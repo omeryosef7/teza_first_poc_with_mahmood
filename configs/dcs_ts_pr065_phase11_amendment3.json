@@ -1,0 +1,1011 @@
+{
+  "id": "DCS-PR-065",
+  "title": "PHASE 11 AMENDMENT 3 to DCS-PR-059, successor to DCS-PR-064 -- record that the frozen option_mass gate is scoped to EVERY ARM (it is; the parent says so four times), and decide the ONE thing the parent left open: WHAT HAPPENS TO THE REST OF A STAGE when a non-baseline arm falls below that gate",
+  "status": "FROZEN",
+  "written": "2026-09-09",
+  "written_at_commit": "b29f1494",
+  "phase": 11,
+  "kind": "AMENDMENT",
+  "mandate_section": 14,
+  "_read_this_first": [
+    "This file AMENDS configs/dcs_ts_pr059_phase11.json (DCS-PR-059), FROZEN and NOT edited, and",
+    "SUPERSEDES configs/dcs_ts_pr064_phase11_amendment2.json (DCS-PR-064), also FROZEN and also NOT",
+    "edited. Both are pinned by sha16 in `amendment`. An amendment is a NEW file.",
+    "",
+    "WHAT THIS FILE DOES NOT DO. It does NOT decide where the option_mass gate sits. That question",
+    "was already decided, in the FROZEN parent, before any of these numbers existed, and it is",
+    "decided AGAINST the reading that would have been convenient here. The parent says the gate is",
+    "per ARM, in four separate places, quoted verbatim in decision_PR059_D9.the_design_already_says.",
+    "This file RECORDS that finding and makes it code-checkable so it cannot be quietly re-scoped.",
+    "",
+    "WHAT THIS FILE DOES DECIDE. The parent says a below-gate arm is CANNOT ANSWER. It never says",
+    "what happens to the ELEVEN OTHER ARMS of the stage that arm was running in. On 2026-09-09 the",
+    "runner answered that by aborting the whole stage at arm 2 of 12, which took down the entire",
+    "OTHER codeword bank -- a bank the parent declares is 'never pooled' with the first and whose",
+    "readability the first bank's reading says nothing about. That stop-scope is what",
+    "decision_PR059_D9 settles, by ARM ROLE, in terms that do not mention the measured margin."
+  ],
+  "amendment": {
+    "amends": "configs/dcs_ts_pr059_phase11.json",
+    "amends_prereg_id": "DCS-PR-059",
+    "amends_file_sha16": "55c722ac1f5e9603",
+    "amends_frozen_at": "2026-09-07",
+    "supersedes_amendment": "configs/dcs_ts_pr064_phase11_amendment2.json",
+    "supersedes_amendment_prereg_id": "DCS-PR-064",
+    "supersedes_amendment_file_sha16": "9fb381425e2e6752",
+    "supersedes_amendment_frozen_at": "2026-09-09",
+    "_chain": "DCS-PR-059 (preregistration, FROZEN 2026-09-07) -> DCS-PR-061 (amendment, FROZEN 2026-09-08) -> DCS-PR-064 (amendment 2, FROZEN 2026-09-09) -> DCS-PR-065 (this file). The runner loads ONE amendment against the preregistration, so this file amends DCS-PR-059 directly and pins DCS-PR-064 as the amendment it replaces. Item ids V1-V16 are DCS-PR-064's so the checklists diff line for line; V17 is the only new id.",
+    "_the_parents_are_never_edited": "configs/dcs_ts_pr059_phase11.json, configs/dcs_ts_pr061_phase11_amendment.json and configs/dcs_ts_pr064_phase11_amendment2.json are FROZEN. Nothing here rewrites, deletes or relaxes a parent field in place.",
+    "supersedes": [
+      {
+        "field": "pre_extraction_checklist",
+        "parent_says": "DCS-PR-064's sixteen items V1-V16, of which TWO are BLOCKING and not done: V3 and V16.",
+        "this_file_says": "the same sixteen items with the same ids and the same booleans, plus V17, which is NEW and BLOCKING and not done: the `kill` stage has not completed on any bank, so PHASE 11 does not yet know whether ANY bank has a readable S_G.",
+        "why": "the kill stage aborted at arm 2 of 12 (job 870536). A checklist that does not carry that is a checklist that would let the family stage be gated on a kill stage which never ran."
+      },
+      {
+        "field": "option_mass_gate_policy",
+        "parent_says": "NOTHING. The parent scopes the gate to every arm (four quotations in decision_PR059_D9.the_design_already_says) and attaches CANNOT ANSWER to a below-gate arm, but is SILENT on whether the remaining arms of the stage are still submitted.",
+        "this_file_says": "a machine-readable policy keyed on ARM ROLE, adding nothing to the gate itself: same scope, same value, same statistic, baseline unchanged. It supplies only the stop-scope the parent left open, and its cross_bank_isolation clause is derived from primary.statistic rather than chosen here.",
+        "why": "the runner had a de facto rule -- abort the stage -- that nobody preregistered and that contradicts primary.statistic's never-pooled banks. An unpreregistered rule that decides what gets measured is the thing this phase family exists to stop."
+      },
+      {
+        "field": "go_no_go",
+        "parent_says": "GO for `kill` on the VALIDATION split; NO-GO for every TEST-reading stage; open blocking items V3 and V16.",
+        "this_file_says": "GO for RESUMING `kill` on the VALIDATION split ONLY after the existing ABORTED.json is archived with its provenance by the stage owner, and ONLY with the button_bomb bank's six arms plus basket_bomb's four remaining arms EXCLUDED per CANNOT_ANSWER_BANK. NO-GO for `family` on either bank and NO-GO for every TEST-reading stage. Open blocking items V3, V16 and V17.",
+        "why": "one bank's reference scope is CANNOT ANSWER; the other bank has not been measured."
+      },
+      {
+        "field": "artifacts.report",
+        "parent_says": "reports/DCS_TS_PR064_AMENDMENT.md",
+        "this_file_says": "reports/DCS_TS_P11_OPTION_MASS_ON_ARMS.md; the DCS-PR-064 report remains the record of the work it describes and is not edited.",
+        "why": "a new file records new work."
+      }
+    ],
+    "leaves_untouched": [
+      "the option_mass gate itself -- its scope (every arm), its value (0.05), its statistic (median_true) and its channel. NOTHING here moves a numeric gate.",
+      "the BASELINE gate, which is not relaxed under any reading and keeps the parent's SECOND kill condition verbatim.",
+      "decision_PR059_D1 and decision_PR059_D8, carried from DCS-PR-064 unchanged.",
+      "question, population, split, model, read_site, classifier, primary, power, nulls_required, nulls_disposition_amendment, multiplicity -- inherited byte for byte.",
+      "power.mde.in_semantic_logodds_nats stays NULL. This file does not fill it in.",
+      "scripts/dcs_ts_prereg.py, NOT edited, still fail-closed: --for-extraction ignores applies_to_stages and refuses on every blocking-and-not-done item, now three of them.",
+      "outputs/boombness/pr059_runner/kill_validation/ABORTED.json, which this file does not delete and does not archive."
+    ]
+  },
+  "decision_PR059_D1": {
+    "defect": "PR059-D1",
+    "the_arithmetic": "The query span is 28 rows (rel_end -28..-1), constant in 6900/6900 cell-C prompts. A dose-matched random-row control for a scope of size m needs m rows drawn from the span EXCLUDING the scope's own rows, so it needs a pool of at least m out of 28-m, i.e. m <= 14. Realised pools: S_A m=5 pool 23 OK; S_C m=1 pool 27 OK; S_F m=1 pool 27 OK; S_F2 m=1 pool 27 OK; S_D m=22 pool 6 IMPOSSIBLE; S_E m=23 pool 5 IMPOSSIBLE; S_G m=28 pool 0 IMPOSSIBLE.",
+    "options_considered": [
+      {
+        "option": "1. draw the control rows from the DEMONSTRATION block instead of the query span",
+        "rejected_because": "It changes what the control controls for, and it changes the experiment. This phase's intervention is a demonstration->query attention knockout: the SOURCE keys are the demonstration block and only the DESTINATION rows vary -- `intervention.source_keys`: 'IDENTICAL in every scope: only the DESTINATION rows vary. That is what makes the family a localisation experiment rather than a dose sweep.' A control whose destinations are demonstration rows blocks demo->demo attention, which is a different causal graph at a different place in the sequence, upstream of the query entirely. It would answer 'does cutting m rows anywhere matter?' when the question is 'does cutting THESE m QUERY rows matter?'. It is also not constructible through the instrument: the declared-offset selector CONSTRAINS every offset to the row's own query span precisely so that a selector cannot cut a demonstration row and report it as a query-position result."
+      },
+      {
+        "option": "2. drop \"excluding own rows\" and allow overlap",
+        "rejected_because": "Then it is not a control. Any 23-row draw from a 28-row span shares at least 18 rows with S_E; at m=22 and m=23 the 'control' IS the scope, up to a handful of rows. Its expected effect is the scope's effect, so it cannot fail, and a control that cannot fail is a check that binds nothing. This is the repo's own 'a check that reads the same broken source' shape."
+      },
+      {
+        "option": "3. ACCEPT that S_D/S_E/S_G have no random-row control, DEMOTE them from primary, and rely on the other declared controls -- ADOPTED",
+        "adopted_because": "It is the only option that changes nothing about what the arms are and states the loss plainly. S_D, S_E and S_G still run, still report their full per-domain distributions, still carry the nondemo-KEY control (whose draw pool is non-demonstration KEYS and is therefore unaffected by the query span's size), and S_D vs S_E is still dose-matched to within one row by construction. What it costs is stated in `what_is_lost` and is not small."
+      },
+      {
+        "option": "4. redefine the primary contrast onto a smaller scope pair (S_C vs S_F, 1 row each, both controllable)",
+        "rejected_because": "It would make the phase's headline a comparison the design ITSELF predicts is uninformative. primary.negative._this_is_a_real_result already says so, before any data exist: 'A single-row null (S_C, S_F) is the EXPECTED shape and on its own is close to uninformative -- it must not be reported as \"that row is not the mechanism\"', citing arXiv:2605.04061's 0% single-position task transfer across all 28 layers despite 100% probing accuracy. Promoting S_C vs S_F would be choosing the contrast that SURVIVES rather than the contrast the question asks, which is subset shopping with the selection moved one level up. S_C vs S_F remains an exactly dose-matched, fully controlled REPORTED comparison -- it is simply not promoted to primary."
+      },
+      {
+        "option": "5. (identified here, NOT adopted, recorded for a future preregistration) control the DIFFERENCE ROW rather than the scope",
+        "what_it_would_be": "The primary contrast is a DIFFERENCE of two scopes, and what needs controlling is the ONE row by which they differ. The dose-matched control for that row is `S_D plus one random non-codeword row`: m=1 drawn from the span excluding S_D's 22 rows and excluding the codeword row -10, a pool of 5 ({-5,-4,-3,-2,-1}) and 5 distinct 1-row draws available for the 3 the design requires. That arm is 23 rows, exactly matched to S_E, and differs from it only in WHETHER THE ADDED ROW IS THE CODEWORD. It is arithmetically constructible.",
+        "not_adopted_because": "It is a NEW ARM, and the arm manifest is built by the FROZEN analyzer (scripts/dcs_ts_pr059_localisation.build_arm_manifest). Adding it means editing an analyzer that was committed before the outcome exists -- artifacts._freeze_rule: 'The analyzer is committed BEFORE the outcome exists. It is not edited to rescue an outcome. A new design is a new preregistration.' It is recorded here as the constructive path a successor preregistration should take, and it is deliberately NOT smuggled in as an amendment to this one.",
+        "caveat_that_must_travel_with_it": "the 5 rows available as substitutes are exactly S_A's scaffold rows, so the arm is only interpretable if L-N5 holds -- if the scaffold-only arm S_A moves the readout, the whole family is VOID anyway."
+      }
+    ],
+    "chosen": "option 3, with option 5 named as the successor design",
+    "what_is_lost": [
+      "PHASE 11 CANNOT ANSWER ITS OWN DECLARED PRIMARY QUESTION. 'Does removing the codeword row from an otherwise identical 23-row cut change the effect?' is asked by mandate 14.1's D-vs-E pair and it is the one comparison this design was built around. It will be REPORTED and it will carry no confirmatory weight.",
+      "The rows-versus-cells confound is NOT separated for S_D, S_E or S_G. PR-032 declared it could not separate rows from cells and the per-scope random-row control was this phase's answer to that; for the three largest scopes the answer is withdrawn. Within S_A, S_C, S_F and S_F2 it still holds.",
+      "The S_D-vs-S_E difference cannot separate 'the codeword row specifically' from 'one more row of any kind'. The two arms differ by one row of DOSE as well as by that row's IDENTITY, and those are exactly what a 23rd-random-row control would have separated. Any S_D/S_E difference is therefore an upper bound on the codeword row's contribution, never an estimate of it.",
+      "Success condition 3 is unevaluable for the three largest scopes, and success is CONJUNCTIVE, so if the only scope reaching half of S_G is S_D or S_E the phase's verdict is CANNOT ANSWER -- not a positive.",
+      "The reference scope S_G, the DENOMINATOR of every fraction this phase reports, has no random-row control either. Nothing in the manifest ever asked for one (the analyzer's build_arm_manifest gives the reference no controls), so no Holm-corrected claim rests on it; but the parent's `for every scope` clause is contradicted and the contradiction is recorded rather than read past."
+    ],
+    "what_is_NOT_lost": [
+      "S_A (the scaffold null, L-N5), S_C (the codeword row), S_F (the readout row) and S_F2 all keep a fully constructible 3-draw dose-matched random-row control. The three-way comparison S_C vs S_F -- exactly dose-matched at 1 row each, both controlled -- is intact and is what the phase can still answer cleanly.",
+      "The nondemo-KEY control exists for EVERY scope regardless of size: its draw pool is non-demonstration KEYS with query_span_positions protected, so the 28-row span does not bound it.",
+      "Every scope's effect as a FRACTION of S_G, the 0.5 rule, the Holm family, S_B at p = 1.0, and both installation strata are unchanged."
+    ],
+    "mandate_14_justification": "Mandate section 14.1 says exactly two things about dose: 'define a SMALL family such as A..F' and 'Match dose wherever the scientific comparison requires it.' It does NOT require a random-row control for every scope -- that is the parent's own tightening, and it is a good one. Where the scientific comparison requires matched dose, this decision leaves it matched: S_C vs S_F is 1 row against 1 row, and S_D vs S_E is 22 against 23 by construction. What is withdrawn is the parent's extra requirement in the three places it is arithmetically unbuildable, and the withdrawal is declared BEFORE any outcome exists. Mandate 14.1 also says 'If a further hypothesis is suggested by these results: new preregistration. No subset shopping.' -- which is why option 5 is named and not adopted, and why option 4 (promoting the contrast that survives) is refused.",
+    "declared_before_any_outcome": "2026-09-08. No PHASE 11 arm has been scored on any bank on any channel; the analyzer's default entry point refuses with '78 arm tags searched, 78 absent' and the verifier with '82 declared arm(s) searched, 0 present on disk'. This decision therefore cannot have been made to fit a number."
+  },
+  "question": "WHICH SEMANTIC REGION OF THE QUERY has to read the demonstration block for the model's semantic report to carry the installed concept? Measured on `semantic_one_word`, the channel that does NOT name the answer in its own question, and over PREDECLARED SEMANTIC REGIONS derived from a frozen token-role map -- not over raw 'last K rows'.",
+  "_question_note": "unchanged from the parent; carried because the mandate-21 loader requires the field.",
+  "population": {
+    "bank_family": "ts116m",
+    "banks": {
+      "button_bomb": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl",
+        "bank_file_sha16": "dcd92d723f3e6d00",
+        "bank_rows_sha16": "4ca3ec165ab5b018"
+      },
+      "button_knife": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_button_knife.jsonl",
+        "bank_file_sha16": "94fd300d611fccf2",
+        "bank_rows_sha16": "65eb4fa533890eff"
+      },
+      "button_gun": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_button_gun.jsonl",
+        "bank_file_sha16": "8e646dfdb451abc6",
+        "bank_rows_sha16": "c7ceb5a151a2788a"
+      },
+      "basket_bomb": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl",
+        "bank_file_sha16": "79511d9e254571e6",
+        "bank_rows_sha16": "1e872cd8cd2f63a5"
+      },
+      "basket_knife": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_knife.jsonl",
+        "bank_file_sha16": "538ca9b48d905290",
+        "bank_rows_sha16": "61e586e4bdca6f28"
+      },
+      "basket_gun": {
+        "path": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_gun.jsonl",
+        "bank_file_sha16": "f4c655a723729c08",
+        "bank_rows_sha16": "f1a8332bdd7c48ce"
+      }
+    },
+    "pools": {
+      "shared_valences_from": "data/boombness_prompts/demo_pools_116dom.json",
+      "shared_pools_sha16": "976aa2b0b617118d",
+      "harm_bomb": {
+        "path": "data/boombness_prompts/demo_pools_116dom_tsm_bomb.json",
+        "content_sha16": "e561c812ee355c73",
+        "job": 859722,
+        "provenance": "60 candidates generated at seed 20260906, 40 selected by scripts/dcs_ts_length_match_pools.py"
+      },
+      "harm_knife": {
+        "path": "data/boombness_prompts/demo_pools_116dom_tsm_knife.json",
+        "content_sha16": "27eaf6a76f6d0526",
+        "job": 859723,
+        "provenance": "60 candidates generated at seed 20260906, 40 selected by scripts/dcs_ts_length_match_pools.py"
+      },
+      "harm_gun": {
+        "path": "data/boombness_prompts/demo_pools_116dom_tsm_gun.json",
+        "content_sha16": "50ba5d1fbeb5764f",
+        "job": 859724,
+        "provenance": "60 candidates generated at seed 20260906, 40 selected by scripts/dcs_ts_length_match_pools.py"
+      },
+      "_seed": 20260906
+    },
+    "concepts": [
+      "bomb",
+      "knife",
+      "gun"
+    ],
+    "codewords": {
+      "development": "button",
+      "external_confirmation": "basket"
+    },
+    "cell": "C",
+    "_cell_note": "Select on the field `cell` == 'C'. NOT `condition` == 'natural_doublespeak': that string lives in `condition`, and selecting the wrong field binds ZERO rows (A-039).",
+    "query_kind_primary": "semantic_one_word",
+    "query_kind_display": "semantic_forced_choice",
+    "_CHANNEL_IS_THE_POINT_OF_THIS_PHASE": "PRIMARY MECHANISTIC CHANNEL IS semantic_one_word, which contains the concept word ZERO times in 6780 dose-4 rows and 1356 dose-0 rows. semantic_forced_choice is scored and reported as SECONDARY DISPLAY, with the 100%-leakage note attached to every number, and NO mechanism claim may rest on it. A disengaged primary channel is CANNOT ANSWER, not a licence to fall back on the display channel.",
+    "n_examples_primary": 4,
+    "n_examples_replication": 8,
+    "n_examples_null": 0,
+    "_dose_rule": "Doses are separate preregistered cells and are NEVER pooled into one p-value.",
+    "rows_per_domain_per_cell": 10,
+    "n_rows_per_bank": 1130,
+    "_row_arithmetic": "113 analysed domains x 10 family slots = 1130 rows per (bank, cell C, semantic_one_word, dose 4); 2260 rows across the two bomb banks. Verified on disk: 1160 rows before the three exclusions.",
+    "concept_primary": "bomb",
+    "concepts_descriptive_only": [
+      "knife",
+      "gun"
+    ],
+    "_template_split": "NONE. One query template per query_kind; the token-role census is constant in 6900/6900 prompts. Template generalisation (mandate 5.4) is NOT tested here and that is a declared scope limit.",
+    "preregistered_exclusions": [
+      {
+        "domain": "restaurant_kitchen",
+        "scope": "the ENTIRE analysis population, all concepts, all cells",
+        "reason": "Prompt-only and prospective. A kitchen has knives as natural furniture, so bomb and gun harm pools generated for it keep naming a knife: bomb[39] 'A misplaced knife on the edge of the counter was a potential bomb hazard.', gun[19] '...whether a gun or a knife is the better tool for a chef.' Regenerating at a second seed (20260907) cleaned bomb and knife and left gun contaminated again -- the domain, not the draw. A third bump would be selection rather than repair. Excluding it makes all three ORIGINAL uniform-seed pools fully clean (0 of 13920 contaminated), so every surviving domain comes from one generation family at one seed, which is strictly better than a per-domain patchwork. Decided on prompt text alone, before any extraction.",
+        "seed_bumps_attempted": 1,
+        "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged",
+        "whole_population": true
+      },
+      {
+        "domain": "subway_station",
+        "scope": "the ENTIRE analysis population, all concepts, all cells",
+        "reason": "C-087, prompt-only and prospective, same precedent as restaurant_kitchen. Its gun harm pool contains 'A witness described the gun as a large, black handgun with a silver barrel.' -- prompt_families._substitute uses str.replace, which has no word-boundary notion, so the shipped demo reads 'handbutton'/'handbasket'. That leaks concept identity LEXICALLY (only the gun arm) while being invisible to every whole-word leakage check. The same pool's sentence 33 is also TRUNCATED -- 'After the inspection, we felt relieved that no gun' -- with no object and no terminal punctuation, which no occurrence rule can catch because its count is correct. Exactly ONE compound occurrence exists across all three pools, so this exclusion removes the entire known population of the defect.",
+        "cost": "it sits in TRAIN, so validation and test stay at 23/23 and the power analysis is unchanged",
+        "whole_population": true
+      },
+      {
+        "domain": "school_campus",
+        "scope": "the ENTIRE analysis population, all concepts, all cells",
+        "reason": "C-075 + R-108. 'basket' matches inside 'basketball.' in this domain's dev preamble. At extraction that is not a metadata nuisance but a HARD REFUSAL: resolve_occurrences found one more TOKEN occurrence than TEXT occurrence and declined to guess which was the codeword, so 30 rows of basket_bomb failed with occurrence_count_mismatch (text=N, tokens=N+1). Verified: all 30 are school_campus, 3 of them in the primary population. The extractor behaved correctly -- it refused rather than mis-indexing -- so the honest response is to remove the domain rather than to tolerate rows the pipeline could not resolve. Widened from the earlier occurrence-ordinal-only scope to the WHOLE population. It is in TRAIN: validation and test stay 23/23, analysed split becomes 67/23/23 over 113 domains.",
+        "whole_population": true
+      }
+    ],
+    "_no_installation_exclusion": "Non-installing domains are NOT dropped (mandate section 15). Installation is a preregistered STRATIFICATION variable and a reported descriptive limit, never a post-hoc filter.",
+    "_two_codewords_are_a_transfer_pair_not_a_pool": "button and basket are analysed as a declared transfer pair and NEVER pooled: button_bomb installs in 92/113 domains on the primary channel and basket_bomb in 46/113.",
+    "_inherited_verbatim": true
+  },
+  "split": {
+    "manifest": "data/boombness_prompts/dcs_ts116_domain_split.json",
+    "manifest_sha16": "be7d2c772d814ef3",
+    "field": "dsplit",
+    "unit": "domain",
+    "n_train": 67,
+    "n_validation": 23,
+    "n_test": 23,
+    "seed": 202609061,
+    "discipline": "Discovery reads train only. Hyperparameters are selected on validation ONLY. test is read once, by the frozen analyzer, and never for layer/C/threshold selection.",
+    "_fpr_evidence": "Measured on pure noise over the real 36-point grid, 300 reps: validation-selected FPR 0.0467 (calibrated); test-selected 0.4433 (9.5x inflation). This is why the rule exists.",
+    "n_domains_analysed": 113,
+    "_exclusion_note": "70 train domains are ASSIGNED by the frozen manifest; 67 are ANALYSED after the THREE whole-population preregistered exclusions (restaurant_kitchen C-082, subway_station C-087, school_campus C-075/R-108 -- all three sit in TRAIN). Analysed split is 67/23/23 over 113 domains, verified against the manifest on disk. The manifest is NOT regenerated; a split may be created once (mandate 5.2). NOTE: PR-048's own _exclusion_note still says '68 are ANALYSED' and names only two exclusions -- it predates the school_campus widening. The arithmetic here (70-3=67, 67+23+23=113) is the one that matches the manifest and matches R-116's 113 x 48 = 5424 rows per bank.",
+    "_inherited_verbatim": true
+  },
+  "model": {
+    "hf_id": "meta-llama/Llama-3.1-8B-Instruct",
+    "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+    "n_layers": 32,
+    "hidden": 4096,
+    "n_heads": 32,
+    "n_kv_heads": 8,
+    "dtype": "bfloat16",
+    "attn_impl": "eager",
+    "_qwen": "Qwen3-14B is absent from both caches and HF_HUB_OFFLINE=1 makes any Qwen job fail at load. This phase is Llama-only BY DECISION, recorded as a scope limit and NOT as a model-specificity claim.",
+    "tokenizer": "meta-llama/Llama-3.1-8B-Instruct, add_special_tokens=False on the chat-templated string; the chat template contributes a constant 35.0 +/- 0.0 tokens (token-role map Q3)",
+    "position_resolver": "extract_boombness.resolve_occurrences on the bank field `target_surface`; indices are ALWAYS taken as len(input_ids)+rel_end, never as a constant absolute integer",
+    "_absolute_index_is_void": "The full list of ABSOLUTE codeword indices is identical across the three concepts in 0/2300 triples (cross-concept spread 9.36 +/- 5.90 tokens, range 0-50) while the END-RELATIVE index of the last query occurrence is identical in 2300/2300. An absolute index reads a DIFFERENT TOKEN in each arm. This is the recorded absolute-position-index bug class.",
+    "_inherited_verbatim": true
+  },
+  "read_site": {
+    "_mandate": "section 12.1-12.2",
+    "position_PRIMARY": "THE OUTPUT. The semantic readout is a whole-answer teacher-forced score at the answer position after the full prefill, so it is downstream of every layer and every intervened row BY CONSTRUCTION. The mandate-12.1 artifact -- 'a state read at the first affected layer may only reflect the read row's own mask' -- cannot touch it at all. That is the cleanest available answer to the R5 defect and it is why the readout, not a hidden state, is this phase's primary.",
+    "position_SECONDARY_REPRESENTATION": "following",
+    "_following_is": "rel_end -9, decoded ' actually', token id 3604, PASSING all four downstream-neutral criteria in 6900/6900 prompts and identical across the three concepts in 2300/2300 triples (token-role map Q1). Exposed in the extractor CLI on 2026-09-07 (C-099); before that no run could capture it.",
+    "_the_codeword_row_is_NOT_a_valid_read_site_for_a_scope_that_cuts_it": "For scopes S_C and S_D/S_E, reading at rel_end -10 reads the intervened row itself at the first affected block. Where a scope's cut includes the read row, the representation read is at `following` ONLY, and the codeword-row read is persisted as a diagnostic labelled INVALID FOR PROPAGATION.",
+    "layer_convention": "block L == hidden_states[L+1]; hidden_states[0] == embeddings",
+    "layer_convention_verified_by": "planted-hook GPU test, job 860184, 2026-09-07 -- CONFIRMED BY EXPERIMENT (mandate 22.3: never inferred from names)",
+    "read_layer_grid": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "primary_read_layer": 9,
+    "_primary_read_layer_is_inherited_not_selected": "block 9 is PR-048's VALIDATION-ONLY selection (best_val_acc 0.9130, C=0.01, n_tied 1/36, inert False). This phase performs NO selection of any kind, so the measured test-selection FPR inflation (0.4433 against 0.0467) cannot enter.",
+    "_inherited_verbatim": true
+  },
+  "classifier": {
+    "type": "multinomial_logistic_regression",
+    "role": "SECONDARY DIAGNOSTIC ONLY",
+    "provenance": "the FROZEN PR-048 estimator, TRAIN domains, block 9, C = 0.01, standardisation fitted on TRAIN domains only; applied UNCHANGED, never refitted in this phase",
+    "_no_mlp": "A linear probe, per mandate section 8.1.",
+    "_it_is_not_the_outcome": "This phase's outcome is what the model SAYS. The probe is reported at `following` as corroboration and carries no confirmatory weight; R-112 already showed a control nine tokens downstream decodes identity at 0.9261 against the codeword's 0.9446, so probe movement at either site is weak evidence about localisation.",
+    "_inherited_verbatim": true
+  },
+  "primary": {
+    "statistic": "for each scope, the domain-mean PAIRED delta(semantic_logodds) = scope-KO minus untouched baseline, within prompt_id, cell C, semantic_one_word, concept bomb, n_examples 4, reported per codeword bank and never pooled across banks; each scope assessed against its OWN dose-matched random-row control",
+    "primary_contrast": "S_D vs S_E -- does removing the codeword row from an otherwise identical 23-row cut change the effect? This is the one comparison in the family that is dose-matched to within a single row and that isolates the codeword from everything else in the question.",
+    "independence_unit": "domain",
+    "n_domains_analysed": 113,
+    "n_domains_by_split": {
+      "train": 67,
+      "validation": 23,
+      "test": 23
+    },
+    "_population_is_all_113_and_why_that_is_not_a_leak": "Mandate 14.2 asks for all available domains for the final headline mechanism estimate. NOTHING is selected in this phase -- layer, band, scope set, threshold, channel and probe are all inherited frozen -- so there is no selection for a held-out set to protect against. The 23 test domains are ALSO reported separately as a leakage-0 confirmation, and where the two disagree the smaller, cleaner one is what the claim rests on.",
+    "alpha": 0.05,
+    "test": "group permutation at the DOMAIN level, arm-label flip within domain",
+    "n_perm": 10000,
+    "attainable_p_floor": 9.999e-05,
+    "_p_floor_rule": "EVERY p IS PUBLISHED NEXT TO ITS FLOOR, 1/(n_perm+1) = 9.999e-05. On zero exceedances the report reads 'p < 9.999e-05 (= floor)', never 'p = 0'. A p AT its floor is a statement about the resolution of the design, not a measurement of the effect. R-116's own installation table has SIX p-values all at the floor and says so.",
+    "secondary_test": "two-sided exact sign test over domains with the tie count; its floor is 1.93e-34 at n=113 and 2.384e-07 at n=23, so the permutation floor is the binding one",
+    "_row_level_permutation_is_forbidden": "measured false-positive rate 0.2000 on this design. It appears in no arm, no secondary and no diagnostic in this phase. A significant row-level p-value does not establish a domain-level claim (mandate section 33).",
+    "success": {
+      "_conjunctive_on_purpose": "All four required together. Any three of four is not a localisation result.",
+      "conditions": [
+        "S_G (the whole query span) moves the readout in the expected direction -- there is something to localise",
+        "at least one narrower scope reproduces a preregistered fraction >= 0.5 of the S_G effect, Holm-corrected within PHASE11_LOCALISATION",
+        "that scope's OWN dose-matched random-row control does NOT reproduce it, across 3 draws with 3 DISTINCT output hashes",
+        "S_A (scaffold only) is NULL -- a scaffold-only cut that moves the readout means the arms differ by something other than query content"
+      ],
+      "half_of_S_G_rule": 0.5,
+      "_where_the_0_5_comes_from": "PR-032's own section-11.5 reproduction rule, |delta_scope| >= 0.5 x |delta_reference|, inherited verbatim rather than re-chosen here. Inheriting a threshold from the design being replaced is the one way to be sure it was not picked to fit this phase's numbers."
+    },
+    "negative": {
+      "condition": "S_G moves but NO narrower scope reaches half of it, with power >= 0.8 for the declared MDE",
+      "MANDATORY_WORDING": "THE DEMONSTRATION->QUERY PATHWAY IS DISTRIBUTED ACROSS THE QUERY RATHER THAN LOCALISED TO ANY PREDECLARED SEMANTIC REGION, UNDER THIS INTERVENTION, AT THIS BAND, ON THIS BANK",
+      "_this_is_a_real_result": "It is also the result the literature predicts: arXiv:2605.04061 reports single-position activation intervention at 0% task transfer across all 28 layers of Llama-3.2-3B despite 100% probing accuracy at those same positions. A single-row null (S_C, S_F) is the EXPECTED shape and on its own is close to uninformative -- it must not be reported as 'that row is not the mechanism'.",
+      "_the_other_negative": "If S_G itself does not move, the intervention did not do what it claims: check liveness, dose, the eager record and the disabled-hook bridge. That is VOID or a kill, not a localisation negative."
+    },
+    "cannot_answer": "ANY of: (a) median option_mass in an arm falls below the 0.05 gate; (b) the realised power for the declared MDE, computed on the measured between-domain SD, is below 0.8; (c) a scope's row-set resolver fails on more than 5% of rows, so the arms no longer share a population; (d) the installation stratification shows the installing stratum is empty in a bank (it is not for bomb: 92/113 and 46/113).",
+    "void": "attn_implementation not eager on a live arm; hook_fired_count == 0; n_decode_edits != 0 on any scope in this prefill-only family; realised != expected cell count; any realised row set that does not equal its declared rel_end set; the disabled-hook bridge failing to reproduce the baseline byte-for-byte; identical output hashes across the 3 control draws; an absolute index anywhere in the path; a row-level p-value in any reported number; unequal per-arm populations.",
+    "_largest_risk": "THE CONCEPT-FREE CHANNEL IS ONLY WEAKLY ENGAGED. Median option_mass is 0.1138 -- the two scored options carry about a ninth of the next-token mass and a THIRD word is the model's actual answer ~89% of the time. So semantic_logodds is an ordering inside a residual, and a knockout can move that ordering while the model's actual output word never changes. MITIGATION, PREREGISTERED: (1) the argmax decoded answer and the full option_mass distribution are reported for every arm beside every delta, never after it; (2) an argmax-switch rate is reported as a corroborant, expected to be small and NOT required for success (mandate 10.5 item 4 says 'ideally'); (3) if median option_mass in an arm drops below the gate the arm is CANNOT ANSWER. The alternative -- moving to the display channel, where option_mass is 0.708 -- is exactly the leakage this phase exists to remove, and is forbidden.",
+    "_inherited_verbatim": true
+  },
+  "power": {
+    "_mandate": "section 20 -- computed BEFORE any GPU time is requested.",
+    "_honesty_statement": "THE BETWEEN-DOMAIN SD OF THE PAIRED KNOCKOUT DELTA IN semantic_logodds HAS NEVER BEEN MEASURED ON THE CONCEPT-FREE CHANNEL. The old ladder's magnitudes (K=8 delta -6.616, controls +5.16..+5.38) are DISPLAY-CHANNEL numbers on a 38-domain bank and are NOT transferable -- borrowing them would import exactly the instrument this phase removes. The SD is left NULL below rather than filled with a plausible-looking value; measuring it on VALIDATION domains is blocking checklist item U3.",
+    "design": "paired, domain-level, two-sided, alpha 0.05, target power 0.80",
+    "mde_formula": "d_MDE = (z_{1-alpha/2} + z_{1-beta}) / sqrt(n) = 2.80158 / sqrt(n), in units of the BETWEEN-DOMAIN SD of the paired delta",
+    "mde": {
+      "in_sd_units": {
+        "n_113_all_analysed": 0.26355,
+        "n_67_train": 0.34227,
+        "n_23_test": 0.58417
+      },
+      "in_semantic_logodds_nats": null,
+      "_null_is_deliberate": "see _honesty_statement"
+    },
+    "power": {
+      "for_the_declared_effect": null,
+      "_resolution": "U3 measures the SD on VALIDATION DOMAINS ONLY and the analyzer computes power from the realised value, as a CODE PATH."
+    },
+    "declared_minimum_meaningful_effect": {
+      "semantic_logodds_shift": 0.5,
+      "unit": "natural-log odds, concept vs codeword",
+      "justification": "ASSUMPTION, stated as one, and set EQUAL to PR-057's and PR-058's declared minimum so all three phases' effects sit on one scale."
+    },
+    "a_derived_upper_bound_that_does_exist": {
+      "quantity": "between-domain SD of the domain-mean concept_binary_prob for bomb, primary channel, cell C, dose 4 -- THIS PHASE'S EXACT CELL",
+      "value": 0.20226,
+      "derivation": "from R-116's published p10 = 0.2823 and p90 = 0.8007: (0.8007-0.2823)/(2 x 1.28155), assuming approximate normality of the domain means",
+      "why_it_is_an_UPPER_bound_on_the_paired_SD": "it is the SD of the baseline LEVEL across domains, not of a within-prompt paired DIFFERENCE; pairing removes the shared domain intercept.",
+      "implied_mde_in_cbp_units": {
+        "n_113": 0.05331,
+        "n_67": 0.06923,
+        "n_23": 0.11815
+      },
+      "_reading": "at 113 domains the design can resolve a shift of about 0.053 in domain-mean concept_binary_prob. R-116's measured C-minus-A installation effect for bomb is +0.5563, roughly ten times that -- so a knockout that removed even a TENTH of the installed effect would be detectable. At 23 domains the MDE is 0.118 and only a fifth-of-the-effect knockout would be. That is the argument for running all 113 domains and it is made before any data exist.",
+      "_and_the_same_arithmetic_condemns_the_knife_and_gun_arms": "knife's median domain-mean is 0.0868 and gun's 0.0316; a knockout predicted to LOWER the installed reading has less headroom than the MDE. Their nulls are power statements, not mechanism results."
+    },
+    "icc_and_design_effect": {
+      "icc": 0.0884,
+      "source": "PR-048, measured on this population",
+      "deff_at_m10": 1.7956,
+      "n_eff_rows": "1130 / 1.7956 = 629 effective rows per bank at m=10",
+      "_not_a_route_to_a_row_level_test": "reported because mandate 20 asks for it; the independence unit is the domain, full stop."
+    },
+    "n_arms_and_gpu_cost_stated_before_asking_for_it": "6 family scopes (S_A, S_C, S_D, S_E, S_F, S_G) + S_F2 + S_0 baseline + 3 random-row control draws per scope + 3 nondemo-key draws per scope = 44 arms x 2260 rows at dose 4. Doses 0 and 8 and the knife/gun descriptive arms multiply that. The submission is staged: S_G and S_0 first (the kill condition reads them), then the narrower scopes.",
+    "underpowered_branch": "IF the realised SD at U3 implies power < 0.8 for the declared 0.5-nat effect, the phase returns WITHOUT READING TEST and reports CANNOT ANSWER with the realised MDE attached.",
+    "_inherited_verbatim": true
+  },
+  "nulls_required": [
+    {
+      "id": "L-N1",
+      "name": "disabled-hook bridge",
+      "expect": "byte-identical greedy generations and max|diff| == 0.000e+00 hidden states against the untouched baseline",
+      "blocking": true
+    },
+    {
+      "id": "L-N2",
+      "name": "hook liveness, every live arm",
+      "expect": "n_prefill_edits > 0, n_decode_edits == 0, realised == expected cells",
+      "blocking": true
+    },
+    {
+      "id": "L-N3",
+      "name": "eager attention read back from the LOADED config",
+      "expect": "attn_implementation == 'eager', not merely requested",
+      "blocking": true
+    },
+    {
+      "id": "L-N4",
+      "name": "realised row set equals the declared rel_end set",
+      "expect": "for every arm and every row, the persisted surface_span_positions equal len(input_ids)+rel_end for the scope's declared offsets, and the persisted DECODED tokens match the token-role map's modal decodings",
+      "blocking": true
+    },
+    {
+      "id": "L-N5",
+      "name": "S_A scaffold-only null",
+      "expect": "no readout movement; a moving scaffold-only arm means the arms differ by something other than query content",
+      "blocking": true
+    },
+    {
+      "id": "L-N6",
+      "name": "n_examples = 0 population check",
+      "expect": "no demonstrations to cut; rows ledgered and absent, ledger count matches. NOT interpreted as a logodds outcome -- median option_mass at dose 0 is 0.0328, below the gate.",
+      "blocking": true
+    },
+    {
+      "id": "L-N7",
+      "name": "dose-matched random-row control, 3 draws per scope",
+      "expect": "does NOT reproduce the scope; 3 DISTINCT output hashes per scope",
+      "blocking": true
+    },
+    {
+      "id": "L-N8",
+      "name": "dose-matched nondemo-key control, 3 draws per scope",
+      "expect": "match_ratio 1.000 with zero rows below 1; the draw pool excludes query_span_positions",
+      "blocking": true
+    },
+    {
+      "id": "L-N9",
+      "name": "domain-level group permutation",
+      "expect": "null centred at 0",
+      "_never": "row-level permutation; measured FPR 0.2000",
+      "blocking": true
+    },
+    {
+      "id": "L-N10",
+      "name": "end-relative index audit",
+      "expect": "every edit and read index is len(input_ids)+rel_end; 0 absolute indices in the path",
+      "blocking": true
+    },
+    {
+      "id": "L-N11",
+      "name": "equal populations across arms",
+      "expect": "ledgered prompt_ids replayed as an exclusion into EVERY arm; per-domain row counts identical arm-to-arm",
+      "blocking": true
+    },
+    {
+      "id": "L-N12",
+      "name": "concept-word absence in the primary channel",
+      "expect": "0 whole-word bomb/knife/gun occurrences in full_prompt on every scored primary-channel row, recounted independently and cross-checked against the bank's n_concept_occurrences -- a disagreement is a refusal",
+      "blocking": true
+    },
+    {
+      "id": "L-N13",
+      "name": "S_B is empty and is reported as empty",
+      "expect": "the neutral_content role census is 0 in every prompt; S_B enters Holm at p = 1.0 as an absent member and the report says mandate 14.1's scope B could not be built",
+      "blocking": false
+    }
+  ],
+  "multiplicity": {
+    "families": [
+      {
+        "name": "PHASE11_LOCALISATION",
+        "members": [
+          "DCS-PR-059 S_A: chat scaffold + response header only (5 rows)",
+          "DCS-PR-059 S_B: neutral question content only -- UNCONSTRUCTIBLE, enters at p = 1.0",
+          "DCS-PR-059 S_C: codeword row only (1 row)",
+          "DCS-PR-059 S_D: all user-content rows excluding the codeword (22 rows)",
+          "DCS-PR-059 S_E: all user-content rows (23 rows)",
+          "DCS-PR-059 S_F: downstream readout row only, rel_end -9 (1 row)"
+        ],
+        "correction": "Holm across the six, alpha = 0.05 family-wise, on the O1 domain-level p-values",
+        "_S_G_is_not_a_member": "S_G (whole query span) is the DENOMINATOR and the kill-condition read, not a hypothesis about localisation. It is reported with its own p and is not corrected within the family.",
+        "_S_F2_is_not_a_member": "prompt_last_row_only is scaffold and is reported as a labelled extra.",
+        "_control_arms_are_not_members": "the random-row and nondemo-key draws are gates, not hypotheses. A control that fails to reach significance is not thereby a passed control: each is reported with its interval.",
+        "_descriptive_arms_are_not_members": "knife, gun, dose 0, dose 8 and the display channel carry no membership and no confirmatory weight.",
+        "_absent_members_enter_at_p_1": "S_B is the worked example: it is declared, it cannot be built, and it enters at p = 1.0 rather than being quietly dropped."
+      },
+      {
+        "name": "NULLS L-N1..L-N13",
+        "members": [
+          "diagnostics"
+        ],
+        "correction": "not corrected -- they are gates, not hypotheses; each reported with its own value"
+      }
+    ],
+    "_disjoint_from_every_existing_family": "PHASE11_LOCALISATION's members are disjoint from PRIMARY, SECONDARY, EXPLORATORY, PHASE8_MECHANISM, PHASE9_CAUSAL and PHASE10_SYMMETRY, so no existing Holm correction is redefined (the C-106 rule applied forwards).",
+    "_declared_before_any_outcome": "2026-09-07; no scoped knockout has been run on ts116m on any channel",
+    "_inherited_verbatim": true
+  },
+  "_nulls_required_note": "byte-copied from the parent. Their DISPOSITIONS change: L-N1 is NOT CONSTRUCTIBLE (PR059-D6) and L-N7 is constructible only for S_A/S_C/S_F/S_F2 (PR059-D1). See nulls_disposition_amendment.",
+  "nulls_disposition_amendment": [
+    {
+      "id": "L-N1",
+      "name": "disabled-hook bridge",
+      "parent_expect": "byte-identical greedy generations and max|diff| == 0.000e+00 hidden states",
+      "disposition": "NOT CONSTRUCTIBLE -- PR059-D6",
+      "evidence": "pair_common.DisabledHookBridge bridges an inner context exposing (_hook, layer) or (_hooks, layers). ScopedAttentionKnockout -- the class every arm of this phase installs -- exposes `layers` and `_handles` and no hook attribute, so the bridge raises TypeError('DisabledHookBridge cannot bridge ...: it exposes neither (_hook, layer) nor (_hooks, layers)'). Observed on CPU against the real class on 2026-09-08. It stays BLOCKING (item V12); fixing it needs doublespeak_causality/pair_common.py, which is held by other work.",
+      "blocking": true
+    },
+    {
+      "id": "L-N7",
+      "name": "dose-matched random-row control, 3 draws per scope",
+      "parent_expect": "does NOT reproduce the scope; 3 DISTINCT output hashes per scope",
+      "disposition": "CONSTRUCTIBLE for S_A, S_C, S_F, S_F2 ONLY -- PR059-D1",
+      "evidence": "pools 23/27/27/27 against doses 5/1/1/1 are constructible; pools 6/5/0 against doses 22/23/28 for S_D/S_E/S_G are not. The 3 draws are 3 DISTINCT ROW SETS for every constructible scope on CPU today; the 3 DISTINCT OUTPUT HASHES half is GPU work and is gated behind V8.",
+      "blocking": true
+    },
+    {
+      "id": "L-N2",
+      "name": "hook liveness, every live arm",
+      "parent_expect": "n_prefill_edits > 0, n_decode_edits == 0, realised == expected cells",
+      "disposition": "PARTIALLY EVALUABLE -- PR059-D4",
+      "evidence": "the attention-knockout producer writes hook_n_prefill_edits / hook_n_decode_edits, so the first two clauses are checkable on every row. It writes NO hook_fired_count and NO n_cells_edited_expected, so 'realised == expected cells' has no producer source at all and the analyzer's liveness_gate cannot be evaluated for a knockout arm. The launcher gates on the producer's own fields and records the analyzer's verdict as NOT EVALUABLE beside it rather than inventing the missing counts. Item V10.",
+      "blocking": true
+    }
+  ],
+  "artifacts": {
+    "readout": "src/boombness/score_behavior.py (EXISTS) via scripts/dcs_ts_readout_multi.py",
+    "scope_plumbing": "doublespeak_causality/pair_common.py SCOPED_KNOCKOUT_MODES / resolve_scoped_query_rows / LIVENESS_REQUIREMENT / LIVENESS_MUST_BE_ZERO (EXISTS). query_last_k_rows, target_surface_row_only, prompt_last_row_only and query_prefill_only cover S_A, S_C, S_F2 and S_G with no new code.",
+    "arbitrary_row_set_channel": "pair_common.resolve_scoped_query_rows('query_last_k_rows') already takes the row set VERBATIM from the consumer via `surface_span` -- 'the consumer, not this resolver, owns the definition of last K'. S_D, S_E and S_F ride that same channel.",
+    "representation_capture": "scripts/dcs_extract_under_ko.py (EXISTS) --position following, --knockout-scope, per-arm liveness gate",
+    "nondemo_control": "src/boombness/score_behavior.py nondemo_control_draw / nondemo_draw_seed / nondemo_matched_d{1,2,3} (EXISTS), with query_span_positions protected",
+    "token_map": "scripts/dcs_ts116m_token_roles.py + outputs/dcs_ts/token_roles_ts116m.json.gz (EXISTS AND COVERS THIS PHASE'S EXACT POPULATION -- cell C, semantic_one_word, dose 4)",
+    "verifier_architecture_inherited_from": "scripts/dcs_verify_kladder.py (checks C1 arm identity / C2 dose / C3 pairing, and the rule that NOTHING is imported from the producer) and scripts/dcs_verify_kladder_rowlevel.py (R1-R5, closing silent denominator, sign inversion, anchor-by-copy, population swap and drift, vacuous-by-omission, producer-picks-rungs), red-teamed by scripts/dcs_redteam_kladder_verifier.py",
+    "_WHAT_DOES_NOT_EXIST_YET": [
+      "the consumer-side SELECTOR that turns a declared rel_end set into surface_span. Today score_behavior computes only sorted(query_span)[-K:] (two call sites: the pre-flight at ~line 2184 and the per-row resolution at ~line 2486, which must stay in agreement BY CONSTRUCTION, as they currently do). S_D, S_E and S_F need a declared-offset selector at BOTH sites. Checklist U1.",
+      "the same selector in scripts/dcs_extract_under_ko.py for the O2 capture. Checklist U1.",
+      "the per-scope RANDOM-ROW control draw (the nondemo-KEY control exists; the random-ROW control does not). Checklist U2.",
+      "scripts/dcs_ts_pr059_localisation.py, the frozen analyzer. scripts/dcs_kladder_analysis.py is NOT reusable: it is frozen against PR-032's rung set (NEW_RUNGS 3-7, INHERITED 1,2,8,16,32), its EXPECT_N is 380, and it resolves arm dirs by the dcsk* glob. It is a TEMPLATE for the shape (its half-of-reference rule is inherited verbatim above), not an analyzer for this population. Checklist U5.",
+      "a mutation harness for that analyzer. Checklist U6.",
+      "the independent verifier for this population. Same reasoning as the analyzer: the kladder verifiers bind PR-032's arm directories and cannot bind these. Their CHECK CLASSES are reused; their code is not. Checklist U7."
+    ],
+    "analyzer": "scripts/dcs_ts_pr059_localisation.py",
+    "analyzer_commit": "d27fca35",
+    "analyzer_exists": true,
+    "analyzer_committed_before_outcome": true,
+    "_freeze_rule": "The analyzer is committed BEFORE the outcome exists. It is not edited to rescue an outcome. A new design is a new preregistration.",
+    "_loader_will_refuse_extraction_and_that_is_correct": "scripts/dcs_ts_prereg.py --for-extraction REFUSES this file, on the two BLOCKING items that are genuinely open -- V3 (power, never measured) and V16 (the three-distinct-hashes control band, never run). TWO refusals, down from DCS-PR-061's seven. That refusal IS the design working, and it must not be worked around.",
+    "report": "reports/DCS_TS_P11_OPTION_MASS_ON_ARMS.md",
+    "design_doc": "reports/DCS_TS_PR058_PR059_DESIGN.md",
+    "_mandate_34_output": "required final output #8, 'corrected attention mechanism report'",
+    "log_entry": "external_md/DCS_THESIS_SCALE_BOMBNESS_CAUSAL_CONFIRMATION_PLAN_AND_PROGRESS_20260906.md",
+    "mandate_sha16_at_freeze": "2ec4bb91d2c58ab0",
+    "token_role_map_report_sha16_at_freeze": "38fd3d6f4397cd8a",
+    "token_role_map_artifact_sha16_at_freeze": "95280fbd9d37b6cb",
+    "prompt_validation_report_sha16_at_freeze": "b799805ff9d23e74",
+    "literature_update_sha16_at_freeze": "2afeaa4447950180",
+    "pair_common_sha16_at_freeze": "b89f9226b522f1c8",
+    "_these_hashes_are_witnesses_not_gates": "The loader file-verifies only bank and pool hashes. These are recorded so a later reader can tell whether the artifacts this design was written against are the ones they hold. A mismatch is a signal to re-read, not an automatic refusal.",
+    "_inherited_verbatim_except": "launcher, analyzer_exists, analyzer_commit, analyzer_committed_before_outcome, pair_common_sha16_at_freeze, report (see amendment.supersedes)",
+    "launcher": "src/boombness/pr059_run_localisation.py",
+    "launcher_is_new_here": true,
+    "_launcher_why": "PR059-D2: every arm command dcs_ts_pr059_localisation.py --plan prints is addressed to scripts/dcs_ts_readout_multi.py, which forwards no --only-cell, no --knockout-scope and no row-set flag, so the printed line is a design statement and not a command. The launcher loads the model ONCE, loops the ANALYZER'S OWN arm manifest (imported, never restated), drives src/boombness/score_behavior.py in-process, and cross-checks every argv it builds against the analyzer's own launch_command().",
+    "_analyzer_exists_is_now_true_because": "the flag's whole content is 'can this file emit a verdict'. DCS-PR-061 kept it false because analyse() ended at the liveness gates. It now ends in a verdict, and the verdict logic is pure and GPU-free, so all six verdict classes are reachable under --self-test. See checklist V13. Nothing about this flag was flipped to make a gate pass: `--for-extraction` still refuses on V3 and V16.",
+    "_superseded_pair_common_sha16_at_pr059_freeze": "33da1f4a5a4bdae5",
+    "_pair_common_repin_note": "DCS-PR-061's ADDENDUM A6.2 recorded the DCS-PR-059 value as a STALE WITNESS -- pair_common.py was edited to give ScopedAttentionKnockout its expected/realised cell counts (V10) and its attn_pre_kwargs bridge family (V12). Re-pinned here to the file on disk on 2026-09-09. The loader file-verifies only bank and pool hashes, so these remain WITNESSES, NOT GATES.",
+    "analyzer_sha16_at_this_amendment": "ba86aecc714e5e8f",
+    "verifier_sha16_at_this_amendment": "b1f98ccba896a229",
+    "launcher_sha16_at_this_amendment": "5a521e94a8d20236",
+    "score_behavior_sha16_at_this_amendment": "d5317fd490986293",
+    "smoke_done_json_sha16": "18eb89a92fdf473e",
+    "smoke_run_manifest_sha16": "aedf9e5053839aee",
+    "_launcher_edited_here": "src/boombness/pr059_run_localisation.py gained TWO re-derivation predicates and nothing else: _reads_the_test_split (registered for V3) and _runs_a_random_row_control_band (registered for V16). No gate was loosened, no refusal removed. Verified unchanged after the edit: --self-test 58 checks / 0 failed, --mutate 49/49 RED."
+  },
+  "pre_extraction_checklist": [
+    {
+      "id": "V1",
+      "supersedes": "U1",
+      "item": "the DECLARED-OFFSET row selector exists at both score_behavior call sites and in scripts/dcs_extract_under_ko.py, resolves END-RELATIVE per prompt, refuses an absolute index, and persists the realised positions AND their decoded tokens on every row.",
+      "blocking": true,
+      "done": true,
+      "evidence": {
+        "closed": "2026-09-08 (parent U1) and RE-VERIFIED by the launcher on 2026-09-08",
+        "producer_and_analyzer_selectors_agree": "score_behavior.surface_span_from_rel_end and dcs_ts_pr059_localisation.surface_span_from_rel_end return IDENTICAL positions for all 7 constructible scopes at seq_len in {60,137,400,1024} -- 0 mismatches, re-derived by pr059_run_localisation.py --self-test",
+        "absolute_index_refused": "rel_end_arg([9]) -> 'ABSOLUTE INDEX REFUSED'",
+        "persisted_per_row": [
+          "surface_span_positions",
+          "surface_span_rel_end",
+          "surface_span_decoded",
+          "surface_span_tokens",
+          "seq_len",
+          "knockout_scope_id",
+          "knockout_selector"
+        ]
+      }
+    },
+    {
+      "id": "V2",
+      "supersedes": "U2 (+ PR059-D1)",
+      "item": "the per-scope dose-matched RANDOM-ROW control: implemented and seeded where the query span can supply it, REFUSED BY NAME where it cannot, and the consequence of the refusal DECIDED rather than left open. The 'verify 3 DISTINCT output hashes' clause is a statement about arm OUTPUTS and moves to V8.",
+      "blocking": true,
+      "done": true,
+      "evidence": {
+        "closed": "2026-09-08 by DECISION, recorded in decision_PR059_D1 (option 3 adopted)",
+        "constructible": {
+          "S_A": "m=5 pool=23",
+          "S_C": "m=1 pool=27",
+          "S_F": "m=1 pool=27",
+          "S_F2": "m=1 pool=27"
+        },
+        "not_constructible": {
+          "S_D": "m=22 pool=6",
+          "S_E": "m=23 pool=5",
+          "S_G": "m=28 pool=0"
+        },
+        "producer_refuses_by_name": "'[score] REFUSING: PR059-D1: scope S_E asks for 23 control row(s) but the query span (28 rows) has only 5 row(s) outside the scope'",
+        "draws_agree_across_three_independent_derivations": "the analyzer's random_row_control_draw, score_behavior.random_row_control_rel_end and the U7 verifier's redraw return the same rows for every constructible scope and every draw index (S_A draw 0 -> [-28,-25,-21,-16,-8], m=5, pool=23)",
+        "consequence_declared": "S_D, S_E and S_G are DEMOTED; S_D vs S_E is no longer the primary contrast; success condition 3 is unevaluable for them and the phase returns CANNOT ANSWER for the codeword-row question unless a controlled narrower scope reaches half of S_G"
+      }
+    },
+    {
+      "id": "V3",
+      "supersedes": "U3",
+      "item": "measure the between-domain SD of the paired knockout delta in semantic_logodds ON THE CONCEPT-FREE CHANNEL, on VALIDATION DOMAINS ONLY, and recompute MDE and power for the declared 0.5-nat effect; if power < 0.8, return CANNOT ANSWER WITHOUT READING TEST.",
+      "blocking": true,
+      "done": false,
+      "applies_to_stages": [
+        "family"
+      ],
+      "why_open": "GENUINELY OPEN, and NOT CLOSED HERE. GPU work that has never been run. `--u3-inventory` returns rc=2 NOT CLOSABLE: 0 knockout runs on the concept-free channel exist on ANY of the 6 preregistered ts116m banks, and the nearest usable rows (dcssow_*, 6 domains, a different bank, 1 of them a ts116 validation domain) cannot form an SD for this population. power.mde.in_semantic_logodds_nats stays null. The launcher exists and the smoke has run, so this is one submission away.",
+      "_rescoped_here": "DCS-PR-061 declared applies_to_stages [\"kill\", \"family\"]. This file declares [\"family\"]. See decision_PR059_D8: V3's own text gates READING TEST, and the `kill` stage on the VALIDATION split is the run that MEASURES it, so V3 blocking that run is circular.",
+      "_the_predicate": "src/boombness/pr059_run_localisation.py::_reads_the_test_split, registered in CHECKLIST_STAGE_RELEVANCE[\"V3\"]. It RE-DERIVES the scope from the population this run will actually score -- the keep_ids of the exclusion list handed to score_behavior, built from the bank on disk -- against the frozen split manifest's TEST assignment. It never reads the stage's name or the flag's spelling, and it fails CLOSED (returns True, so the item blocks) on anything it cannot re-derive. Without such a predicate the runner REFUSES to honour the scope at all: 'a prose scope with no code path is not a scope'.",
+      "_still_blocks": "`--stage family --split test --dry-run` refuses on V3 (stage in applies_to_stages). `--stage kill --split test --dry-run` ALSO refuses on V3, via the predicate rather than the stage name -- the case a name-only scope would have let through. scripts/dcs_ts_prereg.py --for-extraction refuses on V3 unconditionally.",
+      "_must_remain_reachable": "if the measurement returns power < 0.8, the PREREGISTERED answer is CANNOT ANSWER WITHOUT READING TEST. Nothing in this file may make that branch harder to reach, and nothing here does.",
+      "_what_closes_it": "one artifact: the DONE.json of `--stage kill --split validation`, carrying the between-domain SD of the paired knockout delta in semantic_logodds over the 23 analysed validation domains, the recomputed MDE at the 0.80 power bar, the power at the declared 0.50-nat effect, and a PROCEED / CANNOT-ANSWER decision. A further amendment records it, in the shape DCS-PR-060 item A1 uses."
+    },
+    {
+      "id": "V4",
+      "supersedes": "U4",
+      "item": "verify on CPU, against outputs/dcs_ts/token_roles_ts116m.json.gz, that each declared scope's rel_end set resolves to the intended roles in 6900/6900 prompts.",
+      "blocking": true,
+      "done": true,
+      "evidence": {
+        "closed": "2026-09-08, re-run 2026-09-08",
+        "verify_token_map": "ok=true, n_prompts=6900, layout_mismatches={}, n_prompts_whose_span_differs=0",
+        "K5_equals_S_A": "6900/6900, realising chat_scaffold 6900 + response_header 27600 and ZERO query content",
+        "S_B_is_genuinely_empty": "n_neutral_content_tokens_total=0",
+        "independently_re_derived_by": "scripts/dcs_ts_pr059_verifier.py --self-test (shares no code): scope sizes 5/0/1/22/23/1/1/28, span 28 rows -28..-1, S_E minus S_D == [-10] exactly"
+      }
+    },
+    {
+      "id": "V5",
+      "supersedes": "U5",
+      "item": "write the frozen analyzer with every threshold through Prereg.require() and no numeric gate literal.",
+      "blocking": true,
+      "done": true,
+      "evidence": {
+        "closed": "2026-09-08, re-run 2026-09-08",
+        "self_test": "92 checks, 0 failed",
+        "source_literal_audit": "12 declared gates checked against the analyzer's own source, 0 violations",
+        "plan": "78 arms over the 2 confirmatory banks, baseline and S_G ordered first",
+        "default_entry_point": "REFUSES, rc=1, '78 arm tags searched, 78 absent'",
+        "reverified_2026_09_09": "--self-test 114 checks, 0 failed (was 92 at closure; the verdict path of V13 added the difference). analyzer sha16 ba86aecc714e5e8f"
+      }
+    },
+    {
+      "id": "V6",
+      "supersedes": "U6",
+      "item": "mutation-test that analyzer; the eight named corruptions must each produce a refusal.",
+      "blocking": true,
+      "done": true,
+      "evidence": {
+        "closed": "2026-09-08, re-run 2026-09-08",
+        "mutate": "80/80 mutations produced a refusal",
+        "the_eight_named": "dead hook M1, SDPA arm M2, realised != declared M8 (M9 decoded token), identical-hash control band M11, row-level p-value M32, scope without its control M41/M42, dropped family member M43, display-channel number as a mechanism result M46 (M47 fallback)",
+        "reverified_2026_09_09": "--mutate 94/94 mutations produced a refusal (was 80/80 at closure). analyzer sha16 ba86aecc714e5e8f"
+      }
+    },
+    {
+      "id": "V7",
+      "supersedes": "U7",
+      "item": "write the independent verifier for this population, importing NOTHING from the analyzer and declaring the expected arm set itself.",
+      "blocking": true,
+      "done": true,
+      "evidence": {
+        "closed": "2026-09-08, re-run 2026-09-08",
+        "self_test": "22 checks, 0 FAILED",
+        "mutate": "22/22 RED",
+        "default_entry_point": "rc=2, '82 declared arm(s) searched, 0 present on disk'",
+        "but_see": "SUPERSEDED: the 78-vs-82 disagreement this line pointed at is CLOSED. Both derivations now say 84, tag for tag. See V11.",
+        "reverified_2026_09_09": "--self-test 25 checks, 0 FAILED; --mutate 22/22 RED. verifier sha16 b1f98ccba896a229"
+      }
+    },
+    {
+      "id": "V8",
+      "supersedes": "U8",
+      "item": "smoke run S_G and S_C on a handful of TRAIN domains: eager on the LOADED config, n_prefill_edits > 0, n_decode_edits == 0, the realised row set equal to the declared rel_end set with matching decoded tokens, and -- where L-N1 is constructible at all -- the disabled-hook bridge byte-identical. This item also carries U2's 'verify the 3 draws produce 3 DISTINCT output hashes' clause, which is a statement about arm OUTPUTS and therefore GPU work.",
+      "blocking": true,
+      "done": true,
+      "applies_to_stages": [
+        "kill",
+        "family"
+      ],
+      "why_open": "GPU work; nothing has been submitted. It is now LAUNCHABLE: `pr059_run_localisation.py --stage smoke --split train` builds 6 arms (baseline + S_G + S_C on both confirmatory banks) at --expect-n == --limit == 40, and `--dry-run` exits 0 on CPU. The bridge half of the item is NOT satisfiable -- see V12.",
+      "closed_on": "2026-09-09",
+      "closed_evidence": "CLOSED by SLURM job 870382 (nodelist n-802, hostname n-802, pid 4074222), stage `smoke`, split `train`, --limit 40: COMPLETED 0:0, 6 arms selected / 6 done / 0 unbuildable, 240 rows, wall_seconds 972.230 (16.2 min), model_loads 1, model_cache_hits 4, DONE.json status ok (outputs/boombness/pr059_runner/smoke_train/DONE.json, sha16 18eb89a92fdf473e; PR059_RUN_MANIFEST.json sha16 aedf9e5053839aee). MEASURED, per arm, re-read from PR059_ARM_GATE.json and summary.json on 2026-09-09: (a) BACKEND -- attn_implementation 'eager' from the LOADED config in all four intervened arms (basket/button x S_G/S_C) and in button_bomb_S_0_baseline; the SIXTH arm, basket_bomb_S_0_baseline, is a cache hit from the earlier job 870303 on n-801 and records NO backend field at all, which is correct and gated: the arm gate requires the backend only of a non-baseline arm. (b) LIVENESS -- frac_rows_scope_live 1.0, frac_rows_decode_live 0.0, scope_violations {} in all four intervened arms; producer n_decode_edits 0 and n_zero_dose_rows 0 in all four; analyzer liveness live=true, evaluable=true, reasons=[] in all four, with n_cells_realised == n_cells_expected exactly. (c) THE REALISED ROW SET EQUALS THE DECLARED ONE -- realised_equals_declared ok=true over 40 records per arm, n_row_mismatches 0 and n_token_mismatches 0, against declared_rel_end [-10] for S_C and the full 28-row span -28..-1 for S_G; end_relative_audit n_violations 0, with 26 distinct first positions over 26 distinct sequence lengths (a SINGLE first position across differing lengths is the absolute-index signature and would have failed). (d) INTERNAL CONSISTENCY WORTH CITING -- S_G (28 declared rows) shows 57,456 prefill edits per row (2,298,240 over 40 rows) and S_C (1 declared row) shows 2,052 per row (82,080 over 40); the ratio is 2298240/82080 = 28.000, matching the declared scope sizes exactly. (e) resolver_failure_gate n_failed 0 / n_total 40, cannot_answer false, in every arm.",
+      "_what_this_closure_does_NOT_cover": "the U2 clause this item inherited -- 'verify the 3 draws produce 3 DISTINCT output hashes'. The smoke ran the baseline, S_G and S_C only; it built ZERO control arms, and DONE.json records control_bands {}. That clause is therefore CARVED OUT into V16 rather than closed here, on the DCS-PR-060 precedent that split Q7 into A7a and A7b. Closing it inside V8 would have marked measured a thing nothing measured.",
+      "_the_bridge_half": "V8's 'where L-N1 is constructible at all, the disabled-hook bridge byte-identical' clause is satisfied by V12, which made the bridge constructible and measured it byte-identical. The smoke itself ran no bridge arm; the kill stage constructs two."
+    },
+    {
+      "id": "V9",
+      "supersedes": "U8 (its launcher half) + PR059-D2",
+      "item": "a LAUNCHER for this phase's arms: the analyzer's --plan commands are addressed to scripts/dcs_ts_readout_multi.py and are not runnable.",
+      "blocking": true,
+      "done": true,
+      "evidence": {
+        "closed": "2026-09-08",
+        "launcher": "src/boombness/pr059_run_localisation.py",
+        "loads_the_model_once": "DONE.json.model_loads is the number that proves it",
+        "imports_rather_than_restates": "build_arm_manifest, ArmSpec, declared_scopes, query_span_rel_end, random_row_control_draw/_constructible, liveness_gate, audit_end_relative, assert_realised_equals_declared, bind_rows, control_band_gate and assert_scope_has_its_control all come from scripts/dcs_ts_pr059_localisation.py",
+        "cross_checks_every_argv": "assert_argv_agrees_with_analyzer parses the analyzer's own launch_command and compares bank, cell, channel, dose, attention implementation, intervention arm/mode/band/alpha, knockout scope and the declared rel_end row set; any disagreement is a refusal",
+        "C_123_closed": "--expect-n must EQUAL --limit whenever a limit is applied; refused in BOTH directions in the runner, before submission, rather than by score_behavior's row-count guard after a queue wait",
+        "C_124_closed": "assert_stage_has_no_prior_verdict refuses a stage that already carries DONE.json or ABORTED.json BEFORE any arm runs",
+        "A15_closed": "every terminal record carries SLURM_JOB_ID, the nodelist and the hostname",
+        "second_half_of_D2_recorded_not_closed": "launch_command also prints --nondemo-matched-draws and --nondemo-draw-seed, and NEITHER FLAG EXISTS on score_behavior either; the nondemo control is selected by the intervention ARM NAME (nondemo_matched_d1..3) and seeded from --seed. The launcher carries that as its only other sanctioned translation, with the 0-based/1-based index difference written down and asserted."
+      }
+    },
+    {
+      "id": "V10",
+      "supersedes": "(new) PR059-D4",
+      "item": "reconcile the liveness PRODUCER and CONSUMER schemas for an ATTENTION KNOCKOUT. The analyzer's liveness_gate reads hook_fired_count, n_cells_edited_expected, n_cells_edited_realised, n_forward, n_prefill_edits and n_decode_edits -- the PR-057 project-out schema. The knockout producer writes hook_n_forward / hook_n_edits / hook_n_prefill_edits / hook_n_decode_edits / hook_n_query_rows_edited / hook_n_keys_masked and NO hook_fired_count and NO expected cell count anywhere.",
+      "blocking": true,
+      "done": true,
+      "applies_to_stages": [
+        "kill",
+        "family"
+      ],
+      "why_open": "This is the C-117 class recurring for PHASE 11. Three of the six fields have no producer source at all, so 'realised == expected cells' cannot be evaluated for a knockout arm and liveness_gate would VOID every healthy arm for a schema reason rather than a scientific one. The launcher REFUSES TO INVENT the missing counts (PR-057's runner records exactly this lesson), gates each arm on the producer's own fields plus the realised-vs-declared audit, and writes both verdicts into PR059_ARM_GATE.json. Fixing it needs src/boombness/score_behavior.py or doublespeak_causality/pair_common.py, both held by other work: REPORTED, not fixed.",
+      "closed_on": "2026-09-09",
+      "closed_evidence": "CLOSED 2026-09-08 by R-141 (commit d27fca35), PRODUCER-SIDE, exactly as C-117 was fixed -- the gate was NOT made lenient. ScopedAttentionKnockout._pre (doublespeak_causality/pair_common.py, sha16 b89f9226b522f1c8) now counts on OPPOSITE SIDES OF THE WRITE: n_cells_edited_expected summed from the rows the forward RESOLVED, before the mask is written, and n_cells_edited_realised READ BACK OUT OF THE MASK that was actually written, at the coordinates the write targeted -- so realised == expected is not a tautology and realised <= expected always holds. Measured on CPU against the real class: n_edits=12 expected=12 realised=12 hook_fired_count=2 n_forward_with_destinations=2. liveness_gate() now REQUIRES eight fields per record and RAISES BY NAME on a missing one; a field PRESENT AND ZERO remains DEAD HOOK -> VOID. Both halves are asserted (analyzer mutations M89/M90 RED, plus two self-test checks); the runner still invents nothing -- LIVENESS_FIELD_MAP leaves an absent field ABSENT and the gate raises on it (runner mutation M41 RED). CONFIRMED ON REAL GPU ROWS by job 870382: DONE.json analyzer_liveness_contract ok=true, n_fields 11, unmapped [], defect '' -- all six fields the analyzer's liveness_gate reads now have a declared producer source; and all four intervened arms gate live=true / evaluable=true / reasons=[] with n_cells_realised == n_cells_expected (2,298,240 for S_G, 82,080 for S_C, per bank) and n_fired 1440 over 40 rows. RE-OBSERVED 2026-09-09: analyzer --self-test 114/0 and --mutate 94/94 RED; launcher --self-test 58/0 and --mutate 49/49 RED."
+    },
+    {
+      "id": "V11",
+      "supersedes": "(new) PR059-D5",
+      "item": "reconcile the ANALYZER's arm manifest with the INDEPENDENT VERIFIER's expected arm set. They disagree: 78 against 82.",
+      "blocking": true,
+      "done": true,
+      "applies_to_stages": [
+        "family"
+      ],
+      "why_open": "The difference is exactly (a) the verifier expects 3 nondemo-key control draws for the reference scope S_G and the analyzer's build_arm_manifest gives the reference scope no controls at all ('the denominator gets no dose-matched control'), +6; and (b) the analyzer adds one disabled-hook BRIDGE arm per bank that the verifier does not know about, -2. Under the verifier's R5 a complete 78-arm run would fail BOTH ways at once -- six arms 'complete on disk and absent from the output' and two 'arms nobody preregistered'. One of the two derivations is wrong and the disagreement is the finding; neither file is edited here. It matters only where a stage claims the COMPLETE preregistered arm set.",
+      "closed_on": "2026-09-09",
+      "closed_evidence": "CLOSED 2026-09-08 by R-141 (commit d27fca35), at 84 -- and NEITHER of the two disagreeing numbers was right. The +6: the VERIFIER was right. build_arm_manifest carried one refusal doing duty for two -- per_scope_random_row_control is genuinely unbuildable for the reference scope (pool 28-28 = 0), but per_scope_nondemo_key_control draws NON-DEMONSTRATION keys from a pool the frozen file says EXCLUDES query_span_positions, so the 28-row span does not constrain it at any m, and the frozen text is 'for EVERY scope' with no exemption. Skipping it left the DENOMINATOR of every fraction this phase reports with no control of any kind. S_G now carries its 3 nondemo draws per bank and still gets NO random-row control, because that one really cannot be built. The -2: the ANALYZER was right. L-N1 is a DECLARED, BLOCKING null and its bridge arm must be run to be reported; expected_arms() now declares it FROM nulls_required, not adopted from the producer's naming. The verifier's reference scope is re-derived independently -- the family scope whose row set IS the whole query span -- rather than read off a key the analyzer also reads. MEASURED: analyzer 84, verifier 84, only_in_analyzer [], only_in_verifier [], TAG FOR TAG. Recorded on a real run in outputs/boombness/pr059_runner/smoke_train/DONE.json arm_set_disagreement: agree=true, n_runner=84, n_verifier=84, only_in_analyzer_manifest=[], only_in_verifier_expectation=[], defect=''. The comparator survives as a pure function so it can still be driven with sets that really differ (runner mutation M42 RED). RE-OBSERVED 2026-09-09: verifier --self-test 25/0, --mutate 22/22 RED; analyzer --self-test 114/0, --mutate 94/94 RED.",
+      "_consequence": "the arm count rose 78 -> 84. The `kill` stage is 12 arms (2 baseline + 2 S_G scope + 6 S_G nondemo-key controls + 2 bridges) and the `family` stage is 72. The smoke is still 6 arms."
+    },
+    {
+      "id": "V12",
+      "supersedes": "(new) PR059-D6 + L-N1",
+      "item": "make the disabled-hook bridge (null L-N1) constructible for an attention knockout, or record L-N1 as unbuildable and amend its blocking status.",
+      "blocking": true,
+      "done": true,
+      "why_open": "pair_common.DisabledHookBridge bridges an inner context exposing (_hook, layer) or (_hooks, layers); ScopedAttentionKnockout exposes `layers` and `_handles` and no hook attribute, so the bridge raises TypeError. Observed on CPU against the real class. L-N1 is BLOCKING in the parent and the analyzer's manifest builds one bridge arm per bank, so the kill stage cannot complete as designed. The launcher refuses the bridge arm BY NAME rather than launching it to die at the node after a queue wait and a model load. Fixing it needs doublespeak_causality/pair_common.py, held by other work.",
+      "applies_to_stages": [
+        "kill"
+      ],
+      "closed_on": "2026-09-09",
+      "closed_evidence": "CLOSED 2026-09-08 by R-141 (commit d27fca35) -- L-N1 is CONSTRUCTIBLE, so it is satisfied rather than demoted, and L-N1's BLOCKING status in nulls_required is untouched. DisabledHookBridge grew a third family, `attn_pre_kwargs`, reached ONLY by objects the two existing branches already refused. ScopedAttentionKnockout edits the additive attention mask in a forward PRE-hook and its edit is not a return value to be swapped, so the shim runs _pre IN FULL -- the eager-mask assertion, the batch check, the head expansion, resolve_scoped_query_rows, the per-key causal lo, the min_val writes into the clone and every counter -- and hands back the ORIGINAL (args, kwargs). A dedicated contract, bridge_mask_liveness_violations(), replaces the project-out one, because a mask edit's magnitude is always |finfo.min| and carries no information: the informative witness is how many mask cells WOULD have been blocked. MEASURED on CPU against the real classes: BRIDGE kind='attn_pre_kwargs' n_forward_calls=2 prefill=2 cells_would=12 realised=0; liveness_violations []; max|bridged - baseline| = 0, BYTE-IDENTICAL True -- L-N1 HOLDS. A bridge over a DEAD inner hook is still refused ('bridge_over_a_dead_hook:n_mask_cells_would_have_edited==0'), and a genuinely unbridgeable object still raises TypeError. AND THE SECOND, WORSE HALF, FOUND WHILE PROVING THE FIRST -- C-130: score_behavior.make_intervention returned the attention-knockout hooks from an EARLY return, ABOVE its own disabled-hook-bridge block, so --pr057-disable-hooks on a knockout arm was SILENTLY IGNORED and the arm installed a FULLY LIVE KNOCKOUT AND RECORDED IT AS THE C5 BRIDGE -- a live arm wearing the null's name. Both knockout returns now go through _bridge_if_disabled(), which is the IDENTITY when disable_hooks is False, so no existing arm changes. Verified: disable_hooks=False -> ['ScopedAttentionKnockout']; disable_hooks=True -> ['DisabledHookBridge'] kind='attn_pre_kwargs'. The guard SURVIVES the fix: the runner refuses the bridge arm BY NAME if pair_common stops declaring the family or if score_behavior stops routing through it, re-derived from their own source (runner mutation M46 RED). `--stage kill --dry-run` now CONSTRUCTS the bridge arm instead of refusing it -- re-observed 2026-09-09 on --split validation: 12 arms, 12 constructible, 0 unbuildable, including basket_bomb_S_G_bridge and button_bomb_S_G_bridge, each carrying --pr057-disable-hooks and --pr057-liveness-out auto. pair_common.py sha16 b89f9226b522f1c8, score_behavior.py sha16 d5317fd490986293."
+    },
+    {
+      "id": "V13",
+      "supersedes": "(new) PR059-D7",
+      "item": "give the analyzer an OUTCOME path: analyse() must read the baseline, evaluate the kill conditions, render each scope's delta against its control, apply Holm within PHASE11_LOCALISATION and emit a verdict. It currently ends at the liveness gates.",
+      "blocking": true,
+      "done": true,
+      "why_open": "dcs_ts_pr059_localisation.analyse() returns 0 after the liveness / realised-row gates, printing '(baseline readout, then the kill conditions, ... then the verdict -- in that order)'. evaluate_success(), holm_with_absent(), render_delta() and verdict() are exercised only under --self-test and --mutate. artifacts.analyzer_exists stays false, which keeps `dcs_ts_prereg.py --for-extraction` fail-closed. An analyzer that cannot emit a verdict is not an analyzer for the purposes of that gate.",
+      "applies_to_stages": [
+        "kill",
+        "family"
+      ],
+      "closed_on": "2026-09-09",
+      "closed_evidence": "CLOSED 2026-09-08 by R-141 (commit d27fca35). analyse() ended at the liveness gates and returned 0; it now ends in a VERDICT, and the verdict logic is SPLIT so that it can be exercised without a GPU -- which was the actual defect, since a verdict path only a completed run can reach is a verdict path nobody has ever run. observe() does the I/O (reads each arm's results.jsonl, pairs within prompt_id, refuses unequal per-arm populations by name (L-N11), forms each scope's domain-level delta through domain_group_permutation). decide() is PURE -- it takes measured quantities and emits the conjunct table, both clause walks, Holm and the verdict, touching no disk, so --self-test drives it end to end on CPU. Driven that way, decide() reaches, in order: POSITIVE, NEGATIVE, CANNOT_ANSWER, VOID (unclean liveness), VOID (a triggered void clause), NO_VERDICT (a winner whose control reproduced), and -- for a reference that moved the WRONG way -- the kill condition, before any narrower scope is read. VERDICT_CLASSES = (VOID, CANNOT_ANSWER, POSITIVE, NEGATIVE, NO_VERDICT) and a self-test asserts the four reachable classes are four DISTINCT values. The four conjuncts are scored SEPARATELY, each against ITS OWN preregistered expected sign, parsed out of the frozen file by o1_expected_sign() from two prose statements that must AGREE (observed sign = -1 from 2 statements); zero statements or two that disagree is a refusal (M93/M94). void_walk() and cannot_answer_walk() split the frozen strings into 10 and 4 clauses and give each CLEAN / VOID / CANNOT_ANSWER / UNEVALUATED; a clause with no evidence key is a REFUSAL (M91) and UNEVALUATED is not clean (M92). The NEGATIVE branch returns check_wording_pin(pr) -- the pinned MANDATORY_WORDING literal, returned only after it is asserted equal word for word; nothing paraphrases or appends. holm_with_absent() + refuse_shrunken_family() keep m PINNED at 6 with structurally absent members at p = 1.0 (M85/M86 RED). Every printed p carries its attainable floor [9.9990e-05]. RE-OBSERVED 2026-09-09: --self-test 114 checks / 0 failed, --mutate 94/94 RED, analyzer sha16 ba86aecc714e5e8f."
+    },
+    {
+      "id": "V14",
+      "supersedes": "U9",
+      "item": "confirm PHASE 9 (PR-057) and PHASE 10 (PR-058) are not competing for the same fair-share allocation; at most 6 parallel jobs, at most ~2 model-loading jobs per node, and the staged submission order respected.",
+      "blocking": false,
+      "done": false,
+      "why_open": "operational, checked at submission time. The launcher makes the staged order a CODE PATH (assert_stage_order reads the earlier stages' own DONE.json) and is ONE job per stage, which is the point: 78 separate score_behavior invocations would spend more wall time loading weights than computing."
+    },
+    {
+      "id": "V15",
+      "supersedes": "U10",
+      "item": "re-run scripts/dcs_ts116m_token_roles.py and confirm its report sha16 still matches artifacts.token_role_map_report_sha16_at_freeze, or record the diff.",
+      "blocking": false,
+      "done": false,
+      "why_open": "not re-run in this session; the scope definitions ARE that map, so if it moved the scopes moved."
+    },
+    {
+      "id": "V16",
+      "supersedes": "U2 (its 'verify the 3 draws produce 3 DISTINCT output hashes' clause, carved out of V8)",
+      "item": "verify that the per-scope RANDOM-ROW control band's three seeded draws produce THREE DISTINCT OUTPUT HASHES, on the arms' own outputs.",
+      "blocking": true,
+      "done": false,
+      "applies_to_stages": [
+        "family"
+      ],
+      "why_open": "GPU work on arms nothing has run. DCS-PR-061 folded this clause into V8, and the U8 smoke did NOT execute it: the smoke built the baseline, S_G and S_C only -- ZERO control arms -- and its DONE.json records control_bands {}. Closing it inside V8 would have marked measured a thing nothing measured, so it is carved out here, on the DCS-PR-060 precedent that split Q7 into A7a and A7b.",
+      "_why_it_does_not_block_the_kill_stage": "re-derived from the ARM MANIFEST, not from the stage's name: the `kill` stage builds 12 arms -- 2 baseline, 2 S_G scope, 6 S_G NONDEMO-KEY controls and 2 bridges -- and ZERO arms of kind random_row_control. DCS-PR-059's per_scope_random_row_control is arithmetically impossible for the reference scope (pool 28-28 = 0), which decision_PR059_D1 already decided. A stage that builds none of those arms can make this clause neither true nor false. The `family` stage builds all 24 of them, so the clause applies there and blocks there. The predicate is src/boombness/pr059_run_localisation.py::_runs_a_random_row_control_band, registered in CHECKLIST_STAGE_RELEVANCE[\"V16\"].",
+      "_and_a_gap_this_carve_out_EXPOSES_rather_than_fixes": "PR059-D9, REPORTED AND NOT FIXED HERE. The runner's end-of-stage band check (pr059_run_localisation.py, section 'L-N7: the random-row control bands, THREE DISTINCT OUTPUT HASHES') selects arms with `if arm.kind != \"random_row_control\": continue`. The SIX nondemo-key control draws the `kill` stage actually runs are kind `nondemo_control`, so they pass through that loop untouched and the kill stage's band_report is {} -- exactly what job 870382's DONE.json shows for the smoke. The frozen dose_matching text asks for three distinct draws of the nondemo-key control too, and nothing checks that they differ. This project has TWICE published a control band that was secretly n=1 because the seed never reached the draw, which is why the check exists. It is RECORDED here rather than fixed, because fixing it changes what the runner does on the kill stage and this file's mandate is the checklist and the V3 scoping; a further amendment must land it before any nondemo-key control BAND is reported as a band.",
+      "_what_closes_it": "a family-stage run whose DONE.json control_bands shows n_distinct == 3 for every bank/scope key, through the analyzer's own control_band_gate."
+    },
+    {
+      "id": "V17",
+      "item": "the `kill` stage COMPLETES on the VALIDATION split for at least one codeword bank, with that bank's S_0 baseline AND its S_G reference scope both at or above the option_mass gate, so that a fraction-of-S_G exists to localise against.",
+      "blocking": true,
+      "done": false,
+      "applies_to_stages": [
+        "family"
+      ],
+      "why_open": "job 870536 aborted at arm 2 of 12. MEASURED: basket_bomb S_0 median_true 0.08080 (PASS) and basket_bomb S_G median_true 0.04517 (BELOW GATE) -- so basket_bomb is CANNOT_ANSWER_BANK under option_mass_gate_policy. button_bomb has not been measured at all: its six arms were never submitted. Until one bank clears both, PHASE 11 has no denominator and the `family` stage has nothing to be a fraction of.",
+      "closes_when": "a resumed `kill` stage writes DONE.json with, for some bank, both the baseline and the reference-scope arms at status done and option_mass reportable true.",
+      "_the_predicate": "src/boombness/pr059_run_localisation.py::_scores_a_narrower_scope, registered in CHECKLIST_STAGE_RELEVANCE[\"V17\"]. It RE-DERIVES the scope from the ARM MANIFEST, not from the stage NAME: relevance is whether the stage builds an arm whose only declared use is a FRACTION of the reference scope. The `kill` stage builds only S_0 and S_G, so it is the run that MEASURES V17 and cannot be blocked by it -- the same circularity decision_PR059_D8 resolved for V3, resolved the same way. A truncated TRAIN smoke feeds no confirmatory estimate and is scoped out by the same binding."
+    }
+  ],
+  "_checklist_note": "`blocking` and `done` are BOOLEANS. C-086 passed an outstanding blocker because the prose status 'BLOCKING, not done' contains the substring 'done'. Item ids are DCS-PR-061's, so the two checklists diff line for line; V16 is the only new id. Every item that flipped to done:true since DCS-PR-061 carries a `closed_evidence` string naming the job id, the harness numbers and the measured values, and a `closed_on` date -- the shape configs/dcs_ts_pr060_phase9_amendment.json uses. `applies_to_stages` is honoured ONLY by src/boombness/pr059_run_localisation.py's stage-aware gate, which is STRICTLY STRONGER than the loader's: an item is scoped out only if the scope is declared AND the runner carries a predicate that RE-DERIVES the item's relevance from the arm manifest and the run's own binding AND that predicate says it is irrelevant. A prose scope with no code path is not a scope. `scripts/dcs_ts_prereg.py --for-extraction` ignores applies_to_stages entirely and refuses on every blocking-and-not-done item, which is why it still refuses this file -- on V3 and V16, two refusals, down from seven.",
+  "go_no_go": {
+    "verdict": "CONDITIONAL-GO for RESUMING `kill` on the VALIDATION split, button_bomb only. NO-GO for `family` on either bank. NO-GO for every TEST-reading stage.",
+    "open_blocking_items": [
+      "V3",
+      "V16",
+      "V17"
+    ],
+    "precondition_before_any_resume": "the stage owner archives outputs/boombness/pr059_runner/kill_validation/ABORTED.json WITH its provenance (slurm job 870536, node n-804). It is NOT deleted. Until then C-124 makes the runner refuse to resume the stage, and that refusal is correct.",
+    "what_may_now_run": "stage `kill`, split `validation`, resumed: the six button_bomb arms (baseline, S_G scope, three S_G nondemo-key controls, disabled-hook bridge). basket_bomb_S_0_baseline is already done and is skipped. basket_bomb_S_G_scope is CANNOT ANSWER and its four remaining arms are NOT submitted (CANNOT_ANSWER_BANK).",
+    "what_may_NOT_run": "the `family` stage on either bank. basket_bomb is CANNOT_ANSWER_BANK; button_bomb is unmeasured, and V17 gates `family` on both.",
+    "_if_button_bomb_S_G_also_falls_below_the_gate": "PHASE 11 is CANNOT ANSWER outright on the localisation question, reported with both banks' measured option-mass distributions and explicitly NOT as a mechanism null. That branch is declared HERE, before the arm runs."
+  },
+  "frozen_at": "2026-09-09",
+  "depends_on": [
+    {
+      "what": "configs/dcs_ts_pr059_phase11.json",
+      "why": "the parent; every field not superseded here still governs",
+      "status": "FROZEN, unedited",
+      "blocking": true
+    },
+    {
+      "what": "scripts/dcs_ts_pr059_localisation.py",
+      "why": "the arm manifest, the scopes, the draws and the gates -- imported by the launcher, never restated",
+      "status": "EXISTS; 92/0 self-test, 80/80 mutations; NO verdict path (V13)",
+      "blocking": true
+    },
+    {
+      "what": "scripts/dcs_ts_pr059_verifier.py",
+      "why": "the independent expected arm set",
+      "status": "EXISTS; 22/22 and 22/22; disagrees with the manifest (V11)",
+      "blocking": false
+    },
+    {
+      "what": "src/boombness/pr059_run_localisation.py",
+      "why": "the launcher",
+      "status": "NEW 2026-09-08",
+      "blocking": true
+    },
+    "configs/dcs_ts_pr061_phase11_amendment.json (sha16 1da927fb07200b20) -- the amendment this file supersedes; not edited",
+    "reports/DCS_TS_PR061_AMENDMENT.md including its ADDENDUM -- the record of the four code fixes this file's closures cite",
+    "reports/DCS_TS_P11_ATTN_IMPL.md -- the record that the backend is EAGER and that the refusal was a missing field read as a value (C-131)",
+    "outputs/boombness/pr059_runner/smoke_train/DONE.json (slurm job 870382) -- the V8 evidence"
+  ],
+  "decision_PR059_D8": {
+    "defect": "PR059-D8 (the circular precondition)",
+    "the_circularity": "V3 says: measure the between-domain SD of the paired knockout delta in semantic_logodds ON THE CONCEPT-FREE CHANNEL, on VALIDATION DOMAINS ONLY, and recompute MDE and power for the declared 0.5-nat effect; if power < 0.8, return CANNOT ANSWER WITHOUT READING TEST. There is no run in this design that produces that SD except the `kill` stage on the VALIDATION split -- it is the only stage that puts a knockout arm and its baseline on the concept-free channel over validation domains. In DCS-PR-061 V3 declares applies_to_stages [\"kill\", \"family\"], so that run is blocked by the item it would answer. The item can then never be closed, and the phase can never reach either of its preregistered branches -- PROCEED or CANNOT ANSWER WITHOUT READING TEST.",
+    "options_considered": [
+      "1. Mark V3 done:true because the launcher exists. REJECTED: the item is a MEASUREMENT and nothing has measured it. That is the 'published threshold never enforced' failure with the sign flipped.",
+      "2. Demote V3 to blocking:false. REJECTED: it would stop blocking the TEST read too, which is the one thing it must never stop doing.",
+      "3. Assume a value for the SD from the nearest available rows (dcssow_*, 6 domains, a different bank). REJECTED: `--u3-inventory` already returns rc=2 NOT CLOSABLE for exactly this reason -- those rows cannot form an SD for this population, and one estimate is not a stability property.",
+      "4. Scope V3 to the stage it actually gates -- the TEST-reading stage -- and make the runner RE-DERIVE that scope at launch from the population the run will actually score. ADOPTED.",
+      "5. Read TEST now and measure the SD there. REJECTED outright: that is the read V3 exists to prevent."
+    ],
+    "chosen": "option 4 -- V3.applies_to_stages = [\"family\"], with a re-derivation predicate",
+    "the_precedent": "PHASE 9 met this exactly. DCS-PR-057's Q1 was the same power item, DCS-PR-060 records it as A1, and the VALIDATION run that measured it (stage q1, split validation, slurm job 867233, 23 validation domains, between-domain SD 0.04200821142171075, power 1.0, decision PROCEED) EXECUTED WHILE THE CHECKLIST WAS STILL OPEN. It could, because the power item gates READING TEST, not running VALIDATION. PHASE 11 is the identical situation and gets the identical treatment.",
+    "what_is_NOT_relaxed": [
+      "V3 stays blocking:true and done:false. It is open until it is measured.",
+      "The TEST-reading stage is STILL BLOCKED on V3. Proven in both directions: `--stage kill --split validation --dry-run` returns rc=0 and `--stage family --split test --dry-run` still refuses on V3. `--stage kill --split test --dry-run` also still refuses on V3, and that is the case the stage NAME alone would have missed.",
+      "scripts/dcs_ts_prereg.py --for-extraction ignores applies_to_stages entirely and still refuses on V3. The published gate keeps its code path unchanged.",
+      "The underpowered branch stays reachable: if the measurement returns power < 0.8, the preregistered answer is CANNOT ANSWER WITHOUT READING TEST, and no part of this file makes that harder to say."
+    ],
+    "the_scope_is_re_derived_not_read": "This is the A14 pattern DCS-PR-060 established and src/boombness/pr059_run_localisation.py already implements. An item is scoped out of a stage ONLY if (1) it declares applies_to_stages and the stage is not in it, (2) the RUNNER carries a predicate that re-derives its relevance, and (3) that predicate, run against this stage's own arms and binding, says it is irrelevant. A prose scope with no code path is not a scope. V3's predicate is `_reads_the_test_split`, ADDED BY THIS WORK: it loads the frozen split manifest, builds the exact `keep_ids` exclusion list the run will hand score_behavior for each confirmatory bank, and asks whether ANY kept prompt's domain is assigned to TEST. It never reads the flag's spelling, it fails CLOSED on any exception, and a run called `validation` that nonetheless bound a test domain would still block.",
+    "declared_before_any_outcome": "Written 2026-09-09, before any validation arm has been submitted. No knockout run on the concept-free channel exists on any of the six preregistered ts116m banks, so there is no observed SD, no observed power and no observed delta that this scoping could have been chosen to suit."
+  },
+  "decision_PR059_D9": {
+    "defect": "PR059-D9 (the option-mass gate on an intervened arm, and the stop-scope of a below-gate arm)",
+    "the_measurement": {
+      "job": "870536, node n-804, stage `kill`, split `validation`, 12 arms planned",
+      "channel": "semantic_one_word, cell C, dose 4, bank ts116m_basket_bomb, n=230 rows over 23 validation domains",
+      "arm_1_basket_bomb_S_0_baseline": {
+        "median_true": 0.08080029487609863,
+        "median_upper_middle": 0.0810040533542633,
+        "p10": 0.006150603294372559,
+        "p90": 0.32857969403266907,
+        "max": 0.8786974549293518,
+        "frac_above_1pct": 0.8695652173913043,
+        "reportable": true,
+        "option_mass_gate": "PASS",
+        "exit_code": 0
+      },
+      "arm_2_basket_bomb_S_G_scope": {
+        "median_true": 0.045166268944740295,
+        "median_upper_middle": 0.048310503363609314,
+        "p10": 0.0001146425711340271,
+        "p90": 0.44927868247032166,
+        "max": 0.7941572666168213,
+        "frac_above_1pct": 0.6478260869565218,
+        "reportable": false,
+        "option_mass_gate": "OVERRIDDEN -- NOT REPORTABLE: semantic/semantic_one_word: median option mass 0.04831 < 0.05",
+        "exit_code": 4
+      },
+      "what_the_intervention_did": "the knockout roughly HALVES the median option mass, 0.08080 -> 0.04517, a ratio of 0.5590. It ALSO thins the lower tail by a factor of 54: p10 falls 0.006151 -> 0.000115, and the fraction of rows carrying >= 1% of the next-token mass falls 0.8696 -> 0.6478. Both facts are true at once and the second one is why this is not merely a bookkeeping problem.",
+      "the_smoke_did_not_see_it": "the U8 smoke (job 870382) ran the same arm at n=40 and measured median_true 0.2611, comfortably above the gate. The n=230 population is where it falls. The smoke was not wrong; it was 40 rows.",
+      "consequence_observed": "score_behavior.py returned 4 (the tail gate). src/boombness/pr059_run_localisation.py treats any non-zero return as a stage failure, wrote ABORTED.json and stopped. 1 of 12 arms completed. The ten unrun arms include ALL SIX arms of the button_bomb bank, which had not been touched."
+    },
+    "the_two_readings": {
+      "reading_a_gate_belongs_on_the_baseline": "The gate asks 'is this instrument usable on this population?'. That is a property of the population and the channel, established once, on the untouched arm. Applying it to an intervention arm makes a SUCCESSFUL MANIPULATION UNREPORTABLE: an intervention that works by removing the model's grip on the forced choice will always drive option mass down, so under this gate the stronger the knockout the less reportable it is, which inverts the instrument.",
+      "reading_b_gate_belongs_on_every_arm": "semantic_logodds is an ORDERING INSIDE A RESIDUAL (the parent says so up front). If the residual on the knockout arm is itself decided in a thin tail, that arm's own logodds is shaky, and a delta between a well-supported baseline and a barely-supported arm is a difference of two quantities measured to different precisions. The gate is then not asking 'did the intervention work' but 'is the number I am about to subtract a number'.",
+      "both_are_defensible_and_that_is_why_neither_was_chosen_here": "This file does not adjudicate between them on its own authority. The parent already did. See the_design_already_says."
+    },
+    "the_design_already_says": {
+      "_verdict": "READING (b). THE GATE IS ON EVERY ARM. The FROZEN parent states it four times, in four different fields, and states the BASELINE case SEPARATELY and in different words -- which is what proves 'arm' is not a loose synonym for 'baseline' in the other three.",
+      "q1_configs/dcs_ts_pr059_phase11.json :: outcome_variables.O1_semantic_readout.cannot_answer_if": "median option_mass in a scope's arm falls below the 0.05 gate -- CANNOT ANSWER, never a fallback to the display channel",
+      "q2_configs/dcs_ts_pr059_phase11.json :: primary.cannot_answer clause (a)": "ANY of: (a) median option_mass in an arm falls below the 0.05 gate; ...",
+      "q3_configs/dcs_ts_pr059_phase11.json :: primary._largest_risk mitigation (3)": "if median option_mass in an arm drops below the gate the arm is CANNOT ANSWER",
+      "q4_configs/dcs_ts_pr059_phase11.json :: kill_condition, SECOND kill -- THE BASELINE CASE, SEPARATELY WORDED": "SECOND kill condition: if median option_mass in the S_0 baseline falls below the 0.05 gate on this population, no knockout job is submitted at all.",
+      "_why_q4_is_the_decisive_one": "If 'arm' in q1-q3 had meant 'the baseline', q4 would be a restatement and the parent would say the same thing twice in one file with two different consequences (CANNOT ANSWER vs nothing is submitted). It does not. q4 names S_0 explicitly and attaches a SUBMISSION consequence; q1-q3 say 'an arm' / 'a scope's arm' and attach an ANALYSIS consequence. Two rules, two scopes, two consequences, written together.",
+      "q5_configs/dcs_ts_pr059_phase11.json :: primary._largest_risk mitigation (1) -- the travels-with rule": "the argmax decoded answer and the full option_mass distribution are reported for every arm beside every delta, never after it",
+      "q6_carried_verbatim_into_both_prior_amendments": "configs/dcs_ts_pr061_phase11_amendment.json:331,333 and configs/dcs_ts_pr064_phase11_amendment2.json:346,348 repeat q2 and q3 BYTE FOR BYTE. Two amendments re-froze the arm-scoped wording after the design was reviewed. It is not a slip.",
+      "q7_reports/DCS_TS_PR058_PR059_DESIGN.md:374 and :492": "CANNOT ANSWER if median `option_mass` in an arm falls below the 0.05 gate ... and an arm whose median `option_mass` drops below the gate is CANNOT ANSWER.",
+      "q8_PHASE_9_precedent_in_code_not_prose": "scripts/dcs_ts_pr057_causal.py:1929-1930 applies the same gate to the INTERVENED arm's own rows and states the rationale: 'option_mass_gate: the semantic_one_word channel must still be ENGAGED after the edit. A destroyed readout collapses option_mass; a moved readout does not.' That sentence is reading (b) in one line, it predates PHASE 11, and it was written when no arm was anywhere near the gate. Measured across PHASE 9's 35 intervened arm directories: option_mass_gate = PASS on 35/35, reportable = true on 35/35, lowest median_true 0.05210 (ts116m_pr057_h2a_s2_projout_basket). PHASE 9 therefore fixes WHERE the gate sits and supplies no precedent for what to do when it fires, because it never fired.",
+      "_the_margin_did_not_decide_this": "Every quotation above was frozen on 2026-09-07 or earlier, before job 870536 existed. The rule would read identically had arm 2 measured 0.01 or 0.20. Nothing in this file is conditioned on 0.04517 being near 0.05, and the 10% margin is recorded in the_measurement as an observation, never as an argument."
+    },
+    "what_the_design_does_NOT_say_and_what_this_file_decides": {
+      "the_open_question": "The parent says a below-gate arm is CANNOT ANSWER -- a VERDICT, published beside the arm's own option-mass distribution (q5). It never says whether the REMAINING ARMS OF THE STAGE are still submitted. The runner's answer -- abort everything at the first non-zero return -- was never preregistered; it is a generic failure policy meeting a return code that is not a failure. score_behavior.py's own message says so: 'the run is written and its healthy readouts are usable, but these are NOT reportable'.",
+      "the_rule_adopted": "STOP-SCOPE IS DECIDED BY THE ARM'S ROLE, NEVER BY HOW FAR BELOW THE GATE IT LANDED. See option_mass_gate_policy.below_gate_disposition_by_arm_role for the machine-readable form.",
+      "role_baseline_S_0": "KILL_BANK. Unchanged from the parent's SECOND kill condition (q4): no knockout job is submitted for that bank at all.",
+      "role_reference_scope_S_G": "CANNOT_ANSWER_BANK. No further arm of THAT BANK is submitted, in this stage or any later one, and that bank's PHASE11_LOCALISATION verdict is CANNOT ANSWER. The authority is the parent's own success conditions, not a new judgement: condition 1 requires 'S_G ... moves the readout in the expected direction' and condition 2 requires a narrower scope to reach 'a preregistered fraction >= 0.5 of the S_G effect'. Every narrower number in the bank is a FRACTION OF S_G. An unreadable denominator makes every one of them undefined, so running them would buy nothing the design could use.",
+      "role_any_other_arm": "CANNOT_ANSWER_ARM. A narrower scope, a nondemo-key control, a random-row control draw or a disabled-hook bridge that falls below the gate is CANNOT ANSWER FOR ITSELF. The stage CONTINUES. Its measured option mass travels with it and with every number derived from it; a family member that is CANNOT ANSWER enters Holm at p = 1.0 exactly as a structurally absent member does, and is never reported as a null.",
+      "cross_bank_isolation": "In EVERY case above, arms of OTHER banks are unaffected. Authority: primary.statistic -- 'reported per codeword bank and never pooled across banks'. A bank whose channel disengages under knockout says nothing about a bank that was never run. Aborting bank 2 on bank 1's reading manufactures a shared fate the design explicitly denies.",
+      "_why_this_is_not_a_weakening": "No arm below the gate becomes reportable under this rule. The gate is unchanged, its value is unchanged, its statistic is unchanged, and it is not relaxed for the baseline under any reading. What changes is only how many OTHER arms a single below-gate arm is allowed to take down with it."
+    },
+    "what_is_lost_by_choosing_this": {
+      "_this_section_is_the_price_and_it_is_paid_not_argued_away": true,
+      "L1_a_successful_manipulation_is_unreportable": "This is the cost of reading (b) and it is REAL. basket_bomb's S_G knockout demonstrably worked -- it halved the option mass -- and PHASE 11 may not report the semantic_logodds delta it produced. The one thing that CAN be said about it is the option-mass movement itself (0.08080 -> 0.04517, p10 0.006151 -> 0.000115), reported as a CHANNEL-ENGAGEMENT observation and explicitly NOT as an outcome, because option_mass is declared in outcome_variables.O3 as 'REPORTED ALWAYS; descriptive, no multiplicity membership'.",
+      "L2_PHASE_11_may_lose_its_transfer_pair": "If button_bomb's S_G also reads below the gate, PHASE 11 has no readable bank and the phase is CANNOT ANSWER outright. If button_bomb's S_G reads above it, PHASE 11 has ONE bank, not the declared 'transfer pair, never pooled'. Any PHASE 11 positive would then rest on a single codeword and the transfer claim -- the thing two banks were carried for -- is not available. That must be stated in the result, not discovered in the appendix.",
+      "L3_the_basket_bomb_localisation_question_is_closed_unanswered": "S_D vs S_E, the codeword-row contrast, is never measured on basket_bomb. It is not a null. It is not evidence that the codeword row does not matter. It is CANNOT ANSWER.",
+      "L4_GPU_already_spent_yields_no_outcome_number": "arm 2 cost 249s of a 3238s stage and produces no delta. Under the alternative stop-scope (continue the whole bank) that cost would have grown, not shrunk.",
+      "L5_what_the_OTHER_reading_would_have_cost_instead": "Had reading (a) been adopted, PHASE 11 would publish a paired delta whose knockout limb has p10 = 1.146e-04 and where 35.2% of rows carry under 1% of the next-token mass -- an ordering inside a residual that is itself largely inside the tail the gate exists to refuse. That is the exact failure the parent's own gate comment names: 'a forced choice decided inside a 1e-5 tail is not a forced choice ... the sprint published section 2.6 verdicts from exactly that for two months without noticing'. Recorded so that choosing (b) is visibly a choice between two costs and not a free win."
+    },
+    "the_below_gate_arm_never_travels_alone": {
+      "_mandate": "primary._largest_risk mitigation (1), quoted at q5, and the PHASE 9 pattern in which every null carries its realised dose (scripts/dcs_ts_pr057_causal.py:1776 verdict()/_null, which REFUSES to emit a null-shaped verdict without format_realised_dose).",
+      "required_fields_on_every_derived_number": [
+        "median_option_mass (median_true)",
+        "the declared gate value",
+        "p10",
+        "frac_above_1pct",
+        "n rows the median was taken over",
+        "cannot_answer: true"
+      ],
+      "enforced_by": [
+        "scripts/dcs_ts_pr059_localisation.py ArmReadout -- a ScopeDelta cannot be printed without its bound option_mass/argmax readout (existing refusal, unchanged).",
+        "scripts/dcs_ts_pr059_localisation.py engagement_gate() -- returns cannot_answer with the measured median and the gate in the reason string (existing, unchanged).",
+        "scripts/dcs_ts_pr059_localisation.py below_gate_disposition() -- NEW: maps arm role -> disposition by reading option_mass_gate_policy out of THIS file, and REFUSES if the policy is absent, if its gate value disagrees with the frozen parent's, or if a role is unmapped.",
+        "src/boombness/pr059_run_localisation.py -- NEW: on score_behavior return code 4 the runner records the arm's measured option-mass block into the manifest and PR059_ARM_GATE.json with status 'cannot_answer', then applies the role disposition. It never marks such an arm 'done' and never counts it toward n_arms_done."
+      ]
+    },
+    "the_ABORTED_json_that_exists_now": {
+      "path": "outputs/boombness/pr059_runner/kill_validation/ABORTED.json",
+      "provenance": "slurm job 870536, node n-804, written 2026-09-09 02:37:28",
+      "status": "IT IS NOT DELETED AND IT IS NOT ARCHIVED BY THIS FILE. Per C-124 the runner will refuse to resume the `kill` stage while a terminal file sits in the stage directory, and that refusal is correct: it is the record that arm 2 of 12 stopped a run under the OLD stop-scope.",
+      "what_must_happen_before_the_stage_resumes": "the stage owner archives it WITH ITS PROVENANCE (job 870536, node n-804) to a sibling path that is not read as a terminal file -- it must not be deleted, because a stage that silently loses the record of why it stopped is a stage that can be re-reported as if it never did.",
+      "what_resuming_will_and_will_not_re_run": "basket_bomb_S_0_baseline is status done with output_sha256 6a9c531cb01956bcb6ddedcfe9d600af90ad3304c7c397819495969351fe922d and is SKIPPED on resume. basket_bomb_S_G_scope is status failed; under this amendment it is re-classified cannot_answer, its bank is closed, and its four remaining basket arms are NOT submitted. The six button_bomb arms ARE submitted."
+    }
+  },
+  "option_mass_gate_policy": {
+    "_this_field_is_read_by_code_not_by_a_reader": "scripts/dcs_ts_pr059_localisation.py::below_gate_disposition() and src/boombness/pr059_run_localisation.py both REQUIRE this block. Its absence is a refusal, not a default.",
+    "gate_scope": "every_arm",
+    "gate_scope_authority": "configs/dcs_ts_pr059_phase11.json outcome_variables.O1_semantic_readout.cannot_answer_if, primary.cannot_answer clause (a), primary._largest_risk mitigation (3). FROZEN 2026-09-07.",
+    "gate_value": 0.05,
+    "gate_statistic": "median_true",
+    "gate_channel": "semantic_one_word",
+    "baseline_gate_is_not_relaxed": true,
+    "below_gate_disposition_by_arm_role": {
+      "baseline": "KILL_BANK",
+      "reference_scope": "CANNOT_ANSWER_BANK",
+      "scope": "CANNOT_ANSWER_ARM",
+      "nondemo_control": "CANNOT_ANSWER_ARM",
+      "random_row_control": "CANNOT_ANSWER_ARM",
+      "bridge": "CANNOT_ANSWER_ARM"
+    },
+    "dispositions": {
+      "KILL_BANK": "no further arm of this bank is submitted; the parent's SECOND kill condition.",
+      "CANNOT_ANSWER_BANK": "no further arm of this bank is submitted; this bank's PHASE11_LOCALISATION verdict is CANNOT ANSWER, never a null.",
+      "CANNOT_ANSWER_ARM": "this arm alone is CANNOT ANSWER; the stage continues; the arm enters Holm at p = 1.0 if it is a family member; never a null."
+    },
+    "cross_bank_isolation": true,
+    "cross_bank_isolation_authority": "configs/dcs_ts_pr059_phase11.json primary.statistic: 'reported per codeword bank and never pooled across banks'.",
+    "stop_scope_depends_on_arm_role_only": true,
+    "stop_scope_depends_on_margin": false,
+    "_margin_independence_test": "This policy is a total function of (arm role). It reads no measured value except the boolean median_true < gate_value. It would return the same disposition at 0.01 and at 0.04999.",
+    "must_travel_with_every_derived_number": true,
+    "required_travelling_fields": [
+      "median_option_mass",
+      "gate",
+      "p10",
+      "frac_above_1pct",
+      "n",
+      "cannot_answer"
+    ],
+    "scorer_return_code_that_signals_below_gate": 4,
+    "_scorer_return_code_4_is_not_a_crash": "src/boombness/score_behavior.py returns 4 from the tail gate AFTER the run is fully written: 'the run is written and its healthy readouts are usable, but these are NOT reportable'. A runner that treats 4 as a crash discards a completed measurement and, before this amendment, discarded ten arms that were never measured at all.",
+    "_return_code_4_from_a_NaN_readout_is_different": "score_behavior.py also appends to tail_fail when option_mass values are NaN. That is an ABSENT measurement, not a low one, and it is NOT covered by this policy: a NaN readout remains a hard stage failure. The runner distinguishes them by reading summary.json's option_mass block (median_true is null and n_nan > 0 on the NaN path)."
+  }
+}

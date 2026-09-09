@@ -5353,3 +5353,60 @@ the same class of error as generalising from one bank.
 count per arm, same cache state — or take the larger of the two estimates. And when someone who has
 just read the code recommends a walltime, a contrary estimate needs better evidence than an
 extrapolation from a smoke test.
+
+---
+
+## DCS-R-146 / PR-065 — the design settles the gate; and the runner's fail-fast rule was never preregistered
+*2026-09-09*
+
+**The frozen parent settles `C-132` for reading (b): the gate is on EVERY arm, not just the baseline.**
+Three clauses say *"median option_mass in **an arm** falls below the 0.05 gate — CANNOT ANSWER, never
+a fallback to the display channel"* (`O1_semantic_readout.cannot_answer_if`, `primary.cannot_answer`,
+`primary._largest_risk`), while a **fourth, separately worded** clause names the baseline with a
+**different consequence**: *"if median option_mass in **the S_0 baseline** falls below the gate … no
+knockout job is submitted at all."* If *"an arm"* meant the baseline, the parent would state the same
+rule twice with two different consequences. **The margin decided nothing** — every quote predates job
+870536.
+
+**And the gate is substantively right, not merely textually.** On that arm `p10` collapses **54×** to
+**1.15e-04**, and **35.2% of rows sit under 1% of next-token mass**. That is precisely the tail the
+gate exists to refuse, so reading (a) would have reported a delta computed inside it.
+
+**PHASE 9 fixes WHERE the gate sits and gives no precedent for what happens when it fires** — because
+it never fired: 35/35 intervened arms gated and PASSED, the lowest at **0.05210**. Its code says it
+outright: *"the channel must still be ENGAGED after the edit. A destroyed readout collapses
+option_mass; a moved readout does not."* PHASE 9 came within 0.0021 of this same wall.
+
+**What was genuinely open was the STOP-SCOPE, and here the runner had an UNPREREGISTERED rule.** The
+parent never says whether the other eleven arms are still submitted. The runner's de-facto rule — any
+non-zero exit aborts the stage — is the fail-closed behaviour I have repeatedly praised, and **it is
+not in any preregistration**. It took down **six `button_bomb` arms** on a bank the design's own
+`primary.statistic` calls *"never pooled"* with the one that tripped. A fail-fast that destroys an
+independent bank's arms is not conservative; it is a scope error wearing conservatism's clothes.
+
+`configs/dcs_ts_pr065_phase11_amendment3.json` records the stop-scope **by arm role, never by
+margin**: baseline → `KILL_BANK` (unchanged); the reference scope S_G → `CANNOT_ANSWER_BANK`, because
+`primary.success` conditions 1–2 make every narrower number *a fraction of S_G*; every other arm →
+`CANNOT_ANSWER_ARM` with the stage continuing; **other banks always unaffected**; NaN readouts stay
+hard failures.
+
+**What this costs, stated rather than buried:** a successful manipulation is unreportable —
+`basket_bomb` S_G halved the channel, 0.08080 → 0.04517, and that is the intervention working;
+PHASE 11 may lose its transfer pair and rest on a single codeword bank; and `basket_bomb`'s
+S_D-vs-S_E codeword contrast is **closed unanswered — not a null**.
+
+**Two stale things exposed and fixed in passing:** the runner's `AMENDMENT_DEFAULT` was **two
+amendments behind** (still PR-061), and moving it revealed **two self-test assertions hardcoding
+PR-061's open-blocker set** — both now re-derive from the loaded amendment rather than restating it.
+That is the same class as PR-058's `identity_gate`, caught before it could bite.
+
+**Recorded, not fixed:** `summary.json` labels a below-gate arm
+`option_mass_gate: "OVERRIDDEN — NOT REPORTABLE"` even when `--allow-tail-readout` was never passed.
+Nothing was overridden. The mislabel lives in a shared producer field written by three phases, so it
+was documented rather than changed under a live result.
+
+**Observed:** analyzer 114 → **122/0** and 94 → **104/104 RED**; runner 58 → **69/0** and 49 →
+**56/56 RED**; verifier 25 → **27/0** and 22 → **25/25 RED** with a new check class P5. **PHASE 9 and
+PHASE 10 UNMOVED**: 117/0 · 102/102 · 57/0 · 56/56. Loader clean at 21 hashes; `--for-extraction`
+**3 refusals** (V3, V16, and a new **V17** scoped by re-derivation via `_scores_a_narrower_scope`,
+not by stage name). Repo tests 1693 passed / 4 pre-existing failures.

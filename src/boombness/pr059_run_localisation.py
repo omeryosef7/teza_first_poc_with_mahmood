@@ -78,9 +78,11 @@ from dcs_ts_prereg import load as load_prereg  # noqa: E402
 import dcs_ts_pr059_localisation as AN  # noqa: E402
 from dcs_ts_pr059_localisation import (  # noqa: E402
     ArmSpec,
+    BELOW_GATE_RC,
     CannotAnswer,
     CONTRACT_ARM,
     Refusal,
+    below_gate_disposition,
     assert_realised_equals_declared,
     assert_sayable,
     assert_scope_has_its_control,
@@ -117,7 +119,7 @@ PREREG_DEFAULT = "configs/dcs_ts_pr059_phase11.json"
 #: edited. It supersedes the parent's `pre_extraction_checklist` and the parent's
 #: `dose_matching.per_scope_random_row_control` clause on measured arithmetic, and it carries the
 #: stage scoping the checklist gate reads. Pass an empty string to gate on the parent alone.
-AMENDMENT_DEFAULT = "configs/dcs_ts_pr061_phase11_amendment.json"
+AMENDMENT_DEFAULT = "configs/dcs_ts_pr065_phase11_amendment3.json"
 SCORE_SCRIPT = "src/boombness/score_behavior.py"
 RUNS_ROOT_DEFAULT = "outputs/boombness/score_behavior"
 STATE_ROOT_DEFAULT = "outputs/boombness/pr059_runner"
@@ -817,6 +819,84 @@ def assert_stages_partition(pr: Prereg) -> Dict[str, Any]:
             "n_smoke": sum(1 for x in arms if stage_selector(pr, "smoke")(x))}
 
 
+# ============================================================================================
+# 6b. A BELOW-GATE ARM IS NOT A CRASHED ARM
+# ============================================================================================
+#
+# `score_behavior.py` returns 4 from its tail gate AFTER writing the run in full: "the run is
+# written and its healthy readouts are usable, but these are NOT reportable". Before DCS-PR-065
+# this runner treated 4 like any other non-zero code -- a stage failure -- and on 2026-09-09 that
+# cost ten arms that had never been measured, six of them in a codeword bank `primary.statistic`
+# declares is "never pooled" with the one that tripped.
+#
+# THE GATE IS NOT TOUCHED HERE, in either direction. Whether an arm is below it is
+# score_behavior's `reportable` flag, computed from `median_true`; where the gate applies is the
+# FROZEN parent's (every arm); what a below-gate arm is called is the parent's (CANNOT ANSWER).
+# The only thing decided here is how many OTHER arms it takes with it, and that is read out of
+# the amendment by `below_gate_disposition()`, keyed on the arm's ROLE and on nothing else.
+def below_gate_readout(run_dir: str, channel: str) -> Optional[Dict[str, Any]]:
+    """The arm's own option-mass block, or None if this is NOT a below-gate readout.
+
+    Returns None -- meaning "treat as a hard failure" -- for a NaN/absent readout. A NaN option
+    mass is not a small mass, it is an ABSENT measurement (score_behavior.py says so where it
+    counts them), and an absent measurement can never be dispositioned as "the channel disengaged
+    on this arm". It also returns None if nothing on disk is actually below its gate, so a
+    return code of 4 that came from somewhere else cannot be laundered through this path.
+    """
+    fp = os.path.join(run_dir, "summary.json")
+    if not os.path.exists(fp):
+        return None
+    try:
+        summ = json.load(open(fp))
+    except Exception:
+        return None
+    blocks = summ.get("option_mass") or {}
+    key = next((k for k in blocks if k.endswith("/" + channel)), None)
+    if key is None:
+        return None
+    blk = dict(blocks[key])
+    if blk.get("median_true") is None or blk.get("n_nan"):
+        return None                       # an ABSENT measurement, not a low one
+    if blk.get("reportable") is not False:
+        return None                       # not below its gate; rc=4 came from elsewhere
+    blk["channel"] = key
+    return blk
+
+
+def below_gate_record(arm: ArmSpec, blk: Dict[str, Any], disp: Dict[str, Any]) -> Dict[str, Any]:
+    """The record that TRAVELS with the arm. `primary._largest_risk` mitigation (1) requires the
+    full option_mass distribution beside every number derived from the arm, and PHASE 9 made the
+    same requirement structural for its nulls' realised dose. Every field the amendment's
+    `required_travelling_fields` names must be present or this refuses -- a below-gate arm that
+    can be read without its option mass is a below-gate arm that reads as if it were fine."""
+    rec = {"status": "cannot_answer", "arm_id": arm.arm_id, "bank": arm.bank,
+           "scope_id": arm.scope_id, "arm_kind": arm.kind,
+           "exit_code": BELOW_GATE_RC,
+           "cannot_answer": True,
+           "cannot_answer_reason": "OPTION MASS BELOW THE DECLARED GATE ON THIS ARM",
+           "disposition": disp["disposition"], "role": disp["role"],
+           "closes_bank": disp["closes_bank"], "policy_from": disp["policy_from"],
+           "gate": disp["gate"], "gate_statistic": disp["gate_statistic"],
+           "median_option_mass": blk.get("median_true"),
+           "option_mass": blk,
+           "_never_a_null": "This arm is CANNOT ANSWER. It is NOT a null, NOT evidence that the "
+                            "intervention did nothing, and NOT reportable as a delta. If it is a "
+                            "family member it enters Holm at p = 1.0.",
+           "_the_intervention_may_well_have_worked": "A knockout that removes the model's grip on "
+                                                     "the forced choice drives option mass DOWN. "
+                                                     "That the channel disengaged is reported as a "
+                                                     "channel-engagement observation (O3, "
+                                                     "descriptive) and never as an outcome."}
+    missing = [f for f in (disp.get("required_travelling_fields") or [])
+               if f not in rec and f not in blk]
+    if missing:
+        raise RunnerRefusal(
+            "a below-gate arm record for %s is missing the travelling field(s) %s that "
+            "`option_mass_gate_policy.required_travelling_fields` requires. An arm reported "
+            "without its option mass reads as if it were fine." % (arm.arm_id, missing))
+    return rec
+
+
 def stage_dir(state_root: str, stage: str, split: str) -> str:
     return os.path.join(state_root, "%s_%s" % (stage, split))
 
@@ -1048,6 +1128,30 @@ def _runs_a_bridge_arm(pr: Prereg, stage: str, ctx: Dict[str, Any]) -> bool:
     return any(x.kind == "bridge" for x in build_arm_manifest(pr) if sel(x))
 
 
+def _scores_a_narrower_scope(pr: Prereg, stage: str, ctx: Dict[str, Any]) -> bool:
+    """`V17` re-derived from the ARM MANIFEST, not from the stage's NAME.
+
+    V17 says a bank must have a READABLE reference scope before anything narrower is scored. Its
+    relevance is therefore exactly: does this stage build an arm whose only declared use is as a
+    FRACTION OF S_G? `primary.success` condition 2 -- "at least one narrower scope reproduces a
+    preregistered fraction >= 0.5 of the S_G effect" -- is what makes S_G the denominator of every
+    narrower number in a bank.
+
+    The `kill` stage builds ONLY S_0 and the reference scope, so it is the run that MEASURES V17
+    and cannot be blocked by it -- the identical circularity `decision_PR059_D8` resolved for V3,
+    resolved the identical way. The `smoke` stage additionally builds S_C, but a truncated TRAIN
+    smoke feeds no confirmatory estimate, so the smoke is scoped out by the same
+    `_feeds_a_confirmatory_estimate` binding every other GPU item uses. The `family` stage builds
+    every narrower scope and blocks.
+    """
+    if not _feeds_a_confirmatory_estimate(pr, stage, ctx):
+        return False
+    ref = reference_scope_id(pr)
+    sel = stage_selector(pr, stage)
+    return any(x.scope_id not in ("S_0", ref)
+               for x in build_arm_manifest(pr) if sel(x))
+
+
 def _reads_the_test_split(pr: Prereg, stage: str, ctx: Dict[str, Any]) -> bool:
     """`V3` / `U3` is, IN ITS OWN WORDS, a precondition for READING TEST: "if power < 0.8, return
     CANNOT ANSWER WITHOUT READING TEST." The run that MEASURES it is a VALIDATION run, so an
@@ -1106,6 +1210,12 @@ CHECKLIST_STAGE_RELEVANCE = {
             "TRAIN smoke)", _feeds_a_confirmatory_estimate),
     "V16": ("the stage runs a per-scope RANDOM-ROW control band, whose three draws are what the "
             "three-distinct-output-hashes clause is about", _runs_a_random_row_control_band),
+    # DCS-PR-065. V17 asks for a bank with a READABLE reference scope. Its relevance is not the
+    # stage's name but whether the stage scores anything whose only declared use is a FRACTION of
+    # that reference scope. The `kill` stage is the run that ANSWERS V17 and is scoped out of it.
+    "V17": ("the stage scores a NARROWER scope, whose only declared use is as a fraction of the "
+            "reference scope's effect, so an unreadable reference makes it undefined",
+            _scores_a_narrower_scope),
 }
 
 
@@ -1677,9 +1787,32 @@ def run_stage(pr: Prereg, a) -> int:
     cache = ModelCache().install()
     import score_behavior as SB
     n_rows_total, n_done = 0, 0
+    # DCS-PR-065. The amendment object itself, not just its checklist: `below_gate_disposition()`
+    # reads `option_mass_gate_policy` out of it and REFUSES if it is absent, so a stage launched
+    # without an amendment cannot quietly acquire a stop-scope.
+    amd_obj = load_amendment(a.amendment, pr) if a.amendment else None
+    channel = primary_channel(pr)
+    closed_banks: Dict[str, Dict[str, Any]] = {}
+    cannot_answer_arms: List[Dict[str, Any]] = []
     try:
         for i, (arm, argv, expect_rows) in enumerate(todo, 1):
             rec = man["arms"].setdefault(arm.arm_id, {})
+            if arm.bank in closed_banks:
+                # NOT "skipped because we ran out of time". This bank's baseline or its reference
+                # scope is below the option-mass gate, so nothing further in it can be read: every
+                # narrower number in a bank is a FRACTION OF S_G. Recorded by name, per arm, so a
+                # reader cannot mistake an unsubmitted arm for a measured null.
+                cb = closed_banks[arm.bank]
+                rec.update({"status": "not_submitted",
+                            "not_submitted_because": cb["disposition"],
+                            "closed_by_arm": cb["arm_id"], "bank": arm.bank,
+                            "_not_a_null": "this arm was NEVER RUN. It is not a null and carries "
+                                           "no evidence in either direction."})
+                manifest_save(sdir, man)
+                print("[pr059] [%d/%d] %s NOT SUBMITTED -- bank %r is %s (closed by %s)"
+                      % (i, len(todo), arm.arm_id, arm.bank, cb["disposition"], cb["arm_id"]),
+                      flush=True)
+                continue
             if rec.get("status") == "done":
                 print("[pr059] [%d/%d] %s already complete at %s -- SKIPPING (resume)"
                       % (i, len(todo), arm.arm_id, rec.get("run_dir")), flush=True)
@@ -1704,6 +1837,39 @@ def run_stage(pr: Prereg, a) -> int:
             finally:
                 sys.argv = old_argv
             wall = time.time() - t0
+            # ---- DCS-PR-065: rc == 4 is a REPORTABILITY verdict, not a crash ------------------
+            if rc == BELOW_GATE_RC:
+                bg_dir = _find_run(runs_root, arm.tag())
+                blk = below_gate_readout(bg_dir, channel) if bg_dir else None
+                if blk is not None:
+                    disp = below_gate_disposition(pr, amd_obj, arm.kind, arm.scope_id)
+                    bg = below_gate_record(arm, blk, disp)
+                    bg.update({"run_dir": bg_dir, "wall_seconds": wall})
+                    rec.update(bg)
+                    cannot_answer_arms.append(bg)
+                    with open(os.path.join(bg_dir, ARM_GATE_FILE), "w") as fh:
+                        json.dump({**bg, "provenance": slurm_provenance(), "argv": argv,
+                                   "prereg": a.prereg, "amendment": a.amendment or None,
+                                   "defects_recorded": ALL_DEFECTS}, fh, indent=2, default=str)
+                    manifest_save(sdir, man)
+                    print("[pr059] [%d/%d] %s CANNOT ANSWER: median option mass %.6g < gate %.6g "
+                          "(p10=%.6g, frac>1%%=%.4f, n=%d) -- role %r -> %s"
+                          % (i, len(todo), arm.arm_id, blk["median_true"], disp["gate"],
+                             blk.get("p10", float("nan")), blk.get("frac_above_1pct", float("nan")),
+                             blk.get("n", 0), disp["role"], disp["disposition"]), flush=True)
+                    if disp["closes_bank"]:
+                        closed_banks[arm.bank] = {"disposition": disp["disposition"],
+                                                  "arm_id": arm.arm_id, "role": disp["role"],
+                                                  "median_option_mass": blk["median_true"],
+                                                  "gate": disp["gate"], "option_mass": blk}
+                        print("[pr059]     bank %r is %s. Its remaining arms are NOT submitted. "
+                              "OTHER BANKS ARE UNAFFECTED -- `primary.statistic` reports per bank "
+                              "and never pools." % (arm.bank, disp["disposition"]), flush=True)
+                    continue
+                print("[pr059] arm %s exited %d but its readout is ABSENT (NaN option mass, no "
+                      "summary, or nothing actually below its gate). That is a corrupted "
+                      "measurement, not a disengaged channel, and it is a hard failure."
+                      % (arm.arm_id, rc), file=sys.stderr, flush=True)
             if rc != 0:
                 rec.update({"status": "failed", "exit_code": rc, "wall_seconds": wall})
                 manifest_save(sdir, man)
@@ -1769,7 +1935,27 @@ def run_stage(pr: Prereg, a) -> int:
         print("[pr059] control band(s) verified distinct: %s"
               % {k: v["n_distinct"] for k, v in band_report.items()}, flush=True)
 
+    # DCS-PR-065. A stage in which NOTHING cleared the gate is not a completed stage. This is the
+    # same rule as the empty-stage refusal above: a DONE.json plus a row count is not proof.
+    if n_done == 0:
+        write_terminal(sdir, "ABORTED.json",
+                       {"status": "aborted", "stage": a.stage, "split": a.split,
+                        "reason": "NO ARM IN THIS STAGE PRODUCED A REPORTABLE READOUT",
+                        "cannot_answer_arms": cannot_answer_arms,
+                        "closed_banks": closed_banks,
+                        "wall_seconds": time.time() - t_stage})
+        raise RunnerRefusal(
+            "stage %s completed %d arm(s) but NONE produced a reportable readout (%d arm(s) "
+            "CANNOT ANSWER on the option-mass gate). A stage with no readable arm does not get a "
+            "DONE.json." % (a.stage, len(todo), len(cannot_answer_arms)))
+
     done = {"status": "ok", "stage": a.stage, "split": a.split,
+            # DCS-PR-065: these two keys are the reason a reader cannot mistake this DONE.json for
+            # a stage in which every arm was fine. They are written even when empty.
+            "cannot_answer_arms": cannot_answer_arms,
+            "n_cannot_answer": len(cannot_answer_arms),
+            "closed_banks": closed_banks,
+            "option_mass_gate_policy_from": (amd_obj or {}).get("id"),
             "n_arms_selected": len(selected), "n_arms_done": n_done,
             "n_arms_unbuildable": len(unbuildable), "unbuildable": unbuildable,
             "rows": n_rows_total, "wall_seconds": time.time() - t_stage,
@@ -2061,6 +2247,79 @@ def selftest() -> int:
         ck.add("the smoke stage has no predecessor and always passes the order gate",
                _no_raise(lambda: assert_stage_order(td, "smoke", "train")), "")
 
+    # ---- DCS-PR-065: a below-gate arm is not a crashed arm ------------------------------------
+    # THE MEASUREMENT THAT FORCED THIS, pinned as data so the checks below are not abstract:
+    # job 870536, bank ts116m_basket_bomb, cell C, dose 4, n=230. Baseline S_0 median_true
+    # 0.08080 (reportable). Knockout S_G median_true 0.04517 (NOT reportable), p10 1.146e-04,
+    # frac>1% 0.6478. The knockout HALVED the channel and the gate refused the arm for it.
+    with tempfile.TemporaryDirectory() as td:
+        _chan = primary_channel(pr)
+        _key = "semantic/" + _chan
+
+        def _summ(**blk):
+            d = os.path.join(td, "r%d" % len(os.listdir(td)))
+            os.makedirs(d)
+            json.dump({"option_mass": {_key: blk}}, open(os.path.join(d, "summary.json"), "w"))
+            return d
+
+        _below = _summ(n=230, median=0.048310503363609314, median_true=0.045166268944740295,
+                       p10=0.0001146425711340271, p90=0.44927868247032166,
+                       frac_above_1pct=0.6478260869565218, reportable=False)
+        _ok = _summ(n=230, median_true=0.08080029487609863, p10=0.006150603294372559,
+                    frac_above_1pct=0.8695652173913043, reportable=True)
+        _nan = _summ(n=230, n_nan=96, n_numeric=134, median=None, median_true=None,
+                     reportable=False)
+        r_below = below_gate_readout(_below, _chan)
+        ck.add("a below-gate readout is RECOGNISED as such, with its measured numbers",
+               r_below is not None and abs(r_below["median_true"] - 0.045166268944740295) < 1e-12
+               and r_below["p10"] < 1e-3,
+               "median_true=%.6g p10=%.3e" % (r_below["median_true"], r_below["p10"])
+               if r_below else "None")
+        ck.add("an ABOVE-gate arm exiting 4 is NOT laundered through the below-gate path",
+               below_gate_readout(_ok, _chan) is None, "")
+        ck.add("a NaN readout is an ABSENT measurement, never a disengaged channel",
+               below_gate_readout(_nan, _chan) is None,
+               "NaN stays a hard failure, not a CANNOT ANSWER")
+        ck.add("a missing summary.json is a hard failure, not a CANNOT ANSWER",
+               below_gate_readout(os.path.join(td, "nope"), _chan) is None, "")
+
+        _amd5 = load_amendment(AMENDMENT_DEFAULT, pr)
+        _ref5 = reference_scope_id(pr)
+        _arms5 = build_arm_manifest(pr)
+        _sg5 = _arm_by(_arms5, scope_id=_ref5, kind="scope")
+        _b05 = _arm_by(_arms5, scope_id="S_0", kind="baseline")
+        _d_sg = below_gate_disposition(pr, _amd5, _sg5.kind, _sg5.scope_id)
+        ck.add("the REFERENCE scope below the gate closes its OWN bank and nothing else",
+               _d_sg["disposition"] == "CANNOT_ANSWER_BANK" and _d_sg["closes_bank"]
+               and _amd5["option_mass_gate_policy"]["cross_bank_isolation"] is True,
+               "%s -> %s" % (_d_sg["role"], _d_sg["disposition"]))
+        ck.add("the BASELINE below the gate still KILLS the bank (the parent's SECOND kill)",
+               below_gate_disposition(pr, _amd5, _b05.kind,
+                                      _b05.scope_id)["disposition"] == "KILL_BANK", "")
+        _nd5 = [x for x in _arms5 if x.kind == "nondemo_control"]
+        ck.add("a CONTROL arm below the gate is CANNOT ANSWER for itself; the stage continues",
+               not below_gate_disposition(pr, _amd5, _nd5[0].kind,
+                                          _nd5[0].scope_id)["closes_bank"], "")
+        _rec5 = below_gate_record(_sg5, r_below, _d_sg)
+        ck.add("the arm's OPTION MASS travels with the record, which says CANNOT ANSWER and "
+               "NEVER a null",
+               _rec5["cannot_answer"] is True and _rec5["option_mass"]["p10"] < 1e-3
+               and "not a null" in _rec5["_never_a_null"].lower()
+               and _rec5["median_option_mass"] == r_below["median_true"],
+               "median=%.6g" % _rec5["median_option_mass"])
+        ck.add("a below-gate record missing a REQUIRED travelling field REFUSES",
+               _refuses(lambda: below_gate_record(
+                   _sg5, {k: v for k, v in r_below.items() if k != "p10"},
+                   dict(_d_sg, required_travelling_fields=["p10"])), "travelling field"), "")
+        ck.add("a below-gate arm with NO amendment loaded REFUSES rather than defaulting",
+               _refuses(lambda: below_gate_disposition(pr, None, _sg5.kind, _sg5.scope_id),
+                        "NO AMENDMENT"), "")
+        ck.add("the stop-scope is a function of ROLE only -- identical at 0.01 and at 0.04999",
+               _amd5["option_mass_gate_policy"]["stop_scope_depends_on_margin"] is False
+               and below_gate_disposition(pr, _amd5, _sg5.kind, _sg5.scope_id)
+               == below_gate_disposition(pr, _amd5, _sg5.kind, _sg5.scope_id),
+               "no measured value is read")
+
     # ---- the checklist gate ------------------------------------------------------------------
     amd = repo_path(AMENDMENT_DEFAULT)
     if os.path.exists(amd):
@@ -2072,16 +2331,31 @@ def selftest() -> int:
                             {"split": "train", "limit": 40})
         ck.add("the SMOKE stage passes the stage-aware checklist gate", gs["ok"],
                "; ".join(gs["blocking"])[:80])
+        # RE-DERIVED, NOT HARDCODED (DCS-PR-065). This check used to pin the literal set
+        # {V3, V8, V10, V11, V12, V13, artifacts.analyzer_exists} -- DCS-PR-061's open blockers.
+        # DCS-PR-064 closed five of them on measured evidence, so the literal set silently became
+        # a claim about a superseded file, and it only kept passing because AMENDMENT_DEFAULT was
+        # still pointed at DCS-PR-061. It now asserts the PROPERTY the check was always about:
+        # EVERY item the loaded amendment leaves blocking-and-not-done is scoped OUT of the smoke,
+        # whichever items those happen to be, and there is at least one of them so the check
+        # cannot pass vacuously.
+        _open = {str(x.get("id")) for x in (load_amendment(AMENDMENT_DEFAULT, pr)
+                                            .get("pre_extraction_checklist") or [])
+                 if x.get("blocking") and not x.get("done")}
         ck.add("the smoke's binding scopes every open blocker OUT (re-derived, not by stage name)",
-               {x["id"] for x in gs["scoped_out"]}
-               >= {"V3", "V8", "V10", "V11", "V12", "V13", "artifacts.analyzer_exists"},
-               str(sorted(x["id"] for x in gs["scoped_out"])))
+               bool(_open) and _open <= {x["id"] for x in gs["scoped_out"]},
+               "open=%s scoped_out=%s" % (sorted(_open),
+                                          sorted(x["id"] for x in gs["scoped_out"])))
         gk = checklist_gate(PREREG_DEFAULT, AMENDMENT_DEFAULT, "kill",
                             {"split": "test", "limit": 0})
-        ck.add("the KILL stage on the full TEST population is BLOCKED by V3/V8/V10/V12/V13",
-               not gk["ok"] and all(any(i in b for b in gk["blocking"])
-                                    for i in ("V3", "V8", "V10", "V12", "V13")),
-               "%d blocking" % len(gk["blocking"]))
+        # Likewise re-derived. The property is that reading TEST is blocked, and that the item
+        # doing the blocking is one the amendment actually leaves open -- not that it is V3 by
+        # name. V17 (DCS-PR-065) is deliberately NOT expected here: the `kill` stage is the run
+        # that measures it, exactly as `kill` on validation is the run that measures V3.
+        ck.add("the KILL stage on the full TEST population is BLOCKED by an OPEN checklist item",
+               not gk["ok"] and any(any(i in b for b in gk["blocking"]) for i in _open),
+               "%d blocking: %s" % (len(gk["blocking"]),
+                                    "; ".join(b[:40] for b in gk["blocking"])[:120]))
         ck.add("an amendment pinned to the wrong parent sha REFUSES",
                _refuses(lambda: _amendment_wrong_sha(pr), "amends nothing"), "")
     else:
@@ -2301,6 +2575,45 @@ def mutate() -> int:
                  "realised"))
     muts.append(("M46 PR059-D6: the bridge family removed from pair_common's dispatch",
                  lambda: _bridge_family_gone(pr, arms), "PR059-D6"))
+
+    # ---- DCS-PR-065: the below-gate path cannot be made permissive ---------------------------
+    _am5 = load_amendment(AMENDMENT_DEFAULT, pr)
+    _sg5 = _arm_by(arms, scope_id=reference_scope_id(pr), kind="scope")
+    _blk5 = {"n": 230, "median_true": 0.045166268944740295, "p10": 0.0001146425711340271,
+             "frac_above_1pct": 0.6478260869565218, "reportable": False}
+    muts.append(("M47 DCS-PR-065: a below-gate arm dispositioned with NO amendment",
+                 lambda: below_gate_disposition(pr, None, _sg5.kind, _sg5.scope_id),
+                 "NO AMENDMENT"))
+    muts.append(("M48 DCS-PR-065: an amendment carrying no option_mass_gate_policy",
+                 lambda: below_gate_disposition(pr, {"id": "X"}, _sg5.kind, _sg5.scope_id),
+                 "option_mass_gate_policy"))
+    muts.append(("M49 DCS-PR-065: the policy re-scopes the gate to the baseline",
+                 lambda: below_gate_disposition(
+                     pr, {"id": "X", "option_mass_gate_policy":
+                          dict(_am5["option_mass_gate_policy"], gate_scope="baseline_only")},
+                     _sg5.kind, _sg5.scope_id), "gate_scope"))
+    muts.append(("M50 DCS-PR-065: the stop-scope reads the MARGIN",
+                 lambda: below_gate_disposition(
+                     pr, {"id": "X", "option_mass_gate_policy":
+                          dict(_am5["option_mass_gate_policy"],
+                               stop_scope_depends_on_margin=True)},
+                     _sg5.kind, _sg5.scope_id), "margin"))
+    muts.append(("M51 DCS-PR-065: a below-gate arm closes ANOTHER bank",
+                 lambda: below_gate_disposition(
+                     pr, {"id": "X", "option_mass_gate_policy":
+                          dict(_am5["option_mass_gate_policy"], cross_bank_isolation=False)},
+                     _sg5.kind, _sg5.scope_id), "never pooled"))
+    muts.append(("M52 DCS-PR-065: a below-gate arm reported WITHOUT its option mass",
+                 lambda: below_gate_record(
+                     _sg5, {k: v for k, v in _blk5.items() if k != "p10"},
+                     dict(below_gate_disposition(pr, _am5, _sg5.kind, _sg5.scope_id),
+                          required_travelling_fields=["p10"])), "travelling field"))
+    muts.append(("M53 DCS-PR-065: the policy relaxes the BASELINE gate",
+                 lambda: below_gate_disposition(
+                     pr, {"id": "X", "option_mass_gate_policy":
+                          dict(_am5["option_mass_gate_policy"],
+                               baseline_gate_is_not_relaxed=False)},
+                     _sg5.kind, _sg5.scope_id), "baseline_gate_is_not_relaxed"))
 
     n_red = 0
     for name, fn, needle in muts:

@@ -28,6 +28,11 @@ population and keep their names:
                           this project has twice published a control band that was secretly n=1.
   R4 POPULATION SWAP/DRIFT  the scored rows do not join the declared bank, or were relabelled off
                           the declared cell / channel / dose.
+  P5 CANNOT ANSWER AS AN ESCAPE HATCH  an arm complete on disk is dropped from the producer's
+     `arms` under a CANNOT ANSWER label this verifier cannot re-derive -- or, in the other
+     direction, an arm this verifier CAN re-derive as below the option-mass gate is reported as
+     an ordinary result. DCS-PR-065 lets a below-gate arm be omitted from `arms`; P5 is what
+     stops that permission from becoming a way to omit anything.
   R5 VACUOUS BY OMISSION  the producer reports less and the comparisons evaporate instead of
                           failing. THE EXPECTED ARM SET IS DECLARED HERE, in `expected_arms()`,
                           from the frozen file -- never iterated out of the producer's own keys.
@@ -63,9 +68,11 @@ import argparse
 import collections
 import glob
 import hashlib
+import io
 import json
 import os
 import random
+import re
 import shutil
 import sys
 import tempfile
@@ -111,7 +118,7 @@ EXPECT_RANDOM_ROW_IMPOSSIBLE_D1 = ("S_D", "S_E", "S_G")
 DECLARED_PRODUCER_KEYS = ("scopes", "arms", "family", "reference", "controls", "liveness",
                           "population", "channel")
 
-CHECK_IDS = ("V0", "R1", "R2", "R3", "R4", "R5", "P1", "P2", "P3", "P4")
+CHECK_IDS = ("V0", "R1", "R2", "R3", "R4", "R5", "P1", "P2", "P3", "P4", "P5")
 
 
 # =============================================================================================
@@ -281,6 +288,54 @@ def expected_arms(cfg, banks=DECLARED_CONFIRMATORY_BANKS):
 # =============================================================================================
 # 2. READING ARM DIRECTORIES -- re-derived, never taken from a producer summary
 # =============================================================================================
+def option_mass_gate_from_cfg(cfg):
+    """THIS FILE'S OWN parse of the option-mass gate, out of the frozen file's own prose. The
+    analyzer has its own; that they agree is the point of having two."""
+    texts = []
+    for path in (("outcome_variables", "O1_semantic_readout", "cannot_answer_if"),
+                 ("primary", "cannot_answer"), ("kill_condition",)):
+        node = cfg
+        for k in path:
+            node = (node or {}).get(k) if isinstance(node, dict) else None
+        if isinstance(node, str):
+            texts.append(node)
+    for t in texts:
+        m = re.search(r"below the (0?\.\d+) gate", t) or re.search(
+            r"option_mass\s+below\s+the\s+(0?\.\d+)", t)
+        if m:
+            return float(m.group(1))
+    raise SystemExit("[pr059-verifier] REFUSING: no option_mass gate could be parsed out of the "
+                     "frozen preregistration's own prose. A gate this file cannot read is a gate "
+                     "it cannot check.")
+
+
+def arm_median_option_mass(run_dir, cfg):
+    """The arm's TRUE median option mass, re-derived from its own summary.json. Returns None when
+    the readout is ABSENT (no summary, no block, NaN) -- absent is not low, and an absent
+    measurement is never dispositioned as a disengaged channel."""
+    if not run_dir:
+        return None
+    fp = os.path.join(run_dir, "summary.json")
+    if not os.path.exists(fp):
+        return None
+    try:
+        summ = json.load(open(fp))
+    except ValueError:
+        return None
+    chan = ((cfg.get("population") or {}).get("query_kind_primary")
+            or (cfg.get("population") or {}).get("primary_channel")
+            or "semantic_one_word")
+    blocks = summ.get("option_mass") or {}
+    key = next((k for k in blocks if k.endswith("/" + chan)), None)
+    if key is None:
+        return None
+    blk = blocks[key] or {}
+    if blk.get("n_nan"):
+        return None
+    v = blk.get("median_true")
+    return None if v is None else float(v)
+
+
 def newest_done(root, tag):
     for h in reversed(sorted(glob.glob(os.path.join(root, tag + "_*")))):
         if os.path.exists(os.path.join(h, "DONE.json")):
@@ -405,10 +460,49 @@ def verify(cfg, arm_root, producer_path, bank_dir, argsroot, banks=DECLARED_CONF
               % missing)
         reported = set(prod.get("arms", {}) or {})
         on_disk = {t for t in exp if newest_done(arm_root, t)}
-        dropped = sorted(on_disk - reported)
+        # ---- P5 -- DCS-PR-065's one permitted omission, and its price -----------------------
+        # An arm whose median option mass is below the declared gate is CANNOT ANSWER, so it does
+        # not appear in `arms` as a result. That permission is the ONLY reason a complete arm may
+        # be missing, and it is honoured here ONLY where THIS verifier can re-derive the shortfall
+        # from the arm's OWN summary.json -- never from the producer saying so. Re-derived with
+        # this file's own gate parse and its own median, sharing no code with the analyzer.
+        declared_ca = dict((prod.get("cannot_answer_arms") or {})) \
+            if isinstance(prod.get("cannot_answer_arms"), dict) \
+            else {str(x.get("arm_id") or x.get("tag")): x
+                  for x in (prod.get("cannot_answer_arms") or [])}
+        gate_v = option_mass_gate_from_cfg(cfg)
+        rederived_below, rederived_above = set(), set()
+        for t in sorted(on_disk):
+            m = arm_median_option_mass(newest_done(arm_root, t), cfg)
+            if m is None:
+                continue
+            (rederived_below if m < gate_v else rederived_above).add(t)
+        # (a) an omission this verifier CANNOT re-derive as below-gate is R5, exactly as before.
+        dropped = sorted(on_disk - reported - rederived_below)
         check("R5", not dropped,
               "arm(s) %s are COMPLETE on disk and absent from the producer's `arms`; the producer "
               "chose its own arm set" % dropped[:8])
+        # (b) an omission this verifier CAN re-derive must still be DECLARED as CANNOT ANSWER.
+        #     Silently missing and correctly missing are not the same thing.
+        undeclared = sorted((rederived_below & on_disk) - reported - set(declared_ca))
+        check("P5", not undeclared,
+              "arm(s) %s are below the option-mass gate (%.4g) on their OWN summary.json and are "
+              "absent from BOTH the producer's `arms` and its `cannot_answer_arms`. DCS-PR-065 "
+              "permits a below-gate arm to be omitted from `arms`; it does not permit it to "
+              "vanish." % (undeclared[:8], gate_v))
+        # (c) the reverse laundering: an arm this verifier re-derives as ABOVE the gate may not be
+        #     labelled CANNOT ANSWER to make an inconvenient result disappear.
+        false_ca = sorted(set(declared_ca) & rederived_above)
+        check("P5", not false_ca,
+              "arm(s) %s are declared CANNOT ANSWER on option-mass grounds, but their OWN "
+              "summary.json puts the median at or above the gate (%.4g). A gate verdict "
+              "re-derived from the producer's label is not a verdict." % (false_ca[:8], gate_v))
+        # (d) and a below-gate arm may not ALSO be reported as an ordinary result.
+        both = sorted(set(declared_ca) & reported)
+        check("P5", not both,
+              "arm(s) %s are reported BOTH in `arms` and in `cannot_answer_arms`. An arm is one "
+              "or the other; a number that appears in both places will be quoted from the first."
+              % (both[:8],))
         unexpected = sorted(reported - set(exp))
         check("R5", not unexpected,
               "the producer reports arm(s) %s that this verifier's declared arm set does not "
@@ -857,6 +951,30 @@ def self_test():
                              banks=("button_bomb",))
         check("T20 a non-FROZEN design is refused by V0", "V0" in fails)
 
+    # ---- T21/T22: DCS-PR-065's option-mass gate, parsed by THIS FILE alone -------------------
+    # The verifier imports nothing from the analyzer, so the only way its gate can be trusted is
+    # if it re-derives the SAME number from each of the three independent prose sites the frozen
+    # file states it in. Three sentences, written separately, agreeing.
+    _g = option_mass_gate_from_cfg(cfg)
+    _sites = [((cfg.get("outcome_variables") or {}).get("O1_semantic_readout") or {})
+              .get("cannot_answer_if"),
+              (cfg.get("primary") or {}).get("cannot_answer"),
+              cfg.get("kill_condition")]
+    _vals = []
+    for _t_ in _sites:
+        _m = re.search(r"below the (0?\.\d+) gate", _t_ or "") or re.search(
+            r"option_mass\s+below\s+the\s+(0?\.\d+)", _t_ or "")
+        if _m:
+            _vals.append(float(_m.group(1)))
+    check("T21 the option-mass gate is stated identically at all three prose sites",
+          len(_vals) >= 3 and len(set(_vals)) == 1 and _vals[0] == _g,
+          "sites=%s parsed=%r" % (_vals, _g))
+    check("T22 the gate is a real fraction, re-derived and never a constant in this file",
+          isinstance(_g, float) and 0.0 < _g < 1.0
+          and ("%g" % _g) not in io.open(__file__, encoding="utf-8").read()
+              .split("def option_mass_gate_from_cfg")[0],
+          "gate=%r" % _g)
+
     print("\n[pr059-verifier] self-test: %d check(s), %d FAILED" % (n, len(bad)))
     if bad:
         print("  FAILED: %s" % bad)
@@ -961,6 +1079,52 @@ def m_display_channel(cfg, ar, pp, bd, ag):
     _write(d, rows)
 
 
+def _write_option_mass(cfg, ar, tag, median_true):
+    """Give one arm on disk an option-mass block at a chosen median. Used ONLY by the mutation
+    harness, to make P5's two directions reachable."""
+    d = newest_done(ar, tag)
+    fp = os.path.join(d, "summary.json")
+    j = json.load(open(fp)) if os.path.exists(fp) else {}
+    chan = ((cfg.get("population") or {}).get("query_kind_primary")
+            or (cfg.get("population") or {}).get("primary_channel")
+            or "semantic_one_word")
+    j.setdefault("option_mass", {})["semantic/" + chan] = {
+        "n": 230, "median_true": median_true, "p10": 0.0001146425711340271,
+        "frac_above_1pct": 0.6478260869565218,
+        "reportable": median_true >= option_mass_gate_from_cfg(cfg)}
+    json.dump(j, open(fp, "w"))
+    return d
+
+
+def m_below_gate_arm_vanishes(cfg, ar, pp, bd, ag):
+    """DCS-PR-065 lets a below-gate arm be omitted from `arms`. It does not let it VANISH: it must
+    still be declared in `cannot_answer_arms`, carrying its own option mass."""
+    _write_option_mass(cfg, ar, _t("S_D"), option_mass_gate_from_cfg(cfg) / 2.0)
+    j = json.load(open(pp))
+    j["arms"].pop(_t("S_D"), None)
+    j.pop("cannot_answer_arms", None)
+    json.dump(j, open(pp, "w"))
+
+
+def m_healthy_arm_labelled_cannot_answer(cfg, ar, pp, bd, ag):
+    """The other direction: an arm whose OWN summary.json is comfortably above the gate is
+    labelled CANNOT ANSWER, which would let any inconvenient result be relabelled away."""
+    _write_option_mass(cfg, ar, _t("S_D"), option_mass_gate_from_cfg(cfg) * 4.0)
+    j = json.load(open(pp))
+    j["arms"].pop(_t("S_D"), None)
+    j["cannot_answer_arms"] = [{"arm_id": _t("S_D"), "median_option_mass": 0.001}]
+    json.dump(j, open(pp, "w"))
+
+
+def m_arm_reported_twice(cfg, ar, pp, bd, ag):
+    """An arm in `arms` AND in `cannot_answer_arms`. Whichever a reader hits first becomes the
+    number, and the other becomes deniable."""
+    _write_option_mass(cfg, ar, _t("S_D"), option_mass_gate_from_cfg(cfg) / 2.0)
+    j = json.load(open(pp))
+    j["cannot_answer_arms"] = [{"arm_id": _t("S_D"), "median_option_mass": 0.02}]
+    json.dump(j, open(pp, "w"))
+
+
 def m_producer_drops_a_block(cfg, ar, pp, bd, ag):
     j = json.load(open(pp))
     for k in ("controls", "liveness", "reference"):
@@ -1063,6 +1227,11 @@ MUTATIONS = [
     ("M20 the scope leaked into decode",           m_leaky_scope,               "P2"),
     ("M21 PR059-D1 impossible control SHIPPED",    m_impossible_control_shipped, "P4"),
     ("M22 producer CLAIMS the impossible control", m_producer_claims_the_impossible_control, "P4"),
+    # DCS-PR-065: the one permitted omission, in both directions and doubled.
+    ("M23 a below-gate arm VANISHES instead of being declared CANNOT ANSWER",
+     m_below_gate_arm_vanishes, "P5"),
+    ("M24 an ABOVE-gate arm relabelled CANNOT ANSWER", m_healthy_arm_labelled_cannot_answer, "P5"),
+    ("M25 an arm reported BOTH as a result and as CANNOT ANSWER", m_arm_reported_twice, "P5"),
 ]
 
 

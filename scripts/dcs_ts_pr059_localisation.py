@@ -1465,6 +1465,127 @@ def engagement_gate(readout: ArmReadout, pr: Prereg) -> Dict[str, Any]:
                       % (med, readout.arm_id, gate)}
 
 
+#: The amendment DCS-PR-065 that carries `option_mass_gate_policy`. Loaded lazily and ONLY by the
+#: self-test / mutation harnesses and by callers that pass it in explicitly; `below_gate_disposition`
+#: never reaches for it on its own, because a stop-scope that appears by default is not declared.
+P11_AMENDMENT3 = "configs/dcs_ts_pr065_phase11_amendment3.json"
+
+
+def load_gate_policy_amendment(path: str = P11_AMENDMENT3) -> Dict[str, Any]:
+    """Read the amendment JSON that declares `option_mass_gate_policy`. No hashing here -- the
+    RUNNER's `load_amendment()` is what pins the parent sha and refuses a non-FROZEN file; this is
+    only the reader."""
+    fp = path if os.path.isabs(path) else os.path.join(REPO, path)
+    with open(fp) as fh:
+        return json.load(fh)
+
+
+#: `score_behavior.py`'s tail-gate return code. It is NOT a crash: the run is fully written and
+#: its healthy readouts are usable ("the run is written and its healthy readouts are usable, but
+#: these are NOT reportable"). A caller that treats it as a crash discards a completed measurement.
+BELOW_GATE_RC = 4
+
+#: The three dispositions `option_mass_gate_policy` may assign. Stated here, in the analyzer, so
+#: the runner does not get to invent a fourth.
+BELOW_GATE_DISPOSITIONS = ("KILL_BANK", "CANNOT_ANSWER_BANK", "CANNOT_ANSWER_ARM")
+
+
+def below_gate_disposition(pr: Prereg, amendment: Optional[Dict[str, Any]],
+                           arm_kind: str, scope_id: str) -> Dict[str, Any]:
+    """WHAT HAPPENS TO THE REST OF A STAGE when an arm falls below the option-mass gate.
+
+    THE GATE ITSELF IS NOT DECIDED HERE AND IS NOT DECIDED BY ANY AMENDMENT. The FROZEN parent
+    scopes it to EVERY ARM, four times -- `O1_semantic_readout.cannot_answer_if` ("median
+    option_mass in a scope's arm falls below the [gate] -- CANNOT ANSWER"), `primary.cannot_answer`
+    clause (a), `primary._largest_risk` mitigation (3), and separately, in DIFFERENT WORDS and with
+    a DIFFERENT consequence, the BASELINE case in `kill_condition` ("if median option_mass in the
+    S_0 baseline falls below the [gate] ... no knockout job is submitted at all"). Two rules,
+    two scopes, two consequences, written together on 2026-09-07. `engagement_gate()` above is that
+    rule and it is unchanged. (The literal gate value is elided as `[gate]` in these two
+    quotations ONLY because this analyzer's own `no_gate_literals` check forbids a declared gate
+    value appearing as a numeric literal anywhere in its source; the unelided text is quoted in
+    full in DCS-PR-065 `decision_PR059_D9.the_design_already_says`.)
+
+    What the parent never says is whether the ELEVEN OTHER ARMS of the stage are still submitted.
+    That is DCS-PR-065 `option_mass_gate_policy`, and this function is the only place it is read.
+
+    IT IS A TOTAL FUNCTION OF THE ARM'S ROLE. It reads no measured value at all -- not the median,
+    not the margin. It would return the same disposition for an arm at 0.01 and an arm at 0.04999.
+    A stop-scope that varied with how close the arm came to the threshold would be a stop-scope
+    chosen to get a result.
+
+    REFUSES, rather than defaulting, when: the policy block is absent (an amendment that does not
+    carry it cannot license a below-gate arm); its `gate_value` or `gate_statistic` disagrees with
+    the frozen parent's, which would make this a second gate; the role is unmapped; or the mapped
+    disposition is not one of `BELOW_GATE_DISPOSITIONS`.
+    """
+    if not amendment:
+        raise Refusal(
+            "an arm fell below the option-mass gate and NO AMENDMENT is loaded. The frozen "
+            "preregistration says the arm is CANNOT ANSWER but is silent on the rest of the "
+            "stage, so there is no declared stop-scope to apply. REFUSING rather than picking "
+            "one at the moment it decides a result.")
+    pol = amendment.get("option_mass_gate_policy")
+    if not isinstance(pol, dict):
+        raise Refusal(
+            "amendment %r carries no `option_mass_gate_policy`, so it does not declare what "
+            "happens to the rest of a stage when an arm falls below the gate. An amendment that "
+            "is silent on the question cannot be read as permitting anything."
+            % amendment.get("id"))
+    gate = option_mass_gate_value(pr)
+    if float(pol.get("gate_value", -1.0)) != float(gate):
+        raise Refusal(
+            "`option_mass_gate_policy.gate_value` is %r and the FROZEN preregistration's gate is "
+            "%r. An amendment that restates the gate at a different number is a SECOND GATE, and "
+            "this file may not move a numeric gate." % (pol.get("gate_value"), gate))
+    if pol.get("gate_statistic") != "median_true":
+        raise Refusal(
+            "`option_mass_gate_policy.gate_statistic` is %r; the producer's `reportable` flag and "
+            "`engagement_gate()` both read the TRUE median. Two statistics is two gates."
+            % (pol.get("gate_statistic"),))
+    if pol.get("gate_scope") != "every_arm":
+        raise Refusal(
+            "`option_mass_gate_policy.gate_scope` is %r. The frozen parent scopes the gate to "
+            "every arm in three fields and states the baseline case separately in a fourth; an "
+            "amendment may not re-scope it." % (pol.get("gate_scope"),))
+    if pol.get("baseline_gate_is_not_relaxed") is not True:
+        raise Refusal("`option_mass_gate_policy` must assert `baseline_gate_is_not_relaxed`: the "
+                      "baseline gate is not weakened under any reading.")
+    if pol.get("stop_scope_depends_on_margin") is not False:
+        raise Refusal("`option_mass_gate_policy.stop_scope_depends_on_margin` must be false. A "
+                      "stop-scope that reads how far below the gate the arm landed is a rule "
+                      "written to fit one number.")
+    ref = reference_scope_id(pr)
+    role = ("reference_scope" if (arm_kind == "scope" and scope_id == ref) else arm_kind)
+    table = pol.get("below_gate_disposition_by_arm_role") or {}
+    if role not in table:
+        raise Refusal(
+            "`option_mass_gate_policy.below_gate_disposition_by_arm_role` maps no disposition for "
+            "arm role %r (known: %s). An unmapped role is an undeclared decision, not a default."
+            % (role, sorted(table)))
+    disp = table[role]
+    if disp not in BELOW_GATE_DISPOSITIONS:
+        raise Refusal("disposition %r for role %r is not one of %s"
+                      % (disp, role, list(BELOW_GATE_DISPOSITIONS)))
+    if not pol.get("cross_bank_isolation"):
+        raise Refusal(
+            "`option_mass_gate_policy.cross_bank_isolation` is not set. `primary.statistic` says "
+            "results are 'reported per codeword bank and never pooled across banks'; a below-gate "
+            "arm in one bank may not close another bank that was never run.")
+    if not pol.get("must_travel_with_every_derived_number"):
+        raise Refusal(
+            "`option_mass_gate_policy.must_travel_with_every_derived_number` is not set. "
+            "`primary._largest_risk` mitigation (1) requires the full option_mass distribution "
+            "beside every delta; a below-gate arm reported without it reads as if it were fine.")
+    return {"arm_kind": arm_kind, "scope_id": scope_id, "role": role, "disposition": disp,
+            "closes_bank": disp.endswith("_BANK"),
+            "gate": gate, "gate_statistic": "median_true",
+            "policy_from": amendment.get("id"),
+            "required_travelling_fields": list(pol.get("required_travelling_fields") or []),
+            "reason": "arm role %r -> %s. %s" % (role, disp,
+                                                 (pol.get("dispositions") or {}).get(disp, ""))}
+
+
 def argmax_switch_rate(baseline: Sequence[str], scope: Sequence[str]) -> Dict[str, Any]:
     """A CORROBORANT, explicitly NOT one of the conjunctive success conditions (mandate 10.5 says
     "ideally"). It is reported because a delta that moves an ordering while the output word never
@@ -3107,6 +3228,65 @@ def selftest(pr: Prereg) -> int:
     ck.add("engagement_gate", "an arm whose median option_mass falls below the declared gate is "
            "CANNOT ANSWER", gate_ok["engaged"] and dis["cannot_answer"], 2,
            "median=%.4f gate=%.4f" % (gate_ok["median_option_mass"], gate_ok["gate"]))
+    # ---- DCS-PR-065: the stop-scope of a below-gate arm --------------------------------------
+    # The GATE is the parent's and is checked immediately above. THIS checks only what the parent
+    # left open: how many OTHER arms one below-gate arm takes down. Role in, disposition out --
+    # no measured value is read, so the answer is the same at 0.01 and at one tick under the gate.
+    _am3 = load_gate_policy_amendment()
+    _refs = reference_scope_id(pr)
+    _d_ref = below_gate_disposition(pr, _am3, "scope", _refs)
+    _d_nar = below_gate_disposition(pr, _am3, "scope", "S_C")
+    _d_ctl = below_gate_disposition(pr, _am3, "nondemo_control", _refs)
+    _d_bas = below_gate_disposition(pr, _am3, "baseline", "S_0")
+    ck.add("below_gate_reference_closes_bank",
+           "the REFERENCE scope below the gate closes its own bank -- every narrower number is a "
+           "fraction of S_G, so an unreadable denominator makes them undefined",
+           _d_ref["disposition"] == "CANNOT_ANSWER_BANK" and _d_ref["closes_bank"], 2,
+           _d_ref["reason"][:60])
+    ck.add("below_gate_narrow_scope_is_arm_only",
+           "a NARROWER scope below the gate is CANNOT ANSWER for itself and the stage continues",
+           _d_nar["disposition"] == "CANNOT_ANSWER_ARM" and not _d_nar["closes_bank"], 2)
+    ck.add("below_gate_control_is_arm_only",
+           "a control arm below the gate is CANNOT ANSWER for itself, never for the stage",
+           _d_ctl["disposition"] == "CANNOT_ANSWER_ARM" and not _d_ctl["closes_bank"], 2)
+    ck.add("below_gate_baseline_unchanged",
+           "the BASELINE below the gate still KILLS the bank -- the parent's SECOND kill "
+           "condition, not weakened under any reading",
+           _d_bas["disposition"] == "KILL_BANK" and _d_bas["closes_bank"], 2)
+    ck.add("below_gate_is_role_only_never_margin",
+           "the stop-scope is a total function of the arm's ROLE and reads no measured value, so "
+           "it is identical at 0.01 and at one tick under the gate",
+           _am3["option_mass_gate_policy"]["stop_scope_depends_on_margin"] is False
+           and _am3["option_mass_gate_policy"]["stop_scope_depends_on_arm_role_only"] is True, 2)
+    ck.add("below_gate_never_crosses_banks",
+           "a below-gate arm in one bank never closes a bank that was never run -- "
+           "`primary.statistic` reports per bank and never pools",
+           _am3["option_mass_gate_policy"]["cross_bank_isolation"] is True, 1)
+    ck.add("below_gate_carries_its_option_mass",
+           "a below-gate arm's option mass must travel with every number derived from it",
+           bool(_d_ref["required_travelling_fields"])
+           and "median_option_mass" in _d_ref["required_travelling_fields"], 1)
+    _caught = 0
+    for _bad in ({}, {"id": "X"},
+                 {"id": "X", "option_mass_gate_policy": dict(
+                     _am3["option_mass_gate_policy"],
+                     gate_value=option_mass_gate_value(pr) * 3.0)},
+                 {"id": "X", "option_mass_gate_policy": dict(
+                     _am3["option_mass_gate_policy"], gate_scope="baseline_only")},
+                 {"id": "X", "option_mass_gate_policy": dict(
+                     _am3["option_mass_gate_policy"], stop_scope_depends_on_margin=True)},
+                 {"id": "X", "option_mass_gate_policy": dict(
+                     _am3["option_mass_gate_policy"],
+                     below_gate_disposition_by_arm_role={"baseline": "KILL_BANK"})}):
+        try:
+            below_gate_disposition(pr, _bad or None, "scope", _refs)
+        except Refusal:
+            _caught += 1
+    ck.add("below_gate_policy_refuses_rather_than_defaults",
+           "no amendment / no policy block / a re-scoped gate / a moved gate value / a "
+           "margin-dependent stop-scope / an unmapped role each REFUSE", _caught == 6, 6,
+           "caught %d/6" % _caught)
+
     sw = argmax_switch_rate([" Button", " Button"], [" Bomb", " Button"])
     ck.add("argmax_switch", "the argmax-switch rate is computed as a CORROBORANT, not a success "
            "condition", sw["n_switched"] == 1 and "CORROBORANT" in sw["_status"], sw["n_paired"])
@@ -3754,6 +3934,42 @@ def mutate(pr: Prereg) -> int:
         [{"prompt_id": "x", "seq_len": 200, "surface_span_positions": [190]}], [-10],
         decoded_by_rel_end={-10: " button"})
     raisers["M80 resolver gate over zero rows"] = lambda: resolver_failure_gate(0, 0, pr)
+    # DCS-PR-065: the stop-scope policy REFUSES rather than defaulting. Six ways to make an
+    # amendment silently permit something, each of which must fire for its own reason.
+    _a3 = load_gate_policy_amendment()
+    _p3 = _a3["option_mass_gate_policy"]
+    _rf = reference_scope_id(pr)
+    raisers["M91 a below-gate arm with NO amendment loaded"] = lambda: below_gate_disposition(
+        pr, None, "scope", _rf)
+    raisers["M92 an amendment with no option_mass_gate_policy"] = lambda: below_gate_disposition(
+        pr, {"id": "X"}, "scope", _rf)
+    raisers["M93 the policy restates the gate at a DIFFERENT value"] = lambda: (
+        below_gate_disposition(pr, {"id": "X", "option_mass_gate_policy":
+                                    dict(_p3, gate_value=option_mass_gate_value(pr) * 3.0)},
+                               "scope", _rf))
+    raisers["M94 the policy RE-SCOPES the gate to the baseline"] = lambda: (
+        below_gate_disposition(pr, {"id": "X", "option_mass_gate_policy":
+                                    dict(_p3, gate_scope="baseline_only")}, "scope", _rf))
+    raisers["M95 the policy reads the MARGIN"] = lambda: (
+        below_gate_disposition(pr, {"id": "X", "option_mass_gate_policy":
+                                    dict(_p3, stop_scope_depends_on_margin=True)}, "scope", _rf))
+    raisers["M96 the policy relaxes the BASELINE gate"] = lambda: (
+        below_gate_disposition(pr, {"id": "X", "option_mass_gate_policy":
+                                    dict(_p3, baseline_gate_is_not_relaxed=False)}, "scope", _rf))
+    raisers["M97 an arm role with no declared disposition"] = lambda: (
+        below_gate_disposition(pr, {"id": "X", "option_mass_gate_policy":
+                                    dict(_p3, below_gate_disposition_by_arm_role={})},
+                               "scope", _rf))
+    raisers["M98 a below-gate arm may close ANOTHER bank"] = lambda: (
+        below_gate_disposition(pr, {"id": "X", "option_mass_gate_policy":
+                                    dict(_p3, cross_bank_isolation=False)}, "scope", _rf))
+    raisers["M99 a below-gate arm reported without its option mass"] = lambda: (
+        below_gate_disposition(pr, {"id": "X", "option_mass_gate_policy":
+                                    dict(_p3, must_travel_with_every_derived_number=False)},
+                               "scope", _rf))
+    raisers["M100 the policy uses a DIFFERENT gate statistic"] = lambda: (
+        below_gate_disposition(pr, {"id": "X", "option_mass_gate_policy":
+                                    dict(_p3, gate_statistic="mean")}, "scope", _rf))
 
     print("=== %s mutation harness (U6): every refusal must be REACHABLE ===" % PR_ID)
     _REFUSALS = (Refusal, ZeroBinding, PreregError, CannotAnswer)
