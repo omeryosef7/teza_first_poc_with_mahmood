@@ -5410,3 +5410,51 @@ was documented rather than changed under a live result.
 PHASE 10 UNMOVED**: 117/0 · 102/102 · 57/0 · 56/56. Loader clean at 21 hashes; `--for-extraction`
 **3 refusals** (V3, V16, and a new **V17** scoped by re-derivation via `_scores_a_narrower_scope`,
 not by stage name). Repo tests 1693 passed / 4 pre-existing failures.
+
+---
+
+## DCS-R-147 / C-133 — PR-065's stop-scope works; and the disabled-hook bridge edited 13 MILLION cells
+*2026-09-09* — job 870913
+
+**PR-065's stop-scope did exactly what it was written for.** `basket_bomb` closed as
+`CANNOT_ANSWER_BANK`, its four remaining arms **NOT SUBMITTED**, with the runner printing the reason
+in full: *"OTHER BANKS ARE UNAFFECTED — `primary.statistic` reports per bank and never pools."* Under
+the previous unpreregistered fail-fast, the six `button_bomb` arms would have died with it. They ran.
+
+**And `button_bomb` is a far better-engaged bank than `basket_bomb`**, which is worth recording
+because it is consistent with `R-116` from an entirely different instrument: option mass
+**0.2733 / 0.4411 / 0.3112 / 0.2941 / 0.2870 / 0.2654** across the six arms, `frac>1%` ≈ **0.99** —
+against basket's 0.081 baseline and 0.045 knockout. R-116 measured installation at button **92/113**
+versus basket **46/113**; the readout channel shows the same asymmetry.
+
+Five arms completed and are `done` in the manifest: `button_bomb_S_0_baseline`,
+`button_bomb_S_G_scope`, and the three `nondemo_control` draws, at 1.5–2.5 min each.
+
+## `C-133` — the bridge is a live knockout, and this is the THIRD appearance of the shape
+
+Arm 12 refused:
+
+> *the disabled-hook bridge reports `hook_fired_count=8280`; the disabled-hook bridge edited
+> **13061664** cells*
+
+A disabled-hook bridge must edit **zero**. 13,061,664 is **exactly** the `total_prefill_edits` a full
+live knockout produced on 230 rows. **The bridge ran as a live knockout** — the control whose entire
+job is to certify that nothing happened.
+
+The history is the point:
+- **`C-130`** — `make_intervention` returned knockout hooks from an early `return` *above* its bridge
+  block; found by reading code.
+- **`PR059-D6`** — `DisabledHookBridge` could not bridge `ScopedAttentionKnockout`; fixed, and
+  **measured on CPU as `cells_would=12, realised=0`, byte-identical to baseline**.
+- **now** — in production, on a real model, that same bridge edits **13 million** cells.
+
+**A CPU measurement said 0 and production says 13,061,664.** That gap matters more than the fix: a
+CPU test that certifies a control as inert while production runs it live will certify the next one
+too. The `D-6` regression was a **false negative**, and mutations cannot catch those — only a
+positive test against the real object can, which is why the investigation is required to say plainly
+whether it verified the production object or a stand-in.
+
+**The liveness gate caught it.** The bridge did not silently certify a null; the run refused and no
+number was published. But the producer should be able to convict itself — if the only thing that
+distinguished *fired-and-discarded* from *fired-and-wrote* was a downstream cell count, the bridge is
+under-instrumented.
