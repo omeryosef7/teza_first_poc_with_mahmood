@@ -969,6 +969,23 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
 
     donor_hs = forward_hidden(lm, d_ids)          # [n_blocks+1, seq, H]
     probe_pos = r_last[-1]
+    # THE DONOR'S OWN PROBE POSITION. `probe_pos` is an ABSOLUTE index into the RECIPIENT, and the
+    # `donor_ceiling` row reads the DONOR's forward pass. Under `absolute` the two prompts have
+    # equal length so the same integer is the same semantic role and this is a no-op -- which is
+    # why the defect never appeared in eight months of harm_ctx/benign_ctx runs. Under
+    # `end_relative` the lengths differ by up to 32 tokens and the recipient index simply runs off
+    # the end of the donor: job 872583 died with
+    #     IndexError: index 239 is out of bounds for dimension 1 with size 226
+    # on the fourth family. This is the absolute-position-index bug class the project has recorded
+    # repeatedly, appearing in the one place the end-relative work had not looked.
+    donor_probe_pos = (probe_pos if align_mode == "absolute"
+                       else len(d_ids) + (probe_pos - len(r_ids)))
+    if not (0 <= donor_probe_pos < len(d_ids)):
+        ledger.fail(f"donor_probe_pos_out_of_range:{donor_probe_pos}", recip["prompt_id"])
+        return 0
+    if d_ids[donor_probe_pos] != r_ids[probe_pos] and align_mode == "end_relative":
+        ledger.fail("donor_probe_token_differs", recip["prompt_id"])
+        return 0
     d_surface = directions["d_surface"]
 
     base = dict(
@@ -977,6 +994,7 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
         donor_prompt_id=donor["prompt_id"], domain=recip["domain"], split=recip["split"],
         n_examples=recip["n_examples"], query_kind=recip["query_kind"],
         n_occurrences=len(r_last), seq_len=len(r_ids), probe_pos=probe_pos,
+        donor_probe_pos=donor_probe_pos, donor_seq_len=len(d_ids), align_mode=align_mode,
         layer_convention=sg.LAYER_CONVENTION,
         readout_layers=list(readout_layers),
         # C-6: the record is VERSIONED, not silently redefined. A row without these keys is v1,
@@ -1075,7 +1093,7 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
     with contextlib.ExitStack() as st:
         cap = st.enter_context(BlockCapture(lm.model, readout_layers))
         rec = readout(lm, d_ids, cap, concept_ids, codeword_ids, readout_layers,
-                      d_surface, probe_pos, semantic_mode, d_text, answer_prefix,
+                      d_surface, donor_probe_pos, semantic_mode, d_text, answer_prefix,
                       sem_variants)
     emit({**base, "intervention": "donor_ceiling", "scope": "", "window": "", "alpha": 0.0,
                  "direction": "", **wf("", ""), **rec})

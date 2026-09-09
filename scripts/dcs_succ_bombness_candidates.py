@@ -442,6 +442,89 @@ def analyse(codeword, train_domains, torch, rng, n_random_draws=12, verbose=True
             for c2 in CONCEPTS:
                 cosmat["%s|%s" % (c1, c2)] = float(torch.dot(vhatf[c1], vhatf[c2]))
 
+        # ---- THE INTERACTION DECOMPOSITION. This is now the PRIMARY reading, not B1.
+        #
+        # The bank is a 2 x 2, so it IDENTIFIES ITS OWN INTERACTION, and C-208 records that nobody
+        # computed it for the first day of this phase. With v_hat a reference axis:
+        #
+        #   B1 = <h_C - h_A, v>                      the candidate as originally reported
+        #   H  = <(h_C-h_A) + (h_B-h_E), v> / 2      MAIN EFFECT of harmful context
+        #   I  = <(h_C-h_A) - (h_B-h_E), v> / 2      TOKEN x CONTEXT INTERACTION
+        #   B1 = H + I, exactly, which is asserted below rather than trusted.
+        #
+        # Why it decides the reading. Under "the codeword binds to the concept", h_C gains
+        # concept-meaning and h_B already has it, so BOTH differences project positively and I is
+        # about zero. Under the anomaly account -- state ~ token + context + oddness, oddness large
+        # for the concept word in a benign frame AND for the codeword in a threat frame, small for
+        # the two congruent cells -- the two differences have OPPOSITE signs and I carries
+        # everything. The measured answer on the bomb axis was I = 127% of B1 with H negative.
+        #
+        # And length cannot produce it: the seq_len deltas of (C-A) and (B-E) are distributionally
+        # identical over all families, so any additive length effect cancels exactly in I.
+        dec = {}
+        for ref_c in CONCEPTS:
+            vhat_ref = _unit(vfull[ref_c], torch)
+            gref = gap[ref_c]
+            for shift_c in CONCEPTS:
+                b1v, hv, iv = [], [], []
+                for d in common:
+                    ca = delta_CA[shift_c][d][L_i]
+                    be = (means[shift_c][("B", d)][L_i] - means[shift_c][("E", d)][L_i])
+                    b1v.append(float(torch.dot(ca, vhat_ref)) / gref)
+                    hv.append(float(torch.dot(ca + be, vhat_ref)) / (2 * gref))
+                    iv.append(float(torch.dot(ca - be, vhat_ref)) / (2 * gref))
+                resid = max(abs(b1 - (h + i)) for b1, h, i in zip(b1v, hv, iv))
+                if resid > 1e-4:
+                    raise Refusal("B1 = H + I is an identity and it failed by %g at L%d "
+                                  "%s/%s -- the decomposition is not what it says it is"
+                                  % (resid, L, shift_c, ref_c))
+                kH = sum(1 for x in hv if x > 0)
+                kI = sum(1 for x in iv if x > 0)
+                dec["shift_%s|ref_%s" % (shift_c, ref_c)] = {
+                    "B1": mean(b1v), "H_main_effect": mean(hv), "I_interaction": mean(iv),
+                    "I_share_of_B1": (mean(iv) / mean(b1v)) if mean(b1v) else float("nan"),
+                    "H_n_positive": kH, "I_n_positive": kI, "n_domains": len(hv),
+                    "H_sign_p": sign_test_two_sided(kH, len(hv))[0],
+                    "I_sign_p": sign_test_two_sided(kI, len(iv))[0],
+                    "H_ci95": boot_ci(hv, rng), "I_ci95": boot_ci(iv, rng),
+                    "identity_max_residual": resid}
+        out.setdefault("interaction_decomposition", {})["L%d" % L] = dec
+
+        # ---- THE 3 x 3 ON THE *RESIDUAL* AXES. C-208b: "90.8% bomb-specific" was never a
+        # specificity statement, because specificity needs the residual BOMB axis traversed MORE by
+        # the bomb shift than by the others -- and only the diagonal was ever computed. The full
+        # table is computed here whichever way it comes out.
+        resid_axes = {}
+        for target in CONCEPTS:
+            basis_t = []
+            for c in [x for x in CONCEPTS if x != target]:
+                u = vfull[c].clone()
+                for bv in basis_t:
+                    u = u - float(torch.dot(u, bv)) * bv
+                nn = float(torch.linalg.vector_norm(u))
+                if nn > 1e-8:
+                    basis_t.append(u / nn)
+            rr = vfull[target].clone()
+            for bv in basis_t:
+                rr = rr - float(torch.dot(rr, bv)) * bv
+            resid_axes[target] = (_unit(rr, torch), float(torch.linalg.vector_norm(rr)))
+        tab = {}
+        for ref_c in CONCEPTS:
+            rhat_c, rnorm_c = resid_axes[ref_c]
+            for shift_c in CONCEPTS:
+                vals = [float(torch.dot(delta_CA[shift_c][d][L_i], rhat_c)) / rnorm_c
+                        for d in common]
+                k = sum(1 for x in vals if x > 0)
+                tab["shift_%s|resid_ref_%s" % (shift_c, ref_c)] = {
+                    "mean_resid_units": mean(vals), "ci95": boot_ci(vals, rng),
+                    "n_positive": k, "n_domains": len(vals),
+                    "sign_p": sign_test_two_sided(k, len(vals))[0]}
+        out.setdefault("residual_axis_3x3", {})["L%d" % L] = {
+            "table": tab,
+            "_reading": "SPECIFICITY requires the diagonal to dominate its own COLUMN -- the "
+                        "residual axis of concept X traversed more by X's shift than by the "
+                        "others. Reading only the diagonal answers a different question."}
+
         # ---- CELL COORDINATES on the bomb axis, in gap units, relative to cell A. This is the
         # table that stops "traverses 10% of the gap" from flattering itself: it shows where all
         # FOUR cells sit, so the reader can see that C is at 0.10 while B is at 0.84 and E at 1.00.

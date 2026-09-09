@@ -3377,3 +3377,47 @@ judge's own flip rate.** Both reasons stand; neither is needed by the other.
 * **the reproducibility floor** — `0.0221` on ASR differences, `0.1372` on labels, κ `0.4435`.
 
 Every ASR number this phase reports carries both.
+
+---
+
+### 2026-09-09 23:15 — ENTRY 031 — `C-210`: the C→A patch reaches the GPU, writes transplant rows, and dies on the absolute-index bug class in the one place end-relative work had not looked
+
+**Label: BUG (mine), found in production, fixed.**
+
+Job **872583** (n-802) is the first run in which the `ds_to_benign` pair **actually wrote transplant
+rows** — the `C-204` fix works. Rows appeared for every layer window: `L0-4`, `L5-8`, `L9`, `L9-12`,
+`L11`, `L12`, `L13-16`, `L17-20`, `L21-24`, `L25-31`, `all`, `write_carry_8-21`, three families
+each, plus `none`, `donor_ceiling` and the live `self_swap_noop_check`.
+
+It then **FAILED on the fourth family**:
+
+```
+File "src/boombness/aggressive_patching.py", line 873, in readout
+    hs = torch.stack([cap.at(L, probe_pos) for L in readout_layers], dim=0)
+IndexError: index 239 is out of bounds for dimension 1 with size 226
+```
+
+**The cause.** `probe_pos = r_last[-1]` is an **absolute index into the RECIPIENT**, and the
+`donor_ceiling` row reads the **DONOR's** forward pass. Under `absolute` alignment the two prompts
+have equal length, so the same integer is the same semantic role — which is why this never appeared
+in any historical `harm_ctx` / `benign_ctx` run. Under `end_relative` the lengths differ by up to
+**32 tokens** (`S-005`: mean +4.1, range [−32, +47]), and the recipient index runs off the end of
+the donor. The first three families happened to have donor ≥ recipient length; the fourth did not.
+
+⛔ This is **the absolute-position-index bug class**, which `PR-059` records as
+*"an absolute index reads a DIFFERENT TOKEN in each arm"* and which this session has quoted three
+times — appearing in the one place the end-relative work had not looked, because `donor_ceiling`
+was not a *patch* site and so was not on the list of things I converted.
+
+**Fixed**: `donor_probe_pos` is derived end-relatively, bounds-checked, **and its token identity is
+checked against the recipient's** — so a future silent divergence is a refusal, not an IndexError.
+It is a no-op under `absolute`, and the row now records `donor_probe_pos`, `donor_seq_len` and
+`align_mode` so the artifact is self-describing. Module tests: **64 passed**. Resubmitted at
+`--n-families 8` as job **872635**.
+
+**And a small operational slip, recorded because the guard tested the wrong thing.** I wrote
+`sed -i '…' file || python3 -c '…write a new file…'`. `sed` **succeeded**, editing the *original*
+file in place, so the `||` fallback never ran and the intended new argsfile was never created — the
+first resubmission (872634) pointed at a path that did not exist. The `||` was guarding against
+"sed failed"; the actual risk was "sed did something different from what I meant". Cancelled,
+original restored, new argsfile written explicitly, `test -s` checked before submitting.
