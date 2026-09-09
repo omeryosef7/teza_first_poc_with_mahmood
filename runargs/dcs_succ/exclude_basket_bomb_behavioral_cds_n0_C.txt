@@ -1,0 +1,13 @@
+# Derived by scripts/dcs_ts_make_exclusions.py from data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl
+# selection: query_kind=behavioral bank_block=cds_n0 condition=natural_doublespeak split=ALL
+# 232 selected rows over 116 domains; 6 rows EXCLUDED (3 preregistered whole-population domains); 226 rows remain over 113 domains
+#   restaurant_kitchen   DCS-C-082
+#   school_campus        DCS-C-075 / DCS-R-108
+#   subway_station       DCS-C-087
+# exclusion_sha16 = f8eb1e9f4200c865
+2369ca3092a0c51f
+79dfbf7b5346a5ff
+b0bbcbc73538aab1
+ca2a7fdd9b933c1a
+dace087f56069bd6
+e7f330ec205ec87d

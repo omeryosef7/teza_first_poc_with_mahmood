@@ -3875,3 +3875,56 @@ own site transfers nothing. **The forbidden sentence stays forbidden.**
 
 ⛔ **NOT causal.** `Q2` is a correlation across domains. Plan §32's Link 5 needs an intervention that
 moves installation and moves ASR with it, and none has been run.
+
+---
+
+### 2026-09-10 02:05 — ENTRY 038 — the position control reaches the data, and the `basket` replication wave opens
+
+**Label: OPERATIONS + INSTRUMENT.**
+
+**Position extraction complete.** Four GPU jobs, **19 minutes each**, all COMPLETED on the pinned
+node list: `ts116m_pos{following,last}_{button,basket}_bomb`, layers 6–14,
+`--only-query-kind semantic_one_word --only-n-examples 4`, no knockout. The two control positions
+are the ones plan §8 and `R-112` require:
+
+| position | rel_end | token | why it is the control |
+|---|---|---|---|
+| `codeword_last` | −10 | the queried **codeword** | the treatment site — everything in `S-002`…`S-007` is read here |
+| `following` | −9 | `' actually'` | the frozen neutral read site, **token-identical across all cells**, no concept token |
+| `last` | −1 | `'\n\n'` | maximally downstream, the final prompt token |
+
+`scripts/dcs_succ_b1_position_control.py` (selftest 5/5) **imports** the loader, the leave-one-out
+direction, the unit-normaliser, the sign test and the domain bootstrap from
+`dcs_succ_bombness_candidates.py`, so the control and the headline are computed by the same code.
+It is running.
+
+⚠ **A meaning shift that must be stated before the numbers, not after.** At `following` and `last`
+the token is **identical across cells A, C and E**, so `v_lex` there is *not* a token-substitution
+direction — it is whatever the prompt-level difference **propagates to** that token. The comparison
+is therefore "the same construction at a role-matched control site", exactly as `R-112` did it, and
+**not** a comparison of two measurements of the same thing. Plan §8's warning applies in both
+directions: a *smaller* value at the control does not by itself establish localisation, and an
+*equal* value would establish that `B1` is a global prompt-state signal and the word "codeword" does
+no work.
+
+**The `basket_bomb` replication wave is now authorised and launched.** `PR-066`'s
+`kill_condition.second_wave_gate` reads: *"`basket_bomb` is generated only after `button_bomb`'s Q1
+is read. If `button_bomb` trips the kill condition, `basket_bomb` is not generated."* Q1 has been
+read (`ENTRY 037`) and the kill condition — pooled cell-C dose-4 ASR < 0.05 — was **not** tripped
+(0.3274 raw, 0.1398 concept-present). The gate is open on its own terms.
+
+Three arms submitted, jobs **872833–872835**: `basket_bomb` cell C dose 4 (1130 rows), cell C
+dose 0 (226, the false-positive floor for this codeword), cell B dose 4 (1130, the direct-harmful
+baseline). Exclusion files derived, and their `exclusion_sha16` values are **byte-identical to the
+`button_bomb` ones** — which is `A-101`/`D-001`'s `prompt_id` collision showing up again, and the
+reason every join in this phase is compound.
+
+⛔ `basket` and `button` are a **declared transfer pair and are never pooled** (`PR-059`'s
+`_two_codewords_are_a_transfer_pair_not_a_pool`): button installs in 92/113 domains and basket in
+46/113. Whatever basket returns is a replication statement, not an addition to n.
+
+**`REVIEW-2` launched** — the second four-hourly five-part review, scoped to entries **025–037** and
+instructed not to re-report `REVIEW-1`'s findings. It is asked specifically to verify the amendment's
+13 "verbatim" blocks byte-for-byte, to re-derive the K-ladder percentages and the patch liveness
+argument independently, to read ~20 cell-C generations and bound what fraction of the 158
+concept-present survivors are genuine, and to attack `Q2`'s causal reading.
