@@ -3494,3 +3494,120 @@ alphabetically, so scaling it up would silently have read validation and test do
 `--only-domains-file` was added (refusing on a missing file or an empty list) and
 `runargs/dcs_succ/domains_train.txt` was generated from the frozen manifest: **67 TRAIN domains**,
 the three preregistered exclusions removed. Job **872644** runs `--n-families 67` under it.
+
+---
+
+### 2026-09-10 00:05 — ENTRY 033 — `S-007`: the aggressive upper bound at **67 TRAIN domains**. The donor's reading is 12.33 log-odds away, reachable in 67/67; the full-state transplant moves **0.05 %** of it.
+
+**Label: EXPLORATORY, TRAIN ONLY, 67 domains, 1005 rows, `DONE.json` present. Job 872644, 8 min 48 s,
+restricted to TRAIN by `--only-domains-file`.** This is the scaled confirmation of `S-006`'s smoke.
+
+| arm | paired Δ vs baseline | 95 % CI | domains toward donor | sign p (floor) |
+|---|---|---|---|---|
+| **`donor_ceiling`** | **+12.3312** | [11.337, 13.286] | **67/67** | 1.36e−20 **at its floor** |
+| `self_swap_noop_check` | **0.0000** | — | 0/67 | — |
+
+**The endpoint is reachable, universally.** Using the donor's *prompt* moves the readout 12.33
+log-odds in every one of 67 independent domains. Now the transplant:
+
+| window | Δ | 95 % CI | toward | sign p | **% of the gap** |
+|---|---|---|---|---|---|
+| `all` (**32 layers**) | +0.0066 | [−0.214, 0.218] | 32/67 | 0.81 | **0.054 %** |
+| `L0-4` (best) | +0.0433 | [−0.014, 0.102] | 41/67 | 0.086 | 0.351 % |
+| `L5-8` | +0.0210 | [−0.103, 0.148] | 31/67 | 0.63 | 0.170 % |
+| `L9` / `L9-12` / `L11` / `L12` | −0.05 … −0.01 | all span 0 | 24–29/67 | 0.03–0.33 | ≈ −0.4 % |
+| `write_carry_8-21` | −0.0336 | [−0.206, 0.134] | 28/67 | 0.22 | −0.273 % |
+| `L17-20` | −0.1209 | [−0.228, **−0.013**] | 22/67 | 0.0067 | −0.981 % |
+| `L21-24` | −0.1665 | [−0.258, **−0.076**] | 18/67 | 1.9e−04 | −1.351 % |
+| `L25-31` | −0.1939 | [−0.262, **−0.127**] | 15/67 | **6.5e−06** | −1.572 % |
+
+**Not one window shows significant transfer toward the donor.** The most favourable, `L0-4`, moves
+**0.35 %** of the gap at p = 0.086. Copying the donor's state at **all 32 layers** moves **0.054 %**
+at 32/67 domains — dead chance. The only significant effects run the *wrong way*: patching the late
+layers (L17–31) moves the recipient **away** from the donor by 1–1.6 %, consistently
+(15/67, p = 6.5e−06). Small, and recorded rather than explained.
+
+**Liveness is established per-row and was re-established at this scale** by `S-006`'s method: the
+logit-lens columns take the donor's *exact* value at every read layer inside the patched window.
+
+#### The synthesis this licenses, and it is the most useful thing the session has produced
+
+> **The installed reading is not carried by the codeword token's residual state.** The donor's
+> reading is 12.33 log-odds away and universally reachable *via the prompt*; the donor's entire
+> hidden state at the query codeword, at every layer, carries **none** of it.
+
+⛔ **And it converts `PHASE 9`'s null from an isolated negative into a *predicted* one.** `R-137`
+found that projecting `v_bomb_specific` out of the residual stream returned NEGATIVE / NOT A CAUSAL
+RESULT, with a norm-matched orthogonal control moving the readout 1.93× further. Plan §13 anticipated
+exactly this logic: *"If aggressive state transfer cannot move anything under a clean aligned
+design, that constrains how promising a 1-D direction objective can be."* **If the whole state at a
+site transfers nothing, no one-dimensional direction at that site can.** `R-137` is not a surprising
+failure of a good direction; it is what this site's upper bound requires.
+
+Four instruments now point the same way — `R-112` (not localised at the codeword), `R-093` (the
+knockout destroys the readout and leaves the representation), PHASE 11's pathway family, and now the
+full-state patch.
+
+⛔ Scope: one site (`query_only`, the query codeword), one bank, TRAIN only, and **it does not show
+that the reading is uncaused** — only that this token's state is not where it lives. The obvious
+next site is the demonstration block, which is **not** transplantable between A and C because their
+demonstrations are different text (`END_RELATIVE_SCOPES` refuses it by name).
+
+---
+
+### 2026-09-10 00:05 — ENTRY 034 — `C-211`: **`S-004`'s rebuttal of the review was itself the diagonal-vs-column error.** This supersedes entry 020's central sentence.
+
+Entry 020 said the independent verification's §8.4 prediction — that concept-specific landing would
+be *bomb-only* — "**is not bomb-only**", because knife's shift on knife's own residual axis is
++0.0425 (56/67) and +0.0954 (66/67). The full residual-axis 3 × 3 is now computed, and **read by
+column, which is what specificity requires**:
+
+**`button` L12** — rows are shifts, columns are residual reference axes:
+
+| shift \ residual axis | **bomb** | **knife** | **gun** |
+|---|---|---|---|
+| bomb | **0.1254** (64/67) | −0.0073 (27/67) | −0.0297 (23/67) |
+| knife | 0.0735 (62/67) | **0.0425** (56/67) | −0.1142 (7/67) |
+| gun | 0.0803 (62/67) | 0.0416 (59/67) | **−0.0978** (11/67) |
+
+**`basket` L11:**
+
+| shift \ residual axis | **bomb** | **knife** | **gun** |
+|---|---|---|---|
+| bomb | **0.1400** (66/67) | 0.0529 (57/67) | −0.0365 (24/67) |
+| knife | 0.0337 (47/67) | **0.0954** (66/67) | −0.1232 (5/67) |
+| gun | 0.0608 (59/67) | 0.0905 (65/67) | **−0.0919** (9/67) |
+
+* **the bomb column does show diagonal dominance** — 0.1254 against 0.0735/0.0803 (1.6×) on button,
+  0.1400 against 0.0337/0.0608 (2.3–4.2×) on basket. That is the one specificity result that
+  survives, and it is weaker than "90.8 %" ever suggested;
+* **the knife column does not discriminate at all** — knife's own shift 0.0425 against **gun's
+  0.0416** on button, and 0.0954 against **0.0905** on basket. Gun's shift traverses knife's
+  concept-specific axis as much as knife's own does;
+* **the gun column is negative for everything**, and *most* negative for **knife** (−0.1142, 7/67),
+  not for gun.
+
+⛔ **So entry 020's rebuttal is wrong in the sense that matters, and this supersedes it.** Knife's
+positive diagonal is not evidence of concept-specific landing, because the same axis is traversed
+equally by a different concept's shift. **I read the diagonal and not the column — the exact error
+`C-208b` had already named two entries earlier.** Making the same mistake twice, once after being
+told, is worth more than the number.
+
+**The corrected position**: concept-specific landing is a **bomb-only** property in the
+discriminative sense, at ~1.6–4× the off-diagonal, on one of two codewords cleanly. The independent
+verification's §8.4 prediction was substantially right.
+
+#### And the `H`/`I` decomposition generalises across concepts
+
+| shift (own axis) | `B1` | `H` main effect | `I` interaction | `I` share | `I` domains + |
+|---|---|---|---|---|---|
+| bomb, button L12 | 0.1056 | **−0.0285** (13/67) | **+0.1341** | **127 %** | **67/67** |
+| gun, button L12 | −0.0153 | **−0.0590** (6/67) | **+0.0437** | −285 % | **62/67** |
+| knife, button L12 | 0.0145 | +0.0069 (44/67) | +0.0076 | 53 % | 49/67 |
+| bomb, basket L11 | 0.1375 | −0.0029 (29/67) | **+0.1404** | 102 % | **67/67** |
+| gun, basket L11 | 0.0057 | −0.0439 (16/67) | **+0.0496** | 876 % | **63/67** |
+
+`B1 = H + I` is asserted as a per-domain identity by the analyzer (max residual > 1e−4 is a
+Refusal). **The interaction is the robust component for bomb (67/67, both codewords) and for gun
+(62–63/67), and the harm-context main effect is negative or null everywhere except knife.** The
+`C-208a` finding is not a bomb peculiarity; it is the shape of the manipulation.
