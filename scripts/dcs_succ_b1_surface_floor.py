@@ -206,7 +206,20 @@ def main() -> int:
     r_len_p, r_len_s = pearson(dlen, y), spearman(dlen, y)
     med = float(np.median(np.abs(dlen)))
     bal = [i for i, v in enumerate(dlen) if abs(v) <= med]
+    # Linear extrapolation to ZERO length difference. The balanced-half mean is a blunt instrument
+    # -- |delta| <= median still leaves a mostly-positive delta -- so the slope-based estimate of
+    # "what would B1 be if C's demonstration block were the same length as A's" is reported beside
+    # it. Both are estimates and both are labelled as such.
+    sd_y = float(np.std(y, ddof=1))
+    sd_d = float(np.std(dlen, ddof=1))
+    slope = (r_len_p * sd_y / sd_d) if sd_d > 0 else float("nan")
+    intercept_at_zero = float(np.mean(y)) - slope * float(np.mean(dlen))
+
     res["mean_confound_length"] = {
+        "slope_B1_per_char": slope,
+        "B1_extrapolated_to_zero_length_delta": intercept_at_zero,
+        "frac_of_B1_surviving_zero_length_extrapolation": (
+            intercept_at_zero / float(np.mean(y)) if np.mean(y) else float("nan")),
         "mean_char_len_C": float(np.mean(lens_c)), "mean_char_len_A": float(np.mean(lens_a)),
         "mean_delta_C_minus_A": float(np.mean(dlen)), "sd_delta": float(np.std(dlen, ddof=1)),
         "pearson_delta_vs_B1": r_len_p, "spearman_delta_vs_B1": r_len_s,

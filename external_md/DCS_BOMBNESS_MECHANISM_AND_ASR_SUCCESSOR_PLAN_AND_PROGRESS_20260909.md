@@ -2890,3 +2890,60 @@ documented the failure mode, in the right file, in a comment placed exactly wher
 see it. I read the file, quoted its `--exclude` warning in entry 004's audit table, and still
 submitted eleven jobs against the default node list. ⛔ **Standing rule for the rest of this
 session: every `sbatch` carries `--nodelist=n-802,n-803,n-804,n-805,t-806`.**
+
+---
+
+### 2026-09-09 — ENTRY 023 — `S-005`: the surface nuisance floor. Register explains nothing; length is real and costs 7–15 %
+
+**Label: EXPLORATORY, TRAIN ONLY, 67 domains.** Plan §5 requires a *measured* nuisance floor.
+`scripts/dcs_succ_b1_surface_floor.py` (selftest 7/7), which **imports** `register_features`,
+`register_features_lengthfree`, `hedge_counts` and the five-family `HEDGE_PATTERNS` from
+`scripts/dcs_ts_pr049_blockers.py` — so this floor and the corpus's own register numbers are the
+**same instrument**, and register is not redefined here.
+
+`B1` is not a classifier, so the floor is posed two ways and the difference between them is
+load-bearing.
+
+**(1) The VARIATION floor — register explains nothing, on both codewords.** Leave-one-**domain**-out
+cross-validated R² of a ridge predicting per-domain `B1` from text-only features of the cell-C and
+cell-A demonstration blocks:
+
+| feature set | n features | `button` L12 | `basket` L11 |
+|---|---|---|---|
+| register, C and A | 34 | **−0.483** | **−2.079** |
+| register with every length channel removed | 28 | **−0.346** | **−0.718** |
+| register delta (C − A) | 17 | **−0.424** | **−0.554** |
+
+All six are **negative** — the text-only model predicts per-domain `B1` *worse than predicting the
+mean*. ⛔ Stated so it cannot be over-read: this bounds the **variation**, not the mean. It says the
+domains where `B1` is large are not the domains with distinctive register. It does **not** by itself
+clear `B1`.
+
+**(2) The MEAN confound — length is real, and it costs 7–15 %.** The one surface asymmetry that can
+produce a positive *mean* rather than variance is length: cell C's harmful demonstrations come from
+a different pool than cell A's benign ones, so if C's block is longer, more context precedes the
+queried token and the state differs for a reason with nothing to do with the concept. It is:
+
+| | value |
+|---|---|
+| mean demo-block length, cell C | **322.2** chars |
+| mean demo-block length, cell A | **282.6** chars |
+| delta (C − A) | **+39.6 ± 29.1** |
+| corr(delta, `B1`) | r = **0.310** (button), 0.181 (basket); ρ = 0.264, 0.153 |
+| `B1` on the length-balanced half (\|delta\| ≤ median) | 0.0952 (button), 0.1276 (basket) |
+| **`B1` linearly extrapolated to zero length delta** | **0.0886** (button), **0.1266** (basket) |
+| **fraction of `B1` surviving** | **84.8 %**, **92.7 %** |
+
+So the length confound is **not nothing** — C's demonstrations *are* systematically longer, and
+domains with a bigger length gap *do* show a bigger `B1` (r = 0.31 on button, ~10 % of variance).
+But removing it linearly leaves **85–93 %** of the effect. Both the balanced-half mean and the
+slope-based extrapolation agree, and they are computed differently.
+
+*(The length figures are identical across the two codewords because the demonstration blocks differ
+only in a 6-character substring, `button` vs `basket`. The correlations differ because `B1` differs.)*
+
+**Where this leaves the candidate.** Of the accounts on the table for `B1`'s magnitude —
+register/hedging, demonstration length, incongruity, generic-danger-region, concept identity —
+**register is now excluded** and **length is bounded at ≈ 15 %**. Incongruity remains partly
+bounded (the residualisation of `S-002`/`S-004`) and partly open. That is progress on the plan §33
+question "if it fails, ask WHY", run in the direction of "if it works, ask what else it could be".

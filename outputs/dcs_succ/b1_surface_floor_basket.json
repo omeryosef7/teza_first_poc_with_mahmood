@@ -1,0 +1,41 @@
+{
+ "_label": "SURFACE NUISANCE FLOOR for B1. EXPLORATORY, TRAIN ONLY.",
+ "codeword": "basket",
+ "layer": 11,
+ "n_domains": 67,
+ "feature_source": "scripts/dcs_ts_pr049_blockers.py (IMPORTED, not reimplemented)",
+ "n_hedge_families": 5,
+ "b1_mean": 0.13658738024777953,
+ "b1_sd": 0.040552025692930184,
+ "variation_floor": {
+  "register_full_C_and_A": {
+   "loo_cv_r2": -2.0784851970239955,
+   "n_features": 34,
+   "_reading": "leave-one-DOMAIN-out cross-validated R^2 of a ridge on text-only features. High means B1's between-domain VARIATION is register."
+  },
+  "register_lengthfree_C_and_A": {
+   "loo_cv_r2": -0.7180557620082124,
+   "n_features": 28,
+   "_reading": "leave-one-DOMAIN-out cross-validated R^2 of a ridge on text-only features. High means B1's between-domain VARIATION is register."
+  },
+  "register_delta_C_minus_A": {
+   "loo_cv_r2": -0.5542508619043358,
+   "n_features": 17,
+   "_reading": "leave-one-DOMAIN-out cross-validated R^2 of a ridge on text-only features. High means B1's between-domain VARIATION is register."
+  }
+ },
+ "mean_confound_length": {
+  "slope_B1_per_char": 0.00025263020282784344,
+  "B1_extrapolated_to_zero_length_delta": 0.1265771912557294,
+  "frac_of_B1_surviving_zero_length_extrapolation": 0.9267121971745053,
+  "mean_char_len_C": 322.2014925373134,
+  "mean_char_len_A": 282.57761194029854,
+  "mean_delta_C_minus_A": 39.623880597014924,
+  "sd_delta": 29.050948399228172,
+  "pearson_delta_vs_B1": 0.18098102033205532,
+  "spearman_delta_vs_B1": 0.1526458616010855,
+  "b1_mean_on_length_balanced_half": 0.1275583734605686,
+  "n_length_balanced": 34,
+  "_reading": "if C's demonstration block is systematically longer than A's, more context precedes the queried token in C and the state differs for a reason that has nothing to do with the concept. The balanced-half mean is B1 restricted to the domains whose |length delta| is at or below the median."
+ }
+}
