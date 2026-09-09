@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse, hashlib, json, os, sys
 
 EXCLUDED_DOMAINS = ("restaurant_kitchen", "school_campus", "subway_station")
+SPLIT_MANIFEST = "data/boombness_prompts/dcs_ts116_domain_split.json"
 AUTHORITY = {"restaurant_kitchen": "DCS-C-082", "school_campus": "DCS-C-075 / DCS-R-108",
              "subway_station": "DCS-C-087"}
 
@@ -36,7 +37,20 @@ def main() -> int:
     ap.add_argument("--bank-block", required=True)
     ap.add_argument("--condition", required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--split", default="",
+                    help="if given, ALSO exclude every row whose domain the frozen manifest "
+                         "assigns to a different split. The manifest is read, never regenerated.")
     a = ap.parse_args()
+
+    keep_domains = None
+    if a.split:
+        man = json.load(open(os.path.join(os.path.dirname(os.path.dirname(
+            os.path.abspath(__file__))), SPLIT_MANIFEST), encoding="utf-8"))
+        if a.split not in set(man["assign"].values()):
+            print("REFUSING: split %r is not a value of the frozen manifest" % a.split,
+                  file=sys.stderr)
+            return 2
+        keep_domains = {d for d, s_ in man["assign"].items() if s_ == a.split}
 
     sel, exc, doms = 0, [], set()
     with open(a.bank, encoding="utf-8") as fh:
@@ -47,7 +61,8 @@ def main() -> int:
                 continue
             sel += 1
             doms.add(r["domain"])
-            if r["domain"] in EXCLUDED_DOMAINS:
+            if r["domain"] in EXCLUDED_DOMAINS or (
+                    keep_domains is not None and r["domain"] not in keep_domains):
                 exc.append(r["prompt_id"])
 
     if not exc:
@@ -66,12 +81,19 @@ def main() -> int:
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
     with open(a.out, "w", encoding="utf-8") as fh:
         fh.write("# Derived by scripts/dcs_ts_make_exclusions.py from %s\n" % a.bank)
-        fh.write("# selection: query_kind=%s bank_block=%s condition=%s\n"
-                 % (a.query_kind, a.bank_block, a.condition))
-        fh.write("# %d selected rows over %d domains; %d rows in the %d preregistered excluded "
-                 "domains; %d rows remain over %d domains\n"
-                 % (sel, len(doms), len(exc), len(EXCLUDED_DOMAINS), sel - len(exc),
-                    len(doms - set(EXCLUDED_DOMAINS))))
+        fh.write("# selection: query_kind=%s bank_block=%s condition=%s split=%s\n"
+                 % (a.query_kind, a.bank_block, a.condition, a.split or "ALL"))
+        if a.split:
+            fh.write("# split source: %s (frozen; read, never regenerated). Rows outside split "
+                     "%r are excluded IN ADDITION to the three whole-population exclusions.\n"
+                     % (SPLIT_MANIFEST, a.split))
+        fh.write("# %d selected rows over %d domains; %d rows EXCLUDED (%d preregistered "
+                 "whole-population domains%s); %d rows remain over %d domains\n"
+                 % (sel, len(doms), len(exc), len(EXCLUDED_DOMAINS),
+                    "" if not a.split else " PLUS every domain outside split %r" % a.split,
+                    sel - len(exc),
+                    len((doms if keep_domains is None else doms & keep_domains)
+                        - set(EXCLUDED_DOMAINS))))
         for d in EXCLUDED_DOMAINS:
             fh.write("#   %-20s %s\n" % (d, AUTHORITY[d]))
         fh.write("# exclusion_sha16 = %s\n" % sha)

@@ -2077,3 +2077,188 @@ knife or gun ASR on this bank; any difference below `N5`'s measured judge noise.
 Eight production argsfiles are written and **not yet submitted** (`tsb66_{A,B,C,E}_n{0,4}.txt`);
 they go in only after the smoke returns a non-empty `gens.jsonl` — `N6` exists because 60 previous
 runs on this bank family silently wrote zero bytes.
+
+---
+
+### 2026-09-09 — ENTRY 007 — `D-001`: a family key that was not unique, caught by its own count guard
+
+**Label: BUG (mine), found and fixed before any number was produced.**
+
+The first version of `scripts/dcs_succ_bombness_candidates.py` built its pairing key as
+
+```python
+parts = r["family_id"].split("|")          # domain|split|slotN|n4|none|consistent|near|plain|qk
+slot  = "|".join(parts[2:-1])              # <-- drops parts[1] as well as parts[0]
+rows[(cell, domain, slot)] = prompt_id
+```
+
+`parts[1]` is the **bank's own `split` field** — `dev` / `heldout`, 11,136 rows each — and it is a
+*different object* from the domain-level `dsplit` manifest. Dropping it made
+`hospital_supply|dev|slot0` and `hospital_supply|heldout|slot0` **the same key**, so every second
+row silently overwrote the first. The loader reported **2,260** family keys where the selection
+holds **4,520** rows. Nothing raised. Every downstream mean would have been over half the data,
+and the half that survived is *systematically* the `heldout` half — not a random subsample.
+
+**How it was caught, which matters more than the bug.** The count did not match arithmetic I had
+written down in advance (4 cells × 113 domains × 10 slots), so the discrepancy was visible in the
+first line of output. The fix is `parts[1:-1]`, but the *repair* is the guard now beside it:
+
+```python
+if key in rows: raise Refusal("family key %r binds two rows (%s and %s)...")
+...
+if len(rows) != n_selected: raise Refusal("%d rows selected but only %d family keys survived")
+```
+
+A dict keyed by a non-unique key keeps the last row and drops the rest, in silence. That is the
+same shape as mandate §24.1's `prompt_id` warning and §24.7's *missing is not zero*.
+
+**And the `prompt_id` warning is confirmed live, on this session's own artifacts.** The derived
+validation exclusion file for `ts116m_button_bomb` hashes to `exclusion_sha16 = 64f6bb1310332073`
+— **byte-identical to the id list `PHASE 11` derived for `ts116m_basket_bomb`**. The two banks
+carry the *same* `prompt_id` values for structurally corresponding rows. Any join on `prompt_id`
+alone across banks would bind the wrong rows and would look perfectly healthy. Every join in this
+phase uses the compound key `(bank_file_sha16, …)`.
+
+---
+
+### 2026-09-09 — ENTRY 008 — `PR-067` design: a Bombness candidate that does not need the concept to install
+
+**Label: EXPLORATORY, TRAIN ONLY.** Code: `scripts/dcs_succ_bombness_candidates.py`
+(selftest 14/14 PASS, mutation harness **4/4 RED**).
+
+**The problem this is built to get around.** `PR-053` / `R-111` built
+`v_bomb_specific = v_bomb − mean(v_knife, v_gun)` where each `v_concept = mean_domains(h_C − h_A)`
+— a contrast *between doublespeak cells of different concepts*. `R-116` then showed knife installs
+in **0/113** domains and gun in **1/113**, so that contrast is partly a contrast between *which
+demonstrations are present*. That narrowing stands and is not disputed.
+
+**Cells B and E were never used.** `PR-053`'s `CELL_BASELINE` is `"A"` and it touches only A and C.
+The 2 × 2 supplies a concept reference axis that **needs no installation at all**:
+
+> `v_lex(concept, L) = unit( mean_domains [ h_E(L) − h_A(L) ] )`
+
+Cell A is `benign_literal` (benign demonstrations, codeword `button`); cell E is
+`concept_in_benign_ctx` — **the same benign demonstrations with the codeword replaced by the
+concept word**. Both are read at `codeword_last`, which the extractor's own `results.jsonl`
+confirms resolves to `' button'` in A/C and `' bomb'` / `' knife'` / `' gun'` in B/E, in every row
+of every bank. So `v_lex` is the direction from the token `' button'` to the token `' bomb'` **at
+one fixed semantic role, in a benign context, with nothing installed and nothing to install** — and
+it exists for knife and gun on exactly the same footing, because building it does not require them
+to install.
+
+**The candidate is Matan's own phrasing made arithmetic** (§2.1: *"what does 'the model is moving
+toward the representation of a bomb' actually mean?"*):
+
+> `B1(d, L) = ⟨ h_C(d,L) − h_A(d,L) , v̂_lex(concept, L) ⟩ / ‖ mean_d(h_E − h_A) ‖`
+
+read in **gap units**: 1.0 means the Doublespeak manipulation moves the codeword's state as far
+along the button→bomb axis as *actually writing the word bomb* does. The shift `h_C − h_A` is
+within-domain and within-family at a token whose **identity is held constant** (`' button'` in both
+cells) whose entire 28-token query span is byte-identical (`S-001`). Mandate §2.7's warning — that
+reading the token `bomb` to ask whether the concept is bomb is a lexical identity test — does not
+apply, because here the token is the same on both sides and only the upstream context moves.
+
+**The specificity test is a 3 × 3**, and it is the part that the old construction could not do:
+project each concept bank's Doublespeak shift onto each concept's `v_lex`. Diagonal dominance is
+concept specificity **without** the installation confound. Cell A is byte-identical across the
+three concept banks (the banks differ only in the harmful demonstrations, `C-074`/`R-101`), so the
+three reference axes share an origin — and the analyzer **measures** that rather than assuming it,
+reporting `‖h_A^bomb − h_A^knife‖` per layer as `cellA_identity_across_concept_banks`.
+
+**Controls, all computed at every layer:**
+* every reference direction is **leave-one-domain-out** — a domain never contributes to the axis it
+  is scored against, or `B1` is partly an inner product of a vector with itself;
+* 12 independent **random unit** directions, reported with their **between-draw sd**, not one draw
+  (§26; and `T9a` in `aggressive_patching.py` records this project doing exactly that wrong before);
+* 12 **domain-shuffled reference** draws — the E−A pairing permuted across domains before
+  averaging, which preserves the axis's length and per-domain composition and destroys only the
+  domain correspondence, so it is not merely a test of "is 4096-d chance small";
+* the **harm-context axis measured at the concept token** (`h_B − h_E`) projected on the *same*
+  reference — if the Doublespeak shift aligns with button→bomb but the harm-demo shift measured at
+  `' bomb'` does not, the alignment is not "harm demonstrations move everything that way".
+
+Running on the **67 TRAIN domains**, 4,520 selected rows per bank, 0 domains dropped, all six
+`ts116m_full` caches (layers 6–14, position `codeword_last`) — **no GPU**, they already exist.
+The module **refuses** `--split test` outright.
+
+---
+
+### 2026-09-09 — ENTRY 009 — `PR-067b`: the concept-free K ladder reaches the GPU
+
+**Label: EXPLORATORY, TRAIN ONLY.** Runner: `src/boombness/kladder_run.py`, job **872512** (n-804).
+
+Successor plan §10 calls this the highest-priority missing experiment, and the handoff (§12.3
+item 5) records it as *"named in `R-081` §27.4 as the single highest-value follow-up and never
+funded"*. The audit established it needs **no code change to the scorer**, only `--query-kinds`.
+
+**Why the rung map is the whole point.** The old ladder's decisive rung was **K = 7**, and on
+`semantic_forced_choice` K = 7 is where the cut first reaches the literal option token `' bomb'` —
+the readout's own answer. On the concept-free template the rungs are different objects:
+
+| K | 1–5 | 6 | 7 | 8 | 9 | **10** | 11–14 |
+|---|---|---|---|---|---|---|---|
+| token | response header + `<\|eot_id\|>` | `?` | `' to'` | `' refer'` | `' actually'` | **`' button'`** | `' word'`, `' the'`, `' does'`, `' what'` |
+
+So the question becomes askable: **is the step at the codeword rung?**
+
+**27 arms**: baseline + K = 1…14 demo arms + a **three-draw** `nondemo_matched_d{1,2,3}` control
+band at the four rungs that decide it (K = 8, 9, 10, 11). The runner **refuses** any `--k-list`
+whose largest K leaves a non-demonstration pool smaller than the dose (`28 − m ≥ m`, i.e. K ≤ 14) —
+a rung whose dose-matched control cannot be built is not run silently.
+
+**Two design choices taken from this session's own measurements rather than from habit:**
+* **one model load, not 27.** A cold weight load on this cluster took **> 9 minutes** under NFS
+  contention with two concurrent jobs (measured on 872460/872466 this evening). 27 sbatch jobs
+  would be IO-dominated. The runner installs `ModelCache` — **imported from
+  `pr059_run_localisation`, not reimplemented** — and drives `score_behavior.main()` in-process
+  with `sys.argv` set, the same mechanism PHASE 9 and PHASE 11 use, so the arms are scored by the
+  house readout and not by a second copy of it. `model_loads != 1` is a non-zero exit.
+* **an arm that trips the option-mass gate does not take down the ladder.** `score_behavior` exits
+  **4** on the 0.05 gate. That rung is CANNOT ANSWER and the ladder continues. This is `PR-065`'s
+  stop-scope lesson applied by construction rather than inherited: a fail-fast that destroys
+  eleven other rungs is a scope error wearing conservatism's clothes.
+
+---
+
+### 2026-09-09 — ENTRY 010 — `A-102`: the literature update, and a real novelty threat
+
+**Label: LITERATURE.** Written to `reports/DCS_SUCC_LITERATURE_UPDATE_20260909.md` (341 lines) by
+a parallel read-only agent, after reading the three existing literature files first.
+
+**The threat, named plainly rather than softened: `arXiv 2607.24425`, "Context Is King: How
+In-Context Specification Shapes the Geometry of Concepts" (2026-07-27).** On Gemma (to 31B) and
+Qwen (to 27B) it shows an in-context specification installs a concept geometry that **dominates the
+pretrained prior** — representational similarity 0.6–0.9 to the imposed structure against near-zero
+to the prior — and validates causal use by **activation patching (entity-activation swap)**. All
+three prior literature files missed it because their queries were built around *jailbreak*,
+*decodable* and *refusal direction* and never reached the benign in-context-redefinition
+literature.
+
+**What it forecloses**: any claim that "an in-context specification installs a real, substantive,
+causally live representation" is novel. It also supplies a **competing explanation for our own
+model split** that is more concrete than the one the matrix currently favours: its finding that
+"cleaner dominance emerges only in larger models" is a *capability* story for
+Llama-3.1-8B-vs-Qwen3-14B, not an architecture story.
+
+**What survives**: the harmful/jailbreak setting, ASR, the attention-knockout pathway result, and —
+importantly — our concept-specificity **negative**, which is best framed as the contrast to their
+positive rather than competed with.
+
+**Close behind**: `2606.07555` (Stroop lexical override; joint codeword/definition/query patching,
+largely anticipating `R-112`); `2607.08883` (activation-guided GCG works, and blames single-site
+targeting); `2605.18830` (subspace patching of an ICL concept on Llama-3-8B, 78.8 % vs 0 %
+complement); and `2608.30585` + `2606.30449`, which jointly retire *"ours is the first dissociation
+in a safety setting."*
+
+**Three methods worth adopting, each with a place in this phase's pipeline:**
+1. `2608.04183`'s **four-donor patching design** with its ≈1.0 / ≈0.0 isolation criterion — a
+   two-sided, preregisterable causal-use bar. It slots directly into the C→A upper-bound patch
+   (§13) and it fixes the standing complaint that PHASE 9's `interpretation_warning` fires only
+   against the outcome we did not want.
+2. `2605.09070`'s **VSM + Union Coverage** — a re-aggregation of *existing* StrongREJECT scores,
+   free, that turns a single-configuration ASR into a distributional claim. It slots into `PR-066`.
+3. `2408.15510`'s **completeness-vs-selectivity** result — a citable reason a 4.7–19.0 % nullifying
+   dose under-doses, and an argument for preferring counterfactual patch-in.
+
+**Recorded, not acted on yet**: adopting (1) and (2) requires an amendment or a new
+preregistration; neither is folded into `PR-066` retroactively.
