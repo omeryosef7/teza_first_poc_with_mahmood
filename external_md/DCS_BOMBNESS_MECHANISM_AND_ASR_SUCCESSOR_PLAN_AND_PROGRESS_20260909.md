@@ -3319,3 +3319,61 @@ to gate on, and which my ad-hoc `json.load` over a glob did not.
 checks `DONE.json` **first**. The house analyzers do this; my throwaway inspection scripts have
 twice now not. `N5` is recomputed when `tsb66j_A_n0` completes, and the number that goes in this log
 will state its row count.
+
+---
+
+### 2026-09-09 23:05 — ENTRY 030 — `R-204` / `N5`: the judge flips **13.7 %** of labels on byte-identical text, and the whole `R-201` table sits under its own noise floor
+
+**Label: `PR-066` `N5`, SATISFIED — and by a stronger design than the preregistration specified.**
+`scripts/dcs_succ_n5_judge_reliability.py`, selftest 6/6, every run directory gated on `DONE.json`
+first (the rule `ENTRY 029` added after the partial-run near-miss).
+
+`PR-066` asked for a re-judge of a random 200-row subset with the cache disabled. `C-209` noticed
+the bank supplies something better for free: **at dose 0, cells A and C are byte-identical prompts**
+— with no demonstrations the demonstration block was the only thing that distinguished them. So the
+two arms are the same prompts **generated twice and judged twice, in four independent runs**.
+
+```
+n byte-identical judged pairs                 226   (0 dropped for text mismatch)
+n_identical_completions                       226   frac = 1.000
+label table (A, C)         TT 17 | TF 13 | FT 18 | FF 178
+LABEL DISAGREEMENT RATE                    0.1372   Wilson95 [0.0983, 0.1881]
+observed agreement                         0.8628   Cohen kappa  0.4435
+ASR arm A 0.1327  vs  arm C 0.1549   on the SAME prompts   ->  |diff| 0.0221
+mean |score difference|                    0.1012   frac scores exactly equal 0.8230
+```
+
+**The completions are byte-identical in 226/226**, so greedy decoding is deterministic here and
+**every bit of this disagreement is the judge**. The script checked that rather than assuming it —
+"greedy is deterministic" is a claim about kernels and batching, not about arithmetic — and the
+check turned a joint bound into a clean isolation.
+
+**κ = 0.4435 is moderate agreement at best**, on *identical text*. And the measurement independently
+lands beside the standing `R-074` figure of 12.6 %, now measured on **this** population rather than
+inherited.
+
+**⛔ The consequence for everything in `R-201`.** The judge's own reproducibility gives a floor:
+
+> **No ASR difference smaller than 0.0221 is a result. No arm-level ASR below ~0.022 is
+> distinguishable from zero by this instrument.**
+
+Against that floor, the entire entry-019 table collapses:
+
+| arm | published ASR | vs the 0.0221 noise floor |
+|---|---|---|
+| B dose 4 | 0.0088 | **below the floor** — 10 rows, 1 domain (`C-208d`) |
+| E dose 4 | 0.0053 | **below the floor** |
+| B dose 0 | 0.0000 | at zero |
+| E dose 0 | 0.0000 | at zero |
+| C dose 0 | 0.1549 | above the floor, and **it is the false-positive channel** (`C-209`) |
+
+⛔ `C-208d` withdrew cell B's 0.0088 on the grounds that its ten positives were one domain of
+board-game answers. `N5` withdraws it a second time on independent grounds: **it is smaller than the
+judge's own flip rate.** Both reasons stand; neither is needed by the other.
+
+**Two standing quantities for the rest of this phase, both now measured rather than assumed:**
+* **the false-positive floor** — cell C dose 0, `0.1549`, which drops to `0.0088` under the
+  concept-presence condition (`R-203`);
+* **the reproducibility floor** — `0.0221` on ASR differences, `0.1372` on labels, κ `0.4435`.
+
+Every ASR number this phase reports carries both.

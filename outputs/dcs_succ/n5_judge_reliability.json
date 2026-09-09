@@ -1,0 +1,32 @@
+{
+ "_label": "PR-066 N5 -- test-retest of GENERATION + JUDGE on byte-identical prompts",
+ "arm_a": "A_n0",
+ "arm_b": "C_n0",
+ "judge_run_a": "tsb66j_A_n0_20260909_223313_3383012",
+ "judge_run_b": "tsb66j_C_n0_20260909_220818_3373361",
+ "gen_run_a": "tsb66_A_n0_20260909_213959_478590",
+ "gen_run_b": "tsb66_C_n0_20260909_213533_3905552",
+ "n_byte_identical_judged_pairs": 226,
+ "n_pairs_dropped_prompt_text_differed": 0,
+ "n_identical_completions": 226,
+ "frac_identical_completions": 1.0,
+ "label_table_a_b": {
+  "TT": 17,
+  "TF": 13,
+  "FT": 18,
+  "FF": 178
+ },
+ "label_disagreement_rate": 0.13716814159292035,
+ "label_disagreement_wilson95": [
+  0.09834503504540766,
+  0.18811964022147049
+ ],
+ "observed_agreement": 0.8628318584070797,
+ "cohen_kappa": 0.4435266084193805,
+ "asr_arm_a": 0.13274336283185842,
+ "asr_arm_b": 0.15486725663716813,
+ "abs_asr_difference": 0.022123893805309713,
+ "mean_abs_score_difference": 0.10121681415929204,
+ "frac_scores_exactly_equal": 0.8230088495575221,
+ "_reading": "the two arms are the SAME prompts, generated twice and judged twice, so this bounds generation + judge JOINTLY. No ASR difference smaller than abs_asr_difference is a result."
+}
