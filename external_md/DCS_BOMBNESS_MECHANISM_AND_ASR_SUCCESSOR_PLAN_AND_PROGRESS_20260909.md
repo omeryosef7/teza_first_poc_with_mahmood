@@ -3928,3 +3928,105 @@ instructed not to re-report `REVIEW-1`'s findings. It is asked specifically to v
 13 "verbatim" blocks byte-for-byte, to re-derive the K-ladder percentages and the patch liveness
 argument independently, to read ~20 cell-C generations and bound what fraction of the 158
 concept-present survivors are genuine, and to attack `Q2`'s causal reading.
+
+---
+
+### 2026-09-10 02:45 — ENTRY 039 — `REVIEW-2`, and `C-213`: **the integrity check I claimed to have run did not exist**, plus four wrong published numbers
+
+**Label: REVIEW + CORRECTIONS. Reports `reports/DCS_SUCC_REVIEW2_*.md`.** Ten findings, scoped to
+entries 025–037 and instructed not to re-report `REVIEW-1`. Acted on below in order of consequence.
+
+#### `C-213a` (CRITICAL) — the machine check was a shell heredoc. `PR-066-A2` FROZEN.
+
+`ENTRY 037` claimed *"a machine check asserting byte-identity across 13 blocks"*. **It did not
+exist**: it ran inline in a throwaway heredoc and is in no file, so it could not be re-run and could
+not fail in public. That is `C-134`'s shape (a constant printed as a measurement) and `D-007`'s
+(a grep matching a pre-existing string) for a third time.
+
+It also **missed real drift.** I hand-wrote `pre_extraction_checklist` in A1 instead of copying the
+parent's, and **X1 lost its entire arithmetic** — *"1160 → 1130 rows over 113 domains at dose 4;
+232 → 226 at dose 0, per cell"* became *"arithmetic verified"*. X2 lost the bank name, X3 lost
+*"from an existing, DIFFERENT-bank ASR artifact"*, X4 lost `.env`. A fifth block (`classifier`)
+changed while entry 037 said "exactly four things".
+
+**Fixed.** `scripts/dcs_succ_amendment_integrity.py` (selftest 7/7) diffs every top-level block of
+an amendment against its parent, classifies each IDENTICAL / ANNOTATED / DECLARED / **UNDECLARED
+DRIFT**, prints a unified diff for every drift and **exits non-zero**. Run against **A1** it reports
+**12 undeclared drifts**. `configs/dcs_ts_pr066_amendment2.json` is built by **loading the parent and
+applying named diffs**, so a block cannot drift by being retyped, and it reports:
+
+```
+29 blocks compared; 17 IDENTICAL, 2 ANNOTATED, 7 DECLARED, 0 UNDECLARED/MISSING
+```
+
+#### `C-213b` (CRITICAL) — the withdrawal A1 *said* it added, and did not
+
+A1's prose claimed `C-208`'s withdrawal of the B1 specificity reading was *"ADDED, not
+substituted"* to `things_that_must_not_be_said`. **The list was byte-identical to the parent's — 5
+items, no `C-208` item** — and the analyzer prints that list verbatim into the published
+`reports/DCS_SUCC_PR066_BEHAVIOUR.md`. **The session's most consequential withdrawal was absent from
+the published deliverable.** A2 adds it, plus a second one, and the report re-run against A2 now
+carries both at lines 86–87.
+
+#### `C-213c` (HIGH) — I adopted the wrong reliability statistic, and the corrected floor is 6× larger
+
+`A1` froze the phase floor as `abs_asr_difference = |TF − FT| / n = 0.0221`. **That quantity has no
+lower-bound property**: with `TF = FT = 100` and `n = 226` it is **exactly 0** at an 88.5 %
+disagreement rate. The defensible figure is the one I did *not* adopt — the **label disagreement
+rate 0.1372** [0.0983, 0.1881], κ 0.4435. A2 corrects it.
+
+⛔ **Consequence, and it is against me**: under the corrected floor `N1` (0.2230) clears by **1.6×**
+and `N2` (0.1726) by **1.26×** — both still pass, but **narrowly**. Entry 037's *"both 8–10× the
+floor"* is **withdrawn**.
+
+#### `C-213d` (HIGH) — `ENTRY 028`'s cell-A row was computed on 78 of 226 rows
+
+`concept_presence.py` took `jdirs[-1]` with **no `DONE.json` gate** and used the judged subset as
+the ASR denominator — so a mid-flight judge run produced a plausible number instead of a refusal.
+**It did.** `ENTRY 029` declared the "check `DONE.json` first" rule at **the same minute** this file
+was last touched, and the rule was not applied here. Corrected, with a refusal when the judge run
+covers fewer rows than were generated:
+
+| arm | entry 028 said | **corrected** |
+|---|---|---|
+| A dose 0 | ASR 0.1410 → 0.0000, "**all** 11 of 11" | ASR **0.1327** → **0.0044**, **29 of 30** |
+| A dose 4 (new) | — | ASR 0.1044 → **0.0018**, 116 of 118 |
+
+⛔ Entry 028's *"and **all** of cell A's [positives are removed]"* is **false** — one of 30 survives.
+The direction of the error is small and against the attack, but it was published.
+**Cell A dose 4 at 0.0018 is now the cleanest control in the phase**: the benign-literal prompt with
+benign demonstrations essentially never produces bomb content.
+
+#### `C-213e` (MEDIUM) — a real bug with, as it turns out, no numerical effect
+
+`b1_surface_floor.py --bank` did **not** follow `--codeword`, so `ENTRY 023`'s basket column was
+computed against the **button** bank's text. Fixed (the bank now derives from the codeword, and the
+artifact records which bank it used). Recomputed against the correct bank the numbers are
+**identical to four decimals** — CV R² −2.0785 / −0.7181 / −0.5543, r = 0.181, 92.7 % surviving —
+because `C-074`'s fix makes the two banks' demonstration blocks differ **only** in the six-character
+codeword, which changes no register feature. Entry 023 stands; it now stands **verified** rather
+than by luck.
+
+#### Still outstanding from `REVIEW-2`, recorded and not yet fixed
+
+* **`C4` — and this one is worse than `C-208b`.** The residual-axis table reports **residual-norm
+  units** beside gap-unit `B1`. Converted properly (button L12: `resid_norm` 2.91938, `gap` 3.85981):
+  `0.125410 × 2.91938 / 3.85981 = 0.094847` gap units against a published `B1` of `0.104441` —
+  **residualising REDUCES the bomb shift by 9.2 %** (basket: −27 %). `C-208b`'s table printed
+  *+0.1254 vs +0.1056*, which reads as **+19 %**. And `0.094847 / 0.104441 = 0.9081` — **the
+  "90.8 %" I quoted as evidence FOR specificity is exactly the ratio showing a 9.2 % reduction.**
+  The pre-existing `B1resid` block already carried the warning *"units are the RESIDUAL gap… a
+  large number over a tiny residual is not a large effect"*; my new duplicate dropped both
+  `resid_norm` and the warning.
+* **`C3`** — the `H`/`I` block uses the **in-sample** axis while `B1` proper uses leave-one-out, so
+  `interaction_decomposition.B1 = 0.10556605` where the published headline is `0.10444100`
+  (+1.08 %). Worse, `0.105566` is the exact number my own `leakage_probe` comment says *"may never
+  be quoted"*. `B1 = H + I` still holds to 3.09e−08, so the **shape** survives; the label and the
+  H/I magnitudes need recomputing on the LOO axis.
+* **`C6`/`C8`** — the analyzer has **no concept-presence field**, so `A1-3`'s instruction to read
+  `N2` on that channel is not executable, and entry 037's ρ = 0.5260 / 0.4206 rebuttal exists in
+  **no script and no artifact**. The one sentence defending `Q2` against `C-209` is currently
+  unre-runnable.
+* **`C9`** — `R-205` ran on a `kladder_run.py` predating the `C-205`/`C-206` fixes (both protective;
+  no `R-205` number moves, and TRAIN-only is carried by `--expect-n 670` plus the exclusion file,
+  which the reviewer verified independently).

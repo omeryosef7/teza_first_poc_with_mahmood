@@ -131,8 +131,10 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--artifact", default=os.path.join(
         REPO, "outputs/dcs_succ/bombness_candidates_train.json"))
-    ap.add_argument("--bank", default=os.path.join(
-        REPO, "data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl"))
+    # REVIEW-2 C10: --bank did NOT follow --codeword, so `--codeword basket` read the BUTTON
+    # bank's demonstration text while labelling the artifact `basket`. Entry 023's basket column
+    # was therefore computed against the wrong text. It now derives from --codeword unless given.
+    ap.add_argument("--bank", default="")
     ap.add_argument("--codeword", default="button")
     ap.add_argument("--layer", type=int, default=12)
     ap.add_argument("--out", default=os.path.join(REPO, "outputs/dcs_succ/b1_surface_floor.json"))
@@ -141,6 +143,12 @@ def main() -> int:
     if a.selftest:
         print("=== selftest ===")
         return selftest()
+
+    if not a.bank:
+        a.bank = os.path.join(REPO, "data/boombness_prompts/"
+                              "boombness_prompt_bank_ts116m_%s_bomb.jsonl" % a.codeword)
+    if not os.path.exists(a.bank):
+        raise SystemExit("REFUSING: bank not found: %s" % a.bank)
 
     import numpy as np
     from dcs_ts_pr049_blockers import (register_features, register_features_lengthfree,
@@ -189,6 +197,8 @@ def main() -> int:
 
     res = {"_label": "SURFACE NUISANCE FLOOR for B1. EXPLORATORY, TRAIN ONLY.",
            "codeword": a.codeword, "layer": a.layer, "n_domains": len(doms),
+           "bank": os.path.relpath(a.bank, REPO), "split": "train",
+           "artifact_sha16_of_source": art.get("_label", "")[:0] or None,
            "feature_source": "scripts/dcs_ts_pr049_blockers.py (IMPORTED, not reimplemented)",
            "n_hedge_families": len(HEDGE_PATTERNS),
            "b1_mean": float(np.mean(y)), "b1_sd": float(np.std(y, ddof=1)),

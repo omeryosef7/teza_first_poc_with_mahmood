@@ -1685,9 +1685,9 @@
     }
   },
   "preregistration": {
-    "file_sha16": "5278f55ac74f4d39",
-    "id": "DCS-PR-066-A1",
-    "path": "configs/dcs_ts_pr066_amendment1.json",
+    "file_sha16": "bfc3530651d2f315",
+    "id": "DCS-PR-066-A2",
+    "path": "configs/dcs_ts_pr066_amendment2.json",
     "status": "FROZEN"
   },
   "schema": "DCS_SUCC_PR066_BEHAVIOUR/1",
@@ -1707,6 +1707,8 @@
     "'representation destruction predicts ASR' -- no intervened behavioural arm is run here.",
     "an ASR difference smaller than N5's measured judge disagreement rate.",
     "a pooled button+basket ASR number.",
-    "any ASR number for knife or gun on this bank."
+    "any ASR number for knife or gun on this bank.",
+    "ADDED BY AMENDMENT 2 (the item A1 claimed to add and did not): any specificity claim for the B1 candidate. DCS-C-208b WITHDREW '90.8% bomb-specific' as a specificity statement -- specificity requires the residual bomb axis to be traversed MORE by the bomb shift than by the others, and the measured off-diagonals are 59% and 64% of the diagonal on button. REVIEW-2 C4 further shows that in COMPARABLE UNITS residualising REDUCES the bomb shift by 9.2% (button) and 27% (basket).",
+    "ADDED BY AMENDMENT 2: 'the codeword carries the installed reading'. DCS-S-007 transplanted the donor's FULL hidden state at that token, at all 32 layers, over 67 domains, and moved 0.054% of a 12.33 log-odds gap."
   ]
 }
