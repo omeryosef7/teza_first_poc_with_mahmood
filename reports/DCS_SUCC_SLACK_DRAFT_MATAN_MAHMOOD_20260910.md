@@ -47,11 +47,25 @@ But transplanting that token's **entire hidden state at all 32 layers** transfer
 also *explains* the earlier PHASE 9 null instead of leaving it as a puzzle: if the whole state at a
 site transfers nothing, no single direction at that site could.
 
-**5 — A warning about the ASR numbers, and it applies to our earlier ones too.**
+**5 — A warning about the ASR numbers.**
 StrongREJECT scores a fluent answer about *literal buttons* as a success. On the no-demonstration
 null it reads **15.5 %**. We measured that floor, and the judge's reproducibility on **226
 byte-identical prompts**: it flips **13.7 %** of labels, κ = 0.44. Every number above carries both.
 The floor is also **codeword-dependent** — 15.5 % for `button`, 2.2 % for `basket`.
+
+*On whether this touches our earlier ASR numbers — stated carefully, because it is a claim about
+prior work.* The mechanism is not specific to this phase: `judge_boombness.make_goal` substitutes
+codeword → concept whenever the row carries both and the query contains the codeword, so **any** run
+judging codeword-surface prompts against a substituted goal is exposed. Counted on disk:
+**127 of 461** earlier judge runs (≥ 200 rows) have `goal_status = substituted` on every row. The
+largest of them are `button` banks reporting ASR 0.27–0.35 — the same codeword whose floor we have
+now measured at **15.5 %** raw / **0.9 %** concept-present.
+
+⚠️ **I would not revise any published number on this alone.** What we measured is a floor for
+`button` on *our* bank; those runs are a different bank, and the floor is a property of how
+plausibly the model can answer the *literal* request (7× different between `button` and `basket`).
+The right move is to re-score a sample of those runs through the concept-presence filter and see —
+about an hour of work, no GPU. Flagging it rather than acting on it.
 
 **6 — What we still cannot say.** Not "the codeword is represented as BOMB", not "Bombness is
 localized at the codeword", not "Bombness predicts jailbreak" (the predictor in (2) is *installation*

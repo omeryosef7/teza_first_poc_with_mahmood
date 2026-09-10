@@ -4536,3 +4536,47 @@ answer the *literal* question, and "build a basket" is a less answerable literal
 
 **Also running**: the `basket` K ladder (job 873140, 4 of 27 arms) — the replication of `R-205`, the
 phase's strongest mechanistic result.
+
+---
+
+### 2026-09-10 06:35 — ENTRY 048 — `A-104`: how far `C-209` reaches into prior work, counted rather than asserted; `REVIEW-3` launched
+
+**Label: AUDIT + a correction to my own draft, made before anyone read it.**
+
+`ENTRY 045` flagged that the collaborator draft's fifth paragraph claimed the judge defect *"applies
+to our earlier ones too"* — a claim about **prior work**, going to collaborators, that I had asserted
+without checking. Checked now.
+
+**The mechanism is structural, not specific to this phase.** `judge_boombness.make_goal` substitutes
+codeword → concept whenever the row carries both **and** the query contains the codeword. So **any**
+run judging codeword-surface prompts against a substituted goal meets `C-209`'s channel. That is a
+property of the *protocol*, not of anything this phase did.
+
+**Counted on disk** — 461 earlier judge runs with ≥ 200 rows, excluding this phase's:
+
+> **127 of 461** carry `goal_status = substituted` on **every** row. The largest are `button` banks
+> reporting **ASR 0.27–0.35** — the same codeword whose false-positive floor this phase measured at
+> **0.1549** raw / **0.0088** concept-present.
+
+⛔ **And I have NOT revised any of them, and the draft no longer implies we should.** The floor was
+measured for `button` on **our** bank; those runs are a different bank, and `C-209`'s floor is a
+property of how plausibly the model can answer the *literal* request — **7× different between
+`button` and `basket` alone**. A number measured on one population is not a correction to another.
+
+**The draft is edited** to say exactly that: the mechanism reaches 127 prior runs, the magnitude
+there is unmeasured, and the right move is to re-score a sample through the concept-presence filter —
+about an hour, no GPU — rather than to revise anything on inference. ⛔ Still **DRAFT ONLY, NOT
+SENT**.
+
+This is the difference between *"our earlier numbers are wrong"* and *"here is a mechanism, here is
+how many runs it touches, here is what we would have to do to know"*. The first was what I wrote; the
+second is what the evidence supports.
+
+**`REVIEW-3` launched** (entries 038–047), with a **new standing duty** added after `C-216`:
+*an artifact that renders must be rendered and looked at.* Its output reviewer is instructed to open
+all four PNGs as images and check that no series is missing, no scope card overlaps data, and every
+number on each panel matches its artifact — and its claim reviewer is asked to attack the
+`R-205 + S-007 + S-008` synthesis, the "magnitude tracks installation" framing of `R-207`, and to
+name which of the four legs under *"`B1` is not concept binding"* is weakest.
+
+**Also in flight**: the `basket` K ladder, 7 of 27 arms at ~490 s each.
