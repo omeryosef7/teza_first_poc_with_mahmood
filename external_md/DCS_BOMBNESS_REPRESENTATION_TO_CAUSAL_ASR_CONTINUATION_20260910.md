@@ -2589,3 +2589,69 @@ Three outcomes and what each licenses:
    informative, which is a finding about the method and would need saying out loud.
 
 ⛔ Queued behind the running extraction; not launched yet.
+
+---
+
+### 2026-09-10 — CONT-ENTRY 009 — **the discovery corpus exists.** Both templates extracted, TEST physically absent; the positive control is running; the map is being computed
+
+**Loop check.** Job `875529` **COMPLETED**, exit `0:0`, wall **1:26:42**. Job `875772` (the E→A
+positive control) running on `n-307`. `REVIEW-1` still running.
+
+#### 1. What now exists on disk
+
+| run | rows | sites × layers | `DONE.json` | cache | failures |
+|---|---|---|---|---|---|
+| `cont1_behavioral_button_bomb_20260910_152806_272296` | **3,720** | **20 × 19** | ✅ | 12 GB | `{}` |
+| `cont1_semantic_one_word_button_bomb_20260910_163857_282805` | **3,720** | **20 × 19** | ✅ | 12 GB | `{}` |
+
+**3,720 rows = 93 domains × 10 family slots × 4 cells**, over `train + validation` only. The 23
+test domains are **not in these artifacts at all** — the `--only-split` guarantee of
+`CONT-ENTRY 006 §1`, now a property of the files rather than a promise about the code.
+
+This is the first representation corpus in the project that can answer mandate §8–§11 at all: the
+successor sprint's 18 runs were **one site × nine layers**; these are **20 sites × 19 layers**, on
+**two templates**, with per-row decoded-token provenance at every site.
+
+⚠️ Operational note worth carrying: the **first** model load took **~62 minutes** (cold NFS, 700 s
+on the first shard alone); the **second**, in the same job, took a few minutes on a warm page cache.
+Sequencing two extractions inside one allocation is therefore worth roughly an hour, and the
+`dcs_ts_extract_multi.py` driver's whole rationale — one allocation, several units of work —
+applies to query kinds as much as to banks.
+
+#### 2. The positive control is running on the identical population
+
+`875772` reproduces `PR-068`'s instrument **byte-for-byte with one changed argument**:
+`--pairs benign_ctx` instead of `ds_to_benign`. Everything else — bank, `--bank-blocks cds_n4_sow`,
+`--query-kind semantic_one_word`, `--scopes query_only`, `--min-option-mass 0.05`,
+`--dose-unit gap`, `--no-add`, `--readout-layers 16,20,24`, `--singletons 9,11,12`,
+`--n-control-draws 12`, seed `20260909` — is copied from `PR-068`'s own `config.json`.
+
+Population verified before launch rather than assumed: `runargs/dcs_succ/domains_train.txt` is two
+comment lines plus **exactly the 67 train domains** (70 manifest train − the 3 preregistered
+whole-population exclusions), and the job's own first line confirms
+`[patch] restricted to 67 domains from domains_train.txt`. **Same instrument, same population,
+one changed argument** — which is what makes it a control rather than another experiment.
+
+#### 3. The map is being computed, and what will and will not be reportable
+
+`scripts/dcs_cont_layerpos_map.py` is running on the behavioural corpus against the concept-free
+installation target, `--split train`, `--n-perm 200`.
+
+Recorded **before the numbers exist**, so it cannot be adjusted afterwards:
+
+* the map has **1,520 cells**, and `CONT-ENTRY 007` measured that the largest of that many
+  pure-noise cells lands near **|ρ| ≈ 0.64**. **No cell will be reported as a finding on the
+  strength of its own ρ.** The family-wise permutation threshold is computed first and printed
+  first.
+* `C_minus_A_CONFOUNDED` will be present in the output and **may not be quoted** — it is the
+  register-confounded comparator, and the artifact carries a field saying so.
+* Beating the FWER threshold is **necessary and not sufficient**: `N_surface` (LOO r = 0.526),
+  `N_B1`, `N_neighbour` and `N_logitlens` are declared in the registry and **are not yet computed
+  inside this analyzer**. Any cell that survives the null is therefore, at this stage, a
+  **candidate to test against the floors** — not a result.
+
+#### 4. Standing
+
+⛔ Not done: the four floors; basket replication; `§7` template transfer (a genuinely held-out
+readout template does not exist yet); and the intervened-ASR arm. ✅ Done this iteration: the
+discovery corpus, and the positive control launched on the identical population.
