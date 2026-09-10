@@ -4047,3 +4047,62 @@ required for the behaviour", never "the pathway is the behaviour".
 false-positive floor on `button` and a **13.7 %** judge label-flip rate. The concept-presence filter
 must be applied, and `REVIEW-1` established the corrected outcome is **itself** codeword-dependent
 (45.7 % of corrected positives still benign). Both must travel with any number this produces.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 027 — **`C-CONT-015`: fourteen entries carry a wrong date.** Plus the §24 run's population verified
+
+#### 1. The defect
+
+**`CONT-ENTRY 013` through `026` are headed `2026-09-13`. All fourteen were written on
+`2026-09-10`.** Their commit timestamps are the authority:
+
+```
+4e397de8  2026-09-10 18:47  DCS-CONT-014
+...
+5f117a9d  2026-09-10 23:36  DCS-CONT-026
+```
+
+⇒ every entry from `013` on is dated **three days in the future**, in a log whose entire purpose is
+that another session can reconstruct what happened and in what order. The first twelve entries
+(`000`–`012`, dated `2026-09-10`) are correct; today is `2026-09-11`, and this entry is the first
+one whose header is right by accident rather than by check.
+
+**Cause:** I carried a date forward from one entry to the next without re-reading the clock, and the
+session's own date-change notice went to `2026-09-11` while my headers had already drifted to
+`2026-09-13`.
+
+**Correction, not rewrite.** The true span of `CONT-ENTRY 013`–`026` is
+**2026-09-10, 18:47 → 23:36 local**, and the ordering within the log is correct — only the labels
+are wrong. Following the `CONT-ENTRY 017` precedent, the headers are left as written and this entry
+is the correction of record, because the branch is pushed and rewriting fourteen headers would make
+the log disagree with fourteen pushed commits.
+
+⚠️ **What this does and does not affect.** No number, population, split or artifact path depends on
+an entry header. But two things in this project *are* date-sensitive and were checked as a result:
+
+* the concept-presence lexicon's freeze attestation (`2026-09-09T22:40`, verified against git in
+  Phase 1) — **unaffected**, it is attested by commit not by an entry header;
+* `PR-066`'s frozen-before-first-outcome claim (config `21:04:44`, first scored arm `21:21:17`) —
+  **unaffected**, same reason.
+
+**Rule adopted:** the date in an entry header is read from the environment at write time, never
+carried forward from the entry above.
+
+#### 2. §24 run — population verified at bind time
+
+`876531`, arm 1 of 3 running:
+
+```
+[score] EXCLUDED 490 declared prompt_ids (sha16=214ff882b1a2a3e2): 1160 -> 670 rows
+```
+
+The exclusion file's hash matches the one recorded when it was built, and the row count is exactly
+the declared **670** = 67 TRAIN domains × 10 slots. `--expect-n 670` would have refused otherwise.
+Test domains are absent by file, on top of being absent from the corpora by `--only-split`.
+
+#### 3. Standing
+
+Unchanged from `CONT-ENTRY 026`: no candidate (`K1` withdrawn), the surviving results are the
+transplant/pathway ones, and the intervened-ASR arms are the open experiment. Nothing new is claimed
+in this entry.
