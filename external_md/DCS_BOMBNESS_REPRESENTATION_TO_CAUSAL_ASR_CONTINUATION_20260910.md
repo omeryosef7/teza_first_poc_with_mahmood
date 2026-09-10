@@ -3437,3 +3437,94 @@ same families the patcher will.
 ⚠️ **Cost that must travel with the result:** donor and recipient are different **domains**, so topic
 is not matched. §21 accepts this for an instrument upper bound, but it is a real confound and the
 result must be labelled as an upper bound, not as a matched transplant.
+
+---
+
+### 2026-09-13 — CONT-ENTRY 019 — **`N_neighbour` and `N_random`: `K1` beats a random pool decisively, and is *not* localised to the codeword token.** Plus an independent re-derivation to four decimals
+
+`outputs/dcs_cont/layerpos_neighbour_train_button_bomb.json`, from the slim corpus
+`cont3nb_behavioral_button_bomb` (3,720 rows, **7 sites × 5 layers, 1.2 GB** — the targeted
+re-design of `CONT-ENTRY 017`). 400 permutations, 175 cells, **FWER p95 = 0.5837**.
+
+#### 1. `K1` reproduces on a fresh forward pass
+
+| | original corpus | **fresh run, different site set** |
+|---|---|---|
+| `cw_demo_mean\|L13` | 0.6971 | **0.6972** |
+| `cw_demo_mean\|L14` | 0.6983 | **0.6984** |
+
+Four decimal places, a different job, a different capture configuration. The candidate is not an
+artefact of one extraction.
+
+Note also that against **175** cells rather than 1900 the noise ceiling drops to **0.584**, so `K1`
+now clears it by a clear margin instead of `CONT-ENTRY 013`'s hair's breadth.
+
+#### 2. The controls, interaction contrast, best over layers
+
+| site | best ρ | clears 0.584? | |
+|---|---|---|---|
+| **`cw_demo_mean`** | **0.6984** | ✅ | **`K1`** |
+| `cw_demo_prev_mean` | **0.6169** | ✅ | ⚠️ the **−1** neighbour |
+| `cw_demo_last` | 0.6155 | ✅ | |
+| `cw_demo_next_mean` | 0.4994 | ⛔ | the **+1** neighbour |
+| `cw_query` | 0.4421 | ⛔ | the query codeword |
+| `cw_demo_first` | 0.3796 | ⛔ | |
+| **`cw_demo_rand_mean`** | **0.3656** | ⛔ | **size-matched random pool** |
+
+**`N_random`: PASSED, decisively.** Four random positions drawn from inside the demonstration span
+reach **0.366** against the candidate's **0.698**, and clear the threshold at **no** layer. `K1` is
+not "any four positions in the demonstration block".
+
+⚠️ **`N_neighbour`: PARTIAL, and this narrows the claim.** The **+1** neighbour (0.499) and the
+query codeword (0.442) fail; but the **−1** neighbour reaches **0.617** and clears. So
+
+> **the signal is not sharply localised to the codeword *token*.** It is smeared over the codeword
+> and its immediate **left** context, and asymmetrically — the token *before* each demonstration
+> codeword carries most of what the codeword carries; the token *after* does not.
+
+The registry now says **demonstration codeword *region*, not token**. Recording this as a narrowing
+rather than a pass, because the difference is exactly the kind of thing that gets rounded off in a
+summary.
+
+#### 3. 🆕 A recency gradient across the demonstrations
+
+```
+first demo codeword   0.3796   (fails)
+last  demo codeword   0.6155   (clears)
+mean of all four      0.6984   (clears, and beats both)
+```
+
+Later demonstrations carry more installation-predictive structure than earlier ones, and **pooling
+all four beats any single occurrence**. That is a mechanistically meaningful shape — it is what an
+accumulating in-context binding should look like, and it is not what a fixed lexical property of the
+token would look like.
+
+#### 4. The positional dissociation replicates
+
+`cw_query` = **0.442**, below the ceiling, on an independent corpus with an independent null. The
+query codeword still does not carry the interaction structure the demonstration codewords do.
+
+#### 5. `K1` scorecard after six floors
+
+| floor | verdict |
+|---|---|
+| `N_surface` | ✅ 0.179, fails its own null |
+| `N_fwer` | ✅ 0.698 vs **0.584** (was marginal at 1900 cells; clear at 175) |
+| `N_logitlens` | ✅ partial 0.706, ρ_ll 0.048 |
+| `N_B1` | ✅ partial 0.694, ρ_B1 0.092 |
+| **`N_random`** | ✅ **0.366 vs 0.698** |
+| **`N_neighbour`** | ⚠️ **PARTIAL** — −1 neighbour also clears |
+| cross-codeword | ⛔ basket semantic corpus lost to `EDQUOT`, needs re-extraction |
+| cross-template | ⛔ no held-out template exists |
+| causal | ⛔ instrument **NOT VALIDATED**; `876332` is the test |
+
+`eligible_for_confirmation` remains **false**.
+
+#### 6. The refusal that saved a run
+
+`876304` refused mid-flight: *"donor family `farm_storage|…` has no `natural_doublespeak` row"*.
+Cause: `--only-domains-file` carried only the **recipient** domains, so the donors' rows were never
+loaded at all. The guard added in `CONT-ENTRY 018` — one of four written for a pair type that had
+never been run — caught a real design error **before any number existed**. Fixed by putting donor
+domains in the load set (31 domains = 24 recipient + 8 donor, 1 shared) and making the map total
+over the union: **310 families, stratum 89, 0 same-domain violations**. Relaunched as `876332`.

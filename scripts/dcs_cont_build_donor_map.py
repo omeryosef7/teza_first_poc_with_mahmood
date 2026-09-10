@@ -91,8 +91,15 @@ def main() -> int:
     # round-robin over domains, and will not necessarily pick the exact slot listed here; an
     # unmapped family is a hard refusal mid-run. So every cell-C family in a recipient domain gets
     # a donor, not just the single lowest-installation one.
+    # THE DOMAIN FILE MUST CARRY THE DONORS TOO. --only-domains-file filters the rows the patcher
+    # loads at all, so a donor whose domain is absent has no row to donate and the run refuses
+    # mid-flight (observed: job 876304, "donor family farm_storage|... has no natural_doublespeak
+    # row"). Recipients AND donors therefore both go in the file, and the map is total over the
+    # union so the patcher's own round-robin selection can never land on an unmapped family.
     recip_domains = {rd for _, _, rd in recips}
-    recips = [(f, p, d) for f, (p, d) in ordered if d in recip_domains]
+    donor_domains = {dd for _, _, dd in donors[:a.n_donor_pool]}
+    load_domains = recip_domains | donor_domains
+    recips = [(f, p, d) for f, (p, d) in ordered if d in load_domains]
     recips.sort(key=lambda t: (t[2], t[0]))
     mapping, rows = {}, []
     for i, (rf, rp, rd) in enumerate(recips):
@@ -121,6 +128,9 @@ def main() -> int:
                        "4 forbids post-hoc exclusion by outcome."),
                "n_in_stratum": sum(1 for r in rows if r["recipient_install"] < 0.10),
                "n_total": len(rows)},
+           "n_load_domains": len(load_domains),
+           "n_recipient_domains": len(recip_domains),
+           "n_donor_domains": len(donor_domains),
            "n_distinct_donors": len({r["donor_family"] for r in rows}),
            "n_distinct_donor_domains": len({r["donor_domain"] for r in rows})}
     op = os.path.join(REPO, a.out); os.makedirs(os.path.dirname(op), exist_ok=True)
@@ -129,7 +139,7 @@ def main() -> int:
     with open(od, "w", encoding="utf-8") as fh:
         fh.write("# recipient domains for the cinstall_hi_to_lo positive control (%s split)\n"
                  % a.split)
-        for dom in sorted({r["recipient_domain"] for r in rows}):
+        for dom in sorted(load_domains):
             fh.write(dom + "\n")
     print("[donormap] %d recipients | recipient installation %.4f..%.4f | donor %.4f..%.4f"
           % (len(rows), out["recipient_install_range"][0], out["recipient_install_range"][1],

@@ -172,7 +172,7 @@
   "candidates": [
     {
       "candidate_id": "K1_interaction_at_demo_codewords_L13_14",
-      "status": "TRAIN-SURVIVING CANDIDATE -- not a finalist, not promoted",
+      "status": "TRAIN-SURVIVING CANDIDATE -- six floors passed or partial, still not a finalist",
       "mathematical_definition": "score(d) = <x(d), vhat_-d> where x(d) = mean_slots[(h_C - h_B) + (h_E - h_A)] read at cw_demo_mean (the mean over the four DEMONSTRATION codeword occurrences), and vhat_-d is the unit leave-one-domain-out covariance direction between x and y_install",
       "motivation": "the only cell surviving all four measured floors; and it is at the demonstration occurrences, where the remapping is ESTABLISHED, not at the query occurrence where the successor sprint looked",
       "representation_source": "residual stream, behavioural prompt (cell C/B/E/A), dose 4",
@@ -185,15 +185,15 @@
         "N_fwer": "PASSED -- rho 0.697/0.698 vs family-wise p95 0.6916 (MARGINAL, a hair's breadth)",
         "N_logitlens": "PASSED -- rho_logitlens 0.048/0.079, partial rho 0.706/0.700 (essentially unchanged)",
         "N_B1": "PASSED DECISIVELY -- rho(B1, y_install) = +0.0920 on the same 67 TRAIN domains, so B1 barely predicts installation at all; rho(candidate, B1) = +0.1491, and the partial correlation of the candidate given B1 is +0.6940 against a raw +0.6971, i.e. B1 explains essentially none of it. The reverse partial, B1 given the candidate, is -0.0167.",
-        "N_neighbour": "NOT YET COMPUTED",
-        "N_random": "NOT YET COMPUTED",
+        "N_neighbour": "PARTIAL. The +1 neighbour (0.4994) and the query codeword (0.4421) do NOT clear the threshold; the -1 neighbour (0.6169) DOES, only 0.08 below the candidate. So the signal is not sharply localised to the codeword TOKEN -- it is smeared over the codeword and its immediate LEFT context, and asymmetrically so. The candidate's claim must be about the demonstration codeword REGION, not the token.",
+        "N_random": "PASSED DECISIVELY -- a size-matched seeded random pool of 4 positions inside the demonstration span reaches rho 0.3656 against the candidate's 0.6984, and does not clear the family-wise threshold (0.5837) at any layer.",
         "N_shuffled": "the FWER permutation is a shuffled-label control at the family level; a per-cell one is not yet run"
       },
-      "installation_relationship": "rho_loo = +0.6971 (L13) / +0.6983 (L14), 67 TRAIN domains; partial given B1 = +0.6940; partial given the logit lens = +0.7060",
+      "installation_relationship": "rho_loo = +0.6971 (L13) / +0.6983 (L14), 67 TRAIN domains; partial given B1 = +0.6940; partial given the logit lens = +0.7060; INDEPENDENTLY RE-DERIVED on a fresh forward pass (run cont3nb_behavioral_button_bomb): L13 0.6972 vs 0.6971 and L14 0.6984 vs 0.6983 -- four decimal places, different job, different site set",
       "asr_relationship": "NOT TESTED",
       "cross_codeword_transfer": "NOT TESTED -- basket not extracted",
       "cross_template_transfer": "NOT TESTED -- no held-out readout template exists",
-      "positional_specificity": "the QUERY codeword (cw_query) peaks at 0.515 and NEVER exceeds the noise ceiling at any layer; the demonstration codewords do. That contrast is the candidate's main claim to being about something other than the token.",
+      "positional_specificity": "the QUERY codeword (cw_query) peaks at 0.515 and NEVER exceeds the noise ceiling at any layer; the demonstration codewords do. That contrast is the candidate's main claim to being about something other than the token. A recency gradient runs across the demonstrations: first demo codeword 0.3796, last 0.6155, mean of all four 0.6984 -- later demonstrations carry more, and pooling beats any single occurrence.",
       "failure_mode": "marginal against the family-wise ceiling (0.698 vs 0.692); a single codeword; no causal test; and the transplant instrument that would test it is NOT VALIDATED (CONT-ENTRY 012)",
       "eligible_for_confirmation": false
     }
