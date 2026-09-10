@@ -92,6 +92,21 @@ def main() -> int:
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
+    # ---- REVIEW-2/CODE-03: ENFORCE BANK AGREEMENT -------------------------------------- #
+    # This script had no bank check at all. Executed by the reviewer: a BASKET bank against a
+    # BUTTON readout returned rho=+0.1791 with exit 0; button_gun gave 0.0884 and button_knife
+    # -0.0297. The never-pool-button-and-basket rule was unenforced in one of the two scripts that
+    # produce the section 44 gate numbers, and a silently wrong N_surface is a silently LOWER
+    # floor -- permissive in exactly the direction that admits a bad candidate.
+    import hashlib
+    _bank_path = os.path.join(REPO, a.bank)
+    with open(_bank_path, "rb") as _fh:
+        _bank_sha = hashlib.sha256(_fh.read()).hexdigest()[:16]
+    _ro_sha, _ro_src = lpm.readout_bank_sha(os.path.join(REPO, a.readout_run))
+    if _bank_sha != _ro_sha:
+        raise lpm.Refusal("BANK MISMATCH: --bank hashes to %s but the readout run is %s (from %s). "
+                          "button and basket are never pooled." % (_bank_sha, _ro_sha, _ro_src))
+    print("[surface] bank agreement: %s == %s (%s)" % (_bank_sha, _ro_sha, _ro_src))
     assign = lpm.load_split()
     inst, n_inst, kinds = lpm.load_installation(os.path.join(REPO, a.readout_run))
     keep = {d for d, s in assign.items() if s == a.split} - set(lpm.EXCLUDED_DOMAINS)

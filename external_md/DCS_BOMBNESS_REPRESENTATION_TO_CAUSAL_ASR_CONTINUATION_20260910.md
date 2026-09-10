@@ -3908,3 +3908,67 @@ mandatory control, and it goes first, before the clever ones.
   logit-lens control both refuse correctly. Being fixed now.
 * ⚠️ `N_random`'s position mismatch (§2) — the fix is to seed the draw on the **family** key, which
   is provably shared across the paired cells in 1858/1860 cases, not on `prompt_id`.
+
+---
+
+### 2026-09-13 — CONT-ENTRY 025 — **basket confirms it: what transfers across codewords is the topic signal, not the contrast.** Bank guards closed
+
+#### 1. The cross-codeword picture, re-derived by me on the basket corpus
+
+`cont1_behavioral_basket_bomb` (sha `79511d9e254571e6`), 67 TRAIN domains, basket's own ceiling
+**0.6929**. ⛔ Reported separately; never pooled.
+
+| site | **interaction** (`K1`'s construction) | **raw cell-C state, no contrast** |
+|---|---|---|
+| `cw_demo_mean` | 0.6275 ⛔ **fails** | **0.7173 ✅ CLEARS** |
+| `cw_query` | 0.4315 ⛔ fails | 0.6425 ⛔ fails |
+
+⇒ **The contrast-free state replicates across codewords where `K1` does not.** `CONT-ENTRY 021 §4`
+recorded "cross-codeword transfer is NOT established" for `K1` and that stands — but the reason is
+now known: the thing that *does* transfer is the **topic signal**, and `K1`'s contrast removes it.
+
+This is the second, independent confirmation of `C-CONT-013`, on a different bank, with a different
+readout and a different noise ceiling.
+
+#### 2. `REVIEW-2/CODE-03` closed — the never-pool rule is now enforced where it was not
+
+`dcs_cont_surface_floor.py` and `dcs_cont_nb1_control.py` had **no bank check at all**, while the map
+and the logit-lens control both refuse correctly. The reviewer demonstrated the consequence by
+execution: a **basket** bank against a **button** readout returned `rho = +0.1791, exit 0`;
+`button_gun` gave 0.0884; `button_knife` −0.0297.
+
+⚠️ **The direction matters**: a silently wrong `N_surface` is a silently **lower** floor — permissive
+in exactly the direction that admits a bad candidate. These are the two scripts that produce the §44
+gate numbers.
+
+Both now hash the bank and compare against the readout (and, for `N_B1`, against the `B1` run as
+well). Verified:
+
+```
+REFUSING: BANK MISMATCH: --bank hashes to 79511d9e254571e6 but the readout run is
+          dcd92d723f3e6d00 (from metadata.json:bank_file_sha16). button and basket are never pooled.
+```
+
+#### 3. Where the phase stands after the withdrawal
+
+| | |
+|---|---|
+| candidates | **none** — `K1` withdrawn (`C-CONT-013`) |
+| what predicts installation | the **raw state at any site**, i.e. domain topic — a null model the phase never ran |
+| the map's interpretation | ⛔ **void** as a representation search; it measured topic |
+| ✅ the transplant results | **untouched** — interventions against the readout, not map correlations |
+| ✅ instrument | transfers **+10.7 %**, replicated across two independent jobs |
+| ✅ the mechanism claim | codeword state transfers **only into a harm-context recipient**: **+1.62 log-odds**, p = 0.011, within-run, pre-declared stratum |
+
+**The phase's surviving result is causal, not correlational** — which is the opposite of what I
+expected two entries ago, and is the better outcome of the two.
+
+#### 4. What a re-run of the search must do differently
+
+1. ⛔ **`N_contrastfree` runs FIRST**, before any clever control. The null model is the first
+   question, not the last.
+2. The target needs a **within-domain** component. Aggregating `y_install` to the domain mean makes
+   topic the dominant axis; the family-level variance is mostly *within* domain and is exactly what
+   a representation search should be predicting.
+3. `N_random`'s draw must be seeded on the **family** key, not `prompt_id` — the pool is provably
+   shared across the paired cells in 1858/1860 cases, so the mismatch was gratuitous.

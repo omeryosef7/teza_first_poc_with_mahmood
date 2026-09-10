@@ -78,6 +78,17 @@ def main() -> int:
 
     # ---- the candidate, on the BEHAVIOURAL prompt at its own site/layer -----------------------
     mp, rows, bank_sha = lpm.load_corpus(os.path.join(REPO, a.beh_run))
+    # ---- REVIEW-2/CODE-03: ENFORCE BANK AGREEMENT ON BOTH JOINS ------------------------- #
+    # The corpus yielded bank_sha and it was never compared to anything. A basket readout
+    # returned rho(candidate,y)=+0.6168 with exit 0, and a basket B1 run gave rho(B1,y)=+0.1900 --
+    # silently changing the negative control this phase quotes as 0.092.
+    _ro_sha, _ro_src = lpm.readout_bank_sha(os.path.join(REPO, a.readout_run))
+    if _ro_sha != bank_sha:
+        raise lpm.Refusal("BANK MISMATCH: corpus %s vs readout %s (%s)" % (bank_sha, _ro_sha, _ro_src))
+    _b1_sha, _b1_src = lpm.readout_bank_sha(os.path.join(REPO, a.b1_run))
+    if _b1_sha != bank_sha:
+        raise lpm.Refusal("BANK MISMATCH: corpus %s vs B1 run %s (%s)" % (bank_sha, _b1_sha, _b1_src))
+    print("[nb1] bank agreement: corpus %s == readout %s == B1 run %s" % (bank_sha, _ro_sha, _b1_sha))
     si, li = mp["sites"].index(a.site), mp["layers"].index(a.layer)
     ball = {}
     for r in rows:
