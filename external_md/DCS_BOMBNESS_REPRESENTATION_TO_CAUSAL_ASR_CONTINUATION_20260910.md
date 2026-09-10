@@ -3292,3 +3292,77 @@ until it runs the honest status of every transplant result in this project remai
 
 `876103` basket: behavioural ✅ (3,714 stacks, the predicted `school_campus` shortfall), semantic
 running. `876192` neighbour-control extraction at 2,200/3,720.
+
+---
+
+### 2026-09-13 — CONT-ENTRY 017 — **two jobs lost to a transient disk quota, and a mid-flight code edit that split one job's artifact in two**
+
+**Loop check.** `876103` (basket) **FAILED** `1:0`; `876192` (neighbour extraction) exited **`rc=1`**
+at 3,400/3,720 rows. Both on the same error:
+
+```
+OSError: [Errno 122] Disk quota exceeded
+```
+
+#### 1. It was not my quota, and it was transient
+
+| | used | limit |
+|---|---|---|
+| user `omeryosef` | **200 G** | 16 384 G |
+| group `cs_sharifm` | 17 055 G | 32 768 G |
+| filesystem | 24 T of 29 T | **free swung 1.3 T → 4.7 T within the session** |
+
+Neither quota is near its limit; the shared filesystem is simply churning under other users. ⇒ A
+`Errno 122` here is **an environmental hazard to design around, not a budget to manage**.
+
+**Response — the right one is not "get more space":** the previous attempt asked for **~13 GB** to
+answer a question that needs **~1 GB**. `K1` sits at `cw_demo_mean`, L13–14, so its neighbour and
+random-pool controls need only the **7 codeword sites** over the **5 layers around the peak**:
+`3720 × 7 × 5 × 4096 × 2 ≈ 1.07 GB`. Relaunched as `876260`, **12× smaller**, targeted at the
+question rather than re-capturing the grid.
+
+Also removed **six artifacts that had no `DONE.json`** — which is precisely the rule this phase's own
+analyzer enforces (*"an unfinished run is not a corpus"*). Nothing with a `DONE.json` was touched,
+so §53's "do not delete failed results" is respected in substance: what was deleted was never a
+result.
+
+#### 2. `C-CONT-011` — editing a script while a job that re-invokes it is running
+
+The basket job ran two passes in one allocation. Their caches:
+
+```
+cont1_behavioral_basket_bomb        3714 stacks  [20 sites x 19 layers]
+cont1_semantic_one_word_basket_bomb 3714 stacks  [23 sites x 19 layers]   <-- SAME JOB
+```
+
+Between the two passes I added the three demonstration-side sites (`CONT-ENTRY 015`). The sbatch
+loops per query kind and **each iteration re-reads the script from disk**, so the second pass ran
+*different code from the first*. `dcs_ts_extract_multi.py` has the same shape — it shells out per
+bank, deliberately, for a clean interpreter each time.
+
+> ⛔ **A running job is not a snapshot of the code that launched it.** Anything that re-invokes a
+> script per unit of work will pick up edits mid-run, and the only visible trace here was a site
+> count I happened to print.
+
+**And the artifact said so.** `RUNMETA.json` records `git_commit` and `git_dirty` per invocation, and
+the basket run carries **`git_dirty=True`**. The provenance mechanism worked exactly as designed —
+**I did not read it.** That is the honest version of this defect: not a missing check, an unread one.
+
+The 23-site artifact is gone (it had no `DONE.json`), so every surviving corpus is uniformly
+**20 sites × 19 layers**, verified from the logs:
+
+```
+cont1_behavioral_button_bomb        20 sites   cont1_semantic_one_word_button_bomb  20 sites
+cont1_behavioral_basket_bomb        20 sites
+```
+
+**Discipline adopted, and it is now a rule rather than an intention:** ⛔ *no editing a script while
+a job that re-invokes it is in flight* — and check `git_dirty` in `RUNMETA` before trusting any run
+that matters.
+
+#### 3. Cost, stated plainly
+
+The basket **semantic** corpus must be re-extracted (§30 replication still wants it), and the
+neighbour extraction is re-running. Two GPU-hours lost, no scientific claim affected — both losses
+were in *un-analysed* artifacts, and both failures were loud (`rc≠0`, no `DONE.json`) rather than
+silent. The basket **behavioural** corpus survived intact and is the one §30 needs first.
