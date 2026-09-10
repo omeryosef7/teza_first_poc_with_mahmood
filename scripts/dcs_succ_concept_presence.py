@@ -159,6 +159,24 @@ def main() -> int:
                                           "pick one by mtime" % len(jdirs)}
             continue
         if jdirs:
+            # REVIEW-3 C1 (CRITICAL). prompt_id sets are IDENTICAL across banks, so pairing a
+            # button generation run with a basket judge run passes every count check and produces
+            # a plausible number. Executed by the reviewer: 0.049557 against a published 0.052212,
+            # EXIT 0. The generation and judge runs must agree on the bank they scored.
+            gm = os.path.join(gdirs[0], "metadata.json")
+            jm = os.path.join(jdirs[0], "metadata.json")
+            gsha = json.load(open(gm, encoding="utf-8")).get("bank_file_sha16") \
+                if os.path.exists(gm) else None
+            jsha = json.load(open(jm, encoding="utf-8")).get("bank_file_sha16") \
+                if os.path.exists(jm) else None
+            if gsha is None or jsha is None or gsha != jsha:
+                res["arms"][arm] = {"status": "REFUSED: generation run bank_file_sha16 %r != judge "
+                                              "run %r -- the two banks share prompt_id values "
+                                              "exactly, so nothing downstream would notice"
+                                              % (gsha, jsha),
+                                    "gen_run": os.path.basename(gdirs[0]),
+                                    "judge_run": os.path.basename(jdirs[0])}
+                continue
             for line in open(os.path.join(jdirs[0], "results.jsonl"), encoding="utf-8"):
                 r = json.loads(line)
                 jrows[r["prompt_id"]] = r

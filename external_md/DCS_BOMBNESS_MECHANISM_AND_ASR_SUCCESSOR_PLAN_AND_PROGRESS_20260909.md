@@ -4580,3 +4580,86 @@ number on each panel matches its artifact — and its claim reviewer is asked to
 name which of the four legs under *"`B1` is not concept binding"* is weakest.
 
 **Also in flight**: the `basket` K ladder, 7 of 27 arms at ~490 s each.
+
+---
+
+### 2026-09-10 07:00 — ENTRY 049 — `REVIEW-3`, and `C-217`: **the parameterisation I called a fix had no safety property**, plus a status correction to `R-207`
+
+**Label: REVIEW + CORRECTIONS.** `reports/DCS_SUCC_REVIEW3_*.md`. Nineteen code findings, and the
+reviewers **executed** the failures rather than describing them.
+
+#### `C-217a` (CRITICAL, mine) — the cross-bank chimera was constructible and exited 0
+
+`ENTRY 047` said parameterising `--gen-prefix` / `--judge-prefix` / `--bank-key` applied `C8`'s
+lesson. **It did not.** `prompt_id` sets are not merely colliding across the two banks — they are
+**identical**, 1130/1130 — so every membership and count check passes when a *button* generation run
+is paired with a *basket* judge run. The reviewer ran exactly that:
+
+* `concept_presence.py --gen-prefix tsb66_ --judge-prefix tsb66bj_` → button's concept content
+  (0.1858, 91/113) against basket's judge (182 positives) → **`asr_and_concept_present = 0.049557`**
+  beside the published **0.052212**, **EXIT 0**;
+* `q2_concept_present.py --bank-key basket_bomb` with default prefixes → basket's predictor ×
+  button's outcome → **ρ = +0.3700**, **EXIT 0**, artifact recording `"bank_key": "basket_bomb"`
+  next to `"gen_prefix": "tsb66_"`.
+
+⛔ **The predictor was bound by digest; the outcome was bound to nothing.** I replaced *"two copies
+that can diverge"* with *"one copy pointed at the wrong data"* — a failure mode the log had not
+named. **Fixed**: both scripts now assert `bank_file_sha16` on **every** run directory they read
+against the declared bank, and the generation and judge runs must agree with each other. Verified —
+both chimeras now refuse by name, and the legitimate basket call still returns **0.0522**.
+
+`PR-059`'s transfer-pair rule was being enforced by *me typing four flags consistently*. It is now
+enforced by the digest both sides already carried.
+
+#### `C-217b` (CRITICAL, mine) — the integrity check could be defeated by a leading underscore
+
+`canon()` stripped `_amendment_note*` / `_added_by_amendment*` **recursively, at every depth**. The
+reviewer forged a copy that reverted `C-213c`'s corrected floor back to **0.0221** *inside*
+`classifier._added_by_amendment_measured_floors` and injected a `kill_condition` override — and the
+script reported **0 UNDECLARED, EXIT 0**. And because `IDENTICAL`/`ANNOTATED` were tested **before**
+`k in declared`, the block carrying the entire `C-213c` repair printed as *"ANNOTATED"*, with diffs
+suppressed for everything that was not refusing.
+
+**The repair is not a better stripping rule — it is deleting the category.** `ANNOTATED` existed to
+excuse a block that differs from its parent *"only by an annotation"*, and any rule for deciding
+that is a rule an author can write around: the parent never contains the annotation key, so whatever
+is hidden inside it is invisible to any comparison that strips it. There are now **three outcomes**:
+`IDENTICAL`, `DECLARED` (itemised **and its diff printed**), or `UNDECLARED DRIFT` (a refusal).
+Selftest 10/10 including two new regressions. **A2 passes unchanged** — 16 IDENTICAL, 10 DECLARED,
+**0 undeclared** — so nothing had been relying on the hatch.
+
+#### `C-217c` — a status correction: **`R-207`'s basket `Q2` is EXPLORATORY, not a confirmatory replication**
+
+The data reviewer is right and this supersedes `ENTRY 047`'s framing. `PR-066-A2` names
+**`ts116m_button_bomb`** in *both* `primary.predictor_x` and `primary.outcome_y`; its artifact glob
+cannot match `tsb66b_`; only basket **generation** was gated by `second_wave_gate`; and the file's
+own `_what_would_violate_this` sends any post-hoc `Q2` variant to **EXPLORATORY**.
+
+⛔ **So basket's ρ = 0.4468 is an EXPLORATORY replication, not a second confirmatory test**, and
+"replicates more strongly" must be read that way. The *numbers* are unaffected and the direction is
+unchanged; what changes is what may be claimed from them. A confirmatory basket `Q2` needs its own
+preregistration, written before the number is looked at again — and it has already been looked at,
+so that route is closed for this outcome on this bank.
+
+#### Also found, recorded, not yet fixed
+
+* **`F5` still has no CI band.** `C-216` fixed the outer key and I *guessed* the inner one: the
+  artifact's rung keys are **`lo`/`hi`**, not `ci95`. So `fill_between` never runs — **while the
+  scope card asserts "shaded: 95 % domain bootstrap".** A card claiming something the panel does not
+  draw is worse than the original occlusion, and it is mine, in the commit that fixed the occlusion.
+* **`F3`'s legend covers L6 and L7 on both panels** — the two layers whose values *contradict* the
+  panel's title (at L6 the codeword is 7.5× the last token). **`F2`'s scope card covers the tick
+  labels of bars B and E.** **`F8` is not a plot** and carries a hardcoded conclusion sentence that
+  is false on both artifacts' test splits.
+* **`ENTRY 047`'s basket `Q1b`/`Q1d` are in no script and no artifact** — fifth instance of `C8`'s
+  shape. The reviewer re-derived them independently and they are **correct** (42 pos / 0 neg / 71
+  ties, p = 4.547e−13 at its floor) but unfiled. And **Δ = +0.0522 is a 113-domain mean printed
+  beside a 42-domain sign test**; over the 42 domains that moved it is **0.1405**.
+* **`B1 = H + I` is algebraically vacuous** — true for any `v`, which is why it held at 3.09e−08
+  throughout the period `C3` was live. The check that would have caught `C3` is
+  `dec.B1 == metrics.B1`, which was not in code; it now holds to **exactly 0** across the full grid.
+* **`S-009`'s 1.20 / 1.02 appears in no script or artifact** — computed inline. Sixth instance.
+
+**The pattern, restated because it changed shape.** Four new instances of *"a quantity that could not
+have told you it was wrong"* — **all inside the four entries that named it.** And one the log had not
+named: **parameterising without binding the parameters to each other.**

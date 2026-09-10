@@ -34,12 +34,29 @@ import sys
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def canon(o, prefixes):
+def canon(o, prefixes, _top=True):
+    """Retained only for the selftest. THE CLASSIFIER NO LONGER USES IT -- see below.
+
+    REVIEW-3 C2 (CRITICAL). This used to recurse, stripping `_amendment_note*` and
+    `_added_by_amendment*` at EVERY depth of EVERY block -- so anything hidden inside an annotation
+    key was invisible to the comparison. The reviewer forged a copy that reverted C-213c's
+    corrected floor back to 0.0221 *inside* `classifier._added_by_amendment_measured_floors` and
+    injected a `kill_condition` override, and this script reported **0 UNDECLARED, EXIT 0**. A
+    check that can be defeated by putting the change in a key whose name begins with an underscore
+    is not a check; it is a naming convention.
+
+    The repair is NOT a better stripping rule -- it is DELETING THE CATEGORY. `ANNOTATED` existed
+    to excuse a block that differs from its parent "only by an annotation", and any rule for
+    deciding that is a rule an author can write around: the parent never contains the annotation
+    key, so whatever is hidden inside it is invisible to any comparison that strips it. There are
+    now exactly three outcomes -- IDENTICAL, DECLARED (itemised in the amendment, with its diff
+    PRINTED), or UNDECLARED DRIFT (a refusal). A block that differs at all must be declared, and
+    declaring it shows it. A2 passes unchanged under this rule: 0 blocks were ANNOTATED once
+    `declared` was tested first, so nothing was relying on the hatch.
+    """
     if isinstance(o, dict):
-        return {k: canon(v, prefixes) for k, v in o.items()
-                if not any(k.startswith(p) for p in prefixes)}
-    if isinstance(o, list):
-        return [canon(x, prefixes) for x in o]
+        return {k: v for k, v in o.items()
+                if not (_top and any(k.startswith(p) for p in prefixes))}
     return o
 
 
@@ -58,13 +75,15 @@ def classify(par, am, prefixes, declared):
         if k not in am:
             rows.append((k, "MISSING FROM AMENDMENT", "the analyzer would refuse on it"))
             continue
-        if json.dumps(par[k], sort_keys=True) == json.dumps(am[k], sort_keys=True):
-            rows.append((k, "IDENTICAL", ""))
-        elif json.dumps(canon(par[k], prefixes), sort_keys=True) == \
-                json.dumps(canon(am[k], prefixes), sort_keys=True):
-            rows.append((k, "ANNOTATED", "identical once %s keys are stripped" % list(prefixes)))
-        elif k in declared:
+        # REVIEW-3 C2: `declared` is tested FIRST. Testing IDENTICAL/ANNOTATED first made a block
+        # the amendment explicitly claims to change print as "ANNOTATED" whenever its only visible
+        # difference was an annotation key -- which is exactly what A2's `classifier` block did,
+        # the block carrying the entire C-213c repair. A declared change reported as an annotation
+        # is C-213b's failure mode (a change the amendment says it made, invisible in the output).
+        if k in declared:
             rows.append((k, "DECLARED", declared[k]))
+        elif json.dumps(par[k], sort_keys=True) == json.dumps(am[k], sort_keys=True):
+            rows.append((k, "IDENTICAL", ""))
         else:
             rows.append((k, "UNDECLARED DRIFT", "not named in _blocks_this_amendment_changes"))
     return rows
@@ -82,7 +101,16 @@ def selftest() -> int:
     am = {"a": {"x": 1}, "b": [1, 2, 3], "c": "keep", "d": {"p": 1, "_note": "hi"}, "e": 5}
     r = dict((k, s) for k, s, _ in classify(par, am, ("_note",), {}))
     chk("identical block is IDENTICAL", r["a"] == "IDENTICAL")
-    chk("annotated block is ANNOTATED", r["d"] == "ANNOTATED")
+    chk("an undeclared annotation-only change is DRIFT", r["d"] == "UNDECLARED DRIFT")
+    # REVIEW-3 C2 regression: a change NESTED INSIDE an annotation key must be visible.
+    par2 = {"c": {"keep": 1, "_amendment_note": {"floor": 0.1372}}}
+    am2 = {"c": {"keep": 1, "_amendment_note": {"floor": 0.0221}}}
+    r_nest = dict((k, s) for k, s, _ in classify(par2, am2, ("_amendment_note",), {}))
+    chk("a change INSIDE an annotation key is caught", r_nest["c"] == "UNDECLARED DRIFT")
+    chk("there is no ANNOTATED category left",
+        not any(st == "ANNOTATED" for _, st, _ in classify(par2, am2, ("_amendment_note",), {})))
+    r_first = dict((k, s) for k, s, _ in classify(par, am, ("_note",), {"d": "declared"}))
+    chk("declared beats annotated in classification", r_first["d"] == "DECLARED")
     chk("drifted block is UNDECLARED DRIFT", r["b"] == "UNDECLARED DRIFT")
     chk("new block is AMENDMENT-ONLY", r["e"] == "AMENDMENT-ONLY")
     r2 = dict((k, s) for k, s, _ in classify(par, am, ("_note",), {"b": "on purpose"}))
@@ -96,7 +124,7 @@ def selftest() -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--amendment", required=True)
+    ap.add_argument("--amendment", default="")
     ap.add_argument("--annotation-prefix", default="_amendment_note,_added_by_amendment")
     ap.add_argument("--show-diff", action="store_true", default=True)
     ap.add_argument("--selftest", action="store_true")
@@ -104,6 +132,8 @@ def main() -> int:
     if a.selftest:
         print("=== selftest ===")
         return selftest()
+    if not a.amendment:
+        raise SystemExit("REFUSING: --amendment is required unless --selftest")
 
     am = json.load(open(a.amendment, encoding="utf-8"))
     ppath = os.path.join(REPO, am["amends"])
@@ -120,15 +150,26 @@ def main() -> int:
         if s in ("UNDECLARED DRIFT", "MISSING FROM AMENDMENT"):
             bad.append(k)
     if a.show_diff:
+        # Print a diff for EVERY block that is not byte-identical, not only the refusing ones.
+        # REVIEW-3 C2: diffs used to print only for `bad`, so all nine DECLARED/ANNOTATED changes
+        # were suppressed -- including the one carrying the C-213c repair. A declared change whose
+        # content is never shown is a declaration, not a disclosure.
+        for k, st, _ in rows:
+            if st == "DECLARED" and k in par and k in am:
+                print("\n--- diff for %s block %r ---" % (st, k))
+                for line in difflib.unified_diff(dump(par[k]), dump(am[k]),
+                                                 "parent." + k, "amendment." + k, lineterm=""):
+                    print("  " + line)
         for k in bad:
             if k in par and k in am:
                 print("\n--- diff for UNDECLARED block %r ---" % k)
                 for line in difflib.unified_diff(dump(par[k]), dump(am[k]),
                                                  "parent." + k, "amendment." + k, lineterm=""):
                     print("  " + line)
-    print("\n%d block(s) compared; %d IDENTICAL, %d ANNOTATED, %d DECLARED, %d UNDECLARED/MISSING"
+    print("\n%d block(s) compared; %d IDENTICAL, %d (no annotated category), %d DECLARED, "
+          "%d UNDECLARED/MISSING"
           % (len(rows), sum(1 for _, s, _ in rows if s == "IDENTICAL"),
-             sum(1 for _, s, _ in rows if s == "ANNOTATED"),
+             0,
              sum(1 for _, s, _ in rows if s == "DECLARED"), len(bad)))
     if bad:
         print("REFUSING: undeclared drift in %s" % bad)

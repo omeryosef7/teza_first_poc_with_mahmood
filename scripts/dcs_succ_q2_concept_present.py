@@ -204,6 +204,25 @@ def main() -> int:
     # ---- OUTCOME: per-domain ASR, raw and concept-present
     j = one_done(os.path.join(REPO, "outputs/boombness/judge/%s%s_*" % (a.judge_prefix, a.arm)))
     gd = one_done(os.path.join(REPO, "outputs/boombness/score_behavior/%s%s_*" % (a.gen_prefix, a.arm)))
+    # REVIEW-3 C1 (CRITICAL). The predictor was bound by bank digest; THE OUTCOME WAS BOUND TO
+    # NOTHING. prompt_id sets are IDENTICAL across the two banks -- not merely colliding -- so every
+    # membership and count check passes when a button generation run is paired with a basket judge
+    # run. The reviewer executed exactly that and got rho = +0.3700 with EXIT 0 and an artifact
+    # recording "bank_key": "basket_bomb" beside "gen_prefix": "tsb66_". Parameterising replaced
+    # "two copies that can diverge" with "one copy pointed at the wrong data"; the digest both sides
+    # already carry is what should have been enforcing it.
+    for label, d in (("generation", gd), ("judge", j)):
+        mp = os.path.join(d, "metadata.json")
+        if not os.path.exists(mp):
+            raise Refusal("%s run %s has no metadata.json to bind its bank"
+                          % (label, os.path.basename(d)))
+        got = json.load(open(mp, encoding="utf-8")).get("bank_file_sha16")
+        if got != bank_sha:
+            raise Refusal(
+                "%s run %s carries bank_file_sha16 %r but --bank-key %r pins %r. The two banks "
+                "share prompt_id values exactly, so nothing downstream would have noticed."
+                % (label, os.path.basename(d), got, a.bank_key, bank_sha))
+
     gens = {json.loads(l)["prompt_id"]: json.loads(l)
             for l in open(os.path.join(gd, "gens.jsonl"), encoding="utf-8")}
     raw, cp = collections.defaultdict(list), collections.defaultdict(list)
