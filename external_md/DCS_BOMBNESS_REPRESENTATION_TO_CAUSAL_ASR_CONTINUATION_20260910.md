@@ -2398,3 +2398,85 @@ position sweep; they are not how the codeword is located.
 conduit-not-store result cannot be stated as a positive claim — the literature is explicit that a
 null transplant without a matched positive control on the same instrument is not evidence. It is
 not part of *this* job because it is a different experiment, not because it has been deprioritised.
+
+---
+
+### 2026-09-10 — CONT-ENTRY 007 — **the layer × position map would have manufactured a discovery.** A family-wise null, measured before any real data was read
+
+**Loop check.** Extraction `875529` running on `n-305`; the `--only-split` filter reported
+**3,720/4,640 rows over 93 domains** exactly as predicted on CPU, and the model loaded — confirming
+`C-CONT-001` made the job node-independent (`n-305` is outside the inherited `n-80x` pin). Weight
+load over the shared filesystem is slow (~291 shards streamed over NFS); that is the price of node
+independence and it is worth paying.
+
+`scripts/dcs_cont_layerpos_map.py` written while the corpus is still on the queue.
+
+#### 1. The number that changes how this map may be read
+
+Before touching real representations I calibrated the analyzer on **pure noise** — `X` drawn
+independently of `y`, so the true correlation is exactly zero — at the real dimensions
+(**n = 67 domains, d = 4096**), 200 draws:
+
+> **null sd of a single cell's `rho_loo` = 0.160.**
+
+The map has **4 contrasts × 20 sites × 19 layers = 1,520 cells**. The largest of 1,520 pure-noise
+draws lands at
+
+> **|ρ| ≈ 0.64** — *larger than this project's headline installation→ASR correlation of 0.396.*
+
+⛔ **So "the best cell in the layer × position map" is, with near-certainty, noise.** A map like this
+reported cell-by-cell does not need a bad intention to produce a false discovery; it produces one by
+construction. Under a per-cell reading, **ρ = 0.5 at some site and layer is not evidence of
+anything.**
+
+This is the §36 multiplicity requirement made concrete, and it is the reason the analyzer computes,
+**before printing any real number**, a **family-wise permutation null**: shuffle the `y_install`
+domain labels, recompute *every* cell, take the **global max |ρ|**, repeat 200×, and report the
+p50/p95/p99 of that maximum. A cell is flagged `exceeds_fwer95` only if it beats the p95 of the
+noise maximum. The permutation also absorbs the **correlation between adjacent layers and adjacent
+sites**, which a Bonferroni count over 1,520 would badly over-penalise.
+
+#### 2. What the analyzer does, and the three things that are not the obvious implementation
+
+1. **Contrasts are `C − B` and `E − A`, never `C − A`** (`CONT-ENTRY 003 §F`). `C_minus_A` is still
+   computed, labelled `C_minus_A_CONFOUNDED`, and carries a field saying it "must never be quoted as
+   a result" — kept only as the confounded comparator.
+2. **Predictor on the behavioural prompt, target on the semantic one**, joined on
+   `(domain, family_slot)` via `family_slot() = family_id.split("|")[1:-1]` — dropping the domain
+   (first) and the **query kind** (last). The query-kind field is precisely the one that legitimately
+   differs between predictor and target, which is why it is the one dropped; `D-001` is the
+   precedent for what dropping the wrong field costs.
+3. **The target is filtered to `semantic_one_word`.** The readout run contains
+   `semantic_forced_choice` rows too, and §4 forbids the channel that names the concept. That filter
+   is load-bearing, and the loader refuses if the selection binds zero rows.
+
+Refusals rather than silent degradation: no `DONE.json` ⇒ not a corpus; mixed `bank_file_sha16` ⇒
+refuse; a `(domain, slot, cell)` key binding two rows ⇒ refuse; a key with a representation but no
+installation target ⇒ refuse (missing ≠ zero).
+
+#### 3. A correction to my own work, stated as what it was
+
+I "fixed" a leave-one-out leak: `ȳ` had been computed over all domains including the held-out one,
+so domain *i* could influence its own direction through the mean. Then I measured it, 200 null draws
+at the real dimensions:
+
+| | mean ρ on null data | sd |
+|---|---|---|
+| leaky `ȳ` | **−0.0134** | 0.157 |
+| corrected `ȳ` | **−0.0141** | 0.160 |
+
+⇒ **The leak was immaterial.** Both are within noise of zero (|mean|/se ≈ 1.2). The correction
+stands because it is nearly free, **not** because it was producing a wrong number, and the comment
+in the code says so. Recording this because the alternative — quietly banking it as a caught bug —
+would inflate the defect ledger with something that never mattered, and this project's ledger is
+only useful if it is honest in both directions.
+
+The vectorised scorer that replaces the loop was verified against it: **max abs diff 8.3e-07**, and
+the batched permutation form matches the single form to **4.8e-07**.
+
+#### 4. Standing
+
+⛔ Still not run: the transplant **positive control** (`CONT-ENTRY 003 §D`), and the `N_surface` /
+`N_B1` / `N_neighbour` / `N_logitlens` floors are declared but not yet computed inside this
+analyzer. The FWER threshold is a **necessary** condition, not a sufficient one — a cell that beats
+the noise maximum still has to beat a surface model that already reaches **LOO r = 0.526**.
