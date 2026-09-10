@@ -4305,3 +4305,75 @@ the artifact does not support**, and the fix that is correct but uncomputable is
 #### 4. Loop state
 
 `876531` arm 1 at ~500/670; two arms to follow. `DR-070` remains frozen and unread.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 031 — **the flagged comparisons, tested.** The cell-C raw state wins, and `C-CONT-017` corrects last entry's ordering
+
+`CONT-ENTRY 030` printed four numbers in rank order and said explicitly that the *differences*
+between them were untested. Tested now, paired at the **domain** level (each domain contributes one
+within-domain ρ), `cw_demo_mean|L14`, n = 67, 20 000-draw sign-flip permutation and a domain
+bootstrap:
+
+| mean per-domain ρ | |
+|---|---|
+| `C_minus_B` | +0.5108 |
+| **`raw_C`** | **+0.4991** |
+| `interaction` | +0.4412 |
+| `mean4` | +0.3806 |
+
+| comparison | mean difference | 95 % CI | p | domains |
+|---|---|---|---|---|
+| **`raw_C` > `mean4`** | **+0.1185** | [+0.064, +0.175] | **0.0001** | 46/67 |
+| **`raw_C` > `interaction`** | **+0.0579** | [+0.013, +0.105] | **0.0173** | 43/67 |
+| `C_minus_B` vs `raw_C` | +0.0118 | **[−0.023, +0.047]** | **0.515** | 35/67 |
+
+#### 1. `C-CONT-017` — a correction to `CONT-ENTRY 030`
+
+> That entry's table put `C_minus_B_LEXICAL` (+0.5090) above `raw_C_NULLMODEL` (+0.4821) and I
+> described the lexical contrast as beating the null model. ⛔ **It does not.** The paired
+> difference is **+0.012 with a CI spanning zero and p = 0.515** — the two are indistinguishable at
+> n = 67 domains.
+
+The entry did flag the difference as untested, so nothing was asserted that the data denied. But an
+ordering printed without its uncertainty *reads* as a ranking, and this one would have become "the
+lexical contrast is the best predictor" the moment it was summarised. Recorded as a correction
+rather than a clarification.
+
+#### 2. What is now established
+
+1. ✅ **`raw_C` beats the four-cell average, decisively** — +0.119, p = 0.0001, 46/67 domains. The
+   **doublespeak cell's own state** carries within-domain installation information that the average
+   of A, B, C and E does not. This is not topic: topic is removed by construction.
+2. ✅ **`raw_C` beats the interaction** — +0.058, p = 0.017, 43/67 domains. `C-CONT-013` now has a
+   *paired significance test* behind it, not just a rank comparison. **No contrast improves on the
+   raw state**, and the one that comes closest is statistically indistinguishable from it.
+3. ⇒ **The best predictor of within-domain installation is the raw cell-C state.** After eight
+   candidate constructions, five nuisance controls, a withdrawal and a redesign, the thing that
+   predicts installation is *the state of the doublespeak prompt itself* — and every attempt to
+   isolate a component of it has made it worse.
+
+#### 3. What that is and is not
+
+⚠️ It is **not a Bombness candidate**. A raw state is not a *direction*, carries no claim of
+concept-specificity, and cannot be projected out or added. §44's criteria are mostly not even
+applicable to it.
+
+⚠️ It is also **not localised**: `CONT-ENTRY 030` recorded 25 of 35 cells clearing the ceiling for
+four of five families.
+
+What it **is**, stated as precisely as the evidence allows:
+
+> Within a domain, which slots install is predictable from the cell-C residual state at the
+> demonstration codewords, at ρ ≈ 0.50 against a 0.21 permutation ceiling; the signal is not shared
+> with the matched non-doublespeak cells; and no linear contrast over the 2 × 2 improves on simply
+> using the state.
+
+#### 4. Loop state — the §24 arms de-risked
+
+`876531` arm 1 at 543/670 and ~14 s/row ⇒ ≈ 2.6 h for arm 1 alone; the two knockout arms are slower
+still, and three arms would not fit the 12 h wall clock. **Arms 2 and 3 were therefore split into
+their own jobs** (`876883` `ko`, `876884` `ctrl`) with **byte-identical flags** — same bank, same
+exclusion file (`sha16 214ff882b1a2a3e2`), same seed, same eager/batch-1 — so the arms stay
+comparable. If the original job also reaches them, the duplicate run directories are harmless and
+`DR-070`'s CANNOT ANSWER fires if the arms end up covering different `prompt_id`s.
