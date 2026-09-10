@@ -4377,3 +4377,51 @@ their own jobs** (`876883` `ko`, `876884` `ctrl`) with **byte-identical flags** 
 exclusion file (`sha16 214ff882b1a2a3e2`), same seed, same eager/batch-1 — so the arms stay
 comparable. If the original job also reaches them, the duplicate run directories are harmless and
 `DR-070`'s CANNOT ANSWER fires if the arms end up covering different `prompt_id`s.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 032 — **all three §24 arms bind the identical population**, and the `n-503` fix is confirmed to generalise
+
+**Loop check.** `876531` baseline at **652/670**. `876883` (`ko`) and `876884` (`ctrl`) both running
+on **`n-503`**, past the population filter and into the weight load.
+
+#### 1. The comparability condition is satisfiable — verified from the arms' own bind records
+
+All three arms printed the same population summary:
+
+```
+exclude_prompt_ids_sha16 : 214ff882b1a2a3e2   n_excluded 490
+-> n = 670   by_condition {natural_doublespeak: 670}   by_bank_block {cds_n4: 670}
+   by_domain: 67 domains x 10 rows            by_split {dev: 335, heldout: 335}
+   by_n_examples {4: 670}                     n_families 670
+```
+
+⇒ `DR-070`'s CANNOT ANSWER condition *"the three arms do not cover the same `prompt_id`s"* is
+**satisfiable**, and the analyzer will still check it row-by-row rather than trusting this summary.
+The 10-rows-per-domain balance is exact across all 67 domains, which is what the domain-level
+primary assumes.
+
+#### 2. `n-503` works now — which retires a standing risk
+
+`n-503` is the node where the **first** continuation job died at model load
+(`does not appear to have a file named model.safetensors`, `CONT-ENTRY 005`). Both split arms are
+loading there successfully with `HF_HUB_CACHE` pointed at the lab-shared cache.
+
+⇒ `C-CONT-001`'s fix is **not** node-specific, and the inherited `--nodelist` pin is now known to be
+unnecessary for a reason stronger than "it worked once elsewhere": the job runs on the node that
+previously failed. The remaining reason to avoid `n-801` is its documented weight-load stalls, which
+`--exclude` handles.
+
+#### 3. An operational note worth recording, because it cost real context
+
+Reading those logs printed the **full 490-element exclusion id list twice**. The bind record is
+valuable — it is exactly what proves §1 above — but it is unreadable at that width. Future checks on
+these logs must filter to the summary fields (`n`, `by_domain`, `sha16`) rather than the whole line.
+Recorded because "the artifact is right but unreadable" is a real cost, and this project has already
+spent an entry on a figure that was correct and misleading.
+
+#### 4. Standing
+
+Nothing new is claimed. `DR-070` remains frozen and unread; no generation has been judged. The
+within-domain result (`CONT-ENTRY 030`–`031`) is the phase's current best correlational finding, and
+the transplant contrast (`CONT-ENTRY 023`) its current best causal one.
