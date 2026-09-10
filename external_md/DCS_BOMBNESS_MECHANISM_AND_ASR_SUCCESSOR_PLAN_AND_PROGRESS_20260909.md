@@ -4105,3 +4105,76 @@ announcing the experiment had already written down what would make it uninterpre
 
 **Also this iteration**: `basket_bomb` cell B dose 4 completed (1130 rows) and is judging; cells
 C dose 4 and C dose 0 are generating.
+
+---
+
+### 2026-09-10 03:05 — ENTRY 041 — `S-008`: **`B1` is NOT localised at the codeword.** The portable statistic reproduces `R-112` on a different instrument.
+
+**Label: EXPLORATORY, TRAIN ONLY, 67 domains, both codewords.** Read on
+**`cos` = ⟨h_C − h_A, v̂_lex⟩ / ‖h_C − h_A‖** — the statistic `C-214` established is the only one of
+the three that is comparable **across** positions, because it is scale-free in *both* the shift and
+the axis. `gap_units` was rejected for this comparison (its denominator moves 30×), and it and
+`raw_proj` are reported beside it in the artifact.
+
+**Contrast 1 — the codeword against its immediate neighbour** (`following`, rel_end −9,
+`' actually'`, **token-identical across all four cells**):
+
+| bank | L9 | L11 | L12 | L13 |
+|---|---|---|---|---|
+| `button` | −0.006, 36/67, p = 0.63 | +0.029, 44/67, p = 0.014 | +0.019, 42/67, **p = 0.05** | +0.011, 42/67, p = 0.05 |
+| `basket` | −0.001, 38/67, p = 0.33 | +0.023, 39/67, p = 0.22 | +0.009, 38/67, p = 0.33 | −0.027, 34/67, **p = 1** |
+
+⛔ **The codeword is indistinguishable from the neutral token one position later.** Signs are mixed
+across layers, the domain counts hover at 34–44 of 67, and only one cell of eight reaches p = 0.014
+— which would not survive a correction over the 18 comparisons the grid contains. This is exactly
+`R-112`'s finding (probe 0.9446 at the codeword against 0.9261 nine tokens downstream) reproduced on
+a completely different instrument.
+
+**Contrast 2 — the codeword against the final prompt token** (`last`, rel_end −1, `'\n\n'`):
+
+| bank | L9 | L11 | L12 | L13 |
+|---|---|---|---|---|
+| `button` | **−0.226, 1/67**, p = 9.2e−19 | −0.091, 8/67, p = 1e−10 | **−0.203, 2/67**, p = 3.1e−17 | −0.120, 5/67, p = 1.4e−13 |
+| `basket` | **−0.198, 2/67**, p = 3.1e−17 | −0.091, 5/67, p = 1.4e−13 | **−0.193, 1/67**, p = 9.2e−19 | −0.185, 1/67, p = 9.2e−19 |
+
+**A larger fraction of the Doublespeak shift points along the local button→bomb axis at the FINAL
+PROMPT TOKEN than at the codeword, in 65–66 of 67 domains, on both codewords, at every layer.**
+
+**And the magnitude reading, stated beside it so neither is quoted alone.** In raw projection at L12
+the codeword *is* the largest site — button 0.403 vs 0.288 (`following`) vs 0.338 (`last`); basket
+0.559 vs 0.470 vs 0.378. So the shift is **biggest** at the codeword and **best-aligned** at the
+readout position. Those are different statements and the log carries both.
+
+#### The verdict, and it is a negative
+
+> ⛔ **`B1` is not localised at the codeword.** It is statistically indistinguishable from the
+> adjacent neutral token, and the final prompt token carries a higher-aligned shift in 65–66 of 67
+> domains. Plan §8's rule — *"Localization requires a relative comparison against meaningful nearby
+> and role-matched positions"* — is now satisfied, and it returns **no localisation**.
+
+**"Bombness is localized at the codeword" stays on the forbidden list, now with a direct measurement
+behind it rather than an inherited one.**
+
+#### Where this leaves the mechanistic account
+
+Four results, one picture, and it is more specific than the phase started with:
+
+| result | says |
+|---|---|
+| `R-205` (K ladder) | cutting the **codeword row's** access to the demonstrations destroys **62 %** of the semantic readout; a dose-matched non-demonstration cut moves **+0.03** |
+| `S-007` (full-state patch) | copying that token's **entire state**, all 32 layers, transfers **0.054 %** of a 12.33 log-odds gap |
+| **`S-008`** (this) | that token's state is **no better aligned** than its neighbour's, and **worse** than the readout position's |
+| `C-208` (2 × 2) | the whole of `B1` is the **token × context interaction**; the harm-context main effect is negative |
+
+**The codeword row is a required conduit, not a store.** It is where the demonstrations are read —
+blocking that read destroys the answer — but its state neither holds the result, nor transfers it,
+nor is distinctively aligned with the concept axis. Whatever `B1` measures accumulates *downstream*
+of it, toward the position where the answer is produced.
+
+⛔ Scope: TRAIN, one bank family, two codewords, three positions, no causal test of the downstream
+position. The obvious next experiment — **a K-ladder-style knockout read at `last` rather than at
+the codeword** — is named and not run.
+
+**Also this iteration**: `basket_bomb` cell B dose 4 judged — ASR@0.5 **0.0088**, refusal **0.9912**,
+*identical to `button`'s direct-harmful baseline to four decimals*, which is a clean replication of
+the control arm. Cell C dose 0 is judging; cell C dose 4 is still generating.
