@@ -4939,3 +4939,59 @@ installing domains, `S-010` found the attack works in 79 against 42 domains, and
 codeword's semantic channel is 4× thinner throughout. ⛔ The two are **never pooled**, and this is why.
 
 **All experiments for this phase are now complete.** Nothing is running.
+
+---
+
+### 2026-09-10 09:35 — ENTRY 055 — the §43 final report: **all fourteen questions answered, four of them "no"**
+
+**Label: TERMINAL DELIVERABLE.** `reports/DCS_SUCC_FINAL_REPORT.md`, answering successor-plan §43
+**A–N**, self-contained, every number carrying an entry id and an artifact path.
+
+**The four questions answered NO, stated as such rather than hedged:**
+
+* **B — is it BOMB-specific?** ⛔ **No.** Concentration ratio **1.202 / 1.025** where 1.0 is uniform.
+* **C/E — is it localised at the codeword?** ⛔ **No.** Indistinguishable from the neutral token one
+  position later; worse-aligned than the readout position, 1–2 of 67 domains.
+* **H — can we causally manipulate it?** ⛔ **No, at this site.** A **provably live** full-state
+  transplant at every layer moves **0.054 %** of a 12.33 log-odds gap.
+* **J — does manipulating it change ASR?** ⛔ **NOT TESTED.** Plan §32's **Link 5 is not
+  established** and no intervened behavioural arm was run.
+
+**The four answered YES:**
+
+* **F** — installation predicts attack success, ρ = **0.3961**, preregistered, powered, p at its
+  floor, **strengthening to 0.4206** under the `C-209` correction.
+* **G** — the pathway runs through the codeword's query row: **62 %** of the climb in one row
+  against a dose-matched control at **+0.03**, 67/67 domains, and `K* = 10` **replicates**.
+* **K** — transfers across domains (66–67/67) and, for the *behaviour*, across codewords.
+* **L** — a mechanism is supported: **conduit, not store**, and `B1` is the token × context
+  interaction.
+
+**The answer to Matan's actual question (§2.1), in one sentence:**
+
+> We built the measurement he asked for — how far the codeword's state moves along a `button→bomb`
+> axis built where nothing installs — it moves **~10 % of that gap in 66–67 of 67 domains**, and it
+> is **not bombness**: it is an anomaly signal, not localised, not concept-specific on the
+> replication codeword, and its site transfers nothing.
+
+**The transferable output is a section of its own**, and it is not a result about the model:
+
+> Fourteen defects were found in this phase's own work. Three are one shape — **a quantity that
+> could not have told you it was wrong** — and it appeared **inside the repairs for itself** twice
+> (`C-213a`, `C-217b`). The two defences that worked are **procedures, not checks**: adversarial
+> re-derivation by someone forbidden to read the original, and writing down in advance what would
+> make a result uninterpretable. A third earned its place late: **an artifact that renders must be
+> rendered and looked at** — every statistic on that panel was correct and the picture was not.
+
+**Phase status: all experiments complete, nothing running.** The deliverable set is
+`DCS_SUCC_FINAL_REPORT.md` · `DCS_SUCC_CLAIM_TABLE.md` (19 rows + changelog) ·
+`DCS_SUCC_SLACK_DRAFT_MATAN_MAHMOOD_20260910.md` (⛔ **DRAFT, NOT SENT**) ·
+`DCS_SUCC_LITERATURE_UPDATE_20260909.md` · `DCS_SUCC_S002_INDEPENDENT_VERIFICATION.md` ·
+fifteen `DCS_SUCC_REVIEW{1,2,3}_*.md` · `reports/figures/F{2,3,5,8}` · 16 artifacts under
+`outputs/dcs_succ/` · four frozen configs (`PR-066`, `A1`, `A2`, and the `PR-059` chain untouched).
+
+**Open and named, not quietly dropped**: `Q-014` (the register rebuild — Omer's decision);
+Link 5 (an intervened behavioural arm); template transfer (one template per channel);
+`REVIEW-3`'s `C6` (the analyzer still has no concept-presence field, so `A1-3`'s instruction is
+recorded but not executable); and re-scoring the **127 prior judge runs** the `C-209` mechanism
+reaches (`A-104`) — about an hour, no GPU, and **not done on inference**.
