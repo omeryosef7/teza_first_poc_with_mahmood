@@ -4723,3 +4723,62 @@ numbers would not have caught any of these four.
 * `B1 = H + I` is **algebraically vacuous** — true for any `v` — which is exactly why it held at
   3.09e−08 throughout the period `C3` was live. The check that *would* have caught `C3` is
   `dec.B1 == metrics.B1`; it is not in code, and it now holds to exactly 0 across the full grid.
+
+---
+
+### 2026-09-10 07:35 — ENTRY 051 — `S-010`: filing the unfiled numbers produced a **better result than the inline ones**, and refines `R-207`
+
+**Label: CORRECTION + REFINEMENT.** `scripts/dcs_succ_phase_statistics.py` (selftest 6/6),
+`outputs/dcs_succ/phase_statistics.json`.
+
+Six times a headline number has been computed inline, reported, and found later to live in no script
+— `C8`, then `REVIEW-3` on basket's `Q1b`/`Q1d` and on `S-009`'s ratio. Rather than fix them one at
+a time and produce a seventh, **all three are now computed by one file**, which also asserts the
+invariant that would have caught the defect each hid.
+
+**1 — the concentration ratio, filed.** button L12 **1.2008**, basket L11 **1.0247**, reproducing
+`S-009` exactly. The artifact now carries `projection_retained`, `axis_retained` and the ratio, so
+row 10 of the claim table points at something.
+
+**2 — the `C3` invariant that was missing.** `B1 = H + I` is **algebraically vacuous** — true for any
+direction — which is why it held at 3.09e−08 throughout the period the decomposition used the wrong
+axis. The check that *would* have caught `C3` is `interaction_decomposition.B1 == metrics.B1`,
+comparing the decomposition against the **independently computed** candidate. Asserted over the full
+grid: **max |difference| = 0 over 162 cells**, and a difference above 1e−12 is now a `Refusal`.
+
+**3 — and the refinement, which is why filing them was worth more than fixing them.**
+
+`ENTRY 047` printed basket's `Q1b` as **+0.0522**, a **113-domain** mean, beside a **42-domain**
+sign test. Reporting *both* denominators changes the reading:
+
+| | all-domain mean | **informative-domain mean** | informative / ties |
+|---|---|---|---|
+| **button** Q1b | +0.1310 | **+0.1873** | 79 / 34 |
+| **button** Q1d | +0.1327 | **+0.1899** | 79 / 34 |
+| **basket** Q1b | +0.0522 | **+0.1405** | 42 / **71** |
+| **basket** Q1d | +0.0451 | **+0.1214** | 42 / **71** |
+
+⛔ **`R-207`'s "≈ 2.7× weaker" was an artefact of the all-domain denominator.** basket has **71
+ties** against button's 34 — far more domains where *nothing happens at all*. On the domains that
+actually move, basket runs at **0.1405** against button's **0.1873**: a ratio of **0.75**, not 0.37.
+
+**And that maps onto installation far more cleanly than `R-207` claimed:**
+
+```
+installation ratio   basket/button = 46/92  = 0.500
+informative-domain ratio           = 42/79  = 0.532      <- these two agree
+all-domain mean ratio (R-207)      = 0.399
+informative-mean ratio             = 0.750
+```
+
+> **The installation asymmetry predicts the NUMBER OF DOMAINS in which the attack does anything
+> (0.53 against 0.50), not how well it works where it works (0.75).**
+
+That is a sharper and more testable statement than `ENTRY 047`'s loose *"the magnitude gap tracks the
+installation asymmetry"*, which `REVIEW-3`'s claim reviewer attacked as a 2.7-vs-2.0 fit that could
+be a third factor. It supersedes that sentence. The mechanism it suggests — installation is closer
+to a **per-domain switch** than a per-domain gain — is checkable, and is not checked here.
+
+⛔ The numbers themselves are unchanged and were correct; what changes is which denominator the
+comparison is made on, and that changed the conclusion. **Six instances of "computed inline,
+reported" produced one wrong reading; the seventh would have too.**

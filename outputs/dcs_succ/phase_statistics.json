@@ -1,0 +1,90 @@
+{
+ "_label": "phase statistics that previously existed only in prose (REVIEW-3)",
+ "concentration_ratio": {
+  "button_L12": {
+   "projection_retained": 0.9082091111052867,
+   "axis_retained": 0.7563529280086734,
+   "concentration_ratio": 1.2007742384185918,
+   "_reading": "1.0 = the shift is spread uniformly over the axis, with no preference for the part knife and gun cannot express"
+  },
+  "basket_L11": {
+   "projection_retained": 0.7253206709668878,
+   "axis_retained": 0.7078549357639244,
+   "concentration_ratio": 1.0246741730833793,
+   "_reading": "1.0 = the shift is spread uniformly over the axis, with no preference for the part knife and gun cannot express"
+  }
+ },
+ "c3_invariant": {
+  "max_abs_difference": 0.0,
+  "n_cells_checked": 162,
+  "_why": "B1 = H + I is vacuous (true for any direction). This compares the decomposition's B1 against the independently computed candidate, which is the check that would have caught C3."
+ },
+ "paired_Q1": {
+  "button": {
+   "bank_file_sha16": "dcd92d723f3e6d00",
+   "Q1b_Cdose4_minus_Cdose0": {
+    "n_domains_all": 113,
+    "mean_delta_over_ALL_domains": 0.13097345132743363,
+    "ci95_over_ALL_domains": [
+     0.10353982300884956,
+     0.15840707964601772
+    ],
+    "n_domains_informative": 79,
+    "n_ties": 34,
+    "mean_delta_over_INFORMATIVE_domains": 0.18734177215189873,
+    "n_positive": 77,
+    "sign_p": 1.0458871665120482e-20,
+    "sign_p_floor": 3.308722450212111e-24,
+    "_both_denominators": "the sign test's n is the INFORMATIVE count; a mean over ALL domains printed beside it answers a different question. ENTRY 047 printed only the first."
+   },
+   "Q1d_Cdose4_minus_Bdose4": {
+    "n_domains_all": 113,
+    "mean_delta_over_ALL_domains": 0.13274336283185842,
+    "ci95_over_ALL_domains": [
+     0.10796460176991152,
+     0.15840707964601772
+    ],
+    "n_domains_informative": 79,
+    "n_ties": 34,
+    "mean_delta_over_INFORMATIVE_domains": 0.189873417721519,
+    "n_positive": 78,
+    "sign_p": 2.6469779601696886e-22,
+    "sign_p_floor": 3.308722450212111e-24,
+    "_both_denominators": "the sign test's n is the INFORMATIVE count; a mean over ALL domains printed beside it answers a different question. ENTRY 047 printed only the first."
+   }
+  },
+  "basket": {
+   "bank_file_sha16": "79511d9e254571e6",
+   "Q1b_Cdose4_minus_Cdose0": {
+    "n_domains_all": 113,
+    "mean_delta_over_ALL_domains": 0.05221238938053097,
+    "ci95_over_ALL_domains": [
+     0.03716814159292035,
+     0.06902654867256638
+    ],
+    "n_domains_informative": 42,
+    "n_ties": 71,
+    "mean_delta_over_INFORMATIVE_domains": 0.14047619047619048,
+    "n_positive": 42,
+    "sign_p": 4.547473508864641e-13,
+    "sign_p_floor": 4.547473508864641e-13,
+    "_both_denominators": "the sign test's n is the INFORMATIVE count; a mean over ALL domains printed beside it answers a different question. ENTRY 047 printed only the first."
+   },
+   "Q1d_Cdose4_minus_Bdose4": {
+    "n_domains_all": 113,
+    "mean_delta_over_ALL_domains": 0.04513274336283186,
+    "ci95_over_ALL_domains": [
+     0.030088495575221242,
+     0.06106194690265487
+    ],
+    "n_domains_informative": 42,
+    "n_ties": 71,
+    "mean_delta_over_INFORMATIVE_domains": 0.12142857142857144,
+    "n_positive": 41,
+    "sign_p": 1.9554136088117957e-11,
+    "sign_p_floor": 4.547473508864641e-13,
+    "_both_denominators": "the sign test's n is the INFORMATIVE count; a mean over ALL domains printed beside it answers a different question. ENTRY 047 printed only the first."
+   }
+  }
+ }
+}
