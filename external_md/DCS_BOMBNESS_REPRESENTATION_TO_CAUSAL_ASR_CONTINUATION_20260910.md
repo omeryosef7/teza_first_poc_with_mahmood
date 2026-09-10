@@ -1861,3 +1861,257 @@ that reason.
 
 **Nothing is frozen.** This becomes `PR-069` only after the auditors report, and the extraction
 design in `CONT-ENTRY 001 §4` may still change.
+
+---
+
+### 2026-09-10 — CONT-ENTRY 003 — **Phase 1 complete. TEST is spent for two of three targets; register does not cancel; and three inherited headlines move when the test split is removed**
+
+Ten blind auditors, **10/10 completed, 0 errors**, 387 tool calls, ~29 min wall. Every re-derivation
+agent was given the definition and the artifact path and **never the reported value**. Findings are
+grouped by what they force us to *do*.
+
+---
+
+#### A. Three inherited headlines change once TEST is excluded — none of them was wrong, all were **pooled**
+
+The successor sprint's primary read was preregistered over the **pooled 113 domains, test included**
+— which `audit:test-contamination` confirms was legitimate (`PR-066` was FROZEN at 21:04:44; the
+first scored arm ran at 21:21:17, sixteen minutes later, and the prereg names the pooled population
+verbatim). But the continuation may not *build* on a pooled-with-test number, so here is the same
+arithmetic on the 90 non-test domains:
+
+| quantity | as published (pooled, incl. TEST) | **train only** | **validation only** | **non-test (n=90)** |
+|---|---|---|---|---|
+| ρ(installation, ASR) raw | 0.3961 | **0.4836** (p at floor) | **0.1435** (p = **0.51**) | 0.3900 |
+| ρ, concept-corrected | 0.4206 | **0.5260** (p at floor) | **0.1592** (p = 0.47) | 0.4499 |
+| judge FP floor, `button` | 0.1549 | — | — | **0.1722** |
+| judge FP floor, `basket` | 0.0221 | — | — | 0.0222 |
+| judge label flip rate | 0.1372 | — | — | **0.1556** |
+| Cohen's κ | 0.44 | — | — | **0.3923** |
+| prior judge runs examined | "461" | — | — | **790 examined** |
+
+⚠️ **The finding that matters is not the third decimal.** The successor sprint reported the Q2 sign
+as *"positive in all three splits"*. That is true and it is misleading: on **validation the
+correlation is 0.14 with p = 0.51** — indistinguishable from zero, on 23 domains whose outcome takes
+only 9 distinct values (10 judged rows per domain ⇒ ASR is a multiple of 0.1, heavily tie-saturated).
+The installation→ASR link is carried by **train**. It is **not** independently replicated on a
+held-out split.
+
+Status change: `installation → ASR` moves from **CONFIRMED (preregistered)** to
+**CONFIRMED-AS-PREREGISTERED, NOT SPLIT-REPLICATED**. The claim table must carry the validation
+number next to the headline. This is a *caveat added*, not a claim withdrawn.
+
+Also: **the p-floor is 9.999e-05 and is set by `n_perm = 10000`, not by n** — identical for n = 23,
+67 and 90. "p at its floor" therefore says only *p < 1e-4 at this resolution* and carries **no**
+information about effect size. (§36 already forbids reading it as one; now we know the exact floor.)
+
+#### B. `B1` reproduces to the digit — and one part of `C-208` narrows to `button` only
+
+`B1` re-derived independently: **button L12 = 0.104441 gap units, 66/67 domains**; **basket L11 =
+0.136587, 67/67**. Recomputed per-domain values matched the stored ones to `max|diff| = 0.0`.
+`H + I = B1` verified to 5.5e-10.
+
+| arm | H (harm main effect) | I (token × context) | H significant? |
+|---|---|---|---|
+| button L12 | **−27.51 %** of `B1` | +127.51 % | ✅ yes — 13/67 positive, p = 4.5e-07 |
+| basket L11 | **−2.11 %** of `B1` | +102.11 % | ⛔ **no** — 29/67 positive, **p = 0.328** |
+
+⇒ `C-208`'s "the harm main effect is **negative**" is a **button-only** result. On basket H is
+indistinguishable from zero. The *interaction dominance* replicates on both; the *negative main
+effect* does not. Recorded as a narrowing of `C-208`, not a withdrawal.
+
+⚠️ Note the auditor computed on the **in-sample** axis (the artifact's `interaction_decomposition`
+is stored that way). `C-215`/C3 is the standing precedent for why in-sample and LOO must never be
+quoted side by side; both are labelled here.
+
+#### C. K-ladder reproduces, with the denominator finally stated — and a second jump nobody mentioned
+
+K\* = **10 = the codeword**, share **0.6168**, denominator **|mean_delta at K14| = 7.2836** log-odds.
+Doses are recorded and non-zero at every rung (20,520 edited cells at K10; K0 baseline = 0 edits,
+correctly). The K9→K10 rise of **4.4927** is **>4×** the next largest.
+
+🆕 **Unremarked in the successor sprint:** there is a *second* discontinuity at **K3→K4 = +1.09**,
+at `<|start_header_id|>` — a chat-scaffold token, not a semantic one. Any account of "the codeword
+row is special" must also explain why cutting the response-header row costs a fifth as much. Logged
+as an open question, not a defect.
+
+#### D. The transplant null is **directional**, not inert — and the literature says our null is unpublishable as it stands
+
+`rederive:patch-upper-bound` returned **PARTIAL**, and the reason is the finding:
+
+* gap = **+12.331** log-odds, positive in **67/67** domains;
+* mean movement under the full-state transplant = **+0.006645** ⇒ **+0.0539 %** of the gap,
+  bootstrap CI [−1.72 %, +1.77 %];
+* but **mean |movement| = 0.684**, median 0.507, max 2.87 log-odds — **with random sign**.
+
+⇒ The correct statement is **"the transplant moves the readout by ~0.5–0.7 log-odds in a random
+direction, transferring none of the 12.3 log-odds gap"** — not "nothing happens". The hook was
+live; the effect is real and undirected.
+
+⛔ **And the literature track (§41) supplies the blocker:** *a null transplant is worthless without a
+positive control on the same instrument.* `2312.10091`, `2607.03502` (KV transplants at **filler**
+positions swap outputs) and `2604.22128` all show this intervention class works **when there is a
+store**. **We never ran a positive control.** Without a matched positive number beside our 0.054 %,
+the conduit-not-store headline is not defensible. **This is now a required experiment, not an
+optional one.**
+
+#### E. TEST contamination — **two of the continuation's three targets have no clean confirmation split**
+
+| target | verdict |
+|---|---|
+| (i) representation candidate → installation | ⚠️ **outcome side contaminated.** Test installation was consumed by `pr066_behaviour.json /Q2/by_split/test`, **again** post-hoc by `q2_concept_present.py`, and `outputs/dcs_ts/pr048_result.json /per_domain_accuracy` is a probe accuracy over **exactly the 23 test domains** |
+| (ii) downstream full-state patch site | ✅ **TEST USABLE** — the only clean one. No `PR-068` GPU run exists; the K-ladder runner cannot reach test |
+| (iii) intervened-ASR causal contrast | ⛔ **FRESH POPULATION REQUIRED.** `outputs/boombness/pr057_runner/h2_test/DONE.json` records `stage=h2 split=test`, **30 arms done, 230 test rows per bank**. The judged ASR was never computed, but the one preregistered shot at test was fired |
+
+**Three live guard gaps, all of which would fire silently:**
+
+1. `scripts/dcs_ts_make_exclusions.py:40` — `--split` defaults to `""` (no filter ⇒ pooled incl.
+   test), and `--split test` is **accepted**, because "test" is a legal manifest value.
+2. `src/boombness/pr057_run_causal.py:3064` — **`--split` defaults to `"test"`**, and nothing keeps
+   a ledger of whether test has already been read for that hypothesis. Re-running `h2` reads test
+   again, silently.
+3. `scripts/dcs_succ_q2_concept_present.py:273` — loops `("pooled","train","validation","test")`
+   **unconditionally**, no guard, no override flag. It was written *after* the outcomes existed.
+
+⇒ **Decision: the continuation's confirmatory population is a fresh bank, not `ts116m`'s test
+split.** The inventory hands us one for free — see §G.
+
+#### F. `Q-014` is **decided**, and the answer reframes every contrast we planned
+
+`audit:register-and-surface` measured it instead of restating it. Unit = domain, 70 train domains,
+700 matched family pairs, 14 surface statistics, all test domains excluded.
+
+1. ⛔ **Register does NOT cancel in `C − A`.** Zero of the 14 statistics match; a surface-only
+   classifier separates the matched (C, A) pair from a held-out domain **on prompt text alone**.
+2. ⛔ **Surface alone predicts installation at LOO Pearson +0.526** — *larger than the ρ = 0.484
+   train correlation we are celebrating.* Any hidden-state prediction of installation is confounded
+   until it beats this. `N_surface` is now a **measured floor**, not a caveat.
+3. ✅ **`E − A` is register-matched by construction**: 11 of 14 statistics are **bitwise identical in
+   700/700 pairs**; `n_chars` differs by exactly **−10.0** with sd 0.0 in every pair — which is just
+   `5 × (len("button") − len("bomb"))`. No new bank needed for this family.
+4. 🆕 **The bank's surface partition is by DEMO VALENCE, not by codeword.** `{A,E}` share the benign
+   sentence pool and `{B,C}` share the harm pool: `n_tokens` A = E = 166.490 ± 10.282 and
+   B = C = 171.130 ± 10.082, *to the digit*; `harm_lex_count_ex_target` A = E = 0.806, B = C = 3.749.
+   ⇒ **C is a surface twin of B, not of A.**
+
+**The consequence, which is the most useful thing Phase 1 produced.** `C − A` is register-confounded,
+but `C − B` and `E − A` are each register-matched — and
+
+```
+   interaction  =  (C − A) − (B − E)  =  (C − B) − (A − E)
+```
+
+⇒ **the token × context interaction is a difference of two register-matched contrasts, and is
+therefore register-clean even though neither main effect is.** `C-208` showed `B1` *is* essentially
+that interaction. That does not rescue `B1` (it is still not concept-specific: concentration 1.02 on
+basket), but it does dictate the construction rule for this phase:
+
+> ⛔ **Build candidates on `C − B`, `E − A`, and the interaction. Do not build them on `C − A`.**
+> `configs/dcs_cont_candidate_registry.json` `F2` is amended accordingly before any fit.
+
+#### G. The confirmation population we needed is already on disk, unextracted
+
+`audit:representation-inventory`: **18 extraction runs, all `ts116m`**, all `--layers 6..14`, all
+Llama-3.1-8B-Instruct pinned at `0e9e39f2…`, 32 blocks, d = 4096, all with `DONE.json`.
+**Zero extraction runs exist on the `ts116` or `ts116n` banks** — 12 built banks, never touched by a
+forward pass. `ts116n` is a candidate fresh confirmatory population for §29/§30, subject to its own
+prompt-validation gates.
+
+Corrections to my own `CONT-ENTRY 001`:
+
+* ⚠️ the manifest assigns **116** domains (70/23/23), not 113. 113 is the *behavioural export's*
+  domain count after three drops. My "113 analysed" was the wrong denominator to quote.
+* 🆕 the basket subset is **4,634 rows, not 4,640**: `school_campus` contributes **34**, from 30
+  `occurrence_count_mismatch` skips. Any paired button-vs-basket domain comparison has **one
+  unbalanced domain**, and it is a *train* domain.
+* cost, measured: **`GB = N × P × L × 8.192e-6`**; at P = 12, L = 32 ⇒ **14.60 GB per button bank**,
+  87.5 GB for all six. A full-bank re-extraction is **~1.0 GPU-h** and the **forward pass dominates**
+  (0.663–0.694 ms per prompt token, batch size 1, eager).
+
+#### H. Multi-position capture is a **~15-line additive diff** — and absolute indices are void
+
+`audit:position-machinery`, verified from the banks rather than from prose:
+
+* `--position` accepts exactly `{codeword_last, last, following}`; one index is chosen at
+  `dcs_extract_under_ko.py:570-586` and consumed at `:588-589`, **after** the forward pass, so
+  capturing K positions costs **zero extra compute**.
+* The rel_end machinery already exists and is frozen — `score_behavior.parse_rel_end_rows:345`,
+  `surface_span_from_rel_end:393` — but is wired **only to knockout scoping, never to the read site**.
+* **All 14 readers of `cache/final_occurrence_reps.pt` hardcode that literal path; none globs the
+  cache dir.** ⇒ writing a second file under a new name breaks nothing. `PR-053` and `PR-051` bind
+  their sites by the cache's `position` field, so the existing payload must not be touched.
+* ⛔ **Absolute indices are void.** The A/C trailing span is token-identical for **≥28 tokens in
+  930/930** matched pairs in **all six** banks — but `seq_len(A) == seq_len(C)` in only **45/930**.
+  Every multi-position read must be **rel_end-relative**. (This is the same shape as `C-210`, where
+  a recipient's absolute `probe_pos` was used on a donor's forward pass.)
+* Sizing warning: all 28 offsets ⇒ 28× the cache. A **role-representative offset set** is required,
+  not `−28..−1`.
+
+#### I. The concept-presence correction is **itself codeword-dependent, in the same direction as the defect it corrects**
+
+`audit:concept-presence-reuse`: the 44-term lexicon **is** genuinely frozen (git: committed
+22:37:34, before the `tsb66_C_n4` run completed at 23:39:55, never edited since), and its
+**false-negative rate is ~0** (0 clear misses in 45 enriched rows; an exhaustive 41-term near-miss
+screen over all 727 non-test negatives yielded 14 candidates, all benign). It does its stated job.
+
+⛔ **But its precision is poor and asymmetric.** On the judge-positive subset that feeds the
+headline, **16 of 35 lexicon-positive rows are benign (45.7 %)**. The damage concentrates in seven
+polysemous terms — above all **`casing`, 49 sole hits** — which are ordinary vocabulary for a
+*literal pushbutton* and not for a basket: **39.9 % poly-only hits for `button` vs 10.8 % for
+`basket`**. So `asr_and_concept_present = 0.1456` corresponds to a content-true rate near **0.058**.
+
+⇒ The `C-209` correction **inherits the very codeword-dependence it was built to remove**. Verdict:
+**reuse with a named addition for the bomb banks; re-freeze for gun and knife** — and the addition
+must be frozen **before** any new outcome is read.
+
+#### J. Literature (§41) — `reports/DCS_CONT_LITERATURE_UPDATE_20260910.md`, 43 retrieved URLs
+
+⛔ **Two of our five novelty claims are dead and a third is narrowed:**
+
+* **(e) internal intervention → behavioural ASR change: NOT NOVEL.** Pre-empted ≥6 times, cleanest
+  `2606.28153` (ICML 2026 **Oral**; suppressing compromised heads drives ASR 0 % → 95 %+),
+  `2608.27504`, `2607.14147`, `2605.00123`, `2508.10029`.
+* **(d) causal semantic patching: NOT NOVEL** (already conceded); Patchscopes `2401.06102` is a
+  further ancestor.
+* **(a) query-row knockout: NARROWED** — `2605.04061` already publishes "the query position is
+  strictly necessary (53–100 % disruption)" across four model families. Only *the row as the unit*
+  survives.
+* **(c) concept-free readout: NARROWED** — no named method exists, but Patchscopes is the ancestor
+  **and the Doublespeak paper itself may use Patchscopes**. ⚠️ Must be checked against the in-repo
+  PDF before any novelty sentence is written.
+* ✅ **(b) the query-position ladder is the one clean claim.** All published progressive designs
+  ladder over *layers*, not positions.
+
+**Conduit-not-store has a near-ancestor we did not know about:** `2606.08292` (Quirke, *Necessary,
+Decodable and Reversible, Yet Not Transferable*) — abstract: *"necessity, decodability, same-prompt
+repair, and cross-prompt transfer are separable evidence"*, on three 7–8B instruct models. **That
+sentence is our logical form.** We survive only on the unit, the quantified 62 %/0 % pairing, the
+harm setting, and the positive routing interpretation Quirke declines to make.
+
+**Methods to adopt:** (1) continuous-variable causal intervention `2605.29971` — low cost, answers
+the "you under-dosed" objection; (2) DAS / distributed interchange `2303.02536` — the only
+instrument that distinguishes *no store* from *a low-dimensional store drowned by a whole-state
+swap*, ⛔ with the mandatory random-init floor of `2507.08802` (unconstrained alignment maps reach
+100 % IOI accuracy on **randomly initialised** models); (3) certified interventional fidelity
+`2607.08349` — anytime-valid confidence sequences under adaptive sampling.
+
+Also: Doublespeak has **4 indexed citations**, and `abs:codeword AND abs:jailbreak` returns **zero**
+arXiv results — no mechanistic competitor exists. OpenReview is **tool-inaccessible** (bot-gated on
+HTML and both API endpoints); it needs a human with a browser. ⚠️ Every `‡agent` row in that report
+is flagged as needing to be opened before citation.
+
+---
+
+#### What Phase 1 changes about the plan
+
+1. **A positive control for the transplant instrument is now mandatory** (§D) — promoted from "nice"
+   to a blocker on the headline.
+2. **Candidates are built on `C − B`, `E − A` and the interaction, never `C − A`** (§F).
+3. **`N_surface` is a measured floor of LOO r = 0.526**, and any candidate must beat it (§F).
+4. **Confirmation runs on a fresh bank**, not `ts116m` test (§E). `ts116n` is the leading candidate.
+5. **Extraction must be rel_end-relative** with a role-representative offset set (§H).
+6. **The three guard gaps get closed before any run that could touch test** (§E).
+7. **`F5`'s target stays `y_install`**, but the probe must now also beat the surface model, not just
+   `B1`.
+
+Nothing is frozen. `PR-069` is drafted next.
