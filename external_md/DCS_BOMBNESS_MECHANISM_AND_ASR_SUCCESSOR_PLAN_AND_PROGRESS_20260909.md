@@ -4322,3 +4322,60 @@ the codeword row carries 62 % of the readout against a +0.03 dose-matched contro
 bound** (`S-007`), a **localisation negative** (`S-008`), a **working attack** (`R-206`, 103/104
 domains over the direct request) and a **preregistered installation → behaviour link** (`Q2`,
 ρ = 0.3961 pooled, 0.4206 corrected).
+
+---
+
+### 2026-09-10 04:35 — ENTRY 044 — the claim table, and the answer to Matan's central question
+
+**Label: DELIVERABLE.** `reports/DCS_SUCC_CLAIM_TABLE.md` — successor-plan §35 items 2, 3, 4, and
+the answer set for §43. Nineteen rows, each carrying an entry id **and** an artifact path.
+
+**The answer to §2.1 — *"what does 'the model is moving toward the representation of a bomb'
+actually mean?"* — stated as the phase now has it:**
+
+> We built the measurement: how far the codeword's hidden state moves along a `button → bomb` axis
+> constructed in the **benign** cells, where nothing installs and nothing needs to. It moves
+> **~10 % of that gap in 66–67 of 67 domains**, replicates on a second codeword, sits **~14 sd**
+> above random directions, is **not** explained by register (six negative CV R²), and survives
+> length correction at 85–93 %.
+>
+> ⛔ **And it is not bombness.** It is the **token × context interaction** — how anomalous the
+> queried word is in its frame — measured at **128 % / 102 %** of the whole effect with the
+> harm-context main effect **negative**. It is **not localised** at the codeword (indistinguishable
+> from the adjacent neutral token; worse-aligned than the readout position). Its **concept
+> specificity is 1.02× on the replication codeword** — none. And **its site transfers nothing**:
+> the donor's entire state at that token, all 32 layers, moves 0.054 % of a 12.33 log-odds gap.
+
+**What replaces it, and it is a better answer than the one the question presupposed:**
+
+> **The codeword's query row is a required conduit, not a store.** Cutting *its* access to the
+> demonstrations destroys **62 %** of the model's semantic report — against a dose-matched
+> non-demonstration control that moves **+0.03**, in 67/67 domains. But nothing about the concept is
+> *held* there: not transferable, not distinctively aligned, not localised. The reading is
+> **recomputed** from the demonstration block at the position where the answer is produced.
+
+Four instruments, built for different purposes, agree: `R-112` (inherited), `R-093` (inherited),
+`S-007`, `S-008`.
+
+**And the behavioural half, which `R-097` could not answer at all:** the attack beats the direct
+harmful request in **103 of 104** informative domains, and the model's **own semantic report
+predicts where it lands** (ρ = 0.3961 pooled, **0.4206** once the judge's false positives are
+removed, both at the permutation floor).
+
+**§4 of the claim table is a defect ledger of this phase's own work — fourteen entries.** Three of
+them are one shape, and naming it is the phase's most transferable output:
+
+> **A quantity that could not have told you it was wrong.** `C-134`'s constant printed as a
+> measurement; `C-213a`'s check that existed only in a shell heredoc; `C-214`'s denominator that
+> moves 30× across the thing being compared. Each looked like evidence and carried none. The
+> defences that worked were *arithmetic stated in advance* (`D-001` was caught by a count that did
+> not match), *adversarial re-derivation by someone forbidden to read the original* (`A-103`), and
+> *writing down what would make an experiment uninterpretable before running it* (`C-214`).
+
+⛔ Nothing in the deliverable makes a forbidden sentence sayable; §3 lists eleven, two of them added
+by this phase's own withdrawals.
+
+**Still open and named**: the `basket` attack arm (1068/1130 rows, generating); a K-ladder knockout
+read at `last` rather than the codeword; the `Q-014` register decision; and `REVIEW-2`'s `C6` — the
+analyzer has no concept-presence field, so `A1-3`'s instruction to read `N2` on that channel is
+recorded but not executable.
