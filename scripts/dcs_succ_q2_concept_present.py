@@ -39,6 +39,8 @@ import random
 import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TEST_READ_REFUSAL = ("DCS-CONT TEST-READ GUARD. The frozen split's TEST domains are the confirmatory population and every read of them spends the one shot. Pass --confirm-test-read to state that this read is intended and preregistered.")
+
 sys.path.insert(0, os.path.join(REPO, "scripts"))
 
 from dcs_succ_concept_presence import concept_hits            # noqa: E402  frozen lexicon
@@ -189,6 +191,8 @@ def main() -> int:
         REPO, "outputs/dcs_succ/q2_concept_present.json"))
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--mutate", action="store_true")
+    ap.add_argument("--confirm-test-read", action="store_true",
+                    help="include the pooled and test scopes. Without it this analyzer reports TRAIN and VALIDATION only.")
     a = ap.parse_args()
     if a.selftest:
         print("=== selftest ===")
@@ -270,7 +274,19 @@ def main() -> int:
            "bank_key": a.bank_key, "gen_prefix": a.gen_prefix,
            "join_key": "(bank_file_sha16, domain) -- COMPOUND",
            "n_perm": a.n_perm, "seed": a.seed, "rows": {}}
-    for split in ("pooled", "train", "validation", "test"):
+    # ---- DCS-CONT TEST-READ GUARD (guard gap 3 of 3, CONT-ENTRY 003) --------------------- #
+    # This loop was unconditional, had no override flag, and was written AFTER the outcomes
+    # existed -- a second, post-hoc look at TEST. "pooled" is listed here too because it
+    # CONTAINS the test domains; only train and validation are free.
+    _splits = ["train", "validation"]
+    if a.confirm_test_read:
+        _splits = ["pooled", "train", "validation", "test"]
+    else:
+        res["test_read_guard"] = ("REFUSED: pooled and test omitted; pass --confirm-test-read "
+                                  "to include them")
+        print("[q2] TEST-READ GUARD: computing train and validation only. %s"
+              % TEST_READ_REFUSAL, file=sys.stderr)
+    for split in _splits:
         doms = sorted(d for d in inst if d in raw and d not in EXCLUDED
                       and (split == "pooled" or assign.get(d) == split))
         if len(doms) < 4:

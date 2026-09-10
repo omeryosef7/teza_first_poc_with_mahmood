@@ -1753,6 +1753,11 @@ def run_stage(pr: Prereg, a) -> int:
     if a.stage == "q1" and a.split != "validation":
         raise RunnerRefusal("the Q1 power stage is VALIDATION-ONLY by preregistration; got --split %r"
                             % a.split)
+    if a.split == "test" and not a.confirm_test_read:
+        raise RunnerRefusal(
+            "DCS-CONT TEST-READ GUARD: --split test spends the one confirmatory shot, and "
+            "h2 has ALREADY been run on it (outputs/boombness/pr057_runner/h2_test: 30 arms, "
+            "230 rows/bank). Pass --confirm-test-read to state that this read is intended.")
     if a.stage in ("h1", "h2") and a.split != "test":
         raise RunnerRefusal("the confirmatory stages run on TEST; got --split %r" % a.split)
 
@@ -3062,6 +3067,16 @@ def main() -> int:
                          "string to gate on the parent alone.")
     ap.add_argument("--stage", default="", choices=["", "q1", "smoke", "h1", "h2"])
     ap.add_argument("--split", default="test", choices=["train", "validation", "test"])
+    # ---- DCS-CONT TEST-READ GUARD (guard gap 2 of 3, CONT-ENTRY 003) --------------------- #
+    # `--split` DEFAULTS to "test" and the confirmatory stages REQUIRE test, which is what
+    # PR-057 preregistered -- that part is deliberate and is NOT changed here. What was missing
+    # is any record that the one shot had already been fired: h2 was run on the 23 test domains
+    # (outputs/boombness/pr057_runner/h2_test/DONE.json, 30 arms, 230 rows/bank) and a bare
+    # re-invocation would silently read them again. Replaying that run now requires appending
+    # --confirm-test-read; the flag IS the record.
+    ap.add_argument("--confirm-test-read", action="store_true",
+                    help="required whenever the resolved --split is 'test'. See the DCS-CONT "
+                         "test-read guard.")
     ap.add_argument("--fit-dir", default="outputs/dcs_ts/directions_pr053",
                     help="the PR-053 TRAIN-ONLY direction DIRECTORY. The loader joins "
                          "directions_fit_dev.pt itself; see C-113 in this file's header.")

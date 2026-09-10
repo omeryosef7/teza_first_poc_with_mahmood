@@ -49,6 +49,10 @@ def main() -> int:
     ap.add_argument("--only-cell", default="")
     ap.add_argument("--only-query-kind", default="")
     ap.add_argument("--only-n-examples", type=int, default=-1)
+    # DCS-CONT: pass-through for the additive multi-position capture. Absent => the extractor
+    # behaves exactly as it did for the six committed ts116m runs.
+    ap.add_argument("--capture-rel-end", default="")
+    ap.add_argument("--capture-codeword-occ", action="store_true")
     a = ap.parse_args()
 
     names = [b for b in a.banks.split(",") if b]
@@ -75,6 +79,10 @@ def main() -> int:
             cmd += ["--only-query-kind", a.only_query_kind]
         if a.only_n_examples >= 0:
             cmd += ["--only-n-examples", str(a.only_n_examples)]
+        if a.capture_rel_end:
+            cmd += ["--capture-rel-end", a.capture_rel_end]
+        if a.capture_codeword_occ:
+            cmd += ["--capture-codeword-occ"]
         print(f"\n=== [{i}/{len(names)}] {name} ===", flush=True)
         print("    " + " ".join(cmd), flush=True)
         t0 = time.time()

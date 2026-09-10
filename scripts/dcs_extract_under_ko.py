@@ -81,7 +81,7 @@ import collections
 import json
 import os
 import sys
-from typing import Dict, List, Optional, Sequence
+from typing import Dict, List, Optional, Sequence, Tuple
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _REPO = os.path.dirname(_HERE)
@@ -469,6 +469,11 @@ def capture(lm, dc, pc, rows, layers, band, run, ledger, args) -> Dict:
     legal_head_mults = (1, int(_nh)) if isinstance(_nh, int) and _nh > 0 else None
     n_ok = 0
     n_keys_hist: List[int] = []
+    # DCS-CONT multi-position accumulators. `mp_site_order` is established by the first row
+    # and every later row is REFUSED unless it matches, so axis 0 of the stack means one thing.
+    mp_cache: Dict[str, torch.Tensor] = {}
+    mp_prov: Dict[str, object] = {}
+    mp_site_order: List[str] = []
     skip_reasons: Dict[str, int] = collections.defaultdict(int)
     diag = {}
     exp_forms: Dict[str, int] = collections.defaultdict(int)
@@ -588,6 +593,58 @@ def capture(lm, dc, pc, rows, layers, band, run, ledger, args) -> Dict:
         vec = pick_layer_rows(hs, layers, pos)
         cache[pid] = vec.half()
 
+        # ---- DCS-CONT multi-position capture ------------------------------------------- #
+        # `hs` is the WHOLE [n_blocks+1, seq, H] tensor and the forward pass has already
+        # happened, so every extra site here costs one index, not one forward.
+        if getattr(args, "_multipos", False):
+            sites: List[Tuple[str, object]] = []
+            if getattr(args, "_capture_rel_end", None) is not None:
+                for _r in args._capture_rel_end:
+                    _a = len(ids) + int(_r)
+                    if not (0 <= _a < len(ids)):
+                        # A row too short for a DECLARED offset is not a row to quietly shorten
+                        # the tensor for; the site set must be identical on every row or the
+                        # stacked axis means different things in different rows.
+                        raise SystemExit(
+                            f"REFUSING: {pid}: declared capture offset {_r} resolves to {_a} "
+                            f"outside a sequence of length {len(ids)}")
+                    sites.append((f"rel{int(_r)}", _a))
+            if getattr(args, "capture_codeword_occ", False):
+                if len(last) < 2:
+                    ledger.fail("capture:too_few_codeword_occurrences", pid)
+                    skip_reasons["too_few_codeword_occurrences"] += 1
+                    continue
+                sites.append(("cw_query", int(last[-1])))
+                sites.append(("cw_demo_last", int(last[-2])))
+                sites.append(("cw_demo_first", int(last[0])))
+                sites.append(("cw_demo_mean", [int(x) for x in last[:-1]]))
+            _stack = []
+            _prov = []
+            for _name, _at in sites:
+                if isinstance(_at, list):
+                    _v = torch.stack([pick_layer_rows(hs, layers, int(_p)) for _p in _at],
+                                     dim=0).mean(dim=0)
+                    _prov.append({"site": _name, "pos": _at, "rel_end": [int(_p) - len(ids)
+                                                                        for _p in _at],
+                                  "token_id": None, "token_text": None, "n_pooled": len(_at)})
+                else:
+                    _v = pick_layer_rows(hs, layers, int(_at))
+                    _prov.append({"site": _name, "pos": int(_at),
+                                  "rel_end": int(_at) - len(ids),
+                                  "token_id": int(ids[_at]),
+                                  "token_text": tok.decode([ids[_at]]), "n_pooled": 1})
+                _stack.append(_v)
+            _names = [n for n, _ in sites]
+            if mp_site_order and _names != mp_site_order:
+                raise SystemExit(
+                    f"REFUSING: {pid}: capture site order {_names} differs from the order "
+                    f"established on the first row {mp_site_order}. A stacked axis whose meaning "
+                    f"changes between rows is not a position.")
+            if not mp_site_order:
+                mp_site_order.extend(_names)
+            mp_cache[pid] = torch.stack(_stack, dim=0).half()
+            mp_prov[pid] = _prov
+
         rec: Dict[str, object] = {
             "prompt_id": pid, "prompt_sha16": row.get("prompt_sha16"),
             "family_id": row.get("family_id"), "cell": row.get("cell"),
@@ -666,6 +723,24 @@ def capture(lm, dc, pc, rows, layers, band, run, ledger, args) -> Dict:
                    os.path.join(run.cache, "final_occurrence_reps.pt"))
         print(f"[ko-extract] cached {len(cache)} rep stacks -> {run.cache}/"
               f"final_occurrence_reps.pt")
+
+    if mp_cache:
+        os.makedirs(run.cache, exist_ok=True)
+        # A DELIBERATELY DIFFERENT FILENAME. Every one of the 14 readers of
+        # `final_occurrence_reps.pt` hardcodes that literal path and none globs the cache dir,
+        # so this file is invisible to all of them.
+        torch.save({"schema": "multiposition_reps/1",
+                    "layers": list(layers), "layer_convention": sg.LAYER_CONVENTION,
+                    "sites": list(mp_site_order),
+                    "capture_rel_end": (list(args._capture_rel_end)
+                                        if args._capture_rel_end is not None else []),
+                    "capture_codeword_occ": bool(args.capture_codeword_occ),
+                    "position_of_primary_cache": args.position,
+                    "dtype": "float16", "reps": mp_cache, "site_provenance": mp_prov},
+                   os.path.join(run.cache, "multiposition_reps.pt"))
+        print(f"[ko-extract] cached {len(mp_cache)} multi-position stacks "
+              f"[{len(mp_site_order)} sites x {len(layers)} layers] -> {run.cache}/"
+              f"multiposition_reps.pt")
 
     out: Dict[str, object] = {
         "n_rows_attempted": len(rows), "n_rows_captured": n_ok, "n_cached": len(cache),
@@ -1121,6 +1196,28 @@ def main() -> int:
     # token-role map's own nomination was rel_end -9, `' actually'`, which IS this following site.
     ap.add_argument("--position", default="codeword_last",
                     choices=["codeword_last", "last", "following"])
+    # ---- DCS-CONT multi-position capture (mandate sections 8, 9) ----------------------- #
+    # ADDITIVE. `--position` above, its three per-row assertions, `vec`/`cache[pid]` and the
+    # `final_occurrence_reps.pt` payload are UNTOUCHED, because 14 files read that cache by its
+    # literal path and PR-051/PR-053 bind their read SITE by its `position` field. This writes a
+    # SECOND file under a different name and never mutates the first.
+    #
+    # WHY rel_end AND NOT ABSOLUTE. Measured over all six ts116m banks: cells A and C are
+    # token-identical for >= 28 trailing tokens in 930/930 family-matched pairs, but
+    # seq_len(A) == seq_len(C) in only 45/930. An absolute index means a different ROLE in
+    # different prompts -- the C-210 shape, where a recipient's absolute probe_pos was used on a
+    # donor's forward pass.
+    ap.add_argument("--capture-rel-end", default="",
+                    help="declared role-relative capture offsets, e.g. '-28..-1' or "
+                         "'-1,-9,-10,-11'. Resolved per row as len(input_ids)+rel_end by the SAME "
+                         "frozen parser the knockout scopes use (score_behavior.parse_rel_end_rows). "
+                         "Empty = no multi-position capture, and this file behaves exactly as before.")
+    ap.add_argument("--capture-codeword-occ", action="store_true",
+                    help="ALSO capture four fixed codeword sites: the query occurrence, the last "
+                         "and first demonstration occurrences, and the MEAN over all demonstration "
+                         "occurrences (mandate section 10's pooled representation). Fixed arity of 4 "
+                         "regardless of how many occurrences a row has, so the stacked tensor has "
+                         "the same shape on every row.")
     ap.add_argument("--model", default=None, help="default = ds_common.PRIMARY_MODEL")
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--seed", type=int, default=20260905)
@@ -1211,6 +1308,16 @@ def main() -> int:
     args._rel_end_rows = None
     args._rel_end_scope_id = (args.knockout_scope_id or "").strip()
     args._rr_draw = None
+    # ---- DCS-CONT: capture offsets, parsed by the frozen parser, `None` = feature off ---- #
+    try:
+        _cap_declared = sb.parse_rel_end_rows(args.capture_rel_end, what="--capture-rel-end")
+    except sb.DeclaredOffsetRefusal as e:
+        raise SystemExit(f"REFUSING: {e}")
+    args._capture_rel_end = list(_cap_declared) if _cap_declared else None
+    if args._capture_rel_end is None and not args.capture_codeword_occ:
+        args._multipos = False
+    else:
+        args._multipos = True
     if _rel_end_declared:
         if scope != LAST_K_SCOPE:
             raise SystemExit(

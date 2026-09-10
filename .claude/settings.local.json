@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git show:*)",
+      "Bash(git add:*)",
+      "Bash(git restore:*)",
+      "Bash(git checkout:*)",
+      "Bash(git switch:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git fetch:*)",
+      "Bash(git stash:*)",
+      "Bash(git config:*)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('poc_stage6/batch_redacted_export_all.py'\\).read\\(\\)\\); print\\('OK'\\)\")",
+      "Bash(python3 -m pytest poc_stage4_5/tests/test_core.py -v -k \"Pilot\")",
+      "Bash(pip3 show *)",
+      "Bash(conda run *)",
+      "Bash(find /home/sharifm /a/home /home/cc -name \"activate\" -path \"*/poc_stage2/*\" 2>/dev/null | head -5; find /home/sharifm /a/home -name \"python3\" -path \"*/poc_stage2/*\" 2>/dev/null | head -3)",
+      "Read(//home/sharifm/**)",
+      "Bash(grep -nE '^#{1,3} ' docs/RESEARCH_PLAN_DISTILLING_JAILBREAKS.md)",
+      "Bash(grep -nE '^#{1,3} ' docs/PLAN_EXECUTION_SUMMARY.md)"
+    ]
+  }
+}

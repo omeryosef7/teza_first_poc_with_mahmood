@@ -25,6 +25,8 @@ from __future__ import annotations
 import argparse, hashlib, json, os, sys
 
 EXCLUDED_DOMAINS = ("restaurant_kitchen", "school_campus", "subway_station")
+TEST_READ_REFUSAL = (
+    "DCS-CONT TEST-READ GUARD. The frozen split's TEST domains are the confirmatory population and every read of them spends the one shot. Phase 1 of the continuation found this call site could reach TEST with no flag and no record. Pass --confirm-test-read to state that this read is intended and preregistered.")
 SPLIT_MANIFEST = "data/boombness_prompts/dcs_ts116_domain_split.json"
 AUTHORITY = {"restaurant_kitchen": "DCS-C-082", "school_campus": "DCS-C-075 / DCS-R-108",
              "subway_station": "DCS-C-087"}
@@ -40,7 +42,18 @@ def main() -> int:
     ap.add_argument("--split", default="",
                     help="if given, ALSO exclude every row whose domain the frozen manifest "
                          "assigns to a different split. The manifest is read, never regenerated.")
+    ap.add_argument("--confirm-test-read", action="store_true",
+                    help="required to build an exclusion file that KEEPS the frozen manifest's "
+                         "test domains, i.e. --split test. See the DCS-CONT test-read guard.")
     a = ap.parse_args()
+
+    # ---- DCS-CONT TEST-READ GUARD (guard gap 1 of 3, CONT-ENTRY 003) --------------------- #
+    # `--split` defaulted to "" (no filter => the pooled population INCLUDING all 23 test
+    # domains) and `--split test` was accepted silently, because "test" is a legal manifest
+    # value. Both paths now have to say so out loud.
+    if a.split == "test" and not a.confirm_test_read:
+        print("REFUSING: %s" % TEST_READ_REFUSAL, file=sys.stderr)
+        return 2
 
     keep_domains = None
     if a.split:

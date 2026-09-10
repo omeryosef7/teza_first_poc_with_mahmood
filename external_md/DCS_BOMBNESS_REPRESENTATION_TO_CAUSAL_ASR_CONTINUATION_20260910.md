@@ -2115,3 +2115,202 @@ is flagged as needing to be opened before citation.
    `B1`.
 
 Nothing is frozen. `PR-069` is drafted next.
+
+---
+
+### 2026-09-10 — CONT-ENTRY 004 — **Phase 2 build.** Multi-position capture implemented additively; the three TEST-read gaps are closed; the node pin turns out to be a weights-location fact
+
+**Loop check.** Cluster was idle at the start of this iteration. Smoke job **875336** now queued on
+`n-804`. No new artifacts yet.
+
+#### 1. Multi-position capture — the diff, and what it deliberately does not touch
+
+`scripts/dcs_extract_under_ko.py` gains exactly two flags:
+
+```
+--capture-rel-end='-14..-1'     # role-relative capture offsets, parsed by the FROZEN parser
+--capture-codeword-occ          # + 4 fixed codeword sites
+```
+
+**Additive by construction.** `--position`, its three per-row assertions, `vec` / `cache[pid]` and
+the `final_occurrence_reps.pt` payload are **untouched**, because 14 files read that cache by its
+literal path and `PR-051` / `PR-053` bind their read *site* by its `position` field. The new sites
+go to **`cache/multiposition_reps.pt`**, a filename none of those 14 readers can see.
+Self-test T6 still pins the 5-key payload; **35/35 checks pass** after the patch.
+
+Three properties that are the point of the design, not decoration:
+
+* **Per-row provenance.** Every captured site records absolute `pos`, `rel_end`, `token_id` and the
+  **decoded `token_text`**. The read site is therefore *auditable from the artifact* instead of
+  assumed — which also means the **behavioural prompt's role map is produced by the extraction**
+  rather than needing to be known before it (`REL_END_ROLE` was built for the *semantic* template
+  and does not describe the prompt `CONT-ENTRY 002` moved the predictor onto).
+* **Site order is pinned by the first row and every later row is REFUSED unless it matches.** An
+  axis whose meaning changes between rows is not a position.
+* **Offsets are role-relative, never absolute** — because A and C are token-identical for ≥28
+  trailing tokens in **930/930** pairs while `seq_len(A) == seq_len(C)` in only **45/930**. An
+  absolute index is a *different role* in a different prompt. This is the `C-210` shape.
+
+Reuses the existing frozen machinery rather than adding any: `score_behavior.parse_rel_end_rows`
+(same parser the knockout scopes use, same refusals on non-negative and duplicate offsets).
+Costs **zero extra forward passes** — `hs` already holds every layer and every token, and
+`pick_layer_rows` is a pure indexer. `scripts/dcs_ts_extract_multi.py` gains matching pass-through.
+
+The four fixed codeword sites (§10's pooled representations, fixed arity so the stack shape is
+row-invariant): `cw_query`, `cw_demo_last`, `cw_demo_first`, `cw_demo_mean`.
+
+#### 2. The three TEST-read gaps are closed, and each was verified to refuse
+
+All three use the **same flag name and the same refusal text**, so `grep` finds every one:
+
+| # | site | was | now |
+|---|---|---|---|
+| 1 | `dcs_ts_make_exclusions.py` | `--split test` accepted **silently** ("test" is a legal manifest value); `--split ""` meant *no filter* ⇒ pooled **incl. test** | refuses without `--confirm-test-read` — **verified: exit 2 on `test`, unchanged on `train`** (`selected=1160 excluded=490 remain=670 domains_remain=67`) |
+| 2 | `pr057_run_causal.py` | **`--split` defaults to `"test"`**, no record that the one shot was already fired | default left alone (PR-057 preregistered it) but a test read now requires the flag — **verified present in `--help`** |
+| 3 | `dcs_succ_q2_concept_present.py` | looped `("pooled","train","validation","test")` **unconditionally**, no override, written *after* the outcomes existed | reports **train and validation only** unless the flag; `pooled` is gated too **because it contains the test domains** |
+
+⚠️ Consequence, stated plainly: replaying the recorded `PR-057` `h2` command now requires appending
+`--confirm-test-read`. **The flag is the record.** That is a deliberate trade of bit-exact replay
+for a guard that cannot be walked past by accident.
+
+#### 3. The node pin was never only about `n-801` being slow
+
+`C-201`/`C-202` recorded `--nodelist=n-802,n-803,n-804,n-805,t-806` as an avoidance of `n-801`'s
+weight-load stalls. Debugging this iteration's submissions established a second, larger reason that
+was **not** in the record:
+
+* `--nodelist` demands **all** listed nodes; with `n-805` transiently unavailable the job sat
+  `PD (ReqNodeNotAvail)` forever. `--exclude=n-801` expresses "avoid the bad node" correctly.
+* But `--exclude=n-801` then scheduled onto **`n-503`, where the run died**:
+  `OSError: meta-llama/Llama-3.1-8B-Instruct does not appear to have a file named ... model.safetensors`.
+* The shared cache at `/home/sharifm/students/omeryosef/.cache/huggingface/hub/models--meta-llama--Llama-3.1-8B-Instruct/`
+  contains **only `config.json` and the tokenizer** — 9 MB of blobs, **no weights**.
+
+⇒ **The Llama weights are node-local to the `n-80x` set.** The nodelist is a *data-locality*
+constraint, not just a performance one, and any job that leaves that set fails at model load. The
+smoke was resubmitted with `--nodelist=n-804` and carries a diagnostic that prints `HOME`,
+`HF_HOME` and the located `.safetensors` path, so the next session does not have to rediscover this.
+
+Also recorded: this account submits with `--account=gpu-research --partition=killable`; omitting
+the account gives `Invalid account or account/partition combination specified`.
+
+#### 4. What the smoke has to prove before any full extraction runs
+
+The smoke captures cell C, dose 4, `--limit 40`, layers 10–12, offsets `−14..−1` plus the four
+codeword sites, on **both** query kinds. The decisive check is a **three-way agreement**:
+
+> on the `semantic_one_word` rows, the new `rel-10` site, the new `cw_query` site, and the **frozen**
+> code's own `token_pos` must all be the same index, and its `token_text` must be `' button'`.
+
+That is an independent cross-validation of the new capture path against the code that produced every
+committed result — the strongest check available without a second implementation. If those three
+disagree, the multi-position cache is wrong and nothing downstream may be built on it.
+
+Secondary: the **behavioural** rows' `token_text` at each `rel_end` gives the behavioural role map
+that does not currently exist anywhere in the repo.
+
+**Nothing is extracted at scale and `PR-069` is not frozen.** Both wait on the smoke.
+
+---
+
+### 2026-09-10 — CONT-ENTRY 005 — **the smoke validated the new capture path bit-exactly, and immediately caught the bug it was designed to catch.** Plus `C-CONT-001`, a correction to ENTRY 004
+
+Smoke `875402`, both query kinds, `rc=0`, 40 rows each, **18 sites × 3 layers**.
+
+#### 1. The three-way agreement, on the semantic prompt: **40/40, bit-exact**
+
+| check | result |
+|---|---|
+| `rel-10` position == `cw_query` position == **frozen code's `token_pos`** | ✅ **40/40** |
+| `rel-10` `token_text` == frozen `token_text` | ✅ **40/40** (`' button'`) |
+| **tensor identity** `multiposition[rel-10]` == `final_occurrence_reps` vector | ✅ **40/40** |
+
+The last row is the one that matters: the new capture path returns the **byte-identical vector** the
+frozen extractor produces at the shared site. That is an independent cross-validation against the
+code that produced every committed result in this project.
+
+#### 2. On the behavioural prompt the same check reads **0/40 — and that is the correct answer**
+
+```
+MISMATCHES: (pid, rel-10 pos, cw_query pos, frozen token_pos)
+  b16e0dfd…  209  208  208
+  cb7b182e…  198  197  197
+```
+
+**The behavioural query's codeword is at `rel_end −11`, not `−10`.** Read off the artifact:
+
+| rel_end | **semantic_one_word** | **behavioral** |
+|---|---|---|
+| −14 | ` what` | ` to` |
+| −13 | ` does` | ` build` |
+| −12 | ` the` | ` a` |
+| **−11** | ` word` | ⭐ **` button`  ← CODEWORD** |
+| **−10** | ⭐ **` button`  ← CODEWORD** | `.` |
+| −9 | ` actually` *(neutral control)* | ` given` |
+| −8 | ` refer` | ` the` |
+| −7 | ` to` | ` context` |
+| −6 | `?` | `.` |
+| −5…−1 | `<|eot_id|>`, `<|start_header_id|>`, `assistant`, `<|end_header_id|>`, `\n\n` | *identical* |
+
+⛔ **The near-miss, stated plainly.** `REL_END_ROLE` — the frozen, correct map this project has used
+throughout — says the codeword is `−10`. It was built on the **semantic** template. `CONT-ENTRY 002`
+moved the predictor onto the **behavioural** prompt. Had I carried `−10` across, every "codeword"
+representation in this phase would have been read at **the period following the codeword**, and
+nothing in any downstream statistic would have looked wrong: same layer count, same norms, same
+domain structure, a plausible number at every step.
+
+This is the third instance in this project of one shape — **a quantity that could not have told you
+it was wrong** — and the first one caught *before* it produced a number. What caught it was not
+care; it was the decision in `CONT-ENTRY 004 §1` to make every captured site record its **decoded
+token text**, so the read site is an *observation* rather than an assumption.
+
+**Consequences, now binding:**
+
+1. ⛔ **The predictor site is `cw_query`, never a hardcoded offset.** `cw_query` is resolved from
+   the codeword *occurrences* (`resolve_occurrences`), so it lands on the codeword under **both**
+   templates and will land correctly under the §7 held-out templates that do not exist yet. The
+   `rel*` sites remain, but as the **position sweep**, not as the way to find the codeword.
+2. **The two templates have different control structure.** The semantic prompt's `+1` neighbour is
+   a content word (` actually`); the behavioural prompt's is punctuation (`.`). The §18
+   neighbouring-position control is therefore **not the same control** on the two templates and must
+   be declared per template.
+3. `cw_demo_last` sits at `rel_end −30` (semantic) and `−26` (behavioural) — consistent with the
+   4-token-shorter tail, a second independent confirmation that offsets do not transport.
+
+#### 3. `C-CONT-001` — correcting `CONT-ENTRY 004 §3`
+
+> **ENTRY 004 §3 claimed the Llama weights are node-local to the `n-80x` set. That is WRONG.**
+
+The diagnostic job (`875362`, `n-804`) settles it: on the compute node `$HOME` is
+`/a/home/cc/students/math/omeryosef` and that cache's Llama entry is
+**8.8 MB — `config.json` and the tokenizer only, zero `.safetensors`, all four blobs stamped
+2026-08-25 10:48 and unchanged since.** The same is true of the `/home/sharifm/...` path. The
+failure on `n-503` and the failure on `n-804` had the **same** cause, and it was never node locality.
+
+**Where the weights actually are:** `/home/sharifm/students/matanbentov/hub` — a **lab-shared**
+cache holding the **exact pinned revision** `0e9e39f249a16976918f6564b8830bc894c89659` (the commit
+recorded in every `ts116m` run's `metadata.json`), all four shards, readable, 31 GB, **on the shared
+filesystem**. Setting
+
+```
+export HF_HUB_CACHE=/home/sharifm/students/matanbentov/hub
+export HF_HUB_OFFLINE=1
+```
+
+makes the run succeed, and makes it **node-independent** — `--exclude=n-801` is now sufficient and
+`--nodelist` is not needed at all. ⚠️ **This dependency is recorded nowhere in the repository**, and
+without it every GPU job in this project dies at model load with *"does not appear to have a file
+named model.safetensors"*. It is written here because it is the single fact that would otherwise
+cost the next session an hour.
+
+Two smaller operational facts, same category: this account must submit with
+`--account=gpu-research --partition=killable` (omitting the account gives *"Invalid account or
+account/partition combination"*), and **`--nodelist` demands ALL listed nodes** — the inherited
+five-node pin sat `PD (ReqNodeNotAvail)` indefinitely the moment `n-805` went unavailable.
+`--exclude=n-801` is the correct expression of the `C-201`/`C-202` lesson.
+
+#### 4. State
+
+✅ multi-position capture implemented, self-test 35/35, **validated bit-exactly against the frozen
+extractor**, guards closed, GPU path restored. ⛔ Not yet done: `PR-069` is not frozen and no
+extraction has been run at scale. That is the next step, and it now has a decided predictor site.
