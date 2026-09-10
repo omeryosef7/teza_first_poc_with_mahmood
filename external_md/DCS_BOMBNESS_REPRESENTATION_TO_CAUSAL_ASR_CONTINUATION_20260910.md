@@ -3528,3 +3528,61 @@ loaded at all. The guard added in `CONT-ENTRY 018` — one of four written for a
 never been run — caught a real design error **before any number existed**. Fixed by putting donor
 domains in the load set (31 domains = 24 recipient + 8 donor, 1 shared) and making the map total
 over the union: **310 families, stratum 89, 0 same-domain violations**. Relaunched as `876332`.
+
+---
+
+### 2026-09-13 — CONT-ENTRY 020 — **REVIEW-2 launched; basket replication started with no new GPU**
+
+**Loop check.** `876332` (the `C_hi→C_lo` positive control) running, **64 families over 31 domains**,
+597 rows written. Basket map running on CPU. `REVIEW-2` (5 dimensions + adjudicator) launched.
+
+#### 1. The basket replication needed no GPU, because the surviving corpus already contains the site
+
+`CONT-ENTRY 017` recorded that §30 replication would need a re-extraction after the basket
+**semantic** corpus was lost to `EDQUOT`. **That was wrong about what §30 needs first.** `K1` is
+defined on the **behavioural** prompt at `cw_demo_mean` L13–14 — and the basket *behavioural* corpus
+survived intact (3,714 rows, 20 sites × 19 layers, `DONE.json`); 20 sites includes `cw_demo_mean`,
+19 layers includes 13 and 14.
+
+Running now on CPU against `ts116m_readout_basket_bomb_20260907_152329_3191150`. Confirmed at
+launch:
+
+```
+[map] bank agreement: corpus 79511d9e254571e6 == readout 79511d9e254571e6
+[map] 670 complete 4-cell keys over 67 domains (split=train)
+[map] y_install over 67 domains: mean 0.4756  min 0.0004  max 0.9348
+```
+
+🆕 Basket's mean installation is **0.476** against button's **0.678** — the same direction as the
+inherited finding that basket's concept-free channel is thinner, now measured on this corpus.
+
+⛔ Reported **separately**, never pooled — and the analyzer enforces it by construction: a button
+corpus against a basket readout **refuses** on the bank-sha assertion.
+
+What the basket run cannot yet do is the demonstration-side **neighbour and random-pool** controls,
+which need the `cont3nb` site set. If `K1` replicates on basket, that slim run is the follow-up.
+
+#### 2. `REVIEW-2` — the three questions written into the prompts rather than left to chance
+
+1. ⚠️ **The threshold question.** `K1` was **selected** using the 1900-cell map (ceiling 0.6916) and
+   is now judged against the 175-cell corpus (ceiling 0.5837). That is selection on one family and
+   testing against a smaller one. If the honest threshold is 0.6916, `K1`'s margin is a hair's
+   breadth again and **`CONT-ENTRY 019 §1`'s "clear margin" is wrong**.
+2. ⚠️ **Is `N_neighbour` "partial" or simply "failed"?** `K1` = 0.6984, the −1 neighbour = 0.6169.
+   Whether that **difference** is distinguishable from zero at n = 67 decides which word is honest.
+   **The registry currently says "PARTIAL" without having tested it.**
+3. ⚠️ **Is the positional dissociation an averaging artifact?** `cw_demo_mean` pools **four**
+   occurrences; `cw_query` is **one**, and averaging reduces noise. The single-occurrence comparison
+   that settles it — `cw_demo_last` (0.6155) vs `cw_query` (0.4421) — is put to the reviewers
+   directly.
+
+Also asked for: the strongest **opposing** case that the transplant instrument is fine and the nulls
+*are* meaningful; and the strongest true sentence `K1` would support versus the strongest false one
+someone might write anyway.
+
+#### 3. Standing
+
+Both live claims are provisional **in the same way**: `K1` rests on a threshold comparison that may
+not be the right one, and *"the instrument is not validated"* rests on two transplants that could
+not have worked for a reason discovered only afterwards (`C-CONT-010`). `876332` addresses the
+second; `REVIEW-2` the first.
