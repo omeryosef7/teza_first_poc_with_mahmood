@@ -3586,3 +3586,115 @@ Both live claims are provisional **in the same way**: `K1` rests on a threshold 
 not be the right one, and *"the instrument is not validated"* rests on two transplants that could
 not have worked for a reason discovered only afterwards (`C-CONT-010`). `876332` addresses the
 second; `REVIEW-2` the first.
+
+---
+
+### 2026-09-13 — CONT-ENTRY 021 — **the instrument DOES transfer.** `C-CONT-012` reverses `CONT-ENTRY 012`; the `C→A` null becomes interpretable; basket replicates the *shape* but not the *threshold*
+
+Job `876332` **`rc=0`, `DONE.json`, 960 rows**, and for the first time in this project **every arm's
+option mass is admissible**:
+
+```
+donor_ceiling  median 0.8429   (B was 0.011, E was 0.036 -- both below the gate)
+none           median 0.1749
+transplant     median 0.2464
+self_swap_noop_check   mean +0.00000000   max|d| 0.00000000   -> INERT
+```
+
+#### 1. The result, at the DOMAIN unit, with the stratum declared before the run
+
+| | **primary stratum** (`recipient_install < 0.10`) | all families |
+|---|---|---|
+| n domains | **16** | 31 |
+| gap | +13.965 | +8.360 |
+| movement | **+1.479** | +0.342 |
+| **transfer** | **+10.7 %** | +4.1 % |
+| 95 % CI (domain bootstrap, 10 k) | **[+3.3 %, +19.6 %]** | [−0.3 %, +8.7 %] |
+| sign test | 11/16, p = 0.21 | 18/31, p = 0.47 |
+| **sign-flip permutation on domain means** | **p = 0.0089** | p = 0.105 |
+
+⇒ **A token-matched transplant at the query codeword transfers ~10.7 % of the semantic gap, in the
+right direction, with a bootstrap CI excluding zero and permutation p = 0.0089.**
+
+Two things this table says that matter more than the headline:
+
+* ⚠️ **The sign test alone (11/16, p = 0.21) does NOT reach significance.** It throws away magnitude.
+  What carries this result is the magnitude-based permutation and the bootstrap CI. Anyone quoting
+  "11 of 16 domains" as the evidence would be quoting the weakest available summary.
+* ⚠️ **The all-families analysis does NOT reach significance** (+4.1 %, CI touching zero,
+  p = 0.105). **The pre-declared stratum is load-bearing.** It was written into the map artifact
+  before a single transplant row existed (`CONT-ENTRY 018 §3`), defined on the predictor, never the
+  outcome — and it more than doubles the effect. This is preregistration doing the job it exists for.
+
+#### 2. `C-CONT-012` — this reverses `CONT-ENTRY 012`
+
+> `CONT-ENTRY 012` concluded: *"the instrument fails to transfer semantic content in the one case
+> where the content is certainly local"*, and upgraded the standing risk to **"cannot currently be
+> supported"**. ⛔ **That conclusion is now withdrawn.**
+
+It rested on `E→A`, and `CONT-ENTRY 016` established that `E→A` was **structurally incapable** of
+showing transfer: its donor's readout is degenerate, because asked what ` bomb` refers to a model
+paraphrases (donor option mass **0.036**, 53/67 families below the run's own gate). The same was
+true of `B→C` (0.011). Both were invalid experiments, and I drew a conclusion from them before
+finding out why they were invalid.
+
+**The valid experiment says the opposite: the instrument transfers.**
+
+#### 3. What that does to the inherited null — and the refinement it forces
+
+The `C→A` null is now **interpretable**, because there is finally a demonstrated capability to
+measure it against:
+
+| | transfer | 95 % CI |
+|---|---|---|
+| `C_hi → C_lo` (this run) | **+10.7 %** | [+3.3 %, +19.6 %] |
+| `C → A` (`PR-068`) | **+0.054 %** | [−1.72 %, +1.77 %] |
+
+Both are **token-matched** (a ` button` state patched into a ` button` position), on the same
+instrument, at the same site and scope. One moves the reading; the other does not, and its CI
+excludes the other's point estimate.
+
+🆕 **The difference between them is the recipient's demonstration block**, and that is the finding:
+
+* `C_hi → C_lo`: the recipient has **harmful** demonstrations — the doublespeak scaffolding is
+  present, installation merely failed. Transplanting the codeword state **helps**.
+* `C → A`: the recipient has **benign** demonstrations — no scaffolding. The identical intervention
+  does **nothing**.
+
+> **The codeword's state is not sufficient on its own. It expresses the installed reading only when
+> the recipient's own demonstrations can support it.**
+
+That is *"conduit, not store"* restated with **positive evidence on both sides** instead of an
+uninterpretable null — and it is a sharper claim than the successor sprint's, which had only the
+null. ⚠️ It rests on a **between-run** comparison (this run vs `PR-068`) sharing bank, site, scope
+and instrument but differing in design, so it is **EXPLORATORY** until the two arms are run together.
+
+#### 4. Basket: the shape replicates, the threshold does not
+
+`outputs/dcs_cont/layerpos_train_BASKET_bomb.json`, 67 TRAIN domains, FWER p95 = **0.6929**.
+⛔ Reported separately; never pooled.
+
+| site (interaction) | **basket** best | **button** best |
+|---|---|---|
+| `cw_demo_mean` | **0.6275** ⛔ (thr 0.6929) | 0.6983 ✅ (thr 0.6916) |
+| `cw_demo_last` | 0.6096 | 0.6155 |
+| `cw_query` | 0.4315 ⛔ | 0.5153 ⛔ |
+| `cw_demo_first` | 0.4380 | 0.3796 |
+
+**The ordering and the layer profile replicate**: `cw_demo_mean` is the top site on both, both peak
+at **L13–14**, and `cw_query` is well below on both. But on basket the effect **does not clear its
+own noise ceiling** (0.628 vs 0.693).
+
+⇒ **Cross-codeword transfer is NOT established.** The registry must say so. It is consistent with
+basket's thinner channel — mean installation **0.476** vs button's **0.678** — but "consistent with"
+is not "shown", and the §44 criterion is unmet.
+
+#### 5. Standing
+
+| claim | status |
+|---|---|
+| the transplant instrument transfers (token-matched) | ✅ **+10.7 %, p = 0.0089**, pre-declared stratum |
+| `CONT-ENTRY 012`'s "instrument not validated" | ⛔ **WITHDRAWN** (`C-CONT-012`) |
+| the `C→A` null | ✅ now **interpretable**, and it is a real null |
+| the codeword state needs recipient context to express | 🆕 EXPLORATORY, between-run |
+| `K1` cross-codeword | ⛔ **not established** — basket 0.628 < 0.693 |
