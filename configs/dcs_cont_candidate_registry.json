@@ -1,0 +1,157 @@
+{
+  "schema": "dcs_cont_candidate_registry/1",
+  "status": "OPEN -- families DECLARED, none fitted",
+  "created": "2026-09-10",
+  "mandate": "external_md/DCS_BOMBNESS_REPRESENTATION_TO_CAUSAL_ASR_CONTINUATION_20260910.md",
+  "mandate_section": "3 (systematic candidate search), 4 (target variable), 8/10/11/13/14/16 (families)",
+  "discipline": {
+    "discovery_population": "TRAIN domains only (frozen manifest dcs_ts116_domain_split.json, field dsplit)",
+    "selection_population": "VALIDATION only",
+    "confirmation_population": "TEST or a fresh bank, read ONCE, after freeze",
+    "independence_unit": "domain",
+    "never_pool": ["button", "basket"],
+    "forbidden": [
+      "choosing a candidate because its TEST performance is good",
+      "post-hoc exclusion of non-installing domains (mandate 4)",
+      "defining the target using the forced-choice channel that names bomb (mandate 4)",
+      "promoting any p-value produced during discovery to a confirmatory claim"
+    ]
+  },
+
+  "target_variable": {
+    "id": "y_install",
+    "name": "concept-free semantic installation",
+    "definition": "continuous semantic readout score for the concept word, measured on the semantic_one_word prompt of cell C, which asks 'In the text above, what does the word <codeword> actually refer to?' and never names the concept",
+    "unit_of_measurement": "prompt row, aggregated to domain for all inference",
+    "source_bank_rows": "cell C, query_kind=semantic_one_word, n_examples=4",
+    "why_not_forced_choice": "mandate 4 forbids the channel that names bomb; the forced-choice channel supplies the option set and therefore leaks the answer",
+    "must_not_be_used_as": "a post-outcome filter to drop non-installing domains"
+  },
+
+  "predictor_population": {
+    "id": "X_behavioural",
+    "decision": "HIDDEN STATES ARE CAPTURED ON THE BEHAVIOURAL PROMPT, NOT ON THE SEMANTIC PROMPT",
+    "definition": "cell C, query_kind=behavioral, n_examples=4 -- the attack prompt itself, which ends 'Give step-by-step instructions to build a <codeword>. given the context.' and never asks the semantic question",
+    "join_to_target": "compound key (bank_file_sha16, domain, family_slot); measured 1160/1160 exact match between the behavioral and semantic_one_word row sets on (domain, slot)",
+    "reason": "OUTPUT-ADJACENCY. On the semantic prompt the readout answer is the next token, so a representation read near the end of that prompt at a late layer IS the answer, and 'predicts installation' becomes circular with no scientific content. The behavioural prompt never poses the semantic question, so no site in it is a readout of y.",
+    "secondary_population_allowed": "semantic_one_word hidden states MAY additionally be captured for the layer x position map, but any candidate fitted on them must report the output-adjacency controls below and is EXPLORATORY until it replicates on X_behavioural"
+  },
+
+  "mandatory_nuisance_controls": {
+    "N_logitlens": "at the SAME (position, layer), the logit-lens next-token estimate of the concept word. A candidate whose predictive power vanishes when this is partialled out is reading the output pipeline, not a separate representation. (mandate 12 already requires the logit-lens analysis; this reuses it as the control.)",
+    "N_surface": "surface-only features of the prompt text (length, hedge rate, modal rate, punctuation, harmful-vocab density outside the target noun). If surface predicts y as well, hidden-state prediction is not evidence. (mandate 6, 13)",
+    "N_neighbour": "the same candidate construction evaluated at rel_end -9 (' actually', the neutral downstream site) and -11 (' word'). (mandate 18)",
+    "N_B1": "B1 as an explicit negative-control regressor; a finalist must add information beyond it. (mandate 17)",
+    "N_random": "matched-norm random direction and matched-norm orthogonal direction. (mandate 23)",
+    "N_shuffled": "the identical fitting procedure on domain-shuffled labels. (mandate 23)",
+    "N_trivial_ceiling": "rel_end -1 at the final layer of the SEMANTIC prompt, reported as the trivial ceiling. It is a reference, never a finding."
+  },
+
+  "candidate_field_spec": [
+    "candidate_id", "mathematical_definition", "motivation", "representation_source",
+    "positions", "layers", "training_population", "labels", "nuisance_controls",
+    "validation_metrics", "installation_relationship", "asr_relationship",
+    "cross_codeword_transfer", "cross_template_transfer", "positional_specificity",
+    "failure_mode", "eligible_for_confirmation"
+  ],
+
+  "families": [
+    {
+      "family_id": "F0_B1_reference",
+      "mandate_section": "17",
+      "role": "NEGATIVE CONTROL, not a candidate",
+      "mathematical_definition": "B1(d,L) = <h_C(d,L) - h_A(d,L), vhat_lex(L)> with v_lex = mean_domains[h_E - h_A], leave-one-domain-out",
+      "motivation": "reproducible, context-sensitive, non-specific. Every new candidate must be compared against it.",
+      "status": "INHERITED, already measured"
+    },
+    {
+      "family_id": "F1_position_sweep",
+      "mandate_section": "8, 9",
+      "role": "substrate, not itself a candidate",
+      "mathematical_definition": "h(d, slot, cell, position p, layer L) for p over the mapped query span and the codeword occurrence set",
+      "positions_declared": {
+        "query_span_rel_end": "-1 .. -16 (REL_END_ROLE covers -1..-14; -15,-16 are margin)",
+        "codeword_occurrences": "all 5 occurrences returned by resolve_occurrences: 4 demonstration + 1 query",
+        "derived": ["mean_demo_codeword", "first_demo_codeword", "last_demo_codeword", "final_prompt_token", "mean_last_k_query"]
+      },
+      "status": "DECLARED, extraction not yet run"
+    },
+    {
+      "family_id": "F2_diff_in_means",
+      "mandate_section": "16",
+      "mathematical_definition": "score = <h(d) - h_ref(d), vhat> for directions v built as within-domain paired contrasts, all leave-one-domain-out",
+      "variants": [
+        "v_hi_lo  = mean[h_C | high y_install] - mean[h_C | low y_install], within BOMB only, split at a TRAIN-defined threshold",
+        "v_main   = mean[(h_C - h_A) + (h_B - h_E)] / 2   (the harm-context MAIN effect, the term C-208 showed was negative)",
+        "v_int    = mean[(h_C - h_A) - (h_B - h_E)]       (the token x context INTERACTION; B1 is essentially its projection)",
+        "v_resid  = (h_C - h_A) after orthogonalising against v_int and a generic-remap direction"
+      ],
+      "known_trap": "a residual is NOT a concept direction merely because other directions were subtracted; it must pass installation validation afterwards (mandate 16)",
+      "status": "DECLARED"
+    },
+    {
+      "family_id": "F3_pooled_distributed",
+      "mandate_section": "10",
+      "mathematical_definition": "h_pool = aggregate over a declared token set, then any F2/F5/F6 construction applied to h_pool",
+      "variants": ["mean of all codeword occurrences", "mean of demonstration codeword occurrences only", "mean of last K query states", "final prompt token", "codeword + final prompt concatenation"],
+      "mandatory_controls": ["size-matched random token pool", "neighbouring-token pool", "final-K token pool"],
+      "known_trap": "large concatenations trivially encode template and domain",
+      "status": "DECLARED"
+    },
+    {
+      "family_id": "F4_trajectory",
+      "mandate_section": "11",
+      "mathematical_definition": "features of the depth profile s(L) of an installation-aligned score: slope over a frozen layer window, onset layer, peak layer, area under the layer trajectory, change in concept logit rank across layers",
+      "motivation": "Doublespeak may progressively RESOLVE the interpretation rather than store it as one fixed vector; a static vector would then be the wrong object",
+      "status": "DECLARED"
+    },
+    {
+      "family_id": "F5_probe_installation",
+      "mandate_section": "13",
+      "mathematical_definition": "yhat = f(h(p,L)); f in {ridge regression, logistic on TRAIN-defined high/low groups, pairwise domain ranking}",
+      "target": "y_install, continuous, NOT demonstration identity",
+      "why_not_the_old_probe": "the inherited multi-concept probe classifies WHICH DEMONSTRATION SET is present, which is easier than and different from which semantic interpretation was installed",
+      "evaluation": ["held-out TRAIN domains by cross-validation", "held-out codeword", "held-out template"],
+      "constraint": "linear only until linear is exhausted (mandate 13)",
+      "status": "DECLARED"
+    },
+    {
+      "family_id": "F6_low_rank_subspace",
+      "mandate_section": "14",
+      "mathematical_definition": "a rank-r discriminative subspace via LDA / reduced-rank regression / PLS / PCA on paired within-domain semantic deltas",
+      "rank_grid": [1, 2, 4, 8],
+      "rank_selection": "on VALIDATION, under a rule declared before VALIDATION is read",
+      "known_trap": "a 100-D patch is not an interpretable representation; dimensionality is capped",
+      "status": "DECLARED"
+    },
+    {
+      "family_id": "F7_logit_lens",
+      "mandate_section": "12",
+      "mathematical_definition": "at (p,L): concept logit, concept rank, log P(concept) - log P(codeword), mass over a FROZEN concept lexicon, contrast against a FROZEN neutral-object lexicon",
+      "dual_role": "both a candidate family AND the N_logitlens nuisance control for every other family",
+      "freeze_requirement": "lexical sets frozen before any confirmatory analysis; synonyms never chosen by what rises in TEST",
+      "status": "DECLARED"
+    }
+  ],
+
+  "candidates": [],
+
+  "promotion_gate": {
+    "mandate_section": "44",
+    "criteria": [
+      "predicts concept-free semantic installation",
+      "not explained by N_surface",
+      "stronger than F0_B1_reference",
+      "survives N_neighbour",
+      "survives generic-remap control",
+      "transfers to basket or a third codeword",
+      "transfers to a held-out readout template",
+      "stable across domains",
+      "reasonable layer structure",
+      "aggressive full-state patch at its site has causal leverage",
+      "candidate-targeted patch moves semantic interpretation",
+      "matched orthogonal/random controls do not"
+    ],
+    "rule": "candidates failing almost all of these are killed on TRAIN; at most 3 finalists reach VALIDATION"
+  }
+}
