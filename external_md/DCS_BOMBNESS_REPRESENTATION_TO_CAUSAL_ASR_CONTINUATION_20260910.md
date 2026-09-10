@@ -2480,3 +2480,112 @@ the batched permutation form matches the single form to **4.8e-07**.
 `N_B1` / `N_neighbour` / `N_logitlens` floors are declared but not yet computed inside this
 analyzer. The FWER threshold is a **necessary** condition, not a sufficient one — a cell that beats
 the noise maximum still has to beat a surface model that already reaches **LOO r = 0.526**.
+
+---
+
+### 2026-09-10 — CONT-ENTRY 008 — **the transplant positive control was never run on `ts116m`, and the only historical one is not usable.** The conduit-not-store reading is currently unsupported
+
+**Loop check.** Extraction `875529` still loading weights (131/291, now 4–6 s/it after a cold start
+of 700 s on the first shard); the behavioural corpus writes its own `DONE.json` before the semantic
+pass begins, so a timeout would still leave the primary deliverable intact. `REVIEW-1` (five
+adversarial dimensions + adjudicator) running in parallel.
+
+#### 1. The positive control already exists in the code — and was never pointed at this bank
+
+`src/boombness/aggressive_patching.py:210` has carried three pairs all along:
+
+```python
+PAIRS = {"harm_ctx":     ("direct_harmful",        "natural_doublespeak"),   # B -> C
+         "benign_ctx":   ("concept_in_benign_ctx", "benign_literal"),        # E -> A
+         "ds_to_benign": ("natural_doublespeak",   "benign_literal")}        # C -> A
+```
+
+**`benign_ctx` (E → A) *is* the positive control the literature demands.** The donor's queried word
+is literally ` bomb`; the recipient's is ` button`; the two prompts are otherwise the same benign
+text (Phase 1 measured 11 of 14 surface statistics **bitwise identical in 700/700 pairs**), and
+`seq_len` matches, which is why its alignment is `absolute`. If replacing the recipient's state at
+the queried token with a state whose token *is* the concept does not move the readout toward the
+concept, then this intervention **cannot detect a local store even when the information is certainly
+local** — and a null from it says nothing.
+
+Enumerating every `aggressive_patching` run on disk by the `pair` field of its own rows:
+
+| run | bank | pairs actually present |
+|---|---|---|
+| `pr068_train67_20260909` | **ts116m_button_bomb** | `ds_to_benign` only (1005 rows) |
+| `pr068smoke3 / smoke2 / smoke` | ts116m_button_bomb | `ds_to_benign` only |
+| `g1wa_sow_20260819` | ⚠️ `boombness_prompt_bank.jsonl` (pre-`ts116`) | `harm_ctx` 15552, **`benign_ctx` 4449** |
+| `g1strat`, `pilot`, `g1wa_smoke` | pre-`ts116` | `harm_ctx`, `benign_ctx` |
+
+⇒ **Every run that produced the 0.054 % null covered `ds_to_benign` and nothing else.** No positive
+control was run on `ts116m`, on that instrument, on that population. This is exactly the objection
+the §41 literature track raised (`2312.10091`, `2607.03502`, `2604.22128` all show this
+intervention class *works* when there is a store), and it is now confirmed as a fact about our runs
+rather than a hypothetical.
+
+#### 2. What the only historical E → A data shows — and why it cannot be used
+
+`g1wa_sow_20260819`, `query_only`, `window=all`, paired over 24 families:
+
+| pair | recipient baseline | donor ceiling | gap | movement | "transfer" |
+|---|---|---|---|---|---|
+| **`benign_ctx` (E→A)** | −14.403 | +0.888 | **15.291** | **−3.499** | **−22.9 %** |
+| `harm_ctx` (B→C) | +4.052 | +12.270 | 8.217 | −8.439 | **−102.7 %** |
+
+Cross-checked on the independent next-token readout: −35.4 % and −107.4 %. The transplant moves the
+readout **away** from the donor, by a magnitude comparable to the whole gap.
+
+⛔ **I am not reporting those percentages as a result, because the denominator does not survive
+inspection** — the `C-214` discipline, applied to someone else's run this time:
+
+```
+benign_ctx  baseline      option_mass mean 0.0704  min 0.0043   10/24 families BELOW the run's own 0.05 gate
+            donor_ceiling option_mass mean 0.0968  min 0.0007   14/24 BELOW
+            transplant    option_mass mean 0.5727  min 0.1028    0/24 below
+```
+
+The 15.29 log-odds gap is measured between two states in which the model puts **7–10 % of its
+probability mass on {bomb, button} combined** — i.e. it is mostly answering something else entirely,
+on families the run's own `--min-option-mass 0.05` gate would have dropped. A ratio whose
+denominator is built from those endpoints is not interpretable.
+
+⚠️ One thing that is *not* a problem here, checked rather than assumed: `readout_tautological=True`
+on all 24 transplant rows refers to the **captured layer-probe vector** (`aggressive_patching.py:469`
+— "R is patched AND at the readout position"), **not** to the LM-head `semantic_logodds`. So the
+tautology flag does not invalidate the log-odds column. The option mass does.
+
+Also notable and unexplained: the transplant **raises** option mass from 0.07 to **0.57**. Something
+real happens at that site — the model becomes far more willing to answer with one of the two options
+— it simply answers `button`.
+
+#### 3. The consequence for a claim we have already written down
+
+> ⛔ **`CONT-ENTRY 003 §D`'s standing risk is now upgraded from "not run" to "cannot currently be
+> supported".** The 0.054 % C→A null is **not** evidence of "conduit, not store", because the
+> instrument has never been shown to transfer anything on this bank, and the one place it was tried
+> under conditions where transfer *must* be possible is unusable.
+
+This does **not** say the conduit reading is wrong. It says we do not presently have the evidence for
+it, and the successor sprint's final report states it as a supported mechanism. That report is
+`TERMINAL` and is not edited; the correction lives here and must reach the claim table.
+
+#### 4. The experiment this defines
+
+**`E → A` on `ts116m_button_bomb`, same instrument, same domains, same scope as `PR-068`** —
+`--pairs benign_ctx`, `query_only`, paired per domain, with:
+
+* **option-mass gating enforced and reported**, so the gap's endpoints are admissible;
+* a **layer window that excludes the readout layers**, so the probe columns are not tautological;
+* the **`self_swap_noop_check`** arm (already in the code) as the plumbing control — patching a
+  prompt with its own state must move nothing;
+* the same `--dose-unit gap` accounting, and the recorded dose persisted per `§40`.
+
+Three outcomes and what each licenses:
+1. **transfers substantially** ⇒ the instrument works, and the C→A null becomes real evidence for
+   conduit-not-store;
+2. **transfers ~nothing** ⇒ the instrument cannot demonstrate a local store at all, and **every**
+   transplant null in this project — including `PHASE-9`'s — is uninformative;
+3. **moves away, with admissible option mass** ⇒ the intervention is disruptive rather than
+   informative, which is a finding about the method and would need saying out loud.
+
+⛔ Queued behind the running extraction; not launched yet.
