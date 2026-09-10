@@ -172,7 +172,7 @@
   "candidates": [
     {
       "candidate_id": "K1_interaction_at_demo_codewords_L13_14",
-      "status": "TRAIN-SURVIVING CANDIDATE -- six floors passed or partial, still not a finalist",
+      "status": "WITHDRAWN (C-CONT-013). Not a candidate.",
       "mathematical_definition": "score(d) = <x(d), vhat_-d> where x(d) = mean_slots[(h_C - h_B) + (h_E - h_A)] read at cw_demo_mean (the mean over the four DEMONSTRATION codeword occurrences), and vhat_-d is the unit leave-one-domain-out covariance direction between x and y_install",
       "motivation": "the only cell surviving all four measured floors; and it is at the demonstration occurrences, where the remapping is ESTABLISHED, not at the query occurrence where the successor sprint looked",
       "representation_source": "residual stream, behavioural prompt (cell C/B/E/A), dose 4",
@@ -187,14 +187,15 @@
         "N_B1": "PASSED DECISIVELY -- rho(B1, y_install) = +0.0920 on the same 67 TRAIN domains, so B1 barely predicts installation at all; rho(candidate, B1) = +0.1491, and the partial correlation of the candidate given B1 is +0.6940 against a raw +0.6971, i.e. B1 explains essentially none of it. The reverse partial, B1 given the candidate, is -0.0167.",
         "N_neighbour": "PARTIAL. The +1 neighbour (0.4994) and the query codeword (0.4421) do NOT clear the threshold; the -1 neighbour (0.6169) DOES, only 0.08 below the candidate. So the signal is not sharply localised to the codeword TOKEN -- it is smeared over the codeword and its immediate LEFT context, and asymmetrically so. The candidate's claim must be about the demonstration codeword REGION, not the token.",
         "N_random": "PASSED DECISIVELY -- a size-matched seeded random pool of 4 positions inside the demonstration span reaches rho 0.3656 against the candidate's 0.6984, and does not clear the family-wise threshold (0.5837) at any layer.",
-        "N_shuffled": "the FWER permutation is a shuffled-label control at the family level; a per-cell one is not yet run"
+        "N_shuffled": "the FWER permutation is a shuffled-label control at the family level; a per-cell one is not yet run",
+        "N_contrastfree": "THE MISSING CONTROL, and the one that killed it. Five nuisance controls were built (surface, logit-lens, B1, random pool, neighbour) and the NULL MODEL was not among them: the same pipeline on the raw state at the same site. It beats the candidate at every site tested."
       },
       "installation_relationship": "rho_loo = +0.6971 (L13) / +0.6983 (L14), 67 TRAIN domains; partial given B1 = +0.6940; partial given the logit lens = +0.7060; INDEPENDENTLY RE-DERIVED on a fresh forward pass (run cont3nb_behavioral_button_bomb): L13 0.6972 vs 0.6971 and L14 0.6984 vs 0.6983 -- four decimal places, different job, different site set",
       "asr_relationship": "NOT TESTED",
       "cross_codeword_transfer": "NOT ESTABLISHED. On basket_bomb (67 TRAIN domains, reported separately, never pooled) cw_demo_mean reaches 0.6275 against its own family-wise ceiling of 0.6929 -- it does NOT clear. The SHAPE replicates: cw_demo_mean is the top site on both codewords, both peak at L13-14, and cw_query is well below on both (basket 0.4315, button 0.5153). Consistent with basket's thinner concept-free channel (mean installation 0.476 vs 0.678), but consistent-with is not shown, and the section 44 criterion is UNMET.",
       "cross_template_transfer": "NOT TESTED -- no held-out readout template exists",
       "positional_specificity": "the QUERY codeword (cw_query) peaks at 0.515 and NEVER exceeds the noise ceiling at any layer; the demonstration codewords do. That contrast is the candidate's main claim to being about something other than the token. A recency gradient runs across the demonstrations: first demo codeword 0.3796, last 0.6155, mean of all four 0.6984 -- later demonstrations carry more, and pooling beats any single occurrence.",
-      "failure_mode": "marginal against the family-wise ceiling (0.698 vs 0.692); a single codeword; no causal test; and the transplant instrument that would test it is NOT VALIDATED (CONT-ENTRY 012)",
+      "failure_mode": "WITHDRAWN. The contrast-free baseline -- the RAW cell-C state at the same site and layer, with no contrast at all -- predicts y_install BETTER than K1 does: 0.7504 vs 0.6972 at cw_demo_mean L13, verified independently. So does mean4 = (A+B+C+E)/4 (0.7005), which is ORTHOGONAL to every contrast the map computes. And the raw state predicts nearly as well at sites where the interaction fails: cw_query 0.6651 (interaction 0.4171) and at a size-matched RANDOM pool 0.6639 (interaction 0.3493). The predictive signal is in the raw state everywhere, the contrast SUBTRACTS it rather than isolating anything, and the target's between-domain component is largely topic. K1 measured domain topic, worse than the null model does.",
       "eligible_for_confirmation": false
     }
   ],
@@ -218,5 +219,6 @@
   },
   "instrument_status": {
     "transplant": "VALIDATED, WEAKLY, for a TOKEN-MATCHED pair: C(high-install) -> C(low-install) transfers +10.7% of the semantic gap at the domain unit, 95% bootstrap CI [+3.3%, +19.6%], sign-flip permutation p=0.0089, in the stratum declared before the run. The sign test alone (11/16, p=0.21) does not reach significance and the all-families analysis does not either (+4.1%, CI touching zero) -- the pre-declared stratum is load-bearing. Donor ceiling option mass 0.843; self_swap_noop_check exactly 0.00000000. This WITHDRAWS the earlier 'instrument not validated' status (C-CONT-012), which rested on two structurally invalid experiments."
-  }
+  },
+  "candidates_withdrawn": 1
 }

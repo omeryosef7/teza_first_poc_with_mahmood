@@ -3833,3 +3833,78 @@ store" with evidence on both sides**, which is what the successor sprint's versi
 | instrument transfers | validated once | ✅ **replicated**, two jobs, +10.7 % both |
 | harm-vs-benign recipient contrast | EXPLORATORY, between-run | ✅ **within-run, within-domain**, p = 0.011 on the pre-declared stratum |
 | "conduit, not store" | withdrawn as unsupported (`CONT-ENTRY 012`) | 🆕 **supported, with positive evidence on both sides** — EXPLORATORY |
+
+---
+
+### 2026-09-13 — CONT-ENTRY 024 — **`C-CONT-013`: `K1` is WITHDRAWN.** The contrast-free baseline beats it, and the map was measuring domain topic
+
+`REVIEW-2` (6 agents, 0 errors) returned two BLOCKERs, and its adjudicator found something **all five
+reviewers missed** which subsumes several of their findings and ends the phase's only candidate.
+
+#### 1. The finding, re-derived by me before acting
+
+I ran it myself on `cont3nb`, 67 TRAIN domains, the same `loo_scores` / `spearman` machinery:
+
+| site | layer | **`K1` (interaction)** | **raw cell-C state, NO contrast** | **`mean4` = (A+B+C+E)/4** |
+|---|---|---|---|---|
+| `cw_demo_mean` | L13 | +0.6972 | ⛔ **+0.7504** | +0.7005 |
+| `cw_query` | L13 | +0.4171 | ⛔ **+0.6651** | +0.5393 |
+| `cw_demo_rand_mean` | L13 | +0.3493 | ⛔ **+0.6639** | +0.6221 |
+
+> ⛔ **The raw state, with no contrast at all, predicts semantic installation BETTER than `K1` does —
+> at `K1`'s own site, and at sites where the interaction fails, including a size-matched RANDOM
+> pool.** `mean4` is **orthogonal to every contrast the map computes** and also beats it.
+
+⇒ The predictive signal is in the **raw state, everywhere**. The contrast does not isolate it; the
+contrast **subtracts** it. And what the raw state carries at every position is **which domain this
+is** — topic. The map's target is aggregated to the domain mean, so the map measures topic, and
+`K1` is a *worse* topic detector than doing nothing at all.
+
+**`K1` is withdrawn.** The registry now records it as `WITHDRAWN`, with the reason, and
+`candidates` is effectively empty again.
+
+#### 2. What this kills, precisely
+
+Every `K1` result in `CONT-ENTRY 013`, `014` and `019` is affected in the same way:
+
+* the **positional dissociation** (`cw_query` fails, demo codewords clear) — ⛔ **not a dissociation
+  about information.** Contrast-free, `cw_query` reads **0.665**; the query codeword carries the
+  topic signal perfectly well. What differs between the sites is how much the *contrast* destroys.
+* **`N_random` "PASSED decisively"** — ⛔ the random pool's raw state reads **0.664**. The pool is
+  not an uninformative site; it was handicapped by the contrast, and (per `REVIEW-2/CODE-01`,
+  confirmed) also by a position mismatch I introduced: the random draw is seeded on `prompt_id`, so
+  it lands on **different positions in the two halves of the contrast** (positions equal in
+  **0/930** pairs, versus 928/930 for every other site).
+* **the recency gradient** and **`N_logitlens` / `N_B1` passes** — all measured on the same
+  contrast against the same topic-laden target.
+
+#### 3. The lesson, and it is the sharpest one this phase has produced
+
+> **I built five nuisance controls — surface, logit-lens, `B1`, random pool, neighbour — and omitted
+> the null model.** Not one of them asked *"what does the same pipeline give on the raw state at the
+> same site?"* Every one of the five was a control against a *specific* alternative explanation, and
+> the thing that was actually true was the most generic one available.
+
+This is a different shape from the project's recurring defect. It is not *a quantity that could not
+have told you it was wrong* — it is **a quantity nobody asked**. `N_contrastfree` is now a registered
+mandatory control, and it goes first, before the clever ones.
+
+#### 4. What survives
+
+* ✅ **The transplant results are untouched.** `CONT-ENTRY 021`/`023` are behavioural interventions
+  measured against the readout, not map correlations: the instrument transfers **+10.7 %**
+  (replicated across two jobs), and the within-run paired contrast is **+1.62 log-odds**
+  (p = 0.011) on the pre-declared stratum. None of that depends on the map or on `K1`.
+* ✅ `N_surface` = 0.179 stands as a *measured* number, though it now needs re-reading: surface fails
+  where the raw hidden state succeeds, which is itself informative.
+* ✅ The instrument, corpus and guard work.
+
+#### 5. Also confirmed from `REVIEW-2`, and being fixed
+
+* ⚠️ **`dcs_cont_surface_floor.py` and `dcs_cont_nb1_control.py` never check bank agreement.**
+  Executed by the reviewer: feeding a **basket** bank to a **button** analysis returns
+  `rho = +0.1791, exit 0`; `button_gun` gives 0.0884; `button_knife` −0.0297. The never-pool rule is
+  **unenforced** in exactly the two scripts that produce the §44 gate numbers, while the map and the
+  logit-lens control both refuse correctly. Being fixed now.
+* ⚠️ `N_random`'s position mismatch (§2) — the fix is to seed the draw on the **family** key, which
+  is provably shared across the paired cells in 1858/1860 cases, not on `prompt_id`.
