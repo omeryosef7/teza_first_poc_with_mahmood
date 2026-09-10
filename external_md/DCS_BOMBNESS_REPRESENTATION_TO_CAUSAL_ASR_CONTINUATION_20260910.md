@@ -3972,3 +3972,78 @@ expected two entries ago, and is the better outcome of the two.
    a representation search should be predicting.
 3. `N_random`'s draw must be seeded on the **family** key, not `prompt_id` — the pool is provably
    shared across the paired cells in 1858/1860 cases, so the mismatch was gratuitous.
+
+---
+
+### 2026-09-13 — CONT-ENTRY 026 — **§24, the phase's biggest missing link: intervened ASR is launched**
+
+Job `876531`. With `K1` withdrawn, the phase's surviving results are the **pathway** ones, and §24
+is the experiment they were always pointing at: *"Once a promising mechanistic intervention exists,
+run behavioural generation on the SAME prompts and SAME domains."*
+
+#### 1. `C-CONT-014` — the documented ASR path does not exist
+
+`aggressive_patching.py`'s module docstring says, twice:
+
+```
+  generation/ASR          only with --generate, on a subset, judged downstream
+  ... generations (when enabled) are written to a separate gens.jsonl
+```
+
+⛔ **There is no `--generate` flag.** `grep -c 'add_argument("--generate'` returns **0**; the full
+argument list contains nothing generation-related. The docstring documents a capability that was
+never implemented, and it is precisely the capability §24 requires — anyone reading it would
+conclude intervened ASR was one flag away.
+
+Recorded rather than built, because a cheaper route exists that reuses code known to work.
+
+#### 2. The route taken, and the trap avoided on the way
+
+`score_behavior.py` **does** generate and judge on `query_kind = behavioral` (that is how every ASR
+number in this project was produced) **and** supports `--intervene`. So intervened ASR needs no new
+code at all — only the right intervention.
+
+⚠️ **The obvious choice would have been wrong.** The natural instrument is the K-ladder rung that
+carries 62 % of the demonstration→query effect — K10, "the codeword". But `kladder_run.REL_END_ROLE`
+is a **semantic-template** map, and on the **behavioural** prompt `rel_end −10` is `'.'`, not the
+codeword (`CONT-ENTRY 005`). Running the ladder on behavioural prompts would have cut the **period
+after the codeword** and labelled it K10.
+
+The template-safe instrument is **`--knockout-scope target_surface_row_only`**, which resolves the
+codeword's row from **occurrences**, not from an offset — so it lands on the codeword under both
+templates. Confirmed by scan: it has **never been run to ASR on behavioural prompts**. This is a new
+experiment, not a re-analysis.
+
+#### 3. The design
+
+| arm | intervention |
+|---|---|
+| 1 · baseline | none |
+| 2 · **knockout** | `demo_all:attn_knockout:6-14:1.0`, scope `target_surface_row_only` — the codeword's row loses access to the demonstrations |
+| 3 · **dose-matched control** | `nondemo_random:attn_knockout:6-14:1.0`, same scope — the same number of rows cut, from **non-demonstration** keys |
+
+* **670 rows** = 67 TRAIN domains × 10 slots, cell C, dose 4, behavioural. Test domains excluded by
+  file (`exclusion_sha16 = 214ff882b1a2a3e2`, `domains_remain=67`), and `--expect-n 670` refuses if
+  the population is not what is declared.
+* ⚠️ **The baseline is re-run, not reused.** An earlier behavioural run on this cell exists
+  (`tsb66_C_n4`), but knockout arms force `--attn-impl eager` and batch 1, and the earlier run did
+  not. Comparing an eager/batch-1 intervened arm against a differently-configured baseline would
+  confound the intervention with the implementation. All three arms run under identical conditions.
+* Cost: measured **7.36 s/row** from the prior run ⇒ ≈ 82 min per arm, ~4.1 GPU-h of generation plus
+  loads.
+
+#### 4. What it can and cannot show
+
+It tests the **pathway** claim that survives `C-CONT-013`, not the withdrawn candidate:
+
+> if cutting the codeword row's access to the demonstrations reduces installation by ~62 %, does it
+> reduce **attack success** on the same prompts — and does a dose-matched cut elsewhere not?
+
+⛔ It does **not** test a *representation*. There is no candidate to test. And it is a **necessity**
+intervention (removing access), not a sufficiency one, so a positive result licenses "the pathway is
+required for the behaviour", never "the pathway is the behaviour".
+
+⚠️ The ASR outcome carries the instrument defects this project already measured: a **15.5 %**
+false-positive floor on `button` and a **13.7 %** judge label-flip rate. The concept-presence filter
+must be applied, and `REVIEW-1` established the corrected outcome is **itself** codeword-dependent
+(45.7 % of corrected positives still benign). Both must travel with any number this produces.
