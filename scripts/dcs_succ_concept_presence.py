@@ -114,6 +114,10 @@ def selftest() -> int:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--arms", default="A_n0,B_n0,C_n0")
+    # The basket wave writes tsb66b_/tsb66bj_ rather than tsb66_/tsb66j_. Parameterised rather
+    # than hardcoded so the replication codeword is scored by the SAME code as the development one.
+    ap.add_argument("--gen-prefix", default="tsb66_")
+    ap.add_argument("--judge-prefix", default="tsb66j_")
     ap.add_argument("--runs-root", default=os.path.join(REPO, "outputs/boombness/score_behavior"))
     ap.add_argument("--judge-root", default=os.path.join(REPO, "outputs/boombness/judge"))
     ap.add_argument("--out", default=os.path.join(REPO, "outputs/dcs_succ/concept_presence.json"))
@@ -129,7 +133,7 @@ def main() -> int:
            "lexicon_n_terms": len(_FLAT), "lexicon": CONCEPT_LEXICON, "arms": {}}
 
     for arm in [x.strip() for x in a.arms.split(",") if x.strip()]:
-        gdirs = sorted(glob.glob(os.path.join(a.runs_root, "tsb66_%s_*" % arm)))
+        gdirs = sorted(glob.glob(os.path.join(a.runs_root, "%s%s_*" % (a.gen_prefix, arm))))
         gdirs = [d for d in gdirs if os.path.exists(os.path.join(d, "DONE.json"))]
         if not gdirs:
             res["arms"][arm] = {"status": "REFUSED: no completed generation run"}
@@ -147,7 +151,7 @@ def main() -> int:
         # a refusal. It did: ENTRY 028's cell-A dose-0 row was computed on 78 of 226 rows and every
         # column of it was wrong. ENTRY 029 declared the "check DONE.json first" rule at the same
         # minute this file was last touched, and the rule was not applied here.
-        jdirs = [d for d in sorted(glob.glob(os.path.join(a.judge_root, "tsb66j_%s_*" % arm)))
+        jdirs = [d for d in sorted(glob.glob(os.path.join(a.judge_root, "%s%s_*" % (a.judge_prefix, arm))))
                  if os.path.exists(os.path.join(d, "DONE.json"))]
         jrows = {}
         if len(jdirs) > 1:

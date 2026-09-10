@@ -4464,3 +4464,75 @@ Every statistic in that panel was correct; the picture was not. `REVIEW-1` and `
 included "read some actual generations" for the same reason, and it paid twice
 (`C-208d`'s board-game false positives, `C-209`'s literal buttons). **Rendering an artifact and
 opening it is a check, and it belongs in the four-hourly review alongside the code and the numbers.**
+
+---
+
+### 2026-09-10 06:05 — ENTRY 047 — `R-207`: **the behavioural result replicates on the second codeword**, and `Q2` replicates more strongly
+
+**Label: REPLICATION. `basket_bomb`, 113 domains, scored by the SAME code as `button` — the scripts
+were parameterised (`--gen-prefix`, `--judge-prefix`, `--bank-key`, `--readout-glob`) rather than
+copied, which is `C8`'s lesson applied before it could bite again.**
+⛔ **The two codewords are a declared transfer pair and are NEVER pooled** (`PR-059`).
+
+#### `Q1` — the attack replicates in direction, weaker in magnitude, and it tracks installation
+
+| | **button** | **basket** |
+|---|---|---|
+| cell C dose 4, raw ASR@0.5 | 0.3274 | **0.1611** |
+| **cell C dose 4, concept-present** | **0.1398** | **0.0522** |
+| cell C dose 0 (its own floor), raw | 0.1549 | **0.0221** |
+| cell C dose 0, concept-present | 0.0088 | **0.0000** |
+| cell B dose 4 (direct harmful) | 0.0071 | **0.0071** — identical |
+| domains with any concept content | 91/113 | 57/113 |
+| **`R-116` installation** | **92/113** | **46/113** |
+
+Paired within-domain, concept-present, exact two-sided sign test:
+
+| contrast | Δ | 95 % CI | domains + | p (floor) |
+|---|---|---|---|---|
+| **Q1b** basket C dose 4 − dose 0 | **+0.0522** | [0.0372, 0.0690] | **42/42** | 4.55e−13 **at its floor** |
+| **Q1d** basket C dose 4 − B dose 4 | **+0.0451** | [0.0301, 0.0611] | **41/42** | 1.96e−11 |
+
+**The attack works on the replication codeword and is ~2.7× weaker** (0.0522 vs 0.1398) — against an
+installation ratio of **46/92 = 0.50**. Same direction, and the magnitude gap tracks the
+installation asymmetry `R-116` measured on a completely different channel.
+
+**And the direct-harmful control is identical to four decimals on both codewords** (0.0071), which
+is what a control arm should do.
+
+#### `Q2` — the confirmatory primary replicates, and more strongly
+
+| split | n | ρ raw (the frozen `y`) | ρ concept-present |
+|---|---|---|---|
+| **pooled** | **113** | **+0.4468**, p at its floor, CI [0.286, 0.583] | **+0.4868**, p at floor, CI [0.332, 0.616] |
+| train | 67 | +0.5262 | +0.5400 |
+| validation | 23 | −0.0733, p = 0.74 | +0.0971, p = 0.66 |
+| **test** | 23 | **+0.4615, p = 0.0278** | **+0.4398, p = 0.034** |
+
+**basket's ρ = 0.4468 exceeds button's 0.3961**, clears the declared MDE of 0.2996, sits at the
+permutation floor, and — unlike button — **reaches significance on the 23-domain TEST split alone**
+(p = 0.028), where the design's own MDE is 0.556. ⛔ Its validation split is **null** and is printed
+unconditionally, as button's was; at n = 23 neither small split can test anything, which is why the
+primary was declared on 113 domains before the data existed.
+
+#### What this replication does and does not buy
+
+✅ **Installation → attack success is not a `button` peculiarity.** Two codewords, two independent
+behavioural waves, both at the permutation floor, both above the declared MDE, the second stronger
+than the first. Row 2 of the claim table is strengthened.
+
+✅ **The attack itself replicates**, with a magnitude difference that is *predicted* by the
+installation asymmetry rather than unexplained by it.
+
+⛔ **It does not make `B1` a concept representation.** `Q2`'s predictor is **installation** — the
+model's own concept-free semantic report — on both codewords. Nothing here touches `S-009`'s
+concentration ratio of **1.02** on this very codeword, and *"Bombness predicts jailbreak"* remains
+forbidden.
+
+⛔ **And the false-positive floor being 7× smaller on `basket`** (0.0221 vs 0.1549) is not a
+convenience — it is `C-209` confirming itself: the floor is a property of how plausibly the model can
+answer the *literal* question, and "build a basket" is a less answerable literal request than
+"build a button". Every ASR number carries **its own codeword's** floor.
+
+**Also running**: the `basket` K ladder (job 873140, 4 of 27 arms) — the replication of `R-205`, the
+phase's strongest mechanistic result.

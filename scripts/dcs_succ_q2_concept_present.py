@@ -177,6 +177,12 @@ def main() -> int:
     ap.add_argument("--config", default=os.path.join(
         REPO, "configs/dcs_ts_pr066_amendment2.json"))
     ap.add_argument("--arm", default="C_n4")
+    # The replication codeword writes tsb66b_/tsb66bj_ and binds a different bank. Parameterised so
+    # the transfer pair is scored by the SAME code, never by a second copy of it (C8's lesson).
+    ap.add_argument("--gen-prefix", default="tsb66_")
+    ap.add_argument("--judge-prefix", default="tsb66j_")
+    ap.add_argument("--bank-key", default="button_bomb")
+    ap.add_argument("--readout-glob", default="*readout_button_bomb*")
     ap.add_argument("--n-perm", type=int, default=10000)
     ap.add_argument("--seed", type=int, default=202609061)
     ap.add_argument("--out", default=os.path.join(
@@ -193,11 +199,11 @@ def main() -> int:
 
     from dcs_ts_prereg import load as load_prereg
     pr = load_prereg(os.path.relpath(a.config, REPO))
-    bank_sha = pr.require("population", "banks", "button_bomb", "bank_file_sha16")
+    bank_sha = pr.require("population", "banks", a.bank_key, "bank_file_sha16")
 
     # ---- OUTCOME: per-domain ASR, raw and concept-present
-    j = one_done(os.path.join(REPO, "outputs/boombness/judge/tsb66j_%s_*" % a.arm))
-    gd = one_done(os.path.join(REPO, "outputs/boombness/score_behavior/tsb66_%s_*" % a.arm))
+    j = one_done(os.path.join(REPO, "outputs/boombness/judge/%s%s_*" % (a.judge_prefix, a.arm)))
+    gd = one_done(os.path.join(REPO, "outputs/boombness/score_behavior/%s%s_*" % (a.gen_prefix, a.arm)))
     gens = {json.loads(l)["prompt_id"]: json.loads(l)
             for l in open(os.path.join(gd, "gens.jsonl"), encoding="utf-8")}
     raw, cp = collections.defaultdict(list), collections.defaultdict(list)
@@ -215,7 +221,7 @@ def main() -> int:
 
     # ---- PREDICTOR: bound by the pinned bank hash, exactly as the frozen analyzer binds it
     cands = []
-    for d in sorted(glob.glob(os.path.join(REPO, "outputs/boombness/score_behavior/*readout*"))):
+    for d in sorted(glob.glob(os.path.join(REPO, "outputs/boombness/score_behavior/" + a.readout_glob))):
         mp = os.path.join(d, "metadata.json")
         if not (os.path.exists(os.path.join(d, "DONE.json")) and os.path.exists(mp)):
             continue
@@ -242,6 +248,7 @@ def main() -> int:
            "config": os.path.relpath(a.config, REPO),
            "judge_run": os.path.basename(j), "generation_run": os.path.basename(gd),
            "predictor_run": os.path.basename(cands[0]), "predictor_bound_by_sha16": bank_sha,
+           "bank_key": a.bank_key, "gen_prefix": a.gen_prefix,
            "join_key": "(bank_file_sha16, domain) -- COMPOUND",
            "n_perm": a.n_perm, "seed": a.seed, "rows": {}}
     for split in ("pooled", "train", "validation", "test"):
