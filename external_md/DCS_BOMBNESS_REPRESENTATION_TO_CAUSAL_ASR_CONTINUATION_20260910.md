@@ -3049,3 +3049,75 @@ produces a **byte-identical** exclusion hash, so nothing changed for real work) 
 computed · `N_logitlens` computed · positive control run and reported.
 ⛔ Next: `N_B1` and `N_neighbour` for `K1`; the **`B → A`** positive control that `CONT-ENTRY 012`
 named; §40 dose persistence in `aggressive_patching.py`; basket extraction.
+
+---
+
+### 2026-09-13 — CONT-ENTRY 014 — **`N_B1`: the inherited Bombness measure predicts installation at ρ = 0.092.** `K1` passes decisively; a commit-provenance correction
+
+`outputs/dcs_cont/nb1_control_train_button_bomb.json` · `scripts/dcs_cont_nb1_control.py`.
+67 TRAIN domains, LOO throughout, `B1` computed at `codeword_last` L12 on the **semantic** prompt
+exactly as inherited, the candidate at `cw_demo_mean` L13 on the **behavioural** prompt.
+
+| quantity | value |
+|---|---|
+| ρ(`K1` candidate, `y_install`) | **+0.6971** |
+| ρ(**`B1`**, `y_install`) | ⛔ **+0.0920** |
+| ρ(candidate, `B1`) | +0.1491 |
+| **partial(candidate \| `B1`)** | **+0.6940** — *adds essentially everything* |
+| partial(`B1` \| candidate) | **−0.0167** — *`B1` adds nothing* |
+
+#### 1. The number the successor sprint could only assert
+
+That phase concluded `B1` "is **not** a proxy for semantic installation". It never put a number on
+it. Here it is: on the same 67 domains, with the same leave-one-domain-out discipline,
+**`B1` correlates with concept-free semantic installation at ρ = 0.092** — indistinguishable from
+nothing, and far below even the surface floor (0.179), which itself fails to beat its own null.
+
+⇒ This is a **fifth independent ground** on which the inherited Bombness reading fails, and the
+first that is about *installation* rather than about specificity or localisation: `B1` is a real,
+reproducible measurement of a **token × context anomaly**, and it does **not** track whether the
+model actually installed the concept.
+
+#### 2. `K1` passes `N_B1` decisively
+
+The two are nearly orthogonal (ρ = 0.149) and the candidate's correlation is untouched by
+partialling `B1` out (0.697 → **0.694**). So `K1` is not a re-description of `B1`. Combined with
+`CONT-ENTRY 013`, `K1` has now passed **four measured floors**:
+
+| floor | result |
+|---|---|
+| `N_surface` | ✅ surface reaches 0.179 and fails its own null |
+| `N_fwer` | ⚠️ 0.698 vs 0.6916 — **still a hair's breadth** |
+| `N_logitlens` | ✅ partial **0.706** (ρ_ll = 0.048) |
+| `N_B1` | ✅ partial **0.694** (ρ_B1 = 0.092) |
+
+⛔ Still missing and still blocking promotion: `N_neighbour`, `N_random`, cross-codeword,
+cross-template, and any causal test — the last of which is blocked on an instrument that
+`CONT-ENTRY 012` showed is **not validated**.
+
+⚠️ **`N_neighbour` cannot be computed from the current corpus.** The captured sites are the four
+codeword occurrences plus the *query-side* `rel_end −16…−1`. The natural neighbour control for
+`cw_demo_mean` is the tokens **adjacent to the demonstration codewords**, and those were never
+captured. Mandate §10 also requires a **size-matched random token pool** for any pooled
+representation. Both need a re-extraction with demonstration-side offsets. **Recorded as a gap, not
+skipped.**
+
+#### 3. `C-CONT-008` — a commit-provenance correction
+
+Commit **`06207139`**, whose message describes only `CONT-ENTRY 012`, in fact also contains
+**`CONT-ENTRY 013`** and the **first candidate registration** (`K1`). Cause: a background
+`git commit` for 012 was still pending when the 013 command ran `git add -A`, so the 012 commit
+picked up 013's staged content and the subsequent commit found nothing to do (`exit 0`, "nothing
+added to commit").
+
+Nothing is lost and nothing is misreported in the log itself — but a commit whose message does not
+describe its contents is a provenance defect under §53, and anyone bisecting this history would be
+misled. Recorded here rather than rewritten, because the branch is pushed.
+**Operational fix adopted: no more overlapping background commits in this repo.**
+
+#### 4. Running
+
+`876102` **B → C** — the better positive control `CONT-ENTRY 012` named (donor `direct_harmful`
+commits to the concept *and* shares the harm demonstration pool with the recipient, so it is a
+surface twin; `PR-068`'s instrument with **one** changed argument, again).
+`876103` **basket_bomb** extraction, both query kinds in one allocation (§30 replication).
