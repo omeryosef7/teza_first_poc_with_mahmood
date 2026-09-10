@@ -210,6 +210,9 @@ DEFAULT_BANK = os.path.join(DATA_DIR, "boombness_prompt_bank.jsonl")
 PAIRS = {
     "harm_ctx": ("direct_harmful", "natural_doublespeak"),
     "benign_ctx": ("concept_in_benign_ctx", "benign_literal"),
+    # DCS-CONT: donor and recipient are BOTH natural_doublespeak, drawn from DIFFERENT families
+    # via --donor-family-map. See CROSS_FAMILY_PAIRS below.
+    "cinstall_hi_to_lo": ("natural_doublespeak", "natural_doublespeak"),
     # ADDED 2026-09-09, successor plan section 13 ("start with an aggressive upper bound").
     # DONOR = cell C (natural_doublespeak: harmful demonstrations, codeword surface).
     # RECIPIENT = cell A (benign_literal: benign demonstrations, THE SAME codeword surface).
@@ -234,7 +237,22 @@ PAIR_ALIGNMENT = {
     "harm_ctx": "absolute",
     "benign_ctx": "absolute",
     "ds_to_benign": "end_relative",
+    "cinstall_hi_to_lo": "end_relative",
 }
+
+#: Pairs whose DONOR comes from a DIFFERENT family than the recipient. Every other pair takes both
+#: rows from one family, so donor and recipient differ only by cell. This one differs only by
+#: DOMAIN: donor and recipient are both `natural_doublespeak`, both ask about the same codeword,
+#: and the two prompts' trailing query spans are token-identical -- what differs is how strongly
+#: the concept installed. Mandate section 21 names exactly this design ("donor: high-installation
+#: Doublespeak; recipient: low-installation prompt").
+#:
+#: WHY IT IS THE ONLY CONSTRUCTIBLE POSITIVE CONTROL ON THIS BANK (C-CONT-010). The two-option
+#: readout is {concept, codeword}. It is only meaningful where the QUERIED WORD IS THE CODEWORD,
+#: i.e. cells A and C -- asked what ' bomb' refers to, the model paraphrases, so cells B and E have
+#: degenerate readouts and cannot serve as donors. Measured: donor_ceiling median option mass
+#: 0.0113 (B) and 0.0359 (E), both below the 0.05 gate, versus 0.302 for cell C.
+CROSS_FAMILY_PAIRS = ("cinstall_hi_to_lo",)
 
 #: The shared suffix an END-RELATIVE pair must actually exhibit before any position is patched.
 #: 28 is the query span on this template (token-role map, census constant in 6900/6900 prompts).
@@ -1237,6 +1255,10 @@ def main() -> int:
                     choices=sorted(_QK))
     ap.add_argument("--n-families", type=int, default=4, help="matched families per pair (smoke=2)")
     ap.add_argument("--n-examples", default="4", help="comma list")
+    ap.add_argument("--donor-family-map", default="",
+                    help="JSON {\"map\": {recipient_family_id: donor_family_id}} for the "
+                         "cross-family pairs (cinstall_hi_to_lo). Built by "
+                         "scripts/dcs_cont_build_donor_map.py from a concept-free readout run.")
     ap.add_argument("--only-domains-file", default="",
                     help="restrict to the domains named in this file, one per line, '#' comments "
                          "allowed. This module has NO --split flag and its round-robin family "
@@ -1468,9 +1490,20 @@ def main() -> int:
     if unknown:
         raise SystemExit("REFUSING: unknown --pairs %s; known: %s"
                          % (unknown, sorted(PAIRS)))
+    donor_map = {}
+    if args.donor_family_map:
+        with open(args.donor_family_map, encoding="utf-8") as fh:
+            donor_map = json.load(fh)["map"]
+        print("[patch] donor-family map: %d recipient families -> donor families"
+              % len(donor_map))
     for pair_name in requested_pairs:
         donor_cond, recip_cond = PAIRS[pair_name]
         align_mode = PAIR_ALIGNMENT[pair_name]
+        if pair_name in CROSS_FAMILY_PAIRS and not donor_map:
+            raise SystemExit(
+                "REFUSING: pair %r takes its donor from a DIFFERENT family and requires "
+                "--donor-family-map. Without it donor and recipient would be the same row and "
+                "every transplant would be a no-op reported as a null." % pair_name)
         # A pair whose correspondence is END-RELATIVE may only be asked for scopes that live in
         # the verified shared suffix. Refusing HERE, before the model runs, turns a whole run's
         # worth of ledgered per-row failures into one message.
@@ -1513,7 +1546,21 @@ def main() -> int:
         family_accounting.append(ledger_note)
         for fam in fams:
             recip = by_family[fam][recip_cond]
-            donor = by_family[fam][donor_cond]
+            if pair_name in CROSS_FAMILY_PAIRS:
+                dfam = donor_map.get(fam)
+                if dfam is None:
+                    raise SystemExit("REFUSING: no donor family mapped for recipient %r" % fam)
+                if dfam == fam:
+                    raise SystemExit("REFUSING: recipient %r is mapped to ITSELF as donor; that "
+                                     "transplant is a no-op and would be reported as a null" % fam)
+                if dfam not in by_family or donor_cond not in by_family[dfam]:
+                    raise SystemExit("REFUSING: donor family %r has no %r row" % (dfam, donor_cond))
+                donor = by_family[dfam][donor_cond]
+                if donor.get("domain") == recip.get("domain"):
+                    raise SystemExit("REFUSING: donor and recipient share domain %r; the donor "
+                                     "must come from a different domain" % recip.get("domain"))
+            else:
+                donor = by_family[fam][donor_cond]
             # Cross-fit: score with directions fitted on the OTHER split.
             other = "heldout" if recip["split"] == "dev" else "dev"
             payload = fitted.get(other) or fitted[recip["split"]]

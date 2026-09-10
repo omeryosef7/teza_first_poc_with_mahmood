@@ -3366,3 +3366,74 @@ The basket **semantic** corpus must be re-extracted (§30 replication still want
 neighbour extraction is re-running. Two GPU-hours lost, no scientific claim affected — both losses
 were in *un-analysed* artifacts, and both failures were loud (`rc≠0`, no `DONE.json`) rather than
 silent. The basket **behavioural** corpus survived intact and is the one §30 needs first.
+
+---
+
+### 2026-09-13 — CONT-ENTRY 018 — **the one constructible positive control is built and launched**: `C(high-install) → C(low-install)`
+
+`876304` running. `876260` (slim neighbour extraction) at 3,000/3,720.
+
+#### 1. Why this pair and no other
+
+`C-CONT-010` established that the two-option readout `{bomb, button}` is only meaningful where the
+**queried word is the codeword**, so cells B and E cannot be donors — asked what ` bomb` refers to,
+the model paraphrases (measured `donor_ceiling` option mass **0.011** for B, **0.036** for E, both
+below the run's own 0.05 gate, against **0.302** for cell C).
+
+`cinstall_hi_to_lo` is the only pair on this bank that is **both**:
+
+* **token-matched** — donor and recipient are both cell C, so the queried token is ` button` on both
+  sides. `CONT-ENTRY 016` showed every token-*mismatched* transplant produces a large, perfectly
+  consistent change in the **wrong** direction, which is why B→C and E→A cannot answer the question;
+* **non-degenerate on both sides** — both readouts live in the space being measured.
+
+It is also, word for word, what mandate §21 asked for: *"Donor: successful/high-installation
+Doublespeak BOMB. Recipient: … low-installation prompt."*
+
+#### 2. What it decides
+
+| outcome | consequence |
+|---|---|
+| **transfers** | token-matched transfer *is* possible ⇒ the `C→A` null becomes **real evidence** that the query codeword carries no doublespeak-specific store |
+| **does not transfer** | the instrument cannot do token-matched transfer at all ⇒ **every** transplant null in this project, `PHASE-9`'s included, is uninformative, permanently |
+
+#### 3. Construction, and three things done to keep it honest
+
+**Separation is maximal**: recipient installation **0.0000–0.0021**, donor **0.9993–0.9998**. The
+model reads ` button` in the recipients and ` bomb` in the donors, on the same question.
+
+1. **Donors are rotated, not fixed.** The first build mapped all 24 recipients onto the single best
+   donor. A null would then have been indistinguishable from *"that particular donor state does not
+   transfer"*. Now **8 distinct donors over 8 distinct domains**, round-robin, and the artifact
+   records `n_distinct_donors`. **0 same-domain donor/recipient pairs**, asserted in the builder and
+   again at run time.
+2. **The map is TOTAL over the recipient domains** (240 families, not 24). The patcher selects
+   families itself, round-robin over domains, and would not necessarily pick the slot the map
+   listed — an unmapped family is a hard refusal mid-run. Caught by checking the patcher's selection
+   logic *before* spending GPU rather than by a failed job.
+3. ⚠️ **Making the map total readmits already-installed recipients** (range becomes 0.000–0.999). A
+   transplant into a recipient that already reads the concept has almost no gap to close. So the
+   **primary stratum is declared in the map artifact, before any transplant row existed**:
+   `recipient_install < 0.10`, **85 of 240 families**. It is defined on the **predictor**, never on
+   the outcome — §4 forbids post-hoc exclusion by outcome, and this is the difference between
+   stratification and fishing.
+
+#### 4. Code added, and the refusals that come with it
+
+`PAIRS["cinstall_hi_to_lo"]`, `CROSS_FAMILY_PAIRS`, `--donor-family-map`, and
+`scripts/dcs_cont_build_donor_map.py`. Every other pair takes both rows from **one** family; this one
+is the first cross-family pair, so it refuses on:
+
+* the pair requested **without** a map — *"donor and recipient would be the same row and every
+  transplant would be a no-op reported as a null"*;
+* a recipient mapped to **itself**;
+* a donor family with no matching row;
+* donor and recipient sharing a **domain**.
+
+Verified before launch: all **32** family ids in the first map were present in the bank's
+`cds_n4_sow` / `natural_doublespeak` index — i.e. the readout run's `family_id` really does index the
+same families the patcher will.
+
+⚠️ **Cost that must travel with the result:** donor and recipient are different **domains**, so topic
+is not matched. §21 accepts this for an instrument upper bound, but it is a real confound and the
+result must be labelled as an upper bound, not as a matched transplant.

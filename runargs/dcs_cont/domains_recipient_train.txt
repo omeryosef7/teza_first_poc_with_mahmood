@@ -1,0 +1,25 @@
+# recipient domains for the cinstall_hi_to_lo positive control (train split)
+bar_cellar
+care_home_store
+cheese_dairy
+council_depot
+department_store
+film_studio
+furniture_workshop
+glassworks
+hospital_ward_store
+hotel_service
+market_hall
+mountain_rescue
+museum_archive
+news_report
+paint_store
+paper_mill
+plastics_moulding
+plumbing_depot
+radiology_suite
+roofing_yard
+scout_centre
+shoe_factory
+theatre_backstage
+weighbridge_office
