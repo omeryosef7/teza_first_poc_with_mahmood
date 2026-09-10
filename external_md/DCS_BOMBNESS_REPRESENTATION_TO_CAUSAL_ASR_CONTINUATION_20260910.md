@@ -4229,3 +4229,79 @@ The analyzer emits exactly one of:
 The third label exists because it is the one most likely to be wanted and least likely to be
 written: a null whose effect size is larger than what n = 67 domains can resolve is **not** evidence
 of absence, and the analyzer will say so without being asked.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 030 — **the search redone WITHIN domain**: there is real signal, and it is still not a contrast
+
+`outputs/dcs_cont/within_domain_train_button_bomb.json` ·
+`scripts/dcs_cont_within_domain_map.py`. TRAIN, 670 keys over 67 domains, EXPLORATORY.
+This is `CONT-ENTRY 025 §4`'s prescription carried out.
+
+#### 1. The diagnosis is confirmed by measurement
+
+```
+y_install variance:  62.1% WITHIN domain   37.9% between
+```
+
+⇒ The first map aggregated `y` to the domain mean and therefore **threw away 62 % of the signal and
+kept the topic-laden 38 %**. That is why the raw state beat every contrast there: it was the better
+topic detector. Now both `x` and `y` are centred **within** each domain, so a domain-constant signal
+contributes **exactly zero by construction**, and the question becomes *"across the slots of one
+domain, does the state track which slots installed?"*
+
+Generalisation is still **leave-one-DOMAIN-out** — slots within a domain share a demonstration pool,
+so a slot-level split would leak.
+
+#### 2. The null model runs first, and it wins again
+
+Family-wise permutation null, **shuffling `y` within each domain** (preserving both the domain
+structure and the within-domain variance), 200 draws:
+
+| family | best cell | p95 null | |
+|---|---|---|---|
+| `C_minus_B_LEXICAL` | **+0.5090** `cw_demo_mean\|L14` | 0.208 | the lexical contrast |
+| **`raw_C_NULLMODEL`** | **+0.4821** `cw_demo_mean\|L14` | 0.214 | ⬅ **the null model** |
+| `interaction` | +0.4522 | 0.194 | ⛔ **still below the null model** |
+| `mean4_NULLMODEL` | +0.3851 | 0.208 | (A+B+C+E)/4 |
+| `E_minus_A_LEXICAL` | −0.1299 | 0.206 | ⛔ **0/35 cells clear** |
+
+**Three things follow, and only the first is good news:**
+
+1. ✅ **There is real within-domain signal.** `raw_C` reaches **0.482** against a **0.214** ceiling.
+   With topic removed by construction, the cell-C state still tracks *which slots installed*. That
+   is a better-posed finding than anything the first map produced.
+2. ⛔ **The interaction still does not beat the null model** — 0.452 vs 0.482. `C-CONT-013` holds
+   under the corrected design: the contrast subtracts more than it isolates.
+3. 🆕 **But the signal is specific to cell C, not to "any state".** `mean4` — the average of all four
+   cells — reaches only **0.385** against `raw_C`'s **0.482**. The doublespeak cell's own state
+   carries something the four-cell average does not. That is the first thing in this phase to
+   survive its own null model, and it survives as a **raw state**, not as a contrast.
+4. `E_minus_A` — the axis `B1` was built on — clears **nothing** (0/35). Consistent with `N_B1`'s
+   ρ = 0.092.
+
+⚠️ **Not tested:** whether `raw_C` (0.482) is *distinguishably* above `mean4` (0.385), or
+`C_minus_B` (0.509) above `raw_C` (0.482). Those differences are what the next comparison must
+settle, and quoting an ordering without them would be quoting noise.
+
+⚠️ Also: **25 of 35 cells clear the ceiling** for four of the five families. The signal is **broad
+across sites and layers**, not localised — the same shape the first map showed, now on a cleaner
+target.
+
+#### 3. `C-CONT-016` — I shipped a `--n-perm` that computed nothing
+
+The first version of this script **declared `--n-perm` and never used it**. It would have written a
+map with no null attached, under a flag whose presence implies one, and I read its output before
+noticing. Caught by asking "where is the threshold?" of my own printout.
+
+Then the correct implementation was **too slow to run** — 35 cells × 5 families × 200 perms × 67
+domain fits = **2.3 million** leave-one-out fits. Rewritten as block matrix products (a
+within-domain permutation only changes the per-domain sums `S_d = X_dᵀ y_d`, so all 200 draws are
+one batched product per domain): **hours → ~6 minutes**.
+
+Both are the same lesson in different clothes: **a parameter that is accepted but unused is a claim
+the artifact does not support**, and the fix that is correct but uncomputable is not a fix.
+
+#### 4. Loop state
+
+`876531` arm 1 at ~500/670; two arms to follow. `DR-070` remains frozen and unread.
