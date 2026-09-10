@@ -3110,6 +3110,18 @@ def main() -> int:
         return 2
     AN.check_wording_pin(pr)
 
+    # ---- DCS-CONT TEST-READ GUARD, HOISTED (REVIEW-1/T1-4) ------------------------------- #
+    # The guard installed in CONT-ENTRY 004 lives inside run_stage (:1756). `--plan` never enters
+    # run_stage: main() handles it here, and plan() calls split_bind() with `a.split`, which
+    # DEFAULTS to "test". So --plan bound the confirmatory split with no flag and no record, and
+    # ENTRY 004 recorded that closure as "verified present in --help" -- which exercises no
+    # behaviour. The guard now runs before ANY branch that can reach a split.
+    if a.split == "test" and not a.confirm_test_read:
+        print("REFUSING: DCS-CONT TEST-READ GUARD: --split test spends the one confirmatory shot "
+              "and h2 has ALREADY been run on it (outputs/boombness/pr057_runner/h2_test). Pass "
+              "--confirm-test-read to state that this read is intended.", file=sys.stderr)
+        return 2
+
     try:
         if a.plan:
             p = plan(pr, a)

@@ -169,7 +169,35 @@
       "status": "DECLARED"
     }
   ],
-  "candidates": [],
+  "candidates": [
+    {
+      "candidate_id": "K1_interaction_at_demo_codewords_L13_14",
+      "status": "TRAIN-SURVIVING CANDIDATE -- not a finalist, not promoted",
+      "mathematical_definition": "score(d) = <x(d), vhat_-d> where x(d) = mean_slots[(h_C - h_B) + (h_E - h_A)] read at cw_demo_mean (the mean over the four DEMONSTRATION codeword occurrences), and vhat_-d is the unit leave-one-domain-out covariance direction between x and y_install",
+      "motivation": "the only cell surviving all four measured floors; and it is at the demonstration occurrences, where the remapping is ESTABLISHED, not at the query occurrence where the successor sprint looked",
+      "representation_source": "residual stream, behavioural prompt (cell C/B/E/A), dose 4",
+      "positions": "cw_demo_mean (mean of 4 demonstration codeword occurrences), resolved from occurrences",
+      "layers": "L13-L14 peak; unimodal profile rising from L0 (+0.25) to L13 (+0.70) then declining to L31 (+0.53)",
+      "training_population": "TRAIN, 67 domains, ts116m_button_bomb sha16 dcd92d723f3e6d00",
+      "labels": "y_install, continuous concept-free semantic_one_word readout on cell C",
+      "nuisance_controls": {
+        "N_surface": "PASSED -- surface floor rho_loo = 0.179, below its own null",
+        "N_fwer": "PASSED -- rho 0.697/0.698 vs family-wise p95 0.6916 (MARGINAL, a hair's breadth)",
+        "N_logitlens": "PASSED -- rho_logitlens 0.048/0.079, partial rho 0.706/0.700 (essentially unchanged)",
+        "N_B1": "NOT YET COMPUTED",
+        "N_neighbour": "NOT YET COMPUTED",
+        "N_random": "NOT YET COMPUTED",
+        "N_shuffled": "the FWER permutation is a shuffled-label control at the family level; a per-cell one is not yet run"
+      },
+      "installation_relationship": "rho_loo = +0.6971 (L13) / +0.6983 (L14), 67 TRAIN domains",
+      "asr_relationship": "NOT TESTED",
+      "cross_codeword_transfer": "NOT TESTED -- basket not extracted",
+      "cross_template_transfer": "NOT TESTED -- no held-out readout template exists",
+      "positional_specificity": "the QUERY codeword (cw_query) peaks at 0.515 and NEVER exceeds the noise ceiling at any layer; the demonstration codewords do. That contrast is the candidate's main claim to being about something other than the token.",
+      "failure_mode": "marginal against the family-wise ceiling (0.698 vs 0.692); a single codeword; no causal test; and the transplant instrument that would test it is NOT VALIDATED (CONT-ENTRY 012)",
+      "eligible_for_confirmation": false
+    }
+  ],
   "promotion_gate": {
     "mandate_section": "44",
     "criteria": [

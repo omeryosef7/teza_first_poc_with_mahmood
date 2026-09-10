@@ -232,10 +232,18 @@ def main() -> int:
                     help="DISCOVERY is train. validation is for SELECTION only and must not be "
                          "used to search.")
     ap.add_argument("--out", required=True)
+    ap.add_argument("--confirm-validation-read", action="store_true",
+                    help="required for --split validation. VALIDATION is the SELECTION population "
+                         "(mandate section 29); discovery runs on train. Typing the word should "
+                         "not be the only gate on it. REVIEW-1/T1-5.")
     ap.add_argument("--n-perm", type=int, default=200)
     ap.add_argument("--seed", type=int, default=20260910)
     a = ap.parse_args()
 
+    if a.split == "validation" and not a.confirm_validation_read:
+        raise Refusal("--split validation is the SELECTION population, not the discovery one. "
+                      "Pass --confirm-validation-read to state that this is a selection run and "
+                      "not a search.")
     assign = load_split()
     inst, n_inst_rows, kinds = load_installation(os.path.join(REPO, a.readout_run))
     mp, rows, bank_sha = load_corpus(os.path.join(REPO, a.beh_run))

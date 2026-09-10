@@ -54,6 +54,15 @@ def main() -> int:
     if a.split == "test" and not a.confirm_test_read:
         print("REFUSING: %s" % TEST_READ_REFUSAL, file=sys.stderr)
         return 2
+    # REVIEW-1/T1-3: the EMPTY default is the other half of this gap and was left open. No
+    # `--split` means no filter, i.e. the pooled population INCLUDING all 23 test domains --
+    # executed, it returns rc=0 with `domains_remain=113`. CONT-ENTRY 004's "the three gaps are
+    # closed" was half true for this one.
+    if not a.split and not a.confirm_test_read:
+        print("REFUSING: --split was not given, so this exclusion file would RETAIN every test "
+              "domain. Pass --split train (or validation), or --confirm-test-read to build a "
+              "deliberately pooled file. %s" % TEST_READ_REFUSAL, file=sys.stderr)
+        return 2
 
     keep_domains = None
     if a.split:

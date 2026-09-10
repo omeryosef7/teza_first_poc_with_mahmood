@@ -2878,3 +2878,174 @@ on 67 domains, in a single codeword, with no causal test.
   `C−B` / `E−A` redesign was real about *register* and wrong about *predictive confounding* —
   surface predicts nothing. What actually confounds is **token identity propagating prompt-globally**,
   which register-matching does not touch. That is `CONT-ENTRY 010`'s lesson, now with the numbers.
+
+---
+
+### 2026-09-10 — CONT-ENTRY 012 — **the positive control was run, and it FAILED.** The transplant instrument cannot transfer semantics even where the information is certainly local
+
+Job `875772` **COMPLETE**: `outputs/boombness/aggressive_patching/contposc_EtoA_train67_20260910_161144_1559398`,
+**1005 rows** — the same row count as `PR-068`, from the same instrument with one changed argument.
+Arms present: `none` 67, `donor_ceiling` 67, `self_swap_noop_check` 67, `transplant` 804.
+
+#### 1. The result
+
+`E → A`: donor is `concept_in_benign_ctx` (its queried token **is** ` bomb`); recipient is
+`benign_literal` (` button`); same benign text, same `seq_len`.
+
+| | **POSITIVE CONTROL `E→A`** | **the inherited null `C→A` (`PR-068`)** |
+|---|---|---|
+| gap (ceiling − baseline) | **+18.570** log-odds | +12.331 |
+| transplant movement | **−1.871** | +0.007 |
+| **transfer** | ⛔ **−10.1 %** | +0.1 % |
+| option-mass-gated (both endpoints ≥ 0.05) | n = 13, **−16.6 %** | n = 34, −0.4 % |
+| movement > 0 | **11/67** (gated **1/13**) | 32/67 |
+| mean \|movement\| | **2.388** | 0.684 |
+| `self_swap_noop_check` | ⚠️ max \|δ\| **0.093** | ✅ exactly **0.000000** |
+
+⇒ **Transplanting a state whose token literally IS the concept does not make the model read the
+concept.** It moves the readout **away**, in 66 of 67 domains, by ~10–17 % of the gap.
+
+#### 2. It is not a dose artefact — measured, because neither run records one
+
+⛔ **§40 is unmet by both runs**: no dose field exists in `PR-068`'s rows or in mine. So I measured
+the edit size directly from the `ts116m_full_button_bomb` cache at the patched site
+(`codeword_last`), 670 keys, 67 TRAIN domains:
+
+| layer | ‖E−A‖ (positive) | ‖C−A‖ (null) | ‖A‖ | ratio |
+|---|---|---|---|---|
+| L10 | 3.955 | 3.846 | 7.646 | **0.97** |
+| L11 | 4.222 | 4.321 | 8.264 | **1.02** |
+| L12 | 4.490 | 4.223 | 8.279 | **0.94** |
+| L14 | 5.956 | 5.257 | 9.653 | **0.88** |
+
+**The two transplants are the same size.** The `C→A` null is therefore **not** explained by a
+smaller edit — the states are perturbed comparably and one moves the readout 3.5× more than the
+other.
+
+#### 3. What this licenses, and what it takes away
+
+`CONT-ENTRY 008` wrote down three outcomes in advance. The result is **outcome (2)/(3)**:
+
+> ⛔ **The `C→A` null cannot be read as "no store at this site".** The instrument fails to transfer
+> semantic content in the one case where the content is *certainly* local, so its silence in the
+> doublespeak case is not evidence of absence. **`CONT-ENTRY 003 §D` is now settled against the
+> conduit reading, on evidence rather than on the literature's objection.**
+
+**This reaches beyond this phase.** Every transplant null in this project rests on the same
+instrument — `PHASE-9`'s included — and the successor sprint's `DCS_SUCC_FINAL_REPORT.md` states
+*"conduit, not store"* as a supported mechanism. **It is not supported.** That report is `TERMINAL`
+and stays unedited; this entry is the correction of record and must reach the claim table.
+
+🆕 **But the instrument is not inert, and the asymmetry is itself a finding.** At *equal edit
+magnitude*, `E−A` produces **3.5×** the readout movement of `C−A` (2.388 vs 0.684). So the
+difference between the two doublespeak contexts at the query codeword lies in a subspace the
+downstream computation is **relatively insensitive to**, while the token-identity difference is one
+it reacts to — violently and in the wrong direction. That is a sharper statement than "nothing is
+there", and it is the one the data supports.
+
+#### 4. Two caveats that must travel with the number
+
+* ⚠️ **The `self_swap_noop_check` is NOT inert on this run** — max \|δ\| **0.093** (mean 0.0014) —
+  while it is **exactly** `0.000000` on `PR-068`. Patching a prompt with its own state must change
+  nothing. The movements here (mean \|δ\| 2.39) are ~25× that floor, so the conclusion survives,
+  but **the plumbing is not clean and the difference between the two pairs is unexplained.**
+* ⚠️ **The donor ceiling's option mass is very low**: mean **0.036**, with **53/67** families below
+  the run's own 0.05 gate (`PR-068`'s ceiling: 0.346, only 6/67 below). Cell E asks *"what does the
+  word **bomb** actually refer to?"* against **benign** demonstrations (`bomb supplements`,
+  `bomb juice`), and the model sensibly answers **neither** option. So the 18.57 log-odds gap is
+  between two weakly-committed states, and the gated analysis rests on **13 families**. The
+  direction of the result is unambiguous (66/67 domains); its *magnitude* is not well determined.
+
+#### 5. Consequences for the plan
+
+1. **`E→A` is a flawed positive control** for the reason in §4 — the donor does not itself commit to
+   the concept. A better one is needed: a donor whose readout *does* commit. The natural candidate
+   is **`B → A`** (donor `direct_harmful`: harm demonstrations **and** the concept surface, where
+   the model does read `bomb`), which the code does not currently pair.
+2. Until then, the honest status of every transplant result in this project is
+   **INSTRUMENT NOT VALIDATED**.
+3. §40 dose persistence must be added to `aggressive_patching.py` before any further transplant run.
+
+---
+
+### 2026-09-13 — CONT-ENTRY 013 — **the logit-lens control separates the map**, and the phase has its first surviving candidate
+
+`outputs/dcs_cont/logitlens_control_train_button_bomb.json`. `N_logitlens` reads the model's own
+next-token estimate at the **same (site, layer)** — final RMSNorm then four unembedding rows only
+(` bomb`/` Bomb` vs ` button`/` Button`, ids frozen in the script and cross-checked against the smoke
+capture provenance) — and partials it out of the map's correlation.
+
+#### 1. The control does real work: it separates cells that looked identical
+
+| cell | role | `rho_map` | `rho_logitlens` | **`rho_partial`** | verdict |
+|---|---|---|---|---|---|
+| `rel-6\|L31` | `.` (final content token) | +0.750 | **+0.790** | **+0.259** | ⛔ **COLLAPSES** |
+| `rel-6\|L22` | `.` | +0.750 | +0.708 | **+0.443** | ⛔ collapses |
+| `rel-6\|L30` | `.` | +0.784 | +0.643 | +0.601 | ⚠️ weakened |
+| `rel-4\|L16` | `<\|start_header_id\|>` | +0.759 | **+0.024** | **+0.764** | ✅ survives |
+| **`cw_demo_mean\|L13`** | **mean of 4 demo codewords** | **+0.697** | **+0.048** | **+0.706** | ✅ **survives** |
+| **`cw_demo_mean\|L14`** | ″ | +0.698 | +0.079 | +0.700 | ✅ survives |
+
+⇒ **`CONT-ENTRY 011`'s worry was justified and specific.** The end-of-prompt cells at late layers —
+the ones that looked strongest — *were* substantially reading the output pipeline: `rel-6|L31` loses
+**two thirds** of its correlation once the model's own next-token estimate is removed. The cells at
+the demonstration codewords and at the response-header token lose **nothing**.
+
+#### 2. 🆕 A finding in its own right (§12): the logit lens on the *behavioural* prompt predicts installation
+
+`rho_logitlens` reaches **+0.790** at `rel-6|L31`. The behavioural prompt never asks what ` button`
+refers to — it asks for instructions — yet the bomb-vs-button margin in its own final residual
+stream predicts the **separately measured** semantic installation across domains. This is the §12
+probability/logit analysis Matan asked for, and it is **cross-prompt**, so it is not circular.
+It is also exactly why it must be partialled out of everything else.
+
+#### 3. The positional result sharpens
+
+```
+interaction, layer profile:
+  cw_query      L0 +0.207 → L6 +0.515 (peak) → L31 +0.445     NEVER exceeds the 0.692 ceiling
+  cw_demo_mean  L0 +0.246 → L13 +0.697, L14 +0.698 (peak) → L31 +0.529   EXCEEDS at L13-14
+```
+
+> **The query codeword row does not carry installation-predictive interaction structure at any of
+> the 19 layers. The demonstration codewords do, with a clean unimodal mid-layer peak.**
+
+That is a positional dissociation *within the same token type, in the same prompt, under the same
+contrast* — the demonstrations are where the remapping is established, and that is where the
+structure is.
+
+#### 4. First candidate registered — `K1`, and it is **not** promoted
+
+`configs/dcs_cont_candidate_registry.json` `candidates[0]`:
+**`K1_interaction_at_demo_codewords_L13_14`**.
+
+| §44 criterion | status |
+|---|---|
+| predicts concept-free installation | ✅ ρ_loo **+0.697 / +0.698**, 67 TRAIN domains |
+| not explained by surface | ✅ `N_surface` = **0.179**, below its own null |
+| beats the family-wise noise ceiling | ⚠️ **0.698 vs 0.6916 — a hair's breadth** |
+| not the output pipeline | ✅ `N_logitlens` 0.048, partial **0.706** |
+| positional specificity | ✅ `cw_query` never exceeds at any layer |
+| reasonable layer structure | ✅ unimodal, peak L13–14 |
+| stronger than `B1` | ⛔ **not computed** |
+| survives neighbouring-position control | ⛔ **not computed** |
+| transfers to another codeword | ⛔ basket not extracted |
+| transfers to a held-out template | ⛔ no such template exists |
+| causal leverage | ⛔ **and the instrument that would test it is NOT VALIDATED** (`CONT-ENTRY 012`) |
+
+`eligible_for_confirmation: false`. **Nothing here is promoted, and no p-value from this map may
+become a confirmatory claim** — it is all discovery on TRAIN.
+
+⚠️ The honest weakness is the third row: **0.698 against a 0.692 ceiling**. On its own that is
+nothing. What makes it worth registering is not its size but the **pattern** around it — that the
+same contrast at the same token type one position earlier in the prompt (`cw_query`) never gets
+close, that its layer profile is unimodal rather than monotone, and that it is untouched by the
+control that halves its neighbours.
+
+#### 5. Loop state
+
+✅ Done: the three Tier-1 guard gaps closed and verified (the legitimate `--split train` path
+produces a **byte-identical** exclusion hash, so nothing changed for real work) · `N_surface`
+computed · `N_logitlens` computed · positive control run and reported.
+⛔ Next: `N_B1` and `N_neighbour` for `K1`; the **`B → A`** positive control that `CONT-ENTRY 012`
+named; §40 dose persistence in `aggressive_patching.py`; basket extraction.
