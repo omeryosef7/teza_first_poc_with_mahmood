@@ -4250,3 +4250,75 @@ not be pooled — which `PR-059`'s transfer-pair rule already required for a dif
 
 `basket` cell B dose 4 replicates `button`'s direct-harmful control **to four decimals**
 (ASR 0.0088, refusal 0.9912). Cell C dose 4 is still generating.
+
+---
+
+### 2026-09-10 04:05 — ENTRY 043 — `S-009`: the specificity question, finally asked in comparable units. **The concentration ratio is 1.20 and 1.02.**
+
+**Label: EXPLORATORY, TRAIN, 67 domains. `C3` and `C4` verified fixed; this is the corrected reading
+of the question `S-002` opened and `C-208b` withdrew.**
+
+**Both fixes land.** The `H`/`I` decomposition now uses the leave-one-out axis and its `B1` matches
+`B1` proper to **0.00e+00** (was 1.08e−03), with the identity `B1 = H + I` holding to 2.3e−08. ⛔ And
+**`C-208a`'s finding is unchanged on the corrected axis**: `H = −0.0287` (13/67), `I = +0.1332`
+(**67/67**), `I / B1 = 128 %` on button; `H = −0.0029`, `I = +0.1395` (67/67), 102 % on basket. The
+interaction still *is* the effect.
+
+#### The residual 3 × 3, in FULL-gap units — the first time this table has been comparable to `B1`
+
+**`button` L12** (`B1` = 0.1044), **`basket` L11** (`B1` = 0.1366):
+
+| shift ＼ residual axis | bomb | knife | gun | | bomb | knife | gun |
+|---|---|---|---|---|---|---|---|
+| **bomb** | **0.0949** | −0.0060 | −0.0206 | | **0.0991** | 0.0395 | −0.0223 |
+| **knife** | 0.0556 | **0.0347** | −0.0793 | | 0.0238 | **0.0714** | −0.0752 |
+| **gun** | 0.0607 | 0.0341 | **−0.0679** | | 0.0431 | 0.0676 | **−0.0561** |
+
+* the **bomb column** shows diagonal dominance — 0.0949 against 0.0556/0.0607 (**1.6–1.7×**) on
+  button, 0.0991 against 0.0238/0.0431 (**2.3–4.2×**) on basket. That is the specificity evidence
+  that survives, and it is real but modest;
+* the **knife column still does not discriminate knife from gun** (0.0347 vs 0.0341 on button;
+  0.0714 vs 0.0676 on basket) — `C-211`'s finding, unchanged in the corrected units;
+* the **gun column is negative for everything**.
+
+#### The statistic the question actually needs, and it is not 90.8 %
+
+Residualising removes what the three axes share. So the honest question is: **does the shift
+concentrate in the part that survives, or is it spread uniformly over the axis?** That is a *ratio
+of ratios*:
+
+```
+                projection retained        axis retained        CONCENTRATION RATIO
+button L12          0.909                     0.756                    1.202
+basket L11          0.725                     0.708                    1.025
+```
+
+⛔ **A ratio of 1.0 means the Doublespeak shift is spread uniformly over the button→bomb axis, with
+no preference at all for the part knife and gun cannot express.** Measured: **1.20 on button, 1.02
+on basket.** So there is **~20 % concentration on the development codeword and ~2 % — none — on the
+replication codeword.**
+
+**This is the correct final reading of the specificity question, and it supersedes every earlier
+form of it.** `S-002` said *"90.8 % of the alignment lives in the part knife and gun cannot
+express"*; `C-208b` withdrew that as a specificity statement; `C-215`/`C4` showed the same number is
+a **9.2 % reduction** when the units are made comparable; and this entry shows what it is once the
+axis shortening is divided out: **a 1.20× concentration that does not replicate on the second
+codeword.**
+
+⛔ **No specificity claim for `B1` is licensed.** The entry that could have made one is this one, and
+it does not.
+
+#### The candidate table, closed for this phase
+
+| candidate | status |
+|---|---|
+| **`B1`** ⟨h_C − h_A, v̂_lex⟩ | **a real, reproducible, well-controlled measurement** — 66–67/67 domains, two codewords, ~14 sd over random, register-independent (`S-005`), length-bounded at ~15 %, re-derived independently to 6–7 s.f. |
+| its **interpretation** | ⛔ **not concept binding.** It is the token × context interaction (`C-208a`, 128 %/102 %, `H` negative); not localised at the codeword (`S-008`); not concentrated in the concept-specific subspace on the replication codeword (this entry, 1.02); and its site transfers nothing under a full-state patch (`S-007`, 0.054 %) |
+| **`B3`** prototype similarity | ⛔ **REJECTED** — the concept-free context prototype beats it (`S-003a`) |
+| `B1_harmref` | ⛔ **not a valid test** — structurally biased by a shared incongruity term (`S-003c`) |
+
+**What the phase has instead**, and it is not nothing: a **mechanistic pathway result** (`R-205`,
+the codeword row carries 62 % of the readout against a +0.03 dose-matched control), a **causal upper
+bound** (`S-007`), a **localisation negative** (`S-008`), a **working attack** (`R-206`, 103/104
+domains over the direct request) and a **preregistered installation → behaviour link** (`Q2`,
+ρ = 0.3961 pooled, 0.4206 corrected).
