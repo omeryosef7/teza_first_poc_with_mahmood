@@ -3197,3 +3197,98 @@ about the demonstration **block**, not its codewords, and the registry entry mus
 
 The run also **independently re-derives `cw_demo_mean`** on a fresh forward pass, which is a
 same-model reproducibility check on the phase's only candidate.
+
+---
+
+### 2026-09-13 — CONT-ENTRY 016 — **B→C: the instrument is emphatically LIVE and it destroys the reading instead of transferring it.** And no donor of this form can serve as a positive control
+
+Job `876102` finished **`rc=4` — refused by its own tail gate**, correctly:
+
+```
+[patch] option mass semantic/semantic_one_word/donor_ceiling:
+        n=67 median=0.01126 max=0.0652 frac>1%=0.567  BELOW GATE
+[patch] TAIL GATE FAILED — the run is written and its healthy readouts are usable,
+        but these are NOT reportable: donor_ceiling median option mass 0.01126 < 0.05
+```
+
+⛔ **I therefore do not report a gap or a transfer percentage for B→C.** The denominator failed its
+own gate; quoting a ratio built on it would be the `C-214` mistake with someone else's instrument.
+What *is* reportable is the movement, and the plumbing.
+
+#### 1. What happened
+
+| arm | option mass (median) | `semantic_logodds` (mean) |
+|---|---|---|
+| recipient **C** (`none`) | **0.302** ✅ | **+0.810** |
+| donor **B** (`donor_ceiling`) | ⛔ **0.011** | +7.169 |
+| **transplant** | 0.452 ✅ | **−6.307** |
+
+* **movement = −7.117 log-odds, negative in 67 of 67 domains**, |movement| median 7.23.
+* `self_swap_noop_check`: **exactly `0.000000`** — clean plumbing on this pair.
+
+So transplanting the donor's state at the queried token **moves the recipient from *leaning bomb*
+(+0.81) to *strongly button* (−6.31), in every single domain** — while the donor itself leans bomb
+at +7.17. The intervention is enormous, perfectly consistent, and **points the wrong way**.
+
+🆕 Incidental but worth recording: the recipient's own top-1 answer is **` Bomb` (id 33909) in
+35 of 67 domains**. Installation is not a subtle statistical residue on this bank — on more than half
+the domains the model's single most likely next token *is the concept*.
+
+#### 2. The three transplants together now say one thing
+
+| pair | donor token → recipient token | context | movement | domains |
+|---|---|---|---|---|
+| **B→C** | ` bomb` → ` button` | harm → harm | **−7.12** | 67/67 away |
+| **E→A** | ` bomb` → ` button` | benign → benign | **−1.87** | 66/67 away |
+| **C→A** | ` button` → ` button` | harm → benign | **+0.007** | nothing |
+
+> **When the donor's token differs from the recipient's, the transplant produces a large,
+> perfectly consistent change in the WRONG direction. When the tokens match, it produces nothing.**
+
+That is a coherent mechanistic statement and it is the strongest thing this phase has said about the
+site: the residual state at the queried token is **dominated by token identity**, and swapping it in
+does not import a reading — it *contradicts* the surrounding prompt and the model resolves the
+contradiction toward the surface token. The **context-dependent** component (`C` vs `A`, same token)
+is, by comparison, downstream-inert.
+
+⇒ `CONT-ENTRY 012`'s conclusion is reinforced from a second direction and with clean plumbing:
+**the `C→A` null is not evidence of "no store".** It is what this instrument does whenever the token
+is held constant.
+
+#### 3. `C-CONT-010` — **no donor of this form can be a positive control**, and this is structural
+
+Both candidate donors failed the option-mass gate, for the *same* reason, and it is not bad luck:
+
+> Cells **B** and **E** ask *"what does the word **bomb** actually refer to?"*. The two-option
+> readout is `{bomb, button}`. Asked what "bomb" refers to, a model does not answer "bomb" — it
+> paraphrases. The donors' top-1 tokens are ids `53435`, `85966`, `14227` — **not** the concept and
+> **not** the codeword.
+
+The two-option readout is only meaningful where the queried word is the **codeword**, i.e. cells
+**A** and **C**. Every donor whose queried token *is* the concept has a degenerate readout **by
+construction**. ⇒ **`E→A` and `B→C` are both structurally unusable as positive controls, and no
+other pair of this shape exists on this bank.**
+
+#### 4. The positive control that *is* constructible — and the mandate already named it
+
+§21: *"Donor: successful/high-installation Doublespeak BOMB. Recipient: matched literal/benign or
+**low-installation** prompt."*
+
+⇒ **`C(high-install) → C(low-install)`**. Both prompts are cell C, both ask about ` button`, both
+readouts live in the two-option space, and the recipient's option mass is **0.302** — healthy. The
+donor commits *within the space being measured*, which is exactly what B and E cannot do. And it is
+**token-matched**, so it does not trigger the disruption of §2.
+
+⚠️ Its cost: donor and recipient are different **domains**, so topic is not matched. For an
+instrument *upper bound* that is acceptable and is what §21 asks for — but it must be labelled, and
+a same-domain control (high vs low slot within a domain) should accompany it where the installation
+spread allows.
+
+⛔ **This pair does not exist in `PAIRS` and needs new code.** It is the next causal experiment, and
+until it runs the honest status of every transplant result in this project remains
+**INSTRUMENT NOT VALIDATED**.
+
+#### 5. Loop state
+
+`876103` basket: behavioural ✅ (3,714 stacks, the predicted `school_campus` shortfall), semantic
+running. `876192` neighbour-control extraction at 2,200/3,720.
