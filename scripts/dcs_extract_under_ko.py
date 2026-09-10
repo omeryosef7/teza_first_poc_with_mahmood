@@ -1230,6 +1230,19 @@ def main() -> int:
     ap.add_argument("--only-cell", default="", help="restrict to one cell, e.g. C")
     ap.add_argument("--only-query-kind", default="", help="restrict to one query kind")
     ap.add_argument("--only-n-examples", type=int, default=-1, help="restrict to one dose")
+    # ---- DCS-CONT: restrict extraction to declared splits of the FROZEN manifest ---------- #
+    # WHY THIS EXISTS AT EXTRACTION TIME AND NOT ONLY IN THE ANALYZER. Not extracting the test
+    # domains at all is a PHYSICAL guarantee that no discovery analysis can read them -- stronger
+    # than any flag, because it cannot be forgotten, overridden or defaulted past. Phase 1 of the
+    # continuation found three call sites that could reach TEST silently; this removes the
+    # possibility from the artifact rather than guarding each consumer.
+    ap.add_argument("--only-split", default="",
+                    help="comma list of frozen-manifest splits to KEEP, e.g. 'train,validation'. "
+                         "Empty = every domain (the behaviour of every committed run). Including "
+                         "'test' additionally requires --confirm-test-read.")
+    ap.add_argument("--confirm-test-read", action="store_true",
+                    help="required to include 'test' in --only-split. See the DCS-CONT "
+                         "test-read guard.")
     ap.add_argument("--enable-thinking", default=None, choices=[None, "true", "false"])
     # --- this file's own ------------------------------------------------------------------- #
     ap.add_argument("--band", default=DEFAULT_BAND,
@@ -1413,6 +1426,30 @@ def main() -> int:
         all_rows = [r for r in all_rows if r.get("query_kind") == args.only_query_kind]
     if args.only_n_examples >= 0:
         all_rows = [r for r in all_rows if int(r.get("n_examples", -1)) == args.only_n_examples]
+    if args.only_split:
+        _want = [x.strip() for x in args.only_split.split(",") if x.strip()]
+        _man_path = os.path.join(_REPO, "data", "boombness_prompts",
+                                 "dcs_ts116_domain_split.json")
+        with open(_man_path, encoding="utf-8") as _fh:
+            _assign = json.load(_fh)["assign"]
+        _legal = set(_assign.values())
+        _bad = [x for x in _want if x not in _legal]
+        if _bad:
+            raise SystemExit("REFUSING: --only-split %r is not a value of the frozen manifest "
+                             "(legal: %s)" % (_bad, sorted(_legal)))
+        if "test" in _want and not args.confirm_test_read:
+            raise SystemExit(
+                "REFUSING: DCS-CONT TEST-READ GUARD. --only-split includes 'test', which would "
+                "put the confirmatory population into a discovery artifact. Pass "
+                "--confirm-test-read to state that this is intended and preregistered.")
+        _keep = {d for d, sp in _assign.items() if sp in _want}
+        _before = len(all_rows)
+        all_rows = [r for r in all_rows if r.get("domain") in _keep]
+        _doms = sorted({r.get("domain") for r in all_rows})
+        print("[ko-extract] --only-split %s: %d/%d rows over %d domains"
+              % (_want, len(all_rows), _before, len(_doms)), flush=True)
+        if not all_rows:
+            raise SystemExit("REFUSING: --only-split %r selected ZERO rows" % _want)
     if not all_rows:
         raise SystemExit("population filter selected ZERO rows -- refusing to run an empty "
                          "extraction that would look like a completed one")

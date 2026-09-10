@@ -2314,3 +2314,87 @@ five-node pin sat `PD (ReqNodeNotAvail)` indefinitely the moment `n-805` went un
 ✅ multi-position capture implemented, self-test 35/35, **validated bit-exactly against the frozen
 extractor**, guards closed, GPU path restored. ⛔ Not yet done: `PR-069` is not frozen and no
 extraction has been run at scale. That is the next step, and it now has a decided predictor site.
+
+---
+
+### 2026-09-10 — CONT-ENTRY 006 — **`DR-069` extraction design record; the discovery corpus is launched with TEST physically absent**
+
+**Loop check.** Cluster idle at iteration start. Extraction job **875529** now queued
+(`--exclude=n-801`, `HF_HUB_CACHE` set per `C-CONT-001`).
+
+⚠️ **This is a DESIGN RECORD (`DR-069`), deliberately not a frozen preregistration.** Mandate §29
+places the freeze at **Phase 9**, before confirmation. Everything below is **discovery**, is
+**EXPLORATORY** by §3, and no p-value it produces may be promoted. Calling it `PR-` would imply a
+confirmatory status it does not have.
+
+#### 1. `--only-split`: making TEST physically absent beats guarding every consumer
+
+The extractor had **no** split filter — only `--only-cell`, `--only-query-kind`,
+`--only-n-examples`. Added `--only-split` (comma list of frozen-manifest splits to keep), with
+`test` requiring the same `--confirm-test-read` flag as the three guards closed in `CONT-ENTRY 004`,
+and a zero-row refusal.
+
+The reason it belongs at *extraction* time and not only in the analyzer:
+
+> **Not extracting the test domains at all is a physical guarantee that no discovery analysis can
+> read them.** It cannot be forgotten, overridden, or defaulted past — which is exactly how all
+> three of the Phase-1 gaps would have fired. This removes the possibility from the artifact rather
+> than guarding each consumer of it.
+
+Verified on CPU before launch: `behavioral` × dose 4 × `train,validation` ⇒ **3,720 rows over 93
+domains**, with **all 23 test domains excluded**.
+
+#### 2. The discovery corpus
+
+| | |
+|---|---|
+| bank | `ts116m_button_bomb` (`sha16 dcd92d723f3e6d00`) — ⛔ basket is **not** run yet; §43 staged scaling, and button/basket are never pooled |
+| cells | **A, B, C, E** (all four — the register-clean contrasts `C−B` and `E−A` need B and E) |
+| query kinds | **`behavioral`** (the predictor population, `CONT-ENTRY 002`) **and `semantic_one_word`** (the position sweep's second template and the output-adjacency reference) |
+| dose | 4 |
+| splits | **`train,validation` only** — test physically absent |
+| rows | **3,720 per query kind**, 93 domains × 10 slots × 4 cells |
+| layers | **19 of 33**: `0,2,4,6,8,10,11,12,13,14,16,18,20,22,24,26,28,30,31` — full-depth coverage, denser through 10–14 where `B1` peaks |
+| sites | **20**: `rel_end −16…−1` (the position sweep) **+** `cw_query`, `cw_demo_last`, `cw_demo_first`, `cw_demo_mean` (§10 pooled) |
+| cost | ≈ 11.6 GB per query kind; ~10 min of forward passes each |
+
+**Why 19 layers and not 33.** The successor sprint extracted **9** (6–14) and could therefore not
+answer where installation information *first* becomes decodable or whether it migrates downstream —
+§9's actual questions. A stride-2 grid answers those at discovery resolution; finalists are
+re-extracted at full layer resolution **in their selected band only** (§43 staged scaling), which is
+also why the disk cost of the full 33 × 28 map (≈ 35 GB/bank) is not paid now.
+
+#### 3. What is *not* extracted, and why that is deliberate
+
+* **Dose 0** — a no-demonstration row has no demonstration codeword occurrences, so `cw_demo_*` is
+  undefined. The capture refuses such rows (`too_few_codeword_occurrences`) rather than silently
+  emitting a short stack. Dose-0 controls come from the existing behavioural artifacts.
+* **`semantic_forced_choice`** — mandate §4 forbids defining the target from the channel that names
+  the concept.
+* **Test** — see §1.
+* **basket, knife, gun** — staged; button must produce something worth replicating first.
+
+#### 4. The analysis this corpus is built to support, stated before the data exists
+
+Recording the intended analysis **now**, while the corpus is still on the queue, so that what is
+run later can be compared against what was intended:
+
+1. **§9 layer × position map.** For each of 20 sites × 19 layers: the paired within-domain
+   `C−B` and `E−A` contrasts (⛔ *not* `C−A`, per `CONT-ENTRY 003 §F`), the installation-predictive
+   score, and the position-relative and layer-relative contrasts. Domain is the unit throughout.
+2. **§13 probes** targeting `y_install`, the continuous concept-free readout — which already exists
+   in `outputs/boombness/score_behavior/ts116m_readout_button_bomb_20260907_133811_3183103/` and is
+   joined on the compound key `(bank_file_sha16, domain, family_slot)`.
+3. **Every candidate is scored against four floors**, all of them measured rather than assumed:
+   `N_surface` (**LOO r = 0.526** — larger than the ρ = 0.484 train correlation), `N_B1`,
+   `N_neighbour`, `N_logitlens`.
+
+**Predictor site is `cw_query`, never `rel-10`** (`CONT-ENTRY 005`). The `rel*` sites are the
+position sweep; they are not how the codeword is located.
+
+#### 5. Standing risk, carried forward so it is not rediscovered
+
+⛔ The transplant **positive control** (`CONT-ENTRY 003 §D`) is still not run. Until it is, the
+conduit-not-store result cannot be stated as a positive claim — the literature is explicit that a
+null transplant without a matched positive control on the same instrument is not evidence. It is
+not part of *this* job because it is a different experiment, not because it has been deprioritised.
