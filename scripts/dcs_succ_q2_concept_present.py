@@ -284,6 +284,14 @@ def main() -> int:
             p, fl = perm_p(x, y, a.n_perm, a.seed)
             row[nm] = {"rho": rho, "perm_p": p, "perm_p_floor": fl,
                        "fisher_z_ci95": fisher_ci(rho, len(doms))}
+        if split == "pooled":
+            # per-domain values, so F8 can be an actual scatter rather than a text panel
+            # (REVIEW-3: F8 "is not a plot at all"). Exported, not recomputed downstream.
+            res["per_domain_export"] = {
+                "domains": doms, "installation": x,
+                "raw_ASR": [sum(raw[d]) / len(raw[d]) for d in doms],
+                "asr_and_concept_present": [sum(cp[d]) / len(cp[d]) for d in doms],
+                "split_of_domain": {d: assign.get(d) for d in doms}}
         res["rows"][split] = row
 
     os.makedirs(os.path.dirname(a.out), exist_ok=True)

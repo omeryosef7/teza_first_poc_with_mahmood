@@ -53,18 +53,33 @@ def one_done(pattern):
     return ds[0]
 
 
-def scope_card(ax, lines):
-    """Plan section 36's requirement, drawn on the panel rather than left to a caption.
+#: Cards are COLLECTED during drawing and rendered after layout, in FIGURE coordinates.
+#: Three attempts at this failed in three different ways and all three are the same mistake --
+#: positioning a required annotation in AXES coordinates against a layout that then moves:
+#:   1. (0.99, 0.02) inside the axes  -> painted over rungs K10-K14 (C-216)
+#:   2. (1.0, -0.42) below the axes   -> overlapped the x-axis label
+#:   3. (1.0, -0.52) with rect 0.26   -> landed off the page entirely and was clipped away
+#: A card that is not on the page is the same failure as one over the data, one step further on.
+_CARDS = []
 
-    PLACED OUTSIDE THE AXES, and that is not cosmetic. The first version put it at (0.99, 0.02) in
-    axes coordinates with an opaque facecolor, and on F5 that rectangle sat exactly over rungs
-    K10-K14 -- the four points that carry the result. The figure looked complete and had the
-    decisive part of the curve painted over. A panel that hides its own evidence behind the box
-    listing its scope is worse than one with no box, so the card now lives below the axes where it
-    cannot cover data."""
-    ax.text(1.0, -0.42, "\n".join(lines), transform=ax.transAxes, fontsize=6.2,
-            va="top", ha="right", family="monospace",
-            bbox=dict(boxstyle="round,pad=0.35", fc="#f7f7f7", ec="#bbbbbb", lw=0.6))
+
+def scope_card(ax, lines):
+    """Plan section 36's requirement. Queued here; drawn by `finish()` after the layout is fixed."""
+    _CARDS.append((ax, list(lines)))
+
+
+def finish(fig, rect):
+    """tight_layout, then place every queued card in the reserved band under its own axes."""
+    fig.tight_layout(rect=rect)
+    for ax, lines in list(_CARDS):
+        if ax.figure is not fig:
+            continue
+        pos = ax.get_position()
+        fig.text(pos.x1, rect[1] - 0.02, "\n".join(lines), fontsize=6.0, va="top", ha="right",
+                 family="monospace",
+                 bbox=dict(boxstyle="round,pad=0.35", fc="#f7f7f7", ec="#bbbbbb", lw=0.6))
+        _CARDS.remove((ax, lines))
+    return fig
 
 
 def fig2(plt, cand):
@@ -92,8 +107,7 @@ def fig2(plt, cand):
                         "A and E are 0 and 1 by construction"])
     fig.suptitle("F2  the Doublespeak cell sits at ~0.10-0.14 of the way from the codeword to the "
                  "concept", fontsize=9.5)
-    fig.tight_layout(rect=(0, 0.24, 1, 0.95))
-    return fig
+    return finish(fig, (0, 0.30, 1, 0.95))
 
 
 def fig3(plt, pos):
@@ -112,8 +126,11 @@ def fig3(plt, pos):
             ax.fill_between(xs, lo, hi, color=col, alpha=0.15, lw=0)
         ax.set_xlabel("block layer", fontsize=8)
         ax.set_ylabel("cos(h_C - h_A, v_lex)   POSITION-PORTABLE", fontsize=7.5)
-        ax.set_title("%s_bomb" % cw, fontsize=9)
-        ax.legend(fontsize=6.5, loc="upper left")
+        ax.set_title("%s_bomb" % cw, fontsize=9, pad=22)
+        # REVIEW-3 F: the legend sat over L6 and L7 -- the two layers whose values
+        # CONTRADICT the panel's title. Moved outside the axes.
+        ax.legend(fontsize=6.2, loc="lower center", bbox_to_anchor=(0.5, 1.02), ncol=3,
+                  frameon=False)
         n = rec["layers"][Ls[0]]["n_domains"]
         scope_card(ax, ["n = %d TRAIN domains" % n, "split: train only",
                         "shaded: 95% domain bootstrap",
@@ -121,8 +138,7 @@ def fig3(plt, pos):
                         "gap units are NOT position-portable (C-214)"])
     fig.suptitle("F3  B1 is NOT localised: the codeword matches its neighbour and trails the "
                  "readout position", fontsize=9.5)
-    fig.tight_layout(rect=(0, 0.24, 1, 0.95))
-    return fig
+    return finish(fig, (0, 0.30, 1, 0.95))
 
 
 def fig5(plt, lad):
@@ -140,15 +156,23 @@ def fig5(plt, lad):
             raise Refusal("rung %s carries no mean_delta" % k)
         ks.append(int(k))
         ys.append(r["mean_delta"])
-        bs = r.get("bootstrap") or {}
-        ci = bs.get("ci95") or bs.get("ci95_domain_bootstrap") or [None, None]
-        los.append(ci[0]); his.append(ci[1])
+        # REVIEW-3 F: C-216 fixed the OUTER key (`controls`) and I GUESSED the inner one. The
+        # artifact's bootstrap block is {point, lo, hi, n_boot, caveat} -- there is no `ci95` -- so
+        # fill_between never ran while the scope card asserted "shaded: 95% domain bootstrap".
+        # A card claiming something the panel does not draw is worse than the occlusion it replaced.
+        # The keys are now required, and the card is DERIVED from what was actually drawn.
+        bs = r.get("bootstrap")
+        if not bs or "lo" not in bs or "hi" not in bs:
+            raise Refusal("rung %s carries no bootstrap lo/hi; the panel would claim a CI band it "
+                          "cannot draw" % k)
+        los.append(bs["lo"]); his.append(bs["hi"])
     if len(ks) != 14:
         raise Refusal("expected 14 declared rungs, found %d" % len(ks))
     fig, ax = plt.subplots(figsize=(7.0, 4.9))
     ax.plot(ks, ys, marker="o", ms=4, lw=1.5, color="#c0392b", label="demo knockout")
-    if all(v is not None for v in los):
-        ax.fill_between(ks, los, his, color="#c0392b", alpha=0.15, lw=0)
+    ax.fill_between(ks, los, his, color="#c0392b", alpha=0.18, lw=0)
+    drew_ci = True
+    nboot = rungs[str(ks[0])]["bootstrap"].get("n_boot")
     cks = sorted((int(k) for k in ctr), key=int)
     if not cks:
         raise Refusal("the artifact carries no control band; the panel would show the treatment "
@@ -163,43 +187,52 @@ def fig5(plt, lad):
     ax.text(10.15, lo + 0.30 * (hi - lo), "K=10\nthe CODEWORD", fontsize=7.5)
     ax.set_xlabel("K  (the cut reaches query row rel_end -K)", fontsize=8)
     ax.set_ylabel("mean paired delta in semantic_logodds", fontsize=8)
-    ax.legend(fontsize=6.5, loc="lower left")
-    scope_card(ax, ["n = 67 TRAIN domains, 670 rows/arm",
+    ax.legend(fontsize=6.5, loc="lower center", bbox_to_anchor=(0.5, 1.01), ncol=2,
+              frameon=False)
+    scope_card(ax, ["n = %d TRAIN domains, 670 rows/arm" % rungs[str(ks[0])]["n_domains"],
                     "split: train only",
                     "readout: semantic_one_word (concept word on 0 of 32544 rows)",
-                    "shaded: 95% domain bootstrap",
+                    ("shaded: 95%% domain bootstrap, %s draws" % nboot) if drew_ci
+                    else "NO CI BAND DRAWN",
                     "shape rule returns NEITHER -- 'step' is not used"])
     fig.suptitle("F5  the concept-free K ladder: one row, the codeword's, carries 62% of the "
                  "effect", fontsize=9.5)
-    fig.tight_layout(rect=(0, 0.28, 1, 0.95))
-    return fig
+    return finish(fig, (0, 0.34, 1, 0.95))
 
 
 def fig8(plt, q2):
-    fig, ax = plt.subplots(figsize=(6.0, 4.0))
-    rows = q2["rows"]["pooled"]
-    ax.axis("off")
-    txt = ["F8  installation -> attack success", "",
-           "n = %d domains (all splits, PR-066 discipline_for_Q2)" % rows["n_domains"], ""]
-    for nm, lab in (("raw_ASR", "raw ASR@0.5 (the frozen y)"),
-                    ("asr_and_concept_present", "asr_and_concept_present (C-209 corrected)")):
-        r = rows[nm]
-        txt.append("%-42s rho = %+.4f" % (lab, r["rho"]))
-        txt.append("%-42s p   = %.5g  (attainable floor %.5g)" % ("", r["perm_p"],
-                                                                  r["perm_p_floor"]))
-        txt.append("%-42s CI  = [%.3f, %.3f]" % ("", *r["fisher_z_ci95"]))
-        txt.append("")
-    txt += ["predictor: concept_binary_prob, semantic_one_word, cell C dose 4",
-            "           bound BY HASH to the pinned bank " + q2["predictor_bound_by_sha16"],
-            "join key : " + q2["join_key"],
-            "declared MDE 0.2996 at power 0.90",
-            "",
-            "the correlation STRENGTHENS under the C-209 correction,",
-            "which is the opposite of what a false-positive artefact would do"]
-    ax.text(0.02, 0.98, "\n".join(txt), va="top", ha="left", family="monospace", fontsize=7.6,
-            transform=ax.transAxes)
-    fig.tight_layout()
-    return fig
+    """REVIEW-3 F: this was `ax.axis("off")` and a block of text with a HARDCODED conclusion
+    sentence that was false on both artifacts' test splits. A panel that cannot be contradicted by
+    its own data is not a panel. It is now a scatter of the per-domain values the artifact carries,
+    and every sentence on it is read off the artifact."""
+    pd = q2.get("per_domain_export")
+    if not pd:
+        raise Refusal("the artifact carries no per_domain_export; F8 would have to be text again")
+    fig, axes = plt.subplots(1, 2, figsize=(10.0, 4.7))
+    for ax, key, lab in zip(axes, ("raw_ASR", "asr_and_concept_present"),
+                            ("raw ASR@0.5  (the frozen y)",
+                             "asr_and_concept_present  (C-209 corrected)")):
+        x, y = pd["installation"], pd[key]
+        cols = {"train": "#2c7fb8", "validation": "#f0a202", "test": "#c0392b"}
+        for sp in ("train", "validation", "test"):
+            ix = [i for i, d in enumerate(pd["domains"]) if pd["split_of_domain"][d] == sp]
+            ax.scatter([x[i] for i in ix], [y[i] for i in ix], s=16, alpha=0.75,
+                       c=cols[sp], label="%s (n=%d)" % (sp, len(ix)), edgecolors="none")
+        r = q2["rows"]["pooled"][key]
+        ax.set_xlabel("per-domain installation (concept_binary_prob)", fontsize=8)
+        ax.set_ylabel(lab, fontsize=8)
+        ax.set_title("rho = %+.4f   p = %.4g (floor %.4g)"
+                     % (r["rho"], r["perm_p"], r["perm_p_floor"]), fontsize=8.5)
+        ax.legend(fontsize=6.2, loc="upper left", frameon=False)
+        scope_card(ax, ["n = %d domains, ALL splits" % q2["rows"]["pooled"]["n_domains"],
+                        "unit: DOMAIN. rows are never the unit",
+                        "Spearman; %d-permutation p, domain labels shuffled" % q2["n_perm"],
+                        "Fisher-z CI [%.3f, %.3f]" % tuple(r["fisher_z_ci95"]),
+                        "predictor bound BY HASH to " + q2["predictor_bound_by_sha16"],
+                        "join: " + q2["join_key"]])
+    fig.suptitle("F8  installation predicts attack success; the correlation SURVIVES removing the "
+                 "judge's false positives", fontsize=9.5)
+    return finish(fig, (0, 0.32, 1, 0.94))
 
 
 def selftest() -> int:

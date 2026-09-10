@@ -4663,3 +4663,63 @@ so that route is closed for this outcome on this bank.
 **The pattern, restated because it changed shape.** Four new instances of *"a quantity that could not
 have told you it was wrong"* — **all inside the four entries that named it.** And one the log had not
 named: **parameterising without binding the parameters to each other.**
+
+---
+
+### 2026-09-10 07:30 — ENTRY 050 — `C-218`: the scope card failed **three more ways**, and the fix is a mechanism rather than a coordinate
+
+**Label: CORRECTIONS to the figure set (`REVIEW-3` findings F1–F4).**
+
+`C-216` reported the scope card fixed. `REVIEW-3` opened the PNGs and found it was not, and found
+worse beside it. All four are mine and all four are in the commit that claimed the repair.
+
+**`F5` still had NO CI BAND — while its card asserted one.** `C-216` fixed the *outer* key
+(`controls`) and I **guessed** the inner one. The artifact's bootstrap block is
+`{point, lo, hi, n_boot, caveat}` — there is no `ci95` — so `fill_between` never ran, and the card
+printed *"shaded: 95 % domain bootstrap"* over a panel with no shading. ⛔ **A card claiming
+something the panel does not draw is worse than the occlusion it replaced**, because the occlusion
+was visible. The keys are now **required** (a rung without `bootstrap.lo/hi` is a `Refusal`) and the
+card's CI line is **derived from whether the band was drawn**, with the draw count read off the
+artifact — it now reads *"3000 draws"* because that is what the artifact says.
+
+**`F3`'s legend covered L6 and L7 — the two layers that CONTRADICT its title.** At L6 the codeword
+is **7.5×** the last token (0.1565 vs 0.0208 on button). A legend hiding the counter-evidence to the
+panel's own claim. Moved above the axes.
+
+**`F2`'s card covered the tick labels of bars B and E**, so the panel named two of its four bars and
+hid the names of the other two. **`F8` was not a plot at all** — `ax.axis("off")` and a text block
+with a **hardcoded conclusion sentence** that was false on both artifacts' test splits. It is now a
+**per-domain scatter**, coloured by split, with ρ and its p read off the artifact into the axis
+titles, and it required adding a `per_domain_export` to the `Q2` script.
+
+#### The mechanism, because the coordinate was never the problem
+
+Three attempts, three different failures, **one mistake**: positioning a required annotation in
+**axes coordinates** against a layout that then moves.
+
+| attempt | placement | what happened |
+|---|---|---|
+| 1 (`C-216`) | `(0.99, 0.02)` inside the axes | **painted over rungs K10–K14** |
+| 2 | `(1.0, −0.42)` below the axes | overlapped the x-axis label |
+| 3 | `(1.0, −0.52)`, `rect` bottom 0.26 | **landed off the page and was clipped away** |
+
+⛔ **A card that is not on the page is the same failure as one over the data, one step further on.**
+Cards are now **queued** during drawing and rendered by `finish(fig, rect)` **after** `tight_layout`,
+in **figure** coordinates, under their own axes' bbox in a reserved band. Verified by rendering and
+looking: F5 shows all 14 rungs, a visible CI band, the control band flat at 0, the legend clear of
+the data and the card clear of everything.
+
+**Standing rule added**: *a required annotation is placed after the layout, in the layout's own
+coordinates, and the panel is opened and looked at before the figure is called done.* Reading the
+numbers would not have caught any of these four.
+
+#### Outstanding from `REVIEW-3`, carried forward and not quietly dropped
+
+* `ENTRY 047`'s basket `Q1b`/`Q1d` are **in no script** (5th instance of `C8`'s shape). They are
+  **correct** — independently re-derived at 42 pos / 0 neg / 71 ties, p = 4.547e−13 at its floor —
+  but unfiled, and **Δ = +0.0522 is a 113-domain mean printed beside a 42-domain sign test**; over
+  the 42 domains that moved it is **0.1405**. Both numbers belong in the log; only one is there.
+* `S-009`'s concentration ratio (1.20 / 1.02) is **in no script or artifact** — 6th instance.
+* `B1 = H + I` is **algebraically vacuous** — true for any `v` — which is exactly why it held at
+  3.09e−08 throughout the period `C3` was live. The check that *would* have caught `C3` is
+  `dec.B1 == metrics.B1`; it is not in code, and it now holds to exactly 0 across the full grid.
