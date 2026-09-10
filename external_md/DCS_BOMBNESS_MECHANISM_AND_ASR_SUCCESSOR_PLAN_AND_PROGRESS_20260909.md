@@ -4782,3 +4782,56 @@ to a **per-domain switch** than a per-domain gain — is checkable, and is not c
 ⛔ The numbers themselves are unchanged and were correct; what changes is which denominator the
 comparison is made on, and that changed the conclusion. **Six instances of "computed inline,
 reported" produced one wrong reading; the seventh would have too.**
+
+---
+
+### 2026-09-10 08:05 — ENTRY 052 — `S-011`: the switch-vs-gain hypothesis I proposed one entry ago is **NOT SUPPORTED**
+
+**Label: EXPLORATORY. A direct test of `S-010`'s own suggestion, run immediately rather than left
+standing.**
+
+`S-010` observed that the installation ratio (46/92 = 0.500) matched the informative-domain ratio
+(42/79 = 0.532) far better than it matched the effect-size ratio (0.750), and suggested:
+
+> *"installation is closer to a **per-domain switch** than a per-domain gain."*
+
+That is checkable from artifacts already on disk, so it was checked. Split the question in two:
+
+* **A** — does installation predict **whether the attack does anything at all** in a domain?
+  (Spearman of installation against the binary `concept-present ASR > 0`, all 113 domains.)
+* **B** — among domains where it does work, does installation predict **how much**?
+  (Spearman of installation against ASR, restricted to the working domains.)
+
+A **switch** predicts **A ≫ B**. Measured:
+
+| codeword | A: works at all | B: how much, given it works | working domains |
+|---|---|---|---|
+| **button** | 0.2934, p = 0.0018 | **0.3919**, p = 0.00040 | 79/113, mean 0.2000 |
+| **basket** | **0.4609**, p at floor | 0.3510, p = 0.0218 | 42/113, mean 0.1405 |
+
+⛔ **The two codewords give OPPOSITE orderings**, and **both correlations are substantial on both**.
+On `button` the "how much" correlation is *stronger* than the "whether"; on `basket` it is weaker.
+There is no consistent sign of a switch.
+
+> **`S-010`'s suggested mechanism is NOT SUPPORTED. Installation predicts both whether the attack
+> works and how much it works, on both codewords. The 0.53-against-0.50 agreement that suggested it
+> was a coincidence of two aggregates, not evidence about a mechanism.**
+
+**A caveat that cuts against test B specifically, and it is mine to state.** B **conditions on the
+outcome** — it restricts to domains selected by `y > 0`. Conditioning on a variable downstream of
+both x and y can attenuate or distort the correlation, and the two codewords' B values rest on 79
+and 42 domains respectively, so they are not equally powered. The honest reading is therefore:
+**the test does not support a switch, and it is not strong enough to establish a gain either.** What
+it does establish is that `S-010`'s sentence should not stand as written, and it does not.
+
+**Why this entry exists at all.** `S-010` was a genuine improvement — it corrected `R-207`'s
+denominator and produced a sharper statement. But the *mechanism* it gestured at was a story fitted
+to two ratios agreeing, and this project's own record is full of stories fitted to an agreement that
+did not survive its first direct test (`PR-016`…`PR-023`'s installation gradient dissolved exactly
+this way, and `C-208a` killed the whole Bombness reading). **Naming a mechanism in an entry creates
+an obligation to test it in the next one**, and the cost here was ten minutes of CPU on artifacts
+already on disk.
+
+`S-010`'s *numerical* correction stands: `R-207`'s "≈ 2.7× weaker" is still an artefact of the
+all-domain denominator, and the informative-domain ratio is still 0.750. Only the mechanistic gloss
+is withdrawn.
