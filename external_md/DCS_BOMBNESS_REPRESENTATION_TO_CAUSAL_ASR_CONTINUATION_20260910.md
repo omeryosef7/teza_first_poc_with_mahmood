@@ -3121,3 +3121,79 @@ misled. Recorded here rather than rewritten, because the branch is pushed.
 commits to the concept *and* shares the harm demonstration pool with the recipient, so it is a
 surface twin; `PR-068`'s instrument with **one** changed argument, again).
 `876103` **basket_bomb** extraction, both query kinds in one allocation (§30 replication).
+
+---
+
+### 2026-09-13 — CONT-ENTRY 015 — **the demonstration-side controls `K1` had none of**, and a latent `NameError` that `py_compile` could not see
+
+**Loop check.** `876102` (B→C positive control) at **687/1005** rows; `876103` (basket) finished its
+behavioural pass and is on the semantic one; `876166` neighbour smoke **rc=0**; `876192` full
+neighbour-control extraction queued.
+
+#### 1. Why `K1` had no control at all, and what was added
+
+`K1` lives at `cw_demo_mean` — the mean over the four **demonstration** codeword occurrences. Every
+control captured so far is on the **query** side (`rel_end −16…−1`), so **not one captured token is
+adjacent to a demonstration codeword**. §18's neighbouring-position control and §10's size-matched
+random pool were therefore not merely un-run: they were **not constructible** from the corpus.
+
+Three sites added to `dcs_extract_under_ko.py`, all reusing the occurrence indices the extractor
+already resolves:
+
+| site | definition |
+|---|---|
+| `cw_demo_prev_mean` | mean over demonstration codeword **− 1** |
+| `cw_demo_next_mean` | mean over demonstration codeword **+ 1** |
+| `cw_demo_rand_mean` | mean over **4 random positions inside the demonstration span**, excluding the codewords and both neighbours, seeded per prompt off the run seed, **indices persisted** |
+
+Refusals rather than silent degradation: a demonstration codeword at a sequence boundary, or a span
+too narrow for a size-matched pool, aborts the run.
+
+#### 2. `C-CONT-009` — a `NameError` I introduced, and the check that would not have caught it
+
+The new block calls `random.Random(...)`. **`random` was never imported.** `py_compile` passed,
+and the module's own `--self-test` passed **35/35**, because neither exercises that path.
+
+It would have died at the first row of the first real run — fail-fast, so nothing false would have
+been produced — but it is the fourth time in this project that *"it compiles"* has been mistaken for
+*"it works"*, and the first I have committed myself. The lesson is the one already in the log and
+not yet obeyed: **exercise the path, do not compile it.** So the fix was followed by an actual GPU
+smoke (`876166`, 12 rows) rather than another compile.
+
+#### 3. The smoke verified the sites are what they claim, not merely that they exist
+
+```
+prompt b16e0dfd  seq_len=219   frozen token_pos=208
+  cw_query          208                      ' button'
+  cw_demo_mean      [139, 153, 180, 193]     4 pooled
+  cw_demo_prev_mean [138, 152, 179, 192]     == demo-1   ✅
+  cw_demo_next_mean [140, 154, 181, 194]     == demo+1   ✅
+  cw_demo_rand_mean [142, 158, 171, 185]     size-matched ✅ disjoint ✅ inside span ✅
+```
+
+And the two §37 checks that a filename or a loop variable cannot answer:
+
+* **distinct random draws across 12 prompts: 12/12** — the draws really do differ;
+* the draw is **reproducible from `(prompt_id, seed)` alone**, recomputed independently.
+
+The pooled vectors are genuinely different objects: `cos(demo_mean, next_mean) = 0.576`,
+`cos(demo_mean, rand_mean) = 0.480`.
+
+#### 4. A data note carried forward
+
+The basket behavioural corpus cached **3,714** stacks, not 3,720 — six fewer, which is exactly the
+`school_campus` shortfall the Phase-1 inventory predicted for the basket banks
+(`occurrence_count_mismatch`, 34 rows instead of 40). ✅ Predicted in advance and reproduced;
+the analyzer's complete-4-cell-key requirement handles it, and `school_campus` is in any case one
+of the three preregistered exclusions.
+
+#### 5. What `876192` will decide
+
+`K1`'s claim is that the **demonstration** codewords carry installation-predictive interaction
+structure that the **query** codeword does not. The neighbour and random-pool sites are the test of
+the alternative reading — that *any* pooled site inside the demonstration block would score the
+same, and the codewords are incidental. If `cw_demo_prev/next/rand` reach ~0.70 as well, `K1` is
+about the demonstration **block**, not its codewords, and the registry entry must say so.
+
+The run also **independently re-derives `cw_demo_mean`** on a fresh forward pass, which is a
+same-model reproducibility check on the phase's only candidate.

@@ -80,6 +80,7 @@ import argparse
 import collections
 import json
 import os
+import random
 import sys
 from typing import Dict, List, Optional, Sequence, Tuple
 
@@ -618,6 +619,33 @@ def capture(lm, dc, pc, rows, layers, band, run, ledger, args) -> Dict:
                 sites.append(("cw_demo_last", int(last[-2])))
                 sites.append(("cw_demo_first", int(last[0])))
                 sites.append(("cw_demo_mean", [int(x) for x in last[:-1]]))
+                # ---- DCS-CONT: the mandate section 18 NEIGHBOUR control and the section 10
+                # SIZE-MATCHED RANDOM POOL, for the DEMONSTRATION-side pooled site. Without these
+                # `cw_demo_mean` has no control at all: the query-side rel_end grid does not
+                # contain the tokens adjacent to a demonstration codeword.
+                _demo = [int(x) for x in last[:-1]]
+                _prev = [i - 1 for i in _demo if i - 1 >= 0]
+                _next = [i + 1 for i in _demo if i + 1 < len(ids)]
+                if len(_prev) != len(_demo) or len(_next) != len(_demo):
+                    raise SystemExit("REFUSING: %s: a demonstration codeword sits at a sequence "
+                                     "boundary, so its neighbour control is not constructible"
+                                     % pid)
+                sites.append(("cw_demo_prev_mean", _prev))
+                sites.append(("cw_demo_next_mean", _next))
+                # SIZE-MATCHED RANDOM POOL: the same number of positions, drawn from the span the
+                # demonstration codewords themselves occupy, EXCLUDING the codewords and their two
+                # neighbours. Seeded PER PROMPT off the run seed so the draw is reproducible, and
+                # the drawn indices are PERSISTED (section 37: never trust that draws differ --
+                # inspect and record them).
+                _lo, _hi = min(_demo), max(_demo)
+                _ban = set(_demo) | set(_prev) | set(_next)
+                _pool = [i for i in range(_lo, _hi + 1) if i not in _ban]
+                if len(_pool) < len(_demo):
+                    raise SystemExit("REFUSING: %s: demonstration span too narrow for a "
+                                     "size-matched random pool (%d usable positions, need %d)"
+                                     % (pid, len(_pool), len(_demo)))
+                _rng = random.Random("%s|%d" % (pid, int(args.seed)))
+                sites.append(("cw_demo_rand_mean", sorted(_rng.sample(_pool, len(_demo)))))
             _stack = []
             _prov = []
             for _name, _at in sites:
