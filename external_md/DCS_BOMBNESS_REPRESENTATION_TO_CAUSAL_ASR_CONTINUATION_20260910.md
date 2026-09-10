@@ -2771,3 +2771,110 @@ domains at `rc=0` (**"the three gaps are closed" is half true for gap 1**) · `p
 `--help`", which exercises no behaviour · `--split validation` has no confirm gate.
 
 Map relaunched with all Tier-0 fixes. Positive control `875772` still running.
+
+---
+
+### 2026-09-10 — CONT-ENTRY 011 — **the first layer × position map.** Surface does not predict installation; the lexical contrast predicts it *everywhere*; and the query codeword row does **not** clear the noise ceiling
+
+Artifacts: `outputs/dcs_cont/layerpos_train_button_bomb.json` ·
+`outputs/dcs_cont/surface_floor_train_button_bomb{,_SEMANTIC}.json`.
+**TRAIN only, 67 domains, `button_bomb`, EXPLORATORY.** Positive control `875772` still running.
+
+#### 1. `C-CONT-005` discharged: `N_surface` computed, and it is **0.179, not 0.526**
+
+`scripts/dcs_cont_surface_floor.py` runs the **identical pipeline** to the map — per-domain vector →
+LOO covariance direction → score the held-out domain → Spearman vs `y_install` — differing only in
+that the vector is 12 surface counts from the prompt **text**, no model, no hidden state. That
+identity is what makes it a floor rather than a different number.
+
+| population | `N_surface` ρ_loo | its own permutation p95 | beats it? |
+|---|---|---|---|
+| behavioural (the predictor population) | **+0.1791** | 0.3805 | ⛔ **no** |
+| semantic_one_word | **+0.1793** | 0.3760 | ⛔ **no** |
+
+⇒ **Prompt surface does not predict semantic installation at all.** The claimed 0.526 was ~3× too
+high and, had it stood, would have made the §44 gate nearly unpassable for the wrong reason. The
+strongest single surface features are `punct_per_100c` (−0.257) and `harm_per_100w` (+0.249) —
+individually weak. Both lexicons and all 12 features are written into the script.
+
+**This is good news for the phase**: the confound `CONT-ENTRY 003 §F` most feared is not present.
+
+#### 2. The map
+
+**Family-wise null, 200 permutations, 1900 cells, 4 reportable families:**
+
+```
+max |rho| from PURE NOISE   p50 = 0.5196   p95 = 0.6916   p99 = 0.7888
+cells exceeding p95         184 / 1900
+```
+
+⚠️ **Note how high that ceiling is.** With 67 domains and 4096-dimensional LOO-fitted directions,
+noise alone reaches **|ρ| ≈ 0.69** somewhere in a map this size. Any cell at 0.75 is *marginal*, not
+strong. `CONT-ENTRY 007`'s instinct was right even though its arithmetic was wrong.
+
+**Best cell per site (max over 19 layers), behavioural roles read off the artifact:**
+
+| site | role | `interaction` | `C_minus_B_LEXICAL` | `E_minus_A_LEXICAL` |
+|---|---|---|---|---|
+| `cw_query` | ` button` (the codeword) | **0.515** ⛔ | 0.770 ✅ | 0.464 |
+| `cw_demo_mean` | mean of 4 demo codewords | **0.698 ✅** | 0.793 ✅ | 0.420 |
+| `cw_demo_last` | last demo codeword | 0.616 | 0.713 ✅ | 0.408 |
+| `rel-4` | `<\|start_header_id\|>` | **0.759 ✅** | **0.859 ✅** | 0.482 |
+| `rel-6` | `.` | **0.784 ✅** | 0.812 ✅ | 0.510 |
+| `rel-7` | ` context` | 0.691 | 0.835 ✅ | 0.531 |
+| `rel-11` | ` button` (= `cw_query`) | 0.515 ⛔ | 0.770 ✅ | 0.464 |
+
+#### 3. Three readings, in decreasing confidence
+
+**(a) The lexical contrast is a prompt-GLOBAL property, not a representation of anything local.**
+`C_minus_B_LEXICAL` clears the ceiling at **16 of 20 sites**, and its single best cell is at
+**`<|start_header_id|>`** — a pure chat-scaffold token — reading **0.859**, *higher than at the
+codeword itself* (0.770). It also fires at `<|eot_id|>` (0.769) and `'\n\n'` (0.793).
+
+> A contrast that predicts installation better at `<|start_header_id|>` than at ` button` is not
+> telling us where anything lives. It is telling us that swapping ` button` for ` bomb` throughout a
+> prompt changes the whole prompt's state, everywhere, and that the change correlates with
+> installation. This is the confound `CONT-ENTRY 010` renamed it to expose, now measured.
+
+**(b) The lexically-cancelled interaction is much weaker and much sparser — 3 sites, not 16.**
+And `E_minus_A_LEXICAL` clears the ceiling **nowhere** (max 0.531). So the diffuse signal in (a) is
+carried by the *harm-context* half of the lexical swap, not by lexical identity as such.
+
+**(c) 🆕 The query codeword row does NOT clear the ceiling on the interaction — but the
+demonstration codewords do.**
+
+```
+interaction @ cw_query      = 0.515   (below the 0.692 noise ceiling)
+interaction @ cw_demo_mean  = 0.698   (above it)
+```
+
+That is the opposite of the "codeword stores the meaning" picture and **consistent with the conduit
+reading**: the demonstration occurrences — where the remapping is *established* — carry
+installation-predictive structure that the query occurrence does not. It also converges with the
+strongest interaction cells sitting at the **end of the prompt** (`rel-4`, `rel-6`) in **late
+layers** (L16, L26–L30), i.e. in the prompt-global state just before generation.
+
+⛔ **All of (c) is observational and marginal**: 0.698 against a 0.692 ceiling is a hair's breadth,
+on 67 domains, in a single codeword, with no causal test.
+
+#### 4. What this does **not** yet license, stated before anyone quotes it
+
+* ⛔ **No candidate is promoted.** §44 requires beating `N_B1`, `N_neighbour` and **`N_logitlens`**,
+  and `N_logitlens` is the one that matters most here — the winning sites are `rel-4`/`rel-6` at
+  **L26–L31**, which is exactly where the output pipeline lives. The behavioural prompt does not ask
+  the semantic question, so this is *cross-prompt* prediction rather than circularity — but the
+  logit-lens control is what turns that argument into a measurement, and it is **not run**.
+* ⛔ **Not replicated on `basket`.** One codeword only.
+* ⛔ **No template transfer.** §7's held-out readout template does not exist.
+* ⛔ **`E_minus_A_LEXICAL` clearing nothing is itself informative** and needs saying: the benign-cell
+  lexical swap — the very axis `B1` was built on (`v_lex = mean[h_E − h_A]`) — **does not predict
+  installation at any site or layer**.
+
+#### 5. Corrections carried
+
+* `C-CONT-005` **discharged**: `N_surface` now has an artifact, and the number in the log was wrong
+  by ~3×. The §44 surface gate is enforceable from this entry onward.
+* The `N_surface` finding **strengthens** the phase: the register worry that motivated the whole
+  `C−B` / `E−A` redesign was real about *register* and wrong about *predictive confounding* —
+  surface predicts nothing. What actually confounds is **token identity propagating prompt-globally**,
+  which register-matching does not touch. That is `CONT-ENTRY 010`'s lesson, now with the numbers.
