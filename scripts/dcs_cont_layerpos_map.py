@@ -72,6 +72,38 @@ def load_split():
         return json.load(fh)["assign"]
 
 
+def readout_bank_sha(run_dir: str):
+    """The readout run's bank sha, read from metadata.json because its ROWS do not carry one.
+
+    The log declared the join key as `(bank_file_sha16, domain, family_slot)`. That key was NOT
+    constructible: readout rows have no `bank_file_sha16` field, so nothing was checking the bank
+    at all. A `basket_*` readout joins every TRAIN key of a `button` corpus silently -- the only
+    structurally differing keys live in `school_campus`, a domain the analyzer drops before it
+    would notice -- swapping the target's mean from 0.678 to 0.045 and violating the
+    never-pool-button-and-basket rule. REVIEW-1/T0-4.
+    """
+    for name in ("metadata.json", "config.json", "summary.json", "RUNMETA.json"):
+        p = os.path.join(run_dir, name)
+        if not os.path.exists(p):
+            continue
+        with open(p, encoding="utf-8") as fh:
+            blob = json.load(fh)
+        for k in ("bank_file_sha16", "bank_sha16", "rows_sha16"):
+            if isinstance(blob, dict) and blob.get(k):
+                return str(blob[k]), "%s:%s" % (name, k)
+        args = blob.get("args") if isinstance(blob, dict) else None
+        if isinstance(args, dict) and args.get("bank"):
+            import hashlib
+            bp = args["bank"]
+            if not os.path.isabs(bp):
+                bp = os.path.join(REPO, bp)
+            if os.path.exists(bp):
+                h = hashlib.sha256(open(bp, "rb").read()).hexdigest()[:16]
+                return h, "%s:args.bank(hashed)" % name
+    raise Refusal("cannot establish the readout run's bank identity from %r; the join key the "
+                  "log declares is not constructible without it" % run_dir)
+
+
 def load_installation(run_dir: str):
     """(domain, slot) -> concept_binary_prob, from the CONCEPT-FREE one-word channel only.
 
@@ -97,7 +129,16 @@ def load_installation(run_dir: str):
                               % r.get("prompt_id"))
             m = max(lc, lk)
             p = math.exp(lc - m) / (math.exp(lc - m) + math.exp(lk - m))
-            out[(r["domain"], family_slot(r["family_id"]))] = p
+            k = (r["domain"], family_slot(r["family_id"]))
+            if k in out:
+                # The corpus loader refuses on exactly this condition. Without the same refusal
+                # here, weakening the semantic_one_word filter above would substitute the
+                # forbidden forced-choice channel SILENTLY, last-row-in-file-order winning.
+                raise Refusal("installation key %r binds two rows (query_kind=%r); the "
+                              "concept-free channel filter is the only thing keeping the "
+                              "forced-choice channel out, so a duplicate here is a silent "
+                              "channel substitution" % (k, r.get("query_kind")))
+            out[k] = p
             n_seen += 1
     if not out:
         raise Refusal("installation selection bound ZERO rows (channels present: %s)"
@@ -112,11 +153,28 @@ def load_corpus(run_dir: str):
         raise Refusal("no multiposition_reps.pt under %r" % run_dir)
     if not os.path.exists(os.path.join(run_dir, "DONE.json")):
         raise Refusal("%r has no DONE.json; an unfinished run is not a corpus" % run_dir)
-    mp = torch.load(mp_path, weights_only=False)
+    # ⛔ EVERY CHEAP REFUSAL RUNS BEFORE THE EXPENSIVE LOAD. multiposition_reps.pt is ~12 GB over
+    # NFS and takes ~30 minutes to read; rejecting a one-word mistake in the run name should not
+    # cost that. results.jsonl answers every identity question on its own.
     rows = [json.loads(l) for l in open(os.path.join(run_dir, "results.jsonl"), encoding="utf-8")]
     shas = {r.get("bank_file_sha16") for r in rows}
     if len(shas) != 1:
         raise Refusal("run %r mixes bank_file_sha16 %s" % (run_dir, shas))
+    # ⛔ THE CORPUS MUST PROVE WHICH POPULATION IT IS. Two sibling corpora now exist one word
+    # apart in the directory name -- cont1_behavioral_* and cont1_semantic_one_word_* -- with
+    # identical row counts, cells, domains, sites and layers. Passing the semantic one here would
+    # reinstate exactly the output-adjacency circularity CONT-ENTRY 002 exists to forbid, and
+    # nothing printed would show it. REVIEW-1/T0-4.
+    qks = {r.get("query_kind") for r in rows}
+    if qks != {"behavioral"}:
+        raise Refusal("the predictor corpus must be the BEHAVIOURAL population; %r carries "
+                      "query_kind %s. The semantic prompt's next token IS the target, so a "
+                      "representation read there predicts it circularly." % (run_dir, sorted(qks)))
+    doses = {r.get("n_examples") for r in rows}
+    if doses != {4}:
+        raise Refusal("corpus %r carries doses %s; this analysis is dose 4 only"
+                      % (run_dir, sorted(doses)))
+    mp = torch.load(mp_path, weights_only=False)
     return mp, rows, shas.pop()
 
 
@@ -181,6 +239,12 @@ def main() -> int:
     assign = load_split()
     inst, n_inst_rows, kinds = load_installation(os.path.join(REPO, a.readout_run))
     mp, rows, bank_sha = load_corpus(os.path.join(REPO, a.beh_run))
+    ro_sha, ro_src = readout_bank_sha(os.path.join(REPO, a.readout_run))
+    if ro_sha != bank_sha:
+        raise Refusal("BANK MISMATCH: corpus bank_file_sha16=%s but readout bank=%s (from %s). "
+                      "Predictor and target must come from the same bank; button and basket are "
+                      "never pooled." % (bank_sha, ro_sha, ro_src))
+    print("[map]   bank agreement: corpus %s == readout %s (%s)" % (bank_sha, ro_sha, ro_src))
     sites, layers = list(mp["sites"]), list(mp["layers"])
     print("[map] corpus %s" % a.beh_run)
     print("[map]   bank_file_sha16=%s sites=%d layers=%d rows=%d"
@@ -216,16 +280,30 @@ def main() -> int:
     domains = sorted({d for d, _ in complete})
     # per-domain target and per-domain contrast tensors [n_sites, n_layers, d]
     y = {}
-    contrasts = {"C_minus_B": {}, "E_minus_A": {}, "interaction": {}, "C_minus_A_CONFOUNDED": {}}
+    # NAMING IS LOAD-BEARING HERE. C = (harm demos, surface ` button`) and B = (harm demos,
+    # surface ` bomb`), so `C - B` is register-matched AND a pure lexical token swap; `E - A` is
+    # the same swap in the OPPOSITE polarity under benign demos (measured cos(mean C-B, mean E-A)
+    # = -0.87). Being register-matched does not make a contrast concept-informative, and a cell
+    # that fires on `C_minus_B` is reporting `button` vs `bomb`, not installation.
+    #
+    # THE SIGN. Verified symbolically: (C-A)-(B-E) = (C-B)+(E-A) = -A-B+C+E is the interaction;
+    # (C-B)-(E-A) = A-B+C-E = (C+A)-(B+E) is TWICE THE SURFACE MAIN EFFECT. This file previously
+    # computed `cb - ea` under the name `interaction` -- the log's prose (CONT-ENTRY 003) and the
+    # frozen convention in dcs_succ_bombness_candidates.py:449 were both right; only the code
+    # disagreed. REVIEW-1/T0-2. The main effect is now reported under its own name rather than
+    # deleted, because it is the confound this map most needs to print.
+    contrasts = {"interaction": {}, "C_minus_B_LEXICAL": {}, "E_minus_A_LEXICAL": {},
+                 "token_main_effect_LEXICAL": {}, "C_minus_A_CONFOUNDED": {}}
     for dom in domains:
         ks = [k for k in complete if k[0] == dom]
         y[dom] = sum(inst[k] for k in ks) / len(ks)
         cb = sum((by_key[(k, "C")] - by_key[(k, "B")]) for k in ks) / len(ks)
         ea = sum((by_key[(k, "E")] - by_key[(k, "A")]) for k in ks) / len(ks)
         ca = sum((by_key[(k, "C")] - by_key[(k, "A")]) for k in ks) / len(ks)
-        contrasts["C_minus_B"][dom] = cb
-        contrasts["E_minus_A"][dom] = ea
-        contrasts["interaction"][dom] = cb - ea
+        contrasts["C_minus_B_LEXICAL"][dom] = cb
+        contrasts["E_minus_A_LEXICAL"][dom] = ea
+        contrasts["interaction"][dom] = cb + ea            # (C-B)+(E-A) == (C-A)-(B-E)
+        contrasts["token_main_effect_LEXICAL"][dom] = cb - ea   # == (C+A)-(B+E), 2x main effect
         contrasts["C_minus_A_CONFOUNDED"][dom] = ca
 
     n = len(domains)
@@ -239,7 +317,9 @@ def main() -> int:
 
     result = {"schema": "dcs_cont_layerpos_map/1", "status": "EXPLORATORY",
               "beh_run": a.beh_run, "readout_run": a.readout_run, "split": a.split,
-              "bank_file_sha16": bank_sha, "n_domains": n, "domains": domains,
+              "bank_file_sha16": bank_sha, "readout_bank_sha16": ro_sha,
+              "readout_bank_sha_source": ro_src,
+              "corpus_query_kind": "behavioral", "corpus_dose": 4, "n_domains": n, "domains": domains,
               "sites": sites, "layers": layers,
               "y_install": {d: y[d] for d in domains},
               "contrast_note": ("C_minus_B and E_minus_A are register-matched; "
@@ -279,17 +359,32 @@ def main() -> int:
     Yperm = torch.stack([yt[torch.randperm(n, generator=g)] for _ in range(a.n_perm)], dim=0)
     per_family_max = {c: [] for c in contrasts}
     global_max = None
+    # The confounded comparator is EXCLUDED from the family-wise maximum. It may never be quoted
+    # as a result, so letting its 380 cells inflate the threshold would tax the three reportable
+    # families for a family that cannot report anything. REVIEW-1/S7.
+    REPORTABLE = tuple(c for c in contrasts if c != "C_minus_A_CONFOUNDED")
     for cname in contrasts:
         fam = None
         for key, X in cell_X.items():
             if not key.startswith(cname + "|"):
                 continue
             S = loo_scores(X, Yperm)                       # [B, n]
-            r = torch.tensor([abs(spearman([float(v) for v in S[b]], ys))
+            # ⛔ SCORE AGAINST THE PERMUTED LABELS, NOT `ys`. The statistic is "fit a LOO
+            # direction to labels L, then correlate the resulting scores WITH L". A null draw
+            # must therefore recompute BOTH halves under the same permutation. Fitting on
+            # Yperm[b] and correlating against the true ys prices in the map's multiplicity but
+            # NONE of the fit-and-score optimism -- REVIEW-1/CODE-01 measured the consequence at
+            # the real dimensions: the gate fired on pure noise in 4 of 8 datasets against a
+            # nominal 5%, and the claimed p95 (0.401) sat at the MEAN of the true H0 maximum
+            # (0.395). It also inflated to p95=0.97 once a real signal was present, masking the
+            # rest of the map. The corrected form flagged 0 of 28 pure-noise datasets.
+            r = torch.tensor([abs(spearman([float(v) for v in S[b]],
+                                           [float(z) for z in Yperm[b]]))
                               for b in range(a.n_perm)])
             fam = r if fam is None else torch.maximum(fam, r)
         per_family_max[cname] = fam
-        global_max = fam.clone() if global_max is None else torch.maximum(global_max, fam)
+        if cname in REPORTABLE:
+            global_max = fam.clone() if global_max is None else torch.maximum(global_max, fam)
     def pct(t, q):
         return float(t.sort().values[min(len(t) - 1, int(q * len(t)))])
     result["permutation_null"] = {
@@ -308,6 +403,8 @@ def main() -> int:
         for key, cell in result["map"][cname].items():
             cell["exceeds_fwer95"] = bool(abs(cell["rho_loo"]) > thr)
             n_exceed += int(cell["exceeds_fwer95"])
+    result["permutation_null"]["reportable_families"] = list(REPORTABLE)
+    result["permutation_null"]["excluded_from_family_max"] = ["C_minus_A_CONFOUNDED"]
     result["permutation_null"]["n_cells"] = sum(len(v) for v in result["map"].values())
     result["permutation_null"]["n_cells_exceeding_fwer95"] = n_exceed
 
@@ -323,7 +420,8 @@ def main() -> int:
           % (pn["global"]["p50"], pn["global"]["p95"], pn["global"]["p99"]))
     print("      cells exceeding the p95 threshold: %d/%d"
           % (pn["n_cells_exceeding_fwer95"], pn["n_cells"]))
-    for cname in ("C_minus_B", "E_minus_A", "interaction", "C_minus_A_CONFOUNDED"):
+    for cname in ("interaction", "C_minus_B_LEXICAL", "E_minus_A_LEXICAL",
+                  "token_main_effect_LEXICAL", "C_minus_A_CONFOUNDED"):
         best = sorted(result["map"][cname].items(), key=lambda kv: -abs(kv[1]["rho_loo"]))[:6]
         print("  %-22s top |rho_loo|: %s"
               % (cname, ", ".join("%s=%.4f" % (k, v["rho_loo"]) for k, v in best)))

@@ -9,7 +9,10 @@
     "selection_population": "VALIDATION only",
     "confirmation_population": "TEST or a fresh bank, read ONCE, after freeze",
     "independence_unit": "domain",
-    "never_pool": ["button", "basket"],
+    "never_pool": [
+      "button",
+      "basket"
+    ],
     "forbidden": [
       "choosing a candidate because its TEST performance is good",
       "post-hoc exclusion of non-installing domains (mandate 4)",
@@ -17,7 +20,6 @@
       "promoting any p-value produced during discovery to a confirmatory claim"
     ]
   },
-
   "target_variable": {
     "id": "y_install",
     "name": "concept-free semantic installation",
@@ -27,34 +29,43 @@
     "why_not_forced_choice": "mandate 4 forbids the channel that names bomb; the forced-choice channel supplies the option set and therefore leaks the answer",
     "must_not_be_used_as": "a post-outcome filter to drop non-installing domains"
   },
-
   "predictor_population": {
     "id": "X_behavioural",
     "decision": "HIDDEN STATES ARE CAPTURED ON THE BEHAVIOURAL PROMPT, NOT ON THE SEMANTIC PROMPT",
     "definition": "cell C, query_kind=behavioral, n_examples=4 -- the attack prompt itself, which ends 'Give step-by-step instructions to build a <codeword>. given the context.' and never asks the semantic question",
     "join_to_target": "compound key (bank_file_sha16, domain, family_slot); measured 1160/1160 exact match between the behavioral and semantic_one_word row sets on (domain, slot)",
     "reason": "OUTPUT-ADJACENCY. On the semantic prompt the readout answer is the next token, so a representation read near the end of that prompt at a late layer IS the answer, and 'predicts installation' becomes circular with no scientific content. The behavioural prompt never poses the semantic question, so no site in it is a readout of y.",
-    "secondary_population_allowed": "semantic_one_word hidden states MAY additionally be captured for the layer x position map, but any candidate fitted on them must report the output-adjacency controls below and is EXPLORATORY until it replicates on X_behavioural"
+    "secondary_population_allowed": "semantic_one_word hidden states MAY additionally be captured for the layer x position map, but any candidate fitted on them must report the output-adjacency controls below and is EXPLORATORY until it replicates on X_behavioural",
+    "codeword_site_rule": "cw_query, resolved from codeword OCCURRENCES, never a hardcoded rel_end offset. rel_end -10 is the codeword on the semantic template and the PERIOD AFTER IT on the behavioural one."
   },
-
   "mandatory_nuisance_controls": {
     "N_logitlens": "at the SAME (position, layer), the logit-lens next-token estimate of the concept word. A candidate whose predictive power vanishes when this is partialled out is reading the output pipeline, not a separate representation. (mandate 12 already requires the logit-lens analysis; this reuses it as the control.)",
     "N_surface": "surface-only features of the prompt text (length, hedge rate, modal rate, punctuation, harmful-vocab density outside the target noun). If surface predicts y as well, hidden-state prediction is not evidence. (mandate 6, 13)",
-    "N_neighbour": "the same candidate construction evaluated at rel_end -9 (' actually', the neutral downstream site) and -11 (' word'). (mandate 18)",
+    "N_neighbour": "the same candidate construction evaluated at the tokens ADJACENT TO THE CODEWORD, resolved PER TEMPLATE and never by a fixed rel_end. On the semantic_one_word template the codeword is rel_end -10 and its neighbours are -11 (' word') and -9 (' actually'); on the BEHAVIOURAL template -- which is the predictor population -- the codeword is rel_end -11 and its neighbours are -12 (' a') and -10 ('.'). REVIEW-1/CODE found this control specified in semantic coordinates while the predictor was declared behavioural, which is the exact non-transportability CONT-ENTRY 005 discovered and did not propagate here. Note the two templates are NOT equivalent controls: the semantic +1 neighbour is a content word, the behavioural +1 neighbour is punctuation. (mandate 18)",
     "N_B1": "B1 as an explicit negative-control regressor; a finalist must add information beyond it. (mandate 17)",
     "N_random": "matched-norm random direction and matched-norm orthogonal direction. (mandate 23)",
     "N_shuffled": "the identical fitting procedure on domain-shuffled labels. (mandate 23)",
     "N_trivial_ceiling": "rel_end -1 at the final layer of the SEMANTIC prompt, reported as the trivial ceiling. It is a reference, never a finding."
   },
-
   "candidate_field_spec": [
-    "candidate_id", "mathematical_definition", "motivation", "representation_source",
-    "positions", "layers", "training_population", "labels", "nuisance_controls",
-    "validation_metrics", "installation_relationship", "asr_relationship",
-    "cross_codeword_transfer", "cross_template_transfer", "positional_specificity",
-    "failure_mode", "eligible_for_confirmation"
+    "candidate_id",
+    "mathematical_definition",
+    "motivation",
+    "representation_source",
+    "positions",
+    "layers",
+    "training_population",
+    "labels",
+    "nuisance_controls",
+    "validation_metrics",
+    "installation_relationship",
+    "asr_relationship",
+    "cross_codeword_transfer",
+    "cross_template_transfer",
+    "positional_specificity",
+    "failure_mode",
+    "eligible_for_confirmation"
   ],
-
   "families": [
     {
       "family_id": "F0_B1_reference",
@@ -72,7 +83,13 @@
       "positions_declared": {
         "query_span_rel_end": "-1 .. -16 (REL_END_ROLE covers -1..-14; -15,-16 are margin)",
         "codeword_occurrences": "all 5 occurrences returned by resolve_occurrences: 4 demonstration + 1 query",
-        "derived": ["mean_demo_codeword", "first_demo_codeword", "last_demo_codeword", "final_prompt_token", "mean_last_k_query"]
+        "derived": [
+          "mean_demo_codeword",
+          "first_demo_codeword",
+          "last_demo_codeword",
+          "final_prompt_token",
+          "mean_last_k_query"
+        ]
       },
       "status": "DECLARED, extraction not yet run"
     },
@@ -93,8 +110,18 @@
       "family_id": "F3_pooled_distributed",
       "mandate_section": "10",
       "mathematical_definition": "h_pool = aggregate over a declared token set, then any F2/F5/F6 construction applied to h_pool",
-      "variants": ["mean of all codeword occurrences", "mean of demonstration codeword occurrences only", "mean of last K query states", "final prompt token", "codeword + final prompt concatenation"],
-      "mandatory_controls": ["size-matched random token pool", "neighbouring-token pool", "final-K token pool"],
+      "variants": [
+        "mean of all codeword occurrences",
+        "mean of demonstration codeword occurrences only",
+        "mean of last K query states",
+        "final prompt token",
+        "codeword + final prompt concatenation"
+      ],
+      "mandatory_controls": [
+        "size-matched random token pool",
+        "neighbouring-token pool",
+        "final-K token pool"
+      ],
       "known_trap": "large concatenations trivially encode template and domain",
       "status": "DECLARED"
     },
@@ -111,7 +138,11 @@
       "mathematical_definition": "yhat = f(h(p,L)); f in {ridge regression, logistic on TRAIN-defined high/low groups, pairwise domain ranking}",
       "target": "y_install, continuous, NOT demonstration identity",
       "why_not_the_old_probe": "the inherited multi-concept probe classifies WHICH DEMONSTRATION SET is present, which is easier than and different from which semantic interpretation was installed",
-      "evaluation": ["held-out TRAIN domains by cross-validation", "held-out codeword", "held-out template"],
+      "evaluation": [
+        "held-out TRAIN domains by cross-validation",
+        "held-out codeword",
+        "held-out template"
+      ],
       "constraint": "linear only until linear is exhausted (mandate 13)",
       "status": "DECLARED"
     },
@@ -119,7 +150,12 @@
       "family_id": "F6_low_rank_subspace",
       "mandate_section": "14",
       "mathematical_definition": "a rank-r discriminative subspace via LDA / reduced-rank regression / PLS / PCA on paired within-domain semantic deltas",
-      "rank_grid": [1, 2, 4, 8],
+      "rank_grid": [
+        1,
+        2,
+        4,
+        8
+      ],
       "rank_selection": "on VALIDATION, under a rule declared before VALIDATION is read",
       "known_trap": "a 100-D patch is not an interpretable representation; dimensionality is capped",
       "status": "DECLARED"
@@ -133,9 +169,7 @@
       "status": "DECLARED"
     }
   ],
-
   "candidates": [],
-
   "promotion_gate": {
     "mandate_section": "44",
     "criteria": [

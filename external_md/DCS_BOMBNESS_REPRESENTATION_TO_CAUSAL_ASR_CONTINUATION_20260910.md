@@ -2655,3 +2655,119 @@ Recorded **before the numbers exist**, so it cannot be adjusted afterwards:
 ⛔ Not done: the four floors; basket replication; `§7` template transfer (a genuinely held-out
 readout template does not exist yet); and the intervened-ASR arm. ✅ Done this iteration: the
 discovery corpus, and the positive control launched on the identical population.
+
+---
+
+### 2026-09-10 — CONT-ENTRY 010 — **REVIEW-1: the instrument built to prevent a manufactured discovery was manufacturing one.** Two composing blockers, both fixed; three log corrections
+
+Full report: **`reports/DCS_CONT_REVIEW1_ADJUDICATION.md`**. Five adversarial reviewers +
+an adjudicator who re-verified every finding with its own command output. 6 agents, **0 errors**.
+
+#### 1. `C-CONT-002` (BLOCKER, fixed) — the family-wise null was not a null
+
+`dcs_cont_layerpos_map.py:288` fitted the LOO direction on **permuted** `y` and then correlated the
+scores against the **observed** `y`. The statistic is *"fit to labels L, score against L"*; a null
+draw must recompute **both halves** under the same permutation.
+
+```
+map level, 150 pure-noise datasets, 24 cells, n=67, 200 perms
+  family-wise false-positive rate, ANALYZER  : 71/150 = 0.473
+  family-wise false-positive rate, CORRECTED : 11/150 = 0.073   (nominal 0.05)
+```
+
+Worse than a constant bias: on **real** states the broken threshold **tracks the effect it is meant
+to be blind to** — `cw_query|L12` `C_minus_B`: broken p95 **0.628** vs correct **0.324**. It is a
+*function of the observed effect*, so **no amount of `--n-perm` could have fixed it**.
+
+⛔ **`CONT-ENTRY 007` is the entry that exists to prevent a manufactured discovery, and the
+instrument it introduced manufactured one ~40 % of the time.** Fourth instance in this project of
+*a quantity that could not have told you it was wrong* — and the third time it has appeared
+**inside the repair for that very shape**.
+
+#### 2. `C-CONT-003` (BLOCKER, fixed) — `interaction` was the token MAIN effect
+
+Verified symbolically before touching the code:
+
+```
+true interaction  (C-A)-(B-E) = -A-B+C+E
+CONT-ENTRY 003    (C-B)-(A-E) = -A-B+C+E   ✅ the prose was right
+CODE              (C-B)-(E-A) =  A-B+C-E  = (C+A)-(B+E) = 2x the SURFACE MAIN EFFECT ❌
+```
+
+`C = (harm, ' button')`, `B = (harm, ' bomb')` ⇒ `C−B` is a **button↔bomb token swap**, and `E−A` is
+that swap in the **opposite polarity** (measured `cos = −0.87`). So `cb + ea` cancels the lexical
+part; `cb − ea` doubles it. The log's prose and the frozen convention in
+`dcs_succ_bombness_candidates.py:449` were both correct — **only the code disagreed.**
+
+#### 3. The finding no reviewer had, and the one that changes the phase's expectation
+
+**The two blockers compose.** Corrected family-wise p95 at `cw_query` ≈ **0.33**; the real
+`C_minus_B` cell reads **0.71–0.76**. So fixing the null *alone* would not have produced silence —
+it would have stamped **FWER-95 significance on a whole-prompt lexical swap**, under the label
+`interaction`.
+
+⇒ Both landed together, and the main effect is now **printed under its own name**
+(`token_main_effect_LEXICAL`), with the two contrasts renamed `C_minus_B_LEXICAL` /
+`E_minus_A_LEXICAL`. **The lesson generalises and is now written into the code:**
+
+> ⛔ **Being register-matched does not make a contrast concept-informative.** `CONT-ENTRY 003 §F`
+> chose `C−B` and `E−A` because register cancels in them. It does — and what remains is largely
+> **token identity**. Register-matching solved the confound it was aimed at and left a larger one
+> standing.
+
+**And `CONT-ENTRY 007`'s controlling expectation is empirically false on this corpus.** It said the
+best cell in the map would be noise. It will not be: the map **will fire**, on the lexical contrast.
+Nobody had run the pipeline on real data to check — all five reviewers reasoned on synthetic noise.
+
+#### 4. `C-CONT-004` (fixed) — the declared join key was never constructible
+
+The log declared `(bank_file_sha16, domain, family_slot)`. **Readout rows carry no
+`bank_file_sha16`**, so nothing was checking the bank. A `basket` readout joins **all 670 TRAIN
+keys** of a `button` corpus silently — the only structurally differing keys live in `school_campus`,
+which the analyzer drops *before* it would notice — moving the target mean **0.678 → 0.045** and
+breaking never-pool-button-and-basket. And two sibling corpora now differ by **one word** in the
+directory name, so passing the semantic one would silently reinstate the circularity
+`CONT-ENTRY 002` exists to forbid.
+
+Both refusals verified firing, and **every cheap refusal now runs before the 12 GB `torch.load`** —
+rejecting a one-word mistake used to cost 30 minutes of NFS I/O.
+
+#### 5. Three corrections to this log, stated plainly
+
+* ⛔ **`C-CONT-005` — `N_surface = 0.526` is NOT a measured floor.** `CONT-ENTRY 003 §F` and
+  `CONT-ENTRY 006 §4` call it "measured". **No script and no artifact exist.** The only
+  surface-floor artifact targets `B1`, not `y_install`, and its LOO CV R² are **−0.48 / −0.35 /
+  −0.42**. The value may be a transcription of `q2_concept_present.json` `/rows/train/…/rho =
+  0.5260319859594348`. **Until it is actually computed, the §44 "must beat surface" gate is not
+  enforceable**, and no candidate may be promoted on the claim that it was.
+* ⛔ **`C-CONT-006` — the "≥28 trailing tokens in 930/930" figure is a *semantic-template* number
+  stated about the *behavioural* population.** Behavioural is min **24**, median **25**, and only
+  **1/930** reaches 28. The capture is still safe (the grid stops at `−16`, 8 tokens of headroom)
+  and no conclusion changes — but this is the **same error class as the near-miss `CONT-ENTRY 005`
+  congratulates itself for catching, committed one entry earlier**.
+* **`C-CONT-007` — the null sd is 0.171–0.174, not 0.160** (se ≈ 0.007; ~1.5 se, i.e. sampling noise
+  quoted to three digits). The dependent "max ≈ 0.64" becomes ≈ 0.61. Qualitative point survives.
+
+Also corrected: **"not split-replicated" is supported; "failed to replicate" is not.** Validation
+n = 23 has **MDE ρ = 0.556 at 80 % power** and only **0.655 power** at the train effect; the
+observed CI **[−0.286, 0.525]** contains 0, 0.396 **and** 0.484.
+
+#### 6. What survived the attack
+
+* **The capture geometry is sound.** The adjudicator went looking for `rel_end` misalignment and
+  **self-refuted**: the last-16 window differs *exactly* at `rel-11` in **670/670** pairs for both
+  contrasts. Two prompts differ in length (an uppercase `"BOMB"` tokenises as 2 tokens vs
+  `"BUTTON"` as 1) but end-relative capture is untouched by it.
+* ⇒ **Every confirmed defect in this phase is in the analysis layer, not the data layer. Nothing
+  needs re-extracting.**
+* "`rho_loo` is just contrast magnitude" — **refuted**: norm-only baseline runs −0.25…+0.29 while
+  `rho_loo` is 0.42–0.76.
+
+#### 7. Still open (Tier 1, gating promotion not the map)
+
+`N_surface` unbacked (above) · `make_exclusions` default `--split ""` still retains all 23 test
+domains at `rc=0` (**"the three gaps are closed" is half true for gap 1**) · `pr057 --plan` reaches
+`split_bind` before the guard, and `CONT-ENTRY 004` recorded that closure as "verified present in
+`--help`", which exercises no behaviour · `--split validation` has no confirm gate.
+
+Map relaunched with all Tier-0 fixes. Positive control `875772` still running.
