@@ -4170,3 +4170,62 @@ lexicon binds zero rows in any arm.
 That list goes in the config rather than in this entry because the analyzer reads the config, and
 `C-213b`'s lesson from the previous phase is that a forbidden-wording list which lives only in prose
 does not travel with the number.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 029 — **the §24 chain verified end-to-end before it is needed**, and the analyzer that enforces `DR-070` rather than remembering it
+
+**Loop check.** `876531` arm 1 at **323/670**, ~15 s/row under eager/batch-1 ⇒ ≈ 2.8 h per arm,
+≈ 9.5 h for three against a 12 h limit. No new artifacts to analyse yet.
+
+#### 1. Checking the dependency eight hours early instead of discovering it late
+
+The §24 chain is generation → judge → concept-presence → primary. Generation is running; the rest
+was **unverified**, and the judge needs an external API. Checking that at the end would have meant
+discovering a broken chain after ~9 GPU-hours.
+
+| link | status |
+|---|---|
+| generation | ✅ running, population bound (`sha16 214ff882b1a2a3e2`, 670 rows) |
+| judge entry point | ✅ `src/boombness/judge_boombness.py`, CLI read |
+| **judge credentials** | ✅ **`AUTH OK`, `gpt-4o-mini` visible** — verified with a `models.list` call that sends **no research content** |
+| judge model pin | ✅ prior runs pin `openai/gpt-4o-mini`; same pin available |
+| concept presence | ✅ `scripts/dcs_succ_concept_presence.py`, lexicon prefrozen and git-verified |
+| primary analysis | ✅ written this iteration (below) |
+
+🆕 Incidental but useful: `.env` also carries an **`HF_TOKEN`**. Given `C-CONT-001` — the Llama
+weights are absent from this account's cache and are being read from a lab-shared directory — that
+token is the fallback if that directory ever disappears. Recorded because the failure it guards
+against has already happened once.
+
+#### 2. `scripts/dcs_cont_asr_primary.py` — the analyzer reads the frozen declaration
+
+It does not re-state `DR-070`; it **loads** it and enforces it:
+
+* ⛔ refuses unless the declaration's `status == FROZEN`;
+* ⛔ **refuses to run without `--concept-presence`** — because the declared primary is *ASR AND
+  concept_present AND non_refusal*, and omitting the filter would silently compute the **raw
+  secondary** outcome *under the primary's name*. Verified firing.
+* evaluates every CANNOT ANSWER condition it can — arms covering different `prompt_id`s, an arm
+  judged on fewer rows than were generated, a lexicon binding zero rows — and **prints the ones it
+  cannot evaluate** rather than passing them silently (knockout liveness and control-dose parity are
+  run-time properties recorded in each run's `summary.json`);
+* refuses a judge run that binds a `prompt_id` twice;
+* raises on a missing `malicious_at_0.5` rather than treating it as 0 — *missing ≠ zero*;
+* prints the frozen **`things_that_must_not_be_said`** list beside the result.
+
+That last point is the `C-213b` lesson made structural: in the previous phase a forbidden-wording
+list lived only in prose, and the analyzer that printed the number into the report never saw it.
+Here the list travels **with** the number because the analyzer reads the same file the freeze is in.
+
+#### 3. The verdict vocabulary is fixed in advance too
+
+The analyzer emits exactly one of:
+
+* **`DETECTED`** — permutation p < 0.05;
+* **`NULL, POWERED`** — not significant **and** |estimate| < the declared MDE of **0.0531**;
+* **`NULL, UNDERPOWERED FOR THIS EFFECT SIZE`** — not significant but the estimate exceeds the MDE.
+
+The third label exists because it is the one most likely to be wanted and least likely to be
+written: a null whose effect size is larger than what n = 67 domains can resolve is **not** evidence
+of absence, and the analyzer will say so without being asked.
