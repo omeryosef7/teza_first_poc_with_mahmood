@@ -4835,3 +4835,42 @@ already on disk.
 `S-010`'s *numerical* correction stands: `R-207`'s "≈ 2.7× weaker" is still an artefact of the
 all-domain denominator, and the informative-domain ratio is still 0.750. Only the mechanistic gloss
 is withdrawn.
+
+---
+
+### 2026-09-10 08:35 — ENTRY 053 — the claim table revised, with the revisions **listed rather than applied silently**
+
+**Label: DELIVERABLE MAINTENANCE.** `reports/DCS_SUCC_CLAIM_TABLE.md` is a *regenerated* deliverable,
+not an append-only log, so a revision leaves no trace unless one is written. §5 is now a changelog
+and every change since the 04:35 first issue is in it.
+
+**Three rows changed, all because of findings that arrived after it was written:**
+
+* **rows 1 / 1b — both denominators.** `S-010` showed a 113-domain mean printed beside a 42-domain
+  sign test answers a different question. Row 1 now carries `button` at **+0.1327** over 113 domains
+  and **+0.1899** over the 79 that move; the new row 1b carries `basket` at **+0.0451** / **+0.1214**
+  over 42, with its own dose-0 floor of 0.0221 rather than button's 0.1549.
+* **row 3b — added and marked ⛔ EXPLORATORY.** basket's `Q2` (ρ = 0.4468, significant on the test
+  split alone) is *not* a second confirmatory test: `PR-066-A2` names `ts116m_button_bomb` in **both**
+  `predictor_x` and `outcome_y`, and only basket *generation* was gated by `second_wave_gate`
+  (`C-217c`).
+* **row 3c — a withdrawn mechanism, recorded as a row.** `S-011` tested `S-010`'s switch-vs-gain
+  suggestion directly and it is **not supported**; the row states the negative rather than deleting
+  the sentence that prompted it.
+
+**And a note in §5 worth surfacing here**, because it is the phase's own recurring shape appearing
+inside the repairs for it:
+
+> `C-213a` — a machine check that existed only in a shell heredoc.
+> `C-217b` — an integrity check defeatable by putting the change in a key whose name starts with an
+> underscore.
+> **Both were *fixes for* the shape they then exhibited.**
+
+That is not irony, it is the thing to design against: a check written in a hurry to close a finding
+inherits the conditions that produced the finding. The two defences that have actually worked all
+phase are **adversarial re-derivation by someone forbidden to read the original** (`A-103`,
+`REVIEW-1/2/3`) and **writing down in advance what would make a result uninterpretable** (`C-214`).
+Neither is a check I wrote; both are procedures.
+
+**`basket` K ladder at 24 of 27 arms** — K12, K13 and K14 remain, ~20 minutes. It is the replication
+of `R-205`, the phase's strongest mechanistic result, and it is the last experiment in flight.

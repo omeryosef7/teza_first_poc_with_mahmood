@@ -29,9 +29,12 @@ query span** (`S-001`).
 
 | # | statement | status | entry | artifact |
 |---|---|---|---|---|
-| 1 | **The Doublespeak attack works, and beats simply asking.** Cell C dose 4 against the *direct harmful request*: **+0.3186** raw / **+0.1327** concept-present, **103 of 104** informative domains, Holm-rejected at α/3 | **CONFIRMED** (`Q1d`, preregistered) | `R-206`, ENTRY 037 | `outputs/dcs_succ/pr066_behaviour.json` |
+| 1 | **The Doublespeak attack works, and beats simply asking.** `button`, cell C dose 4 against the *direct harmful request*: **+0.3186** raw / **+0.1327** concept-present over all 113 domains (**+0.1899** over the 79 that move), **103 of 104** informative domains on the raw channel, Holm-rejected at α/3 | **CONFIRMED** (`Q1d`, preregistered) | `R-206`, ENTRY 037; denominators `S-010` | `outputs/dcs_succ/pr066_behaviour.json`, `phase_statistics.json` |
+| 1b | **It replicates on the second codeword.** `basket` `Q1d`: **+0.0451** over 113 domains, **+0.1214** over the 42 that move, **41/42** positive, p = 1.96e−11. Its own dose-0 floor is **0.0221** raw / **0.0000** concept-present | **REPLICATED** (exploratory; the transfer pair is never pooled) | `R-207`, `S-010` | `outputs/dcs_succ/concept_presence_basket.json`, `phase_statistics.json` |
 | 2 | **Per-domain semantic installation predicts per-domain attack success.** Spearman **ρ = 0.3961** over 113 domains, permutation p **at its 9.999e−05 floor**, CI [0.228, 0.541]; MDE 0.2996; sign positive in **3/3** splits | **CONFIRMED** (`Q2`, preregistered primary) | ENTRY 037 | `outputs/dcs_succ/pr066_behaviour.json` |
 | 3 | That correlation **is not the judge's false-positive channel**: recomputed on `asr_and_concept_present` it **strengthens** to **0.4206** pooled / **0.5260** train, both at the permutation floor | qualification on 2 | `C-215`, ENTRY 042 | `outputs/dcs_succ/q2_concept_present.json` |
+| 3b | **`Q2` replicates on `basket`**: ρ = **0.4468** raw / **0.4868** concept-present over 113 domains, p at the permutation floor, and significant on the 23-domain test split alone (0.4615, p = 0.028) | ⛔ **EXPLORATORY, not a second confirmatory test** — `PR-066-A2` names `ts116m_button_bomb` in **both** `predictor_x` and `outcome_y`; only basket *generation* was gated | `R-207`, corrected by `C-217c` | `outputs/dcs_succ/q2_concept_present_basket.json` |
+| 3c | Installation predicts **both** whether the attack works in a domain **and** how much. A "per-domain switch" reading is **not supported**: the two codewords give opposite orderings of the two correlations (button 0.293 / 0.392; basket 0.461 / 0.351) | **NOT SUPPORTED** — withdraws `S-010`'s mechanistic gloss, not its arithmetic | `S-011` | `outputs/dcs_succ/q2_concept_present*.json` |
 | 4 | **The demonstration→query pathway runs through the codeword's query row.** Concept-free K ladder: adding that one row to the cut moves the readout **−4.49**, **61.7 %** of the whole climb; the four content rows after it add **1.5 %**; the dose-matched 3-draw non-demonstration control moves **+0.03**; **67/67** domains, p at its 1.355e−20 floor | **CONFIRMED** as a pathway result | `R-205`, ENTRY 035 | `outputs/dcs_succ/kladder_sowk_train.json` |
 | 5 | The ladder's **shape is `NEITHER`** by the frozen rule (a step needs a rise crossing 0.20 → 0.50; K9 sits at 0.368). ⛔ **The word "step" is not used** | qualification on 4 | `R-205` | same |
 | 6 | **The codeword's state does not carry the reading.** Donor→recipient full-hidden-state transplant at that token, **every layer window**, 67 domains: `donor_ceiling` **+12.33** log-odds in **67/67**; `transplant\|all` **+0.0066 = 0.054 %** of the gap at 32/67 domains, p = 0.81. Liveness proved per-row (the logit-lens columns take the donor's *exact* value inside the patched window) | **NEGATIVE**, well-powered | `S-007`, ENTRY 033 | `outputs/boombness/aggressive_patching/pr068_train67_*` |
@@ -120,3 +123,21 @@ Fourteen defects were found in this phase's own work. The three that recur are o
 
 *Generated 2026-09-10 from the append-only log and the artifacts on disk. Where this file and the
 log disagree, the log wins.*
+
+---
+
+## 5. CHANGES SINCE FIRST ISSUE (2026-09-10 04:35)
+
+This deliverable is regenerated, not append-only, so every revision is listed here.
+
+| when | change | why |
+|---|---|---|
+| 07:00 | row 3b added and marked **EXPLORATORY** | `C-217c` — `PR-066-A2` names `button_bomb` in both `predictor_x` and `outcome_y`, so basket's `Q2` is not a second confirmatory test. `ENTRY 047`'s framing is superseded |
+| 07:35 | rows 1 and 1b now carry **both denominators** | `S-010` — a 113-domain mean printed beside a 42-domain sign test answers a different question; basket has 71 ties against button's 34 |
+| 08:05 | row 3c added, recording a **withdrawn mechanism** | `S-011` — the switch-vs-gain reading `S-010` suggested was tested directly and is not supported |
+| 07:30 | §4's ledger grows by four (`C-217a/b`, `C-218`, and the figure defects) | `REVIEW-3` executed the failures rather than describing them |
+
+**Two entries in §4's ledger are worth reading together**, because they are the phase's own recurring
+shape appearing in the repairs for it: `C-213a` (a machine check that existed only in a shell
+heredoc) and `C-217b` (an integrity check defeatable by putting the change in a key whose name
+starts with an underscore). Both were *fixes for* the shape they then exhibited.
