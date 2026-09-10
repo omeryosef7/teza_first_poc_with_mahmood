@@ -3754,3 +3754,82 @@ that the pre-declared stratum is therefore load-bearing.
 
 ⛔ **Nothing is confirmatory.** Every number above is TRAIN-only discovery. §29's freeze has not
 happened and TEST has not been read.
+
+---
+
+### 2026-09-13 — CONT-ENTRY 023 — **the within-run contrast: the codeword state transfers only into a recipient whose own demonstrations are harmful.** Replicated across two independent jobs
+
+Job `876466`, **`rc=0`, 1,920 rows, both arms in one allocation** — one model load, the same 31
+domains, the same seed, the same instrument. Both arms' `self_swap_noop_check` are **exactly
+`0.00000000`**.
+
+#### 1. The replication, first
+
+| `C_hi → C_lo`, pre-declared stratum | transfer | 95 % CI | permutation p |
+|---|---|---|---|
+| job `876332` (standalone) | **+10.7 %** | [+3.3, +19.6] | 0.0089 |
+| job `876466` (within-run) | **+10.7 %** | [+3.5, +19.5] | 0.0100 |
+
+Two independent jobs, same design, agreeing to the first decimal. The instrument's transfer
+capability is **not** a one-run artefact.
+
+#### 2. The contrast — and why the honest answer needed the stratum
+
+| arm | recipient's demonstrations | n dom | transfer | CI | p |
+|---|---|---|---|---|---|
+| `C_hi → C_lo` | **harmful** | 16 (stratum) | **+10.7 %** | [+3.5, +19.5] | **0.0100** |
+| `C_hi → C_lo` | harmful | 31 (all) | +4.0 % | [−0.3, +8.6] | 0.109 |
+| `C → A` | **benign** | 31 (all) | **+0.4 %** | [−1.0, +1.9] | 0.584 |
+
+**Paired within-domain contrast of the two arms:**
+
+```
+all 31 shared domains        difference +0.290 log-odds   11/31 ... 16/31 positive   p = 0.287   NOT significant
+PRE-DECLARED STRATUM (n=16)  difference +1.617 log-odds   11/16 positive             p = 0.0111  95% CI [+0.503, +3.033]
+      harm-recipient movement   +1.4824
+      benign-recipient movement -0.1348
+```
+
+⚠️ **Reported in that order deliberately.** The all-domains contrast is **not significant** — and if
+the stratum had not been declared in advance, restricting to it afterwards would be indefensible.
+It *was* declared, in the map artifact, before a single transplant row existed
+(`CONT-ENTRY 018 §3`), on the **predictor**. The all-domains number is null because the harm-arm
+effect itself only exists in the stratum (+4.0 %, p = 0.109), not because the stratum was chosen to
+rescue it.
+
+#### 3. What this licenses
+
+> **Transplanting the query codeword's full residual state moves the semantic reading by
+> +1.62 log-odds more when the recipient's own demonstrations are harmful than when they are
+> benign** (n = 16 domains, 95 % CI [+0.50, +3.03], p = 0.011, within-run, within-domain, both
+> plumbing controls exactly inert).
+
+This is the strongest causal statement the phase has produced, and it is a **positive** one on both
+sides rather than a null: the same intervention, at the same site, with the same measured dose,
+**does something in one context and nothing in the other**.
+
+The mechanistic reading — *the codeword's state is not sufficient on its own; it expresses the
+installed reading only where the surrounding demonstrations can support it* — is **"conduit, not
+store" with evidence on both sides**, which is what the successor sprint's version lacked and what
+`CONT-ENTRY 012` wrongly declared unsupportable.
+
+#### 4. What it does **not** license, stated now
+
+* ⛔ **The two arms differ in more than the recipient's demonstrations.** `C_hi → C_lo` crosses
+  **domains**; `C → A` crosses **cells** within a domain. "Recipient's demonstrations" is the
+  *interpretation*, not the only difference. A design that varies only the demonstration valence —
+  same domain, same donor — is the experiment that would close this, and it does not exist yet.
+* ⛔ **n = 16 domains**, TRAIN only, **EXPLORATORY**. No freeze, no TEST.
+* ⛔ The all-domains contrast is **p = 0.287**. Anyone quoting the +1.62 without the stratum
+  qualifier is quoting a number that does not survive its own unrestricted analysis.
+* ⛔ **Nothing here touches ASR.** The mandate's §45 endpoint — an intervention that moves semantic
+  interpretation *and* behaviour — remains untested, and this result is about the semantic readout
+  only.
+
+#### 5. Status changes
+
+| claim | before | now |
+|---|---|---|
+| instrument transfers | validated once | ✅ **replicated**, two jobs, +10.7 % both |
+| harm-vs-benign recipient contrast | EXPLORATORY, between-run | ✅ **within-run, within-domain**, p = 0.011 on the pre-declared stratum |
+| "conduit, not store" | withdrawn as unsupported (`CONT-ENTRY 012`) | 🆕 **supported, with positive evidence on both sides** — EXPLORATORY |
