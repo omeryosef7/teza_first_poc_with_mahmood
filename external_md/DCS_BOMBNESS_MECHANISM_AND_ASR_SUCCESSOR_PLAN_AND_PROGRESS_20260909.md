@@ -4411,3 +4411,56 @@ finding, then the ASR instrument warning, then the forbidden list.
 The draft's fifth paragraph is the one worth flagging to Omer before any send: **it warns that the
 judge defect applies to the project's *earlier* ASR numbers too**, not only this phase's. That is a
 claim about prior work and Omer should decide whether it goes to collaborators in that form.
+
+---
+
+### 2026-09-10 05:35 — ENTRY 046 — `C-216`: the figure set, and **a scope card that painted over the result**
+
+**Label: DELIVERABLE + CORRECTION.** `scripts/dcs_succ_figures.py` (selftest 4/4),
+`reports/figures/F{2,3,5,8}_*.png`.
+
+Plan §36 lists nine panels and attaches a hard requirement to each: *"n independent domains; split;
+CI; controls; exact metric."* Four are computable from artifacts that exist; **the other five need
+arms this phase did not run and are NOT stubbed** — a panel that cannot be drawn from data is not
+drawn with placeholder data.
+
+| panel | shows |
+|---|---|
+| **F2** | the four cells on the button→bomb axis: A 0.000, **C 0.106**, B 0.837, E 1.000 |
+| **F3** | the position × layer map on the **portable** cosine — the codeword tracking its neighbour and trailing the readout position |
+| **F5** | the concept-free K ladder with its dose-matched control band |
+| **F8** | installation → ASR, raw and `C-209`-corrected |
+
+#### `C-216` — three defects, and I found them by *looking at the picture*
+
+The first render was produced, opened, and was **wrong in three ways at once**:
+
+1. **The dose-matched control band was missing entirely.** My accessor read `control_band` /
+   `band_mean_delta`; the artifact's keys are `controls` / `band_mean`. A `.get(...) or {}` chain
+   fell through to empty and **drew the treatment arm alone** — which is not the result. The K
+   ladder's whole force is that the demo arm moves −7.17 while a dose-matched non-demonstration cut
+   moves +0.03; a panel showing only the first is a panel showing nothing.
+2. **The CI band was missing** for the same reason (`ci95` vs the artifact's `bootstrap`).
+3. **`62%%` and `95%%` rendered literally** — `%%` escaping in a plain string.
+
+Fixed by **asserting the accessors instead of defaulting**: a rung without `mean_delta` is a
+`Refusal`, a ladder without 14 declared rungs is a `Refusal`, and **an artifact with no control band
+is a `Refusal`** with the reason spelled out — *"the panel would show the treatment arm alone, which
+is not the result."*
+
+#### And then the fourth, which is the one worth recording
+
+With the control band restored, the red curve **still stopped at K ≈ 9.8**. The four rungs that
+carry the finding — K10 at −7.17 through K14 at −7.28 — were plotted and then **painted over by the
+scope card**, an opaque box at (0.99, 0.02) in axes coordinates sitting exactly on top of them.
+
+⛔ **The figure looked complete and had its own evidence hidden behind the box listing its scope.**
+It would have passed a glance. The scope card now lives **outside the axes**, where it cannot cover
+data, and the docstring says why.
+
+**That is a fourth instance of this phase's recurring shape** — after `C-134`, `C-213a` and `C-214`
+— and the first one whose detection required *looking at the artifact rather than computing on it*.
+Every statistic in that panel was correct; the picture was not. `REVIEW-1` and `REVIEW-2` both
+included "read some actual generations" for the same reason, and it paid twice
+(`C-208d`'s board-game false positives, `C-209`'s literal buttons). **Rendering an artifact and
+opening it is a check, and it belongs in the four-hourly review alongside the code and the numbers.**
