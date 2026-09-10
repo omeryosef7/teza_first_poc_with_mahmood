@@ -4379,3 +4379,35 @@ by this phase's own withdrawals.
 read at `last` rather than the codeword; the `Q-014` register decision; and `REVIEW-2`'s `C6` — the
 analyzer has no concept-presence field, so `A1-3`'s instruction to read `N2` on that channel is
 recorded but not executable.
+
+---
+
+### 2026-09-10 05:05 — ENTRY 045 — the `basket` replication reaches the GPU on both fronts; the collaborator draft is written and NOT sent
+
+**Label: OPERATIONS + DELIVERABLE.**
+
+**`basket_bomb` cell C dose 4 COMPLETED** — 1130 rows, `DONE.json` present, 2 h 25 min. It is
+judging. That completes the four-arm `basket` behavioural wave (C dose 4, C dose 0, B dose 4) and
+the transfer pair `PR-059` requires be reported separately and never pooled.
+
+**The `basket` K ladder is launched** — job **873140**, 27 arms, the same 14 rungs and the same
+three-draw dose-matched control band at K = 8, 9, 10, 11, on `ts116m_basket_bomb`, TRAIN, 670 rows
+per arm. `R-205` is the strongest result this phase produced and it has been measured on **one
+codeword**; plan §20 requires the second. The runner's `--split` cross-check passed against the
+derived exclusion file's own provenance header (the `C-206` guard doing its job on first use).
+
+⚠ Recorded because it will look like a bug later: the `basket` sow exclusion file's
+`exclusion_sha16` is **`b3ba3d5ea6c91d34`, byte-identical to `button`'s**. That is the `prompt_id`
+collision (`D-001`) again — the two banks carry the same ids for structurally corresponding rows.
+Every join in this phase is compound; this is the fourth appearance of that fact.
+
+**Collaborator draft written**: `reports/DCS_SUCC_SLACK_DRAFT_MATAN_MAHMOOD_20260910.md`, plan §35
+item 13. ⛔ **DRAFT ONLY. NOT SENT.** §35 forbids sending, emailing, or creating calendar events, and
+nothing has been transmitted anywhere. It is six paragraphs and leads with the two results that
+survive — the attack beating the direct request in 103/104 domains, and installation predicting ASR
+at ρ = 0.396 — then states plainly that the Bombness reading is dead and why, then the conduit/store
+finding, then the ASR instrument warning, then the forbidden list.
+
+The draft's fifth paragraph is the one worth flagging to Omer before any send: **it warns that the
+judge defect applies to the project's *earlier* ASR numbers too**, not only this phase's. That is a
+claim about prior work and Omer should decide whether it goes to collaborators in that form.
