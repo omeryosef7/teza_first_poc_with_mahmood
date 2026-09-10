@@ -4995,3 +4995,40 @@ Link 5 (an intervened behavioural arm); template transfer (one template per chan
 `REVIEW-3`'s `C6` (the analyzer still has no concept-presence field, so `A1-3`'s instruction is
 recorded but not executable); and re-scoring the **127 prior judge runs** the `C-209` mechanism
 reaches (`A-104`) — about an hour, no GPU, and **not done on inference**.
+
+---
+
+### 2026-09-10 — ENTRY 056 — **THIS RECORD IS CLOSED. THE CONTINUATION SUPERSEDES IT.**
+
+**Label: CROSS-LINK / RECORD CLOSURE.** This is the final entry in this file.
+
+A continuation mandate was received on 2026-09-10 —
+`CONTINUATION MANDATE — BOMB REPRESENTATION SEARCH → CAUSAL ASR` — opening a new phase whose
+central question is **not** the one this record answered. This record answered *"is the codeword's
+local residual direction a bomb representation?"* (⛔ no, `C-208`). The continuation asks *"where and
+in what form does semantic BOMB information actually appear, and does manipulating it change ASR?"*
+
+**The continuation has its own splits, its own frozen candidates, its own prohibitions, and its own
+claim table.** It is recorded in:
+
+> **`external_md/DCS_BOMBNESS_REPRESENTATION_TO_CAUSAL_ASR_CONTINUATION_20260910.md`**
+
+**That file supersedes this one for all work after the successor sprint.** This file remains the
+authoritative, unedited record of the successor sprint itself — `ENTRY 001`–`ENTRY 055`, terminal
+deliverable `reports/DCS_SUCC_FINAL_REPORT.md`. ⛔ **No further entries are to be appended here, and
+nothing in `ENTRY 001`–`ENTRY 055` is to be edited.**
+
+**What the continuation explicitly carries forward as still-open**, exactly as this record left
+them — none of these were quietly dropped: `Q-014` (the register rebuild); **Link 5**, the
+intervened behavioural arm, which the continuation names as *"the single biggest missing link"*;
+template transfer (one template per readout channel, untested); `REVIEW-3`'s `C6` (the ASR analyzer
+still has no concept-presence field); and re-scoring the **127 prior judge runs** the `C-209`
+mechanism reaches, which the continuation reclassifies as a separately-labelled
+`RETROSPECTIVE JUDGE INSTRUMENT AUDIT` that **must not be mixed** with new confirmatory work.
+
+**What the continuation explicitly forbids inferring from this record's central negative:** that
+`B1` is not bombness ⛔ does **not** license "there is no bomb representation." It licenses only
+"the simplest codeword-local residual direction is the wrong object."
+
+**Status at closure: all experiments complete, nothing running, all deliverables written and
+committed.** The Slack draft for Matan and Mahmood remains ⛔ **DRAFT, NOT SENT**.
