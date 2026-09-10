@@ -1,0 +1,97 @@
+{
+ "_label": "Q2 ROBUSTNESS: the frozen primary recomputed with the C-209 correction applied to the OUTCOME. Reported ALONGSIDE the frozen Q2, never instead.",
+ "config": "configs/dcs_ts_pr066_amendment2.json",
+ "judge_run": "tsb66j_C_n4_20260910_000237_3406997",
+ "generation_run": "tsb66_C_n4_20260909_212117_460899",
+ "predictor_run": "ts116m_readout_button_bomb_20260907_133811_3183103",
+ "predictor_bound_by_sha16": "dcd92d723f3e6d00",
+ "join_key": "(bank_file_sha16, domain) -- COMPOUND",
+ "n_perm": 10000,
+ "seed": 202609061,
+ "rows": {
+  "pooled": {
+   "n_domains": 113,
+   "raw_ASR": {
+    "rho": 0.3960558994659426,
+    "perm_p": 9.999000099990002e-05,
+    "perm_p_floor": 9.999000099990002e-05,
+    "fisher_z_ci95": [
+     0.22800789293626056,
+     0.5411904267538313
+    ]
+   },
+   "asr_and_concept_present": {
+    "rho": 0.4205770855330938,
+    "perm_p": 9.999000099990002e-05,
+    "perm_p_floor": 9.999000099990002e-05,
+    "fisher_z_ci95": [
+     0.25571452270714423,
+     0.5616690807021746
+    ]
+   }
+  },
+  "train": {
+   "n_domains": 67,
+   "raw_ASR": {
+    "rho": 0.4835654248084081,
+    "perm_p": 9.999000099990002e-05,
+    "perm_p_floor": 9.999000099990002e-05,
+    "fisher_z_ci95": [
+     0.2753392699055017,
+     0.6484520707671839
+    ]
+   },
+   "asr_and_concept_present": {
+    "rho": 0.5260319859594348,
+    "perm_p": 9.999000099990002e-05,
+    "perm_p_floor": 9.999000099990002e-05,
+    "fisher_z_ci95": [
+     0.32716281012995535,
+     0.6802819397242066
+    ]
+   }
+  },
+  "validation": {
+   "n_domains": 23,
+   "raw_ASR": {
+    "rho": 0.14347403354967864,
+    "perm_p": 0.5084491550844915,
+    "perm_p_floor": 9.999000099990002e-05,
+    "fisher_z_ci95": [
+     -0.2856197882119118,
+     0.5246483471837331
+    ]
+   },
+   "asr_and_concept_present": {
+    "rho": 0.1592135546970197,
+    "perm_p": 0.46185381461853814,
+    "perm_p_floor": 9.999000099990002e-05,
+    "fisher_z_ci95": [
+     -0.27075797607173535,
+     0.5362243113345159
+    ]
+   }
+  },
+  "test": {
+   "n_domains": 23,
+   "raw_ASR": {
+    "rho": 0.3778886047317414,
+    "perm_p": 0.07779222077792221,
+    "perm_p_floor": 9.999000099990002e-05,
+    "fisher_z_ci95": [
+     -0.04064464946756627,
+     0.6836076141187362
+    ]
+   },
+   "asr_and_concept_present": {
+    "rho": 0.3244841821303416,
+    "perm_p": 0.132986701329867,
+    "perm_p_floor": 9.999000099990002e-05,
+    "fisher_z_ci95": [
+     -0.10126211787964151,
+     0.6497767192385165
+    ]
+   }
+  }
+ }
+}

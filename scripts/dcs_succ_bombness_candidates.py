@@ -463,11 +463,18 @@ def analyse(codeword, train_domains, torch, rng, n_random_draws=12, verbose=True
         # identical over all families, so any additive length effect cancels exactly in I.
         dec = {}
         for ref_c in CONCEPTS:
-            vhat_ref = _unit(vfull[ref_c], torch)
             gref = gap[ref_c]
             for shift_c in CONCEPTS:
                 b1v, hv, iv = [], [], []
                 for d in common:
+                    # REVIEW-2 C3. This block used the IN-SAMPLE axis `_unit(vfull[ref_c])` while
+                    # `B1` proper uses the LEAVE-ONE-OUT axis, so it printed B1 = 0.10556605 where
+                    # the published headline is 0.10444100 -- and 0.105566 is the exact number this
+                    # file's own `leakage_probe` block says "may never be quoted as a control that
+                    # the effect survived". C-208a printed +0.1056 and labelled it "the candidate I
+                    # reported". It was not. The axis is now LOO, matching B1 exactly.
+                    vhat_ref = _unit(loo_direction(
+                        {k: v[L_i] for k, v in delta_EA[ref_c].items()}, common, d, torch), torch)
                     ca = delta_CA[shift_c][d][L_i]
                     be = (means[shift_c][("B", d)][L_i] - means[shift_c][("E", d)][L_i])
                     b1v.append(float(torch.dot(ca, vhat_ref)) / gref)
@@ -514,11 +521,28 @@ def analyse(codeword, train_domains, torch, rng, n_random_draws=12, verbose=True
             for shift_c in CONCEPTS:
                 vals = [float(torch.dot(delta_CA[shift_c][d][L_i], rhat_c)) / rnorm_c
                         for d in common]
+                # REVIEW-2 C4, and this one changed a conclusion. These are RESIDUAL-gap units and
+                # were printed beside FULL-gap `B1`, which is not a comparison. Converted properly
+                # (button L12: rnorm 2.91938, gap 3.85981) the bomb diagonal is
+                # 0.125410 * 2.91938/3.85981 = 0.094847 full-gap units against a published B1 of
+                # 0.104441 -- residualising REDUCES the shift by 9.2% (basket: 27%), where
+                # C-208b's table printed +0.1254 vs +0.1056 and read as +19%. And
+                # 0.094847/0.104441 = 0.9081: the "90.8% bomb-specific" quoted as evidence FOR
+                # specificity is exactly the ratio showing a reduction. Both units are now emitted
+                # and the full-gap one is the comparable column.
+                in_full = [v * rnorm_c / gap[ref_c] for v in vals]
                 k = sum(1 for x in vals if x > 0)
                 tab["shift_%s|resid_ref_%s" % (shift_c, ref_c)] = {
                     "mean_resid_units": mean(vals), "ci95": boot_ci(vals, rng),
+                    "mean_in_FULL_gap_units": mean(in_full),
+                    "ci95_in_FULL_gap_units": boot_ci(in_full, rng),
+                    "resid_norm": rnorm_c, "full_gap_norm": gap[ref_c],
+                    "frac_of_axis_orthogonal_to_the_other_two": rnorm_c / gap[ref_c],
                     "n_positive": k, "n_domains": len(vals),
-                    "sign_p": sign_test_two_sided(k, len(vals))[0]}
+                    "sign_p": sign_test_two_sided(k, len(vals))[0],
+                    "_WHICH_COLUMN_IS_COMPARABLE_TO_B1": "mean_in_FULL_gap_units. "
+                        "mean_resid_units has a SMALLER denominator and a large number over a "
+                        "tiny residual is not a large effect."}
         out.setdefault("residual_axis_3x3", {})["L%d" % L] = {
             "table": tab,
             "_reading": "SPECIFICITY requires the diagonal to dominate its own COLUMN -- the "
