@@ -4874,3 +4874,68 @@ Neither is a check I wrote; both are procedures.
 
 **`basket` K ladder at 24 of 27 arms** — K12, K13 and K14 remain, ~20 minutes. It is the replication
 of `R-205`, the phase's strongest mechanistic result, and it is the last experiment in flight.
+
+---
+
+### 2026-09-10 09:05 — ENTRY 054 — `R-208`: the K ladder replicates **`K* = 10`** on the second codeword — on a channel one hair above its own reportability gate
+
+**Label: EXPLORATORY, TRAIN, 67 domains, 670 rows/arm, 27 arms, ONE model load (26 cache hits), all
+`rc = 0`.** Job 873140. This is the replication of `R-205`, the phase's strongest mechanistic result,
+and the last experiment in flight.
+
+#### What replicates
+
+**`K* = 10` — the codeword — is the largest single rung on BOTH codewords.** And the tail
+replicates almost exactly:
+
+| | `button` | `basket` |
+|---|---|---|
+| K1 → K9 (nine rows, **none** the codeword) | −2.6365 = **36.2 %** | −4.4375 = **58.7 %** |
+| **K9 → K10 (the CODEWORD row)** | **−4.4927 = 61.7 %** | **−2.9848 = 39.5 %** |
+| K10 → K14 (four more content rows) | −0.1097 = **1.5 %** | −0.0984 = **1.3 %** |
+| `K*` | **10** | **10** |
+| dose-matched control at K10 | +0.0335 | +0.1108 |
+| contrast at K10 | −7.2073, **67/67** | −7.5774, **64/67**, p = 6.8e−16 |
+
+**The codeword row is the single largest rung on both codewords, and on both, the four content rows
+after it add ~1.4 % of the climb.** The dose-matched three-draw non-demonstration control moves
+**+0.11** against a demo arm of **−7.47**.
+
+#### What does NOT replicate, and both differences matter
+
+**1 — the codeword's share halves: 61.7 % → 39.5 %.** Not because the codeword does less (−2.98 vs
+−4.49 on a slightly larger total) but because **`basket`'s earlier rungs do much more**: K4 alone is
+already **−2.53** on basket against **−1.15** on button, and by K9 basket has spent **58.7 %** of its
+climb against button's 36.2 %. ⛔ *"One row carries 62 % of the effect"* is a **`button` statement**,
+not a property of the paradigm.
+
+**2 — and the more serious one: `basket`'s readout is barely engaged.** Median option mass across the
+ladder:
+
+| | baseline / early rungs | **at K10–K14** |
+|---|---|---|
+| `button` | 0.33–0.34 | **0.41–0.43** (rises — the model confidently flips) |
+| `basket` | **0.09** | **0.051–0.057** |
+
+⛔ **`basket` sits at 0.051 against the 0.05 gate — one hair above CANNOT ANSWER**, and it is the
+*same gate on the same bank* that closed `basket_bomb`'s PHASE-11 `S_G` arm at 0.04517 (`R-202`).
+On `button` the cut makes the readout **more** engaged; on `basket` it drives it to the floor. So
+the basket ladder is reportable **by 0.001**, and any statement resting on its post-K10 rungs is one
+rounding away from being uninterpretable.
+
+**The frozen shape rule returns `RAMP` for basket and `NEITHER` for button** — a consequence of
+difference 1, not a separate finding, and the word "step" is not used for either.
+
+#### The honest replication statement
+
+> **`K* = 10` replicates: on both codewords the codeword's query row is the single largest rung of
+> the concept-free K ladder, and the content rows after it add ~1.4 %. The magnitude of its share
+> does NOT replicate (61.7 % vs 39.5 %), and the replication runs on a readout channel that is at
+> its reportability floor.**
+
+This is the pattern the whole phase has shown from a different direction: **`button` and `basket` are
+a transfer pair with genuinely different engagement**, `R-116` measured it as 92/113 against 46/113
+installing domains, `S-010` found the attack works in 79 against 42 domains, and here the second
+codeword's semantic channel is 4× thinner throughout. ⛔ The two are **never pooled**, and this is why.
+
+**All experiments for this phase are now complete.** Nothing is running.
