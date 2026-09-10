@@ -3698,3 +3698,59 @@ is not "shown", and the §44 criterion is unmet.
 | the `C→A` null | ✅ now **interpretable**, and it is a real null |
 | the codeword state needs recipient context to express | 🆕 EXPLORATORY, between-run |
 | `K1` cross-codeword | ⛔ **not established** — basket 0.628 < 0.693 |
+
+---
+
+### 2026-09-13 — CONT-ENTRY 022 — **turning the phase's central comparison from between-run into within-run**
+
+**Loop check.** Cluster idle at iteration start; `876466` now running. `REVIEW-2` still out.
+
+#### 1. Why this run exists
+
+`CONT-ENTRY 021`'s sharpest claim is a **contrast between two arms**:
+
+| recipient's demonstrations | transfer |
+|---|---|
+| **harmful** (`C_hi → C_lo`) | **+10.7 %** [+3.3, +19.6] |
+| **benign** (`C → A`) | **+0.054 %** [−1.72, +1.77] |
+
+Both token-matched, same site, same scope, same bank — but they came from **different jobs**
+(`876332` and `PR-068`'s `pr068_train67`), run days apart, on different domain sets (31 vs 67),
+under different code states. I labelled it EXPLORATORY for exactly that reason.
+
+`876466` runs **both pairs in one allocation**: one model load, the same 31 domains, the same seed,
+the same instrument, the same session. The contrast becomes **within-run**, which is the difference
+between "two numbers that agree with a story" and "one experiment with two arms".
+
+⚠️ Note what this does **not** fix: donor and recipient are still different **domains** in the
+`cinstall_hi_to_lo` arm and different **cells** in the `ds_to_benign` arm, so the two arms differ in
+more than the recipient's demonstrations. The within-run design removes the *run-to-run* confound,
+not the *design* difference. Stated so it is not over-read later.
+
+#### 2. Registry updated — cross-codeword marked NOT ESTABLISHED
+
+`K1.cross_codeword_transfer` now records the basket result in full: **0.6275 against a ceiling of
+0.6929 — does not clear**, while the *shape* replicates (top site, L13–14 peak, `cw_query` well
+below on both). The §44 criterion is **unmet**, and the entry says "consistent with basket's thinner
+channel … but consistent-with is not shown".
+
+A new top-level `instrument_status.transplant` field records the validation and, deliberately, its
+weaknesses in the same sentence: the **+10.7 %** with its CI and permutation p, **and** that the sign
+test alone does not reach significance, **and** that the all-families analysis does not either, **and**
+that the pre-declared stratum is therefore load-bearing.
+
+#### 3. Where the phase actually stands
+
+| question | answer |
+|---|---|
+| does anything track semantic installation? | `K1`, ρ = **0.698**, 67 TRAIN domains — passes surface, logit-lens, `B1`, random-pool |
+| is it at the query codeword? | ⛔ **no** — that site never clears its ceiling (0.44–0.52) |
+| where is it? | the **demonstration** codeword region, L13–14, smeared onto the −1 neighbour |
+| does it transfer across codewords? | ⛔ **not established** (basket 0.628 < 0.693) |
+| across templates? | ⛔ **untested** — no held-out template exists |
+| does the instrument work at all? | ✅ **yes, ~10.7 %**, token-matched, pre-declared stratum |
+| does the codeword state carry the reading? | 🆕 **only when the recipient's demonstrations support it** — EXPLORATORY, and `876466` is the within-run test |
+| does any of it change ASR? | ⛔ **untested.** Still the biggest gap, exactly as the mandate said |
+
+⛔ **Nothing is confirmatory.** Every number above is TRAIN-only discovery. §29's freeze has not
+happened and TEST has not been read.
