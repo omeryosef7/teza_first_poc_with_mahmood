@@ -6367,3 +6367,48 @@ alone: these are our runs on our banks. What is now measured rather than suspect
 
 Jobs: `878972` (TEST extraction for `DR-072`) loaded 920 rows over 23 test domains and is running;
 basket ASR arms `877545/6/7` at ~2h30m, 200/670 rows each.
+
+---
+
+### CONT-ENTRY 064 — 2026-09-11 — a sick node; and REVIEW-2 (the full 5-part) launched, 22h overdue
+
+**`878972` cancelled and resubmitted as `879904`.** The `DR-072` TEST extraction landed on `n-307` and
+spent **21 minutes loading the first weight shard** and 46 minutes reaching 41 of 291. The weights live
+on a shared filesystem (`HF_HUB_CACHE=/home/sharifm/students/matanbentov/hub`), so this is node-side
+I/O, not the job: the basket arms on `n-503` loaded normally. Extrapolated, loading alone would have
+consumed the 6h limit and the job would have timed out having produced nothing. Cancelled at 54 min
+and resubmitted with `--exclude=n-801,n-307`; everything else byte-identical.
+
+Recorded because it is a cost worth knowing: this is the second node-level failure in the phase after
+`C-CONT-001` (the weights were not in this account's cache at all), and the symptom — a job that is
+*running* and looks healthy — is one that `squeue` alone will not show. The tell is in the log's
+progress bar, which is why the iteration checks logs and not just job state.
+
+**REVIEW-2 launched.** The mandate asks for the full 5-part review every ~4h. The last complete one
+(`REVIEW-3` of the successor phase) is timestamped **2026-09-10 07:03**; it is now **2026-09-11 16:03**,
+so the cadence has slipped by roughly 22 hours — the phase has been producing results faster than it
+has been auditing them, which is the wrong way round. Five reviewers are running in parallel, one per
+dimension, each with an explicit adversarial brief and each forbidden to touch TEST, to edit a FROZEN
+config, or to fix anything it finds:
+
+* **CODE** — correctness, leakage, silent-failure channels. Briefed with the `generation` vs
+  `completion` incident (`C-CONT-036`) as the shape to hunt for more of.
+* **DATA** — bank integrity, corpus coverage, completeness accounting, provenance, and an independent
+  recount of `063`'s 793/483/111/28 run census.
+* **OUTPUT** — the model's actual text. Its priority task is the channel **nobody has audited**: the
+  lexicon's false **positives** (does `charge` fire on "charge the battery", `primer` on paint primer?).
+  `060` and `063` audited only the *removed* rows; the *kept* rows have never been read.
+* **STATISTICAL** — the `F5` claims. Explicitly told to attack the non-independence of 10 slots within
+  a domain, whether the within-domain permutation preserves the structure it should, and to supply the
+  **missing CI on the F5-minus-comparator difference** (+0.6784 vs +0.6135), which is currently a
+  point-difference with no uncertainty attached to it at all.
+* **SCIENTIFIC** — overclaim audit, with the central question named: `F5` predicts `y_install`, the
+  model's own next-token semantic report, from a hidden state. Is that a finding, or is it close to
+  circular — decoding a quantity from the state that produces it? The record claims moving the
+  predictor to the behavioural prompt breaks the output-adjacency circularity; the reviewer is asked
+  whether it **fully** breaks it.
+
+Findings land in `reports/DCS_CONT_REVIEW2_{CODE,DATA,OUTPUT,STATISTICAL,SCIENTIFIC}.md` and will be
+adjudicated in a following entry — including any finding that overturns something written above.
+
+Jobs: `879904` (TEST extraction, resubmitted), basket arms `877545/6/7` at ~3h.
