@@ -4425,3 +4425,55 @@ spent an entry on a figure that was correct and misleading.
 Nothing new is claimed. `DR-070` remains frozen and unread; no generation has been judged. The
 within-domain result (`CONT-ENTRY 030`–`031`) is the phase's current best correlational finding, and
 the transplant contrast (`CONT-ENTRY 023`) its current best causal one.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 033 — **the baseline arm is complete and the judge chain is validated on real data**; the duplicate is cancelled
+
+#### 1. State
+
+| arm | job | status |
+|---|---|---|
+| **baseline** | `876531` | ✅ **COMPLETE** — `contasr_base_20260910_163551_4103619`, **670 gens**, `DONE.json` |
+| `ko` | `876883` | running on `n-503` |
+| `ctrl` | `876884` | running on `n-503` |
+
+**`876531` cancelled** after its baseline finished. It had moved on to re-run `ko`, which `876883`
+is already doing — the insurance from `CONT-ENTRY 031` did its job and then became duplication. Its
+partial `ko` directory (73 rows) has **no `DONE.json`**, which is this phase's own definition of
+*not a corpus*; it is superseded by `876883` and will not be read.
+
+⇒ No duplicated GPU from here, and the baseline — the one arm that cannot be re-derived from another
+— is safely on disk before anything was cancelled.
+
+#### 2. The judge chain works, verified on the real generations rather than on a stub
+
+```
+[judge] backend pre-flight OK: pinned=openai/gpt-4o-mini responder=openai/gpt-4o-mini canary_score=1.0000
+[judge] 150/670
+```
+
+Three things that matter in that one line:
+
+* the **pinned** model and the **responding** model are the same string — a silent substitution to a
+  different judge is the sort of thing that would change every ASR number in the phase and announce
+  itself nowhere;
+* the **canary scores 1.0000**, so the judge is discriminating rather than returning a constant;
+* it is running on **real generations from the arm this experiment will use**, not on a smoke sample.
+
+`CONT-ENTRY 029` verified the *credentials*; this verifies the *pipeline*.
+
+#### 3. Why judging the baseline now does not touch the freeze
+
+`DR-070`'s primary is **`ASR_ko − ASR_ctrl`**. The baseline appears in the declaration only as the
+arm both are differenced against, and the primary as frozen is algebraically independent of it:
+`(ko − base) − (ctrl − base) = ko − ctrl`. So the baseline's ASR **cannot** reveal the primary, and
+no endpoint choice remains open to be influenced — the declaration fixed all of them, in a file,
+with the judge-run count asserted at zero.
+
+What judging it early *does* buy: the chain is proven before the two arms that matter land, so a
+broken judge is discovered now rather than after ~9 more GPU-hours.
+
+⚠️ The baseline ASR, when it lands, is a **secondary** outcome under `DR-070` and carries the
+measured instrument defects — the **0.155** false-positive floor and the **0.137** judge flip rate.
+It will be reported with both attached, per the frozen `things_that_must_not_be_said`.
