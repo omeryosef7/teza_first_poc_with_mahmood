@@ -7605,3 +7605,47 @@ concepts that install — which this bank family does not contain, and which is 
 
 ⛔ Unchanged: correlational, train+validation, no TEST read, no preregistration, no causal claim. §46's
 conclusion is still not taken.
+
+---
+
+### CONT-ENTRY 083 — 2026-09-11 — REVIEW-3 launched. Two hazards I found while writing the briefs, before any reviewer reports.
+
+`REVIEW-2` closed at ~16:00 and it is now ~22:30. Entries 068–082 have added, among other things, a
+**confirmed TEST read**, §15's matched reference, A12's concept-dependence, and two harm controls —
+all unaudited. That is the same gap `CONT-ENTRY 064` named, and it reopened within a day. Four
+reviewers are running: **CODE**, **STATISTICAL**, **SCIENTIFIC**, and a combined **DATA + OUTPUT**.
+
+**Writing the briefs surfaced two problems in my own work. Recording them now, unprompted, rather
+than waiting to be told.**
+
+**1. The §15 comparator may be rigged, and I do not yet know that it is not.** The headline compares
+`cos(h_C, h_B)` — similarity to the explicit-BOMB state — against a "matched context-only prototype"
+defined as `cos(h_C, (h_A + h_B)/2)`. The mean of two non-parallel vectors is **a third direction**,
+not a fair stand-in for "either of them". Cosine is norm-invariant so the shrunken norm does not
+matter, but the *direction* of an average may sit somewhere neither reference does, and if that
+direction happens to be less aligned with the installation axis then the +0.4053 gap is partly an
+artifact of how I built the comparator rather than a fact about `h_B`. The individual references are
+reported beside it (A −0.1923, E +0.2225) and the ordering B > E > A holds without the mean, which is
+reassuring — but "reassuring" is not "checked". STATISTICAL is asked to construct the fair version
+and report it. **Until it does, the +0.4053 figure should be read as provisional.**
+
+**2. The attenuation argument in `CONT-ENTRY 082` is not obviously valid for a rank statistic.** I
+argued that knife's effect being 6.5× smaller than bomb's, against only a 1.63× within-domain sd
+deficit, means variance loss cannot explain the gap — and therefore that the geometry is
+concept-dependent. **Spearman is rank-based.** Variance compression attenuates it through ties and
+floor effects, not by any clean scaling in sd, so comparing a 6.5× effect ratio to a 1.63× sd ratio
+is comparing quantities that are not on the same footing. I hedged this in the entry ("stated as a
+bound rather than a formal correction") but the conclusion *"concept-DEPENDENT, not general"* rests on
+it entirely. STATISTICAL is asked to do the like-for-like version — compress bomb's installation to
+knife's marginal distribution and recompute — which is the test that actually settles it.
+
+Both are flagged as **open** in advance of the verdicts, so that if a reviewer confirms either, the
+record shows the problem was identified before it was pointed out, and if a reviewer clears them the
+clearance means something.
+
+Other things the reviewers are pointed at: the executed `DR-072` path end-to-end (it ran the single
+confirmatory read after being patched twice under time pressure); whether `getsize()==0` really means
+"zero rows" for every row-file type in the completeness guard; whether the bomb/gun/knife banks share
+domains and slots, which A12's paired test assumes; whether the basket `ko` arm's text diverges from
+`base` by more than the cross-GPU churn baseline of `CONT-ENTRY 070`; and a hand-audit of the kept
+concept-present rows in the basket arms, which feed a **published** primary and have never been read.
