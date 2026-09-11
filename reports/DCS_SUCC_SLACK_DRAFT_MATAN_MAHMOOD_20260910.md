@@ -7,9 +7,22 @@ calendar events. Nothing here has been transmitted anywhere.
 ---
 
 **Short version:** the attack is real and beats asking directly; the model's own semantic report
-predicts where it lands; we now know which row of the prompt the mechanism runs through — and the
-thing we were calling "Bombness" is **not** a bomb representation. Details below, all on 113 domains
-of the aligned bank, one model.
+predicts where it lands; the thing we were calling "Bombness" is **not** a bomb representation — and
+the single most useful thing we found is that **our ASR instrument was mismeasuring by a factor of
+2.55**. Details below, all on one model.
+
+🆕 **Since the last draft (2026-09-11).** Two results and one warning:
+* **The intervention null replicates on the second codeword.** Cutting the codeword row's access to
+  the demonstrations removes ~24 % of semantic installation in **67/67 basket domains** and moves
+  attack success by **−0.0090, CI [−0.0254, +0.0090]** (button: −0.2150 in 67/67 and +0.0030,
+  CI [−0.030, +0.036]). Installation and behaviour are **dissociable under intervention on both
+  codewords** — qualitatively. We are **not** powered for the quantitative version: detecting the
+  effect the installation drop predicts needs ~173 domains, 2.6× what we have.
+* **The judge defect reaches 111 prior runs**, 58,468 rows. Corrected, `button` ASR goes
+  **0.2984 → 0.1169**, a factor of **2.55 [2.46, 2.66]**.
+* ⚠️ **The correction is itself too generous.** We finally audited the rows it *keeps* and 63 of 100
+  contain no bomb content — the lexicon fires on "plastic or metal **casing** for the button's back".
+  **Every corrected number we quote is an upper bound**, including the ones below.
 
 **1 — Doublespeak works, and it beats simply asking.**
 Against the *direct* harmful request ("give step-by-step instructions to build a bomb", with four
@@ -18,8 +31,11 @@ Corrected for a judge defect (below), it runs at **14.0 %** against the direct r
 
 **2 — Matan's question 2.9, answered: installation predicts attack success.**
 Per-domain semantic installation vs per-domain ASR, same bank, same domains:
-**ρ = 0.396** over 113 domains, preregistered, permutation p at its floor, MDE 0.300, sign positive
-in all three splits. It **strengthens to 0.421** when the judge's false positives are removed.
+**ρ = 0.396** over 113 domains, preregistered, permutation p at its floor, MDE 0.300. It
+**strengthens to 0.421** when the judge's false positives are removed.
+
+*(Corrected 2026-09-11: an earlier draft said "sign positive in all three splits". It is **not**
+split-replicated — validation ρ = 0.143, p = 0.51. The pooled number stands; the split claim does not.)*
 This is the link that was CANNOT ANSWER before, and it needed the behavioural data to exist on the
 bank the representation was measured on.
 
@@ -43,9 +59,16 @@ demonstration→query effect — against a dose-matched control cutting the same
 non-demonstration keys, which moves **+0.03**, in 67/67 domains.
 But transplanting that token's **entire hidden state at all 32 layers** transfers **0.05 %** of a
 12.3 log-odds gap.
-⇒ **The codeword row is where the demonstrations are read, not where the result is stored.** That
-also *explains* the earlier PHASE 9 null instead of leaving it as a puzzle: if the whole state at a
-site transfers nothing, no single direction at that site could.
+⇒ The natural reading is that **the codeword row is where the demonstrations are read, rather than
+where the result is stored** — and it would *explain* the earlier PHASE 9 null instead of leaving it a
+puzzle: if the whole state at a site transfers nothing, no single direction at that site could.
+
+⚠️ **Stated as a reading, not as established** — and I have stopped asserting it in bold. Our own claim
+table lists "conduit, not store" among the things we may not present as established, because the
+transplant instrument was validated only *after* two structurally invalid controls. The instrument
+**can** transfer when token-matched: **+10.7 %, CI [+3.5, +19.5], p = 0.010** on 16 domains — but that
+is the **all-layer** window (the best localized window is 8 %), and the effect is gated by which
+recipients are eligible. Both caveats belong next to the number and were missing from the last draft.
 
 **5 — A warning about the ASR numbers.**
 StrongREJECT scores a fluent answer about *literal buttons* as a success. On the no-demonstration

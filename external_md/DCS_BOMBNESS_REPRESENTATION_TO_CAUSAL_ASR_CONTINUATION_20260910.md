@@ -7104,3 +7104,40 @@ correction for the obvious channel carries a large unaudited channel of its own.
 results are a clean two-codeword null and a candidate that cannot be a mechanism.
 
 Job `880762` (L24 controls) running.
+
+---
+
+### CONT-ENTRY 074 — 2026-09-11 — the collaborator draft corrected: it asserted two things our own claim table forbids
+
+`reports/DCS_SUCC_SLACK_DRAFT_MATAN_MAHMOOD_20260910.md` is the only artifact in this program written
+to be read by other people. It has never been sent (§54 forbids sending, and nothing has been
+transmitted anywhere). `REVIEW-2/SCIENTIFIC` finding 10 checked it against the claim table and found it
+**contradicting our own prohibitions**. Corrected.
+
+**1. It claimed a split replication that does not exist.** The draft said the installation→ASR link had
+*"sign positive in all three splits"*. It does not: **validation ρ = 0.143, p = 0.51** (`CONT-ENTRY
+003`). The pooled ρ = 0.396 stands and is unchanged; the split claim is struck, with the correction
+visible in the text rather than silently removed.
+
+**2. It asserted "read, not stored" in bold, which section B lists as not-establishable.** The draft
+read: *"⇒ **The codeword row is where the demonstrations are read, not where the result is stored.**"*
+That is the phase's most attractive sentence and it is exactly the one our own claim table says may not
+be presented as established, because the transplant instrument was validated only *after* two
+structurally invalid controls (`C-CONT-019`, `C-CONT-010`). It now reads as **a reading, not a
+result**, and carries the two caveats the draft had dropped: the instrument **can** transfer when
+token-matched (**+10.7 %, CI [+3.5, +19.5], p = 0.010**, 16 domains), but that is the **all-layer**
+window — the best localized window is 8 % — and the effect is gated by recipient eligibility.
+
+**3. It was five results out of date.** A new header now carries what changed: the **two-codeword**
+intervention null (basket −0.0090, CI [−0.0254, +0.0090], against button's +0.0030), the **111-run**
+judge re-score at a factor of **2.55 [2.46, 2.66]**, the explicit statement that we are **not powered**
+for the quantitative dissociation (≈173 domains needed, 2.6× what exists), and — put in the summary
+rather than buried — that **every corrected number in the draft is an upper bound**, because 63 of 100
+audited kept-positives contain no bomb content.
+
+The draft's own headline now leads with the methodological result rather than the mechanistic one,
+matching section G of the claim table and `REVIEW-2/SCIENTIFIC`'s ranking.
+
+**It remains a DRAFT and remains unsent.** The ⛔ banner at its head is untouched.
+
+Job `880762` at 3300/3720.
