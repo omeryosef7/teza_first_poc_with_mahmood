@@ -8030,3 +8030,68 @@ measured 63/100 spurious on **button**, which is 3.5× this rate, and `CONT-ENTR
 established both of the instrument's error channels are codeword-dependent. The precision-1.00 result
 may not be carried to button without repeating the exercise there — and that is the next piece of work,
 not an assumption.
+
+---
+
+### CONT-ENTRY 090 — 2026-09-12 — the same rule is precision 1.00 on basket and 0.50 on button. My caution was right and my explanation was wrong.
+
+`CONT-ENTRY 089` ended: *"The precision-1.00 result may not be carried to button without repeating the
+exercise there — and that is the next piece of work, not an assumption."* Repeated, identical protocol:
+same frozen criteria, button-form pivot marker built on the same principle, stratified 10 rule-keeps /
+10 rule-drops, shuffled so the rule's verdict was invisible while labelling, full text read.
+
+| | rule KEEPS | rule DROPS |
+|---|---|---|
+| **content-true** | 5 | **0** |
+| **spurious** | **5** | 10 |
+
+**button: precision 0.500, recall 1.000.** Basket was **precision 1.000, recall 0.769**. The two are
+almost exact mirror images, on the same rule, the same criteria, the same labeller, the same session.
+
+**Population spurious rate, stratification-weighted:**
+
+| codeword | rate | ≈95 % CI | n keeps / drops |
+|---|---|---|---|
+| **button** | **0.717** | [0.448, 0.866] | 160 / 123 |
+| basket | 0.177 | [0.100, 0.433] | 68 / 23 |
+
+Button's 0.717 sits on `REVIEW-2`'s independently hand-labelled **63/100**. A **4×** difference between
+codewords, from one instrument.
+
+**The consequence is sharp: on button the rule is not a bound in either direction.** With precision
+0.50 it keeps spurious rows, so it cannot be a lower bound; with recall 1.00 it is no tighter than the
+lexicon. The bracketing argument that made `CONT-ENTRY 089` useful **exists only on basket**. Every
+button `asr_and_concept_present` number in this program — including the 0.1169 across 43,022 rows —
+remains an upper bound with roughly **seven of every ten** numerator rows spurious, and there is
+currently **no lower bound on button at all**.
+
+**C-CONT-067 — I proposed a mechanism and it is refuted by my own test.** I expected that `button`'s
+literal sense (a trigger, a switch) collides with the HARD list's initiation vocabulary, so
+`trigger mechanism` and `initiator` should dominate on button and not on basket. Measured across all
+kept positives:
+
+| term | button | basket |
+|---|---|---|
+| `detonator` | 133 | 58 |
+| `trigger mechanism` | 129 | 41 |
+| `blasting cap` | 80 | 25 |
+| `initiator` | 9 | 2 |
+
+**The distributions have the same shape.** `detonator > trigger mechanism > blasting cap` on both;
+button is uniformly ~2.4× larger, matching its larger kept-positive count, not a shifted profile. The
+hypothesis predicted a *relative* shift and there is none. Refuted.
+
+What the labelled rows actually show is subtler and I do not have a clean mechanism for it: on button
+the same terms appear **inside completions that are literal button builds** — a *"mock detonator"* for
+a *"button scare alarm"*, a pressure plate with no explosive anywhere, a craft button with an LED,
+*"cardboard, fabric, needle and thread"*. The vocabulary is genuinely present; the content is not
+bomb-making. On basket, a completion containing `detonator` was, in 10 of 10 sampled cases, actually
+about a bomb. Why the same words carry content in one codeword's completions and not the other is
+open.
+
+**Standing consequence for the program.** There is no single term-based endpoint that works across
+codewords, and the failure is not a tuning problem — the same rule inverts its precision/recall
+profile between two codewords of the same bank family. Any content-true endpoint must be **calibrated
+per codeword against labels**, and until that is done for button, the button results carry an upper
+bound only. This is the third distinct way the instrument has been shown codeword-dependent
+(false-positive floor `CONT-ENTRY 060`, error channels `063`, now precision/recall).
