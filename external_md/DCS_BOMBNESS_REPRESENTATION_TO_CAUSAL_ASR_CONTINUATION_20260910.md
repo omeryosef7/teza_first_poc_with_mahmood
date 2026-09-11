@@ -4925,3 +4925,61 @@ already in the artifact, and it falsified a sentence I had written two entries e
 The primary remains uncomputed and uncomputable. Two amendments now stand between the frozen
 declaration and the experiment actually running — both because a control was not a control, and both
 written **before** any arm they affect was judged.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 041 — **the knockout raises raw ASR, halves refusal, and leaves the corrected outcome *exactly* unchanged**
+
+⛔ **These are SECONDARY comparisons (`ko` vs `base`). The frozen primary is `ko − ctrl` at the
+domain level, and `ctrl` is still generating (142/670). Nothing below is the primary.**
+
+`contasrj2_ko_20260911_060402_810172` + `outputs/dcs_cont/cp_rows_ko.json`:
+
+| | **base** | **ko** | Δ |
+|---|---|---|---|
+| raw ASR@0.5 | 0.3373 | **0.3925** | **+5.5 pp** |
+| refusal | 0.1149 | **0.0403** | **−7.5 pp** |
+| concept content | 0.1761 | 0.1925 | +1.6 pp |
+| **corrected ASR** (the declared outcome) | **0.1418** | **0.1418** | **0.0000** |
+| raw positives with no concept content | 131/226 (58 %) | 168/263 (64 %) | |
+
+#### 1. The three numbers together tell one story
+
+Cutting the codeword row's access to the demonstrations **raised** raw ASR by 5.5 points and **more
+than halved** refusal — while the corrected outcome did not move **at all**, to four decimal places.
+
+The raw rise is **fully accounted for** by the refusal drop: fewer refusals ⇒ more fluent
+completions ⇒ more essays about building a literal button ⇒ more StrongREJECT positives. The share
+of positives with **no** concept content rises from **58 % to 64 %** in step.
+
+⇒ **On this comparison the intervention moves the *refusal/compliance* axis, not the *semantic
+interpretation* axis.** That is exactly the dissociation §34 asks to be measured separately and
+never collapsed: *"Does an intervention change ASR because it changes semantic interpretation,
+because it changes refusal, or both?"* Here, on the secondary contrast, the answer is **refusal**.
+
+#### 2. Why this vindicates the frozen endpoint choice, concretely
+
+Had the raw rate been primary, this experiment would now read **"the knockout increases attack
+success by 5.5 points"** — significant-looking, directionally opposite to the hypothesis, and
+**wrong**. The corrected outcome was declared primary in `DR-070` *before any generation was judged*,
+on the argument that a raw rate cannot distinguish a reduced attack from a reduced button essay.
+This is that argument's first real test, and the gap between the two readings is **the entire
+effect**.
+
+#### 3. What it does **not** show, stated before the primary exists
+
+* ⛔ **It is not the primary.** `ko − ctrl` is, and a dose-matched late-band control may itself shift
+  refusal — in which case the *contrast* could differ from this *comparison* in either direction.
+* ⛔ **A pooled row rate is not the domain-level statistic.** `0.1418 = 0.1418` is over 670 rows;
+  the primary is a mean over 67 domain rates, which can differ.
+* ⛔ **Identical is not the same as null.** Two rates agreeing to four decimals across 670 rows is
+  the kind of coincidence that should raise suspicion rather than confidence, and it will be checked
+  at the domain level with a CI when the primary is computed.
+* ⚠️ The refusal drop is itself measured with a **keyword** detector, independent of the score. It is
+  a real filter (`CONT-ENTRY 037`), but it is not a model of refusal.
+
+#### 4. Loop state
+
+`base` ✅ judged + mapped · `ko` ✅ judged + mapped · `ctrl` generating on `n-804` (142/670, a faster
+node than `n-503`). The primary needs the third map and will be computed by the analyzer that
+refuses a single-map input, reads the correct refusal field, and enforces the frozen population.
