@@ -6630,3 +6630,78 @@ Eight runs persisted **zero** rows with `status: ok`. Every shortfall traced so 
 EXCLUDED domain, so no published number moves, but that is luck rather than design.
 
 STATISTICAL is still running; part 3 will close REVIEW-2.
+
+---
+
+### CONT-ENTRY 067 — 2026-09-11 — REVIEW-2 part 3 (STATISTICAL). The comparator was the same estimator; the F5 statistics otherwise hold.
+
+**C-CONT-046 — "regularisation buys 0.078" is INVERTED. The comparator is the same ridge at λ → ∞.**
+I called the baseline the *"unregularised covariance direction"*. It is `X'y`, and ridge's dual solution
+`w = X'(XX' + λI)⁻¹y` tends to `X'y/λ` as λ grows; Spearman is scale-invariant, so the "comparator" is
+ridge at **maximal** shrinkage. Verified directly on VALIDATION:
+
+| λ | 1e2 | 1e6 | 1e9 | 1e12 | 1e15 | "covariance direction" |
+|---|---|---|---|---|---|---|
+| ρ | **+0.6784** | +0.6134 | +0.6135 | +0.6135 | +0.6135 | **+0.6135** |
+
+The λ ladder in entry 059 had this in plain sight — its 1e6 rung reads +0.5454 against the "comparator"
+0.5453 — and I labelled the same number twice without noticing. What the +0.078 buys is **less**
+shrinkage, not more. Entries 059 and 061 are corrected accordingly.
+
+**C-CONT-047 — the missing CI, supplied, and the claim weakens.** ρ(F5) − ρ(comparator) on VALIDATION
+= **+0.0650**, domain-level bootstrap 95 % CI **[−0.0031, +0.1312]**, P(≤ 0) = 0.032, and F5 beats the
+comparator in only **13 of 23 domains**. TRAIN's +0.0788 CI [+0.041, +0.119] excludes zero but is fit
+on all domains and therefore optimistic. I published +0.6784 vs +0.6135 with no uncertainty at all;
+the honest statement is that F5 is *probably* better than its own λ → ∞ limit, and not by much. This
+also makes `DR-072`'s prespecified comparator gate **near-uninformative in both directions** — recorded
+here, config untouched.
+
+**What survived, and these were genuine attacks.**
+* *Pooled Spearman over non-independent slots* — **survives**. The pooled 670-slot ρ equals the mean
+  per-domain ρ (+0.6241 vs +0.6244 TRAIN). The within-domain permutation is an **exact conditional
+  test**: it preserves domain structure and destroys only the pairing under test. CIs now supplied —
+  VALIDATION pooled ρ [+0.570, +0.760].
+* *"Positive in 22/23 domains" with n = 10 per domain* — **survives**. Exact null for the count: mean
+  11.53, sd 2.40, P(≥ 22) ≤ 0.00050.
+* *Within-domain centring artifact* — **survives**, and centring biases **downward**: the same fixed
+  predictor scores +0.6139 against raw y versus +0.6784 centred.
+* *Multiple comparisons over F5's search* (38 site × layer × 6 λ) — **survives**: refit max-|ρ| null
+  gives p95 = 0.2434, p99 = 0.3040, family-wise **p = 0.0050**.
+
+**C-CONT-048 — the C-209 factor needed a design effect, and it is large.** The 43 022 `button` rows
+contain only **2742 distinct prompts** (max multiplicity 74), and 39.1 % are exact configuration
+duplicates — unavoidable, since `ds_common.py:1013` sets `do_sample=False`. **Design effect 24.9.** A
+naive binomial interval would be ~5× too narrow. Run-clustered 95 % CIs: raw **[0.273, 0.317]**,
+corrected **[0.104, 0.127]**, the factor **2.55 [2.46, 2.66]**. The factor survives comfortably; it
+simply had no interval before. (These remain upper bounds under `C-CONT-038`.)
+
+**C-CONT-049 — entry 049's dissociation was weaker than even its own withdrawal admitted.** Propagating
+the slope's error through a joint domain bootstrap: measured − *within*-domain prediction = +0.0331,
+CI [−0.0022, +0.0683], **p = 0.069**; measured − *between*-domain prediction = +0.0604, **p = 0.011**.
+Entry 050's "2.1× the half-width" also mis-describes its own arithmetic (2.19 half-widths from the
+point estimate, 1.19 outside the CI). `C-CONT-032` was right and the verdict stands unchanged and
+firmer: **the dissociation is qualitative only.** Power to detect the predicted −0.0301 is **0.414**;
+MDE(80 %) = 0.0484; **173 domains** would be needed, 2.6× what exists.
+
+---
+
+**REVIEW-2 closed. Five dimensions, five reporters, eleven corrections (`C-CONT-038` … `C-CONT-049`).**
+The pattern is worth stating plainly: nothing failed to *reproduce* — DATA, CODE and STATISTICAL each
+recomputed the published numbers to the digit, and the discipline held where it was tested (zero TEST
+rows in the search corpus; the freeze commit preceding the read attempt; banks clean; every domain in
+exactly one split). What failed was **interpretation and instrumentation**: a correction whose numerator
+was never audited, a false-negative channel that did not exist, a comparator that was the same
+estimator, a rank curve produced by a missing deflation, and a confirmatory script that could not have
+run. Five of the eleven corrections are to entries written in the last 24 hours.
+
+**Standing state after REVIEW-2.**
+* `DR-072` **HELD**, freeze intact, single read unspent. It will not execute until F5's adjacency
+  controls exist — and they require an extraction that captures `cw_demo_prev/next/rand_mean` at L24.
+* `F5` is real as a *predictor* (family-wise p = 0.0050, transfers to VALIDATION, survives four
+  statistical attacks) and **cannot be a mechanism** (`C-CONT-040`: bit-identical input across ko/ctrl).
+* Every `asr_and_concept_present` number in the record is an **upper bound**.
+* The phase's most defensible contribution remains the **methodological** one: the ASR instrument's
+  error channels are codeword-dependent, its false-positive floor was measured, and 111 prior runs were
+  re-scored at a factor of 2.55 [2.46, 2.66].
+
+Basket arms `877545/6/7` at ~3h30m; `879904` building the TEST corpus that `DR-072` will not yet read.
