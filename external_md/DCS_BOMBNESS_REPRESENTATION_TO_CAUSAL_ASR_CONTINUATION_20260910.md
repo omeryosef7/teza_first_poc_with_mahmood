@@ -4545,3 +4545,70 @@ the reason it cannot be called a null.
 the same node**, so they are contending for the same 16 GB of NFS reads and each is paying roughly
 double. Spreading parallel jobs across nodes is worth an `--exclude` of whatever the first one
 landed on. Not worth restarting at 57 %.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 035 — **the baseline arm is fully characterised and reproduces the inherited instrument on both outcomes**; `REVIEW-3` launched
+
+`outputs/dcs_cont/concept_presence_contasr_base.json`.
+
+```
+base  n=670  concept_content=0.1761 (118 rows, 47/67 domains)  refusal_like=0.1149
+      ASR 0.3373 -> asr_and_concept_present 0.1418
+      131 of 226 raw positives never mention the concept
+```
+
+#### 1. Both outcomes reproduce the inherited run — on an independent generation and judge pass
+
+| | **new baseline** (this phase, eager/batch-1, fresh judge) | inherited `tsb66_C_n4` (train domains) |
+|---|---|---|
+| raw ASR | **0.3373** | 0.3224 |
+| **corrected ASR** | **0.1418** | **0.1403** |
+
+The **corrected** outcome — the one `DR-070` declares primary — agrees to **0.0015**. Two
+independent generation runs, two independent judge runs, two attention implementations. That is the
+strongest reproducibility evidence this project has for its behavioural instrument, and it was
+obtained as a by-product of re-running a baseline for a different reason.
+
+⚠️ And the defect reproduces too: **131 of 226 raw positives (58 %) never mention the concept.**
+`C-209` is not a one-run artefact of the previous phase — it is a stable property of this judge on
+this codeword, measured again here.
+
+#### 2. `C-CONT-018` — my invocation was wrong, and the script was right
+
+My first call passed `--gen-prefix contasr_base --arms base`, and the script globs
+`prefix + arm + "_*"` ⇒ `contasr_basebase_*`, which matches nothing. It returned
+**`REFUSED: no completed generation run`** — correctly — and **still wrote an artifact recording the
+refusal**.
+
+I flagged that artifact as suspicious before reading the code. It is not: **writing a
+`status: REFUSED` record is better than writing nothing**, because a missing file is
+indistinguishable from a job that never ran, while a refusal record is evidence about what was
+attempted. Recorded because I nearly logged a correct design as a defect, and this log is only
+useful if it is honest in that direction too.
+
+#### 3. `REVIEW-3` launched — four dimensions, pointed at what is most likely to be wrong
+
+* **ASR-DESIGN** — is the control *dose-matched in the sense that matters* (rows? keys? cells?); is
+  `target_surface_row_only` right for the **behavioural** template; is a 10-row per-domain rate the
+  right unit when the judge flips **13.7 %** of labels on identical text; **and what would make this
+  experiment uninterpretable that is not already in the CANNOT ANSWER list**.
+* **ASR-DATA** — re-derive every baseline number, and **read 20 of the 131 "positives that never
+  mention the concept"** and say whether they agree. That correction is what the entire primary
+  rests on, and no human or agent has yet looked at those generations in this phase.
+* **WITHIN-DOMAIN** — the obvious attack: within a domain, slots differ in demonstration *text*, so
+  `raw_C` predicting which slot installed may be predicting demonstration content rather than
+  anything about the codeword.
+* **CLAIM** — ⚠️ explicitly asked: **§46 lists seven things required before a no-representation
+  conclusion is warranted. Which has this phase done, and which has it skipped?** Answer
+  unsparingly. The phase has withdrawn its only candidate and should not drift toward "there is no
+  representation" without meeting that bar.
+
+Reviewers are forbidden to judge or re-judge any generation — it costs money and would contaminate
+the frozen experiment.
+
+#### 4. Loop state
+
+`876883`/`876884` at **91 %** of the weight load after 2 h (same-node NFS contention, `CONT-ENTRY
+034 §3`). Generation has not begun. `DR-070` remains frozen; the primary remains uncomputed and
+uncomputable — two of its three arms do not exist yet.
