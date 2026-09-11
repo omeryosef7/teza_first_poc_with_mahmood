@@ -12,7 +12,7 @@ is the **DOMAIN** throughout.
 
 | # | claim | status | n | statistic | source |
 |---|---|---|---|---|---|
-| **A1** | Cutting the query codeword's row access to the demonstrations, in the retrieval band, **removes ~31 % of concept-free semantic installation** | **MEASURED** | 67 domains | −0.2150, CI [−0.235, −0.196], p<1e-4, **67/67 domains** | `CONT-ENTRY 049` · `DR-071` |
+| **A1** | Cutting the query codeword's row access to the demonstrations, in the retrieval band, **removes ~31 % of concept-free semantic installation** | **MEASURED, REPLICATED CROSS-CODEWORD** | 67 domains each | **button** −0.2150, CI [−0.235, −0.196], **67/67**; **basket** −0.2435, CI [−0.273, −0.213], **67/67** (never pooled) | `CONT-ENTRY 049`, `054` · `DR-071` |
 | **A2** | The **same cut does not change attack success** | **NULL, POWERED** | 67 domains | +0.0030, CI [−0.030, +0.036], MDE 0.053 | `CONT-ENTRY 044` · `DR-070` |
 | **A3** | ⇒ semantic installation and behavioural attack success are **dissociable under intervention** — qualitatively | **MEASURED, EXPLORATORY** | 67 domains | A1 ∧ A2, both arms same scope/bands/rows | `CONT-ENTRY 049 §2` |
 | **A4** | The same cut **halves refusal**, and the effect is **band-specific** | **MEASURED** | 670 rows | refusal 0.115→0.040 (`ko`) vs 0.112 (`ctrl`, identical dose) | `CONT-ENTRY 044 §1` |
@@ -32,7 +32,7 @@ is the **DOMAIN** throughout.
 | "a localized state was transplanted" | +10.7 % is the **all-layer** window; the best localized window is 8 % (`C-CONT-027`) |
 | any ASR number bare | the **0.155** false-positive floor and **0.137** judge flip rate must travel with it |
 | "conduit, not store" as established | the instrument was validated only **after** two structurally invalid controls (`C-CONT-019`, `C-CONT-010`) |
-| "cross-codeword transfer" | basket **does not clear** its own ceiling (0.628 vs 0.693) |
+| "cross-codeword transfer **of a representation**" | basket **does not clear** its own ceiling (0.628 vs 0.693). ⚠️ NOTE: the *intervention* effect (A1) **does** replicate cross-codeword; it is the *correlational map* that does not |
 
 ## C. WITHDRAWN / NARROWED
 

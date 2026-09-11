@@ -5770,3 +5770,68 @@ reference prototype**. ⛔ *"There is no BOMB representation"* remains forbidden
 #### 3. Loop state
 
 `877289` (basket replication of `DR-071`) running on `rack-bgw-dgx1`.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 054 — **claim A1 REPLICATES on `basket`**: the same cut removes installation in 67/67 domains on a second codeword
+
+`cinstbk_{base,ko,ctrl}`, **670 rows each**, all `DONE`. Identical scope, bands, dose and statistic
+to `DR-071`; the **only** change is the bank. ⛔ Reported separately — never pooled.
+
+**Conditions, all passed:**
+
+```
+edits      ko 1 385 460 | ctrl 1 385 460      relative difference 0.00000
+liveness   1.000 scope-live, 0 decode edits, no violations, BOTH arms
+option mass ko median 0.1887 | ctrl 0.0868     (gate 0.05)
+prompt_ids identical across arms
+bank       ts116m_basket_bomb, sha16 79511d9e254571e6 on both (hashed from config)
+```
+
+**Result:**
+
+| | **button** (`DR-071`) | **basket** (this run) |
+|---|---|---|
+| installation `base` | 0.6785 | **0.4768** |
+| installation `ko` | 0.4703 | **0.2405** |
+| installation `ctrl` | 0.6854 | 0.4840 |
+| **`ko − ctrl`** | **−0.2150** | **−0.2435** |
+| 95 % CI | [−0.234, −0.196] | **[−0.273, −0.213]** |
+| p | < 1e-4 | **< 1e-4** |
+| **domains negative** | **67/67** | **67/67** |
+| `ctrl − base` | +0.0068 | **+0.0073** |
+
+⇒ **A1 replicates on a second codeword**, with a *larger* absolute effect (−0.244 vs −0.215) and a
+*much* larger relative one — **49 % of basket's installation removed vs 31 % of button's**, because
+basket's baseline is thinner (0.477 vs 0.679), exactly as the inherited work found.
+
+🆕 And the **control behaves identically on both banks**: +0.0068 and +0.0073 — a near-inert,
+slightly *positive* nudge from the same dose in a late band. Two independent banks agreeing on the
+control's near-zero effect is stronger evidence that the dose-matching is real than either alone.
+
+#### 1. What this upgrades, and what it does not
+
+✅ `reports/DCS_CONT_CLAIM_TABLE.md` **A1** moves to **MEASURED, REPLICATED CROSS-CODEWORD**.
+
+⚠️ And it forces a distinction the claim table was blurring. The "must not say" line previously read
+*"cross-codeword transfer — basket does not clear its own ceiling"*. That is about the
+**correlational map**. It is now amended to separate the two:
+
+> the **intervention** effect (A1) **does** replicate across codewords, in 67/67 domains on both
+> banks. It is the **correlational** structure — the map, `K1`, the within-domain contrast — that
+> does not.
+
+That asymmetry is itself informative: **what generalises is the causal fact about the pathway, not
+the descriptive geometry that was supposed to explain it.**
+
+⛔ Unchanged: this replicates **A1 only**. The basket **ASR** arms do not exist, so **A2 and A3 —
+the null and the dissociation — are NOT replicated**, and the phase's headline remains a
+single-codeword result on the behavioural side.
+
+#### 2. A provenance gap, noted
+
+The readout `results.jsonl` rows carry **no `bank_file_sha16`** (`{None}`), unlike the extraction
+rows. The bank identity was recovered by **hashing the file named in each run's `config.json`** —
+`79511d9e254571e6` on both arms, the basket bank. That worked, but it means a cross-bank join in a
+*readout* run cannot be caught by a row-level assertion the way `CONT-ENTRY 010` catches it for
+corpora. Recorded as a latent gap.
