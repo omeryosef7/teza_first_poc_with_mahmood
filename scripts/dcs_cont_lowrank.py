@@ -33,7 +33,7 @@ def pls_fit(X, y, r):
     """PLS-1 with deflation. Returns (weights [r,d], coefs [r]) fitted on X,y."""
     import torch
     Xd = X.clone(); yd = y.clone()
-    W, C = [], []
+    W, C, P = [], [], []
     for _ in range(r):
         w = Xd.t() @ yd
         n = w.norm()
@@ -48,13 +48,30 @@ def pls_fit(X, y, r):
         p = (Xd.t() @ t) / tt            # loadings
         Xd = Xd - torch.outer(t, p)      # deflate X
         yd = yd - c * t                  # deflate y
-        W.append(w); C.append(c)
-    return (torch.stack(W, 0), torch.tensor(C)) if W else (None, None)
+        W.append(w); C.append(c); P.append(p)
+    return (torch.stack(W, 0), torch.tensor(C), torch.stack(P, 0)) if W else (None, None, None)
 
 
-def pls_predict(X, W, C):
-    """Apply the fitted deflation-free approximation: sum_k c_k * (X w_k)."""
-    return sum(C[k] * (X @ W[k]) for k in range(len(C)))
+def pls_predict(X, W, C, P):
+    """Apply the fitted PLS model WITH deflation.
+
+    C-CONT-043. The previous body was `sum_k c_k * (X w_k)` -- every component scored against the
+    UNDEFLATED X, which its own docstring called a "deflation-free approximation". That is exact at
+    rank 1 and wrong for every rank above it, because component k's score is defined on the residual
+    left by components 1..k-1, not on the original matrix. It understated ranks >= 2 and manufactured
+    the rise-then-fall curve CONT-ENTRY 053 read as "the structure is one-dimensional".
+
+    The fit already computes the loadings P needed to reproduce the deflation at predict time; they
+    were simply discarded. Rank 1 is unchanged, so 053's rank-1 number stands.
+    """
+    import torch  # module-level helpers take torch locally in this file; see C-CONT-009
+    Xd = X.clone()
+    out = torch.zeros(X.shape[0], dtype=X.dtype)
+    for k in range(len(C)):
+        t = Xd @ W[k]
+        out = out + C[k] * t
+        Xd = Xd - torch.outer(t, P[k])
+    return out
 
 
 def main() -> int:
@@ -111,10 +128,10 @@ def main() -> int:
         for d in doms:
             ho = [i for i, dd in enumerate(dof) if dd == d]
             tr = [i for i, dd in enumerate(dof) if dd != d]
-            W, C = pls_fit(X[tr], Y[tr], r)
+            W, C, P = pls_fit(X[tr], Y[tr], r)
             if W is None:
                 continue
-            p = pls_predict(X[ho], W, C)
+            p = pls_predict(X[ho], W, C, P)
             for j, i in enumerate(ho):
                 pred[i] = float(p[j])
         rho = lpm.spearman(pred, ys)

@@ -6705,3 +6705,89 @@ run. Five of the eleven corrections are to entries written in the last 24 hours.
   re-scored at a factor of 2.55 [2.46, 2.66].
 
 Basket arms `877545/6/7` at ~3h30m; `879904` building the TEST corpus that `DR-072` will not yet read.
+
+---
+
+### CONT-ENTRY 068 — 2026-09-11 — the codeword is not special at L24; F6's rank curve reverses once deflation is fixed
+
+**`879904` COMPLETED** — 00:08:53, rc 0, `failures {}`, bank `dcd92d723f3e6d00`, 19 layers, `DONE.json`
+present. The `DR-072` TEST corpus now exists at
+`cont1_behavioral_button_bomb_TEST_20260911_160414_251697`. Eight minutes on `n-804` against the 54
+minutes `n-307` spent not finishing the model load. **It has not been read.** `DR-072` remains HELD per
+`C-CONT-040`; only its metadata (row/site/layer counts, bank hash, DONE flag) was inspected, which
+entry 062 already established is not a measurement.
+
+**The aborted run is quarantined, not deleted** (§53). `878972`'s directory held `cache/`,
+`config.json`, `RUNMETA.json` and nothing else — no `metadata.json`, no `results.jsonl`, no `DONE.json`
+— so it never reached the extraction stage and contains no measurement. Moved to
+`outputs/boombness/QUARANTINE/` with a `QUARANTINE_REASON.md` naming the node, the symptom, the entry,
+and the superseding run.
+
+---
+
+**D-001, run at L24 on the behavioural template. Nothing is localised at the codeword.**
+
+The adjacency controls `C-CONT-040` asked for (`cw_demo_prev/next/rand_mean`) are **not in this corpus**
+— it captured 20 sites, 16 `rel-*` plus four codeword sites, and the prev/next/rand sites were never
+extracted. But the `rel-*` ladder supplies the test for the *query* codeword for free, because on the
+behavioural template the codeword sits at `rel_end −11`. Fit on TRAIN, λ = 1e2 fixed, scored on
+VALIDATION:
+
+| site | what it is | ρ |
+|---|---|---|
+| `cw_query` | **the codeword**, occurrence-resolved | +0.6039 |
+| `rel-11` | the codeword, by offset | **+0.6039** |
+| `rel-12` | neighbour, one **earlier** | +0.5621 |
+| `rel-10` | neighbour, one **later** | +0.5540 |
+| `rel-13` | two earlier | +0.5843 |
+| `rel-9` | two later | +0.4518 |
+| `rel-1` | final prompt token | +0.4665 |
+| `cw_demo_last` | last demonstration codeword | +0.5553 |
+| `cw_demo_first` | first demonstration codeword | +0.2248 |
+| `cw_demo_mean` | **F5's site** (mean of 4 demo rows) | **+0.6784** |
+
+First, an internal consistency check that passed: `cw_query` and `rel-11` agree to four decimals, from
+two independent resolution paths — occurrence search versus fixed offset. The `rel_end −11` finding is
+confirmed by arithmetic rather than by my having written it down.
+
+The substance: the codeword's neighbours predict **nearly as well as the codeword** (+0.5540 / +0.5621
+against +0.6039). This is the `D-001` result, reproduced at L24 on the behavioural template with a
+regularised probe rather than a direction — **nothing is sharply localised at the codeword row**. And
+`cw_demo_mean` beats every single site. Since `cw_demo_first` alone is only +0.2248, the advantage is
+not one privileged row; it looks like averaging four demonstration rows reduces variance. Combined
+with `C-CONT-040`, the reading is that **`F5` reads the demonstration block, not a codeword
+representation** — which is consistent with the phase's existing conclusion that the codeword row is
+where demonstrations are *read*, not where a result is *stored*.
+
+The proper mass control (a size-matched non-codeword demo-row mean) still requires a new extraction.
+
+---
+
+**C-CONT-043 closed — and it reverses entry 053's conclusion.** `pls_predict` now deflates: the fit
+already computed the loadings `P` needed to reproduce the deflation at predict time and simply threw
+them away. Rank 1 is untouched by the fix, as expected, since deflation cannot affect the first
+component. Re-run on TRAIN, LOO by domain, `cw_demo_mean`:
+
+| rank | 1 | 2 | 4 | 8 | 16 |
+|---|---|---|---|---|---|
+| **L14** | +0.4808 | +0.5380 | **+0.5536** | +0.5383 | +0.5392 |
+| **L24** | +0.5451 | +0.5722 | **+0.5913** | +0.5823 | +0.5713 |
+
+The curve now **rises to rank 4 and plateaus**. Entry 053 read a rise-then-fall shape as *"the
+structure is one-dimensional"*; with the deflation restored the structure is roughly
+**four-dimensional**, and that conclusion is formally withdrawn. Rank 4 buys +0.073 (L14) and +0.046
+(L24) over rank 1. Note these are pooled `rho_loo`; entry 053 quoted a mean-per-domain statistic, so
+its individual numbers are not directly comparable to this table — the *shape*, which is what the
+conclusion rested on, is computed identically within each run and it reverses.
+
+`F6` still does not beat `F5`: its best here (+0.5913) is below the ridge's +0.6241 at the same site
+and layer. So the family ranking is unchanged — but it was dismissed on a false shape, and that
+mattered enough to fix.
+
+**C-CONT-050 — `torch` used in a module-level helper that never imported it.** The rewritten
+`pls_predict` raised `NameError: name 'torch' is not defined`: in this file `main()` imports torch
+locally and the helpers had been inheriting it by accident of call order. Identical in shape to
+`C-CONT-009` (`random.Random` without `import random`), which also passed `py_compile` and a self-test.
+Caught on first execution. Fixed with a local import and a comment pointing at the precedent.
+
+Basket arms `877545/6/7` at ~3h30m.

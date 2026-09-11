@@ -1,0 +1,29 @@
+{
+ "schema": "dcs_cont_lowrank/1",
+ "status": "EXPLORATORY",
+ "beh_run": "outputs/boombness/extract_boombness/cont1_behavioral_button_bomb_20260910_152806_272296",
+ "site": "cw_demo_mean",
+ "layer": 14,
+ "split": "train",
+ "bank_file_sha16": "dcd92d723f3e6d00",
+ "n_slots": 670,
+ "n_domains": 67,
+ "note": "PLS-1 with scalar target; component 1 IS the covariance direction the map already uses, so rank 1 reproduces it. Rank is NOT selected here -- every rank is reported and selection on VALIDATION has not happened.",
+ "by_rank": {
+  "1": {
+   "rho_loo": 0.4808031311634006
+  },
+  "2": {
+   "rho_loo": 0.537963241606753
+  },
+  "4": {
+   "rho_loo": 0.5536101213207119
+  },
+  "8": {
+   "rho_loo": 0.5382970733070195
+  },
+  "16": {
+   "rho_loo": 0.5391547339056723
+  }
+ }
+}
