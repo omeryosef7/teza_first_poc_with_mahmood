@@ -1,0 +1,57 @@
+{
+ "schema": "dcs_cont_preregistration/1",
+ "id": "DR-072",
+ "title": "F5_probe_installation -- confirmation on TEST",
+ "status": "FROZEN",
+ "frozen_at": "2026-09-11",
+ "frozen_before": "any TEST-split quantity for F5 was computed. TEST has not been read for this family.",
+ "mandate": "external_md/DCS_BOMBNESS_REPRESENTATION_TO_CAUSAL_ASR_CONTINUATION_20260910.md",
+ "provenance": {
+  "corpus": "outputs/boombness/extract_boombness/cont1_behavioral_button_bomb_20260910_152806_272296",
+  "installation_run": "outputs/boombness/score_behavior/ts116m_readout_button_bomb_20260907_133811_3183103",
+  "bank_file_sha16": "dcd92d723f3e6d00",
+  "model": "meta-llama/Llama-3.1-8B-Instruct",
+  "model_revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+  "codeword": "button",
+  "concept": "bomb",
+  "never_pool": "basket is a SEPARATE preregistration; this one is button only"
+ },
+ "history": {
+  "discovery": "TRAIN, 67 domains / 670 slots. CONT-ENTRY 059. rho_loo=+0.6241, nested lambda=1e2 in 67/67 folds, within-domain permutation p=0.0050.",
+  "selection": "VALIDATION, 23 domains / 230 slots. CONT-ENTRY 061. rho=+0.6784, positive in 22/23 domains, permutation p=0.00050, lambda NOT retuned.",
+  "confirmation": "TEST -- NOT YET RUN. This document specifies it."
+ },
+ "specification": {
+  "site": "cw_demo_mean",
+  "layer": 24,
+  "cell": "C",
+  "lambda": 100.0,
+  "estimator": "ridge regression, dual form, closed form alpha = (K + lambda*I)^-1 y, prediction = X_test @ X_fit.T @ alpha",
+  "fit_population": "TRAIN + VALIDATION domains (90 total, minus the 3 EXCLUDED_DOMAINS), pooled",
+  "target": "y_install on the semantic_one_word channel, cell C; the semantic_forced_choice channel is FORBIDDEN (mandate 4)",
+  "centering": "x and y are centred WITHIN DOMAIN, separately in the fit and the eval population",
+  "unit_of_analysis": "the (domain, family_slot) slot; family_slot = family_id.split('|')[1:-1]",
+  "independence_unit": "domain",
+  "scoring": "Spearman rho between predicted and actual within-domain-centred y over all TEST slots",
+  "no_retuning": "lambda, site, layer and cell are FIXED by this document and may not be re-chosen on TEST"
+ },
+ "null": {
+  "procedure": "labels permuted WITHIN domain on TEST; the predictor is FIXED (fit on TRAIN+VALIDATION) and is NOT refit",
+  "n_permutations": 2000,
+  "seed": 20260911,
+  "note": "because the predictor is fixed, permuting labels is the complete null; the C-CONT-002 refit requirement applies only when the fit is inside the resampled loop"
+ },
+ "decision_rule": {
+  "CONFIRMED": "rho_test > 0 AND permutation p < 0.05 AND per-domain rho positive in >= 60% of TEST domains",
+  "NOT CONFIRMED": "any of the three fails",
+  "point_prediction": "rho_test in [0.55, 0.70]; the TRAIN LOO estimate is 0.6241 and the VALIDATION estimate is 0.6784",
+  "prespecified_comparator": "the unregularised covariance direction at the same site and layer, fit on the same population. VALIDATION: F5 +0.6784 vs comparator +0.6135. F5 is claimed to BEAT it; if rho_test(F5) <= rho_test(comparator) the regularisation claim is NOT CONFIRMED even if F5 itself is significant."
+ },
+ "things_that_must_not_be_said": [
+  "that F5 predicts ASR -- it predicts INSTALLATION, the model's own semantic report. CONT-ENTRY 049/050 stand: the installation->ASR dissociation is qualitative, not quantitative.",
+  "that F5 is a BOMB representation -- the successor phase refuted that reading and nothing here revives it.",
+  "that F5 is localised at the codeword -- cw_demo_mean is a MEAN over demonstration codeword rows, not a single site, and no localisation test has been run on it.",
+  "that a confirmed rho licenses a causal claim -- this is a predictive fit, and the only causal evidence in the phase is the knockout, which moved ASR by +0.0030, CI [-0.030,+0.036]."
+ ],
+ "single_read": "TEST is read ONCE under this document. If the run errors, the error and its cause are recorded and the read still counts."
+}

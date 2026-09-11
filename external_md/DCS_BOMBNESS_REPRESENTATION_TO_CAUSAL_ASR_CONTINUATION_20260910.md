@@ -6200,3 +6200,52 @@ result that I could have written up as "the lexicon does not fire on basket." Wh
 the printed sample rows were blank. The re-run asserts `all(isinstance(v,str) and v)` on the loaded
 generations before scoring, so an empty field raises instead of scoring as absence. The `0.0000` is
 withdrawn and appears nowhere above; the table is from the corrected pass.
+
+---
+
+### CONT-ENTRY 061 — 2026-09-11 — F5 selected on VALIDATION; DR-072 frozen before TEST is touched
+
+`CONT-ENTRY 059` left `F5` as a TRAIN-only candidate. The registry's discipline is explicit —
+discovery on TRAIN, **selection on VALIDATION**, confirmation on TEST — so the next legal step is
+VALIDATION, and it does not read TEST.
+
+**F5 transfer, TRAIN → VALIDATION.** Fit on the 67 TRAIN domains at `cw_demo_mean|L24` with λ = 1e2
+**fixed from the TRAIN nested selection and not retuned**; applied to 23 VALIDATION domains / 230
+slots. Assertion in the script: the two populations are disjoint and neither contains a `test` domain.
+
+| | VALIDATION ρ |
+|---|---|
+| **F5 ridge probe** | **+0.6784** |
+| unregularised covariance direction, same site/layer/fit | +0.6135 |
+| *(TRAIN LOO reference)* | *+0.6241* |
+
+Per-domain: mean +0.6105, median +0.7212, **positive in 22 of 23 domains**. Within-domain label
+permutation on VALIDATION with the predictor held fixed, 2000 permutations: p50 = +0.0058,
+p95 = +0.1193, max = +0.2356 ⇒ **p = 0.00050**, the 2000-perm floor.
+
+It transfers *slightly upward* (0.6241 → 0.6784), which is what a genuine effect estimated by LOO on a
+smaller population tends to do, and it beats the unregularised comparator on VALIDATION as it did on
+TRAIN. `F5` is now **SELECTED**, not merely discovered.
+
+**DR-072 frozen — `configs/dcs_cont_dr072_f5_confirmation.json`, sha16 `35a5ed952756e88a`.**
+Discovery and selection are both spent. Everything free has now been chosen, so the confirmation is
+written down *before* TEST is read: site `cw_demo_mean`, layer 24, cell C, λ = 1e2, dual-form ridge,
+fit on TRAIN+VALIDATION pooled (90 domains), within-domain centring, unit = `(domain, family_slot)`,
+independence unit = domain, 2000-permutation within-domain null with the predictor **fixed** (so the
+`C-CONT-002` refit requirement does not apply — the fit is not inside the resampled loop).
+
+Decision rule, prespecified: **CONFIRMED** iff ρ_test > 0 **and** p < 0.05 **and** per-domain ρ
+positive in ≥ 60 % of TEST domains. Point prediction ρ_test ∈ [0.55, 0.70]. A second prespecified
+comparator: `F5` must **beat** the unregularised direction on TEST, or the regularisation claim is not
+confirmed even if `F5` itself is significant.
+
+`things_that_must_not_be_said` is carried in the config and names four: that `F5` predicts **ASR**
+(it predicts installation — 049/050 stand, the dissociation is qualitative); that it is a **bomb
+representation**; that it is **localised at the codeword** (`cw_demo_mean` is a mean over demonstration
+rows and no localisation test has been run on it); and that any ρ licenses a **causal** claim (the only
+causal evidence in the phase is the knockout, +0.0030, CI [−0.030, +0.036]).
+
+This entry and the freeze are committed **before** the TEST read, so the ordering is auditable in git
+rather than asserted here. TEST is read ONCE under DR-072.
+
+Basket arms `877545`/`877546`/`877547` at ≈1h58m, still running.
