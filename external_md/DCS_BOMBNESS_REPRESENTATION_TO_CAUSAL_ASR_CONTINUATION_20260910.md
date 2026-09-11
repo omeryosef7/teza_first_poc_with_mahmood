@@ -7555,3 +7555,53 @@ artifact names look like timestamps, are treated like timestamps, and for one no
 by seven hours.
 
 `881206` (knife, §15's harmful non-BOMB reference) still running on that node, 3586/3720 rows at check.
+
+---
+
+### CONT-ENTRY 082 — 2026-09-11 — §15's harm control lands, and the answer is neither pole. The geometry is concept-DEPENDENT, not concept-specific and not general.
+
+`881206` COMPLETED clean (trailer `rc=0`, `failures {}`, 3720 rows, `DONE.json`). Note its directory is
+named `..._20260911_150342_...` and it actually ran at 22:07 — `C-CONT-058`, the skewed node.
+
+**§15 at `cw_demo_mean` L24, within domain, 900 slots / 90 domains each, never pooled:**
+
+| concept / codeword | B (explicit concept) | ctx-only | **B − ctx** | perm p | within-domain sd of `y_install` |
+|---|---|---|---|---|---|
+| **bomb** / button | +0.3823 | −0.0230 | **+0.4053** | 0.00050 | 0.3739 |
+| **bomb** / basket | +0.3223 | −0.0094 | **+0.3317** | 0.00050 | 0.3816 |
+| **knife** / button | +0.1206 | +0.0583 | **+0.0623** | **0.00050** | 0.2295 |
+| gun / button | +0.0320 | +0.0515 | −0.0196 | 0.146 | 0.0849 |
+
+**My recorded prediction was wrong in both directions, which is the useful outcome.** `CONT-ENTRY 080`
+said ~+0.2 would mean the geometry is concept-general and ~0 would mean `bomb` is special. Knife gives
+**+0.0623** — *significantly non-zero* (p at the 2000-permutation floor, so not the gun-style
+inconclusive null) but **6.5× smaller than bomb's**.
+
+**The attenuation defence does not cover the gap.** Knife has less installation variance to correlate
+against, so some shrinkage is expected — but its within-domain sd is **0.2295 against bomb's 0.3739**,
+a ratio of **1.63×**, while the effect ratio is **6.5×**. Variance loss of 1.6× cannot produce an
+effect loss of 6.5×. (Stated as a bound rather than a formal correction: Spearman is rank-based, so
+variance compression attenuates it through ties and floor effects rather than by a clean scaling law,
+and I am not going to pretend a precise adjustment.)
+
+**So §15's harmful non-BOMB control is answered, and the answer is the middle one:**
+* it is **not** a general property of concept installation — knife installs and its geometry is 6.5×
+  weaker, far past what its variance explains;
+* it is **not** unique to `bomb` either — knife's effect is real and significant;
+* `gun` remains **inconclusive** and cannot be used either way (`CONT-ENTRY 079`).
+
+The honest statement is **concept-dependent**: the demonstration-side state's alignment with the
+explicit-concept state tracks installation for every concept that installs at all, and it does so
+**far more strongly for `bomb`** than its installability advantage accounts for. A13 is narrowed
+accordingly — it may not be reported as "bomb-specific", and it may not be reported as a generic
+concept-installation geometry.
+
+**One structural caveat I am not going to argue away.** `bomb` is also the concept that installs most
+(A12: 12× gun, 4× knife). Installability and geometry strength are confounded across only three
+concepts, and with n = 3 concepts I cannot separate "bomb has a special geometry" from "concepts that
+install more have a stronger geometry, and bomb installs most". Distinguishing them needs more
+concepts that install — which this bank family does not contain, and which is the same wall
+`CONT-ENTRY 079` hit. Recorded as the limit of what these data can say.
+
+⛔ Unchanged: correlational, train+validation, no TEST read, no preregistration, no causal claim. §46's
+conclusion is still not taken.
