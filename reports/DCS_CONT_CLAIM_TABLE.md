@@ -23,7 +23,7 @@ is the **DOMAIN** throughout.
 | **A8** | The transplant instrument **can** transfer, token-matched | **MEASURED** | 16 domains | +10.7 %, CI [+3.5, +19.5], p=0.010 | `CONT-ENTRY 021`, `023` |
 | **A9** | 🆕 **The ASR instrument's false-positive floor is codeword-dependent, and 111 prior judge runs are exposed** | **MEASURED** | 58,468 rows / 111 runs | `button` ASR 0.2984→0.1169, factor **2.55, CI [2.46, 2.66]** (design effect 24.9, run-clustered); `basket` 0.1172→0.0379. Split-clean: button train+val 0.3146→0.1243 | `CONT-ENTRY 063`, `066` · `C-CONT-048` |
 | **A10** | 🆕 **Greedy decoding is not byte-reproducible across GPU architectures**, and that sets a noise floor under every ASR contrast | **MEASURED** | 670 prompts / 67 domains | same condition, V100 vs L40S: raw Δ +0.0149 CI [−0.018, +0.048], corrected Δ **+0.0015 CI [−0.015, +0.019]**. The `DR-070` primary (+0.0030) sits **inside** that band | `CONT-ENTRY 070` · `C-CONT-052` |
-| **A11** | 🆕 A ridge probe on the demonstration-side state predicts installation **within domain** | **TRAIN+VALIDATION, CANDIDATE ONLY — TEST UNREAD** | 670 + 230 slots | ρ_loo +0.6241 (p=0.0050, family-wise); VALIDATION +0.6784, 22/23 domains, p=0.00050 | `CONT-ENTRY 059`, `061` · `DR-072` **HELD** |
+| **A11** | 🆕 A ridge probe on the demonstration-side state predicts installation **within domain** | **CONFIRMED ON TEST** — but it **cannot be a mechanism** (`C-CONT-040`) | 900 fit / 230 test slots | TRAIN +0.6241 → VALIDATION +0.6784 → **TEST +0.6054**, 23/23 domains, p=0.00050. Beats a size-matched demo-span control by **+0.3960** | `CONT-ENTRY 059`, `061`, `075` · `DR-072` |
 
 ## B. WHAT WE MUST NOT SAY
 
@@ -94,12 +94,12 @@ commit-time completeness guard, and persisted intervention dose.
 
 | what | why it matters | cost |
 |---|---|---|
-| **`DR-072`'s TEST read — HELD** | `F5`/A11 is the phase's best predictor and its freeze is written, but it is **structurally incapable of mediating** the knockout (`C-CONT-040`) and its adjacency controls do not exist yet. A preregistered read is spent once | 1 GPU-h (job `880762` running) then CPU |
+| ~~`DR-072`'s TEST read~~ | ✅ **DONE, CONFIRMED** — ρ_test +0.6054, 23/23 domains, p=0.00050, inside the prespecified [0.55, 0.70]. The single read is spent (`CONT-ENTRY 075`) | — |
 | **Power on A2/A3** | still the decisive gap. Power to detect the predicted −0.0301 is **0.414**; MDE(80 %) 0.0484; **173 domains** needed, 2.6× what exists. ⚠️ the old note here said re-runs add nothing because generation is deterministic — **that is now known to be false across GPU architectures** (`C-CONT-052`), but the divergence is *numerical*, not a fresh sample, so it still does not buy power | new bank rows + ~12 GPU-h |
 | **the lexicon's false-positive channel** | every corrected number is an upper bound until it is fixed, and it cannot be fixed by editing the frozen lexicon | a **new** frozen instrument, scoring the materials block rather than term presence |
 | §7 template transfer | **no held-out readout template exists** | cheap (CPU) + 1 run |
 | §46 accounting | which of the seven no-representation prerequisites are met — **not yet answered** | analysis only |
-| **within-domain demonstration-side patch** | `REVIEW-2/SCIENTIFIC`'s top recommendation: the sufficiency test at the site the search actually found, and the discriminator between the dissociation account and a **common-cause** account (demonstrations drive both) | ~6 GPU-h |
+| **within-domain demonstration-side patch** | `REVIEW-2/SCIENTIFIC`'s top recommendation and the discriminator between the dissociation account and a **common-cause** account. ⛔ **BLOCKED — not constructible on this bank**: of 4050 within-domain cell-C pairs, 172 agree on `(seq_len, token_pos, n_occ)` and **0** share their demonstration codeword positions (`CONT-ENTRY 076`) | needs a **position-matched bank** (generation change), then ~6 GPU-h |
 
 ### Closed since the last revision
 * ~~basket replication of A1–A3~~ → **done**, `CONT-ENTRY 071` (A2 basket −0.0090, NULL POWERED)

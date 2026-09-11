@@ -7212,3 +7212,55 @@ result stand, with one amendment:
 
 **The registry closes**: 8 of 8 families fitted, one positive, **confirmed on TEST**. The single read
 is spent and `DR-072` is complete.
+
+---
+
+### CONT-ENTRY 076 — 2026-09-11 — REVIEW-2's top recommended experiment is NOT constructible on this bank. Measured, not assumed.
+
+With `DR-072` confirmed, the highest open item was `REVIEW-2/SCIENTIFIC`'s §12: a **within-domain,
+same-query, demonstration-side state patch** (donor high-install → recipient low-install in the *same*
+domain) — the sufficiency test at the site the search actually found, and the discriminator between the
+dissociation account and a **common-cause** account. I went to build it. It cannot be built here.
+
+**What the repo already knew.** `aggressive_patching.py` supports exactly two correspondences,
+`PAIR_ALIGNMENT ∈ {absolute, end_relative}`, and it **refuses demonstration-side scopes by name** for
+end-relative pairs: *"the demonstration blocks are different text of different length, so 'the first
+demo occurrence' of the donor and of the recipient are not the same object. They are REFUSED BY NAME
+rather than silently mapped onto whatever index arithmetic happens to produce."* `cinstall_hi_to_lo`
+— the existing §21 positive control — is `end_relative`, and it differs by **DOMAIN**, which is the
+topic confound the recommendation exists to remove.
+
+So a within-domain demo-side patch needs an **`absolute`** alignment: donor and recipient must agree on
+the demonstration codeword positions themselves. Measured over all cell-C slot pairs within a domain,
+90 domains, train+validation:
+
+| | pairs |
+|---|---|
+| total within-domain cell-C pairs | 4050 |
+| agreeing on `(seq_len, token_pos, n_occurrences)` — **necessary** | 172 (4.2 %) |
+| **also** sharing identical demo codeword positions — **sufficient** | **0** |
+
+**Zero.** Even among the 172 pairs whose prompts are the same total length with the query codeword at
+the same index, **not one** has its four demonstration codewords at the same positions. That is what
+you would expect once stated: the demonstrations are drawn from pools, so their internal layout varies
+even when the totals coincide.
+
+**Conclusion: the experiment is not constructible on this bank**, and the repo's existing refusal was
+right for a reason broader than the one it states — it holds *within* a domain, not only across cells.
+What would make it constructible is a **bank-generation** change, not an analysis one: demonstrations
+templated to an identical token layout so that occurrence *i* sits at the same index in every slot of a
+domain. That is a real, scoped piece of work and it is now the precise thing standing between this
+program and a sufficiency test. Recorded as such rather than left as "~6 GPU-h" on the open list.
+
+**C-CONT-056 — a near-repeat of `C-CONT-036`, caught by implausibility.** My first pass read the
+pooled positions from `x.get('pooled_pos') or x.get('positions')`; the field is **`pos`** (a list for
+pooled sites). Every lookup returned `None`, every comparison failed, and the script printed **"ALSO
+identical demo positions: 0"** — the same answer the correct code later produced, for entirely the
+wrong reason. It was caught only because 0 of 172 was implausible *given* the necessary condition held.
+The rerun asserts the field resolves before counting. **Twice now a wrong field name has produced a
+clean, plausible, correct-looking number**; the lesson recorded in `C-CONT-036` — assert the field, do
+not trust a `.get` chain — was written down and then not applied. The count above is from the asserted
+version.
+
+Open-item list updated accordingly: the sufficiency test moves from "~6 GPU-h" to **"blocked, needs a
+position-matched bank"**.
