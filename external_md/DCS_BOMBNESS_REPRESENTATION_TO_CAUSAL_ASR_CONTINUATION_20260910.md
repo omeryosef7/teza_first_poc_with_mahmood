@@ -7443,3 +7443,52 @@ comparably, because on this bank **no other concept does**.
 
 ⛔ Unchanged: correlational, train+validation, no TEST read, no preregistration, no causal claim.
 §46's conclusion is still not taken, and §15's control is now explicitly listed as open rather than met.
+
+---
+
+### CONT-ENTRY 080 — 2026-09-11 — A12 tested properly with domain as the unit; and C-CONT-057, an ordering I asserted against my own printed numbers
+
+`CONT-ENTRY 079` reported the concept-installation gap from means alone. Tested properly —
+**domain-paired**, domain as the independence unit, 1080 slots shared across all three concepts,
+90 domains, 20000-draw sign-flip permutation and a 4000-resample domain bootstrap:
+
+| codeword | contrast | diff | 95 % CI | sign-flip p | domains positive |
+|---|---|---|---|---|---|
+| **button** | bomb − knife | **+0.4314** | [+0.3858, +0.4747] | 0.00005 | **89/90** |
+| button | bomb − gun | **+0.5166** | [+0.4766, +0.5546] | 0.00005 | **87/90** |
+| button | knife − gun | +0.0852 | [+0.0585, +0.1124] | 0.00005 | 70/90 |
+| **basket** | bomb − knife | **+0.3612** | [+0.3241, +0.3992] | 0.00005 | **88/90** |
+| basket | bomb − gun | **+0.3346** | [+0.3009, +0.3707] | 0.00005 | **88/90** |
+| basket | **knife − gun** | **−0.0267** | [−0.0438, −0.0108] | 0.00110 | **40/90** |
+
+**`bomb` sits far above both other concepts on both codewords**, in 87–89 of 90 domains, with CIs
+nowhere near zero. That part of A12 is solid and is now a domain-level result rather than a comparison
+of means.
+
+**C-CONT-057 — I asserted an ordering that my own table in the same entry contradicts.**
+`CONT-ENTRY 079` says: *"Ordering by installability: **bomb ≫ knife > gun**, and it holds on both
+codewords (basket: 0.3808 / 0.0196 / 0.0462)."* The three numbers I printed **in that sentence** show
+knife at 0.0196 **below** gun at 0.0462 — the ordering does *not* hold on basket, and I wrote that it
+did while quoting the figures that refute it. Tested here, `knife − gun` is **+0.0852 on button and
+−0.0267 on basket**: the sign **reverses** between codewords and only 40/90 basket domains are positive.
+
+Corrected claim: **`bomb` ≫ {`knife`, `gun`} on both codewords, robustly; the `knife`/`gun` ordering is
+codeword-dependent and does not replicate.** This is the third time in this phase a claim has been
+written next to the numbers that contradict it (`C-CONT-034`, `C-CONT-035`, now this) — the recurring
+shape is not just "a quantity that could not tell you it was wrong" but **a sentence I did not check
+against the table directly beside it**.
+
+**Why the correction matters beyond bookkeeping.** The reversed knife/gun ordering is evidence that at
+the low end these installation rates are near a floor where codeword-specific noise dominates
+(basket knife 0.0196, gun 0.0462, both with within-domain sd under 0.10). That is the same reason
+`CONT-ENTRY 079` gave for calling the gun control inconclusive, and it applies to knife on **basket**
+too. It does **not** apply to knife on **button** (0.1322, within-domain sd 0.2188 — 58 % of bomb's),
+which is why the knife extraction now running (`881206`) is submitted on the **button** codeword.
+
+**`881206`** extracts `ts116m_button_knife` at `cw_demo_mean`, L14 and L24, train+validation — the best
+available harmful non-BOMB reference for §15. **Prediction recorded before it lands:** if §15's
+geometry is specific to `bomb`, knife's B−ctx should be near zero; if it tracks *any* installed
+concept, knife should show a positive B−ctx, attenuated relative to bomb's +0.4053 roughly in
+proportion to its smaller within-domain variance — so somewhere near +0.2. A result near +0.2 would
+mean the geometry is general; near zero would mean `bomb` is special. Unlike gun, knife on button has
+enough variance for either answer to be informative.
