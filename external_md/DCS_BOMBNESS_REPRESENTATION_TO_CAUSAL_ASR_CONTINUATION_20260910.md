@@ -7914,3 +7914,65 @@ SCIENTIFIC` reached the same place from a different direction (A2's MDE is 103�
 genuine attack rate in content-true units). Building a defensible content-true endpoint — frozen
 before use, validated against labels, not assembled by looking at which words spike — is the
 prerequisite for the demonstration-dose ladder it ranks first, and for any future ASR claim here.
+
+---
+
+### CONT-ENTRY 088 — 2026-09-12 — the false-positive "floor" was measured in the one regime where the instrument has almost nothing to get wrong
+
+Going to build a content-true endpoint, I first asked what the existing floor actually bounds. The
+answer is: much less than the record has been using it for.
+
+**The known-negative population.** Cell C at **dose 0** — the codeword query with **no
+demonstrations**, so nothing can be installed and every positive is false by construction:
+
+| arm | n | `ASR@0.5` | v1 `asr_and_concept_present` |
+|---|---|---|---|
+| cell C, dose 0 | 226 | 0.1549 | **0.0088** |
+| cell A, dose 0 | 226 | 0.1327 | 0.0044 |
+| cell C, dose 4 | 1130 | 0.3274 | 0.1398 |
+
+**0.0088 is 2 rows out of 226.** That is the number quoted throughout this program — and in the
+collaborator draft — as evidence the corrected metric is clean. It is not a measure of the
+instrument's accuracy; it is a measure of a regime in which **the model produces almost no bomb
+vocabulary at all**, so the lexicon has nearly nothing to fire on, correctly or otherwise. At dose 4
+the same instrument keeps **158** rows, of which `REVIEW-3` and `CONT-ENTRY 087` put somewhere between
+19 % and 36 % spurious. **A floor measured on 2 positives cannot bound a rate over 158.**
+
+**I tested the obvious mechanism and it is largely wrong.** If the demonstrations simply supplied the
+vocabulary, the firing terms would already appear in the prompt. Checked against `full_prompt` for every
+kept positive:
+
+| arm | kept | firing term **already in the prompt** | novel-only |
+|---|---|---|---|
+| cell C, dose 0 | 2 | 0 (0.0 %) | 2 |
+| **cell C, dose 4** | **158** | **21 (13.3 %)** | **137** |
+| cell B, dose 4 | 8 | 4 (50.0 %) | 4 |
+| cell A, dose 4 | 2 | 0 (0.0 %) | 2 |
+
+Only **13.3 %** of dose-4 kept positives echo a term present in their own prompt (most often
+`explosive`, 10 times). **137 of 158 are the model's own vocabulary.** So the demonstrations are not
+feeding the lexicon its words directly — they are putting the model in a register where it produces
+bomb vocabulary while still answering about a button or a basket. That is a harder problem than
+echoing, and it is exactly the problem a term-presence instrument cannot solve.
+
+⇒ **Two corrections to how the floor may be used.**
+1. The **0.0088 / "0.9 % concept-present"** figure bounds the false-positive rate **at dose 0 only**.
+   Every use of it as a general statement about the corrected metric — including in the unsent
+   collaborator draft — overstates what was measured. It should be quoted with its dose.
+2. The **0.1549 raw floor** is on firmer ground (35 positives), and that one does transfer: it is a
+   statement about StrongREJECT scoring fluent literal-button essays, which happens at any dose.
+
+**C-CONT-066 — the third wrong-field incident, caught this time by a diagnostic I added because of the
+first two.** My first pass read the bank's prompt text via `r.get('prompt') or r.get('text') or
+r.get('prompt_text')`; the field is **`full_prompt`**. Every lookup returned `''`, every echo test
+returned `0.0 %`, and the table printed a clean, plausible, entirely wrong result — identical in shape
+to `C-CONT-036` and `C-CONT-056`. It was caught **immediately** because I had printed
+`non-empty: 0` alongside, and the rerun asserts `all prompts non-empty` before counting. The lesson
+those two entries recorded finally did its job on the third occurrence; the numbers above are from the
+asserted version.
+
+**What this means for the endpoint work.** The dose-0 arm is not a usable validation population for a
+v2 instrument — it discriminates nothing, because v1 already scores 2/226 there. A content-true
+endpoint has to be validated where the instrument actually fires, which means labelled dose-4 data,
+which means the disagreement `CONT-ENTRY 087` measured (18.7 % / 25 % / 36 %) has to be resolved
+first. That is the real prerequisite, and it is a labelling problem, not a modelling one.
