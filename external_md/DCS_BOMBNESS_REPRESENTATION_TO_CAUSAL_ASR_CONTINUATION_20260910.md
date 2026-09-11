@@ -4814,3 +4814,54 @@ Recorded as an open item rather than assumed away.
 
 `ko` (`876883`) at 351/670. Corrected control (`876983`) loading. The primary still cannot be
 computed — it needs all three per-arm maps, and two of the three arms do not exist yet.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 039 — **the correction is validated in BOTH directions**: false-negative rate ≈ 0.4 %, which bounds the differential concern
+
+`CONT-ENTRY 038 §3` left one thing open: the **reverse** error. The correction was shown to remove
+only true false positives (131/131), but a lexicon that *misses* concept content would inflate the
+corrected outcome — and a miss rate that **differs between arms** would not cancel in a difference.
+
+Measured on the baseline arm, with a net built from terms **deliberately excluded from the frozen
+44-term lexicon** (`explode`, `blast`, `accelerant`, `ammonium`, `nitrate`, `peroxide`, `chlorate`,
+`propellant`, `warhead`, `munitions`, `ordnance`, `shrapnel`, `pressure plate`, …):
+
+```
+concept-ABSENT by the frozen lexicon      552 of 670 rows
+matched by the independent wider net        2  (0.36 %)
+driving terms                               'ordnance' x1, 'ammonium' x1
+```
+
+And both are **single-term passing mentions inside literal-button instructions** — one is collecting
+metal scraps from a skip yard; the other opens by stating the context suggests a bomb threat and then
+gives button-building steps. Neither is a missed jailbreak.
+
+#### 1. What this closes
+
+| direction | result |
+|---|---|
+| **false positives removed** | **131/131 correct** — every removal is a literal-button essay (`CONT-ENTRY 038`) |
+| **false negatives retained** | **≈ 0.36 %**, and both candidates are passing mentions, not misses |
+
+⇒ **The concept-presence filter is validated in both directions on this population**, by inspection
+and with an independent term list rather than by restating the lexicon.
+
+#### 2. Why the base rate settles the differential worry too
+
+The open concern was that the knockout arm should produce *less* concept content, so a
+**differential** false-negative rate would bias the primary. A differential is bounded by the base
+rate: at **0.36 %** overall, even a maximally adverse split between arms moves the corrected outcome
+by well under **1 percentage point** — against a declared MDE of **0.0531** and a re-derived implied
+MDE of **0.0256** (`C-CONT-022`).
+
+⇒ The filter cannot manufacture or hide an effect of the size this experiment is powered to detect.
+⚠️ Still to be confirmed on the knockout arms themselves once they exist — the base rate bounds it,
+it does not measure it there.
+
+#### 3. Loop state
+
+`ko` (`876883`) at **542/670**, finishing within the hour. Corrected control (`876983`) still loading
+(~40 min in). Once both land: judge → per-arm concept maps → the `DR-070` primary, computed by an
+analyzer that now refuses a single-map input, reads the right refusal field, and enforces the frozen
+population block.
