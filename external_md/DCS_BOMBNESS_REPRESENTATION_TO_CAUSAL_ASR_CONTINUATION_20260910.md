@@ -4865,3 +4865,63 @@ it does not measure it there.
 (~40 min in). Once both land: judge → per-arm concept maps → the `DR-070` primary, computed by an
 analyzer that now refuses a single-map input, reads the right refusal field, and enforces the frozen
 population block.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 040 — **the `ko` arm is complete with perfect liveness — and its liveness record exposed that my corrected control was still asymmetric**
+
+#### 1. `ko` complete, and the liveness contract is fully satisfied
+
+`contasr2_ko_20260911_020602_3506906`, **670 gens, `rc=0`, `DONE.json`**:
+
+```
+frac_rows_scope_live   1.0          scope_violations   {}
+median_prefill_edits   513.0        total_prefill_edits   346329
+median_decode_edits    0.0          total_decode_edits    0
+frac_rows_decode_live  0.0          knockout_scope  target_surface_row_only
+median_n_demo_positions 57.0        attn_implementation  eager
+```
+
+⇒ The intervention fired on **100 % of rows**, edited **346,329** cells during prefill, and leaked
+**zero** edits into generation. `DR-070`'s CANNOT ANSWER condition on liveness is **satisfied**, not
+merely satisfiable.
+
+#### 2. `C-CONT-024` — the record arithmetic caught an asymmetry `A1` had left in
+
+`median_prefill_edits = 513 = 57 demonstration key positions × 9 layers (6–14)`.
+
+`A1` specified the control as *"the same keys and rows, differing **only** in the layer band"* —
+band **20–31**. But 20–31 is **12** layers:
+
+| arm | band | layers | cells edited per row |
+|---|---|---|---|
+| `ko` | 6–14 | 9 | **513** |
+| `ctrl` as `A1` declared it | 20–31 | 12 | **684** — ⛔ **33 % more** |
+| `ctrl` as amended | **20–28** | **9** | **513** ✅ |
+
+The direction was **conservative** — a larger control makes a positive `ko − ctrl` *harder* to get —
+but *"differing only in the band"* would have been **false as written**, and an asymmetric control is
+precisely how this experiment already went wrong once (`C-CONT-019`).
+
+**`configs/dcs_cont_dr070_amendment2.json`** written — ⛔ `DR-070` and `A1` both remain **FROZEN and
+untouched**; `A2` loads its parent, asserts its status, records the named diff, and embeds the
+liveness evidence that motivated it. Asserted at write time: **0 control judge runs existed**. The
+control was relaunched as `877004` on band **20–28** before it had generated a single row.
+
+🆕 Note what made this catchable: **the run persisted its realised edit count**. §40 exists for
+exactly this — *"persist actual measured intervention strength ... exact rows, exact keys, layers,
+exact edited cells"*. `PR-068` and my own first two transplants recorded **no dose at all**
+(`CONT-ENTRY 012 §2`), and I had to reconstruct it from the extraction cache. Here the number was
+already in the artifact, and it falsified a sentence I had written two entries earlier.
+
+#### 3. State
+
+| arm | status |
+|---|---|
+| `base` | ✅ generated, judged, concept-mapped (670 / 118 present) |
+| `ko` | ✅ generated with perfect liveness; **judge running** |
+| `ctrl` | relaunched (`877004`), band 20–28, cell-matched |
+
+The primary remains uncomputed and uncomputable. Two amendments now stand between the frozen
+declaration and the experiment actually running — both because a control was not a control, and both
+written **before** any arm they affect was judged.

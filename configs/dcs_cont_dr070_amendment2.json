@@ -1,0 +1,38 @@
+{
+  "schema": "dcs_cont_intervened_asr_declaration_amendment/1",
+  "id": "DR-070-ASR-A2",
+  "status": "FROZEN",
+  "parent": "configs/dcs_cont_dr070_amendment1.json",
+  "grandparent": "configs/dcs_cont_dr070_intervened_asr.json",
+  "parent_status_at_amendment": "FROZEN",
+  "frozen_at": "2026-09-11, before any knockout arm was judged; the ko arm had finished generating and its judge was mid-run, the control had not begun generating",
+  "judge_runs_matching_contasr2_ctrl_at_amendment": 0,
+  "reason": "A1 specified the control as the same keys and rows in a LATE band, 'differing ONLY in the layer band'. The ko arm's liveness record shows that is not quite true: median_prefill_edits = 513 = 57 demonstration key positions x 9 layers (6-14). A 20-31 control spans 12 layers and would edit 57 x 12 = 684 cells -- 33 percent MORE than the intervention it controls for. The direction is conservative (a larger control makes a positive ko-minus-ctrl harder to obtain), but 'differing only in the band' would have been false as written, and an asymmetric control is how this experiment already went wrong once.",
+  "amends": {
+    "arms.ctrl": {
+      "from": "demo_all:attn_knockout:20-31:1.0",
+      "to": "demo_all:attn_knockout:20-28:1.0",
+      "why": "20..28 is 9 layers, exactly matching 6..14, so the control edits 57 x 9 = 513 cells -- the same count as the knockout, on the same rows, with the same keys, in a late band."
+    }
+  },
+  "unchanged": [
+    "the primary statistic and its direction",
+    "the outcome definition",
+    "the population",
+    "the MDE and power block",
+    "the CANNOT ANSWER list",
+    "things_that_must_not_be_said",
+    "A1's correction of the nondemo_random control, which stands"
+  ],
+  "evidence": {
+    "ko_liveness": {
+      "frac_rows_scope_live": 1.0,
+      "median_prefill_edits": 513,
+      "total_prefill_edits": 346329,
+      "total_decode_edits": 0,
+      "scope_violations": {},
+      "median_n_demo_positions": 57.0
+    }
+  },
+  "git_commit_at_amendment": "26c9d24492ea53dfec821ca50c4c3147f9d6a19a"
+}
