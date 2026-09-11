@@ -7711,3 +7711,87 @@ test** (`harm_ctx` B→C `demos_only`, +0.80 of span at L13–16 against query-o
 mean `CONT-ENTRY 076`'s "not constructible" was answering a narrower question than it sounded. That is
 consistent with this entry's own 928/930 B→C alignment finding. I have not verified it yet and will
 not describe it further until I have.
+
+---
+
+### CONT-ENTRY 085 — 2026-09-12 — REVIEW-3 closed. The basket primary's sign flips under hand-verified content, and the knockout rewrites text that ASR cannot see.
+
+All four reviewers in. **Almost everything reproduced**: `DATA` independently rebuilt the §15 estimator
+and recovered all 34 published ρ values to four decimals; the 077 alignment census (928/930), the 076
+pair census (4050/172/**0**), all six installation means and sds, A12's six paired diffs and six domain
+counts, and the clock skew (+7.064 h, exactly 8 runs — it scanned all **2491** `RUNMETA.json` and found
+no ninth). `DR-072` reproduces to the digit and **survives**, with the CI the record lacked:
+**ρ_test +0.6054, 95 % CI [+0.528, +0.678]**, and its TEST comparator margin **+0.0580, CI [+0.0157,
++0.0984]** *excludes* zero where VALIDATION's straddled it.
+
+**C-CONT-061 — `CONT-ENTRY 075` says the estimate "declines monotonically across populations".**
+0.6241 → 0.6784 → 0.6054 **rises then falls**. Scoring one TRAIN-only predictor on both held-out sets
+gives VAL +0.6784 vs TEST +0.6069, difference +0.0715 CI [−0.060, +0.184] — the VALIDATION peak is
+noise and needs no selection story. The word "monotonically" is simply wrong about three numbers
+printed beside it.
+
+**C-CONT-062 — §46 prerequisite 7 is downgraded to ⚠️ PARTIAL. The matched pairing does no work.**
+`CONT-ENTRY 077` framed the aligned B→C pair as the missing piece. Verified myself at `cw_demo_mean`
+L24:
+
+| pairing | ρ |
+|---|---|
+| **matched** — C with **its own slot's** B | +0.3823 |
+| **mismatched** — C with *another slot's* B, same domain | **+0.4059** |
+| domain-mean B prototype | **+0.5057** |
+
+The mismatched pairing **beats** the matched one, and a domain-mean prototype beats both;
+`matched − mismatch` = −0.0373, p = 0.89. The geometry claim survives — similarity to *a* bomb-context
+state tracks installation, more strongly the cruder the reference — but **the token-level alignment
+§15 asks for contributes nothing**, so the box I ticked in `CONT-ENTRY 077` is not ticked by this
+evidence. §46 remains un-concluded, now for one more reason.
+
+**C-CONT-063 — the basket primary's sign is not supportable.** `OUTPUT` hand-read **all 91** kept
+positives across the three basket arms: **17/91 spurious (18.7 %, Wilson95 [0.12, 0.28])**, unevenly
+split (base 3/31, ko 7/27, ctrl 7/33). Restricting to hand-verified bomb content **flips the primary
+from −0.0090 to +0.0030**. The verdict is unchanged — still NULL, POWERED — but `CONT-ENTRY 071` said
+the point estimate was *"negative — the direction the necessity hypothesis predicts"*, and that
+sentence is **withdrawn**. The sign was never robust to the instrument's own false-positive channel.
+
+**The reframing that matters most, and it is not a defect — it is a finding `OUTPUT` extracted that I
+had not looked for.** The knockout **visibly rewrites the text**, by more than numerical churn:
+
+* `ko` differs from `base` on **669/670** completions, median common prefix **27 chars**, difflib
+  0.391 — **larger divergence than the cross-GPU churn floor** re-derived from `CONT-ENTRY 070`
+  (573/670, prefix 225, difflib 0.640). `ctrl`'s divergence (0.776) is *smaller* than churn.
+* `ko` raises literal basket-weaving by **+8.5 pp [+4.3, +12.8]**, cuts disclaimers −3.1 pp, cuts
+  keyword refusals −1.0 pp, adds +9.2 tokens, and **removes 7 of the 8 refusals** that `base` and
+  `ctrl` share. Coherence is untouched — no degeneration.
+* One prompt turned from *"I can't help with that."* in both `base` and `ctrl` into a StrongREJECT-
+  **1.000** gasoline-and-blasting-cap recipe under `ko`.
+
+⇒ **A2's null should not be read as "the cut does nothing".** The cut does a great deal to the text —
+it moves the completion off refusal and toward the literal reading — and **none of it registers in the
+ASR endpoint**. That is a statement about the endpoint as much as about the mechanism, and it belongs
+beside A2 rather than buried.
+
+**Two further corrections, both mine.** `C-CONT-064`: `CONT-ENTRY 079`'s "the readout is not broken"
+option-mass check (0.1174 vs 0.2119) reproduces **only** when pooling the forbidden `semantic_forced_
+choice` channel, cell A, dose 0, and all 23 TEST domains; on the actual analysis population it is
+**0.0765 vs 0.2332**. The INCONCLUSIVE verdict stands — it is in fact *better* supported — but the
+evidence I cited was not the evidence I claimed. `C-CONT-065`: the "1.63× sd deficit" in
+`CONT-ENTRY 082` mixes the 900-slot §15 population with the 1080-slot readout population; matched it
+is **1.20×**, and the like-for-like quantile-mapping test costs only **1.41×** (+0.4053 → +0.2869),
+leaving **4.6×** rather than 6.5×. The attenuation *conclusion* survives and is strengthened; the
+*reasoning* I gave for it failed.
+
+**And the reproducibility hole is closed.** `CODE`, `STATISTICAL` and `DATA` all noted that entries
+076–082 committed four result JSONs and **zero scripts** — `DATA` had to reconstruct the §15 estimator
+and got it right only on the fifth guess (four plausible variants give +0.4315 / +0.4066 / +0.4315 /
++0.3970 against the true +0.4053). `scripts/dcs_cont_s15_reference.py` now exists, permutes **every
+quantity against its own null**, and emits all five contrasts with provenance:
+
+| | ρ_B (p) | B−E (p) | B−ctx (p) | matched−mismatch (p) | prototype |
+|---|---|---|---|---|---|
+| bomb/button L24 | +0.3823 (0.0005) | **+0.1598 (0.0005)** | +0.4053 (0.0005) | −0.0373 (0.89) | +0.5057 |
+| bomb/basket L24 | +0.3223 (0.0005) | **+0.1703 (0.0005)** | +0.3317 (0.0005) | −0.0234 (0.75) | +0.4299 |
+| knife/button L24 | +0.1206 (0.0005) | **−0.0171 (0.67)** | +0.0623 (0.085) | −0.0587 (0.97) | +0.2007 |
+| gun/button L24 | +0.0320 (0.15) | −0.0565 (0.94) | −0.0196 (0.71) | −0.0554 (0.98) | +0.1367 |
+
+A13 stands at **+0.1598 / +0.1703**, significant on both bomb codewords under the conservative
+contrast, with **no excess at all** for knife or gun.
