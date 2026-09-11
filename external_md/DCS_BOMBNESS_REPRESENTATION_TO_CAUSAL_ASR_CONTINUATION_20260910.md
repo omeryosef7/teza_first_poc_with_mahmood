@@ -5237,3 +5237,88 @@ outcome confirms causality — one band, one scope, one codeword, TRAIN only.
 The §24 answer from `CONT-ENTRY 044` stands as reported: **`ko − ctrl = +0.0030`, CI [−0.030,
 +0.036], NULL POWERED**, with a band-specific **halving of refusal**. What `DR-071` decides is not
 that number but **what it means**.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 046 — **`REVIEW-3` corrections: five published claims narrowed or withdrawn**, and the within-domain signal turns out to track *harm demonstrations*, not the codeword
+
+The `SCIENTIFIC` reviewer reproduced every headline in entries 021/023/030/031/034 from artifacts and
+then attacked each. Three survived; several of my *descriptions* of them did not.
+
+#### 1. `C-CONT-025` — the within-domain "specificity" claim is **wrong**, and the truth is sharper
+
+`CONT-ENTRY 031 §2.1/§3` said the signal is *"specific to cell C, not to 'any state'"* because
+`raw_C` (0.499) beat `mean4` (0.381). I verified the reviewer's attack myself, single cells at
+`cw_demo_mean|L14`, mean per-domain ρ over 67 domains:
+
+| cell | ρ | vs `mean4` |
+|---|---|---|
+| **`raw_C`** (harm demos, ` button`) | **+0.4991** | — |
+| **`raw_B`** (harm demos, ` bomb`) | **+0.3909** | **+0.010, p = 0.746 — indistinguishable** |
+| `mean4` | +0.3806 | — |
+| `raw_A` (benign demos, ` button`) | **−0.0535** | −0.434, p < 1e-4 |
+| `raw_E` (benign demos, ` bomb`) | **+0.0147** | −0.366, p < 1e-4 |
+
+⛔ **`mean4` was a weak control**: it is essentially *B's* contribution diluted. The claim
+*"not shared with the matched non-doublespeak cells"* is **false** — cell **B** shares most of it.
+
+🆕 **But the pattern is more informative than the claim it replaces.** The two **harm-demonstration**
+cells (B, C) carry the signal; the two **benign-demonstration** cells (A, E) carry **none** (−0.05,
++0.01). And `raw_C` is still **significantly above `raw_B`** (+0.108, **p = 0.0017**).
+
+> ⇒ The within-domain installation signal tracks the **harm demonstrations**, not the codeword — and
+> the doublespeak cell adds a **significant increment on top of** the direct-harmful cell.
+
+That is the `C-CONT-013` lesson **recurring one entry later in a different dress**: I added the null
+model and still omitted the **single-cell** controls, then drew a specificity conclusion from a
+mixture that contained the predictor.
+
+#### 2. `C-CONT-026` — "replicated across two independent jobs" is **not replication**
+
+`CONT-ENTRY 023 §1`. Generation is deterministic (`do_sample=False`); the two jobs' per-family
+movements correlate at **r = 0.9983**, mean |difference| **0.069** against a signal sd of **1.63**.
+⇒ It is a **numerical re-execution of the same computation on the same inputs** — a reproducibility
+check, carrying **essentially no independent evidential weight**. The transplant effect rests on
+**one** measurement of 16 recipient domains served by **8** donors.
+
+#### 3. `C-CONT-027` — the +10.7 % is the **all-layer** window, and the log never said so
+
+The headline patched the donor's residual at that token across **all 32 layers**. Windows that do not
+overlap the readout layers: **L9–12 = +8.0 %**; L17–20 / L21–24 / L25–31 ≈ **0.2 % / −0.7 % / −0.2 %**.
+
+> The scientifically stronger reading is the deflating one: **even a total, all-layer replacement of
+> the codeword's residual stream transfers only ~11 % of the semantic gap**, and the best genuinely
+> localized window gives 8 %. Described as *"a token-matched transplant at the query codeword"*, the
+> original wording invites the reading that a *localized* state was moved. It was not.
+
+#### 4. `C-CONT-028` — `DR-070`'s `why_the_baseline_is_rerun` is false, **and it is frozen**
+
+Both runs used `--attn-impl eager`, and nothing in `score_behavior` batches generation. The stated
+contrast **never varied**, so `CONT-ENTRY 034 §1`'s *"the implementation does not materially change
+ASR"* is **unsupported — the implementation was held constant.** Only the **seed** differed. The
+re-run remains correct practice; its stated justification was wrong, and that error is inside a
+FROZEN config, so it is corrected here and cannot be edited there.
+
+#### 5. Two more, recorded without re-deriving
+
+* ⚠️ **`C-CONT-029`** — the test–retest ρ = 0.7097 of `CONT-ENTRY 034` is **inflated by judge
+  caching**: 72 of 670 rows reused the earlier run's label, so agreement on those was guaranteed by
+  construction.
+* ⚠️ **`C-CONT-030`** — the within-domain search covers **5 of 32 layers** and four of five families
+  peak at **L14, the boundary of the captured range**. A maximum at the edge of the search window is
+  **not a located peak**, and the "L13–14" language inherited from the withdrawn `K1` story should
+  not be reused for it. §46 requires *"multiple layers"*; five contiguous ones with the optimum on
+  the boundary does not meet it.
+
+#### 6. The one that bears on `CONT-ENTRY 044`'s null
+
+⚠️ **`F2`**: the frozen primary (`ASR ∧ concept_present ∧ ¬refusal`) correlates with the
+concept-installation readout at **r = 0.939** at the domain level. If that holds, the §24 design
+measures **one thing twice**, and a null licenses only *"the pathway is not required for the
+completion mentioning bomb words"* — not *"not required for the attack"*.
+
+⛔ **Not yet verified by me.** It is the single most consequential outstanding claim about
+`CONT-ENTRY 044`, and it is the next thing to check — **before** `DR-071` lands, since `DR-071`'s
+interpretation depends on whether its outcome is independent of `DR-070`'s.
+
+`DR-071` (`877076`) continues.
