@@ -7649,3 +7649,65 @@ confirmatory read after being patched twice under time pressure); whether `getsi
 domains and slots, which A12's paired test assumes; whether the basket `ko` arm's text diverges from
 `base` by more than the cross-GPU churn baseline of `CONT-ENTRY 070`; and a hand-audit of the kept
 concept-present rows in the basket arms, which feed a **published** primary and have never been read.
+
+---
+
+### CONT-ENTRY 084 — 2026-09-11 — REVIEW-3 part 1. The §15 p-values were the wrong null, and my hazard flag was half right.
+
+`REVIEW-3/CODE` and `REVIEW-3/SCIENTIFIC` have reported. Both landed on §15. I re-derived the decisive
+numbers myself before accepting anything.
+
+**C-CONT-059 — the `perm_p` I printed beside every `B − ctx` figure is the null of `ρ_B`, not of the
+difference.** My permutation loop accumulated `spearman(cB, yp)` — the B-similarity correlation — and I
+tabulated that p in a column headed by the difference. Recomputed with each quantity against **its own**
+null, 2000 draws:
+
+| | ρ_B | p(ρ_B) | **B − ctx** | **p(difference)** | **B − E** (fair single reference) |
+|---|---|---|---|---|---|
+| bomb / button | +0.3823 | 0.0005 | **+0.4053** | **0.0005** | **+0.1598** |
+| bomb / basket | +0.3223 | 0.0005 | **+0.3317** | **0.0005** | **+0.1703** |
+| **knife / button** | +0.1206 | 0.0005 | +0.0623 | **0.0845** | **−0.0171** |
+
+**The bomb results survive intact** — the difference has its own p at the floor on both codewords.
+**The knife result does not.** `CONT-ENTRY 082` called it *"significantly non-zero (p at the
+2000-permutation floor, so not the gun-style inconclusive null)"*. Against its own null it is
+**p = 0.0845**, not significant. That sentence is withdrawn.
+
+**And my self-flagged hazard was half right, in a way I did not anticipate.** `CONT-ENTRY 083` worried
+the averaged comparator was unfair because of its norm. **That part is cleared** — cosine is
+scale-invariant, and unit-normalising A and E before averaging moves ρ_ctx by 0.004 against a claimed
+gap of 0.405. But the comparator *is* flattering for a different reason: **ρ_ctx ≈ 0 is cancellation**,
+ρ_A = −0.1923 and ρ_E = +0.2225 having opposite signs. Against the matched *single* reference the gap
+is **+0.1598**, not +0.4053 — **2.5× smaller**. The headline figure is the maximum over contrasts and
+I reported it without saying so.
+
+**Where this leaves A13, stated with the tension intact rather than resolved in my favour.** Under the
+fair single-reference contrast, bomb gives **+0.1598 / +0.1703** and knife gives **−0.0171** — which
+points *more* toward bomb-specificity than `CONT-ENTRY 082` concluded, not less. But `REVIEW-3/
+SCIENTIFIC` computes a third contrast, `E − A`, under which the three concepts' effects are
+**near-proportional to their installation sd** (1.11 / 0.81 / 0.98 for bomb / knife / gun) — the
+concept-*general* reading, reappearing in numbers my own script computed and did not print. It also
+notes that knife's **ρ_E (+0.1377) exceeds its ρ_B (+0.1206)**, an inversion absent from my table, and
+that the same holds for gun; for bomb alone the alignment is with the concept *in harmful context*.
+
+⇒ **A13's headline is contrast-dependent and I do not currently know which contrast is right.** The
+bomb effect is real and significant under every contrast tried; its *size* ranges from +0.16 to +0.41
+and the bomb/knife ratio from ~1.4× to ~6.5× depending on the baseline. `STATISTICAL` is still running
+with exactly this question. Until it reports, **A13 is quoted as +0.1598 (the conservative,
+matched-single-reference figure), not +0.4053.**
+
+**C-CONT-060 — `DR-072` was read with two of its four declared controls un-run, and the entry that
+reported it is titled as though all four passed.** `CONT-ENTRY 065` listed four: `raw_B`,
+adjacency/mass, a **within-domain surface floor**, and **cos(w_F5, logit-lens)**. `CONT-ENTRY 075` is
+titled *"F5 passes its controls"* and reports the first two. The last two were never run and the entry
+does not say so. The read is spent; that cannot be undone. What I can do is state it: **the TEST
+confirmation compared F5 against a label permutation and against itself at λ→∞, and every
+information-matched control lives on VALIDATION.** The two missing controls are cheap and are now owed.
+
+**Also accepted, pending my own check:** the claim table's banner still says *"the frozen TEST split has
+not been read"*, which A11 and section E now contradict — fixed below; and `REVIEW-3/SCIENTIFIC` reports
+that `outputs/boombness/g1_wholeanswer_sow.json` **already contains a demonstration-side sufficiency
+test** (`harm_ctx` B→C `demos_only`, +0.80 of span at L13–16 against query-only −0.57), which would
+mean `CONT-ENTRY 076`'s "not constructible" was answering a narrower question than it sounded. That is
+consistent with this entry's own 928/930 B→C alignment finding. I have not verified it yet and will
+not describe it further until I have.
