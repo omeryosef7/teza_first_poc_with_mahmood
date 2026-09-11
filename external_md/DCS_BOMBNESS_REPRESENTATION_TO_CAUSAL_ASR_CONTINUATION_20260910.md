@@ -7795,3 +7795,65 @@ quantity against its own null**, and emits all five contrasts with provenance:
 
 A13 stands at **+0.1598 / +0.1703**, significant on both bomb codewords under the conservative
 contrast, with **no excess at all** for knife or gun.
+
+---
+
+### CONT-ENTRY 086 — 2026-09-12 — the two owed DR-072 controls pass; and a demonstration-side sufficiency test has existed since August, with a control that undercuts it
+
+**1. `C-CONT-060`'s two un-run controls, now run. Both pass.**
+
+| | result |
+|---|---|
+| F5 on VALIDATION (reference) | ρ = **+0.6784** |
+| **within-domain random-direction floor**, 200 draws, same site/layer/population | p50 +0.0071, p95 +0.2795, **max +0.3937** |
+| **cos(w_F5, concept−codeword unembedding direction)** | **+0.0764** |
+| that logit-lens direction used directly as a predictor | ρ = +0.4181 |
+
+F5 exceeds the random floor's **maximum over 200 draws by +0.2847** — the floor `DR-072` declared and
+`CONT-ENTRY 075` never ran. (The 0.179 floor already in the record was computed against the *discarded*
+domain-mean target, which is why a within-domain one was declared separately.) And F5 is **not the
+logit lens with shrinkage**: the two directions are near-orthogonal at cos = +0.0764.
+
+An observation worth keeping: the logit-lens direction, nearly orthogonal to F5, **still predicts
+installation at +0.4181**. Two near-orthogonal directions both carrying installation signal is
+consistent with `F6`'s corrected rank curve, which plateaus around **rank 4** (`C-CONT-043`).
+
+The controls are on VALIDATION, as `REVIEW-3/SCIENTIFIC` noted every information-matched control is.
+That does not retroactively repair `C-CONT-060` — the TEST read was spent before these existed — but
+the record can now say what F5 was and was not compared against, which it could not yesterday.
+
+**2. Verified: a demonstration-side sufficiency test has existed since 2026-08-22.**
+`REVIEW-3/SCIENTIFIC` reported it and I said I would not describe it unverified. Read from
+`outputs/boombness/g1_wholeanswer_sow.json` (readout `semantic_logodds`, n = 24 per arm):
+
+| pair | arm | frac of span | CI |
+|---|---|---|---|
+| **harm_ctx** | `transplant\|demos_only\|L13-16` | **+0.803** | [+0.557, +1.180] |
+| harm_ctx | `transplant\|query_only\|all` | **−1.027** | [−2.012, −0.647] |
+| **benign_ctx** | `transplant\|demos_only\|L13-16` | **+1.096** | [+0.905, +1.333] |
+| benign_ctx | `transplant\|query_only\|all` | −0.229 | [−0.305, −0.174] |
+
+**The claim is real**: transplanting the whole demonstration-side state at L13–16 moves the readout
+**~80 % of the donor–recipient span** in the harmful pair, while transplanting the *query* row moves it
+**negatively**. That is a sufficiency result at the demonstration side and a null at the query side, and
+it sharpens the phase's standing reading — the demonstrations are where the content is, the query row
+is not where it is stored.
+
+**But the control kills the interesting version of it.** The **benign** pair transfers **+1.096** —
+*more* than the harmful pair's +0.803. A demonstration-side state transplant is therefore **not
+doublespeak-specific**; it moves the readout at least as well when nothing harmful is involved. What it
+demonstrates is that the demonstration block drives this readout in general, not that a *bombness* is
+being carried.
+
+**3. `CONT-ENTRY 076` is narrowed.** That entry concluded the within-domain demonstration-side patch is
+"not constructible", and that remains **true for the design `REVIEW-2` recommended** — same cell, two
+slots differing in installation, which needs matching demo codeword positions that 0 of 4050 pairs have.
+But I wrote it as though *the* sufficiency test at that site were blocked, and it was not: the
+cell-to-cell version was aligned, constructible, and had already been run three weeks earlier. The
+distinction is between **"does the demo state carry the *degree* of installation?"** (still open, still
+blocked) and **"does the demo state carry enough to move the readout at all?"** (answered: yes, and
+equally in a benign pair). I conflated them.
+
+This also means §46 prerequisite 7's neighbours are in better shape than the record showed: a
+demonstration-side sufficiency test exists, it has a matched benign control, and the control is
+negative for specificity. Recorded here rather than left in an August artifact nobody had re-read.

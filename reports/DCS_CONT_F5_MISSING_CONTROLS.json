@@ -1,0 +1,8 @@
+{
+ "f5_validation_rho": 0.678431005106532,
+ "random_floor_p50": 0.00709193976708691,
+ "random_floor_p95": 0.27945280464741257,
+ "random_floor_max": 0.39370301238537425,
+ "cos_w_f5_logitlens": 0.07636140011379919,
+ "logitlens_direction_rho": 0.41810291474236794
+}
