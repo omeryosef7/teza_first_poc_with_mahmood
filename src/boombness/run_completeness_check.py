@@ -65,6 +65,17 @@ ROW_FILE = {
 #: Runs known to be short, with the reason. A short run is not automatically a defect — but silence
 #: about one is. Same convention as `ledger_propagation_check.METHOD_ONLY`.
 KNOWN_SHORT = {
+    "continst_base_20260911_083431_3533623":
+        "DCS-CONT-048: DR-071's baseline arm persisted 11 of 670 rows. Cause is a documented OOM, "
+        "not a data property: the arm carries NO knockout, so --readout-max-batch defaulted to 16 "
+        "variants per forward, and string_option_readout calls .float() on the full [B, width, V] "
+        "logits -- the failure score_behavior.py:2038-2044 describes in its own help text ('the OOM "
+        "that attrited 22 of 40'). failures = {n_attempted 670, n_succeeded 11, n_failed 659}, every "
+        "reason an OutOfMemoryError. The knockout arms force batch 1 and were unaffected. SUPERSEDED "
+        "by continst2_base, re-run with --readout-max-batch 1, which also makes the base and "
+        "intervened arms use the SAME readout batching -- they did not before. This directory is "
+        "retained rather than deleted (mandate section 53) and MUST NOT be read as a result: its "
+        "option-mass gate reports PASS on those 11 rows, which is exactly the C-213d shape.",
     "dcsbk_C_qpo_ctrl_d1_20260903_004546_2400855":
         "DCS-PR-003 / DCS-R-011: the declared basket forced-choice exclusion (data/boombness_prompts/exclusions/cds38_basket_bomb_occurrence_mismatch_forcedchoice.txt, exclude_prompt_ids_sha16=ee8b3388ee577b69, n_excluded=3, 0 ledgered failures) removes 3 rows of the SAME domain school_campus|dev, so that domain holds 7 rows instead of 10 while the other 37 hold 10. The loss is NON-UNIFORM and the guard is right to say so. It is acceptable here because (a) it is the IDENTICAL domain and the IDENTICAL 3 prompt_ids in all three cell-C arms, so the within-cell contrast is unaffected; (b) the mechanism is codeword TOKENISATION, fixed per prompt and computable from the tokenizer alone, so it is independent of any outcome; (c) the cross-cell DiD was PREREGISTERED with a robustness recomputation dropping school_campus entirely, and it reproduces the verdict -- DiD -9.264 with 1+/36- and p=5.53e-10 against the primary -9.352 with 1+/37- and p=2.84e-10; and (d) the imbalance is stated wherever the cell is used. Cell B is unaffected at 380 because B rows carry no codeword. This is the KO-3 count-matched control arm of the basket replication",
     "dcsbk_C_qpo_demo_20260903_004546_2400857":

@@ -5322,3 +5322,133 @@ completion mentioning bomb words"* — not *"not required for the attack"*.
 interpretation depends on whether its outcome is independent of `DR-070`'s.
 
 `DR-071` (`877076`) continues.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 047 — **`F2` REFUTED: the §24 primary is not a restatement of installation** — and checking it reproduced the phase's headline on fresh data
+
+`REVIEW-3`'s most consequential claim was that the frozen primary correlates with the concept-
+installation readout at **r = 0.939**, which would mean §24 *"measures one thing twice"* and that
+`CONT-ENTRY 044`'s null licenses only *"not required for the completion mentioning bomb words"*.
+
+Measured myself on the baseline arm, 67 TRAIN domains, domain unit:
+
+| pair | Spearman | Pearson |
+|---|---|---|
+| **corrected ASR vs installation** | **0.5312** | **0.4166** |
+| raw ASR vs installation | 0.3960 | 0.3805 |
+
+⇒ ⛔ **`F2` is REFUTED.** The correlation is **0.42 (Pearson)**, not 0.939. The corrected outcome
+shares roughly **17 % of its variance** with installation — the two are *related*, exactly as this
+project's own headline says they are, and nowhere near redundant.
+
+> **`CONT-ENTRY 044`'s powered null stands as reported.** The §24 primary is a behavioural endpoint
+> that is **not** a re-encoding of the semantic readout, and the null is about behaviour.
+
+#### 1. 🆕 The check reproduced the phase's headline correlation on a completely fresh pipeline
+
+The correlation I had to compute to test `F2` **is** the inherited `Q2` relationship — installation
+predicting attack success — recomputed end-to-end on new generations and a new judge run:
+
+| | **this run** (fresh generation + fresh judge) | inherited, TRAIN domains |
+|---|---|---|
+| **corrected** outcome | **0.5312** | **0.5260** |
+| raw outcome | 0.3960 | 0.4836 |
+
+The **corrected** correlation reproduces to **0.005**. That is an independent replication of the
+phase's central observational claim — obtained as a by-product of testing an objection to it.
+
+🆕 And note which one reproduces better: **corrected Δ0.005 vs raw Δ0.088**. The raw outcome is the
+one contaminated by the literal-button false-positive channel (`CONT-ENTRY 038`: 131/131 verified),
+and it is also the noisier one across independent runs. The corrected outcome is not merely more
+*valid* — on this evidence it is more *stable*.
+
+#### 2. Where `REVIEW-3` stands after my verification
+
+| finding | verdict |
+|---|---|
+| `F6` specificity claim false | ✅ **CONFIRMED** — corrected in `C-CONT-025`, and the replacement is sharper |
+| `F7` "replicated" is a re-execution | ✅ CONFIRMED — `C-CONT-026` |
+| `F9` +10.7 % is the all-layer window | ✅ CONFIRMED — `C-CONT-027` |
+| `F5` frozen config carries a false reason | ✅ CONFIRMED — `C-CONT-028` |
+| `F1` one concept map for three arms | ⚠️ **STALE** — fixed as `C-CONT-021` *before* the primary was computed; the primary used per-arm maps |
+| `F3` no manipulation check | ✅ CONFIRMED — which is why `DR-071` exists and is running |
+| **`F2`** primary ≡ installation, r = 0.939 | ⛔ **REFUTED** — measured 0.42 |
+
+A reviewer that finds six real defects and one wrong one is doing its job; the wrong one mattered
+most, which is why it was checked before being acted on rather than after.
+
+#### 3. What this does to `DR-071`'s interpretation
+
+`DR-071`'s frozen reading (`CONT-ENTRY 045 §2`) is unchanged and now better grounded: since the ASR
+endpoint is **not** a restatement of installation, a drop in installation combined with `DR-070`'s
+null would be a genuine **dissociation between the semantic readout and behaviour under
+intervention** — not an artefact of measuring the same quantity twice.
+
+`877076` still loading on `n-503`.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 048 — **`C-CONT-031`: a commit-time guard caught a run that reported `ok` after losing 98 % of its rows**
+
+The `CONT-ENTRY 047` commit was **refused by the pre-commit hook**:
+
+```
+[run-complete] SHORT continst_base_...: persisted 11 rows in results.jsonl against --expect-n 670
+[run-complete] FAIL — a finished run did not persist all its rows.
+```
+
+#### 1. What happened
+
+`DR-071`'s **baseline** arm: `n_attempted 670, n_succeeded 11, n_failed 659`, **every** failure an
+`OutOfMemoryError`. Cause, and it is not subtle:
+
+> The base arm carries **no knockout**, so `--readout-max-batch` defaulted to **16 variants per
+> forward**, and `string_option_readout` calls `.float()` on the **full `[B, width, V]` logits**.
+> `score_behavior.py:2038-2044` documents this exact failure in its own help text — *"the OOM that
+> attrited 22 of 40"*. The **knockout** arms force batch 1 and were unaffected.
+
+⇒ I walked into a failure mode this repository documents **in the help text of the flag that
+prevents it** — the second time this phase has hit something the repo already knew
+(`C-CONT-019` was the first).
+
+🆕 It also means the arms were **not** using the same readout batching: base at 16, `ko`/`ctrl` at 1.
+The re-run (`877102`, `--readout-max-batch 1`) fixes the OOM **and** makes the batching identical
+across arms, which it never was in the original design.
+
+#### 2. ⛔ The worse half: the run said it was fine
+
+| | |
+|---|---|
+| exit code | **`rc=0`** |
+| `DONE.json` | **present**, `status: "ok"` |
+| `rows_written` | **11** |
+| **option-mass gate** | **`PASS`** — computed on those 11 rows |
+
+A run that lost **98 %** of its data reported success, wrote a completion marker, and **passed its
+own quality gate on the surviving fraction**. `--expect-n 670` was supplied and is enforced at
+*selection*, not at *write*.
+
+> This is the **`C-213d` shape exactly** — the previous phase's cell-A row computed on 78 of 226
+> rows — and the only thing that caught it was `run_completeness_check`, at **commit time**, three
+> entries after the run finished.
+
+⚠️ Had I bypassed the hook, `DR-071`'s baseline would have been an 11-row number with a `PASS`
+beside it, and the §23 chain would have been closed on it.
+
+#### 3. Handled per §53: superseded, not deleted
+
+The short directory is **retained** and documented in `KNOWN_SHORT` with the cause, the failure
+counts, the superseding run, and an explicit *"MUST NOT be read as a result: its option-mass gate
+reports PASS on those 11 rows"*. The guard now passes:
+
+```
+[run-complete] every finished run persisted its full row count
+```
+
+#### 4. Standing
+
+`DR-071`'s `ko` arm is unaffected (batch 1 by construction) and at 200/670; `ctrl` follows it;
+`877102` re-runs the baseline. The §24 result (`CONT-ENTRY 044`) and the `F2` refutation
+(`CONT-ENTRY 047`) are untouched — both rest on the **behavioural** runs, which were complete and
+whose row counts the same guard verifies.
