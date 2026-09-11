@@ -5098,3 +5098,80 @@ The primary is computed by `scripts/dcs_cont_asr_primary.py`, which after `REVIE
 
 ⛔ The primary is still **uncomputed**. The control's judge is running; nothing about `ko − ctrl` is
 known.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 044 — **§24 ANSWERED: the primary is a POWERED NULL.** Cutting the codeword row's access to the demonstrations does not change attack success — but it halves refusal
+
+`outputs/dcs_cont/dr070_primary.json`. Computed by the analyzer that **loads** `DR-070` and enforces
+it. **`cannot_answer_triggered: []`** — every evaluable condition passed.
+
+```
+DR-070 PRIMARY, DOMAIN unit, n = 67
+  ASR   base 0.1418 | ko 0.1418 | ctrl 0.1388
+  PRIMARY (ko - ctrl) = +0.0030    95% CI [-0.0299, +0.0358]    perm p = 0.8442
+  negative in 16/67 domains        MDE at 80% = 0.0531
+  VERDICT: NULL, POWERED
+```
+
+⇒ **The declared effect is absent, and the experiment could have seen it.** |+0.0030| is ~18× smaller
+than the MDE, and the CI excludes anything beyond ±0.036 — inside the declared 0.0531 and inside the
+re-derived 0.0256 (`C-CONT-022`). This is the mandate's §24 question answered, on the population and
+by the statistic frozen before a single generation was judged.
+
+#### 1. The intervention was **not** inert — it moved the other axis
+
+| arm | refusal | raw ASR | **corrected ASR** |
+|---|---|---|---|
+| `base` | 0.1149 | 0.3373 | 0.1418 |
+| **`ko`** (band 6–14) | **0.0403** | **0.3925** | 0.1418 |
+| `ctrl` (band 20–28, **identical dose**) | 0.1119 | 0.3597 | 0.1388 |
+
+🆕 **The refusal drop is band-specific.** `ko` more than halves refusal (0.115 → 0.040) while the
+dose-matched late-band control leaves it at baseline (0.112). Same rows, same keys, **identical
+346,329 edited cells** — only the band differs. So the effect is a property of *where* the cut lands,
+not of cutting.
+
+> **The intervention demonstrably does something — it suppresses refusal — and that something does
+> not change how often the attack actually succeeds.** This is §34's dissociation, measured rather
+> than argued: the refusal/compliance axis moved, the semantic-interpretation axis did not.
+
+And it is why the endpoint choice mattered. On the **raw** rate this run reads *"+5.5 points, the
+knockout increases attack success"*. That number is real, directionally opposite to the hypothesis,
+and an artefact of fewer refusals producing more fluent essays about building a **literal button**
+(`CONT-ENTRY 038`: 131/131 of the removed positives verified by inspection).
+
+#### 2. ⛔ What this does NOT establish — the gap that matters most
+
+> **Installation was never measured under this intervention.**
+
+The inherited result that motivated the experiment — that this cut removes ~62 % of the semantic
+readout — was measured on the **`semantic_one_word`** template with the **K-ladder** scope. This
+experiment ran `target_surface_row_only` on the **`behavioral`** template and measured **ASR and
+refusal only**.
+
+⇒ The tempting chain — *"installation drops 62 % and ASR does not move, therefore installation is
+not causally required"* — is **NOT established here**, because the two halves come from different
+templates and different scope machinery, and the installation half was not re-measured. §23 requires
+a targeted intervention to report *both* the representation change and the behavioural change; this
+reports one.
+
+**The missing run is cheap and obvious**: the *same* intervention (`target_surface_row_only`,
+`demo_all`, band 6–14) on the **`semantic_one_word`** prompts, reading the concept-free installation
+score. That closes the chain with both halves on the same scope. It is the next experiment.
+
+#### 3. What is licensed, stated against the frozen forbidden list
+
+✅ **Licensed:** at this dose, band, scope and template, the query codeword row's access to the
+demonstrations is **not necessary** for the attack's behavioural success; and the same cut **does**
+suppress refusal, band-specifically.
+
+⛔ **Not licensed**, and the analyzer printed these beside the number:
+* that this shows the pathway **is** the behaviour — it is a **necessity** intervention;
+* that this tests a **representation** — `K1` is withdrawn and no candidate exists;
+* any ASR number without the **0.155** false-positive floor and **0.137** judge flip rate attached;
+* that the corrected outcome is clean — `REVIEW-1` measured 45.7 % of corrected positives as still
+  benign on the previous population.
+
+⚠️ And: **TRAIN only, one codeword, one model, EXPLORATORY.** No freeze for confirmation has
+happened and TEST has not been read.
