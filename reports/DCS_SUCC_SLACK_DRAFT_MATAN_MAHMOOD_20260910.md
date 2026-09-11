@@ -57,9 +57,22 @@ The floor is also **codeword-dependent** — 15.5 % for `button`, 2.2 % for `bas
 prior work.* The mechanism is not specific to this phase: `judge_boombness.make_goal` substitutes
 codeword → concept whenever the row carries both and the query contains the codeword, so **any** run
 judging codeword-surface prompts against a substituted goal is exposed. Counted on disk:
-**127 of 461** earlier judge runs (≥ 200 rows) have `goal_status = substituted` on every row. The
-largest of them are `button` banks reporting ASR 0.27–0.35 — the same codeword whose floor we have
-now measured at **15.5 %** raw / **0.9 %** concept-present.
+**111 of 483** earlier judge runs (≥ 200 rows) have `goal_status = substituted` on every row.
+*(Corrected 2026-09-11: an earlier version of this draft said "127 of 461". Counted fresh from disk
+the numbers are 793 judge runs, 483 with ≥ 200 rows, 111 substituted on every row, 28 on some. The
+127 could not be reconstructed and does not survive.)*
+
+**These have now been re-scored — see CONT-ENTRY 063.** Across all 111 runs, by codeword, never
+pooled: `button` **ASR 0.2984 → 0.1169** over 43 022 rows (a factor of 2.55); `basket`
+**0.1172 → 0.0379** over 3 618 rows. A third codeword, `carrot`, is **withdrawn**: the frozen lexicon
+has a false-negative rate of **43.3 %** there (it contains `pipe bomb` but not the bare word `bomb`,
+and with an absurd codeword the model breaks character and names the concept outright). On `button`
+and `basket` that same false-negative rate is **1.8 %** and **0.7 %**, so those two stand.
+
+⚠️ Both error channels of the ASR instrument are **codeword-dependent** — the false-positive floor
+(15.5 % `button` vs 2.2 % `basket`) and now the false-negative rate (0.7 % → 43.3 %), in opposite
+directions. No ASR number on this bank family transfers across codewords without re-validating the
+instrument on each.
 
 ⚠️ **I would not revise any published number on this alone.** What we measured is a floor for
 `button` on *our* bank; those runs are a different bank, and the floor is a property of how
