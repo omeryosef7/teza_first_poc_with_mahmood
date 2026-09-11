@@ -5175,3 +5175,65 @@ suppress refusal, band-specifically.
 
 ⚠️ And: **TRAIN only, one codeword, one model, EXPLORATORY.** No freeze for confirmation has
 happened and TEST has not been read.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 045 — **`DR-071` frozen and launched: the missing half of `DR-070`'s chain**
+
+Job `877076`. `configs/dcs_cont_dr071_installation.json`, `status: FROZEN`, with
+**0 matching run directories asserted at write time**.
+
+#### 1. What it fixes
+
+`CONT-ENTRY 044` answered §24 with a **powered null on ASR** and immediately flagged the gap: §23
+requires a targeted intervention to report **both** the representation change and the behavioural
+change, and `DR-070` reported only the latter. The inherited *"62 % of the demonstration→query
+effect"* came from a **different template** (`semantic_one_word`) with **different scope machinery**
+(the K-ladder rung), so it cannot be spliced onto `DR-070`'s null.
+
+`DR-071` supplies the other half with **everything held constant except the template**:
+
+| | `DR-070` (ASR) | **`DR-071`** (installation) |
+|---|---|---|
+| scope | `target_surface_row_only` | **same** |
+| `ko` band | 6–14 | **same** |
+| `ctrl` band | 20–28 | **same** |
+| rows | 670, 67 TRAIN domains × 10 | **same count, same split** |
+| **template** | `behavioral` | **`semantic_one_word`** |
+| outcome | ASR ∧ concept ∧ ¬refusal | **concept-free installation** |
+
+Forward-only — no generation — so all three arms fit one cheap allocation.
+
+#### 2. The declaration says in advance what **either** result means
+
+This is the part worth writing down, because a null on ASR is only interesting if the intervention
+did what it was supposed to:
+
+* **if installation DROPS** ⇒ the intervention moves installation but **not** ASR. Installation and
+  behavioural success would be **dissociable under intervention**, which undercuts the observational
+  ρ ≈ 0.40 link as a *causal* claim.
+* **if installation does NOT drop** ⇒ this scope simply does not do what the K-ladder rung did, and
+  **`DR-070`'s null says nothing about the pathway — it says the intervention was the wrong one.**
+
+⚠️ That second reading is recorded **now**, in the frozen config, precisely so it cannot be avoided
+later. A powered null is only evidence about a pathway if the instrument is shown to have engaged
+that pathway; otherwise it is evidence about the instrument. This phase has already spent three
+entries learning that lesson about controls (`C-CONT-019`, `C-CONT-024`), and the same logic applies
+to the intervention itself.
+
+#### 3. Conditions declared in advance
+
+**CANNOT ANSWER** if: any arm's liveness gate fails or edits 0 cells · the arms do not cover the same
+670 `prompt_id`s · **`ko` and `ctrl` `total_prefill_edits` differ by more than 1 %** (now a
+*falsifiable* condition — the bands differ, unlike the same-band pair `REVIEW-3` showed was
+unfalsifiable) · median option mass falls below the run's own 0.05 gate.
+
+**Must not be said:** that a drop here explains the inherited 62 % (different scope, different
+template, not re-measured); that this tests a representation (`K1` is withdrawn); or that either
+outcome confirms causality — one band, one scope, one codeword, TRAIN only.
+
+#### 4. Standing
+
+The §24 answer from `CONT-ENTRY 044` stands as reported: **`ko − ctrl = +0.0030`, CI [−0.030,
++0.036], NULL POWERED**, with a band-specific **halving of refusal**. What `DR-071` decides is not
+that number but **what it means**.
