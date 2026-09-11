@@ -7492,3 +7492,66 @@ concept, knife should show a positive B−ctx, attenuated relative to bomb's +0.
 proportion to its smaller within-domain variance — so somewhere near +0.2. A result near +0.2 would
 mean the geometry is general; near zero would mean `bomb` is special. Unlike gun, knife on button has
 enough variance for either answer to be informative.
+
+---
+
+### CONT-ENTRY 081 — 2026-09-11 — C-CONT-058: one compute node's clock is 7 hours behind, and run directory names encode it
+
+Checking on `881206` I noticed its output directory is named
+`s15_behavioral_button_knife_**20260911_150342**_902441` while the files inside were being written at
+**22:07**. The job had started 30 minutes earlier. That is not a stale directory — it is the node's
+clock.
+
+**Measured across the last 40 extraction runs**, comparing each directory's embedded timestamp against
+when its `RUNMETA.json` was actually written (NFS server clock):
+
+| node | runs | median skew |
+|---|---|---|
+| n-801 | 12 | +0.06 h |
+| n-802 | 6 | +0.05 h |
+| n-803 | 5 | +0.06 h |
+| n-804 | 10 | +0.06 h |
+| n-805 | 2 | +0.05 h |
+| c-001 | 4 | +0.06 h |
+| **rack-gww-dgx1** | 1 | **+7.06 h** |
+
+Every normal node shows ~0.05 h, which is just the run's own duration. **`rack-gww-dgx1` is 7.06 hours
+behind**, consistently.
+
+**Every affected run** (`RUNMETA.hostname == rack-gww-dgx1`), across all four output roots:
+
+| run | name says | actually ran |
+|---|---|---|
+| `cont1_behavioral_basket_bomb_20260910_113902` | 09-10 11:39 | **09-10 18:42** |
+| `contposc2_BtoC_train67_20260910_113902` | 09-10 11:39 | 09-10 18:42 |
+| `cont3nb_behavioral_button_bomb_20260910_1310` | 09-10 13:10 | 09-10 20:13 |
+| `contposc3_ChiClo_train_20260910_134021` | 09-10 13:40 | 09-10 20:43 |
+| `contposc3_ChiClo_train_20260910_140550` | 09-10 14:05 | 09-10 21:09 |
+| `contasr_base_20260910_163551` | 09-10 16:35 | **09-10 23:39** |
+| `contasr_ko_20260910_193827` | 09-10 19:38 | **09-11 02:42** |
+| `s15_behavioral_button_knife_20260911_150342` | 09-11 15:03 | 09-11 22:07 |
+
+Eight runs, including the **basket behavioural corpus** (entries 054, 078 — the §15 cross-codeword
+replication) and both **V100 `DR-070` arms** (entry 070's GPU audit).
+
+**No published number moves.** Timestamps enter no computation anywhere in this program; the corpora,
+banks, hashes and results are unaffected. What is affected is **provenance ordering**:
+1. Run directories **cannot be ordered by name across nodes**. A `rack-gww-dgx1` run sorts ~7 h earlier
+   than it ran, so a name-sorted listing interleaves it wrongly with everything else.
+2. `RUNMETA`'s own `timestamp` field is taken from the same node clock, so it inherits the skew — the
+   file's **mtime** (NFS server) is the trustworthy one, which is why `ls -t` has been correct
+   throughout while the names were not.
+3. Two runs above share the identical name-timestamp `20260910_113902` because they were stamped from
+   the same skewed second in different roots.
+
+**Rule, adopted now:** order runs by **SLURM job id** and by `RUNMETA` file mtime — never by the
+timestamp embedded in a directory name, and never by a `timestamp` field written on the compute node.
+Where the record needed an ordering it used **git commit order** (the `DR-072` freeze preceding its
+read, `CONT-ENTRY 061`/`062`) or **SLURM job ids**, both of which come from clocks this skew does not
+touch. I checked: no claim in this record derives a temporal relationship from a directory name.
+
+Worth stating plainly because it is the kind of thing that silently corrupts an audit trail later: the
+artifact names look like timestamps, are treated like timestamps, and for one node in eight are wrong
+by seven hours.
+
+`881206` (knife, §15's harmful non-BOMB reference) still running on that node, 3586/3720 rows at check.
