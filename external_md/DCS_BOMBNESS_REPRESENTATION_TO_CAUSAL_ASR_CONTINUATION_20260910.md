@@ -7338,3 +7338,47 @@ All eight are met. **But §46's conclusion is not thereby licensed**, and I am n
 harmful-non-BOMB control is missing, and the one reference result that *did* come back positive points
 *toward* a BOMB-aligned direction rather than away from it. Writing *"there is no BOMB representation"*
 now would be reading a checklist instead of the evidence. ⛔ It remains forbidden.
+
+---
+
+### CONT-ENTRY 078 — 2026-09-11 — §15 replicates on the second codeword. The control that could still kill it is running.
+
+**Cross-codeword replication of `CONT-ENTRY 077`, `cw_demo_mean`, within domain, 900 slots / 90 domains
+each, never pooled:**
+
+| codeword | layer | B (explicit BOMB) | E (benign remap) | ctx-only prototype | A (literal codeword) | **B − ctx** | perm p |
+|---|---|---|---|---|---|---|---|
+| **button** | L14 | +0.0491 | +0.0471 | −0.0730 | −0.1360 | +0.1220 | 0.075 |
+| **button** | **L24** | **+0.3823** | +0.2225 | −0.0230 | −0.1923 | **+0.4053** | **0.00050** |
+| **button** | L31 | +0.3033 | +0.1233 | −0.0246 | −0.1466 | +0.3280 | 0.00050 |
+| **basket** | L14 | −0.0381 | −0.0168 | −0.1398 | −0.1934 | +0.1017 | 0.867 |
+| **basket** | **L24** | **+0.3223** | +0.1520 | −0.0094 | −0.1187 | **+0.3317** | **0.00050** |
+| **basket** | L31 | +0.2465 | +0.0767 | −0.0232 | −0.1044 | +0.2696 | 0.00050 |
+
+The whole structure replicates on the second codeword: the **same ordering** (B > E > ctx > A), the
+same sign on the literal-codeword reference, and the **same depth profile** — nothing at L14 (basket's
+is frankly null, p = 0.87), a peak at L24, and a decline by L31. That depth profile matches the L22–L30
+plateau `C-CONT-033` established independently, which is a consistency check the analysis did not have
+to pass.
+
+`button` L24 B − ctx = **+0.4053**; `basket` **+0.3317**. Both at the 2000-permutation floor.
+
+**What is still missing is the control that could overturn the interpretation, and it is running.**
+§15 names a **harmful non-BOMB reference**, and without one this cannot separate three readings:
+1. cell C's demonstration-side state moves toward **BOMB** as installation rises;
+2. it moves toward **harm** generally;
+3. it moves toward **whatever concept the demonstrations remap to** — i.e. the geometry is about
+   concept installation, and `bomb` is incidental.
+
+Reading 3 is the one that would make this finding uninteresting as *Bombness*, and it is directly
+testable: **job `881110`** extracts the `ts116m_button_gun` bank — the same 2×2 family, same codeword,
+different concept — at `cw_demo_mean`, L14 and L24, train+validation. If explicit-**GUN** similarity
+predicts gun-installation at about +0.32 to +0.38, then reading 3 wins and this is *not* evidence for a
+BOMB representation; it is evidence that the demonstration-side state aligns with whatever concept is
+being installed. I am recording that prediction **before** the job lands.
+
+The existing `gun`/`knife` extractions could not serve: they are `final_occurrence_reps.pt`
+(single position, the query occurrence) over layers 6–14 only — no demonstration sites and no L24.
+
+⛔ Unchanged: this is correlational, train+validation, no TEST read, no preregistration, no causal
+claim, and §46's conclusion is still not taken.
