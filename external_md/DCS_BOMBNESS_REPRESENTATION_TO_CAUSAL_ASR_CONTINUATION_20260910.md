@@ -6249,3 +6249,41 @@ This entry and the freeze are committed **before** the TEST read, so the orderin
 rather than asserted here. TEST is read ONCE under DR-072.
 
 Basket arms `877545`/`877546`/`877547` at ≈1h58m, still running.
+
+---
+
+### CONT-ENTRY 062 — 2026-09-11 — DR-072 could not execute: the search corpus has no TEST rows, by design. The read is NOT spent.
+
+With `DR-072` frozen and committed, I wrote `scripts/dcs_cont_f5_confirm.py` — which does not decide
+anything, but reads site, layer, cell, λ, fit population, centring, unit, null and the decision rule
+out of the frozen config and enforces them. Its refusal paths were exercised **before** the real run:
+no `--confirm-test-read` ⇒ rc 2; a copy of the config with `status: DRAFT` ⇒ rc 2 (`REFUSING: config
+status is 'DRAFT', not FROZEN`).
+
+**The confirmatory run then failed, and the reason is the discipline working.** The corpus
+`cont1_behavioral_button_bomb_...` contains **3720 rows over `train` (2800) and `validation` (920) and
+nothing else**. It was extracted (job `875529`) with `--only-split train,validation`. There is no TEST
+data in it to read. The basket corpus is the same: 2794 train + 920 validation, zero test.
+
+So the search corpus **physically cannot** leak TEST — the rule "never read TEST while searching for a
+candidate" was enforced at extraction time, not by my restraint during analysis. Every number in
+entries 059 and 061 was computed on a corpus in which TEST does not exist.
+
+**NOTHING WAS READ. The `DR-072` single read is NOT spent.** `build(TST)` returned zero rows, so no
+TEST quantity was ever computed — not a ρ, not a permutation, not a per-domain sign. `DR-072`'s
+`single_read` clause says an *erroring* run still counts, and that clause is about a run that touched
+TEST and failed; this run never touched it. Recording the distinction explicitly so the claim is
+auditable rather than convenient.
+
+**Fixed.** The script crashed with `torch.cat(): expected a non-empty list of Tensors`, which is a
+confusing way to say "there is no TEST data". It now counts TEST rows first and refuses with rc 3,
+naming the corpus, the reason, and — the part that matters — the sentence *"NOTHING WAS READ: the
+DR-072 single read is NOT spent."* Verified: rc 3 with that message.
+
+**Submitted `878972`** — `f5test_btn`, the TEST half of the behavioural extraction. Flags are
+byte-identical to job `875529` except `--only-split test` plus the `--confirm-test-read` guard that
+`dcs_extract_under_ko.py:1470` requires for any test read. Same bank, same 19 layers, same
+`codeword_last` position, same `--capture-rel-end=-16..-1`, same `--capture-codeword-occ`. When it
+lands, `DR-072` executes once against it and `F5` is either confirmed or it is not.
+
+Basket ASR arms `877545`/`877546`/`877547` still running (≈2h).
