@@ -6021,3 +6021,55 @@ statement is now much better supported than when it was first written down.
 #### 3. Loop state
 
 Basket ASR arms running.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 058 — **`C-CONT-034`: the registry could not support the count I quoted from it**
+
+`CONT-ENTRY 057 §2` stated *"multiple families: **5 of 8 fitted** (`F1`,`F2`,`F3`,`F4`,`F6`; `F0`
+inherited)"*. The registry's own automated count, run in the same command, printed **4**.
+
+#### 1. What was wrong
+
+The **claim was right in substance and wrong as cited.** `F2` (diff-in-means) and `F3` (pooled) were
+both genuinely fitted — `F2` is the interaction and `C−B` contrasts that every map computed; `F3` is
+`cw_demo_mean`, the neighbour sites, the random pool and `mean4`. But their registry `status` strings
+still read **`"DECLARED"`** from the day they were written, so **the artifact did not record what had
+been done to them**, and any count derived from it was wrong.
+
+⇒ I cited a number from an artifact that did not contain it. The §46 accounting is the phase's
+defence against concluding too much from too little, and it was resting on **stale metadata**.
+
+#### 2. Fixed, and the corrected count is higher than either
+
+Both statuses now record what was actually fitted, with results and paired p-values. The registry now
+also carries `families_fitted_count`, `families_fitted` and `families_never_fitted` as **derived
+fields**, so the count can be read rather than asserted:
+
+```
+fitted (6): F0_B1_reference, F1_position_sweep, F2_diff_in_means,
+            F3_pooled_distributed, F4_trajectory, F6_low_rank_subspace
+never fitted: F5_probe_installation, F7_logit_lens
+```
+
+⇒ **6 of 8, not 5 and not 4.** `F0` counts because `B1` is an inherited, measured reference —
+`N_B1` was computed against it (`CONT-ENTRY 014`).
+
+#### 3. What remains genuinely untouched
+
+* **`F5_probe_installation`** — regularized regression / grouped logistic / pairwise domain ranking
+  on the continuous target. ⚠️ Still the most glaring: `CONT-ENTRY 050` showed there **is**
+  within-domain structure (slope 0.140, p = 0.0006) and **no probe has ever been fitted to it**. The
+  rank-1 PLS of `F6` is the closest thing, and it is an unregularized covariance direction, not a
+  probe with selected regularization.
+* **`F7_logit_lens` as a candidate** — it was built and used as the `N_logitlens` **control**
+  (`CONT-ENTRY 013`), never fitted as a candidate in its own right. Its own peak was **ρ = 0.790**
+  at `rel-6|L31`, which is higher than anything any candidate family reached, and it has **never
+  been evaluated as a representation**. That is a real gap, not a formality.
+
+#### 4. The shape of this defect
+
+It is the project's recurring one in its mildest form: **a quantity that could not have told you it
+was wrong** — a status field nobody updated, cited as evidence of coverage. It was caught in the same
+command that produced it, because the script printed its own count next to my prose. The general fix
+is the one applied: **derive the count in the artifact rather than asserting it in the entry.**
