@@ -5835,3 +5835,59 @@ rows. The bank identity was recovered by **hashing the file named in each run's 
 `79511d9e254571e6` on both arms, the basket bank. That worked, but it means a cross-bank join in a
 *readout* run cannot be caught by a row-level assertion the way `CONT-ENTRY 010` catches it for
 corpora. Recorded as a latent gap.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 055 — **the basket ASR arms are launched**: closing the gap `CONT-ENTRY 054` opened
+
+`877545` (`base`), `877546` (`ko`), `877547` (`ctrl`), submitted as three parallel jobs so the three
+arms do not have to share one wall clock (`CONT-ENTRY 031`'s lesson).
+
+#### 1. Why this run, specifically
+
+`CONT-ENTRY 054` replicated **A1** — the installation drop — in **67/67 domains on basket**, and in
+the same entry recorded the limit honestly: *"this replicates A1 only. The basket ASR arms do not
+exist, so A2 and A3 — the null and the dissociation — are NOT replicated."*
+
+These are those arms. If they land, the phase's headline stops being a single-codeword result on the
+behavioural side:
+
+| claim | button | basket |
+|---|---|---|
+| **A1** installation drops | ✅ −0.2150, 67/67 | ✅ **−0.2435, 67/67** |
+| **A2** ASR unchanged | ✅ +0.0030, powered null | ⏳ **this run** |
+| **A3** dissociation | ✅ qualitative | ⏳ **this run** |
+
+#### 2. Held constant, deliberately
+
+Identical to the button arms in every respect except the bank: same scope
+(`target_surface_row_only`), same bands (6–14 `ko`, 20–28 `ctrl`), same `--expect-n 670`, same
+`--max-new 640`, same seed `20260913`, same eager/batch-1, and the same exclusion discipline —
+`exclusion_sha16 214ff882b1a2a3e2`, 490 excluded, **670 rows over 67 TRAIN domains**.
+
+🆕 **`--readout-max-batch 1` on every arm from the start.** `C-CONT-031` cost this phase a silent
+98 %-row loss because the un-intervened arm defaulted to batch 16 and OOM'd while reporting `ok`.
+Setting it explicitly on all three arms also makes them use **identical** readout batching, which
+the button ASR arms did **not** (base 16, `ko`/`ctrl` 1) — a difference discovered only after those
+runs completed.
+
+⇒ The basket ASR arms are, in this one respect, **better controlled than the button arms they
+replicate**. Worth stating plainly rather than quietly fixing.
+
+#### 3. What the analysis will be
+
+`DR-070`'s frozen primary, unchanged, on the basket bank: domain-level
+`mean(ASR_ko − ASR_ctrl)` on `ASR ∧ concept_present ∧ ¬refusal`, computed by
+`scripts/dcs_cont_asr_primary.py`, which enforces the per-arm concept maps (`C-CONT-021`), the
+correct refusal field (`C-CONT-020`) and the population block (`S24-7`).
+
+⚠️ The concept-presence lexicon was validated in both directions **on button**
+(`CONT-ENTRY 038`, `039`). `REVIEW-1` established the correction is **codeword-dependent** — the
+false-positive floor is 15.5 % for `button` but 2.2 % for `basket`. So the lexicon's behaviour on
+basket **must be re-verified**, not assumed, before the basket primary is quoted. Recorded now so it
+is not skipped when the arms land.
+
+#### 4. Also running
+
+The **full-depth within-domain sweep** (19 layers × 20 sites, `cont1` corpus) is still computing its
+permutation null — it addresses `C-CONT-030`, that the 5-layer search peaked at its own boundary.
