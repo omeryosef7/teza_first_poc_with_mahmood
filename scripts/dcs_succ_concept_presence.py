@@ -121,6 +121,10 @@ def main() -> int:
     ap.add_argument("--runs-root", default=os.path.join(REPO, "outputs/boombness/score_behavior"))
     ap.add_argument("--judge-root", default=os.path.join(REPO, "outputs/boombness/judge"))
     ap.add_argument("--out", default=os.path.join(REPO, "outputs/dcs_succ/concept_presence.json"))
+    ap.add_argument("--emit-by-prompt-id", action="store_true",
+                    help="also emit res['by_arm'][arm]['by_prompt_id'] = {prompt_id: bool}. "
+                         "Required by scripts/dcs_cont_asr_primary.py, whose declared primary is a "
+                         "per-arm per-prompt outcome the arm-level aggregate cannot express.")
     ap.add_argument("--selftest", action="store_true")
     a = ap.parse_args()
     if a.selftest:
@@ -180,6 +184,21 @@ def main() -> int:
             for line in open(os.path.join(jdirs[0], "results.jsonl"), encoding="utf-8"):
                 r = json.loads(line)
                 jrows[r["prompt_id"]] = r
+
+        # ---- REVIEW-3/S24-2: EMIT THE ROW-LEVEL RESULT ------------------------------------ #
+        # This function computed concept_hits per row and threw the row-level answer away,
+        # aggregating straight to the arm. DR-070's primary is a PER-ARM, PER-PROMPT outcome
+        # ("ASR AND concept_present AND non_refusal"), so the aggregate cannot express it -- and
+        # concept presence is a property of each arm's OWN completion, not of the prompt_id: two
+        # runs of the SAME condition disagree on 9.55% of rows. Emitting it here is what lets the
+        # primary be computed at all.
+        if a.emit_by_prompt_id:
+            res.setdefault("by_arm", {})[arm] = {
+                "gen_run": os.path.basename(gdirs[0]),
+                "judge_run": (os.path.basename(jdirs[0]) if jdirs else None),
+                "bank_file_sha16": (gsha if jdirs else None),
+                "by_prompt_id": {pid: bool(concept_hits(g["generation"]))
+                                 for pid, g in gens.items()}}
 
         n = len(gens)
         n_hit = sum(1 for g in gens.values() if concept_hits(g["generation"]))

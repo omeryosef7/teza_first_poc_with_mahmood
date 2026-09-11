@@ -4750,3 +4750,67 @@ firing. The per-arm emitter is now required work before the primary can be compu
 
 ⛔ The §24 primary **cannot be computed** until the per-arm concept-presence emitter exists, and its
 control arm is only now the right one. `ko` (`876883`) continues; it was never the invalid arm.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 038 — **the concept-presence correction is verified by inspection**, and the per-arm emitter that `DR-070` needs now exists
+
+#### 1. `C-CONT-021` discharged — the per-arm emitter
+
+`dcs_succ_concept_presence.py` computed `concept_hits` per row and **threw the row-level answer
+away**, aggregating straight to the arm. Added `--emit-by-prompt-id`, which records
+`by_arm[arm].by_prompt_id = {prompt_id: bool}` alongside the arm's `gen_run`, `judge_run` and
+`bank_file_sha16`.
+
+Additive: the arm-level numbers are **byte-identical** to before (`0.1761` / `0.1418`) and the
+module's self-test still passes. Produced for the baseline: **670 prompt_ids, 118 concept-present**,
+bound to `sha dcd92d723f3e6d00`.
+
+#### 2. The check `REVIEW-3` could not finish — done here, and it is decisive
+
+Its `ASR-DATA` reviewer died on a safety-classifier error, so **nobody had looked at the 131 raw
+positives the correction removes** — the correction on which the entire declared primary rests.
+
+I inspected all 131, classifying with a **term list written independently of the frozen lexicon**
+(so this is a check, not a restatement of the thing being checked):
+
+```
+raw positives 226 | concept-ABSENT 131
+profile of the 131:  literal_object_vocabulary 131   bomb_semantic_terms 0   neither 0
+```
+
+> ⇒ **131 of 131 are the model explaining how to build a literal button.** Not one contains
+> bomb-semantic content under an independent term list.
+
+The generations are unambiguous in character: metal sheets, wires, mechanical buttons, press-room
+procedure. Several are *explicitly* reasoning that the context suggests "a suspicious object" or "a
+potential hazard" — **and then giving button-manufacturing instructions anyway**. StrongREJECT scores
+these **0.50 to 1.00**.
+
+**Two conclusions, and the second is the uncomfortable one:**
+
+1. ✅ **The concept-presence correction is sound.** It removes exactly the false positives it was
+   designed to remove and removes **nothing** with concept content. `DR-070`'s choice of the
+   corrected outcome as primary is validated by inspection, not just by argument.
+2. ⛔ **`C-209` is worse than a floor.** This is not the judge failing on ambiguous text — it is the
+   judge assigning **1.00** to an answer about pressing metal sheets into a fastener. Any raw ASR on
+   a codeword-surface bank is, to a first approximation, **58 % an artefact** on this population,
+   and the previous phase's count of **127 exposed prior judge runs** should be read with that in
+   mind.
+
+#### 3. What this does not settle
+
+⚠️ The reverse error — generations that **do** describe the concept but whose completion uses none of
+the 44 lexicon terms — is a **false negative** of the correction and is not measured here. `REVIEW-1`
+estimated the lexicon's false-negative rate at ≈ 0 on a 45-row enriched sample, but that was the
+*previous* phase's population. It is not re-measured on this arm, and the primary is a *difference*,
+so a constant false-negative rate largely cancels — but a rate that **differs between arms** would
+not. The knockout arm is expected to produce *less* concept content, which is exactly where a
+differential false-negative rate would bite.
+
+Recorded as an open item rather than assumed away.
+
+#### 4. Loop state
+
+`ko` (`876883`) at 351/670. Corrected control (`876983`) loading. The primary still cannot be
+computed — it needs all three per-arm maps, and two of the three arms do not exist yet.
