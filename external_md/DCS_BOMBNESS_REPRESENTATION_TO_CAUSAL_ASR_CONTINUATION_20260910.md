@@ -5535,3 +5535,75 @@ figure — different scope, different template, **still not re-measured**.
 ⚠️ **TRAIN only. One codeword. One model. EXPLORATORY.** No confirmation freeze; TEST unread.
 `continst2_base` (the re-run baseline) is still generating and is a **secondary** context arm — the
 primary above needs only `ko` and `ctrl`.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 050 — **`C-CONT-032`: the quantitative dissociation is downgraded by its own caveat** — and installation predicts ASR *within* domain after all
+
+`CONT-ENTRY 049 §4` flagged that the slope used in §3 was estimated **between** domains while the
+intervention acts **within** domain, and called it *"exactly the kind of assumption that fails"*.
+Tested on the joined per-slot data (670 `(domain, slot)` pairs, 67 domains, baseline arm):
+
+| slope of corrected ASR on installation | value | |
+|---|---|---|
+| **between** domains | **+0.2670** | the one `§3` used |
+| **within** domain | **+0.1400** | **permutation p = 0.0006** |
+
+#### 1. 🆕 The good half: the link is **not** purely topic
+
+`C-CONT-013` showed the between-domain axis is substantially **topic**, which left open whether the
+phase's headline installation→ASR correlation was anything more. It is:
+
+> **Within a domain — topic held fixed by construction — slots that install more are attacked
+> successfully more often, slope +0.140, p = 0.0006.**
+
+That is a *new* result and it strengthens the observational claim: the relationship survives the
+control that killed `K1`.
+
+#### 2. ⛔ The bad half: it weakens my own quantitative dissociation
+
+Applying each slope to `DR-071`'s measured installation shift of **−0.2150**:
+
+```
+predicted ASR change, BETWEEN slope   -0.0574      (and -0.0689 with entry 049's estimate)
+predicted ASR change, WITHIN  slope   -0.0301
+measured ASR change                   +0.0030      95% CI [-0.0299, +0.0358]
+```
+
+⇒ The within-domain prediction of **−0.0301** sits **essentially on the lower CI bound (−0.0299)** —
+**not outside it.**
+
+> **`CONT-ENTRY 049 §3` is downgraded.** *"The prediction lies outside the measured CI by 2.1× its
+> half-width"* holds only for the **between-domain** slope, which is the **less appropriate** one.
+> With the slope that matches how the intervention acts, the prediction is **at the boundary of the
+> CI**, and the quantitative dissociation is **not established**.
+
+#### 3. What survives, stated precisely
+
+✅ **`CONT-ENTRY 049 §2` is untouched** and remains the phase's headline: the same cut, same site,
+same dose, drops installation **−0.2150 in 67/67 domains** and moves ASR by **+0.0030** with a
+powered-null CI. A large, unanimous change in one quantity and no detectable change in the other is
+a dissociation **in the qualitative sense**, and it does not depend on any slope.
+
+⚠️ **The quantitative sense is now: the measured ASR effect is consistent with what the within-domain
+relationship predicts, at the edge.** The experiment is **underpowered to distinguish** "installation
+causally drives ASR at the observed within-domain rate" from "it does not" — the predicted effect
+(−0.030) and the MDE (0.053) are the same order, and the CI contains both the prediction and zero.
+
+That is a **weaker and more honest** reading than the one I wrote, and it was produced by testing a
+caveat I had already written down rather than by an external reviewer.
+
+#### 4. Also recorded: a small inconsistency of my own
+
+`CONT-ENTRY 049 §3` quoted the between-domain slope as **+0.3204**; this entry measures **+0.2670**.
+The difference is the row set — §49 regressed domain-mean ASR over *all* judged rows against
+installation from a separate aggregation, while this joins per-`(domain, slot)` and keeps only pairs
+present in both. Neither is wrong, but they are **different estimators quoted as one quantity**, and
+the more conservative is the joined one used here.
+
+#### 5. What this changes about the next step
+
+The honest gap is now **power**, not design. Distinguishing a −0.030 ASR effect from zero needs
+roughly **4× the rows per domain** (MDE scales as 1/√n). That is the concrete, costed next
+experiment — and it is worth more than a second codeword, because replicating an underpowered
+contrast on `basket` would reproduce the ambiguity rather than resolve it.
