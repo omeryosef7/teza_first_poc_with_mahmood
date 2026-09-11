@@ -6528,3 +6528,105 @@ replicates at scale (12.95 % over 54,989 byte-identical pairs) but κ = 0.4435 i
 artifact and the "0.0221 noise floor" has SE 0.0246 — an estimate of zero, not a floor.
 
 CODE, DATA and STATISTICAL are still running. Part 2 follows.
+
+---
+
+### CONT-ENTRY 066 — 2026-09-11 — REVIEW-2 part 2 (CODE + DATA). The confirmatory script would have burned the single read.
+
+---
+
+**C-CONT-041 — `dcs_cont_f5_confirm.py` could not have executed `DR-072`, and would have failed in the
+one way that costs the most.** It built both the fit and the TEST side from **one** corpus. The fit
+corpus holds no test rows; the corpus `879904` is building holds *only* test rows. Either way one side
+comes back empty. The reviewer reproduced the crash on mock corpora and established the part that
+matters: it lands **after** the test rows are loaded and counted, so unlike `C-CONT-062` it would
+plausibly have **spent the single read on a stack trace**. I wrote that script yesterday, exercised two
+refusal paths on it, and still shipped a version that cannot do its one job.
+
+Fixed: `--test-corpus` is now a required separate argument, each side is built from its own corpus with
+its own site/layer indices resolved independently, and the empty-TEST guard reads the test corpus.
+Verified rc 2 with the message *"NOTHING WAS READ: the DR-072 single read is NOT spent."*
+
+**C-CONT-042 — "FROZEN" was an unpinned string.** The reviewer pointed `--config` at a modified copy
+(`n_permutations` 2000 → 200) and the script printed `FROZEN`, ran, and stamped its output
+`config_id: DR-072`. The committed config was never touched — it still hashes to `35a5ed952756e88a`
+— but the *guard* was theatre. `DR072_SHA16` is now pinned in the script and checked before anything
+else. Verified: the tampered copy refuses with `config sha16 c84f90c985f1465e != 35a5ed952756e88a`.
+Also added the readout-bank check that `REVIEW-3/CODE-03` gave the six sibling scripts and this one
+never received.
+
+**C-CONT-043 — `F6`'s rank curve is an artifact; entry 053's conclusion is withdrawn.**
+`dcs_cont_lowrank.py`'s `pls_predict` applies the fitted components to the **undeflated** X — its own
+docstring says *"the fitted deflation-free approximation"*. The fit deflates correctly; the prediction
+does not. Rank 1 is therefore exact and every rank ≥ 2 is understated, which manufactures the
+rise-then-fall shape (+0.4814 / +0.5215 / +0.4626 / +0.4437) that entry 053 read as **"the structure is
+one-dimensional"**. That reading is withdrawn. Correction can only *raise* ranks ≥ 2, so `F6` may have
+been dismissed too early; re-running it is now on the list.
+
+**C-CONT-044 — the `C-CONT-036` assertion I reported adding was never added to the repo.** Entry 060
+says the re-run *"asserts `all(isinstance(v,str) and v)` on the loaded generations"*. It does — in the
+heredoc I ran. `dcs_succ_concept_presence.py` has no such assertion, and `generation == ""` still scores
+as concept-absence there. Latent today (all gens files on disk are clean: 0 empty, 0 duplicate ids),
+but the record claimed a durable fix where only a throwaway one existed. Noted as still-open rather
+than quietly fixed, because the file also carries the FROZEN lexicon and I will not edit it casually.
+
+---
+
+**F5 is now reproducible, and its first controls are in.** `REVIEW-2/DATA` finding 10 and
+`REVIEW-2/CODE-05` both landed on the same hole: entries 059 and 061 committed **no script and no
+artifact**, so the phase headline and the entire subject of `DR-072` could not be re-derived — and
+`outputs/` is gitignored. `scripts/dcs_cont_f5_probe.py` now reproduces both entries and writes
+`reports/DCS_CONT_F5_RESULTS.json`, which is committed. Reproduction is exact: ladder peak +0.6241 at
+λ = 1e2, permutation p = 0.0050, VALIDATION +0.6784 vs comparator +0.6135, 22/23 domains.
+
+First `C-CONT-040` controls, fit on TRAIN, λ fixed, scored on VALIDATION:
+
+| | ρ | vs F5 |
+|---|---|---|
+| **F5** (`cw_demo_mean`, cell C) | **+0.6784** | — |
+| `cw_query` (the query row alone) | +0.6039 | −0.0746 |
+| `raw_B` (same site, cell B) | +0.4933 | −0.1851 |
+| `cw_demo_prev/next/rand_mean` | **site not captured** | — |
+
+Two readings, and I prefer the second. `raw_B` at −0.185 says F5 is not merely reading the
+demonstration block irrespective of cell. But `cw_query` — a **single row**, inside the query span,
+and therefore the one site that *can* mediate the knockout — reaches **+0.6039**, within 0.075 of the
+demonstration-side mean over four rows. The demonstration-side advantage is small, and the site that
+could carry causal weight is nearly as predictive. The adjacency controls that would settle whether
+anything is localised at the codeword (`prev`/`next`/`rand`) were **not captured in this corpus**, so
+the D-001 test cannot be run at L24 without a new extraction. `DR-072` stays **HELD**.
+
+---
+
+**C-CONT-045 — entry 063's aggregate pooled TEST rows, and far more than the reviewer found.** DATA
+flagged six runs spanning all 113 domains; recomputing myself, **108 of 111 runs** contain test-domain
+rows, totalling **11,062 of 58,468 (18.9 %)**. This is not a breach of the mandate's rule — that rule
+governs *searching for or selecting a candidate*, and the re-score is instrument measurement on
+pre-existing runs from earlier phases — but the numbers I published were not split-clean. Recomputed,
+never pooling splits or codewords:
+
+| codeword | split | rows | `ASR@0.5` | `asr_and_concept_present` |
+|---|---|---|---|---|
+| `button` | train+val | 36 270 | 0.3146 | 0.1243 |
+| `button` | test | 6 752 | 0.2113 | 0.0773 |
+| `basket` | train+val | 3 042 | 0.1226 | 0.0391 |
+| `basket` | test | 576 | 0.0885 | 0.0312 |
+
+The pooled 0.2984 → 0.1169 of entry 063 was diluted by test domains, which run markedly lower ASR
+(0.2113 vs 0.3146) — a domain-composition effect, not a split effect, and worth knowing on its own.
+Both columns remain **upper bounds** under `C-CONT-038`.
+
+**DATA also verified, independently and to the digit:** entry 062's zero-TEST claim (and more strongly
+— no test domain *name* appears in either corpus); all five of entry 063's census counts; entry 060
+exactly, including re-reading the two flagged removals; bank integrity (0 duplicate ids, 1856/1856
+complete A/B/C/E slots, every domain in exactly one split); and the sha chain through corpus, readout
+and `DR-072` provenance, with the freeze commit preceding the read commit in git. Verifications that
+pass are results, and these ones cover the discipline the phase rests on.
+
+**Still open from DATA, not yet fixed:** `run_completeness_check.py` skips every run whose `expect_n`
+is absent or 0 — 100 % of `extract_boombness`, 100 % of `judge`, and 395 of 924 `score_behavior` — so
+it audits 533 of 1796 finished runs while printing *"every finished run persisted its full row count"*.
+Eight runs persisted **zero** rows with `status: ok`. Every shortfall traced so far lands in an
+EXCLUDED domain, so no published number moves, but that is luck rather than design.
+
+STATISTICAL is still running; part 3 will close REVIEW-2.
