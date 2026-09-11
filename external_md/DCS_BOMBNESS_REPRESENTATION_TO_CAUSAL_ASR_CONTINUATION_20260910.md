@@ -4612,3 +4612,52 @@ the frozen experiment.
 `876883`/`876884` at **91 %** of the weight load after 2 h (same-node NFS contention, `CONT-ENTRY
 034 §3`). Generation has not begun. `DR-070` remains frozen; the primary remains uncomputed and
 uncomputable — two of its three arms do not exist yet.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 036 — **both knockout arms pass pre-flight 670/670 and are generating**
+
+`876883` (`ko`) and `876884` (`ctrl`) finished their weight loads at ~2 h and are generating:
+**144 and 162 of 670** rows, ≈ 10 s/row ⇒ ≈ 1.5 h remaining.
+
+#### 1. The knockout is well-formed on every row, in both arms
+
+```
+knockout scope: target_surface_row_only
+  (liveness required > 0: ['n_prefill_edits'];  required == 0: ['n_decode_edits'])
+KNOCKOUT PRE-FLIGHT: n_rows 670 | no_demo_block 0 | infeasible_control 0 | dead_scope_span 0
+                     by_n_examples {'4': {n 670, ok 670, bad 0}}
+ko   : direction demo_all       mode attn_knockout  layers 6-14  alpha 1.0
+ctrl : direction nondemo_random mode attn_knockout  layers 6-14  alpha 1.0
+```
+
+Four things in that block matter, and each is a `DR-070` condition or close to one:
+
+* **`ok 670, bad 0`** on both arms — the scope resolves to a live set of cells on **every** row, so
+  the CANNOT ANSWER condition *"any arm's knockout liveness gate fails, or the edited-cell count is
+  0 on any row"* is **satisfiable**. The final `assert_knockout_live` still runs at the end; this is
+  the pre-flight that predicts it.
+* 🆕 **`infeasible_control: 0`** — this is the **dose-matching evidence**. The dose-matched control
+  requires enough non-demonstration keys to cut the *same number* of cells as the demonstration
+  knockout; a row where that is impossible is counted here. It is zero on all 670 rows, so the
+  control is constructible **everywhere** and is not silently degraded on a subset.
+* **`dead_scope_span: 0`** — no row where the scope resolves to nothing, which is the failure mode
+  `C-204` cost this project a whole job for.
+* **the liveness contract is scope-specific and two-sided**: `n_prefill_edits > 0` **and**
+  `n_decode_edits == 0`. A knockout that leaked into the decode steps would be editing the model
+  *while it generates*, which is a different experiment from the one declared.
+
+#### 2. What is still unverified
+
+⛔ The pre-flight shows the intervention **can** fire, not that the two arms edit the **same number
+of cells**. `infeasible_control: 0` proves a matched control was *constructible*; it does not print
+the realised counts. `DR-070`'s VOID condition — *"the control's edited-cell count differs from the
+knockout's by more than 1 %"* — is checked against each run's `summary.json` after completion, and
+`REVIEW-3`'s ASR-DESIGN dimension is independently asked whether the control is matched on **rows,
+keys, or cells**, because those are three different claims and only one of them is the one that
+matters.
+
+#### 3. Loop state
+
+Baseline: judged and concept-scored. `ko`/`ctrl`: generating. `REVIEW-3`: running.
+`DR-070`: frozen, unread, and still uncomputable.
