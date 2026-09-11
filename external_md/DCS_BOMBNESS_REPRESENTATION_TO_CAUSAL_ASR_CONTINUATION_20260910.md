@@ -5042,3 +5042,59 @@ succeed. What it does not move is the **number** of genuine successes.
 * ⇒ The honest reading of §1's 🆕 is: **the level is a powered null; the composition change is not
   distinguishable from noise at this row count.** Stated here rather than allowed to become a
   finding.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 043 — **all three arms exist; the control's dose matches the knockout's EXACTLY**
+
+`contasr2_ctrl3_20260911_060451_206456`, **670 gens, `DONE.json`**. Its liveness record beside the
+knockout's:
+
+| | **`ko`** (band 6–14) | **`ctrl`** (band 20–28) |
+|---|---|---|
+| `frac_rows_scope_live` | 1.0 | **1.0** |
+| `median_prefill_edits` | 513.0 | **513.0** |
+| **`total_prefill_edits`** | **346 329** | **346 329** |
+| `total_decode_edits` | 0 | **0** |
+| `scope_violations` | `{}` | **`{}`** |
+
+⇒ **The two arms edit the identical number of cells — 346,329, not approximately — on the same rows,
+with the same demonstration keys, differing only in which nine layers.** The VOID condition
+*"the control's edited-cell count differs from the knockout's by more than 1 %"* is satisfied at
+**0 %**.
+
+That is what `C-CONT-024`'s amendment was for, and it is now verified rather than intended. Note the
+contrast with where this started: the **original** control (`nondemo_random`) was matched on count
+but carried ~5.7× the attention mass (`C-CONT-019`); the **first** correction was matched on
+position but edited 33 % more cells (`C-CONT-024`); this one is matched on **rows, keys, count and
+position**, and differs only in the band's *function*.
+
+#### 1. The experiment is now assembled
+
+| arm | generated | liveness | judged | concept-mapped |
+|---|---|---|---|---|
+| `base` | ✅ 670 | n/a | ✅ | ✅ 118 present |
+| `ko` | ✅ 670 | ✅ perfect | ✅ | ✅ 129 present |
+| `ctrl` | ✅ 670 | ✅ **identical to `ko`** | running | pending |
+
+Every `DR-070` CANNOT ANSWER condition that can be evaluated before judging is now **satisfied**:
+liveness fired on 100 % of rows in both intervened arms with zero decode leakage; all three arms
+bound the same 670 `prompt_id`s over the same 67 TRAIN domains at 10 rows each; and the frozen
+population block will be re-checked row-by-row by the analyzer rather than trusted from these
+summaries.
+
+#### 2. What happens next, and what is already fixed about it
+
+The primary is computed by `scripts/dcs_cont_asr_primary.py`, which after `REVIEW-3`:
+
+* **refuses** a single concept map and requires one per arm (`C-CONT-021`);
+* reads the **`refused`** field the judge actually writes, and refuses if no refusal key is present
+  (`C-CONT-020` — this conjunct was silently dead);
+* **enforces** the frozen population block, so a run carrying test rows or a different bank cannot
+  pass (`S24-7`);
+* prints the frozen `things_that_must_not_be_said` beside the result;
+* emits one of three pre-declared verdicts, including **`NULL, UNDERPOWERED FOR THIS EFFECT SIZE`**,
+  which exists so that a null bigger than the MDE cannot be reported as absence.
+
+⛔ The primary is still **uncomputed**. The control's judge is running; nothing about `ko − ctrl` is
+known.
