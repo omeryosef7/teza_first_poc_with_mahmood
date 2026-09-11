@@ -8095,3 +8095,52 @@ profile between two codewords of the same bank family. Any content-true endpoint
 per codeword against labels**, and until that is done for button, the button results carry an upper
 bound only. This is the third distinct way the instrument has been shown codeword-dependent
 (false-positive floor `CONT-ENTRY 060`, error channels `063`, now precision/recall).
+
+---
+
+### CONT-ENTRY 091 — 2026-09-12 — a second mechanism hypothesis refuted; the 40 labels are now a persisted asset
+
+**The labelled set is persisted.** `data/labels/dcs_cont_content_true_labels_v1.json` — 40 rows, 20
+per codeword, each carrying `codeword`, `arm`, `domain`, `prompt_id`, my `label_content_true`, and the
+rule's verdict, with the protocol and the criteria file recorded alongside. This program has produced
+a great many instrument arguments and, until now, **no reusable labelled data**. Every future endpoint
+claim can be scored against this file instead of re-litigating from scratch.
+
+**C-CONT-068 — the "energetic material" hypothesis is refuted, and it fails worse than what it was
+meant to improve.** `CONT-ENTRY 090` left open why identical terms carry content on basket and not on
+button, and noted that button's spurious rows cite *initiation hardware* (detonator, trigger, pressure
+plate) with no explosive anywhere. The obvious fix is to require a named energetic **substance** —
+`C4`, `TATP`, `black powder`, `dynamite`, `explosive material/powder/compound` — rather than hardware.
+Scored against the 40 labels:
+
+| | MATERIAL rule | HARD rule (`CONT-ENTRY 089/090`) |
+|---|---|---|
+| basket precision / recall | 0.73 / 0.62 | **1.00 / 0.77** |
+| button precision / recall | 0.40 / 0.40 | 0.50 / **1.00** |
+
+**Worse on both codewords, on both axes but one.** And the result is stronger than an ordinary negative,
+because it was evaluated **on the same 40 labels that motivated it** — post-hoc fitting biases toward
+*good* performance, and it still lost. A rule that cannot beat its predecessor on its own training
+data will not beat it out of sample.
+
+**Two mechanism hypotheses now refuted, both by my own tests:** the term-distribution shift
+(`C-CONT-067` — the distributions have the same shape on both codewords) and the substance requirement
+(here). Between them they cover the two obvious ways a term-based instrument could be repaired: change
+*which* terms count, or require a *stronger class* of term.
+
+⇒ **The conclusion I am drawing, and it is a negative one about instrument design.** The
+codeword-dependence is **not a vocabulary problem and cannot be fixed with a better word list.** In
+both failed tests the discriminating information was not in which words appeared but in *what the
+answer was doing with them* — a "mock detonator" for a "button scare alarm", a pressure plate in a
+craft build, an explosive named only inside a disclaimer. That is structural, and no
+presence-of-term rule of any vocabulary reaches it.
+
+This bounds the endpoint work more usefully than another lexicon iteration would. A content-true
+endpoint for this bank family needs either (a) a judge that reads the answer's *function*, validated
+per codeword against labels like these, or (b) an accepted decision to report **bounds** rather than
+point estimates — which is available on basket (`CONT-ENTRY 089`) and, on present evidence, not on
+button (`CONT-ENTRY 090`).
+
+Recorded as the outcome of a deliberate attempt to repair the instrument, not as a reason to stop
+measuring: the bracket on basket stands, the button upper bound stands, and both are quotable so long
+as they are labelled as what they are.

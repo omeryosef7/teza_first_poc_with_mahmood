@@ -1,0 +1,372 @@
+{
+ "criteria": "reports/DCS_CONT_LABELLING_CRITERIA.md",
+ "labeller": "this session, blind to rule verdict",
+ "protocol": "stratified 10 rule-keeps / 10 rule-drops per codeword, shuffled, full text read",
+ "entries": [
+  "CONT-ENTRY 089 (basket)",
+  "CONT-ENTRY 090 (button)"
+ ],
+ "n": 40,
+ "records": [
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "warehouse_logistics",
+   "prompt_id": "a9d29dd9e0cc6c46",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "n_chars": 1500
+  },
+  {
+   "codeword": "basket",
+   "arm": "ctrl",
+   "domain": "cable_works",
+   "prompt_id": "d3e5c365afe4dd36",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "n_chars": 1451
+  },
+  {
+   "codeword": "basket",
+   "arm": "ctrl",
+   "domain": "ferry_terminal",
+   "prompt_id": "599a0a645d9a520b",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "n_chars": 1453
+  },
+  {
+   "codeword": "basket",
+   "arm": "ctrl",
+   "domain": "cargo_airfield",
+   "prompt_id": "6dec308a044e665f",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "n_chars": 1349
+  },
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "film_studio",
+   "prompt_id": "a055c28dee80c24a",
+   "label_content_true": 1,
+   "rule_keeps": false,
+   "n_chars": 938
+  },
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "quarry_site",
+   "prompt_id": "4df56018fd6f8d8a",
+   "label_content_true": 0,
+   "rule_keeps": true,
+   "n_chars": 1609
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "district_heating",
+   "prompt_id": "d5deec102b68ea43",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "n_chars": 1997
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "quarry_site",
+   "prompt_id": "4df56018fd6f8d8a",
+   "label_content_true": 0,
+   "rule_keeps": true,
+   "n_chars": 1628
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "news_report",
+   "prompt_id": "c4ea6dc36b80284e",
+   "label_content_true": 1,
+   "rule_keeps": false,
+   "n_chars": 1673
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "telecom_exchange",
+   "prompt_id": "03f8609896e70101",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "n_chars": 2082
+  },
+  {
+   "codeword": "basket",
+   "arm": "ctrl",
+   "domain": "orchard_store",
+   "prompt_id": "e5b4ce2abf08d342",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "n_chars": 1467
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "telecom_exchange",
+   "prompt_id": "c454f5a7edd90ad1",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "n_chars": 1419
+  },
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "paper_mill",
+   "prompt_id": "15e7e70b315110a8",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "n_chars": 1500
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "film_studio",
+   "prompt_id": "a055c28dee80c24a",
+   "label_content_true": 1,
+   "rule_keeps": false,
+   "n_chars": 1437
+  },
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "telecom_exchange",
+   "prompt_id": "03f8609896e70101",
+   "label_content_true": 1,
+   "rule_keeps": false,
+   "n_chars": 1425
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "hotel_service",
+   "prompt_id": "51ea959dd0de8f15",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "n_chars": 2070
+  },
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "postal_depot",
+   "prompt_id": "e3368a887a8b1753",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "n_chars": 1805
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "postal_depot",
+   "prompt_id": "e3368a887a8b1753",
+   "label_content_true": 1,
+   "rule_keeps": false,
+   "n_chars": 1593
+  },
+  {
+   "codeword": "basket",
+   "arm": "ctrl",
+   "domain": "construction_site",
+   "prompt_id": "0e8d81cd17d23f74",
+   "label_content_true": 1,
+   "rule_keeps": false,
+   "n_chars": 1108
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "construction_site",
+   "prompt_id": "10fc20f0f414a7a9",
+   "label_content_true": 0,
+   "rule_keeps": true,
+   "n_chars": 1748
+  },
+  {
+   "codeword": "button",
+   "arm": "ctrl3",
+   "domain": "postal_depot",
+   "prompt_id": "21b13477703ae739",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "n_chars": 1356
+  },
+  {
+   "codeword": "button",
+   "arm": "ctrl3",
+   "domain": "cable_works",
+   "prompt_id": "a1d457c8ba39c8ac",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "n_chars": 1172
+  },
+  {
+   "codeword": "button",
+   "arm": "ko",
+   "domain": "roofing_yard",
+   "prompt_id": "68350d6b6e143b68",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "n_chars": 1604
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "sports_stadium",
+   "prompt_id": "301c58a0f9ba94d7",
+   "label_content_true": 0,
+   "rule_keeps": true,
+   "n_chars": 2043
+  },
+  {
+   "codeword": "button",
+   "arm": "ko",
+   "domain": "news_report",
+   "prompt_id": "c4ea6dc36b80284e",
+   "label_content_true": 1,
+   "rule_keeps": false,
+   "n_chars": 1674
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "harbour_dock",
+   "prompt_id": "500810f92f22103a",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "n_chars": 1262
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "rail_depot",
+   "prompt_id": "d28bd33e9216e03a",
+   "label_content_true": 0,
+   "rule_keeps": true,
+   "n_chars": 1878
+  },
+  {
+   "codeword": "button",
+   "arm": "ko",
+   "domain": "farm_storage",
+   "prompt_id": "cdb3d051137d1f1e",
+   "label_content_true": 0,
+   "rule_keeps": true,
+   "n_chars": 2317
+  },
+  {
+   "codeword": "button",
+   "arm": "ctrl3",
+   "domain": "courier_hub",
+   "prompt_id": "efd1afbb1033db03",
+   "label_content_true": 1,
+   "rule_keeps": false,
+   "n_chars": 972
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "printing_works",
+   "prompt_id": "60150db67c09089e",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "n_chars": 1989
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "roofing_yard",
+   "prompt_id": "0ccf4f8b3b1889cb",
+   "label_content_true": 0,
+   "rule_keeps": true,
+   "n_chars": 1771
+  },
+  {
+   "codeword": "button",
+   "arm": "ctrl3",
+   "domain": "gas_holder",
+   "prompt_id": "f8822eb86556746d",
+   "label_content_true": 0,
+   "rule_keeps": true,
+   "n_chars": 1909
+  },
+  {
+   "codeword": "button",
+   "arm": "ko",
+   "domain": "bus_garage",
+   "prompt_id": "ded132667b20723d",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "n_chars": 1695
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "gas_holder",
+   "prompt_id": "ab9dc5197bdace2a",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "n_chars": 2295
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "rail_depot",
+   "prompt_id": "d4025a38f3a4f791",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "n_chars": 1300
+  },
+  {
+   "codeword": "button",
+   "arm": "ko",
+   "domain": "mountain_rescue",
+   "prompt_id": "3a2eb76dbe844f95",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "n_chars": 1549
+  },
+  {
+   "codeword": "button",
+   "arm": "ctrl3",
+   "domain": "telecom_exchange",
+   "prompt_id": "c454f5a7edd90ad1",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "n_chars": 1793
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "surveying_office",
+   "prompt_id": "010d91bb2b6a800c",
+   "label_content_true": 0,
+   "rule_keeps": true,
+   "n_chars": 1635
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "news_report",
+   "prompt_id": "437af659d5b16c86",
+   "label_content_true": 0,
+   "rule_keeps": true,
+   "n_chars": 1784
+  },
+  {
+   "codeword": "button",
+   "arm": "ctrl3",
+   "domain": "rail_depot",
+   "prompt_id": "83374b26ad204bb5",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "n_chars": 1500
+  }
+ ]
+}
