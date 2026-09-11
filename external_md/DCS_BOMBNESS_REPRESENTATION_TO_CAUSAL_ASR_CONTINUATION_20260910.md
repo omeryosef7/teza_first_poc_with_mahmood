@@ -5656,3 +5656,58 @@ The two sections that matter most for anyone reading this phase cold:
   wrong*, which appeared **inside the repair for itself three times**. What actually caught things
   was adversarial re-derivation, the commit-time completeness guard, and persisted intervention dose
   — **procedures, not cleverness**.
+
+---
+
+### 2026-09-52 — CONT-ENTRY 052 — **the §46 accounting, unsparing: the bar for "no BOMB representation" is NOT met, and three of seven prerequisites are untouched**
+
+`REVIEW-3` asked which of §46's seven prerequisites this phase has met. Answering it honestly,
+because the phase withdrew its only candidate and the drift from *"we found no candidate"* to
+*"there is no representation"* is exactly what §46 exists to prevent.
+
+#### 1. The audit
+
+| §46 prerequisite | status | evidence |
+|---|---|---|
+| multiple representation **families** | ⚠️ **PARTIAL — 3 of 8 declared families were ever fitted** | `F1` position sweep ✅, `F2` diff-in-means ✅, `F3` pooled ✅ (+ the raw-state null model, unregistered). **`F4` trajectory, `F5` probes, `F6` low-rank, `F7` logit-lens-as-candidate: DECLARED, NEVER FITTED** |
+| multiple **positions** | ✅ **DONE** | 20 sites: `rel_end −16…−1`, four codeword sites, later seven |
+| multiple **layers** | ⚠️ **PARTIAL** | the big map covered **19 of 33** layers; the **within-domain redesign that replaced it used 5**, with four of five families peaking at the **boundary** (`C-CONT-030`) |
+| **pooled / distributed** representations | ✅ **DONE** | `cw_demo_mean`, `mean4`, size-matched random pools, demo ±1 |
+| at least one **low-rank** approach | ⛔ **NOT DONE** | no LDA, no reduced-rank regression, no PLS, no subspace of any rank. `F6` was declared and never touched |
+| **concept-free probability / readout** analyses | ✅ **DONE** | logit lens at every cell as `N_logitlens`; the installation readout throughout |
+| **aligned reference** comparisons | ⚠️ **PARTIAL** | the transplant work compares matched donor/recipient states, but §15's matched-reference **prototype** was never built |
+
+**Score: 3 done, 3 partial, 1 untouched.**
+
+> ⛔ **§46's bar is NOT met.** This phase may **not** conclude that there is no BOMB representation,
+> and the claim table does not — it says *"`K1` withdrawn, no candidate"*, which is a statement about
+> **what was searched**, not about what exists.
+
+#### 2. The honest characterisation of what the search actually covered
+
+Eight families were declared in the registry on the first day. **The phase fitted three.** The
+search then consumed itself: `K1` was found in `F2`, spent four entries passing floors, and was
+withdrawn when the **null model** — which was not one of the eight — beat it. The redesign
+(`CONT-ENTRY 030`) re-ran `F2`/`F3` against that null model on a better target and found the raw
+state still winning.
+
+⇒ **The phase did not run out of families. It ran out of iterations on two of them**, and the most
+promising untried ones are precisely the ones §46 names: **low-rank subspaces** (`F6`) and
+**probes trained on the continuous target** (`F5`). `F5` is especially notable — the within-domain
+result (`CONT-ENTRY 050`: installation predicts ASR within domain at slope 0.140, p=0.0006) says
+there **is** within-domain structure to predict, and no probe was ever fitted to it.
+
+#### 3. What this changes in the record
+
+`reports/DCS_CONT_CLAIM_TABLE.md` §B already forbids *"we found a BOMB representation"*. This entry
+adds the converse, which was **not** previously written down anywhere:
+
+> ⛔ **"There is no BOMB representation" is equally forbidden**, and will remain so until `F5`, `F6`
+> and a full-depth layer sweep have been run. The phase's negative results are about **`K1`, the
+> interaction contrast, and the map that produced them** — not about the hypothesis.
+
+#### 4. Loop state
+
+`877289` running: the **basket replication of `DR-071`** (claim A1) — identical scope, bands, dose
+and statistic, the only change being the bank, and `--readout-max-batch 1` on every arm from the
+start per `C-CONT-031`.
