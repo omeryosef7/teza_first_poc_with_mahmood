@@ -209,7 +209,7 @@ def main() -> int:
                     ("NULL, POWERED" if abs(statistics.mean(diff)) < decl["power"]["MDE_corrected_80pct_n67"]
                      else "NULL, UNDERPOWERED FOR THIS EFFECT SIZE"))})
     json.dump(result, open(os.path.join(REPO, a.out), "w"), indent=1)
-    print("[asr] DR-070 primary, DOMAIN unit, n=%d" % len(doms))
+    print("[asr] %s primary, DOMAIN unit, n=%d" % (decl.get("id", "?"), len(doms)))
     print("      ASR base %.4f | ko %.4f | ctrl %.4f" % (result["asr_base"], result["asr_ko"], result["asr_ctrl"]))
     print("      PRIMARY (ko - ctrl) = %+.4f   95%% CI [%+.4f, %+.4f]   perm p = %.4f"
           % (result["primary_estimate"], lo, hi, p))

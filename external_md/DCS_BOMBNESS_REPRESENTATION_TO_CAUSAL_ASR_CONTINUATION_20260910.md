@@ -6947,3 +6947,69 @@ The basket wave did this by accident of submission; the button wave did not.
 
 Jobs: `880540` (F5 control extraction) 2500/3720 captured; `880569` (basket judge) running, its three
 arm directories already created.
+
+---
+
+### CONT-ENTRY 071 — 2026-09-11 — the basket ASR primary. A2/A3 replicate: the dissociation is not a single-codeword result.
+
+The basket judge (`880569`) COMPLETED in 28:03 — three arms, **670 rows each**, all with `DONE.json`.
+Per-arm concept maps built with the frozen lexicon; the primary computed once under `DR-073a`.
+
+**`DR-073a` (basket), primary = mean over domains of (ASR_ko − ASR_ctrl), corrected endpoint:**
+
+| | basket (`DR-073a`) | button (`DR-070`) |
+|---|---|---|
+| base / ko / ctrl | 0.0463 / 0.0403 / 0.0493 | — |
+| **primary (ko − ctrl)** | **−0.0090** | **+0.0030** |
+| 95 % CI | **[−0.0254, +0.0090]** | [−0.030, +0.036] |
+| permutation p | **0.4017** | — |
+| MDE at 80 % | 0.0254 | 0.0531 |
+| **verdict** | **NULL, POWERED** | NULL, POWERED |
+
+**The behavioural null replicates on the second codeword.** The basket point estimate is *negative* —
+the direction the necessity hypothesis predicts — but at p = 0.40 it is indistinguishable from zero,
+and the CI excludes any effect larger than 0.025 in absolute terms.
+
+**Read together with the installation side, which was already measured on this codeword:** the same
+cut, at the same site, with the same dose, drops installation **−0.2435 in 67/67 basket domains**
+(`CONT-ENTRY 049`) and moves the behavioural endpoint by **−0.0090, CI [−0.0254, +0.0090]**. Both
+halves come from the same intervention on the same bank. **The qualitative dissociation is now a
+two-codeword result**, which is what `CONT-ENTRY 055` said would be the point of running these arms.
+
+**Three things this does not license, stated because the numbers invite them.**
+1. **The basket null is not stronger than button's for being tighter.** Its CI is half the width
+   (0.025 vs 0.053) but its base rate is roughly a third (0.046 vs 0.140). In *relative* terms the
+   basket interval excludes a ~55 % reduction while button's excludes ~38 % — comparable, not better.
+   `DR-073a` froze this caveat in advance precisely so the tighter interval could not be misread.
+2. **The corrected numbers are upper bounds, on both codewords** (`C-CONT-038`). The lexicon's own
+   false-positive channel leaves 11 of 22 sampled basket kept-positives spurious. A true basket
+   corrected rate near 0.02 would make the same absolute CI a much weaker relative statement.
+3. **It remains a NECESSITY intervention.** A null licenses only that the pathway is not *required*;
+   it says nothing about sufficiency, and no representation is being tested — `K1` is withdrawn and
+   `F5` is structurally incapable of mediating this cut (`C-CONT-040`).
+
+**On the freeze, stated plainly because it is weaker than the button one.** `DR-073` was written
+*after* the basket arms and their judge had completed, so it is **not a pre-registration in the strict
+sense**, and the config says so in its own `frozen_before` field rather than implying otherwise. What
+protects it is that every analysis choice — arms, scope, bands, primary statistic, test, α,
+multiplicity — is **copied verbatim from `DR-070`**, which was frozen before any basket arm was
+submitted, and the generating `sbatch` records that intent in its header. The freeze was committed
+before the primary was computed.
+
+**C-CONT-054 — my own freeze was incomplete, and is superseded rather than edited.** `DR-073` omitted
+`MDE_corrected_80pct_n67`, which the primary script requires; it refused rather than proceeding.
+`DR-073a` supersedes it (`DR-073` stays in git history, unedited). No analysis choice changed: the
+missing field is a script input, and its value is **derived from the BASE arm alone**, which is not
+part of the `ko − ctrl` contrast, so obtaining it read no outcome. The paired sd is estimated as the
+baseline per-domain sd × 1.0975, the ratio `DR-070` measured empirically on button — a proxy inherited
+from the other codeword, and the config records that a larger true basket sd means a larger MDE and a
+weaker null.
+
+**Two instrument notes.** The primary script **refused twice before running**, both times correctly:
+once because `--concept-presence` was missing (*"omitting it would compute the raw secondary outcome
+under the primary's name"*), once because the map was not per-arm (*"concept presence is a property of
+each arm's own completion"*). Those guards did real work here. Separately, its banner printed
+*"DR-070 primary"* regardless of the declaration passed — cosmetic, but it would have mislabelled this
+result in any pasted log; it now prints the declaration's own `id`.
+
+Jobs: `880540` (F5 control extraction) still running.
