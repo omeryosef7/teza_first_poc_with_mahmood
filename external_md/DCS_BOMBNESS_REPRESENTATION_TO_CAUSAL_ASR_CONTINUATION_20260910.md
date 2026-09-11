@@ -5891,3 +5891,66 @@ is not skipped when the arms land.
 
 The **full-depth within-domain sweep** (19 layers × 20 sites, `cont1` corpus) is still computing its
 permutation null — it addresses `C-CONT-030`, that the 5-layer search peaked at its own boundary.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 056 — **`C-CONT-033`: the "L13–14 peak" was a window boundary. The real profile plateaus at L22–L30** — and `C−B` overtakes the raw state there
+
+`outputs/dcs_cont/within_domain_FULLDEPTH_button_bomb.json` — the within-domain search re-run over
+**19 layers × 20 sites** on the `cont1` corpus, closing the gap `C-CONT-030` named.
+
+**`cw_demo_mean`, raw_C, full depth** (p95 null = 0.2908):
+
+```
+L0  +0.191   L8  +0.461   L14 +0.482   L20 +0.503   L26 +0.546
+L2  +0.277   L10 +0.467   L16 +0.507   L22 +0.532   L28 +0.545
+L4  +0.373   L11 +0.470   L18 +0.498   L24 +0.546 <-- peak   L30 +0.540
+L6  +0.424   L12 +0.477                                       L31 +0.515
+```
+
+⇒ **`CONT-ENTRY 030`/`031` searched L10–14 and reported a "peak at L13–14" of +0.482. That was the
+edge of the window.** The true profile rises monotonically and **plateaus at L22–L30 around +0.55**,
+peaking at **L24 (+0.5463)** — 13 % higher than anything the 5-layer search could see.
+
+`C-CONT-030` flagged this as *"a maximum at the edge of the search window is not a located peak"*.
+It was right, and the correction is larger than a relabelling: **the signal is a late-layer
+phenomenon, not a mid-layer one.**
+
+#### 1. 🆕 And the ordering changes with depth
+
+| layer band | raw_C | interaction | **C − B** |
+|---|---|---|---|
+| L10–14 (the old window) | **0.482** | 0.452 | 0.509 |
+| L16 | 0.507 | 0.484 | **0.542** |
+| L24–30 | **0.546** | 0.460 | **0.547** |
+
+* the **interaction** never catches the raw state at any depth — `C-CONT-013` holds across all 19
+  layers, not just the five previously searched;
+* **`C − B` and `raw_C` are neck-and-neck at depth** (0.5466 vs 0.5463 at L30/L24), consistent with
+  `C-CONT-017`'s finding that the two are statistically indistinguishable;
+* `E − A` clears the ceiling at **0/380** cells — the axis `B1` was built on is dead at **every**
+  layer and **every** site, which is the strongest version of that negative yet.
+
+⚠️ **`mean4` peaks at `rel-6|L30` (+0.482), not at `cw_demo_mean`** — the four-cell average is
+best read at the **end of the prompt**, while the doublespeak-cell state is best read at the
+**demonstration codewords**. Different sites for different quantities; worth noting, not yet
+explained.
+
+#### 2. §46 accounting updated again
+
+| prerequisite | was | now |
+|---|---|---|
+| multiple **layers** | ⚠️ PARTIAL (5, peak at boundary) | ✅ **DONE** — 19 of 33, interior peak, monotone profile |
+| low-rank | ✅ DONE (`CONT-ENTRY 053`) | ✅ |
+
+**Remaining: `F5` probes, `F4` trajectories, §15's matched reference prototype.** ⛔ *"There is no
+BOMB representation"* stays forbidden — but two of the three gaps I named in `CONT-ENTRY 052` are
+now closed, in the two iterations since naming them.
+
+🆕 Note what the late-layer plateau implies for `F4`: a profile that rises monotonically and
+plateaus **is** a trajectory result in embryo, and `F4` (onset layer, slope, area-under-depth) is
+now cheap to compute on exactly this artifact.
+
+#### 3. Loop state
+
+Basket ASR arms `877545/6/7` running on `n-503`, past the population filter.

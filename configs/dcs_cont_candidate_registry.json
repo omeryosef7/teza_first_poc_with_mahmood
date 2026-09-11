@@ -91,7 +91,7 @@
           "mean_last_k_query"
         ]
       },
-      "status": "DECLARED, extraction not yet run"
+      "status": "FITTED. Full-depth within-domain sweep (CONT-ENTRY 056): 19 layers x 20 sites. The layer profile at cw_demo_mean rises monotonically from L0 (+0.19) to a plateau at L22-L30 (+0.53 to +0.55, peak L24 +0.5463) and falls at L31. The L13-14 'peak' in CONT-ENTRY 030/031 was the BOUNDARY of a 5-layer window (L10-14, max +0.4816) and is superseded."
     },
     {
       "family_id": "F2_diff_in_means",
