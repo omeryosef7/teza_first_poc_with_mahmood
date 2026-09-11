@@ -6073,3 +6073,67 @@ It is the project's recurring one in its mildest form: **a quantity that could n
 was wrong** — a status field nobody updated, cited as evidence of coverage. It was caught in the same
 command that produced it, because the script printed its own count next to my prose. The general fix
 is the one applied: **derive the count in the artifact rather than asserting it in the entry.**
+
+---
+
+### CONT-ENTRY 059 — 2026-09-11 — the two never-fitted families, F7 and F5. One dies; one wins the phase.
+
+`CONT-ENTRY 058` closed with the registry's derived count: **fitted (6)**, and **never fitted:
+`F5_probe_installation`, `F7_logit_lens`**. Both are now fitted. TRAIN split only; TEST was not read.
+
+**F7_logit_lens, as a candidate rather than as the `N_logitlens` control — REFUTED.**
+`F7` was carrying the phase's largest single number, ρ = 0.790, higher than any candidate family. That
+number was measured on the **domain-mean** target at `rel-6|L31`, and the domain-mean target is
+topic-laden — which is why §46 listed `F7` as a gap rather than as a result. Re-scored on the
+**within-domain** target (topic removed, LOO by DOMAIN, 670 slots / 67 domains):
+
+| site \| layer | logit lens | raw C state |
+|---|---|---|
+| `cw_demo_mean`\|L24 | +0.4146 | **+0.5463** |
+| `cw_demo_mean`\|L31 | +0.4982 | +0.5147 |
+| `rel-6`\|L31 | +0.4833 | +0.4844 |
+| `cw_query`\|L31 | +0.4297 | +0.4598 |
+
+`F7`'s best within-domain cell is **+0.4982**, below the raw state's **+0.5463**. It does not beat the
+state it is computed from, and the 0.790 was topic. `F7` is refuted as a candidate; it remains valid
+in the role it already had, the `N_logitlens` nuisance control.
+
+One thing worth keeping: at `cw_demo_mean|L31` the logit lens scores +0.4982 against the fitted
+direction's +0.5147 while fitting **zero parameters**. Near-parity, not a win — recorded as an
+observation, not a claim.
+
+**F5_probe_installation — FITTED, and it is the best within-domain predictor in the phase.**
+Ridge in dual form (n = 670 « d = 4096), LOO by DOMAIN, x and y centred per domain, λ ladder 1e1…1e6:
+
+| site \| layer | 1e1 | 1e2 | 1e3 | 1e4 | 1e5 | 1e6 |
+|---|---|---|---|---|---|---|
+| `cw_demo_mean`\|L24 | +0.6114 | **+0.6241** | +0.5880 | +0.5527 | +0.5461 | +0.5454 |
+| `cw_demo_mean`\|L14 | +0.5812 | +0.5567 | +0.5061 | +0.4838 | +0.4811 | +0.4808 |
+| `cw_query`\|L31 | +0.4901 | +0.5700 | +0.5742 | +0.5089 | +0.4687 | +0.4602 |
+| `rel-6`\|L20 | +0.5947 | +0.5935 | +0.5479 | +0.5144 | +0.5039 | +0.5023 |
+
+λ picked off that ladder is a free parameter chosen on the same curve it is scored on, so the number
+is not quotable as it stands. **Nested selection** — inner LOO over the 66 training domains inside
+each outer fold, λ re-chosen per fold — returns **ρ_loo = +0.6241**, identical, with λ = 1e2 selected
+in **67 of 67 folds**. The ladder pick and the nested pick coincide; it is not a selection artifact.
+
+**Within-domain permutation null**, 200 permutations, labels permuted *within* domain, **both the fit
+and the score** recomputed under the permuted labels (the `C-CONT-002` discipline): p50 = −0.0094,
+p95 = +0.0917, max = +0.1696 ⇒ **p = 0.0050**, the floor for 200 permutations.
+
+**+0.6241 vs +0.5463** — regularisation buys 0.078 over the unregularised covariance direction at the
+same site and layer. `F5` is the phase's best within-domain predictor of installation.
+
+**What this does and does not license.** It is TRAIN-split only. Under the mandate's rule — never read
+TEST while searching for or selecting a candidate — the search is what just happened, so `F5` is a
+**candidate**, not a confirmed result; TEST confirmation is a separate preregistered step and was not
+taken. It is also a prediction of **installation**, not of ASR: `CONT-ENTRY 049/050` stand unchanged,
+and nothing here converts the qualitative dissociation into a quantitative one.
+
+Registry now reads **fitted (7)**, never fitted (0) — with `F7` refuted-as-candidate and `F5` the
+phase's leader, awaiting TEST.
+
+**Basket ASR arms `877545`/`877546`/`877547`** still running (≈1h30m at check). The `CONT-ENTRY 055`
+caveat stands and is repeated so it cannot be skipped: **the concept-presence lexicon must be
+re-verified on basket before the basket primary is quoted** — `REVIEW-1` established the correction is
+codeword-dependent (false-positive floor 15.5 % button vs 2.2 % basket).
