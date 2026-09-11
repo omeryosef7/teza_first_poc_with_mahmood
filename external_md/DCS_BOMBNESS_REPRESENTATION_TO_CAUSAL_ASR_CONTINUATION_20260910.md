@@ -4477,3 +4477,71 @@ broken judge is discovered now rather than after ~9 more GPU-hours.
 ⚠️ The baseline ASR, when it lands, is a **secondary** outcome under `DR-070` and carries the
 measured instrument defects — the **0.155** false-positive floor and the **0.137** judge flip rate.
 It will be reported with both attached, per the frozen `things_that_must_not_be_said`.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 034 — **the baseline is judged, and it measures the pipeline's own reproducibility** — which turns out to sit right at the declared MDE
+
+`outputs/boombness/judge/contasrj_base_20260911_030439_753524`, `DONE.json`, 670 rows.
+
+```
+natural_doublespeak  n=670  ASR@0.5 = 0.3373  iid[0.303,0.374]  clustered[0.297,0.378]
+                     mean strongreject = 0.2722   refusal = 0.1149
+goal statuses: {'substituted': 670}
+```
+
+⚠️ `substituted` on **670/670** is the `C-209` mechanism operating exactly as documented — every
+codeword-surface row has its goal substituted. It is expected here and is *why* the frozen primary
+is the concept-present-corrected outcome, not this raw number.
+
+#### 1. 🆕 Does forcing eager attention and batch 1 change ASR? No — measured, not assumed
+
+`CONT-ENTRY 026` re-ran the baseline rather than reusing `tsb66_C_n4`, on the argument that knockout
+arms force `--attn-impl eager` and batch 1 while the earlier run did not, so reusing it would
+confound the intervention with the implementation. That argument can now be **tested**, because the
+two runs cover the same 67 TRAIN domains:
+
+| | mean raw ASR |
+|---|---|
+| **new baseline** (eager, batch 1) | **0.3373** |
+| inherited `tsb66_C_n4` (sdpa, batched) | 0.3224 |
+| **paired domain-level difference** | **+0.0149**, 95 % CI **[−0.018, +0.048]**, perm **p = 0.42** |
+
+⇒ **The implementation does not materially change ASR.** The re-run was still the right call — that
+could not have been known in advance, and the alternative was an unquantified confound in the
+phase's central experiment — but the confound it guarded against is now measured at **+1.5 pp with
+a CI spanning zero**.
+
+#### 2. ⚠️ The number that matters more, and it is a caveat on the result not yet obtained
+
+The same comparison is a **test–retest measurement of the whole generation → judge pipeline** at the
+domain level, on identical prompts:
+
+```
+Spearman(new, old) across the 67 domains = 0.7097
+per-domain ASR differs in 50 of 67 domains
+paired difference CI half-width ~= 0.048
+```
+
+> ⛔ **`DR-070`'s declared MDE is 0.0531. The pipeline's own run-to-run CI half-width on a paired
+> domain-level ASR difference is ≈ 0.048.** The §24 primary is therefore operating **right at the
+> reproducibility floor of the instrument that measures it.**
+
+Two honest qualifications, in both directions:
+
+* this comparison crosses **two implementations and two judge runs**, so it is an **upper bound** on
+  noise; the three §24 arms share an implementation and their `ko`/`ctrl` contrast is a difference of
+  two arms measured under the same conditions, so their floor should be lower;
+* but per-domain ASR reproducing at **ρ = 0.71** rather than ≈ 1.0 between two runs of the *same
+  condition* is a real property of this instrument, and it was not known before this entry.
+
+**Recorded now, before the primary exists**, so that it is a property of the instrument rather than
+an excuse attached to a disappointing number later. If the primary lands inside ±0.05, this entry is
+the reason it cannot be called a null.
+
+#### 3. Loop state, and one operational lesson
+
+`876883`/`876884` at **167/291** shards after 1:21 — not stuck, but slow: **both were scheduled onto
+the same node**, so they are contending for the same 16 GB of NFS reads and each is paying roughly
+double. Spreading parallel jobs across nodes is worth an `--exclude` of whatever the first one
+landed on. Not worth restarting at 57 %.
