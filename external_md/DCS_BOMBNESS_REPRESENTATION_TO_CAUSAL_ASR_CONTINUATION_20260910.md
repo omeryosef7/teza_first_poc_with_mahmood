@@ -7013,3 +7013,45 @@ each arm's own completion"*). Those guards did real work here. Separately, its b
 result in any pasted log; it now prints the declaration's own `id`.
 
 Jobs: `880540` (F5 control extraction) still running.
+
+---
+
+### CONT-ENTRY 072 — 2026-09-11 — the F5 control extraction died on disk quota with SLURM reporting success; a judgment call about 5.1G, disclosed
+
+**`880540` failed, and SLURM said it succeeded.** `sacct` reports **COMPLETED, ExitCode 0:0** after
+58:43. The script's own trailer reports **`rc=1`**, and the log ends in
+`OSError: [Errno 122] Disk quota exceeded`. This is the third instance in this program of the pattern
+where the scheduler's status is not the run's status — after `C-CONT-031` (11 of 670 rows lost behind
+`rc=0` and a PASS gate) and the ClearHarm arms that died 179/179 while "SLURM reported COMPLETED 0:0"
+(`CONT-ENTRY 069`). **The job state is never the evidence; the log trailer and the persisted files are.**
+
+**What actually failed.** `results.jsonl` holds **3720 rows — the complete row set**. The extraction
+captured everything and died at the very end, writing `metadata.json`, which is **0 bytes**.
+
+**The judgment call, and I am recording it as a choice rather than a necessity.** Every reader here
+resolves a corpus through `lpm.load_corpus`, which requires `metadata.json` for the site list, the
+layer list and `bank_file_sha16`; without it the 5.1G cache cannot be loaded, indexed or checked
+against a bank. **It was probably reconstructible** — the site and layer lists follow from
+`config.json`, and the bank hash is computable. I chose not to reconstruct it: hand-writing the
+provenance file of a scientific corpus so that it will pass the very hash checks that exist to catch
+bank mismatches is a worse hazard than re-running. **The cost of that choice is about one GPU-hour**,
+and it is mine, not forced. The cache was reclaimed; `config.json`, `RUNMETA.json`, all 3720 rows of
+`results.jsonl` and a `QUARANTINE_REASON.md` are kept, which is what §53 asks for — the evidence that
+the run happened and how it failed, not the uninterpretable bulk.
+
+**The quota is not free space.** `/home/sharifm` is at **95 % (19T of 20T)** and shared with the lab,
+but my own quota is barely touched (200G against a 16384G limit, 301k files against 4295m). The
+`EDQUOT` is a volume-level, intermittent condition: writing the 1.7 KB provenance file **failed twice
+with 1.2T reported free** before succeeding on a later attempt. So this is not something a cleanup of
+mine reliably fixes, and it can strike any write — including the metadata write at the end of an
+hour-long GPU job, which is exactly what happened.
+
+**Resubmitted as `880762`, restricted to `--layers 24` only.** The controls this corpus exists to
+supply — `cw_demo_prev_mean`, `cw_demo_next_mean`, `cw_demo_rand_mean` (`C-CONT-040`,
+`CONT-ENTRY 068`) — are needed **at L24 and nowhere else**. The failed run swept 19 layers only because
+it copied the `cont1` invocation; that breadth costs ~19× the disk and buys nothing for this purpose.
+The re-run should produce roughly 270 MB rather than 5.1 GB, which also makes it far less likely to hit
+the condition that killed its predecessor.
+
+**Disk census, for the record** — `outputs/` is 127G, of which `extract_boombness/` is **84G**, and the
+three `cont1` corpora are 12G each. Nothing was pruned beyond the failed run's own cache.
