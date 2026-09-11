@@ -5607,3 +5607,52 @@ The honest gap is now **power**, not design. Distinguishing a −0.030 ASR effec
 roughly **4× the rows per domain** (MDE scales as 1/√n). That is the concrete, costed next
 experiment — and it is worth more than a second codeword, because replicating an underpowered
 contrast on `basket` would reproduce the ambiguity rather than resolve it.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 051 — **the control is inert on installation, confirming the manipulation**; and the §49 claim table
+
+#### 1. `DR-071`'s third arm closes the manipulation check
+
+`continst2_base` (the `--readout-max-batch 1` re-run) completed with the full **670 rows**:
+
+| arm | installation | vs base |
+|---|---|---|
+| `base` | 0.6785 | — |
+| **`ko`** | **0.4703** | **−0.2082**, CI [−0.227, −0.190], **67/67 domains** |
+| `ctrl` | 0.6854 | **+0.0068**, CI [+0.0053, +0.0083] |
+
+⇒ **The dose-matched control is effectively inert on installation** (+0.007 — statistically
+detectable at n=67 but ~30× smaller than the intervention, and *positive*), while the knockout drops
+installation in **every domain**. Same rows, same keys, **identical 1,385,316 edited cells**.
+
+That is what a manipulation check should look like: the intervention moves the thing it targets, the
+dose-matched control does not, and the gap is not marginal.
+
+#### 2. The power ceiling is structural, not a budget question
+
+`CONT-ENTRY 050 §5` said the gap is power. Checked what that would actually take:
+
+* `ds_common.py:1013` sets **`do_sample=False`** — generation is **deterministic**, so re-running the
+  same prompts produces **byte-identical** output and adds **zero** independent rows. (This is also
+  why `C-CONT-026` downgraded the "replication".)
+* the bank holds **10 rows/domain** for cell C × behavioural × dose 4 (1,160 rows / 116 domains).
+
+⇒ 4× the rows cannot be bought with GPU time. It needs **new prompts** — or a switch to stochastic
+sampling, which would break comparability with every prior result in the project. Recorded so the
+next session does not try to buy power by re-running.
+
+#### 3. `reports/DCS_CONT_CLAIM_TABLE.md` written (§49, §56)
+
+Eight claims we can state with status/n/statistic/source; eight things we must **not** say with the
+reason for each; ten withdrawn-or-narrowed claims including **`K1`**; a ten-entry own-work defect
+ledger; and open items **with costs**.
+
+The two sections that matter most for anyone reading this phase cold:
+
+* **"What we must not say"** — headed by *"we found a BOMB representation"*, because the registry has
+  **no candidate** and the search that produced one measured **topic**;
+* **the defect ledger** — whose recurring shape is *a quantity that could not have told you it was
+  wrong*, which appeared **inside the repair for itself three times**. What actually caught things
+  was adversarial re-derivation, the commit-time completeness guard, and persisted intervention dose
+  — **procedures, not cleverness**.
