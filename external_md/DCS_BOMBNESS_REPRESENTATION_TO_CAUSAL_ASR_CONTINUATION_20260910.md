@@ -7382,3 +7382,64 @@ The existing `gun`/`knife` extractions could not serve: they are `final_occurren
 
 ⛔ Unchanged: this is correlational, train+validation, no TEST read, no preregistration, no causal
 claim, and §46's conclusion is still not taken.
+
+---
+
+### CONT-ENTRY 079 — 2026-09-11 — the gun control refutes my prediction and still licenses nothing. The instrument has no variance to correlate against.
+
+`881110` COMPLETED clean — rc 0 in the log trailer, `failures {}`, `DONE.json`, 3720 rows, layers
+[14, 24], bank `8e646dfdb451abc6`. (The log also carries `slurmstepd: error: Cannot write to
+cgroup.procs`; that is scheduler noise, and after `C-CONT-072` I check the trailer and the files rather
+than the job state.)
+
+**§15 on the gun bank, the harmful non-BOMB reference, `cw_demo_mean`, 900 slots / 90 domains:**
+
+| | B (explicit concept) | ctx-only | **B − ctx** | perm p |
+|---|---|---|---|---|
+| **gun**, L24 | **+0.0320** | +0.0515 | **−0.0196** | 0.146 |
+| gun, L14 | −0.1354 | +0.0153 | −0.1507 | 1.000 |
+| *bomb / button*, L24 | *+0.3823* | *−0.0230* | *+0.4053* | *0.00050* |
+| *bomb / basket*, L24 | *+0.3223* | *−0.0094* | *+0.3317* | *0.00050* |
+
+**My recorded prediction was wrong.** `CONT-ENTRY 078` predicted that if the geometry were about
+concept installation generally, gun would land at +0.32…+0.38. It landed at **+0.0320** — a flat null.
+Recorded as a refuted prediction rather than quietly dropped.
+
+**But the null does not license the opposite claim, because the gun instrument barely moves.** A null
+needs a working measurement, so I checked before reading anything into it:
+
+| concept / codeword | mean `y_install` | sd | **within-domain sd** |
+|---|---|---|---|
+| **bomb** / button | **0.5636** | 0.4177 | **0.3739** |
+| **bomb** / basket | **0.3808** | 0.4299 | **0.3816** |
+| knife / button | 0.1322 | 0.2761 | 0.2188 |
+| gun / button | **0.0470** | 0.1485 | **0.0849** |
+| gun / basket | 0.0462 | 0.1701 | 0.0990 |
+| knife / basket | 0.0196 | 0.0965 | 0.0540 |
+
+The gun readout's **within-domain sd is 0.0849 against bomb's 0.3739** — a 4.4× smaller range on the
+exact quantity the correlation is computed against. The readout is not broken (median option mass
+0.1174 vs bomb's 0.2119; the sub-0.05 fraction is 0.30 vs 0.27 — comparable), the model simply **does
+not install `gun`**. With almost no variance to correlate, the gun correlation is attenuated toward
+zero by construction and the control is **INCONCLUSIVE**, not negative.
+
+⇒ **§15's harmful non-BOMB reference remains OPEN.** The three readings from `CONT-ENTRY 078` — toward
+BOMB, toward harm, toward whatever concept is installed — are all still live. What this bank family
+cannot provide is a harmful non-BOMB concept that *installs*, and the obvious fix is forbidden:
+restricting to the gun slots that did install would be post-hoc selection on the outcome, which §4
+explicitly prohibits.
+
+**A real finding falls out of the control, though, and it is about the attack rather than the geometry.
+The doublespeak remap is strongly concept-dependent.** On identical bank structure, identical
+codewords, and the same 90 domains, the remap installs `bomb` at **0.5636** and `gun` at **0.0470** —
+**12×** apart, with `knife` between them at 0.1322. Ordering by installability: **bomb ≫ knife > gun**,
+and it holds on both codewords (basket: 0.3808 / 0.0196 / 0.0462). Whatever makes this attack work is
+not a generic "remap a word onto a forbidden concept" mechanism; it is far easier for some concepts
+than others. That is a claim about the *attack*, measured on 1080 slots per cell, and it does not
+depend on any of the representation geometry above.
+
+It also reframes the phase's own naming: "Bombness" was never tested against a concept that installs
+comparably, because on this bank **no other concept does**.
+
+⛔ Unchanged: correlational, train+validation, no TEST read, no preregistration, no causal claim.
+§46's conclusion is still not taken, and §15's control is now explicitly listed as open rather than met.
