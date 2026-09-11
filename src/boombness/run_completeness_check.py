@@ -64,6 +64,34 @@ ROW_FILE = {
 
 #: Runs known to be short, with the reason. A short run is not automatically a defect — but silence
 #: about one is. Same convention as `ledger_propagation_check.METHOD_ONLY`.
+#: Runs that finished, wrote DONE.json, and persisted ZERO rows. Every one of these is an HONEST
+#: total failure: its summary.json ledger records n_succeeded = 0 with per-reason counts, so nothing
+#: is being hidden -- the run failed loudly and the files agree that it failed. They are listed here,
+#: with cause, so that the zero-row check stays LIVE for new runs instead of being switched off.
+#: None of them is cited by any claim in the record (checked 2026-09-11 across external_md/ and
+#: reports/). They are NOT deleted -- section 53: supersede or quarantine with provenance.
+KNOWN_ZERO = {
+    "ch_Dctrl_20260818_172957_3878938":
+        "ClearHarm empty-needle bug: target_surface is the empty string on external-harmful rows, so "
+        "occurrence resolution failed on all 179 (resolve:occurrence_count_mismatch). This is the bug "
+        "dcs_extract_under_ko.target_surface_positions now refuses up front.",
+    "ch_base_20260818_172957_375977":
+        "Same ClearHarm empty-needle bug, 179/179 failed.",
+    "ch_D_20260818_172957_3878935":
+        "Same ClearHarm empty-needle bug, the third arm of that wave, 179/179 failed.",
+    "s3_demo_processing_only_20260825_071208_421086":
+        "ScopedAttentionKnockout did not support batching: semantic_one_word raised "
+        "NotImplementedError on all 8 rows.",
+    "s3_response_query_only_20260825_071208_421085":
+        "Same ScopedAttentionKnockout batching NotImplementedError, 8/8.",
+    "s5_demo_processing_only_20260825_084234_2407242":
+        "Same batching NotImplementedError under the s5 configuration, 8/8.",
+    "s5_legacy_all_query_20260825_084234_2407243":
+        "AllQueryAttentionKnockout batching NotImplementedError on semantic_forced_choice, 8/8.",
+    "s5_query_prefill_only_20260825_084234_2407244":
+        "Same AllQueryAttentionKnockout batching NotImplementedError, 8/8.",
+}
+
 KNOWN_SHORT = {
     "continst_base_20260911_083431_3533623":
         "DCS-CONT-048: DR-071's baseline arm persisted 11 of 670 rows. Cause is a documented OOM, "
@@ -259,6 +287,7 @@ def is_a_run(run_dir, rowfile):
 
 def scan():
     problems, checked, non_runs = [], 0, []
+    zero_row, unchecked = [], 0
     for root, rowfile in sorted(ROW_FILE.items()):
         for d in sorted(glob.glob(os.path.join(ROOT, "outputs", "boombness", root, "*/"))):
             if not os.path.isfile(os.path.join(d, "DONE.json")):
@@ -276,6 +305,22 @@ def scan():
                 continue
             expect = cfg.get("expect_n")
             if not expect:
+                # REVIEW-2/DATA-07. `expect_n` is absent or 0 on most runs, and the old code simply
+                # `continue`d -- so the guard audited a minority of finished runs while its closing
+                # line announced that EVERY finished run was complete. A run without an expect_n
+                # cannot be checked against a target, but ZERO persisted rows is wrong on its own
+                # terms: nothing legitimately finishes, writes DONE.json, and persists nothing.
+                unchecked += 1
+                # No is_a_run() test here: reaching this line means config.json parsed, so this
+                # IS a run. (An earlier draft gated on `is_a_run(...) is False`, which is exactly
+                # backwards -- it would have fired only on things that are not runs, i.e. never.)
+                # Cheap by construction: zero rows <=> a zero-byte (or absent) row file. Parsing
+                # every unchecked run's rows instead took the pre-commit hook from seconds to ~10
+                # minutes, and a guard nobody can afford to run is a guard that gets disabled.
+                _rp = os.path.join(d, rowfile)
+                if not os.path.isfile(_rp) or os.path.getsize(_rp) == 0:
+                    zero_row.append((rid_, f"DONE.json present but {rowfile} holds ZERO rows, and "
+                                           f"the run carries no --expect-n to check it against"))
                 continue
             checked += 1
             rid = os.path.basename(d.rstrip("/"))
@@ -299,11 +344,11 @@ def scan():
                 problems.append((rid, f"{ci[2]} of {ci[1]} (domain x dose) cells hold fewer than "
                                       f"the modal {ci[0]} rows -- loss is NON-UNIFORM, which is "
                                       f"what biases a clustered analysis"))
-    return problems, checked, non_runs
+    return problems, checked, non_runs, zero_row, unchecked
 
 
 def main() -> int:
-    problems, checked, non_runs = scan()
+    problems, checked, non_runs, zero_row, unchecked = scan()
     fa_problems, comparable, not_comparable = scan_file_agreement()
     problems += fa_problems
     if checked < MIN_EXPECTED:
@@ -314,6 +359,16 @@ def main() -> int:
         print(f"[run-complete] FAIL — only {comparable} runs were COMPARABLE for file agreement, "
               f"expected at least {MIN_COMPARABLE}. Check 3 has collapsed to a no-op.")
         return 1
+    zero_row = [(rid, why) for rid, why in zero_row if rid not in KNOWN_ZERO]
+    if zero_row:
+        for rid, why in zero_row:
+            print(f"  ZERO-ROW {rid}: {why}")
+        print("[run-complete] FAIL -- a finished run persisted zero rows. If the failure is real "
+              "and documented, add it to KNOWN_ZERO with its cause; do not delete the run.")
+        return 1
+    print(f"[run-complete] {checked} finished runs carry an expect_n and were checked; "
+          f"{unchecked} finished runs carry none and were NOT checked against a target "
+          f"(only their row count being non-zero was verified); ")
     print(f"[run-complete] {checked} finished runs carry an expect_n; "
           f"{len(KNOWN_SHORT)} documented short; "
           f"{len(non_runs)} DONE dirs are not runs (no config and no row file)")
@@ -331,7 +386,9 @@ def main() -> int:
     if not ok:
         print("[run-complete] FAIL — a finished run did not persist all its rows.")
         return 1
-    print("[run-complete] every finished run persisted its full row count")
+    print("[run-complete] every finished run THAT CARRIES AN expect_n persisted its full row "
+          f"count; {unchecked} others carry none and were checked only for being non-empty "
+          f"({len(KNOWN_ZERO)} documented zero-row failures allowed)")
     return 0
 
 

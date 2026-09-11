@@ -6791,3 +6791,74 @@ locally and the helpers had been inheriting it by accident of call order. Identi
 Caught on first execution. Fixed with a local import and a comment pointing at the precedent.
 
 Basket arms `877545/6/7` at ~3h30m.
+
+---
+
+### CONT-ENTRY 069 — 2026-09-11 — the basket ASR arms landed clean; the completeness guard was auditing 30% of runs and saying "every"
+
+**All three basket ASR arms COMPLETED.** `877545` base (03:35:03), `877546` ko (03:38:05), `877547`
+ctrl (03:35:11), all rc 0. Each persisted **670/670** rows with `expect_n = 670` and
+`failures: {n_attempted: 670, n_succeeded: 670, n_failed: 0}` — no repeat of `C-CONT-031`, where
+`--readout-max-batch` defaulting to 16 silently cost 11 of 670 rows behind `rc=0` and a PASS gate.
+The `--readout-max-batch 1` carried on every arm from the start did its job.
+
+**Judge submitted as `880569`**, all three arms in **one** manifest and one invocation — the
+`CDS-PR-001` §2.5 requirement, so the three arms cannot drift apart through separate judge sessions.
+Bank `boombness_prompt_bank_ts116m_basket_bomb.jsonl`, 670 rows/arm, judge pinned to
+`openai/gpt-4o-mini`. The submitter refused nothing: it checks `DONE.json` and an exact gens count per
+arm before writing the manifest.
+
+When this lands, the basket `DR-070` primary replicates claims **A2/A3** on the second codeword. The
+`CONT-ENTRY 060` precondition is already discharged — the lexicon was verified on basket before the
+arms existed — but `C-CONT-038` now adds a second, harder caveat that must travel with the number:
+**`asr_and_concept_present` is an upper bound on both codewords**, because its numerator is inflated by
+the lexicon's own false-positive channel (basket 11/22 of sampled kept positives spurious).
+
+---
+
+**C-CONT-051 — the commit-time completeness guard audited 536 of 1023 finished runs and announced
+"every finished run persisted its full row count".** `REVIEW-2/DATA-07`. The mechanism is one line:
+`if not expect: continue` skipped every run whose `expect_n` was absent or zero, which is most of them,
+and the closing message did not qualify itself. The guard has run at every commit in this phase.
+
+Fixed in three parts:
+1. Runs without an `expect_n` are now **counted and reported** rather than silently skipped. Current
+   census: **536 checked against a target, 487 checked only for being non-empty.**
+2. A new **zero-row check** that needs no `expect_n`, because nothing legitimately finishes, writes
+   `DONE.json`, and persists nothing. It fails the commit.
+3. The verdict line now reads *"every finished run **that carries an `expect_n`** persisted its full
+   row count; 487 others carry none and were checked only for being non-empty"*.
+
+The new check immediately found **8 zero-row runs with `DONE.json`** — and they are all **honest**
+failures whose ledgers say so (`n_succeeded: 0` with per-reason counts). Three `ch_*` ClearHarm arms
+died 179/179 on the **empty-needle bug** (`target_surface` is the empty string on external-harmful
+rows, so occurrence resolution matched everywhere) — the exact bug that
+`dcs_extract_under_ko.target_surface_positions` now refuses up front, and which its docstring already
+cites as having "killed 179/179 rows in three ClearHarm arms while SLURM reported COMPLETED 0:0". Five
+`s3_*`/`s5_*` runs died 8/8 on `NotImplementedError` from knockout classes that did not support
+batching.
+
+They are recorded in a new `KNOWN_ZERO` allowlist **with cause, not deleted** (§53), so the check stays
+live for new runs instead of being switched off to make the commit pass. I verified none is cited by
+any claim in `external_md/` or `reports/`. An eighth surfaced only after the first seven were listed —
+`ch_D_20260818_172957_3878935`, the third arm of the same ClearHarm wave — because my first listing was
+truncated by `tail`. The allowlist holds **8**, counted from the module rather than from my tally: I
+first wrote "9" here by adding one to a number I had already miscounted, which is the `C-CONT-034`
+shape again, caught before the commit by reading `len(KNOWN_ZERO)` instead of trusting the draft.
+
+**Two further defects in the fix itself, both caught by its own tests.** The zero-row branch first
+gated on `is_a_run(d, rowfile) is False` — exactly backwards, since reaching that line means
+`config.json` parsed and the directory therefore *is* a run; the condition could never have fired.
+And the first working version parsed every unchecked run's row file, taking the pre-commit hook from
+seconds to **9m51s**; a guard nobody can afford to run is a guard that gets disabled. Zero rows is
+exactly a zero-byte file, so the check is now `getsize() == 0` and the guard completes in **7.9 s**.
+Two new tests cover the behaviour: one asserts an `expect_n`-less zero-row run is counted *and*
+flagged, the other that every `KNOWN_ZERO` entry carries a stated cause, so the allowlist cannot
+become a silent dumping ground. 27 tests pass.
+
+**What this does not change:** no published number moves. `REVIEW-2/DATA` had already traced every
+*short* run's shortfall into an EXCLUDED domain. The defect was an assurance the guard was not entitled
+to give, and it gave it 69 times per commit run.
+
+Jobs: `880540` (F5 control extraction, for the adjacency/mass controls `C-CONT-040` requires),
+`880569` (basket ASR judge).

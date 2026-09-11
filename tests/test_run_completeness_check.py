@@ -131,7 +131,7 @@ def test_the_ROW_COUNT_check_fires_on_loss_the_cell_check_CANNOT_see(tmp_path, m
     monkeypatch.setattr(rc, "ROW_FILE", {"fakeroot": "results.jsonl"})
     monkeypatch.setattr(rc, "MIN_EXPECTED", 1)
     monkeypatch.setattr(rc, "KNOWN_SHORT", {})
-    probs, checked, _ = rc.scan()
+    probs, checked, _, _, _ = rc.scan()
     assert checked == 1
     assert rc.cell_imbalance(rows)[2] == 0, "fixture must be cell-BALANCED or it tests the wrong check"
     assert len(probs) == 1 and "expect-n" in probs[0][1], (
@@ -293,14 +293,14 @@ def _scan_no_config(tmp_path, monkeypatch, with_rows):
 def test_a_run_with_ROWS_but_no_config_is_a_DEFECT_not_a_skip(tmp_path, monkeypatch):
     """It persisted rows, so it IS a run -- and its expect_n can never be recovered. Before this,
     it was dropped silently and counted nowhere."""
-    problems, checked, non_runs = _scan_no_config(tmp_path, monkeypatch, with_rows=True)
+    problems, checked, non_runs, _, _ = _scan_no_config(tmp_path, monkeypatch, with_rows=True)
     assert non_runs == [], "a directory holding rows is a run, not a non-run"
     assert len(problems) == 1 and "UNCHECKABLE" in problems[0][1]
 
 
 def test_a_dir_with_NEITHER_config_nor_rows_is_COUNTED_as_a_non_run(tmp_path, monkeypatch):
     """The four fit artifacts. Out of scope is fine; being out of scope SILENTLY is not."""
-    problems, checked, non_runs = _scan_no_config(tmp_path, monkeypatch, with_rows=False)
+    problems, checked, non_runs, _, _ = _scan_no_config(tmp_path, monkeypatch, with_rows=False)
     assert problems == [] and checked == 0
     assert len(non_runs) == 1, "an out-of-scope directory must still be counted and reported"
 
@@ -315,6 +315,31 @@ def test_the_two_states_are_DISTINGUISHED_by_the_scan(tmp_path, monkeypatch):
 
 
 def test_the_real_corpus_reports_its_non_runs_rather_than_hiding_them():
-    problems, checked, non_runs = rc.scan()
+    problems, checked, non_runs, _, _ = rc.scan()
     assert sorted(non_runs) == ["fitN_concept", "fitN_concept_bk", "fitU_button_bk", "fitW_codeword"]
     assert checked >= rc.MIN_EXPECTED
+
+
+def test_a_finished_run_with_ZERO_rows_and_no_expect_n_is_a_DEFECT_not_a_skip(tmp_path, monkeypatch):
+    """C-CONT-051. `if not expect: continue` skipped every run without an expect_n, and the guard
+    then announced that EVERY finished run was complete -- while auditing about a third of them.
+    A run that writes DONE.json and persists nothing is wrong whether or not it declared a target."""
+    d = tmp_path / "outputs" / "boombness" / "fakeroot" / "zero_run_20260101_000000_1"
+    d.mkdir(parents=True)
+    (d / "DONE.json").write_text("{}", encoding="utf-8")
+    (d / "config.json").write_text(json.dumps({"args": {"bank": "b.jsonl"}}), encoding="utf-8")
+    (d / "results.jsonl").write_text("", encoding="utf-8")
+    monkeypatch.setattr(rc, "ROOT", str(tmp_path))
+    monkeypatch.setattr(rc, "ROW_FILE", {"fakeroot": "results.jsonl"})
+    _, checked, _, zero_row, unchecked = rc.scan()
+    assert checked == 0, "fixture carries no expect_n, so the target check must not see it"
+    assert unchecked == 1, "a run without an expect_n must be COUNTED, not silently dropped"
+    assert [rid for rid, _ in zero_row] == ["zero_run_20260101_000000_1"]
+
+
+def test_every_KNOWN_ZERO_entry_carries_a_stated_cause():
+    """KNOWN_ZERO exists so the zero-row check stays live, not so it can be switched off. An entry
+    without a reason is an entry nobody had to justify."""
+    assert rc.KNOWN_ZERO, "the allowlist must not be empty while the guard reports documented zeros"
+    for rid, why in rc.KNOWN_ZERO.items():
+        assert isinstance(why, str) and len(why) > 40, f"{rid} has no stated cause"
