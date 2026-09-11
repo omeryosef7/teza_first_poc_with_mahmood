@@ -5954,3 +5954,70 @@ now cheap to compute on exactly this artifact.
 #### 3. Loop state
 
 Basket ASR arms `877545/6/7` running on `n-503`, past the population filter.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 057 — **`F4` run: the depth trajectory adds nothing.** Third §46 gap closed, third negative
+
+`scripts/dcs_cont_trajectory.py` · `outputs/dcs_cont/trajectory_train_button_bomb.json`.
+19 layers at `cw_demo_mean`, within-domain centred, leave-one-**DOMAIN**-out, 670 slots / 67 domains.
+
+| feature | ρ | |
+|---|---|---|
+| **best SINGLE layer (L24)** | **+0.5463** | the bar |
+| `auc_depth` (mean over depth) | +0.5280 | ⛔ does not beat it |
+| `slope_depth` | +0.2318 | ⛔ |
+| `late_minus_early` | +0.1915 | ⛔ |
+| `peak_layer` | +0.2197 | ⛔ |
+
+⇒ **No trajectory feature beats reading the state at one layer.**
+
+§11's motivating hypothesis was that *"Doublespeak may progressively RESOLVE the interpretation
+rather than encode it as one fixed vector"*. On this evidence it gains **no support**: the shape of
+the depth profile carries no information about installation beyond its height at the plateau.
+
+🆕 `auc_depth` coming *close* (0.528 vs 0.546) is the expected behaviour, not a near-miss — averaging
+z-scored layers largely recovers the plateau `CONT-ENTRY 056` measured. That it still **loses** is
+the informative part: aggregating depth **discards** rather than adds.
+
+Each feature was z-scored per layer before combining, so a layer with a larger score scale could not
+dominate a sum by scale alone.
+
+#### 1. The pattern across four families is now consistent
+
+Everything tried at this site loses to, or ties with, **the raw state read at one late layer**:
+
+| family | best | vs raw state at L24 |
+|---|---|---|
+| `F2` interaction | 0.460 | ⛔ loses at every depth |
+| `F2` `C − B` | 0.547 | ≈ tie (`C-CONT-017`: p = 0.515) |
+| `F3` pooled `mean4` | 0.482 | ⛔ loses, and peaks at a different **site** |
+| **`F4` trajectory** | **0.528** | ⛔ **loses** |
+| `F6` low-rank r>1 | 0.518 | ⛔ no gain (p = 0.553) |
+| `F0` `B1` axis (`E − A`) | — | ⛔ **0/380 cells clear** |
+
+⇒ Four independent families, four negatives, one tie. **The representation of within-domain
+installation at this site is a single direction of the raw doublespeak-cell state at late layers**,
+and every attempt to find structure beyond that — contrast, pool, subspace, trajectory — has
+subtracted from it.
+
+#### 2. §46 accounting
+
+| prerequisite | status |
+|---|---|
+| multiple families | **5 of 8 fitted** (`F1`,`F2`,`F3`,`F4`,`F6`; `F0` inherited) |
+| multiple positions | ✅ |
+| multiple layers | ✅ (`CONT-ENTRY 056`) |
+| pooled / distributed | ✅ |
+| low-rank | ✅ (`CONT-ENTRY 053`) |
+| concept-free readout | ✅ |
+| aligned reference | ⚠️ **still no matched prototype** (§15) |
+
+**All three gaps named in `CONT-ENTRY 052` are now closed** — low-rank, layers, and trajectories —
+in the five iterations since naming them. Remaining: **`F5` probes** and §15's **matched reference
+prototype**. ⛔ *"There is no BOMB representation"* stays forbidden until those are run, but the
+statement is now much better supported than when it was first written down.
+
+#### 3. Loop state
+
+Basket ASR arms running.

@@ -130,7 +130,7 @@
       "mandate_section": "11",
       "mathematical_definition": "features of the depth profile s(L) of an installation-aligned score: slope over a frozen layer window, onset layer, peak layer, area under the layer trajectory, change in concept logit rank across layers",
       "motivation": "Doublespeak may progressively RESOLVE the interpretation rather than store it as one fixed vector; a static vector would then be the wrong object",
-      "status": "DECLARED"
+      "status": "FITTED (CONT-ENTRY 057), NEGATIVE. Depth-profile features over 19 layers at cw_demo_mean, within-domain, LOO by domain: auc_depth +0.5280, slope_depth +0.2318, late_minus_early +0.1915, peak_layer +0.2197 -- NONE beats the best single layer (L24, +0.5463). Section 11's hypothesis that the interpretation is progressively RESOLVED rather than encoded as one state gains no support: the depth profile carries no information beyond reading the state at its plateau."
     },
     {
       "family_id": "F5_probe_installation",
