@@ -1,0 +1,31 @@
+{
+  "schema": "dcs_cont_intervened_asr_declaration_amendment/1",
+  "id": "DR-070-ASR-A1",
+  "status": "FROZEN",
+  "parent": "configs/dcs_cont_dr070_intervened_asr.json",
+  "parent_status_at_amendment": "FROZEN",
+  "frozen_at": "2026-09-11, BEFORE any knockout arm was judged; the ko arm was mid-generation and the invalid control arm was cancelled",
+  "judge_runs_matching_contasr2_at_amendment": 0,
+  "reason": "REVIEW-3/S24-3. The parent declared the dose-matched control as nondemo_random:attn_knockout:6-14:1.0 -- the count-matched, demonstration-disjoint random draw. THIS REPOSITORY HAD ALREADY INVESTIGATED AND REFUTED THAT CHOICE. src/boombness/retrieval_strength.py:9-25 records that its own 8-row smoke measured demo_mass 0.0374 against ctrl_mass 0.2489 with demo > ctrl in 0 of 4 measurable rows, and states the cause: 'a count-matched draw matches SIZE but not POSITION, and attention is dominated by the BOS sink and by recency ... The control was measuring position, not retrieval.' The artifact field is named ctrl_mass_band_REFERENCE_ONLY for exactly this reason. On the full Llama artifact the count-matched draw carries ~5.7x the demonstration block's L6-14 attention mass. So the parent's control is plausibly the LARGER intervention, and the parent's expected sign could be produced or reversed by the control rather than by the pathway.",
+  "amends": {
+    "arms.ctrl": {
+      "from": "nondemo_random:attn_knockout:6-14:1.0, scope target_surface_row_only",
+      "to": "demo_all:attn_knockout:20-31:1.0, scope target_surface_row_only",
+      "why": "the SAME destination rows and the SAME demonstration keys as the knockout arm, differing ONLY in the layer band -- late layers where the identical knockout is near-inert. Positional priors are shared by both bands and largely cancel, no draw can be infeasible, and the control is matched on position as well as on count. This is the fix retrieval_strength.py adopted for the same problem."
+    },
+    "void_conditions": {
+      "from": "the dose-matched control's edited-cell count differs from the knockout's by more than 1 percent",
+      "to": "SUPERSEDED AND VOIDED AS A CONDITION. REVIEW-3 proved by construction over 2000 prompt geometries that cell counts are IDENTICAL for any same-scope same-count arm pair (|surface_span| x |demo_keys| x n_heads), so the condition is unfalsifiable and certifies nothing. Replaced by: the control must use the SAME key set as the knockout, which is now true by construction, and the two arms must differ ONLY in the layer band."
+    }
+  },
+  "unchanged": [
+    "the primary statistic and its direction",
+    "the outcome definition",
+    "the population",
+    "the MDE and power block",
+    "the CANNOT ANSWER list",
+    "things_that_must_not_be_said"
+  ],
+  "note_on_the_cancelled_arm": "job 876884 generated 162 of 670 rows under the refuted control and was cancelled. Its directory has no DONE.json and is not a corpus. It is NOT judged and NOT read.",
+  "git_commit_at_amendment": "12a86145492792c860ee44053391bd2d4a861e5f"
+}

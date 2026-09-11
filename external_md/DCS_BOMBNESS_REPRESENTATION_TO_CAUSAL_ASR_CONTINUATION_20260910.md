@@ -4661,3 +4661,92 @@ matters.
 
 Baseline: judged and concept-scored. `ko`/`ctrl`: generating. `REVIEW-3`: running.
 `DR-070`: frozen, unread, and still uncomputable.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 037 — **`REVIEW-3`: the control was refuted by this repository before I chose it.** Three BLOCKERs; `DR-070` amended, not edited
+
+Four reviewers + adjudicator; **one reviewer (`ASR-DATA`) died on a safety-classifier error**, so the
+check it carried — *read 20 of the 131 "positives that never mention the concept" and say whether you
+agree* — **did not happen** and is still outstanding. Recorded so it is not mistaken for a pass.
+
+#### 1. `C-CONT-019` (BLOCKER) — the dose-matched control is not a control, and the repo said so
+
+`DR-070` declared the control as `nondemo_random` — the count-matched, demonstration-disjoint random
+draw. **This repository had already tried that, refuted it, and renamed the artifact field to warn
+against it.** `src/boombness/retrieval_strength.py:9-25`, in its own words:
+
+> *"The 8-row smoke refuted it immediately: `demo_mass 0.0374` vs `ctrl_mass 0.2489`, with demo > ctrl
+> in **0 of 4** measurable rows … a count-matched draw matches **SIZE but not POSITION**, and attention
+> is dominated by the BOS sink and by recency … **The control was measuring position, not
+> retrieval.**"*
+
+The artifact field is literally named **`ctrl_mass_band_REFERENCE_ONLY`**. On the full Llama artifact
+the count-matched draw carries **≈ 5.7×** the demonstration block's L6-14 attention mass, demo > ctrl
+in **0 of 12** rows.
+
+⇒ **My "dose-matched control" is plausibly the *larger* intervention.** The frozen expected sign could
+have been produced — or reversed — by the control rather than by the pathway. I chose it without
+reading a file in this repository that exists to record exactly that mistake.
+
+🆕 And `REVIEW-3` proved the VOID condition guarding it was **unfalsifiable**: over 2000 prompt
+geometries, cell counts are *identical by construction* for any same-scope same-count pair
+(`|surface_span| × |demo_keys| × n_heads`). *"The control's edited-cell count differs by more than
+1 %"* could never fire. A guard that cannot fail is not a guard.
+
+**Action, taken before any knockout arm was judged (asserted: 0 matching judge runs):**
+
+* the invalid control arm (`876884`, 162/670 rows) was **cancelled**; it has no `DONE.json`, is not a
+  corpus, and will not be judged or read;
+* **`configs/dcs_cont_dr070_amendment1.json`** written — ⛔ `DR-070` itself is **FROZEN and untouched**;
+  the amendment loads the parent, asserts its status, and records named diffs;
+* the corrected control (`876983`) is **`demo_all:attn_knockout:20-31:1.0`, same scope, same rows,
+  same demonstration keys — differing only in the layer band.** Positional priors are shared and
+  largely cancel, no draw can be infeasible, and it is matched on **position** as well as count. This
+  is the fix `retrieval_strength.py` itself adopted for the same problem.
+
+#### 2. `C-CONT-020` (BLOCKER) — the `non_refusal` conjunct was never computed
+
+`asr_flag` read `refusal` / `is_refusal`; `judge_boombness.py` writes **`refused`**. Field census on
+the real baseline: `refused` on **670/670**, the other two on **0**. Proven by mutation — setting
+`refused=True` on all 670 rows of an arm moved the primary by **zero digits**.
+
+⇒ The analyzer silently computed *"ASR AND concept_present"* under the primary's name — **the exact
+failure mode the `--concept-presence` refusal was written to prevent for the other conjunct.** Fixed:
+it now reads whichever refusal key is present and **refuses** if none is (*missing ≠ zero*, already
+this file's rule for `malicious_at_0.5`).
+
+#### 3. `C-CONT-021` (BLOCKER) — one concept map cannot express a per-arm outcome
+
+Concept presence is a property of **each arm's own completion**. Two runs of the *same* condition
+already disagree on **9.55 %** of rows. A single map applied to all three arms degenerates the primary
+to a raw-ASR difference on a fixed subpopulation — **biased toward the null on exactly the channel the
+knockout should move.**
+
+And no producer of the per-`prompt_id` format exists: `dcs_succ_concept_presence.py` computes row-level
+hits and **throws them away**, aggregating to arm. ⇒ **`CONT-ENTRY 029`'s "chain verified end-to-end"
+was false at its last join** — that link had never been run against a real artifact.
+
+Fixed by **refusing rather than computing the wrong thing**: the analyzer now requires a per-arm map,
+checks each arm's coverage of its own judged rows, and refuses the old single-map format. Verified
+firing. The per-arm emitter is now required work before the primary can be computed.
+
+#### 4. Also confirmed, and corrected here
+
+* ⛔ **`C-CONT-022` — `CONT-ENTRY 034`'s headline was wrong three ways.** `0.048` is the CI's **upper
+  endpoint**, not its half-width (0.0329); it was the **raw** outcome compared against the
+  **corrected** MDE; and a CI half-width (1.96·se) **is not** an MDE (2.80·se). Re-derived on the
+  actual primary outcome: test-retest CI **[−0.0164, +0.0194]**, half-width **0.0179**, implied MDE
+  **0.0256** — **less than half** the declared 0.0531. ⇒ The instrument is **better** than I claimed,
+  and my "operating at the reproducibility floor" caveat was wrong in the pessimistic direction.
+* ⛔ **`C-CONT-023` — `DR-070`'s `why_the_baseline_is_rerun` is factually false.** The inherited
+  `tsb66_C_n4` ran `--attn-impl eager` too, and nothing in `score_behavior` batches generation. The
+  only real difference is the **seed**. The re-run remains useful — it produced the reproducibility
+  measurement of `CONT-ENTRY 034` — but the stated reason for it was wrong.
+* the declaration's `sd_paired` assumes **independent** arms; the arms correlate at **r = 0.87**, so
+  the declared MDE is conservative.
+
+#### 5. Standing
+
+⛔ The §24 primary **cannot be computed** until the per-arm concept-presence emitter exists, and its
+control arm is only now the right one. `ko` (`876883`) continues; it was never the invalid arm.
