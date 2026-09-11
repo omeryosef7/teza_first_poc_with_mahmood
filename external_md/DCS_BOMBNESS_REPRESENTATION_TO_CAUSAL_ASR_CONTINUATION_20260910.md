@@ -7141,3 +7141,74 @@ matching section G of the claim table and `REVIEW-2/SCIENTIFIC`'s ranking.
 **It remains a DRAFT and remains unsent.** The ⛔ banner at its head is untouched.
 
 Job `880762` at 3300/3720.
+
+---
+
+### CONT-ENTRY 075 — 2026-09-11 — F5 passes its controls, and DR-072 is CONFIRMED on TEST. The single read is now spent.
+
+**1. The controls `C-CONT-040` demanded now exist** (`880762`, L24 only, rc 0, `failures {}`,
+`DONE.json`, 23 sites, bank `dcd92d723f3e6d00`). Fit on TRAIN, λ = 1e2 fixed, scored on VALIDATION:
+
+| site | what it is | ρ |
+|---|---|---|
+| **`cw_demo_mean`** | **F5: mean of the 4 demonstration CODEWORD rows** | **+0.6779** |
+| `cw_demo_prev_mean` | the token *before* each demo codeword | +0.5072 |
+| `cw_demo_next_mean` | the token *after* each demo codeword | +0.4881 |
+| **`cw_demo_rand_mean`** | **size-matched RANDOM rows from the same demo span** | **+0.2819** |
+| `cw_query` | the query codeword row | +0.6017 |
+| `cw_demo_first` | first demo codeword alone | +0.2242 |
+
+**F5 beats the size-matched mass control by +0.3960** and its own neighbours by 0.17–0.19. It is not
+reading demonstration-block mass. Note also that `cw_demo_mean` here is **+0.6779** against **+0.6784**
+measured on an entirely separate extraction — 0.0005 apart, on different hardware.
+
+**C-CONT-055 — my own speculation in `CONT-ENTRY 068` is refuted by this control.** That entry said
+F5's advantage "looks like averaging four demonstration rows reduces variance." Averaging four
+*random* rows from the same span gives **+0.2819**, not +0.678. The averaging is not the explanation;
+**the codeword rows specifically carry the content.** I wrote a mechanism into the record on intuition
+and the control I had already ordered contradicted it.
+
+**2. Cross-GPU drift was measured before the read, not assumed.** The fit corpus was extracted on an
+**RTX 3090**, the TEST corpus on an **L40S**, the control corpus on a **Quadro RTX 8000** — and
+`C-CONT-052` established that bfloat16 forward passes differ across architectures. Measured on the same
+validation rows held in two corpora on two GPUs: the hidden states differ by a **median 2.99 % relative
+L2** (max 7.07 %), and F5's ρ moves by **+0.0008** (0.6784 → 0.6792). The probe is robust to a drift
+that is plainly visible in the states themselves. The confound is bounded at ~0.001, so the read could
+proceed across architectures.
+
+**3. `DR-072` — the confirmatory TEST read, executed ONCE.**
+
+```
+site=cw_demo_mean layer=24 cell=C lambda=100   fit=90 doms/900 slots   TEST=23 doms/230 slots
+rho_test                    +0.6054
+comparator (ridge at inf)   +0.5475   -> F5 beats it: True
+per-domain: mean +0.6401, median +0.7212, positive in 23/23 (100.0%)
+null (2000 perms, predictor FIXED): p50=+0.0002 p95=+0.1204 max=+0.2417 -> p = 0.00050
+prespecified: rho>0 ✓ | p<0.05 ✓ | >=60% domains ✓        VERDICT: CONFIRMED
+```
+
+ρ_test = **+0.6054** lands inside the prespecified window **[0.55, 0.70]**, written down before any
+TEST quantity existed. Positive in **23 of 23** domains. All three gates pass, and so does the fourth,
+prespecified comparator gate — though `C-CONT-046`/`047` established that gate is weak, since the
+"comparator" is the same ridge at λ → ∞ and the difference carries a CI straddling zero.
+
+The estimate declines monotonically across populations — **0.6241 TRAIN (LOO) → 0.6784 VALIDATION →
+0.6054 TEST** — which is the ordinary shape when a candidate is selected on the middle population.
+
+**4. What this does and does not establish.** The four `things_that_must_not_be_said` printed with the
+result stand, with one amendment:
+* It predicts **installation**, the model's own semantic report — **not ASR**. Entries 049/050/071 are
+  untouched; the dissociation stays qualitative on both codewords.
+* It is **not** a bomb representation.
+* The frozen doc says F5 "is not localised at the codeword — no localisation test has been run on it."
+  **That prohibition's basis has changed**: §1 above *is* that test, and it says the demonstration
+  codeword rows do carry the content. I record the amendment rather than the conclusion, because the
+  localisation evidence is **TRAIN/VALIDATION only** — it was not part of the TEST read and may not
+  borrow its confirmation.
+* A confirmed ρ **licenses no causal claim.** `C-CONT-040` stands and is structural: F5's site is
+  causally upstream of `target_surface_row_only`, so its input is **bit-identical** across `ko` and
+  `ctrl`. F5 is a confirmed *predictor* that is provably incapable of mediating the one intervention
+  this phase owns.
+
+**The registry closes**: 8 of 8 families fitted, one positive, **confirmed on TEST**. The single read
+is spent and `DR-072` is complete.
