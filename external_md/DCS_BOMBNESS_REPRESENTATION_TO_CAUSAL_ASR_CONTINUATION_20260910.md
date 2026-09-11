@@ -7055,3 +7055,52 @@ the condition that killed its predecessor.
 
 **Disk census, for the record** — `outputs/` is 127G, of which `extract_boombness/` is **84G**, and the
 three `cont1` corpora are 12G each. Nothing was pruned beyond the failed run's own cache.
+
+---
+
+### CONT-ENTRY 073 — 2026-09-11 — the claim table rebuilt against the evidence as it now stands
+
+`reports/DCS_CONT_CLAIM_TABLE.md` is the paper-facing deliverable and it had not been touched since
+before `REVIEW-2`. Eleven corrections and one new primary later, several of its rows asserted things
+the evidence no longer supports. Rebuilt, 86 → 132 lines.
+
+**Section A — what we can tell Matan and Mahmood.**
+* **A2 is now cross-codeword**: basket **−0.0090, CI [−0.0254, +0.0090], p = 0.40, NULL POWERED**
+  beside button's +0.0030. Never pooled, as the mandate requires.
+* **A3** is two-codeword — and its parenthetical *"both arms same scope/bands/rows"* was **false on the
+  dose clause**, which `REVIEW-2/SCIENTIFIC` caught: the installation and ASR arms use different query
+  templates and persisted dose totals of 346,329 vs 1,385,316. Corrected in place rather than dropped.
+* **A6** no longer says **REPLICATED**. It says **ROBUST TO GENERATION CHURN**, and carries the reason:
+  byte-identical prompts (`prompt_sha16` 670/670) produced **573/670 different completions** because one
+  run was on a V100 and one on an L40S.
+* **A7 is split.** The old row claimed the correction is *"valid in both directions"*. **A7b** now
+  records that its kept rows were never audited until `REVIEW-2` and that 63 of 100 sampled button
+  kept-positives contain no bomb content — so **every corrected number in this program is an upper
+  bound**, stated as a status, not a footnote.
+* Three new rows: **A9** the 2.55× instrument result with its run-clustered CI [2.46, 2.66] and design
+  effect 24.9; **A10** the hardware noise floor, inside which the `DR-070` primary sits; **A11** `F5`,
+  flagged **CANDIDATE ONLY — TEST UNREAD**.
+
+**Section B** gains six prohibitions, the load-bearing ones being that no corrected number may be
+called an estimate, that byte-reproducibility holds only within a GPU architecture, that the tighter
+basket interval is not a stronger null, and that **A11 may not be called the mechanism** — its input is
+bit-identical across `ko` and `ctrl`.
+
+**Section C** gains `C-CONT-037` **withdrawn in full** (with entry 063's headline falling alongside it),
+plus 038, 043, 046, 047, 049 and 053. **Section D** gains seven defects, and its "recurring shape" line
+is updated from three to **five** instances of a defect appearing *inside the repair for itself* —
+including two inside today's guard fix.
+
+**Section E** now leads with **`DR-072`'s held TEST read**, and corrects in place the note that used to
+say re-runs add nothing because generation is deterministic: that is false across architectures, but
+the divergence is numerical rather than a fresh sample, so it still buys no power. Three items are
+closed — the basket replication, the judge re-score, and the two never-fitted families.
+
+**New section G, "if only one thing is reported."** `REVIEW-2/SCIENTIFIC` ranked the methodological
+result above every mechanistic one and I agree: an LLM-judge ASR pipeline on codeword-remapping
+jailbreaks **mismeasures by 2.55× [2.46, 2.66]**, its error channels are **codeword-dependent**, and the
+correction for the obvious channel carries a large unaudited channel of its own. 58,468 rows, 111 runs,
+158 completions hand-read across two codewords, and it generalises past this bank. The mechanistic
+results are a clean two-codeword null and a candidate that cannot be a mechanism.
+
+Job `880762` (L24 controls) running.
