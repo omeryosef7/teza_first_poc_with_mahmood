@@ -1,0 +1,15 @@
+{
+ "rho_explicit_bomb": 0.3822992538673916,
+ "rho_context_prototype": -0.022957197066498437,
+ "difference": 0.40525645093389007,
+ "diff_ci95": [
+  0.294339810545395,
+  0.510140545085564
+ ],
+ "perm_p": 0.0004997501249375312,
+ "n_slots": 900,
+ "n_domains": 90,
+ "site": "cw_demo_mean",
+ "layer": 24,
+ "population": "train+validation"
+}

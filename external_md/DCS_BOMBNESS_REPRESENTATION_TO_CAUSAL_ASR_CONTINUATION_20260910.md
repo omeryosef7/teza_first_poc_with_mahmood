@@ -7264,3 +7264,77 @@ version.
 
 Open-item list updated accordingly: the sufficiency test moves from "~6 GPU-h" to **"blocked, needs a
 position-matched bank"**.
+
+---
+
+### CONT-ENTRY 077 — 2026-09-11 — §15's matched reference was constructible all along, and it PASSES its own test. The last §46 prerequisite closes.
+
+`CONT-ENTRY 076` closed the sufficiency patch as not-constructible. The other long-open item was §15's
+**matched reference prototype**, recorded as ⚠️ PARTIAL / "never built" since the phase began. It turns
+out the bank already contains the matched pair.
+
+**The alignment, measured.** §15 asks for donor and recipient sharing *domain, sentence structure,
+query, semantic role, token position, length and style*, differing **mainly in explicit BOMB vs
+codeword-remapped BOMB**. Cell-pair alignment within the same slot, 930 slots:
+
+| pair | `seq_len` equal | `token_pos` equal | **demo positions equal** |
+|---|---|---|---|
+| **B → C** | **99 %** | **99 %** | **99 %** |
+| A → E | 100 % | 100 % | 100 % |
+| A → C | 4 % | 4 % | **0 %** |
+| B → E | 4 % | 4 % | **0 %** |
+| E → C | 4 % | 4 % | **0 %** |
+
+**B→C is fully aligned in 928 of 930 slots across 93 domains** — it is an exact `button`↔`bomb` word
+swap, which is why `PAIR_ALIGNMENT` classes the analogous `harm_ctx`/`benign_ctx` pairs as `absolute`.
+This is exactly §15's construction, and the reason it looked impossible before is that the phase kept
+reaching for A→C (the cell pair that is *not* aligned, 0 % on demo positions).
+
+**The §15 test, run at `cw_demo_mean` L24, within domain, 900 slots / 90 domains (train+validation):**
+
+| reference | ρ(similarity, installation) |
+|---|---|
+| **B — explicit BOMB** | **+0.3823** |
+| E — benign remap | +0.2225 |
+| matched **context-only prototype** (mean of A and E) | **−0.0230** |
+| A — literal codeword | −0.1923 |
+
+§15's rule is explicit: *"If direct-BOMB similarity increases with semantic installation AND exceeds
+the matched context-only prototype, that is meaningful. Otherwise reject it."*
+
+* It **increases**: +0.3823, within-domain permutation null over 2000 draws p50 = +0.0015,
+  p95 = +0.0566, max = +0.1229 ⇒ **p = 0.00050**.
+* It **exceeds** the context-only prototype by **+0.4053, 95 % CI [+0.2943, +0.5101]** (domain-level
+  bootstrap, 4000 resamples).
+
+**Both conditions are met.** This is the first positive result the prototype/reference line has
+produced in this program, and the previous prototype approach was *beaten* by a concept-free context
+prototype — which is the comparison §15 was written to force, and which now goes the other way. The
+sign structure is coherent too: as installation rises, cell C's demonstration-side state moves
+**toward** the explicit-BOMB state and **away** from the literal-codeword state (−0.1923).
+
+**What it does not establish.** It is a **correlation with installation**, within domain, on
+**train+validation** — no TEST read, no preregistration, no causal claim. §15 also names a **harmful
+non-BOMB reference** (the `gun`/`knife` banks exist and were not used here), and without it this cannot
+distinguish "moves toward BOMB" from "moves toward *harm*" — which matters especially given
+`C-CONT-025`, where the signal tracked harm demonstrations rather than the doublespeak cell. That
+control is the obvious next step and it is cheap.
+
+**§46 accounting — the mandate's eight prerequisites before "no BOMB representation" may be concluded.**
+(The claim table said seven; the mandate lists **eight** bullets. Corrected.)
+
+| # | prerequisite | status |
+|---|---|---|
+| 1 | multiple representation families | ✅ **8 of 8 fitted** (`F0`–`F7`), registry closed |
+| 2 | multiple positions | ✅ 23 sites incl. 16 `rel-*`, query, and four demonstration-side |
+| 3 | multiple layers | ✅ 19 layers, 0–31 |
+| 4 | pooled/distributed representations | ✅ `F3` |
+| 5 | at least one low-rank approach | ✅ `F6`, PLS ranks 1–16, **deflation fixed** (`C-CONT-043`) |
+| 6 | concept-free probability/readout analyses | ✅ `y_install` on `semantic_one_word`, concept-free by construction (§4) |
+| 7 | **aligned reference comparisons** | ✅ **NOW MET** — this entry |
+| 8 | proper validation | ✅ TRAIN → VALIDATION → TEST, `DR-072` confirmed |
+
+All eight are met. **But §46's conclusion is not thereby licensed**, and I am not taking it: §15's own
+harmful-non-BOMB control is missing, and the one reference result that *did* come back positive points
+*toward* a BOMB-aligned direction rather than away from it. Writing *"there is no BOMB representation"*
+now would be reading a checklist instead of the evidence. ⛔ It remains forbidden.
