@@ -5452,3 +5452,86 @@ reports PASS on those 11 rows"*. The guard now passes:
 `877102` re-runs the baseline. The §24 result (`CONT-ENTRY 044`) and the `F2` refutation
 (`CONT-ENTRY 047`) are untouched — both rest on the **behavioural** runs, which were complete and
 whose row counts the same guard verifies.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 049 — **`DR-071`: the manipulation check PASSES decisively, and the §23 chain closes on a DISSOCIATION**
+
+`continst_ko` / `continst_ctrl`, both **670 rows**, both `DONE`. Every declared CANNOT ANSWER
+condition checked and **none triggered**:
+
+```
+edits          ko 1 385 316 | ctrl 1 385 316   relative difference 0.00000
+liveness       ko 1.000 scope-live, 0 decode   | ctrl 1.000 scope-live, 0 decode
+option mass    ko median 0.5211 | ctrl median 0.3196    (gate 0.05)
+prompt_ids     identical across arms
+```
+
+#### 1. The primary
+
+```
+DR-071 PRIMARY, DOMAIN unit, n = 67
+  installation   ko 0.4703 | ctrl 0.6854
+  PRIMARY (ko - ctrl) = -0.2150    95% CI [-0.2348, -0.1961]    perm p = 0.0000
+  NEGATIVE IN 67/67 DOMAINS
+```
+
+⇒ **The intervention does exactly what it was supposed to do.** Cutting the codeword row's access to
+the demonstrations in the retrieval band drops concept-free installation by **21.5 points — a 31 %
+relative fall — in every single domain**, against a dose-identical cut in a late band.
+
+**`DR-071`'s frozen declaration named this branch in advance** (`CONT-ENTRY 045 §2`): *"if
+installation DROPS ⇒ the intervention moves installation but not ASR … installation and behavioural
+success are dissociable under intervention."* That is the branch we are in, and the alternative
+reading it was written to make unavoidable — *"the intervention was the wrong one"* — is **excluded
+by this result**.
+
+#### 2. The chain, both halves from the *same* intervention
+
+| | scope | `ko` band | `ctrl` band | outcome | result |
+|---|---|---|---|---|---|
+| `DR-070` | `target_surface_row_only` | 6–14 | 20–28 | **ASR** ∧ concept ∧ ¬refusal | **+0.0030**, CI [−0.030, +0.036], **POWERED NULL** |
+| `DR-071` | **same** | **same** | **same** | **installation** | **−0.2150**, CI [−0.235, −0.196], **p < 1e-4, 67/67** |
+
+> **The same cut, at the same site, with the same dose, removes a third of the model's semantic
+> installation and changes attack success by nothing.**
+
+#### 3. 🆕 The dissociation is *quantitative*, not merely "one moved and one didn't"
+
+Regressing corrected ASR on installation across the 67 domains gives a slope of **+0.3204** ASR per
+unit installation. Applying it to the measured intervention effect:
+
+```
+predicted ASR change  =  0.3204 x (-0.2150)  =  -0.0689
+measured  ASR change  =  +0.0030    95% CI [-0.0299, +0.0358]
+```
+
+⇒ **The prediction lies OUTSIDE the measured CI, by 2.1× its half-width.** The observational
+installation→ASR relationship — this project's headline, ρ ≈ 0.40–0.53, reproduced twice — **does
+not survive intervention**. It is not a causal relationship in that direction, via this pathway.
+
+#### 4. ⚠️ The caveat that must travel with §3, because it is the load-bearing assumption
+
+The slope is estimated **between domains**, and `C-CONT-013` established that the between-domain
+axis is substantially **topic**. The intervention acts **within** domain. So *"the observational
+slope predicts −0.069"* assumes a cross-domain slope transfers to a within-domain manipulation —
+**exactly the kind of assumption that fails**, and the kind this phase has already been caught by.
+
+⇒ §3 is best read as: *under the natural reading of the phase's own headline correlation*, the
+intervention should have moved ASR by ~7 points and did not. §2 does not depend on the slope at all
+and is the safer statement.
+
+#### 5. What is licensed, and what is still forbidden
+
+✅ **Licensed:** the query codeword row's access to the demonstrations is **required for semantic
+installation** (−0.215, 67/67) and **not required for behavioural attack success** (powered null) —
+at this band, scope, codeword and split, both halves measured under the *same* intervention.
+
+⛔ Still forbidden, per both frozen configs: that this shows the pathway **is** the behaviour
+(necessity only); that it tests a **representation** (`K1` withdrawn, no candidate); any ASR number
+without the **0.155** floor and **0.137** flip rate; and that a drop here explains the inherited 62 %
+figure — different scope, different template, **still not re-measured**.
+
+⚠️ **TRAIN only. One codeword. One model. EXPLORATORY.** No confirmation freeze; TEST unread.
+`continst2_base` (the re-run baseline) is still generating and is a **secondary** context arm — the
+primary above needs only `ko` and `ctrl`.
