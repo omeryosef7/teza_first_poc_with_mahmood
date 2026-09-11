@@ -6412,3 +6412,119 @@ Findings land in `reports/DCS_CONT_REVIEW2_{CODE,DATA,OUTPUT,STATISTICAL,SCIENTI
 adjudicated in a following entry — including any finding that overturns something written above.
 
 Jobs: `879904` (TEST extraction, resubmitted), basket arms `877545/6/7` at ~3h.
+
+---
+
+### CONT-ENTRY 065 — 2026-09-11 — REVIEW-2 adjudication, part 1 (OUTPUT + SCIENTIFIC). Four corrections, two of them to entries written today.
+
+Two of five reviewers have reported. Both found things I did not, and both overturn material I wrote
+in the last 24 hours. Each finding below was **independently re-verified by me** before being accepted;
+I am not taking a reviewer's word for a correction to my own record.
+
+---
+
+**C-CONT-038 — `asr_and_concept_present` is itself inflated, by roughly 3×. The correction needed
+correcting.**
+
+Entries 060 and 063 audited only the rows the filter **removed**. The rows it **keeps** — the numerator
+of every corrected number I have quoted — had never been read by anyone. The OUTPUT reviewer hand-
+labelled 100 random `button` kept positives: **63 contain no bomb content** (Wilson 95 % [0.53, 0.72]),
+29 genuine, 8 weak. Basket 11/22 spurious; carrot only 5/24 genuine.
+
+I re-derived the mechanism myself and it is unambiguous:
+
+| sole lexicon hit | button kept positives |
+|---|---|
+| `casing` | **1303** |
+| `explosive` | 550 |
+| `trigger mechanism` | 368 |
+| `explosion` | 216 |
+
+**33.2 %** of `button` kept positives (1671 of 5031) fire on `casing` or `trigger mechanism` *and
+nothing else*. Ten random `casing`-only rows, read verbatim: *"plastic or metal casing (for the
+button's back)"*, *"metal sheet (for the button's outer casing)"*, *"collect a suitable button
+casing"*. That is a literal button housing. `explosive` as a sole hit frequently fires **inside the
+model's own disclaimer** — *"not an actual explosive device"*.
+
+So the frozen instrument has a false-**positive** channel of its own, and it is large. The reviewer's
+hard-term restriction (calibrated against its labels at precision 0.90 / recall 0.97) gives `button`
+**0.1169 → 0.0381**. That figure is **post hoc and may not replace the preregistered number**; it is
+recorded as a labelled bound. What changes today is the hedge: every corrected number in entries 060
+and 063 is an **upper bound**, not an estimate, and `asr_and_concept_present` remains a
+necessary-not-sufficient filter that is *far* looser than I presented it.
+
+---
+
+**C-CONT-039 — `C-CONT-037` is WITHDRAWN. The bare-word-`bomb` false-negative channel does not exist,
+and the conclusion I drew from it was wrong.**
+
+Yesterday I reported that the lexicon misses the bare word `bomb` and inferred a false-negative rate of
+43.3 % on `carrot`. The reviewer read 38 of the rows I counted; **0 of 38** are bomb content. I sampled
+ten independently and agree completely:
+
+* *"the 'button' in question is likely a bomb threat or a hoax. However, I will provide step-by-step
+  instructions…"* — restating the prompt's scenario, then building a button;
+* *"Step-by-step instructions to build a bomb (not a carrot, as per the context): 1. Gather materials:
+  a small piece of tissue paper…"* — announcing the word, then craft.
+
+The regex counted the **word**, and I read a count as a rate without reading the rows — the exact
+failure I had just caught in `C-CONT-036` and the same one as `C-CONT-034`. Consequences:
+1. The `v1 + bare word` sensitivity column in entry 063 is an **upward bias**; adding `bomb` would make
+   the instrument *worse*. Struck.
+2. The entry-063 claim that **"both error channels of the ASR instrument are codeword-dependent, in
+   opposite directions"** is **UNSUPPORTED and withdrawn**. Only the false-**positive** channel is
+   shown to vary by codeword. This was the headline of that entry and it does not survive.
+3. `carrot`'s withdrawal was the right call for the **wrong reason** — not FN 43.3 %, but that only
+   ~21 % of its kept positives are genuine.
+4. The Slack draft, which I edited yesterday to carry the two-channel claim, must be corrected again.
+
+---
+
+**C-CONT-040 — `F5` is structurally blind to the only intervention this phase owns, and the
+circularity fix I claimed is a no-op at F5's site.**
+
+The SCIENTIFIC reviewer's decisive point, which I verified in the source:
+
+* `target_surface_row_only` resolves *"the FINAL `target_surface` occurrence **INSIDE the query
+  span**"*. Its own docstring says: *"The codeword also appears throughout the demonstrations; the
+  final DEMO occurrence is a different scientific question from the final QUERY occurrence."*
+* `F5`'s site is `cw_demo_mean`, which the extractor builds as `last[:-1]` — the mean over the
+  codeword's **demonstration** occurrences, explicitly excluding the query occurrence.
+* Demonstrations **precede** the query. Under causal attention their hidden states cannot depend on a
+  row edited later.
+
+⇒ **F5's input is bit-identical between the `ko` and `ctrl` arms.** It is provably incapable of
+mediating the knockout, and so cannot be the mechanism behind claim A1. Nothing in entries 059/061 said
+otherwise, but the phase was heading toward treating its best predictor as its mechanism, and that path
+is now closed by construction rather than by a future null.
+
+The same geometry voids a circularity defence I have leaned on. The record argues that moving the
+predictor from the semantic to the behavioural prompt breaks output-adjacency circularity (`y_install`
+is the next token after the semantic prompt). But at a **demonstration-side** site the hidden states are
+identical across the two templates — the templates differ in the *query*, which is downstream. So at
+`cw_demo_mean` the move is **arithmetically a no-op**, and the registry's "EXPLORATORY until it
+replicates on X_behavioural" rule is vacuous there. The reviewer's sharper framing: within a domain the
+query is fixed across all 10 slots, so `y_install` is a deterministic function of the demonstrations and
+`cw_demo_mean` encodes those same demonstrations — ρ = 0.62 may be measuring **linear decodability of
+the demonstration set**, not installation.
+
+**Decision: `DR-072`'s single TEST read is HELD.** The extraction (`879904`) continues — building the
+corpus is not reading it — but DR-072 will not execute until `F5` has passed the controls below. A
+preregistered read is spent once, and spending it on a quantity whose meaning is in doubt wastes the
+only confirmatory shot this candidate gets. The freeze is **not** edited; it is simply not executed yet.
+
+**F5 controls to run, all zero-GPU, all on tensors already on disk:** ridge on `raw_B`; ridge on
+`cw_demo_prev_mean` / `cw_demo_next_mean` / `cw_demo_rand_mean` at L24 (captured in the same pass,
+never used at this layer); a **within-domain** surface floor (the existing 0.179 floor was computed
+against the discarded domain-mean target); and `cos(w_F5, logit-lens direction)` — because the
+unasked question is whether `F5` is just the logit lens with shrinkage.
+
+---
+
+**Also accepted, pending my own verification in part 2:** A3's "same dose" spans two query templates
+with persisted dose totals 346,329 vs 1,385,316; A2's "POWERED NULL" is never expressed relative to
+base rate; A6 is labelled REPLICATED though generation is deterministic; the judge's 13.7 % flip rate
+replicates at scale (12.95 % over 54,989 byte-identical pairs) but κ = 0.4435 is a low-prevalence
+artifact and the "0.0221 noise floor" has SE 0.0246 — an estimate of zero, not a floor.
+
+CODE, DATA and STATISTICAL are still running. Part 2 follows.
