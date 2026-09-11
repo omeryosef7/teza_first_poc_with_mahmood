@@ -6137,3 +6137,12 @@ phase's leader, awaiting TEST.
 caveat stands and is repeated so it cannot be skipped: **the concept-presence lexicon must be
 re-verified on basket before the basket primary is quoted** — `REVIEW-1` established the correction is
 codeword-dependent (false-positive floor 15.5 % button vs 2.2 % basket).
+
+**C-CONT-035 (self-caught, same commit cycle).** Writing the `059` registry update I set
+`families_fitted_count = 7` beside a `families_fitted` list holding **8** entries. That is exactly the
+`C-CONT-034` failure mode — an asserted count standing next to the list it is supposed to count — and
+I reproduced it one entry after correcting it. Fixed to `len(families_fitted)`, added
+`families_total_count`, and added an assertion that the fitted list equals the registry's own
+`family_id` set so the two cannot drift again. Correct reading: **8 of 8 families fitted, 0 never
+fitted, 1 positive on TRAIN (`F5`, awaiting TEST).** No result changes; the arithmetic in `059` above
+was right and only the registry field was wrong.

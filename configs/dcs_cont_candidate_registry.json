@@ -221,7 +221,7 @@
   "transplant": "VALIDATED, WEAKLY, for a TOKEN-MATCHED pair: C(high-install) -> C(low-install) transfers +10.7% of the semantic gap at the domain unit, 95% bootstrap CI [+3.3%, +19.6%], sign-flip permutation p=0.0089, in the stratum declared before the run. The sign test alone (11/16, p=0.21) does not reach significance and the all-families analysis does not either (+4.1%, CI touching zero) -- the pre-declared stratum is load-bearing. Donor ceiling option mass 0.843; self_swap_noop_check exactly 0.00000000. This WITHDRAWS the earlier 'instrument not validated' status (C-CONT-012), which rested on two structurally invalid experiments."
  },
  "candidates_withdrawn": 1,
- "families_fitted_count": 7,
+ "families_fitted_count": 8,
  "families_fitted": [
   "F0_B1_reference",
   "F1_position_sweep",
@@ -235,5 +235,6 @@
  "families_never_fitted": [],
  "families_positive_on_train": [
   "F5_probe_installation"
- ]
+ ],
+ "families_total_count": 8
 }
