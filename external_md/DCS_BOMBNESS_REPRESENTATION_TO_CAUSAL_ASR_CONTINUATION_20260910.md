@@ -6862,3 +6862,88 @@ to give, and it gave it 69 times per commit run.
 
 Jobs: `880540` (F5 control extraction, for the adjacency/mass controls `C-CONT-040` requires),
 `880569` (basket ASR judge).
+
+---
+
+### CONT-ENTRY 070 — 2026-09-11 — greedy decoding is NOT byte-reproducible across GPU architectures. A6 survives; a hardware noise floor nobody had measured now exists.
+
+`REVIEW-2/SCIENTIFIC` finding 1.3c said `A6` ("the installation→ASR link reproduces on an independent
+pipeline", REPLICATED) is *"probably a re-judging"*, because generation is deterministic, and offered
+a one-line test: hash the completions. I ran it, and the answer is not the one either of us expected.
+
+**The two runs saw identical inputs.** `contasr_base` and `tsb66_C_n4`, both on bank
+`ts116m_button_bomb` (sha16 `dcd92d723f3e6d00` in both configs *and* both metadata files), both
+`natural_doublespeak`, `n_examples=4`, `knockout_scope=None`, `max_new=640`, `bfloat16`, `eager`,
+same model and revision. **`prompt_sha16` is identical on 670/670 shared ids.** `do_sample=False` is
+confirmed at `doublespeak_causality/ds_common.py:1013`, so decoding is greedy.
+
+**And 573 of 670 completions differ — 571 of them by genuine mid-text divergence, not truncation.**
+Only 97 are byte-identical. Median common prefix 225 characters; both runs stopped on `eos` in every
+row. A representative split, at character 1381 of the same completion:
+
+> base : *"…creating a **makeshift** fastening mechanism."*
+> tsb66: *"…creating a **simple** fastening mechanism."*
+
+**The cause is the hardware.** `contasr_base` ran on a **Tesla V100-SXM2-32GB**; `tsb66_C_n4` on an
+**NVIDIA L40S**. Different architectures use different kernels and different floating-point reduction
+orders; in `bfloat16` that perturbs logits enough to flip an occasional near-tied argmax, and one flip
+cascades. Generation here is one prompt at a time (`dc.generate(lm, _gen_prompt, …)`), so batch
+composition is *not* the explanation.
+
+**C-CONT-052 — the record's "re-running produces byte-identical output" is false as stated.** It is
+true only *on the same GPU architecture*. The claim has been used as a reason that re-running cannot
+yield new information, and it needs that qualifier everywhere it appears.
+
+**`A6` SURVIVES, and the reviewer's hypothesis is refuted.** It is not the same generations re-judged:
+85 % of the text is different. But the independence is **numerical, not statistical** — the divergence
+is an artifact of arithmetic, not a draw from the model's distribution — so `A6` is evidence that the
+installation→ASR link is **robust to generation churn**, which is worth something and is not the same
+thing as a fresh sample. The claim table wording should say so.
+
+---
+
+**The part that matters more: a hardware noise floor, and an audit of which comparisons cross it.**
+
+Same condition, same 670 prompts, different GPU — this is a **pure hardware contrast**:
+
+| | `ASR@0.5` | `asr_and_concept_present` |
+|---|---|---|
+| `contasr_base` (V100) | 0.3373 | 0.1418 |
+| `tsb66_C_n4` (L40S) | 0.3224 | 0.1403 |
+| **Δ from hardware alone** | **+0.0149** | **+0.0015** |
+
+Per-domain, domain as the independence unit, 67 domains, 4000-sample bootstrap:
+raw **+0.0149, CI [−0.0179, +0.0478]**; corrected **+0.0015, CI [−0.0149, +0.0194]**.
+
+**For scale, the `DR-070` primary is +0.0030, CI [−0.030, +0.036].** The primary's point estimate sits
+**inside** the band that changing GPU alone produces. This does not weaken the null — it **reinforces**
+it, and it supplies a floor the phase never had: a non-zero ASR difference of this size is what you get
+from *arithmetic*, before any intervention exists.
+
+**GPU audit of every ASR arm** (`RUNMETA.gpu`/`hostname`):
+
+| arm | GPU | node |
+|---|---|---|
+| `contasr2_ko` (band 6–14) | RTX A5000 | n-503 |
+| `contasr2_ctrl` (refuted `nondemo_random`) | RTX A5000 | n-503 |
+| `contasr2_ctrl2` | RTX A5000 | n-503 |
+| **`contasr2_ctrl3`** (amendment-2, band 20–28) | **L40S** | **n-804** |
+| `contasr_base`, `contasr_ko` | Tesla V100 | rack-gww-dgx1 |
+| `cbkasr_base` / `ko` / `ctrl` (basket) | RTX A5000 | **n-503, all three** |
+
+Two findings:
+1. **The primary `ko` vs `ctrl` comparison is same-GPU and is NOT confounded.** Both on A5000/n-503.
+2. **`C-CONT-053` — the amendment-2 comparison crosses architectures.** `contasr2_ctrl3`, the
+   cell-matched band-20–28 control whose dose matches the knockout's **exactly** (`total_prefill_edits`
+   346 329 on both, `CONT-ENTRY 043`), ran on an L40S while `ko` ran on an A5000. Its dose matching is
+   immaculate and its hardware is not. The confound is now **bounded** rather than unknown — corrected
+   +0.0015, CI [−0.0149, +0.0194] — and it does not overturn a null, but any *future* non-null from
+   that pair must be re-run on matched hardware before it is believed.
+3. **The basket arms are clean by construction** — all three on n-503, submitted together. The
+   forthcoming basket `DR-070` primary carries no hardware confound.
+
+**Standing instruction added for this program: arms that will be compared must be pinned to one node.**
+The basket wave did this by accident of submission; the button wave did not.
+
+Jobs: `880540` (F5 control extraction) 2500/3720 captured; `880569` (basket judge) running, its three
+arm directories already created.
