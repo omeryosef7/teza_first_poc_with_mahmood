@@ -4983,3 +4983,62 @@ effect**.
 `base` ✅ judged + mapped · `ko` ✅ judged + mapped · `ctrl` generating on `n-804` (142/670, a faster
 node than `n-503`). The primary needs the third map and will be computed by the analyzer that
 refuses a single-map input, reads the correct refusal field, and enforces the frozen population.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 042 — **the pooled identity is a real cancellation, not a coincidence**: domains move ±11 points and sum to exactly zero
+
+`CONT-ENTRY 041 §3` flagged `0.1418 = 0.1418` as *"the kind of coincidence that should raise
+suspicion rather than confidence"* and said it would be checked at the domain level with a CI.
+⛔ Still a **SECONDARY** contrast (`ko` vs `base`); the primary is `ko − ctrl` and `ctrl` is at
+372/670.
+
+```
+domain level, corrected outcome, n = 67 domains, 10 rows each on both arms
+  mean over domains      base 0.1418      ko 0.1418
+  paired ko - base       +0.0000    95% CI [-0.0343, +0.0358]    perm p = 1.0000
+  direction split        ko>base 22 | ko<base 26 | equal 19
+  mean |per-domain change|   0.1104
+```
+
+#### 1. The identity survives the check — and stops being suspicious
+
+The agreement is **not** a pooling artefact: it holds at the domain unit too, with a **tight CI**
+(±0.035, comfortably inside the declared MDE of 0.0531 and the re-derived 0.0256). This is a
+**powered null**, not an absence of measurement.
+
+🆕 **But the arms are not doing the same thing to each domain.** Individual domains move by
+**11 points on average**, in both directions — 22 up, 26 down, 19 unchanged — and the movements
+cancel to **exactly** zero.
+
+> ⇒ Cutting the codeword row's access to the demonstrations changes **which domains the attack
+> succeeds on, without changing how many.** That is a substantively different statement from
+> "nothing happened", and it would have been invisible in the pooled rate.
+
+#### 2. What it adds to `CONT-ENTRY 041`
+
+The picture from the two entries together, all **secondary**:
+
+| axis | effect of the knockout |
+|---|---|
+| refusal | ⬇ **halved** (0.115 → 0.040) |
+| raw ASR | ⬆ **+5.5 pp** — fully accounted for by the refusal drop |
+| corrected ASR, **level** | **unchanged**, powered null, CI ±0.035 |
+| corrected ASR, **composition** | 🆕 **churns by ±0.11 per domain** |
+
+⇒ The intervention is **not inert** — it visibly moves refusal and it reshuffles which domains
+succeed. What it does not move is the **number** of genuine successes.
+
+#### 3. Caveats that stay attached
+
+* ⛔ **Not the primary.** `ko − ctrl` is, and a late-band control may move refusal too — the
+  *contrast* can differ from this *comparison*.
+* ⚠️ **Churn at n = 10 rows per domain is partly binomial noise.** A domain rate over 10 rows has
+  sd ≈ 0.11 at p = 0.14 — which is exactly the observed mean absolute change. **So the churn is
+  consistent with pure sampling noise and is NOT yet evidence of reshuffling.** Distinguishing the
+  two needs either more rows per domain or the test–retest baseline (`CONT-ENTRY 034`), which
+  measured per-domain ASR reproducing at ρ = 0.71 between two runs of the *same* condition — i.e.
+  churn of this order occurs with **no intervention at all**.
+* ⇒ The honest reading of §1's 🆕 is: **the level is a powered null; the composition change is not
+  distinguishable from noise at this row count.** Stated here rather than allowed to become a
+  finding.
