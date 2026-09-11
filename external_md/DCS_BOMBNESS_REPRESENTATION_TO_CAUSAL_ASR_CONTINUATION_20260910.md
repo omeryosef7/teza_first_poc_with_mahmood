@@ -5711,3 +5711,62 @@ adds the converse, which was **not** previously written down anywhere:
 `877289` running: the **basket replication of `DR-071`** (claim A1) — identical scope, bands, dose
 and statistic, the only change being the bank, and `--readout-max-batch 1` on every arm from the
 start per `C-CONT-031`.
+
+---
+
+### 2026-09-11 — CONT-ENTRY 053 — **`F6` run: the predictive structure is ONE-DIMENSIONAL.** One of §46's three gaps closed
+
+`scripts/dcs_cont_lowrank.py` · `outputs/dcs_cont/lowrank_train_button_bomb.json`.
+PLS-1 on the **within-domain** target at `cw_demo_mean` L14, leave-one-**DOMAIN**-out, 670 slots /
+67 domains. Written and run in the same iteration that identified it as the one §46 prerequisite
+never touched — rather than logged as future work.
+
+| rank | mean per-domain ρ | vs rank 1 |
+|---|---|---|
+| **1** | **+0.4991** | — |
+| 2 | +0.5182 | **+0.0192**, CI [−0.043, +0.081], **p = 0.553**, better in **33/67** |
+| 4 | +0.4851 | −0.0139, p = 0.640 |
+| 8 | (pooled ρ +0.4437) | degrades |
+
+> ⇒ **No subspace beats a single direction.** Rank 2's edge is 33/67 domains and a CI spanning zero.
+> The predictive structure is **one-dimensional**.
+
+✅ Rank 1 reproduces `CONT-ENTRY 031`'s `raw_C` at **+0.4991 exactly** — which is the correct
+behaviour, not a coincidence: **PLS component 1 with a scalar target *is* the covariance direction**
+the map already used. The implementation reproducing a known number at r=1 is the check that it is
+computing what it claims.
+
+⚠️ Rank is **reported, not selected**. §14 requires selection on VALIDATION under a pre-declared
+rule; that has not happened, and picking rank 2 because it scored best here would be exactly the
+selection-on-the-search-set error this phase has spent entries avoiding.
+
+#### 1. What this adds to the picture
+
+Four independent ways of asking *"is there more structure than one direction in the raw cell-C
+state?"* now all say no:
+
+| attempt | result |
+|---|---|
+| the **interaction** contrast | ⛔ loses to the raw state (p = 0.017) |
+| `C − B` lexical contrast | ⛔ indistinguishable from it (p = 0.515) |
+| the four-cell average `mean4` | ⛔ loses (p = 0.0001) — but so does cell **B** alone, indistinguishably (`C-CONT-025`) |
+| **rank > 1 subspace** | ⛔ **no gain** (p = 0.553) |
+
+⇒ Everything predictive about within-domain installation at this site sits in **one direction of the
+raw doublespeak-cell state**, it is **shared with the direct-harmful cell**, and cell C adds a
+significant increment on top (p = 0.0017). Contrasts, averages and extra dimensions all subtract.
+
+#### 2. §46 accounting updated
+
+| prerequisite | was | now |
+|---|---|---|
+| **low-rank approach** | ⛔ **NOT DONE** | ✅ **DONE** — `F6` fitted, answer recorded |
+| multiple families | 3 of 8 | **4 of 8** (`F6` added) |
+
+Still open: **`F5` probes** on the continuous target, **`F4` trajectories**, a **full-depth layer
+sweep** (the within-domain work used 5 of 33 layers, peaking at the boundary), and §15's **matched
+reference prototype**. ⛔ *"There is no BOMB representation"* remains forbidden.
+
+#### 3. Loop state
+
+`877289` (basket replication of `DR-071`) running on `rack-bgw-dgx1`.
