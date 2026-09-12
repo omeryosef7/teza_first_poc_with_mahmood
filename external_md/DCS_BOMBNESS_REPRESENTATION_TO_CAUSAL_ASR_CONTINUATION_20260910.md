@@ -10617,3 +10617,44 @@ that specific rival, and against nothing broader.
 basket ladder (job 886483, `t-806`) is still running and will say whether `DR-075`'s saturation premise
 is even a cross-codeword fact. And the corrected `raw_judge` Δ of +0.0111 with a CI spanning
 [−0.0778, +0.1000] is, like everything else in this dose step, **consistent with nothing happening**.
+
+---
+
+### CONT-ENTRY 141 — 2026-09-12 — A15's interval fixed on the third asking; the correction is real and immaterial, and the claim table's header was asserting something false about TEST
+
+**The last named-and-deferred item is closed.** `REVIEW-7` raised it, `REVIEW-8` raised it again, and
+`CONT-ENTRY 134` wrote *"named so it is not quietly dropped"* and then dropped it for two entries.
+A15's leak-rate interval was a **row-level Wilson** on 5/48 where the declared independence unit is
+the **domain**.
+
+Recomputed through `filter_rows()` with both axes explicit:
+
+| interval on the 10.4 % leak rate | 95 % |
+|---|---|
+| row-level Wilson (published) | [0.0453, 0.2217] |
+| **domain-clustered bootstrap (correct unit)** | **[0.0238, 0.1915]** |
+
+**The correction is real and immaterial, and both halves of that matter.** The published interval was
+computed on the wrong unit, which is a genuine defect. But the corrected interval is **0.95× as
+wide** — very slightly *narrower* — because the 48 de-refusals are **well spread**: the worst-affected
+domain contributes **4 of 48, 8 %**. Clustering only inflates an interval when units are lumpy, and
+here they are not. The conclusion is untouched.
+
+I am recording the non-effect as carefully as I would have recorded a big one. Two reviews flagged
+this and neither could have known which way it would go — and after a day in which three corrections
+*did* overturn published numbers, the honest result is that this one does not.
+
+**A15 is also TEST-clean, which is worth stating on a day when two other things were not.** The
+de-refusal set is **byte-identical** computed on train+val and on all domains: no de-refusal falls in
+a TEST domain. That is a property of the data, not of my care, but it is now checked rather than
+assumed.
+
+**And the claim table's header was asserting something false.** It read: *"Nothing else has touched
+TEST."* After `C-CONT-094` that is untrue — `CONT-ENTRY 133`'s seven numbers and `DR-075`'s frozen
+config inputs were both computed with the 23 TEST domains in. The header has been the most-read four
+lines of the phase's main deliverable and it was carrying a TEST-discipline guarantee the phase had
+already broken. Retracted in place, with the correction named. The front matter also claimed revision
+"after REVIEW-2 and REVIEW-3" while REVIEW-8 had landed, and listed the defect ledger as ending at
+`C-CONT-068` when it ends at `C-CONT-094`; both fixed.
+
+Basket ladder (job 886483, `t-806`) at 5403 of 7424 rows.
