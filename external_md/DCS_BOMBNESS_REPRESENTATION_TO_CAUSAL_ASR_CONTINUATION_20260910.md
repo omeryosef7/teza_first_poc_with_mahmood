@@ -10177,3 +10177,46 @@ the provenance of each, and the exact fractions.
 `$HOME` resolves to a near-empty path on the compute nodes and its llama snapshot carries config and
 tokenizer but **no weights**. The real cache is on `/vol/scratch`, at the pinned revision. The
 resubmission asserts the weight index exists before loading rather than discovering it on the GPU.
+
+---
+
+### CONT-ENTRY 133 — 2026-09-12 — C-CONT-091: the slot-composition mechanism is **basket-only**. The button reversal has a cause, and it is not the one on record
+
+`REVIEW-7` flagged this and it was still unacted. It is the most consequential of the outstanding items
+because it is not a missing caveat — it is a **wrong cause recorded in a deliverable**.
+
+`CONT-ENTRY 117` demonstrated, on basket, that "all slots" compares **one slot at dose 0 against five
+at dose 4**, inflating the ASR dose slope from +0.0075 to +0.0313 — **4.2×** — which inflates the
+prediction and manufactures the gap. That much is right. It then wrote: *"The same 1-slot-vs-5
+mismatch sits under the button version."* **It does not.** Measured directly, both scopes, both
+measures, on the same runs:
+
+| button, dose 0 → 4 | `slot0` PRIMARY | all slots | ratio |
+|---|---|---|---|
+| **installation** slope | +0.6587 | +0.6624 | **1.01×** |
+| **raw-judge ASR** slope | +0.1991 | +0.1726 | **0.87×** |
+| **content-true (CR-002)** slope | +0.0398 | +0.0354 | **0.89×** |
+
+**On button, widening the scope *deflates* the ASR slope by ~11 % and leaves installation untouched at
+1.01×.** Against basket's 4.2× that is not the same mechanism; it is barely a mechanism at all. The
+predicted and measured quantities move nearly in lockstep, which is precisely the configuration that
+*cannot* manufacture a gap.
+
+**What this does and does not establish.** It establishes that the cause `CONT-ENTRY 117` named is
+not operating on button, and the claim table has been recording it as though it were. It does **not**
+re-derive `C-CONT-083`'s reversal (+0.0221 → −0.0044) end to end — I did not reproduce that
+computation here, and I am not going to assert a decomposition I have not run. The honest statement is:
+**the button reversal's cause is now unexplained rather than wrongly explained.** That is worse
+bookkeeping and better science.
+
+**Why the error was easy to make and worth a ledger entry.** The basket finding was clean, striking,
+and arrived with a real mechanism attached. Generalising it one sentence sideways to the other codeword
+cost nothing at the time and was never checked — on a phase whose standing constraint is **never pool
+button and basket**. The constraint exists for the data; I violated its spirit in the prose.
+
+**An incidental corroboration of A16.** Note the dose-0 row: raw-judge ASR is **0.1549** while
+content-true is **exactly 0.0000**. The entire dose-0 "attack success" is judge false positives, on
+226 rows, independently of the `REVIEW-6` inspection that found 0/226 energetic-material terms. Two
+instruments, same answer.
+
+Claim table corrected. `DR-075` (job 886005) continues on n-804.
