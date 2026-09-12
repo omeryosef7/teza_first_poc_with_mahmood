@@ -29,10 +29,18 @@ def _load(mod, path):
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--rule", default=os.path.join(REPO, "configs/dcs_cont_content_rule_v2.json"))
-    ap.add_argument("--cluster", default="run+domain", choices=["run", "domain", "run+domain"])
+    ap.add_argument("--cluster", default="domain", choices=["run", "domain", "run+domain"],
+                    help="Cluster unit for the bootstrap. DEFAULT domain: the design is crossed "
+                         "(domains recur across runs) so run-clustering suppresses the domain "
+                         "component (C-CONT-078). run+domain resamples (run,domain) CELLS, which "
+                         "is FINER than either and spuriously narrow -- it is offered only so the "
+                         "wrong answer is reproducible, never as a default.")
     ap.add_argument("--n-boot", type=int, default=4000)
     ap.add_argument("--seed", type=int, default=20260912)
-    ap.add_argument("--adjust-recall", action="store_true")
+    # REVIEW-6: this flag was declared, documented as printing a stratum table, and NEVER READ --
+    # passing it silently returned the unadjusted factor. Removed rather than half-implemented:
+    # the design-weighted recall correction (C-CONT-077) belongs in the entry that quotes it,
+    # with its stratum sizes, not behind a flag that can be passed and ignored.
     ap.add_argument("--sr-threshold", type=float, default=0.5,
                     help="StrongREJECT cutoff for a positive. REVIEW-5 showed the factor is "
                          "threshold-conditional, so it must be reported with its threshold.")

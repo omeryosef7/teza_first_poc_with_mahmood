@@ -9337,3 +9337,65 @@ precision, and independently relabelled at κ = 0.953.
 
 Push still failing — eight commits pending locally. Everything through `CONT-ENTRY 107` is on the
 remote; `CONT-ENTRY 109` has the diagnosis and the three steps.
+
+---
+
+### CONT-ENTRY 116 — 2026-09-12 — C-CONT-083: the quantitative dissociation is WITHDRAWN. It collapses on the program's own declared primary.
+
+Both `REVIEW-6` reviewers independently reproduced `CONT-ENTRY 113`'s arithmetic to the digit and then
+took it apart. The decisive finding, verified by me:
+
+| analysis | gap | 95 % CI | P(gap ≤ 0) |
+|---|---|---|---|
+| **all slots** — what entry 113 used, **unstated** | **+0.0221** | [+0.0058, +0.0388] | **0.0022** |
+| **`slot0` PRIMARY** — declared in `CONT-ENTRY 094` | **−0.0044** | **[−0.0451, +0.0374]** | **0.5925** |
+
+**The result is an artifact of an undeclared scope.** `CONT-ENTRY 094` fixed `slot0` as the dose
+ladder's primary **specifically so the choice could not be made after seeing results**. Entry 113 then
+computed the ASR side on all five slots without saying so — and worse, **mixed scopes inside one
+ratio**: the numerator −0.2082 is all-slots `ko − base`, the denominator +0.6719 is `slot0`. The
+reviewer had to search an 18-cell grid to work out where 0.2082 came from, because the entry states
+neither scope. That is `C-CONT-072` exactly — the defect I recorded, and then repeated three entries
+later inside a bigger claim. **The quantitative dissociation is withdrawn.**
+
+**Four further reasons it would not have survived even on all slots.**
+1. **The null itself fails on its own data.** Within the dose-4 regime (base / ctrl3 / ko span
+   installation 0.470 → 0.685, *wider* than the knockout's own), the within-domain slope of CR-002 ASR
+   on installation is **−0.053** — *opposite in sign* to the **+0.071** chord the test uses. The chord
+   is the 0 → 4 discontinuity, not a slope, and `A14` already shows the curve saturating, so a
+   two-point secant through the origin extrapolates onto a concave curve. Concavity alone can produce
+   the whole positive gap.
+2. **A refusal confound the entry never looked at.** `ko` refuses on **4.0 %** of rows against
+   **11.2 %** for `ctrl3` — and base and dose-4 sit at 11.5 / 12.7 % on three different GPUs, so this
+   is the *intervention*, not hardware. Conditioning on non-refusal collapses `ko − ctrl3` from
+   +0.0090 to **+0.0061**. The whole measured effect is 32 CR-002 rows against 26.
+3. **I discounted the confound with the wrong band.** Entry 113 used `CONT-ENTRY 070`'s **lexicon**-endpoint
+   hardware figure (+0.0015). The CR-002 cell on the same V100/L40S pair is **−0.0090
+   [−0.0209, +0.0030]** — six times larger and **opposite in sign**. My dismissal happened to assume
+   the sign that shrinks the gap.
+4. **The "90/90 vs 24/90" asymmetry is not a dissociation.** Under perfect homogeneity **29.5/90**
+   domains are expected to show an increase at that mean; 24 is *below* expectation. Real
+   over-dispersion exists (permutation P ≤ 0.0032) but 24/90 does not measure it.
+
+**C-CONT-084 — and entry 113's "the basket route is closed" is false.** It stated basket has *"no
+dose-0 ASR arm… the only basket dose-0 judged rows number 24"*. **`tsb66bj_C_n0` is a complete,
+judged, 226-row basket dose-0 arm**, sitting beside `tsb66bj_C_n4`, and all three basket knockout arms
+are already on one node. I verified all five components exist. That is the **second time in three
+entries** I asserted non-existence without opening the directory (`C-CONT-082` was the first), and
+this one closed off the *hardware-clean* route — the very thing entry 113 said was missing.
+
+**What survives.** The behavioural dose ladder itself: content-true ASR **0.0000 → 0.0389**, and the
+dose-0 zero is now much stronger than a zero — `REVIEW-6` found **0/226** button completions contain
+any `MATERIAL` term *or* any of detonate / fuse / blasting-cap / shrapnel / ignite / explosive / bomb /
+nitrate / oxidiser, replicated at **0/226** on basket. No genuine attack succeeds without
+demonstrations, on two codewords, by direct inspection rather than by filter.
+
+**Two live code defects fixed.** `--adjust-recall` in `dcs_cont_asr_factor.py` was declared, documented
+as printing a stratum table, and **never read** — passing it silently returned the unadjusted factor.
+Removed rather than half-implemented. And `--cluster` **defaulted to `run+domain`**, the option
+`CONT-ENTRY 105` itself calls "the obvious wrong way to do this", with no help text; the default is now
+`domain` and the help text says why. The committed artifact carried the disowned [11.23, 12.69] with no
+`sr_threshold` field; regenerated, it now records both.
+
+Job `882854` continues. It settles `ko − ctrl` on matched hardware, which remains worth having — but
+`REVIEW-6` is right that it leaves the scope, the null, and the refusal confound untouched.
