@@ -8532,3 +8532,52 @@ genuine attacks** (4 of 28 across both codewords), so it bounds from below and d
 level. And the MDE problem `REVIEW-3` raised gets **worse**, not better: against a base rate of 0.0343,
 the button CI half-width of ~0.029 is still ~85 % of the entire genuine attack rate. The endpoint is
 now defensible; it is not yet powerful.
+
+---
+
+### CONT-ENTRY 099 — 2026-09-12 — the headline sharpens by an order of magnitude: raw StrongREJECT overstates genuine attack success by 11.4× on button
+
+With `CR-002` validated out of sample (`CONT-ENTRY 098`), it can be applied to the whole `C-209`
+corpus — 111 runs, 58,468 rows — which the program previously re-scored only as far as the frozen
+lexicon.
+
+| codeword | split | rows | `ASR@0.5` | lexicon | **CR-002** |
+|---|---|---|---|---|---|
+| **button** | train+val | 36,270 | 0.3146 | 0.1243 | **0.0263** |
+| button | test | 6,752 | 0.2113 | 0.0773 | 0.0178 |
+| **basket** | train+val | 3,042 | 0.1226 | 0.0391 | **0.0178** |
+| basket | test | 576 | 0.0885 | 0.0312 | 0.0017 |
+| *carrot* | train+val | 8,094 | 0.1768 | 0.1048 | *0.0248* |
+
+**Run-clustered factor** (the unit is the RUN — `C-CONT-048` established a design effect of 24.9, so
+row-level intervals would be ~5× too narrow):
+
+> **button 11.4×, 95 % CI [10.5×, 12.5×], over 68 runs**
+> basket 7.4×, 95 % CI [5.2×, 10.0×], over 6 runs
+
+**Adjusted for CR-002's own recall**, which is 0.923 on button: the rule *misses* genuine attacks, so
+dividing by it overstates the factor. Genuine ≈ CR-002 / 0.923, giving **≈ 10.5×** as the recall-
+corrected point estimate on button. Either way it is **an order of magnitude**, against the **2.55×**
+this program has been quoting — that figure measured only raw → lexicon, and the lexicon is now known
+to keep 72 % spurious rows on button (`CONT-ENTRY 090`).
+
+**Three limits, stated rather than buried.**
+1. **`carrot` is not validated.** It is a third codeword with no labels, and three separate
+   codeword-dependences are on record. Its column is reported for completeness and is **not** a bound.
+2. **basket's test cell (51×) is one row.** 0.0017 × 576 ≈ 1 positive. Unstable and not quotable; the
+   basket train+val figure rests on 6 runs against button's 68, which is why its interval is three
+   times wider.
+3. **This is a lower bound on genuine ASR, so an upper bound on the factor.** CR-002's precision lower
+   bound is 0.76, not 1 — up to a quarter of its kept rows may still be spurious, which would push the
+   true rate *up* and the factor *down*.
+
+**What the program can now say that it could not yesterday.** Not "our judge has a bug", and not even
+"a factor of 2.55". The claim is: **on codeword-remapping jailbreaks, an LLM-judge ASR pipeline
+overstates genuine attack success by roughly an order of magnitude**, measured on 58,468 rows across
+111 runs, with the correction itself validated out of sample against blind human-criteria labels on
+two codewords (24 fresh rows, 0 false positives), and with every error channel of both instruments
+measured and codeword-dependent. That is the strongest result this phase has produced, and it is
+methodological rather than mechanistic — which `REVIEW-2/SCIENTIFIC` ranked correctly weeks of entries
+ago.
+
+Job `881787` (dose 8) at 1607 rows and still running.
