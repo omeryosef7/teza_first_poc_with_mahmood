@@ -10888,3 +10888,73 @@ comparison would be meaningless. Recorded as a limit, and as the one thing a che
 
 A17's row now carries both the inert-control result and the button gap. `REVIEW-9` is running against
 A17 with the ratio-bootstrap, the formalisation of the rival, and the scope choice as named targets.
+
+---
+
+### CONT-ENTRY 147 — 2026-09-13 — **A17 IS WITHDRAWN.** `C-CONT-096`. The second headline claim to die in two days, and this one I had already "attacked myself" and cleared
+
+`REVIEW-9` reproduced every A17 number exactly — and then destroyed the claim they were used to build.
+I verified the decisive computation myself.
+
+**1 — There were two mechanical channels. I found one and declared victory.**
+
+`CONT-ENTRY 145` tested the confound that refused rows cannot carry bomb content, measured it
+(opportunity factor 1.081 / 1.011), and concluded A17 survived. It missed a second, **larger** channel:
+**CR-002's `SCOPE` clause is a disclaimer detector, and the knockout suppresses disclaimers** — which
+this phase already had on record as **A2b, "−3.1 pp disclaimers"**. So the rule vetoes control
+candidates more often than knockout candidates, purely because the control still writes disclaimers:
+
+| vetoed candidates | ko | ctrl |
+|---|---|---|
+| button | **1** | **4** |
+| basket | **0** | **3** |
+
+Strip **both** channels — never-refused-in-both stratum, disclaimer clause dropped:
+
+| | ko / ctrl | 95 % CI |
+|---|---|---|
+| **button** | **28 / 28 = 1.000** | [0.630, 1.625] |
+| **basket** | **18 / 17 = 1.059** | [0.583, 1.900] |
+
+**The entire excess was mechanical.** "Content-true, if anything, goes up" is withdrawn.
+
+**2 — And it reverses the exact argument I called decisive.** Entry 145 said: *"basket's confound is
+essentially absent (1.011) yet basket shows the larger ratio, so the confound runs opposite to the
+pattern."* Basket's **disclaimer** factor is **1.214 — the largest of the four**. Total mechanical
+inflation is **1.223** (button) and **1.227** (basket): nearly identical, which is **why** the two raw
+ratios "agreed to within 2 %". `CONT-ENTRY 144` called that agreement "the strongest cross-codeword
+agreement of any quantity in this phase." It was two confounds summing to the same number twice.
+
+**3 — The formalisation was wrong independently of all that.** "One switch ⇒ content ratio ≈ refusal
+ratio" is **not a theorem**. A single graded latent bomb-reading with **two ordered thresholds** —
+refuse above `t_R`, emit content between `t_C` and `t_R` — is *one switch*, is *tightly* coupled, and
+predicts exactly refusal-down / content-flat-or-up. It fits 75→27 and 24→32 with parameters to spare.
+So even the raw 1.333 never excluded the rival. I formalised someone else's hypothesis into the
+version my data could beat, and did not notice I had done it.
+
+**4 — `CONT-ENTRY 145`'s conditional adjustment conditions on a post-treatment variable.** Refusal is
+*caused by* the intervention, so conditioning on not-refused-in-that-arm is a collider: it puts 48 rows
+into `ko`'s denominator absent from `ctrl`'s, and those rows carry content at **2.3×** and **5.3×** the
+base rate. The valid principal-stratum ratios are **1.125** and **1.286**, not the 1.234 / 1.343 I
+published.
+
+**Also confirmed.** `"population": "train+val"` **labels a train-only dataset** — all 67 domains are
+`train` and the 23 validation domains are absent entirely, so the filter is a no-op on this corpus and
+the label overstates what was included. No TEST leak. And basket-PRIMARY intervals silently discarded
+**36 %** of their bootstrap draws through the zero-denominator guard (all-slots discards none, so the
+headline was unaffected).
+
+**Cleared, and worth keeping:** pairing is real (670/670 shared ids, `prompt_sha16` and
+`goal_sha256_16` identical on every pair, one judge manifest and one GPU per codeword), no length
+confound, no scope shopping — the primary points the same way (RoR 2.60, p = 0.054) and is simply
+underpowered. The inert band control from `CONT-ENTRY 146` stands.
+
+**What this costs and what it teaches.** Two headline claims withdrawn in two days, and this one I had
+*already* subjected to a self-attack and cleared. That is the lesson worth more than the claim: **I
+tested the confound I thought of, found it insufficient, and treated "insufficient" as "absent."** The
+second channel was not obscure — it was already a numbered result in this phase's own claim table.
+
+The discriminating quantity, per `REVIEW-9`, is the **never-refused-in-both** ratio (a threshold model
+predicts < 1, gating predicts = 1). Measured: **1.000** and **1.059**, intervals spanning 0.58–1.9.
+**Undecided**, and honestly so. Breaking the tie needs a new measurement — a blind human rating of the
+~60 candidate rows, insensitive to disclaimer style — not another pass over these artifacts.
