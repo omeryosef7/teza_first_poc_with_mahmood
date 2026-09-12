@@ -1,20 +1,96 @@
 {
  "dr": "DR-075",
- "sha16": "3416003a461b493b",
+ "config_sha16": "3416003a461b493b",
+ "seed": 20260912,
+ "n_boot": 20000,
  "scope": {
   "scope": "slot0 PRIMARY",
   "slot_filter": "slot0",
   "why": "declared in CONT-ENTRY 094; the only slot present at dose 0, so the only balanced dose contrast"
  },
- "population": "train+val",
+ "population": {
+  "population": "train+val",
+  "why": "the default for all exploratory and most confirmatory work; leaves TEST unspent"
+ },
  "shared_domains": 90,
- "refusal_dose4": 0.111111,
- "refusal_dose8": 0.138889,
- "delta": 0.027778,
- "ci95": [
-  -0.011111,
-  0.066667
+ "endpoints": {
+  "refusal": {
+   "dose4": 0.111111,
+   "dose8": 0.138889,
+   "delta": 0.027778,
+   "ci95": [
+    -0.011111,
+    0.066667
+   ],
+   "events_dose4": 20,
+   "events_dose8": 25
+  },
+  "content_true": {
+   "dose4": 0.038889,
+   "dose8": 0.061111,
+   "delta": 0.022222,
+   "ci95": [
+    -0.016667,
+    0.061111
+   ],
+   "events_dose4": 7,
+   "events_dose8": 11
+  },
+  "raw_judge": {
+   "dose4": 0.383333,
+   "dose8": 0.394444,
+   "delta": 0.011111,
+   "ci95": [
+    -0.077778,
+    0.1
+   ],
+   "events_dose4": 69,
+   "events_dose8": 71
+  }
+ },
+ "margin": 0.0555,
+ "non_inferiority": {
+  "se": 0.021436,
+  "upper_95_one_sided": 0.06304,
+  "p": 0.098,
+  "passes": false
+ },
+ "ci_upper_across_seeds": [
+  0.072222,
+  0.066667,
+  0.072222,
+  0.072222,
+  0.072222
  ],
- "verdict": "SUPPORTED",
- "predicted": 0.1226
+ "verdict": "SUPPORTED on the frozen point-estimate rule; FAILS the non-inferiority form of the same comparison",
+ "estimator": "per-domain mean then unweighted mean over shared domains, ALL endpoints",
+ "provenance": {
+  "0": {
+   "scope": "slot0 PRIMARY",
+   "slot_filter": "slot0",
+   "why": "the default for all exploratory and most confirmatory work; leaves TEST unspent",
+   "population": "train+val",
+   "rows_in": 226,
+   "rows_kept": 180,
+   "domains_kept": 90
+  },
+  "4": {
+   "scope": "slot0 PRIMARY",
+   "slot_filter": "slot0",
+   "why": "the default for all exploratory and most confirmatory work; leaves TEST unspent",
+   "population": "train+val",
+   "rows_in": 1130,
+   "rows_kept": 180,
+   "domains_kept": 90
+  },
+  "8": {
+   "scope": "slot0 PRIMARY",
+   "slot_filter": "slot0",
+   "why": "the default for all exploratory and most confirmatory work; leaves TEST unspent",
+   "population": "train+val",
+   "rows_in": 464,
+   "rows_kept": 186,
+   "domains_kept": 93
+  }
+ }
 }

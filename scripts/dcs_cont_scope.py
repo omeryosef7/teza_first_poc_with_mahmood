@@ -100,6 +100,74 @@ class Scope:
             "primary and call it stratified." % sorted(shared))
 
 
+# ---------------------------------------------------------------------------
+# POPULATION -- the second half of the same lesson (C-CONT-094)
+# ---------------------------------------------------------------------------
+# Scope was not enough. On 2026-09-12 I published seven numbers computed with the
+# 23 TEST domains IN (CONT-ENTRY 133), and a FROZEN config asserting
+# "does_not_read_TEST": true whose own inputs spanned all 116 domains. Neither was
+# caught by the scope guard, because population is a different axis.
+#
+# So population is now required in the same way and by the same call. A number
+# needs BOTH to be interpretable, and this phase has now been bitten by each.
+
+
+@dataclass(frozen=True)
+class _Population:
+    name: str
+    keeps_test: bool
+    why: str
+
+    def keeps(self, domain: str, assign: Dict[str, str]) -> bool:
+        return self.keeps_test or assign.get(domain) != "test"
+
+    @property
+    def tag(self) -> Dict[str, str]:
+        return {"population": self.name, "why": self.why}
+
+
+class Population:
+    TRAIN_VAL = _Population(
+        "train+val", False,
+        "the default for all exploratory and most confirmatory work; leaves TEST unspent")
+    ALL_INCLUDING_TEST = _Population(
+        "ALL (TEST INCLUDED)", True,
+        "only for a preregistered single TEST read with its own written authorisation. "
+        "Passing this SPENDS TEST -- it is never the convenient choice")
+
+    @staticmethod
+    def require(population) -> "_Population":
+        if not isinstance(population, _Population):
+            raise TypeError(
+                "population must be Population.TRAIN_VAL or Population.ALL_INCLUDING_TEST, "
+                "explicitly. There is no default: C-CONT-094 was seven published numbers and a "
+                "frozen config's inputs, all silently computed with TEST in.")
+        return population
+
+
+def filter_rows(rows, scope, population, assign, family_key="family_id",
+                domain_key="domain"):
+    """The only sanctioned way to narrow rows for an analysis in this phase.
+
+    Requires BOTH axes explicitly and returns (kept, provenance). Raises on an
+    empty result rather than letting a downstream mean be computed over nothing --
+    four defects in this phase (C-CONT-036/056/066/069) were silent empty or
+    mis-keyed selections that produced plausible numbers.
+    """
+    sc = Scope.require(scope)
+    po = Population.require(population)
+    kept = [r for r in rows
+            if sc.keeps(r.get(family_key, "")) and po.keeps(r.get(domain_key), assign)]
+    if not kept:
+        raise ValueError("filter_rows kept 0 of %d rows (scope=%s, population=%s). "
+                         "Refusing to return an empty set silently."
+                         % (len(rows), sc.name, po.name))
+    prov = {**sc.tag, **po.tag,
+            "rows_in": len(rows), "rows_kept": len(kept),
+            "domains_kept": len({r.get(domain_key) for r in kept})}
+    return kept, prov
+
+
 if __name__ == "__main__":
     fid = "hospital_supply|dev|slot0|n4|none|consistent|near|plain|behavioral"
     other = fid.replace("slot0", "slot12")
@@ -126,4 +194,23 @@ if __name__ == "__main__":
         raise SystemExit("FAIL: a real stratified case was silently reduced to the primary")
     except NotImplementedError:
         pass
-    print("dcs_cont_scope self-test OK:", Scope.PRIMARY.tag)
+    # population (C-CONT-094)
+    A = {"d_tr": "train", "d_te": "test"}
+    rows = [{"family_id": "x|dev|slot0|n4", "domain": "d_tr"},
+            {"family_id": "x|dev|slot0|n4", "domain": "d_te"},
+            {"family_id": "x|dev|slot4|n4", "domain": "d_tr"}]
+    kept, prov = filter_rows(rows, Scope.PRIMARY, Population.TRAIN_VAL, A)
+    assert len(kept) == 1 and prov["population"] == "train+val", prov
+    kept, _ = filter_rows(rows, Scope.PRIMARY, Population.ALL_INCLUDING_TEST, A)
+    assert len(kept) == 2
+    for bad in (None, "train+val", Scope.PRIMARY):
+        try:
+            Population.require(bad); raise SystemExit("FAIL: %r accepted as a population" % (bad,))
+        except TypeError:
+            pass
+    try:
+        filter_rows(rows, Scope.PRIMARY, Population.TRAIN_VAL, {"d_tr": "test", "d_te": "test"})
+        raise SystemExit("FAIL: an empty selection was returned silently")
+    except ValueError:
+        pass
+    print("dcs_cont_scope self-test OK:", Scope.PRIMARY.tag, Population.TRAIN_VAL.tag)

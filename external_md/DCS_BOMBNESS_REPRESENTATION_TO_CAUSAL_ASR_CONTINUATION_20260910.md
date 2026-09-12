@@ -10559,3 +10559,61 @@ disclosure (entry 135), an hour after committing numbers computed with TEST in (
 withdrew A16 for asserting a claim across checked numbers without checking the claim — and the same
 shape produced both. **Building the instrument is not the same as using it**, and I have now made that
 mistake in consecutive entries.
+
+---
+
+### CONT-ENTRY 140 — 2026-09-12 — The guards are now the *only* way in, and `DR-075` is reproducible for the first time
+
+Yesterday's lesson was that I keep building instruments and then not using them. The response is to
+make the instrument the path of least resistance rather than a document.
+
+**`Population` is now required exactly as `Scope` is.** `scripts/dcs_cont_scope.py` gains
+`Population.TRAIN_VAL` / `Population.ALL_INCLUDING_TEST` with no default, and a single
+`filter_rows(rows, scope, population, assign)` that:
+
+* **raises** unless *both* axes are passed explicitly — `C-CONT-093` was a missing scope and
+  `C-CONT-094` a missing population, one day apart, and neither guard would have caught the other;
+* **raises** if the selection is **empty**, rather than letting a mean be taken over nothing —
+  `C-CONT-036/056/066/069` were four silent empty or mis-keyed selections that each produced a
+  plausible number;
+* returns a provenance dict carrying scope, population, rows in/out and domain count, so an artifact
+  cannot be written without them.
+
+Naming `ALL_INCLUDING_TEST` in full, rather than `ALL`, is deliberate: the call site should read like
+what it costs.
+
+**`DR-075` now has a committed, seeded script** — `scripts/dcs_cont_dr075_analyze.py` — and every
+endpoint uses **the same estimator over the same domains**. Re-run from scratch:
+
+| endpoint | dose 4 | dose 8 | Δ | 95 % CI | events |
+|---|---|---|---|---|---|
+| refusal | 0.1111 | 0.1389 | **+0.0278** | [−0.0111, +0.0667] | **20 → 25** |
+| content-true | 0.0389 | 0.0611 | +0.0222 | [−0.0167, +0.0611] | **7 → 11** |
+| raw judge | 0.3833 | **0.3944** | **+0.0111** | [−0.0778, +0.1000] | 69 → 71 |
+
+**`D1` confirmed:** entry 136 published the raw-judge dose-8 value as **0.3871, Δ +0.0038**. That was a
+row-level rate over 93 domains — three of them preregistered-excluded — sitting in a table of
+per-domain numbers. Under the prespecified estimator it is **0.3944, Δ +0.0111**, **2.9× larger**.
+Corrected here.
+
+**`D8` confirmed:** across five further seeds the CI upper bound is **0.0722, 0.0722, 0.0722, 0.0722,
+0.0667**. The value I published, +0.0667, is the **minority outcome** — I reported resampling noise to
+four decimals from an unseeded run. The seed is now recorded in the artifact and the sweep is printed
+beside the headline.
+
+**And the test DR-075 structurally is, reported at last.** The frozen rule compares a point estimate to
+a margin, which is a **non-inferiority design**. Computed:
+
+* SE **0.02144**, one-sided 95 % upper bound **+0.0630** against the margin **+0.0555**
+* non-inferiority **p = 0.098** → **FAILS**
+
+So `DR-075` is *simultaneously* SUPPORTED under the rule as frozen and FAILING the honest form of the
+same comparison. Both now appear in the artifact's `verdict` field, because reporting only the first
+is what made entry 136 read stronger than the data. The narrow claim that survives is unchanged and
+worth keeping: **refusal is not a *linear* demonstration counter** — the design has ~99 % power against
+that specific rival, and against nothing broader.
+
+**What this does not repair.** A16 stays withdrawn (`C-CONT-092`); none of this revives it. The
+basket ladder (job 886483, `t-806`) is still running and will say whether `DR-075`'s saturation premise
+is even a cross-codeword fact. And the corrected `raw_judge` Δ of +0.0111 with a CI spanning
+[−0.0778, +0.1000] is, like everything else in this dose step, **consistent with nothing happening**.
