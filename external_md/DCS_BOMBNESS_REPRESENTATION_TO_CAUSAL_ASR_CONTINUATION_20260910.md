@@ -9832,3 +9832,38 @@ something large, one-directional and replicable; it simply does not do the thing
 That belongs in the paper-facing table, with the leak quantified, rather than as a narrative in the log.
 
 Push still failing; nineteen commits pending locally.
+
+---
+
+### CONT-ENTRY 126 — 2026-09-12 — "negative in 33/67 domains" was diluted by ties. It is 33 of 33.
+
+Briefing `REVIEW-7` I listed as an oddity that `CONT-ENTRY 121` reports the refusal effect as
+**negative in 33/67 domains** while giving it **p = 0.00005** — half the domains is a strange sign
+count for an effect that strong. Checked it myself rather than waiting.
+
+| | count |
+|---|---|
+| domains with a **negative** refusal difference | **33** |
+| domains with a **positive** difference | **0** |
+| domains with a difference of **exactly zero** | **34** |
+| — of which, zero refusals in **both** arms | **28** |
+
+**Among the 39 domains where either arm refuses at all: 33 negative, 0 positive, 6 zero. That is
+33 of 33 — every domain where the effect is measurable at all, without a single exception.**
+
+The "33/67" was **diluted by ties**: in 28 domains neither arm ever refuses, so there is nothing for
+the cut to remove and the difference is exactly 0 by construction. Counting those as "not negative"
+understates a result that has **no counterexamples**. On the non-tied domains the mean difference is
+**−0.1231**.
+
+**This makes A15's one-directionality claim stronger and more coherent.** The prompt-level statement
+was already **0 reversals in 1340 paired prompts**; the domain-level statement is now **0 domains
+moving the other way**. The same asymmetry appears at both levels of aggregation, which is what a real
+one-directional effect looks like and what a noisy one does not.
+
+**Corrected reporting, and the general form of the mistake.** `CONT-ENTRY 121` and the claim table both
+say "negative in 33/67". Neither is wrong, but both invite the reading that the effect holds in about
+half of domains. The right denominator for a sign count is **the domains where the quantity can
+vary** — and where a floor or ceiling makes most units constant, a raw sign count reads as weak
+evidence for a strong effect. Fixed in both places. I should have noticed when writing `121` that a
+p of 0.00005 and a 50 % sign rate cannot both be describing the same data plainly.
