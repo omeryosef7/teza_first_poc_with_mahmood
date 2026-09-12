@@ -70,6 +70,35 @@ class Scope:
                 "four defects in this phase (C-CONT-072/083/088/089) were an unstated slot scope.")
         return scope
 
+    @staticmethod
+    def for_dose_contrast(slots_a, slots_b, scope=None) -> "_Scope":
+        """The admissible scope for a contrast between two arms with different slot sets.
+
+        A dose contrast may only use slots present in BOTH arms. Anything else compares
+        different slot compositions and calls the difference a dose effect -- which is
+        exactly what inflated basket's ASR dose slope 4.2x (CONT-ENTRY 117, C-CONT-091).
+
+        REVIEW-7 asked why nobody had proposed a slot-STRATIFIED estimator. This is the
+        answer, and it is a fact about the bank rather than a preference: on ts116m every
+        dose pair on BOTH codewords shares exactly one slot, slot0. So the stratified
+        estimator collapses to the slot0 primary and recovers no extra information.
+        ALL_SLOTS is therefore not merely secondary for dose work -- it is inadmissible.
+        """
+        shared = set(slots_a) & set(slots_b)
+        if not shared:
+            raise ValueError("the two arms share NO slot; no dose contrast is defined")
+        if scope is Scope.ALL_SLOTS:
+            raise ValueError(
+                "ALL_SLOTS is inadmissible for a dose contrast: the arms share only %s, so "
+                "'all slots' would compare %d slot(s) against %d. See C-CONT-091."
+                % (sorted(shared), len(set(slots_a)), len(set(slots_b))))
+        if shared == {"slot0"}:
+            return Scope.PRIMARY
+        raise NotImplementedError(
+            "arms share %s, more than slot0 alone. A genuine stratified estimator is now "
+            "possible and must be written deliberately -- do not silently fall back to the "
+            "primary and call it stratified." % sorted(shared))
+
 
 if __name__ == "__main__":
     fid = "hospital_supply|dev|slot0|n4|none|consistent|near|plain|behavioral"
@@ -79,5 +108,22 @@ if __name__ == "__main__":
     try:
         Scope.require("slot0"); raise SystemExit("FAIL: a bare string was accepted")
     except TypeError:
+        pass
+    # dose-contrast admissibility (C-CONT-091)
+    assert Scope.for_dose_contrast(["slot0"], ["slot0", "slot4"]) is Scope.PRIMARY
+    try:
+        Scope.for_dose_contrast(["slot0"], ["slot0", "slot4"], scope=Scope.ALL_SLOTS)
+        raise SystemExit("FAIL: ALL_SLOTS accepted for a dose contrast")
+    except ValueError:
+        pass
+    try:
+        Scope.for_dose_contrast(["slot0"], ["slot4"])
+        raise SystemExit("FAIL: disjoint slot sets accepted")
+    except ValueError:
+        pass
+    try:
+        Scope.for_dose_contrast(["slot0", "slot4"], ["slot0", "slot4"])
+        raise SystemExit("FAIL: a real stratified case was silently reduced to the primary")
+    except NotImplementedError:
         pass
     print("dcs_cont_scope self-test OK:", Scope.PRIMARY.tag)

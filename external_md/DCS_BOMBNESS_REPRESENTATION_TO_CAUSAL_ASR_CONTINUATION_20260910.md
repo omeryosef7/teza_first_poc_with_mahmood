@@ -10224,3 +10224,53 @@ the edit had matched **nothing** and changed **0 lines**. That is `C-CONT-086` e
 artifact was updated without checking the write landed. The real anchor was in **A3**, which stated
 the slot cause for *both* withdrawals; it is now corrected there, with an assert on the anchor so a
 silent no-op cannot recur. `DR-075` (job 886005) continues on n-804.
+
+---
+
+### CONT-ENTRY 134 — 2026-09-12 — The slot-stratified estimator REVIEW-7 asked for is a **no-op**, and that retires "all slots" for dose work entirely
+
+`REVIEW-7`'s last open item asked why nobody had proposed a slot-**stratified** dose estimator — the
+textbook fix for comparing arms with different slot composition. It is a fair question and the answer
+turns out to be a fact about the bank rather than a preference. Enumerated from both banks:
+
+| | dose 0 | dose 4 | dose 8 |
+|---|---|---|---|
+| **button** | `slot0` | `slot0, 4, 8, 12, 16` | `slot0, 3` |
+| **basket** | `slot0` | `slot0, 4, 8, 12, 16` | `slot0, 3` |
+
+| contrast | slots present in **both** arms |
+|---|---|
+| dose 0 vs 4 | **`slot0`** |
+| dose 0 vs 8 | **`slot0`** |
+| dose 4 vs 8 | **`slot0`** |
+
+**Every dose pair, on both codewords, shares exactly one slot.** A stratified estimator restricted to
+strata present in both arms therefore **collapses to the `slot0` primary** and recovers no additional
+information. There is nothing to stratify over.
+
+**This changes the status of the primary from a choice to a constraint.** `CONT-ENTRY 094` declared
+`slot0` primary on the reasonable ground that it is the only slot at dose 0. The stronger statement is
+now available: for *any* dose contrast on this bank, **`slot0` is the only admissible analysis**, and
+"all slots" is not a defensible secondary — it is comparing 1 slot against 5 and calling the difference
+a dose effect. That is exactly the 4.2× inflation `CONT-ENTRY 117` found on basket.
+
+**Enforced rather than noted.** `Scope.for_dose_contrast(slots_a, slots_b)` in
+`scripts/dcs_cont_scope.py` takes the two arms' slot sets and
+
+* **raises** if `ALL_SLOTS` is passed for a dose contrast, naming the 1-vs-5 mismatch;
+* **raises** if the arms share no slot at all;
+* returns `PRIMARY` when the shared set is exactly `{slot0}`;
+* **raises `NotImplementedError`** when the shared set is *larger* than `slot0` — because then a real
+  stratified estimator becomes possible and must be written deliberately. Silently returning the
+  primary and calling it "stratified" is the failure mode this whole helper exists to prevent, and it
+  would be the easiest one to add by accident when the next bank arrives.
+
+Four assertions cover those branches in the module self-test.
+
+**What this does not fix.** It constrains dose contrasts only. `A15`'s all-slots quantities are a
+*rare-event* argument, not a dose contrast — the primary leaves 9 and 1 de-refusals, too few to
+analyse — so they stay labelled as secondary rather than becoming inadmissible. And the one genuinely
+open REVIEW-7 item remains: **A15's Wilson intervals are row-level where the declared unit is the
+domain.** Not touched here; named so it is not quietly dropped.
+
+`DR-075` at 354/464 generations on n-804.
