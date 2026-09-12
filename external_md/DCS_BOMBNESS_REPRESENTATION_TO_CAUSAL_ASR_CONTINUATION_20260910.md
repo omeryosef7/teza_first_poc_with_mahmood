@@ -9737,3 +9737,48 @@ simply has less to act on there. That is an observation about the corpus, not a 
 not going to dress it up as one.
 
 Push still failing; seventeen commits pending locally.
+
+---
+
+### CONT-ENTRY 124 — 2026-09-12 — the linking prediction is not supported, and the test cannot tell "no link" from "a link too small to see"
+
+`CONT-ENTRY 122/123` left an attractive chain: the cut removes the remap → the model reads the query
+literally → it has nothing to refuse → what it writes is a literal answer, not an attack. That chain
+makes a **testable per-domain prediction** — the domains that lose the most installation should lose
+the most refusal — and both quantities are already measured, each on internally matched hardware.
+
+**Tested, button, 67 domains:**
+
+| | mean | sd |
+|---|---|---|
+| installation drop (`ko − ctrl`) | −0.2150 | 0.0803 |
+| refusal drop (`ko − ctrl`) | −0.0716 | 0.0927 |
+
+> **Spearman ρ = +0.1758, 95 % CI [−0.0513, +0.4048], permutation p = 0.16.**
+
+The sign is the predicted one — both drops are negative, so a positive ρ means they move together —
+but the interval includes zero. **The linking prediction is not supported.**
+
+**And the test cannot settle it either way.** At n = 67, the minimum detectable correlation at 80 %
+power is **ρ ≈ 0.34**. The observed 0.176 is **half the MDE**, so a real association of exactly this
+magnitude would be missed most of the time. This is a null that does not distinguish *"installation
+loss and refusal loss are independent consequences of the same cut"* from *"they are linked, modestly,
+and 67 domains cannot show it"*.
+
+⇒ **What the account may and may not say.** It may say the cut **removes refusals one-directionally**
+(replicated, two codewords, 1340 paired prompts, zero reversals) and that **what replaces them is
+mostly not an attack** (button 10.4 % [4.5, 22.2]). It may **not** say that the refusal loss is
+*caused by* the installation loss: the domain-level link that would show it is absent at the power
+available, and I proposed that chain one entry ago on the strength of its plausibility.
+
+**This is the phase's recurring constraint in a new place.** A2 is underpowered in content-true units
+(MDE exceeds the base rate). The quantitative dissociation was withdrawn partly for the same reason.
+Now the mechanistic link between two *established* effects is also below the detection floor. The
+domain count — 67 usable, 90 with validation — is the binding constraint on nearly every remaining
+question, and no amount of careful analysis of the existing arms changes that.
+
+**What would change it:** more domains, not more analyses. The bank carries 113 domains of which 23 are
+TEST and 3 excluded; the ceiling on any within-bank test is therefore ~90. A linking test with useful
+power at ρ ≈ 0.18 needs roughly **240 domains** — a bank-generation question, and the third distinct
+result this phase has traced back to one (`CONT-ENTRY 076`'s position-matched bank and `CONT-ENTRY
+079`'s concept that installs being the others).
