@@ -344,11 +344,31 @@ def scan():
                 problems.append((rid, f"{ci[2]} of {ci[1]} (domain x dose) cells hold fewer than "
                                       f"the modal {ci[0]} rows -- loss is NON-UNIFORM, which is "
                                       f"what biases a clustered analysis"))
-    return problems, checked, non_runs, zero_row, unchecked
+    # C-CONT-082. The zero-row check above only sees runs that wrote DONE.json. A run that writes a
+    # config and then vanishes -- cancelled, OOM-killed, or dead before its first flush -- leaves a
+    # directory with config.json and NO row file at all, and was invisible to every check here.
+    # contasr2_ctrl2 was exactly that: expect_n 670, zero rows, and it tripped nothing. Reported
+    # rather than failed, because a cancelled run is legitimate; what is not legitimate is silence.
+    # Directories touched in the last 6 hours are skipped so in-flight runs are not flagged.
+    import time as _time
+    started_empty = []
+    for root, rowfile in sorted(ROW_FILE.items()):
+        for d in sorted(glob.glob(os.path.join(ROOT, "outputs", "boombness", root, "*/"))):
+            if os.path.isfile(os.path.join(d, "DONE.json")):
+                continue
+            cfg_p = os.path.join(d, "config.json")
+            if not os.path.isfile(cfg_p):
+                continue
+            if os.path.getsize(os.path.join(d, rowfile)) > 0 if os.path.isfile(os.path.join(d, rowfile)) else False:
+                continue
+            if _time.time() - os.path.getmtime(cfg_p) < 6 * 3600:
+                continue
+            started_empty.append(os.path.basename(d.rstrip("/")))
+    return problems, checked, non_runs, zero_row, unchecked, started_empty
 
 
 def main() -> int:
-    problems, checked, non_runs, zero_row, unchecked = scan()
+    problems, checked, non_runs, zero_row, unchecked, started_empty = scan()
     fa_problems, comparable, not_comparable = scan_file_agreement()
     problems += fa_problems
     if checked < MIN_EXPECTED:
@@ -366,6 +386,12 @@ def main() -> int:
         print("[run-complete] FAIL -- a finished run persisted zero rows. If the failure is real "
               "and documented, add it to KNOWN_ZERO with its cause; do not delete the run.")
         return 1
+    if started_empty:
+        print(f"[run-complete] {len(started_empty)} run dir(s) STARTED and produced no rows "
+              f"(config.json present, no DONE.json, no rows, untouched >6h) -- cancelled or died:")
+        for rid in started_empty[:12]:
+            print(f"    started-empty {rid}")
+        print("      -> quarantine with provenance (section 53); they are invisible to every other check here")
     print(f"[run-complete] {checked} finished runs carry an expect_n and were checked; "
           f"{unchecked} finished runs carry none and were NOT checked against a target "
           f"(only their row count being non-zero was verified); ")

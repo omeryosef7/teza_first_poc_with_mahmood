@@ -9301,3 +9301,39 @@ timing — not the free lunch I advertised.
 finished with zero persisted rows; it did not trip the guard because it never wrote `DONE.json`. That
 is a gap in `C-CONT-051`'s fix: the zero-row check only sees runs that *claim* completion. A run that
 writes a config and then vanishes is invisible to it.
+
+---
+
+### CONT-ENTRY 115 — 2026-09-12 — the hardware-matched control is running; and the guard now sees runs that start and vanish
+
+**`882854` submitted and RUNNING on `n-503`** — the RTX A5000 node where `contasr2_ko` ran. Flags copied
+**verbatim** from `contasr2_ctrl3`'s `RUNMETA.argv`; the two arms differ **only** in
+`--intervene demo_all:attn_knockout:20-28:1.0` versus `6-14`, so a same-node rerun of the control makes
+`ko − ctrl` a within-hardware comparison for the first time. That is what `CONT-ENTRY 113`'s
+proportionality test needs and what `C-CONT-082` established could not be had for free.
+
+**The guard gap `C-CONT-082` exposed is closed.** `C-CONT-051`'s zero-row check walks **DONE
+directories only**, so a run that writes a config and then dies — cancelled, OOM-killed, or gone
+before its first flush — left no trace any check could see. `contasr2_ctrl2` was exactly that:
+`expect_n` 670, zero rows, **tripped nothing**, and I then wrote a costed plan around it.
+
+The guard now reports a **started-but-empty** census: a directory with `config.json`, **no**
+`DONE.json`, **no** rows, and untouched for **> 6 hours** (so in-flight jobs are not flagged). It
+**reports rather than fails** — a cancelled run is legitimate; what is not legitimate is silence.
+
+**It immediately found 57 such directories**, including `bombspecko` ×3, `roleblk`,
+`vfy_mainpath_nok`, `abR24_C`/`abR28_C` from August, and five already prefixed `VOID_`/`VOID_hung_` by
+earlier work — which shows the category was real and was being handled by hand, one directory at a
+time, with no census to say how many there were.
+
+Two tests added: one asserts a vanished run **is** reported, the other that a **freshly written**
+directory is **not** — because a check that cries wolf on every submission gets ignored, which is how
+a guard stops guarding. **29 tests pass**; the guard runs in 12.6 s (from 7.9 s).
+
+**Standing state.** The quantitative dissociation (gap **+0.0223 [+0.0060, +0.0389]**, P = 0.0022)
+remains confounded until `882854` lands and the comparison can be redone within hardware. The dose
+ladder is complete and calibrated on both halves. The endpoint is validated, censused at 0.977
+precision, and independently relabelled at κ = 0.953.
+
+Push still failing — eight commits pending locally. Everything through `CONT-ENTRY 107` is on the
+remote; `CONT-ENTRY 109` has the diagnosis and the three steps.
