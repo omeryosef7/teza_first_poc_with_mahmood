@@ -10328,3 +10328,57 @@ Judge pinned to **`openai/gpt-4o-mini`**, the dose-4 comparator's manifest, so t
 not confounded by a judge change on top of everything else.
 
 **Nothing about the prediction has been read.** The verdict follows in the next entry.
+
+---
+
+### CONT-ENTRY 136 — 2026-09-12 — **DR-075: SUPPORTED.** Refusal does not track demonstration count — but the test cannot tell +0.0115 from +0.0278, and content-true moved more
+
+Executed under the rule frozen in `CONT-ENTRY 131`, config sha16 **`3416003a461b493b`** re-hashed and
+verified unchanged at read time, scope obtained from `Scope.for_dose_contrast()` rather than chosen,
+population **train+val** as the frozen comparator requires, independence unit the **domain**.
+
+**The pipeline validated itself first: the dose-4 comparator reproduced at exactly `0.1111`**, the
+number frozen a day earlier from a different computation. Judge output carried **0 nulls**, 464/464
+`judge_status=ok`, one pinned model.
+
+| button, `slot0` PRIMARY, train+val, 90 shared domains | dose 4 | dose 8 | Δ | 95 % CI (domain-clustered) | domains ↑/↓/= |
+|---|---|---|---|---|---|
+| **refusal** | 0.1111 | **0.1389** | **+0.0278** | **[−0.0111, +0.0667]** | 10 / 5 / 75 |
+| content-true (CR-002) | 0.0389 | 0.0611 | +0.0222 | [−0.0222, +0.0611] | 8 / 3 / 79 |
+| raw-judge ASR | 0.3833 | 0.3871 | +0.0038 | — | — |
+
+**VERDICT under the frozen rule: SUPPORTED.** The rise is **+0.0278**, below the **+0.0555**
+falsification threshold; dose-8 refusal is **0.1389**, below the **0.1666** ceiling.
+
+**What that genuinely establishes.** Doubling the demonstrations from four to eight does **not** buy
+another large increment of refusal. The first four demonstrations bought **+0.1111**; the second four
+bought **+0.0278**, a quarter as much, while installation rose only 10.3 %. **The reading that refusal
+counts demonstrations is disfavoured** — that hypothesis predicted continued climbing and it is not
+there. Raw-judge ASR is flat to three decimals (+0.0038), which is its own small corroboration that
+nothing dramatic happens in this step.
+
+**Three things that must travel with it, none of which the pass disposes of.**
+
+1. **The confidence interval is not inside the supported region.** The frozen rule was written on the
+   **point estimate**, and on the point estimate it passes. But the CI runs to **+0.0667**, past the
+   +0.0555 threshold, and it also includes **zero**. This test cannot distinguish A16's predicted
+   +0.0115 from the measured +0.0278, and cannot exclude no effect at all. It rules out a *large*
+   rise; it does not pin down a small one.
+2. **The measured rise is 2.4× the predicted point.** A16 predicted +0.0115 by proportionality to
+   installation; refusal rose more than that. Consistent with the CI, but the direction of the miss is
+   worth naming rather than rounding away.
+3. **Content-true rose proportionally *more* than refusal — +57 % against +25 %.** That sits
+   awkwardly with A16's "gates refusal, **not** capability", and I am not going to file it under
+   caveats. Both CIs include zero and the counts are tiny (8 domains moving on content-true), so
+   **neither rise is established**; but if the next bank shows capability tracking installation as
+   closely as refusal does, A16's second half is in trouble. The honest summary of dose 4→8 is that
+   **very little moves**, which is what saturation predicts, and the fine structure is below this
+   design's resolution.
+
+**Net effect on A16.** Its *falsifiable* half survived a test that could have killed it: refusal is not
+a demonstration counter. Its *quantitative* half — refusal tracking installation proportionally — is
+**not confirmed**, and the resolution to confirm it is not in this bank. A16 stays as entered, with
+`DR-075` recorded as a passed falsification test rather than as positive confirmation, because that is
+what it is.
+
+`reports/DCS_CONT_DR075_RESULT.json`. Jobs 886005 (arm, L40S/n-804) and 886353 (judge, gpt-4o-mini).

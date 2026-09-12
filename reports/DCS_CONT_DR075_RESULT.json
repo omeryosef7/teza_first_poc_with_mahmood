@@ -1,0 +1,20 @@
+{
+ "dr": "DR-075",
+ "sha16": "3416003a461b493b",
+ "scope": {
+  "scope": "slot0 PRIMARY",
+  "slot_filter": "slot0",
+  "why": "declared in CONT-ENTRY 094; the only slot present at dose 0, so the only balanced dose contrast"
+ },
+ "population": "train+val",
+ "shared_domains": 90,
+ "refusal_dose4": 0.111111,
+ "refusal_dose8": 0.138889,
+ "delta": 0.027778,
+ "ci95": [
+  -0.011111,
+  0.066667
+ ],
+ "verdict": "SUPPORTED",
+ "predicted": 0.1226
+}
