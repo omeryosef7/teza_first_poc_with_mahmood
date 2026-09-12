@@ -8421,3 +8421,61 @@ than invalid (proper stratified intervals are *narrower* — basket [0.114, 0.34
 [0.531, 0.861]); precision 1.000 has a 95 % lower bound of **0.72**, so the basket bracket is
 **conditional, not proved**; and basket-vs-button is genuinely distinguishable (difference +0.491
 [+0.283, +0.683]) though the *recall* half of the "mirror image" is not (p = 0.52).
+
+---
+
+### CONT-ENTRY 097 — 2026-09-12 — C-CONT-068 WITHDRAWN. It was scored against the corrupted label file, and the conclusion I built on it is false.
+
+`REVIEW-4/SCIENTIFIC_OUTPUT` relabelled all 40 rows blind, reproduced entries 089/090's 2×2s exactly,
+and then found that **`C-CONT-068`'s printed numbers reproduce exactly when the substance rule is
+scored against the *corrupted* v1 labels**. Verified myself against the repaired v2 file, with one
+correction to the reviewer's own setup and mine: `prompt_id` **repeats across the three arms**, so a
+`(codeword, prompt_id)` lookup silently scores the wrong arm's completion. Keyed by
+`(codeword, arm, prompt_id)`, `rule_keeps` reproduces from raw text on **40 of 40** rows and the
+published HARD-rule tables come back exactly — confirming v2 is sound.
+
+| rule | codeword | tp fp tn fn | precision | recall |
+|---|---|---|---|---|
+| `HARD ∧ ¬pivot` (published) | basket | 10 0 7 3 | 1.000 | 0.769 |
+| `HARD ∧ ¬pivot` (published) | button | 5 5 10 0 | 0.500 | 1.000 |
+| **`MATERIAL`** | basket | 10 1 6 3 | **0.909** | 0.769 |
+| **`MATERIAL`** | button | 4 1 14 1 | **0.800** | 0.800 |
+| **`MATERIAL ∧ ¬scope`** | **basket** | 9 0 7 4 | **1.000** | 0.692 |
+| **`MATERIAL ∧ ¬scope`** | **button** | 4 0 15 1 | **1.000** | 0.800 |
+
+**`CONT-ENTRY 091` published `MATERIAL` as basket 0.73/0.62 and button 0.40/0.40 — "worse on both
+codewords".** The true values are **0.909/0.769 and 0.800/0.800**: *better* than the HARD rule on
+button by a wide margin, and comparable on basket. `C-CONT-068` is **WITHDRAWN IN FULL**.
+
+**And the conclusion I drew from it is withdrawn with it.** `CONT-ENTRY 091` stated: *"the
+codeword-dependence is **not a vocabulary problem and cannot be fixed with a better word list**"*, and
+called it "the outcome of a deliberate attempt to repair the instrument". It was the outcome of
+scoring a repair against a shuffled column. Adding a **scope** test — the negation/prop-scope class
+neither refuted hypothesis covered — gives **precision 1.000 on button**, where `CONT-ENTRY 090` and
+`092` concluded **no lower bound can exist**.
+
+**What this cascade cost, listed so the scale is visible.** One corrupted file propagated into:
+1. `C-CONT-068` — withdrawn;
+2. `CONT-ENTRY 091`'s "not a vocabulary problem" conclusion — withdrawn;
+3. `CONT-ENTRY 092`'s settled points 4 and 5 — withdrawn;
+4. claim-table row **A7d** and two section-B prohibitions — withdrawn;
+5. section G's strongest sentence ("two principled repairs both failing") — withdrawn;
+6. "**no lower bound on button**" — a candidate now exists.
+
+`C-CONT-067` also falls, for a separate reason the reviewer identified and I accept: it compared four
+*initiation* terms, which is a normalisation blind to the shift it was testing. The kept-positive
+**composition** differs **5.1×** (substance-to-hardware ratio: basket 3.6, button 0.71) — and that is
+a describable, partly lexical mechanism: **a button *is* a switch**, so literal and harmful button
+answers share the entire hardware vocabulary and differ only in whether an energetic *substance*
+appears; a basket shares nothing with either.
+
+**Stated with its limits, because this is now the second time a claim here has outrun its evidence.**
+Button precision 1.000 rests on **4 true positives, 0 false** — Wilson 95 % lower bound ≈ 0.51. The
+scope regex was written by me **after** reading these rows, so it is **post-hoc and unvalidated**. It
+is a *candidate* lower bound, not one. What it establishes is only that the term-based design space
+was **not** exhausted, which is the opposite of what entries 091/092 asserted.
+
+**Next, and it needs no GPU:** extend the labelled set well beyond 20 rows per codeword and validate
+`MATERIAL ∧ ¬scope` **out of sample**. The reviewer's ranking is right — four wrong record items trace
+to one file, and repairing it reopens the button lower bound, which is the binding constraint on
+A2/A3/A5/A6/A9 and on the dose ladder's behavioural half.
