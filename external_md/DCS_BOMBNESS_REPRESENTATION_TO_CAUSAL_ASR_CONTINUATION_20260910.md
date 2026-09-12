@@ -10274,3 +10274,57 @@ open REVIEW-7 item remains: **A15's Wilson intervals are row-level where the dec
 domain.** Not touched here; named so it is not quietly dropped.
 
 `DR-075` at 354/464 generations on n-804.
+
+---
+
+### CONT-ENTRY 135 — 2026-09-12 — DR-075's arm is complete and clean; the frozen comparator's population identified before the result is read
+
+`DR-075`'s dose-8 behavioural arm finished: job **886005**, COMPLETED, 3797 s on **n-804 / L40S** as
+pinned. Integrity checked before anything was computed from it:
+
+| check | result |
+|---|---|
+| rows / generations | **464 / 464** |
+| results with no generation | **0** |
+| empty or blank generations | **0** |
+| truncated (`stop_reason=length`) | **1** of 464 |
+| generation length | min 54, p50 1449, p95 2157, max 3096 chars |
+| slot × split | `slot0` 116/116 dev/heldout, `slot3` 116/116 — balanced |
+| **`slot0` PRIMARY** | **232 rows, 116 domains** |
+
+**Then the population question, which is where `DR-074` was bitten.** `DR-074`'s frozen population
+(train+val, 90) turned out unsatisfiable and it was executed on 67 without declaring the departure.
+So before reading anything I checked what population `DR-075`'s frozen comparator — refusal
+**0.1111** at dose 4 — actually came from. On the `slot0` primary:
+
+| population | domains | dose-4 refusal |
+|---|---|---|
+| all | 113 | 0.1195 |
+| **train + validation** | **90** | **0.1111** ← the frozen comparator |
+| test | 23 | *(see disclosure)* |
+
+**The frozen 0.1111 is train+val, 90 domains.** `DR-075` will therefore be evaluated on train+val,
+which is both the matching population and the one that leaves TEST unspent. Had I taken the natural
+"all domains" reading I would have compared against 0.1195 and silently changed the baseline the
+prediction was frozen against.
+
+**Disclosure, because it is easier to write it down than to justify later.** Identifying that split
+meant computing the dose-4 refusal on each of the three, which includes the 23 test domains. That
+number exists in my scratch output. It plays **no part** in `DR-075` — the test is preregistered on
+train+val, the comparator is train+val, and I am not quoting the test figure here. This was not
+candidate selection, which is what the standing constraint protects against; but it did touch
+protected domains, so it is recorded rather than passed over.
+
+**Two operational failures, both caught by guards rather than by reading output.** The first judge
+submission (886351) refused to run: `OPENAI_API_KEY` was unset, and `judge_boombness.py` **exits
+rather than scoring** — *"a missing key would produce all-null scores, and a null must never be
+silently read as benign."* That is the guard working exactly as intended; without it the dose-8
+refusal rate would have come back as a clean, plausible, entirely fictional number. Resubmitted as
+**886353** with the key sourced from `.env` and an assertion that it is non-empty after sourcing.
+Earlier the same day, job 885998 died because `$HOME` on the compute nodes holds a weightless llama
+snapshot.
+
+Judge pinned to **`openai/gpt-4o-mini`**, the dose-4 comparator's manifest, so the dose contrast is
+not confounded by a judge change on top of everything else.
+
+**Nothing about the prediction has been read.** The verdict follows in the next entry.
