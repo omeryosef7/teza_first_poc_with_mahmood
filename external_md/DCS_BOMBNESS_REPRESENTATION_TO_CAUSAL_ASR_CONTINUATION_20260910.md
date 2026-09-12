@@ -8927,3 +8927,45 @@ is *more* trustworthy than I claimed, obtained by a method I described inaccurat
 **Standing fix:** any future labelling reads the **whole completion**, and the criteria file will say
 so with the measured length distribution attached. A protocol sentence that is false of every row it
 describes is worse than no protocol sentence, because it is the thing a reader would check against.
+
+---
+
+### CONT-ENTRY 107 — 2026-09-12 — A2's status corrected after four consecutive reviews asked; the claim table brought current
+
+`REVIEW-5` listed the claim table as stale in seven places, one of them a status label **four
+consecutive reviews have now flagged**. Fixed, all seven.
+
+**The one that matters: A2 is not "POWERED".** It has carried **NULL, POWERED** since `DR-070`, and
+that was true against the endpoint it was computed on — the frozen lexicon, whose button rate is
+0.1418. It is **not** true against genuine attack success. `CR-002` puts the button content-true rate
+at **0.0263** and the primary's CI half-width at ~0.029: **the minimum detectable effect exceeds the
+entire genuine attack rate.** The row now reads **NULL, REPLICATED CROSS-CODEWORD — but UNDERPOWERED
+in content-true units**, with the arithmetic in the cell.
+
+This is the shape `REVIEW-3/SCIENTIFIC` first described (*"the MDE is 103–132 % of the entire genuine
+attack rate"*) and I carried the old label through three more reviews because the underlying numbers
+kept moving. They have now stopped moving, and the label was simply wrong.
+
+**The other six.** `A7c`'s sampled bracket is superseded by the **census** of all 129 CR-002 keeps
+(126/129 = 0.977) with the independent relabelling attached. `A9` takes the corrected statistics —
+**114** runs not 111, **domain-clustered [9.6×, 15.6×]** not run-clustered [10.5×, 12.5×],
+design-weighted recall **0.706** not the naive 0.923, and the threshold-conditional **6.0×** at
+SR ≥ 0.75. The artifacts section stops listing the **deleted** `labels_v1` and now states plainly that
+**`outputs/` is gitignored**, so nothing under `outputs/dcs_cont/` is tracked — section F had been
+listing untracked files as deliverables.
+
+**Section G was rewritten whole rather than patched**, because it had drifted into two overlapping
+versions and still led with the superseded **2.55×**. It now carries a caveat on its own mechanism
+sentence that the reviewer supplied: the "a button *is* a switch, so the answers differ only in an
+energetic substance" story covers about **two thirds** of the rule's output, because **34 %** of
+CR-002's keeps fire on the generic phrase *explosive material/powder/compound* rather than a named
+substance. That is the kind of qualification a headline needs before it leaves the repository.
+
+**Standing state.** The methodological result is stated on: 60,478 rows, 114 runs with the census
+recomputed from disk, a correction frozen with a recorded prediction before its validation sample
+existed, validated out of sample, then censused at 0.977 precision, and independently relabelled at
+κ = 0.953. The mechanistic results are nulls and bounds, and the table says so.
+
+Calibration job `882172` still **PENDING** — `rack-omerl-g01` remains occupied. It is the only node
+with the GPU that dose 8 used, so the queue is the cost of doing the comparison correctly rather than
+on whatever hardware is free (`C-CONT-075`).
