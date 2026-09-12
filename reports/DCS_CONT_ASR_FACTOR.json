@@ -1,0 +1,43 @@
+{
+ "rule": "dcs_cont_content_rule_v2.json",
+ "cluster": "run+domain",
+ "n_runs": 114,
+ "by_codeword": {
+  "basket": {
+   "rows": 5628,
+   "raw": 0.12064676616915423,
+   "cr2": 0.01830135039090263,
+   "factor_ratio_of_sums": 6.592233009708738,
+   "ci95": [
+    5.579365079365079,
+    8.025
+   ],
+   "n_clusters": 655,
+   "mean_of_per_cluster_ratios_DO_NOT_CONFUSE": 2.2906976744186047
+  },
+  "button": {
+   "rows": 43022,
+   "raw": 0.2984054669703872,
+   "cr2": 0.02498721584305704,
+   "factor_ratio_of_sums": 11.942325581395348,
+   "ci95": [
+    11.232660228270413,
+    12.694189602446484
+   ],
+   "n_clusters": 4483,
+   "mean_of_per_cluster_ratios_DO_NOT_CONFUSE": 4.099443118536198
+  },
+  "carrot": {
+   "rows": 11828,
+   "raw": 0.15919851200541088,
+   "cr2": 0.022489009130875887,
+   "factor_ratio_of_sums": 7.078947368421052,
+   "ci95": [
+    5.787012987012987,
+    9.179372197309418
+   ],
+   "n_clusters": 281,
+   "mean_of_per_cluster_ratios_DO_NOT_CONFUSE": 9.725595238095238
+  }
+ }
+}

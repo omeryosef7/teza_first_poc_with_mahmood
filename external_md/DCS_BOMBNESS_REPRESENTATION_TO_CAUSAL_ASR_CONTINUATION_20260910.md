@@ -8806,3 +8806,68 @@ Calibration job `882172` still **PENDING (Resources)** — `rack-omerl-g01` is t
 cluster with Quadro GPUs (`sinfo`: `gpu:quadro:6`) and is occupied by another user's 4-hour array
 jobs. The job was narrowed to the one channel and condition the analysis uses, which is safe because
 `--readout-max-batch 1` makes every row its own forward pass.
+
+---
+
+### CONT-ENTRY 105 — 2026-09-12 — REVIEW-5: the factor survives, the recall adjustment does not, and the interval was too narrow
+
+`REVIEW-5/STATISTICAL_DATA` reproduced **all nine rate cells of `CONT-ENTRY 099` to the digit** on
+58,468 rows with zero join failures, and **confirmed my `C-CONT-076` circularity catch independently**.
+Three corrections follow, two of them mine.
+
+**C-CONT-077 — the recall adjustment is invalid, and I ignored a design I had built myself.**
+`CONT-ENTRY 099` multiplied 11.4× by a recall of **0.923** to get "≈10.5×". That 0.923 is
+`12/(12+1)` from a sample that **oversamples rule-keeps ~5× by construction** — I drew 12 of 81 keeps
+against 6 of 202 drops precisely so precision would be estimable. Horvitz–Thompson weighting each
+stratum to its population:
+
+| codeword | N_keep / N_drop | sampled | naive recall | **design-weighted** |
+|---|---|---|---|---|
+| button | 81 / 202 | 24 / 6 | 0.960 | **0.706 [0.416, 0.930]** |
+| basket | 48 / 43 | 24 / 6 | 0.885 | **0.681 [0.568, 0.851]** |
+
+So the recall-corrected factor is **≈8.1×**, not ≈10.5×. The **unadjusted 11.4× is untouched** — it
+never used recall. The reviewer reaches ≈7.7× by a slightly different stratum accounting; the two
+agree that the published adjustment was wrong in the same direction and by a similar amount.
+
+**C-CONT-078 — the interval was clustered on runs alone, and the design is crossed.** 116 domains
+recur across all 68 button runs, so run-clustering suppresses the domain component. Recomputed on the
+current corpus:
+
+| clustering | button | basket |
+|---|---|---|
+| run (as published) | 11.94× **[10.97, 13.26]** | 6.59× [5.15, 8.47] |
+| **domain** | 11.94× **[9.60, 15.56]** | 6.59× [5.10, 9.53] |
+
+The domain-clustered interval is **2.4× wider on the log scale**, matching the reviewer's two-way
+figure of [8.9, 14.7] in character. **I am quoting the domain-clustered interval**, as the wider of
+the two single-dimension clusterings; a proper two-way estimator would be wider still. My own
+`run+domain` option resamples (run, domain) **cells**, which is *finer* than either clustering and
+returns a spuriously narrow [11.23, 12.69] — recorded here because it is the obvious wrong way to do
+this and the script now says so in its own help text.
+
+**The corpus was stale, and it grew because of my own work.** `CONT-ENTRY 099` used a cached list of
+**111** runs. Recomputing the census from disk gives **114** — the three basket ASR judge runs I
+created in `CONT-ENTRY 071` now satisfy the same criteria. Basket's rows go 3,618 → 5,628 and its
+factor 7.4× → **6.59×**. The script now **recomputes the census every time** rather than reading a
+cached list; that is what caused the staleness.
+
+**Revised headline.** Not "11.4× [10.5, 12.5]" but:
+
+> **button 11.9×, 95 % CI [9.6, 15.6] (domain-clustered); ≈8.1× after design-weighted recall
+> correction. basket 6.6× [5.1, 9.5].**
+
+The qualitative claim — **raw LLM-judge ASR overstates genuine attack success by close to an order of
+magnitude on this attack family** — survives all three corrections, and is now stated on a wider
+interval, a corrected recall, and a census recomputed from disk.
+
+**`scripts/dcs_cont_asr_factor.py` now exists**, because `REVIEW-4` and `REVIEW-5` both had to rebuild
+this pipeline from raw runs to check it, and `REVIEW-5` noted no script for entries 098/099/103 was in
+the repo at all. It refuses a non-FROZEN rule, recomputes the census, asserts non-empty generations,
+prints the mean-of-per-cluster-ratios beside the ratio-of-sums so the two can never be confused
+(they differ by 19.7× vs 11.9× on button), and documents each correction above in its own docstring.
+
+**Also accepted, not yet acted on:** the reviewer's hypergeometric bound on the finite keep stratum
+gives precision **≥ 0.901 (button) / ≥ 0.875 (basket)** out of sample — tighter than my Wilson bounds
+and valid for those three arms; and the bolded train+val row in `099` was paired with a factor
+computed over all splits.
