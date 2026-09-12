@@ -35,8 +35,13 @@ causal content at its own site. *Cost:* a change in `prompt_families.generate_ba
 regeneration. *Risk:* padding is itself a manipulation; the padded bank must reproduce the existing
 installation and ASR levels before it is used for anything, or it is a different experiment.
 
-**2. A second concept that installs.** The remap installs `bomb` at **0.5636** and `gun` at **0.0470**
-(`A12`), so the existing contrast concepts are floor-bound. A specificity test needs a concept whose
+**2. A second concept that installs.** ⚠️ **Corrected 2026-09-12 (`C-CONT-090`): this item as first
+written failed its own criterion.** It demanded a concept installing "within a factor of two of bomb's"
+and then asserted none exists — but `knife`/`button` has a within-domain sd of **0.2188** against
+bomb's **0.3739**, a ratio of **1.71×**, which *passes*. `knife` is floor-bound on **basket** (0.0540),
+not on button. The real statement is narrower: **no second concept installs comparably on BOTH
+codewords**, and `knife` on button may already be usable for a single-codeword specificity test. The
+remap installs `bomb` at **0.5636** and `gun` at **0.0470** (`A12`, button). A specificity test needs a concept whose
 installation is within, say, a factor of two of `bomb`'s. *Unblocks:* §15's harm control, and with it
 the only route to separating "toward BOMB" from "toward any installed concept". *Cost:* `generate_pools`
 per candidate concept plus a screening readout — cheap per candidate, and **screen before committing**:

@@ -9926,3 +9926,57 @@ refusal drop is 51 % ties so normal theory does not apply at all; `DR-074`'s fro
 (train+val, 90 domains) was **unsatisfiable** and it executed on 67, undeclared; and the entry-117
 mechanism — the 1-slot-vs-5 dose inflation — is **basket-only** (×4.2 there, ×1.16 on button), so the
 button reversal has a different cause and the claim table records the wrong one.
+
+---
+
+### CONT-ENTRY 128 — 2026-09-12 — REVIEW-7 part 2: A15's quantities are on the scope I declared secondary two entries earlier
+
+**C-CONT-089 — the fourth unstated-scope error, and this one contradicts a declaration I wrote myself.**
+`CONT-ENTRY 120` states: *"PRIMARY: `slot0` only… An all-slots version may be reported only as a
+labelled secondary."* `CONT-ENTRY 122/123` then computed the entire de-refusal analysis on **all
+slots**, unlabelled. Verified:
+
+| | all slots (used) | **`slot0` PRIMARY (declared)** |
+|---|---|---|
+| button de-refusals | 48 | **9** |
+| button content-true | 5 (**10.4 %**) | **0** |
+| button contribution | +0.0075 | **+0.0000** |
+| basket de-refusals | 7 | **1** |
+| **reversals, both codewords** | **0** | **0** |
+
+**On the declared primary there is no leak to quantify** — 9 de-refusals and zero content-true on
+button. A15's numbers are a **secondary-scope** result. There is a real defence — refusals are rare
+events and `slot0` leaves 9 of them, so the pooled analysis is the only one with any power — but that
+is an argument I should have *made and labelled*, not a scope I should have silently switched into
+after declaring the opposite. `C-CONT-072`, `083`, `088`, now `089`.
+
+**What survives untouched: the structure.** `REVIEW-7` verified something stronger than my own
+statement — **`ko`'s refusal set is a strict subset of `ctrl`'s** (27 ⊂ 75 button, 1 ⊂ 8 basket), and
+the 0 reversals hold on **both** scopes. The opportunity set is 1257, giving a rule-of-three bound of
+**≤ 0.0024** on the reverse rate.
+
+**And the hand-labelling vindicates the leak rate.** All 48 + 7 completions read end to end: **zero
+false positives, one false negative** (a `radiology_suite` row with a full IED assembly that `MATERIAL`
+misses because it names no explosive). Hand rate **6/48 = 12.5 % [5.9, 24.7]** against my mechanical
+10.4 % — the mechanical figure is slightly *conservative*, which is the right direction for a
+lower-bound instrument.
+
+**Two further corrections.**
+`C-CONT-090` — **the bank specification I wrote yesterday fails its own criterion.** It demanded a
+second concept installing "within a factor of two of bomb's" and asserted none exists; `knife`/`button`
+sd is **0.2188** against bomb's **0.3739** — a ratio of **1.71×**, which passes. `knife` is floor-bound
+on *basket*, not on button. Corrected in the document: **no second concept installs comparably on both
+codewords**, and knife-on-button may already support a single-codeword specificity test.
+
+**And "54.2 % no concept vocabulary" mischaracterises those rows.** `REVIEW-7` read them: **36 of 48
+explicitly name the remap and then answer literally** — the `S2 PIVOT` class from the frozen criteria,
+not an absence of concept vocabulary. Three build *hoax devices*, including the `garden_nursery` row
+`CONT-ENTRY 122` quoted as its example of benign literalness. The mechanical bucket name was wrong even
+where the count was right.
+
+**Accepted and not yet acted on:** `p = 0.00005` is a bootstrap resolution floor throughout, not a
+measurement (exact sign test on the refusal effect: 2.3e−10); `CONT-ENTRY 124`'s linking test compares
+two variables whose rows share **0 of 670** `prompt_id`s (different `query_kind` **and** `bank_block`),
+so it is the wrong test rather than an underpowered one, and a better one — the dose ladder's refusal
+arm, 0.0000 → 0.1265 — is already on disk; and A15's Wilson intervals are row-level where the declared
+unit is the domain.
