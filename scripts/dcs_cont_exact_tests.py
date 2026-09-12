@@ -24,12 +24,24 @@ direction. Counting structural zeros as "failures to replicate" understates an
 effect with no counterexamples. Both denominators are reported below so the
 reader can see the choice rather than inherit it.
 
+SCOPE -- THE DEFECT THIS FILE SHIPPED WITH (C-CONT-093)
+-------------------------------------------------------
+The first version of this script carried NO scope field and its headline number,
+p = 2.33e-10 for the refusal effect, was computed on the ALL-SLOTS scope that
+CONT-ENTRY 120 had already declared SECONDARY. On the declared slot0 PRIMARY the
+same effect is 8- / 0+ / 59 tied, p = 0.0078 -- EIGHT ORDERS OF MAGNITUDE weaker.
+
+That is C-CONT-089 repeated inside the entry that was fixing p-value defects, two
+entries before I wrote scripts/dcs_cont_scope.py to prevent exactly it. Every
+result below now carries its scope explicitly and BOTH scopes are printed, because
+a sign count without a scope is not a result.
+
 PROVENANCE OF THE COUNTS
 ------------------------
-These counts are not re-derived here; they are taken from the entries named
-below, each of which was independently reproduced by REVIEW-7/STATISTICAL_DATA_CODE.
-A sign test's sufficient statistic IS the pair of counts, so this is the whole
-input, not a summary of it.
+Counts marked verified=True were recomputed from raw judge artifacts for this
+file. Counts marked verified=False are carried from the named entry and are
+LABELLED AS SUCH -- they have not been re-derived here and must not be quoted as
+if they had been.
 """
 from __future__ import annotations
 import json
@@ -76,32 +88,33 @@ class Result:
 
 RESULTS = [
     Result(
-        claim="A4 / A15",
+        claim="A4 / A15  [PRIMARY]",
         quantity="refusal difference, knockout minus control (matched hardware, button)",
+        n_neg=8, n_pos=0, n_tied=59,
+        tie_reason="on the declared slot0 primary only 8 domains can move at all; this is the "
+                   "number that should have been published in CONT-ENTRY 132",
+        provenance="recomputed here from casrHW_ko / casrHW_ctrlHW (verified)",
+        bootstrap_reported="p = 0.00005 (floor)",
+    ),
+    Result(
+        claim="A4 / A15  [secondary]",
+        quantity="same, on the ALL-SLOTS scope CONT-ENTRY 120 declared secondary",
         n_neg=33, n_pos=0, n_tied=34,
-        tie_reason="28 of the 34 are domains where NEITHER arm ever refuses, so the "
-                   "difference is 0 by construction; 6 are non-structural zeros",
-        provenance="CONT-ENTRY 126, reproduced independently by REVIEW-7",
+        tie_reason="28 of the 34 are domains where NEITHER arm ever refuses. This is the number "
+                   "CONT-ENTRY 132 published WITHOUT saying it was the secondary scope",
+        provenance="recomputed here from casrHW_ko / casrHW_ctrlHW (verified)",
         bootstrap_reported="p = 0.00005 (floor)",
     ),
     Result(
-        claim="A1 (button)",
+        claim="A1 (button)  [secondary]",
         quantity="semantic installation drop under the codeword-row knockout",
         n_neg=67, n_pos=0, n_tied=0,
         tie_reason="none",
-        provenance="CONT-ENTRY 100 / successor-plan; 67/67 domains",
-        bootstrap_reported="p = 0.00005 (floor)",
-    ),
-    Result(
-        claim="A1 (basket)",
-        quantity="semantic installation drop under the codeword-row knockout",
-        n_neg=67, n_pos=0, n_tied=0,
-        tie_reason="none",
-        provenance="replication arm; 67/67 domains",
+        provenance="CONT-ENTRY 100 -- NOT re-derived here; all-slots. REVIEW-8 reports the primary "
+                   "as 65/2 -> 3.1e-17, i.e. scope-robust, but I have not verified that myself",
         bootstrap_reported="p = 0.00005 (floor)",
     ),
 ]
-
 
 def main() -> int:
     out = []
@@ -109,9 +122,11 @@ def main() -> int:
     print("independence unit: DOMAIN; ties discarded (see module docstring)\n")
     for r in RESULTS:
         t = exact_sign_test(r.n_pos, r.n_neg)
-        naive = exact_sign_test(r.n_pos, r.n_neg + r.n_tied)  # ties miscounted as support
+        # D4: the original sensitivity added ties to the SUPPORTING side, which can only make
+        # the p smaller. Both directions are now reported; the against-direction is the honest one.
+        naive = exact_sign_test(r.n_pos + r.n_tied, r.n_neg)   # ties counted AGAINST
         rec = {**asdict(r), "exact": t,
-               "if_ties_were_counted_as_support": naive["p_two_sided"]}
+               "if_ties_counted_AGAINST": naive["p_two_sided"]}
         out.append(rec)
         print(f"{r.claim:12s} {r.quantity[:58]}")
         print(f"  {r.n_neg} negative / {r.n_pos} positive / {r.n_tied} tied"
@@ -119,9 +134,9 @@ def main() -> int:
         print(f"  bootstrap said : {r.bootstrap_reported}")
         print(f"  EXACT          : p = {t['p_two_sided']:.3g}   ({t['p_exact_fraction']})")
         print(f"  provenance     : {r.provenance}\n")
-    print("The bootstrap floor reported all three as the SAME p. They differ by "
-          f"{out[1]['exact']['p_two_sided'] and abs(__import__('math').log10(out[0]['exact']['p_two_sided']) - __import__('math').log10(out[1]['exact']['p_two_sided'])):.0f}"
-          " orders of magnitude.")
+    print("SCOPE MATTERS: the same refusal effect is p = %.3g on the declared PRIMARY and\n"
+          "p = %.3g on the secondary -- the published figure was the secondary, unlabelled."
+          % (out[0]["exact"]["p_two_sided"], out[1]["exact"]["p_two_sided"]))
     with open("reports/DCS_CONT_EXACT_TESTS.json", "w") as f:
         json.dump({"schema": "exact_tests/1",
                    "why": "p=0.00005 is 1/20000, a resampling resolution floor, not a measurement",

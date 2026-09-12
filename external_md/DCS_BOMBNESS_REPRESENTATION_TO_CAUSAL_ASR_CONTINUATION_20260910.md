@@ -10491,3 +10491,71 @@ foundation went unexamined for eight entries.
 A16 is withdrawn in the claim table with all three defects recorded. `C-CONT-092` entered in the
 ledger. No number from that row may be quoted. The dose-ladder measurements themselves stand — they
 are fine; the *claim assembled from them* was not.
+
+---
+
+### CONT-ENTRY 139 — 2026-09-12 — `REVIEW-8` part 2: eleven confirmed defects, including TEST in two published populations and my own flagship defect repeated inside the entry that was fixing defects
+
+`REVIEW-8/STATISTICAL_DATA_CODE` recomputed every number from raw artifacts. Eleven defects confirmed.
+I verified the three most serious myself.
+
+**`C-CONT-093` — the exact tests were computed on the scope this phase declared SECONDARY, unlabelled.**
+Verified by recomputation from `casrHW_ko` / `casrHW_ctrlHW`:
+
+| scope | counts | exact p |
+|---|---|---|
+| **`slot0` PRIMARY (declared)** | **8− / 0+ / 59 tied** | **0.0078** |
+| all slots (secondary) | 33− / 0+ / 34 tied | 2.33e−10 |
+
+`CONT-ENTRY 132` published **2.33e−10**. The correct figure on the declared primary is **0.0078** —
+**eight orders of magnitude** weaker. This is `C-CONT-089` repeated *inside the entry that was fixing
+p-value defects*, and two entries before I wrote `scripts/dcs_cont_scope.py` to prevent exactly it.
+Writing the guard did not make me use it. The script now prints both scopes and refuses to carry a
+count without one; the claim table's A4 row is corrected.
+
+**`C-CONT-094` — TEST domains are inside two published populations.**
+
+* **Entry 133 / `C-CONT-091`.** All seven published numbers (0.87×, 0.89×, etc.) reproduce **only on
+  the test-inclusive 113 domains**. On train+val: **0.79×** and **1.00×**. *The conclusion survives and
+  is stronger* — content-true ratio 1.00× against basket's 4.2× — but the numbers were computed on a
+  population I am not supposed to be reading, and entry 135's TEST disclosure was written an hour
+  later and does not cover it.
+* **`DR-075`'s frozen config** asserts `"does_not_read_TEST": true`. **That is false.** Its
+  `installation_dose4 / dose8 / shared_domains = 116` are over all 116 manifest domains, TEST included.
+  On the 90 analysis domains: 0.6726 / 0.7361, second step **9.43 %**. **The config is FROZEN and I am
+  not editing it** — the correction is recorded here and supersedes it. The **verdict is unaffected**:
+  every threshold derives from `refusal_dose4 = 0.1111`, which is train+val.
+
+**The `DR-075` verdict is weaker than I reported.** The point estimate reproduces exactly
+(0.111111 → 0.138889, Δ +0.027778, 10↑/5↓/75=) and the domain clustering is honest (deff 1.11). But
+"SUPPORTED" is a **point-estimate pass of what is structurally a non-inferiority test, and the
+non-inferiority test fails**: one-sided 95 % upper bound **+0.0630 > +0.0555**, non-inferiority
+p = **0.098**; Δ = 0 is not rejected (p = 0.195); the sign test on the 15 non-tied domains gives
+p = **0.30**; 12 % of resamples land in the falsification region. **Under a true Δ = 0 the frozen rule
+returns SUPPORTED 83 % of the time.** What saves it from being pure null-dressing is ~99 % power
+against the literal doubling rival — so the narrow claim ("refusal is not a *linear* demonstration
+counter") holds, and nothing broader does.
+
+**Eight further confirmed defects, recorded.**
+
+| | defect |
+|---|---|
+| **D1** | entry 136's raw-judge row mixes estimators — `0.3871` is row-level over 93 domains **including 3 preregistered-excluded**; per-domain over the 90 shared it is `0.3944`, Δ **+0.0111, 2.9× larger**. The dose-4 value beside it *is* per-domain |
+| **D3** | A12's four p-values were relabelled "exact sign test" **without one being run** — A12 appears in neither the script nor its JSON. The bound holds by worst case; the label was false. Corrected in the table |
+| **D4** | the tie sensitivity ran **anti-conservatively** (ties added to the *supporting* side). Now reported ties-against |
+| **D7** | the freeze commit is **32 seconds after** job 885998's submit. Entry 131 says "FROZEN before the arm was submitted" — **false as written**. Mitigated: that job produced no generations and died on a weightless snapshot, so no outcome existed to peek at. Record-keeping defect, not data-peeking |
+| **D8** | `DCS_CONT_DR075_RESULT.json` records **no seed** and no committed script produces it. Across 5 seeds the CI upper bound is +0.0722 (4×) and +0.0667 (1×) — **the published value is the minority outcome** |
+| **D9** | the frozen secondary `slot3` was **never reported**. It is also inadmissible under entry 134's own rule (absent at dose 4). Not outcome-driven: slot3@d8 = 0.1237 |
+| **D10** | the config describes `kw_refusal` as matching **"at char 0"**; `behav_judge.py:101-103` matches **anywhere**. Materially stricter as described than as implemented. Numbers unaffected |
+| **D11** | "frozen a day earlier" was **36 minutes**; "n4cal on a larger domain set" was the **same 116** |
+
+**Cleared:** no TEST contamination of the refusal endpoint — train+val was both the *forced* choice
+(the only population giving 0.1111) and the *conservative* one. Entry 134's bank enumeration, entry
+135's integrity table, the L40S pin and the `Scope` self-test all verified clean.
+
+**The pattern, since it is now three for three.** I wrote a guard against unstated slot scope
+(entry 134), then published a headline p on the wrong scope (entry 132, D2). I wrote a TEST-discipline
+disclosure (entry 135), an hour after committing numbers computed with TEST in (entry 133, D6). I
+withdrew A16 for asserting a claim across checked numbers without checking the claim — and the same
+shape produced both. **Building the instrument is not the same as using it**, and I have now made that
+mistake in consecutive entries.
