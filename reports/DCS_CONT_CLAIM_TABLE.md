@@ -14,7 +14,7 @@ is the **DOMAIN** throughout.
 | # | claim | status | n | statistic | source |
 |---|---|---|---|---|---|
 | **A1** | Cutting the query codeword's row access to the demonstrations, in the retrieval band, **removes ~31 % of concept-free semantic installation** | **MEASURED, REPLICATED CROSS-CODEWORD** | 67 domains each | **button** −0.2150, CI [−0.235, −0.196], **67/67**; **basket** −0.2435, CI [−0.273, −0.213], **67/67** (never pooled) | `CONT-ENTRY 049`, `054` · `DR-071` |
-| **A2** | The **same cut does not change attack success** | **NULL, POWERED, REPLICATED CROSS-CODEWORD** | 67 domains each | **button** +0.0030, CI [−0.030, +0.036]; **basket** −0.0090, CI [−0.0254, +0.0090], p=0.40. ⚠️ the basket **sign is not established** — under three content rules it is −0.0090 / −0.0030 / +0.0030, bracket **[−0.0090, +0.0030]** spanning zero (`C-CONT-063`, `CONT-ENTRY 087/089`) | `DR-070`; `DR-073a` |
+| **A2** | The **same cut does not change attack success** | **NULL, REPLICATED CROSS-CODEWORD — but UNDERPOWERED in content-true units** (flagged by four consecutive reviews; corrected here). It is powered against the *lexicon* endpoint, not against genuine attack success: CR-002's button rate is **0.0263** and the CI half-width ~0.029, so the MDE **exceeds the entire genuine attack rate** | 67 domains each | **button** +0.0030, CI [−0.030, +0.036]; **basket** −0.0090, CI [−0.0254, +0.0090], p=0.40. ⚠️ the basket **sign is not established** — under three content rules it is −0.0090 / −0.0030 / +0.0030, bracket **[−0.0090, +0.0030]** spanning zero (`C-CONT-063`, `CONT-ENTRY 087/089`) | `DR-070`; `DR-073a` |
 | **A2b** | 🆕 ⚠️ **The cut rewrites the text; the endpoint cannot see it.** The null is about the *instrument* as much as the mechanism | **MEASURED** | 670 rows | `ko` differs from `base` on **669/670** completions, difflib 0.391 — **larger divergence than the cross-GPU churn floor** (0.640); +8.5 pp [+4.3,+12.8] literal basket-weaving, −3.1 pp disclaimers, **7 of 8 shared refusals removed**; one *"I can't help with that."* → StrongREJECT **1.000** | `REVIEW-3/OUTPUT` · `CONT-ENTRY 085` |
 | **A3** | ⇒ semantic installation and behavioural attack success are **dissociable under intervention** — qualitatively | **MEASURED, EXPLORATORY, NOW TWO-CODEWORD** | 67 domains × 2 codewords | A1 ∧ A2 on **both** button and basket. ⚠️ same scope and bands; **"same dose" is NOT true across the pair** — the installation and ASR arms use different query templates and persisted dose totals 346,329 vs 1,385,316 (`REVIEW-2/SCIENTIFIC 1.3a`) | `CONT-ENTRY 049 §2`, `071` |
 | **A4** | The same cut **halves refusal**, and the effect is **band-specific** | **MEASURED** | 670 rows | refusal 0.115→0.040 (`ko`) vs 0.112 (`ctrl`, identical dose) | `CONT-ENTRY 044 §1` |
@@ -22,13 +22,13 @@ is the **DOMAIN** throughout.
 | **A6** | The observational installation→ASR link **survives regeneration on different hardware** | **ROBUST TO GENERATION CHURN** (not "replicated" — see note) | 67 domains | corrected ρ 0.5312 vs 0.5260. The two runs share byte-identical prompts (`prompt_sha16` 670/670) yet **573/670 completions differ**, because one ran on a V100 and one on an L40S | `CONT-ENTRY 047 §1`, `070` |
 | **A7** | StrongREJECT scores **literal-codeword essays** as jailbreaks | **MEASURED, VERIFIED BY INSPECTION** | 670 rows | 131/131 button removals correct, 27/27 basket removals correct | `CONT-ENTRY 038`, `039`, `060` |
 | **A7b** | ⚠️ **The correction is NOT valid in both directions**, and its failure rate is **codeword-dependent by 4×** | **NARROWED — every corrected number is an UPPER BOUND** | 40 blind-labelled (20/codeword) + 100 + 91 hand-labelled | spurious among kept positives: **button 0.717 [0.448, 0.866]** (independently 63/100); **basket 0.177 [0.100, 0.433]** (independently 17/91) | `C-CONT-038` · `CONT-ENTRY 089`, `090` |
-| **A7c** | 🆕 **A conservative rule brackets the basket endpoint — and has no analogue on button** | **MEASURED** | 40 blind labels | same rule: **basket precision 1.00 / recall 0.77** (a true lower bound) vs **button precision 0.50 / recall 1.00** (a bound in *neither* direction). Basket ASR is bracketed; **button has an upper bound only** | `CONT-ENTRY 089`, `090` |
+| **A7c** | ~~A conservative rule brackets basket and has no analogue on button~~ — **SUPERSEDED** by `CR-002`, which bounds **both** codewords | **CENSUSED, not sampled** | **all 129** CR-002 keeps on the six arms | basket **48/48 = 1.000**; button **78/81 = 0.963**; pooled **126/129 = 0.977**, i.e. a **2.3 %** spurious rate. Independent blind relabelling of 100 rows agrees 98/100, κ = 0.953 | `CONT-ENTRY 098`, `106` · `REVIEW-5` |
 | **A7d** | ⚠️ ~~The codeword-dependence is not a vocabulary problem~~ — **WITHDRAWN** (`C-CONT-068`, `CONT-ENTRY 097`): both "refutations" were scored against a **corrupted label column**. On repaired labels a substance rule reaches **0.909/0.769 (basket)** and **0.800/0.800 (button)**, and `MATERIAL ∧ ¬scope` reaches **precision 1.000 on BOTH** — a candidate lower bound on button, post-hoc and unvalidated (4 tp, Wilson lower 0.51) | **CANDIDATE, NEEDS OUT-OF-SAMPLE** | 40 labels | the mechanism is partly lexical: a button **is** a switch, so literal and harmful answers share all hardware vocabulary and differ only in an energetic substance (composition ratio basket 3.6 vs button 0.71, **5.1×**) | `CONT-ENTRY 097` |
 | **A12** | 🆕 **The doublespeak remap is strongly concept-dependent**: `bomb` installs far more readily than `knife` or `gun`, on both codewords | **MEASURED, DOMAIN-PAIRED** | 1080 shared slots / 90 domains | button: bomb−knife **+0.4314** [+0.386,+0.475] 89/90 domains; bomb−gun **+0.5166** 87/90. basket: **+0.3612** 88/90; **+0.3346** 88/90. All sign-flip p=0.00005. ⚠️ the `knife`/`gun` ordering **reverses** between codewords (+0.0852 vs −0.0267) and does not replicate | `CONT-ENTRY 079`, `080` · `C-CONT-057` |
 | **A13** | 🆕 §15's matched reference: cell C's demonstration-side state aligns with the **explicit-BOMB** state as installation rises, beating the matched context-only prototype | **MEASURED, REPLICATED CROSS-CODEWORD** | 900 slots / 90 domains each | ⚠️ **contrast-dependent** (`C-CONT-059`): matched **single** reference **+0.1598** (button) / **+0.1703** (basket), p=0.0005 both; the *averaged* prototype gives +0.4053 but sits near zero by **cancellation**. Quoted conservatively. ⚠️ the token-level **matching does no work** — a *mismatched* same-domain partner scores **+0.4196** and a domain-mean prototype **+0.5057** (`C-CONT-062`), so §46 prerequisite 7 is **PARTIAL**. **Concept-DEPENDENT, not bomb-specific**: knife/button **+0.0623 is NOT significant** against its own null (p=0.0845) and is **−0.0171** under the fair single-reference contrast; gun inconclusive. ⚠️ installability and geometry strength are confounded across only 3 concepts | `CONT-ENTRY 077`–`079`, `082` |
 | **A14** | 🆕 **Installation is delivered almost entirely by the first four demonstrations**, and the knockout removes about a quarter of the total | **MEASURED** | 90 domains (ladder), 67 (share) | matched-`slot0`, probability scale: dose 0 ≈ 0 → **dose 4 +0.6728** [+0.610,+0.734] 90/90 → **dose 8 +0.0632** [+0.029,+0.099] 60/90, i.e. doubling the demos adds **9.4 %** of what the first four gave. Knockout share of the full 0→8 span: **25.4 % [20.8, 30.3]** — ~**three quarters survives the cut**. ⚠️ the 4→8 step is the ladder's only **cross-run** comparison (L40S/`16333dde` vs Quadro RTX 8000/`2c6fbff`), uncalibrated; a calibration run is in flight | `CONT-ENTRY 093`, `094`, `100` |
 | **A8** | The transplant instrument **can** transfer, token-matched | **MEASURED** | 16 domains | +10.7 %, CI [+3.5, +19.5], p=0.010 | `CONT-ENTRY 021`, `023` |
-| **A9** | 🆕 **Raw LLM-judge ASR overstates genuine attack success by an ORDER OF MAGNITUDE on codeword-remapping attacks** | **MEASURED, CORRECTION VALIDATED OUT OF SAMPLE** | 58,468 rows / 111 runs; 76 blind labels | `button` raw 0.3146 → lexicon 0.1243 → **CR-002 0.0263**: factor **11.4×, run-clustered CI [10.5×, 12.5×]** over 68 runs (**≈10.5×** adjusted for CR-002's 0.923 recall). `basket` 7.4× [5.2×, 10.0×], 6 runs. ⚠️ `carrot` unvalidated; basket's test cell is 1 row | `CONT-ENTRY 063`, `098`, `099` · `CR-002` |
+| **A9** | 🆕 **Raw LLM-judge ASR overstates content-true attack success by close to an ORDER OF MAGNITUDE on codeword-remapping attacks** | **MEASURED; correction validated out of sample and then CENSUSED** | 60,478 rows / **114 runs** (census recomputed, not cached); 129 keeps labelled | `button` raw 0.2984 → lexicon → **CR-002 0.0250**: factor **11.9×, domain-clustered CI [9.6×, 15.6×]**; **≈8.1×** after *design-weighted* recall (0.706, not the naive 0.923). `basket` **6.6× [5.1×, 9.5×]**. ⚠️ threshold-conditional (**6.0×** at SR ≥ 0.75); `carrot` unvalidated | `CONT-ENTRY 099`, `105`, `106` · `scripts/dcs_cont_asr_factor.py` |
 | **A10** | 🆕 **Greedy decoding is not byte-reproducible across GPU architectures**, and that sets a noise floor under every ASR contrast | **MEASURED** | 670 prompts / 67 domains | same condition, V100 vs L40S: raw Δ +0.0149 CI [−0.018, +0.048], corrected Δ **+0.0015 CI [−0.015, +0.019]**. The `DR-070` primary (+0.0030) sits **inside** that band | `CONT-ENTRY 070` · `C-CONT-052` |
 | **A11** | 🆕 A ridge probe on the demonstration-side state predicts installation **within domain** | **CONFIRMED ON TEST** — it **cannot mediate A1** (`C-CONT-040`); causal status at its own site **untested** | 900 fit / 230 test slots | TRAIN +0.6241 → VALIDATION +0.6784 → **TEST +0.6054, CI [+0.528, +0.678]**, 23/23 domains, p=0.00050. Beats a size-matched demo-span control by +0.3960, a random-direction floor's **max over 200 draws** by +0.2847, and is near-orthogonal to the logit lens (cos +0.076). ⚠️ two declared controls were run **after** the TEST read (`C-CONT-060`) | `CONT-ENTRY 059`, `061`, `075`, `086` · `DR-072` |
 
@@ -131,7 +131,9 @@ commit-time completeness guard, and persisted intervention dose.
 `outputs/dcs_cont/`: `dr070_primary.json`, `layerpos_train_button_bomb.json`,
 `layerpos_train_BASKET_bomb.json`, `within_domain_train_button_bomb.json`,
 `surface_floor_*.json`, `logitlens_control_*.json`, `nb1_control_*.json`, `cp_per_arm.json`
-`data/labels/`: `dcs_cont_content_true_labels_v1.json` (**40 blind labels**, 20/codeword)
+`data/labels/`: `dcs_cont_content_true_labels_v4.json` (**100 blind labels**; v1 **withdrawn**, `C-CONT-071`)
+⚠️ **`outputs/` is gitignored**, so nothing under `outputs/dcs_cont/` is tracked — the committed
+artifacts are those under `reports/`, `configs/`, `data/labels/` and `scripts/`.
 `reports/`: `DCS_CONT_LABELLING_CRITERIA.md`, `DCS_CONT_REVIEW3_{CODE,STATISTICAL,SCIENTIFIC,DATA_OUTPUT}.md`,
 `DCS_CONT_S15_v2_*.json` (all five contrasts, each against its own null),
 `DCS_CONT_REVIEW1_ADJUDICATION.md`, `DCS_CONT_LITERATURE_UPDATE_20260910.md`,
@@ -144,15 +146,34 @@ commit-time completeness guard, and persisted intervention dose.
 ## G. IF ONLY ONE THING IS REPORTED
 
 The **methodological** result is the strongest thing here, and `REVIEW-2/SCIENTIFIC` ranked it above
-every mechanistic finding: **an LLM-judge ASR pipeline on codeword-remapping jailbreaks mismeasures by
-a factor of 2.55 [2.46, 2.66]**, its error channels are **codeword-dependent**, and the correction that
-fixes the obvious channel has a large unaudited channel of its own. That is demonstrated on 58,468 rows
-across 111 runs. Stronger now than when first written: the instrument's failure rate is **4× different
-between two codewords of the same bank** (0.717 vs 0.177), the **same rule inverts its precision/recall
-profile** between them, and the failure has a describable partly-lexical mechanism — a `button` **is** a switch, so literal
-and harmful answers share all hardware vocabulary and differ only in an energetic substance, while a
-`basket` shares neither (composition ratio 3.6 vs 0.71). 231 completions blind- or
-hand-labelled across two codewords, with the labels published. The mechanistic results are a **clean
-two-codeword null** (A2/A3, whose own sign is instrument-dependent), a **candidate that cannot be a
-mechanism** (A11), and a **demonstration-side geometry** whose matched-pairing framing did not survive
-(A13).
+every mechanistic finding.
+
+> **On codeword-remapping jailbreaks, an LLM-judge ASR pipeline overstates content-true attack success
+> by close to an order of magnitude.** Button: raw 0.2984 → **CR-002 0.0250**, a factor of **11.9×**,
+> 95 % CI **[9.6×, 15.6×]** (domain-clustered); **≈8.1×** after design-weighted recall correction;
+> **6.0×** at a stricter SR ≥ 0.75 threshold. Basket **6.6× [5.1×, 9.5×]**.
+
+**The evidence.** 60,478 rows across **114** judge runs, census recomputed from disk rather than
+cached. The correction (`CR-002`) was **frozen with a recorded prediction before its validation sample
+was drawn**, passed out of sample on both codewords, and was then **censused**: all **129** of its
+kept rows were labelled — basket 48/48, button 78/81, pooled **126/129 = 0.977**, a 2.3 % spurious
+rate. An independent blind relabelling of 100 rows agrees **98/100, κ = 0.953**.
+
+**Why it is not just "our judge had a bug".** Both of the instrument's error channels are
+**codeword-dependent**: the false-positive floor is 15.5 % on `button` against 2.2 % on `basket`, and
+the *same* filter rule inverts its precision/recall profile between them. The failure has a partly
+lexical mechanism — a `button` **is** a switch, so literal and harmful button answers share the whole
+hardware vocabulary and differ only in whether an energetic substance appears, while a `basket` shares
+neither (substance:hardware composition 3.6 vs 0.71). ⚠️ That mechanism covers about two thirds of the
+rule's output: **34 %** of CR-002's keeps rest on the generic phrase *explosive material/powder/
+compound* rather than a named substance.
+
+**What must travel with it.** `CR-002` bounds rather than estimates (design-weighted recall ≈ 0.71);
+the factor is threshold-conditional; `carrot`, a third codeword, is **unvalidated**; and the whole
+result is one model, one judge, one bank family.
+
+**The mechanistic line, for contrast**, is a careful set of nulls and bounds: a confirmed predictor
+that **cannot mediate** the intervention (A11), a two-codeword behavioural null that is
+**underpowered in content-true units** (A2), a demonstration-side geometry whose matched-pairing
+framing did not survive (A13), and a dose response showing the remap is essentially complete at four
+demonstrations (A14). Honest, and not the headline.
