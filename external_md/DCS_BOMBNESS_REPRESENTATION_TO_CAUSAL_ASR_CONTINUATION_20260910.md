@@ -10030,3 +10030,51 @@ demonstration of it.
 
 **`CONT-ENTRY 124`'s null is superseded, not overturned** — it tested a pairing that does not share a
 single row, so its ρ measured nothing in particular.
+
+---
+
+### CONT-ENTRY 130 — 2026-09-12 — A16: installation gates refusal, not capability
+
+The last several entries have assembled something the record has not stated as one claim. On the
+declared `slot0` primary, scope tag attached via the new helper:
+
+| codeword | dose | installation | refusal | content-true ASR |
+|---|---|---|---|---|
+| **button** | 0 | **0.0000** | **0.0000** | **0.0000** |
+| button | 4 | 0.6587 | 0.1111 | 0.0389 |
+| **basket** | 0 | **0.0000** | **0.0000** | **0.0000** |
+| basket | 4 | 0.4578 | 0.0056 | 0.0056 |
+
+**All three quantities start at exactly zero on both codewords.** With no demonstrations there is no
+remap, no refusal, and no genuine attack — the last of these verified by direct inspection, **0/226
+completions** containing any energetic-material term or any of nine bomb words (`REVIEW-6`).
+
+**What the demonstrations then buy, per unit of installation, is refusal — not success.** Adding four
+demonstrations raises installation by **+0.659** and refusal by **+0.111**, while content-true attack
+success reaches only **0.039**. Per domain, installation gain predicts refusal gain at **ρ = +0.2376,
+p = 0.023**, and at **+0.2548** on the secondary scope — in sign *and* magnitude, the first
+scope-sensitive quantity in this phase that agrees both ways.
+
+**And the intervention moves the same pair in the same direction.** The knockout removes ~31 % of
+installation and **−0.0716** of refusal, negative in **33 of the 33** domains where refusal can vary —
+while leaving content-true ASR null on matched hardware, both codewords, both scopes.
+
+⇒ **A16: installation gates the model's refusal behaviour, and does not gate its capability.** The
+remap is what makes the request legible as harmful; the safety response tracks it closely, up and down,
+across a dose manipulation and an intervention. Whether the model can actually produce bomb content is
+governed by something else — at dose 4 it refuses 11 % of the time and produces genuine content 4 % of
+the time, and removing the remap moves the first number and not the second.
+
+**This reframes A2's null into a positive statement.** "The cut does not change attack success" has
+been the phase's headline behavioural result and always read as an absence. The cut changes the safety
+response by a large, replicable, one-directional amount; it does not change what the model is able to
+write. That is a claim about *where* the doublespeak mechanism acts, and it is the strongest
+mechanistic statement this phase has produced.
+
+**Held at arm's length, deliberately.** p = 0.023 across four tests; **basket's refusal barely moves
+at all** (+0.0056), so its correlation is uninformative rather than contradictory; the dose comparison
+is between-prompt while the knockout is within-prompt; and none of this is an intervention *on
+installation itself* — the within-domain, install-graded patch that would be remains blocked by the
+bank (`CONT-ENTRY 076`). A16 is a convergence of three measurements, not a manipulation.
+
+Entered in the claim table. Push still failing; twenty-seven commits pending locally.
