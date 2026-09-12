@@ -28,8 +28,15 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(REPO, "scripts"))
 from dcs_cont_scope import Scope, Population, filter_rows   # noqa: E402
 
-KO = "outputs/boombness/judge/casrHW_ko_20260912_143556_3731257"
-CT = "outputs/boombness/judge/casrHW_ctrlHW_20260912_143556_3732504"
+# button: the matched-hardware pair (one GPU, one judge manifest).
+# basket: the replication codeword's matched trio (all three cbkasr arms on RTX A5000 / n-503).
+# NEVER POOLED -- the two codewords are run separately and reported as two results.
+ARMS = {
+    "button": ("outputs/boombness/judge/casrHW_ko_20260912_143556_3731257",
+               "outputs/boombness/judge/casrHW_ctrlHW_20260912_143556_3732504"),
+    "basket": ("outputs/boombness/judge/cbkasrj_ko_20260911_170750_3702616",
+               "outputs/boombness/judge/cbkasrj_ctrl_20260911_170750_3721824"),
+}
 
 
 def _load(mod, path):
@@ -57,10 +64,15 @@ def read(run, scope, pop, assign, cp, MAT, SCOPE_RE):
 
 def main() -> int:
     ap = argparse.ArgumentParser()
+    ap.add_argument("--codeword", default="button", choices=sorted(ARMS),
+                    help="run one codeword at a time; they are never pooled")
     ap.add_argument("--seed", type=int, default=20260912)
     ap.add_argument("--n-boot", type=int, default=20000)
-    ap.add_argument("--out", default=os.path.join(REPO, "reports/DCS_CONT_ONESWITCH.json"))
+    ap.add_argument("--out", default=None)
     a = ap.parse_args()
+    KO, CT = ARMS[a.codeword]
+    if a.out is None:
+        a.out = os.path.join(REPO, "reports/DCS_CONT_ONESWITCH_%s.json" % a.codeword)
 
     assign = _load("lpm", "scripts/dcs_cont_layerpos_map.py").load_split()
     cp = _load("cp", "scripts/dcs_succ_concept_presence.py")
@@ -69,7 +81,8 @@ def main() -> int:
         print("REFUSING: content rule not FROZEN"); return 2
     MAT = re.compile(rule["MATERIAL"], re.I); SCOPE_RE = re.compile(rule["SCOPE"], re.I)
 
-    out = {"question": "can the data exclude ONE-SWITCH or GATING?", "seed": a.seed, "by_scope": {}}
+    out = {"question": "can the data exclude ONE-SWITCH or GATING?", "codeword": a.codeword,
+           "seed": a.seed, "by_scope": {}}
     for scope in (Scope.ALL_SLOTS, Scope.PRIMARY):
         ko, prov = read(KO, scope, Population.TRAIN_VAL, assign, cp, MAT, SCOPE_RE)
         ct, _ = read(CT, scope, Population.TRAIN_VAL, assign, cp, MAT, SCOPE_RE)
@@ -97,7 +110,7 @@ def main() -> int:
         cLo, cHi = q(bC, .025), q(bC, .975)
         rLo, rHi = q(bR, .025), q(bR, .975)
         kC = sum(doms[d][1] for d in dl); cC = sum(doms[d][3] for d in dl)
-        print("\n=== %s  (%d domains, %d prompt pairs) ===" % (scope.name, len(dl), len(shared)))
+        print("\n=== %s / %s  (%d domains, %d prompt pairs) ===" % (a.codeword, scope.name, len(dl), len(shared)))
         print("  refusal      ratio ko/ctrl = %.3f  [%.3f, %.3f]   (%d -> %d events)"
               % (pR, rLo, rHi, sum(doms[d][2] for d in dl), sum(doms[d][0] for d in dl)))
         print("  content-true ratio ko/ctrl = %.3f  [%.3f, %.3f]   (%d -> %d events)"

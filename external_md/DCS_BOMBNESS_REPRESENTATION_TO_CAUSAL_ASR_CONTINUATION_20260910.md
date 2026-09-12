@@ -10760,3 +10760,41 @@ more than the withdrawn A16 was, because it is a negative result about someone e
 rather than a synthesis of my own numbers.
 
 `reports/DCS_CONT_ONESWITCH.json`.
+
+---
+
+### CONT-ENTRY 144 — 2026-09-13 — The one-switch exclusion **replicates on basket**, and the two content-true ratios agree to within 2 %
+
+`C-CONT-091` was generalising a clean basket result to button in one unchecked sentence. Having just
+found a clean *button* result, the obligation runs the other way, and it took one command rather than
+a GPU hour. Both codewords, never pooled, run separately:
+
+| all slots (secondary) | refusal ratio ko/ctrl | **content-true ratio ko/ctrl** | content events | one-switch |
+|---|---|---|---|---|
+| **button** | 0.360 [0.264, 0.454] | **1.333 [0.838, 2.250]** | 24 → 32 | **EXCLUDED** |
+| **basket** | 0.125 [0.000, 0.500] | **1.357 [0.750, 2.600]** | 14 → 19 | **EXCLUDED** |
+
+**The content-true ratios agree to within 2 %** — 1.333 and 1.357 — on two codewords whose *refusal*
+behaviour differs by a factor of three and whose banks share no lexical material at the codeword.
+Nothing forced that agreement; the two were computed from separate runs on separate hardware. It is
+the strongest cross-codeword agreement of any quantity in this phase.
+
+**The exclusion replicates. The thing it is compared against does not, on basket.** Basket's refusal
+ratio rests on **8 control events falling to 1** — the interval runs to 0.500 and the primary has
+**1 → 0**, which is not a measurement. So on basket the statement that survives is the narrow one:
+**content-true does not fall under the knockout** (ratio 1.357, lower bound 0.750), and *therefore* a
+proportional one-switch model is excluded whatever the refusal ratio turns out to be. That conclusion
+does not depend on basket's thin refusal arm, which is why it holds.
+
+**Entered as A17**, with all three limits in the row: secondary scope only (the primary has 7→6 and
+1→2 content-true events and discriminates nothing); only the **proportional** form of the account is
+excluded; and basket's refusal comparator is 8→1 events.
+
+**Why this is the sturdiest thing the phase has produced this week, and it is not close.** A16 was a
+synthesis of my own numbers and died in eight entries. `DR-075` passed a rule I had set too loose to
+fail. This is a **prediction made by someone else's hypothesis**, tested on the endpoint that
+hypothesis is about, on two codewords, with the null result reported on the scope that cannot decide.
+It can be wrong — the coupling variant is untouched, and 32-versus-24 events is 32-versus-24 events —
+but it is wrong in a way that further data would settle rather than in a way that argument would.
+
+`reports/DCS_CONT_ONESWITCH_button.json`, `reports/DCS_CONT_ONESWITCH_basket.json`.
