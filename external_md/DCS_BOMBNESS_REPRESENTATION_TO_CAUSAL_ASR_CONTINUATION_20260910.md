@@ -9687,3 +9687,53 @@ basket arms are hardware-matched too and the same analysis should be run there b
 called general.
 
 Push still failing; sixteen commits pending locally.
+
+---
+
+### CONT-ENTRY 123 — 2026-09-12 — the de-refusal mechanism on the second codeword: the structure replicates, the rate does not follow
+
+`CONT-ENTRY 122` ended by naming basket as the test of whether the account is general — its arms are
+hardware-matched (A5000 / n-503) and were judged in one manifest, so the comparison is as clean as
+button's. Run.
+
+| | button | basket |
+|---|---|---|
+| prompts | 670 | 670 |
+| `ctrl` refuses, `ko` does not | **48** | **7** |
+| `ctrl` refuses, `ko` also refuses | 27 | 1 |
+| **`ko` refuses where `ctrl` did not** | **0** | **0** |
+
+**The one-directional property replicates exactly: zero reversals on both codewords.** Across 1340
+paired prompts the knockout never once introduced a refusal. That is the robust part of the account and
+it now rests on two independent codewords, each internally hardware- and judge-matched.
+
+**The 10 % leak rate does not replicate — and cannot, at this n.**
+
+| what `ko` produces on de-refused prompts | button | basket |
+|---|---|---|
+| no concept vocabulary | 26 (54.2 %) | 1 (14.3 %) |
+| concept vocab, fails CR-002 | 10 (20.8 %) | 0 |
+| literal-object build | 7 (14.6 %) | 4 (57.1 %) |
+| **CONTENT-TRUE** | **5 (10.4 %)** | **2 (28.6 %)** |
+| content-true share, 95 % CI | **[0.045, 0.222]** | **[0.082, 0.641]** |
+
+Basket has only **7** de-refusals to classify, because it barely refuses in the first place — 8 control
+refusals against button's 75. Its point estimate of 28.6 % is **2 rows**, its interval spans a factor
+of eight, and the two intervals overlap across most of their range. **I can neither confirm nor refute
+that the leak rate is the same; the data do not separate 10 % from 29 %.**
+
+⇒ **What the account is entitled to say, restated to match the evidence.** The knockout **removes
+refusals and never adds them** — replicated, two codewords, 1340 paired prompts. The completions that
+replace those refusals are **mostly not attacks** — the button estimate is 10.4 % [4.5, 22.2] and
+basket is consistent with it but far too small to pin down. And the contribution to the content-true
+endpoint is small on both: **+0.0075** (button) and **+0.0030** (basket), against measured `ko − ctrl`
+values that are null on both.
+
+**One asymmetry worth noting rather than explaining.** Basket's control refuses on ~1 % of prompts
+where button's refuses on ~11 %. The codeword that is *easier to read literally* draws far fewer
+refusals to begin with — which fits everything else this phase has measured about `basket` being the
+more innocuous surface (floor 2.2 % vs 15.5 %, `CONT-ENTRY 060`), and means the de-refusal mechanism
+simply has less to act on there. That is an observation about the corpus, not a mechanism, and I am
+not going to dress it up as one.
+
+Push still failing; seventeen commits pending locally.
