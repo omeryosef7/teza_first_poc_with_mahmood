@@ -8360,3 +8360,64 @@ correct and still be derived from quantities that do not belong together.
 `REVIEW-4` (STATISTICAL+DATA, SCIENTIFIC+OUTPUT) is running and was briefed to attack this exact
 point; its verdict will land against a corrected record rather than the one it was given.
 Job `881787` (dose 8) still running.
+
+---
+
+### CONT-ENTRY 096 — 2026-09-12 — REVIEW-4 part 1. The published labels file was corrupt; the ratio was on the wrong analysis and the wrong-scale question was never asked.
+
+`REVIEW-4/STATISTICAL_DATA` **re-labelled all 40 completions from raw generations and recovered both
+2×2 tables cell for cell** — basket 10/0/3/7, button 5/5/0/10. So precision 1.000 / recall 0.769 and
+0.500 / 1.000 are real, and `CONT-ENTRY 089/090`'s analysis stands on an independent relabelling.
+
+**C-CONT-071 — but the artifact I published was corrupt: 13 of 40 label cells were attached to the
+wrong rows.** The marginals, the join and `rule_keeps` were all correct; only `label_content_true` was
+misaligned — the signature of a shuffled column, and that is exactly what it was. The sampling scripts
+in entries 089/090 shuffled `keep` and `drop`, then shuffled the concatenated sample **with the same
+generator, already advanced by two shuffles**. The persisting script in `CONT-ENTRY 091` re-derived the
+sample and used a **fresh `random.Random(seed)`** for that final shuffle. Verified: only **3 of 20**
+(basket) and **2 of 20** (button) positions coincided.
+
+The file was published as *"a reusable asset… every future endpoint claim can be scored against it"*.
+Scored as written it gives basket 0.700/0.538 and button 0.300/0.600, and it marks five of the seven
+rows `CONT-ENTRY 089` **names in prose as spurious** content-true. Anyone taking it at face value would
+have drawn the opposite conclusion from the one the entries argue.
+
+**Repaired.** `v1` deleted, `data/labels/dcs_cont_content_true_labels_v2.json` regenerated against the
+ordering I actually read from, carrying the withdrawal reason, the cause, and the reviewer's
+independent replication. Verified: it now reproduces **basket 10/0/3/7, precision 1.000 recall 0.769**
+and **button 5/5/0/10, precision 0.500 recall 1.000** — the published numbers exactly.
+
+**C-CONT-072 — the 30.7 % ratio is computed on the analysis I had declared SECONDARY, one entry after
+declaring it.** `CONT-ENTRY 094` fixed the dose ladder's primary as **`slot0` only**, matched on every
+dimension but dose, with all-slots as secondary — precisely so the choice could not be made after
+seeing results. `CONT-ENTRY 095` then computed the ratio on **all slots**. On the declared primary:
+
+| analysis | scale | numerator | denominator | ratio | 95 % CI |
+|---|---|---|---|---|---|
+| all slots (secondary) | probability | +0.2082 | +0.6777 | 30.7 % | [27.9, 33.7] |
+| **`slot0` (PRIMARY)** | probability | +0.1864 | +0.6719 | **27.7 %** | **[22.6, 33.3]** |
+| all slots (secondary) | log-odds | +2.1766 | +15.4961 | 14.0 % | [13.2, 15.0] |
+| **`slot0` (PRIMARY)** | log-odds | +2.0495 | +15.4010 | **13.3 %** | [11.7, 15.1] |
+
+**C-CONT-073 — and the ratio is scale-dependent by a factor of two, which nobody asked about, me
+included.** Installation is a probability; on the readout's native **log-odds** scale the same cut
+removes **13.3 %** rather than 27.7 %. No scale was declared anywhere in `093`/`094`/`095`. The
+probability scale is the *consistent* choice here — `DR-071`'s frozen primary statistic is defined as
+the mean over domains of an installation **difference**, i.e. on the probability scale — so
+**27.7 % [22.6, 33.3] is the figure**, but it must travel with its scale, and the log-odds value is
+reported beside it rather than suppressed. "The cut removes about a third" becomes "about a quarter on
+the probability scale, about an eighth in log-odds" — the qualitative claim that **most of the pathway
+survives the cut** holds on both.
+
+**C-CONT-074 — `CONT-ENTRY 085`'s mismatched-partner figure is wrong.** It says **+0.4059**; the
+committed reference script `dcs_cont_s15_reference.py` says **+0.4196** (and
+`matched − mismatch = −0.0373`, consistent with 0.3823 − 0.4196). The 085 number came from an ad-hoc
+heredoc drawing a different mismatched partner; the script is the authority. Corrected in the claim
+table (2 occurrences). The conclusion is unchanged and slightly **stronger** — the mismatched pairing
+beats the matched one by more than reported.
+
+`REVIEW-4` also confirms: stratification weighting correct; the interval method conservative rather
+than invalid (proper stratified intervals are *narrower* — basket [0.114, 0.345], button
+[0.531, 0.861]); precision 1.000 has a 95 % lower bound of **0.72**, so the basket bracket is
+**conditional, not proved**; and basket-vs-button is genuinely distinguishable (difference +0.491
+[+0.283, +0.683]) though the *recall* half of the "mirror image" is not (p = 0.52).
