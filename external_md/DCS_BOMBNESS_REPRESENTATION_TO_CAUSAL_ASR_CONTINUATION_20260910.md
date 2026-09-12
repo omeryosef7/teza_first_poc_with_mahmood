@@ -9190,3 +9190,69 @@ need not be. That is a rule I can now state with a measured bound behind it rath
 
 Push still failing — five commits pending locally. Everything through `CONT-ENTRY 107` is on the
 remote; `CONT-ENTRY 109` records the diagnosis and the three steps the user needs to take.
+
+---
+
+### CONT-ENTRY 113 — 2026-09-12 — the dose ladder's behavioural half, and the quantitative dissociation: significant, and confounded by hardware
+
+`REVIEW-3/SCIENTIFIC` named the dose ladder measured **jointly on installation and content-true ASR**
+as the single most valuable experiment, gated behind a working endpoint. `CR-002` is that endpoint, and
+two of the ladder's three doses already have judged data.
+
+**The behavioural half, cell C, button, CR-002, domain unit, 90 domains:**
+
+| endpoint | dose 0 | dose 4 | 0 → 4 | 95 % CI | domains positive |
+|---|---|---|---|---|---|
+| raw `ASR@0.5` | 0.1722 | 0.3389 | +0.1667 | [+0.1044, +0.2267] | 61/90 |
+| **CR-002 content-true** | **0.0000** | 0.0389 | **+0.0389** | [+0.0244, +0.0556] | 24/90 |
+| *installation* (`CONT-ENTRY 100`) | *~0* | *0.6728* | *+0.6728* | *[+0.6096, +0.7338]* | *90/90* |
+
+**Content-true ASR at dose 0 is exactly 0.0000** — no genuine attack succeeds without demonstrations,
+matching installation's ~0 anchor. Both endpoints rise with dose and both are significant; their
+*magnitudes* differ by a factor of 17, and their *consistency* differs starkly — installation rises in
+**90/90** domains, content-true ASR in **24/90**.
+
+**The proportionality test this makes possible.** If installation drove attack success with a constant
+slope, the knockout — which removes 0.2082 of installation — should move ASR by that fraction of the
+dose-implied slope. Jointly bootstrapped over the 67 domains carrying all six quantities:
+
+| | value | 95 % CI |
+|---|---|---|
+| **predicted** ko ASR effect | **−0.0134** | [−0.0197, −0.0078] |
+| **measured** ko − ctrl ASR effect | **+0.0089** | [−0.0090, +0.0269] |
+| **measured − predicted** | **+0.0223** | **[+0.0060, +0.0389]** |
+
+**P(measured ≤ predicted) = 0.0022.** The gap excludes zero. This is the *quantitative* dissociation
+that `C-CONT-032` downgraded and `REVIEW-3` confirmed as qualitative-only — and with a validated
+endpoint and a dose-derived slope it now comes out significant.
+
+**⛔ And it is confounded, so I am not claiming it.** Checking the generation hardware behind every arm:
+
+| arm | GPU | node |
+|---|---|---|
+| dose 0 (`tsb66_C_n0`) | L40S | n-804 |
+| dose 4 (`tsb66_C_n4`) | L40S | n-803 |
+| **knockout `ko`** | **RTX A5000** | n-503 |
+| **knockout `ctrl3`** | **L40S** | n-804 |
+
+The dose slope is hardware-clean — both arms on L40S. **The measured arm is not**: `ko` and `ctrl3`
+cross architectures, which is exactly `C-CONT-053`. `CONT-ENTRY 070` measured the hardware effect on
+this endpoint at **+0.0015, CI [−0.0149, +0.0194]** — the *same order* as the +0.0223 gap. At the
+upper end of that interval the gap shrinks to +0.0029 and the result evaporates.
+
+**So: suggestive, not established.** Stated that way because the alternative is to publish a p = 0.0022
+whose measured arm I have already documented as confounded, one entry after using the same audit to
+discharge a different caveat.
+
+**What would settle it, and it needs no new generation.** Among the button ASR arms, **only three are
+judged** and all three sit on different GPUs — there is no matched pair. But `contasr2_ctrl2` was
+**generated on the A5000 at n-503, the same hardware as `ko`**, and never judged. Judging it gives a
+hardware-matched `ko − ctrl2` comparison for the cost of a judge run and no GPU time. Its band and
+scope must first be checked against `DR-070`'s amendment — `ctrl3` is the dose-exact control and
+`ctrl2` may not be — so this is a specification question before it is a compute question.
+
+The basket route is closed for the opposite reason: its knockout arms **are** hardware-matched (all
+three on A5000/n-503), but basket has **no dose-0 ASR arm** to build a slope from; the only basket
+dose-0 judged rows number 24.
+
+Push still failing — six commits pending.
