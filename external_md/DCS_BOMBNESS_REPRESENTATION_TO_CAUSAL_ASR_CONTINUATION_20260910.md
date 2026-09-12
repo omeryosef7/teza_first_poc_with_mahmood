@@ -8678,3 +8678,39 @@ the remap is essentially complete at four demonstrations (A14). The methodologic
 correction showing raw LLM-judge ASR overstates genuine attack success by **an order of magnitude** on
 this attack family (A9). The second is the publishable result; the first is a careful set of nulls and
 bounds. Both are honest, and the record says which is which.
+
+---
+
+### CONT-ENTRY 102 — 2026-09-12 — C-CONT-075: the calibration run was scheduled onto a third GPU, which would have calibrated nothing
+
+`882126` was submitted to measure dose 4 under the **dose-8 configuration**, so that
+`dose4_here − dose4_there` gives the cross-run offset directly. I checked its `RUNMETA` 30 minutes in
+rather than at the end, and it was running on the wrong hardware:
+
+| run | GPU | node | git |
+|---|---|---|---|
+| doses 0 + 4 | NVIDIA L40S | n-804 | `16333dde55` |
+| dose 8 | **Quadro RTX 8000** | rack-omerl-g01 | `2c6fbff9a9` |
+| **`882126` (calibration)** | **Tesla V100-SXM2-32GB** | rack-bgw-dgx1 | `ce1027f639` |
+
+**A third configuration calibrates nothing.** The offset I need to remove is specifically
+*dose-8-configuration minus doses-0/4-configuration*; measuring dose 4 on a V100 would have produced a
+second uncalibrated comparison rather than closing the first. The sbatch carried
+`--exclude=n-801,n-307` — which says where *not* to run, and I had written it as though it said where
+*to* run. Cancelled at 30 minutes rather than at 2 hours.
+
+**Resubmitted as `882136` with `--nodelist=rack-omerl-g01`**, pinning the node dose 8 actually used.
+`sinfo` confirms that node carries `gpu:quadro:6`, so the GPU model follows from the node.
+
+**And I checked the other half of the difference rather than assuming it away.** The three runs also
+differ in git commit. `git diff 2c6fbff9a9 HEAD -- src/boombness/score_behavior.py
+doublespeak_causality/ds_common.py` is **empty** — the readout code is byte-identical between the
+dose-8 commit and HEAD. So the commit difference is immaterial and **GPU/node is the only thing the
+calibration has to absorb**, which is what makes pinning the node sufficient.
+
+**Why this is worth an entry.** `C-CONT-053` recorded that the amendment-2 ASR comparison crossed GPU
+architectures, and `CONT-ENTRY 070` measured what that costs. Having found that problem, I then
+submitted a job *intended* to fix an instance of it and let the scheduler choose the hardware — the
+same defect one layer up. A job that runs is not a job that answers the question it was submitted for,
+and for hardware-sensitive comparisons the node has to be **pinned, then verified from `RUNMETA`**, not
+assumed from the submission.
