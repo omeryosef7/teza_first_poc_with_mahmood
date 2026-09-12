@@ -9582,3 +9582,52 @@ material term or any of nine bomb words, by direct inspection. No genuine attack
 demonstrations.
 
 Push still failing; fourteen commits pending locally.
+
+---
+
+### CONT-ENTRY 121 — 2026-09-12 — the hardware-matched knockout: A2's null survives, A4 replicates exactly, and the sign is still not determined
+
+`884025` COMPLETED — both arms, 670 rows each, `DONE.json`, **one judge manifest**, **one GPU**
+(RTX A5000 / n-503), differing only in the intervention band.
+
+**On the `slot0` primary declared in `CONT-ENTRY 120` before the judge ran:**
+
+| endpoint | ko | ctrl | **ko − ctrl** | 95 % CI |
+|---|---|---|---|---|
+| **CR-002 content-true** | 0.0448 | 0.0522 | **−0.0075** | [−0.0597, +0.0448] |
+| raw `ASR@0.5` | 0.3731 | 0.3433 | +0.0299 | [−0.0672, +0.1269] |
+| *(all-slots secondary)* | *0.0478* | *0.0358* | *+0.0119* | *[−0.0075, +0.0299]* |
+
+**A2's null survives on matched hardware**, on both scopes and both endpoints. Every previous button
+estimate of this quantity crossed GPU architectures (`C-CONT-053`); this one does not, and the answer
+is the same.
+
+**The sign is still not determined — and now flips with scope on clean data.** Primary **−0.0075**,
+secondary **+0.0119**, cross-hardware **+0.0089**. `C-CONT-063` said the sign was an artifact of
+instrument choice; it is also an artifact of scope, and removing the hardware confound did not
+stabilise it. The honest statement remains: **null, sign undetermined, on two codewords and now on
+matched hardware.**
+
+**A4 replicates almost exactly, and this is the strongest confirmation in the entry.** The claim
+(`CONT-ENTRY 044`) was refusal **0.115 → 0.040** under `ko` against **0.112** for a dose-matched
+control, measured cross-hardware in separate judge runs. On one GPU and one judge manifest:
+
+> **ko 0.0403, ctrl 0.1119, difference −0.0716, 95 % CI [−0.0940, −0.0507], sign-flip p = 0.00005.**
+
+**0.040 and 0.112 — to three decimal places.** The knockout cuts refusal to roughly a third, and that
+effect is not a hardware artifact, not a judge-session artifact, and not scope-sensitive (it holds on
+both). It is also the effect `REVIEW-6` correctly flagged as a confound for the ASR contrast: **`ko`
+refuses far less than its control**, so any ASR comparison between them is partly a comparison of
+refusal rates.
+
+**Which sharpens the phase's central picture rather than changing it.** The cut does something large,
+replicable and mechanistically legible — **it removes refusals** — and does **not** move content-true
+attack success. `REVIEW-3/OUTPUT` saw the same thing in the text (`ko` removes 7 of 8 shared refusals,
+rewrites 669/670 completions); this is that finding on matched hardware with an interval.
+
+**Standing position on A2/A3, unchanged by today and now better supported:** the intervention's
+behavioural effect is null on the content-true endpoint, the *qualitative* dissociation stands, the
+*quantitative* version is withdrawn on both codewords (`C-CONT-083`, `DR-074`), and what the
+intervention demonstrably does is **suppress refusal without creating successful attacks**.
+
+Push still failing; fifteen commits pending locally.
