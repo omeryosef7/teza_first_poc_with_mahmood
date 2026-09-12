@@ -10418,3 +10418,76 @@ pooled — the two ladders are compared as two results, never averaged.
 
 Meanwhile `REVIEW-8` is running as two adversarial passes (CODE/DATA/STATISTICAL and
 OUTPUT/SCIENTIFIC) over entries 130–136, with `DR-075` and A16 as the named primary targets.
+
+---
+
+### CONT-ENTRY 138 — 2026-09-12 — **A16 IS WITHDRAWN.** `C-CONT-092`. It was entered eight entries ago as the phase's strongest mechanistic claim and it does not survive its own review
+
+`REVIEW-8/OUTPUT_SCIENTIFIC` returned 24 findings against entries 130–136. I verified the three
+load-bearing ones myself before acting. All three hold, and together they do not leave A16 standing.
+
+**1 — There is no dissociation. Both endpoints are at their ordinary levels.**
+
+| at dose 4, `slot0` primary | measured | ordinary comparator | ratio |
+|---|---|---|---|
+| refusal | **0.1111** | control arm 0.1119 | **0.99×** |
+| content-true | **0.0389** | ASR-arm corpus rate 0.0343 | **1.13×** |
+| content-true | 0.0389 | 114-run corpus 0.0250 | **1.56×** |
+
+A16 read **0.111 vs 0.039** as refusal moving while capability did not. But 0.039 is not a floor — it
+is **at or above** the corpus-wide button content-true rate, and 0.1111 is the ordinary refusal rate to
+three decimals. **The two endpoints are at their normal full-attack levels, in their normal ratio.**
+The "gating" was a ratio of two base rates presented as a mechanism.
+
+**2 — The ρ is not a dose-response test. It is algebraically cross-sectional.**
+
+Dose-0 refusal is **exactly 0 in 90 of 90 domains** — a fact `CONT-ENTRY 130` itself put in bold. So
+per domain, `gain = dose4 − dose0 = dose4`. The "installation gain predicts refusal gain" correlation
+is **identically** the correlation between installation and refusal *within the dose-4 arm*. It is not
+evidence that adding demonstrations moves the two together; the dose ladder contributes nothing to it.
+Entry 130's two halves cannot both be strong, and I wrote them as if they were.
+
+**3 — The event counts are 20 and 7.**
+
+| dose | rows | refusal events | content-true events |
+|---|---|---|---|
+| 0 | 180 | **0** | **0** |
+| 4 | 180 | **20** | **7** |
+| 8 | 186 | **25** | **11** |
+
+`DR-075`'s entire verdict is a **net of +5 refusal rows**, with 10 domains up and 5 down — gross churn
+15, not a shift. The "content-true rose 57 %" is **+4 rows**. I reported both to four decimals.
+
+**Four further findings I accept without re-deriving.** ρ = 0.2376 is **below this design's own MDE**
+(≈0.29 at n = 90); `CONT-ENTRY 124`'s ρ = 0.176 CI **contains** 0.2376 while being recorded as not
+supported — the same evidence graded twice by different standards. The "+0.2548 secondary agrees both
+ways" is an **all-slots dose contrast**, which `CONT-ENTRY 134` — written by me, four entries later —
+makes `Scope.for_dose_contrast()` **raise** on. A16 was never labelled button-only although basket's
+refusal moves **1 row in 180**. And the headline ρ has **no committed script and no artifact**: I
+computed it in a shell and wrote the number into prose, which is `C-CONT-086`'s exact shape and the
+thing this phase keeps doing.
+
+**On `DR-075`, which I ran and passed this morning.** The bookkeeping was right — entry 136 recorded it
+as a passed falsification test, not confirmation. The **preregistration was weak**: falsification
+required refusal above **0.1666**, which is **39 % above the highest button refusal ever recorded in
+this phase** (0.1195). I froze a threshold the data could almost not reach and then reported that it
+was not reached. It excludes a strictly *linear* demonstration counter and nothing else — √2 scaling
+would have passed too. `DR-075` stands as a narrow negative result, not as support for A16, which no
+longer exists.
+
+**The simpler account that was never tested against.** `REVIEW-8` names one: *installation gates
+whether the request is read as a bomb request at all; refusal and bomb content are both downstream of
+that single switch.* It explains every number here, is corroborated by A2b, by A15's "what replaces
+them is mostly not an attack", and by the judge scoring 404/670 `ko` rows as refusing the harmful
+goal — and **no measurement in this phase discriminates against it**, because the proportional
+content-true drop it predicts (~64 %) is inside every interval we have.
+
+**What I should have done.** Entry 130 opened with "the last several entries have assembled something
+the record has not stated as one claim." That is the tell. The numbers had each been checked; the
+*claim built across them* had not, and I wrote it up as a synthesis rather than testing it as a
+hypothesis. `DR-075` then tested a prediction A16 made, which felt like rigour, while the claim's
+foundation went unexamined for eight entries.
+
+A16 is withdrawn in the claim table with all three defects recorded. `C-CONT-092` entered in the
+ledger. No number from that row may be quoted. The dose-ladder measurements themselves stand — they
+are fine; the *claim assembled from them* was not.
