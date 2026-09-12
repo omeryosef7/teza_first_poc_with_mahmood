@@ -9011,3 +9011,42 @@ domains**, because the numerator exists only on the 67 `continst` train domains 
 forces the population either way. The number is right. What was wrong is that the entry **never stated
 its population**, which is precisely why a reviewer could not tell without recomputing it — the same
 reporting gap that made `C-CONT-072` possible.
+
+---
+
+### CONT-ENTRY 109 — 2026-09-12 — push blocked: the remote's embedded token is no longer accepted. Work continues locally; nothing is lost.
+
+`CONT-ENTRY 108` **committed cleanly** — pre-commit guards passed, 343 tests passed — and then the
+push failed:
+
+```
+remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for '.../teza_first_poc_with_mahmood.git/'
+```
+
+Retried once; same result. `git status` reports the branch **ahead 1**, so the work is committed and
+safe in the local repository. Every entry through `CONT-ENTRY 107` is already on the remote.
+
+**Diagnosis.** The `origin` URL embeds a GitHub **personal access token** directly in the remote
+string (`https://<user>:<token>@github.com/...`), and there is **no credential helper** configured
+(`git config --get credential.helper` is empty) and no `gh` CLI on PATH. The token is therefore stored
+**in plaintext in `.git/config`**, and it is no longer being accepted — consistent with expiry, manual
+revocation, or GitHub's automatic secret-scanning revocation, which fires when a token appears
+somewhere it can be observed.
+
+**This is the user's to fix, not mine.** Replacing a credential is an outward-facing action on their
+account, and I am not going to write a new token into the repository or reconfigure their auth. The
+token value is not reproduced in this record.
+
+**Recommended, in order:**
+1. Treat the existing token as **compromised** and revoke it at
+   `https://github.com/settings/tokens`, regardless of why it stopped working — it has been sitting
+   in plaintext in `.git/config`.
+2. Re-point the remote without an embedded secret:
+   `git remote set-url origin https://github.com/omeryosef7/teza_first_poc_with_mahmood.git`
+3. Authenticate with a credential helper or SSH key rather than a URL-embedded token, so the secret
+   is not stored in the repository at all.
+
+**Meanwhile the loop continues.** Commits accumulate locally and will push as a batch once auth is
+restored; nothing about the analysis depends on the remote. The calibration job `882172` is still
+queued, so no results are blocked on this either.
