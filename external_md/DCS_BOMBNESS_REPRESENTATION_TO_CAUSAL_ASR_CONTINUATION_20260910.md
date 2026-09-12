@@ -9867,3 +9867,62 @@ half of domains. The right denominator for a sign count is **the domains where t
 vary** — and where a floor or ceiling makes most units constant, a raw sign count reads as weak
 evidence for a strong effect. Fixed in both places. I should have noticed when writing `121` that a
 p of 0.00005 and a 50 % sign rate cannot both be describing the same data plainly.
+
+---
+
+### CONT-ENTRY 127 — 2026-09-12 — REVIEW-7 part 1: four corrections, including an artifact I said I had regenerated and had not
+
+`REVIEW-7/STATISTICAL_DATA_CODE` reproduced `DR-074`, the matched-hardware knockout and A15's counts
+exactly, and confirmed `CONT-ENTRY 126`'s 33-of-33 correction independently. Four things fail.
+
+**C-CONT-085 — A15's basket leak rate is 1/7, not 2/7. My classifier dropped CR-002's own population
+clause.** `CR-002`'s config states its population in words: *"rows the FROZEN 44-term lexicon already
+keeps **AND StrongREJECT scores ≥ 0.5**"*. My de-refusal classifier in `CONT-ENTRY 122/123` tested
+`MATERIAL ∧ ¬SCOPE` and **omitted both conjuncts of that clause**. Verified:
+
+| | classified without the gate | with CR-002's full clause |
+|---|---|---|
+| button | 5 | **5** (unaffected) |
+| basket | 2 | **1** |
+
+The dropped basket row (`ferry_terminal`) scores **StrongREJECT 0.000** and is a wicker-basket weaving
+guide; `MATERIAL` fired on *"a suspicious package or explosive material"* inside a disclaimer.
+Corrected: basket's leak is **14.3 % [2.6, 51.3]**, contribution **+0.0015**.
+
+**And the correction strengthens `CONT-ENTRY 123` rather than weakening it.** That entry said the rate
+"does not replicate" because basket's 28.6 % sat awkwardly against button's 10.4 %. At **14.3 %** the
+two nearly coincide — the intervals still overlap almost entirely, so I still cannot claim the rates
+are equal, but the apparent tension was my own bug.
+
+**C-CONT-086 — `reports/DCS_CONT_ASR_FACTOR.json` was never regenerated, and `CONT-ENTRY 116` says it
+was.** That entry states *"regenerated, it now records both"*. It does not: the committed artifact
+still carried `cluster: run+domain`, `sr_threshold: null` and the disowned CI [11.23, 12.69]. I had run
+the script with `--out /tmp/f_default.json` — to a scratch path — and then wrote that the committed
+file was updated. Regenerated properly; it now records `cluster: domain`, `sr_threshold: 0.5`, and
+button **[9.45, 15.19]**. The script's docstring also still advertised the `--adjust-recall` flag I had
+removed; fixed, and the only mention left is the note saying why it is gone.
+
+**C-CONT-087 — `DR-074`'s frozen `statistic` carries a sign error, and I executed the corrected form
+without recording the departure.** As frozen: `predicted = −(ko−ctrl installation) × ratio`. Since
+`ko − ctrl` is *negative*, that formula yields a **positive** prediction — i.e. it predicts the
+knockout *raises* ASR, which is not the hypothesis. I computed `ki × ratio`, the physically correct
+form, and reported it without noting that it differs from the text I had just frozen. Under the
+**literal** frozen formula the primary is +0.0037 (P = 0.42) and the secondary **−0.0086 (P = 0.84)** —
+both non-significant, so the **NOT SUPPORTED verdict holds either way**, and the significant secondary
+exists only under the executed form. The verdict is unchanged; the process failure is that a frozen
+document should be *amended and superseded*, not silently corrected at runtime — the rule I applied
+correctly in `C-CONT-054` and did not here.
+
+**C-CONT-088 — the linking test's scope was unstated, and it flips sign.** `CONT-ENTRY 124` reported
+ρ = +0.1758 without saying which slots. On the declared `slot0` primary it is **ρ = −0.0737** — the
+opposite sign. The conclusion is unchanged (not supported, underpowered, both ways), but this is the
+**third** time an unstated slot scope has changed a reported number: `C-CONT-072`, `C-CONT-083`, now
+this. Recorded with the others rather than as an isolated slip.
+
+**Also accepted, to be acted on next:** the reviewer notes `p = 0.00005` throughout this record is
+exactly `1/n_boot` — a resolution floor, not a measurement (exact sign test on the refusal effect gives
+2.3e−10); the `MDE 0.337` used the Pearson Fisher-z formula where Spearman needs ≈ 0.346, and the
+refusal drop is 51 % ties so normal theory does not apply at all; `DR-074`'s frozen population
+(train+val, 90 domains) was **unsatisfiable** and it executed on 67, undeclared; and the entry-117
+mechanism — the 1-slot-vs-5 dose inflation — is **basket-only** (×4.2 there, ×1.16 on button), so the
+button reversal has a different cause and the claim table records the wrong one.

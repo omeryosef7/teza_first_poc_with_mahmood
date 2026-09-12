@@ -12,7 +12,10 @@ WHAT REVIEW-5 CORRECTED, and why the defaults here differ from CONT-ENTRY 099:
   * RECALL. CONT-ENTRY 099 multiplied by a NAIVE recall of 0.923. The validation sample oversamples
     rule-keeps ~5x BY DESIGN, so the naive figure is not the population recall. The design-weighted
     (Horvitz-Thompson) value is ~0.71 on button, which lowers the recall-corrected factor from ~10.5x
-    to ~8x. Recall adjustment is therefore OPT-IN (`--adjust-recall`) and prints its own stratum table.
+    to ~8x. Recall adjustment is therefore NOT offered here at all: it belongs in the entry that quotes
+    it, with its stratum sizes attached. An earlier version declared a `--adjust-recall` flag that was
+    never read -- passing it silently returned the unadjusted factor (REVIEW-6). The flag is gone and
+    this sentence is the only place it is now mentioned.
   * ESTIMATOR. This reports the RATIO OF SUMS, which is what CONT-ENTRY 099 reported without saying
     so. The mean of per-run ratios is a different and much larger number (~19.7); it is printed
     alongside so the two can never be confused again.
