@@ -10382,3 +10382,39 @@ a demonstration counter. Its *quantitative* half — refusal tracking installati
 what it is.
 
 `reports/DCS_CONT_DR075_RESULT.json`. Jobs 886005 (arm, L40S/n-804) and 886353 (judge, gpt-4o-mini).
+
+---
+
+### CONT-ENTRY 137 — 2026-09-12 — Installation saturation is a **button-only** fact, and A16/DR-075 both lean on it. Basket ladder submitted, prediction stated first
+
+`DR-075`'s whole force comes from a saturation: installation rises **+0.6589** over the first four
+demonstrations and only **+0.0681** over the next four, so a refusal rise of +0.0278 rather than
+another +0.1111 is the interesting outcome. That saturation has been measured on **button only**.
+
+If it turns out to be a button quirk, `DR-075` does not generalise — and this phase has been caught
+generalising across codewords once already today (`C-CONT-091`, where a clean basket mechanism was
+asserted of button in a single unchecked sentence). The symmetric error is available here and worth
+spending a GPU hour to avoid.
+
+**Submitted as job 886483**: the basket installation ladder, doses **0, 4 and 8 in one run**. One run
+for all three doses means there is **no cross-run offset to discharge** — `CONT-ENTRY 094` had to
+re-measure dose 4 on the dose-8 hardware to close exactly that gap, and this design avoids needing to.
+No GPU pin: readouts are hardware-insensitive here (measured offset **−0.0002**), unlike generation,
+where the pin is mandatory.
+
+**Stated before the result exists**, so it cannot be fitted afterwards:
+
+* **If basket saturates like button**, the second step should be a small fraction of the first — on
+  button it is **10.3 %**. Anything under ~25 % I will read as replicating the shape.
+* **If basket does not saturate** — if dose 8 adds a large further increment — then `DR-075`'s premise
+  is codeword-specific, and its "refusal is not a demonstration counter" conclusion is a statement
+  about button and must be relabelled as such in the claim table.
+* Basket's dose-4 installation is **0.4578** against button's 0.6587, so basket has **more headroom**
+  to keep climbing. That makes this a real test rather than a formality: the codeword further from
+  ceiling is the one more likely to break the pattern.
+
+Independence unit the domain, `slot0` primary via `Scope.for_dose_contrast()`, button and basket not
+pooled — the two ladders are compared as two results, never averaged.
+
+Meanwhile `REVIEW-8` is running as two adversarial passes (CODE/DATA/STATISTICAL and
+OUTPUT/SCIENTIFIC) over entries 130–136, with `DR-075` and A16 as the named primary targets.
