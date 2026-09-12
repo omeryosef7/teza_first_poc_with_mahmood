@@ -8144,3 +8144,53 @@ button (`CONT-ENTRY 090`).
 Recorded as the outcome of a deliberate attempt to repair the instrument, not as a reason to stop
 measuring: the bracket on basket stands, the button upper bound stands, and both are quotable so long
 as they are labelled as what they are.
+
+---
+
+### CONT-ENTRY 092 — 2026-09-12 — the claim table rebuilt again; and what the endpoint line actually settled
+
+`reports/DCS_CONT_CLAIM_TABLE.md` rebuilt after `REVIEW-3` and entries 084–091 (132 → 156 lines). It
+had gone materially wrong: it still quoted A13 at +0.4053, described the correction's failure rate
+with a single number, and said nothing about the endpoint having no lower bound on button.
+
+**Section A changes.** A2 now carries the basket **bracket [−0.0090, +0.0030]**, spanning zero, rather
+than a point estimate whose sign three different content rules disagree about. A new **A2b** records
+what `REVIEW-3/OUTPUT` extracted and I had not looked for: the cut rewrites **669/670** completions
+with divergence *larger* than the cross-GPU churn floor, removes **7 of 8** shared refusals, and turns
+one *"I can't help with that."* into a StrongREJECT-1.000 recipe — **none of which the endpoint
+registers**. A7b now quantifies the spurious rate **per codeword** (button 0.717 [0.448, 0.866],
+basket 0.177 [0.100, 0.433]) instead of citing one sample; **A7c** and **A7d** are new and carry the
+bracketing asymmetry and the two failed repairs. A13 is quoted conservatively and flagged that the
+token-level matching does no work. A11 gains its TEST CI and the two controls run after the fact.
+
+**Section G, the "if only one thing is reported" claim, is materially stronger than when written.** It
+used to rest on a factor of 2.55 across 111 runs. It now rests on: a **4× difference in failure rate
+between two codewords of the same bank family**; **the same rule inverting its precision/recall profile**
+between them (1.00/0.77 → 0.50/1.00); and **two principled repairs both failing**, one of them failing
+even when fitted on its own labels. That is no longer "our judge has a bug" — it is a property of
+term-based ASR judging on codeword-remapping attacks, demonstrated on 231 blind- or hand-labelled
+completions across two codewords, **with the labels published**.
+
+---
+
+**What the endpoint line settled, stated once so it is not re-litigated.**
+
+1. The frozen lexicon gives an **upper bound** on both codewords. That much always held.
+2. On **basket** a conservative rule gives a **lower bound** (precision 1.00), so the endpoint is
+   bracketed and the bracket spans zero for the primary.
+3. On **button** there is **no lower bound** — the same rule is precision 0.50. Every button
+   content-true number is upper-bounded only.
+4. The gap between codewords is **not lexical**. Two repairs covering the obvious design space —
+   change which terms count, require a stronger class of term — both fail, the second one worse than
+   what it replaced even under post-hoc fitting.
+5. Therefore the remaining routes are a **function-reading judge validated per codeword**, or an
+   explicit decision to **report bounds**. Both are real options; neither is a lexicon iteration.
+
+**And what it did not settle.** Why the same vocabulary carries content in basket completions and not
+in button ones. I have two refuted hypotheses and no third. The labelled rows point at something
+structural — *"mock detonator"*, *"button scare alarm"*, a pressure plate with no explosive — but
+"structural" is a description, not a mechanism, and I am not going to dress it up as one.
+
+Every number in this program's ASR line now carries its bound direction, its codeword, and its
+labelled-sample uncertainty. That is a weaker set of claims than the phase started with and a
+defensible one.
