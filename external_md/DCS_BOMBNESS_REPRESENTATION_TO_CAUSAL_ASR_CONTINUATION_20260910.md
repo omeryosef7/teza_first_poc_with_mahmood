@@ -8969,3 +8969,45 @@ existed, validated out of sample, then censused at 0.977 precision, and independ
 Calibration job `882172` still **PENDING** — `rack-omerl-g01` remains occupied. It is the only node
 with the GPU that dose 8 used, so the queue is the cost of doing the comparison correctly rather than
 on whatever hardware is free (`C-CONT-075`).
+
+---
+
+### CONT-ENTRY 108 — 2026-09-12 — C-CONT-081: C-CONT-074 "corrected" one random draw with another. The finding it supported is stronger than either.
+
+`REVIEW-5/CODE` noted that `dcs_cont_s15_reference.py`'s `matched_minus_mismatch` rests on a **single
+random partner draw**, and that its permutation null holds that draw fixed — so A13's mismatch
+comparison has never had an interval, and `C-CONT-074` "is that draw's variance". Checked, over 200
+independent draws at `cw_demo_mean` L24:
+
+| | value |
+|---|---|
+| **matched** (C with its own slot's B) | **+0.3823** (deterministic) |
+| **mismatched**, 200 draws | mean **+0.4222**, sd 0.0167, 95 % range **[+0.3879, +0.4510]** |
+| matched − mismatched | mean **−0.0399**, 95 % range [−0.0687, −0.0056] |
+| draws exceeding the matched value | **196 / 200 = 0.980** |
+
+**Both numbers the record argued about are ordinary draws from this distribution** — `CONT-ENTRY 085`'s
+**+0.4059** and the script's **+0.4196** both sit inside [+0.3879, +0.4510]. `C-CONT-074` declared the
+script "the authority" and corrected the entry and the claim table accordingly. That was **wrong in
+kind**: there was no error to correct, only sampling noise in a comparator I had built as a single
+draw and then treated as a fixed quantity.
+
+**The underlying finding survives and is stronger than the single-draw version stated it.** The claim
+in `C-CONT-062` was that the token-level matching does no work. Over 200 draws the mismatched partner
+beats the matched one in **98 %** of them, with the difference **−0.0399, 95 % range [−0.0687,
+−0.0056]** — an interval that excludes zero, where before there was one number and no uncertainty at
+all. Matching a demonstration block to *its own* counterfactual is, if anything, slightly **worse**
+than matching it to an arbitrary one from the same domain.
+
+**Corrections that follow.** The claim-table figure for the mismatched comparator becomes
+**+0.4222 [+0.3879, +0.4510]** rather than a point value, and `C-CONT-074` is **withdrawn as a
+correction** — it is re-recorded as an observation that the comparator was stochastic and undeclared.
+`§46` prerequisite 7 stays **PARTIAL** for the reason `C-CONT-062` gave, now with an interval behind it.
+
+**Also checked, and the concern does not bite.** `REVIEW-5` flagged that `CONT-ENTRY 100`'s **25.4 %**
+might repeat the 67-domain-over-90-domain mismatch `CONT-ENTRY 095` was written to fix. Recomputed
+with the denominator built on train-only and on train+validation: **both give 25.4 % [20.6, 30.3] on 67
+domains**, because the numerator exists only on the 67 `continst` train domains and the intersection
+forces the population either way. The number is right. What was wrong is that the entry **never stated
+its population**, which is precisely why a reviewer could not tell without recomputing it — the same
+reporting gap that made `C-CONT-072` possible.
