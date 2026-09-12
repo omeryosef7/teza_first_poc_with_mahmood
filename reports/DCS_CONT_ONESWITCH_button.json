@@ -20,6 +20,13 @@
    "content_events_ko": 32,
    "one_switch_excluded": true,
    "gating_excluded": false,
+   "content_ratio_conditional": 1.2338,
+   "content_ci_conditional": [
+    0.7764,
+    2.0729
+   ],
+   "one_switch_excluded_conditional": true,
+   "opportunity_factor": 1.0807,
    "provenance": {
     "scope": {
      "scope": "all slots SECONDARY",
@@ -52,6 +59,13 @@
    "content_events_ko": 6,
    "one_switch_excluded": false,
    "gating_excluded": false,
+   "content_ratio_conditional": 0.7978,
+   "content_ci_conditional": [
+    0.2386,
+    2.8346
+   ],
+   "one_switch_excluded_conditional": false,
+   "opportunity_factor": 1.0744,
    "provenance": {
     "scope": {
      "scope": "slot0 PRIMARY",

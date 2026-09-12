@@ -10798,3 +10798,43 @@ It can be wrong — the coupling variant is untouched, and 32-versus-24 events i
 but it is wrong in a way that further data would settle rather than in a way that argument would.
 
 `reports/DCS_CONT_ONESWITCH_button.json`, `reports/DCS_CONT_ONESWITCH_basket.json`.
+
+---
+
+### CONT-ENTRY 145 — 2026-09-13 — A17 attacked with its most dangerous confound, and it survives. The confound is real on button and near-zero on basket, which is the wrong way round for it to be the cause
+
+Every headline claim in this session has died under adversarial review, so A17 got the same treatment
+before it settled — starting with the confound most likely to kill it.
+
+**The threat.** A17 rests on the content-true ratio ko/ctrl being ≈1.3 rather than ≈0.36. But **a
+refused row can carry no bomb content**. The knockout removes 64 % of refusals, so `ko` has *more
+non-refused rows* and therefore more **opportunity** for content-true. The whole excess could be an
+artifact of the refusal drop — which would make A17 a restatement of the refusal effect rather than
+independent evidence, and would not disturb the one-switch account at all.
+
+**Decomposed**, `rate = P(not refused) × P(content | not refused)`:
+
+| | raw ratio | = opportunity × | conditional | conditional 95 % CI | one-switch |
+|---|---|---|---|---|---|
+| **button** | 1.333 | **1.081** | **1.234** | [0.776, 2.073] | **EXCLUDED** |
+| **basket** | 1.357 | **1.011** | **1.343** | [0.741, 2.577] | **EXCLUDED** |
+
+**The confound is real and it is not the cause.** On button it accounts for **1.081 of 1.333** — about
+a quarter of the excess, which is not nothing and would have been wrong to leave unstated. After
+conditioning, the ratio is **1.234** and 0.360 remains far outside its interval.
+
+**And the decisive detail is basket.** Basket barely refuses at all (not-refused 0.9881 → 0.9985), so
+its opportunity factor is **1.011** — the confound is essentially *absent*. Yet basket shows the
+**larger** conditional ratio, **1.343** against button's 1.234. **If the mechanical effect were driving
+this, the codeword with almost no mechanical effect should show the smallest ratio, and it shows the
+biggest.** The confound runs the opposite way to the pattern.
+
+**What is still not established, stated plainly.** Both conditional intervals **include 1.0**
+([0.776, 2.073] and [0.741, 2.577]). So content-true **rising** under the knockout is *not* a result —
+the established statement is only that it does **not fall proportionally**, which is all the
+one-switch exclusion needs and all I am claiming. The `slot0` primary remains undecided on both
+codewords (conditional 0.798 and 1.985, intervals spanning zero to nearly 3 and 5).
+
+The decomposition is in `scripts/dcs_cont_oneswitch.py` and its JSON, not in a shell — `D8`'s lesson
+was that a headline number without a committed script is not a result. A17's claim-table row now
+carries the decomposition and the "no rise established" limit.

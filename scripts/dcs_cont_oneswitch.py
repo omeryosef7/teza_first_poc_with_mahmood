@@ -94,6 +94,23 @@ def main() -> int:
             doms[d][2] += ct[p][1]; doms[d][3] += ct[p][2]
         dl = sorted(doms)
 
+        # CONFOUND (CONT-ENTRY 145): a REFUSED row can carry no bomb content, so the arm that
+        # refuses less has more OPPORTUNITY for content-true. The raw ratio is therefore
+        # rate = P(not refused) x P(content | not refused), and part of any excess is mechanical.
+        # Decomposed here so the exclusion cannot rest on the mechanical part.
+        nr = collections.defaultdict(lambda: [0, 0, 0, 0])   # koNR koC ctNR ctC
+        for p in shared:
+            d = ko[p][0]
+            if not ko[p][1]:
+                nr[d][0] += 1; nr[d][1] += ko[p][2]
+            if not ct[p][1]:
+                nr[d][2] += 1; nr[d][3] += ct[p][2]
+
+        def cond_ratio(sample):
+            a = sum(nr[d][0] for d in sample); b = sum(nr[d][1] for d in sample)
+            c = sum(nr[d][2] for d in sample); e = sum(nr[d][3] for d in sample)
+            return (b / a) / (e / c) if a and c and e else float("nan")
+
         def ratios(sample):
             kR = sum(doms[d][0] for d in sample); kC = sum(doms[d][1] for d in sample)
             cR = sum(doms[d][2] for d in sample); cC = sum(doms[d][3] for d in sample)
@@ -110,17 +127,32 @@ def main() -> int:
         cLo, cHi = q(bC, .025), q(bC, .975)
         rLo, rHi = q(bR, .025), q(bR, .975)
         kC = sum(doms[d][1] for d in dl); cC = sum(doms[d][3] for d in dl)
+        pCond = cond_ratio(dl)
+        g2 = random.Random(a.seed); bCond = []
+        for _ in range(a.n_boot):
+            sm = [dl[g2.randrange(len(dl))] for _ in dl]
+            v = cond_ratio(sm)
+            if not math.isnan(v):
+                bCond.append(v)
+        bCond.sort()
+        condLo, condHi = bCond[int(.025 * len(bCond))], bCond[int(.975 * len(bCond))]
+        oppK = sum(nr[d][0] for d in dl) / sum(doms[d][0] + 0 for d in dl) if False else None
         print("\n=== %s / %s  (%d domains, %d prompt pairs) ===" % (a.codeword, scope.name, len(dl), len(shared)))
         print("  refusal      ratio ko/ctrl = %.3f  [%.3f, %.3f]   (%d -> %d events)"
               % (pR, rLo, rHi, sum(doms[d][2] for d in dl), sum(doms[d][0] for d in dl)))
         print("  content-true ratio ko/ctrl = %.3f  [%.3f, %.3f]   (%d -> %d events)"
               % (pC, cLo, cHi, cC, kC))
         excl_one = not (cLo <= pR <= cHi)
+        excl_one_cond = not (condLo <= pR <= condHi)
         excl_gate = not (cLo <= 1.0 <= cHi)
         print("  ONE-SWITCH predicts content-true ratio ~= refusal ratio %.3f -> %s"
               % (pR, "EXCLUDED" if excl_one else "NOT excluded"))
         print("  GATING     predicts content-true ratio ~= 1.000            -> %s"
               % ("EXCLUDED" if excl_gate else "NOT excluded"))
+        print("  CONDITIONAL on not-refused: ratio = %.3f  [%.3f, %.3f]  -> one-switch %s"
+              % (pCond, condLo, condHi, "EXCLUDED" if excl_one_cond else "NOT excluded"))
+        print("     (raw %.3f = opportunity %.3f x conditional %.3f)"
+              % (pC, pC / pCond if pCond else float("nan"), pCond))
         if not excl_one and not excl_gate:
             print("  ==> the data CANNOT DISCRIMINATE. Both accounts sit inside the interval.")
         out["by_scope"][scope.name] = {
@@ -129,6 +161,10 @@ def main() -> int:
             "content_ratio": round(pC, 4), "content_ci": [round(cLo, 4), round(cHi, 4)],
             "content_events_ctrl": int(cC), "content_events_ko": int(kC),
             "one_switch_excluded": bool(excl_one), "gating_excluded": bool(excl_gate),
+            "content_ratio_conditional": round(pCond, 4),
+            "content_ci_conditional": [round(condLo, 4), round(condHi, 4)],
+            "one_switch_excluded_conditional": bool(excl_one_cond),
+            "opportunity_factor": round(pC / pCond, 4) if pCond else None,
             "provenance": prov}
     json.dump(out, open(a.out, "w"), indent=1)
     print("\nwrote %s" % os.path.relpath(a.out, REPO))
