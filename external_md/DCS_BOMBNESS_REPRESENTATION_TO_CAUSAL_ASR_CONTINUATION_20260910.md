@@ -8754,3 +8754,55 @@ an eighth. Recall is untouched at 0.92/0.80 and remains the reason this bounds r
 The calibration job `882136` is still **PENDING (Resources)** — pinned to `rack-omerl-g01`, which is
 busy. A queued correct job is the right trade against a running one on the wrong hardware
 (`C-CONT-075`).
+
+---
+
+### CONT-ENTRY 104 — 2026-09-12 — C-CONT-076: the precision pooling was circular, and the column I warned about tripped me
+
+Briefing `REVIEW-5` I listed "the derivation rows were used to BUILD the rule, so including them in a
+precision estimate is circular" as an attack line. It is not hypothetical — it is what
+`CONT-ENTRY 098` and `103` did. Settled myself rather than waiting.
+
+| codeword | rows included | tp | fp | precision | 95 % CI |
+|---|---|---|---|---|---|
+| button | all sets (as published) | 29 | 5 | 0.8529 | [0.699, 0.936] |
+| **button** | **out-of-sample ONLY** | **24** | **0** | **1.0000** | **[0.862, 1.000]** |
+| basket | all sets (as published) | 33 | 1 | 0.9706 | [0.851, 0.995] |
+| **basket** | **out-of-sample ONLY** | **23** | **1** | **0.9583** | **[0.798, 0.993]** |
+
+**Two distinct defects, and the second is worse.**
+
+1. **Circularity.** `CR-002` was *derived* on the 40 rows of the derivation set (`CONT-ENTRY 097`).
+   Scoring it there and pooling that into a precision estimate credits the rule for fitting the data it
+   was built from. The honest basis is the 48 out-of-sample keeps, and those give
+   **button 1.000 [0.862, 1.000]** and **basket 0.958 [0.798, 0.993]**.
+
+2. **The `rule_keeps` column means two different rules, and filtering on it mixes them.** I wrote that
+   warning into the v3 file myself — *"for the v2 rows `rule_keeps` is the HARD-and-no-pivot rule…
+   for the 36 new rows it is CR-002… filter on `set` before scoring"* — and then, one entry later,
+   published a pooled figure computed by **adding running counts** instead of filtering the file. A
+   naive filter on `rule_keeps` returns **button 29 tp / 5 fp = 0.853**, because the derivation rows'
+   keeps are HARD-rule keeps and the HARD rule is precision 0.500 on button. Neither my published
+   number nor that one is the right answer; the out-of-sample figure is.
+
+**What moves.** `CONT-ENTRY 103` published bounds of **[0.879, 1.000]** (button) and
+**[0.847, 0.995]** (basket). Corrected, out-of-sample only: **[0.862, 1.000]** and
+**[0.798, 0.993]** — slightly *wider*, which is the direction removing circularity should push them.
+The qualitative claim survives: CR-002 is ≥ 0.86 precise on button and ≥ 0.80 on basket, so at most
+~14 % / ~20 % of kept rows are spurious. Entry 103's headline sentence — "at most ~12–15 %" — becomes
+**at most ~14–20 %**.
+
+**The `CONT-ENTRY 099` factor is untouched.** It depends on CR-002's *rate* on the corpus, not on the
+precision bound, and no rate changed.
+
+**The lesson, since this is the second time a labels artifact has misled me** (`C-CONT-071` was a
+shuffled column; this is a column that legitimately holds two different things). A field whose meaning
+depends on another field is a trap even when documented — I documented it and still walked into it,
+because I pooled from memory rather than from the file. The v5 file should carry **separate** columns
+per rule rather than one overloaded `rule_keeps`, and any precision claim should be computed by
+filtering on `set`, in code, every time.
+
+Calibration job `882172` still **PENDING (Resources)** — `rack-omerl-g01` is the only node in the
+cluster with Quadro GPUs (`sinfo`: `gpu:quadro:6`) and is occupied by another user's 4-hour array
+jobs. The job was narrowed to the one channel and condition the analysis uses, which is safe because
+`--readout-max-batch 1` makes every row its own forward pass.
