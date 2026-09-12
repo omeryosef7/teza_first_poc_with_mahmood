@@ -659,6 +659,15 @@ JSON — it is thirty lines and it makes `A9` reproducible. (b) Narrow the `.git
 `outputs/dcs_cont/*.json` is tracked (they are kilobytes; the rule exists for activation caches).
 (c) Delete or rewrite `c209_rescore_by_codeword.json` with named fields.
 
+**Update, same review cycle.** `REVIEW-5/STATISTICAL_DATA`, running concurrently, has written
+`scripts/dcs_cont_asr_factor.py` + `reports/DCS_CONT_ASR_FACTOR.json` — the first executable
+reconstruction of the `A9` pipeline. Its independent numbers corroborate my decoding above: button
+`raw = 0.2984` (= 12838/43022, so `[1]` is the `ASR@0.5` count) and `cr2 = 0.02499` (≈ 1075 rows), so
+the file's `[3] = 7034` is **not** the `CR-002` count under any reading. That closes fix (a) for `A9`
+specifically; (b), (c) and the absence of code behind entries 095–097, 100 and 103 remain open, and
+the finding stands as stated for the entries themselves, which shipped no code at the time they made
+their claims.
+
 ### C1.2 — HIGH. Entry 104's own remedy is not implementable against `v4`
 
 Entry 104: *"any precision claim should be computed by **filtering on `set`, in code, every time**."*
