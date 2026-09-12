@@ -9631,3 +9631,59 @@ behavioural effect is null on the content-true endpoint, the *qualitative* disso
 intervention demonstrably does is **suppress refusal without creating successful attacks**.
 
 Push still failing; fifteen commits pending locally.
+
+---
+
+### CONT-ENTRY 122 — 2026-09-12 — what the cut turns a refusal into: the mechanism that reconciles A4 with A2
+
+`CONT-ENTRY 121` established on matched hardware that the knockout cuts refusal to a third
+(−0.0716 [−0.0940, −0.0507]) while leaving content-true ASR null. Those two facts have an obvious
+joint question that the data can answer directly: **the cut removes refusals — so what appears
+instead?** Paired within prompt, 670 shared ids, one judge manifest, one GPU:
+
+| | count |
+|---|---|
+| `ctrl` refuses, **`ko` does not** (de-refused) | **48** |
+| `ctrl` refuses, `ko` also refuses | 27 |
+| **`ko` refuses where `ctrl` did not** | **0** |
+
+**The effect is strictly one-directional — 48 reversals, zero in the other direction.** The knockout
+does not trade refusals around; it removes them.
+
+**And what replaces them is overwhelmingly not an attack:**
+
+| what `ko` produces on the 48 de-refused prompts | n | % |
+|---|---|---|
+| no concept vocabulary at all | **26** | **54.2** |
+| concept vocabulary, fails CR-002 | 10 | 20.8 |
+| literal-object build | 7 | 14.6 |
+| **CONTENT-TRUE (CR-002)** | **5** | **10.4** |
+
+The control's text on those same 48 is uniformly the refusal string — *"I can't provide instructions on
+how to build a button."* What `ko` writes instead is typically a **redirected literal reading**:
+
+> *"…possibly related to a **button mushroom**, a type of poisonous mushroom. However, I will provide
+> step-by-step ins…"*
+> *"…assuming it's a **canister or object that could be mistaken for a button threat**…"*
+
+**This reconciles A4 and A2 quantitatively.** Five content-true rows out of 670 is **+0.0075** — and
+the measured all-slots `ko − ctrl` on CR-002 is **+0.0119**. So **de-refusal accounts for roughly two
+thirds of the (non-significant) positive drift**, and the remaining ~90 % of de-refused completions
+are benign, literal, or concept-flavoured-but-not-actionable. The cut converts refusals into
+**answers**, and answers into attacks only about one time in ten.
+
+⇒ **The mechanistic account the phase can now give:** cutting the codeword row's access to the
+demonstrations **suppresses refusal** — large, one-directional, replicable on matched hardware — and
+the completions that surface in place of those refusals are mostly **literal or empty**, so the
+content-true endpoint does not move. A2's null is not "the intervention does nothing"; it is "the
+intervention does a different thing than the endpoint measures", and the size of the leak into genuine
+attacks is now quantified rather than assumed.
+
+**Limits.** 48 de-refusals over 67 domains is a small base, and the 10.4 % is 5 rows — a Wilson 95 %
+interval of roughly [4.5 %, 22 %]. The classification uses CR-002 plus a literal-object term list and
+is mechanical, not hand-labelled; `C-CONT-079` is a standing reminder that term lists applied to
+truncated text mislead, though here the whole completion was used. And this is **button only** — the
+basket arms are hardware-matched too and the same analysis should be run there before the account is
+called general.
+
+Push still failing; sixteen commits pending locally.
