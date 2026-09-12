@@ -10078,3 +10078,55 @@ installation itself* — the within-domain, install-graded patch that would be r
 bank (`CONT-ENTRY 076`). A16 is a convergence of three measurements, not a manipulation.
 
 Entered in the claim table. Push still failing; twenty-seven commits pending locally.
+
+---
+
+### CONT-ENTRY 131 — 2026-09-12 — DR-075 FROZEN: A16's forward test, and it can fail
+
+A16 was entered one entry ago as a convergence of three measurements. A convergence is not a test, so
+before it settles I am putting it somewhere it can break. It makes a **quantitative forward prediction
+I have not yet looked at the answer to**, and the data to test it is one generation run away.
+
+**The prediction comes from a saturation already on disk.** Installation is measured at all three
+doses. On `slot0` PRIMARY, 116 shared domains, one readout family:
+
+| step | installation | Δ |
+|---|---|---|
+| dose 0 | 0.0000 | — |
+| dose 4 | 0.6589 | **+0.6589** |
+| dose 8 | 0.7270 | **+0.0681** |
+
+The second dose step buys **10.3 %** of what the first did — installation has largely saturated by
+dose 4, rising in only 80 of 116 domains. (The `n4cal` readout independently reproduces the dose-4
+figure the behavioural arm was matched to: **0.6589 vs 0.6587**, on a larger domain set. That the two
+agree to the third decimal is a useful check on the readout.)
+
+**So A16 is forced.** If refusal tracks *installation*, the 4→8 step must buy correspondingly little
+refusal — about **+0.0115**, against the first step's +0.1111. If refusal instead tracks the
+*demonstrations themselves*, it should keep climbing; there are twice as many of them. **These two
+readings agree on every number measured so far and disagree here.** That is the whole reason to run it.
+
+`configs/dcs_cont_dr075_dose8_refusal.json`, sha16 **`3416003a461b493b`**, FROZEN before the arm was
+submitted:
+
+* **SUPPORTED** if refusal at dose 8 rises by **less than +0.0555** — under half the first step's gain.
+* **FALSIFIED** if refusal exceeds **0.1666** — the second step buying as much as half the first, while
+  installation added a tenth as much. A16 would be wrong, and wrong in a specific way: refusal would be
+  counting demonstrations, not reading the remap.
+* A **decrease** is not predicted by either reading and would need its own explanation. Recorded as
+  AMBIGUOUS rather than quietly folded into "supported".
+
+Prespecified: per-domain mean then unweighted mean over domains, independence unit the **domain**;
+refusal is `kw_refusal`, **the same field the dose-4 number used**, not the judge rubric; content-true
+by CR-002. Dose 0 and dose 4 are **not re-run** — they are the frozen comparators.
+
+**Hardware pinned, deliberately.** `--gres=gpu:l40s:1`. The dose-4 comparator ran on L40S/n-803 and
+cross-GPU numerics change 573 of 670 completions between V100 and L40S. Letting the scheduler choose
+would confound a generation contrast with the GPU it ran on — which is exactly `C-CONT-075`, committed
+two weeks ago on a job whose purpose was fixing a hardware confound.
+
+The bank supports this cleanly: **`slot0` carries 232 rows at every one of the three doses**, so the
+ladder is balanced on the declared primary rather than comparing one slot against five. The dose-8
+block also carries `slot3`, reported as an internal replication and not as evidence.
+
+Submitted as job **885998**, 464 rows. Twenty-eight commits still pending locally.
