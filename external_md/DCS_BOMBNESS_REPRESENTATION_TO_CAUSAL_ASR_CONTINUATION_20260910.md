@@ -9136,3 +9136,57 @@ p-value audit that *did* find a real error (`C-CONT-059`), and this pass. The co
 the numbers.
 
 Calibration `882172` at 45 minutes on matched hardware. Push still failing; four commits pending.
+
+---
+
+### CONT-ENTRY 112 — 2026-09-12 — the cross-run offset is −0.0002. The dose ladder's weak step is now established, not conditional.
+
+`882172` COMPLETED clean — rc 0, `failures {}`, 1160 rows, `DONE.json`, on the **Quadro RTX 8000 at
+`rack-omerl-g01`**, verified from `RUNMETA` to match the dose-8 run exactly. Three submissions to get
+one job onto the right hardware (`C-CONT-075`); this is what it bought.
+
+**The offset, measured rather than assumed:**
+
+| | mean |
+|---|---|
+| dose 4 on **L40S** (the run that also gave dose 0) | 0.6728 |
+| dose 4 on **Quadro** (the run that also gave dose 8) | 0.6726 |
+| **offset (Quadro − L40S)** | **−0.0002, 95 % CI [−0.0025, +0.0020]** |
+
+Positive in **45 of 90** domains — exactly chance. The offset is indistinguishable from zero and two
+orders of magnitude below the ~0.06 that `CONT-ENTRY 100` could not exclude.
+
+**So the 4 → 8 step stands:**
+
+| | Δ | 95 % CI |
+|---|---|---|
+| cross-run, as published | +0.0632 | [+0.0304, +0.0993] |
+| **within the Quadro run, offset-free** | **+0.0635** | **[+0.0296, +0.0963]** |
+
+`CONT-ENTRY 100` stated "still climbing" as **conditional on no cross-run offset**, and explicitly
+refused to present it as established. **The condition is now discharged**: installation genuinely
+continues to rise from four demonstrations to eight, by +0.0635 — **9.4 % of what the first four
+delivered**. The ladder's qualitative conclusion is unchanged and its one weak step is now sound.
+
+**A second result falls out, and it is more generally useful than the first.** Putting this beside the
+program's other cross-GPU measurements:
+
+| quantity | cross-GPU effect |
+|---|---|
+| **generation** (greedy completions) | **573 / 670 differ** (`C-CONT-052`) |
+| hidden states (relative L2) | ~3 % (`CONT-ENTRY 086`) |
+| F5 probe correlation | +0.0008 (`CONT-ENTRY 086`) |
+| **installation readout** (this entry) | **−0.0002 [−0.0025, +0.0020]** |
+
+**Cross-GPU drift is catastrophic for generation and negligible for readouts**, and the mechanism is
+clear: greedy decoding amplifies a ~1e−3 logit perturbation through an argmax that occasionally flips
+and then cascades, while a scalar readout averages the same perturbation away. That reconciles
+`C-CONT-052` (hardware rewrites 85 % of completions) with `CONT-ENTRY 086` (hardware moves a probe by
+0.0008) — they are not in tension, they are the two ends of the same effect.
+
+**Practical consequence for this program:** comparisons whose endpoint is **generated text** must be
+hardware-matched (`C-CONT-053` flagged one that was not); comparisons whose endpoint is a **readout**
+need not be. That is a rule I can now state with a measured bound behind it rather than a caution.
+
+Push still failing — five commits pending locally. Everything through `CONT-ENTRY 107` is on the
+remote; `CONT-ENTRY 109` records the diagnosis and the three steps the user needs to take.
