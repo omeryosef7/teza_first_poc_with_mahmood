@@ -9089,3 +9089,50 @@ reason recorded in its help text so the number cannot be quoted again without it
 **Push still failing.** Three commits now pending locally (`108`, `109`, this one). The remote's
 embedded token remains unaccepted; `CONT-ENTRY 109` records the diagnosis and what the user needs to
 do. Nothing is lost and no analysis depends on it.
+
+---
+
+### CONT-ENTRY 111 — 2026-09-12 — the §15 script hardened; the self-inclusion hazard is real and does not bite
+
+`REVIEW-5/CODE` raised three defects in `dcs_cont_s15_reference.py`. Checked each before changing
+anything, because two of them affect a published number.
+
+**1. The prototype comparator included its own target — measured, and the effect is 0.0027.**
+`rho_prototype` averaged **all** of a domain's B states, including the B belonging to the row being
+scored, so each row was partly compared against itself.
+
+| | ρ |
+|---|---|
+| prototype **including** the target's own B (published) | **+0.5057** |
+| prototype **leave-one-out** | **+0.5030** |
+| matched (C with its own B) | +0.3823 |
+
+A difference of **0.0027**, because every domain in this corpus carries exactly **10** slots, so the
+target contributes a tenth of the mean. The defect is real and the number it produced is fine.
+`C-CONT-062`'s argument — that the domain-mean prototype beats the matched pairing decisively — is
+untouched. The script now computes the leave-one-out form regardless, since it costs nothing and the
+inflation would grow as slots per domain fall.
+
+**2. A single-slot domain would have emitted a silent NaN.** Measured: slots per domain are **min 10,
+max 10**, so **no domain can trigger it** on this corpus. The script now **refuses explicitly** rather
+than propagating a NaN into a Spearman — a latent trap closed before it fires, which is the only time
+it is cheap to close.
+
+**3. A requested-but-absent layer was silently skipped.** It is now recorded in the output under
+`layers_requested_but_absent` and printed. A layer that quietly vanishes from a sweep is exactly the
+kind of thing that makes a table look complete when it is not.
+
+**4. And the mismatch caveat is now in the docstring**, not only in the record: the comparator is a
+single random draw whose null holds that draw fixed, so it must be quoted as the 200-draw distribution
+**+0.4222 [+0.3879, +0.4510]** and never as a point value (`C-CONT-081`).
+
+Re-ran after the changes: `B +0.3823 | B−E +0.1598 | B−ctx +0.4053 | matched−mismatch −0.0373 |
+proto +0.5030`. Every published §15 figure reproduces; only the prototype moves, by 0.0027.
+
+**This is the third consecutive iteration where a reviewer-flagged defect turned out not to change a
+result.** That is worth saying plainly rather than presenting each as a narrow escape: the section-15
+numbers have now survived an independent reimplementation (`REVIEW-3/DATA`, all 34 values to 4 dp), a
+p-value audit that *did* find a real error (`C-CONT-059`), and this pass. The code was sloppier than
+the numbers.
+
+Calibration `882172` at 45 minutes on matched hardware. Push still failing; four commits pending.

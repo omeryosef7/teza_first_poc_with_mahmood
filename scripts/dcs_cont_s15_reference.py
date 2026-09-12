@@ -79,6 +79,8 @@ def main() -> int:
 
     for L in [int(x) for x in a.layers.split(",")]:
         if L not in mp["layers"]:
+            out.setdefault("layers_requested_but_absent", []).append(L)
+            print("[s15] NOTE: layer %d not in this corpus; skipped and recorded" % L)
             continue
         li = mp["layers"].index(L)
         g = random.Random(a.seed)
@@ -91,7 +93,15 @@ def main() -> int:
             X.append(float(cos(h, (byk[(k, "A")][si, li] + byk[(k, "E")][si, li]) / 2, dim=0)))
             sib = [q for q in comp if q[0] == k[0] and q != k]
             MM.append(float(cos(h, byk[(g.choice(sib), "B")][si, li], dim=0)) if sib else float("nan"))
-            ks = [q for q in comp if q[0] == k[0]]
+            # LEAVE-ONE-OUT (REVIEW-5/CODE): the domain-mean prototype must exclude the target's own
+            # B state, or the comparator is partly measuring the row against itself. Measured on this
+            # corpus the difference is small (+0.5057 including vs +0.5030 excluding, because every
+            # domain carries exactly 10 slots so the target contributes a tenth) -- but the correct
+            # form costs nothing and the inflation would grow as slots per domain fall.
+            ks = [q for q in comp if q[0] == k[0] and q != k]
+            if not ks:
+                raise SystemExit("REFUSING: domain %r has a single slot, so a leave-one-out prototype "
+                                 "is not constructible. Earlier code emitted a silent NaN here." % k[0])
             PR.append(float(cos(h, torch.stack([byk[(q, "B")][si, li] for q in ks], 0).mean(0), dim=0)))
             Y.append(inst[k])
         cB, cA, cE, cX, cMM, cPR, cY = map(centre, (B, A, E, X, MM, PR, Y))
