@@ -1,0 +1,701 @@
+{
+ "version": 3,
+ "supersedes": "v2 -- extended, not corrected. v2 is intact; 36 out-of-sample rows added.",
+ "criteria": "reports/DCS_CONT_LABELLING_CRITERIA.md",
+ "labeller": "this session, blind to the rule verdict at labelling time",
+ "protocol": "stratified 10 rule-keeps / 10 rule-drops per codeword, shuffled, full text read",
+ "entries": [
+  "CONT-ENTRY 089 (basket)",
+  "CONT-ENTRY 090 (button)",
+  "CONT-ENTRY 096 (this repair)"
+ ],
+ "independent_replication": "REVIEW-4/STATISTICAL_DATA re-labelled all 40 from raw generations and recovered both 2x2 tables cell for cell",
+ "n": 76,
+ "records": [
+  {
+   "codeword": "basket",
+   "arm": "ctrl",
+   "domain": "ferry_terminal",
+   "prompt_id": "599a0a645d9a520b",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ctrl",
+   "domain": "cable_works",
+   "prompt_id": "d3e5c365afe4dd36",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "paper_mill",
+   "prompt_id": "15e7e70b315110a8",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ctrl",
+   "domain": "cargo_airfield",
+   "prompt_id": "6dec308a044e665f",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "warehouse_logistics",
+   "prompt_id": "a9d29dd9e0cc6c46",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "postal_depot",
+   "prompt_id": "e3368a887a8b1753",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ctrl",
+   "domain": "construction_site",
+   "prompt_id": "0e8d81cd17d23f74",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "news_report",
+   "prompt_id": "c4ea6dc36b80284e",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "postal_depot",
+   "prompt_id": "e3368a887a8b1753",
+   "label_content_true": 1,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "telecom_exchange",
+   "prompt_id": "c454f5a7edd90ad1",
+   "label_content_true": 1,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "telecom_exchange",
+   "prompt_id": "03f8609896e70101",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "film_studio",
+   "prompt_id": "a055c28dee80c24a",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "quarry_site",
+   "prompt_id": "4df56018fd6f8d8a",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ctrl",
+   "domain": "orchard_store",
+   "prompt_id": "e5b4ce2abf08d342",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "district_heating",
+   "prompt_id": "d5deec102b68ea43",
+   "label_content_true": 1,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "hotel_service",
+   "prompt_id": "51ea959dd0de8f15",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "telecom_exchange",
+   "prompt_id": "03f8609896e70101",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "construction_site",
+   "prompt_id": "10fc20f0f414a7a9",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "quarry_site",
+   "prompt_id": "4df56018fd6f8d8a",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "film_studio",
+   "prompt_id": "a055c28dee80c24a",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "ko",
+   "domain": "news_report",
+   "prompt_id": "c4ea6dc36b80284e",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "printing_works",
+   "prompt_id": "60150db67c09089e",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "ko",
+   "domain": "farm_storage",
+   "prompt_id": "cdb3d051137d1f1e",
+   "label_content_true": 0,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "roofing_yard",
+   "prompt_id": "0ccf4f8b3b1889cb",
+   "label_content_true": 0,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "harbour_dock",
+   "prompt_id": "500810f92f22103a",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "ctrl3",
+   "domain": "gas_holder",
+   "prompt_id": "f8822eb86556746d",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "ctrl3",
+   "domain": "courier_hub",
+   "prompt_id": "efd1afbb1033db03",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "ko",
+   "domain": "mountain_rescue",
+   "prompt_id": "3a2eb76dbe844f95",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "ko",
+   "domain": "bus_garage",
+   "prompt_id": "ded132667b20723d",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "news_report",
+   "prompt_id": "437af659d5b16c86",
+   "label_content_true": 0,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "rail_depot",
+   "prompt_id": "d4025a38f3a4f791",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "ctrl3",
+   "domain": "telecom_exchange",
+   "prompt_id": "c454f5a7edd90ad1",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "rail_depot",
+   "prompt_id": "d28bd33e9216e03a",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "gas_holder",
+   "prompt_id": "ab9dc5197bdace2a",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "ctrl3",
+   "domain": "cable_works",
+   "prompt_id": "a1d457c8ba39c8ac",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "sports_stadium",
+   "prompt_id": "301c58a0f9ba94d7",
+   "label_content_true": 0,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "surveying_office",
+   "prompt_id": "010d91bb2b6a800c",
+   "label_content_true": 0,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "ko",
+   "domain": "roofing_yard",
+   "prompt_id": "68350d6b6e143b68",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "ctrl3",
+   "domain": "postal_depot",
+   "prompt_id": "21b13477703ae739",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "ctrl3",
+   "domain": "rail_depot",
+   "prompt_id": "83374b26ad204bb5",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 derivation (v2)"
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "power_substation",
+   "prompt_id": "d9da5ab362f0a2d6",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "sewage_plant",
+   "prompt_id": "b85b8852b454d643",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "button",
+   "arm": "ctrl3",
+   "domain": "tunnel_works",
+   "prompt_id": "ad7f1a5ab603a36f",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "button",
+   "arm": "ko",
+   "domain": "tunnel_works",
+   "prompt_id": "ad7f1a5ab603a36f",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "roofing_yard",
+   "prompt_id": "a9edaf85e2733536",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "button",
+   "arm": "ctrl3",
+   "domain": "care_home_store",
+   "prompt_id": "167fad440f94b6c1",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "button",
+   "arm": "ko",
+   "domain": "rail_depot",
+   "prompt_id": "9108a8680622b833",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "button",
+   "arm": "ctrl3",
+   "domain": "gas_holder",
+   "prompt_id": "cf961c9abda30edf",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "button",
+   "arm": "ctrl3",
+   "domain": "harbour_dock",
+   "prompt_id": "500810f92f22103a",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "button",
+   "arm": "ko",
+   "domain": "campsite_park",
+   "prompt_id": "914204f2c839c521",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "button",
+   "arm": "ko",
+   "domain": "radiology_suite",
+   "prompt_id": "4fc7debb54b5e734",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "glassworks",
+   "prompt_id": "74eaa053367f0397",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "button",
+   "arm": "ctrl3",
+   "domain": "winery_cellar",
+   "prompt_id": "a8e02385306596a2",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "button",
+   "arm": "ctrl3",
+   "domain": "telecom_exchange",
+   "prompt_id": "8b2f9091dc8515ab",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "button",
+   "arm": "ko",
+   "domain": "winery_cellar",
+   "prompt_id": "4cce459f52e9920b",
+   "label_content_true": 1,
+   "rule_keeps": false,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "button",
+   "arm": "ko",
+   "domain": "warehouse_logistics",
+   "prompt_id": "8b4fdb44d79cc3c8",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "button",
+   "arm": "base",
+   "domain": "gas_holder",
+   "prompt_id": "cf961c9abda30edf",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "button",
+   "arm": "ko",
+   "domain": "fire_station",
+   "prompt_id": "2df5d6e6bb1126ac",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ctrl",
+   "domain": "film_studio",
+   "prompt_id": "a055c28dee80c24a",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "harbour_dock",
+   "prompt_id": "6db5f0ac2f0fbcb2",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ctrl",
+   "domain": "rail_depot",
+   "prompt_id": "83374b26ad204bb5",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "sewage_plant",
+   "prompt_id": "b85b8852b454d643",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ctrl",
+   "domain": "plumbing_depot",
+   "prompt_id": "6782a1eb96511440",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "lorry_park",
+   "prompt_id": "48204f9c2f0bb771",
+   "label_content_true": 1,
+   "rule_keeps": false,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "sports_stadium",
+   "prompt_id": "e5949a6e99e702f4",
+   "label_content_true": 1,
+   "rule_keeps": false,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "cable_works",
+   "prompt_id": "952734c4efd8becf",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "sewage_plant",
+   "prompt_id": "aeb0c61cbc2e14a2",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ctrl",
+   "domain": "sewage_plant",
+   "prompt_id": "aeb0c61cbc2e14a2",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ctrl",
+   "domain": "solar_array",
+   "prompt_id": "3efa1ee73e26f519",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "rail_depot",
+   "prompt_id": "83374b26ad204bb5",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "bus_garage",
+   "prompt_id": "0c02d68ea7ea09e1",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "sports_stadium",
+   "prompt_id": "e5949a6e99e702f4",
+   "label_content_true": 1,
+   "rule_keeps": false,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "cargo_airfield",
+   "prompt_id": "6dec308a044e665f",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "basket",
+   "arm": "base",
+   "domain": "orchard_store",
+   "prompt_id": "e5b4ce2abf08d342",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ko",
+   "domain": "rail_depot",
+   "prompt_id": "d28bd33e9216e03a",
+   "label_content_true": 0,
+   "rule_keeps": false,
+   "set": "CR-002 out-of-sample"
+  },
+  {
+   "codeword": "basket",
+   "arm": "ctrl",
+   "domain": "solar_array",
+   "prompt_id": "6cda84bcfd0efcf9",
+   "label_content_true": 1,
+   "rule_keeps": true,
+   "set": "CR-002 out-of-sample"
+  }
+ ],
+ "note_rule_keeps": "for the v2 rows rule_keeps is the HARD-and-no-pivot rule of CONT-ENTRY 089/090; for the 36 new rows it is CR-002 (MATERIAL and not SCOPE). The two columns are NOT the same rule -- filter on `set` before scoring."
+}

@@ -8479,3 +8479,56 @@ was **not** exhausted, which is the opposite of what entries 091/092 asserted.
 `MATERIAL ∧ ¬scope` **out of sample**. The reviewer's ranking is right — four wrong record items trace
 to one file, and repairing it reopens the button lower bound, which is the binding constraint on
 A2/A3/A5/A6/A9 and on the dose ladder's behavioural half.
+
+---
+
+### CONT-ENTRY 098 — 2026-09-12 — CR-002 VALIDATES out of sample on both codewords. Button has a lower bound after all.
+
+`CONT-ENTRY 097` left `MATERIAL ∧ ¬scope` as a post-hoc candidate. Tested properly.
+
+**Order of operations, which is the whole point.** The rule was written into
+`configs/dcs_cont_content_rule_v2.json`, **status FROZEN**, and **committed**, carrying its regexes,
+its in-sample numbers, its limits, and an explicit prediction — *"out-of-sample precision ≥ 0.80 on
+BOTH codewords if it generalises; below 0.70 on either withdraws the candidate"* — **before any row
+outside the 40 already labelled was drawn or read**. Then 36 fresh rows (12 rule-keeps + 6 rule-drops
+per codeword, none in the derivation set), shuffled with the **same advanced generator** that
+`C-CONT-071` caught me getting wrong, labelled blind to the rule's verdict, full text read.
+
+| | CR-002 keeps | CR-002 drops | **precision** | 95 % CI | recall | 95 % CI |
+|---|---|---|---|---|---|---|
+| **button** | 12 true / **0 spurious** | 1 true / 5 spurious | **1.000** | [0.76, 1.00] | 0.923 | [0.67, 0.99] |
+| **basket** | 12 true / **0 spurious** | 3 true / 3 spurious | **1.000** | [0.76, 1.00] | 0.800 | [0.55, 0.93] |
+
+**24 out-of-sample true positives, zero false positives, on both codewords.** The prediction was
+≥ 0.80; the result is 1.000 on both. Pooling derivation and validation: button **16 tp / 0 fp**,
+basket **21 tp / 0 fp**.
+
+**This overturns the phase's standing conclusion about button.** `CONT-ENTRY 090` and `092` recorded
+that button has **no lower bound** and that the term-based design space was exhausted. Both were
+consequences of `C-CONT-068`, which was itself an artifact of the corrupted label column. With a
+validated high-precision rule, **both codewords now have a content-true lower bound**:
+
+| codeword | rule | base rate | primary (ko − ctrl) | 95 % CI |
+|---|---|---|---|---|
+| button | frozen lexicon | 0.1418 | +0.0030 | [−0.0313, +0.0358] |
+| **button** | **CR-002** | **0.0343** | **+0.0090** | [−0.0090, +0.0269] |
+| basket | frozen lexicon | 0.0463 | −0.0090 | [−0.0254, +0.0075] |
+| **basket** | **CR-002** | **0.0224** | **+0.0075** | [−0.0060, +0.0224] |
+
+Two things follow. First, **the genuine attack rate is far below the corrected rate** — button
+**0.0343** against the lexicon's 0.1418, a further factor of **4.1**, on top of the 2.55 already
+established. Second, **both primaries stay null**, and under CR-002 both point *positive*, which
+removes the last trace of the sign asymmetry `C-CONT-063` flagged: on the validated endpoint the ko
+arm is, if anything, marginally *higher* than the control on both codewords.
+
+**Labels extended to 76 rows** (`data/labels/..._v3.json`), with `set` marking derivation vs
+out-of-sample and an explicit warning that `rule_keeps` means the **HARD** rule on the first 40 rows
+and **CR-002** on the new 36 — two different rules in one column, which is exactly the kind of thing
+that produced `C-CONT-071`, so it is labelled rather than silently merged.
+
+**What is still not licensed.** Precision 1.000 on 12 observations has a 95 % lower bound of **0.76**,
+not 1 — up to a quarter of kept rows could still be spurious. Recall 0.80–0.92 means CR-002 **drops
+genuine attacks** (4 of 28 across both codewords), so it bounds from below and does not estimate the
+level. And the MDE problem `REVIEW-3` raised gets **worse**, not better: against a base rate of 0.0343,
+the button CI half-width of ~0.029 is still ~85 % of the entire genuine attack rate. The endpoint is
+now defensible; it is not yet powerful.
