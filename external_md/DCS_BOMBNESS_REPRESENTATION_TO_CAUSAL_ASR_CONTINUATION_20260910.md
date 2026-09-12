@@ -8640,3 +8640,41 @@ would calibrate the offset directly and costs about the same as the run just com
 the cheapest remaining piece of work on the mechanism side rather than done now, because the
 qualitative conclusion (**strongly diminishing returns; most of the remap is delivered by four
 demonstrations**) holds under either reading.
+
+---
+
+### CONT-ENTRY 101 — 2026-09-12 — the calibration run submitted; claim table carries the ladder
+
+**`882126` submitted** — dose 4 re-measured under the **dose-8 configuration**, flags identical to
+`881787` except `--n-examples`. This is the overlapping dose the ladder lacks: `dose4_here −
+dose4_there` **is** the cross-run offset, measured directly rather than assumed away. If it is near
+zero, `CONT-ENTRY 100`'s +0.0632 stands as a real dose effect; if it is ~0.06, the 4 → 8 step is an
+artifact of changing GPU and commit. Either result settles the ladder's one weak step, and it costs
+one run.
+
+**Claim table updated.** New row **A14** carries the dose ladder and the knockout's share of it —
+installation is delivered almost entirely by the first four demonstrations (doubling them adds 9.4 %
+of what the first four gave), and the cut removes **25.4 % [20.8, 30.3]** of the full 0 → 8 span, so
+roughly three quarters survives it. The cross-run caveat travels with the row.
+
+**The endpoint item in section E is closed.** It had stood as *"the binding constraint on the whole
+program… term-based rules are exhausted"* — which was true only while `C-CONT-068` stood, and
+`C-CONT-068` was an artifact of the corrupted label file. `CR-002` is frozen, validated out of sample
+on both codewords, and in use. It is replaced by a narrower open item: **extend its validation**,
+since precision 1.000 rests on 12 rows per codeword with a lower bound of 0.76, and recall 0.80–0.92
+means it bounds rather than estimates.
+
+**And one item got worse, which is worth saying plainly.** Power on A2/A3 was already the phase's
+weakest point; the validated endpoint makes it **weaker**, not stronger. Against CR-002's button base
+rate of **0.0343**, the primary's CI half-width of ~0.029 is about **85 %** of the entire genuine
+attack rate. Having a defensible endpoint does not make the behavioural null informative — it makes
+precise how uninformative it is. That is progress of a kind, and it is not the kind that produces a
+positive result.
+
+**Where the phase stands after 101 entries.** The mechanistic line has a confirmed predictor that
+cannot mediate (A11), a two-codeword behavioural null whose own sign is instrument-dependent (A2), a
+demonstration-side geometry whose matched framing did not survive (A13), and a dose response showing
+the remap is essentially complete at four demonstrations (A14). The methodological line has a validated
+correction showing raw LLM-judge ASR overstates genuine attack success by **an order of magnitude** on
+this attack family (A9). The second is the publishable result; the first is a careful set of nulls and
+bounds. Both are honest, and the record says which is which.
