@@ -8194,3 +8194,57 @@ structural — *"mock detonator"*, *"button scare alarm"*, a pressure plate with
 Every number in this program's ASR line now carries its bound direction, its codeword, and its
 labelled-sample uncertainty. That is a weaker set of claims than the phase started with and a
 defensible one.
+
+---
+
+### CONT-ENTRY 093 — 2026-09-12 — the dose ladder's installation half needed no new compute, and it puts the knockout on a scale
+
+`REVIEW-3/SCIENTIFIC` ranked the **demonstration-dose ladder** first and gated it behind rebuilding the
+ASR endpoint. That gate applies to its *behavioural* half. The **installation** half needs no endpoint
+at all — and two of its three points already existed.
+
+**Doses in the bank:** `n_examples ∈ {0, 4, 8}` (cell C: 696 / 3480 / 1392 rows). The existing
+installation readout already covers **0 and 4**.
+
+**Installation vs dose, cell C, `semantic_one_word`, DOMAIN unit, train+validation, 90 domains:**
+
+| dose | slots | mean | median | sd | max |
+|---|---|---|---|---|---|
+| **0** | 180 | **5.6e−07** (median) | — | ~0 | **5.96e−06** |
+| **4** | 900 | **0.6763** | 0.7174 | 0.2144 | 0.9747 |
+
+**dose 0 → 4: +0.6763, 95 % CI [+0.6323, +0.7185], sign-flip p = 0.00005, positive in 90/90 domains.**
+
+Dose 0 is an almost perfect zero anchor: every one of 180 slots lies between **8.9e−08 and 5.96e−06**,
+none above 1e−3. (My first printout said "exactly zero"; it is not — the values are non-zero and tiny,
+and 4-decimal display made them look identical to zero. Stated precisely rather than left as the
+rounder figure.)
+
+**What this buys, and it is the thing the phase has lacked: a denominator.** The knockout removes
+**−0.2150** of installation (67/67 domains, `CONT-ENTRY 049`). Removing the demonstrations *entirely*
+removes **−0.6763**. So:
+
+> **cutting the codeword row's access to the demonstrations removes about 32 % of the total
+> contribution the demonstrations make to installation.**
+
+Every previous statement of the knockout's size was an absolute drop with nothing to divide by —
+"−0.2150, and 67/67 domains" says the effect is real and consistent but not whether it is most of the
+mechanism or a corner of it. It is roughly a third. That also frames `C-CONT-040` more sharply: the
+cut is a partial intervention on the demonstration pathway, and **two thirds of that pathway's
+contribution survives it** — which is consistent with the behavioural null being uninformative about
+the pathway as a whole rather than evidence against it.
+
+**Submitted `881773`** — the dose-8 readout, `semantic_one_word`, cell C, `--readout-max-batch 1`
+(`C-CONT-031`), completing **0 → 4 → 8**. The question it answers is whether installation **saturates**
+by dose 4 or keeps climbing: saturation would say four demonstrations already exhaust the remapping,
+and continued growth would say the pathway has headroom the knockout is not reaching.
+
+**C-CONT-069 — fourth wrong-field incident, and the first that cost nothing.** My first pass filtered
+on `r.get('readout_id') == 'semantic_one_word'`; the field is **`query_kind`**. All 5568 rows returned
+`None`, and the script printed **`rows used: 0`** and stopped — no table, no numbers, nothing to
+retract. I then discarded my own parsing entirely and used `lpm.load_installation`, which already
+encodes the §4 rule that the forced-choice channel may not define the target. Two further slips inside
+the same attempt, both caught the same way: `family_slot` returns a `|`-joined **string**, not a tuple,
+so iterating it yielded characters; and the dose is recoverable from the slot only after splitting it.
+Four incidents of this shape now (`036`, `056`, `066`, this) — the first three produced plausible
+fabricated numbers, this one produced a visible zero.
