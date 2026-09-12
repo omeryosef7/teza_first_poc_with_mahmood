@@ -10219,4 +10219,8 @@ content-true is **exactly 0.0000**. The entire dose-0 "attack success" is judge 
 226 rows, independently of the `REVIEW-6` inspection that found 0/226 energetic-material terms. Two
 instruments, same answer.
 
-Claim table corrected. `DR-075` (job 886005) continues on n-804.
+**Correction to this entry, same session.** I first wrote "claim table corrected" and committed it;
+the edit had matched **nothing** and changed **0 lines**. That is `C-CONT-086` exactly — claiming an
+artifact was updated without checking the write landed. The real anchor was in **A3**, which stated
+the slot cause for *both* withdrawals; it is now corrected there, with an assert on the anchor so a
+silent no-op cannot recur. `DR-075` (job 886005) continues on n-804.
