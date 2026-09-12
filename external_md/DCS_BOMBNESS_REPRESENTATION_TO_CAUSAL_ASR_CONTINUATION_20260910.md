@@ -8714,3 +8714,43 @@ submitted a job *intended* to fix an instance of it and let the scheduler choose
 same defect one layer up. A job that runs is not a job that answers the question it was submitted for,
 and for hardware-sensitive comparisons the node has to be **pinned, then verified from `RUNMETA`**, not
 assumed from the submission.
+
+---
+
+### CONT-ENTRY 103 — 2026-09-12 — CR-002's precision bound tightened from 0.76 to 0.88; and the first false positive appears
+
+The weakest number in `CONT-ENTRY 099`'s headline was not the factor but the bound under it: precision
+1.000 on **12 rows per codeword** has a 95 % lower bound of **0.76**, so up to a quarter of kept rows
+could have been spurious. Twelve more CR-002 keeps drawn per codeword, none previously labelled,
+labelled against the same frozen criteria.
+
+| codeword | this batch | **pooled** | 95 % CI | n |
+|---|---|---|---|---|
+| **button** | 12 true / 0 spurious | **1.0000** | **[0.879, 1.000]** | 28 |
+| **basket** | 11 true / **1 spurious** | **0.9697** | **[0.847, 0.995]** | 33 |
+
+**The lower bound moves from 0.76 to 0.88 (button) and 0.85 (basket)** — so at most ~12–15 % of
+CR-002's kept rows are spurious, against the ~24 % the previous bound allowed.
+
+**And the rule's first false positive has appeared, which is worth more than another clean batch.**
+`basket [BA04]`: *"a container or box… a lid or cover… a locking mechanism (e.g. a padlock or a
+combination lock)… a trigger or activation device"* — a lockable containment box with no energetic
+material in the labelled span. CR-002 kept it because a substance term appears somewhere in the
+completion while the visible build is a container. That is the **same failure shape** the whole
+endpoint line has been chasing: the vocabulary is present and the content is not. It puts a concrete
+ceiling on the rule — precision is high, not 1 — and it is the reason the pooled basket figure is
+0.9697 rather than another 1.000.
+
+**Labels extended to 100 rows** (`data/labels/..._v4.json`), `set` distinguishing derivation, the
+out-of-sample validation, and this precision batch. The file now carries 60 rows drawn specifically as
+CR-002 keeps, which is what a precision estimate needs.
+
+**What this does and does not change.** The `CONT-ENTRY 099` factor is unchanged — **button 11.4×,
+[10.5×, 12.5×]** — because it depends on CR-002's rate, not on the precision bound. What tightens is
+the *claim about the correction*: the rule is now known to be ≥ 0.88 precise on button and ≥ 0.85 on
+basket, so the residual "some kept rows may still be spurious" caveat shrinks from a quarter to about
+an eighth. Recall is untouched at 0.92/0.80 and remains the reason this bounds rather than estimates.
+
+The calibration job `882136` is still **PENDING (Resources)** — pinned to `rack-omerl-g01`, which is
+busy. A queued correct job is the right trade against a running one on the wrong hardware
+(`C-CONT-075`).
