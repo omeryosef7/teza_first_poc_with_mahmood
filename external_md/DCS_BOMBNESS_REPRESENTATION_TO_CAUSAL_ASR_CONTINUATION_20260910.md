@@ -10658,3 +10658,53 @@ already broken. Retracted in place, with the correction named. The front matter 
 `C-CONT-068` when it ends at `C-CONT-094`; both fixed.
 
 Basket ladder (job 886483, `t-806`) at 5403 of 7424 rows.
+
+---
+
+### CONT-ENTRY 142 — 2026-09-12 — Basket **replicates** the installation saturation; `DR-075`'s premise is cross-codeword. And the guard I shipped yesterday had a bug that ate half its own provenance
+
+Job **886483** COMPLETED on `t-806`, 7404 rows. Computed through `filter_rows()` with both axes
+explicit, 93 shared domains, `slot0` PRIMARY, train+val:
+
+| basket, installation | value |
+|---|---|
+| dose 0 | **0.0000** |
+| dose 4 | 0.4594 |
+| dose 8 | 0.5432 |
+| step 0→4 | **+0.4594** |
+| step 4→8 | **+0.0838** |
+| **second step as a fraction of the first** | **18.2 %** |
+
+**Prediction stated in `CONT-ENTRY 137` before the run: under ~25 % reads as replicating the shape.
+18.2 % — it replicates.** `DR-075`'s premise is therefore a **cross-codeword** fact, not a button
+quirk, and the one thing I flagged as able to invalidate it does not.
+
+**But basket is meaningfully less saturated than button, and I predicted that too.** On the same scope
+and population button's second step is **9.43 %**; basket's is **18.2 %** — nearly **twice** the
+relative increment, and dose 8 exceeds dose 4 in **60 of 93** domains. Entry 137 said the codeword
+further from ceiling was the one more likely to keep climbing, and basket (0.459 at dose 4 against
+button's 0.673) does exactly that. The *shape* replicates; the *degree* is codeword-specific, and
+anyone quoting "installation saturates" should quote a range, not button's number.
+
+**A uniform shortfall, checked rather than assumed.** The run wrote 7404 rows where the bank implies
+7424 — short by exactly **−1 / −3 / −1** per condition at doses 0/4/8, **identically in all four
+cells**. All 116 domains are present at every dose and no row carries a null logp, so the loss is
+uniform across the contrast and cannot bias it. Recorded because a 20-row discrepancy that I had
+*not* opened is precisely the shape of `C-CONT-082/084`.
+
+**`C-CONT-095` — the guard I shipped one entry ago silently destroyed half its own provenance.**
+`filter_rows()` built its record as `{**scope.tag, **population.tag}`. **Both tags carry a `why`
+key.** The population's rationale therefore overwrote the scope's, and every provenance dict the new
+"can't-omit-either-axis" helper produced was labelled with the scope's name next to the *population's*
+reason. I caught it only because I printed the dict in this analysis and read it.
+
+The fix namespaces the two (`{"scope": ..., "population": ...}`) and asserts the two rationales differ,
+so the collision cannot return silently. **This is the same lesson a third time in two days**: I wrote
+the guard against unstated scope and then published on the wrong scope; wrote the TEST disclosure after
+committing TEST-inclusive numbers; and have now written a provenance mechanism that lost provenance.
+The guards are getting better; my verification of the guards is what keeps lagging. `DR-075` re-runs
+unchanged through the fixed helper.
+
+**What this does and does not do for the phase.** It restores one load-bearing premise — installation
+really does saturate, on both codewords — after a day that withdrew A16 and weakened `DR-075`. It does
+**not** revive A16: saturation was never the part of A16 that failed.

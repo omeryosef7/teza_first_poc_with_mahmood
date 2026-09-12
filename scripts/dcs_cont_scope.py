@@ -162,9 +162,13 @@ def filter_rows(rows, scope, population, assign, family_key="family_id",
         raise ValueError("filter_rows kept 0 of %d rows (scope=%s, population=%s). "
                          "Refusing to return an empty set silently."
                          % (len(rows), sc.name, po.name))
-    prov = {**sc.tag, **po.tag,
+    # C-CONT-095: both tags carry a "why" key, so {**sc.tag, **po.tag} silently DROPPED the
+    # scope's rationale and relabelled it with the population's. Namespaced instead -- a
+    # provenance dict that quietly loses half its provenance is worse than none.
+    prov = {"scope": sc.tag, "population": po.tag,
             "rows_in": len(rows), "rows_kept": len(kept),
             "domains_kept": len({r.get(domain_key) for r in kept})}
+    assert prov["scope"]["why"] != prov["population"]["why"], "provenance collision"
     return kept, prov
 
 
@@ -200,7 +204,9 @@ if __name__ == "__main__":
             {"family_id": "x|dev|slot0|n4", "domain": "d_te"},
             {"family_id": "x|dev|slot4|n4", "domain": "d_tr"}]
     kept, prov = filter_rows(rows, Scope.PRIMARY, Population.TRAIN_VAL, A)
-    assert len(kept) == 1 and prov["population"] == "train+val", prov
+    assert len(kept) == 1 and prov["population"]["population"] == "train+val", prov
+    assert prov["scope"]["why"].startswith("declared in CONT-ENTRY 094"), \
+        "the scope rationale must survive the merge (C-CONT-095)"
     kept, _ = filter_rows(rows, Scope.PRIMARY, Population.ALL_INCLUDING_TEST, A)
     assert len(kept) == 2
     for bad in (None, "train+val", Scope.PRIMARY):

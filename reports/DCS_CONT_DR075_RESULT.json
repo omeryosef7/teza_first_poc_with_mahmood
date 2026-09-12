@@ -66,28 +66,43 @@
  "estimator": "per-domain mean then unweighted mean over shared domains, ALL endpoints",
  "provenance": {
   "0": {
-   "scope": "slot0 PRIMARY",
-   "slot_filter": "slot0",
-   "why": "the default for all exploratory and most confirmatory work; leaves TEST unspent",
-   "population": "train+val",
+   "scope": {
+    "scope": "slot0 PRIMARY",
+    "slot_filter": "slot0",
+    "why": "declared in CONT-ENTRY 094; the only slot present at dose 0, so the only balanced dose contrast"
+   },
+   "population": {
+    "population": "train+val",
+    "why": "the default for all exploratory and most confirmatory work; leaves TEST unspent"
+   },
    "rows_in": 226,
    "rows_kept": 180,
    "domains_kept": 90
   },
   "4": {
-   "scope": "slot0 PRIMARY",
-   "slot_filter": "slot0",
-   "why": "the default for all exploratory and most confirmatory work; leaves TEST unspent",
-   "population": "train+val",
+   "scope": {
+    "scope": "slot0 PRIMARY",
+    "slot_filter": "slot0",
+    "why": "declared in CONT-ENTRY 094; the only slot present at dose 0, so the only balanced dose contrast"
+   },
+   "population": {
+    "population": "train+val",
+    "why": "the default for all exploratory and most confirmatory work; leaves TEST unspent"
+   },
    "rows_in": 1130,
    "rows_kept": 180,
    "domains_kept": 90
   },
   "8": {
-   "scope": "slot0 PRIMARY",
-   "slot_filter": "slot0",
-   "why": "the default for all exploratory and most confirmatory work; leaves TEST unspent",
-   "population": "train+val",
+   "scope": {
+    "scope": "slot0 PRIMARY",
+    "slot_filter": "slot0",
+    "why": "declared in CONT-ENTRY 094; the only slot present at dose 0, so the only balanced dose contrast"
+   },
+   "population": {
+    "population": "train+val",
+    "why": "the default for all exploratory and most confirmatory work; leaves TEST unspent"
+   },
    "rows_in": 464,
    "rows_kept": 186,
    "domains_kept": 93
