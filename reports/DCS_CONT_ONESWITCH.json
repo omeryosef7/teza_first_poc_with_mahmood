@@ -1,0 +1,70 @@
+{
+ "question": "can the data exclude ONE-SWITCH or GATING?",
+ "seed": 20260912,
+ "by_scope": {
+  "all slots SECONDARY": {
+   "domains": 67,
+   "pairs": 670,
+   "refusal_ratio": 0.36,
+   "refusal_ci": [
+    0.2639,
+    0.4536
+   ],
+   "content_ratio": 1.3333,
+   "content_ci": [
+    0.8378,
+    2.25
+   ],
+   "content_events_ctrl": 24,
+   "content_events_ko": 32,
+   "one_switch_excluded": true,
+   "gating_excluded": false,
+   "provenance": {
+    "scope": {
+     "scope": "all slots SECONDARY",
+     "slot_filter": "(none -- all slots)",
+     "why": "secondary per CONT-ENTRY 120; defensible for rare-event analyses (refusals) where the primary leaves too few events, but only if labelled"
+    },
+    "population": {
+     "population": "train+val",
+     "why": "the default for all exploratory and most confirmatory work; leaves TEST unspent"
+    },
+    "rows_in": 670,
+    "rows_kept": 670,
+    "domains_kept": 67
+   }
+  },
+  "slot0 PRIMARY": {
+   "domains": 67,
+   "pairs": 134,
+   "refusal_ratio": 0.3077,
+   "refusal_ci": [
+    0.0714,
+    0.6
+   ],
+   "content_ratio": 0.8571,
+   "content_ci": [
+    0.25,
+    3.0
+   ],
+   "content_events_ctrl": 7,
+   "content_events_ko": 6,
+   "one_switch_excluded": false,
+   "gating_excluded": false,
+   "provenance": {
+    "scope": {
+     "scope": "slot0 PRIMARY",
+     "slot_filter": "slot0",
+     "why": "declared in CONT-ENTRY 094; the only slot present at dose 0, so the only balanced dose contrast"
+    },
+    "population": {
+     "population": "train+val",
+     "why": "the default for all exploratory and most confirmatory work; leaves TEST unspent"
+    },
+    "rows_in": 670,
+    "rows_kept": 134,
+    "domains_kept": 67
+   }
+  }
+ }
+}

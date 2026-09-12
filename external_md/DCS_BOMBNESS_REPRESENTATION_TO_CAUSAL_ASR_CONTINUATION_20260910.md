@@ -10708,3 +10708,55 @@ unchanged through the fixed helper.
 **What this does and does not do for the phase.** It restores one load-bearing premise — installation
 really does saturate, on both codewords — after a day that withdrew A16 and weakened `DR-075`. It does
 **not** revive A16: saturation was never the part of A16 that failed.
+
+---
+
+### CONT-ENTRY 143 — 2026-09-12 — `REVIEW-8`'s strongest objection is **testable and, on the scope with enough events, excluded**
+
+`REVIEW-8/OUTPUT_SCIENTIFIC` closed with the single strongest reason to doubt everything: a simpler
+**one-switch** account — *installation gates whether the request is read as a bomb request at all;
+refusal and bomb content are both downstream* — which explains every number in the phase and had
+**never been tested against**. It was right that it had never been tested. It is testable.
+
+The two accounts disagree about exactly one number, the **content-true ratio ko/ctrl**:
+
+* **ONE-SWITCH**: both endpoints are downstream of one switch, so the knockout should cut them by a
+  similar *proportion* — content-true ratio ≈ the refusal ratio, **0.36**.
+* **GATING**: the knockout cuts the safety response specifically — content-true ratio ≈ **1.0**.
+
+`scripts/dcs_cont_oneswitch.py`, domain-clustered, both scopes reported, both axes explicit:
+
+| scope | refusal ratio | **content-true ratio** | events (ctrl → ko) | ONE-SWITCH (0.36) | GATING (1.0) |
+|---|---|---|---|---|---|
+| all slots (secondary) | 0.360 [0.264, 0.454] | **1.333 [0.838, 2.250]** | 24 → 32 | **EXCLUDED** | not excluded |
+| `slot0` PRIMARY | 0.308 [0.071, 0.600] | 0.857 [0.250, 3.000] | **7 → 6** | not excluded | not excluded |
+
+**On the only scope carrying enough events, the one-switch account is excluded.** The content-true
+ratio is **1.333**, and the interval's lower bound (0.838) sits far above the 0.360 the account
+requires. The knockout removes **64 %** of refusals while content-true, if anything, goes **up**.
+
+**Four things that hold this in place.**
+
+1. **The discrimination rests on the SECONDARY scope**, and I am not going to blur that. The declared
+   `slot0` primary has **7 and 6** content-true events and discriminates nothing — its interval spans
+   0.25 to 3.0. This is the same rare-event argument that licenses A15's all-slots quantities, and it
+   is legitimate *only* because content-true events are too scarce on the primary to analyse at all.
+   Both scopes are reported above; the primary is null and that is not hidden.
+2. **What is excluded is the *proportional* version.** A weaker one-switch variant — one switch with
+   loose coupling, or a second pathway partly compensating — predicts something between 0.36 and 1.0
+   and is **not** excluded by [0.838, 2.250]. The clean form of the account is dead; the family is not.
+3. **This does not revive A16** (`C-CONT-092`). A16 failed on three specific things — no dissociation
+   between two endpoints that were both at their ordinary rates, a ρ that was algebraically
+   cross-sectional, and 20 and 7 events. None of those is repaired by this. What this tests is a
+   **ratio under intervention**, which is a different comparison from A16's dose levels, and it lands
+   in territory the claim table already occupies: A2/A3's "dissociable under intervention,
+   **qualitatively only**".
+4. **It is 32 events against 24.** Everything above is a small-count statement and reads as one.
+
+**What the phase gains.** `REVIEW-8` was correct that nothing discriminated against the simplest rival,
+and that was a real hole — a story that cannot lose to its obvious competitor is not a finding. It can
+now lose, it was made to try, and on the one scope with the events to decide it did not. That is worth
+more than the withdrawn A16 was, because it is a negative result about someone else's hypothesis
+rather than a synthesis of my own numbers.
+
+`reports/DCS_CONT_ONESWITCH.json`.
