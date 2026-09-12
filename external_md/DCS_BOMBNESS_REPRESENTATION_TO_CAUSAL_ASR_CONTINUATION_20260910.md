@@ -8304,3 +8304,59 @@ extra demonstrations add nothing — which would make the knockout's untouched t
 reserve. If it keeps climbing, the pathway has headroom that four demonstrations do not reach, and the
 32 % figure is an overestimate of the cut's share of what the mechanism can do. Recorded as a
 prediction I am not making: I genuinely do not know which, and both are informative.
+
+---
+
+### CONT-ENTRY 095 — 2026-09-12 — C-CONT-070: the 32 % used the wrong numerator. Corrected to 30.7 % [27.9, 33.7], and now it has a CI.
+
+I flagged the 32 % as `REVIEW-4`'s most important item when briefing it, then worked it myself rather
+than wait. It is wrong as derived, and very nearly right as a number — which is the least useful
+combination, so here is exactly what was wrong.
+
+**The numerator was a band differential, not the cut's effect.** `CONT-ENTRY 093/094` computed
+32.0 % as |`ko − ctrl`| / (dose 4 − dose 0). But `DR-071`'s `ctrl` arm is **itself an intervention** —
+`demo_all:attn_knockout:20-28`, the same cut in a late band. So `ko − ctrl` is *(cut at 6–14)* minus
+*(cut at 20–28)*, a **difference between two interventions**, while the denominator is *(demos
+present)* minus *(demos absent)*. Those are not the same kind of quantity, and dividing one by the
+other is not "the fraction of the demonstrations' contribution that the cut removes".
+
+**The commensurable numerator is `base − ko`, and `DR-071` has a base arm.** Measured on all three
+arms, 670 slots / 67 domains:
+
+| arm | mean installation |
+|---|---|
+| `base` | 0.6785 |
+| `ctrl` (late-band cut) | 0.6854 |
+| `ko` (retrieval-band cut) | 0.4703 |
+
+| contrast | value | 95 % CI | domains |
+|---|---|---|---|
+| `ko − ctrl` (what I used) | −0.2150 | [−0.2347, −0.1956] | 67/67 negative |
+| **`ko − base`** (commensurable) | **−0.2082** | [−0.2272, −0.1891] | 67/67 negative |
+| `ctrl − base` | **+0.0068** | [+0.0054, +0.0084] | — |
+
+**Why the error barely moved the number: the control arm hardly moves installation at all** (+0.0068),
+so `ko − ctrl` ≈ `ko − base`. That is a real and reassuring fact about the control — a dose-matched cut
+in a late band does essentially nothing to installation, which is what makes it a good control — but it
+is *luck* with respect to my arithmetic, not justification.
+
+**Corrected, with both sides on the same population** (67 TRAIN domains, all dose-4 slots, rather than
+a 67-domain numerator over a 90-domain `slot0` denominator):
+
+> **numerator `base − ko` = +0.2082; denominator dose 4 − dose 0 = +0.6777;
+> ratio = 30.7 %, 95 % CI [27.9 %, 33.7 %]** (domain bootstrap, 4000 resamples).
+
+The published 32.0 % had **no interval at all**. It now has one, and it is narrow enough that the
+qualitative reading is unchanged: **cutting the codeword row's access to the demonstrations removes
+roughly three tenths of what the demonstrations contribute to installation, and about seven tenths
+survives the cut.**
+
+**What I would have gotten wrong if I had not checked.** Nothing, numerically — 32.0 vs 30.7 changes no
+conclusion. But the *justification* was unsound, and a reader checking it would have found `ko − ctrl`
+in the numerator and a dose span in the denominator and been right to distrust everything around it.
+The lesson is the one this phase keeps relearning in different clothes: a number can be approximately
+correct and still be derived from quantities that do not belong together.
+
+`REVIEW-4` (STATISTICAL+DATA, SCIENTIFIC+OUTPUT) is running and was briefed to attack this exact
+point; its verdict will land against a corrected record rather than the one it was given.
+Job `881787` (dose 8) still running.
