@@ -131,7 +131,7 @@ def test_the_ROW_COUNT_check_fires_on_loss_the_cell_check_CANNOT_see(tmp_path, m
     monkeypatch.setattr(rc, "ROW_FILE", {"fakeroot": "results.jsonl"})
     monkeypatch.setattr(rc, "MIN_EXPECTED", 1)
     monkeypatch.setattr(rc, "KNOWN_SHORT", {})
-    probs, checked, _, _, _, _ = rc.scan()
+    probs, checked, *_ = rc.scan()
     assert checked == 1
     assert rc.cell_imbalance(rows)[2] == 0, "fixture must be cell-BALANCED or it tests the wrong check"
     assert len(probs) == 1 and "expect-n" in probs[0][1], (
@@ -293,14 +293,14 @@ def _scan_no_config(tmp_path, monkeypatch, with_rows):
 def test_a_run_with_ROWS_but_no_config_is_a_DEFECT_not_a_skip(tmp_path, monkeypatch):
     """It persisted rows, so it IS a run -- and its expect_n can never be recovered. Before this,
     it was dropped silently and counted nowhere."""
-    problems, checked, non_runs, _, _, _ = _scan_no_config(tmp_path, monkeypatch, with_rows=True)
+    problems, checked, non_runs, *_ = _scan_no_config(tmp_path, monkeypatch, with_rows=True)
     assert non_runs == [], "a directory holding rows is a run, not a non-run"
     assert len(problems) == 1 and "UNCHECKABLE" in problems[0][1]
 
 
 def test_a_dir_with_NEITHER_config_nor_rows_is_COUNTED_as_a_non_run(tmp_path, monkeypatch):
     """The four fit artifacts. Out of scope is fine; being out of scope SILENTLY is not."""
-    problems, checked, non_runs, _, _, _ = _scan_no_config(tmp_path, monkeypatch, with_rows=False)
+    problems, checked, non_runs, *_ = _scan_no_config(tmp_path, monkeypatch, with_rows=False)
     assert problems == [] and checked == 0
     assert len(non_runs) == 1, "an out-of-scope directory must still be counted and reported"
 
@@ -315,7 +315,7 @@ def test_the_two_states_are_DISTINGUISHED_by_the_scan(tmp_path, monkeypatch):
 
 
 def test_the_real_corpus_reports_its_non_runs_rather_than_hiding_them():
-    problems, checked, non_runs, _, _, _ = rc.scan()
+    problems, checked, non_runs, *_ = rc.scan()
     assert sorted(non_runs) == ["fitN_concept", "fitN_concept_bk", "fitU_button_bk", "fitW_codeword"]
     assert checked >= rc.MIN_EXPECTED
 
@@ -331,7 +331,7 @@ def test_a_finished_run_with_ZERO_rows_and_no_expect_n_is_a_DEFECT_not_a_skip(tm
     (d / "results.jsonl").write_text("", encoding="utf-8")
     monkeypatch.setattr(rc, "ROOT", str(tmp_path))
     monkeypatch.setattr(rc, "ROW_FILE", {"fakeroot": "results.jsonl"})
-    _, checked, _, zero_row, unchecked, _ = rc.scan()
+    _, checked, _, zero_row, unchecked, *_ = rc.scan()
     assert checked == 0, "fixture carries no expect_n, so the target check must not see it"
     assert unchecked == 1, "a run without an expect_n must be COUNTED, not silently dropped"
     assert [rid for rid, _ in zero_row] == ["zero_run_20260101_000000_1"]
@@ -358,8 +358,9 @@ def test_a_run_that_STARTED_and_produced_nothing_is_reported(tmp_path, monkeypat
     os.utime(d / "config.json", (old, old))
     monkeypatch.setattr(rc, "ROOT", str(tmp_path))
     monkeypatch.setattr(rc, "ROW_FILE", {"fakeroot": "results.jsonl"})
-    *_, started_empty = rc.scan()
+    *_, started_empty, started_partial = rc.scan()
     assert started_empty == ["vanished_20260101_000000_1"]
+    assert started_partial == []
 
 
 def test_an_IN_FLIGHT_run_is_not_flagged_as_vanished(tmp_path, monkeypatch):
@@ -370,5 +371,25 @@ def test_an_IN_FLIGHT_run_is_not_flagged_as_vanished(tmp_path, monkeypatch):
     (d / "config.json").write_text(json.dumps({"args": {"expect_n": 670}}), encoding="utf-8")
     monkeypatch.setattr(rc, "ROOT", str(tmp_path))
     monkeypatch.setattr(rc, "ROW_FILE", {"fakeroot": "results.jsonl"})
-    *_, started_empty = rc.scan()
+    *_, started_empty, started_partial = rc.scan()
+    assert started_empty == [] and started_partial == []
+
+
+def test_a_run_that_STOPPED_PART_WAY_is_reported(tmp_path, monkeypatch):
+    """contasr_ko held 76 of 670 rows with no DONE.json. The zero-row census skips it (it has rows)
+    and the expect_n check never sees it (that walks DONE dirs only), so a run that stopped an
+    eighth of the way through was invisible -- and a later reader can mistake it for a full corpus."""
+    import time
+    d = tmp_path / "outputs" / "boombness" / "fakeroot" / "halfdone_20260101_000000_3"
+    d.mkdir(parents=True)
+    (d / "config.json").write_text(json.dumps({"args": {"expect_n": 670}}), encoding="utf-8")
+    (d / "results.jsonl").write_text("".join(json.dumps({"prompt_id": str(i)}) + "\n" for i in range(76)),
+                                     encoding="utf-8")
+    old = time.time() - 24 * 3600
+    for f in ("config.json", "results.jsonl"):
+        os.utime(d / f, (old, old))
+    monkeypatch.setattr(rc, "ROOT", str(tmp_path))
+    monkeypatch.setattr(rc, "ROW_FILE", {"fakeroot": "results.jsonl"})
+    *_, started_empty, started_partial = rc.scan()
     assert started_empty == []
+    assert started_partial == [("halfdone_20260101_000000_3", 76, 670)]

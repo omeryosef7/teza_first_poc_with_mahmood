@@ -351,7 +351,7 @@ def scan():
     # rather than failed, because a cancelled run is legitimate; what is not legitimate is silence.
     # Directories touched in the last 6 hours are skipped so in-flight runs are not flagged.
     import time as _time
-    started_empty = []
+    started_empty, started_partial = [], []
     for root, rowfile in sorted(ROW_FILE.items()):
         for d in sorted(glob.glob(os.path.join(ROOT, "outputs", "boombness", root, "*/"))):
             if os.path.isfile(os.path.join(d, "DONE.json")):
@@ -359,16 +359,29 @@ def scan():
             cfg_p = os.path.join(d, "config.json")
             if not os.path.isfile(cfg_p):
                 continue
-            if os.path.getsize(os.path.join(d, rowfile)) > 0 if os.path.isfile(os.path.join(d, rowfile)) else False:
-                continue
             if _time.time() - os.path.getmtime(cfg_p) < 6 * 3600:
+                continue  # still in flight; flagging it would make the check cry wolf
+            rp = os.path.join(d, rowfile)
+            n_rows = len(_rows(rp)) if os.path.isfile(rp) and os.path.getsize(rp) > 0 else 0
+            rid_ = os.path.basename(d.rstrip("/"))
+            if n_rows == 0:
+                started_empty.append(rid_)
                 continue
-            started_empty.append(os.path.basename(d.rstrip("/")))
-    return problems, checked, non_runs, zero_row, unchecked, started_empty
+            # PARTIAL AND ABANDONED. contasr2_ctrl held 311 of 670 rows with no DONE.json and was
+            # invisible to every check here: the zero-row census skips it (it has rows) and the
+            # expect_n check never sees it (it walks DONE dirs only). A run that stopped a third of
+            # the way through is exactly the kind of thing a later reader mistakes for a full corpus.
+            try:
+                exp = json.load(open(cfg_p, encoding="utf-8"))["args"].get("expect_n")
+            except Exception:
+                exp = None
+            if exp and n_rows < exp:
+                started_partial.append((rid_, n_rows, exp))
+    return problems, checked, non_runs, zero_row, unchecked, started_empty, started_partial
 
 
 def main() -> int:
-    problems, checked, non_runs, zero_row, unchecked, started_empty = scan()
+    problems, checked, non_runs, zero_row, unchecked, started_empty, started_partial = scan()
     fa_problems, comparable, not_comparable = scan_file_agreement()
     problems += fa_problems
     if checked < MIN_EXPECTED:
@@ -392,6 +405,12 @@ def main() -> int:
         for rid in started_empty[:12]:
             print(f"    started-empty {rid}")
         print("      -> quarantine with provenance (section 53); they are invisible to every other check here")
+    if started_partial:
+        print(f"[run-complete] {len(started_partial)} run dir(s) STOPPED PART-WAY (rows persisted, "
+              f"no DONE.json, below --expect-n, untouched >6h):")
+        for rid, got, exp in started_partial[:12]:
+            print(f"    started-partial {rid}: {got} of {exp} rows")
+        print("      -> a later reader can mistake one of these for a full corpus; quarantine or finish it")
     print(f"[run-complete] {checked} finished runs carry an expect_n and were checked; "
           f"{unchecked} finished runs carry none and were NOT checked against a target "
           f"(only their row count being non-zero was verified); ")
