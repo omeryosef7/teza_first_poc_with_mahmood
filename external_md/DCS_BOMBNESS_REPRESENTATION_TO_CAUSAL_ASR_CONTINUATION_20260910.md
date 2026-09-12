@@ -9980,3 +9980,53 @@ two variables whose rows share **0 of 670** `prompt_id`s (different `query_kind`
 so it is the wrong test rather than an underpowered one, and a better one — the dose ladder's refusal
 arm, 0.0000 → 0.1265 — is already on disk; and A15's Wilson intervals are row-level where the declared
 unit is the domain.
+
+---
+
+### CONT-ENTRY 129 — 2026-09-12 — a process fix for the scope defect, and the linking test done properly: supported on button
+
+**`scripts/dcs_cont_scope.py` — one way to filter slots, and it cannot be called without naming the
+scope.** Four defects in this phase are the same defect (`C-CONT-072`, `083`, `088`, `089`): an inline
+`if 'slot0' in …`, or its absence, with the choice never written down. None was a subtle statistical
+trap. The fix is not more care — it is **removing the option to be silent**:
+
+* `Scope.PRIMARY` and `Scope.ALL_SLOTS` are the only two, each carrying **why** it exists;
+* `Scope.require()` **raises** on anything else, including a bare string — *"there is no default: four
+  defects in this phase were an unstated slot scope"*;
+* `.tag` returns a dict naming the scope and its declaration, to be dropped into any artifact.
+
+Three of the four defects happened because the filter was simply **absent**, which a default argument
+would have permitted. There is no default.
+
+**And the linking test, redone properly.** `REVIEW-7` established that `CONT-ENTRY 124` correlated a
+**dose** installation change against a **knockout** refusal change, and that those two sets of rows
+share **0 of 670 `prompt_id`s** — different `query_kind` *and* `bank_block`. It was the wrong test, not
+an underpowered one. The right one puts both variables on the **same dose contrast**, and the data were
+already on disk:
+
+| codeword | scope | n | refusal 0→4 | installation 0→4 | **ρ** | p |
+|---|---|---|---|---|---|---|
+| **button** | **`slot0` PRIMARY** | 90 | **+0.1111** | +0.6728 | **+0.2376** | **0.023** |
+| button | all slots | 90 | +0.1178 | +0.6763 | +0.2548 | 0.015 |
+| basket | `slot0` PRIMARY | 90 | +0.0056 | +0.4621 | +0.0592 | 0.699 |
+| basket | all slots | 90 | +0.0078 | +0.4569 | −0.0547 | 0.637 |
+
+**On button the chain is supported**: the domains where demonstrations install the most are the domains
+where refusal rises the most. And — for the first time in this phase — **a scope-sensitive quantity
+agrees across both scopes**, in sign and magnitude (+0.238 vs +0.255). Every previous scope-split
+reversed or vanished.
+
+**Both halves now point the same way.** Adding demonstrations **raises** installation and **raises**
+refusal (ρ +0.238); the knockout **lowers** installation and **lowers** refusal (−0.2150 / −0.0716,
+33 of 33 domains). A single account covers both: **the remap is what makes the request recognisable as
+harmful, and refusal tracks it.**
+
+**What I am not claiming.** p = 0.023 is not strong, and four tests were run — Bonferroni across the two
+codewords leaves 0.046, which only just survives. **Basket does not replicate**, though its refusal
+barely moves with dose at all (+0.0056), so the test has almost nothing to correlate there — a floor,
+not a contradiction, but I cannot prove that distinction from these data. And this is a correlation
+across domains, not an intervention on installation: it is consistent with the chain, not a
+demonstration of it.
+
+**`CONT-ENTRY 124`'s null is superseded, not overturned** — it tested a pairing that does not share a
+single row, so its ρ measured nothing in particular.
