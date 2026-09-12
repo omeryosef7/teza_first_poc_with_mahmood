@@ -10170,7 +10170,7 @@ as it is — the sign test has nothing to say there, and swapping in an exact te
 method that flatters the number. The dissociation results that came out NOT SUPPORTED
 (`C-CONT-083`, `DR-074`) are untouched and stay withdrawn.
 
-Claim table updated: 4 floor values replaced. `reports/DCS_CONT_EXACT_TESTS.json` carries the counts,
+Claim table updated: **2** floor values replaced (I wrote 4 first; the script reported 2 and the script is right). `reports/DCS_CONT_EXACT_TESTS.json` carries the counts,
 the provenance of each, and the exact fractions.
 
 **Meanwhile** `DR-075` is running as job **886005** on n-804 (L40S, as pinned). Job 885998 died first:
