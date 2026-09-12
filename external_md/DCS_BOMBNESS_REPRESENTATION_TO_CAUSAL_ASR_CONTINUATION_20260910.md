@@ -8248,3 +8248,59 @@ the same attempt, both caught the same way: `family_slot` returns a `|`-joined *
 so iterating it yielded characters; and the dose is recoverable from the slot only after splitting it.
 Four incidents of this shape now (`036`, `056`, `066`, this) — the first three produced plausible
 fabricated numbers, this one produced a visible zero.
+
+---
+
+### CONT-ENTRY 094 — 2026-09-12 — the dose ladder's analysis fixed BEFORE its third point lands; and a fifth SLURM-says-success failure
+
+**`881773` failed, and SLURM reported COMPLETED 0:0 again.** The trailer says `rc=2`:
+`argument --readout-ids: invalid choice: 'semantic_one_word' (choose from primary, full_word,
+whole_answer)`. I had passed a **query kind** where a **readout id** belongs. Fifth instance in this
+program of the scheduler's status disagreeing with the run's — the log trailer caught it, as it has
+every time. Nothing was produced, so nothing is at risk.
+
+**Fixed by copying, not by guessing.** `881787` takes its flags **verbatim** from `RUNMETA.argv` of the
+run that produced doses 0 and 4 (`ts116m_readout_button_bomb_20260907_133811_3183103`), changing only
+`--n-examples 0,4` → `8`. One deliberate deviation, documented in the script: `--readout-max-batch 1`,
+because dose-8 prompts carry twice the demonstrations and `C-CONT-031` is precisely a default batch
+OOMing and dropping rows behind `rc=0` and a passing gate.
+
+---
+
+**The analysis choice, fixed now, before the third point exists.** Checking whether the ladder would
+even be balanced turned up something that would have confounded it:
+
+| dose | domains | slots/domain | slot indices present | median prompt chars |
+|---|---|---|---|---|
+| 0 | 90 | 2 | `slot0` | 733 |
+| 4 | 90 | 10 | `slot0, 4, 8, 12, 16` | 1054 |
+| 8 | 90 | 4 | `slot0, 3` | 1374 |
+
+Every dose is identical on **`strength=none`, `consistency=consistent`, `position=near`,
+`style=plain`** — those are not confounded. But the **demo-pool slot index differs**: dose 4 averages
+over five indices, dose 8 over two, dose 0 over one. Comparing dose means across all slots therefore
+mixes the dose effect with whatever varies between pools.
+
+**`slot0` is present at all three doses**, in both the `dev` and `heldout` blocks. So:
+
+> **PRIMARY: the dose ladder is analysed on `slot0` only — fully matched on every dimension except
+> dose. All-slots is reported as a secondary.**
+
+Both are computable for 0 → 4 today, and they agree, which is the reassuring case:
+
+| | dose 0 | dose 4 | 0 → 4 | 95 % CI | domains |
+|---|---|---|---|---|---|
+| **`slot0` (primary)** | ~0 | 0.6728 | **+0.6728** | [+0.6096, +0.7338] | 90/90 |
+| all slots (secondary) | ~0 | 0.6763 | +0.6763 | [+0.6315, +0.7192] | 90/90 |
+
+A difference of 0.0035, with the matched version carrying the wider interval — as it should, being
+built on one fifth of the dose-4 slots. Writing the rule down **now** matters because when dose 8
+arrives the two analyses may *not* agree, and at that point choosing between them would be choosing an
+answer. The knockout denominator from `CONT-ENTRY 093` is restated on the primary: the cut's −0.2150
+is **32.0 %** of the matched 0 → 4 span of 0.6728.
+
+**What dose 8 decides.** If installation saturates at 4, the remap is already exhausted there and the
+extra demonstrations add nothing — which would make the knockout's untouched two thirds a *fixed*
+reserve. If it keeps climbing, the pathway has headroom that four demonstrations do not reach, and the
+32 % figure is an overestimate of the cut's share of what the mechanism can do. Recorded as a
+prediction I am not making: I genuinely do not know which, and both are informative.
