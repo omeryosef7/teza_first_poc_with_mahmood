@@ -9782,3 +9782,53 @@ TEST and 3 excluded; the ceiling on any within-bank test is therefore ~90. A lin
 power at ρ ≈ 0.18 needs roughly **240 domains** — a bank-generation question, and the third distinct
 result this phase has traced back to one (`CONT-ENTRY 076`'s position-matched bank and `CONT-ENTRY
 079`'s concept that installs being the others).
+
+---
+
+### CONT-ENTRY 125 — 2026-09-12 — three blocked lines, one root cause: a bank specification, and A15 enters the claim table
+
+**The record was carrying three separate "open, with cost" rows that are one constraint.** Written up
+as `reports/DCS_CONT_NEXT_BANK_SPECIFICATION.md`:
+
+| blocked line | the block | entry |
+|---|---|---|
+| **sufficiency** | **0 of 4050** within-domain pairs share demonstration codeword positions | `076` |
+| **specificity** | no second concept installs — `gun` sd **0.085** against bomb's **0.374** | `079`, `082` |
+| **power** | A2 in content-true units, the withdrawn quantitative test, the ρ 0.176 linking null | `107`, `116`, `124` |
+
+All three are properties of **bank generation**, fixed before any model runs: demonstration blocks are
+drawn from per-domain pools so their token layout varies; the concept is a generation parameter, so
+which concepts install is decided at bank time; and the domain list is a declared constant —
+`prompt_families.DOMAINS` holds **116**, all used by `ts116m`, of which 23 are TEST and 3 excluded,
+leaving **~90** usable and **67** with knockout arms. **No analysis of the existing arms moves any of
+them.**
+
+The specification gives each change, what it unblocks, its cost and its risk — including that
+**padding demonstrations is itself a manipulation**, so a position-matched bank must reproduce the
+existing installation and ASR levels before it is used for anything, and that a second concept must be
+**screened before committing**, since `gun` and `knife` were both built in full before their floors
+were known. Ordering: **power > second concept > position-matching**.
+
+It also states what it does not claim: a larger bank would most likely **sharpen** the two-codeword
+null rather than overturn it. What it buys is the ability to **distinguish a null from an underpowered
+test** — the distinction this phase has repeatedly been unable to make and has repeatedly had to say
+so.
+
+**A15 enters the claim table.** The de-refusal mechanism is now the phase's most complete causal
+account and had been living only in the progress log:
+
+> The cut **removes refusals and never adds them** — 48 (button) and 7 (basket) de-refusals, **0 and 0**
+> in the reverse direction across 1340 paired prompts, each codeword on its own matched hardware and
+> one judge manifest. Of button's 48, **54.2 %** carry no concept vocabulary at all, 14.6 % are literal
+> builds, and **10.4 % [4.5, 22.2]** are content-true — contributing **+0.0075** to `ko`'s CR-002 rate
+> against a null `ko − ctrl`.
+
+with both of its limits attached in the row itself: the *rate* does not replicate (basket 2 of 7), and
+the installation→refusal link is **not supported and underpowered** (ρ 0.176, MDE 0.34).
+
+**Why this is the right place to consolidate.** A2's null has been the phase's headline behavioural
+result for many entries and was always liable to be read as "the intervention does nothing". It does
+something large, one-directional and replicable; it simply does not do the thing the endpoint measures.
+That belongs in the paper-facing table, with the leak quantified, rather than as a narrative in the log.
+
+Push still failing; nineteen commits pending locally.
