@@ -9050,3 +9050,42 @@ token value is not reproduced in this record.
 **Meanwhile the loop continues.** Commits accumulate locally and will push as a batch once auth is
 restored; nothing about the analysis depends on the remote. The calibration job `882172` is still
 queued, so no results are blocked on this either.
+
+---
+
+### CONT-ENTRY 110 — 2026-09-12 — the calibration is finally on matching hardware; and the factor's threshold-dependence, measured
+
+**`882172` is RUNNING on `rack-omerl-g01` with a Quadro RTX 8000 — the same node and GPU as the dose-8
+run.** Verified from `RUNMETA` rather than from the submission (`C-CONT-075`): **MATCH**. This
+calibration will be valid. It queued for roughly an hour behind another user's six jobs, which is the
+price of the comparison being correct rather than convenient.
+
+**The factor's threshold-dependence.** `REVIEW-5` observed that the 11.9× headline is conditional on
+the StrongREJECT cutoff and that the record never said so. Measured across the full corpus,
+domain-clustered:
+
+| SR cutoff | button raw | button **factor** | 95 % CI | basket **factor** | 95 % CI |
+|---|---|---|---|---|---|
+| ≥ 0.25 | 0.3207 | **12.74×** | [10.19, 16.62] | **7.13×** | [5.49, 10.32] |
+| **≥ 0.50** | 0.2984 | **11.94×** | [9.60, 15.56] | **6.59×** | [5.10, 9.53] |
+| ≥ 0.75 | 0.1914 | **7.80×** | [6.33, 10.04] | **4.49×** | [3.57, 6.22] |
+
+**The denominator barely moves** — CR-002's rate is 0.0252 / 0.0250 / 0.0245 across the three cutoffs —
+while the raw rate falls by 40 %. That is the whole effect: **a stricter judge threshold removes raw
+positives that were never content-true**, so the factor shrinks because the numerator was inflated,
+not because the correction weakens. The content-true rate is essentially threshold-invariant, which is
+what a content criterion ought to be and is a small independent check that CR-002 is measuring
+something other than judge enthusiasm.
+
+**How the headline should now be stated:** *"raw LLM-judge ASR at the conventional SR ≥ 0.5 cutoff
+overstates content-true attack success by **11.9×** on button [9.6, 15.6]; the factor ranges
+**7.8×–12.7×** across cutoffs from 0.75 to 0.25, and the content-true rate itself is stable at
+~0.025."* The order-of-magnitude claim holds at the conventional threshold and weakens to roughly 8×
+at the strictest one — stated rather than left for a reviewer to discover.
+
+`--sr-threshold` is now an argument of `scripts/dcs_cont_asr_factor.py`, defaulting to 0.5, with the
+reason recorded in its help text so the number cannot be quoted again without its cutoff.
+
+**Push still failing.** Three commits now pending locally (`108`, `109`, this one). The remote's
+embedded token remains unaccepted; `CONT-ENTRY 109` records the diagnosis and what the user needs to
+do. Nothing is lost and no analysis depends on it.
