@@ -9540,3 +9540,45 @@ documented and then pooled from memory), `C-CONT-082` and `C-CONT-084` (arms ass
 traps; they are unchecked assertions, and they have cost more entries than the subtle ones.
 
 Control arm `882854` at 615/670. Push still failing; thirteen commits pending locally.
+
+---
+
+### CONT-ENTRY 120 — 2026-09-12 — the hardware-matched button control landed; scope declared before the judge does
+
+**`882854` COMPLETED clean** — rc 0, `failures {}`, **670/670** rows, `DONE.json`. Verified from
+`RUNMETA`, both arms now sit on the **same GPU and node**:
+
+| arm | GPU | node | intervene |
+|---|---|---|---|
+| `contasr2_ko` | RTX A5000 | n-503 | `demo_all:attn_knockout:6-14:1.0` |
+| **`contasr3_ctrlHW`** | **RTX A5000** | **n-503** | `demo_all:attn_knockout:20-28:1.0` |
+
+They differ **only** in the band. For the first time in this program the button `ko − ctrl` ASR
+comparison is **within-hardware**, closing `C-CONT-053` for this pair.
+
+**Judge submitted as `884025`, with BOTH arms in one manifest.** `ko` was already judged
+(`contasrj2_ko`), so judging only the new control would have compared arms scored in different judge
+sessions — `CDS-PR-001` §2.5 exists because that introduces drift, and the judge's own flip rate on
+byte-identical inputs is **13.7 %** (`CONT-ENTRY 034`). Re-judging `ko` alongside costs one arm and
+removes the question.
+
+**Scope declared now, before any number exists.** `C-CONT-083` happened because entry 113 computed an
+ASR contrast on all five slots without saying so, then mixed scopes inside one ratio. So, in advance:
+
+> **PRIMARY: `slot0` only, matched to the dose ladder's primary (`CONT-ENTRY 094`) and to `DR-074`.
+> Reference arm `ko − ctrlHW` on the CR-002 endpoint, probability scale, DOMAIN unit,
+> train+validation. An all-slots version may be reported only as a labelled secondary.**
+
+**What this can and cannot settle.** It gives a clean `ko − ctrl` on matched hardware — which is worth
+having on its own, since every previous button estimate of that quantity crossed architectures. It
+does **not** revive the proportionality test: `DR-074` already answered that on basket under a
+pre-frozen rule (**NOT SUPPORTED**), and `REVIEW-6`'s deeper objection — that the within-dose-4 slope
+is **−0.053**, opposite in sign to the chord the test uses — applies whatever the control's hardware.
+A hardware-matched arm fixes one confound in a test whose null is itself suspect.
+
+**Also unaffected by hardware, and worth restating because it is the cleanest thing here:** content-true
+ASR at dose 0 is **0.0000** on both codewords, with **0/226** completions containing any energetic
+material term or any of nine bomb words, by direct inspection. No genuine attack without
+demonstrations.
+
+Push still failing; fourteen commits pending locally.
