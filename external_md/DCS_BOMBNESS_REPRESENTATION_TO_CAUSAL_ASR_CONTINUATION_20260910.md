@@ -8581,3 +8581,62 @@ methodological rather than mechanistic — which `REVIEW-2/SCIENTIFIC` ranked co
 ago.
 
 Job `881787` (dose 8) at 1607 rows and still running.
+
+---
+
+### CONT-ENTRY 100 — 2026-09-12 — the dose ladder completes: still climbing at dose 8, but barely, and the deciding step is the one that crosses runs
+
+`881787` COMPLETED clean — rc 0 in the trailer, `failures {}`, 1856 rows, `DONE.json`.
+
+**The ladder, on the PRIMARY declared in `CONT-ENTRY 094` before any of this existed** — `slot0` only,
+matched on every dimension but dose; probability scale, as `C-CONT-073` requires be stated:
+
+| dose | slots | mean | median | sd |
+|---|---|---|---|---|
+| 0 | 180 | ~0 | ~0 | ~0 |
+| 4 | 180 | 0.6728 | 0.7537 | 0.2985 |
+| **8** | 180 | **0.7361** | 0.8392 | 0.2602 |
+
+| step | Δ | 95 % CI | sign-flip p | domains positive |
+|---|---|---|---|---|
+| 0 → 4 | **+0.6728** | [+0.6096, +0.7338] | 0.00005 | **90/90** |
+| **4 → 8** | **+0.0632** | **[+0.0287, +0.0986]** | 0.00065 | 60/90 |
+| 0 → 8 | +0.7361 | [+0.6824, +0.7885] | 0.00005 | 90/90 |
+
+**Answer to the question `CONT-ENTRY 094` posed: still climbing, but the headroom is small.** Doubling
+the demonstrations from four to eight adds **+0.0632** — **9.4 %** of what the first four added, and
+positive in only 60 of 90 domains against 90/90 for the first step. The remap is nearly, not
+completely, exhausted by four demonstrations.
+
+**The knockout's share, restated on the full ladder:**
+
+| denominator | value | knockout share |
+|---|---|---|
+| dose 4 − dose 0 (published) | +0.6719 | 27.7 % [22.6, 33.3] |
+| **dose 8 − dose 0 (full ladder)** | **+0.7336** | **25.4 % [20.8, 30.3]** |
+
+So the cut removes about a quarter of the demonstration contribution this bank can produce, and
+roughly **three quarters survives it** — the qualitative reading from `CONT-ENTRY 093` holds and
+tightens slightly.
+
+**The caveat that matters, and `REVIEW-4` raised it before the data landed.** The 4 → 8 step is the
+**only cross-run comparison in the ladder**, and there is **no overlapping dose to calibrate it out**:
+
+| | GPU | node | git |
+|---|---|---|---|
+| doses 0 + 4 | NVIDIA L40S | n-804 | `16333dde55` |
+| **dose 8** | **Quadro RTX 8000** | rack-omerl-g01 | `2c6fbff9a9` |
+
+Different GPU architecture, different node, different commit. `C-CONT-052` established that
+architecture changes outputs, and `CONT-ENTRY 086` measured hidden-state drift at ~3 % relative L2
+(with a negligible effect on a *probe*, but this is a log-probability readout, which is more exposed).
+A systematic run offset of ~0.06 on a quantity whose level is ~0.70 is **not excludable from these
+data**. The 0 → 4 step is within-run and clean; the 4 → 8 step is not, and I am not going to present
+"still climbing" as established when the entire effect is the size of an uncalibrated offset.
+
+**Stated precisely:** *conditional on no cross-run offset*, installation continues to rise from dose 4
+to dose 8 by +0.0632. The fix is one overlapping dose — re-running dose 4 on the dose-8 configuration
+would calibrate the offset directly and costs about the same as the run just completed. Recorded as
+the cheapest remaining piece of work on the mechanism side rather than done now, because the
+qualitative conclusion (**strongly diminishing returns; most of the remap is delivered by four
+demonstrations**) holds under either reading.
