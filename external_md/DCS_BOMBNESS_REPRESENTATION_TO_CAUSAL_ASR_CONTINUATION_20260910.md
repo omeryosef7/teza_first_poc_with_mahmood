@@ -10838,3 +10838,53 @@ codewords (conditional 0.798 and 1.985, intervals spanning zero to nearly 3 and 
 The decomposition is in `scripts/dcs_cont_oneswitch.py` and its JSON, not in a shell — `D8`'s lesson
 was that a headline number without a committed script is not a result. A17's claim-table row now
 carries the decomposition and the "no rise established" limit.
+
+---
+
+### CONT-ENTRY 146 — 2026-09-13 — A17's comparator is not a baseline, it is a band control — and on basket it is verified **inert**
+
+Reading the `RUNMETA` rather than the entries turned up something I had been describing loosely. A17's
+`ctrl` arm is **not** an unintervened baseline:
+
+| arm | intervention |
+|---|---|
+| `ko` | `demo_all:attn_knockout:**6-14**:1.0`, scope `target_surface_row_only` |
+| `ctrl` | `demo_all:attn_knockout:**20-28**:1.0`, **same scope** |
+
+So `ctrl` cuts *the same rows at a different layer band*. Entries 143–145 say "the knockout removes
+64 % of refusals", which is true **relative to a band control**, not relative to no intervention. The
+distinction matters: if cutting attention anywhere moved these endpoints, the whole contrast would be
+about the cut rather than the band.
+
+**On basket the question is answerable, because all three arms ran on one GPU** (`RTX A5000 / n-503`).
+670 paired prompts, all-slots, train+val:
+
+| arm | refusals | content-true | P(content \| not refused) |
+|---|---|---|---|
+| **base** (no intervention) | **8** | **15** | 0.0227 |
+| **ctrl** (band 20-28) | **8** | **14** | 0.0211 |
+| **ko** (band 6-14) | **1** | **19** | 0.0284 |
+
+| ratio | refusal | content-true |
+|---|---|---|
+| **ctrl / base** | **1.000** | **0.933** |
+| ko / ctrl | 0.125 | 1.357 |
+| **ko / base** | **0.125** | **1.267** |
+
+**The band control is inert on both endpoints** — 8 refusals against 8, 14 content-true against 15.
+Cutting the identical rows at layers 20-28 does essentially nothing, while cutting them at 6-14 removes
+seven of eight refusals. So A17's `ko/ctrl` comparison **is** `ko/base`, and the effect is specific to
+the band rather than to the act of cutting.
+
+This is a strengthening of A17's design that I had not verified and was entitled to be asked about.
+It also rescues the comparator from the obvious objection — that a "control" which is itself an
+intervention might be quietly moving the thing being measured. Here it demonstrably is not.
+
+**The check is basket-only, and the reason is a hardware fact I cannot argue around.** Button's `base`
+arm ran on a **Tesla V100** while its `ko` and `ctrl` ran on an **RTX A5000**. Cross-GPU numerics change
+**573 of 670** completions, so button's base is not comparable to its own intervention arms and no
+three-way check is possible there without a new run. I am not going to compute it and caveat it; the
+comparison would be meaningless. Recorded as a limit, and as the one thing a cheap future run would fix.
+
+A17's row now carries both the inert-control result and the button gap. `REVIEW-9` is running against
+A17 with the ratio-bootstrap, the formalisation of the rival, and the scope choice as named targets.
