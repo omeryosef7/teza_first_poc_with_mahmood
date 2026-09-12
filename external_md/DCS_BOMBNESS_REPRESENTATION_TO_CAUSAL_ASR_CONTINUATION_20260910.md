@@ -9256,3 +9256,48 @@ three on A5000/n-503), but basket has **no dose-0 ASR arm** to build a slope fro
 dose-0 judged rows number 24.
 
 Push still failing — six commits pending.
+
+---
+
+### CONT-ENTRY 114 — 2026-09-12 — C-CONT-082: the cheap fix I proposed one entry ago does not exist
+
+`CONT-ENTRY 113` closed by naming the way to settle the quantitative dissociation without new
+generation: *"`contasr2_ctrl2` was generated on the A5000 at n-503, the same hardware as `ko`, and
+never judged. Judging it gives a hardware-matched `ko − ctrl2` comparison for the cost of a judge run
+and no GPU time."* I checked the arm before acting on it. **It produced nothing.**
+
+| arm | slurm | hardware | files | rows |
+|---|---|---|---|---|
+| `contasr2_ctrl2` | 876983 | RTX A5000 / n-503 | `config.json`, `RUNMETA.json`, empty `plots/` | **0** |
+| `contasr2_ctrl` | 876884, **CANCELLED** at 02:48:47 | RTX A5000 / n-503 | + `results.jsonl`, `gens.jsonl` | **311 of 670** |
+
+`ctrl2` has **no `results.jsonl`, no `gens.jsonl`, no `summary.json`, no `DONE.json`** — `expect_n` is
+670 and zero rows were persisted. **There is nothing to judge**, so the proposal is void: a
+hardware-matched button control requires **re-generating** one on the A5000, which is GPU work, not a
+judge run.
+
+`ctrl` is partial *and* is the `nondemo_random` control that `C-CONT-019` refuted on the repo's own
+prior evidence, so it cannot serve either.
+
+**Both are quarantined with provenance** rather than deleted (§53), each carrying its slurm id,
+hardware, what it holds, and — for `ctrl2` — an explicit statement that it falsifies a proposal made in
+this record.
+
+**Why I am logging this as a defect rather than a tidy-up.** I wrote a concrete, costed next step into
+the record — "a judge run and no GPU time" — on the strength of a directory name and an entry-070
+hardware table, without opening the directory. The hardware claim was right; the *existence* claim was
+not. One iteration earlier I had written that a job which runs is not a job that answers the question
+it was submitted for (`C-CONT-075`); this is the same error at the planning layer — **a run that was
+submitted is not a run that produced data.**
+
+**Where this leaves the quantitative dissociation.** Unchanged from `CONT-ENTRY 113`: gap
+**+0.0223 [+0.0060, +0.0389]**, P(measured ≤ predicted) = 0.0022, and **confounded**, because `ko`
+(A5000) and `ctrl3` (L40S) cross architectures and the measured hardware effect on this endpoint
+(+0.0015, CI to +0.0194) is the same order as the gap. What it now costs to settle is **one
+re-generated control arm on n-503 plus its judge run** — roughly 3.5 GPU-hours by the basket arms'
+timing — not the free lunch I advertised.
+
+**The completeness guard's `KNOWN_ZERO` list should grow.** `contasr2_ctrl2` is precisely a run that
+finished with zero persisted rows; it did not trip the guard because it never wrote `DONE.json`. That
+is a gap in `C-CONT-051`'s fix: the zero-row check only sees runs that *claim* completion. A run that
+writes a config and then vanishes is invisible to it.
