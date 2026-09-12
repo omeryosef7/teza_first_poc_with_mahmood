@@ -9497,3 +9497,46 @@ on. A rate measured on one prompt set is not evidence about another, which is th
 codeword work produced and is worth stating in the general form.
 
 Control arm `882854` at 1h30m, 397/670 rows. Push still failing; twelve commits pending locally.
+
+---
+
+### CONT-ENTRY 119 — 2026-09-12 — the claim table brought current: A3's quantitative version withdrawn twice, three rates disentangled
+
+`REVIEW-6` listed the claim table as stale in four ways. Fixed.
+
+**A3 now records the withdrawal twice over.** The row previously read "dissociable under intervention —
+qualitatively" with no mention that a quantitative version had been attempted. It now states that the
+quantitative claim is **WITHDRAWN TWICE** — `C-CONT-083` on button (gap +0.0221 → **−0.0044, P = 0.59**
+on the declared `slot0` primary) and `DR-074` on basket (**+0.0116, P = 0.29, NOT SUPPORTED** under a
+rule frozen in advance) — **with the cause named**: the dose-0 arm holds `slot0` only, so any all-slots
+dose slope compares one slot against five. A reader who finds the significant version elsewhere now has
+the reason it is significant.
+
+**Three CR-002 button rates were being quoted unlabelled**, and they are three different populations:
+
+| rate | population |
+|---|---|
+| **0.0343** | the **ASR arms** — what A2's primary is computed on |
+| 0.0250 | the 114-run corpus, all splits |
+| 0.0263 | its train+validation subset |
+
+Each is now named where it appears. The table previously used whichever was nearest to hand, which is
+how `C-CONT-072`-shaped errors start.
+
+**The threshold-conditional figure was a six-arm number.** The table said **6.0×** at SR ≥ 0.75; on the
+full corpus it is **7.80× [6.33, 10.04]**, with 12.74× at SR ≥ 0.25. Corrected in both places it
+appears.
+
+**The defect ledger stopped at `C-CONT-054`** while the record had reached `084` — 30 entries missing
+from the paper-facing table. Extended with the eight most consequential, including the two
+non-existence assertions (`C-CONT-082/084`) and `C-CONT-075`, where I let the scheduler pick the
+hardware for a job whose entire purpose was fixing a hardware confound.
+
+**On the ledger's own "recurring shape" line.** It has read *"a quantity that could not have told you
+it was wrong"* for many entries. The last few days argue for a second shape beside it:
+**a quantity that could have told me, if I had opened the file** — `C-CONT-071` (a shuffled column I
+documented and then pooled from memory), `C-CONT-082` and `C-CONT-084` (arms asserted absent without
+`ls`), `C-CONT-079` ("full text read" of rows I never read in full). Those are not subtle statistical
+traps; they are unchecked assertions, and they have cost more entries than the subtle ones.
+
+Control arm `882854` at 615/670. Push still failing; thirteen commits pending locally.
