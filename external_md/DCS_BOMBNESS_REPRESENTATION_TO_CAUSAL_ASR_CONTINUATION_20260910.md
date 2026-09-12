@@ -10130,3 +10130,50 @@ ladder is balanced on the declared primary rather than comparing one slot agains
 block also carries `slot3`, reported as an internal replication and not as evidence.
 
 Submitted as job **885998**, 464 rows. Twenty-eight commits still pending locally.
+
+---
+
+### CONT-ENTRY 132 — 2026-09-12 — `p = 0.00005` was never a measurement. Three effects, ten orders of magnitude apart, all reported as the same number
+
+`REVIEW-7` accepted this and nobody had acted on it. Closing it, because it is the kind of defect that
+makes strong results look weak and weak results look strong in exactly the same typeface.
+
+**`p = 0.00005` is `1 / 20000`.** It is the smallest non-zero value a 20000-draw bootstrap can
+resolve. It appears throughout this phase next to effects that are not remotely comparable in
+strength, and it is doing no work in any of them.
+
+Where an effect is **sign-consistent across domains**, the sign test is exact and needs no resampling
+at all. `scripts/dcs_cont_exact_tests.py`, exact integer arithmetic (at n = 67 the p-value is ~1e−20
+and float accumulation of binomial terms is not worth trusting silently):
+
+| claim | domains | bootstrap said | **exact** |
+|---|---|---|---|
+| A4/A15 refusal drop under the knockout | 33− / 0+ / 34 tied | p = 0.00005 | **p = 2.33e−10** (2/2³³) |
+| A1 installation drop, **button** | 67− / 0+ | p = 0.00005 | **p = 1.36e−20** (2/2⁶⁷) |
+| A1 installation drop, **basket** | 67− / 0+ | p = 0.00005 | **p = 1.36e−20** (2/2⁶⁷) |
+
+**The floor reported all three as identical. They differ by ten orders of magnitude.**
+
+**The sign test is also the more conservative choice**, which is why it is the right replacement rather
+than a bigger bootstrap: it discards every effect magnitude and keeps only direction. These p-values
+are what survives after throwing away most of the evidence.
+
+**On the ties, stated rather than buried.** The standard sign test discards them, and here that is the
+substantive point of `CONT-ENTRY 126`: in 28 of the 34 tied domains **neither arm ever refuses**, so
+the difference is exactly zero *by construction* and carries no directional information. The script
+reports both denominators and prints what the p-value would be if ties were miscounted as support, so
+the choice is visible instead of inherited. Counting structural zeros as failures-to-replicate is what
+produced the misleading "33/67" in the first place.
+
+**What this does not touch.** Every bootstrap p-value on an effect that is *not* sign-consistent stays
+as it is — the sign test has nothing to say there, and swapping in an exact test would be picking the
+method that flatters the number. The dissociation results that came out NOT SUPPORTED
+(`C-CONT-083`, `DR-074`) are untouched and stay withdrawn.
+
+Claim table updated: 4 floor values replaced. `reports/DCS_CONT_EXACT_TESTS.json` carries the counts,
+the provenance of each, and the exact fractions.
+
+**Meanwhile** `DR-075` is running as job **886005** on n-804 (L40S, as pinned). Job 885998 died first:
+`$HOME` resolves to a near-empty path on the compute nodes and its llama snapshot carries config and
+tokenizer but **no weights**. The real cache is on `/vol/scratch`, at the pinned revision. The
+resubmission asserts the weight index exists before loading rather than discovering it on the GPU.

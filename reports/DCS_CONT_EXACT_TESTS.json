@@ -1,0 +1,61 @@
+{
+ "schema": "exact_tests/1",
+ "why": "p=0.00005 is 1/20000, a resampling resolution floor, not a measurement",
+ "independence_unit": "domain",
+ "results": [
+  {
+   "claim": "A4 / A15",
+   "quantity": "refusal difference, knockout minus control (matched hardware, button)",
+   "n_neg": 33,
+   "n_pos": 0,
+   "n_tied": 34,
+   "tie_reason": "28 of the 34 are domains where NEITHER arm ever refuses, so the difference is 0 by construction; 6 are non-structural zeros",
+   "provenance": "CONT-ENTRY 126, reproduced independently by REVIEW-7",
+   "bootstrap_reported": "p = 0.00005 (floor)",
+   "exact": {
+    "n_nontied": 33,
+    "n_pos": 0,
+    "n_neg": 33,
+    "p_two_sided": 2.3283064365386963e-10,
+    "p_exact_fraction": "2/2^33"
+   },
+   "if_ties_were_counted_as_support": 1.3552527156068805e-20
+  },
+  {
+   "claim": "A1 (button)",
+   "quantity": "semantic installation drop under the codeword-row knockout",
+   "n_neg": 67,
+   "n_pos": 0,
+   "n_tied": 0,
+   "tie_reason": "none",
+   "provenance": "CONT-ENTRY 100 / successor-plan; 67/67 domains",
+   "bootstrap_reported": "p = 0.00005 (floor)",
+   "exact": {
+    "n_nontied": 67,
+    "n_pos": 0,
+    "n_neg": 67,
+    "p_two_sided": 1.3552527156068805e-20,
+    "p_exact_fraction": "2/2^67"
+   },
+   "if_ties_were_counted_as_support": 1.3552527156068805e-20
+  },
+  {
+   "claim": "A1 (basket)",
+   "quantity": "semantic installation drop under the codeword-row knockout",
+   "n_neg": 67,
+   "n_pos": 0,
+   "n_tied": 0,
+   "tie_reason": "none",
+   "provenance": "replication arm; 67/67 domains",
+   "bootstrap_reported": "p = 0.00005 (floor)",
+   "exact": {
+    "n_nontied": 67,
+    "n_pos": 0,
+    "n_neg": 67,
+    "p_two_sided": 1.3552527156068805e-20,
+    "p_exact_fraction": "2/2^67"
+   },
+   "if_ties_were_counted_as_support": 1.3552527156068805e-20
+  }
+ ]
+}
