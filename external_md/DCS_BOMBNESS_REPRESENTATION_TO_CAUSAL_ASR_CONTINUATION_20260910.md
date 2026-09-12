@@ -9399,3 +9399,58 @@ Removed rather than half-implemented. And `--cluster` **defaulted to `run+domain
 
 Job `882854` continues. It settles `ko − ctrl` on matched hardware, which remains worth having — but
 `REVIEW-6` is right that it leaves the scope, the null, and the refusal confound untouched.
+
+---
+
+### CONT-ENTRY 117 — 2026-09-12 — DR-074: basket replicates the artifact exactly, and the mechanism is now visible
+
+`DR-074` was **frozen and committed before a single basket number was computed** — slot scope, reference
+arm, scale, unit, bootstrap, decision rule and three `things_that_must_not_be_said`. That is the
+discipline `CONT-ENTRY 113` skipped and `C-CONT-083` withdrew it for.
+
+**Result, on a codeword whose measured arm is hardware-matched** (all three `cbkasr` arms on
+RTX A5000 / n-503; all three `cinstbk` installation arms on V100 / rack-bgw-dgx1):
+
+| analysis | inst. dose slope | ASR dose slope | predicted | measured | **gap** | P(gap ≤ 0) | verdict |
+|---|---|---|---|---|---|---|---|
+| **`slot0` PRIMARY** | +0.4934 | **+0.0075** | −0.0038 | +0.0078 | **+0.0116 [−0.0149, +0.0446]** | **0.29** | **NOT SUPPORTED** |
+| all slots (secondary) | +0.4756 | **+0.0313** | −0.0160 | +0.0075 | +0.0235 [+0.0094, +0.0402] | <0.0001 | *"supported"* |
+
+**Basket reproduces the button pattern exactly** — significant on all slots, null on the declared
+primary — on an independent codeword, with a hardware-matched measured arm and a refusal difference of
+essentially nothing (ko 0.0000 vs ctrl 0.0075, against button's 4.0 % vs 11.2 %). `C-CONT-083` was not
+a button quirk.
+
+**And the mechanism is now visible. The dose-0 arm contains only `slot0`:**
+
+| arm | slots present |
+|---|---|
+| button dose 0 | **`slot0` only** (226 rows) |
+| button dose 4 | `slot0, 4, 8, 12, 16` (226 each) |
+| basket dose 0 | **`slot0` only** (226 rows) |
+| basket dose 4 | `slot0, 4, 8, 12, 16` (226 each) |
+
+So any "all slots" dose slope compares **one slot at dose 0 against five at dose 4**. On basket that
+inflates the ASR dose slope from **+0.0075 to +0.0313 — 4.2×** — which inflates the predicted
+magnitude, which manufactures the gap. The same 1-slot-vs-5 mismatch sits under the button version.
+**The "quantitative dissociation" was a slot-composition artifact on both codewords**, and the
+`slot0` primary — declared in `CONT-ENTRY 094` before any of this — is precisely the analysis that
+avoids it.
+
+**Verdict recorded under `DR-074`'s own decision rule: NOT SUPPORTED.** The gap CI includes zero on the
+primary, so by the rule frozen in advance the test does not support the claim, whatever the secondary
+shows. I am reporting the secondary **only** as the artifact it is.
+
+**What this settles.** `C-CONT-083`'s withdrawal is confirmed by independent replication rather than by
+reanalysis of the same data. The phase's position on installation → ASR returns to where
+`C-CONT-032` and `REVIEW-3` left it: **the dissociation is qualitative, and the quantitative version
+is not established** — now with a demonstrated reason why the significant-looking version keeps
+appearing.
+
+**What it does not settle.** `REVIEW-6`'s deeper objection stands untouched: the linear-proportionality
+null may be the wrong null regardless of scope, because the within-dose-4 slope of ASR on installation
+is **−0.053**, opposite in sign to the chord the test uses. A test that is null on the primary and
+whose null hypothesis is itself suspect is not evidence for proportionality either.
+
+Job `882854` continues on `n-503`. It settles `ko − ctrl` on matched hardware for button, which is
+still worth having, but `DR-074` has now answered the larger question without it.
