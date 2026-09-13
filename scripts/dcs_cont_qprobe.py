@@ -50,6 +50,20 @@ def _load(mod, path):
     m = importlib.util.module_from_spec(s); s.loader.exec_module(m); return m
 
 
+def _neighbor(site, d, sites):
+    """The adjacent captured site `d` steps along the capture order (which runs
+    rel-16 .. rel-1 toward the query end). Returns None if off the end or if the neighbour is
+    not a query-span `rel*` position (so a specificity control never silently crosses into a
+    demo-side named site)."""
+    try:
+        i = sites.index(site) + d
+    except ValueError:
+        return None
+    if 0 <= i < len(sites) and str(sites[i]).startswith("rel"):
+        return sites[i]
+    return None
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--n-perm", type=int, default=200)
@@ -65,9 +79,15 @@ def main() -> int:
     if any(assign[d] == "test" for d in TR | VA):
         print("REFUSING: a test domain leaked into the fit populations"); return 2
     inst, _, _ = lpm.load_installation(os.path.join(REPO, a.readout))
-    mp, rows, _ = lpm.load_corpus(os.path.join(REPO, a.corpus), mmap=True)  # low-RAM on shared node
+    mp, rows, csha = lpm.load_corpus(os.path.join(REPO, a.corpus), mmap=True)  # low-RAM on shared node
     if any(assign.get(r["domain"]) == "test" for r in rows):
         print("REFUSING: corpus contains test-split rows"); return 2
+    # never-pool guard (REVIEW-1/T0-4): a swapped --readout would silently join on (domain, slot)
+    # and cross a codeword, producing a wrong-but-plausible number. Refuse on bank mismatch.
+    rsha, rsrc = lpm.readout_bank_sha(os.path.join(REPO, a.readout))
+    if rsha != csha:
+        print("REFUSING: corpus bank_sha %s != readout bank_sha %s (%s). A mismatched pair "
+              "would pool codewords silently." % (csha, rsha, rsrc)); return 2
 
     sites_all = list(mp["sites"]); layers_all = list(mp["layers"])
     layers = [L for L in PLATEAU if L in layers_all]
@@ -177,6 +197,69 @@ def main() -> int:
         f5v, f5n, f5d = transfer(F5_SITE, F5_LAYER)
         print("[VALIDATION] incumbent F5 %s L%d transfer rho=%+.4f" % (F5_SITE, F5_LAYER, f5v))
         out["validation_f5_incumbent"] = {"site": F5_SITE, "layer": F5_LAYER, "rho": round(f5v, 4)}
+
+    # ---- INDEPENDENCE FROM F5 (the gating question, per the CONT-ENTRY 151 review): is the
+    # query-side winner a NEW signal, or the demo-side F5 state copied FORWARD by attention into
+    # the query rows? rel-6 sits downstream of the query codeword (cw_query == rel-11), and a
+    # degraded forward-copy would predict slightly WORSE than F5 -- which is what we see. So the
+    # comparable-to-F5 magnitude proves nothing about independence; these tests do.
+    def feats(keep, sl):
+        """Concatenate within-domain-centred features over one or more (site,layer). Rows align
+        across sites (build's comp/order is site-independent), so the columns just stack."""
+        mats = None; y = dof = doms = None
+        for (s, L) in sl:
+            X, yy, dd, dm = build(keep, s, "C", L)
+            mats = X if mats is None else torch.cat([mats, X], 1); y, dof, doms = yy, dd, dm
+        return mats, y, dof, doms
+
+    def transfer_feats(sl):
+        Xa, ya, _, _ = feats(TR, sl); Xb, yb, _, _ = feats(VA, sl)
+        al = torch.linalg.solve(Xa @ Xa.T + LAM * torch.eye(len(ya), dtype=torch.float64), ya)
+        return lpm.spearman((Xb @ Xa.T @ al).tolist(), yb.tolist())
+
+    indep = {"winner_site": bsite, "winner_layer": bL}
+    if F5_SITE in sites_all and F5_LAYER in layers_all:
+        # 1) collinearity of the two probes' out-of-fold TRAIN predictions
+        Xw, yw, dw, domw = build(TR, bsite, "C", bL); _, pw = loo(Xw, yw, dw, domw, LAM)
+        Xf, yf, dff, domf = build(TR, F5_SITE, "C", F5_LAYER); _, pf = loo(Xf, yf, dff, domf, LAM)
+        coll = lpm.spearman(pw, pf)
+        # 2) does the query site ADD anything over F5 alone, held out on VALIDATION?
+        r_f5 = transfer_feats([(F5_SITE, F5_LAYER)])
+        r_q = transfer_feats([(bsite, bL)])
+        r_join = transfer_feats([(F5_SITE, F5_LAYER), (bsite, bL)])
+        # 3) is F5's own state at the winner's EARLY layer as good? (the early-peak question)
+        r_f5_at_bL = transfer(F5_SITE, bL)[0]
+        indep.update({"collinearity_train_rho_pred": round(coll, 4),
+                      "val_f5_only": round(r_f5, 4), "val_query_only": round(r_q, 4),
+                      "val_joint_two_site": round(r_join, 4),
+                      "val_incremental_over_f5": round(r_join - r_f5, 4),
+                      "val_f5_at_winner_layer_L%d" % bL: round(r_f5_at_bL, 4)})
+        print("\n[INDEPENDENCE] winner %s L%d vs F5 %s L%d" % (bsite, bL, F5_SITE, F5_LAYER))
+        print("   collinearity rho(pred_q, pred_F5) TRAIN = %+.4f  (high => same signal)" % coll)
+        print("   VAL: F5-only %+.4f | query-only %+.4f | joint %+.4f | incremental %+.4f"
+              % (r_f5, r_q, r_join, r_join - r_f5))
+        print("   VAL: F5's own state at the winner's layer L%d = %+.4f" % (bL, r_f5_at_bL))
+
+    # ---- SPECIFICITY at the winner site (the controls f5_probe runs at ITS site): is the
+    # prediction about cell-C installation content, or a generic property of that query position?
+    spec = {}
+    for name, site, cell in [("raw_B_same_site", bsite, "B"),
+                             ("neighbor_toward_query", _neighbor(bsite, +1, sites_all), "C"),
+                             ("neighbor_toward_demo", _neighbor(bsite, -1, sites_all), "C")]:
+        if site is None or site not in sites_all:
+            spec[name] = None; continue
+        spec[name] = round(transfer(site, bL, cell)[0], 4)
+    print("[SPECIFICITY] at %s L%d (VAL): cellB=%s  nbr(+)=%s  nbr(-)=%s"
+          % (bsite, bL, spec.get("raw_B_same_site"), spec.get("neighbor_toward_query"),
+             spec.get("neighbor_toward_demo")))
+    out["independence"] = indep; out["specificity_at_winner"] = spec
+    out["notes_from_review"] = {
+        "cw_query_equals": "rel-11 (byte-identical); the knockout-edited row is rel-11, not the "
+                           "winner rel-6 which is 5 positions downstream -- the causal follow-up "
+                           "must target cw_query/rel-11",
+        "perm_p_is": "single-cell upper bound (<= 0.005 at n-perm=200), NOT family-wise over the grid",
+        "honest_headline": "the VALIDATION transfer, not the TRAIN argmax; rel-6 sits on a flat "
+                           "plateau (rel-4..rel-14), so read as 'query-side positions ~F5 level'"}
 
     json.dump(out, open(a.out, "w"), indent=1)
     print("\nwrote %s" % os.path.relpath(a.out, REPO))

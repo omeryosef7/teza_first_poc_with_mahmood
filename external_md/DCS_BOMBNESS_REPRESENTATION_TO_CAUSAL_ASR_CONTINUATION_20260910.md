@@ -11161,3 +11161,60 @@ claimed until the runs land and are read; a query-side rho comparable to F5 woul
 NOT sufficient for a candidate — the causal test is the follow-up. Next iteration reads the JSONs,
 adversarially verifies against the topic/selection/causal-overclaim traps, and only then updates the
 registry.
+
+### CONT-ENTRY 152 — 2026-09-13 — The query-side installation probe: a real, cross-codeword result, but it is *mostly F5 copied forward*. A modest independent increment, no causal claim.
+
+`CONT-ENTRY 151` built and submitted the query-side probe; this entry reads it, adversarially
+verifies it, and states what it does and does not show. **Registry updated** (F8_query_side_probe,
+candidate `Q1_query_side_probe_rel6`, status EXPLORATORY — the second candidate ever registered,
+and NOT a finalist). Numbers were produced on SLURM (jobs 887463/887464) after the analysis
+OOM-killed twice on the shared node; see `C-CONT-099`.
+
+**What was measured (button / basket, VALIDATION, never pooled).** A LOO-by-domain ridge on the
+within-domain cell-C hidden state at query-span sites predicts concept-free installation:
+
+| | button | basket |
+|---|---|---|
+| query-side winner (rel-6) VAL rho | **+0.645** | **+0.653** |
+| demo-side incumbent F5 VAL rho | +0.678 | +0.681 |
+| permutation null (fit+score, within-domain) | p ≤ 0.005 | p ≤ 0.005 |
+
+So a query-side state predicts installation at **~F5 level, replicated cross-codeword** — the winner
+sits on a **flat plateau** (rel-4…rel-14; the exact peak position is not robustly distinguished),
+and `cw_query` (the codeword row the knockout actually edits) is **byte-identical to rel-11** and
+slightly weaker (+0.587 / +0.642 TRAIN). The winner rel-6 is thus 5 positions *downstream* of the
+edited row.
+
+**Is it a NEW signal, or F5 copied forward? — the gating question, now answered.** F5's demo-side
+site is upstream of the query and every earlier position is attendable, so attention can copy the
+demo-side installation state forward into the query rows. The independence battery:
+
+| | button | basket | reading |
+|---|---|---|---|
+| collinearity ρ(pred_q, pred_F5), TRAIN | +0.696 | +0.740 | **mostly the same signal** (below the ~0.85 "identical" line, so not *purely* a copy) |
+| VAL joint two-site − F5-only (increment) | **+0.041** | **+0.023** | a **small, replicated** query-local component beyond F5 |
+| cell-B at the same site (specificity) | 0.397 | 0.326 | the signal is **cell-C-installation-specific**, not a generic property of the position |
+| F5's own state at the winner's early layer | 0.648 | 0.673 | the query-side "early peak" is **matched by F5 at that layer** — not evidence of a distinct locus |
+
+**Honest conclusion.** Most installation-predictive variance lives on the **demonstration side and is
+copied forward** into the query; the query-side carries only a **small, cell-C-specific increment**
+beyond F5. This is a genuine map-of-where-the-signal-lives result and it ADDS to the paper — but it
+is **not** a strong independent representation, and it does **not** by itself get past F5's problem.
+No number here exceeds F5; the claim is explicitly "predicts installation," never causal.
+
+**What it would take to matter (§44 #10), and what is blocked.** The only thing that would make a
+query-side probe *causally* relevant is the differ-across-arms test: does the state at
+`cw_query`/rel-11 differ between `ko` and `ctrl`, and does a patch there move installation? That
+needs a fresh **GPU** extraction — a ko+ctrl multiposition cache with the query sites on the cont1
+bank; the existing knockout run saved no multiposition cache and used a different bank. Given the
+query-side is ~70 % shared with the causally-inert F5, expected leverage is limited; this is flagged
+for the user to authorise rather than run autonomously.
+
+**Verification.** A 3-lens adversarial workflow (topic/independence, selection/statistics,
+code/causal-overclaim) returned **HOLDS_WITH_CAVEATS on all three, no bug** — and independently
+reproduced F5's frozen VALIDATION rho to four decimals through a *different* code path (mmap +
+slice-before-float), corroborating the keying, centring, LOO kernel and no-retune transfer. Its
+caveats are now folded in: the permutation p is a single-cell upper bound (not family-wise); the
+honest headline is the VALIDATION transfer, not the TRAIN argmax; `cw_query`==rel-11; and the
+independence battery above was added at its request. Hardening: `dcs_cont_qprobe.py` now refuses on a
+readout↔corpus `bank_sha` mismatch (the never-pool guard `f5_probe` lacked).
