@@ -1,0 +1,50 @@
+{
+ "schema": "dcs_cont_a12_exact/1",
+ "claim": "A12: bomb installs more readily than knife/gun under the doublespeak remap",
+ "unit": "DOMAIN",
+ "population": "train+val (no TEST)",
+ "re_derived": true,
+ "note": "per-domain mean concept-installation from the one-word/cellC channel; exact two-sided sign test; button and basket never pooled",
+ "by_codeword": {
+  "button": {
+   "bomb_minus_knife": {
+    "n_pos": 89,
+    "n_neg": 1,
+    "n_tied": 0,
+    "n_domains": 90,
+    "p_two_sided": 1.4701842918422953e-25,
+    "p_exact": "182/2^90",
+    "asserted_in_079_080": "89/90"
+   },
+   "bomb_minus_gun": {
+    "n_pos": 87,
+    "n_neg": 3,
+    "n_tied": 0,
+    "n_domains": 90,
+    "p_two_sided": 1.9641662139013065e-22,
+    "p_exact": "243152/2^90",
+    "asserted_in_079_080": "87/90"
+   }
+  },
+  "basket": {
+   "bomb_minus_knife": {
+    "n_pos": 88,
+    "n_neg": 2,
+    "n_tied": 0,
+    "n_domains": 90,
+    "p_two_sided": 6.617444900424222e-24,
+    "p_exact": "8192/2^90",
+    "asserted_in_079_080": "88/90"
+   },
+   "bomb_minus_gun": {
+    "n_pos": 88,
+    "n_neg": 2,
+    "n_tied": 0,
+    "n_domains": 90,
+    "p_two_sided": 6.617444900424222e-24,
+    "p_exact": "8192/2^90",
+    "asserted_in_079_080": "88/90"
+   }
+  }
+ }
+}

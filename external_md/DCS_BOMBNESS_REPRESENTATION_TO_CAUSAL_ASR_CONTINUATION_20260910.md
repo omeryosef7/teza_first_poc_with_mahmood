@@ -11369,3 +11369,35 @@ forward" is consistent-with not proof-of; CONT-150's "un-answerable/252 domains"
 number; all are logged in `reports/DCS_CONT_REVIEW10.md` for the record.
 
 Net: the session's computation stands; the record is now phrased to match what the numbers support.
+
+### CONT-ENTRY 157 — 2026-09-13 — A12 re-derived and run through the exact sign test at last (closes C-CONT-093 / trap #8). Counts reproduce exactly; committed p far below the asserted bound.
+
+With no new inputs (no rated sheet, no GPU auth, no jobs) and the candidate sweep closed, the honest
+CPU item left is a **flagged, never-closed** one: A12 (`bomb` installs more readily than `knife`/`gun`
+under the doublespeak remap) was reported with sign counts and "p < 1e-9" but was **never passed
+through `dcs_cont_exact_tests.py`**, and the counts were carried from CONT-ENTRY 079/080 rather than
+re-derived (`C-CONT-093`; the phase's trap #8, "asserted counts / no committed artifact").
+
+`scripts/dcs_cont_a12_exact.py` closes it, reusing `lpm.load_installation` (the same concept-free
+one-word/cellC target used everywhere) and `exact_tests.exact_sign_test`. It re-derives per-domain
+concept installation for all three concepts on each codeword, counts the domain-level signs itself,
+and runs the exact two-sided sign test. DOMAIN unit, **train+val only (TEST excluded)**, button and
+basket never pooled, no GPU/cache.
+
+| codeword | contrast | re-derived signs (of 90) | exact p | asserted |
+|---|---|---|---|---|
+| button | bomb − knife | **89+ / 1− / 0 tied** | **1.5e−25** | 89/90, p<1e-9 |
+| button | bomb − gun | **87+ / 3− / 0 tied** | **2.0e−22** | 87/90 |
+| basket | bomb − knife | **88+ / 2− / 0 tied** | **6.6e−24** | 88/90 |
+| basket | bomb − gun | **88+ / 2− / 0 tied** | **6.6e−24** | 88/90 |
+
+The re-derived sign counts **match the asserted counts exactly** (validating what CONT-ENTRY 079/080
+carried), and the exact p-values are **far below** the asserted `1e-9` bound (that bound was the
+20000-draw bootstrap floor; the exact test resolves the true value). A12's significance is now a
+committed, re-derived artifact, not an assertion. The claim-table A12 caveat is updated accordingly.
+The pre-existing ⚠️ on A12 — that the `knife`/`gun` ORDERING reverses across codewords and does not
+replicate — is untouched and still stands; only the "asserted, not run" defect is closed.
+
+Self-review: exact-p arithmetic checks by hand (89+/1−: 2·(1+90)/2^90 = 1.47e−25); the re-derivation
+reads the small readout jsonls (no cache), reproduces the carried counts, excludes TEST via the split,
+never pools codewords. Artifact: `reports/DCS_CONT_A12_EXACT.json`.
