@@ -146,7 +146,11 @@ def load_installation(run_dir: str):
     return out, n_seen, sorted(kinds)
 
 
-def load_corpus(run_dir: str):
+def load_corpus(run_dir: str, mmap: bool = False):
+    # `mmap=True` memory-maps the ~12 GB tensor store instead of reading it into RAM: loads in
+    # ~37 s at <0.5 GB RSS and pages in only the [site, layer] slices actually read. Added so
+    # candidate scoring can run (and fan out) on the shared node without OOM. Default False keeps
+    # every existing caller's behaviour byte-for-byte.
     import torch
     mp_path = os.path.join(run_dir, "cache", "multiposition_reps.pt")
     if not os.path.exists(mp_path):
@@ -174,7 +178,7 @@ def load_corpus(run_dir: str):
     if doses != {4}:
         raise Refusal("corpus %r carries doses %s; this analysis is dose 4 only"
                       % (run_dir, sorted(doses)))
-    mp = torch.load(mp_path, weights_only=False)
+    mp = torch.load(mp_path, weights_only=False, mmap=mmap)
     return mp, rows, shas.pop()
 
 

@@ -11113,3 +11113,51 @@ unaffected by this.
 WRONG unit (rows, N=670) the same rho=0.176 clears the MDE and the test would look *powered* —
 so the domain unit is load-bearing and its loss would be caught. Artifact:
 `reports/DCS_CONT_LINKING_POWER.json`. Nothing in the claim table moves.
+
+### CONT-ENTRY 151 — 2026-09-13 — §42 Phase 4 opened on the one untried, causally-relevant direction: a QUERY-SIDE installation probe. Tooling built and submitted; numbers pending.
+
+New operating mode (user directive, this session): orchestrate with parallel subagents/workflows,
+reuse existing `scripts/dcs_cont_*` rather than write new heavy code, self-review for bugs, commit
+**and push** each step, and run the 5-part review every ~4h. Push credential is fixed and
+`git ls-remote` succeeds, but the session's auto-mode classifier is currently **denying `git push`**
+— so commits land locally and the backlog (now 50+) awaits either a `git push` permission rule or a
+manual push. Nothing touched `.git/config`.
+
+**Why this candidate, and why it is the right Phase-4 move.** Three read-only scouts mapped the state:
+Phase 1 done; Phase 2's linking-test question answered negative (CONT-ENTRY 150); the two *newest*
+live actions are blocked on a **human rater** (CONT-ENTRY 149) and a **~250-domain bank + GPU**
+(CONT-ENTRY 150). Phase 4 (broad representation-candidate search, TRAIN only) is the open frontier
+and runs on existing CPU caches. The registry (`configs/dcs_cont_candidate_registry.json`) shows
+families F0–F7 all fitted and all dead or causally inert: F1/F2/F3/F4/F7 lose to or tie the raw
+state (topic), F6 is rank≈4 but never carried through VALIDATION selection, and **F5/A11 — the one
+TEST-confirmed probe — cannot mediate A1 (C-CONT-040)**: its site `cw_demo_mean` sits before the
+edited query row, so its input is *bit-identical* across `ko`/`ctrl`. The query span is the ONLY
+region the row-knockout edits. So the one untried direction that could ever satisfy §44 #10 (causal
+leverage) is a probe on a **query-side** site — `cw_query` (the codeword occurrence inside the query)
+and the `rel-1…rel-16` query-span positions, all of which the cache already holds. This entry asks
+the prerequisite question, TRAIN/VALIDATION only: does a query-side state predict installation at
+all, and how does it compare to the demo-side incumbent F5?
+
+**Tooling (maximal reuse).** `scripts/dcs_cont_qprobe.py` reuses `dcs_cont_layerpos_map`'s loaders and
+the **exact** LOO-by-domain ridge kernel `dcs_cont_f5_probe.py` uses (replicated, not imported, so
+the FROZEN-DR-072 script is untouched). It sweeps every query-side site × plateau layer on TRAIN,
+runs the within-domain permutation null (BOTH fit and score permuted), then reports the winner's
+**VALIDATION** transfer at its FIXED (site,layer) — the honest, selection-free number — alongside the
+F5 incumbent. TEST refused two ways. It explicitly does NOT claim causal leverage; the ko/ctrl
+differ-across-arms test and a patch are the follow-ups.
+
+**Engineering note worth keeping (C-CONT-099).** The 11 GB `multiposition_reps.pt` cache OOM-killed the
+probe twice on the shared node `c-001` — the first time because `build()` materialised each full
+`[20,19,4096]` tensor in float32, the second (after fixing that) because even a memory-mapped read at
+0.5 GB RSS fills the OS page cache and trips the session's low-memory guard under other users' load.
+Fixes: (1) `load_corpus` gained a backward-compatible `mmap=True` kwarg (loads in ~37 s at <0.5 GB
+RSS; default unchanged, so every existing caller is byte-identical); (2) `build()` slices `[site,layer]`
+*before* `.float()`; (3) heavy analyses now run on SLURM via `slurm_scripts/dcs_cont_cpu.slurm`
+(killable/gpu-research, 48 G reserved), outside the shared node's memory contention.
+
+**Submitted, results pending.** Button qprobe = SLURM **887424** (`reports/DCS_CONT_QPROBE.json`),
+basket cross-codeword replication = **887425** (`reports/DCS_CONT_QPROBE_basket.json`). No number is
+claimed until the runs land and are read; a query-side rho comparable to F5 would be necessary but
+NOT sufficient for a candidate — the causal test is the follow-up. Next iteration reads the JSONs,
+adversarially verifies against the topic/selection/causal-overclaim traps, and only then updates the
+registry.
