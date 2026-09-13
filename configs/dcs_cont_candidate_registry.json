@@ -104,7 +104,7 @@
     "v_resid  = (h_C - h_A) after orthogonalising against v_int and a generic-remap direction"
    ],
    "known_trap": "a residual is NOT a concept direction merely because other directions were subtracted; it must pass installation validation afterwards (mandate 16)",
-   "status": "FITTED (CONT-ENTRY 030, 031, 056), NEGATIVE/TIE. v_int (the interaction) and C_minus_B were fitted at every site and layer of both the domain-mean map and the within-domain map. The interaction LOSES to the raw-state null model at every depth (paired p=0.017); C_minus_B is statistically INDISTINGUISHABLE from it (paired p=0.515). v_hi_lo and v_resid were declared and never fitted."
+   "status": "FULLY FITTED, NEGATIVE (CONT-ENTRY 030/031/056 + 154). All four variants now fitted at cw_demo_mean L24, both codewords, TRAIN LOO: v_int -0.158/-0.139 (loses, reproduces the known negative); C_minus_B ties the raw state (p=0.515); v_hi_lo +0.544/+0.538 (AT the raw-state floor 0.546, below F5 0.624 -- a hard median split discards the graded target the ridge uses); v_resid +0.182/-0.166 (weak, sign-inconsistent across codewords, not a direction). No diff-in-means variant beats F5."
   },
   {
    "family_id": "F3_pooled_distributed",
@@ -284,5 +284,6 @@
   "F5_probe_installation"
  ],
  "families_total_count": 9,
- "closure_note_cont153": "Phase-4 sweep status: F5 (demo-side rank-1 ridge) remains the SOLE family that predicts installation and transfers; F1-F4, F6, F7 and the new F8 query-side probe all fail to beat it on held-out. No BOMB-representation candidate has cleared \u00a744 #10 (causal leverage) -- that remains GPU-blocked."
+ "closure_note_cont153": "Phase-4 sweep status: F5 (demo-side rank-1 ridge) remains the SOLE family that predicts installation and transfers; F1-F4, F6, F7 and the new F8 query-side probe all fail to beat it on held-out. No BOMB-representation candidate has cleared \u00a744 #10 (causal leverage) -- that remains GPU-blocked.",
+ "phase4_sweep_complete": "CONT-ENTRY 154: every declared Phase-4 family is now fitted through TRAIN(->VALIDATION where positive). F5 (demo-side rank-1 ridge) is the SOLE family predicting installation and transferring; F1 raw-state floor; F2/F3/F4/F6/F7 negative/tie; F8 query-side ~F5-collinear. Nothing clears \u00a744 #10 (causal leverage) -- GPU differ-across-arms test blocked."
 }

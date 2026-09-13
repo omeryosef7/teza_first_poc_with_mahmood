@@ -11253,3 +11253,38 @@ robust, TEST-confirmed installation PREDICTOR (F5), no family beats it, and NOTH
 
 Self-review: all four jobs rc=0 (validates the new script); numbers plausible and monotone-ish;
 VAL≥TRAIN as F5 also shows; no cell reaches F5. No claim exceeds what the transfer shows.
+
+### CONT-ENTRY 154 — 2026-09-13 — F2's last two variants fitted: negative. The Phase-4 candidate sweep is now COMPLETE, and it has one positive — F5 — which cannot mediate the intervention.
+
+`dcs_cont_f2_variants.py` (reuses lpm loaders + the within-domain LOO protocol F5/qprobe use) fits the
+two F2 directions the registry declared but never ran, at `cw_demo_mean` L24, both codewords, TRAIN
+LOO. SLURM 887637/887638.
+
+| direction | button | basket | reading |
+|---|---|---|---|
+| `v_hi_lo` (supervised diff-in-means, median split on y) | +0.544 | +0.538 | **at the raw-state floor (0.546), below F5 (0.624)** — the hard split throws away the graded target the ridge exploits |
+| `v_resid` ((C−A) ⟂ v_int, partial) | +0.182 | −0.166 | weak and **sign-inconsistent across codewords** — not a direction |
+| `v_int` (sanity) | −0.158 | −0.139 | reproduces the registry's known negative — validates the machinery |
+
+Both never-fitted variants are **negative relative to F5**; `v_resid` here omits the generic-remap
+orthogonalisation term (no committed definition in this corpus) and is a partial fit, but its sign
+inconsistency already rules it out. **F2 closes fully negative.**
+
+**The Phase-4 candidate sweep is now complete.** Every declared family (F0–F8) has been fitted, all
+TRAIN-select / VALIDATION-transfer where positive, both codewords, never pooled:
+
+- **F5** (demo-side rank-1 ridge at `cw_demo_mean` L24) — the **sole positive**: predicts concept-free
+  installation, TEST-confirmed (A11), +0.678/+0.681 VALIDATION.
+- **F1** raw state is the floor; **F2** (all four variants) / **F3** pooled / **F4** trajectory /
+  **F6** low-rank (through VALIDATION, CONT-ENTRY 153) / **F7** logit-lens all fail to beat it;
+  **F8** query-side (CONT-ENTRY 152) predicts installation but is ~70 % collinear with F5.
+
+So the honest Phase-4 conclusion, now on complete coverage: **there is a robust installation
+PREDICTOR (F5) and nothing beats it — but no candidate has cleared §44 #10 (causal leverage), because
+F5's site is bit-identical across ko/ctrl (C-CONT-040) and no other family exceeds it.** The single
+remaining move that could change this is the differ-across-arms test at `cw_query`/rel-11, which needs
+a fresh **GPU** extraction (flagged for authorisation, not run). The CPU/cache frontier for candidate
+search is exhausted.
+
+Self-review: both jobs rc=0 (validates the script); `v_int` reproduces the known negative; `v_hi_lo`
+≈ raw-state floor is the expected behaviour of a median-split diff-in-means; no claim exceeds F5.
