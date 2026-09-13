@@ -10958,3 +10958,53 @@ The discriminating quantity, per `REVIEW-9`, is the **never-refused-in-both** ra
 predicts < 1, gating predicts = 1). Measured: **1.000** and **1.059**, intervals spanning 0.58–1.9.
 **Undecided**, and honestly so. Breaking the tie needs a new measurement — a blind human rating of the
 ~60 candidate rows, insensitive to disclaimer style — not another pass over these artifacts.
+
+### CONT-ENTRY 148 — 2026-09-13 — Two defects `REVIEW-9` found in passing are now guarded in code: a population *label* that described a corpus it had never checked, and a bootstrap that threw away a third of its own draws
+
+`CONT-ENTRY 147` withdrew A17 and, in its "also confirmed" paragraph, recorded two findings that were
+not about A17 at all. Both were properties of the shared tooling, so both could have contaminated
+anything downstream. Both are now defects in `scripts/dcs_cont_scope.py` rather than prose.
+
+**`C-CONT-097` (REVIEW-9/D7) — a label is not a census.** `filter_rows()` stamped every artifact with
+`"population": "train+val"`. On this corpus that string is false: all **67** domains present are
+`train`, and the **23** validation domains are **absent entirely**. The filter is therefore a **no-op**
+here — it removed nothing, because there was nothing of the excluded kind to remove — and the name
+overstates what went in. The failure mode is specific and nasty: a reader who trusts the tag believes
+a validation set was included and that the number is therefore less overfit than it is. Note this is
+the *opposite* polarity from `C-CONT-094`: that one silently let TEST **in**; this one advertises a
+split that was never **there**. A scope/population tag describes the **filter**; only a census
+describes the **data**. `filter_rows()` now returns both:
+
+    "split_census": {"train": 67},      # what is actually in the kept rows
+    "filter_was_a_noop": true           # the filter removed nothing
+
+and the census, not the label, is what an artifact should be read against. No TEST leak either way.
+
+**`C-CONT-098` (REVIEW-9/D8) — a bootstrap that discards draws is not the interval it prints.** The
+ratio bootstrap used for the A17 intervals skipped every resample whose denominator came out zero and
+reported the percentiles of the survivors. On **basket-PRIMARY** that discarded **36 %** of draws. The
+2.5th percentile of the 64 % of resamples that happened to have a non-empty denominator is not the
+2.5th percentile of the sampling distribution, and it is biased in a direction that depends on the
+statistic — silently. (The published headline used all-slots, which discards none, so the A17 numbers
+were not affected by this; the claim died of `C-CONT-096`, not of this.) The new `domain_bootstrap()`
+**counts** dropped draws, **returns** the count in every result, and **raises** past 5 %:
+
+    ValueError: bootstrap discarded 3600 of 10000 draws (36.0%, limit 5%) --
+    the surviving percentiles are not the interval they appear to be.
+
+Refusing is the right behaviour rather than a nuisance: the fix for a degenerate denominator is a
+different estimator, and the old code's fix was to look away.
+
+**The pattern these two share with the previous four.** `C-CONT-072/083/088/089` were an unstated
+slot scope; `C-CONT-094` was an unstated population; `C-CONT-095` was a provenance dict that dropped
+half its provenance in a `{**a, **b}` merge. Every one of them is the same shape — **a number carrying
+a description of itself that nobody had made the code check.** 097 is a description that was wrong;
+098 is a description (a 95 % interval) computed over a sample the code had quietly edited. The guard
+file is now the only sanctioned entry point for narrowing rows *and* for interval estimation on
+domain-clustered data, and its self-test covers both new defects.
+
+**Status.** Self-test passes (`python3 scripts/dcs_cont_scope.py` → `self-test OK`). Nothing in the
+claim table changes: neither defect moves a published number. They are debt paid before the next
+measurement, which per `REVIEW-9` and `CONT-ENTRY 147` is the **blind human rating of the ~60
+never-refused-in-both candidate rows** — the one endpoint not entangled with the intervention's
+disclaimer side effect.

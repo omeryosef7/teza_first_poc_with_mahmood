@@ -145,6 +145,35 @@ class Population:
         return population
 
 
+def domain_bootstrap(domains, stat, n_boot, seed, max_drop=0.05):
+    """Domain-clustered percentile bootstrap that will not hide its own failures.
+
+    C-CONT-098 (REVIEW-9/D8): a ratio bootstrap elsewhere in this phase skipped every
+    resample whose denominator was zero and reported the percentiles of what was left --
+    on one arm that silently DISCARDED 36% of draws, which is no longer the interval it
+    claims to be. Here dropped draws are counted, returned, and raise past `max_drop`.
+    """
+    import random as _r
+    g = _r.Random(seed)
+    dl = list(domains); vals = []; dropped = 0
+    for _ in range(n_boot):
+        s = [dl[g.randrange(len(dl))] for _ in dl]
+        v = stat(s)
+        if v is None or v != v:      # None or NaN
+            dropped += 1
+        else:
+            vals.append(v)
+    if dropped > max_drop * n_boot:
+        raise ValueError(
+            "bootstrap discarded %d of %d draws (%.1f%%, limit %.0f%%) -- the surviving "
+            "percentiles are not the interval they appear to be. Use a different estimator."
+            % (dropped, n_boot, 100.0 * dropped / n_boot, 100 * max_drop))
+    vals.sort()
+    return {"point": stat(dl), "lo": vals[int(.025 * len(vals))],
+            "hi": vals[int(.975 * len(vals))], "n_boot": n_boot,
+            "draws_dropped": dropped, "seed": seed}
+
+
 def filter_rows(rows, scope, population, assign, family_key="family_id",
                 domain_key="domain"):
     """The only sanctioned way to narrow rows for an analysis in this phase.
@@ -165,9 +194,20 @@ def filter_rows(rows, scope, population, assign, family_key="family_id",
     # C-CONT-095: both tags carry a "why" key, so {**sc.tag, **po.tag} silently DROPPED the
     # scope's rationale and relabelled it with the population's. Namespaced instead -- a
     # provenance dict that quietly loses half its provenance is worse than none.
+    # C-CONT-097 (REVIEW-9/D7): the LABEL "train+val" was attached to a train-ONLY corpus --
+    # all 67 domains are `train` and the 23 validation domains are absent entirely, so the
+    # filter is a no-op here and the name overstates what was included. A label describes the
+    # FILTER; only a census describes the DATA. Both are recorded now, and the census is the
+    # one an artifact should be read against.
+    doms = {r.get(domain_key) for r in kept}
+    census = {}
+    for d in doms:
+        census[assign.get(d, "UNASSIGNED")] = census.get(assign.get(d, "UNASSIGNED"), 0) + 1
     prov = {"scope": sc.tag, "population": po.tag,
             "rows_in": len(rows), "rows_kept": len(kept),
-            "domains_kept": len({r.get(domain_key) for r in kept})}
+            "domains_kept": len(doms),
+            "split_census": dict(sorted(census.items())),
+            "filter_was_a_noop": len(kept) == len(rows)}
     assert prov["scope"]["why"] != prov["population"]["why"], "provenance collision"
     return kept, prov
 
@@ -205,6 +245,14 @@ if __name__ == "__main__":
             {"family_id": "x|dev|slot4|n4", "domain": "d_tr"}]
     kept, prov = filter_rows(rows, Scope.PRIMARY, Population.TRAIN_VAL, A)
     assert len(kept) == 1 and prov["population"]["population"] == "train+val", prov
+    assert prov["split_census"] == {"train": 1}, prov          # C-CONT-097
+    try:
+        domain_bootstrap(["a", "b"], lambda s: None, 100, 1)   # C-CONT-098
+        raise SystemExit("FAIL: a bootstrap that dropped every draw returned an interval")
+    except ValueError:
+        pass
+    ok = domain_bootstrap(["a", "b"], lambda s: 1.0, 100, 1)
+    assert ok["draws_dropped"] == 0 and ok["point"] == 1.0
     assert prov["scope"]["why"].startswith("declared in CONT-ENTRY 094"), \
         "the scope rationale must survive the merge (C-CONT-095)"
     kept, _ = filter_rows(rows, Scope.PRIMARY, Population.ALL_INCLUDING_TEST, A)
