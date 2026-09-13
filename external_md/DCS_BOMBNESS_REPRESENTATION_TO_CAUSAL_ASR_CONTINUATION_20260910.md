@@ -11427,3 +11427,24 @@ CODE column of REVIEW-10; the remaining tracked minors are wording (already hand
 
 The substantive frontier is unchanged and still needs an external input: GPU (causal test / bank),
 the human rater (blind sheet), or the push token (58 commits queued).
+
+### CONT-ENTRY 159 — 2026-09-13 — ~4h review checkpoint (scoped): A12 independently verified, HOLDS. No fix.
+
+The ~4h review cadence came due (REVIEW-10 was ~13:20). Since then the only new work is CONT-157
+(A12 exact test) and CONT-158 (review-minor code hardening, already re-derived byte-identical), so a
+full 5-agent 5-part pass would be disproportionate — REVIEW-10 already cleared 147–156. Instead ran a
+single focused **adversarial verification of A12** (the one new scientific result), read-only, allowed
+to re-derive.
+
+**Verdict: HOLDS.** The agent reproduced every A12 number three independent ways — the committed
+script, a from-scratch reparse (own JSONL/softmax/sign-test), and scipy `binomtest` — all identical
+(button 89+/1−, 87+/3−; basket 88+/2−, 88+/2− of 90; exact fractions 182/2^90, 243152/2^90,
+8192/2^90). Confirmed: each concept readout measures its OWN concept (same prompt_id gives
+logp_concept −1.95 bomb / −8.73 knife / −10.0 gun; the concept identity is the bank it scored
+against, all six bank shas distinct — no button↔basket collision); per-domain mean over a uniform 12
+slots/domain; TEST genuinely excluded (90 kept = train∪val−3, ∅ overlap with the 23 test); sign
+convention, tie handling and key-collision all correct. No bug, no caveat to the verdict.
+
+Nothing to fix. No committed number moves. This closes the 4h checkpoint. Substantive frontier
+unchanged — still blocked on GPU auth (causal test / bank), the human rater (blind sheet), and the
+push token (58 commits queued locally).
