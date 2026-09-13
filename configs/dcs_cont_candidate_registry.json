@@ -158,7 +158,8 @@
    ],
    "rank_selection": "on VALIDATION, under a rule declared before VALIDATION is read",
    "known_trap": "a 100-D patch is not an interpretable representation; dimensionality is capped",
-   "status": "FITTED (CONT-ENTRY 053). PLS-1 on the within-domain target at cw_demo_mean L14, leave-one-DOMAIN-out, ranks 1/2/4/8. Mean per-domain rho: rank1 +0.4991, rank2 +0.5182, rank4 +0.4851. Rank 2 vs rank 1 is +0.0192 with CI [-0.043, +0.081] and p=0.553 -- NOT significant, better in only 33/67 domains. ANSWER: the predictive structure is ONE-DIMENSIONAL; no subspace beats a single direction. Rank was not SELECTED (that needs VALIDATION under a pre-declared rule, mandate section 14); every rank is reported."
+   "status": "FITTED (CONT-ENTRY 053). PLS-1 on the within-domain target at cw_demo_mean L14, leave-one-DOMAIN-out, ranks 1/2/4/8. Mean per-domain rho: rank1 +0.4991, rank2 +0.5182, rank4 +0.4851. Rank 2 vs rank 1 is +0.0192 with CI [-0.043, +0.081] and p=0.553 -- NOT significant, better in only 33/67 domains. ANSWER: the predictive structure is ONE-DIMENSIONAL; no subspace beats a single direction. Rank was not SELECTED (that needs VALIDATION under a pre-declared rule, mandate section 14); every rank is reported.",
+   "validation_closure": "CONT-ENTRY 153: carried through VALIDATION selection (pre-declared rule: smallest rank within 0.010 of best TRAIN LOO) at cw_demo_mean L24 and L14, both codewords. Selected rank 2-4 (confirms real rank-2-4 structure, C-CONT-043 fix), but the VALIDATION transfer never reaches F5: best F6 0.659 vs F5 0.678 (button) / 0.681 (basket). F6 CLOSED as EXPLORATORY-NEGATIVE -- low-rank structure adds nothing over the F5 rank-1 ridge out-of-sample."
   },
   {
    "family_id": "F7_logit_lens",
@@ -282,5 +283,6 @@
  "families_positive_on_train": [
   "F5_probe_installation"
  ],
- "families_total_count": 9
+ "families_total_count": 9,
+ "closure_note_cont153": "Phase-4 sweep status: F5 (demo-side rank-1 ridge) remains the SOLE family that predicts installation and transfers; F1-F4, F6, F7 and the new F8 query-side probe all fail to beat it on held-out. No BOMB-representation candidate has cleared \u00a744 #10 (causal leverage) -- that remains GPU-blocked."
 }

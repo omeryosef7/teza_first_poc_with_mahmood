@@ -11218,3 +11218,38 @@ caveats are now folded in: the permutation p is a single-cell upper bound (not f
 honest headline is the VALIDATION transfer, not the TRAIN argmax; `cw_query`==rel-11; and the
 independence battery above was added at its request. Hardening: `dcs_cont_qprobe.py` now refuses on a
 readout↔corpus `bank_sha` mismatch (the never-pool guard `f5_probe` lacked).
+
+### CONT-ENTRY 153 — 2026-09-13 — F6 low-rank carried through VALIDATION selection at last: it does NOT beat F5. The Phase-4 CPU sweep is now closed — F5 stands alone, and nothing has cleared the causal bar.
+
+The §14/§46 prerequisite that `dcs_cont_lowrank.py` never met — a low-rank approach selected under a
+pre-declared rule and TRANSFERRED to held-out VALIDATION — is now done. `scripts/dcs_cont_f6_validation.py`
+(thin; reuses `lowrank.pls_fit`/`pls_predict`, the C-CONT-043 deflation-corrected pair, and the lpm
+loaders) fits PLS on TRAIN, selects rank by the pre-declared rule (smallest rank within 0.010 of the
+best TRAIN LOO), and transfers that fixed rank to VALIDATION. TRAIN/VAL only, TEST refused, bank_sha
+guarded, codewords never pooled. Ran on SLURM (887544-887547).
+
+**Result — F6 does not beat F5 on held-out, anywhere:**
+
+| cell | selected rank | F6 VAL transfer | best F6 VAL (any rank) | F5 incumbent |
+|---|---|---|---|---|
+| button `cw_demo_mean` L24 | 4 | 0.659 | 0.659 | **0.678** |
+| button `cw_demo_mean` L14 | 4 | 0.607 | 0.634 | **0.678** |
+| basket `cw_demo_mean` L24 | 2 | 0.659 | 0.659 | **0.681** |
+| basket `cw_demo_mean` L14 | 4 | 0.615 | 0.617 | **0.681** |
+
+The selection landing at rank 2-4 (not 1) **confirms the C-CONT-043 fix** — real rank-2-4 structure
+exists on TRAIN — but that structure carries **no out-of-sample advantage** over F5's rank-1 ridge.
+**Family F6 closes as EXPLORATORY-NEGATIVE.**
+
+**Phase-4 CPU sweep is now closed.** Tally, all TRAIN-select / VALIDATION-transfer, both codewords:
+F1 (raw-state) is the floor; F2 (diff-in-means/interaction), F3 (pooled), F4 (trajectory), F7
+(logit-lens) all lose to or tie the raw state (topic); **F8 query-side** predicts installation but is
+~70 % collinear with F5 and adds only +0.02-0.04 (CONT-ENTRY 152); **F6 low-rank** does not beat F5
+here. **F5 — the demo-side rank-1 ridge — remains the SOLE family that predicts installation and
+transfers.** And F5 is causally inert (C-CONT-040). So the honest Phase-4 conclusion: there is a
+robust, TEST-confirmed installation PREDICTOR (F5), no family beats it, and NOTHING has cleared §44
+#10 (causal leverage). The one remaining move that could — the differ-across-arms test at
+`cw_query`/rel-11 — needs a fresh **GPU** extraction and is flagged for authorisation, not run.
+
+Self-review: all four jobs rc=0 (validates the new script); numbers plausible and monotone-ish;
+VAL≥TRAIN as F5 also shows; no cell reaches F5. No claim exceeds what the transfer shows.

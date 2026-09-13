@@ -1,0 +1,35 @@
+{
+ "schema": "dcs_cont_f6_validation/1",
+ "corpus": "outputs/boombness/extract_boombness/cont1_behavioral_button_bomb_20260910_152806_272296",
+ "site": "cw_demo_mean",
+ "layer": 14,
+ "ranks": [
+  1,
+  2,
+  4,
+  8,
+  16
+ ],
+ "selection_rule": "smallest rank within 0.010 of best TRAIN LOO (parsimony); VAL transfer is the headline",
+ "train_loo_by_rank": {
+  "1": 0.4808,
+  "2": 0.538,
+  "4": 0.5536,
+  "8": 0.5383,
+  "16": 0.5392
+ },
+ "val_transfer_by_rank": {
+  "1": 0.5055,
+  "2": 0.5966,
+  "4": 0.6067,
+  "8": 0.6342,
+  "16": 0.6249
+ },
+ "selected_rank": 4,
+ "selected_val_transfer": 0.6067,
+ "f5_incumbent_val": {
+  "button": 0.6784,
+  "basket": 0.6807
+ },
+ "verdict_note": "F6 beats F5 on VALIDATION only if selected_val_transfer exceeds the matching codeword's F5 incumbent; otherwise low-rank structure adds nothing over the F5 ridge and F6 is closed as EXPLORATORY-negative."
+}
