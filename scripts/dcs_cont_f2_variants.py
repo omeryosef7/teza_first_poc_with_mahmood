@@ -69,7 +69,10 @@ def main() -> int:
         if r["domain"] in TR:
             t = mp["reps"].get(r["prompt_id"])
             if t is not None:
-                byk[((r["domain"], lpm.family_slot(r["family_id"])), r["cell"])] = t[si, li].float()
+                k = ((r["domain"], lpm.family_slot(r["family_id"])), r["cell"])
+                if k in byk:   # (REVIEW-10) match layerpos_map's duplicate-key refusal
+                    raise SystemExit("duplicate key %r -- silent channel substitution" % (k,))
+                byk[k] = t[si, li].float()
     comp = [k for k in sorted({k for k, _ in byk}) if all((k, c) in byk for c in "ABCE")]
     doms = sorted({d for d, _ in comp})
     dom_slots = {}

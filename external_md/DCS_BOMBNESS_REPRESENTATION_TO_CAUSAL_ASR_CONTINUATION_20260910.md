@@ -11401,3 +11401,29 @@ replicate — is untouched and still stands; only the "asserted, not run" defect
 Self-review: exact-p arithmetic checks by hand (89+/1−: 2·(1+90)/2^90 = 1.47e−25); the re-derivation
 reads the small readout jsonls (no cache), reproduces the carried counts, excludes TEST via the split,
 never pools codewords. Artifact: `reports/DCS_CONT_A12_EXACT.json`.
+
+### CONT-ENTRY 158 — 2026-09-13 — REVIEW-10 CODE minors closed: the new probe kernels now carry the duplicate-key refusal, and qprobe's vacuous TEST guard is gone. Numbers unchanged (re-derived).
+
+No new inputs this tick (no rated sheet, no GPU auth, no jobs). Rather than idle, closed the tracked
+CODE minors REVIEW-10 (CONT-156) flagged — honest follow-through on "fix what the review finds",
+aligned with the phase's core discipline ("guards are the only way in"; the repo has shipped verifier
+harnesses whose checks passed over empty/mis-keyed sets).
+
+- **Duplicate-key refusal** added to the three new build kernels (`dcs_cont_qprobe.py`,
+  `dcs_cont_f6_validation.py`, `dcs_cont_f2_variants.py`), matching `dcs_cont_layerpos_map`/
+  `load_installation`, which raise on a repeated `((domain,family_slot),cell)` key because a duplicate
+  there is a silent channel substitution (last-row-wins). The newer kernels had used plain dict
+  assignment. No duplicate occurs on these corpora (the canonical loaders' uniqueness check passes),
+  so the guard is a no-op here — future-proofing only.
+- **Vacuous TEST guard removed** from `dcs_cont_qprobe.py`: the `any(assign[d]=='test' for d in TR|VA)`
+  check could never fire (TR/VA are built as exactly the train/val domains); replaced with a comment
+  pointing at the real, non-vacuous corpus-row guard that does the work.
+
+**Re-derived, unchanged.** Re-ran `dcs_cont_f2_variants.py` (button) through the edited kernel on
+SLURM (888086): `v_hi_lo +0.5442, v_int −0.1581, v_resid +0.1822` — **byte-identical** to CONT-ENTRY
+154, confirming the guard edits are behavior-preserving. No committed number moves. This clears the
+CODE column of REVIEW-10; the remaining tracked minors are wording (already handled in 156) and the
+`blind_sheet` bank-sha guard (pairing is by hardcoded config, emits no ratio — left as noted).
+
+The substantive frontier is unchanged and still needs an external input: GPU (causal test / bank),
+the human rater (blind sheet), or the push token (58 commits queued).

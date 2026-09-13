@@ -76,8 +76,9 @@ def main() -> int:
     assign = lpm.load_split(); EX = set(lpm.EXCLUDED_DOMAINS)
     TR = {d for d, v in assign.items() if v == "train"} - EX
     VA = {d for d, v in assign.items() if v == "validation"} - EX
-    if any(assign[d] == "test" for d in TR | VA):
-        print("REFUSING: a test domain leaked into the fit populations"); return 2
+    # (REVIEW-10) The old `any(assign[d]=='test' for d in TR|VA)` check was vacuous -- TR/VA are
+    # constructed above as exactly the train/validation domains, so it can never fire. The real,
+    # non-vacuous TEST guard is the corpus-row check below.
     inst, _, _ = lpm.load_installation(os.path.join(REPO, a.readout))
     mp, rows, csha = lpm.load_corpus(os.path.join(REPO, a.corpus), mmap=True)  # low-RAM on shared node
     if any(assign.get(r["domain"]) == "test" for r in rows):
@@ -113,7 +114,10 @@ def main() -> int:
             if r["domain"] in keep:
                 t = mp["reps"].get(r["prompt_id"])
                 if t is not None:
-                    byk[((r["domain"], lpm.family_slot(r["family_id"])), r["cell"])] = t[si, li].float()
+                    k = ((r["domain"], lpm.family_slot(r["family_id"])), r["cell"])
+                    if k in byk:   # (REVIEW-10) match layerpos_map's duplicate-key refusal
+                        raise SystemExit("duplicate key %r -- silent channel substitution" % (k,))
+                    byk[k] = t[si, li].float()
         comp = [k for k in sorted({k for k, _ in byk}) if all((k, c) in byk for c in "ABCE")]
         doms = sorted({d for d, _ in comp}); xs = []; ys = []; dof = []
         for d in doms:
