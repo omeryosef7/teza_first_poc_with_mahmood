@@ -159,7 +159,7 @@
    "rank_selection": "on VALIDATION, under a rule declared before VALIDATION is read",
    "known_trap": "a 100-D patch is not an interpretable representation; dimensionality is capped",
    "status": "FITTED (CONT-ENTRY 053). PLS-1 on the within-domain target at cw_demo_mean L14, leave-one-DOMAIN-out, ranks 1/2/4/8. Mean per-domain rho: rank1 +0.4991, rank2 +0.5182, rank4 +0.4851. Rank 2 vs rank 1 is +0.0192 with CI [-0.043, +0.081] and p=0.553 -- NOT significant, better in only 33/67 domains. ANSWER: the predictive structure is ONE-DIMENSIONAL; no subspace beats a single direction. Rank was not SELECTED (that needs VALIDATION under a pre-declared rule, mandate section 14); every rank is reported.",
-   "validation_closure": "CONT-ENTRY 153: carried through VALIDATION selection (pre-declared rule: smallest rank within 0.010 of best TRAIN LOO) at cw_demo_mean L24 and L14, both codewords. Selected rank 2-4 (confirms real rank-2-4 structure, C-CONT-043 fix), but the VALIDATION transfer never reaches F5: best F6 0.659 vs F5 0.678 (button) / 0.681 (basket). F6 CLOSED as EXPLORATORY-NEGATIVE -- low-rank structure adds nothing over the F5 rank-1 ridge out-of-sample."
+   "validation_closure": "CONT-ENTRY 153: carried through VALIDATION selection (pre-declared rule: smallest rank within 0.010 of best TRAIN LOO) at cw_demo_mean L24 and L14, both codewords. Selected rank 2-4 (confirms real rank-2-4 structure, C-CONT-043 fix), but the VALIDATION transfer never reaches F5: best F6 0.659 vs F5 0.678 (button) / 0.681 (basket). F6 CLOSED as EXPLORATORY-NEGATIVE -- low-rank structure does not BEAT the F5 rank-1 ridge out-of-sample (it does transfer above the raw-state floor, but so do others; F5 is the strongest, not the only predictor)."
   },
   {
    "family_id": "F7_logit_lens",
@@ -173,7 +173,7 @@
    "family_id": "F8_query_side_probe",
    "what": "ridge probe of within-domain cell-C hidden state at QUERY-SPAN sites (rel-16..rel-1, cw_query==rel-11), the only site class the A1 row-knockout can touch (\u00a744 #10). Motivated by C-CONT-040: F5's demo-side site is bit-identical across ko/ctrl.",
    "fitted": "TRAIN+VALIDATION (CONT-ENTRY 152), button+basket, never pooled",
-   "verdict": "EXPLORATORY. Predicts installation ~F5 level and is cell-C-specific, but is LARGELY SHARED with F5 (out-of-fold pred collinearity rho 0.696 button / 0.739 basket) with only a small replicated increment over F5 (+0.041 / +0.023 VAL joint). Most installation-predictive variance is demo-side, copied forward; the query-local component is small. Causal (differ-across-arms) test PENDING GPU."
+   "verdict": "EXPLORATORY. Predicts installation ~F5 level and is cell-C-specific, but is LARGELY SHARED with F5 (out-of-fold pred collinearity rho 0.696 button / 0.740 basket) with only a increment over F5 (+0.041/+0.023 VAL joint) that is WITHIN NOISE at N=23 (REVIEW-10). Most installation-predictive variance is demo-side, copied forward; the query-local component is small. Causal (differ-across-arms) test PENDING GPU."
   }
  ],
  "candidates": [
@@ -207,7 +207,7 @@
   },
   {
    "candidate_id": "Q1_query_side_probe_rel6",
-   "status": "EXPLORATORY -- not a finalist. ~F5-level, cell-C-specific, replicated cross-codeword; but collinearity with F5 is 0.70/0.74 and the VALIDATION increment over F5 is only +0.041/+0.023, i.e. mostly the demo-side state copied forward. Causal leverage (\u00a744 #10) UNTESTED -- needs a ko/ctrl multiposition extraction at cw_query/rel-11 (GPU).",
+   "status": "EXPLORATORY -- not a finalist. ~F5-level, cell-C-specific, replicated cross-codeword; but collinearity with F5 is 0.70/0.74 and the VALIDATION 'increment' over F5 (+0.041/+0.023, joint two-site minus F5-only) is WITHIN NOISE at N=23 validation domains -- it carries no CI/bootstrap and the joint model held lambda fixed while the Gram matrix doubled, so NO query-side signal independent of F5 is established (REVIEW-10). Causal leverage (SS44 #10) UNTESTED -- needs a ko/ctrl multiposition extraction at cw_query/rel-11 (GPU).",
    "mathematical_definition": "LOO-by-domain dual ridge (lambda=100) on within-domain-centred cell-C hidden state at query-span site rel-6; y = concept-free installation. cw_query is byte-identical to rel-11 (the actual knockout-edited row; weaker).",
    "motivation": "the only site class the A1 row-knockout can touch; F5's site is bit-identical across ko/ctrl (C-CONT-040), so no demo-side probe can satisfy \u00a744 #10.",
    "representation_source": "behavioural prompt, cont1_behavioral_{button,basket}_bomb corpus, mmap",
@@ -224,7 +224,8 @@
      "incremental": 0.0413,
      "collinearity_pred": 0.6964,
      "cellB_same_site": 0.3966,
-     "f5_at_L20": 0.6482
+     "f5_at_L20": 0.6482,
+     "increment_caveat": "within noise at N=23; not separately tested; no independent signal established"
     },
     "basket": {
      "query_only": 0.6525,
@@ -233,7 +234,8 @@
      "incremental": 0.0227,
      "collinearity_pred": 0.7395,
      "cellB_same_site": 0.3263,
-     "f5_at_L18": 0.6725
+     "f5_at_L18": 0.6725,
+     "increment_caveat": "within noise at N=23; not separately tested; no independent signal established"
     }
    },
    "installation_relationship": "predicts ~F5 level (VAL 0.645/0.653); small increment over F5",
@@ -281,9 +283,12 @@
  ],
  "families_never_fitted": [],
  "families_positive_on_train": [
-  "F5_probe_installation"
+  "F5_probe_installation",
+  "F8_query_side_probe"
  ],
  "families_total_count": 9,
  "closure_note_cont153": "Phase-4 sweep status: F5 (demo-side rank-1 ridge) remains the SOLE family that predicts installation and transfers; F1-F4, F6, F7 and the new F8 query-side probe all fail to beat it on held-out. No BOMB-representation candidate has cleared \u00a744 #10 (causal leverage) -- that remains GPU-blocked.",
- "phase4_sweep_complete": "CONT-ENTRY 154: every declared Phase-4 family is now fitted through TRAIN(->VALIDATION where positive). F5 (demo-side rank-1 ridge) is the SOLE family predicting installation and transferring; F1 raw-state floor; F2/F3/F4/F6/F7 negative/tie; F8 query-side ~F5-collinear. Nothing clears \u00a744 #10 (causal leverage) -- GPU differ-across-arms test blocked."
+ "phase4_sweep_complete": "CONT-ENTRY 154: every declared Phase-4 family is now fitted through TRAIN(->VALIDATION where positive). F5 (demo-side rank-1 ridge) is the STRONGEST family and nothing beats it on held-out; F6/F8 also transfer above the raw-state floor but do not exceed F5; F1 raw-state floor; F2/F3/F4/F6/F7 negative/tie; F8 query-side ~F5-collinear. Nothing clears \u00a744 #10 (causal leverage) -- GPU differ-across-arms test blocked.",
+ "families_beating_F5_on_validation": [],
+ "positive_vs_beats_f5_note": "'positive_on_train' means predicts installation above the raw-state floor and passes its null; F8 qualifies (and on basket TRAIN 0.6525 > F5 TRAIN 0.6336). NONE beats F5 on held-out VALIDATION. Earlier phrasings calling F5 'the sole family that predicts and transfers' are corrected (REVIEW-10/CONT-156): F5 is the STRONGEST, nothing beats it."
 }

@@ -116,8 +116,12 @@ def main() -> int:
 
     out = {"schema": "dcs_cont_f2_variants/1", "corpus": a.corpus, "site": a.site,
            "layer": a.layer, "n_domains": len(doms),
-           "reference": {"raw_state_floor_F1_within_domain": 0.546,
-                         "F5_ridge_train_loo": 0.6241, "F5_ridge_val_transfer": 0.6784},
+           # REVIEW-10: these reference constants are the BUTTON F5/raw-state values, quoted only for
+           # scale. The codeword-matched incumbent is in DCS_CONT_QPROBE_<cw>.json (basket F5 TRAIN
+           # LOO 0.6336 / VAL 0.6807). Do NOT read these as this run's own codeword's F5.
+           "reference_button_only_for_scale": {"raw_state_floor_F1_within_domain": 0.546,
+                         "F5_ridge_train_loo_button": 0.6241, "F5_ridge_val_transfer_button": 0.6784,
+                         "note": "codeword-matched F5 is in DCS_CONT_QPROBE_<cw>.json"},
            "train_loo_rho": {}, "note":
            "TRAIN LOO-by-domain, within-domain-centred, scored <z_C, vhat>. v_resid omits the "
            "generic-remap term (no committed definition) and is a PARTIAL v_resid."}

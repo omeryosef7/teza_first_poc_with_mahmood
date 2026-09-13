@@ -125,8 +125,9 @@ def main() -> int:
                            "matching codeword's F5 incumbent; otherwise low-rank structure adds "
                            "nothing over the F5 ridge and F6 is closed as EXPLORATORY-negative."}
     json.dump(out, open(a.out, "w"), indent=1)
-    print("[F6-val] selected rank %d VAL transfer = %+.4f  (F5 button 0.6784 / basket 0.6807)"
-          % (selected, out["selected_val_transfer"]))
+    svt = out["selected_val_transfer"]
+    print("[F6-val] selected rank %d VAL transfer = %s  (F5 button 0.6784 / basket 0.6807)"
+          % (selected, ("%+.4f" % svt) if svt is not None else "n/a (PLS degenerate at selected rank)"))
     print("[F6-val] wrote %s" % os.path.relpath(a.out, REPO))
     return 0
 

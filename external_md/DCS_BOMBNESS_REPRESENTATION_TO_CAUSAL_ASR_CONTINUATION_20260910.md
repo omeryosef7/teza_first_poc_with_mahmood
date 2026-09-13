@@ -11319,3 +11319,53 @@ answer (a confirmed installation *predictor* with no causal *mediator* is a publ
 **Flagged, not launched** — first GPU spend this session; awaiting the user's go. No number is claimed.
 The CPU/cache candidate-search frontier is exhausted; the 5-part review (~4 h cadence) comes due ~14:30
 and will precede any paper-facing synthesis.
+
+### CONT-ENTRY 156 — 2026-09-13 — REVIEW-10 (5-part) on this session's work: no number-changing bug; three synthesis/provenance overclaims corrected; minors tracked.
+
+Ran the ~4h review early, at the Phase-4-complete milestone, as a 5-agent workflow (CODE / DATA /
+OUTPUT / STATISTICAL / SCIENTIFIC) over CONT-ENTRY 147–155, the six new/changed scripts, the JSON
+artifacts, the registry and the causal proposal. Full record: `reports/DCS_CONT_REVIEW10.md`.
+Verdicts: CODE **MINOR_ONLY**, OUTPUT **MINOR_ONLY**, DATA / STATISTICAL / SCIENTIFIC
+**MAJOR_FINDINGS** — the majors are all synthesis/provenance wording, not computation.
+
+**Independently confirmed sound** (re-derived): the qprobe LOO kernel is byte-equivalent to the frozen
+`f5_probe` (mmap slice-before-float ≡ float-then-slice); every headline number in 150/152/153/154/155
+reconciles to its JSON cell-for-cell; the Fisher-z power math checks by hand and Monte-Carlo; the
+selection protocols are genuine train-select/val-transfer; permutation nulls permute fit+score;
+TEST/codeword/DOMAIN guardrails hold; the blind-sheet one-shuffle invariant is real.
+
+**Corrections applied this entry:**
+1. **(DATA, major) Bank-sha provenance.** The proposal and CONT-155 said *both* `cont1` caches are on
+   bank `dcd92d723f3e6d00`. That is **button only**; basket `cont1` is `79511d9e254571e6`. Corrected
+   in `DCS_CONT_CAUSAL_TEST_PROPOSAL.md` (each `ko` run matched to its OWN codeword's bank; the CPU
+   analysis must assert per-codeword `bank_sha`). The GPU command template was already parameterised
+   by `<CW>`, so nothing was mis-run — the error was the prose pairing key.
+2. **(SCIENTIFIC, major) "F5 is the SOLE family that predicts and transfers" overstates.** F8
+   query-side (0.645/0.653) and F6 (0.607–0.659) also transfer above the raw-state floor (0.546);
+   F5 is the **strongest** and **nothing beats it on held-out**, but it is not the only predictor.
+   Corrected in the proposal and the registry (`phase4_sweep_complete`, F6 closure, and a new
+   `positive_vs_beats_f5_note`; `families_positive_on_train` now lists F5 **and** F8). CONT-153's
+   phrasing is superseded by this.
+3. **(STATISTICAL/SCIENTIFIC, major) The query-side "increment over F5" is within noise.** The
+   +0.041/+0.023 joint-minus-F5 on **23** VALIDATION domains carried no CI and the joint ridge kept
+   λ fixed while the Gram matrix doubled. Downgraded in the registry Q1/F8 entries: **no query-side
+   signal independent of F5 is established** (a domain-bootstrap CI would include 0). This only
+   *strengthens* the honest conclusion — query-side ≈ F5.
+4. **(STATISTICAL, major) The causal proposal's step-3 tracking correlation is underpowered.** It is a
+   ~67-domain correlation, exactly the regime CONT-150 showed has MDE ≈ 0.337. Added a POWER CAVEAT
+   to the decision rule: a null there means "no effect above MDE 0.337", not "no effect"; steps 1–2
+   (‖Δ‖ magnitudes) remain informative.
+5. **(CODE, minor) f6-validation** final print now guards `None`; **f2-variants** reference block
+   relabelled as button-only-for-scale (the basket F2 JSON had button's F5 numbers — harmless, v_hi_lo
+   0.538 < both).
+
+**Tracked minors, no current impact (deferred):** the vacuous TEST-leak guard copied from `f5_probe`
+(qprobe:79 — the real guard is the corpus-row check); the build kernels' last-row-wins dict
+assignment vs `layerpos_map`'s duplicate-key refusal (no duplicates occur on these corpora, verified);
+`blind_sheet` lacks a bank-sha guard (pairing is by hardcoded config, emits no ratio); "~70%
+collinear" should read "rank-ρ ~0.70, above the ~0.44 expected from a shared target"; "copied
+forward" is consistent-with not proof-of; CONT-150's "un-answerable/252 domains" is conditional on the
+(non-significant) ρ=0.176 and swings 85–347 across the plausible range. None changes a committed
+number; all are logged in `reports/DCS_CONT_REVIEW10.md` for the record.
+
+Net: the session's computation stands; the record is now phrased to match what the numbers support.
