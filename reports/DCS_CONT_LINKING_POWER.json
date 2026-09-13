@@ -1,0 +1,70 @@
+{
+ "schema": "dcs_cont_linking_power/1",
+ "unit": "DOMAIN",
+ "test": "Pearson r, Fisher z",
+ "alpha": 0.05,
+ "power_target": 0.8,
+ "z_crit_sum": 2.80159,
+ "domain_counts": {
+  "knockout_arms": 67,
+  "usable_no_test": 90,
+  "declared_total": 116,
+  "test_withheld": 23,
+  "excluded": 3
+ },
+ "mde_at_current_N": {
+  "N=67": 0.3366,
+  "N=90": 0.2916
+ },
+ "n_needed_for_rho": {
+  "0.150": {
+   "n": 347,
+   "power_analytic": 0.8005,
+   "power_mc": 0.7997
+  },
+  "0.176": {
+   "n": 252,
+   "power_analytic": 0.8014,
+   "power_mc": 0.8036
+  },
+  "0.180": {
+   "n": 240,
+   "power_analytic": 0.8,
+   "power_mc": 0.8028
+  },
+  "0.200": {
+   "n": 194,
+   "power_analytic": 0.8001,
+   "power_mc": 0.8048
+  },
+  "0.250": {
+   "n": 124,
+   "power_analytic": 0.8022,
+   "power_mc": 0.8079
+  },
+  "0.300": {
+   "n": 85,
+   "power_analytic": 0.8003,
+   "power_mc": 0.8022
+  },
+  "0.337": {
+   "n": 67,
+   "power_analytic": 0.8011,
+   "power_mc": 0.8062
+  },
+  "0.400": {
+   "n": 47,
+   "power_analytic": 0.8024,
+   "power_mc": 0.8063
+  }
+ },
+ "observed": {
+  "rho": 0.176,
+  "N_today": 67,
+  "power_today_analytic": 0.2959,
+  "power_today_mc": 0.2948,
+  "mde_today": 0.3366,
+  "underpowered": true,
+  "n_needed_for_observed_rho": 252
+ }
+}

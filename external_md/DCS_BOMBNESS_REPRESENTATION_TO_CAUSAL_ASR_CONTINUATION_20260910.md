@@ -11064,3 +11064,52 @@ opened until the sheet is returned filled in).
 back, nothing here may be analysed, and no ratio may be computed. This is the honest stopping
 point REVIEW-9 identified: the phase's automated data cannot decide threshold-one-switch vs
 GATING, and the next real number comes from the rater, not from another pass over these runs.
+
+### CONT-ENTRY 150 — 2026-09-13 — §42 Phase 2: the linking test's sample-size requirement is now a committed calculation, not prose — and it says the existing bank cannot power it at any usable size
+
+The blind sheet (CONT-ENTRY 149) is the one action that can settle the open A17/one-switch
+question, and it is now blocked on a human rater. With no SLURM jobs running and no new
+artifacts, the honest §42 advance is **Phase 2** — *"decide whether existing `ts116m` can
+answer each hypothesis"* — and the single quantity that decision turns on had never been
+committed as a reproducible computation. `NEXT_BANK_SPECIFICATION` asserts it in prose
+("~240 domains for a rho ~= 0.18 linking test at 80 % power; the present 67 reaches rho ~= 0.34")
+and the claim table carries "rho 0.176 against an MDE of 0.337" (CONT-ENTRY 124). §43 forbids
+guessing the size of the final central experiment. So it should not be a guess.
+
+`scripts/dcs_cont_linking_power.py` computes it (Fisher z, DOMAIN as the unit, two-sided
+alpha 0.05, 80 % power), and a bivariate-normal Monte-Carlo cross-checks every cell so the
+number is not merely a formula. It reads no bank, no run, and no TEST — pure power arithmetic,
+so it cannot leak TEST, pool codewords, or touch the withdrawn A16/A17 artifacts. It quotes
+the published rho=0.176 only to locate it; it fits nothing.
+
+**It reproduces the spec exactly** — `N(0.18) = 240`, `MDE(67) = 0.3366` — confirming those
+prose numbers were right. Then it extends them to the two facts the build decision actually
+needs:
+
+| question | answer |
+|---|---|
+| Power of the linking test **as run** (rho=0.176, N=67) | **0.296** (MC 0.295) — under 30 % |
+| MDE at N=67 (knockout arms today) | **0.337** — observed rho sits **below** it |
+| MDE at N=90 (**all** usable train+val domains, no new bank) | **0.292** — *still above* 0.176 |
+| Domains needed to detect the **observed** rho=0.176 at 80 % | **252** |
+| Domains needed for a rho=0.18 test at 80 % (spec's target) | **240** |
+
+**The Phase-2 verdict for the linking test is therefore decisive and negative:** the existing
+`ts116m` bank **cannot** power it — not at the 67 knockout domains, and not even at the full 90
+usable domains, because the MDE there (0.292) is still larger than the effect (0.176). This is
+not "underpowered, tighten it later"; it is "un-answerable on this bank at any subset." A ~250-
+to-260-domain bank is the floor, which is close to the spec's "~240" and lands in §43's
+"large enough to make a defensible claim" territory — at roughly 3.8× the current per-arm GPU
+cost (252/67), across all four arms.
+
+This does not commit anyone to building it. It converts one of the three blocked lines in
+`NEXT_BANK_SPECIFICATION` (Power) from an assertion into a checked number, so that when the
+build-or-not decision is made it is made against arithmetic. The other two blocked lines
+(position-matched demonstrations for the sufficiency patch; a second concept that installs on
+both codewords for the specificity test) are design changes, not sample-size questions, and are
+unaffected by this.
+
+**Discipline.** `--selftest` passes and includes the RED demonstration §20 requires: at the
+WRONG unit (rows, N=670) the same rho=0.176 clears the MDE and the test would look *powered* —
+so the domain unit is load-bearing and its loss would be caught. Artifact:
+`reports/DCS_CONT_LINKING_POWER.json`. Nothing in the claim table moves.
