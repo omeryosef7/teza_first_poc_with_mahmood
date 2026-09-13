@@ -11288,3 +11288,34 @@ search is exhausted.
 
 Self-review: both jobs rc=0 (validates the script); `v_int` reproduces the known negative; `v_hi_lo`
 ≈ raw-state floor is the expected behaviour of a median-split diff-in-means; no claim exceeds F5.
+
+### CONT-ENTRY 155 — 2026-09-13 — The causal test is specified, sized, and cheaper than expected (ctrl already exists). CPU frontier exhausted; this is the go/no-go for the one remaining move.
+
+Phase-4's candidate sweep is complete (154) and every high-value continuation needs an input I don't
+have autonomously: GPU (causal test / bigger bank), the human rater (blind sheet 149), or the push
+token. Per the operating rule ("if a stage needs unauthorised GPU, do the largest honest analysis
+instead and state what is blocked"), the largest honest thing left is to convert the flagged causal
+test from a hand-wave into a concrete, sized, decision-ready spec: `reports/DCS_CONT_CAUSAL_TEST_PROPOSAL.md`.
+
+**Key finding that makes it cheap:** `cont1_behavioral_{button,basket}_bomb` are the **no-knockout
+base** caches (`knockout_applied=False`), i.e. they ARE the `ctrl` multiposition states at the query
+sites. So the differ-across-arms test does NOT need a ko+ctrl pair generated from scratch — only the
+**`ko` arm**, matched to bank `dcd92d723f3e6d00`, pairs by prompt_id against `cont1`. That is **2 GPU
+jobs (~4–8 GPU-h total)**, not four, on `killable`/`gpu-research`, one 24 GB GPU each.
+
+**What it measures, with a pre-declared decision rule.** Pair `ko` vs `ctrl` by prompt_id, cell C,
+per domain: (1) positive control `||h_ko−h_ctrl||` at `cw_demo_mean` must be ≈0 (C-CONT-040's known
+invariance — validates the extraction); (2) the same at `cw_query`(rel-11)/`rel-6` (non-zero is
+near-certain — it is the edited row); (3) the decisive quantity — does the F8 query-side readout
+`⟨h, w_q⟩` shift across arms in the installation direction and track the per-domain knockout effect?
+§44 #10 candidate iff control≈0 AND the readout shifts AND the shift tracks the effect; otherwise a
+clean negative close.
+
+**Honest expected value:** most likely a **negative close** — `cw_query` is edited so it will differ,
+but its installation-relevant component is largely the F5-shared part, which is not knockout-sensitive.
+Still worth ~4–8 GPU-h: it turns the phase's central causal question from "untested" into a definite
+answer (a confirmed installation *predictor* with no causal *mediator* is a publishable conclusion).
+
+**Flagged, not launched** — first GPU spend this session; awaiting the user's go. No number is claimed.
+The CPU/cache candidate-search frontier is exhausted; the 5-part review (~4 h cadence) comes due ~14:30
+and will precede any paper-facing synthesis.
