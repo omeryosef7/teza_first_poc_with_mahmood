@@ -11008,3 +11008,59 @@ claim table changes: neither defect moves a published number. They are debt paid
 measurement, which per `REVIEW-9` and `CONT-ENTRY 147` is the **blind human rating of the ~60
 never-refused-in-both candidate rows** — the one endpoint not entangled with the intervention's
 disclaimer side effect.
+
+### CONT-ENTRY 149 — 2026-09-13 — The blind rating sheet is built, sealed, and independently checked item-for-item — the one measurement not entangled with the intervention's side effects
+
+`REVIEW-9/S8` and `CONT-ENTRY 147` both land in the same place: every automated content
+endpoint in this phase is entangled with a side effect of the knockout. The intervention
+rewrites **669 of 670** completions, and specifically suppresses disclaimers (A2b), so
+`CR-002`'s `SCOPE` clause — a disclaimer detector — vetoes control candidates more often
+than knockout candidates *for reasons unrelated to bomb content*. That is what killed A17.
+The endpoint that escapes this is a human reading the answer and scoring the **content**.
+This entry builds the instrument; it does not read a result.
+
+**The candidate set — REVIEW-9/P3's discriminating stratum.** A row is on the sheet iff its
+prompt is present in both arms of its codeword, **neither arm refused it**, StrongREJECT
+≥ 0.5, the frozen 44-term concept lexicon keeps it, and MATERIAL matches. The disclaimer
+veto is **deliberately NOT applied** — it is the thing on trial, so it must not select the
+sheet. Each item instead **records** `cr002_scope_veto` in the sealed key, so the veto's
+effect can later be measured against human judgment rather than assumed.
+
+Why never-refused-in-both: threshold-one-switch predicts a content ratio **< 1** in this
+stratum, GATING predicts **= 1**. The automated version sits at 1.000 / 1.059 with intervals
+spanning 0.58–1.9 — undecided. The human read is the tie-breaker.
+
+**Census.**
+
+| codeword | shared pairs | never-refused-in-both | candidates on sheet |
+|---|---|---|---|
+| button | 670 | 595 | **56** (28 ko / 28 ctrl) |
+| basket | 670 | 662 | **35** (18 ko / 17 ctrl) |
+
+91 items total — REVIEW-9 asked for "~60 of both arms"; button alone is 56, the two
+codewords together 91. Both are carried, interleaved, but the key tags `codeword` on every
+item and **they are never pooled** in analysis.
+
+**The C-CONT-071 guard.** That defect was a sheet and a key built from **two different RNG
+states**, so item N on the paper was not item N in the key. Here there is exactly **one**
+shuffle of **one** list (seed 20260913), both files are written in a single pass over that
+one list, and the invariant is asserted before either file opens. Then I checked it the hard
+way, from disk, without importing the builder: re-parsed all 91 answers out of the Markdown,
+re-fetched each completion from its source run by the key's `(codeword, arm, prompt_id)`, and
+compared. **91/91 exact, 0 mismatches.** No arm-identifying token leaks into the sheet; every
+item id appears exactly twice (form row + heading); order signature `ce57b6125e307a07`.
+
+**Guards honoured.** `ALL_SLOTS` is labelled (this is not a dose contrast — both arms sit at
+the same dose — so slot0 is not forced; it is simply where the events are), and `in_slot0` is
+carried per item so the primary-scope subset can be re-analysed **without a second sheet**.
+Population `train+val` = train-only here, recorded via the new census. Completions emitted in
+**full**, no window (C-CONT-079). The builder refuses to overwrite an existing sheet or key.
+
+**Files.** `scripts/dcs_cont_blind_sheet.py` (builder), `reports/DCS_CONT_BLIND_RATING_SHEET_R1.md`
+(the sheet, arms stripped), `data/labels/dcs_cont_blind_rating_key_R1.json` (SEALED — not to be
+opened until the sheet is returned filled in).
+
+**What is NOT done, and cannot be by me.** The sheet must be rated by a human. Until it comes
+back, nothing here may be analysed, and no ratio may be computed. This is the honest stopping
+point REVIEW-9 identified: the phase's automated data cannot decide threshold-one-switch vs
+GATING, and the next real number comes from the rater, not from another pass over these runs.
