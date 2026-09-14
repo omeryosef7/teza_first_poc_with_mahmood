@@ -11697,3 +11697,29 @@ placebo margin is moderate (3–4×, not overwhelming) and is reported as such.
 state patch. Registered against `Q1_query_side_probe_rel6`: installation-axis specificity ESTABLISHED,
 energy rival refuted; behavioural link + patch PENDING. Verification chain: CONT-163 (replication) →
 CONT-165 (review caught overclaim, retracted) → CONT-166 (decisive controls, rival refuted).
+
+### CONT-ENTRY 167 — 2026-09-15 — The decisive interventional patch test is scoped and reuses existing tooling (score_behavior --rescue-*). Decision-ready, GPU-flagged.
+
+With the observational causal signal verified and correctly bounded (CONT-166: query-side perturbation
+is installation-axis-specific, energy rival refuted; representation→behaviour still untested), the one
+experiment that settles §44 #10 is the **interventional patch**: under the live A1 knockout, restore the
+query-side state from a clean forward and see whether the knockout's effect reverses. It needs no new
+code — `score_behavior.py` already has activation **rescue**: `--rescue-positions query --rescue-donor
+clean --rescue-layer L` captures `resid_post` at L from an unhooked forward over the query span and
+writes it back during the knocked-out generation (token identity re-verified; refuses to rescue a
+non-knocked-out run; `--rescue-donor self` is the identity control; `--rescue-n-positions K` size-matches).
+
+Spec (`reports/DCS_CONT_PATCH_TEST_PROPOSAL.md`): five arms per codeword (ctrl; ko; ko+rescue-query-from-
+clean; ko+self-rescue identity control; ko+size-matched). Pre-declared decision rule: query-side is the
+causal bottleneck iff the rescue arm moves the endpoint back toward ctrl while the self-rescue
+reproduces ko and the size-match does not spuriously recover. **Primary endpoint = refusal / de-refusal**
+on the behavioural prompt (A4, a large measured effect: 0.112→0.040), matched to where the differ-arms
+signal lives; installation-on-semantic is secondary (the knockout may not act on the semantic prompt).
+~8–10 GPU-h total (readout-scale runs; pin `--model` to the live snapshot to avoid the dead NFS cache;
+watch the 200 GB quota — small footprint, no 11 GB caches). Never TEST; DOMAIN unit; never pool.
+
+Honest expected value: could go either way (observational placebo margin is moderate, 3–4×, and
+representation→behaviour is untested). Both outcomes publishable — a rescue that restores refusal is the
+phase's first causal-mediation result; a null cleanly bounds the query-side rep as a correlate. Flagged
+for authorisation, not launched. This is the current end of the §42 Phase 7/11 causal line; everything
+up to it (differ-across-arms, replicated + adversarially verified) is committed.
