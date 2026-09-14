@@ -11664,3 +11664,36 @@ cos(w_q, mean_state); if the shift collapses it is an energy artifact; (c) **TRA
 shift. The registry candidate is downgraded to "differs-across-arms confirmed; installation-specificity
 UNDER TEST; the energy-reduction rival is live." No claim stands until (a)/(b) separate it — and even
 then, representation→installation needs the interventional patch (GPU).
+
+### CONT-ENTRY 166 — 2026-09-15 — The decisive controls REFUTE the energy-reduction rival. The query-side perturbation is installation-AXIS-specific, on both codewords. (Behaviour link still needs the patch.)
+
+The controls CONT-165 promised, run on both codewords (SLURM 894442/894443), came back favourable —
+the rival the adversarial review raised does not hold:
+
+| control | button | basket | verdict |
+|---|---|---|---|
+| norm ratio ‖h_ko‖/‖h_ctrl‖ at rel-6 | 0.985 | 0.973 | query states **barely shrink** (~2%) despite ‖Δ‖ ≈ 5 — a directional change, not the energy/shrinkage the rival assumed |
+| cos(w_q, mean activation state) | 0.121 | 0.133 | `w_q` is nearly orthogonal to the magnitude axis |
+| mean-state projection-out (fraction retained) | **0.92** | **0.93** | removing the mean-activation axis barely changes the shift → not an energy artifact |
+| **placebo-target ridge** (real ÷ max of 8 shuffled-target fits) | **2.9×** | **3.9×** | the shift is 3–4× larger for the INSTALLATION target than for shuffled targets → installation-target-specific |
+| TRAIN / VAL shift | −0.095 / −0.103 | −0.176 / −0.151 | holds on held-out VALIDATION domains, no overfit |
+
+**So the C-CONT-102 rival is refuted.** The knockout does not shrink the query state (norm ratio ≈ 0.98,
+so `h_ko ≈ c·h_ctrl` with c ≈ 1, not c<1); the shift is not along the mean-activation axis (cos 0.12,
+projection-out retains ≥ 0.92); and it is target-specific (3–4× a shuffled-target placebo), not a
+consequence of any high-variance direction. It replicates across codewords and holds on VALIDATION.
+
+**Properly-scoped conclusion (no re-overclaim).** ESTABLISHED, observationally: *the A1 knockout
+causally perturbs the query-side representation (`rel-6`) specifically along the installation-PREDICTIVE
+axis* — a directional move aligned with the installation direction more than with shuffled targets or
+the magnitude axis. This is the first representation in the phase shown to be causally perturbed by the
+intervention along a task-relevant axis (F5 is structurally inert, C-CONT-040). NOT established:
+representation → installation **behaviour** — `y_install` here is a fixed readout used for both arms, so
+the knockout's actual behavioural effect on installation is not measured in this analysis. The
+placebo margin is moderate (3–4×, not overwhelming) and is reported as such.
+
+**The one decisive experiment left** for a §44 #10 causal-leverage claim is the **interventional patch**
+(restore/ablate the `ko` query-state and measure whether installation recovers) — GPU generation with a
+state patch. Registered against `Q1_query_side_probe_rel6`: installation-axis specificity ESTABLISHED,
+energy rival refuted; behavioural link + patch PENDING. Verification chain: CONT-163 (replication) →
+CONT-165 (review caught overclaim, retracted) → CONT-166 (decisive controls, rival refuted).

@@ -24,7 +24,7 @@ caveat (CONT-150): any per-domain correlation at N~67 has MDE ~0.337, so a null 
 limited and is the primary read.
 """
 from __future__ import annotations
-import argparse, glob, importlib.util, json, os, statistics, sys
+import argparse, glob, importlib.util, json, os, random, statistics, sys
 import torch
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -86,8 +86,9 @@ def main():
             return None
         return t[mp["sites"].index(site), mp["layers"].index(layer)].float()
 
-    def fit_w(site, layer):
-        """Ridge direction on the CTRL cache, TRAIN, within-domain-centred cell-C -- the F8/F5 probe."""
+    def fit_w(site, layer, permute_seed=None):
+        """Ridge direction on the CTRL cache, TRAIN, within-domain-centred cell-C -- the F8/F5 probe.
+        permute_seed != None shuffles the target = a placebo direction (specificity control)."""
         byk = {}
         for r in rc:
             d, s, c = meta[r["prompt_id"]]
@@ -102,6 +103,8 @@ def main():
             V = torch.stack([byk[(k, "C")] for k in ks], 0).double()
             xs.append(V - V.mean(0, keepdim=True))
             yv = [inst[k] for k in ks]; m = statistics.mean(yv); ys += [y - m for y in yv]
+        if permute_seed is not None:                        # PLACEBO: shuffle target -> non-installation direction
+            g = random.Random(permute_seed); random.Random(permute_seed).shuffle(ys)
         X = torch.cat(xs, 0); y = torch.tensor(ys, dtype=torch.float64)
         al = torch.linalg.solve(X @ X.T + LAM * torch.eye(len(y), dtype=torch.float64), y)
         return (X.T @ al)                                   # w in R^d
@@ -173,6 +176,67 @@ def main():
                                          "excludes_zero": bool(lo > 0 or hi < 0)}
         print("  proj-shift onto %-28s = %+.5f  [%+.5f, %+.5f]  (excl0=%s)"
               % (name, mean_shift, lo, hi, out["projection_shift"][name]["excludes_zero"]))
+
+    # ---- CONT-165 decisive controls: separate installation-specificity from an activation-energy artifact
+    _pv = []
+    for pid, d in pairs:
+        hc = slc(mc, pid, wsite, wlayer); hk = slc(mk, pid, wsite, wlayer)
+        if hc is not None and hk is not None:
+            _pv.append((d, hc.double(), hk.double()))
+    _wq = W["query_winner_%s_L%d" % (wsite, wlayer)]
+
+    def _pdmean(scalars, doms):
+        from collections import defaultdict as _dd2
+        g = _dd2(list)
+        for sc, d in zip(scalars, doms):
+            g[d].append(sc)
+        return {d: sum(v) / len(v) for d, v in g.items()}
+
+    def _shift_on(vec):
+        dm = _pdmean([float((hk - hc) @ vec) for _, hc, hk in _pv], [d for d, _, _ in _pv])
+        vals = list(dm.values())
+        return sum(vals) / len(vals), dm
+
+    real_shift, real_dm = _shift_on(_wq)
+    # (a) PLACEBO-TARGET ridge: same fit on a SHUFFLED target; if its shift ~ real, not installation-specific
+    placebo = []
+    for seed in range(8):
+        wp = fit_w(wsite, wlayer, permute_seed=20260915 + seed)
+        placebo.append(_shift_on(wp)[0])
+    # (b) MEAN-STATE projection-out: remove the mean activation axis from w_q; energy artifact would collapse
+    mu = torch.stack([hc for _, hc, _ in _pv], 0).mean(0)
+    uhat = mu / mu.norm()
+    w_perp = _wq - (_wq @ uhat) * uhat
+    perp_shift, _ = _shift_on(w_perp)
+    norm_ctrl = float(torch.stack([hc.norm() for _, hc, _ in _pv]).mean())
+    norm_ko = float(torch.stack([hk.norm() for _, _, hk in _pv]).mean())
+    cos_wq_mu = float((_wq @ mu) / (_wq.norm() * mu.norm()))
+    # (c) TRAIN/VAL breakout (w_q fit on TRAIN ctrl only)
+    tr_vals = [v for d, v in real_dm.items() if d in TR]
+    va_vals = [v for d, v in real_dm.items() if d in (KEEP - TR)]
+    out["controls_cont165"] = {
+        "real_query_shift": round(real_shift, 5),
+        "placebo_target_shifts": [round(x, 5) for x in placebo],
+        "placebo_mean": round(sum(placebo) / len(placebo), 5),
+        "placebo_max_abs": round(max(abs(x) for x in placebo), 5),
+        "specificity_ratio_real_over_placebo_maxabs": round(abs(real_shift) / max(1e-9, max(abs(x) for x in placebo)), 2),
+        "mean_state_projout_shift": round(perp_shift, 5),
+        "projout_retained_fraction": round(perp_shift / real_shift, 3) if real_shift else None,
+        "norm_ctrl": round(norm_ctrl, 3), "norm_ko": round(norm_ko, 3),
+        "norm_ratio_ko_over_ctrl": round(norm_ko / norm_ctrl, 4),
+        "cos_wq_meanstate": round(cos_wq_mu, 4),
+        "train_shift": round(sum(tr_vals) / len(tr_vals), 5) if tr_vals else None, "n_train_dom": len(tr_vals),
+        "val_shift": round(sum(va_vals) / len(va_vals), 5) if va_vals else None, "n_val_dom": len(va_vals),
+        "reading": "installation-SPECIFIC iff |real| >> placebo AND survives mean-state projection-out "
+                   "(retained fraction near 1) AND holds on VAL; if placebo matches or projout collapses "
+                   "it, it is an activation-energy artifact (energy-reduction rival)."}
+    print("[CONT165] real=%.5f placebo(max|.|)=%.5f ratio=%.1fx | projout=%.5f (retain %.2f) | "
+          "norm ko/ctrl=%.3f cos(wq,mu)=%.3f | train=%.5f val=%.5f"
+          % (real_shift, out["controls_cont165"]["placebo_max_abs"],
+             out["controls_cont165"]["specificity_ratio_real_over_placebo_maxabs"], perp_shift,
+             out["controls_cont165"]["projout_retained_fraction"] or 0.0,
+             out["controls_cont165"]["norm_ratio_ko_over_ctrl"], cos_wq_mu,
+             out["controls_cont165"]["train_shift"] or 0.0, out["controls_cont165"]["val_shift"] or 0.0))
 
     # OOD adversarial check + domain leverage, at the query winner site/layer.
     from collections import defaultdict as _dd

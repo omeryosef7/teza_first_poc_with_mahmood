@@ -49,6 +49,33 @@
    "excludes_zero": true
   }
  },
+ "controls_cont165": {
+  "real_query_shift": -0.16959,
+  "placebo_target_shifts": [
+   0.04385,
+   0.03271,
+   -0.01814,
+   0.04353,
+   0.00023,
+   0.03447,
+   -0.01067,
+   -0.00151
+  ],
+  "placebo_mean": 0.01556,
+  "placebo_max_abs": 0.04385,
+  "specificity_ratio_real_over_placebo_maxabs": 3.87,
+  "mean_state_projout_shift": -0.15724,
+  "projout_retained_fraction": 0.927,
+  "norm_ctrl": 12.516,
+  "norm_ko": 12.172,
+  "norm_ratio_ko_over_ctrl": 0.9725,
+  "cos_wq_meanstate": 0.1334,
+  "train_shift": -0.17603,
+  "n_train_dom": 67,
+  "val_shift": -0.15083,
+  "n_val_dom": 23,
+  "reading": "installation-SPECIFIC iff |real| >> placebo AND survives mean-state projection-out (retained fraction near 1) AND holds on VAL; if placebo matches or projout collapses it, it is an activation-energy artifact (energy-reduction rival)."
+ },
  "ood_check": {
   "site": "rel-6",
   "layer": 18,

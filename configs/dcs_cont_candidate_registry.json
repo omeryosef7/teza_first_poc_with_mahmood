@@ -246,7 +246,7 @@
    "failure_mode": "collinear with F5 (0.70/0.74) -> mostly demo-side state copied forward; small independent component; causal leverage unknown",
    "eligible_for_confirmation": false,
    "causal_test_differ_across_arms": {
-    "status": "DOWNGRADED (CONT-165, C-CONT-102): the adversarial review found the observational battery CANNOT separate 'moved along the installation direction' from a generic activation-energy-reduction rival (knockout removes demo->query drive -> query state shrinks; w_q overlaps the mean activation axis -> negative shift with no installation meaning). The OOD-rho check is scale-invariant and does NOT discriminate. CONFIRMED: knockout causally PERTURBS the query-side representation (differs across arms, ||d||~5, replicated, demo-side ~0). UNDER TEST: installation-specificity (placebo-target + mean-state projection-out + train/val breakout running). NOT established: representation->installation (needs patch/GPU). Earlier 'first causally-relevant representation' / 'reduces installation' wording retracted.",
+    "status": "CONT-166: the CONT-165 decisive controls came back FAVOURABLE on both codewords -- the activation-energy-reduction rival is REFUTED. norm ko/ctrl 0.985/0.973 (states barely shrink); cos(w_q, mean-state) 0.12/0.13 and mean-state projection-out retains 92%/93% of the shift (not the magnitude axis); placebo-target (shuffled-y) ratio 2.9x/3.9x (installation-target-specific); train/val consistent (-0.095/-0.103, -0.176/-0.151). ESTABLISHED (observational): the A1 knockout causally perturbs the query-side representation along the installation-PREDICTIVE axis, specifically, replicated. NOT established: representation->installation BEHAVIOUR (y_install is a fixed readout; the knockout's behavioural effect is not measured here) -- the interventional PATCH (GPU: restore ko query-state -> does installation recover) remains for the full SS44 #10 leverage claim.",
     "positive_control_demo_delta_norm": {
      "button": 0.237,
      "basket": 0.229,
@@ -294,7 +294,35 @@
      "button": "88/90",
      "basket": "90/90"
     },
-    "eligible_for_confirmation": "NO -- installation-specificity under test; energy-reduction rival live"
+    "eligible_for_confirmation": "NO -- installation-specificity under test; energy-reduction rival live",
+    "controls_cont166": {
+     "norm_ratio_ko_ctrl": {
+      "button": 0.985,
+      "basket": 0.973
+     },
+     "cos_wq_meanstate": {
+      "button": 0.121,
+      "basket": 0.133
+     },
+     "projout_retained": {
+      "button": 0.92,
+      "basket": 0.93
+     },
+     "placebo_ratio": {
+      "button": 2.9,
+      "basket": 3.9
+     },
+     "train_val_shift": {
+      "button": [
+       -0.0955,
+       -0.1035
+      ],
+      "basket": [
+       -0.176,
+       -0.1508
+      ]
+     }
+    }
    }
   }
  ],
