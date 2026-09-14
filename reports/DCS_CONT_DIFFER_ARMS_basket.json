@@ -1,52 +1,78 @@
 {
  "schema": "dcs_cont_differ_arms/1",
  "codeword": "basket",
+ "ko_dir": "outputs/boombness/extract_boombness/cont1ko_behavioral_basket_bomb_20260914_214823_2106024",
  "n_pairs": 900,
- "n_domains": 90,
  "lambda": 100.0,
  "sites": {
   "cw_query": {
    "site": "cw_query",
    "layer": 18,
-   "mean_domain_delta_norm": 5.3315
+   "mean_domain_delta_norm": 5.3315,
+   "n_domains": 90
   },
   "rel-6": {
    "site": "rel-6",
    "layer": 18,
-   "mean_domain_delta_norm": 4.3446
+   "mean_domain_delta_norm": 4.3446,
+   "n_domains": 90
   },
   "cw_demo_mean(control)": {
    "site": "cw_demo_mean",
    "layer": 24,
-   "mean_domain_delta_norm": 0.2288
+   "mean_domain_delta_norm": 0.2288,
+   "n_domains": 90
   }
  },
+ "power_caveat": "per-domain effects at N~67 have MDE ~0.337 (CONT-150); a null shift is 'no effect above MDE', not 'no effect'. The projection-shift sign/size is the primary, non-correlation-limited read.",
  "projection_shift": {
   "query_winner_rel-6_L18": {
+   "site": "rel-6",
+   "layer": 18,
    "mean_per_domain_shift": -0.16959,
    "ci95": [
     -0.18436,
     -0.15576
    ],
+   "n_domains": 90,
    "excludes_zero": true
   },
   "demo_F5_cw_demo_mean_L24": {
+   "site": "cw_demo_mean",
+   "layer": 24,
    "mean_per_domain_shift": -0.00082,
    "ci95": [
     -0.00112,
     -0.00051
    ],
+   "n_domains": 90,
    "excludes_zero": true
   }
+ },
+ "ood_check": {
+  "site": "rel-6",
+  "layer": 18,
+  "rho_ctrl_proj_vs_install": 0.7303,
+  "rho_ko_proj_vs_install": 0.6403,
+  "note": "within-domain; if rho_ko ~ rho_ctrl the ridge readout still reads installation on the ko states, so the negative projection shift is a real installation reduction, not an off-manifold extrapolation artifact. If rho_ko collapses, the shift is suspect."
+ },
+ "domain_leverage": {
+  "n_domains": 90,
+  "n_negative": 90,
+  "n_positive": 0
  },
  "random_direction_control": {
   "site": "rel-6",
   "layer": 18,
   "n_draws": 5,
   "mean_abs_random_shift": 0.00985,
+  "random_shifts": [
+   0.01533,
+   0.01101,
+   0.01233,
+   0.00125,
+   -0.00935
+  ],
   "query_probe_shift_for_comparison": -0.16959
- },
- "source": "differ_arms run b2ldyg4h3 (numbers from stdout; original json.dump 0-byte'd at 200G quota-full, C-CONT-101)",
- "interpretation": "PRELIMINARY basket-only. Knockout moves query-side state (||d|| 5.3) specifically along installation-reducing direction (proj -0.170, CI excl 0, 17x random-dir 0.0099); demo-side F5 inert (-0.0008, ||d|| 0.23; C-CONT-040 confirmed). NOT a claim: needs button replication + adversarial verification; w_q fit on ctrl applied to far-OOD ko states.",
- "power_caveat": "per-domain corr at N~67-90 MDE ~0.29-0.34 (CONT-150); shift magnitude/sign is the primary read"
+ }
 }

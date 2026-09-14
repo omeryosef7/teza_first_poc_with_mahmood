@@ -11590,3 +11590,37 @@ patch test (replace the `ko` query-state with `ctrl`, does installation recover)
 GPU generation. (2) **domain leverage** — is the shift carried by a few domains (CI is tight over 90,
 but check). (3) **sign / ridge-overfit** stability. Registered as a causal-SIGNAL candidate,
 replicated, verification pending — NOT a finalist. Artifacts: `reports/DCS_CONT_DIFFER_ARMS_{button,basket}.json`.
+
+### CONT-ENTRY 164 — 2026-09-15 — The causal signal SURVIVES adversarial verification on both codewords. The query-side representation is the phase's first CAUSALLY-RELEVANT one. Interventional patch test (GPU) is the last step.
+
+Two decisive adversarial checks were added to `dcs_cont_differ_arms.py` and run on both codewords
+(SLURM 894402/894403), on top of CONT-163's replication + controls:
+
+| check | button | basket | verdict |
+|---|---|---|---|
+| **OOD** — rho(⟨state,w_q⟩, installation), within-domain, ctrl → ko | 0.712 → **0.661** | 0.730 → **0.640** | the ridge readout still reads installation on the KO states (drops only ~0.05–0.09, no collapse). So the negative projection shift is a genuine reduction of the installation-coded component, NOT an off-manifold extrapolation artifact — the concern that most threatened the result is answered. |
+| **domain leverage** — per-domain query-shift sign | negative **88/90** | negative **90/90** | the effect is consistent across essentially all domains, not carried by a few. |
+
+The full picture, both codewords never pooled, every check passing:
+- positive control: demo-side ‖Δ‖ ≈ 0.23 (C-CONT-040 confirmed, pairing valid);
+- effect: query-side ‖Δ‖ 4–6 (knockout strongly moves the query-side);
+- direction: projection onto the installation axis shifts −0.098 / −0.170, CI excludes 0 (reduces installation);
+- specificity: 17× the same-norm random-direction control;
+- inertness of the incumbent: demo-side F5 shift ≈ 0;
+- OOD-validity: ko readout still reads installation (rho ~0.64–0.66);
+- consistency: 88/90, 90/90 domains negative.
+
+**What this establishes.** The query-side representation (`rel-6`, the query-span region the row-
+knockout edits) is **causally moved by the A1 knockout, specifically along the installation-reducing
+direction, on both codewords** — the FIRST representation in this phase with demonstrated causal
+relevance to installation. F5/A11, the only TEST-confirmed predictor, is structurally barred from this
+(its input is bit-identical across arms, C-CONT-040). Registered against `Q1_query_side_probe_rel6`.
+
+**What remains for the full §44 #10 claim.** §44 #10 asks that an "aggressive full-state patch at its
+site has causal leverage" — an INTERVENTIONAL test: replace the `ko` query-state with `ctrl` (or
+ablate it) and measure whether installation / downstream behaviour recovers. That needs GPU generation
+with a state patch, not an observational readout. So this is registered as **observational causal
+criteria PASSED, interventional patch PENDING** — a strong, adversarially-verified signal, not yet the
+final interventional confirmation. Given the phase's history (A16/A17), an independent adversarial
+review of this whole chain is being run before any paper-level claim; the patch test is the decisive
+next experiment.

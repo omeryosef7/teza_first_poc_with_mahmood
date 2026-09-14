@@ -49,6 +49,18 @@
    "excludes_zero": true
   }
  },
+ "ood_check": {
+  "site": "rel-6",
+  "layer": 20,
+  "rho_ctrl_proj_vs_install": 0.7116,
+  "rho_ko_proj_vs_install": 0.6612,
+  "note": "within-domain; if rho_ko ~ rho_ctrl the ridge readout still reads installation on the ko states, so the negative projection shift is a real installation reduction, not an off-manifold extrapolation artifact. If rho_ko collapses, the shift is suspect."
+ },
+ "domain_leverage": {
+  "n_domains": 90,
+  "n_negative": 88,
+  "n_positive": 2
+ },
  "random_direction_control": {
   "site": "rel-6",
   "layer": 20,

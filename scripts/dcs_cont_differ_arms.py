@@ -174,6 +174,46 @@ def main():
         print("  proj-shift onto %-28s = %+.5f  [%+.5f, %+.5f]  (excl0=%s)"
               % (name, mean_shift, lo, hi, out["projection_shift"][name]["excludes_zero"]))
 
+    # OOD adversarial check + domain leverage, at the query winner site/layer.
+    from collections import defaultdict as _dd
+    _wq = W["query_winner_%s_L%d" % (wsite, wlayer)]
+    pc_all, pk_all, y_all, dof_all = [], [], [], []
+    for pid, d in pairs:
+        hc = slc(mc, pid, wsite, wlayer); hk = slc(mk, pid, wsite, wlayer)
+        yv = inst.get((d, meta[pid][1]))
+        if hc is None or hk is None or yv is None:
+            continue
+        pc_all.append(float(hc.double() @ _wq)); pk_all.append(float(hk.double() @ _wq))
+        y_all.append(float(yv)); dof_all.append(d)
+
+    def _wdc(vals, dof):
+        g = _dd(list)
+        for v, d in zip(vals, dof):
+            g[d].append(v)
+        mean = {d: statistics.mean(g[d]) for d in g}
+        return [v - mean[d] for v, d in zip(vals, dof)]
+    _pc, _pk, _y = _wdc(pc_all, dof_all), _wdc(pk_all, dof_all), _wdc(y_all, dof_all)
+    out["ood_check"] = {"site": wsite, "layer": wlayer,
+        "rho_ctrl_proj_vs_install": round(lpm.spearman(_pc, _y), 4),
+        "rho_ko_proj_vs_install": round(lpm.spearman(_pk, _y), 4),
+        "note": "within-domain; if rho_ko ~ rho_ctrl the ridge readout still reads installation on "
+                "the ko states, so the negative projection shift is a real installation reduction, "
+                "not an off-manifold extrapolation artifact. If rho_ko collapses, the shift is suspect."}
+    # domain leverage: per-domain query-probe shift sign distribution
+    _ds = _dd(list)
+    for pid, d in pairs:
+        hc = slc(mc, pid, wsite, wlayer); hk = slc(mk, pid, wsite, wlayer)
+        if hc is not None and hk is not None:
+            _ds[d].append(float((hk.double() - hc.double()) @ _wq))
+    _dm = {d: statistics.mean(v) for d, v in _ds.items() if v}
+    out["domain_leverage"] = {"n_domains": len(_dm),
+        "n_negative": sum(1 for v in _dm.values() if v < 0),
+        "n_positive": sum(1 for v in _dm.values() if v > 0)}
+    print("[OOD] rho(proj,install) within-domain: ctrl=%.4f  ko=%.4f"
+          % (out["ood_check"]["rho_ctrl_proj_vs_install"], out["ood_check"]["rho_ko_proj_vs_install"]))
+    print("[leverage] per-domain query shift negative in %d/%d domains"
+          % (out["domain_leverage"]["n_negative"], out["domain_leverage"]["n_domains"]))
+
     # random-direction control at the query winner site (same norm as w_q), 5 draws
     rand_shifts = []
     for ri, rvec in enumerate(_rand):
