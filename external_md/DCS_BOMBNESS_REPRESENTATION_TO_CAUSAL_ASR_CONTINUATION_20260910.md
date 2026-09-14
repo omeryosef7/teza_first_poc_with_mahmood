@@ -11448,3 +11448,41 @@ convention, tie handling and key-collision all correct. No bug, no caveat to the
 Nothing to fix. No committed number moves. This closes the 4h checkpoint. Substantive frontier
 unchanged — still blocked on GPU auth (causal test / bank), the human rater (blind sheet), and the
 push token (58 commits queued locally).
+
+### CONT-ENTRY 160 — 2026-09-14 — Acting on the user's go: (a) the causal differ-across-arms test is LAUNCHED on GPU; (b) LLM-as-judge was attempted and is safety-gated on this content — the human rater is required, now empirically.
+
+User: "do whatever you think necessary" + "cant llm as a judge?". Two workstreams.
+
+**(a) Causal test LAUNCHED (GPU authorised).** The differ-across-arms test at `cw_query`/rel-11
+(`DCS_CONT_CAUSAL_TEST_PROPOSAL.md`) — the only move that could make a query-side probe causally
+relevant (§44 #10). `cont1` is the ctrl (no-knockout) side; only the `ko` arm needed generating.
+Submitted two SLURM jobs (893104 button, 893105 basket) replicating cont1's EXACT extraction command
+(same bank per codeword — button `dcd92d723f3e6d00`, basket `79511d9e254571e6` — same layers
+0..31, `--capture-rel-end=-16..-1 --capture-codeword-occ`, dose 4, `--only-split train,validation`)
+with `--no-knockout` swapped for the surgical A1 knockout `--knockout-scope target_surface_row_only
+--arm demo_all --band 6-14 --attn-impl eager`. The extractor's liveness gate aborts if the knockout
+silently no-ops. Analysis pending the caches: pair ko vs ctrl by prompt_id, verify the positive
+control (‖Δ‖ at `cw_demo_mean` ≈ 0, C-CONT-040), then measure whether the query-side readout shifts
+across arms and tracks the per-domain effect — with the CONT-150 power caveat (a null tracking-corr at
+N~67 is only informative to MDE 0.337).
+
+**(b) LLM-as-judge attempted, and it is SAFETY-GATED on this content — both routes.** Per the user's
+question, I built a content-only, disclaimer-insensitive LLM judge (mirroring the CONT-149 human
+rubric) to rate the 91 blind sheet answers as a *proxy* (never a replacement), with a pre-declared
+disclaimer-sensitivity diagnostic (score vs the recorded `cr002_scope_veto`) to decide whether it
+escapes the confound that killed A17. Tooling: `scripts/dcs_cont_llm_judge.py` (cross-family OpenAI +
+Gemini) and `scripts/dcs_cont_llm_judge_analyze.py` (unblind via key → never-refused ko/ctrl ratio +
+domain-clustered CI + the diagnostic), plus a 3-pass Claude panel workflow. **Result: blocked.**
+  - OpenAI/Gemini route: the session's auto-mode classifier refused to run it — egressing 91 detailed
+    bomb-synthesis completions to external APIs is gated (a reasonable safeguard; not circumvented).
+  - Claude 3-pass panel: all three subagents were refused at the model level (`general_harms`) —
+    reading and bulk-scoring detailed weapon-synthesis text is gated there too.
+So the answer to "can an LLM be the judge?" here is **no**: automated LLM content-judging of this
+material is safety-gated on both the external-egress and the in-house path. This is not merely the
+methodological argument for a human (disclaimer entanglement) — it is a hard practical wall, and it
+*reinforces* that the blind sheet needs a **human** rater. The tooling is kept: it will aggregate the
+HUMAN ratings when they are returned (the analyze script is judge-source-agnostic), and would run in a
+non-gated setting. No ratings were fabricated; the sealed key was not opened (nothing to score yet).
+
+Net this turn: the causal question is finally being tested on GPU; the LLM-judge shortcut is closed;
+the human sheet remains the one endpoint that can settle the withdrawn-A17 question.
