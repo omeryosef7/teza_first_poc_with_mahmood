@@ -54,3 +54,24 @@ Given the observational signal is real but the placebo margin is moderate (3–4
 behaviour is entirely untested, this could go either way. Either outcome is publishable: a rescue that
 restores refusal is the phase's first genuine causal-mediation result; a null cleanly bounds the
 query-side representation as a correlate. Flagged for authorisation, not launched (GPU spend).
+
+## Concrete invocation (found precedent — CONT-168)
+The rescue tooling has been run before; copy the arg format from `runargs/p7/p7smoke_identity_L14.txt`
+(identity smoke) and `runargs/p17/p11_qpos_L10.txt` (query-position rescue). Format:
+```
+--intervene demo_all:attn_knockout:6-14:1.0 --knockout-scope <SCOPE> \
+--rescue-donor {self|clean} --rescue-positions query --rescue-layer <L> \
+--arm <label> --tag <tag> --model <SNAP> --attn-impl eager --n-examples 4 --query-kinds behavioral
+```
+**Adaptation required (why this is a NEW combination, validate before the full spend):**
+- precedent used `--knockout-scope demo_processing_only` on the `d10` bank; THIS test must use
+  `--knockout-scope target_surface_row_only` (the A1 knockout the differ-arms signal is under) on the
+  `ts116m_{button,basket}_bomb` bank, dose 4 only, and `--rescue-layer 18` (basket) / `20` (button)
+  (the differ-arms winner). The `target_surface_row_only + rescue-positions query` composition has no
+  precedent — the **self-rescue identity smoke MUST run first** (it must reproduce the ko arm exactly;
+  if it does not, the knockout/rescue interact and no rescue number is interpretable).
+- still to finalise at launch: the ts116m dose-4 `--bank-blocks` name (cont1 rows carry `bank_block=cds_n4`),
+  the TEST-exclusion mechanism in `score_behavior` (the readouts used bank/block filtering, not
+  `--only-split`; must confirm no TEST domains enter), `--expect-n`, and `--pin-judge-model` + OPENAI_API_KEY
+  for the refusal/ASR endpoint. Pin `--model` to the live snapshot (C-CONT-100/101).
+Staged order: (1) self-rescue identity smoke, few rows, both codewords → must equal ko; (2) full 5 arms.

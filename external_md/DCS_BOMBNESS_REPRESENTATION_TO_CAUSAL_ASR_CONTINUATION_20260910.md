@@ -11723,3 +11723,27 @@ representation→behaviour is untested). Both outcomes publishable — a rescue 
 phase's first causal-mediation result; a null cleanly bounds the query-side rep as a correlate. Flagged
 for authorisation, not launched. This is the current end of the §42 Phase 7/11 causal line; everything
 up to it (differ-across-arms, replicated + adversarially verified) is committed.
+
+### CONT-ENTRY 168 — 2026-09-15 — Patch test has precedent and exact arg format; but my config is a new combination — validate with the identity smoke first. Still GPU-flagged.
+
+Fully investigated the rescue tooling: it has been run before (`runargs/p7/p7smoke_identity_L14.txt`,
+`runargs/p17/p11_qpos_L10.txt` query-position rescue; completed runs under `outputs/.../*_rescue_*`), so
+the patch test reuses proven code, not a new pipeline. Exact format recorded in the proposal:
+`--intervene demo_all:attn_knockout:6-14:1.0 --knockout-scope <scope> --rescue-donor {self,clean}
+--rescue-positions query --rescue-layer <L>`.
+
+**Caveat found:** the precedent ran `--knockout-scope demo_processing_only` on the `d10` bank; THIS test
+needs `target_surface_row_only` (the A1 knockout the differ-arms signal is under) on the `ts116m` bank at
+the differ-arms layer (L18 basket / L20 button). That `target_surface_row_only + rescue-positions query`
+combination is UNPRECEDENTED, so the **self-rescue identity smoke must pass first** (must reproduce the
+ko arm exactly) before the real arms — otherwise the knockout and the query-rescue interact and no
+number is interpretable. A few config items remain to finalise at launch (ts116m dose-4 bank-blocks,
+`score_behavior` TEST-exclusion, `--expect-n`, judge pinning). This is exactly the kind of new-config
+GPU launch that produced the extractor saga (comma-truncation, disk, node fails), so it should be a
+deliberate, staged, GPU-authorised run — not a blind fire.
+
+Status: the causal line is complete through observational verification (CONT-166, committed) and the
+interventional patch is decision-ready with a concrete, precedented invocation. **Blocked on GPU
+authorisation** (~8–10 GPU-h; say "run the patch test" and I run the identity smoke then the 5 arms).
+No other high-value CPU §42 work remains (Phase-4 sweep complete; blind sheet human-blocked; linking
+test bank-blocked). Holding.
