@@ -1,0 +1,66 @@
+{
+ "schema": "dcs_cont_differ_arms/1",
+ "codeword": "button",
+ "ko_dir": "outputs/boombness/extract_boombness/cont1ko_behavioral_button_bomb_20260914_235703_1690875",
+ "n_pairs": 900,
+ "lambda": 100.0,
+ "sites": {
+  "cw_query": {
+   "site": "cw_query",
+   "layer": 20,
+   "mean_domain_delta_norm": 6.2766,
+   "n_domains": 90
+  },
+  "rel-6": {
+   "site": "rel-6",
+   "layer": 20,
+   "mean_domain_delta_norm": 4.4517,
+   "n_domains": 90
+  },
+  "cw_demo_mean(control)": {
+   "site": "cw_demo_mean",
+   "layer": 24,
+   "mean_domain_delta_norm": 0.2371,
+   "n_domains": 90
+  }
+ },
+ "power_caveat": "per-domain effects at N~67 have MDE ~0.337 (CONT-150); a null shift is 'no effect above MDE', not 'no effect'. The projection-shift sign/size is the primary, non-correlation-limited read.",
+ "projection_shift": {
+  "query_winner_rel-6_L20": {
+   "site": "rel-6",
+   "layer": 20,
+   "mean_per_domain_shift": -0.0975,
+   "ci95": [
+    -0.10495,
+    -0.08999
+   ],
+   "n_domains": 90,
+   "excludes_zero": true
+  },
+  "demo_F5_cw_demo_mean_L24": {
+   "site": "cw_demo_mean",
+   "layer": 24,
+   "mean_per_domain_shift": 0.00048,
+   "ci95": [
+    0.00024,
+    0.00071
+   ],
+   "n_domains": 90,
+   "excludes_zero": true
+  }
+ },
+ "random_direction_control": {
+  "site": "rel-6",
+  "layer": 20,
+  "n_draws": 5,
+  "mean_abs_random_shift": 0.00576,
+  "random_shifts": [
+   0.00644,
+   0.00644,
+   0.00575,
+   -0.00556,
+   0.00461
+  ],
+  "query_probe_shift_for_comparison": -0.0975
+ }
+}

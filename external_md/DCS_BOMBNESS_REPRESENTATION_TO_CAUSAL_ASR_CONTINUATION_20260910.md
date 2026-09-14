@@ -11557,3 +11557,36 @@ Artifacts: `reports/DCS_CONT_DIFFER_ARMS_basket.json`, `scripts/dcs_cont_differ_
 random-direction control), `slurm_scripts/dcs_ko_multipos.slurm` (slim capture: only the 3 layers ×
 ~7 sites the analysis needs, ~0.6 G, to stay under quota). Next: button result → if it replicates,
 adversarial-verify, then and only then consider a claim.
+
+### CONT-ENTRY 163 — 2026-09-15 — The causal signal REPLICATES cross-codeword. Button and basket agree: the knockout moves the query-side state specifically along the installation-reducing direction; demo-side inert. Still not a claim — adversarial verification next.
+
+Button `ko` re-extracted cleanly once the 200 GB quota was freed (894286, liveness OK, 3720 rows), and
+the button differ-across-arms analysis ran on SLURM (894386, reserved memory — the login node OOMs on
+the 11 GB cont1 mmap). It **replicates the basket result** (CONT-162), both codewords never pooled:
+
+| quantity | button | basket |
+|---|---|---|
+| positive control ‖Δ‖ at `cw_demo_mean` | 0.237 ≈ 0 | 0.229 ≈ 0 |
+| ‖Δ‖ at `cw_query` / `rel-6` | 6.28 / 4.45 | 5.33 / 4.34 |
+| **proj-shift onto query probe** (rel-6, L20/L18) | **−0.098 [−0.105, −0.090]** | **−0.170 [−0.184, −0.156]** |
+| proj-shift onto demo-side F5 (control) | +0.0005 ≈ 0 | −0.0008 ≈ 0 |
+| random-direction control (same ‖w_q‖) | 0.0058 | 0.0099 |
+
+On **both** codewords: the positive control passes (demo-side ‖Δ‖ ≈ 0, C-CONT-040 confirmed); the
+knockout strongly moves the query-side state (‖Δ‖ 4–6); the projection onto the installation direction
+shifts **negative with a CI excluding 0** (knockout reduces the installation-coded component); the
+demo-side F5 shift is ≈ 0 (inert); and the random-direction control is **~17× smaller** than the query
+shift, so the effect is SPECIFIC, not a generic consequence of the large ‖Δ‖. Button is weaker
+(−0.098 vs −0.170) but the sign, structure, and all controls agree. This is the first representation
+in the phase with a **replicated, causally-relevant** signal — something F5 (the confirmed but inert
+predictor) is structurally barred from (its input is bit-identical across arms).
+
+**Still NOT a §44 #10 claim.** A16 and A17 both looked this good and died. The open adversarial
+concerns, to be tested BEFORE any claim: (1) **OOD extrapolation** — `w_q` is fit on `ctrl` and applied
+to `ko` states ~5 units away; the random-direction control rules out a generic-perturbation artifact,
+but not that the linear readout is meaningless off the ctrl manifold. The decisive follow-ups are (a)
+does the `ko`-state projection onto `w_q` still rank-correlate with installation, and (b) a genuine
+patch test (replace the `ko` query-state with `ctrl`, does installation recover) — the latter needs
+GPU generation. (2) **domain leverage** — is the shift carried by a few domains (CI is tight over 90,
+but check). (3) **sign / ridge-overfit** stability. Registered as a causal-SIGNAL candidate,
+replicated, verification pending — NOT a finalist. Artifacts: `reports/DCS_CONT_DIFFER_ARMS_{button,basket}.json`.
