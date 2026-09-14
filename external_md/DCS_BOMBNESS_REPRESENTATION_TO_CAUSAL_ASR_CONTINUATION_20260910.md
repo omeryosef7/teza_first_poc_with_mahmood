@@ -11486,3 +11486,30 @@ non-gated setting. No ratings were fabricated; the sealed key was not opened (no
 
 Net this turn: the causal question is finally being tested on GPU; the LLM-judge shortcut is closed;
 the human sheet remains the one endpoint that can settle the withdrawn-A17 question.
+
+### CONT-ENTRY 161 — 2026-09-14 — The first causal-test ko extraction was mis-run by a SLURM `--export` comma-truncation bug, not a code fault. Diagnosed, fixed, resubmitted.
+
+CONT-160's ko jobs (893168/893169) COMPLETED and the knockout fired (liveness `frac_rows_scope_live=1.0`),
+but they produced the WRONG artifact: `final_occurrence_reps.pt` (single position, layer [0], full
+22272-row bank) instead of the `multiposition_reps.pt` grid (rel-16..-1 + cw_query at layers 0..31 over
+the 3720 dose-4 rows) that cont1 (ctrl) has and the differ-across-arms test must pair against.
+
+**Root cause (C-CONT-100): `sbatch --export=ALL,DCS_CMD="… --layers 0,2,4,…"` truncates at the first
+comma.** SLURM splits `--export` on commas, so the exported `DCS_CMD` became `python … --layers 0` and
+every flag after it — the rest of the layer list, `--position`, `--only-query-kind`, `--only-n-examples`,
+`--only-split`, `--capture-rel-end`, `--capture-codeword-occ`, `--tag` — was dropped. The run therefore
+fell into the extractor's frozen PR-035 default mode (`--tag bombspecko`, single layer, whole bank, no
+multiposition). Confirmed from the run's own recorded argv: it ends at `--layers 0`. The earlier CPU
+jobs escaped this only because their commands contained no commas. Not an extractor bug; not a knockout
+bug (it fired correctly on the mangled config).
+
+**Fix.** `slurm_scripts/dcs_ko_multipos.slurm` carries the full command INLINE (commas safe inside the
+script body; codeword is `$1`), submitted as `sbatch slurm_scripts/dcs_ko_multipos.slurm button|basket`
+— no `--export` of a comma-bearing command. Resubmitted: **893727 (button), 893728 (basket)**, RUNNING.
+The correct run processes only the 3720 dose-4 behavioural rows (vs 22272), so extraction is far shorter;
+the dominant cost is the ~72-min model load over the matanbentov-hub NFS (the real reason the first runs
+took ~3.5 h, not the knockout).
+
+**Cost of the error:** ~7 GPU-h on two wrong-format runs (the `bombspecko_*` dirs are single-layer
+final_occurrence and unused). Recorded so the comma-truncation trap is not repeated. `scripts/dcs_cont_differ_arms.py`
+(the analysis) is written and compiles; it runs once the corrected multiposition ko caches land.
