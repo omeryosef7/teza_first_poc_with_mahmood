@@ -23,12 +23,16 @@ conda activate poc_stage2
 SNAP=/home/sharifm/students/matanbentov/hub/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659
 BANK="data/boombness_prompts/boombness_prompt_bank_ts116m_${CW}_bomb.jsonl"
 echo "HOST=$(hostname) JOB=${SLURM_JOB_ID:-none} CW=$CW $(date -Is)"
+# MINIMAL capture: only the sites/layers the differ-across-arms analysis uses
+# (cw_query, rel-6, cw_demo_mean at L18/L20/L24). The full 19x23 grid is ~13 GB and its write
+# ran the shared FS out of space (CONT-161 addendum); this slim cache is ~0.6 GB. It still pairs
+# with cont1 (ctrl), which holds these same sites/layers within its full grid.
 python scripts/dcs_extract_under_ko.py \
   --bank "$BANK" --model "$SNAP" \
   --knockout-scope target_surface_row_only --arm demo_all --band 6-14 --attn-impl eager \
-  --layers 0,2,4,6,8,10,11,12,13,14,16,18,20,22,24,26,28,30,31 \
+  --layers 18,20,24 \
   --position codeword_last \
   --only-query-kind behavioral --only-n-examples 4 --only-split train,validation \
-  --capture-rel-end=-16..-1 --capture-codeword-occ \
+  --capture-rel-end=-6 --capture-codeword-occ \
   --tag "cont1ko_behavioral_${CW}_bomb"
 echo "---- done rc=$? $(date -Is)"

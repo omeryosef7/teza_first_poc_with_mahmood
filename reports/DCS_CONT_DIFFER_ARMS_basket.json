@@ -1,0 +1,52 @@
+{
+ "schema": "dcs_cont_differ_arms/1",
+ "codeword": "basket",
+ "n_pairs": 900,
+ "n_domains": 90,
+ "lambda": 100.0,
+ "sites": {
+  "cw_query": {
+   "site": "cw_query",
+   "layer": 18,
+   "mean_domain_delta_norm": 5.3315
+  },
+  "rel-6": {
+   "site": "rel-6",
+   "layer": 18,
+   "mean_domain_delta_norm": 4.3446
+  },
+  "cw_demo_mean(control)": {
+   "site": "cw_demo_mean",
+   "layer": 24,
+   "mean_domain_delta_norm": 0.2288
+  }
+ },
+ "projection_shift": {
+  "query_winner_rel-6_L18": {
+   "mean_per_domain_shift": -0.16959,
+   "ci95": [
+    -0.18436,
+    -0.15576
+   ],
+   "excludes_zero": true
+  },
+  "demo_F5_cw_demo_mean_L24": {
+   "mean_per_domain_shift": -0.00082,
+   "ci95": [
+    -0.00112,
+    -0.00051
+   ],
+   "excludes_zero": true
+  }
+ },
+ "random_direction_control": {
+  "site": "rel-6",
+  "layer": 18,
+  "n_draws": 5,
+  "mean_abs_random_shift": 0.00985,
+  "query_probe_shift_for_comparison": -0.16959
+ },
+ "source": "differ_arms run b2ldyg4h3 (numbers from stdout; original json.dump 0-byte'd at 200G quota-full, C-CONT-101)",
+ "interpretation": "PRELIMINARY basket-only. Knockout moves query-side state (||d|| 5.3) specifically along installation-reducing direction (proj -0.170, CI excl 0, 17x random-dir 0.0099); demo-side F5 inert (-0.0008, ||d|| 0.23; C-CONT-040 confirmed). NOT a claim: needs button replication + adversarial verification; w_q fit on ctrl applied to far-OOD ko states.",
+ "power_caveat": "per-domain corr at N~67-90 MDE ~0.29-0.34 (CONT-150); shift magnitude/sign is the primary read"
+}

@@ -11513,3 +11513,47 @@ took ~3.5 h, not the knockout).
 **Cost of the error:** ~7 GPU-h on two wrong-format runs (the `bombspecko_*` dirs are single-layer
 final_occurrence and unused). Recorded so the comma-truncation trap is not repeated. `scripts/dcs_cont_differ_arms.py`
 (the analysis) is written and compiles; it runs once the corrected multiposition ko caches land.
+
+### CONT-ENTRY 162 — 2026-09-14 — The "NFS outage" was my 200 GB quota, full. Root-caused, freed, and — the payoff — the causal test's FIRST §44 #10 signal is in, on basket. Button replication running.
+
+**Correction first (C-CONT-101).** I spent several iterations calling the write failures a "NetApp fault"
+because `quota` reports my limit as 16384 GB and `df` showed 3.9 TB free. Both are red herrings: the
+**real enforced cap on this disk is 200 GB**, and I was sitting at exactly 200 G. Every `fsync` write
+(git, `json.dump`, the Edit tool) hit `EDQUOT`; artifacts wrote 0 bytes; and the button `ko`
+extractions "failed" at startup with empty stderr **because the job could not write its own run
+dir / RUNMETA / stderr** — the tracebacks had nowhere to go. Not a cluster fault, not a code bug: my
+own disk usage. The user flagged the 200 GB limit; that was the key. Freed **15.6 G** (the unused
+`cont1_semantic` multiposition cache — `load_corpus` REFUSES semantic corpora, so it was never
+loaded; the never-read TEST multiposition cache; the corrupt button-ko dir), down to 186 G, and
+`fsync` writes work again. Lesson: the 11.6 GB multiposition caches are the space cost of this test;
+budget deletes alongside them.
+
+**The result (the point of all this): the differ-across-arms causal test ran on basket, and it is the
+first §44 #10-relevant signal the phase has produced.** Pairing the A1-knockout `ko` cache with the
+`cont1` (no-knockout) `ctrl` by prompt_id, cell C, per domain (90 domains, 900 pairs), TRAIN+VAL:
+
+| quantity | basket |
+|---|---|
+| positive control ‖Δ‖ at `cw_demo_mean` (demo-side) | **0.229** ≈ 0 — confirms C-CONT-040 and the pairing |
+| ‖Δ‖ at `cw_query` / `rel-6` (query-side) | **5.33 / 4.34** — the knockout strongly moves the query-side |
+| **projection shift onto the query-side probe** `w_q` (rel-6 L18) | **−0.170 [−0.184, −0.156]**, CI excludes 0, and NEGATIVE — the knockout REDUCES the installation-coded component |
+| projection shift onto demo-side F5 `w` (control) | **−0.0008** ≈ 0 (inert) |
+| **random-direction control** (same ‖w_q‖, 5 draws) | **0.0099** — 17× smaller than the query-probe shift |
+
+So the huge query-side perturbation is **specifically** aligned with the installation-reducing
+direction (not a generic consequence of a big ‖Δ‖ — the random-direction control rules that out), and
+the demo-side probe is inert. Interpreted: on basket, the query-side representation is **causally
+downstream of the A1 knockout and encodes installation** — exactly what F5 could not be (C-CONT-040).
+
+**NOT A CLAIM.** This phase has killed two headline claims that looked this good. Guards on this one:
+(1) **one codeword** — button cross-codeword replication is REQUIRED and is running now (SLURM 894286,
+after 4 quota-blocked startup failures); never pooled. (2) **OOD extrapolation** — `w_q` is fit on
+`ctrl` states and applied to `ko` states that are far away (‖Δ‖ = 5.3); the random-direction control
+mitigates but does not fully settle whether the linear readout means the same thing off-distribution.
+(3) **adversarial verification pending** — domain-driver leverage, sign convention, ridge overfit.
+Registered as a causal-SIGNAL candidate pending replication + verification, NOT a §44 #10 pass.
+
+Artifacts: `reports/DCS_CONT_DIFFER_ARMS_basket.json`, `scripts/dcs_cont_differ_arms.py` (with the
+random-direction control), `slurm_scripts/dcs_ko_multipos.slurm` (slim capture: only the 3 layers ×
+~7 sites the analysis needs, ~0.6 G, to stay under quota). Next: button result → if it replicates,
+adversarial-verify, then and only then consider a claim.

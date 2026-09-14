@@ -75,15 +75,16 @@ def main():
     if any(assign.get(r["domain"]) == "test" for r in rc + rk):
         print("REFUSING: a test-split row is present"); return 2
 
-    sites, layers = list(mc["sites"]), list(mc["layers"])
     # map prompt_id -> (domain, slot) from ctrl rows; ko shares prompt_ids (same bank)
     meta = {r["prompt_id"]: (r["domain"], lpm.family_slot(r["family_id"]), r["cell"]) for r in rc}
 
     def slc(mp, pid, site, layer):
+        # index each cache by ITS OWN site/layer order -- the slim ko cache has a different site
+        # set and layer subset than cont1's full grid, so a shared index would read the wrong cell.
         t = mp["reps"].get(pid)
-        if t is None:
+        if t is None or site not in mp["sites"] or layer not in mp["layers"]:
             return None
-        return t[sites.index(site), layers.index(layer)].float()
+        return t[mp["sites"].index(site), mp["layers"].index(layer)].float()
 
     def fit_w(site, layer):
         """Ridge direction on the CTRL cache, TRAIN, within-domain-centred cell-C -- the F8/F5 probe."""
@@ -123,6 +124,13 @@ def main():
     probes = {"query_winner_%s_L%d" % (wsite, wlayer): (wsite, wlayer),
               "demo_F5_%s_L%d" % F5: F5}
     W = {name: fit_w(site, layer) for name, (site, layer) in probes.items()}
+    # SPECIFICITY control: because ||Delta|| at the query side is large, a random direction of the
+    # SAME norm as w_q, at the SAME query site, must NOT show a comparable projection shift -- else the
+    # shift is a generic consequence of the perturbation, not alignment with the installation code.
+    _wq = W["query_winner_%s_L%d" % (wsite, wlayer)]
+    _g = torch.Generator().manual_seed(20260914)
+    _rand = [torch.randn(_wq.shape[0], generator=_g, dtype=torch.float64) for _ in range(5)]
+    _rand = [r / r.norm() * _wq.norm() for r in _rand]   # match ||w_q||
 
     # per-site ||Delta|| (magnitude) at treatment sites and the demo-side control
     mag_sites = {"cw_query": ("cw_query", wlayer), "rel-6": ("rel-6", wlayer),
@@ -166,6 +174,25 @@ def main():
         print("  proj-shift onto %-28s = %+.5f  [%+.5f, %+.5f]  (excl0=%s)"
               % (name, mean_shift, lo, hi, out["projection_shift"][name]["excludes_zero"]))
 
+    # random-direction control at the query winner site (same norm as w_q), 5 draws
+    rand_shifts = []
+    for ri, rvec in enumerate(_rand):
+        per_dom = {}
+        for pid, d in pairs:
+            hc = slc(mc, pid, wsite, wlayer); hk = slc(mk, pid, wsite, wlayer)
+            if hc is None or hk is None:
+                continue
+            per_dom.setdefault(d, []).append(float((hk.double() - hc.double()) @ rvec))
+        dm = [statistics.mean(v) for v in per_dom.values() if v]
+        rand_shifts.append(statistics.mean(dm))
+    out["random_direction_control"] = {
+        "site": wsite, "layer": wlayer, "n_draws": len(rand_shifts),
+        "mean_abs_random_shift": round(sum(abs(x) for x in rand_shifts) / len(rand_shifts), 5),
+        "random_shifts": [round(x, 5) for x in rand_shifts],
+        "query_probe_shift_for_comparison": out["projection_shift"]["query_winner_%s_L%d" % (wsite, wlayer)]["mean_per_domain_shift"]}
+    print("  random-dir control (|shift| mean of %d, same norm as w_q) = %.5f  vs query-probe %.5f"
+          % (len(rand_shifts), out["random_direction_control"]["mean_abs_random_shift"],
+             out["random_direction_control"]["query_probe_shift_for_comparison"]))
     json.dump(out, open(a.out, "w"), indent=1)
     print("wrote %s" % os.path.relpath(a.out, REPO))
     print("INTERPRETATION: control ||Delta|| at cw_demo_mean must be ~0 (validates C-CONT-040 & "
