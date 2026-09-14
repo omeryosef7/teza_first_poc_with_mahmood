@@ -11624,3 +11624,43 @@ criteria PASSED, interventional patch PENDING** — a strong, adversarially-veri
 final interventional confirmation. Given the phase's history (A16/A17), an independent adversarial
 review of this whole chain is being run before any paper-level claim; the patch test is the decisive
 next experiment.
+
+### CONT-ENTRY 165 — 2026-09-15 — The adversarial review CAUGHT AN OVERCLAIM (C-CONT-102). CONT-164's "causally-relevant / OOD-answered" framing is retracted; the energy-reduction rival is not ruled out. Decisive controls now running.
+
+An independent 3-lens adversarial review of the differ-across-arms result returned **OVERCLAIMED**
+(causal-logic and claim-scope lenses) / HOLDS_WITH_CAVEATS (stats-code: the code is sound, the framing
+is not). It is right, and this is the A16/A17 discipline working. Corrections to the record:
+
+**1 — The controls do not rule out a generic ACTIVATION-ENERGY-REDUCTION rival.** The A1 knockout
+ablates band-6-14 demo→query attention, so the query state plausibly loses its demo drive and shrinks
+toward the mean: `h_ko ≈ c·h_ctrl` (c<1). Under that null the projection shift `(h_ko−h_ctrl)·w_q` is
+**negative whenever `w_q` has positive overlap with the mean activation axis** — and `w_q` is only
+within-domain-centred, never orthogonalised to it — with **no installation meaning**. Every control I
+cited is consistent with this null: the random-direction control is ~0 trivially (random 4096-d vectors
+miss the active subspace), the demo-side F5 control is ~0 because ‖Δ‖≈0 there for ANY direction, and —
+critically — **the OOD rho check is scale-invariant**: within-domain-centred Spearman is unchanged by
+`h_ko=c·h_ctrl`, so `rho_ko≈rho_ctrl` (0.71→0.66 / 0.73→0.64) is exactly what the artifact PREDICTS.
+CONT-164's "the concern that most threatened the result is answered" is **withdrawn** — that check
+cannot discriminate signal from the scale artifact.
+
+**2 — Causally AFFECTED ≠ causally RELEVANT.** Only link (1) knockout→query-representation is
+established causally (a real do-operation with a real effect). Link (2) representation→installation is
+defined by `w_q`, an OBSERVATIONAL ridge predictor, and `y_install` is a FIXED readout used for both
+arms — **this analysis never measures that the knockout reduces installation behaviour**. So
+"first CAUSALLY-RELEVANT representation" and "reduces the installation-coded component" (CONT-162/163/164)
+are **retracted**; the honest statement is: *the A1 knockout causally perturbs the query-side
+representation, and the perturbation aligns — in the ctrl distribution — with the installation-PREDICTIVE
+axis*. Not "causally reduces installation."
+
+**3 — Minor corrections:** the demo-side F5 shift is statistically nonzero (~200× smaller, sign-flips
+across codewords), not a "clean null"; the projection-shift magnitude was unanchored (no between-domain
+SD); no TRAIN/VAL breakout despite d≫N overfit exposure.
+
+**Decisive controls now running** (the cheap no-GPU analogues of the checks that killed A16/A17):
+(a) **placebo-target ridge** — refit `w` identically on SHUFFLED `y_install`; if its shift matches the
+real one, the direction is not installation-specific; (b) **mean-state projection-out** — recompute the
+shift on `w_q` with its mean-activation component removed, and report ‖h_ctrl‖ vs ‖h_ko‖ and
+cos(w_q, mean_state); if the shift collapses it is an energy artifact; (c) **TRAIN/VAL breakout** of the
+shift. The registry candidate is downgraded to "differs-across-arms confirmed; installation-specificity
+UNDER TEST; the energy-reduction rival is live." No claim stands until (a)/(b) separate it — and even
+then, representation→installation needs the interventional patch (GPU).

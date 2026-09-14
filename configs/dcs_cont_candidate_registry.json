@@ -246,7 +246,7 @@
    "failure_mode": "collinear with F5 (0.70/0.74) -> mostly demo-side state copied forward; small independent component; causal leverage unknown",
    "eligible_for_confirmation": false,
    "causal_test_differ_across_arms": {
-    "status": "OBSERVATIONAL CAUSAL CRITERIA PASSED, both codewords (CONT-162/163/164). Interventional PATCH test (GPU) pending for the full SS44 #10 'aggressive patch has causal leverage' criterion.",
+    "status": "DOWNGRADED (CONT-165, C-CONT-102): the adversarial review found the observational battery CANNOT separate 'moved along the installation direction' from a generic activation-energy-reduction rival (knockout removes demo->query drive -> query state shrinks; w_q overlaps the mean activation axis -> negative shift with no installation meaning). The OOD-rho check is scale-invariant and does NOT discriminate. CONFIRMED: knockout causally PERTURBS the query-side representation (differs across arms, ||d||~5, replicated, demo-side ~0). UNDER TEST: installation-specificity (placebo-target + mean-state projection-out + train/val breakout running). NOT established: representation->installation (needs patch/GPU). Earlier 'first causally-relevant representation' / 'reduces installation' wording retracted.",
     "positive_control_demo_delta_norm": {
      "button": 0.237,
      "basket": 0.229,
@@ -294,7 +294,7 @@
      "button": "88/90",
      "basket": "90/90"
     },
-    "eligible_for_confirmation": "observational YES; interventional patch pending"
+    "eligible_for_confirmation": "NO -- installation-specificity under test; energy-reduction rival live"
    }
   }
  ],
