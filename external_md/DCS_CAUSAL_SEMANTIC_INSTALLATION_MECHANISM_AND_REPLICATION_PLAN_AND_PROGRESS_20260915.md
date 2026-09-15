@@ -3011,3 +3011,20 @@ the state is restored, not which directions.** The site is unambiguously causal 
 
 Seven rank-5 controls remain (3 random + 4 shuffled) and will finish the distribution; the reading
 above is stated on 3 of 10 and will be re-run when all land.
+
+**P1-i implemented.** The analyser's verdict is now computed from the candidate's **rank within the
+control distribution** whenever a control family of ≥ 2 is present; the single-comparator verdict is
+**suppressed** and recorded only as a note saying what it *would* have said and that it is not
+reported. Re-running the exact rank-5 configuration that printed `PRIMARY PASSES` in S-050 now gives:
+
+```
+VERDICT: PRIMARY DOES NOT PASS on split=train -- the candidate ranks 2 of 4 in its own
+control distribution (rank p=0.5, attainable floor 0.25). It is INSIDE the controls,
+not above them.
+```
+
+The verdict no longer depends on which control the caller names. Note the honest weakness the new
+wording exposes and the old one hid: with 3 controls the attainable rank-p floor is **0.25**, so
+even a candidate that beat every control could not reach α = 0.05 — **the rank-5 family needs its
+full 10 controls before any pass is attainable at all.** That is now visible in the verdict string
+instead of buried.

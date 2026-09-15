@@ -552,8 +552,38 @@ def main() -> int:
                           "question. This is NOT a negative result.")
     else:
         p = C["PRIMARY_candidate_minus_comparator"]
-        if p["point"] > 0 and p["ci95"][0] > 0 and p["p_two_sided"] < 0.05 and not p["p_at_its_floor"]:
-            out["VERDICT"] = "PRIMARY PASSES on split=%s -- candidate beats its norm-matched comparator" % a.split
+        dist = out.get("control_recovery_distribution")
+        single_ok = (p["point"] > 0 and p["ci95"][0] > 0 and p["p_two_sided"] < 0.05
+                     and not p["p_at_its_floor"])
+        if dist and dist["n_controls"] >= 2:
+            # P1-i. When a control FAMILY exists, the verdict comes from the candidate's position in
+            # the DISTRIBUTION, never from one named comparator. With a control spread of +-0.005
+            # (S-050) the single-comparator verdict is decided by which control the caller happened
+            # to name: against the most negative rank-5 control the same data said "PRIMARY PASSES"
+            # (p=5e-6), against the most positive it said FAIL (p=0.869). A verdict that flips with
+            # an arbitrary naming choice is not a verdict.
+            rank, n = dist["candidate_rank_among_controls"], dist["n_controls"]
+            rank_p = rank / float(n + 1)
+            out["verdict_basis"] = {
+                "rule": "candidate's rank within the control distribution (P1-i)",
+                "candidate_rank": rank, "n_controls": n,
+                "rank_p": round(rank_p, 4), "rank_p_floor": dist["rank_p_floor"],
+                "single_comparator_verdict_SUPPRESSED": (
+                    "would have said %s against --comparator-arm %s; not reported, see S-050"
+                    % ("PASS" if single_ok else "FAIL", a.comparator_arm))}
+            if rank == 1 and rank_p < 0.05:
+                out["VERDICT"] = ("PRIMARY PASSES on split=%s -- candidate is strictly the largest "
+                                  "of %d controls (rank p=%.4g)" % (a.split, n, rank_p))
+            else:
+                out["VERDICT"] = (
+                    "PRIMARY DOES NOT PASS on split=%s -- the candidate ranks %d of %d in its own "
+                    "control distribution (rank p=%.4g, attainable floor %.4g). It is INSIDE the "
+                    "controls, not above them." % (a.split, rank, n + 1, rank_p, dist["rank_p_floor"]))
+        elif single_ok:
+            out["VERDICT"] = ("PRIMARY PASSES on split=%s -- candidate beats its norm-matched "
+                              "comparator (NOTE: only %d control(s) present; a single comparator is "
+                              "an arbitrary draw when the control spread is wide -- S-050)"
+                              % (a.split, (dist or {}).get("n_controls", 0)))
         else:
             out["VERDICT"] = ("PRIMARY DOES NOT PASS on split=%s -- see p, p_floor and the CI "
                               "before calling this a negative" % a.split)
