@@ -1909,3 +1909,58 @@ all afternoon.
 This is the last thing the refusal endpoint can usefully be asked. Further behavioural work waits
 for the Phase-2 bank (D ≈ 300), and the sprint's weight is now correctly on Phase 1's semantic
 endpoint, where the same intervention moves 67/67 domains.
+
+**Traceability note:** two background commits raced and the S-032 content landed inside commit
+`ab72df04`, whose message describes only S-031. No content was lost (verified: S-032, the
+`p0cmpL` artifact and the revised E1 are all in `HEAD`), but a reader scanning `git log` will not
+find "S-032" as a commit subject — it is in `ab72df04`. This log, not the commit subjects, is the
+authoritative index. Cause: launching a second background commit while the first was still inside
+the pre-commit guard. The standing rule (never two commits in flight) exists for exactly this and
+I broke it; re-adopted.
+
+---
+
+## S-033 — Phase-1 group A is running, and its BASE arm reproduces the predecessor's installation baseline exactly
+
+Job 896679 on n-303, `EXPECT_N=670 LAYER=20 RANK=5`, ~8.75 min per arm → ~1 h for all seven.
+First arm complete and audited **while the run is still going**, so a defect would cost minutes
+rather than the whole allocation.
+
+**`csi1_button_train_BASE`, 670 rows:**
+
+| check | value |
+|---|---|
+| rows / domains | **670 / 67** — matches `--expect-n` exactly |
+| split census | **{train: 67}** — no validation, no test |
+| globally-excluded domains present | **none** |
+| cells | **C only** |
+| readout / query kind | `semantic` / `semantic_one_word` only |
+| rescue fields | all present, all `None` (the S-028 schema stabilisation working on a non-rescue arm) |
+| **`y_install` mean** | **0.6784** |
+
+That last row is the cross-check worth having: the predecessor's `DR-071` button **`base`**
+installation is **0.6785** (S-003). My Phase-1 BASE arm, built through an independently written
+population selector, a different exclusion file and the rewritten rescue-field plumbing, reproduces
+it to **four decimal places**. Together with the axis reproducing the query-probe rho on both
+codewords (S-013, S-021), the Phase-1 pipeline now agrees with the established record at three
+independent points.
+
+### A limitation of the endpoint, recorded before it can be discovered inconveniently
+
+`option_mass` over the 670 rows: **mean 0.3669, min 0.0001**, against a `--min-option-mass 0.05`
+gate. The gate's scope is **pooled** (the phase's frozen setting, inherited from DR-071), so it
+tests the pooled mean and passes comfortably — but individual rows exist where the
+(concept, codeword) pair carries **almost no probability mass at all**, i.e. the model's actual
+prediction is some third word.
+
+`y_install` is a two-way softmax over `logp_concept` and `logp_codeword`. On a row with option mass
+1e−4 it is a ratio of two quantities the model barely entertains — arithmetically well-defined,
+epistemically thin. This is the known "tail readout" problem the code carries a flag for
+(`--allow-tail-readout`), and I am **not** changing the protocol: DR-071, A1 and every installation
+number in the predecessor phase were measured this way, and switching now would make my numbers
+incomparable with the record I have just reproduced.
+
+What I will do instead, at analysis time: report the primary contrast **and** a sensitivity
+re-computation restricted to rows above a per-row option-mass floor. If the Phase-1 conclusion
+flips between the two, that is itself the finding and it goes in the log; if it does not, the
+result is robust to the thinnest rows. Added to the checklist as **P1-f**.
