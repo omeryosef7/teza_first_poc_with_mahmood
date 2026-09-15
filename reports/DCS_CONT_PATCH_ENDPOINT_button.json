@@ -1,0 +1,51 @@
+{
+ "schema": "dcs_cont_patch_endpoint/1",
+ "codeword": "button",
+ "scope": "slot0 PRIMARY",
+ "population": "train+val (TEST unspent)",
+ "endpoint": "native kw_refusal, domain-clustered",
+ "n_common": 180,
+ "n_domains": 90,
+ "refusal_rate_by_arm": {
+  "ctrl": 0.1111,
+  "ko": 0.0444,
+  "rescue_clean": 0.0722
+ },
+ "ko_derefusal_ctrl_minus_ko": {
+  "point": 0.0667,
+  "ci": [
+   0.0333,
+   0.1
+  ],
+  "dropped": 0
+ },
+ "recovery_rescue_minus_ko": {
+  "point": 0.0278,
+  "ci": [
+   0.0056,
+   0.0556
+  ],
+  "dropped": 0
+ },
+ "residual_ctrl_minus_rescue": {
+  "point": 0.0389,
+  "ci": [
+   0.0167,
+   0.0667
+  ],
+  "dropped": 0
+ },
+ "recovery_fraction": {
+  "point": 0.417,
+  "ci": [
+   0.133,
+   0.714
+  ],
+  "dropped": 0
+ },
+ "run_dirs": {
+  "ctrl": "patch_ctrl_button_20260915_113819_2396318",
+  "ko": "patch_ko_button_20260915_115234_2437732",
+  "rescue_clean": "patch_rescue_clean_button_20260915_120226_2037285"
+ }
+}

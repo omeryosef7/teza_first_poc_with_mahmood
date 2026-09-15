@@ -11822,3 +11822,40 @@ negative (correlate, not bottleneck). **Deferred on purpose:** the size-match co
 codeword until its own identity smoke passes at layer 18 (never pool button/basket). New tooling:
 `dcs_cont_patch_population.py`, `dcs_cont_patch_identity.py`, `runargs/patch/arm_*_button.txt`,
 `runargs/patch/exclude_button.txt`.
+
+### CONT-ENTRY 171 — 2026-09-15 — Button PRIMARY RESULT: the clean query-side rescue RECOVERS ~42% of the knockout's de-refusal (CI excludes 0), and the knockout de-refusal replicates A4 almost exactly. This is the phase's first interventional representation→behaviour signal — but NOT yet a §44 #10 PASS: the size-match control and basket replication are still owed.
+
+All three button arms COMPLETED and validated (180 rows each, `frac_rows_scope_live 1.0`, gate PASS;
+RESCUE_CLEAN `rescue_liveness.fired` on 180/180, 0 empty generations). Endpoint = native `kw_refusal`
+(no judge), domain-clustered over 90 domains, `dcs_cont_patch_endpoint.py`. Numbers (re-derived here):
+
+| arm | refusal (domain-clustered) |
+|---|---|
+| CTRL (no knockout) | 0.1111 |
+| KO (A1, target_surface_row_only, band 6-14) | 0.0444 |
+| KO + rescue query span from CLEAN (L20) | 0.0722 |
+
+- **KO de-refusal** (CTRL−KO) = **+0.0667 [0.0333, 0.1000]** (domain bootstrap, 20k, 0 dropped). This
+  reproduces **A4 (0.112 → 0.040)** to within 0.004 on an independent 180-row slot0/non-TEST draw —
+  a clean internal replication that the population + knockout are the A4 effect, not a new quantity.
+- **Recovery** (RESCUE_CLEAN−KO) = **+0.0278 [0.0056, 0.0556]** — CI excludes 0.
+- **Recovery fraction** (KO→RESCUE)/(KO→CTRL) = **0.417 [0.133, 0.714]** — the clean query representation,
+  written back at L20 over the query span during the knocked-out generation, restores ~42% of the
+  refusal the knockout removed.
+
+**Why this is a real interventional signal, and what still guards it.** The identity control already
+established (CONT-170) that writing the arm's OWN (self) activations back over the SAME query positions
+reproduces KO byte-for-byte — so the injection mechanism is inert; only the *difference* between the
+clean and the knocked-out query state moves behaviour, and that difference is what recovers refusal.
+Combined with the observational line (CONT-166: that query-side difference is installation-axis-specific,
+norm-rival refuted), this is the phase's first evidence that the query-side representation *causes* part
+of the knockout's behavioural effect. **HELD BACK from a PASS declaration by the pre-declared rule
+(CONT-167):** (1) the **size-match control** (arm 5, `--rescue-n-positions K`) has not run — it must not
+spuriously recover; (2) **basket** has not replicated (the differ-arms signal only earned confidence by
+replicating cross-codeword, and button/basket are never pooled); (3) the interventional norm/distribution
+rival is controlled only OBSERVATIONALLY so far — a rescue that restores clean *magnitude* rather than
+clean *installation content* is not yet excluded on the behavioural endpoint itself. Absolute events are
+small (baseline refusal is low because natural-doublespeak evades it: ~10 refusing domains of 90 at CTRL),
+so the CIs, while excluding 0, rest on few flips (~2.5 domains recovered) — replication is load-bearing.
+NEXT: launch the button size-match control and the basket identity smoke (L18) → basket primary arms;
+only then weigh a §44 #10 verdict. Result: `reports/DCS_CONT_PATCH_ENDPOINT_button.json`.
