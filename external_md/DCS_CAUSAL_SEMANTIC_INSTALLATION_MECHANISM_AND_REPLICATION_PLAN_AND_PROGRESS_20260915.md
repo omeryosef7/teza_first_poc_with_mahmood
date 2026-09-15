@@ -3313,3 +3313,62 @@ the analysis path is the right place to keep pointing this.
 
 **In flight:** group C (2 shuffled rank-5 left), group D position ladder (POS1, POS2 done; POS4
 running), validation group B (rank-1 control family, 5 arms started), basket group A.
+
+---
+
+# S-056 — **POSITION LADDER (preliminary, 3 of 7 rungs): recovery is LINEAR in positions and SUBLINEAR in dimensions.** The two axes of "how much" behave differently.
+
+Group D's first three rungs are complete. Each arm restores the **full clean state** at a
+seeded-random subset of *k* of the ~28 query-span positions; `n_rescue_positions` on the rows
+confirms exactly {1}, {2}, {4}.
+
+| k positions | recovery vs KO | CI95 | pos/neg | p |
+|---|---|---|---|---|
+| **1** | **+0.00281** | [+0.0016, +0.0041] | 40/27 | 4e−05 |
+| **2** | **+0.00607** | [+0.0037, +0.0087] | 51/16 | < 1e−5 |
+| **4** | **+0.00876** | [+0.0062, +0.0114] | 53/14 | < 1e−5 |
+| 28 (`KO_FULL`) | +0.07060 | [+0.0606, +0.0812] | 66/1 | < 1e−5 |
+
+## The comparison that matters
+
+Both ladders vary "how much of the state you restore". Put them on the same scale — share of the
+state restored, versus share of the full effect recovered:
+
+| arm | share of the state | recovery | share of full effect | **observed / linear** |
+|---|---|---|---|---|
+| positions k=1 | 3.6 % | +0.00281 | 4.0 % | **1.11×** |
+| positions k=2 | 7.1 % | +0.00607 | 8.6 % | **1.20×** |
+| positions k=4 | 14.3 % | +0.00876 | 12.4 % | **0.87×** |
+| **dim** rank-1 axis | 3.5 % | +0.00040 | **0.6 %** | **0.16×** |
+| **dim** rank-5 PLS | 10.0 % | +0.00302 | **4.3 %** | **0.43×** |
+
+> **Restoring positions is ≈ LINEAR (0.87–1.20× the linear prediction). Restoring dimensions is
+> strongly SUBLINEAR (0.16–0.43×).** Restoring one position in full recovers **seven times** what
+> the installation axis recovers, despite touching a comparable share of the state.
+
+## What this says, mechanistically
+
+* **Across the query span the effect is uniform and additive.** Each position contributes roughly
+  its equal share; there is **no privileged position** carrying the installed meaning. The answer
+  to "is it localised?" is a quantified **no** — which is a positive finding, not an absence.
+* **Within a position the effect is NOT low-dimensional.** You need most of the 4096 dimensions;
+  a 1- or 5-dimensional slice returns far less than its norm share, and *which* slice does not
+  matter (S-052, S-054).
+
+Together: **the knockout's effect on semantic installation is spread uniformly over the query span
+and densely within each position's representation.** That is a sharper statement than "distributed"
+— it says *how* it is distributed along both axes, with different functional forms, each measured
+against the same positive control.
+
+## Status and caveats, stated before the remaining rungs land
+
+* **Preliminary: 3 of 7 rungs.** k = 8, 14, 20, 28-as-subset are still running. The mild
+  non-monotonicity in the ratio (1.11 → 1.20 → 0.87) may be sampling noise across the seeded
+  position draws, or the beginning of saturation; **four more rungs will decide, and I am not
+  fitting a curve to three points.**
+* The k = 28 arm in group D is a *subset* draw of all 28 and should reproduce `KO_FULL` exactly —
+  that is a built-in consistency check on the ladder, and it has not run yet.
+* Button, TRAIN only. No VALIDATION ladder, no basket ladder.
+* This does **not** rescue the rank-1 candidate: the axis remains 4th of 11 against its controls on
+  TRAIN and fails the primary on both splits. What the ladder adds is the *shape* of the
+  distribution, not a different verdict about directions.
