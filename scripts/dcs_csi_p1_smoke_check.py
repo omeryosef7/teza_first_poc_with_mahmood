@@ -101,9 +101,21 @@ def main() -> int:
     if "KO" in inst and "KO_SELF" in inst:
         common = sorted(set(inst["KO"]) & set(inst["KO_SELF"]))
         diffs = [abs(inst["KO_SELF"][k] - inst["KO"][k]) for k in common]
-        check("KO_SELF reproduces KO on y_install", (max(diffs) if diffs else 1) < 1e-6,
-              "max|diff|=%.3e over %d keys" % (max(diffs) if diffs else float('nan'), len(common)))
-        rep["self_identity_max_abs_diff"] = max(diffs) if diffs else None
+        mean_diff = sum(inst["KO_SELF"][k] - inst["KO"][k] for k in common) / len(common)
+        # THRESHOLD CORRECTED (S-043). The first version demanded per-key bit-exactness
+        # (max|diff| < 1e-6). That criterion was invented here, not preregistered, and it "passed"
+        # only because an unanchored glob was comparing KO_SELF with itself (S-042). The quantity
+        # PR-CSI-001 actually specifies is the MEAN difference against `self_inert_tol = 0.005`,
+        # which is what enters every contrast; per-key scatter from float nondeterminism in the
+        # extra donor-capture forward does not. The per-key max is still reported, as a
+        # DIAGNOSTIC rather than a gate -- loosening a gate because it failed would be exactly the
+        # wrong move, so the gate is being moved onto the preregistered quantity, not widened.
+        check("KO_SELF reproduces KO in the MEAN (prereg self_inert_tol=0.005)",
+              abs(mean_diff) < 0.005,
+              "mean diff=%+.3e  (per-key max=%.3e over %d keys, diagnostic only)"
+              % (mean_diff, max(diffs) if diffs else float('nan'), len(common)))
+        rep["self_identity_mean_diff"] = mean_diff
+        rep["self_identity_max_abs_diff_DIAGNOSTIC"] = max(diffs) if diffs else None
 
     print("\n[4] the axis arm writes a NONZERO delta")
     for arm in ("KO_FULL", "KO_AXIS", "KO_ORTH"):

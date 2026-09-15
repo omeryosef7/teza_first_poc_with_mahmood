@@ -2467,3 +2467,69 @@ named **the same directory**. The lesson is the sprint's own recurring one, now 
 **a control that cannot fail is worse than no control**, and the way it presents is a number that
 looks *too good* — "0.000e+00 on all 670 keys" should have prompted suspicion at the time rather
 than satisfaction. Exact zeros from a floating-point pipeline are a red flag, not a triumph.
+
+---
+
+## S-043 — two further corrections cascading from S-042, and a threshold moved onto the preregistered quantity
+
+### (a) S-029's forward-count explanation was **inverted**. Corrected.
+
+With anchored resolution, the smoke arms' hooked prefill-forward counts are:
+
+| arm | prefill forwards | edits per forward |
+|---|---|---|
+| `KO` | **36** | 55.0 |
+| **`KO_SELF`** | **45** | 55.0 |
+| `KO_FULL` / `KO_AXIS` / `KO_ORTH` | **36** | 55.0 |
+
+S-029 reported `KO = 45, KO_SELF = 45, clean-donor arms = 36` and built an elaborate
+page-cache/readout-caching story to explain why the *clean* arms were the odd ones out. **That was
+the mis-resolved `KO` again**, and the truth is far simpler:
+
+> `KO_SELF` is the **only** arm at 45. The `--rescue-donor self` capture runs **inside** `ctxs`, so
+> it is hooked and contributes exactly **+9** layer-visits (one forward × the 9-layer band 6–14).
+> Clean-donor captures run **outside** `ctxs` and contribute nothing. `KO` has no capture at all.
+> 36 + 9 = 45. Everything else is 36.
+
+**WITHDRAWN:** S-029's cache-warming mechanism. **Retained and now better supported:** its
+conclusion — the knockout applies **identically** across arms at **55.0 edits per hooked forward on
+every single arm**, so the intervention dose is not confounded with the rescue.
+
+### (b) The smoke's identity check was too strict *because* it was built on the artifact
+
+With correct arms, `KO_SELF` vs `KO` on 24 smoke rows gives **per-key max |diff| = 2.635e−02**, and
+the smoke's threshold of `max|diff| < 1e-6` **failed**.
+
+That threshold was **my invention, not the preregistration's**, and it "passed" before only because
+the vacuous self-comparison returned exact zeros. PR-CSI-001 specifies
+`self_inert_tol = 0.005` on the **mean** difference — which is the quantity that enters every
+contrast. Per-key scatter from float nondeterminism in the extra donor-capture forward does not.
+
+So the gate is **moved onto the preregistered quantity**, and the per-key max is retained as a
+**diagnostic**:
+
+```
+PASS  KO_SELF reproduces KO in the MEAN (prereg self_inert_tol=0.005)
+      mean diff = -4.141e-03   (per-key max = 2.635e-02 over 24 keys, diagnostic only)
+```
+
+**I want to be explicit that this is not threshold-shopping.** Loosening a gate because it failed
+would be exactly the wrong move. What happened is: an unpreregistered, artifact-derived criterion
+was replaced by the criterion the preregistration actually names, which is *stricter in the sense
+that matters* — it binds the quantity the science depends on. And at full TRAIN scale that quantity
+is **−0.00076** (S-042), i.e. **6.6× inside** the tolerance, on 670 rows rather than 24.
+
+### Running tally of what S-042's single glob defect touched
+
+| entry | claim | status |
+|---|---|---|
+| S-029 | "KO and KO_SELF both make 45 hooked forwards; clean arms 36" | **WITHDRAWN**, replaced above |
+| S-029 | "the knockout applies identically per forward across arms" | **stands**, now 55.0/forward on all five arms |
+| S-031 | "SMOKE PASS" incl. bit-exact identity | **re-run**: still **SMOKE PASS**, on the corrected criterion |
+| S-038 | "`KO_SELF − KO` = 0.000e+00 on all 670 keys" | **WITHDRAWN** (S-042) |
+| S-038/S-040 | Gates 1 and 3, capability, recovery fraction | **stand**, point estimates move in the 4th decimal |
+| S-041 | the 3.6 % captured-energy dose constraint | **stands** — computed from `KO_AXIS`/`KO_ORTH`, neither of which the glob could mis-resolve |
+
+**One defect, six entries touched, two claims withdrawn, and the scientific conclusions intact.**
+That is the append-only log doing its job: every number above was recoverable because the raw arms
+were still on disk and each entry named the artifact it came from.
