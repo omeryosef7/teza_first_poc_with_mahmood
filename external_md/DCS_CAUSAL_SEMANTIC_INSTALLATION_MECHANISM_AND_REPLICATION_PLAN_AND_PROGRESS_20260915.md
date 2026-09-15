@@ -1216,3 +1216,86 @@ rescue on n-801, size-match on n-803 — **all L40S**) were not *invalidated* by
 nodes: same architecture is the condition that matters, and the churn measured here is *across*
 architectures. Within-architecture, cross-node churn is measured by the pair
 (896363 on n-801 vs the published t-806 run) once 896363's CTRL arm lands.
+
+---
+
+## S-017 — Phase 4 §9.1 (template generalisation) is **BLOCKED on a new extraction**, and here is the cheap test that is available instead
+
+Matan's concern — *is the representation just detecting prompt/template structure?* — is plan §9.1,
+and I checked whether it can be answered from the caches already on disk. It cannot.
+
+Parsing `family_id` (`domain|split|slot|n_ex|strength|consistency|example_position|role_style|query_kind`)
+across all 3720 rows of the behavioural corpus:
+
+| axis | distinct values in the corpus |
+|---|---|
+| domain | 93 |
+| slot | 5 (`slot0/4/8/12/16`) |
+| bank-internal split | 2 (`dev`, `heldout`) |
+| n_examples | **1** (`n4`) |
+| strength | **1** (`none`) |
+| consistency | **1** (`consistent`) |
+| **example_position** | **1** (`near`) |
+| **role_style** | **1** (`plain`) |
+
+**The corpus contains exactly one template family.** `example_position` and `role_style` are the
+two template axes the generator supports, and both are constant here. So a train-on-template-A /
+test-on-template-B experiment is **not analysable from existing activations** — it needs a new GPU
+extraction over template-varied rows (which *do* exist in the bank; they were simply not captured).
+
+Recorded as a real cost, not waved away: §9.1 requires **one new extraction**, and it is queued
+behind Phase 1 rather than dropped. It should not be attempted with a substitute axis and called
+template generalisation.
+
+**What IS available now, and is worth doing:** the bank-internal `dev` / `heldout` split is a
+**prompt-level** holdout orthogonal to the ts116m domain split — different demonstration sentences,
+same template, same domains. Fitting the axis on `dev` rows and scoring it on `heldout` rows within
+the same TRAIN domains tests whether the axis depends on the *particular demonstration sentences*
+rather than on installed meaning. That is a weaker claim than template transfer and **must not be
+reported as template transfer**, but it is a genuine generalisation check, it is pure CPU, and it
+reuses `dcs_csi_axis.build()` unchanged. Added to the checklist as **P4-a**.
+
+Also noted: this corpus carries **93 domains**, i.e. it includes the three globally-excluded ones;
+the exclusion is applied at fit time (`EXCLUDED_DOMAINS`), which is why the fit population is 67.
+
+---
+
+## S-018 — P4-a RESULT: the installation axis is **not sentence-specific**. It transfers across demonstration sentences at full strength.
+
+`scripts/dcs_csi_prompt_transfer.py` → `reports/DCS_CSI_PROMPT_TRANSFER_button.json`, job 896413.
+Button, site rel-6, layer L20, TRAIN domains only, the same `build`/ridge/leave-one-domain-out
+imported from `dcs_csi_axis` so only the row filter differs.
+
+| fit on | scored on | fit rows → score rows | within-fit LOO rho | **cross-prompt transfer rho** |
+|---|---|---|---|---|
+| `dev` | `heldout` | 335 → 335 | 0.5057 | **+0.6326** |
+| `heldout` | `dev` | 335 → 335 | 0.5865 | **+0.5634** |
+| | | | mean **0.546** | mean **+0.598** |
+
+The axis learned from one set of demonstration sentences predicts installation on a **different set
+of demonstration sentences** at ρ ≈ 0.60 — essentially the same as the full-TRAIN in-sample LOO
+(0.5935 on 670 rows). **Retention 1.095.**
+
+**How to read the retention > 1, honestly.** It does *not* mean transfer beats in-sample. The
+within-fit LOO is computed on a **halved** fit set (335 rows), so it is the noisier, weaker number;
+the transfer fits on 335 and scores on a *different* 335. The correct statement is: **halving the
+data costs the axis nothing on held-out sentences** — there is no sentence-level overfitting to
+recover from.
+
+**What this rules out.** One live alternative explanation for the query-probe signal was that the
+axis memorises the particular demonstration sentences used to install the mapping. It does not.
+
+**What this does NOT show, and must not be reported as:**
+
+* **Not template generalisation.** Every row in this corpus is `example_position=near`,
+  `role_style=plain` — one template family (S-017). §9.1 still needs a new extraction.
+* **Not domain generalisation.** The `dev`/`heldout` split is *within* the same TRAIN domains, so
+  domain topic is shared between fit and score. Within-domain centring is what guards against
+  topic here, not the design. Domain-level generalisation is the separate TRAIN→VALIDATION
+  transfer, already reported as +0.645.
+* **Not a causal claim.** This is the observational axis. Whether it *mediates* anything is
+  Phase 1, which is what the GPU arms are for.
+
+So the axis now has three independent generalisation results — across **domains** (TRAIN→VAL
++0.645), across **codewords** (button +0.645 / basket +0.653), and now across **demonstration
+sentences** (+0.598, retention 1.095) — and one known untested axis, **templates**.

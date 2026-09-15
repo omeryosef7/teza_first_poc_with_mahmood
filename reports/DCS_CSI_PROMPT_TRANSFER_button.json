@@ -1,0 +1,34 @@
+{
+ "schema": "dcs_csi_prompt_transfer/1",
+ "codeword": "button",
+ "site": "rel-6",
+ "layer": 20,
+ "fit_population": "TRAIN domains only",
+ "n_train_domains": 67,
+ "WHAT_THIS_IS_NOT": "NOT template generalisation -- the corpus has one template family (example_position=near, role_style=plain on every row)",
+ "results": {
+  "fit_dev_score_heldout": {
+   "fit_rows": 335,
+   "fit_domains": 67,
+   "score_rows": 335,
+   "score_domains": 67,
+   "within_fit_loo_rho": 0.5057,
+   "cross_prompt_transfer_rho": 0.6326,
+   "retention": 1.251
+  },
+  "fit_heldout_score_dev": {
+   "fit_rows": 335,
+   "fit_domains": 67,
+   "score_rows": 335,
+   "score_domains": 67,
+   "within_fit_loo_rho": 0.5865,
+   "cross_prompt_transfer_rho": 0.5634,
+   "retention": 0.9606
+  }
+ },
+ "summary": {
+  "mean_cross_prompt_rho": 0.598,
+  "mean_within_fit_loo_rho": 0.5461,
+  "mean_retention": 1.095
+ }
+}
