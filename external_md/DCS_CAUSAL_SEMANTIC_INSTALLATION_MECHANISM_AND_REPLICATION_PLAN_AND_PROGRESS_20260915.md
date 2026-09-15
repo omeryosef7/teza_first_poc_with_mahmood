@@ -2666,3 +2666,146 @@ One practical consequence worth carrying into Phase 2: for **readout** endpoints
 need to share an allocation — only an architecture. That materially loosens the scheduling
 constraint for the larger banks, where forcing 17 arms into one allocation is what created the
 8-hour walltime problem in the first place.
+
+---
+
+# S-046 — **PR-CSI-001 PRIMARY RESULT, button, TRAIN.** The rank-1 installation axis does NOT mediate. Dimensionality does.
+
+Group A complete (job 896679, all seven arms, one allocation, n-303 / `geforce_rtx_3090`).
+`reports/DCS_CSI_SUBSPACE_button_train.json`. **`VOID: []`** — no void condition triggered.
+
+## Gates (all three PASS)
+
+| gate | contrast | estimate | CI95 | pos/neg/tied | p |
+|---|---|---|---|---|---|
+| manipulation | `KO − BASE` | **−0.20704** | [−0.2264, −0.1886] | 0 / **67** / 0 | < 1e−5 |
+| identity | `KO_SELF − KO` | −0.00076 | [−0.00165, +0.00013] | 28 / 39 / 0 | 0.107 |
+| capability | `KO_FULL − KO` | **+0.07060** | [+0.0606, +0.0812] | **66** / 1 / 0 | < 1e−5 |
+
+## THE PREREGISTERED PRIMARY
+
+> **`KO_AXIS − KO_ORTH` = +0.00041, CI95 [−0.00034, +0.00116], 39/28 pos/neg, p = 0.290.**
+>
+> **VERDICT: THE PRIMARY DOES NOT PASS.**
+
+At matched rank (1) and matched norm (to 1.4e−17 per row), **the installation-predictive direction
+does no more than an arbitrary orthogonal direction.**
+
+**This is a well-powered null, not an uninformative one.** With 67 informative domains the exact
+test has resolution to p = 1.4e−20 — it is nowhere near its floor. The CI width is **0.0015**,
+i.e. we exclude any effect larger than **1.6 % of the positive control's**. And per S-041's dose
+argument the linear-in-dose prediction for a 3.5 %-energy intervention is **+0.00246** — which the
+CI **also excludes**. The axis does *less* than a naive dose extrapolation, not merely "not more
+than a control".
+
+## The dose ladder — and the finding the primary alone would have hidden
+
+| arm | rank | captured energy | recovery vs KO | CI95 | p | recovery / dose | linear prediction |
+|---|---|---|---|---|---|---|---|
+| `KO_ORTH` | 1 | 1.28 % | −0.00001 | [−0.0008, +0.0008] | 0.971 | −0.001 | +0.00090 |
+| `KO_AXIS` | 1 | 3.48 % | +0.00040 | [−0.0003, +0.0011] | 0.249 | 0.012 | +0.00246 |
+| **`KO_PLS`** | **5** | **10.04 %** | **+0.00302** | **[+0.0013, +0.0047]** | **0.00102** | **0.030** | +0.00709 |
+| `KO_FULL` | 4096 | 100 % | **+0.07060** | [+0.061, +0.081] | < 1e−5 | 0.071 | — |
+
+Three things fall out:
+
+1. **The rank-5 PLS subspace DOES beat KO** (+0.00302, 50/17 domains, **p = 0.001**) where the
+   rank-1 axis does not. Restoring five dimensions recovers **7.5×** what one dimension recovers
+   while carrying only **2.9×** the energy.
+2. **Recovery per unit dose rises monotonically with rank**: −0.001 → 0.012 → 0.030 → 0.071. The
+   effect is **superlinear in dimensionality**, not in norm.
+3. **Every subspace arm recovers *less* than linear-in-norm** (0.00040 vs 0.00246; 0.00302 vs
+   0.00709). Restoring a given amount of norm along few directions is worth far less than the same
+   norm spread across the state.
+
+Read together: the knockout's effect on installation is **not carried by one direction**, and it is
+not simply a matter of how much norm you put back — it needs *many* dimensions. That is a
+**distributed** representation result, and it is exactly the shape plan §19 Gate A anticipated for
+a NO: *"investigate whether the information is distributed/nonlinear."*
+
+## The limitation that blocks the strongest version of this claim
+
+**`KO_PLS` has no rank-matched control.** Every control in the frozen candidate set —
+`ctrl_orth`, `ctrl_random0..7`, `ctrl_shuffled0..4` — is **rank 1**. So `KO_PLS`'s significance is
+measured against `KO`, and its advantage over `KO_AXIS` is **confounded with dose** (10.0 % vs
+3.5 % captured energy). I cannot yet say whether rank-5 wins because of *which* five directions or
+merely because it is *five* directions.
+
+**This is the immediately indicated next experiment**, and it is being built now: rank-5 random and
+rank-5 shuffled-label subspaces, norm-matched to `cand_pls5`. Until it runs, the licensed statement
+about `KO_PLS` is *"a rank-5 subspace recovers significantly more than the knockout alone"* and
+**not** *"the installation subspace is causal"*.
+
+## What may and may not be said
+
+**MAY:** the preregistered rank-1 primary is a **well-powered null** at matched dose; the whole-state
+rescue at the same site recovers **34 %** of the installation loss (so the site is causal); recovery
+is superlinear in rank; a rank-5 subspace recovers significantly more than KO.
+
+**MAY NOT** (and PR-CSI-001's `must_not_be_said_if_null` list governs):
+* *"The query-side representation carries no installation information."* — refuted by `KO_FULL`.
+* *"Semantic installation is not causally mediated."* — one subspace, one layer, one site.
+* *"The installation subspace is causal."* — `KO_PLS` lacks its rank-matched control.
+* *"The representation is one-dimensional."* — the opposite of what this shows.
+
+## Relation to the literature (S-036)
+
+arXiv:2605.18830 reports that an ICL **concept subspace is causal** and that *"patching the
+complementary subspace restores 0 %"*. Our rank-1 result points the other way on this attack and
+this model. That is a **dissociation from a published positive**, which S-036 flagged as the likely
+shape of our contribution — and it is a reason to hold the controls to a higher standard, not a
+lower one. It is also consistent with their result if the causal object is a *multi-dimensional*
+subspace rather than a direction, which is precisely what the rank ladder suggests and what the
+rank-matched control will test.
+
+---
+
+## S-047 — the repo's own completeness guard blocked my commit, and it was right: one row missing per shuffled control, from **my own degeneracy guard firing in production**
+
+`check_all.py` refused the S-046 commit: `run_completeness_check` FAILED with
+
+```
+SHORT csi1_button_train_KO_SHUF0: persisted 669 rows against --expect-n 670
+SHORT csi1_button_train_KO_SHUF1: persisted 669 rows against --expect-n 670
+```
+
+**Cause, traced to the row:** the `SubspaceDonorPatch` degeneracy refusal added in review **R2-M5**
+— the one that raises rather than injecting an arbitrary QR-gauge direction when a control subspace
+carries < 1e−6 of the delta. On one row of each shuffled arm (`b1471eb1c15d84b3`,
+`efccdac0f106d4bd`) the shuffled-label basis was near-orthogonal to the KO→clean delta at **1 of 28
+positions**, and the guard refused the row.
+
+**The guard is working exactly as designed** — it declined to fabricate a control rather than
+silently writing a meaningless one. That is the behaviour I wanted. But it creates a second-order
+problem the guard cannot see.
+
+### The second-order problem, and why it is R2-B1 again
+
+A missing row makes that arm's population differ from the others'. My analyser intersected
+**domains**, not **(domain, slot) keys** — so the affected domain's mean for that arm would have
+been an average over **fewer slots** than the arms it is paired against. **That is exactly review
+R2-B1's defect arriving by a completely different route**: paired means over non-identical key sets.
+
+**Fixed:** the analyser now intersects `(domain, slot)` keys across **all** arms before averaging,
+reports `keys_dropped_by_intersection` per arm, and prints the intersection when it bites.
+Re-verified on group A (all seven arms at 670 keys, so a no-op there): the primary is **unchanged**
+at +0.00041, CI [−0.00034, +0.00116], p = 0.290.
+
+### Why the loss is acceptable, argued rather than asserted
+
+The two dropped rows are **outcome-independent**: degeneracy is a property of the angle between a
+*fixed* basis and a *fixed* delta, both determined before any readout — and the delta is
+**identical across arms**, since it is the same KO→clean difference. It is not domain-clustered
+(one row, one arm, each). And after the key intersection every arm is compared on exactly the same
+key set regardless. Both runs are now documented in the guard's `KNOWN_SHORT` with that reasoning
+spelled out; the guard passes.
+
+### The meta-point
+
+This is the third time today a guard I did not write caught something I would have shipped — after
+`strict_run_dir` refusing ambiguous tags and the pre-commit test suite. And the chain here is worth
+noticing: **a fix from review round 2 (R2-M5) caused a row loss, which the repo's completeness
+guard caught, which exposed a gap that was review round 2's other finding (R2-B1) in disguise.**
+Defensive machinery compounds — each layer catches what the previous one's fix disturbed. The cost
+was one blocked commit; the alternative was a control arm quietly averaged over a different
+population than the candidate it is meant to bound.

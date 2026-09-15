@@ -93,6 +93,27 @@ KNOWN_ZERO = {
 }
 
 KNOWN_SHORT = {
+    "csi1_button_train_KO_SHUF0_20260915_201819_3243408":
+        "DCS-CSI-047: 669 of 670 rows. ONE row (b1471eb1c15d84b3) was REFUSED by the sprint's own "
+        "norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5): on that row the "
+        "shuffled-label control basis was near-orthogonal to the KO->clean delta at 1 of 28 "
+        "positions, so rescaling its projection would have amplified float noise into an arbitrary "
+        "QR-gauge direction. Refusing the row is the guard working as designed -- it declines to "
+        "fabricate a control rather than silently writing a meaningless one. The loss is "
+        "OUTCOME-INDEPENDENT: it is a property of the angle between a fixed basis and a fixed "
+        "delta, both determined before any readout, and the delta is IDENTICAL across arms (it is "
+        "the same KO->clean difference). It is also not domain-clustered -- one row in one arm. "
+        "The analysis is unaffected because dcs_csi_subspace_analyze.py now intersects "
+        "(domain, slot) KEYS across all arms before averaging, so every arm is compared on exactly "
+        "the same 669 keys; the domain-only intersection that preceded it would have let this arm's "
+        "domain mean be an average over fewer slots, which is review R2-B1's defect by another "
+        "route. n_attempted 670, n_succeeded 669, n_failed 1, one ledgered ValueError.",
+    "csi1_button_train_KO_SHUF1_20260915_203022_3244525":
+        "DCS-CSI-047: 669 of 670 rows, identical cause to KO_SHUF0 above on row "
+        "efccdac0f106d4bd -- one position of 28 norm-match degenerate, refused by the "
+        "SubspaceDonorPatch guard rather than injecting an arbitrary direction. Same reasoning: "
+        "outcome-independent, not domain-clustered, and neutralised by the cross-arm key "
+        "intersection in the analyser.",
     "continst_base_20260911_083431_3533623":
         "DCS-CONT-048: DR-071's baseline arm persisted 11 of 670 rows. Cause is a documented OOM, "
         "not a data property: the arm carries NO knockout, so --readout-max-batch defaulted to 16 "

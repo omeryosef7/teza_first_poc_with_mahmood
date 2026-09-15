@@ -104,6 +104,20 @@ def _assert_matches_loader(run_dir):
                          "the sensitivity arm must measure the same thing as the primary" % run_dir)
 
 
+def arm_key_values(run_dir, assign, keep_split):
+    """(domain, slot) -> y_install for one arm, restricted to one split. Keys, not domain means.
+
+    main() intersects these ACROSS ARMS before averaging. See the note on `keep_keys` below: a row
+    that one arm lost (e.g. the degeneracy refusal legitimately dropping a control row) would
+    otherwise make that arm's domain mean an average over FEWER SLOTS than the arms it is paired
+    against -- the same defect review R2-B1 found in the option-mass path, arriving by a different
+    route.
+    """
+    _assert_matches_loader(run_dir)
+    inst, n_rows, kinds = lpm.load_installation(run_dir)
+    return ({k: v for k, v in inst.items() if assign.get(k[0]) == keep_split}, n_rows, kinds)
+
+
 def arm_domain_means(run_dir, assign, keep_split, keep_keys=None):
     """(domain -> mean y_install over that domain's slots) for one arm, restricted to one split.
 
@@ -247,7 +261,7 @@ def main() -> int:
 
     assign = lpm.load_split()
     arms = [x for x in a.arms.split(",") if x]
-    dirs, dmeans, meta = {}, {}, {}
+    dirs, dmeans, meta, kv = {}, {}, {}, {}
     keep_keys = None
     if a.option_mass_floor > 0.0:
         if a.option_mass_reference not in arms:
@@ -261,8 +275,8 @@ def main() -> int:
         d = rederive.strict_run_dir("%s_%s" % (a.tag_prefix, arm), a.expect_n,
                                     row_file="results.jsonl")
         dirs[arm] = d
-        dmeans[arm], n_inst, kinds, n_drop = arm_domain_means(
-            d, assign, a.split, keep_keys)
+        kv[arm], n_inst, kinds = arm_key_values(d, assign, a.split)
+        n_drop = 0
         meta[arm] = row_meta(d)
         # BANK IDENTITY. `prompt_id` is derived from the row's AXES, not its text, so it is 100%
         # shared between the button and basket banks (measured: 4002/4002), while `prompt_sha16`
@@ -277,10 +291,28 @@ def main() -> int:
         meta[arm]["installation_rows_all_splits"] = n_inst
         meta[arm]["rows_dropped_by_option_mass_floor"] = n_drop
         meta[arm]["channels_present"] = kinds
-        print("[dir ] %-10s %-52s  %s-domains=%d"
-              % (arm, os.path.basename(d), a.split, len(dmeans[arm])))
+        print("[dir ] %-10s %-52s  %s-keys=%d"
+              % (arm, os.path.basename(d), a.split, len(kv[arm])))
 
-    doms = sorted(set.intersection(*[set(dmeans[x]) for x in arms]))
+    # ---- INTERSECT KEYS ACROSS ARMS, then average. Domain-only intersection was not enough:
+    # an arm that lost a single row still contributed a domain whose mean was over fewer slots.
+    common_keys = set.intersection(*[set(kv[x]) for x in arms])
+    if keep_keys is not None:
+        common_keys &= keep_keys
+    if not common_keys:
+        raise SystemExit("REFUSING: no (domain, slot) key common to all arms on split=%s" % a.split)
+    per_arm_lost = {x: len(kv[x]) - len(common_keys) for x in arms}
+    for x in arms:
+        by = {}
+        for k in common_keys:
+            by.setdefault(k[0], []).append(kv[x][k])
+        dmeans[x] = {d: sum(v) / len(v) for d, v in by.items()}
+        meta[x]["keys_before_intersection"] = len(kv[x])
+        meta[x]["keys_dropped_by_intersection"] = per_arm_lost[x]
+    if any(per_arm_lost.values()):
+        print("[keys] intersected to %d keys common to all arms; dropped per arm: %s"
+              % (len(common_keys), {k: v for k, v in per_arm_lost.items() if v}))
+    doms = sorted({k[0] for k in common_keys})
     if not doms:
         raise SystemExit("REFUSING: no domain common to all arms on split=%s" % a.split)
 
@@ -404,7 +436,7 @@ def main() -> int:
            "codeword": a.codeword, "split": a.split, "arms": arms,
            "option_mass_floor": a.option_mass_floor,
            "run_dirs": {k: os.path.basename(v) for k, v in dirs.items()},
-           "n_domains": len(doms), "arm_meta": meta,
+           "n_domains": len(doms), "n_keys_common": len(common_keys), "arm_meta": meta,
            "installation_by_arm": {x: round(sum(dmeans[x][d] for d in doms) / len(doms), 5)
                                    for x in arms},
            "VOID": void}
