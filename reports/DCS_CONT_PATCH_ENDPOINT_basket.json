@@ -1,0 +1,46 @@
+{
+ "schema": "dcs_cont_patch_endpoint/1",
+ "codeword": "basket",
+ "scope": "slot0 PRIMARY",
+ "population": "train+val (TEST unspent)",
+ "endpoint": "native kw_refusal, domain-clustered",
+ "n_common": 180,
+ "n_domains": 90,
+ "refusal_rate_by_arm": {
+  "ctrl": 0.0056,
+  "ko": 0.0,
+  "rescue_clean": 0.0056
+ },
+ "ko_derefusal_ctrl_minus_ko": {
+  "point": 0.0056,
+  "ci": [
+   0.0,
+   0.0167
+  ],
+  "dropped": 0
+ },
+ "recovery_rescue_minus_ko": {
+  "point": 0.0056,
+  "ci": [
+   0.0,
+   0.0167
+  ],
+  "dropped": 0
+ },
+ "residual_ctrl_minus_rescue": {
+  "point": 0.0,
+  "ci": [
+   0.0,
+   0.0
+  ],
+  "dropped": 0
+ },
+ "recovery_fraction": {
+  "error": "bootstrap discarded 7445 of 20000 draws (37.2%, limit 20%) -- the surviving perc"
+ },
+ "run_dirs": {
+  "ctrl": "patch_ctrl_basket_20260915_133942_1979716",
+  "ko": "patch_ko_basket_20260915_133946_1979854",
+  "rescue_clean": "patch_rescue_clean_basket_20260915_134102_2510627"
+ }
+}
