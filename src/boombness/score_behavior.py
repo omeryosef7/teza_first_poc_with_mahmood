@@ -2328,6 +2328,11 @@ def main() -> int:
                          "never knocked out is a no-op dressed as an experiment, and is refused. "
                          "Donor and recipient are the SAME templated string, and DonorPatch "
                          "re-verifies token identity over the patched span before writing.")
+    ap.add_argument("--rescue-rel-end-rows", default="",
+                    help="Restore only NAMED positions of the rescue span, by rel_end (-1 = last). "
+                         "The position ladder's random subsets measure a position's AVERAGE "
+                         "contribution; this measures whether specific positions differ. A row that "
+                         "cannot supply every requested position is refused, never under-restored.")
     ap.add_argument("--rescue-basis", default="",
                     help="Phase-1 SUBSPACE rescue. Path to a dcs_csi_axis .pt holding named "
                          "orthonormal bases. When given, the rescue writes ONLY the component of "
@@ -3123,6 +3128,7 @@ def main() -> int:
             "rescue_donor": args.rescue_donor,
             "rescue_positions": args.rescue_positions,
             "rescue_n_positions_requested": args.rescue_n_positions,
+            "rescue_rel_end_rows": args.rescue_rel_end_rows or None,
             "n_rescue_positions": (len(rpos) if rpos is not None else None),
         }
 
@@ -3666,6 +3672,27 @@ def main() -> int:
                 if not _rpos:
                     ledger.fail(f"rescue:no_{args.rescue_positions}_positions", row["prompt_id"])
                     continue
+                if args.rescue_rel_end_rows:
+                    # POSITION IDENTITY (DCS-CSI-060). The position LADDER draws random subsets and
+                    # therefore measures the AVERAGE contribution of a position; it cannot say
+                    # whether particular positions matter more. This selects NAMED positions by
+                    # rel_end within the span, using the SAME rel_end convention the knockout and
+                    # the probe sites use (-1 = last token of the span). A row that cannot supply
+                    # every requested position is REFUSED, not silently under-restored -- an
+                    # under-matched donor that shows no effect is an artifact of the under-matching.
+                    _want = parse_rel_end_rows(args.rescue_rel_end_rows,
+                                               what="--rescue-rel-end-rows")
+                    _sel = []
+                    for _re in _want:
+                        _idx = len(_rpos) + _re if _re < 0 else _re
+                        if not (0 <= _idx < len(_rpos)):
+                            _sel = None
+                            break
+                        _sel.append(_rpos[_idx])
+                    if _sel is None:
+                        ledger.fail("rescue:rel_end_row_outside_span", row["prompt_id"])
+                        continue
+                    _rpos = sorted(set(_sel))
                 if args.rescue_n_positions is not None:
                     # SIZE-MATCHED DRAW. Seeded by prompt_id so the same row always donates the same
                     # positions, and an under-sized row is REFUSED rather than quietly donating

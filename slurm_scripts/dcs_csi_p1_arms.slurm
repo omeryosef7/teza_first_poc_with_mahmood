@@ -4,6 +4,7 @@
 #   group B = the rank-1 control DISTRIBUTION: 4 shuffled + 6 random    (10 arms + 1 anchor)
 #   group C = the RANK-5 matched control distribution for KO_PLS         (10 arms + 1 anchor)
 #   group D = the POSITION ladder: full-state rescue at k of ~28 positions (7 arms)
+#   group E = POSITION IDENTITY: full-state rescue at ONE named rel_end position (5 arms)
 #
 # WHY TWO GROUPS AND WHY KO_AXIS APPEARS IN BOTH. At ~29 min per 670-row readout arm, 17 arms do
 # not fit one allocation. The split is chosen so that everything the PREREGISTERED PRIMARY
@@ -86,6 +87,20 @@ elif [ "$GROUP" = "B" ]; then
   sub KO_AXIS_ANCHOR cand_rank1
   for j in 0 1 2 3;       do sub "KO_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done
   for i in 0 1 2 3 4 5;   do sub "KO_RAND${i}" "ctrl_random${i}"   cand_rank1; done
+elif [ "$GROUP" = "E" ]; then
+  # GROUP E -- POSITION IDENTITY (DCS-CSI-060). The ladder (group D) draws RANDOM subsets, so it
+  # measures a position's AVERAGE contribution and found recovery linear in k (R^2 0.997). It
+  # cannot say whether particular positions differ. Each arm here restores the full clean state at
+  # exactly ONE named position, by rel_end within the query span (-1 = last token). If the span is
+  # uniform every arm should land near the ladder's k=1 value (+0.00281); a position that carries
+  # more would show up as a clear outlier. rel-6 is the site the AXIS was fit at and rel-11 is
+  # cw_query, the codeword row the knockout actually edits -- the two positions with a prior reason
+  # to be special.
+  for RE in -1 -6 -11 -20 -28; do
+    NAME="KO_AT$(echo $RE | tr -d '-')"
+    echo ">>> ${NAME} (rel_end ${RE}) $(date -Is)"
+    $SB $COMMON $KO $R --rescue-rel-end-rows "$RE" --arm "$NAME" --tag "${P}_${NAME}"
+  done
 elif [ "$GROUP" = "D" ]; then
   # GROUP D -- the POSITION ladder (DCS-CSI-051). Phase 1's result is that recovery tracks HOW MUCH
   # of the state is restored rather than WHICH directions. The dimension ladder said that for

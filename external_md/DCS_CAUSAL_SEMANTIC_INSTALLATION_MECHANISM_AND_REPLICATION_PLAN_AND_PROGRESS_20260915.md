@@ -3616,3 +3616,40 @@ alone, the final rows, the rel-6 site itself) is the natural follow-up and has *
 This is the sprint's clearest **positive** mechanistic result, and it was reachable precisely
 because Phase 1's directional question came back null: the plan's Gate-A NO branch said
 *"investigate whether the information is distributed"*, and this is what that investigation found.
+
+---
+
+## S-060 — the follow-up S-059 demands: **position IDENTITY** (group E), plus a held-out ladder
+
+S-059 established that recovery is linear in the *number* of positions restored — but its draws
+were **random subsets**, so it measures a position's **average** contribution and is silent on
+whether particular positions differ. Two positions have a prior reason to be special:
+
+* **rel-11 (`cw_query`)** — the codeword row **the knockout actually edits**;
+* **rel-6** — the site the **installation axis was fit at**.
+
+If the span were uniform, restoring any single position should land near the ladder's k = 1 value
+(**+0.00281**); a position carrying disproportionate weight would show up as a clear outlier
+against that benchmark.
+
+**New flag, additive:** `--rescue-rel-end-rows` selects **named** positions of the rescue span by
+`rel_end`, using the same convention the knockout and the probe sites already use (−1 = last token
+of the span). A row that cannot supply every requested position is **refused, never silently
+under-restored** — an under-matched donor showing no effect is an artifact of the under-matching,
+which is this repo's own R-24/R-26 lesson. The selection is recorded on every row
+(`rescue_rel_end_rows`).
+
+**Group E**: five arms, each restoring the full clean state at exactly one position —
+rel −1, −6, −11, −20, −28.
+
+**Smoke first** (job 897293, 24 rows, rel −1 and −6): the flag is new code on the intervention
+path, and this sprint's own history says new intervention code gets smoked before it gets spent on
+(S-028 caught blind instrumentation exactly this way). Group E is not launched until the smoke
+shows the selection resolving to a single position per row.
+
+**Also launched: the VALIDATION position ladder** (job 897291, group D on the held-out split). The
+linearity result is the sprint's clearest positive finding and it currently rests on TRAIN alone;
+replicating it held-out needs **zero new code** and ~30 minutes.
+
+**Basket** (job 897145) is through its weight load and scoring: `BASE` done at 670 rows, `KO` in
+progress.
