@@ -232,10 +232,15 @@ def main() -> int:
         raise SystemExit("REFUSING: --fit-prompt %r but the corpus carries query_kind %r. The "
                          "artifact's provenance must not be able to misdescribe its own fit "
                          "population." % (a.fit_prompt, list(qks)[0]))
-    cws = {r.get("target_surface") for r in rows if r.get("target_surface")}
-    if cws and cws != {a.codeword}:
-        raise SystemExit("REFUSING: --codeword %r but the corpus carries target_surface %s"
-                         % (a.codeword, sorted(cws)))
+    # The 2x2 design means the corpus legitimately carries BOTH surfaces: cells A/C put the
+    # codeword in the surface slot, cells B/E put the concept there. So the check is not "every
+    # row is the codeword" -- that refused a correct corpus on the first attempt (job 896396) --
+    # but "the cell this fit actually uses carries the codeword". Cell C is that cell.
+    cws_C = {r.get("target_surface") for r in rows
+             if r.get("cell") == "C" and r.get("target_surface")}
+    if cws_C and cws_C != {a.codeword}:
+        raise SystemExit("REFUSING: --codeword %r but the corpus's cell-C rows carry "
+                         "target_surface %s" % (a.codeword, sorted(cws_C)))
     corpus_doms = {r["domain"] for r in rows}
     leak = sorted(d for d in corpus_doms if assign.get(d) == "test")
     if leak:

@@ -1064,3 +1064,155 @@ domains).
 Two run directories need quarantining once their live siblings finish (a failed attempt left a
 sibling dir that would make `strict_run_dir` correctly refuse as ambiguous):
 `cont1_semantic_one_word_basket_bomb_20260915_170803_2607554` (from failed job 896365).
+
+---
+
+## S-013 — the Phase-1 candidate axis is BUILT (button, behavioural fit), and it independently reproduces Q1
+
+Job 896372 COMPLETED. `configs/dcs_csi_axis_button_behavioral.{pt,json}`, 20 named bases.
+
+### Independent reproduction of the published query-probe number
+
+| | published `DCS_CONT_QPROBE.json` | `dcs_csi_axis.py` (this sprint) |
+|---|---|---|
+| site | rel-6 | rel-6 (frozen, not searched) |
+| layer | 20 | **20** (selected on TRAIN) |
+| TRAIN LOO rho | 0.5935 | **0.5935** |
+| slots / domains | 670 / 67 | 670 / 67 |
+
+Two independently written scripts, the same corpus and readout, the same number. That is a real
+cross-check of the whole feature-assembly path (within-domain centring, the ABCE completeness rule,
+the `(domain, family_slot)` join, leave-one-**domain**-out), not a re-print.
+
+### What the fit actually says
+
+**The layer is on a plateau, and the selection is not a resolved peak:**
+
+| L16 | L18 | **L20** | L22 | L24 | L26 | L28 | L30 | L31 |
+|---|---|---|---|---|---|---|---|---|
+| 0.5781 | 0.5931 | **0.5935** | 0.5894 | 0.5853 | 0.5803 | 0.5798 | 0.5596 | 0.5407 |
+
+L18 and L20 differ by **0.0004**. So "layer 20" is a consistent *choice* within L18–L22, not an
+identified maximum — the same plateau caveat the query-probe result already carried. This matters
+now that review M2 makes a layer mismatch a hard refusal: the refusal enforces *consistency between
+the fit and the write*, which is what it is for; it does not certify that L20 is special.
+
+**The low-rank PLS family does NOT beat the rank-1 ridge on TRAIN:**
+
+| PLS r=1 | r=2 | r=3 | r=4 | r=5 | ridge (rank-1 direction) |
+|---|---|---|---|---|---|
+| 0.5021 | 0.5350 | 0.5482 | 0.5717 | 0.5767 | **0.5935** |
+
+Two honest readings, both recorded before any intervention runs:
+* every PLS rank scores **below** the plain ridge, so **`cand_rank1` is the natural primary
+  candidate** and the prereg's ordering stands;
+* `selected_rank = 5` sits **at the edge of the search grid** and is still rising, so it is **not a
+  well-identified rank**. `KO_PLS` is therefore **exploratory**, not a second headline, and no
+  claim of the form "the representation is r-dimensional" may be made from it. (The plan's §6.2
+  question "does increasing rank give genuine VALIDATION improvement" remains open and is
+  answerable only on VALIDATION.)
+
+Note also that PLS component 1 has **|cos| = 0.566** with the ridge direction — the two candidates
+are genuinely different directions, not reparametrisations of one.
+
+**The shuffled-label controls behave**: TRAIN LOO rho = 0.0547, 0.0484, −0.0085, 0.0182, 0.0022 —
+i.e. near zero, as a domain-preserving label shuffle should be. `ctrl_orth` has **|cos| = 0.0
+exactly** with the candidate.
+
+### Provenance re-run
+
+896372 used the **pre-review** script, so its artifact lacks the `fit_population.domains_sha16`
+fingerprint that review M4's row-level in-sample detection reads, and it never exercised M1's
+corpus-vs-`--fit-prompt` check. Re-submitted as **896396** with the fixed script; the numbers must
+come out identical, which doubles as a reproducibility check. Phase-1 scoring waits on that
+artifact so that every scored row carries a complete, checkable provenance record.
+
+---
+
+## S-014 — the axis artifact is deterministic ON A NODE, and the sha mismatch was cross-node float noise
+
+The post-review re-run (896398, n-303) reproduced 896372 (n-306) exactly on **every scalar** —
+selected layer 20, TRAIN LOO rho 0.5935, selected rank 5, 670 rows / 67 domains, identical layer
+grid, identical rank grid, identical `bank_sha16` — but the **basis sha16 values differed**. That
+needed explaining rather than waving through, because a candidate direction that changes between
+builds is a candidate whose identity is not well-defined.
+
+**Which bases differed is itself the diagnosis:**
+
+| | bases |
+|---|---|
+| **identical** (8) | `ctrl_random0..7` — pure seeded `torch.randn`, no data involved |
+| **differed** (12) | `cand_rank1`, `cand_pls1..5`, `ctrl_orth` (derived from `cand_rank1`), `ctrl_shuffled0..4` — every **data-derived** basis |
+
+That is the signature of last-bit BLAS/LAPACK differences in the 670×670 dual solve, not a logic
+bug. Confirmed by measurement rather than left as an inference:
+
+**Three builds on the SAME node (n-303) are BIT-IDENTICAL** — `|cos| = 1.00000000000000` and
+`max|elementwise diff| = 0.000e+00` for `cand_rank1`, `cand_pls5`, `ctrl_orth`, `ctrl_shuffled0`
+and `ctrl_random0`, across all three pairwise comparisons. So the script is deterministic given a
+fixed node; the only varying factor was n-306 vs n-303. A direct cross-node comparison
+(job 896409, pinned `--nodelist=n-306`) is running to put a number on the residual.
+
+**Practical risk to the experiment: none.** The basis is built **once** into a `.pt` file and every
+arm reads that same file, so no arm-to-arm comparison can be affected by it. The finding matters
+for *reproducibility by a third party*, and the honest statement is: the axis is reproducible to
+float precision, bit-reproducible only on matched hardware — which is the same caveat this project
+already carries for generation.
+
+## S-015 — operational: I caused an NFS contention slowdown, and the diagnostic worked
+
+Job 896369 (basket `semantic_one_word` extraction) sat at **35 minutes with zero rows written**.
+It is **not hung**: the `.err` weight-loading bar reads `64% | 185/291 [33:31<21:13]` — i.e. it is
+loading Llama weights at ~10 s/shard instead of seconds. The button sibling did the whole job in
+873 s.
+
+Cause: I had stacked three of my own jobs on **n-306** — this GPU model-load plus CPU axis jobs
+that each mmap a 12 GB corpus over the same NFS mount. That is precisely the documented
+"3 model-loading jobs on one node → large weight-load slowdown; cap ~2 per node and spread"
+failure, and I walked into it by submitting CPU analysis wherever the scheduler put it.
+
+Projected: ~52 min load + ~15 min extraction ≈ 67 min against a `--time=01:30:00` wall — it should
+finish with ~23 min of margin, so no action beyond not adding further load to n-306.
+
+**Standing rule adopted for the rest of this sprint:** before submitting, check which node my
+existing jobs hold, and spread — especially never co-schedule a GPU model-load with a large-mmap
+CPU job. The weight-loading bar in `.err`, not `squeue`, is the liveness test.
+
+---
+
+## S-016 — MEASURED: cross-architecture generation churn is **77 %**, but the refusal endpoint flips on **0.6 %** of rows
+
+The first arm of the P0.6 replicate finished, giving a clean paired measurement that this project
+has previously only had a rough figure for. The **CTRL arm** was run twice with *identical* bank,
+prompts, exclusions, seed (20260816), `--max-new`, dtype (bf16), attention implementation (eager)
+and model revision — differing **only in GPU architecture**:
+
+| | L40S (t-806) | RTX 3090 (n-303) |
+|---|---|---|
+| common `prompt_id`s | 180 | 180 |
+| **byte-identical completions** | \multicolumn{2}{c}{**42 / 180 = 23.3 %**} | |
+| refusal rows | 20 | 21 |
+| **refusal LABEL flips** | \multicolumn{2}{c}{**1 / 180 = 0.6 %**} | |
+
+**Read both numbers together — they say opposite-sounding things and both matter.**
+
+* **Greedy decoding is not reproducible across GPU architectures**: 77 % of completions changed.
+  This independently confirms the standing prohibition on ever writing "greedy decoding reproduces
+  byte-identically", and it is now a *paired, same-prompt* number rather than an aggregate.
+* **The refusal endpoint is nevertheless very stable**: a single label flipped out of 180. The
+  keyword refusal detector is reading something robust to the token-level churn.
+
+**Why this is not merely reassuring — it sizes the risk on the S-002 headline.** The button recovery
+effect is a domain-mean of **+0.0278 carried by 5 refusal events**. Cross-architecture churn
+contributes ~1 flipped label per 180 rows *per arm*, so differencing two arms could inject on the
+order of 1–2 rows of noise against a 5-row signal — roughly a **3:1 signal-to-churn ratio**. Not
+fatal, but not comfortable, and it is exactly why the P0.6 design puts all four arms in **one
+allocation on one node**, where this term should be **zero** rather than small. The two replicates
+now running (896356 all-3090, 896363 all-L40S) will show whether the effect survives with that term
+removed, and whether it reproduces on two different architectures independently.
+
+This also retroactively supports the S-002 verdict that the published arms (ctrl/ko on t-806,
+rescue on n-801, size-match on n-803 — **all L40S**) were not *invalidated* by running on three
+nodes: same architecture is the condition that matters, and the churn measured here is *across*
+architectures. Within-architecture, cross-node churn is measured by the pair
+(896363 on n-801 vs the published t-806 run) once 896363's CTRL arm lands.
