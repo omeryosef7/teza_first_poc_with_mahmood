@@ -2000,3 +2000,136 @@ analysis time the primary contrast is reported at floor 0 (the frozen protocol, 
 DR-071/A1) and re-computed at a floor; **if the sign or the conclusion of the contrast flips, that
 is the finding and it goes in the log.** A level shift between the two is expected and means
 nothing.
+
+---
+
+## S-035 — I verified the two load-bearing literature claims MYSELF. Both hold, and the novelty boundary is now precise.
+
+The subagent's literature review (S-001 workstream) made two claims that govern everything we may
+write. Both are too consequential to take second-hand, so I fetched the paper directly.
+
+### Claim 1 — our attack is already published. **CONFIRMED.**
+
+**Yona, Sarid, Karasik, Gandelsman, "In-Context Representation Hijacking", arXiv:2512.03771.**
+Verified from the paper itself: it introduces **"Doublespeak"** — harmful keywords replaced with
+benign tokens across in-context examples — with the benign token's representation *"converging
+toward that of the harmful one, effectively embedding the harmful semantics under a euphemism"*,
+and reports **74 % ASR on Llama-3.3-70B-Instruct**. Their worked example is `carrot → bomb`, giving
+prompts like *"How to build a carrot?"*
+
+⇒ **We cannot claim the phenomenon, the name, the `codeword → concept` construction, or the
+layer-by-layer representational convergence.** Claim-table prohibition #10 stands and is now
+verified rather than inherited.
+
+### Claim 2 — their evidence is read-only. **CONFIRMED, with a precision the summary lacked.**
+
+From the full text: they apply the **logit lens** (*"a fast, lightweight way to peek into the
+model's computation"*) and **Patchscopes** (*"patching h^{i,l} into a different sequence S′"*).
+There is **no attention knockout, no ablation, and no steering.**
+
+The precision that matters: **Patchscopes *is* a forward-pass edit**, so "they performed no
+intervention" would be wrong. The correct distinction is that Patchscopes patches a state into a
+*different* sequence **in order to read out what that state encodes** — it is interpretation
+machinery, not an ablation that removes a computation and measures what breaks. I will state it
+that way and not the sloppier way.
+
+And the finding that most directly motivates this sprint:
+
+> *"While it successfully detected and explained our attack on Llama-70B-instruct, it **failed to
+> do so on the smaller Llama-3.1-8B-instruct model**."* (they fall back to Patchscopes there;
+> Appendix H, Table 4)
+
+**Their primary interpretability tool fails on our exact model.** Our causal battery — the A1
+demo→query attention knockout, the whole-state rescue, and the subspace rescue with norm-matched
+controls — is being run precisely where their read-only approach did not work.
+
+### The novelty boundary, stated conservatively
+
+**NOT ours, and must never be claimed:**
+* the Doublespeak attack, its name, and the representation-convergence observation (2512.03771);
+* attention knockout as a technique (Geva et al. 2023);
+* **layer-banded demonstration→query attention blocking in ICL** (Wang et al., *Label Words are
+  Anchors*, EMNLP 2023) — this is why prohibition #9, *"first to causally intervene on demo→query
+  attention in ICL"*, is FALSE and stays forbidden;
+* corrupt-then-restore / activation patching (Meng et al., ROME);
+* the ablate-and-add template for low-dimensional refusal mediation (Arditi et al. 2024);
+* low-rank causal subspace intervention (DAS / Boundless DAS).
+
+**Plausibly ours, and still to be earned by results rather than asserted:**
+* a **causal** account of *this* attack's mechanism, on a model where the published read-only
+  account failed;
+* the concept-free installation readout used as an **intervention-scorable dependent variable**
+  rather than a descriptive probe;
+* the demo→query edge established as causal **for semantic installation specifically**, separated
+  from generic ICL retrieval;
+* the attempt to link that representation to **behaviour** on a powered endpoint.
+
+Every one of these is contingent on Phase 1 and Phase 5 producing results. **No novelty sentence
+is to be written before those read out**, and the literature report is to be re-checked against
+anything published since — arXiv:2605.00123 and arXiv:2605.18830 were flagged by the review as
+potentially narrowing items 2 and 3 and have **not** been read yet. Recorded as an open dependency.
+
+---
+
+## S-036 — the two flagged papers are REAL and both NARROW our novelty. The honest position is now much more modest.
+
+S-035 recorded arXiv:2605.00123 and arXiv:2605.18830 as flagged-but-unread, with the warning that
+either could narrow items 2 and 3 of the novelty list. I read them. **Both exist, and both do.**
+
+### arXiv:2605.18830 — *In-Context Learning Operates as Concept Subspace Learning*
+Tang, Jiang, Karray & Hu (May 2026).
+
+> *"mechanistic analyses often identify compact activation directions that steer prompted behavior"*
+> … **"patching the complementary subspace restores 0 %"** … *"Concept swaps redirect predictions
+> toward injected relations."*
+
+This is **causal subspace patching of in-context concept representations** — structurally the same
+method as PR-CSI-001. They identify low-dimensional task-aligned subspaces that **mediate** ICL
+behaviour and validate them by patching, including the complementary-subspace control. No
+jailbreaks; the domain is structured task families.
+
+⇒ **Our Phase-1 *method* is not novel.** "Restore only the concept subspace and the behaviour comes
+back / patch its complement and nothing comes back" is published for ICL.
+
+An interesting substantive contrast worth keeping in view rather than burying: their finding is
+that the task subspace **is** causal (complement restores 0 %). Our own 24-row smoke (S-031)
+pointed the other way — rank-1 axis ≈ KO, whole-state rescue recovers ~44 %. If the powered run
+confirms that, we are reporting a **dissociation from** a published positive, which is a
+substantive result in its own right and a reason to be *more* careful, not less, about controls.
+
+### arXiv:2605.00123 — *Minimal, Local, Causal Explanations for Jailbreak Success in LLMs*
+Kumar & Ahuja, **COLM 2026**.
+
+> LOCA identifies *"a minimal set of interpretable, intermediate representation changes that
+> causally induce model refusal on an otherwise successful jailbreak request."*
+
+This is **causal representation→refusal analysis for jailbreaks** — structurally the same question
+as our Phase 5.
+
+⇒ **Our representation→behaviour framing is not novel either.**
+
+### Revised novelty position — narrow, and contingent
+
+Everything in S-035's "plausibly ours" list except one item is now either published or heavily
+anticipated. What survives, stated at the size it actually is:
+
+* the **demonstration→query attention edge** established as the causal locus **for semantic
+  installation specifically** in a Doublespeak attack — the edge (Wang et al.) and the attack
+  (Yona et al.) are each published, but their **causal junction** is not something I have found;
+* the **concept-free installation readout** used as an intervention-scorable DV;
+* whatever Phase 1 actually finds about a low-rank installation axis — **including, and perhaps
+  especially, a negative that dissociates from 2605.18830's positive**;
+* the empirical fact that this is done on **Llama-3.1-8B-Instruct, where the published descriptive
+  account's primary tool failed** (S-035).
+
+**What this changes operationally.** Nothing about the experiments — they were worth running before
+and are worth running now. What changes is the framing: this sprint is no longer plausibly
+"a new method"; it is **a causal account of a specific published attack, on a specific model, with
+a specific readout**, whose main value may turn out to be a *dissociation* rather than a
+confirmation. Claim-table prohibition #10c is amended: the two papers are now **read**, and the
+novelty list is replaced by the four narrow items above.
+
+**Process note.** This is the second time today that checking a subagent's flagged-but-unverified
+item changed a conclusion (the first was S-019). The review flagged these two correctly and I
+recorded them as an open dependency rather than proceeding — that is the only reason the
+overclaim did not reach a draft. **Flagged-and-unread is a blocker, not a footnote.**
