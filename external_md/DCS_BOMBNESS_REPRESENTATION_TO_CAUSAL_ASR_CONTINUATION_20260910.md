@@ -11859,3 +11859,33 @@ small (baseline refusal is low because natural-doublespeak evades it: ~10 refusi
 so the CIs, while excluding 0, rest on few flips (~2.5 domains recovered) — replication is load-bearing.
 NEXT: launch the button size-match control and the basket identity smoke (L18) → basket primary arms;
 only then weigh a §44 #10 verdict. Result: `reports/DCS_CONT_PATCH_ENDPOINT_button.json`.
+
+### CONT-ENTRY 172 — 2026-09-15 — Button size-match control PASSES the decision-rule clause (recovery is DOSE-DEPENDENT in query positions, not a fixed injection artifact); basket identity smoke PASSES at L18 → basket primary arms launched.
+
+**Size-match control (button, arm 5), full 180, `--rescue-n-positions 12` (query span is exactly 24 for
+every row, so K=12 = half; validated: gate PASS, `rescue_liveness.fired` on 180/180, `n_rescue_positions`
+= 12 on all rows).** Refusal (domain-clustered, native `kw_refusal`, 90 domains):
+
+| arm | refusal | recovery vs KO |
+|---|---|---|
+| KO | 0.0444 | — |
+| size-match (12 query pos, clean, L20) | 0.0611 | +0.0167 [0.0000, 0.0389] |
+| full rescue (24 query pos, clean, L20) | 0.0722 | +0.0278 [0.0056, 0.0556] |
+
+Half the query span recovers ~60% of what the full span does; full−sizematch = +0.0111 [0.0000, 0.0278].
+So recovery **scales with the amount of query representation restored** — a clean dose-response
+(0 → 12 → 24 positions ⇒ 0% → 25% → 42% recovery, with the self arm the 0-position anchor). The
+size-match does NOT spuriously recover (it recovers proportionally LESS, not equally), which is exactly
+the pre-declared clause (CONT-167): a generic "any K-position clean injection recovers" artifact is
+excluded because 12 ≠ 24 in effect. (The dose step itself, +0.011, has a CI touching 0 — suggestive of
+monotonicity, not decisive at this n; the load-bearing contrasts remain full−KO and self−KO.)
+
+**Basket identity smoke PASSES at L18** (`dcs_cont_patch_identity.py`: MATCH 24 / MISMATCH 0, self rescue
+fired 24 positions) — the `target_surface_row_only` + query-rescue composition is valid on basket too, at
+its differ-arms winner layer 18. **Basket primary arms LAUNCHED** (full 180, `--requeue`): 895903 CTRL,
+895904 KO, 895905 RESCUE_CLEAN (L18). This is the cross-codeword replication the observational line
+required before it earned confidence; button and basket stay unpooled. New argsfiles:
+`runargs/patch/arm_{ctrl,ko,rescue_clean}_basket.txt`. When basket completes, run the endpoint analyzer
+on basket and weigh the §44 #10 verdict across both codewords (button already shows dose-dependent
+recovery with self-identity holding; the remaining open item is the interventional norm-rival, controlled
+observationally in CONT-166 but not yet on the behavioural endpoint).
