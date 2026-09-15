@@ -3800,3 +3800,66 @@ that, so no subspace arm is attempted.
 
 Job 897386. Until it reports, S-062's prohibition stands: **"recovery is codeword-dependent" may
 not be written.**
+
+---
+
+# S-065 — ⚠ **BASKET gives a DIFFERENT answer from button — and it MUST NOT be reported as a positive yet.** The control family is missing, and the verdict string says so.
+
+Basket group A complete, all seven arms, TRAIN, L18. All gates pass.
+
+| arm | recovery vs KO | CI95 | pos/neg | p |
+|---|---|---|---|---|
+| `KO_FULL` | **+0.12390** | [+0.1052, +0.1427] | 67/0 | < 1e−5 |
+| `KO_PLS` (rank 5) | **+0.01428** | [+0.0096, +0.0196] | 57/10 | < 1e−5 |
+| **`KO_AXIS`** | **+0.00272** | **[+0.0006, +0.0050]** | 45/22 | **0.015** |
+| `KO_ORTH` | −0.00003 | [−0.0005, +0.0005] | 29/38 | 0.905 |
+| **PRIMARY `AXIS − ORTH`** | **+0.00275** | **[+0.0007, +0.0050]** | 45/22 | **0.012** |
+
+**On button the primary failed** (p = 0.29 TRAIN, 0.088 VALIDATION, candidate ranked **4 of 11**).
+**On basket the same contrast has a CI excluding zero and p = 0.012.**
+
+## Why this is not yet a positive, stated before anyone gets attached to it
+
+The analyser printed:
+
+```
+VERDICT: PRIMARY PASSES on split=train -- candidate beats its norm-matched comparator
+(NOTE: only 0 control(s) present; a single comparator is an arbitrary draw when the
+control spread is wide -- S-050)
+```
+
+**Basket has no control family.** Only `ctrl_orth` was run — one draw. And button's own experience
+is decisive about what that is worth:
+
+> On **button**, `KO_AXIS − KO` was **+0.00040** while norm-matched **random** rank-1 directions
+> reached **+0.00159** and a **shuffled-label** direction reached **+0.00104**. The control
+> distribution was **four times wider than the candidate effect.** A single comparator that happened
+> to land near zero would have made button look like a pass too.
+
+Basket's candidate effect is +0.00272. **If basket's rank-1 control distribution has anything like
+button's spread relative to its own scale, this "pass" evaporates.** Note basket's absolute effects
+run ~1.8× button's throughout (`KO_FULL` +0.124 vs +0.071), so a proportionally-scaled control
+spread would reach ≈ +0.0028 — *exactly the candidate's value.*
+
+**Prohibited until the control family lands:**
+* "the installation axis is causal on basket";
+* "the Phase-1 negative does not transfer";
+* any statement contrasting button's null with a basket positive.
+
+**Job 897416 launched**: basket group B — 4 shuffled-label + 6 random rank-1 controls, all
+norm-matched to `cand_rank1`, from basket's own axis artifact (verified to contain all 11 required
+bases before launch). The verdict will then come from the **rank statistic** (P1-i), which is what
+settled button on both splits.
+
+## What this changes about the sprint's conclusion — possibly a lot
+
+If basket's candidate survives its control distribution, Phase 1's headline becomes
+**codeword-dependent**: a low-dimensional installation axis mediates on one codeword and not
+another — which would be a more interesting result than a clean null, and would immediately raise
+whether the difference is codeword or **layer** (basket L18 vs button L20), the same confound
+S-064's group F is already running for the whole-state effect.
+
+If it does not survive, the negative transfers and Phase 1's conclusion stands unchanged.
+
+**Either way the experiment that decides it is running, and no claim is being made in the
+meantime.** Recording the reasoning now, before the data, is the point.
