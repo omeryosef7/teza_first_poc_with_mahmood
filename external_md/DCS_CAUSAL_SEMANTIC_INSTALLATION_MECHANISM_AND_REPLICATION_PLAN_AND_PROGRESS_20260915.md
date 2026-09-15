@@ -3155,3 +3155,62 @@ position ladder (group D) is that investigation on the remaining axis.
   it is simply not low-dimensional **at this site and layer**;
 * *"installation is not mediated by the query state"* — the opposite of the `KO_FULL` result;
 * anything about **other layers or sites** — one site, one layer, one codeword, TRAIN only.
+
+---
+
+# S-053 — **VALIDATION replicates.** The recovery fraction is held-out to within 0.013.
+
+Job 897057, the held-out split: **230 rows / 23 domains**, arms `BASE, KO, KO_SELF, KO_FULL,
+KO_AXIS` complete (`KO_PLS`, `KO_ORTH` still running). The axis is **out of sample** here — fit on
+TRAIN, applied to domains it has never seen — which is the honest test.
+
+| | **TRAIN** (670 / 67) | **VALIDATION** (230 / 23) |
+|---|---|---|
+| `BASE` | 0.67843 | 0.67145 |
+| `KO` | 0.47140 | 0.38154 |
+| **gate 1 manipulation** `KO − BASE` | −0.20704, **0/67** | **−0.28991**, [−0.343, −0.246], **0/23** |
+| **gate 2 identity** `KO_SELF − KO` | −0.00076, p = 0.107 | **+0.00075**, [−0.0008, +0.0023], p = 0.361 |
+| **gate 3 capability** `KO_FULL − KO` | +0.07060, **66/1** | **+0.09502**, [+0.0767, +0.1145], **23/0** |
+| **recovery fraction** | **0.3410** [0.3064, 0.3752] | **0.3278** [0.2896, 0.3631] |
+| `KO_AXIS − KO` | +0.00040, p = 0.249 | +0.00134, [0.00000, +0.00275], p = 0.073 |
+
+**All three gates pass held-out**, and gate 3 does so on **23 of 23 domains** with no dissenter
+(TRAIN had 66/67).
+
+## The finding that replicates is the scale-invariant one
+
+The absolute quantities are *larger* on VALIDATION — the knockout removes more installation
+(−0.290 vs −0.207) and the whole-state rescue restores more (+0.095 vs +0.071). The validation
+domains are simply more susceptible. But the **recovery fraction — the quantity the claim is about
+— replicates to within 0.013**: 0.3410 vs 0.3278, with CIs overlapping across most of their range.
+
+> **Held-out claim, now defensible: under the A1 knockout, restoring the clean query-span state at
+> rel-6/L20 recovers about one third of the semantic installation the knockout removes.**
+> TRAIN 34.1 % [30.6, 37.5], VALIDATION 32.8 % [29.0, 36.3].
+
+That is the sprint's central *positive* result, and it is the one that survives on held-out data.
+
+## `KO_AXIS` on VALIDATION — and why it must not be reported as a trend
+
+`KO_AXIS − KO` comes out **+0.00134, p = 0.073**, larger than TRAIN's +0.00040 and closer to
+significance. **It would be wrong to call that a trend**, for a reason this sprint has already
+measured rather than assumed:
+
+> On TRAIN, **random rank-1 directions reached +0.00159** and a shuffled-label direction reached
+> +0.00104 (S-052). **+0.00134 sits inside that range.**
+
+A bare `candidate − KO` number is uninterpretable without its control distribution — that is the
+whole lesson of S-050 and S-052. `KO_ORTH` is still running and the validation control family does
+not exist at all yet. Until it does, the honest statement is: **the validation axis effect is
+within the range arbitrary directions produced on TRAIN**, and nothing more. Recorded now, before
+the comparator lands, so the reading is fixed in advance.
+
+## Claim-table status
+
+**MAY be said (TRAIN + VALIDATION, button):**
+* the demo→query attention edge is causally necessary for semantic installation — 67/67 and 23/23 domains;
+* the query-span state at rel-6/L20 causally carries **≈ 1/3** of that effect, **replicated held-out**;
+* the whole-state rescue is the only intervention that has ever cleared its controls.
+
+**MAY NOT be said:** anything positive about the rank-1 axis on VALIDATION until its control family
+exists; anything about other layers, sites, codewords, or TEST.
