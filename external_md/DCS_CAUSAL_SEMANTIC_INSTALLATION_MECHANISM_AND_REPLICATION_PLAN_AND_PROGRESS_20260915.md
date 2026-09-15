@@ -2133,3 +2133,93 @@ novelty list is replaced by the four narrow items above.
 item changed a conclusion (the first was S-019). The review flagged these two correctly and I
 recorded them as an open dependency rather than proceeding — that is the only reason the
 overclaim did not reach a draft. **Flagged-and-unread is a blocker, not a footnote.**
+
+---
+
+## S-037 — group B landed on V100 twice: caught a hardware confound **and** an impossible walltime before either cost anything
+
+PR-CSI-001 group B (the control distribution: `KO_AXIS_ANCHOR` + 4 shuffled + 6 random) was
+submitted unpinned after its `--nodelist=n-303` pin left it PENDING 25 min on `(Resources)`. It
+then landed on **`rack-bgw-dgx1`**, and after a cancel-and-resubmit on **`rack-gww-dgx1`** — both
+**`gpu:v100:8`**. Cancelled both. Two independent reasons, and the first is the one that matters:
+
+1. **V100 has no native bfloat16.** `--dtype bfloat16` is emulated there. Group A's arms —
+   including the **candidate** `KO_AXIS` — are running on **n-303 / `geforce_rtx_3090`**. The Holm
+   specificity analysis compares the candidate against **each** group-B control, so this would have
+   put candidate and controls on different numerical paths in the sprint's *primary specificity
+   test*. That is a hardware confound sitting directly under the result PR-CSI-001 exists to
+   produce.
+2. **It could not have finished.** Throughput was ~13 rows/min against n-303's 50–90, projecting
+   **~9.4 h for 11 arms** versus an **8 h** walltime. The job would have died incomplete — and,
+   per the standing lesson, `sacct` would have shown a clean cancellation rather than "your
+   control distribution is missing four arms".
+
+Both aborted anchor-arm directories are **quarantined, not deleted** (`outputs/boombness/quarantine/`),
+each with a `QUARANTINE.json` naming the reason — an invalid run is evidence, and leaving two
+sibling directories under one tag would correctly make `strict_run_dir` refuse as ambiguous.
+
+**Fix, and the general lesson.** Chasing bad nodes one at a time with `--exclude` is the wrong
+instrument — the cluster has `l40s`, `geforce_rtx_3090`, `v100` and `titan`, and an exclude list
+grows forever while the scheduler keeps finding new ways to be unhelpful. The right instrument is
+to **pin the GPU model positively**: group B is resubmitted as `--gpus=geforce_rtx_3090:1`, the
+**same architecture group A is running on**. The `KO_AXIS_ANCHOR` arm then measures
+*allocation-to-allocation* drift with architecture held fixed, which is what it was designed to
+isolate.
+
+> **Rule adopted:** when two run groups will be compared statistically, pin the **GPU model**
+> positively on both. Do not rely on exclusions, and do not rely on the scheduler happening to
+> choose alike.
+
+This also retroactively explains why the S-016 cross-architecture churn measurement was worth the
+GPU time: without a measured sense of how much hardware moves these endpoints, "it landed on a
+V100" would have read as a scheduling detail rather than as a threat to the primary analysis.
+
+---
+
+## S-038 — PR-CSI-001's two VOID gates both PASS at full TRAIN scale, and the manipulation check reproduces DR-071
+
+Group A's first three arms are complete (670 rows / 67 domains each). The preregistration's gates
+are checked **before** any contrast is computed, exactly as written, and both pass.
+
+```
+domain-mean y_install:   BASE 0.67843   KO 0.47064   KO_SELF 0.47064
+```
+
+### Gate 1 — manipulation check: **PASS**
+
+| | this sprint (Phase-1 group A) | predecessor `DR-071` |
+|---|---|---|
+| `base` installation | **0.67843** | 0.6785 |
+| `ko` installation | **0.47064** | 0.4703 |
+| **drop** | **−0.20779** | −0.2082 |
+| **domains moving negative** | **67 / 67** | 67 / 67 |
+
+The knockout removes **31 %** of installation, on **every single domain**, and the whole thing
+lands within 0.0005 of a number measured by different code on a different day. The A1 effect is
+reproduced, not assumed.
+
+### Gate 2 — identity control: **PASS, bit-exactly**
+
+`KO_SELF − KO`: **max |diff| = 0.000e+00 across all 670 keys.** **Zero** keys differ, at all. The
+domain-mean difference is exactly `+0.000e+00`.
+
+This is the gate that licenses every later comparison. Writing a run's own activations back into it
+reproduces it *to the last bit* on 670 rows — so the donor capture, the `ExitStack` ordering, the
+token-identity guard and the patch write-back are all provably inert when they should be. Any
+difference `KO_FULL`, `KO_AXIS` or `KO_ORTH` shows against `KO` is therefore attributable to **the
+donated content**, and to nothing about the machinery that donates it. (S-029 argued this from the
+24-row smoke; it is now established at full scale.)
+
+### What remains
+
+`KO_FULL` is running, then `KO_AXIS`, `KO_PLS`, `KO_ORTH`. Gate 3 — **instrument capability**
+(`KO_FULL − KO > 0` with a CI excluding zero) — is the last one before the primary contrast may be
+read. If it fails, PR-CSI-001 returns **CANNOT ANSWER for want of a capable instrument**, which is
+explicitly *not* a negative.
+
+The smoke's 24-row read (S-031) put `KO_FULL` at 0.682 against `KO` 0.588 — a ~44 % recovery — so
+gate 3 is expected to pass, but it is not assumed and the prereg's wording stands either way.
+
+**Group B** (control distribution) is now on **n-307 / `geforce_rtx_3090`** — the architecture pin
+from S-037 working, and matching group A's n-303. Two further aborted anchor directories were
+quarantined along the way (n-302 stalled at 0/291 shards for a third time; both V100 attempts).
