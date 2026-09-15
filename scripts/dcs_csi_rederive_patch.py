@@ -254,6 +254,33 @@ def recovery_fraction(doms: Sequence[str], ctrl: Dict[str, float], ko: Dict[str,
 
 
 # ------------------------------------------------------------------------------------- hardware
+def slurm_node_for_job(job: str) -> dict:
+    """Hardware for an explicitly-declared SLURM job id.
+
+    `slurm_node_for_tag` greps the logs for `--tag <tag>`, which works when each arm was its own
+    sbatch of score_behavior.py. The single-allocation replicates run their arms from INSIDE a
+    wrapper .slurm, so the tag never appears in the job's stdout and the grep finds nothing --
+    which made the verifier report "hardware unknown" and VOID a run that was in fact the most
+    hardware-controlled one in the sprint. Declaring the job id is the honest fix: it is exactly
+    the fact the wrapper design guarantees (all arms, one allocation, one node).
+    """
+    try:
+        out = subprocess.run(["sacct", "-j", str(job), "-n", "-P", "--format=NodeList"],
+                             capture_output=True, text=True, timeout=60).stdout
+        node = [l for l in out.splitlines() if l.strip()][0].strip()
+    except Exception as e:                                   # noqa: BLE001
+        return {"job_ids": [str(job)], "node": None, "gpu": None, "note": "sacct failed: %s" % e}
+    gpu = None
+    try:
+        o2 = subprocess.run(["scontrol", "show", "node", node], capture_output=True,
+                            text=True, timeout=60).stdout
+        m = re.search(r"Gres=gpu:([a-z0-9_]+):", o2)
+        gpu = m.group(1) if m else None
+    except Exception:                                        # noqa: BLE001
+        pass
+    return {"job_ids": [str(job)], "node": node, "gpu": gpu, "source": "declared --slurm-job"}
+
+
 def slurm_node_for_tag(tag: str) -> dict:
     """Recover the node and GPU an arm actually ran on. Compared generation arms that ran on
     different GPU ARCHITECTURES are not comparable (greedy decoding is not byte-reproducible
@@ -291,7 +318,10 @@ def slurm_node_for_tag(tag: str) -> dict:
 
 # ------------------------------------------------------------------------------------------ main
 ARM_SPEC = {
-    # arm -> (tag suffix, expected config fields that MUST hold)
+    # arm -> (tag suffix, expected config fields that MUST hold). `%s` is filled with the codeword;
+    # `--tag-prefix` replaces the leading "patch" so the same verifier checks the replicate runs
+    # (p0cmp_* on one 3090 allocation, p0cmpL_* on one l40s allocation) without a second copy of
+    # the arm-identity table -- two copies is how one of them stops matching the other.
     "ctrl":         dict(tag="patch_ctrl_%s",         intervene=None, rescue_layer=None,
                          rescue_donor=None,  rescue_n=None,  arm_label="CTRL"),
     "ko":           dict(tag="patch_ko_%s",           intervene="demo_all:attn_knockout:6-14:1.0",
@@ -308,6 +338,12 @@ ARM_SPEC = {
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--codeword", required=True)
+    ap.add_argument("--slurm-job", default="",
+                    help="declare the SLURM job id when every arm ran in ONE allocation (the "
+                         "replicate design); the tag-grep cannot see tags used inside a wrapper")
+    ap.add_argument("--tag-prefix", default="patch",
+                    help="leading component of the run tags; 'patch' = the published arms, "
+                         "'p0cmp'/'p0cmpL' = the single-allocation replicates")
     ap.add_argument("--expect-n", type=int, default=180)
     ap.add_argument("--arms", default="ctrl,ko,rescue_clean,sizematch")
     ap.add_argument("--n-boot", type=int, default=20000)
@@ -326,11 +362,13 @@ def main() -> int:
     dirs, data, cfgs, hw = {}, {}, {}, {}
     for arm in want:
         spec = ARM_SPEC[arm]
-        d = strict_run_dir(spec["tag"] % a.codeword, a.expect_n)
+        _tag = (spec["tag"] % a.codeword).replace("patch_", a.tag_prefix + "_", 1)
+        d = strict_run_dir(_tag, a.expect_n)
         dirs[arm] = d
         data[arm] = read_arm(d)
         cfgs[arm] = json.load(open(os.path.join(d, "config.json")))["args"]
-        hw[arm] = slurm_node_for_tag(spec["tag"] % a.codeword)
+        hw[arm] = (slurm_node_for_job(a.slurm_job) if a.slurm_job
+                   else slurm_node_for_tag(_tag))
         print("[dir ] %-13s %s" % (arm, os.path.basename(d)))
 
     problems: List[str] = []
@@ -602,7 +640,8 @@ def main() -> int:
         "VERDICT": "PASS -- re-derivation reproduces the run and finds no integrity problem"
                    if not problems else "FAIL -- %d integrity problem(s); see PROBLEMS" % len(problems),
     }
-    outp = a.out or os.path.join(REPO, "reports/DCS_CSI_REDERIVE_PATCH_%s.json" % a.codeword)
+    outp = a.out or os.path.join(REPO, "reports/DCS_CSI_REDERIVE_PATCH_%s%s.json"
+                                       % (a.codeword, "" if a.tag_prefix == "patch" else "_" + a.tag_prefix))
     json.dump(out, open(outp, "w"), indent=1)
 
     print("\n=== INDEPENDENT RE-DERIVATION: %s ===" % a.codeword)

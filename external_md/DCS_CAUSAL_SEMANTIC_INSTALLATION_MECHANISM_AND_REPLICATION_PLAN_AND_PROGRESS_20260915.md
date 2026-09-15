@@ -1535,3 +1535,104 @@ snapshot is what caused the stall. It goes in once the smoke is past its load.
 Disk check before committing to another 13 GB cache: the filesystem is at **94 % with 1.3 T free**,
 so one more corpus is affordable; the two 12–13 GB behavioural caches plus this one are the
 dominant consumers and are reconstructable if space becomes tight.
+
+---
+
+## S-026 — P0.6 FIRST REPLICATE: in a single allocation the recovery effect is **larger and now clears α = 0.05**
+
+Job 896356: CTRL, KO and RESCUE_CLEAN run back-to-back in **one allocation on one node**
+(n-303, `geforce_rtx_3090`), so the hardware term that S-016 measured is **zero by construction**
+rather than small. `reports/DCS_CSI_REDERIVE_PATCH_button_p0cmp.json`; VERDICT **PASS**.
+
+| | published arms (3 nodes, all l40s) | **single-allocation replicate (1 node, 3090)** |
+|---|---|---|
+| CTRL | 0.1111 | 0.1167 |
+| KO | 0.0444 | 0.0500 |
+| RESCUE_CLEAN | 0.0722 | **0.0889** |
+| KO de-refusal (CTRL−KO) | +0.0667, k=12, p = 4.88e−4 | **+0.0667, k=12, p = 4.88e−4** |
+| **recovery (RESCUE−KO)** | +0.0278, **k=5**, p = **0.0625** *(= its floor)* | **+0.0389**, **k=7**, p = **0.0156** *(= its floor)* |
+| recovery fraction | 0.417 [0.133, 0.714] | **0.583 [0.286, 0.875]** |
+| residual (CTRL−RESCUE) | +0.0389 | +0.0278 |
+
+**The KO de-refusal reproduces to four decimal places** — same point estimate, same 12 informative
+domains, same p. That is a strong sign the endpoint and population are stable.
+
+**The recovery is larger and now significant by the exact test.** It rests on **7** informative
+domains instead of 5, all same-signed, and the exact two-sided sign-flip p is **0.0156 < 0.05**.
+Note it is *again exactly at its attainable floor* (2/2⁷ = 0.015625) — the test has once more
+exhausted its resolution — but this time **the floor itself is below 0.05**, which the published
+run's 0.0625 floor could never be.
+
+**How much weight this carries, stated carefully.** This is a **second experiment**, not a
+re-analysis: same prompts and seed, different hardware, so the two estimates (+0.0278 on 5 domains,
++0.0389 on 7 domains) are two draws whose difference is within the churn S-016 measured. Two
+independent runs both showing a positive recovery with **every** informative domain moving in the
+predicted direction and **none against** (5/5 and 7/7) is meaningfully better than one. It does not
+yet make E1 a confirmatory result — the endpoint is still resolution-limited, the power analysis
+still says D ≈ 145 for 80 % power, and TEST is still unspent. The honest upgrade is:
+
+> **E1 (revised): directionally consistent across two independent runs, and significant by an exact
+> domain-level test in the hardware-controlled replicate (p = 0.0156, at its floor). Still
+> underpowered and still exploratory; not a confirmatory claim.**
+
+The L40S replicate (896363, arms 3/4 done) will say whether this holds on a *second architecture*.
+If it does, the recovery has reproduced on two architectures and in two hardware-controlled
+allocations, which is about as much as this 90-domain endpoint can be asked to give.
+
+**Verifier fix that this exposed.** `slurm_node_for_tag` greps the logs for `--tag <tag>`, which
+works when each arm is its own sbatch but **not** when arms run inside a wrapper `.slurm` — the tag
+never reaches the job's stdout. The verifier therefore reported "hardware unknown" and **VOIDed the
+most hardware-controlled run in the sprint**. Added `--slurm-job` to declare the allocation
+explicitly, which is precisely the fact the wrapper design guarantees. A verifier that fails closed
+on missing provenance is right to; the fix is to give it the provenance, not to relax the check.
+
+---
+
+## S-027 — the semantic-fit axis empirically VINDICATES the anti-circularity guard, and that changes how Phase 1 may use it
+
+Job 896543 built the basket **semantic**-fit axis (the first use of the S-025 opt-in). The result
+is the clearest possible demonstration of why the guard exists.
+
+**Layer grid, basket, `--fit-prompt semantic` (state and target read on the SAME forward):**
+
+| L16 | L18 | L20 | L22 | L24 | L26 | L28 | **L30** | L31 |
+|---|---|---|---|---|---|---|---|---|
+| 0.6105 | 0.6194 | 0.6316 | 0.6972 | 0.7055 | 0.7282 | 0.7560 | **0.7630** | 0.7611 |
+
+Compare the **behavioural**-fit axis on the same codeword: peak **L18**, rho **0.6525**, with the
+grid *falling* toward late layers (L30 = 0.6002).
+
+**The semantic fit rises monotonically into the output layers and peaks at L30.** That is not
+"installed meaning becoming clearer"; it is **output adjacency** — by L30 the residual state
+increasingly *is* the next-token prediction, and the target *is* that next token. The guard's
+stated reason ("the semantic prompt's next token IS the target, so a representation read there
+predicts it circularly") is now an observed property of the data, not just an argument.
+
+### The trap this would have set for Phase 1, and how the design avoids it
+
+Had the semantic-fit axis been used **at its own TRAIN-selected layer (L30)**, the Phase-1 rescue
+would have restored an output-adjacent direction — which under a knockout would partially restore
+the readout *almost by construction*. That is a **false positive generator**: it would have looked
+like "restoring the installed-meaning component restores installation" while actually meaning
+"restoring the model's own next-token prediction restores the next-token prediction."
+
+So the rule for this sprint, decided now and before any semantic-fit arm is run:
+
+1. **Phase 1's primary candidate stays the BEHAVIOURAL-fit axis**, at its own selected layer
+   (button **L20**, basket **L18**) — the band where the knockout acts and where the fit is not
+   circular.
+2. **A semantic-fit arm, if run at all, must be written at the behavioural band**, never at its own
+   argmax. Review M2's hard layer-mismatch refusal now has to be given an explicit, documented
+   override for exactly this arm — which is the right shape: the refusal makes the exception
+   visible instead of letting it happen quietly.
+3. The semantic fit's rho is **never** reported (claim-table prohibition #15, already standing).
+
+**This also re-ranks the two families' value.** S-008 framed the behavioural axis as a
+*compromise* forced by a missing cache, carrying a transfer confound. That framing was too
+pessimistic: the behavioural axis is the **scientifically preferable** candidate, and the semantic
+axis's apparent superiority (0.763 vs 0.6525) is largely the circularity the guard names. The
+transfer caveat in PR-CSI-001 stands — a null is still ambiguous between "does not transfer" and
+"not causal" — but the semantic family is no longer the obviously-better comparison it looked like.
+
+Controls behave: shuffled-label rho 0.0087 / 0.0426 / −0.0029 / 0.0034 / 0.0037, `ctrl_orth`
+|cos| = 0.0 exactly, `bank_sha16 79511d9e254571e6` (basket).
