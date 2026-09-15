@@ -2615,3 +2615,54 @@ each would have presented as a *clean pass*. The generalisation for the rest of 
 
 > **Every control must be tested against a deliberately broken input**, not merely observed to
 > pass. A control that has only ever been seen to succeed has not been shown to be a control.
+
+---
+
+## S-045 — the `KO_AXIS_ANCHOR` reads **zero** allocation drift, and this time the zero is verified not to be an artifact
+
+The anchor arm exists to answer one question before group A's candidate is compared against group
+B's controls: **does running in a different allocation move the endpoint?**
+
+| | run | node | mean `y_install` |
+|---|---|---|---|
+| group A `KO_AXIS` | job 896679 | n-303, `geforce_rtx_3090` | **0.471794** |
+| group B `KO_AXIS_ANCHOR` | job 896771 | n-350, `geforce_rtx_3090` | **0.471794** |
+
+`ANCHOR − AXIS` = **+0.000000**, CI [0, 0], **0 / 0 / 67** pos/neg/tied.
+Per key: **670 / 670 identical**, max |diff| = **0.000e+00**.
+
+Against the effect it must not contaminate — `KO_FULL − KO` = +0.07060 — the drift is **0.00 %**.
+
+### The zero is checked, because S-042 taught me not to trust one
+
+An exact zero is exactly what a vacuous self-comparison produces, so before recording this I
+verified the two arms are genuinely distinct runs:
+
+```
+KO_AXIS        -> csi1_button_train_KO_AXIS_20260915_195425_1707119   end 20:08:35
+KO_AXIS_ANCHOR -> csi1_button_train_KO_AXIS_ANCHOR_20260915_194600_3238175  end 20:18:13
+SAME DIRECTORY? False
+```
+
+Different run ids, different arm labels, different end timestamps, different jobs, different nodes
+— and the *same* `basis_key = cand_rank1` and `layer = 20`, which is what makes them a valid
+anchor pair. The anchored resolver from S-042 is what keeps `KO_AXIS` from swallowing
+`KO_AXIS_ANCHOR`, and it demonstrably did.
+
+### What this licenses, and what it says about the endpoint
+
+* **The cross-allocation comparison is safe.** Group B's shuffled and random controls may be
+  contrasted against group A's candidate with no hardware-drift term at all. The Holm specificity
+  analysis is unconfounded.
+* **A readout on fixed architecture is bit-reproducible.** This is the same fact S-032 found from
+  the other direction (the L40S replicate reproducing published refusal numbers to five decimals),
+  now at the strongest possible resolution: 670 keys, zero differences. It also sharpens S-016 —
+  the 23 % byte-identity figure is **entirely** a cross-*architecture* phenomenon.
+* **The S-037 architecture pin was the right call, and is now shown to be sufficient.** Holding GPU
+  model fixed reduces the drift term to exactly zero; nothing further (same node, same allocation)
+  buys anything for this endpoint.
+
+One practical consequence worth carrying into Phase 2: for **readout** endpoints, arms do *not*
+need to share an allocation — only an architecture. That materially loosens the scheduling
+constraint for the larger banks, where forcing 17 arms into one allocation is what created the
+8-hour walltime problem in the first place.
