@@ -1745,3 +1745,44 @@ content**, not to the machinery that donates it.
 record because the honest first reaction to "one arm shows 25 % fewer intervention edits than
 another" is alarm, and the resolution depended on a control that was already in the design rather
 than on a post-hoc rationalisation.
+
+---
+
+## S-030 — P0.6 complete on the 3090: all four arms, one allocation. Size-match is stronger but **still CANNOT ANSWER**.
+
+Job 896356 COMPLETED (1:42:33), all four arms back-to-back on **n-303 / `geforce_rtx_3090`**.
+VERDICT **PASS**. `reports/DCS_CSI_REDERIVE_PATCH_button_p0cmp.json`.
+
+| contrast | published (3 nodes, l40s) | **replicate (1 node, 3090)** |
+|---|---|---|
+| CTRL / KO / RESCUE / SIZEMATCH | 0.1111 / 0.0444 / 0.0722 / 0.0611 | 0.1167 / 0.0500 / 0.0889 / **0.0611** |
+| KO de-refusal | +0.0667, k=12, p=4.88e−4 | +0.0667, k=12, p=4.88e−4 |
+| recovery (RESCUE−KO) | +0.0278, k=5, p=0.0625 *(floor)* | **+0.0389, k=7, p=0.0156** *(floor)* |
+| size-match recovery (SM−KO) | +0.0167, k=3, p=0.25 | +0.0111, k=2, p=0.50 |
+| **full − size-match** | +0.0111, **k=2**, p=**0.50** *(floor)* | **+0.0278**, **k=5**, p=**0.0625** *(floor)* |
+| recovery fraction, full | 0.417 [0.133, 0.714] | **0.583 [0.286, 0.875]** |
+| recovery fraction, size-match | 0.250 [0.0, 0.50] | **0.167 [0.0, 0.417]** |
+
+### Position identity vs position count: the ordering is now clean, the test still cannot certify it
+
+In the replicate the dose-ordering is exactly what the hypothesis predicts and much more separated
+than before: the **full** 24-position rescue recovers **58 %** of the knockout's de-refusal, the
+**12-position** size-matched rescue recovers **17 %**, and the gap between them is +0.0278 on **5**
+informative domains, **all same-signed, none against**.
+
+**And it still does not pass.** The exact domain-level sign-flip test on 5 informative domains is
+pinned at its attainable floor of **0.0625**, which is above 0.05. So:
+
+> **C2 stands: the position-identity-vs-count control is CANNOT ANSWER.** The `0a8c7e6d`
+> "size-match PASSES" withdrawal is **not** reversed. What has changed is that the contrast is now
+> **2.5× larger and rests on 5 domains instead of 2**, and is directionally consistent across two
+> independent runs (+0.0111 and +0.0278, 2/2 and 5/5 same-signed, 0 against).
+
+This is the sprint's recurring shape and worth stating plainly: **the effects keep pointing the
+predicted way, and the endpoint keeps running out of resolution before it can certify them.** Three
+separate contrasts (recovery, size-match recovery, full−size-match) have now returned a p that is
+*exactly* their attainable floor. That is not a statement about the effects; it is a statement about
+a 90-domain, ~20-event endpoint — precisely what S-004's power analysis predicted and why Phase 1's
+primary endpoint is semantic installation (67/67 informative domains) rather than refusal.
+
+The L40S replicate (896363) is on arm 3/4 and will say whether this holds on a second architecture.

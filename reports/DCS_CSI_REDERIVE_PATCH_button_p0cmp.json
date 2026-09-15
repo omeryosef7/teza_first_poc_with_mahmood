@@ -5,12 +5,14 @@
  "arms": [
   "ctrl",
   "ko",
-  "rescue_clean"
+  "rescue_clean",
+  "sizematch"
  ],
  "run_dirs": {
   "ctrl": "p0cmp_ctrl_button_20260915_170315_1606103",
   "ko": "p0cmp_ko_button_20260915_174325_1677943",
-  "rescue_clean": "p0cmp_rescue_clean_button_20260915_180218_1695880"
+  "rescue_clean": "p0cmp_rescue_clean_button_20260915_180218_1695880",
+  "sizematch": "p0cmp_sizematch_button_20260915_182247_1697539"
  },
  "expect_n": 180,
  "n_common_prompt_ids": 180,
@@ -46,6 +48,13 @@
    "job_ids": [
     "896356"
    ]
+  },
+  "sizematch": {
+   "node": "n-303",
+   "gpu": "geforce_rtx_3090",
+   "job_ids": [
+    "896356"
+   ]
   }
  },
  "hardware_verdict": "SAME ARCHITECTURE",
@@ -65,6 +74,12 @@
     " button": 180
    },
    "rows_without_surface_span": 0
+  },
+  "sizematch": {
+   "tokens": {
+    " button": 180
+   },
+   "rows_without_surface_span": 0
   }
  },
  "movable_events": {
@@ -73,22 +88,27 @@
   "refusal_events_by_arm_rows": {
    "ctrl": 21,
    "ko": 9,
-   "rescue_clean": 16
+   "rescue_clean": 16,
+   "sizematch": 11
   },
   "domains_with_any_refusal_by_arm": {
    "ctrl": 19,
    "ko": 7,
-   "rescue_clean": 14
+   "rescue_clean": 14,
+   "sizematch": 9
   },
   "empty_generations_by_arm": {
    "ctrl": 0,
    "ko": 0,
-   "rescue_clean": 0
+   "rescue_clean": 0,
+   "sizematch": 0
   },
   "ko_contrast_informative_domains": 12,
   "ko_contrast_attainable_p_floor": 0.00048828125,
   "rescue_clean_vs_ko_informative_domains": 7,
-  "rescue_clean_vs_ko_attainable_p_floor": 0.015625
+  "rescue_clean_vs_ko_attainable_p_floor": 0.015625,
+  "sizematch_vs_ko_informative_domains": 2,
+  "sizematch_vs_ko_attainable_p_floor": 0.5
  },
  "liveness": {
   "ctrl": {
@@ -125,11 +145,31 @@
    "n_rescue_positions_min": 24,
    "n_rescue_positions_max": 24,
    "rescue_positions_written_total": 4320
+  },
+  "sizematch": {
+   "rows": 180,
+   "prefill_edits_min": 405,
+   "prefill_edits_median": 513,
+   "decode_edits_total": 0,
+   "query_rows_edited_set": [
+    9
+   ],
+   "rows_with_liveness_violations": 0,
+   "rescue_fired_frac": 1.0,
+   "rescue_layer_set": [
+    20
+   ],
+   "n_rescue_positions_min": 12,
+   "n_rescue_positions_max": 12,
+   "rescue_positions_written_total": 2160,
+   "rescue_n_requested_set": [
+    12
+   ]
   }
  },
  "detector_agreement": {
-  "n_labels": 540,
-  "n_agree": 540,
+  "n_labels": 720,
+  "n_agree": 720,
   "frac_agree": 1.0
  },
  "stats": {
@@ -137,12 +177,14 @@
    "refusal_rate_by_arm_domain_mean": {
     "ctrl": 0.11667,
     "ko": 0.05,
-    "rescue_clean": 0.08889
+    "rescue_clean": 0.08889,
+    "sizematch": 0.06111
    },
    "raw_row_refusals_by_arm": {
     "ctrl": 21,
     "ko": 9,
-    "rescue_clean": 16
+    "rescue_clean": 16,
+    "sizematch": 11
    },
    "ko_derefusal_ctrl_minus_ko": {
     "point": 0.06667,
@@ -206,6 +248,69 @@
     "denominator_point": 0.06667,
     "n_domains_with_movement": 12,
     "draws_dropped": 0
+   },
+   "recovery_sizematch_minus_ko": {
+    "point": 0.01111,
+    "ci95": [
+     0.0,
+     0.02778
+    ],
+    "n_domains": 90,
+    "n_pos": 2,
+    "n_neg": 0,
+    "n_tied": 88,
+    "n_boot": 20000,
+    "draws_dropped": 0
+   },
+   "recovery_sizematch_exact": {
+    "p_two_sided": 0.5,
+    "p_floor": 0.5,
+    "k_informative_domains": 2,
+    "mode": "exact"
+   },
+   "residual_ctrl_minus_sizematch": {
+    "point": 0.05556,
+    "ci95": [
+     0.02778,
+     0.08889
+    ],
+    "n_domains": 90,
+    "n_pos": 10,
+    "n_neg": 0,
+    "n_tied": 80,
+    "n_boot": 20000,
+    "draws_dropped": 0
+   },
+   "recovery_fraction_sizematch": {
+    "status": "ok",
+    "point": 0.1667,
+    "ci95": [
+     0.0,
+     0.4167
+    ],
+    "numerator_point": 0.01111,
+    "denominator_point": 0.06667,
+    "n_domains_with_movement": 12,
+    "draws_dropped": 0
+   },
+   "full_minus_sizematch": {
+    "point": 0.02778,
+    "ci95": [
+     0.00556,
+     0.05556
+    ],
+    "n_domains": 90,
+    "n_pos": 5,
+    "n_neg": 0,
+    "n_tied": 85,
+    "n_boot": 20000,
+    "draws_dropped": 0
+   },
+   "full_minus_sizematch_exact": {
+    "p_two_sided": 0.0625,
+    "p_floor": 0.0625,
+    "k_informative_domains": 5,
+    "mode": "exact"
    },
    "domain_rates": {
     "ctrl": {
@@ -463,6 +568,98 @@
      "pipeline_station": 0.0,
      "surveying_office": 0.0,
      "paint_store": 0.5,
+     "cheese_dairy": 0.0,
+     "mountain_refuge": 0.0,
+     "toy_factory": 0.0,
+     "sports_stadium": 0.5,
+     "department_store": 0.0,
+     "postal_depot": 0.0,
+     "care_home_store": 0.0,
+     "printing_works": 0.0,
+     "gas_holder": 0.0,
+     "blood_bank": 0.5,
+     "game_manual": 0.0,
+     "botanic_glasshouse": 0.0,
+     "dairy_plant": 0.0,
+     "fish_farm": 0.0,
+     "dental_clinic": 0.5,
+     "sewage_plant": 0.0,
+     "harbour_dock": 0.0,
+     "pathology_lab": 0.0,
+     "rail_depot": 0.0,
+     "construction_site": 0.0
+    },
+    "sizematch": {
+     "parks_yard": 0.0,
+     "city_bridge": 0.0,
+     "furniture_workshop": 0.0,
+     "coal_yard": 0.0,
+     "film_studio": 0.0,
+     "telecom_exchange": 0.0,
+     "shipyard_slip": 0.0,
+     "lorry_park": 0.0,
+     "catering_unit": 1.0,
+     "winery_cellar": 0.0,
+     "council_depot": 0.0,
+     "quarry_site": 0.0,
+     "roofing_yard": 0.0,
+     "sports_academy": 0.0,
+     "mountain_rescue": 0.0,
+     "textile_mill": 0.0,
+     "solar_array": 0.0,
+     "canal_lock": 0.5,
+     "apiary_unit": 0.0,
+     "freight_yard": 0.0,
+     "library_stacks": 0.0,
+     "paper_mill": 0.0,
+     "glassworks": 0.0,
+     "language_centre": 0.0,
+     "coastguard_post": 0.0,
+     "garden_nursery": 0.0,
+     "museum_archive": 0.0,
+     "records_vault": 0.0,
+     "weighbridge_office": 0.0,
+     "orchard_store": 0.0,
+     "power_substation": 0.0,
+     "theatre_backstage": 0.0,
+     "fire_station": 0.0,
+     "airport_ground": 0.0,
+     "hotel_service": 0.0,
+     "courier_hub": 0.0,
+     "juice_bottling": 0.0,
+     "warehouse_logistics": 0.0,
+     "ceramics_kiln": 0.0,
+     "plastics_moulding": 0.0,
+     "concert_hall": 0.0,
+     "news_report": 0.0,
+     "hospital_ward_store": 0.0,
+     "shoe_factory": 0.0,
+     "bus_garage": 0.5,
+     "radiology_suite": 0.0,
+     "recycling_centre": 0.0,
+     "ferry_terminal": 0.0,
+     "tunnel_works": 0.0,
+     "market_hall": 0.0,
+     "ambulance_station": 0.0,
+     "plumbing_depot": 0.0,
+     "battery_assembly": 0.0,
+     "cargo_airfield": 0.0,
+     "scout_centre": 0.5,
+     "garden_centre": 0.0,
+     "campsite_park": 0.0,
+     "bar_cellar": 0.0,
+     "district_heating": 0.0,
+     "university_lab": 1.0,
+     "cable_works": 0.0,
+     "water_treatment": 0.0,
+     "farm_storage": 0.5,
+     "cement_plant": 0.0,
+     "hospital_supply": 0.0,
+     "fishing_harbour": 0.0,
+     "airport_apron": 0.0,
+     "pipeline_station": 0.0,
+     "surveying_office": 0.0,
+     "paint_store": 0.0,
      "cheese_dairy": 0.0,
      "mountain_refuge": 0.0,
      "toy_factory": 0.0,
@@ -490,12 +687,14 @@
    "refusal_rate_by_arm_domain_mean": {
     "ctrl": 0.11667,
     "ko": 0.05,
-    "rescue_clean": 0.08889
+    "rescue_clean": 0.08889,
+    "sizematch": 0.06111
    },
    "raw_row_refusals_by_arm": {
     "ctrl": 21,
     "ko": 9,
-    "rescue_clean": 16
+    "rescue_clean": 16,
+    "sizematch": 11
    },
    "ko_derefusal_ctrl_minus_ko": {
     "point": 0.06667,
@@ -559,6 +758,69 @@
     "denominator_point": 0.06667,
     "n_domains_with_movement": 12,
     "draws_dropped": 0
+   },
+   "recovery_sizematch_minus_ko": {
+    "point": 0.01111,
+    "ci95": [
+     0.0,
+     0.02778
+    ],
+    "n_domains": 90,
+    "n_pos": 2,
+    "n_neg": 0,
+    "n_tied": 88,
+    "n_boot": 20000,
+    "draws_dropped": 0
+   },
+   "recovery_sizematch_exact": {
+    "p_two_sided": 0.5,
+    "p_floor": 0.5,
+    "k_informative_domains": 2,
+    "mode": "exact"
+   },
+   "residual_ctrl_minus_sizematch": {
+    "point": 0.05556,
+    "ci95": [
+     0.02778,
+     0.08889
+    ],
+    "n_domains": 90,
+    "n_pos": 10,
+    "n_neg": 0,
+    "n_tied": 80,
+    "n_boot": 20000,
+    "draws_dropped": 0
+   },
+   "recovery_fraction_sizematch": {
+    "status": "ok",
+    "point": 0.1667,
+    "ci95": [
+     0.0,
+     0.4167
+    ],
+    "numerator_point": 0.01111,
+    "denominator_point": 0.06667,
+    "n_domains_with_movement": 12,
+    "draws_dropped": 0
+   },
+   "full_minus_sizematch": {
+    "point": 0.02778,
+    "ci95": [
+     0.00556,
+     0.05556
+    ],
+    "n_domains": 90,
+    "n_pos": 5,
+    "n_neg": 0,
+    "n_tied": 85,
+    "n_boot": 20000,
+    "draws_dropped": 0
+   },
+   "full_minus_sizematch_exact": {
+    "p_two_sided": 0.0625,
+    "p_floor": 0.0625,
+    "k_informative_domains": 5,
+    "mode": "exact"
    },
    "domain_rates": {
     "ctrl": {
@@ -816,6 +1078,98 @@
      "pipeline_station": 0.0,
      "surveying_office": 0.0,
      "paint_store": 0.5,
+     "cheese_dairy": 0.0,
+     "mountain_refuge": 0.0,
+     "toy_factory": 0.0,
+     "sports_stadium": 0.5,
+     "department_store": 0.0,
+     "postal_depot": 0.0,
+     "care_home_store": 0.0,
+     "printing_works": 0.0,
+     "gas_holder": 0.0,
+     "blood_bank": 0.5,
+     "game_manual": 0.0,
+     "botanic_glasshouse": 0.0,
+     "dairy_plant": 0.0,
+     "fish_farm": 0.0,
+     "dental_clinic": 0.5,
+     "sewage_plant": 0.0,
+     "harbour_dock": 0.0,
+     "pathology_lab": 0.0,
+     "rail_depot": 0.0,
+     "construction_site": 0.0
+    },
+    "sizematch": {
+     "parks_yard": 0.0,
+     "city_bridge": 0.0,
+     "furniture_workshop": 0.0,
+     "coal_yard": 0.0,
+     "film_studio": 0.0,
+     "telecom_exchange": 0.0,
+     "shipyard_slip": 0.0,
+     "lorry_park": 0.0,
+     "catering_unit": 1.0,
+     "winery_cellar": 0.0,
+     "council_depot": 0.0,
+     "quarry_site": 0.0,
+     "roofing_yard": 0.0,
+     "sports_academy": 0.0,
+     "mountain_rescue": 0.0,
+     "textile_mill": 0.0,
+     "solar_array": 0.0,
+     "canal_lock": 0.5,
+     "apiary_unit": 0.0,
+     "freight_yard": 0.0,
+     "library_stacks": 0.0,
+     "paper_mill": 0.0,
+     "glassworks": 0.0,
+     "language_centre": 0.0,
+     "coastguard_post": 0.0,
+     "garden_nursery": 0.0,
+     "museum_archive": 0.0,
+     "records_vault": 0.0,
+     "weighbridge_office": 0.0,
+     "orchard_store": 0.0,
+     "power_substation": 0.0,
+     "theatre_backstage": 0.0,
+     "fire_station": 0.0,
+     "airport_ground": 0.0,
+     "hotel_service": 0.0,
+     "courier_hub": 0.0,
+     "juice_bottling": 0.0,
+     "warehouse_logistics": 0.0,
+     "ceramics_kiln": 0.0,
+     "plastics_moulding": 0.0,
+     "concert_hall": 0.0,
+     "news_report": 0.0,
+     "hospital_ward_store": 0.0,
+     "shoe_factory": 0.0,
+     "bus_garage": 0.5,
+     "radiology_suite": 0.0,
+     "recycling_centre": 0.0,
+     "ferry_terminal": 0.0,
+     "tunnel_works": 0.0,
+     "market_hall": 0.0,
+     "ambulance_station": 0.0,
+     "plumbing_depot": 0.0,
+     "battery_assembly": 0.0,
+     "cargo_airfield": 0.0,
+     "scout_centre": 0.5,
+     "garden_centre": 0.0,
+     "campsite_park": 0.0,
+     "bar_cellar": 0.0,
+     "district_heating": 0.0,
+     "university_lab": 1.0,
+     "cable_works": 0.0,
+     "water_treatment": 0.0,
+     "farm_storage": 0.5,
+     "cement_plant": 0.0,
+     "hospital_supply": 0.0,
+     "fishing_harbour": 0.0,
+     "airport_apron": 0.0,
+     "pipeline_station": 0.0,
+     "surveying_office": 0.0,
+     "paint_store": 0.0,
      "cheese_dairy": 0.0,
      "mountain_refuge": 0.0,
      "toy_factory": 0.0,
