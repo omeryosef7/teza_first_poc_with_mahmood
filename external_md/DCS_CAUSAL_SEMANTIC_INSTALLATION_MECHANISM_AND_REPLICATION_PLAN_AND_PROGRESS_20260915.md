@@ -3929,3 +3929,66 @@ which is visible only now, from the causal side.
 gives 24 % of the full effect; the remaining ~76 % has to live somewhere, and the four sampled
 positions from −6 outward have ruled themselves out. The natural hypothesis is that it is carried
 by the last handful of positions.
+
+---
+
+# S-067 — ⚠ **`rel −1` IS THE READOUT POSITION.** An output-adjacency caveat that changes what S-066 may claim — and an arithmetic check that says the effect is *not* one position.
+
+Before S-066's headline travels any further, I resolved **what token `rel −1` actually is**. Plan
+§8.5 requires this of every patched site, and this repo has turned a codeword experiment into a
+punctuation experiment before.
+
+Measured from the rows (`csi1_button_train_KO_AT1`, 670 rows):
+
+| | |
+|---|---|
+| query span | `[180, 207]`, **28 positions**, every row |
+| `rel −1` absolute index | **207**, with `seq_len = 208` |
+| ⇒ `rel −1` is | **the FINAL token of the entire prompt** |
+| codeword (`" button"`) position | 198 — **9 tokens before it**, constant across rows |
+
+**`rel −1` is the position the readout reads from.** `y_install` is a next-token comparison, and the
+next token is computed from the final prompt token's residual stream. So restoring `rel −1`'s state
+at L20 is the intervention *closest to the measured output*.
+
+## What this does to S-066's claim
+
+This is the **same trap as S-027**, where the semantic-fit axis's ρ climbed monotonically to L30
+because late layers increasingly *are* the next-token prediction. Here it appears along the position
+axis instead of the layer axis.
+
+**MUST NOT be said:** *"the installed meaning lives at the last token of the span"*, or any framing
+in which `rel −1`'s 6.12× is evidence about **storage**. Its outsized effect is at least partly
+**output adjacency**: that state is one layer-stack away from the thing being measured.
+
+**MAY still be said, and it is not weakened by this:**
+* **`rel −6` (the axis site) and `rel −11` (`cw_query`, the knockout's own target) are causally
+  near-inert** — +0.00071 and −0.00025 against a random position's +0.00281. Output adjacency
+  cannot explain an *absence*, and these two positions are the ones with a prior claim to matter.
+  **This is the robust half of S-066 and it stands unchanged.**
+* The knockout's damage **is repairable at the final token** to the tune of 24 %, i.e. the damage
+  propagates forward and can be corrected downstream of where it was inflicted.
+
+## An arithmetic check that rules out "one dominant position"
+
+If `rel −1` were the whole story, it would have to account for the ladder's slope. It does not:
+
+```
+ladder slope (recovery per random position) = 0.002482
+rel-1 enters a random k-subset with probability k/28
+  => its contribution to the slope = 0.01721/28 = 0.000615  =  24.8% of the slope
+  => 75.2% of the slope comes from OTHER positions
+```
+
+But the four positions sampled from `rel −6` outward supply **≈ 0**. So the missing 75 % must live
+in positions not yet measured — i.e. **the tail between `rel −2` and `rel −5`**. The picture is
+**concentration in the last handful of positions**, not a single position, and not uniformity.
+
+**Group G (job 897431) is measuring exactly that stretch** (rel −2, −3, −4, −5, −8). Its prediction,
+fixed here before the arms land: those four should sum to roughly **0.75 × 28 × 0.002482 ≈ 0.052**
+of recovery between them if the tail carries the remainder — and if they do *not*, the slope's
+origin is still unaccounted for and something in the ladder's or the identity arms' accounting needs
+re-examining.
+
+That is a falsifiable prediction about an experiment already running, and it is the cleanest way I
+have to check that S-066 and S-059 are describing the same underlying object.
