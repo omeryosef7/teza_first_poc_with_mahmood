@@ -3548,3 +3548,71 @@ should produce it, including the three configurations this sprint actually shipp
 controls'"). It also greps the analyser source for each branch condition, so if the decision logic
 and this test drift apart the test fails loudly rather than silently mirroring a stale rule.
 **13/13 pass.** A verdict branch cannot quietly become unreachable again.
+
+---
+
+# S-059 — **POSITION LADDER COMPLETE: recovery is LINEAR in positions restored, R² = 0.997.** The consistency check is exact.
+
+All seven rungs of group D are in. Each arm restores the **full clean state** at a seeded-random
+subset of *k* of the 28 query-span positions; `n_rescue_positions` on the rows confirms exactly
+{1}, {2}, {4}, {8}, {14}, {20}, {28}.
+
+| k | recovery vs KO | CI95 | pos/neg | % of `KO_FULL` | obs / linear |
+|---|---|---|---|---|---|
+| 1 | +0.00281 | [+0.0016, +0.0041] | 40/27 | 4.0 % | 1.11× |
+| 2 | +0.00607 | [+0.0037, +0.0087] | 51/16 | 8.6 % | 1.20× |
+| 4 | +0.00876 | [+0.0062, +0.0114] | 53/14 | 12.4 % | 0.87× |
+| 8 | +0.01734 | [+0.0135, +0.0215] | 59/8 | 24.6 % | 0.86× |
+| 14 | +0.03328 | [+0.0274, +0.0393] | 61/6 | 47.1 % | 0.94× |
+| 20 | +0.05020 | [+0.0421, +0.0589] | 63/4 | 71.1 % | 1.00× |
+| 28 | +0.07060 | [+0.0606, +0.0812] | 66/1 | 100.0 % | 1.00× |
+
+**Fit:** `recovery = 0.002517·k − 0.00068`, **R² = 0.9971**. Through the origin (the physically
+meaningful form, since restoring zero positions *is* KO): `recovery = 0.002482·k`, **R² = 0.9968**.
+The fitted intercept is **−0.97 % of the full effect** — indistinguishable from the zero the design
+requires — and **slope × 28 = 0.07049 against `KO_FULL` = 0.07060, a ratio of 0.998.**
+
+## Consistency check: exact
+
+`KO_POS28` draws a subset of size 28 from 28 positions, so it must *be* `KO_FULL`. It is:
+
+```
+per-key identical: 670/670      max|diff| = 0.000e+00
+n_rescue_positions: KO_POS28=[28]   KO_FULL=[28]
+```
+
+The ladder's seeded-subset mechanism reduces **exactly** to the whole-state rescue at k = all — an
+end-to-end validation of the ladder itself, not an assumption. (And, per S-042's lesson, the two
+arms were confirmed to be distinct run directories before this zero was believed.)
+
+## The two axes of "how much", side by side
+
+| | functional form | slope relative to linear |
+|---|---|---|
+| **positions** (full state at k of 28) | **linear, R² = 0.997** | **0.86 – 1.20×, →1.00 at the top** |
+| **dimensions** (rank-r subspace at all 28) | **strongly sublinear** | **0.16× (rank 1), 0.43× (rank 5)** |
+
+> **Each query-span position contributes an equal, additive ~1/28 of the effect. Within a position,
+> the effect needs most of the 4096 dimensions.**
+
+Restoring **one position in full** recovers **+0.00281** — **seven times** what the rank-1
+installation axis recovers (+0.00040) — while touching a comparable share of the state (3.6 % vs
+3.5 %). The state is *dense in dimensions and uniform across positions*.
+
+## What this establishes, and what it does not
+
+**Establishes** — a quantified answer to "is it localised?": **no**, and to an unusual degree. A
+mechanism concentrated in a few positions would show a saturating curve; this one is a straight
+line through the origin over a 28× range, with every rung's CI excluding zero and the
+positive-domain count rising monotonically (40 → 66 of 67).
+
+**Does not establish** anything about *which* positions: the draws are seeded-random subsets, so
+this measures the **average** contribution of a position, not whether particular positions differ.
+A position-*identity* experiment (fixed positions rather than random draws — e.g. the codeword row
+alone, the final rows, the rel-6 site itself) is the natural follow-up and has **not** been run.
+
+**Scope:** button, TRAIN, one layer, one site. No VALIDATION ladder and no basket ladder yet.
+
+This is the sprint's clearest **positive** mechanistic result, and it was reachable precisely
+because Phase 1's directional question came back null: the plan's Gate-A NO branch said
+*"investigate whether the information is distributed"*, and this is what that investigation found.
