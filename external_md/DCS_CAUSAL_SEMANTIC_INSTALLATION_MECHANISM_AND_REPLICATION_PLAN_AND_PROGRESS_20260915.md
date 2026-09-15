@@ -1488,3 +1488,50 @@ By the time 896495 launched, the other three jobs were all past their loads, whi
 loading normally on a node chosen by the scheduler.
 
 Basket `semantic_one_word` corpus (896369): past the load, **2965 / 3720 rows** written.
+
+---
+
+## S-025 — the `semantic` candidate family is UNBLOCKED, and the anti-circularity guard is opted into explicitly rather than weakened
+
+S-008(c) deferred the semantic-fit candidate family for two reasons. **The first has now
+dissolved:** the basket `semantic_one_word` extraction (896369) produced **both**
+`final_occurrence_reps.pt` *and* `multiposition_reps.pt` (13 GB). So a semantic corpus *can* carry
+the multiposition cache — the button-semantic corpus's missing one was a **transient failure**
+(consistent with the recorded disk-space event of CONT-161), not a structural property of semantic
+prompts. S-008's diagnosis of *that* run stands; its implied generalisation does not.
+
+**The second reason — the frozen anti-circularity guard — is a scientific question, and here is the
+argument, made explicitly so it can be reviewed rather than smuggled in.**
+
+`lpm.load_corpus` refuses a semantic corpus because *"the semantic prompt's next token IS the
+target, so a representation read there predicts it circularly"* (REVIEW-1/T0-4, CONT-ENTRY 002).
+**That is correct, and it is correct about a PREDICTIVE claim** — which is exactly what the
+query-probe and F5 results are. It is not correct about an **interventional** one:
+
+* In Phase 1 the fitted direction only decides **which component of the state an intervention
+  restores**. The causal inference comes from the intervention and its controls, not from the fit.
+* The **controls are fit the same way** — `ctrl_orth` is derived from the candidate,
+  `ctrl_shuffled*` use the identical ridge on shuffled labels — so whatever circularity the
+  candidate enjoys, the controls enjoy too. The primary contrast `KO_AXIS − KO_ORTH` differences it
+  out.
+* A circularly-fit direction is a legitimate thing to **intervene along**; it is not a legitimate
+  thing to **report a predictive rho for**.
+
+**Implementation, deliberately conservative.** `lpm.load_corpus` gains
+`allow_query_kinds=("behavioral",)` — the **default is unchanged and every existing caller keeps
+the original refusal**. `dcs_csi_axis.py` opts in *only* when `--fit-prompt semantic` was declared,
+and `--fit-prompt` is itself checked against the corpus rows (review M1), so the opt-in cannot be
+used to slip a semantic corpus in under a behavioural label. The justification above is written
+into both call sites, and a standing prohibition is added to the claim table:
+
+> **Must not say:** any predictive rho obtained from a `--fit-prompt semantic` fit. That fit's only
+> legitimate output is a direction to intervene along.
+
+**Still required before the semantic family can run:** a button `semantic_one_word` re-extraction
+with the multiposition cache (~13 GB, one GPU job). It is **not** submitted yet — per S-024's
+corrected rule, the smoke (896495) is mid-weight-load and adding a concurrent load of the same NFS
+snapshot is what caused the stall. It goes in once the smoke is past its load.
+
+Disk check before committing to another 13 GB cache: the filesystem is at **94 % with 1.3 T free**,
+so one more corpus is affordable; the two 12–13 GB behavioural caches plus this one are the
+dominant consumers and are reconstructable if space becomes tight.

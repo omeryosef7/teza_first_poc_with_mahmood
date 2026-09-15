@@ -146,7 +146,7 @@ def load_installation(run_dir: str):
     return out, n_seen, sorted(kinds)
 
 
-def load_corpus(run_dir: str, mmap: bool = False):
+def load_corpus(run_dir: str, mmap: bool = False, allow_query_kinds=("behavioral",)):
     # `mmap=True` memory-maps the ~12 GB tensor store instead of reading it into RAM: loads in
     # ~37 s at <0.5 GB RSS and pages in only the [site, layer] slices actually read. Added so
     # candidate scoring can run (and fan out) on the shared node without OOM. Default False keeps
@@ -170,10 +170,23 @@ def load_corpus(run_dir: str, mmap: bool = False):
     # reinstate exactly the output-adjacency circularity CONT-ENTRY 002 exists to forbid, and
     # nothing printed would show it. REVIEW-1/T0-4.
     qks = {r.get("query_kind") for r in rows}
-    if qks != {"behavioral"}:
-        raise Refusal("the predictor corpus must be the BEHAVIOURAL population; %r carries "
-                      "query_kind %s. The semantic prompt's next token IS the target, so a "
-                      "representation read there predicts it circularly." % (run_dir, sorted(qks)))
+    # THE DEFAULT IS UNCHANGED and every existing caller keeps the original refusal: a PREDICTIVE
+    # probe read on the semantic prompt predicts its own next token, which is circular, and that
+    # is what REVIEW-1/T0-4 and CONT-ENTRY 002 exist to forbid.
+    #
+    # `allow_query_kinds` is an explicit, caller-side opt-in added for the Phase-1 CAUSAL
+    # experiment, where the argument is different in kind: there the fitted direction only decides
+    # WHICH component of the state an intervention restores, and the causal inference comes from
+    # the intervention plus its norm-matched orthogonal / shuffled / random controls -- which are
+    # fit the exact same way, so any circularity is shared by candidate and controls alike. A
+    # circularly-fit direction is a legitimate thing to intervene ALONG; it is not a legitimate
+    # thing to report a predictive rho for. Callers passing this MUST NOT report an observational
+    # predictive number from the resulting fit.
+    if qks != set(allow_query_kinds):
+        raise Refusal("the predictor corpus must carry query_kind %s; %r carries %s. The semantic "
+                      "prompt's next token IS the target, so a representation read there predicts "
+                      "it circularly -- pass allow_query_kinds explicitly if this is an "
+                      "INTERVENTIONAL use." % (sorted(allow_query_kinds), run_dir, sorted(qks)))
     doses = {r.get("n_examples") for r in rows}
     if doses != {4}:
         raise Refusal("corpus %r carries doses %s; this analysis is dose 4 only"

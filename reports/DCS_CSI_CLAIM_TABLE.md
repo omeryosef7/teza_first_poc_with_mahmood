@@ -64,3 +64,4 @@ this sprint's additions. **These are prohibitions, not preferences.**
 12. Anything marked A16, A17, K1, or WITHDRAWN in the predecessor audit.
 13. **"The axis generalises across templates."** — D4 is *sentence*-level, not template-level (C3).
 14. **"The axis differs across nodes / is hardware-sensitive."** — refuted; see D8 and S-019.
+15. **Any predictive rho obtained from a `--fit-prompt semantic` fit.** That fit reads the state on the same forward whose next token is the target, so its only legitimate output is a **direction to intervene along** — never a prediction. (The shared loader's default still refuses such corpora; the Phase-1 opt-in is explicit and argued in S-025.)

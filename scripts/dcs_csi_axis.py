@@ -197,7 +197,11 @@ def main() -> int:
     ap.add_argument("--corpus", required=True, help="extract_boombness run dir (states)")
     ap.add_argument("--readout", required=True, help="score_behavior run dir (y_install)")
     ap.add_argument("--fit-prompt", required=True, choices=("semantic", "behavioral"),
-                    help="which forward the corpus is from; recorded in provenance, not inferred")
+                    help="which forward the corpus is from; recorded in provenance AND checked "
+                         "against the corpus rows. 'semantic' opts in to a semantic corpus, which "
+                         "the shared loader refuses by default -- legitimate ONLY because this "
+                         "fit's output is a direction to intervene along, never a predictive "
+                         "claim. A rho from a semantic fit MUST NOT be reported as prediction.")
     ap.add_argument("--site", default="rel-6", help="FROZEN prior winner; not re-searched here")
     ap.add_argument("--max-rank", type=int, default=5)
     ap.add_argument("--n-random", type=int, default=8)
@@ -216,7 +220,14 @@ def main() -> int:
         raise SystemExit("REFUSING: empty TRAIN split")
 
     inst, n_inst, kinds = lpm.load_installation(os.path.join(REPO, a.readout))
-    mp, rows, csha = lpm.load_corpus(os.path.join(REPO, a.corpus), mmap=True)
+    # Opt in to a semantic corpus ONLY when the caller declared --fit-prompt semantic. The
+    # justification is written out in lpm.load_corpus: this fit's output is a direction to
+    # INTERVENE along, not a predictive claim. `--fit-prompt` is itself checked against the
+    # corpus below, so this cannot be used to smuggle a semantic corpus in under a behavioural
+    # label.
+    _allow = ("semantic_one_word",) if a.fit_prompt == "semantic" else ("behavioral",)
+    mp, rows, csha = lpm.load_corpus(os.path.join(REPO, a.corpus), mmap=True,
+                                     allow_query_kinds=_allow)
     rsha, rsrc = lpm.readout_bank_sha(os.path.join(REPO, a.readout))
     if rsha != csha:
         raise SystemExit("REFUSING: corpus bank_sha %s != readout bank_sha %s (%s) -- a mismatched "
