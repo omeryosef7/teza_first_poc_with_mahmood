@@ -188,6 +188,46 @@ def boot_paired_diff(doms: Sequence[str], a: Dict[str, float], b: Dict[str, floa
             "n_boot": n_boot, "draws_dropped": 0}
 
 
+def exact_signflip_one_sided(doms, a, b):
+    """One-sided sign-flip randomisation test of mean(a - b) > 0 (sprint item P1-h).
+
+    WHY A SEPARATE FUNCTION. The two-sided test answers "does the candidate DIFFER from this
+    control", which is not the specificity question. It fired in S-049 on a control that was
+    unusually NEGATIVE and would have been read as evidence FOR the candidate. Specificity asks
+    only whether the candidate BEATS the control, which is one-sided by construction.
+    """
+    d = [a[x] - b[x] for x in doms]
+    nz = [x for x in d if x != 0.0]
+    k = len(nz)
+    obs = sum(d) / len(d)
+    if k == 0:
+        return {"p_one_sided": 1.0, "p_floor": 1.0, "k_informative_domains": 0, "mode": "degenerate",
+                "observed": 0.0}
+    floor = 1.0 / (2 ** k)
+    if k <= 16:
+        total = 1 << k
+        hit = 0
+        for mask in range(total):
+            s_ = 0.0
+            for i, v in enumerate(nz):
+                s_ += v if (mask >> i) & 1 else -v
+            if s_ / len(d) >= obs - 1e-12:
+                hit += 1
+        return {"p_one_sided": hit / total, "p_floor": floor, "k_informative_domains": k,
+                "mode": "exact", "observed": obs}
+    rng = random.Random(20260915)
+    N = 200000
+    hit = 0
+    for _ in range(N):
+        s_ = 0.0
+        for v in nz:
+            s_ += v if rng.random() < 0.5 else -v
+        if s_ / len(d) >= obs - 1e-12:
+            hit += 1
+    return {"p_one_sided": (hit + 1) / (N + 1), "p_floor": floor, "k_informative_domains": k,
+            "mode": "monte-carlo(%d)" % N, "observed": obs}
+
+
 def exact_signflip(doms: Sequence[str], a: Dict[str, float], b: Dict[str, float]) -> dict:
     """Exact two-sided sign-flip randomisation test over DOMAINS, plus the attainable p-floor.
 

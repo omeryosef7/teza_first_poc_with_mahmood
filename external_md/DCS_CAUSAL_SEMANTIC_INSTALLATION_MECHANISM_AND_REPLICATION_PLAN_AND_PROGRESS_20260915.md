@@ -2933,3 +2933,81 @@ shortfall must be ledgered *entirely* to the degeneracy refusal, and the ledger'
 with the rows on disk. Anything else it prints as `LEFT FOR A HUMAN`. That keeps the guard's
 purpose — forcing per-run justification — while removing the transcription risk it would otherwise
 create.
+
+---
+
+# S-050 — **The rank-5 result was DOSE, not direction.** A random rank-5 subspace beats the installation subspace. And a "PRIMARY PASSES" verdict that must NOT be believed.
+
+Group C's first three rank-5 matched controls are in, and they settle S-048's question.
+
+## Rank-5 arms, recovery vs KO (67 domains, common-key intersection)
+
+| arm | recovery | CI95 | pos/neg | p |
+|---|---|---|---|---|
+| `KO_FULL` (rank 4096) | **+0.07060** | [+0.061, +0.081] | 66/1 | < 1e−5 |
+| **`KO_R5RAND2`** (random) | **+0.00428** | [+0.0032, +0.0054] | 56/11 | < 1e−5 |
+| **`KO_PLS`** (the candidate) | **+0.00302** | [+0.0013, +0.0047] | 50/17 | 0.001 |
+| `KO_PLS_ANCHOR` | +0.00302 | — | 50/17 | 0.001 | 
+| `KO_R5RAND1` (random) | **−0.00285** | [−0.0038, −0.0019] | 17/50 | < 1e−5 |
+| `KO_R5RAND0` (random) | **−0.00532** | [−0.0064, −0.0043] | 7/60 | < 1e−5 |
+
+**A norm-matched RANDOM rank-5 subspace spans −0.0053 to +0.0043 — and one of the three
+(`KO_R5RAND2`, +0.00428) recovers MORE than the installation subspace (+0.00302).** The candidate
+ranks **2nd of 4**.
+
+> **S-046's rank-5 significance was dimensionality, not direction.** Restoring *any* five
+> norm-matched directions moves the readout by several times what one direction does; which five
+> they are does not appear to matter. The apparent "rank-5 works where rank-1 does not" is a dose
+> effect, exactly the confound S-048 was built to test for — and the test says the confound was the
+> whole story.
+
+Note also how much *larger* the rank-5 arbitrary effects are than the rank-1 ones (±0.005 vs
+±0.0016). That is the superlinear-in-rank pattern of S-046 reappearing **in the controls**, which
+is the cleanest possible demonstration that the pattern is about how much of the state you disturb,
+not about what you restore.
+
+## ⚠ The analyser printed **"PRIMARY PASSES"** and it must not be believed
+
+Running the rank-5 configuration with `--comparator-arm KO_R5RAND0` produced:
+
+```
+VERDICT: PRIMARY PASSES on split=train -- candidate beats its norm-matched comparator
+```
+
+**That verdict is an artifact of which control I happened to name as the comparator.**
+`KO_R5RAND0` is the *most negative* control in the distribution (−0.00532), so the candidate beats
+it overwhelmingly (one-sided p = 5e−6, Holm-corrected 1.5e−5). Name `KO_R5RAND2` instead and the
+same data yields a clear FAIL (p = 0.869).
+
+This is the **same failure mode as S-049's two-sided Holm**, at the level of the verdict rather
+than the test: with a control distribution spanning ±0.005, **any single control is an arbitrary
+comparator**, and a verdict built on one is a coin-flip dressed as an inference.
+
+**The honest statistic is the one the analyser already emits alongside it** — the candidate's
+**rank within the control distribution**: 2 of 4 here (attainable rank-p floor 0.25), 3 of 8 for
+the rank-1 family. Both say the same thing: **the candidate is inside its control distribution.**
+
+**Fix required (P1-i):** when a control family is present, the verdict must be computed from the
+candidate's position in the control *distribution*, never from a single named comparator; and a
+single-comparator verdict must be suppressed rather than printed. PR-CSI-001 named
+`KO_AXIS − KO_ORTH` as the primary, which was defensible when `ctrl_orth` was the *only* control —
+but `ctrl_orth` is now one draw among many and must be treated as such. **This is an amendment to
+the preregistration, recorded before the remaining controls land**, and it *weakens* the reported
+result rather than strengthening it: the rank-1 primary's p = 0.29 stands, and the rank-5 "pass"
+is withdrawn before it was ever claimed.
+
+## Where Phase 1 now stands
+
+| candidate | its control distribution | candidate's rank | verdict |
+|---|---|---|---|
+| rank-1 installation axis | 7 controls, −0.0014 … +0.0016 | **3 of 8** | inside the distribution |
+| rank-5 installation subspace | 3 controls (of 10), −0.0053 … +0.0043 | **2 of 4** | inside the distribution |
+| whole state (4096) | — | — | **+0.0706, 66/67 domains, far outside anything** |
+
+**The knockout's effect on semantic installation is not carried by any low-dimensional subspace we
+can identify at this site and layer — informative or random. What predicts recovery is how much of
+the state is restored, not which directions.** The site is unambiguously causal (`KO_FULL` recovers
+34 % of the installation loss); the *representation* at that site is distributed.
+
+Seven rank-5 controls remain (3 random + 4 shuffled) and will finish the distribution; the reading
+above is stated on 3 of 10 and will be re-run when all land.

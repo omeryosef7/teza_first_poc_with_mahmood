@@ -246,6 +246,9 @@ def main() -> int:
     ap.add_argument("--base-arm", default="BASE")
     ap.add_argument("--self-arm", default="KO_SELF")
     ap.add_argument("--split", default="train", choices=("train", "validation"))
+    ap.add_argument("--control-prefixes", default="KO_SHUF,KO_RAND",
+                    help="arm-name prefixes forming the control distribution for the specificity "
+                         "test. Use KO_R5RAND,KO_R5SHUF when the candidate is the rank-5 subspace.")
     ap.add_argument("--allow-short", type=int, default=0,
                     help="accept arms short by at most N rows, provided DONE.json's count matches "
                          "the rows on disk. The cross-arm key intersection makes a short arm safe; "
@@ -503,14 +506,22 @@ def main() -> int:
     out["gates"] = gates
 
     # ---- specificity: candidate vs EACH shuffled/random control, Holm-corrected -----------------
-    ctrl_arms = [x for x in arms if x.startswith(("KO_SHUF", "KO_RAND"))]
+    ctrl_arms = [x for x in arms if x.startswith(tuple(a.control_prefixes.split(",")))]
     pairs = []
     for c in ctrl_arms:
         k = "specificity_candidate_minus_%s" % c
         C[k] = contrast(a.candidate_arm, c)
-        pairs.append((c, C[k]["p_two_sided"]))
+        # P1-h: specificity is ONE-SIDED. The two-sided p answers "does the candidate DIFFER from
+        # this control", which in S-049 fired on a control that was unusually NEGATIVE and would
+        # have been read as evidence FOR the candidate. Holm is applied to the one-sided p.
+        os_ = rederive.exact_signflip_one_sided(doms, dmeans[a.candidate_arm], dmeans[c])
+        C[k]["p_one_sided_candidate_beats_control"] = os_["p_one_sided"]
+        C[k]["p_one_sided_floor"] = os_["p_floor"]
+        pairs.append((c, os_["p_one_sided"]))
     if pairs:
         out["specificity_holm"] = holm(pairs)
+        out["specificity_test"] = ("ONE-SIDED sign-flip (candidate > control), Holm-corrected "
+                                   "across the control family (P1-h)")
         out["specificity_all_controls_rejected"] = all(
             v["rejected_at_0.05"] for v in out["specificity_holm"].values())
         ctrl_rec = {c: C["recovery_%s_minus_ko" % c]["point"] for c in ctrl_arms}
