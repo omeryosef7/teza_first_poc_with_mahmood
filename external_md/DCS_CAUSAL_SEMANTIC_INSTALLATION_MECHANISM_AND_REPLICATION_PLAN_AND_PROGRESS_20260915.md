@@ -1299,3 +1299,47 @@ axis memorises the particular demonstration sentences used to install the mappin
 So the axis now has three independent generalisation results — across **domains** (TRAIN→VAL
 +0.645), across **codewords** (button +0.645 / basket +0.653), and now across **demonstration
 sentences** (+0.598, retention 1.095) — and one known untested axis, **templates**.
+
+---
+
+## S-019 — **CORRECTION to S-014**: the sha mismatch was *not* cross-node float noise. Cross-node builds are bit-identical.
+
+S-014 concluded, from the pattern of which bases differed, that the axis sha16 mismatch between
+jobs 896372 (n-306) and 896398 (n-303) was "the signature of last-bit BLAS/LAPACK differences" and
+flagged a direct cross-node measurement as pending. **That measurement has now run (job 896409,
+pinned `--nodelist=n-306`) and it refutes the inference.**
+
+n-303 build vs n-306 build, same script revision:
+
+| basis | 1 − \|cos\| | max\|elementwise diff\| |
+|---|---|---|
+| `cand_rank1` | −1.11e−15 | **0.000e+00** |
+| `cand_pls1` | −8.88e−16 | **0.000e+00** |
+| `cand_pls5` | −8.88e−16 | **0.000e+00** |
+| `ctrl_orth` | −1.33e−15 | **0.000e+00** |
+| `ctrl_shuffled0` | −2.00e−15 | **0.000e+00** |
+| `ctrl_random0` | −4.44e−16 | **0.000e+00** |
+
+(The tiny negative values are float rounding on a cosine of exactly 1.) **Every basis is
+bit-identical across nodes.** Together with the three bit-identical same-node builds from S-014,
+that is four builds on two different nodes agreeing exactly.
+
+**So what differed about 896372?** It ran a **different revision of the script** — the pre-review
+version, before the M1/M4 patch. Its `.pt` was overwritten by the re-run, so its tensors no longer
+exist and the difference **cannot now be attributed definitively**. What is bounded: every scalar
+summary matched to 4 dp (selected layer, TRAIN LOO rho, selected rank, the full layer grid, the
+full rank grid), and the seeded-random bases were identical, so whatever moved was small and
+data-path-local.
+
+**The honest statement, replacing S-014's:** the axis build is **bit-reproducible across every node
+and run that can still be compared**. One earlier build under a different script revision produced
+different basis hashes with identical scalar summaries; its tensors are gone, so the cause is
+**unexplained**, not "cross-node noise". Practical risk to the experiment remains **zero** — the
+basis is built once into a `.pt` that every arm reads.
+
+**Process lesson, and it is the reason this correction exists:** S-014 offered a *mechanism* ("BLAS
+noise") on the strength of a *pattern* (which bases differed), and the pattern was equally
+consistent with "a code change touched the data path". I labelled the measurement "pending" and
+then wrote the conclusion anyway. Rule reaffirmed: **a diagnosis stated before its confirming
+measurement is a hypothesis, and must be written as one.** Also: do not overwrite an artifact you
+are still using as a comparison baseline — copying only the JSON cost the ability to answer this.
