@@ -3653,3 +3653,35 @@ replicating it held-out needs **zero new code** and ~30 minutes.
 
 **Basket** (job 897145) is through its weight load and scoring: `BASE` done at 670 rows, `KO` in
 progress.
+
+---
+
+## S-061 — position-identity smoke PASSES; group E launched
+
+Job 897293, 24 rows, rel −1 and rel −6:
+
+| check | result |
+|---|---|
+| `rescue_rel_end_rows` recorded on the rows | `{-1: 24}` / `{-6: 24}` |
+| `n_rescue_positions` | **1 per row**, both arms |
+| rescue fired | **24 / 24**, both arms |
+| query span resolved | 28 positions, every row |
+| positions written per row | 4 = **1 position × the 4 readout forwards** (consistent with S-043's forward accounting) |
+
+**And the decisive check — the two named positions are not the same intervention:**
+
+```
+AT(-1) vs AT(-6) on 24 shared keys: 0 identical, max|diff| = 0.1092, mean|diff| = 0.0230
+mean y_install: AT(-1) = 0.6146   AT(-6) = 0.5919
+```
+
+Zero keys identical. Had the selection silently collapsed to the same position — the obvious failure
+mode for an off-by-one in a rel_end conversion, and this repo's most-repeated bug class — the two
+arms would have been byte-identical and the smoke would have "passed" on the first four checks
+alone. It is the *difference* between the arms that proves the flag is live, which is why it was
+worth running two positions rather than one.
+
+A first, non-inferential observation from 24 rows: **rel −1 (the last token of the span) gives a
+higher readout than rel −6**. That is a hint of non-uniformity, and it is recorded as a hint —
+24 rows, no domain-level statistics, no controls. **Group E launched** (5 arms × 670 rows, rel −1,
+−6, −11, −20, −28) to answer it properly against the ladder's k = 1 benchmark of **+0.00281**.
