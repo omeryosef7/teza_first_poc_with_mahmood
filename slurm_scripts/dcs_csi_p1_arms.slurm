@@ -5,6 +5,7 @@
 #   group C = the RANK-5 matched control distribution for KO_PLS         (10 arms + 1 anchor)
 #   group D = the POSITION ladder: full-state rescue at k of ~28 positions (7 arms)
 #   group E = POSITION IDENTITY: full-state rescue at ONE named rel_end position (5 arms)
+#   group F = LAYER control: BASE/KO/KO_FULL at a layer given as $5 (P1-j)
 #
 # WHY TWO GROUPS AND WHY KO_AXIS APPEARS IN BOTH. At ~29 min per 670-row readout arm, 17 arms do
 # not fit one allocation. The split is chosen so that everything the PREREGISTERED PRIMARY
@@ -35,7 +36,7 @@ source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh
 conda activate poc_stage2
 export PYTHONUNBUFFERED=1
 
-CW="${1:?codeword}"; AXIS="${2:?axis .pt}"; SPLIT="${3:?train|validation}"; GROUP="${4:?A|B}"
+CW="${1:?codeword}"; AXIS="${2:?axis .pt}"; SPLIT="${3:?train|validation}"; GROUP="${4:?A|B|C|D|E|F}"
 SNAP=/home/sharifm/students/matanbentov/hub/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659
 BANK="data/boombness_prompts/boombness_prompt_bank_ts116m_${CW}_bomb.jsonl"
 EXCL="runargs/dcs_cont/exclude_${CW}_bomb_sow_${SPLIT}.txt"
@@ -49,7 +50,18 @@ for l in open(bank):
     if (r.get('query_kind')=='semantic_one_word' and r.get('bank_block')=='cds_n4_sow'
         and r.get('condition')=='natural_doublespeak' and r['prompt_id'] not in ex): n+=1
 print(n)")
-LAYER=$(python -c "import json;print(json.load(open('${AXIS%.pt}.json'))['selected_layer'])")
+LAYER="${5:-}"
+if [ -z "$LAYER" ]; then
+  LAYER=$(python -c "import json;print(json.load(open('${AXIS%.pt}.json'))['selected_layer'])")
+else
+  # LAYER OVERRIDE (DCS-CSI-063 / P1-j). Basket's rescue ran at L18 and button's at L20 -- each
+  # codeword's own TRAIN-selected layer -- so the 53% vs 34% recovery gap is confounded between
+  # CODEWORD and LAYER. Running one codeword at the other's layer separates them. Only the
+  # whole-state arms are meaningful under an override: a subspace basis fit at one layer must not
+  # be written at another (review M2 refuses that), so group A's subspace arms will refuse and
+  # that is correct.
+  echo "[layer-override] using L$LAYER instead of the axis artifact's selected layer"
+fi
 RANK=$(python -c "import json;d=json.load(open('${AXIS%.pt}.json'));print(d.get('selected_rank',1))")
 echo "HOST=$(hostname) JOB=${SLURM_JOB_ID:-none} CW=$CW SPLIT=$SPLIT GROUP=$GROUP LAYER=$LAYER RANK=$RANK EXPECT_N=$NKEEP $(date -Is)"
 nvidia-smi --query-gpu=name --format=csv,noheader || true
@@ -87,6 +99,12 @@ elif [ "$GROUP" = "B" ]; then
   sub KO_AXIS_ANCHOR cand_rank1
   for j in 0 1 2 3;       do sub "KO_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done
   for i in 0 1 2 3 4 5;   do sub "KO_RAND${i}" "ctrl_random${i}"   cand_rank1; done
+elif [ "$GROUP" = "F" ]; then
+  # GROUP F -- the LAYER control (P1-j). Whole-state arms only: BASE and KO are layer-independent,
+  # and KO_FULL is the quantity whose recovery fraction we are trying to attribute.
+  echo ">>> BASE $(date -Is)";    $SB $COMMON                    --arm BASE    --tag ${P}_L${LAYER}_BASE
+  echo ">>> KO $(date -Is)";      $SB $COMMON $KO                --arm KO      --tag ${P}_L${LAYER}_KO
+  echo ">>> KO_FULL $(date -Is)"; $SB $COMMON $KO $R             --arm KO_FULL --tag ${P}_L${LAYER}_KO_FULL
 elif [ "$GROUP" = "E" ]; then
   # GROUP E -- POSITION IDENTITY (DCS-CSI-060). The ladder (group D) draws RANDOM subsets, so it
   # measures a position's AVERAGE contribution and found recovery linear in k (R^2 0.997). It

@@ -3742,3 +3742,61 @@ once knocked out, is restored proportionally more by the same intervention.
 
 **Still running on basket:** `KO_AXIS`, then `KO_PLS`, `KO_ORTH` — the subspace arms, which will say
 whether Phase 1's *negative* also transfers.
+
+---
+
+# S-063 — **the position-linearity result REPLICATES HELD-OUT.** R² = 0.994, consistency check exact again.
+
+VALIDATION position ladder complete (job 897291), 230 rows / 23 domains, same seven rungs.
+
+| k | recovery | CI95 | pos/neg | % of `KO_FULL` | obs / linear |
+|---|---|---|---|---|---|
+| 1 | +0.00319 | [−0.0002, +0.0072] | 14/9 | 3.4 % | 0.94× |
+| 2 | +0.00620 | [+0.0037, +0.0090] | 20/3 | 6.5 % | 0.91× |
+| 4 | +0.00692 | [+0.0004, +0.0129] | 17/6 | 7.3 % | 0.51× |
+| 8 | +0.02550 | [+0.0183, +0.0333] | 20/3 | 26.8 % | 0.94× |
+| 14 | +0.04690 | [+0.0351, +0.0592] | **23/0** | 49.4 % | 0.99× |
+| 20 | +0.06710 | [+0.0545, +0.0806] | 22/1 | 70.6 % | 0.99× |
+| 28 | +0.09502 | [+0.0767, +0.1145] | **23/0** | 100.0 % | 1.00× |
+
+**Through the origin: `recovery = 0.003349·k`, R² = 0.9939**, slope × 28 = 0.09377 against
+`KO_FULL` = 0.09502 — **ratio 0.987**.
+
+| | TRAIN | **VALIDATION** |
+|---|---|---|
+| through-origin R² | 0.9968 | **0.9939** |
+| slope × 28 / `KO_FULL` | 0.998 | **0.987** |
+| `KO_POS28` vs `KO_FULL` | 670/670 identical | **230/230 identical, max\|diff\| 0.000e+00** |
+
+> **The sprint's clearest positive mechanistic finding now stands on held-out data:** recovery of
+> semantic installation is **linear in the number of query-span positions restored**, with a slope
+> that extrapolates to the whole-state effect to within 1–2 %.
+
+The one noisy rung is **k = 4** (0.51× linear, CI [+0.0004, +0.0129]) — on 23 domains a single
+seeded draw can land badly, and its CI is wide enough to contain the linear prediction. TRAIN's k=4
+rung sat at 0.87×. Recorded rather than smoothed over.
+
+The `KO_POS28` consistency check is exact on **both** splits, so the ladder's subset mechanism
+provably reduces to the whole-state rescue in each.
+
+---
+
+## S-064 — P1-j launched: separating **codeword** from **layer** in the 53 % vs 34 % gap
+
+S-062 flagged that basket's rescue ran at **L18** and button's at **L20**, so the recovery-fraction
+gap is confounded. **Group F** is the control: `BASE`, `KO`, `KO_FULL` on **basket at L20** —
+button's layer — via a new `$5` layer-override argument to the launcher.
+
+Only whole-state arms are run under an override, deliberately: `BASE` and `KO` are
+layer-independent, `KO_FULL` is the quantity being attributed, and a **subspace basis fit at one
+layer must never be written at another** — review R3/M2's hard refusal would (correctly) reject
+that, so no subspace arm is attempted.
+
+**The reading is fixed now, before the arms land:**
+
+* basket@L20 recovery ≈ **53 %** (basket@L18) ⇒ the gap is **codeword**, not layer;
+* basket@L20 recovery ≈ **34 %** (button@L20) ⇒ the gap is **layer**, not codeword;
+* anything between ⇒ both contribute, and neither single-factor claim may be made.
+
+Job 897386. Until it reports, S-062's prohibition stands: **"recovery is codeword-dependent" may
+not be written.**
