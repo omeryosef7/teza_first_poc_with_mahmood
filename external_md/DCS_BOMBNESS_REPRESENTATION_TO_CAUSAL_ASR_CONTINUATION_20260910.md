@@ -11785,3 +11785,40 @@ control only runs if ko succeeds). If these clear the mkdir and load the model, 
 reproduce the ko generations exactly before the full 5 arms; if they still die, the residual cause is
 genuine preemption, now cleanly separable from the symlink bug. Standing GPU authorisation applies
 (CONT standing-run-authorization) — launched without a hold.
+
+### CONT-ENTRY 170 — 2026-09-15 — The identity smoke PASSES and the symlink fix holds: ko + self-rescue reproduces ko byte-for-byte (24/24) with the rescue genuinely firing. The interventional patch test (§44 #10) is now LAUNCHED — primary 3 arms on the sanctioned 180-row slot0 population.
+
+**Identity control PASS (the gate for the whole test).** ko smoke 895347 COMPLETED clean (24 rows,
+`frac_rows_scope_live 1.0`, `total_prefill_edits 11556`, `total_decode_edits 0`, `scope_violations {}`,
+`option_mass_gate PASS`), and self-rescue smoke 895348 COMPLETED. `dcs_cont_patch_identity.py` (content-
+safe: compares per-`prompt_id` generation SHA256 only, never the text) gives **MATCH 24 / MISMATCH 0 /
+only_ko 0 / only_self 0 → PASS**. Crucially the identity is NON-TRIVIAL: the self arm actually fired
+(`rescue_liveness {n_positions_written 24, n_forward_calls 192, fired true}`, donor self, positions
+query, layer 20) — it wrote 24 query positions and STILL reproduced ko exactly, which is precisely what a
+self-donor patch must do. So the unprecedented `target_surface_row_only` + `--rescue-positions query`
+composition writes back exactly what it read; a `clean`-donor rescue number is now interpretable.
+(Both smoke jobs first died on the dead `.cache/huggingface` symlink of CONT-169, then ran cleanly after
+the fix — confirming that bug, not preemption, was the blocker; 895348 also survived one killable requeue.)
+
+**Population built the sanctioned way (no TEST spent).** `dcs_cont_patch_population.py` reuses
+`dcs_cont_scope.filter_rows` (Scope.PRIMARY = slot0, Population.TRAIN_VAL) + `layerpos_map.load_split` +
+`EXCLUDED_DOMAINS` — the exact selection `dcs_cont_differ_arms.py` used, so the behavioural endpoint sits
+on the same rows the causal signal was measured on. From the 1160 behavioural / natural_doublespeak /
+dose-4 (`cds_n4`) button rows it keeps **180 slot0 / non-TEST / non-excluded rows across 90 domains**
+(census train 67 / validation 23; hygiene asserts: zero TEST-domain leak, zero excluded-domain leak).
+The `--exclude-prompt-ids` file is PROMPT-SIDE only (slot token + domain split); no outcome information
+enters it, and `--expect-n 180` refuses the run if the population is any other size.
+
+**Launched (button, primary arms, full 180, `--requeue`).** 895478 `CTRL` (no knockout), 895479 `KO`
+(A1 knockout, `target_surface_row_only`, band 6-14), 895480 `RESCUE_CLEAN` (ko + rescue query span from
+the clean forward, layer 20). Endpoint = **refusal recovery**, computed NATIVELY from generations (no
+judge; `score_behavior` makes no OpenAI call, so the classifier-blocked judge path does not gate the
+primary result — the secondary CR-002 content endpoint can be scored later in a clean session). Decision
+rule (pre-declared, CONT-167): RESCUE_CLEAN moves refusal materially from KO back toward CTRL, with the
+already-passed self identity and a yet-to-run size-match not spuriously recovering → §44 #10 PASS
+(query-side representation carries the effect); RESCUE_CLEAN stays at KO despite a valid patch → honest
+negative (correlate, not bottleneck). **Deferred on purpose:** the size-match control (arm 5,
+`--rescue-n-positions K`) until the test arm shows an effect worth controlling for, and the basket
+codeword until its own identity smoke passes at layer 18 (never pool button/basket). New tooling:
+`dcs_cont_patch_population.py`, `dcs_cont_patch_identity.py`, `runargs/patch/arm_*_button.txt`,
+`runargs/patch/exclude_button.txt`.
