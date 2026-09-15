@@ -2267,3 +2267,60 @@ reasons rather than deleted. Cost of *not* learning it would have been a group-B
 be compared) survives intact: n-350 is `geforce_rtx_3090`, matching group A's n-303. So candidate
 and controls remain architecture-matched, and the `KO_AXIS_ANCHOR` arm still measures only
 allocation-to-allocation drift.
+
+---
+
+## S-040 — **GATE 3 PASSES.** The instrument is capable, and the semantic endpoint delivers the resolution the refusal endpoint never had.
+
+`KO_FULL` complete. All three PR-CSI-001 gates, at full TRAIN scale (670 rows / **67 domains**),
+domain-clustered bootstrap (20 000 draws) and sign-flip randomisation:
+
+| gate | contrast | estimate | CI95 | pos / neg / tied | k | p |
+|---|---|---|---|---|---|---|
+| 1 manipulation | `KO − BASE` | **−0.20779** | [−0.22704, −0.18941] | **0 / 67 / 0** | 67 | < 1e−5 |
+| 2 identity | `KO_SELF − KO` | **+0.00000** | [0, 0] | 0 / 0 / **67** | 0 | — |
+| **3 capability** | **`KO_FULL − KO`** | **+0.07135** | **[+0.06127, +0.08204]** | **66 / 1 / 0** | **67** | **< 1e−5** |
+| — residual | `BASE − KO_FULL` | +0.13644 | [+0.12325, +0.14984] | 67 / 0 / 0 | 67 | < 1e−5 |
+
+**Recovery fraction of the knockout's installation loss: 0.3434, CI95 [0.3088, 0.3775].**
+
+### Gate 3 passes decisively — the subspace question is answerable, not CANNOT ANSWER
+
+Restoring the clean query-span state under the live knockout recovers **34 %** of the installation
+the knockout removed, on **66 of 67 domains**, with a CI nowhere near zero. So there *is* a capable
+instrument at this site and layer, and PR-CSI-001's CANNOT-ANSWER branch is closed. Whatever the
+subspace arms show, they will be interpretable.
+
+### The endpoint change was the single best decision in this sprint
+
+Compare the same causal question on the two endpoints:
+
+| | refusal (behavioural) | **semantic installation** |
+|---|---|---|
+| informative domains for the recovery contrast | **5–7** | **67** |
+| recovery fraction CI | [0.13, 0.71] *(l40s)* / [0.29, 0.88] *(3090)* | **[0.309, 0.378]** |
+| exact test | **pinned at its attainable floor in all three runs** | **not floor-limited** — p is limited by my Monte-Carlo sample (1/200001), while the exact floor is 1.36e−20 |
+| significance stable across hardware? | **no** — flips with GPU architecture (S-032) | not yet tested, but the margin is ~10× the hardware churn |
+
+The recovery-fraction CI is **an order of magnitude tighter** (width 0.07 vs 0.58), and for the
+first time in this sprint a p-value is **not** sitting on its own floor. Every floor-pinned result
+recorded today (S-002, S-026, S-030, S-032) was a symptom of a ~20-event endpoint; this is what the
+same intervention looks like measured on an instrument with headroom.
+
+Note the one dissenting domain in Gate 3 (66 positive, **1 negative**) — recorded rather than
+rounded away. With 67 domains and a CI of [+0.061, +0.082] it does not threaten the conclusion, but
+it is the honest count.
+
+### What is now unblocked
+
+`KO_AXIS` is running with the correct basis (`cand_rank1`, sha16 `d543d8f0a76e78cc`, fit on 67 TRAIN
+domains at rel-6/L20 — printed by the run and recorded on every row). Then `KO_PLS` and `KO_ORTH`.
+The preregistered primary contrast `KO_AXIS − KO_ORTH` becomes readable once group A finishes, and
+group B's control distribution follows from n-350.
+
+**Standing expectation, from S-031 and unchanged:** the 24-row smoke put `KO_AXIS` at KO's level
+while `KO_FULL` recovered. If that holds at 67 domains, PR-CSI-001's *failure* clause applies — the
+site carries the effect, the installation-predictive rank-1 component does not — and given S-036,
+that would be a **dissociation from a published positive** (arXiv:2605.18830 found the ICL concept
+subspace *is* causal, with its complement restoring 0 %). That would make the controls matter more,
+not less.
