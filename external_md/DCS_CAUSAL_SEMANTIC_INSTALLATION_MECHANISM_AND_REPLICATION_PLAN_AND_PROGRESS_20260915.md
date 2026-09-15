@@ -3275,3 +3275,41 @@ The position ladder (group D) is that investigation and is running.
   stated against its own controls rather than bounded by TRAIN's;
 * **basket** — the cross-codeword transfer test, not yet run for Phase 1;
 * **TEST** — untouched, and nothing here warrants spending it.
+
+---
+
+## S-055 — tick 23:15: rank-5 distribution at 8 controls; basket transfer launched; review round 3 running
+
+**Rank-5 control distribution, 8 of 10 controls** (6 random + 2 shuffled-label). Candidate
+`KO_PLS` = **+0.00302**:
+
+| control | recovery |
+|---|---|
+| `KO_R5RAND2` | **+0.00428** |
+| `KO_R5SHUF0` | +0.00130 |
+| `KO_R5SHUF1` | +0.00094 |
+| `KO_R5RAND5` | −0.00066 |
+| `KO_R5RAND1` | −0.00285 |
+| `KO_R5RAND3` | −0.00468 |
+| `KO_R5RAND0` | −0.00532 |
+| `KO_R5RAND4` | −0.00565 |
+
+**Candidate ranks 2 of 9** (rank p = 0.222, attainable floor 0.111) — still beaten by a *random*
+rank-5 subspace, and still inside its controls. The two shuffled-label rank-5 controls are both
+positive but smaller than the candidate, which is the first mild hint in the candidate's favour at
+this rank; with 2 more shuffled controls to come, and given the rank-5 arm **already failed to
+replicate on VALIDATION** (S-054, p = 0.146), this does not change the verdict and is noted only so
+the eventual full distribution is not read as a surprise.
+
+**Basket Phase-1 group A launched** (job 897145, n-303): `CW=basket SPLIT=train GROUP=A LAYER=18
+RANK=3 EXPECT_N=670` — the parameters come from the basket axis artifact, not from button's, which
+is the cross-codeword transfer test the plan requires (§3.3: codewords are transfer conditions,
+never pooled).
+
+**Adversarial review round 3 launched** on everything written since round 2 — the cross-arm key
+intersection, the one-sided specificity test, the P1-i distribution verdict, `allow_short`, and the
+`KNOWN_SHORT` automation. Round 2 found a BLOCKER in analysis code I had written the same day, so
+the analysis path is the right place to keep pointing this.
+
+**In flight:** group C (2 shuffled rank-5 left), group D position ladder (POS1, POS2 done; POS4
+running), validation group B (rank-1 control family, 5 arms started), basket group A.

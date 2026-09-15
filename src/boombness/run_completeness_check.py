@@ -93,6 +93,17 @@ KNOWN_ZERO = {
 }
 
 KNOWN_SHORT = {
+    "csi1_button_validation_KO_SHUF2_20260915_230226_3304224":
+        "DCS-CSI-047: 229 of 230 rows. 1 row(s) (adb82858dc0ed88c) REFUSED by the sprint's "
+        "own norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5): the control "
+        "basis was near-orthogonal to the KO->clean delta at some position, so rescaling its "
+        "projection would have amplified float noise into an arbitrary QR-gauge direction. "
+        "The guard declines to fabricate a control rather than silently writing a meaningless "
+        "one. The loss is OUTCOME-INDEPENDENT (the angle between a fixed basis and a fixed "
+        "delta, both determined before any readout; the delta is identical across arms) and is "
+        "not domain-clustered. dcs_csi_subspace_analyze.py intersects (domain, slot) KEYS "
+        "across all arms before averaging, so every arm is compared on the same key set. "
+        "Ledger: n_attempted 230, n_succeeded 229, n_failed 1.",
     "csi1_button_train_KO_RAND1_20260915_211634_3285581":
         "DCS-CSI-047: 669 of 670 rows. 1 row(s) (689fafc10328b62c) REFUSED by the sprint's "
         "own norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5): the control "
