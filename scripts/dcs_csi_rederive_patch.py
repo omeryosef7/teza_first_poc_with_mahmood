@@ -287,7 +287,40 @@ def slurm_node_for_job(job: str) -> dict:
         gpu = m.group(1) if m else None
     except Exception:                                        # noqa: BLE001
         pass
-    return {"job_ids": [str(job)], "node": node, "gpu": gpu, "source": "declared --slurm-job"}
+    # REVIEW R2-M4. Passing one job id for every arm makes `gpus` constant BY CONSTRUCTION, so the
+    # "SAME ARCHITECTURE" verdict was tautological and nothing tied the declared job to the run
+    # directories. The window check below is the missing link: every arm's DONE.json end timestamp
+    # must fall inside the declared job's [start, end] interval. A run that finished outside that
+    # window was not produced by that allocation, whatever the caller declared.
+    win = {"start": None, "end": None}
+    try:
+        o3 = subprocess.run(["sacct", "-j", str(job), "-n", "-P", "--format=Start,End"],
+                            capture_output=True, text=True, timeout=60).stdout
+        parts = [l.split("|") for l in o3.splitlines() if l.strip()]
+        if parts:
+            win = {"start": parts[0][0].strip(), "end": parts[0][1].strip()}
+    except Exception:                                        # noqa: BLE001
+        pass
+    return {"job_ids": [str(job)], "node": node, "gpu": gpu,
+            "source": "declared --slurm-job, VERIFIED against the job time window",
+            "job_window": win}
+
+
+def run_dir_in_job_window(run_dir, win):
+    """Did this run finish inside the declared allocation's time window? (review R2-M4)"""
+    import datetime
+    dj = os.path.join(run_dir, "DONE.json")
+    if not os.path.exists(dj) or not win.get("start") or not win.get("end"):
+        return None
+    try:
+        end_ts = json.load(open(dj))["end_ts"]
+        f = "%Y-%m-%dT%H:%M:%S"
+        t = datetime.datetime.strptime(end_ts, f)
+        s0 = datetime.datetime.strptime(win["start"], f)
+        s1 = datetime.datetime.strptime(win["end"], f) if win["end"] not in ("Unknown", "") else None
+        return (t >= s0) and (s1 is None or t <= s1)
+    except Exception:                                        # noqa: BLE001
+        return None
 
 
 def slurm_node_for_tag(tag: str) -> dict:
@@ -614,8 +647,20 @@ def main() -> int:
     # ---- hardware comparability ---------------------------------------------------------------
     gpus = {arm: hw[arm].get("gpu") for arm in want}
     nodes = {arm: hw[arm].get("node") for arm in want}
+    in_window = {}
+    if a.slurm_job:
+        win = hw[want[0]].get("job_window") or {}
+        for arm in want:
+            in_window[arm] = run_dir_in_job_window(dirs[arm], win)
+        bad_win = [arm for arm, ok in in_window.items() if ok is False]
+        if bad_win:
+            problems.append("declared --slurm-job %s does not own these arms: their DONE.json "
+                            "timestamps fall outside the job window %s: %s"
+                            % (a.slurm_job, win, bad_win))
     hw_verdict = ("SAME ARCHITECTURE" if len({g for g in gpus.values() if g}) == 1 and
                   all(gpus.values()) else "MIXED OR UNKNOWN -- NOT COMPARABLE")
+    if a.slurm_job and any(v is None for v in in_window.values()):
+        hw_verdict += " (job-window verification incomplete for some arms)"
     if hw_verdict != "SAME ARCHITECTURE":
         problems.append("hardware: arms did not all run on one GPU architecture: %r" % gpus)
 
@@ -639,6 +684,7 @@ def main() -> int:
         "hardware": {arm: {"node": nodes[arm], "gpu": gpus[arm], "job_ids": hw[arm].get("job_ids")}
                      for arm in want},
         "hardware_verdict": hw_verdict,
+        "arms_inside_declared_job_window": in_window,
         "knockout_target_token_histogram": ref_toks,
         "movable_events": movable,
         "liveness": liveness,

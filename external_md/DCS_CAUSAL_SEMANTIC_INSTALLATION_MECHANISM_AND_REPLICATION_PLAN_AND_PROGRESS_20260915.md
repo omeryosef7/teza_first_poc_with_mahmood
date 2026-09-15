@@ -2533,3 +2533,85 @@ is **−0.00076** (S-042), i.e. **6.6× inside** the tolerance, on 670 rows rath
 **One defect, six entries touched, two claims withdrawn, and the scientific conclusions intact.**
 That is the append-only log doing its job: every number above was recoverable because the raw arms
 were still on disk and each entry named the artifact it came from.
+
+---
+
+## S-044 — adversarial review round 2: **1 BLOCKER, 4 MAJOR — all real, all demonstrated, all fixed before the primary was read**
+
+`reports/DCS_CSI_CODE_REVIEW_PHASE1_R2.md`. Every finding was verified end-to-end by the reviewer
+rather than argued, and every one is a defect I would have shipped.
+
+### BLOCKER R2-B1 — the P1-f option-mass floor was **post-treatment selection**
+
+`option_mass` is an **outcome of the intervention**. Filtering each arm independently on it deletes
+an arm-dependent, outcome-correlated slice — a **collider** — and because the analyser then
+intersected only *domains* and never *slots*, the paired domain means were averages over
+**different slot sets**.
+
+Reproduced on the real arms (BASE vs KO, 67 TRAIN domains):
+
+| floor | OLD: rows kept BASE / KO | OLD `KO − BASE` | **FIXED** keys | **FIXED `KO − BASE`** |
+|---|---|---|---|---|
+| 0.00 | 670 / 670 | −0.2070 | 670 | **−0.2070** |
+| 0.05 | 586 / **658** | −0.2448 | 586 | **−0.2144** |
+| 0.20 | 435 / **582** | **−0.3297** | 435 | **−0.2299** |
+
+At floor 0.20 the buggy filter inflates the manipulation effect by **59 %** (−0.207 → −0.330),
+purely by keeping 147 more rows in KO than in BASE. **S-034's P1-f design was wrong**, and had I
+run the sensitivity as written it would have produced a spurious "the effect is even stronger on
+clean rows" result.
+
+**Fixed:** the retained key set is chosen **once**, from a single reference arm (default `BASE`, the
+un-intervened condition), and applied **identically to every arm**. The corrected sensitivity says
+the manipulation is **robust** to dropping thin rows (−0.207 → −0.214 → −0.230), which is a modest,
+believable dependence rather than a manufactured one. Stated openly: conditioning on BASE's option
+mass is still conditioning on a *measured* quantity and is not strictly pre-treatment — but it
+cannot differ between arms, which was the defect that mattered.
+
+### MAJOR R2-M1 — the identity arm was exempt from its own liveness VOID
+
+`KO_SELF` was the one rescued arm skipped by the `rescue_fired != expect_n` check — and it is
+precisely the arm whose null **is** the identity gate. A self-patch that never fires is
+byte-identical to KO, so the gate reads exactly 0.0 and passes for the worst possible reason. The
+reviewer demonstrated it: `rescue_fired: 0 of 100`, `VOID: []`, all gates true, `PRIMARY PASSES`.
+**This is the same shape as S-042's vacuous control, reached by a different route.** Fixed: no arm
+declaring a rescue is exempt.
+
+### MAJOR R2-M2 — the analyser never verified **arm identity**
+
+It trusted the arm *label*. The reviewer built a run set where candidate and comparator both
+carried `cand_rank1` and no basis at all, and it emitted a full contrast table with `VOID: []` — a
+publishable negative from **an arm contrasted with itself**. Fixed: the analyser now VOIDs unless
+candidate and comparator declare *different* basis keys, both declare one, the comparator is
+norm-matched, and the arms agree on knockout scope.
+
+### MAJOR R2-M3 — `--rescue-basis-key` without `--rescue-basis` ran the whole-state patch
+
+An unset shell variable in an sbatch line (a documented failure mode here) would run the
+**positive control** while labelling its rows with the subspace key — reporting `KO_FULL`'s 34 %
+recovery as the candidate's. The ORTH arm was caught by the existing norm-match guard; **the AXIS
+arm was not**. Fixed: refused outright.
+
+### MAJOR R2-M4 — my `--slurm-job` made the hardware VOID **tautological**
+
+I added `--slurm-job` in S-026 to fix a false VOID. It passes one job id for every arm, so `gpus`
+is constant *by construction* and "SAME ARCHITECTURE" could never fail — and nothing tied the
+declared job to the run directories. **Fixed with a real check rather than a softer verdict:** each
+arm's `DONE.json` end timestamp must fall inside the declared job's `sacct` [start, end] window; an
+arm outside it is a PROBLEM. Re-verified on the p0cmp replicate: still PASS, now non-vacuously.
+
+### Refuted by test (recorded, because negative review findings are findings)
+
+The reviewer's own tests **cleared**: both stale-cell suspicions (`_rescue_ctx` / `_rpos_row` are
+reset every row), `holm()` (2000 randomised cases against a reference implementation, **0
+mismatches**), the `.replace("patch_", …, 1)` anchoring, `allow_query_kinds` default equivalence
+across 22 call sites, and readout-forward token alignment (0/120 tokenizer prefix breaks).
+
+### The pattern worth naming
+
+**Three separate defects this sprint produced a control that could not fail** — S-042's glob
+collision, R2-M1's exemption, R2-M2's missing identity check. Each arrived by a different route and
+each would have presented as a *clean pass*. The generalisation for the rest of this sprint:
+
+> **Every control must be tested against a deliberately broken input**, not merely observed to
+> pass. A control that has only ever been seen to succeed has not been shown to be a control.

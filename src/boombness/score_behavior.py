@@ -2418,6 +2418,16 @@ def main() -> int:
                          "block is gated on --rescue-layer. Refusing rather than doing nothing.")
     if args.rescue_norm_match_key and not args.rescue_basis:
         raise SystemExit("--rescue-norm-match-key requires --rescue-basis")
+    # REVIEW R2-M3. Without this, --rescue-basis-key with an EMPTY --rescue-basis (an unset shell
+    # variable in an sbatch line -- a documented failure mode in this repo) runs the whole-state
+    # DonorPatch while the rows are labelled with the subspace key. The arm would then report the
+    # POSITIVE CONTROL's recovery as the candidate's. The ORTH arm is caught by the guard above;
+    # the AXIS arm was not.
+    if args.rescue_basis_key and not args.rescue_basis:
+        raise SystemExit("--rescue-basis-key %r was given without --rescue-basis. That would run "
+                         "the WHOLE-STATE rescue while labelling the rows with a subspace key, "
+                         "reporting the positive control's recovery as the candidate's."
+                         % args.rescue_basis_key)
     # SHELL-SAFE EMPTY. The SLURM wrapper word-splits BOOMB_ARGS deliberately, so an empty quoted
     # argument cannot survive the round trip -- `--answer-prefix ""` silently becomes the NEXT flag.
     # The pre-2026-08-18 behaviour therefore has to be reachable by a literal sentinel.

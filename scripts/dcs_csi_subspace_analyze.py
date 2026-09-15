@@ -40,6 +40,22 @@ rederive = _load("rederive", "scripts/dcs_csi_rederive_patch.py")
 lpm = _load("lpm", "scripts/dcs_cont_layerpos_map.py")
 
 
+def installation_with_option_mass_keys(run_dir, floor):
+    """The set of (domain, slot) keys whose option mass clears `floor` in THIS run."""
+    keep = set()
+    with open(os.path.join(run_dir, "results.jsonl"), encoding="utf-8") as fh:
+        for line in fh:
+            r = json.loads(line)
+            if r.get("query_kind") != "semantic_one_word" or r.get("cell") != "C":
+                continue
+            om = r.get("option_mass")
+            if om is None:
+                raise SystemExit("row %r has no option_mass" % r.get("prompt_id"))
+            if om >= floor:
+                keep.add((r["domain"], lpm.family_slot(r["family_id"])))
+    return keep, None
+
+
 def installation_with_option_mass(run_dir, floor):
     """`load_installation` plus a per-row OPTION-MASS floor (sprint item P1-f).
 
@@ -88,21 +104,46 @@ def _assert_matches_loader(run_dir):
                          "the sensitivity arm must measure the same thing as the primary" % run_dir)
 
 
-def arm_domain_means(run_dir, assign, keep_split, option_mass_floor=0.0):
-    """(domain -> mean y_install over that domain's slots) for one arm, restricted to one split."""
-    if option_mass_floor > 0.0:
-        inst, n_dropped = installation_with_option_mass(run_dir, option_mass_floor)
-        n_rows, kinds = len(inst), ["semantic_one_word"]
-    else:
-        _assert_matches_loader(run_dir)
-        inst, n_rows, kinds = lpm.load_installation(run_dir)
-        n_dropped = 0
+def arm_domain_means(run_dir, assign, keep_split, keep_keys=None):
+    """(domain -> mean y_install over that domain's slots) for one arm, restricted to one split.
+
+    `keep_keys`, when given, is the SINGLE key set used for EVERY arm -- see `reference_key_set`.
+    """
+    _assert_matches_loader(run_dir)
+    inst, n_rows, kinds = lpm.load_installation(run_dir)
+    n_dropped = 0
+    if keep_keys is not None:
+        before = len(inst)
+        inst = {k: v for k, v in inst.items() if k in keep_keys}
+        n_dropped = before - len(inst)
     by = {}
     for (dom, slot), p in inst.items():
         if assign.get(dom) != keep_split:
             continue
         by.setdefault(dom, []).append(p)
     return {d: sum(v) / len(v) for d, v in by.items()}, n_rows, kinds, n_dropped
+
+
+def reference_key_set(run_dir, floor):
+    """The P1-f retained key set, defined from ONE reference arm and then applied to ALL arms.
+
+    *** REVIEW R2-B1, AND IT WAS A BLOCKER. ***
+    The first version applied the option-mass floor to each arm INDEPENDENTLY. `option_mass` is an
+    OUTCOME of the intervention, so that is selection on a post-treatment variable -- a collider --
+    and it deletes an arm-dependent, outcome-correlated slice. Because the analyser then intersected
+    only DOMAINS and never slots, the paired domain means were averages over DIFFERENT slot sets.
+    Measured on the real arms: at floor 0.20, BASE kept 435/670 rows and KO kept 582, and the
+    manipulation contrast read -0.330 instead of -0.221 -- a **49 % inflation** manufactured
+    entirely by the filter.
+
+    The fix is to choose the key set ONCE, from the reference arm (default BASE, the un-intervened
+    condition, i.e. the closest thing here to a pre-treatment measurement), and hold it fixed across
+    every arm. That is still conditioning on a measured quantity and is NOT strictly pre-treatment --
+    stated openly rather than hidden -- but it cannot differ between arms, which is the defect that
+    mattered.
+    """
+    inst, _ = installation_with_option_mass_keys(run_dir, floor)
+    return inst
 
 
 def row_meta(run_dir):
@@ -190,6 +231,10 @@ def main() -> int:
     ap.add_argument("--self-arm", default="KO_SELF")
     ap.add_argument("--split", default="train", choices=("train", "validation"))
     ap.add_argument("--n-boot", type=int, default=20000)
+    ap.add_argument("--option-mass-reference", default="BASE",
+                    help="P1-f: the ONE arm whose option mass defines the retained key set, then "
+                         "applied identically to every arm. Never per-arm -- option_mass is an "
+                         "outcome, so a per-arm filter is post-treatment selection (review R2-B1).")
     ap.add_argument("--option-mass-floor", type=float, default=0.0,
                     help="P1-f sensitivity: drop rows whose (concept, codeword) option mass is "
                          "below this before computing y_install. 0.0 = the frozen protocol, which "
@@ -203,12 +248,21 @@ def main() -> int:
     assign = lpm.load_split()
     arms = [x for x in a.arms.split(",") if x]
     dirs, dmeans, meta = {}, {}, {}
+    keep_keys = None
+    if a.option_mass_floor > 0.0:
+        if a.option_mass_reference not in arms:
+            raise SystemExit("--option-mass-reference %r is not among --arms" % a.option_mass_reference)
+        _refdir = rederive.strict_run_dir("%s_%s" % (a.tag_prefix, a.option_mass_reference),
+                                          a.expect_n, row_file="results.jsonl")
+        keep_keys = reference_key_set(_refdir, a.option_mass_floor)
+        print("[P1-f] key set from reference arm %s at floor %g: %d keys retained"
+              % (a.option_mass_reference, a.option_mass_floor, len(keep_keys)))
     for arm in arms:
         d = rederive.strict_run_dir("%s_%s" % (a.tag_prefix, arm), a.expect_n,
                                     row_file="results.jsonl")
         dirs[arm] = d
         dmeans[arm], n_inst, kinds, n_drop = arm_domain_means(
-            d, assign, a.split, a.option_mass_floor)
+            d, assign, a.split, keep_keys)
         meta[arm] = row_meta(d)
         # BANK IDENTITY. `prompt_id` is derived from the row's AXES, not its text, so it is 100%
         # shared between the button and basket banks (measured: 4002/4002), while `prompt_sha16`
@@ -259,7 +313,12 @@ def main() -> int:
                             % (arm, m["prefill_edits_min"]))
             if m["decode_edits_total"]:
                 void.append("%s: %d decode-time edits (must be 0)" % (arm, m["decode_edits_total"]))
-        if arm.startswith("KO_") and arm != a.self_arm:
+        # REVIEW R2-M1. The identity arm was EXEMPT from this check -- and it is precisely the arm
+        # whose null IS a gate. A self-patch that never fires is byte-identical to KO, so the
+        # identity gate reads exactly 0.0 and PASSES for the worst possible reason. Demonstrated by
+        # the reviewer end-to-end: rescue_fired 0/100, VOID [], all gates true, "PRIMARY PASSES".
+        # No arm that declares a rescue is exempt.
+        if arm.startswith("KO_") and arm != a.base_arm and arm != a.ko_arm:
             if m["rescue_fired"] != a.expect_n:
                 void.append("%s: rescue fired on %d of %d rows" % (arm, m["rescue_fired"], a.expect_n))
         if len({tuple(meta[x]["rescue_layers"]) for x in arms if meta[x]["rescue_layers"]}) > 1:
@@ -273,6 +332,36 @@ def main() -> int:
     test_in = [d for d in doms if assign.get(d) == "test"]
     if test_in:
         void.append("TEST LEAK: %s" % test_in[:5])
+
+    # ---- REVIEW R2-M2: ARM IDENTITY. The analyser trusted the arm LABEL and never checked that
+    # the arms actually differ in the way their names claim. The reviewer produced a run set in
+    # which the candidate and the comparator both carried `cand_rank1` and no basis at all, and it
+    # emitted a full contrast table with VOID [] -- a publishable negative from an arm contrasted
+    # with itself. `dcs_csi_rederive_patch.ARM_SPEC` does this job for its arms; this had no
+    # equivalent. These checks are that equivalent.
+    _cand, _comp = a.candidate_arm, a.comparator_arm
+    if _cand in meta and _comp in meta:
+        ck = meta[_cand]["basis_keys"]
+        pk = meta[_comp]["basis_keys"]
+        if not ck:
+            void.append("%s declares no rescue_basis_key -- it is not a subspace arm" % _cand)
+        if not pk:
+            void.append("%s declares no rescue_basis_key -- it is not a subspace arm" % _comp)
+        if ck and pk and ck == pk:
+            void.append("candidate %s and comparator %s used the SAME basis key %s -- this would "
+                        "contrast an arm with itself" % (_cand, _comp, ck))
+        if not meta[_comp]["norm_match_keys"]:
+            void.append("%s is not norm-matched (no rescue_norm_match_key) -- it cannot be the "
+                        "matched-dose comparator" % _comp)
+    for arm in arms:
+        if meta[arm].get("rescue_basis") is None and arm not in (a.base_arm, a.ko_arm, a.self_arm,
+                                                                 a.full_arm):
+            void.append("%s carries rescue_basis=None but is treated as a subspace arm" % arm)
+    # every arm must agree on the intervention it is NOT varying
+    for fld in ("knockout_scopes",):
+        vals = {tuple(meta[x][fld]) for x in arms if x != a.base_arm}
+        if len(vals) > 1:
+            void.append("arms disagree on %s: %s" % (fld, sorted(vals)))
 
     # ---- norm matching: the candidate and every norm-matched control must agree per row --------
     cand_norm = (meta.get(a.candidate_arm) or {}).get("written_norm")
