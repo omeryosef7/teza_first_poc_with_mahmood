@@ -6,6 +6,7 @@
 #   group D = the POSITION ladder: full-state rescue at k of ~28 positions (7 arms)
 #   group E = POSITION IDENTITY: full-state rescue at ONE named rel_end position (5 arms)
 #   group F = LAYER control: BASE/KO/KO_FULL at a layer given as $5 (P1-j)
+#   group G = FINE SCAN of the span tail: rel -2,-3,-4,-5,-8 (5 arms)
 #
 # WHY TWO GROUPS AND WHY KO_AXIS APPEARS IN BOTH. At ~29 min per 670-row readout arm, 17 arms do
 # not fit one allocation. The split is chosen so that everything the PREREGISTERED PRIMARY
@@ -99,6 +100,16 @@ elif [ "$GROUP" = "B" ]; then
   sub KO_AXIS_ANCHOR cand_rank1
   for j in 0 1 2 3;       do sub "KO_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done
   for i in 0 1 2 3 4 5;   do sub "KO_RAND${i}" "ctrl_random${i}"   cand_rank1; done
+elif [ "$GROUP" = "G" ]; then
+  # GROUP G -- FINE SCAN of the span's tail (DCS-CSI-066). Group E found rel-1 carrying 6.1x a
+  # random position while rel-6, -11, -20, -28 carry ~nothing, so the effect is concentrated near
+  # the END of the query span rather than spread over it. This maps the concentration at
+  # single-position resolution over the last stretch.
+  for RE in -2 -3 -4 -5 -8; do
+    NAME="KO_AT$(echo $RE | tr -d '-')"
+    echo ">>> ${NAME} (rel_end ${RE}) $(date -Is)"
+    $SB $COMMON $KO $R --rescue-rel-end-rows "$RE" --arm "$NAME" --tag "${P}_${NAME}"
+  done
 elif [ "$GROUP" = "F" ]; then
   # GROUP F -- the LAYER control (P1-j). Whole-state arms only: BASE and KO are layer-independent,
   # and KO_FULL is the quantity whose recovery fraction we are trying to attribute.

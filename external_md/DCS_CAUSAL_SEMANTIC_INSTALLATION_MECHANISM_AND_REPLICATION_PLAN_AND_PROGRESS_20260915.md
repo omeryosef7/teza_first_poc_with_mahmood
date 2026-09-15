@@ -3863,3 +3863,69 @@ If it does not survive, the negative transfers and Phase 1's conclusion stands u
 
 **Either way the experiment that decides it is running, and no claim is being made in the
 meantime.** Recording the reasoning now, before the data, is the point.
+
+---
+
+# S-066 — **CORRECTION: the effect is NOT uniform across the span. It is concentrated at the LAST position — and the probe site is causally inert.**
+
+Group E complete: five arms, each restoring the full clean state at exactly **one named** position.
+Benchmark: the ladder's **random** single position = **+0.00281**; a uniform span would predict
+`KO_FULL/28` = **+0.00252**.
+
+| position | recovery | CI95 | pos/neg | × random single |
+|---|---|---|---|---|
+| **rel −1 (last token of the span)** | **+0.01721** | **[+0.01540, +0.01906]** | **67 / 0** | **6.12×** |
+| rel −6 (**the site the axis was fit at**) | +0.00071 | [+0.00003, +0.00139] | 39/28 | 0.25× |
+| rel −11 (**`cw_query`, the row the knockout edits**) | **−0.00025** | [−0.00100, +0.00052] | 26/41 | −0.09× |
+| rel −20 | −0.00013 | [−0.00074, +0.00044] | 34/33 | −0.05× |
+| rel −28 (first) | −0.00061 | [−0.00118, −0.00004] | 26/41 | −0.22× |
+
+**`rel −1` alone recovers 24.4 % of the entire whole-state effect from 1 of 28 positions, on
+67 of 67 domains.** The other four named positions sum to ≈ 0.
+
+## ⚠ CORRECTION to S-059 and S-063: "linear in k" does NOT mean "uniform"
+
+S-059 and S-063 reported the position ladder's linearity (R² = 0.997 TRAIN, 0.994 VALIDATION) and
+concluded *"each query-span position contributes an equal, additive ~1/28 of the effect"* and
+*"no privileged position"*. **That inference was wrong, and group E is the disproof.**
+
+The error is a sampling artifact I should have seen: the ladder draws **random** k-subsets, so a
+subset contains any given position with probability k/28. **A single dominant position therefore
+also produces a perfectly linear E[recovery] ∝ k.** Linearity under random sampling cannot
+distinguish "uniform" from "concentrated" — both give the same curve. The ladder measured the
+**average** contribution correctly; I over-read it as the **per-position** contribution.
+
+**WITHDRAWN:** *"each position contributes an equal, additive ~1/28"*, *"no privileged position"*,
+*"the answer to 'is it localised?' is a quantified no"* (S-059, repeated S-063).
+**RETAINED:** the linearity measurements themselves, the R² values, and the exact `KO_POS28`
+consistency checks — those are facts about the ladder and remain correct. Their *interpretation*
+changes from "uniform" to "consistent with concentration, and silent between the two".
+
+This is the sprint's most consequential self-correction: it turned an apparent absence-of-structure
+into **evidence of strong structure**, and it was only reachable because the ladder's caveat
+("measures the average contribution, not whether particular positions differ", S-059) was written
+down at the time and then acted on.
+
+## The second finding: **the observational probe site is causally near-inert**
+
+`rel −6` is the site the installation axis was fit at — the peak of the query-probe grid, ρ = 0.5935
+(S-013), the site every Phase-1 subspace arm wrote to. Restoring it **in full** recovers
+**+0.00071**, a quarter of a random position and **4 % of what `rel −1` recovers**.
+
+And `rel −11` (`cw_query`) — the codeword row the A1 knockout **actually edits** — recovers
+**nothing** (−0.00025, CI spanning zero, 26/41 domains).
+
+> **The position that best PREDICTS installation is not the position that CAUSES it, and neither is
+> the position the intervention targets.**
+
+This retroactively illuminates Phase 1's null. The subspace arms restored a 1- or 5-dimensional
+component **across the whole span**, dominated by 27 positions that carry almost no causal weight.
+A directional probe fit at a causally-inert site is not an obviously promising causal candidate —
+which is visible only now, from the causal side.
+
+## Launched: group G, a fine scan of the tail
+
+**Job 897431**: rel −2, −3, −4, −5, −8, to map how sharply the concentration falls off. `rel −1`
+gives 24 % of the full effect; the remaining ~76 % has to live somewhere, and the four sampled
+positions from −6 outward have ruled themselves out. The natural hypothesis is that it is carried
+by the last handful of positions.
