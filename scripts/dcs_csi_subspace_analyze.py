@@ -341,6 +341,24 @@ def main() -> int:
             void.append("%s: attn_impl=%r (the knockout requires eager)" % (x, meta[x]["attn_impl"]))
         if meta[x]["dtype"] != "bfloat16":
             void.append("%s: dtype=%r" % (x, meta[x]["dtype"]))
+    # REVIEW R3-M6. BASE was exempt from EVERY liveness check, so a BASE arm carrying a live
+    # knockout and live rescue hooks passed with VOID [] and all three gates true -- and BASE is
+    # the denominator of the manipulation gate and the recovery fraction. The sibling verifier
+    # (dcs_csi_rederive_patch) has this assertion; this one did not.
+    _b = meta.get(a.base_arm)
+    if _b is not None:
+        if _b["prefill_edits_min"]:
+            void.append("%s (the BASE arm) has a LIVE knockout (min prefill edits=%s) -- it must "
+                        "be unintervened" % (a.base_arm, _b["prefill_edits_min"]))
+        if _b["decode_edits_total"]:
+            void.append("%s (the BASE arm) has %d decode-time edits" % (a.base_arm,
+                                                                        _b["decode_edits_total"]))
+        if _b["rescue_fired"]:
+            void.append("%s (the BASE arm) fired a rescue on %d rows -- it must be unintervened"
+                        % (a.base_arm, _b["rescue_fired"]))
+        if _b.get("rescue_basis") or _b["basis_keys"]:
+            void.append("%s (the BASE arm) declares a rescue basis %r" % (a.base_arm,
+                                                                          _b["basis_keys"]))
     for arm in arms:
         m = meta[arm]
         if m["n_rows"] != a.expect_n and (a.expect_n - m["n_rows"]) > a.allow_short:
@@ -423,6 +441,13 @@ def main() -> int:
         # place. The comparison is therefore per prompt_id over the intersection.
         _cw = (meta.get(a.candidate_arm) or {}).get("written_norm_by_pid") or {}
         _aw = m.get("written_norm_by_pid") or {}
+        # REVIEW R3-M5. If the CANDIDATE records no written_norm (e.g. --candidate-arm KO_FULL,
+        # whose whole-state DonorPatch emits none), `_cw` is empty and this whole check silently
+        # evaporated -- a mismatched control then passed with VOID []. A norm-matched control
+        # whose reference cannot be read is not checkable, and that is a VOID, not a pass.
+        if _aw and not _cw:
+            void.append("%s declares a norm-match but the candidate arm %r records no written_norm "
+                        "-- the match cannot be verified" % (arm, a.candidate_arm))
         if _cw and _aw:
             shared = set(_cw) & set(_aw)
             if not shared:
@@ -477,8 +502,9 @@ def main() -> int:
         b = rederive.boot_paired_diff(doms, dmeans[x], dmeans[y], a.n_boot, 20260915)
         e = rederive.exact_signflip(doms, dmeans[x], dmeans[y])
         b.update({"p_two_sided": e["p_two_sided"], "p_floor": e["p_floor"],
+                  "p_floor_basis": e.get("p_floor_basis"),
                   "k_informative_domains": e["k_informative_domains"], "test_mode": e["mode"],
-                  "p_at_its_floor": abs(e["p_two_sided"] - e["p_floor"]) < 1e-12})
+                  "p_at_its_floor": e["p_two_sided"] <= e["p_floor"] * (1 + 1e-9)})
         return b
 
     C = {}
@@ -571,14 +597,29 @@ def main() -> int:
                 "single_comparator_verdict_SUPPRESSED": (
                     "would have said %s against --comparator-arm %s; not reported, see S-050"
                     % ("PASS" if single_ok else "FAIL", a.comparator_arm))}
-            if rank == 1 and rank_p < 0.05:
+            # REVIEW R3-B1. The previous rule required `rank == 1 AND rank_p < 0.05`, but
+            # rank_p = rank/(n+1) bottoms out at 1/(n+1) -- so PASS needed n >= 20 controls and was
+            # DEAD CODE on every run in the record (n = 10, 8, 4). Worse, the else-branch then
+            # printed "It is INSIDE the controls, not above them" even at rank 1, which is simply
+            # false. Two separate facts are now reported separately: WHERE the candidate sits, and
+            # WHETHER the control count could certify it.
+            attainable = dist["rank_p_floor"] < 0.05
+            if rank == 1 and attainable:
                 out["VERDICT"] = ("PRIMARY PASSES on split=%s -- candidate is strictly the largest "
-                                  "of %d controls (rank p=%.4g)" % (a.split, n, rank_p))
+                                  "of %d controls (rank p=%.4g < 0.05)" % (a.split, n, rank_p))
+            elif rank == 1:
+                out["VERDICT"] = (
+                    "PRIMARY INCONCLUSIVE on split=%s -- the candidate is strictly the LARGEST of "
+                    "its %d controls, but with only %d controls the attainable rank-p floor is "
+                    "%.4g, which is above 0.05. Being top of the distribution is real; certifying "
+                    "it at alpha=0.05 needs at least %d controls. NOT a pass and NOT a failure."
+                    % (a.split, n, n, dist["rank_p_floor"], 19))
             else:
                 out["VERDICT"] = (
                     "PRIMARY DOES NOT PASS on split=%s -- the candidate ranks %d of %d in its own "
-                    "control distribution (rank p=%.4g, attainable floor %.4g). It is INSIDE the "
-                    "controls, not above them." % (a.split, rank, n + 1, rank_p, dist["rank_p_floor"]))
+                    "control distribution (rank p=%.4g, attainable floor %.4g): %d control(s) "
+                    "recover at least as much as it does. It is INSIDE the controls, not above "
+                    "them." % (a.split, rank, n + 1, rank_p, dist["rank_p_floor"], rank - 1))
         elif single_ok:
             out["VERDICT"] = ("PRIMARY PASSES on split=%s -- candidate beats its norm-matched "
                               "comparator (NOTE: only %d control(s) present; a single comparator is "

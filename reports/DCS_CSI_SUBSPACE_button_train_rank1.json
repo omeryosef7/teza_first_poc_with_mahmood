@@ -9164,10 +9164,11 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 4.9999750001249995e-06,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
-   "p_at_its_floor": false
+   "p_at_its_floor": true
   },
   "identity_self_minus_ko": {
    "point": -0.0007,
@@ -9182,7 +9183,8 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.13505932470337648,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false
@@ -9200,10 +9202,11 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 4.9999750001249995e-06,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
-   "p_at_its_floor": false
+   "p_at_its_floor": true
   },
   "PRIMARY_candidate_minus_comparator": {
    "point": 0.00042,
@@ -9218,7 +9221,8 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.27861360693196535,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false
@@ -9236,7 +9240,8 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.24460877695611521,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false
@@ -9254,10 +9259,11 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 4.9999750001249995e-06,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
-   "p_at_its_floor": false
+   "p_at_its_floor": true
   },
   "recovery_KO_AXIS_minus_ko": {
    "point": 0.0004,
@@ -9272,7 +9278,8 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.24460877695611521,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false
@@ -9290,7 +9297,8 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.9648451757741211,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false
@@ -9308,7 +9316,8 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.12445937770311148,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false
@@ -9326,7 +9335,8 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.7321963390183049,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false
@@ -9344,7 +9354,8 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.0009149954250228749,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false
@@ -9362,7 +9373,8 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.00029499852500737496,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false
@@ -9380,7 +9392,8 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.011869940650296748,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false
@@ -9398,7 +9411,8 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.8952555237223814,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false
@@ -9416,7 +9430,8 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 4.9999750001249995e-05,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false
@@ -9434,7 +9449,8 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.2220638896805516,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false
@@ -9452,7 +9468,8 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.28659856700716496,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false
@@ -9470,7 +9487,8 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.8425957870210649,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false
@@ -9488,12 +9506,13 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.02150989245053775,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false,
    "p_one_sided_candidate_beats_control": 0.010599947000264998,
-   "p_one_sided_floor": 6.776263578034403e-21
+   "p_one_sided_floor": 4.9999750001249995e-06
   },
   "specificity_candidate_minus_KO_SHUF1": {
    "point": 0.00029,
@@ -9508,12 +9527,13 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.47565762171189147,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false,
    "p_one_sided_candidate_beats_control": 0.23617381913090435,
-   "p_one_sided_floor": 6.776263578034403e-21
+   "p_one_sided_floor": 4.9999750001249995e-06
   },
   "specificity_candidate_minus_KO_SHUF2": {
    "point": -0.00063,
@@ -9528,12 +9548,13 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.11824440877795611,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false,
    "p_one_sided_candidate_beats_control": 0.9402602986985065,
-   "p_one_sided_floor": 6.776263578034403e-21
+   "p_one_sided_floor": 4.9999750001249995e-06
   },
   "specificity_candidate_minus_KO_SHUF3": {
    "point": 0.00178,
@@ -9548,12 +9569,13 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.00010499947500262499,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false,
    "p_one_sided_candidate_beats_control": 4.4999775001124996e-05,
-   "p_one_sided_floor": 6.776263578034403e-21
+   "p_one_sided_floor": 4.9999750001249995e-06
   },
   "specificity_candidate_minus_KO_RAND0": {
    "point": 0.00139,
@@ -9568,12 +9590,13 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.0006799966000169999,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false,
    "p_one_sided_candidate_beats_control": 0.00034999825000874994,
-   "p_one_sided_floor": 6.776263578034403e-21
+   "p_one_sided_floor": 4.9999750001249995e-06
   },
   "specificity_candidate_minus_KO_RAND1": {
    "point": 0.00036,
@@ -9588,12 +9611,13 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.4117079414602927,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false,
    "p_one_sided_candidate_beats_control": 0.20497397513012436,
-   "p_one_sided_floor": 6.776263578034403e-21
+   "p_one_sided_floor": 4.9999750001249995e-06
   },
   "specificity_candidate_minus_KO_RAND2": {
    "point": -0.00118,
@@ -9608,12 +9632,13 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.002204988975055125,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false,
    "p_one_sided_candidate_beats_control": 0.9988150059249704,
-   "p_one_sided_floor": 6.776263578034403e-21
+   "p_one_sided_floor": 4.9999750001249995e-06
   },
   "specificity_candidate_minus_KO_RAND3": {
    "point": -9e-05,
@@ -9628,12 +9653,13 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.8594357028214858,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false,
    "p_one_sided_candidate_beats_control": 0.5683071584642077,
-   "p_one_sided_floor": 6.776263578034403e-21
+   "p_one_sided_floor": 4.9999750001249995e-06
   },
   "specificity_candidate_minus_KO_RAND4": {
    "point": 0.00078,
@@ -9648,12 +9674,13 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.034829825850870744,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false,
    "p_one_sided_candidate_beats_control": 0.017654911725441372,
-   "p_one_sided_floor": 6.776263578034403e-21
+   "p_one_sided_floor": 4.9999750001249995e-06
   },
   "specificity_candidate_minus_KO_RAND5": {
    "point": 0.00033,
@@ -9668,12 +9695,13 @@
    "n_boot": 20000,
    "draws_dropped": 0,
    "p_two_sided": 0.44613776931115345,
-   "p_floor": 1.3552527156068805e-20,
+   "p_floor": 4.9999750001249995e-06,
+   "p_floor_basis": "monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by the test that ran",
    "k_informative_domains": 67,
    "test_mode": "monte-carlo(200000)",
    "p_at_its_floor": false,
    "p_one_sided_candidate_beats_control": 0.22235888820555896,
-   "p_one_sided_floor": 6.776263578034403e-21
+   "p_one_sided_floor": 4.9999750001249995e-06
   }
  },
  "domain_means": {
@@ -10790,5 +10818,5 @@
   "rank_p_floor": 0.0909,
   "single_comparator_verdict_SUPPRESSED": "would have said FAIL against --comparator-arm KO_ORTH; not reported, see S-050"
  },
- "VERDICT": "PRIMARY DOES NOT PASS on split=train -- the candidate ranks 4 of 11 in its own control distribution (rank p=0.3636, attainable floor 0.0909). It is INSIDE the controls, not above them."
+ "VERDICT": "PRIMARY DOES NOT PASS on split=train -- the candidate ranks 4 of 11 in its own control distribution (rank p=0.3636, attainable floor 0.0909): 3 control(s) recover at least as much as it does. It is INSIDE the controls, not above them."
 }

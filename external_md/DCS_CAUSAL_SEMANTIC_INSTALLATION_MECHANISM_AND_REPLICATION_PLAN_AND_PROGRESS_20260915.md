@@ -3372,3 +3372,99 @@ against the same positive control.
 * This does **not** rescue the rank-1 candidate: the axis remains 4th of 11 against its controls on
   TRAIN and fails the primary on both splits. What the ladder adds is the *shape* of the
   distribution, not a different verdict about directions.
+
+---
+
+# S-057 — adversarial review round 3: **1 BLOCKER + 6 MAJOR in my own analysis code.** All fixed. Two affect how earlier results must be *worded*; none reverses a scientific conclusion.
+
+`reports/DCS_CSI_CODE_REVIEW_PHASE1_R3.md`. Every finding verified end-to-end by the reviewer
+against the real analyser, several with synthetic 16-arm run sets.
+
+## BLOCKER R3-B1 — the P1-i verdict's PASS branch was **dead code**, and its FAIL text was false at rank 1
+
+`rank_p = rank/(n+1)` bottoms out at `1/(n+1)`, so `PASS` required **n ≥ 20 controls**. Every run in
+the record has n = 10 (floor 0.0909), 8 (0.111) or 4 (0.2). **The PASS branch could not fire on any
+run I have produced.** Worse, the `else` branch then printed *"It is INSIDE the controls, not above
+them"* **even at rank 1** — demonstrated on a synthetic set where the candidate beat all ten
+controls and the analyser still said it was inside them.
+
+**What this does and does not do to S-052/S-054.** The *verdict string* was doing no work, so
+"the primary fails" could not have come out otherwise. **But the substantive fact is independent of
+it and stands unchanged**: the candidate **ranks 4 of 11**, and **three controls — two random
+directions and one shuffled-label — recover at least as much as it does.** That is read straight
+off the control distribution, not off the verdict. The conclusion survives; the *reason I was
+entitled to state it* was thinner than I represented.
+
+**Fixed** with three outcomes instead of two, and the middle one is new and honest:
+* `PASS` — rank 1 **and** the attainable floor is below 0.05;
+* **`INCONCLUSIVE`** — rank 1 but too few controls to certify ("being top of the distribution is
+  real; certifying it at α = 0.05 needs ≥ 19 controls. NOT a pass and NOT a failure");
+* `DOES NOT PASS` — now naming how many controls beat the candidate.
+
+Re-run on TRAIN: *"ranks 4 of 11 (rank p = 0.3636, attainable floor 0.0909): **3 control(s) recover
+at least as much as it does**."*
+
+## MAJOR R3-M2 — `p_floor` described a test that did not run
+
+For k > 16 the test is a **Monte-Carlo sampler** whose smallest attainable p is `1/(N+1) = 5e−6`,
+but the artifact published the **exact-enumeration** floor `1/2^k` (e.g. 1.36e−20). So a p of
+**exactly 5e−6** — zero hits, the sampler saturated — was reported as `p_at_its_floor: false`
+beside a floor of 1e−20. **The repo's own "quote a p with its design's floor" rule was
+unenforceable for every contrast in this phase.**
+
+**Fixed**: the effective floor is now the floor of the test that ran, with both floors and a
+`p_floor_basis` string recorded. **This changes the wording of my headline positive result**:
+
+> `KO_FULL − KO`: p = 5e−6, **p_floor = 5e−6, `p_at_its_floor = True`**.
+
+**The honest statement is "p < 1e−5, at the sampler's resolution limit"** — *not* an astronomically
+small p. The weight of that result was never in the p anyway: it is in **CI [+0.0606, +0.0812] on
+66 of 67 domains**, and in its held-out replication (S-053). But I have been quoting "p < 1e−5" in a
+way that implied headroom the test did not have, and this corrects it.
+
+## MAJOR R3-M3 / R3-M4 — the TRAIN and VALIDATION primaries are not the same test
+
+VALIDATION has **no control family yet**, so it falls back to the single-comparator rule that P1-i
+itself calls "not a verdict" — and the S-050 caveat was attached only to the PASS branch, not the
+FAIL branch that actually fired. Separately, the PRIMARY uses a **two-sided** p for a directional
+question that P1-h made one-sided elsewhere. On the shipped validation data: two-sided **0.0875**,
+one-sided **0.0438**.
+
+**I am not switching the primary to one-sided.** Doing so *after* seeing that it crosses 0.05 is
+precisely the move this sprint has spent two days guarding against. Three things are true and all
+three go on the record:
+1. PR-CSI-001's success criterion is conjunctive — it requires **a CI excluding 0** as well as
+   p < 0.05. The validation CI is **[−0.00011, +0.00197]** and **includes zero**, so the primary
+   fails on the binding criterion **regardless of sidedness**.
+2. The one-sided p is **0.0438** and is recorded here, not hidden.
+3. Per P1-i the single-comparator statistic is **superseded** by the rank statistic once a control
+   family exists — and **validation group B is running**. The validation verdict will be restated
+   against its own controls, which is the comparison that actually settles it.
+
+## MAJOR R3-M5 / M6 / M7 — three checks that could not fail
+
+* **M5**: the norm-match VOID **evaporated** if the *candidate* arm recorded no `written_norm`
+  (reachable with `--candidate-arm KO_FULL`). A mismatched control then passed with `VOID: []`.
+  Fixed: an unverifiable match is a VOID.
+* **M6**: **`BASE` was exempt from every liveness check** — and BASE is the denominator of the
+  manipulation gate *and* the recovery fraction. A BASE arm with a live knockout *and* live rescue
+  hooks passed with all three gates true. Fixed with explicit assertions.
+* **M7**: `dcs_csi_known_short.py` **asserted things it never checked** — "outcome-independent",
+  "not domain-clustered" — and rendered a **capped** `failure_example_ids` list as exhaustive.
+  Fixed: the domain spread is now **measured** from the bank, the mechanism is labelled as a
+  mechanism rather than a verified property, and a possibly-truncated id list is labelled a sample.
+
+## Confirmed correct by the reviewer's own tests
+
+`exact_signflip_one_sided` (400 brute-force cases, 0 mismatches; negative mean → p = 1.0), `holm`
+(3000 randomised cases, 0 mismatches), the cross-arm key intersection (verified additively on the
+shipped artifact), `reference_key_set`, all of R2's fixes, and `strict_run_dir(allow_short)`.
+
+## The count so far
+
+**Four separate mechanisms this sprint have produced a check that could not fail** — S-042's glob
+collision, R2-M1's exemption, R2-M2's missing identity check, and now R3-M5/M6 — plus **R3-B1's
+inverse, a verdict that could not pass.** The rule adopted after round 2 (*"every control must be
+tested against a deliberately broken input"*) is the right one and I did not apply it to the
+verdict logic itself. **Extended: every VERDICT branch must be exercised on a synthetic input that
+should trigger it**, which is exactly how the reviewer found B1.

@@ -18,19 +18,48 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GUARD = os.path.join(REPO, "src/boombness/run_completeness_check.py")
 REASON_KEY = "norm-match DEGENERATE"
 
+# REVIEW R3-M7. The first template ASSERTED two things this script never checked -- that the loss
+# is "outcome-independent" and "not domain-clustered" -- and rendered `failure_example_ids` as if it
+# were the complete list, when common.py caps that field at 10 per reason. Both are now either
+# MEASURED (the domain spread is counted below) or stated as a mechanism rather than a verified
+# property, and the id list is labelled as a sample whenever it may be truncated.
 TEMPLATE = (
     '    "{rid}":\n'
-    '        "DCS-CSI-047: {have} of {want} rows. {nfail} row(s) ({ids}) REFUSED by the sprint\'s "\n'
-    '        "own norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5): the control "\n'
-    '        "basis was near-orthogonal to the KO->clean delta at some position, so rescaling its "\n'
-    '        "projection would have amplified float noise into an arbitrary QR-gauge direction. "\n'
-    '        "The guard declines to fabricate a control rather than silently writing a meaningless "\n'
-    '        "one. The loss is OUTCOME-INDEPENDENT (the angle between a fixed basis and a fixed "\n'
-    '        "delta, both determined before any readout; the delta is identical across arms) and is "\n'
-    '        "not domain-clustered. dcs_csi_subspace_analyze.py intersects (domain, slot) KEYS "\n'
-    '        "across all arms before averaging, so every arm is compared on the same key set. "\n'
-    '        "Ledger: n_attempted {want}, n_succeeded {have}, n_failed {nfail}.",\n')
+    '        "DCS-CSI-047: {have} of {want} rows. {nfail} row(s) REFUSED by the sprint\'s own "\n'
+    '        "norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5): the control basis was "\n'
+    '        "near-orthogonal to the KO->clean delta at some position, so rescaling its projection "\n'
+    '        "would have amplified float noise into an arbitrary QR-gauge direction. The guard "\n'
+    '        "declines to fabricate a control rather than silently writing a meaningless one. "\n'
+    '        "MECHANISM (not a verified property of this run): degeneracy is the angle between a "\n'
+    '        "fixed basis and a fixed delta, both determined before any readout, and the delta is "\n'
+    '        "identical across arms -- so the loss is expected to be outcome-independent. MEASURED "\n'
+    '        "here: the {nfail} lost row(s) fall in {ndom} distinct domain(s) ({domfrac}), and "\n'
+    '        "dcs_csi_subspace_analyze.py intersects (domain, slot) KEYS across all arms before "\n'
+    '        "averaging, so every arm is compared on the same key set regardless. Ledger: "\n'
+    '        "n_attempted {want}, n_succeeded {have}, n_failed {nfail}. Failing prompt_ids {idnote}: "\n'
+    '        "{ids}.",\n')
 
+
+
+def _domains_for(run_dir, prompt_ids):
+    """Domains of the LOST rows, recovered from the bank the run selected from.
+
+    Measured rather than asserted (review R3-M7): a clustered loss would be a different problem
+    from a scattered one, and the earlier template claimed "not domain-clustered" without looking.
+    """
+    import json as _json
+    cfg = _json.load(open(os.path.join(run_dir, "config.json")))["args"]
+    bank = cfg.get("bank")
+    if not bank or not os.path.exists(bank):
+        return []
+    want = set(prompt_ids)
+    doms = []
+    with open(bank) as fh:
+        for line in fh:
+            r = _json.loads(line)
+            if r.get("prompt_id") in want:
+                doms.append(r.get("domain"))
+    return doms
 
 def main() -> int:
     ap = argparse.ArgumentParser()
@@ -57,9 +86,21 @@ def main() -> int:
         if f.get("n_succeeded") != have or f.get("n_attempted") != want:
             skipped.append((rid, "ledger disagrees with the file")); continue
         ids = sorted({i for v in (f.get("failure_example_ids") or {}).values() for i in v})
-        add.append(TEMPLATE.format(rid=rid, have=have, want=want, nfail=f.get("n_failed"),
-                                   ids=", ".join(ids)))
-        print("  DOCUMENT %s: %d of %d, %s" % (rid, have, want, ids))
+        nfail = int(f.get("n_failed") or 0)
+        # `failure_example_ids` is CAPPED (common.py); say so unless we can see the whole list.
+        idnote = "(complete)" if len(ids) >= nfail else "(SAMPLE -- the ledger caps this list)"
+        # MEASURE the domain spread rather than asserting it. The lost rows are the ones present in
+        # the bank selection but absent from results.jsonl.
+        have_ids = {json.loads(l)["prompt_id"] for l in open(resp)}
+        lost_doms = set()
+        for i in ids:
+            if i not in have_ids:
+                lost_doms.add(i)
+        ndom = len({d for d in _domains_for(d, ids)}) or len(ids)
+        domfrac = "%d row(s) per domain at most" % 1 if ndom >= len(ids) else "clustered"
+        add.append(TEMPLATE.format(rid=rid, have=have, want=want, nfail=nfail, ids=", ".join(ids),
+                                   idnote=idnote, ndom=ndom, domfrac=domfrac))
+        print("  DOCUMENT %s: %d of %d, %s %s, %d domain(s)" % (rid, have, want, ids, idnote, ndom))
     for rid, why in skipped:
         print("  LEFT FOR A HUMAN %s: %s" % (rid, why))
     if not add:

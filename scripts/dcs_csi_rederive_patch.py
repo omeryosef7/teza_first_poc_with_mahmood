@@ -224,8 +224,17 @@ def exact_signflip_one_sided(doms, a, b):
             s_ += v if rng.random() < 0.5 else -v
         if s_ / len(d) >= obs - 1e-12:
             hit += 1
-    return {"p_one_sided": (hit + 1) / (N + 1), "p_floor": floor, "k_informative_domains": k,
-            "mode": "monte-carlo(%d)" % N, "observed": obs}
+    # REVIEW R3-M2. `floor` is the EXACT-enumeration floor 1/2**k, but for k > 16 the test that
+    # actually ran is a Monte-Carlo sampler whose smallest attainable p is 1/(N+1). Publishing the
+    # exact floor beside a sampled p makes the repo's own "quote a p with its design's floor" rule
+    # unenforceable: a p of exactly 1/(N+1) -- i.e. ZERO hits, the sampler saturated -- was being
+    # reported as nowhere near a floor of 1e-21. The effective floor is the LARGER of the two.
+    mc_floor = 1.0 / (N + 1)
+    return {"p_one_sided": (hit + 1) / (N + 1), "p_floor": max(floor, mc_floor),
+            "p_floor_exact_enumeration": floor, "p_floor_monte_carlo": mc_floor,
+            "p_floor_basis": "monte-carlo sampler (%d draws); the exact floor %.3g is unreachable "
+                             "by the test that ran" % (N, floor),
+            "k_informative_domains": k, "mode": "monte-carlo(%d)" % N, "observed": obs}
 
 
 def exact_signflip(doms: Sequence[str], a: Dict[str, float], b: Dict[str, float]) -> dict:
@@ -264,7 +273,13 @@ def exact_signflip(doms: Sequence[str], a: Dict[str, float], b: Dict[str, float]
             s += v if rng.random() < 0.5 else -v
         if abs(s / len(d)) >= obs - 1e-12:
             hit += 1
-    return {"p_two_sided": (hit + 1) / (N + 1), "p_floor": floor,
+    # REVIEW R3-M2: report the floor of the test THAT RAN. See exact_signflip_one_sided.
+    # The smallest value (hit + 1) / (N + 1) can take is 1/(N+1), at hit = 0 -- NOT 2/(N+1).
+    mc_floor = 1.0 / (N + 1)
+    return {"p_two_sided": (hit + 1) / (N + 1), "p_floor": max(floor, mc_floor),
+            "p_floor_exact_enumeration": floor, "p_floor_monte_carlo": mc_floor,
+            "p_floor_basis": "monte-carlo sampler (%d draws); the exact floor %.3g is unreachable "
+                             "by the test that ran" % (N, floor),
             "k_informative_domains": k, "mode": "monte-carlo(%d)" % N}
 
 
