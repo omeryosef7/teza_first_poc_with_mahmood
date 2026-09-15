@@ -25,7 +25,7 @@
 #SBATCH --partition=killable
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
-#SBATCH --gpus=l40s:1
+#SBATCH --gpus=1
 set -euo pipefail
 cd /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
 source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh

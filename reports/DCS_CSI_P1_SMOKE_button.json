@@ -3,18 +3,20 @@
  "codeword": "button",
  "n_rows": 24,
  "run_dirs": {
-  "BASE": "csi1sm_button_BASE_20260915_181329_3230180",
-  "KO": "csi1sm_button_KO_SELF_20260915_183610_3232408",
-  "KO_SELF": "csi1sm_button_KO_SELF_20260915_183610_3232408",
-  "KO_FULL": "csi1sm_button_KO_FULL_20260915_183700_3232745",
-  "KO_AXIS": "csi1sm_button_KO_AXIS_20260915_183747_3233080",
-  "KO_ORTH": "csi1sm_button_KO_ORTH_20260915_183836_3233462"
+  "BASE": "csi1sm_button_BASE_20260915_185339_1699892",
+  "KO": "csi1sm_button_KO_SELF_20260915_185506_1700604",
+  "KO_SELF": "csi1sm_button_KO_SELF_20260915_185506_1700604",
+  "KO_FULL": "csi1sm_button_KO_FULL_20260915_185558_1700955",
+  "KO_AXIS": "csi1sm_button_KO_AXIS_20260915_185645_1701307",
+  "KO_ORTH": "csi1sm_button_KO_ORTH_20260915_185733_1701730"
  },
  "n_rescue_positions": [
-  null
+  28
  ],
  "self_identity_max_abs_diff": 0.0,
- "norm_match_max_abs_diff": null,
+ "KO_AXIS_captured_energy_frac_mean": 0.03639,
+ "KO_ORTH_captured_energy_frac_mean": 0.01352,
+ "norm_match_max_abs_diff": 1.3877787807814457e-17,
  "orth_degenerate_positions": 0,
  "installation_mean_by_arm_SMOKE_ONLY": {
   "BASE": 0.804,
@@ -24,20 +26,6 @@
   "KO_AXIS": 0.5904,
   "KO_ORTH": 0.5925
  },
- "FAILS": [
-  "KO_SELF wrote positions on every row",
-  "KO_SELF rescue fired on every row",
-  "KO_FULL wrote positions on every row",
-  "KO_FULL rescue fired on every row",
-  "KO_AXIS wrote positions on every row",
-  "KO_AXIS rescue fired on every row",
-  "KO_ORTH wrote positions on every row",
-  "KO_ORTH rescue fired on every row",
-  "KO_AXIS wrote a nonzero norm on every row",
-  "KO_ORTH wrote a nonzero norm on every row",
-  "KO_ORTH norm == KO_AXIS norm, per row",
-  "KO_AXIS rows record basis key 'cand_rank1'",
-  "KO_ORTH rows record basis key 'ctrl_orth'"
- ],
- "VERDICT": "SMOKE FAIL (13)"
+ "FAILS": [],
+ "VERDICT": "SMOKE PASS"
 }

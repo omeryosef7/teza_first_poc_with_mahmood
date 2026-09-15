@@ -1786,3 +1786,126 @@ a 90-domain, ~20-event endpoint — precisely what S-004's power analysis predic
 primary endpoint is semantic installation (67/67 informative domains) rather than refusal.
 
 The L40S replicate (896363) is on arm 3/4 and will say whether this holds on a second architecture.
+
+---
+
+## S-031 — **SMOKE PASS.** Phase-1 group A is LAUNCHED. And the 24-row diagnostic now means something.
+
+Job 896666, all six arms, `reports/DCS_CSI_P1_SMOKE_button.json` → **SMOKE PASS** (was FAIL (13)
+before the S-028 instrumentation fix).
+
+| check | result |
+|---|---|
+| knockout live on every arm, **0** decode edits, BASE unhooked | PASS |
+| rescue **fired 24/24** on every rescue arm, **28 positions** each | PASS |
+| `KO_SELF` reproduces `KO` on `y_install` | PASS, **max\|diff\| = 0.000e+00** |
+| `KO_AXIS` wrote a **non-zero** delta | PASS, min 0.0321 / mean **0.0682** |
+| **`KO_ORTH` norm-matched to `KO_AXIS` per row** | PASS, **max\|diff\| = 1.39e−17** |
+| zero norm-match-degenerate positions | PASS |
+| basis keys recorded on rows (`cand_rank1`, `ctrl_orth`) | PASS |
+
+The norm match is exact to machine precision *per row*, and the identity control is bit-exact.
+Every failure mode the smoke was written against is now excluded.
+
+### The 24-row read, now that it is interpretable — and how much it is allowed to mean
+
+```
+BASE 0.804 | KO 0.588 | KO_SELF 0.588 | KO_FULL 0.682 | KO_AXIS 0.590 | KO_ORTH 0.593
+```
+
+Unchanged from the broken run — which is itself reassuring, since the fix was to the *recording*,
+not the computation. But now the liveness is verified, so the reading is no longer ambiguous
+between "did nothing" and "never ran":
+
+* the **whole-state** rescue recovers ≈ **44 %** of the knockout's installation loss;
+* the **rank-1 axis** rescue lands at **0.590** against KO's 0.588 — essentially **nothing**;
+* the **norm-matched orthogonal control** lands at **0.593**, *marginally above the candidate*.
+
+**This is a credible preliminary indication that the rank-1 installation axis is NOT the causal
+variable**, while the site plainly is. It is stated here as a **prior expectation recorded before
+the powered run reads out**, not as a result: 24 rows, one codeword, no domain-level statistics, no
+controls beyond one orthogonal draw. PR-CSI-001's primary contrast is 670 rows / 67 TRAIN domains
+with the full control family, and it will decide.
+
+Recording it now matters for a specific reason: if the powered run comes back null, this entry is
+the evidence that the null was **anticipated from the instrument, not constructed after the fact** —
+and if it comes back positive, this entry is the evidence that I did not quietly discard a
+contrary signal.
+
+Note the prereg's failure clause already covers this shape: *"`KO_AXIS − KO_ORTH` not
+distinguishable from 0 while `KO_FULL − KO` is clearly positive and `KO_SELF` is inert — that is an
+informative negative: the site carries the effect but the installation-predictive component is not
+the causal variable."*
+
+### Launched
+
+**Job 896679 — PR-CSI-001 group A, button, TRAIN**: `BASE, KO, KO_SELF, KO_FULL, KO_AXIS, KO_PLS,
+KO_ORTH`, 670 rows / 67 domains each, all seven in **one allocation on one node**, layer L20 and
+rank 5 read from the axis artifact. Group B (4 shuffled + 6 random + a `KO_AXIS_ANCHOR`) follows.
+
+Two operational notes: the `l40s` pin was dropped from the arms launcher — readout endpoints are
+hardware-stable (S-016) and every arm shares one allocation regardless, so pinning only bought queue
+time. And the smoke stalled **twice more** (n-302, n-503, ~9 min at 0/291 shards each) on nodes
+where I had *no* other jobs, so the NFS export contention is not self-inflicted; it succeeded
+immediately on **n-303**, where the page cache was still warm from the replicate that had just
+finished there. **Landing on a node that recently ran the same model is worth more than any node
+preference.**
+
+---
+
+## S-032 — P0.6b: the L40S replicate reproduces the published numbers EXACTLY. Significance is **hardware-contingent**, which is a verdict on the endpoint.
+
+Job 896363, arms 1–3 of 4 complete, all on **n-801 / `l40s`** in one allocation. VERDICT PASS.
+
+| | published (3 l40s nodes) | **l40s, ONE allocation** | 3090, ONE allocation |
+|---|---|---|---|
+| CTRL | 0.11111 | **0.11111** | 0.11667 |
+| KO | 0.04444 | **0.04444** | 0.05000 |
+| RESCUE_CLEAN | 0.07222 | **0.07222** | 0.08889 |
+| KO de-refusal | +0.06667, k=12, p=4.88e−4 | **+0.06667, k=12, p=4.88e−4** | +0.06667, k=12, p=4.88e−4 |
+| **recovery** | +0.02778, **k=5**, p=**0.0625** | **+0.02778, k=5, p=0.0625** | **+0.03889, k=7, p=0.0156** |
+| recovery fraction | 0.4167 [0.133, 0.714] | **0.4167 [0.133, 0.714]** | 0.5833 [0.286, 0.875] |
+
+Two things fall out, and the second is the important one.
+
+### 1. Within one architecture the endpoint is *exactly* reproducible — even across nodes
+
+The published arms ran on **t-806 and n-801**; this replicate ran entirely on **n-801**. Every
+number matches to five decimal places. So **same-architecture cross-node churn on the refusal
+endpoint is zero here**, which retroactively confirms S-002's judgement that the published run's
+three-node spread did not invalidate it, and sharpens S-016: the 23 % byte-identity figure is a
+*cross-architecture* number, and within an architecture the endpoint is stable to the last digit.
+
+### 2. Whether the recovery "passes" depends on which GPU you ran it on — **REFINEMENT of S-026**
+
+S-026 reported the 3090 replicate as *"larger and now clears α = 0.05"*. With the L40S arm in hand
+that framing needs qualifying, and I am qualifying it rather than leaving it to be read the
+favourable way:
+
+* on **l40s**: recovery **+0.0278**, k = 5, exact p = **0.0625** — at its floor, **does not clear 0.05**;
+* on **3090**: recovery **+0.0389**, k = 7, exact p = **0.0156** — at its floor, **clears 0.05**.
+
+The *point estimate is positive on both*, and on both **every informative domain moves in the
+predicted direction and none against** (5/5 and 7/7). What flips is **k** — the number of domains
+with any movement — from 5 to 7, and with it the attainable floor from 0.0625 to 0.0156.
+
+> **So the correct statement is not "the recovery is significant." It is: the recovery is
+> positive and same-signed on two architectures, and whether an exact domain-level test can
+> certify it at α = 0.05 is decided by a two-domain difference that hardware alone produces.**
+
+That is a damning verdict on the *endpoint*, not on the effect. A result whose significance is
+contingent on GPU architecture is a result whose instrument has run out of resolution — exactly
+what S-004 predicted (power 0.39 at D = 90) and what three floor-pinned p-values have been saying
+all afternoon.
+
+**Claim table E1 revised again** — and this supersedes the S-026 wording:
+
+> **E1 (final for this endpoint): the clean query-span rescue recovers part of the knockout's
+> de-refusal. Point estimate +0.0278 (l40s, twice, identically) to +0.0389 (3090), recovery
+> fraction 0.42–0.58, every informative domain same-signed on every run, none against. NOT
+> confirmatory: the exact domain-level test sits at its attainable floor in all three runs, and
+> clears 0.05 on one architecture only. Underpowered by design at D = 90; D ≈ 145 needed.**
+
+This is the last thing the refusal endpoint can usefully be asked. Further behavioural work waits
+for the Phase-2 bank (D ≈ 300), and the sprint's weight is now correctly on Phase 1's semantic
+endpoint, where the same intervention moves 67/67 domains.

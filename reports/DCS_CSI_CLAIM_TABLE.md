@@ -29,7 +29,7 @@ Sourced to the sprint log
 
 | # | claim | statistic | why it is not in section A | source |
 |---|---|---|---|---|
-| E1 | Restoring the clean query span under the live knockout partially recovers refusal | Δ = +0.0278 [+0.0056, +0.0556]; recovery fraction 0.417 [0.133, 0.714] | rests on **5 of 90 domains**, all same-signed; exact sign-flip p = **0.0625 = its attainable floor**, so it **cannot reach α = 0.05**. The bootstrap CI excluded 0 essentially by construction — (85/90)^90 = 0.6 % | **S-002 (CORRECTION to `c029b4fb`)** |
+| E1 | Restoring the clean query span under the live knockout partially recovers refusal | **l40s: Δ = +0.0278, k=5, p=0.0625 (twice, identically). 3090: Δ = +0.0389, k=7, p=0.0156.** Recovery fraction 0.42–0.58 | Positive and same-signed on two architectures, **every** informative domain in the predicted direction, none against — but the exact test is **at its attainable floor in all three runs** and clears 0.05 on **one architecture only**. Significance is hardware-contingent via a 2-domain change in k. Underpowered at D=90 (power 0.39); D≈145 needed | **S-002, S-026, S-032** |
 | E2 | A rank-r PLS subspace is a candidate mediator | TRAIN LOO ρ: r1 0.5021 … r5 0.5767, all **below** the rank-1 ridge 0.5935; selected rank sits at the grid boundary | rank is not identified; no "the representation is r-dimensional" claim may be made | S-013 |
 
 ---
