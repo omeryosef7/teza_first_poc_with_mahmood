@@ -2223,3 +2223,47 @@ gate 3 is expected to pass, but it is not assumed and the prereg's wording stand
 **Group B** (control distribution) is now on **n-307 / `geforce_rtx_3090`** — the architecture pin
 from S-037 working, and matching group A's n-303. Two further aborted anchor directories were
 quarantined along the way (n-302 stalled at 0/291 shards for a third time; both V100 attempts).
+
+---
+
+## S-039 — the weight-load stall is a NODE property, not contention. Four stalls, and the rule that actually works.
+
+Group B took **five** submissions to start. The full record, because the pattern only became legible
+once it had happened enough times:
+
+| job | node | GPU | outcome |
+|---|---|---|---|
+| 896693 | (pinned n-303) | 3090 | PENDING 25 min on `(Resources)` — n-303 is 8/8 allocated |
+| 896728 | rack-bgw-dgx1 | **v100** | cancelled — no native bf16, and ~9.4 h projected vs 8 h wall |
+| 896738 | rack-gww-dgx1 | **v100** | cancelled — same |
+| 896743 | **n-302** | 3090 | **stalled 0/291 shards, ~6 min** |
+| 896764 | **n-307** | 3090 | **stalled 0/291 shards, ~8.5 min** |
+| **896771** | **n-350** | 3090 | **loading normally**, 17/291 at 4.06 s/it |
+
+**The stall is not contention, and my earlier diagnosis in S-015/S-024 was incomplete.** S-015
+blamed per-node job stacking; S-024 corrected that to "concurrent reads of the shared NFS export".
+Both are now insufficient: **896764 stalled on n-307 while nothing else of mine was loading**, and
+896771 loads fine on n-350 *at the same moment* group A is running on n-303. Sorted by observed
+behaviour:
+
+* **n-303** — instant (page cache warm from a job that just finished there);
+* **n-350** — cold but **advancing**, ~4–5 s/shard, ~20 min total;
+* **n-302, n-307, n-503** — **0/291, indefinitely**.
+
+That is three distinct regimes, and the third looks like a genuinely bad or saturated mount on
+those specific nodes rather than anything about my job mix.
+
+> **Operational rule, replacing S-015 and S-024's versions:** the weight-loading bar in `.err`
+> after **two readings a few minutes apart** is the only reliable liveness test, and a node that
+> shows **0/291 twice is bad** — cancel immediately rather than waiting out the walltime. Keep a
+> known-good list (**n-303 warm, n-350 cold-but-working**) and pin to it. Exclusion lists chase the
+> problem; a positive pin ends it.
+
+Cost of learning this: ~35 minutes of wall-clock and four aborted allocations, all quarantined with
+reasons rather than deleted. Cost of *not* learning it would have been a group-B job dying at the
+8-hour walltime with four control arms missing — and `sacct` reporting a clean `CANCELLED`.
+
+**Note on the architecture pin.** S-037's rule (pin the GPU model positively when two groups will
+be compared) survives intact: n-350 is `geforce_rtx_3090`, matching group A's n-303. So candidate
+and controls remain architecture-matched, and the `KO_AXIS_ANCHOR` arm still measures only
+allocation-to-allocation drift.
