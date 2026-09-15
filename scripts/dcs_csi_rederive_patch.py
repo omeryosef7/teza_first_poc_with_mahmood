@@ -50,7 +50,7 @@ def _load(mod: str, path: str):
     return m
 
 
-def strict_run_dir(tag: str, expect_n: int) -> str:
+def strict_run_dir(tag: str, expect_n: int, row_file: str = "gens.jsonl") -> str:
     """The hardening `latest_dir` never had (sprint item P0.4).
 
     `dcs_cont_patch_endpoint.latest_dir` preferred a DONE.json directory but FELL BACK to the
@@ -65,7 +65,7 @@ def strict_run_dir(tag: str, expect_n: int) -> str:
     ok, why = [], []
     for d in cands:
         dj = os.path.join(d, "DONE.json")
-        gj = os.path.join(d, "gens.jsonl")
+        gj = os.path.join(d, row_file)
         if not os.path.exists(dj):
             why.append("%s: no DONE.json" % os.path.basename(d)); continue
         done = json.load(open(dj))
@@ -76,7 +76,7 @@ def strict_run_dir(tag: str, expect_n: int) -> str:
                        % (os.path.basename(d), done.get("rows_written"), expect_n)); continue
         n_lines = sum(1 for _ in open(gj))
         if n_lines != expect_n:
-            why.append("%s: gens.jsonl has %d lines != %d" % (os.path.basename(d), n_lines, expect_n))
+            why.append("%s: %s has %d lines != %d" % (os.path.basename(d), row_file, n_lines, expect_n))
             continue
         ok.append(d)
     if len(ok) != 1:

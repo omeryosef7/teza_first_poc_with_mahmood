@@ -1,0 +1,141 @@
+{
+  "schema": "dcs_csi_prereg/1",
+  "id": "PR-CSI-001",
+  "title": "Causal subspace rescue of semantic installation under the A1 demonstration->query attention knockout",
+  "frozen_utc": "2026-09-15",
+  "frozen_before": "any arm of this experiment has been generated or read",
+  "sprint_log": "external_md/DCS_CAUSAL_SEMANTIC_INSTALLATION_MECHANISM_AND_REPLICATION_PLAN_AND_PROGRESS_20260915.md",
+  "plan_section": "Phase 1 (Priority 1), sections 6.1-6.5",
+
+  "scientific_question": "Under the live A1 attention knockout, does restoring ONLY the component of the query-side residual state that lies in a TRAIN-learned installation-predictive subspace restore semantic installation -- or does the existing whole-state rescue work through something other than that component?",
+
+  "hypothesis": "The installation-predictive component of the query-side representation is a causal mediator of the knockout's effect on semantic installation. If so, a projection-restricted rescue along that component recovers installation materially, while same-norm orthogonal, shuffled-label and random subspaces at the same layer, positions and injected norm do not.",
+
+  "null_hypothesis": "The installation-predictive component is a correlate. A projection-restricted rescue along it recovers no more installation than a same-norm control subspace does.",
+
+  "population": {
+    "bank": "data/boombness_prompts/boombness_prompt_bank_ts116m_{codeword}_bomb.jsonl",
+    "query_kind": "semantic_one_word",
+    "condition": "natural_doublespeak",
+    "n_examples": 4,
+    "cells": "C (the installed-mapping cell); A/B/E enter only the candidate fit's completeness rule",
+    "split": "train+validation; TEST IS NOT READ",
+    "domain_scope": "ts116m frozen split minus EXCLUDED_DOMAINS (restaurant_kitchen, school_campus, subway_station)",
+    "expected_domains": {"train": 67, "validation": 23},
+    "codewords": ["button", "basket"],
+    "never_pooled": "button and basket are separate transfer conditions and are reported separately; a floor-limited result on one is CANNOT ANSWER, not a negative replication",
+    "concept": "bomb only"
+  },
+
+  "intervention": {
+    "knockout": "demo_all:attn_knockout:6-14:1.0",
+    "knockout_scope": "target_surface_row_only",
+    "placebo_band": "20-28 (the dose-matched late-band control arm, named `ctrl` in DR-071/CONT-054)",
+    "rescue_layer": "SELECTED ON TRAIN by scripts/dcs_csi_axis.py; recorded as meta.selected_layer in the candidate artifact; identical for every rescued arm including the full-state positive control",
+    "rescue_positions": "query (the entire query span) -- identical positions in every rescued arm, so the full-state arm and the subspace arms differ ONLY in the projection",
+    "formula": "h' = h + P_W (h_donor - h), P_W = W^T W with W orthonormal",
+    "donor": "clean (an unhooked forward over the same templated string); token identity over the patched span re-verified before every write",
+    "implementation": "src/boombness/donor_patch.py::SubspaceDonorPatch, unit-tested in tests/test_subspace_donor_patch.py (24/24)"
+  },
+
+  "candidate_construction": {
+    "script": "scripts/dcs_csi_axis.py",
+    "fit_population": "TRAIN split only, minus excluded domains; the script REFUSES if any validation or test domain reaches the fit or if the corpus contains test rows",
+    "site": "rel-6, FROZEN to the prior query-probe winner and NOT re-searched, so this experiment adds no new site-selection multiplicity",
+    "selected_on_train": ["layer (over the plateau 16..31)", "PLS rank r (1..5, nested leave-one-domain-out)"],
+    "families": {
+      "semantic": "fit on the semantic_one_word forward -- the SAME forward the intervention acts on. This is the representation the causal claim is about, but it shares a forward pass with the readout, so it is NOT offered as a clean observational claim.",
+      "behavioral": "fit on the behavioural forward -- the non-circular lineage the existing Q1 probe used; asks whether that axis TRANSFERS to the semantic forward."
+    },
+    "family_adjudication": "VALIDATION chooses between the two frozen families. TEST is not involved.",
+    "controls_built_from_the_same_rows_and_fit": ["ctrl_orth", "ctrl_random0..5", "ctrl_shuffled0..3"]
+  },
+
+  "arms": [
+    {"name": "BASE", "desc": "no knockout"},
+    {"name": "KO", "desc": "A1 knockout, no rescue"},
+    {"name": "KO_SELF", "desc": "knockout + whole-state rescue with donor=self; intervention-mechanics identity control; MUST be inert"},
+    {"name": "KO_FULL", "desc": "knockout + whole-state clean rescue; POSITIVE CONTROL and upper bound"},
+    {"name": "KO_AXIS", "desc": "knockout + rank-1 installation axis (cand_rank1)"},
+    {"name": "KO_PLS", "desc": "knockout + rank-r* PLS subspace (cand_pls{r*}), r* selected on TRAIN"},
+    {"name": "KO_ORTH", "desc": "knockout + ctrl_orth, norm-matched to cand_rank1; THE PRIMARY COMPARATOR"},
+    {"name": "KO_SHUF0..3", "desc": "knockout + shuffled-label candidates, norm-matched"},
+    {"name": "KO_RAND0..5", "desc": "knockout + random directions, norm-matched"}
+  ],
+
+  "endpoints": {
+    "primary": "y_install -- concept-free semantic installation = softmax(logp_concept, logp_codeword) on the semantic_one_word channel, cell C, as defined by dcs_cont_layerpos_map.load_installation",
+    "why_not_refusal": "the refusal endpoint yields 5-12 informative domains at 90 domains (S-002) and has 0.39 power for a recovery-sized effect (S-004); the semantic endpoint moves 67/67 domains under the same knockout (CONT-054). Refusal cannot separate arms that are closer together than full-rescue-vs-KO.",
+    "secondary": [
+      "recovery fraction of the KO-induced installation loss, with a degeneracy guard",
+      "realised intervention dose: written delta norm, captured energy fraction, norm-match degeneracy count",
+      "semantic option mass (the readout validity gate, min 0.05)"
+    ],
+    "forbidden_as_primary": "semantic_forced_choice -- the probe names the concept and has leaked severely before"
+  },
+
+  "statistics": {
+    "independence_unit": "DOMAIN",
+    "estimator": "within-domain mean of y_install, then the paired across-domain mean difference between arms",
+    "interval": "domain-clustered bootstrap, 20000 draws, percentile 95%",
+    "test": "exact two-sided sign-flip randomisation test over domains where the number of informative domains permits enumeration, Monte-Carlo otherwise",
+    "must_report_alongside_every_p": "the attainable p-floor 2/2**k for k informative domains",
+    "multiplicity": "Holm across the candidate-vs-each-control family",
+    "train_validation": "TRAIN and VALIDATION reported separately and never pooled; VALIDATION is the replication"
+  },
+
+  "primary_contrast": "mean over domains of [ y_install(KO_AXIS) - y_install(KO_ORTH) ], both norm-matched, same layer, same positions, same donor",
+
+  "success_criterion": {
+    "manipulation_check": "mean_d[y(KO) - y(BASE)] is negative and of the established magnitude (about -0.2); otherwise VOID",
+    "identity_check": "KO_SELF reproduces KO; otherwise VOID",
+    "instrument_capability": "KO_FULL - KO > 0 with a domain-clustered CI excluding 0; if the whole-state rescue itself does not recover installation, the subspace question is CANNOT ANSWER for want of a capable instrument, NOT a negative",
+    "primary": "KO_AXIS - KO_ORTH > 0 with a domain-clustered CI excluding 0 AND an exact sign-flip p < 0.05 that is strictly above its own attainable floor",
+    "specificity": "the candidate's recovery exceeds every shuffled and random control's recovery, each pairwise test surviving Holm correction",
+    "replication": "the sign and rough magnitude reproduce on VALIDATION at the frozen layer, rank, site and positions, without retuning",
+    "dose": "the candidate arm's written delta norm is matched to the controls' within 1e-6 per position, and the norm-match degeneracy counter is 0 on the controls used for the primary contrast"
+  },
+
+  "failure_criterion": "KO_AXIS - KO_ORTH is not distinguishable from 0 while KO_FULL - KO is clearly positive and KO_SELF is inert. That is an informative negative: the site carries the effect but the installation-predictive component is not the causal variable, and the whole-state rescue works through something else.",
+
+  "cannot_answer_criteria": [
+    "KO_FULL - KO is not distinguishable from 0 (no capable instrument at this layer/positions)",
+    "the KO manipulation check fails on this bank",
+    "the readout option-mass gate fails, making y_install undefined on a material fraction of rows",
+    "the recovery-fraction denominator (KO_FULL - KO) is degenerate; the fraction is then withheld and only absolute recoveries are reported",
+    "for a codeword: installation is at floor or ceiling so no arm can move"
+  ],
+
+  "void_conditions": [
+    "any TEST domain appears in any arm's population",
+    "the knockout is not live on every row, or produces nonzero decode-time edits",
+    "the rescue does not fire on every row, or writes a zero-norm delta on the candidate arm",
+    "arms differ in prompt_sha16 on any shared prompt_id",
+    "arms compared across GPU architectures",
+    "attention implementation is not eager, or dtype is not bfloat16",
+    "the basis was fit on a population including validation or test domains",
+    "--rescue-basis-key does not resolve to the arm's declared basis in the row artifact"
+  ],
+
+  "required_controls": ["KO_SELF", "KO_FULL", "KO_ORTH", "KO_SHUF0..3", "KO_RAND0..5", "BASE"],
+
+  "must_not_be_said_if_positive": [
+    "We found the BOMB representation.",
+    "The installed-meaning representation causes the jailbreak. (this experiment's endpoint is semantic installation, NOT behaviour; the behavioural link is Phase 5 and is separately powered)",
+    "F5 / A11 is the mechanism. (its demo-side site is bit-identical across ko and ctrl and cannot mediate A1)",
+    "We identified the circuit. (a representation is not a circuit; that is Phase 3)",
+    "This is the first causal intervention on demonstration->query attention in in-context learning. (FALSE -- see the literature report and the standing prohibition)",
+    "The representation is one-dimensional. (only if rank selection actually favours r=1 on VALIDATION, and stated as such)"
+  ],
+
+  "must_not_be_said_if_null": [
+    "The query-side representation carries no installation information. (a transplant that never demonstrated transfer capability cannot support that)",
+    "Semantic installation is not causally mediated. (a null on one subspace at one layer and one site is not a null on mediation)",
+    "The knockout does nothing. (it moves installation in 67/67 domains)",
+    "Basket failed to replicate. (say: could not test, if its endpoint is floor-limited)"
+  ],
+
+  "reuse": "No new experimental stack. score_behavior.py --rescue-* is the existing rescue path; the only additions are SubspaceDonorPatch and the three --rescue-basis* flags. The knockout, the readout, the option-mass gate, the liveness contract, the exclusion mechanism and the installation definition are all unchanged.",
+
+  "hardware_policy": "every arm of a comparison runs in ONE SLURM allocation on ONE node, which also amortises the model load; hostname, GPU model, dtype, attention implementation and model revision are persisted per run"
+}

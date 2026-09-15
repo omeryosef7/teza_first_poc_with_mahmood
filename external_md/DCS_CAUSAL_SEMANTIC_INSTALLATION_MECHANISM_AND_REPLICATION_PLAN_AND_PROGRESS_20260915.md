@@ -744,3 +744,78 @@ forward exactly (so the Phase-2 necessity arm is the same operation run backward
 all four arms share one node and one GPU by construction, which is the whole point. It additionally
 yields a *cross-architecture* churn bound. 896363 supplies the architecture-matched replicate that
 is directly comparable to the published L40S numbers.
+
+---
+
+## S-007 — Phase 1 is built: candidate export, intervention wiring, preregistration, analyser
+
+Four pieces, all additive, no parallel stack.
+
+**1. `scripts/dcs_csi_axis.py` — the TRAIN-only candidate export.** Produces one `.pt` holding every
+named basis the experiment needs, built from the *same rows, split, centring and fit*:
+
+| basis | what |
+|---|---|
+| `cand_rank1` | the rank-1 ridge installation axis |
+| `cand_pls1..5` | rank-r PLS1 subspaces with **explicit deflation** |
+| `ctrl_orth` | a direction orthogonal to `cand_rank1` |
+| `ctrl_random0..7` | i.i.d. Gaussian directions (the control *distribution*) |
+| `ctrl_shuffled0..4` | the identical ridge fit on **domain-preserving** shuffled labels |
+
+Discipline baked in: the fit refuses if any validation/test domain reaches it or if the corpus
+contains test rows; the **site is FROZEN to the prior winner `rel-6` and is not re-searched**, so
+this adds no new site-selection multiplicity; only *layer* and *rank* are selected, nested inside
+TRAIN by leave-one-**domain**-out; PLS deflation is explicit and commented against the phase's
+earlier wrong "one-dimensional" claim; and `ctrl_orth` is verified orthogonal or the script
+refuses. Controls are built in the same file as the candidate on purpose — a control assembled
+later by different code differs from the candidate in more ways than the one under test.
+
+**Two candidate families are exported and both are frozen before VALIDATION** (plan §4.2):
+`--fit-prompt semantic` fits on the *same forward the intervention acts on* — the right
+representation for a causal claim, but it shares a forward with the readout and so is **not**
+offered as a clean observational claim; `--fit-prompt behavioral` fits on the non-circular lineage
+the existing Q1 probe used and asks whether that axis **transfers**. VALIDATION adjudicates; TEST is
+not involved. Jobs 896371 / 896372.
+
+**2. `score_behavior.py` wiring — three flags, one branch.** `--rescue-basis`,
+`--rescue-basis-key`, `--rescue-norm-match-key`. The subspace patch reuses the *existing* donor
+capture, positions, layer and token-identity guard; the **only** difference from the whole-state
+rescue is the projection — which is what makes the full-state arm an exact upper bound rather than
+a differently-constructed comparison. Guards added: `--rescue-basis` without `--rescue-layer`
+refuses (it would be silently inert); an unknown basis key refuses rather than defaulting (two arms
+differing only by a typo must not produce the same numbers under different labels); the basis
+key, norm-match key, file name and realised dose are **recorded on every row**, so the artifact can
+prove which subspace an arm wrote instead of trusting the arm label.
+
+**3. `configs/dcs_csi_pr001_subspace_rescue.json` — PR-CSI-001, frozen before any arm exists.**
+15 arms; primary endpoint `y_install`; **primary contrast `KO_AXIS − KO_ORTH`** (both norm-matched,
+same layer, same positions, same donor) rather than a rank test against the control set — because
+the paired domain contrast has 67 domains of resolution (p-floor 1.4e−20) whereas ranking the
+candidate among ~11 control arms has a floor of 1/12. The control family is still run, and is
+analysed as 11 pairwise domain-level contrasts under **Holm**, plus the control recovery
+*distribution* with its rank and that rank's honest floor.
+
+Three gates run **before** any contrast is reported: manipulation check (`KO − BASE` negative, the
+established ≈ −0.2), identity check (`KO_SELF` inert), and **instrument capability**
+(`KO_FULL − KO > 0`). If the whole-state rescue itself does not recover installation, the subspace
+question is **CANNOT ANSWER for want of a capable instrument — explicitly not a negative.** The
+prereg also carries its `must_not_be_said_if_positive` list, including the standing prohibition on
+"first to causally intervene on demo→query attention in ICL", which the literature review confirms
+is false (Wang et al., *Label Words are Anchors*, EMNLP 2023).
+
+**4. `scripts/dcs_csi_subspace_analyze.py` — the analyser, with VOID applied first.** Reuses
+`load_installation` (same concept-free channel filter, same duplicate-key refusal) and imports
+`strict_run_dir`, the domain bootstrap and the exact sign-flip test from the S-002 verifier so that
+"complete run" and "p-floor" mean exactly one thing across the sprint. It refuses to print any
+contrast from a run set that trips a VOID condition, and — the check that matters most for a
+controls experiment — it **verifies norm matching from the rows**: if a norm-matched control's
+written delta norm differs from the candidate's by more than 1e−5, or any position was flagged
+norm-match-degenerate, the run is VOID rather than quietly showing false specificity.
+
+### Phase 2 necessity arm: a wiring gap, recorded
+
+The primitive already supports necessity (live = CLEAN, donor = KO), but `score_behavior.py` gates
+the whole rescue block on the arm having a knockout, so the *clean-live / ko-donor* combination
+cannot be expressed by existing flags. Deferred, not forgotten: Phase 1 first, then a small
+additive `--rescue-donor ko` that builds the knockout hooks for the donor capture only. Noted here
+so it is not mistaken for "necessity was tested".

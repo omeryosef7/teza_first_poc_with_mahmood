@@ -43,7 +43,8 @@ from ds_common import parse_enable_thinking as dc_parse_thinking  # noqa: E402
 
 ENABLE_THINKING = None   # None = model default; see --enable-thinking
 from extract_boombness import resolve_occurrences  # noqa: E402
-from donor_patch import ActivationCapture, DonorBlock, DonorPatch  # noqa: E402
+from donor_patch import (ActivationCapture, DonorBlock, DonorPatch,  # noqa: E402
+                         SubspaceDonorPatch)
 
 DEFAULT_BANK = os.path.join(DATA_DIR, "boombness_prompt_bank.jsonl")
 
@@ -1998,6 +1999,52 @@ def exclusion_sha16(ids: Sequence[str]) -> str:
     return hashlib.sha256("\n".join(sorted(ids)).encode("utf-8")).hexdigest()[:16]
 
 
+
+def make_rescue_basis_loader(args):
+    """Load and cache the named bases once per run. Missing keys RAISE; they are not defaulted.
+
+    The cache matters: the basis is read inside the per-row loop and re-reading a torch file 900
+    times is pure waste. The validation matters more -- an unknown --rescue-basis-key silently
+    falling back to any default would make two arms that differ only by a typo produce the same
+    numbers under different labels.
+    """
+    state = {}
+
+    def _get():
+        if not state:
+            if not args.rescue_basis_key:
+                raise SystemExit("--rescue-basis requires --rescue-basis-key (no default: the arm "
+                                 "identity must not depend on dict ordering)")
+            blob = torch.load(args.rescue_basis, map_location="cpu", weights_only=False)
+            bases = blob["bases"]
+            if args.rescue_basis_key not in bases:
+                raise SystemExit("--rescue-basis-key %r not in %s (have: %s)"
+                                 % (args.rescue_basis_key, args.rescue_basis, sorted(bases)))
+            nb = None
+            if args.rescue_norm_match_key:
+                if args.rescue_norm_match_key not in bases:
+                    raise SystemExit("--rescue-norm-match-key %r not in %s (have: %s)"
+                                     % (args.rescue_norm_match_key, args.rescue_basis, sorted(bases)))
+                nb = bases[args.rescue_norm_match_key]
+            state["B"] = bases[args.rescue_basis_key]
+            state["NB"] = nb
+            state["meta"] = blob.get("meta", {})
+            m = state["meta"]
+            print("[rescue-basis] %s key=%s rank=%d  fit_prompt=%s site=%s layer=%s "
+                  "fit_domains=%s sha16=%s  norm_match=%s"
+                  % (os.path.basename(args.rescue_basis), args.rescue_basis_key,
+                     int(state["B"].shape[0]), m.get("fit_prompt"), m.get("site"),
+                     m.get("selected_layer"), (m.get("fit_population") or {}).get("n_domains"),
+                     (m.get("bases") or {}).get(args.rescue_basis_key, {}).get("sha16"),
+                     args.rescue_norm_match_key or None))
+            if m.get("selected_layer") is not None and int(m["selected_layer"]) != int(args.rescue_layer):
+                print("[rescue-basis] WARNING: basis was fit at layer L%s but --rescue-layer is L%s"
+                      % (m["selected_layer"], args.rescue_layer))
+        return state["B"], state["NB"]
+
+    return _get
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--bank", default=DEFAULT_BANK)
@@ -2254,6 +2301,26 @@ def main() -> int:
                          "never knocked out is a no-op dressed as an experiment, and is refused. "
                          "Donor and recipient are the SAME templated string, and DonorPatch "
                          "re-verifies token identity over the patched span before writing.")
+    ap.add_argument("--rescue-basis", default="",
+                    help="Phase-1 SUBSPACE rescue. Path to a dcs_csi_axis .pt holding named "
+                         "orthonormal bases. When given, the rescue writes ONLY the component of "
+                         "(donor - live) inside that subspace: h' = h + P_W(h_donor - h), instead "
+                         "of overwriting the whole state. That is the difference between 'this SITE "
+                         "matters' and 'this VARIABLE at this site matters'. The basis must have "
+                         "been fit on TRAIN only; this script does not verify that and records the "
+                         "basis provenance so the analysis can.")
+    ap.add_argument("--rescue-basis-key", default="",
+                    help="Which named basis inside --rescue-basis to write (e.g. cand_rank1, "
+                         "cand_pls3, ctrl_orth, ctrl_random0, ctrl_shuffled2). REQUIRED whenever "
+                         "--rescue-basis is given: defaulting to 'the first one' would make the "
+                         "arm identity depend on dict ordering.")
+    ap.add_argument("--rescue-norm-match-key", default="",
+                    help="Rescale the written delta, per position, to the norm the named CANDIDATE "
+                         "basis would have written on that same row. This is what makes a control "
+                         "same-norm rather than merely same-rank: a rank-1 random direction "
+                         "captures ~sqrt(1/4096) of a delta, so an unmatched random control injects "
+                         "a far smaller perturbation and would 'show specificity' for purely "
+                         "geometric reasons.")
     ap.add_argument("--knockout-last-k", type=int, default=0,
                     help="ONLY for --knockout-scope query_last_k_rows (DCS-B-010): cut the LAST K "
                          "rows of the query span from the demonstrations. K is swept to separate "
@@ -2316,6 +2383,14 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=20260816)
     ap.add_argument("--tag", default="run")
     args = ap.parse_args()
+    # Phase-1 subspace rescue: bind the (cached, validating) basis loader once. Inert -- and never
+    # touches the torch file -- unless --rescue-basis is given.
+    _rescue_bases = make_rescue_basis_loader(args)
+    if args.rescue_basis and args.rescue_layer is None:
+        raise SystemExit("--rescue-basis without --rescue-layer would be inert: the whole rescue "
+                         "block is gated on --rescue-layer. Refusing rather than doing nothing.")
+    if args.rescue_norm_match_key and not args.rescue_basis:
+        raise SystemExit("--rescue-norm-match-key requires --rescue-basis")
     # SHELL-SAFE EMPTY. The SLURM wrapper word-splits BOOMB_ARGS deliberately, so an empty quoted
     # argument cannot survive the round trip -- `--answer-prefix ""` silently becomes the NEXT flag.
     # The pre-2026-08-18 behaviour therefore has to be reachable by a literal sentinel.
@@ -3539,7 +3614,16 @@ def main() -> int:
                     continue
                 _donor = DonorBlock(layer_idx=args.rescue_layer, positions=list(_rpos),
                                     acts=_cap.acts, input_ids=list(ids_r))
-                _rescue_ctx = DonorPatch(lm.model, _donor, ids_r, strict_ids=True)
+                if args.rescue_basis:
+                    # SUBSPACE rescue. Same donor, same positions, same layer, same token-identity
+                    # guard as the whole-state rescue -- the ONLY difference is the projection, so
+                    # the full-state arm is an exact upper bound for this one rather than a
+                    # differently-constructed comparison.
+                    _B, _NB = _rescue_bases()
+                    _rescue_ctx = SubspaceDonorPatch(lm.model, _donor, ids_r, basis=_B,
+                                                     norm_match_basis=_NB, strict_ids=True)
+                else:
+                    _rescue_ctx = DonorPatch(lm.model, _donor, ids_r, strict_ids=True)
                 ctxs = list(ctxs) + [_rescue_ctx]
             with contextlib.ExitStack() as st:
                 for c in ctxs:
@@ -3733,6 +3817,14 @@ def main() -> int:
                                          if _cd else None)
                             base = {**base,
                                     "rescue_liveness": _rl,
+                                    # WHICH subspace was written. Without this the artifact cannot
+                                    # tell a candidate arm from a control arm after the fact, and
+                                    # the arm label alone is exactly the thing an analysis is
+                                    # supposed to be able to check rather than trust.
+                                    "rescue_basis": (os.path.basename(args.rescue_basis)
+                                                     if args.rescue_basis else None),
+                                    "rescue_basis_key": args.rescue_basis_key or None,
+                                    "rescue_norm_match_key": args.rescue_norm_match_key or None,
                                     "rescue_layer": args.rescue_layer,
                                     "rescue_donor": (args.rescue_donor
                                                      if args.rescue_layer is not None else None),
