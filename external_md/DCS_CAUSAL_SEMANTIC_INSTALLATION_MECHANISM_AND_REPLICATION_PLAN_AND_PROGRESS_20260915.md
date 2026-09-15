@@ -3214,3 +3214,64 @@ the comparator lands, so the reading is fixed in advance.
 
 **MAY NOT be said:** anything positive about the rank-1 axis on VALIDATION until its control family
 exists; anything about other layers, sites, codewords, or TEST.
+
+---
+
+# S-054 — **PHASE 1 COMPLETE on both splits.** The primary fails on TRAIN *and* VALIDATION; the rank-5 result does not replicate; the whole-state result does.
+
+VALIDATION group A complete (all seven arms, 230 rows / 23 domains). `VOID: []`, all gates pass.
+
+## The whole comparison, both splits
+
+| quantity | **TRAIN** (670 / 67) | **VALIDATION** (230 / 23) | replicates? |
+|---|---|---|---|
+| gate 1 `KO − BASE` | −0.20704, 0/67 | −0.28991, 0/23 | ✅ direction and totality |
+| gate 2 `KO_SELF − KO` | −0.00076, p 0.107 | +0.00075, p 0.361 | ✅ inert both |
+| gate 3 `KO_FULL − KO` | +0.07060, 66/1 | +0.09502, **23/0** | ✅ |
+| **recovery fraction (FULL)** | **0.3410** [0.306, 0.375] | **0.3278** [0.290, 0.363] | ✅ **to within 0.013** |
+| **PRIMARY `KO_AXIS − KO_ORTH`** | +0.00041, p **0.290** | +0.00097, p **0.0875** | ✅ **fails on both** |
+| `KO_AXIS` recovery as % of `KO_FULL`'s | **0.6 %** | **1.4 %** | ✅ negligible both |
+| `KO_PLS − KO` | +0.00302, **p 0.001** | +0.00447, **p 0.146** | ❌ **does NOT replicate** |
+
+### Three findings, each now standing on held-out data
+
+**1. The positive result replicates precisely.** The clean query-span rescue recovers
+**≈ one third** of the installation the knockout removes — 34.1 % on TRAIN, 32.8 % held-out, CIs
+overlapping across most of their range. The *absolute* effects differ between splits (validation
+domains are more susceptible: −0.290 vs −0.207) but the **fraction**, which is what the claim is
+about, is stable. This is the sprint's central defensible finding.
+
+**2. The preregistered primary fails on both splits.** VALIDATION's p = 0.0875 is closer to
+significance than TRAIN's 0.290, and the direction is consistently positive — but it does not pass,
+and per S-053 the effect size (+0.00134) sits **inside the range arbitrary rank-1 directions
+produced on TRAIN** (random reached +0.00159). The axis recovers **0.6 %–1.4 %** of what restoring
+the whole state recovers.
+
+**3. The rank-5 result does not survive held-out.** `KO_PLS` was p = 0.001 on TRAIN and is
+**p = 0.146 on VALIDATION**. Together with S-050 — where norm-matched *random* rank-5 subspaces
+spanned −0.0057 to +0.0043 and one beat the candidate — the rank-5 question is closed: **its TRAIN
+significance was dose, and it does not generalise.** Recording this explicitly because S-046
+initially reported the rank-5 arm as the interesting positive, and it is not one.
+
+## Phase 1's answer, final for button
+
+> **Under the A1 demonstration→query attention knockout, the query-span residual state at rel-6/L20
+> causally carries about a third of the knockout's effect on semantic installation — replicated
+> held-out. That effect is NOT carried by any low-dimensional subspace of that state we can
+> identify: neither the rank-1 installation-predictive axis (ranks 4 of 11 against its own
+> norm-matched controls; fails the primary on both splits) nor a rank-5 PLS subspace (inside its
+> rank-matched controls; does not replicate). What predicts recovery is how much of the state is
+> restored, not which directions.**
+
+**Gate A (plan §19) = NO**, on well-controlled, held-out evidence — and the plan's instruction for
+that branch is being followed: *"investigate whether the information is distributed/nonlinear."*
+The position ladder (group D) is that investigation and is running.
+
+## What is still open
+
+* **group C** — 4 shuffled-label rank-5 controls, to complete that distribution;
+* **group D** — the position ladder, the one axis of "how much" still untested;
+* **validation group B** — the held-out rank-1 control family, so the VALIDATION axis number can be
+  stated against its own controls rather than bounded by TRAIN's;
+* **basket** — the cross-codeword transfer test, not yet run for Phase 1;
+* **TEST** — untouched, and nothing here warrants spending it.
