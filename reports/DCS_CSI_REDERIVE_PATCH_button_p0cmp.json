@@ -58,6 +58,12 @@
   }
  },
  "hardware_verdict": "SAME ARCHITECTURE",
+ "arms_inside_declared_job_window": {
+  "ctrl": true,
+  "ko": true,
+  "rescue_clean": true,
+  "sizematch": true
+ },
  "knockout_target_token_histogram": {
   "ctrl": {
    "tokens": {},

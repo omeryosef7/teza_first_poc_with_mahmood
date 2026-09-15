@@ -3,6 +3,7 @@
 #   group A = the gates + the primary contrast + the rank-r candidate  (7 arms)
 #   group B = the rank-1 control DISTRIBUTION: 4 shuffled + 6 random    (10 arms + 1 anchor)
 #   group C = the RANK-5 matched control distribution for KO_PLS         (10 arms + 1 anchor)
+#   group D = the POSITION ladder: full-state rescue at k of ~28 positions (7 arms)
 #
 # WHY TWO GROUPS AND WHY KO_AXIS APPEARS IN BOTH. At ~29 min per 670-row readout arm, 17 arms do
 # not fit one allocation. The split is chosen so that everything the PREREGISTERED PRIMARY
@@ -85,6 +86,19 @@ elif [ "$GROUP" = "B" ]; then
   sub KO_AXIS_ANCHOR cand_rank1
   for j in 0 1 2 3;       do sub "KO_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done
   for i in 0 1 2 3 4 5;   do sub "KO_RAND${i}" "ctrl_random${i}"   cand_rank1; done
+elif [ "$GROUP" = "D" ]; then
+  # GROUP D -- the POSITION ladder (DCS-CSI-051). Phase 1's result is that recovery tracks HOW MUCH
+  # of the state is restored rather than WHICH directions. The dimension ladder said that for
+  # directions; this says it for POSITIONS. Each arm restores the FULL clean state at a
+  # seeded-random subset of k of the ~28 query-span positions, so the only thing varying is how
+  # many positions are restored. If recovery scales smoothly with k the effect is distributed over
+  # the span too; if a few positions carry it, that is localisation and a real finding.
+  # --rescue-n-positions is the existing size-match mechanism (seeded by prompt_id, refuses a row
+  # that cannot supply k), so no new code is involved.
+  for K in 1 2 4 8 14 20 28; do
+    echo ">>> KO_POS${K} $(date -Is)"
+    $SB $COMMON $KO $R --rescue-n-positions "$K" --arm "KO_POS${K}" --tag "${P}_KO_POS${K}"
+  done
 else
   # GROUP C -- the RANK-MATCHED control distribution for the rank-r candidate (DCS-CSI-048).
   # Group B's controls are all rank 1, so KO_PLS (rank 5) had nothing to be compared against at its

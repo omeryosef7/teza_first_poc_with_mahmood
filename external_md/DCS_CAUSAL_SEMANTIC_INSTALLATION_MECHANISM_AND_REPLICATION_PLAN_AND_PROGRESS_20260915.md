@@ -3028,3 +3028,59 @@ wording exposes and the old one hid: with 3 controls the attainable rank-p floor
 even a candidate that beat every control could not reach α = 0.05 — **the rank-5 family needs its
 full 10 controls before any pass is attainable at all.** That is now visible in the verdict string
 instead of buried.
+
+---
+
+## S-051 — rank-5 distribution at 5 of 10 controls; and the POSITION ladder, which is the experiment the result now demands
+
+**Rank-5 control distribution so far** (candidate `KO_PLS` = **+0.00302**):
+
+| control | recovery |
+|---|---|
+| `KO_R5RAND2` | **+0.00428** |
+| `KO_R5RAND1` | −0.00285 |
+| `KO_R5RAND3` | −0.00468 |
+| `KO_R5RAND0` | −0.00532 |
+| `KO_R5RAND4` | −0.00565 |
+
+**Candidate ranks 2 of 6** (rank p = 0.333, attainable floor 0.167). Verdict: does not pass.
+
+**A nuance worth stating, and explicitly labelled EXPLORATORY.** Four of the five random rank-5
+controls are **negative** — a random norm-matched subspace injection typically makes installation
+*worse* than the knockout alone, which makes sense: injecting an arbitrary 5-dim component at 10 %
+of the delta's norm is a perturbation, and perturbations mostly hurt. The candidate is the only
+*positive* arm apart from one random outlier. Against the control **mean** (−0.0028) the candidate
+sits ≈ 1.4 sd high.
+
+**I am not switching to that test.** The rank statistic is what P1-i fixed and what the analyser
+reports, and moving to a parametric comparison *after seeing* that it looks more favourable is
+precisely the move this sprint has spent the day guarding against. The rank verdict stands; the
+distributional observation is recorded as exploratory, to be revisited when all 10 controls land
+(4 shuffled-label rank-5 are still to run, and they are the *harder* control — same fitting
+procedure, same rank, no real labels).
+
+## The next experiment: a POSITION ladder (group D)
+
+Phase 1's finding is that recovery tracks **how much of the state is restored**, not which
+directions. The dimension ladder established that for directions. **Positions are the other axis of
+"how much", and it is untested.**
+
+Group D restores the **full clean state** at a seeded-random subset of **k of the ~28 query-span
+positions**, for k ∈ {1, 2, 4, 8, 14, 20, 28}. Only the number of restored positions varies.
+
+* If recovery scales **smoothly with k**, the effect is distributed across the span as well as
+  across dimensions, and "how much of the state" is the whole story.
+* If **a few positions carry most of it**, that is **localisation** — a genuine positive finding
+  about *where* the installed meaning lives, reachable even though the *directional* question came
+  back null.
+
+This reuses `--rescue-n-positions`, the existing size-match mechanism (seeded per `prompt_id`,
+refuses any row that cannot supply k), so **no new intervention code is involved** — the same
+primitive that produced the behavioural size-match arm, applied to the endpoint that actually has
+resolution.
+
+It is also the natural successor to the **withdrawn** behavioural size-match claim (C2 / S-002):
+that contrast could not be resolved at 2–5 informative domains on refusal, and here it has 67.
+
+**VALIDATION group A launched** (job 897057, n-303, `geforce_rtx_3090`): the seven-arm set on the
+held-out 230 rows / 23 domains, to convert the TRAIN discovery into a held-out claim.
