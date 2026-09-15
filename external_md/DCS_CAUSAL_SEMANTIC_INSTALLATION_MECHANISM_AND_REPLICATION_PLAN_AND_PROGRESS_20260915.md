@@ -3540,3 +3540,11 @@ control is named.
 * a **VALIDATION position ladder** and a **basket ladder**, neither run;
 * **TEST** — untouched. Nothing here warrants spending it, and a null does not need confirming on
   the one-shot split.
+
+**S-058 addendum — the rule from S-057 is now enforced in code, not just adopted.**
+`tests/test_subspace_verdict_branches.py` exercises **every** verdict branch on an input that
+should produce it, including the three configurations this sprint actually shipped and, explicitly,
+**the B1 regression itself** ("a rank-1 candidate with 10 controls is NOT called 'inside the
+controls'"). It also greps the analyser source for each branch condition, so if the decision logic
+and this test drift apart the test fails loudly rather than silently mirroring a stale rule.
+**13/13 pass.** A verdict branch cannot quietly become unreachable again.
