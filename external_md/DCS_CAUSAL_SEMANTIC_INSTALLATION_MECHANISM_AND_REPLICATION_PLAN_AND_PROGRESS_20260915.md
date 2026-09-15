@@ -1455,3 +1455,36 @@ confirms the launcher's inline `NKEEP` computation agrees with an independent re
 
 Completed this tick: 896422 (basket axis), 896423 (basket prompt transfer), plus the claim table
 and this pre-flight. Nothing is blocked except `git push` (S-011). Eleven commits on the branch.
+
+---
+
+## S-024 — the Phase-1 smoke STALLED on weight loading; diagnosed, cancelled, resubmitted
+
+Job 896421 (Phase-1 smoke) on **n-302** sat at `Loading weights: 1/291 [03:24<16:28:37, 204.54s/it]`
+and **the bar did not advance for ~6 minutes**. Against a 2 h walltime and a projection of 16.5 h,
+that job would have died having produced nothing while holding a GPU.
+
+This is the documented diagnostic working as intended: **`squeue` said RUNNING; the weight-loading
+bar in `.err` said stalled.** `squeue` is liveness for the *allocation*, not for the *work*.
+Distinguishing "stuck at shard 1" from "slow but advancing" required two readings a few minutes
+apart — one reading would have been an outlier (the first shard is legitimately the slowest), and
+S-015's basket job *was* genuinely slow-but-advancing and correctly left alone. One data point
+cannot tell those apart; two can.
+
+Cancelled and resubmitted as **896495** with `--exclude=n-302,n-306`; it picked up **n-350** and is
+loading normally.
+
+**A refinement to S-015's rule.** S-015 framed the contention as per-node ("cap ~2 model loads per
+node and spread"). That is incomplete. All of these jobs read the **same Llama snapshot from the
+same NFS export** (`matanbentov/hub/...`), so the binding constraint is the number of **concurrent
+reads of that shared export**, not how the jobs are distributed across nodes — spreading across
+nodes does not help if four jobs are all pulling 16 GB from one mount. The corrected rule:
+
+> **Cap concurrent model loads globally, not per node.** Before submitting a job that loads the
+> model, check how many of my running jobs are still in their weight-loading phase — not how many
+> nodes they occupy. Once a job is past its load, it no longer contends.
+
+By the time 896495 launched, the other three jobs were all past their loads, which is why it is
+loading normally on a node chosen by the scheduler.
+
+Basket `semantic_one_word` corpus (896369): past the load, **2965 / 3720 rows** written.
