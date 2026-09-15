@@ -3685,3 +3685,60 @@ A first, non-inferential observation from 24 rows: **rel −1 (the last token of
 higher readout than rel −6**. That is a hint of non-uniformity, and it is recorded as a hint —
 24 rows, no domain-level statistics, no controls. **Group E launched** (5 arms × 670 rows, rel −1,
 −6, −11, −20, −28) to answer it properly against the ladder's k = 1 benchmark of **+0.00281**.
+
+---
+
+# S-062 — **CROSS-CODEWORD: the central result transfers to `basket`, and recovers MORE — 53 % vs 34 %.** With a confound named.
+
+Basket group A, TRAIN (job 897145): `BASE, KO, KO_SELF, KO_FULL` complete, 670 rows / 67 domains,
+rescue at **L18** (basket's own selected layer, from its own axis artifact — button's parameters
+were never used).
+
+| gate | estimate | CI95 | pos/neg | p |
+|---|---|---|---|---|
+| 1 manipulation `KO − BASE` | **−0.23406** | [−0.2637, −0.2044] | **0 / 67** | < 1e−5 (at floor) |
+| 2 identity `KO_SELF − KO` | −0.00047 | [−0.0015, +0.0006] | 29 / 38 | 0.405 |
+| 3 capability `KO_FULL − KO` | **+0.12390** | [+0.1052, +0.1427] | **67 / 0** | < 1e−5 (at floor) |
+| **recovery fraction** | **0.5293** | **[0.4911, 0.5663]** | — | — |
+
+**Gate 1 reproduces the predecessor's basket measurement.** `CONT-054` recorded basket
+`base = 0.4768`, `ko = 0.2405`, i.e. a drop of **0.2363**; this run gives **0.23406** with `base`
+0.47363 and `ko` 0.23957 — agreement to ~0.002 on independent code and a different day. Gate 3
+moves **every one of the 67 domains**, with no dissenter at all (button had 66/67).
+
+## The transfer, and the difference
+
+| | button TRAIN | button VALIDATION | **basket TRAIN** |
+|---|---|---|---|
+| baseline installation | 0.6784 | 0.6715 | **0.4736** |
+| knockout drop | −0.2070 | −0.2899 | −0.2341 |
+| **recovery fraction** | **0.3410** [0.306, 0.375] | **0.3278** [0.290, 0.363] | **0.5293** [0.491, 0.566] |
+
+> **The qualitative claim transfers cleanly:** the demonstration→query edge is causally necessary for
+> installation on a second codeword (0/67 domains), and the query-span state at the probe site
+> causally carries a large, highly consistent share of that effect (67/67 domains).
+>
+> **The magnitude does not.** Basket recovers **53 %** where button recovers **34 %**, and the
+> confidence intervals **do not overlap** ([0.491, 0.566] vs [0.306, 0.375]).
+
+## ⚠ The confound, stated before anyone reads "codeword-dependent" into it
+
+**Basket's rescue ran at L18; button's at L20.** Each codeword's layer came from its own
+TRAIN-selected axis (S-013, S-021), which is the right procedure for a transfer test — but it means
+the two runs differ in **two** ways at once, and the recovery-fraction gap is **confounded between
+codeword and layer**. I cannot currently say which produces the 53 % vs 34 % difference.
+
+Separating them is one cheap experiment: **basket at L20, or button at L18** (4 arms, ~1 h). It is
+queued as **P1-j** rather than guessed at. Until it runs, the licensed statement is:
+
+* **MAY say:** "the whole-state rescue recovers a large fraction of the installation loss on both
+  codewords — 34 % (button, L20) and 53 % (basket, L18), replicated held-out on button";
+* **MAY NOT say:** "the effect is stronger for basket" or "recovery is codeword-dependent" —
+  the layers differ too.
+
+Worth noting alongside: basket's **baseline installation is much lower** (0.474 vs 0.678), which the
+predecessor phase also found ("basket's baseline is thinner"). So basket both installs less and,
+once knocked out, is restored proportionally more by the same intervention.
+
+**Still running on basket:** `KO_AXIS`, then `KO_PLS`, `KO_ORTH` — the subspace arms, which will say
+whether Phase 1's *negative* also transfers.
