@@ -1343,3 +1343,29 @@ consistent with "a code change touched the data path". I labelled the measuremen
 then wrote the conclusion anyway. Rule reaffirmed: **a diagnosis stated before its confirming
 measurement is a hypothesis, and must be written as one.** Also: do not overwrite an artifact you
 are still using as a comparison baseline — copying only the JSON cost the ability to answer this.
+
+---
+
+## S-020 — loop tick 18:02. Claim table opened; basket-side CPU work launched.
+
+**Deliverable added: `reports/DCS_CSI_CLAIM_TABLE.md`** (plan §21/§27), maintained live and
+organised as the plan requires — **what we can defend / exploratory / CANNOT ANSWER / must not
+say**. It does not overwrite `reports/DCS_CONT_CLAIM_TABLE.md`, which stays the predecessor phase's
+frozen record. Every row cites its statistic, population, caveats and sprint entry. Section D now
+carries **14** standing prohibitions, four of them new this sprint (the withdrawn size-match pass,
+the downgraded 42 % recovery, the sentence-vs-template distinction, and the refuted
+node-sensitivity claim).
+
+**Launched, cross-codeword replication of the two CPU results (both off n-306, per S-015):**
+
+| job | what |
+|---|---|
+| 896422 | basket behavioural axis fit (the Phase-1 basket candidate) |
+| 896423 | basket prompt-level transfer — does S-018's "not sentence-specific" replicate on a second codeword? |
+
+**Still in flight:** 896356 (3090 patch replicate, arm 2/4), 896363 (L40S replicate, arm 1/4),
+896369 (basket semantic corpus, 91 % through its weight load), 896421 (Phase-1 smoke, PENDING).
+
+**Scheduler note:** everything new is PENDING on `(Priority)` — fair-share is depleted by this
+sprint's own submissions. Not a fault, and not something to fix by resubmitting; the 30-minute rule
+applies from `SUBMIT_TIME` and nothing has crossed it yet.
