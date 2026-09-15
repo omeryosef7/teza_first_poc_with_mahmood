@@ -1369,3 +1369,60 @@ node-sensitivity claim).
 **Scheduler note:** everything new is PENDING on `(Priority)` — fair-share is depleted by this
 sprint's own submissions. Not a fault, and not something to fix by resubmitting; the 30-minute rule
 applies from `SUBMIT_TIME` and nothing has crossed it yet.
+
+---
+
+## S-021 — BASKET: the axis reproduces the published number too, and the "not sentence-specific" result REPLICATES cross-codeword
+
+Jobs 896422 (axis) and 896423 (prompt transfer), both COMPLETED.
+
+### Second independent reproduction of the published query-probe number
+
+| | published `DCS_CONT_QPROBE_basket.json` | `dcs_csi_axis.py` |
+|---|---|---|
+| site / layer | rel-6 / L18 | rel-6 / **L18** (selected on TRAIN) |
+| TRAIN LOO rho | 0.6525 | **0.6525** |
+| slots / domains | 670 / 67 | 670 / 67 |
+
+So the axis pipeline now reproduces the prior result on **both** codewords, at each one's own
+selected layer. `bank_sha16 = 79511d9e254571e6` confirms the basket bank (distinct from button's
+`dcd92d723f3e6d00`), so the never-pool guard held.
+
+### An asymmetry in the rank curve that corrects a button-specific statement
+
+| PLS rank | r1 | r2 | r3 | r4 | r5 | rank-1 ridge |
+|---|---|---|---|---|---|---|
+| **button** | 0.5021 | 0.5350 | 0.5482 | 0.5717 | **0.5767** ← boundary | 0.5935 |
+| **basket** | 0.5629 | 0.6354 | **0.6407** ← interior peak | 0.6206 | 0.6123 | 0.6525 |
+
+S-013 said "the selected rank sits at the grid boundary and is therefore not well identified."
+**That is true of button and NOT of basket** — basket's curve has a clean interior maximum at
+**r = 3**, rises to it and falls away. The corrected statement:
+
+* on **both** codewords every PLS rank scores **below** the rank-1 ridge, so `cand_rank1` remains
+  the primary candidate on both;
+* the *rank* is **unidentified on button** (boundary) and **identified at r = 3 on basket**
+  (interior peak). `KO_PLS` therefore stays exploratory on button but is a meaningful second arm on
+  basket.
+
+`ctrl_orth` has |cos| = 0.0 exactly on both. The basket shuffled-label controls all sit slightly
+**negative** (−0.040, −0.049, −0.084, −0.047, −0.042), i.e. near zero as required.
+
+### The prompt-level transfer result replicates
+
+| codeword | fit→score | within-fit LOO | cross-prompt transfer | retention |
+|---|---|---|---|---|
+| button | dev→heldout | 0.5057 | +0.6326 | 1.095 |
+| button | heldout→dev | 0.5865 | +0.5634 | 0.960 |
+| **button mean** | | 0.546 | **+0.598** | **1.095** |
+| basket | dev→heldout | 0.5923 | +0.6705 | 1.132 |
+| basket | heldout→dev | 0.6750 | +0.5820 | 0.862 |
+| **basket mean** | | 0.634 | **+0.626** | **0.988** |
+
+Basket's two directions **bracket 1.0** (1.132 and 0.862) and average to 0.988 — which is the
+cleaner picture and confirms the S-018 reading that retention is ≈ 1 with direction-to-direction
+noise, rather than transfer genuinely exceeding in-sample. **The axis is not sentence-specific on
+either codeword.**
+
+Claim table row **D4** is updated to cross-codeword, and its caveats stand unchanged: this is
+sentence-level, not template-level (C3), not domain-level, and not causal.
