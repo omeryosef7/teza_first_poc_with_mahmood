@@ -1426,3 +1426,32 @@ either codeword.**
 
 Claim table row **D4** is updated to cross-codeword, and its caveats stand unchanged: this is
 sentence-level, not template-level (C3), not domain-level, and not causal.
+
+## S-022 — pre-flight of the Phase-1 launcher population (plan §13 gate)
+
+Before spending a 7-arm allocation, checked the exact population each arm will select — a wrong
+`--expect-n` aborts the whole job, and a split impurity would invalidate it silently:
+
+| codeword | split | `expect_n` | domains | wrong-split domains | excluded domains present | cells selected |
+|---|---|---|---|---|---|---|
+| button | train | 670 | 67 | **0** | **0** | `['C']` |
+| button | validation | 230 | 23 | **0** | **0** | `['C']` |
+| basket | train | 670 | 67 | **0** | **0** | `['C']` |
+| basket | validation | 230 | 23 | **0** | **0** | `['C']` |
+
+All four match the expected counts exactly, contain no domain from another split and none of the
+three globally-excluded domains. The selection resolves to **cell C only**, which is correct —
+`condition=natural_doublespeak` *is* cell C, and installation is defined on cell C — and it
+confirms the launcher's inline `NKEEP` computation agrees with an independent recount.
+
+## S-023 — tick close 18:10
+
+| job | what | state |
+|---|---|---|
+| 896421 | **Phase-1 smoke** (6 arms, 24 rows), L20 / rank 5 | RUNNING on n-302, loading weights |
+| 896369 | basket `semantic_one_word` corpus | RUNNING — past the weight load, **919 / 3720 rows** written |
+| 896356 | 3090 patch replicate | RUNNING, arm 2/4 |
+| 896363 | L40S patch replicate | RUNNING, arm 1/4 |
+
+Completed this tick: 896422 (basket axis), 896423 (basket prompt transfer), plus the claim table
+and this pre-flight. Nothing is blocked except `git push` (S-011). Eleven commits on the branch.
