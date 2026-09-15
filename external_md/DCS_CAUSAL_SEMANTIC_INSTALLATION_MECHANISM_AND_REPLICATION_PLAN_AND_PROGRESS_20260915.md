@@ -3084,3 +3084,74 @@ that contrast could not be resolved at 2–5 informative domains on refusal, and
 
 **VALIDATION group A launched** (job 897057, n-303, `geforce_rtx_3090`): the seven-arm set on the
 held-out 230 rows / 23 domains, to convert the TRAIN discovery into a held-out claim.
+
+---
+
+# S-052 — **DEFINITIVE rank-1 result: the installation axis ranks 4th of 11 in its own control distribution.**
+
+Group B complete (job 896771). The full rank-1 control family — **6 random + 4 shuffled-label**
+directions, every one norm-matched to the candidate per row — analysed on the **666 keys common to
+all 16 arms**.
+
+| | recovery vs KO |
+|---|---|
+| `KO_RAND2` | **+0.00159** |
+| `KO_SHUF2` | **+0.00104** |
+| `KO_RAND3` | **+0.00049** |
+| **`KO_AXIS`  ← the candidate** | **+0.00040** |
+| `KO_SHUF1` | +0.00011 |
+| `KO_RAND5` | +0.00008 |
+| `KO_RAND1` | +0.00005 |
+| `KO_RAND4` | −0.00038 |
+| `KO_SHUF0` | −0.00068 |
+| `KO_RAND0` | −0.00098 |
+| `KO_SHUF3` | −0.00138 |
+
+> **The installation axis ranks 4 of 11.** Three controls — two random directions and one fitted to
+> shuffled labels — recover *more* than it. Rank p = 0.364.
+
+The control distribution is centred near zero (median ≈ +0.00007) with a spread of ±0.0015, and the
+candidate sits unremarkably inside it. **This is not a power failure**: with 10 controls the rank
+test would have reached p = 0.0909 had the candidate been strictly largest, and it is not close to
+largest. (Worth stating plainly, though: 1/11 = **0.0909 is above 0.05**, so a rank test with 10
+controls cannot reach α = 0.05 even in the best case — ≥ 19 controls would be needed. That limits
+what a *positive* could have claimed; it does not soften this negative, which fails on rank, not on
+resolution.)
+
+## Phase 1's answer, stated at full strength
+
+**PR-CSI-001 asked:** under the live A1 knockout, does restoring only the installation-predictive
+component of the query representation restore semantic installation?
+
+**Answer: NO — and the null is comprehensively controlled.**
+
+| | result |
+|---|---|
+| the **site** is causal | `KO_FULL` recovers **+0.0706**, 66/67 domains, 34 % of the knockout's installation loss |
+| the **rank-1 axis** | ranks **4 / 11** in its control distribution; CI [−0.0003, +0.0010] excludes even the linear-in-dose prediction |
+| the **rank-5 subspace** | ranks **2 / 6** so far in its *rank-matched* controls; its apparent significance was **dose** |
+| the **controls** | random and shuffled directions produce effects up to ±0.0016 (rank 1) and ±0.0057 (rank 5) |
+
+**The knockout's effect on semantic installation is distributed.** No low-dimensional subspace we
+can identify at rel-6 / L20 — informative, random, or shuffled — carries it. What predicts recovery
+is **how much of the state you restore**, not which directions.
+
+This is **plan §19 Gate A = NO**, with the plan's own instruction followed: *"Do not force the
+causal-representation story. Investigate whether the information is distributed/nonlinear."* The
+position ladder (group D) is that investigation on the remaining axis.
+
+## Claim-table consequences
+
+**MAY now be said** (TRAIN, button, pending VALIDATION):
+* the demonstration→query attention edge is causally necessary for semantic installation
+  (−0.207, 67/67 domains, reproducing DR-071);
+* the **query-span state at rel-6/L20 causally carries a third of that effect** (whole-state rescue,
+  +0.0706, 66/67);
+* **no rank-1 or rank-5 subspace at that site reproduces it** beyond its matched controls.
+
+**MAY NOT be said:**
+* *"the installation representation is causal"* — refuted here at rank 1 and unsupported at rank 5;
+* *"there is no installation representation"* — `KO_FULL` refutes that; the information is there,
+  it is simply not low-dimensional **at this site and layer**;
+* *"installation is not mediated by the query state"* — the opposite of the `KO_FULL` result;
+* anything about **other layers or sites** — one site, one layer, one codeword, TRAIN only.
