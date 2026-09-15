@@ -2324,3 +2324,68 @@ site carries the effect, the installation-predictive rank-1 component does not �
 that would be a **dissociation from a published positive** (arXiv:2605.18830 found the ICL concept
 subspace *is* causal, with its complement restoring 0 %). That would make the controls matter more,
 not less.
+
+---
+
+## S-041 — **The rank-1 axis spans only 3.6 % of the perturbation.** Recorded BEFORE the primary reads out, because it decides how a null may be interpreted.
+
+The dose fields the S-028 fix put on every row are not bookkeeping — they carry the quantity that
+governs the whole interpretation. Measured on the smoke arms (24 rows, both arms identical prompts):
+
+| quantity | `KO_AXIS` (`cand_rank1`) | `KO_ORTH` (norm-matched control) |
+|---|---|---|
+| ‖delta‖ = ‖h_clean − h_ko‖ per position | **1.4808** | 1.4808 (same rows) |
+| ‖written‖ | 0.0682 | 0.0682 *(matched by construction)* |
+| **captured energy fraction** | **0.0364** | 0.0135 |
+
+**The rank-1 installation axis spans 3.64 % of the norm of the state change the knockout causes.**
+
+### What that number means, against the right baseline
+
+A *random* rank-r subspace of a 4096-dim space captures √(r/d) of an arbitrary vector's norm:
+
+| r | 1 | 3 | 5 | 10 | 50 |
+|---|---|---|---|---|---|
+| √(r/4096) | **1.56 %** | 2.71 % | 3.49 % | 4.94 % | 11.05 % |
+
+So the axis at 3.64 % is **2.3× the geometric baseline** for a random direction, and **2.7×** the
+measured orthogonal control (1.35 %, itself close to the 1.56 % prediction). **The axis is
+genuinely aligned with the knockout's perturbation far more than chance** — which is a real,
+independent corroboration of the observational result, obtained from the intervention's own dose
+record rather than from a probe.
+
+### Why this had to be written down now
+
+If `KO_AXIS` comes back at KO's level, the tempting sentence is *"the installation-predictive
+component is not the causal variable."* **That sentence would not be safe**, because restoring
+**3.6 % of a perturbation's norm** and observing no recovery is close to arithmetically
+unsurprising. That is exactly the trap plan §15 names — *"never conclude 'this state carries
+nothing' from a transplant that has never demonstrated transfer capability"* — in its subtlest
+form: here the transplant *is* capable (Gate 3, +0.071 at 100 % of the delta), but the **candidate
+arm is administering a ~27× smaller dose than the positive control**.
+
+**So the arms are not interchangeable, and the comparisons must be read at matched dose:**
+
+* `KO_FULL` restores **100 %** of the delta → +0.0714 recovery. Comparing `KO_AXIS` to *that* is
+  1 dimension against 4096 and is **not** an apples-to-apples test of the axis.
+* **The preregistered primary is `KO_AXIS − KO_ORTH`** — rank-matched *and* norm-matched to 1.4e−17
+  per row (S-031). That isolates exactly one thing: **at this dose, does the installation direction
+  do more than an arbitrary direction?** The prereg got this right, and it is the contrast that
+  will be reported as primary.
+* `KO_PLS` (rank 5) supplies a **dose rung**: more dimensions, more captured energy (~3.5 % random
+  baseline, so an informative subspace should exceed it).
+
+**Licensed readings, fixed in advance:**
+
+* `KO_AXIS > KO_ORTH` ⇒ the installation direction carries causal weight **at a dose of 3.6 %**,
+  and the effect size should be reported per unit dose, not compared naively to `KO_FULL`.
+* `KO_AXIS ≈ KO_ORTH` ⇒ **at this dose, direction identity does not matter.** That is *not* the
+  same as "the axis is not causal", and it **must not** be written that way. It licenses one
+  further question — whether a larger-rank or amplified intervention along the same direction does
+  anything — and nothing stronger.
+* Either way, the honest headline quantity is **recovery per unit of restored norm**, not raw
+  recovery.
+
+**Checklist addition P1-g:** report captured-energy fraction alongside every subspace arm, and
+express recoveries per unit dose. Already recorded on every row by the S-028 builder, so this costs
+nothing but the reporting discipline.
