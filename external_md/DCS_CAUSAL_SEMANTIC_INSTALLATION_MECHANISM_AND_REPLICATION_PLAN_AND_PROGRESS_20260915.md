@@ -468,3 +468,279 @@ untracked      :
 snapshot exists: YES  (/home/sharifm/students/matanbentov/hub/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659)
 squeue         : 0 job(s) running/pending
 ```
+
+---
+
+## S-002 — P0.5 DONE. Independent re-derivation of the button patch headline: the RUN is clean, the STATISTIC is not. **CORRECTION + WITHDRAWAL.**
+
+New tool: `scripts/dcs_csi_rederive_patch.py`. It does **not** import or call
+`dcs_cont_patch_endpoint.py`. It re-discovers the run directories under a stricter rule,
+re-reads `gens.jsonl` *and* `results.jsonl` from scratch, re-derives population/arm identity/split
+membership from raw rows plus the external split manifest, implements its own domain-clustered
+bootstrap and its own **exact sign-flip randomisation test**, recovers each arm's node/GPU from
+SLURM accounting, and runs a **second, independently written refusal detector** alongside the
+phase's frozen native one. Generation text is read but never printed or written.
+
+Artifacts: `reports/DCS_CSI_REDERIVE_PATCH_button.json`, `reports/DCS_CSI_REDERIVE_PATCH_basket.json`.
+
+### Part 1 — the mechanical audit PASSES on both codewords
+
+| check | button | basket |
+|---|---|---|
+| run dirs: `DONE.json status=ok`, `rows_written == --expect-n == 180`, gens lines == 180 | 4/4 arms | 3/3 arms |
+| identical `prompt_id` set across arms | 180/180 | 180/180 |
+| identical `prompt_sha16` per `prompt_id` across arms (arms saw the *same prompts*) | 0 mismatches | 0 mismatches |
+| shared config surface (bank, model, conditions, n_examples, bank_blocks, exclusions, max_new, dtype, attn_impl, seed) | identical | identical |
+| population | 180 rows / 90 domains | 180 rows / 90 domains |
+| split membership vs external manifest | 67 train + 23 validation, **0 TEST**, 0 excluded | same |
+| model revision | `…/snapshots/0e9e39f249a16976918f6564b8830bc894c89659` | same |
+| dtype / attention | bfloat16 / **eager** on every arm | same |
+| knockout liveness (intervened arms) | prefill edits min 405, median 513, **decode edits 0**, `hook_n_query_rows_edited = 9` on every row (= the 9 layers 6–14), 0 liveness violations | same |
+| rescue liveness | fired on 180/180; layer set `{20}`; 24 positions/row (full span), 12/row (size-match), constant | fired 180/180; layer `{18}` |
+| knockout target token identity | `" button"` × 180 on every intervened arm; CTRL records none (correct — no knockout) | `" basket"` |
+| hardware | ctrl t-806, ko t-806, rescue n-801, sizematch n-803 — **all `l40s`: SAME ARCHITECTURE** | ctrl n-803, ko n-803, rescue t-806 — all `l40s` |
+| detector agreement (native vs independent refusal regex) | **100.00 %** of 720 labels | 100.00 % of 540 labels |
+
+So: the population is right, the arms are right, the intervention was live, the rescue fired, the
+split is clean, no TEST leak, no empty generations, and the refusal endpoint is not an artifact of
+one regex. **`VERDICT: PASS` on both.** Two flags raised in the first pass were verifier bugs, not
+run bugs, and are fixed in the committed version (argparse's inert `--rescue-donor` default on
+non-rescue arms; comparing CTRL's necessarily-empty knockout-target histogram against the
+intervened arms).
+
+### Part 2 — the statistic: **how few events actually carry the headline**
+
+Refusal events, `button`, over the 180-row / 90-domain population:
+
+| arm | refusal rows (of 180) | domains with any refusal (of 90) | domain-mean rate |
+|---|---|---|---|
+| CTRL | 20 | 18 | 0.1111 |
+| KO | 8 | 6 | 0.0444 |
+| RESCUE_CLEAN | 13 | 11 | 0.0722 |
+| SIZEMATCH12 | 11 | 9 | 0.0611 |
+
+Only domains whose **paired** difference is nonzero carry information. With *k* such domains an
+exact two-sided sign-flip test over domains cannot return a p below **2/2^k**. That budget:
+
+| contrast | Δ (domain-mean) | bootstrap CI95 | informative domains *k* | exact p | **attainable p-floor** |
+|---|---|---|---|---|---|
+| KO de-refusal (CTRL−KO) | **+0.0667** | [+0.0333, +0.1000] | **12** (12 pos, 0 neg) | 0.000488 | 0.000488 |
+| recovery (RESCUE−KO) | **+0.0278** | [+0.0056, +0.0556] | **5** (5 pos, 0 neg) | **0.0625** | **0.0625** |
+| size-match recovery (SIZEMATCH−KO) | +0.0167 | [0.0000, +0.0389] | **3** | 0.25 | 0.25 |
+| **full − size-match** | +0.0111 | [0.0000, +0.0278] | **2** | **0.50** | **0.50** |
+| residual (CTRL−RESCUE) | +0.0389 | [+0.0167, +0.0667] | 7 | — | — |
+| recovery fraction | **0.417** | [0.133, 0.714] | denominator from 12 domains | — | — |
+
+Read that column. **The rescue contrast has 5 informative domains; an exact domain-level test on
+5 domains cannot reach p < 0.0625 no matter how large the effect.** The KO contrast's p is *also*
+exactly at its own floor — it exhausted the test's resolution, which is not the same as being
+overwhelmingly strong.
+
+**Why the bootstrap CI looked reassuring and should not have.** With 5 positive and 85 tied
+domains, a domain-resampled bootstrap draw contains zero positive domains with probability
+(85/90)^90 = **0.0058**. So the 2.5th percentile is above zero *by construction* whenever five
+same-signed domains exist. "CI excludes 0" here carries almost no information beyond "five domains
+moved and none moved against"; it is not independent evidence.
+
+### Consequences — status changes
+
+* **CORRECTION to `c029b4fb` ("button patch test PRIMARY result — clean query-rescue recovers
+  ~42% of the KO de-refusal (CI excludes 0)").** The point estimate, the population, the liveness
+  and the mechanics all reproduce exactly. But the significance framing does not survive an exact
+  domain-level test. The defensible statement is now:
+  > Under the live A1 knockout, restoring the clean query span moved refusal from 0.044 back to
+  > 0.072 against a CTRL of 0.111 — a point recovery of 42% of the knockout's de-refusal. The
+  > effect rests on **5 of 90 domains**, all moving in the predicted direction and none against;
+  > an exact domain-level sign-flip test is at its attainable floor of p = 0.0625 and therefore
+  > **cannot certify the effect at α = 0.05**. Status: **EXPLORATORY / DIRECTIONALLY CONSISTENT,
+  > UNDERPOWERED** — not a confirmed causal-mediation result.
+* **WITHDRAWN: `0a8c7e6d` "button size-match PASSES (dose-dependent recovery)".** The
+  full-vs-size-match difference rests on **2 domains** and its exact test cannot go below p = 0.50.
+  The point estimates do order as predicted (full 0.0722 > size-match 0.0611 > KO 0.0444), and the
+  size-match arm is mechanically perfect (12 positions written on every row, constant). But
+  ordering of point estimates is not a PASS, and this is exactly the failure the sprint plan §5.2
+  pre-committed against. **Correct status: CANNOT ANSWER — the position-identity-vs-count control
+  is not resolvable at this event count.**
+* **CONFIRMED CANNOT ANSWER (P0.1): basket.** CTRL 0.00556 / KO 0.000 / RESCUE 0.00556 — that is
+  **one** movable refusal event in the whole 180-row population, *k* = 1 informative domain,
+  attainable p-floor = 1.0, and the recovery-fraction estimator returns `CANNOT ANSWER` from its
+  degeneracy guard. Not a failed replication: **the basket behavioural endpoint could not test the
+  hypothesis.** The forbidden sentence "basket failed to replicate" stands forbidden.
+
+### What this does to the sprint plan
+
+It *strengthens* the plan's two central design choices rather than changing them:
+
+1. **Phase 1 is right to use semantic installation, not refusal, as the primary endpoint.** Button
+   refusal yields 5–12 informative domains at 90 domains; that is not enough resolution to
+   adjudicate a subspace-vs-full-state comparison, which needs to separate several arms that are
+   *closer together* than full-rescue-vs-KO.
+2. **Phase 2's ~260–300-domain bank is not a luxury.** At the observed event rate (20 CTRL refusal
+   rows per 180, and 12 informative domains per 90 for the largest contrast), the arms Phase 5
+   wants to separate are simply not separable at n=90 domains. A domain-unit power calculation is
+   now a hard gate (task **POWER**), not a formality.
+
+Checklist: **P0.1 ✔ · P0.4 ✔** (the strict-run-dir rule is implemented and exercised here) **· P0.5 ✔**.
+P0.2 is superseded in substance — the size-match arm is now analysed, with the honest answer being
+CANNOT ANSWER rather than PASS.
+
+---
+
+## S-003 — Phase 1 premise verified, and the endpoint choice is vindicated by the record
+
+Before building the subspace rescue I checked its load-bearing premise — *does the A1 knockout
+actually move semantic installation?* — against the primary log rather than the plan's summary of
+it. `CONT-ENTRY 054` (predecessor log line 5776 ff.):
+
+| | button (`DR-071`) | basket (`cinstbk_*`) |
+|---|---|---|
+| installation `base` (no knockout) | 0.6785 | 0.4768 |
+| installation `ko` (A1, band 6–14) | 0.4703 | 0.2405 |
+| installation `ctrl` (dose-matched placebo band 20–28) | 0.6854 | 0.4840 |
+| **`ko − ctrl`** | **−0.2150** [−0.234, −0.196] | **−0.2435** [−0.273, −0.213] |
+| **domains moving negative** | **67/67** | **67/67** |
+
+Protocol recovered from the run metadata: scope `target_surface_row_only`, ko band 6–14, placebo
+band 20–28, `--query-kinds semantic_one_word`, `--conditions natural_doublespeak`, `--n-examples 4`,
+`--readout-ids whole_answer`, **`--readout-max-batch 1`**, `--min-option-mass 0.05`, seed 20260913,
+eager/bf16, 670 rows over 67 TRAIN domains, 1735 s per arm (no generation — this is a next-token
+readout, which is why it is ~3× cheaper than the behavioural arms).
+
+Note the arm vocabulary: `ctrl` here is a **dose-matched placebo knockout at a late band**, not a
+no-knockout arm; the no-knockout arm is `base`. Phase 1 keeps all three.
+
+**Why this settles the endpoint question.** Compare the informative-domain budget of the two
+endpoints on the same intervention:
+
+| endpoint | informative domains | attainable exact p-floor |
+|---|---|---|
+| refusal (behavioural), CTRL−KO, 90 domains | **12** | 4.9e−4 |
+| refusal, RESCUE−KO, 90 domains | **5** | **0.0625** |
+| **semantic installation, KO−CTRL, 67 TRAIN domains** | **67** | **1.4e−20** |
+
+The semantic endpoint has **an order of magnitude more resolution** on the same causal pathway.
+Plan §6.1's choice of `y_install` as the Phase-1 primary is therefore not a convenience — it is the
+only endpoint on which the several *closely-spaced* arms a subspace experiment needs (candidate vs
+orthogonal vs shuffled vs random vs full) can possibly be separated.
+
+## S-004 — POWER task DONE: what the behavioural endpoint can and cannot support
+
+`scripts/dcs_csi_power.py` → `reports/DCS_CSI_POWER.json`, `reports/DCS_CSI_POWER.md`. Monte-Carlo
+over the *measured* per-domain refusal profiles, domain unit, exact sign-flip test, α = 0.05.
+
+| contrast | observed effect | power at today's **D = 90** | **D for 80 % power** |
+|---|---|---|---|
+| KO de-refusal (CTRL−KO) | 0.0667 | **0.98** | ≈ 59–63 |
+| **recovery (RESCUE−KO)** | 0.0278 | **0.39** | **≈ 143–147** |
+| size-match (SIZEMATCH−KO) | 0.0167 | 0.08 | ≈ 237 |
+| planned to the CI *lower bound* instead of the point | — | — | KO ≈ 121, recovery ≈ **710** |
+
+MDE at 80 % power (base rate 0.111): **D = 90 → 0.0455** (41 % of base), D = 180 → 0.0221,
+**D = 300 → 0.0134** (12 % of base). MDE scales ≈ 1/D rather than 1/√D because the binding
+constraint is the *count of informative domains*, not row noise.
+
+Two findings beyond the brief, both important:
+
+1. **At D = 90 a recovery-style experiment has a 61 % prior probability of being structurally
+   incapable of significance** — the p-floor 2/2^k exceeds 0.05 before a single token is generated
+   (92 % for the size-match contrast). The observed p = 0.0625 and p = 0.25 in S-002 **are** their
+   floors. This is not hindsight: it is the design's expected behaviour.
+2. **Basket is a headroom problem, not a sample-size problem.** k = 1, p-floor 1.0; ~540 domains
+   would only make significance *attainable*, not likely. No amount of basket data fixes basket.
+
+**Headroom vs domains.** For the limiting recovery contrast, 2× baseline refusal cuts required D by
+46 % (149 → 80) and 3× by 61 % (149 → 58). So a 2×-headroom codeword would make the *existing* 90
+domains adequately powered (0.90) for recovery with **zero new data collection**. Headroom is the
+cheaper lever and converts tied domains into informative ones — but it is a 2–3× lever, not
+orders of magnitude, and the estimate is an upper bound (it assumes arm separation survives on the
+latent scale).
+
+Reconciliation with the prior `DCS_CONT_LINKING_POWER.json` ≈ 252: the two do **not** agree and
+should not — different endpoint (a continuous linking quantity), different estimator (Fisher-z on
+Pearson r, where all N contribute) and different effective N (67 vs 90; here 78 of 90 domains are
+tied and contribute nothing). Both land at 10² domains. **D ≈ 300 satisfies every currently-known
+target simultaneously; D ≈ 150 is the minimum that unblocks recovery alone.**
+
+⇒ This is now the quantitative backing for plan §7.4's "~260–300+ independent domains", and it
+promotes **codeword headroom screening** (§7.2 criterion 3) from a nicety to the single
+highest-leverage design decision in Phase 2.
+
+## S-005 — Phase 1 primitive implemented and unit-tested: `SubspaceDonorPatch`
+
+Additive to `src/boombness/donor_patch.py` (the existing rescue primitive's module), plus
+`tests/test_subspace_donor_patch.py`. **No new stack** — it reuses `DonorBlock`,
+`ActivationCapture` and the existing donor-capture flow in `score_behavior.py` unchanged.
+
+```
+h' = h + P_W (h_donor - h),     P_W = W^T W,   W orthonormal [r, hidden]
+```
+
+Design notes that matter scientifically:
+
+* **One primitive covers both causal directions.** The formula is symmetric in which forward is
+  the donor: live = KO with a clean donor **adds** the installed component (sufficiency); live =
+  CLEAN with a KO donor **removes** it (necessity, plan §6.4). Phase 2 therefore needs no new code,
+  and the two directions cannot drift apart in implementation.
+* **`orthonormalise()` is applied inside the class, not trusted from the caller.** A ridge weight
+  vector is not a unit vector and low-rank components are not orthogonal; projecting with a
+  non-orthonormal basis silently computes something that is not a projection. Linearly dependent
+  rows are refused.
+* **float64 arithmetic, cast once on write.** A bf16 projection of a small delta loses a visible
+  fraction of it.
+* **The token-identity guard was factored out**, not copied: `assert_token_identity()` is now
+  shared by `DonorPatch` and `SubspaceDonorPatch`. Two hand-copied safety checks is how one of
+  them quietly loses it. `DonorPatch`'s behaviour is unchanged and is covered by a test.
+* **Dose is recorded, never inferred**: per-row mean ‖delta‖, ‖P_W(delta)‖, written norm,
+  norm-match target, captured energy fraction, rank, position count, and a degeneracy counter.
+
+### A real bug the tests caught, and what it would have done to the science
+
+The first implementation norm-matched a control by **rescaling its projection** of the delta:
+`proj * (target / max(‖proj‖, 1e-12))`. When the control subspace carries essentially none of the
+difference, `‖proj‖ ≈ 2.6e−17`, so this multiplies floating-point noise by ~1e11 and writes a
+direction that is pure rounding error — the test measured it writing **4e−6 where it should have
+written 0.143**. A norm-matched control that silently writes ~nothing is a control that *cannot
+fail*, and it would have manufactured apparent specificity for the candidate.
+
+Fixed: when a control subspace's projection is degenerate (‖P_W(delta)‖ < 1e−6·‖delta‖) the class
+injects along a **deterministic unit vector of the subspace** at the candidate's norm, and
+**records `n_positions_norm_match_degenerate`** so a degenerate control cannot pass unnoticed.
+
+Two further test "failures" turned out to be the code being right and the test wrong, and both are
+now documented in the test file rather than silently edited away:
+* the token-identity guard is **position-scoped** — a token differing *outside* the patched span
+  cannot misplace anything and must not refuse;
+* a control orthogonal to a candidate that *is* one row of the delta is exactly orthogonal to that
+  row and is **correctly** flagged degenerate. A learned installation axis is never one row's delta,
+  so the test now uses a generic candidate.
+
+`tests/test_subspace_donor_patch.py`: **24/24 PASS**, including the two that carry the most weight —
+a full-rank subspace reproduces `DonorPatch` **exactly** (max|diff| = 0.00e+00, so the subspace arm
+and its own positive control are on the same scale), and add-then-remove returns the unpatched
+forward exactly (so the Phase-2 necessity arm is the same operation run backwards).
+
+## S-006 — two infrastructure failures, recorded
+
+* **The S-002 commit silently did nothing.** `git commit -- <paths>` only accepts *tracked* paths;
+  for new files it errors per-path — and the shell pipeline still exited 0. Lesson for this sprint:
+  **new files must be `git add`-ed first, and every commit must be verified against `git log`, not
+  against an exit code.** (This is the path-limited-commit discipline the shared tree requires,
+  with the new-file case spelled out.)
+* **Job 896365 (basket `semantic_one_word` extraction) FAILED in 71 s.** `--model` was omitted, so
+  it resolved to the HF id `meta-llama/Llama-3.1-8B-Instruct`, which has no weights in the cache on
+  n-306. The button corpus's own metadata records `--model null`, which is how the omission looked
+  reasonable. Fixed by pinning the snapshot path explicitly; resubmitted as **896369**.
+
+### Jobs in flight
+
+| job | what | node | status |
+|---|---|---|---|
+| 896356 | all 4 button patch arms in ONE allocation (P0.6) | n-303, **RTX 3090** | RUNNING |
+| 896363 | same 4 arms pinned to **l40s** (P0.6b, architecture-matched replicate) | — | PENDING |
+| 896369 | basket `semantic_one_word` corpus (Phase 1 cross-codeword prerequisite) | — | PENDING |
+| 896358 | QPROBE basket VALIDATION audit (P0.3) | n-303 | RUNNING |
+
+896356 landing on a 3090 rather than an L40S is **not** a problem for its own internal comparison —
+all four arms share one node and one GPU by construction, which is the whole point. It additionally
+yields a *cross-architecture* churn bound. 896363 supplies the architecture-matched replicate that
+is directly comparable to the published L40S numbers.
