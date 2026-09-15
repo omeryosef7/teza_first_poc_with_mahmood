@@ -3468,3 +3468,75 @@ inverse, a verdict that could not pass.** The rule adopted after round 2 (*"ever
 tested against a deliberately broken input"*) is the right one and I did not apply it to the
 verdict logic itself. **Extended: every VERDICT branch must be exercised on a synthetic input that
 should trigger it**, which is exactly how the reviewer found B1.
+
+---
+
+# S-058 — **PHASE 1 CLOSED.** Rank 4 of 11 on TRAIN *and* on VALIDATION. The one-sided p is fully explained, and no test was switched.
+
+Both control families are complete. The verdict now comes from the rank statistic on both splits —
+the comparison P1-i says supersedes the single comparator — and the two splits agree exactly.
+
+## Rank-1 candidate, both splits, full 10-control families
+
+| | **TRAIN** | **VALIDATION** |
+|---|---|---|
+| candidate `KO_AXIS` | +0.00040 | +0.00132 |
+| **rank in its control distribution** | **4 of 11** | **4 of 11** |
+| controls that beat it | `KO_RAND2` +0.00159, `KO_SHUF2` +0.00104, `KO_RAND3` +0.00049 | `KO_SHUF2` +0.00266, `KO_RAND2` +0.00211, `KO_RAND3` +0.00172 |
+| rank p | 0.364 | 0.364 |
+
+**Identical rank on both splits.** Three arbitrary directions beat the installation axis each time,
+and on both splits the set includes a **shuffled-label** direction.
+
+### This resolves R3-M4 without switching a single test
+
+S-057 recorded that the validation primary's **one-sided** p was **0.0438** — under 0.05 — and that
+switching to it post hoc would be p-hacking. The control family now explains the number outright:
+
+> On VALIDATION the **whole control distribution is shifted positive** — 7 of 10 controls are above
+> zero, up to +0.00266 — whereas on TRAIN it straddles zero. So *any* rank-1 intervention tends
+> positive on these domains. The single-comparator test against one arbitrary control was detecting
+> that general tendency, **not specificity**. The candidate's +0.00132 is unremarkable inside it.
+
+No post-hoc test choice was needed. The statistic P1-i had already designated turns out to give the
+**same answer on both splits**, and it explains the discrepancy the two-sided/one-sided question
+raised rather than arbitrating it.
+
+## Rank-5 candidate, complete 10-control family (TRAIN)
+
+| control | recovery |
+|---|---|
+| **`KO_R5SHUF2`** | **+0.00710** ← a **shuffled-label** subspace, **2.4× the candidate** |
+| `KO_R5RAND2` | +0.00428 |
+| **`KO_PLS` ← candidate** | **+0.00302** |
+| …7 more, down to `KO_R5RAND4` | −0.00565 |
+
+**Candidate ranks 3 of 11.** With the family complete, the *largest effect in the entire rank-5
+experiment belongs to a subspace fitted to randomised labels.* Combined with its failure to
+replicate on VALIDATION (S-054, p = 0.146), the rank-5 question is closed with no ambiguity left.
+
+## Phase 1 — final statement
+
+> **Under the A1 demonstration→query attention knockout, the query-span residual state at rel-6/L20
+> causally carries ≈ 1/3 of the knockout's effect on semantic installation — 34.1 % on TRAIN,
+> 32.8 % held-out, CI [+0.0606, +0.0812] on 66 of 67 domains.**
+>
+> **That effect is not carried by any low-dimensional subspace of that state we can identify.** The
+> rank-1 installation-predictive axis ranks **4 of 11** against norm-matched random and
+> shuffled-label controls **on both splits**; a rank-5 PLS subspace ranks **3 of 11** and is beaten
+> by a shuffled-label subspace. **What predicts recovery is how much of the state is restored, and
+> along the position axis that relationship is close to linear** (S-056).
+
+**Gate A (plan §19) = NO**, on held-out, fully-controlled evidence, with the control distributions
+measured rather than assumed and the verdict taken from the statistic that does not depend on which
+control is named.
+
+## Still open
+
+* **group D** — position ladder rungs k = 20, 28 (5 of 7 done; the k = 28 arm is a built-in
+  consistency check that must reproduce `KO_FULL`);
+* **basket** — cross-codeword transfer, group A running (weight load slow, 51 % at 25 min, node
+  advancing not stalled);
+* a **VALIDATION position ladder** and a **basket ladder**, neither run;
+* **TEST** — untouched. Nothing here warrants spending it, and a null does not need confirming on
+  the one-shot split.
