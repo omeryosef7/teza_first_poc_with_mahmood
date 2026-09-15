@@ -50,7 +50,8 @@ def _load(mod: str, path: str):
     return m
 
 
-def strict_run_dir(tag: str, expect_n: int, row_file: str = "gens.jsonl") -> str:
+def strict_run_dir(tag: str, expect_n: int, row_file: str = "gens.jsonl",
+                   allow_short: int = 0) -> str:
     """The hardening `latest_dir` never had (sprint item P0.4).
 
     `dcs_cont_patch_endpoint.latest_dir` preferred a DONE.json directory but FELL BACK to the
@@ -80,13 +81,24 @@ def strict_run_dir(tag: str, expect_n: int, row_file: str = "gens.jsonl") -> str
         done = json.load(open(dj))
         if done.get("status") != "ok":
             why.append("%s: DONE.status=%r" % (os.path.basename(d), done.get("status"))); continue
-        if int(done.get("rows_written", -1)) != expect_n:
-            why.append("%s: rows_written=%s != expect_n=%d"
-                       % (os.path.basename(d), done.get("rows_written"), expect_n)); continue
+        rw = int(done.get("rows_written", -1))
         n_lines = sum(1 for _ in open(gj))
+        # A run may be SHORT by at most `allow_short` rows -- but only if it is INTERNALLY
+        # CONSISTENT: DONE.json's own count must equal the rows actually on disk. That is the
+        # distinction the repo's run_completeness_check exists to make (a run whose ledger claims
+        # more rows than it wrote is the dangerous case; a run that honestly reports a ledgered
+        # refusal is not). Downstream, the analyser intersects (domain, slot) keys across arms, so
+        # a short arm cannot make one arm's domain mean an average over more slots than another's.
+        if rw != n_lines:
+            why.append("%s: DONE.json says rows_written=%d but %s holds %d lines -- the ledger and "
+                       "the file disagree" % (os.path.basename(d), rw, row_file, n_lines)); continue
         if n_lines != expect_n:
-            why.append("%s: %s has %d lines != %d" % (os.path.basename(d), row_file, n_lines, expect_n))
-            continue
+            if allow_short and (expect_n - n_lines) <= allow_short and n_lines < expect_n:
+                pass                      # documented short; accepted and reported by the caller
+            else:
+                why.append("%s: %s has %d lines != %d" % (os.path.basename(d), row_file, n_lines,
+                                                          expect_n))
+                continue
         ok.append(d)
     if len(ok) != 1:
         raise SystemExit("REFUSING for tag %r: %d complete run dirs (need exactly 1).\n  rejected:\n%s\n"

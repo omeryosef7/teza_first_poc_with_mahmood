@@ -2861,3 +2861,75 @@ ran against. The artifact records the merge and its provenance in `meta.rank_mat
 
 Either way it is the contrast that decides, and it is now preregistered by this entry before the
 arms have produced a single row.
+
+---
+
+## S-049 — the shuffled-label controls **calibrate** the null: the candidate sits *inside* the control distribution, and one shuffled control beats it
+
+Group B's four rank-1 shuffled-label controls are complete. Re-analysed with all 11 available arms
+on the **668 keys common to every arm** (the cross-arm intersection from S-047 doing its job — two
+arms are short by one row each, so every arm is compared on the same 668).
+
+`VOID: []`. All gates pass. Primary essentially unchanged: **`KO_AXIS − KO_ORTH` = +0.00040,
+CI [−0.00036, +0.00114], p = 0.308.**
+
+### Recoveries against KO (67 domains)
+
+| arm | recovery | CI95 | pos/neg | p |
+|---|---|---|---|---|
+| `KO_FULL` | **+0.06968** | [+0.0596, +0.0803] | 66/1 | < 1e−5 |
+| `KO_PLS` (rank 5) | **+0.00295** | [+0.0012, +0.0046] | 49/18 | **0.0013** |
+| `KO_SHUF2` | **+0.00098** | [+0.0004, +0.0016] | 46/21 | **0.0020** |
+| **`KO_AXIS`** (candidate) | **+0.00037** | [−0.0003, +0.0010] | 40/27 | 0.292 |
+| `KO_ORTH` | −0.00003 | [−0.0008, +0.0007] | 34/33 | 0.936 |
+| `KO_SHUF1` | −0.00000 | [−0.0007, +0.0006] | 38/29 | 0.992 |
+| `KO_SHUF0` | −0.00073 | [−0.0016, +0.0001] | 27/40 | 0.100 |
+| `KO_SHUF3` | **−0.00144** | [−0.0021, −0.0008] | 24/43 | **0.00015** |
+
+### The finding: **shuffled-label controls are not null, and the candidate is not the best of them**
+
+Two of four shuffled controls are individually significant at p < 0.05 — **in opposite directions**
+(`KO_SHUF2` **+0.00098**, `KO_SHUF3` **−0.00144**). The shuffled spread runs from −0.0014 to
++0.0010, i.e. **±0.001**, which is **larger than the candidate's entire effect** (+0.00037).
+
+> **The candidate ranks 2nd of 5 in the control distribution — `KO_SHUF2`, a direction fitted to
+> randomised labels, recovers 2.6× more than the real installation axis.**
+
+That is the calibration the primary null needed. It is no longer only "the axis does no better than
+an orthogonal direction"; it is **"the axis does no better than a direction fitted to shuffled
+labels, and worse than one of them."** Any rank-1 perturbation of this norm nudges the readout by
+~±0.001 in an arbitrary direction, and the installation axis is indistinguishable from that noise.
+
+### A methodological correction to my own specificity test
+
+Holm over the four candidate-vs-control contrasts rejects **only `KO_SHUF3`** (p_holm = 0.00034).
+**That rejection does not support specificity** — it fires because `KO_SHUF3` is unusually
+*negative*, so `candidate − SHUF3` is positive. My specificity test is **two-sided**, which
+conflates *"the candidate beats this control"* with *"the candidate differs from this control"*.
+
+Recorded rather than silently reinterpreted: for a specificity claim the test must be **one-sided**
+(candidate > control). Under a one-sided reading the honest summary is the rank statistic the
+analyser already reports: **candidate rank 2 of 5, attainable rank-p floor 0.2** — no specificity,
+and not enough controls to have shown any even if it existed. **Checklist P1-h:** make the
+specificity test one-sided and report direction per control.
+
+### What this does and does not change
+
+* **Strengthens** the S-046 primary null substantially — it is now bracketed by a measured control
+  distribution rather than a single orthogonal draw.
+* **Raises the bar for `KO_PLS`.** At +0.00295 it is 3× the largest shuffled rank-1 control, which
+  is suggestive — but those controls are **rank 1** and `KO_PLS` is **rank 5**, so the comparison is
+  still dose-confounded. **Group C is now the load-bearing experiment of this phase**, not a
+  nicety: without rank-5 matched controls, "+0.00295 beats the rank-1 shuffled spread" is a
+  statement about dimensionality, not direction.
+* Six rank-1 random controls (`KO_RAND0..5`) are still running and will widen the calibration.
+
+**Addendum to S-049 — the short-run documentation is now automated, but only for the cause it can verify.**
+`KO_RAND0` came back 669/670 from the same degeneracy refusal (row `dd0c77189b0e8fcb`), and with
+~20 control arms still to run this will recur. Rather than hand-write each `KNOWN_SHORT` entry —
+which invites a copy-paste that says something slightly untrue about a run nobody re-checked —
+`scripts/dcs_csi_known_short.py` generates them, and **refuses any run it cannot verify**: the
+shortfall must be ledgered *entirely* to the degeneracy refusal, and the ledger's counts must agree
+with the rows on disk. Anything else it prints as `LEFT FOR A HUMAN`. That keeps the guard's
+purpose — forcing per-run justification — while removing the transcription risk it would otherwise
+create.

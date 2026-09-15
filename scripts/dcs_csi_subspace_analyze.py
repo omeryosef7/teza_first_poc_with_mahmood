@@ -166,7 +166,8 @@ def row_meta(run_dir):
            "rescue_fired": 0, "rescue_layers": set(), "basis_keys": set(), "rescue_basis": None,
            "norm_match_keys": set(), "written_norm": [], "captured_frac": [],
            "degenerate_positions": 0, "n_rescue_positions": set(),
-           "liveness_violations": 0, "models": set(), "knockout_scopes": set()}
+           "liveness_violations": 0, "models": set(), "knockout_scopes": set(),
+           "written_norm_by_pid": {}}
     pre = []
     with open(os.path.join(run_dir, "results.jsonl")) as f:
         for line in f:
@@ -185,6 +186,7 @@ def row_meta(run_dir):
                     out["rescue_fired"] += 1
                 if rl.get("written_norm_mean") is not None:
                     out["written_norm"].append(rl["written_norm_mean"])
+                    out["written_norm_by_pid"][r["prompt_id"]] = rl["written_norm_mean"]
                 if rl.get("captured_energy_frac_mean") is not None:
                     out["captured_frac"].append(rl["captured_energy_frac_mean"])
                 out["degenerate_positions"] += (rl.get("n_positions_norm_match_degenerate") or 0)
@@ -244,6 +246,10 @@ def main() -> int:
     ap.add_argument("--base-arm", default="BASE")
     ap.add_argument("--self-arm", default="KO_SELF")
     ap.add_argument("--split", default="train", choices=("train", "validation"))
+    ap.add_argument("--allow-short", type=int, default=0,
+                    help="accept arms short by at most N rows, provided DONE.json's count matches "
+                         "the rows on disk. The cross-arm key intersection makes a short arm safe; "
+                         "a ledger/file DISAGREEMENT is never accepted.")
     ap.add_argument("--n-boot", type=int, default=20000)
     ap.add_argument("--option-mass-reference", default="BASE",
                     help="P1-f: the ONE arm whose option mass defines the retained key set, then "
@@ -267,13 +273,14 @@ def main() -> int:
         if a.option_mass_reference not in arms:
             raise SystemExit("--option-mass-reference %r is not among --arms" % a.option_mass_reference)
         _refdir = rederive.strict_run_dir("%s_%s" % (a.tag_prefix, a.option_mass_reference),
-                                          a.expect_n, row_file="results.jsonl")
+                                          a.expect_n, row_file="results.jsonl",
+                                          allow_short=a.allow_short)
         keep_keys = reference_key_set(_refdir, a.option_mass_floor)
         print("[P1-f] key set from reference arm %s at floor %g: %d keys retained"
               % (a.option_mass_reference, a.option_mass_floor, len(keep_keys)))
     for arm in arms:
         d = rederive.strict_run_dir("%s_%s" % (a.tag_prefix, arm), a.expect_n,
-                                    row_file="results.jsonl")
+                                    row_file="results.jsonl", allow_short=a.allow_short)
         dirs[arm] = d
         kv[arm], n_inst, kinds = arm_key_values(d, assign, a.split)
         n_drop = 0
@@ -333,8 +340,9 @@ def main() -> int:
             void.append("%s: dtype=%r" % (x, meta[x]["dtype"]))
     for arm in arms:
         m = meta[arm]
-        if m["n_rows"] != a.expect_n:
-            void.append("%s: %d rows != expect_n %d" % (arm, m["n_rows"], a.expect_n))
+        if m["n_rows"] != a.expect_n and (a.expect_n - m["n_rows"]) > a.allow_short:
+            void.append("%s: %d rows != expect_n %d (beyond --allow-short %d)"
+                        % (arm, m["n_rows"], a.expect_n, a.allow_short))
         if m["liveness_violations"]:
             void.append("%s: %d rows with hook liveness violations" % (arm, m["liveness_violations"]))
         if len(m["models"]) != 1:
@@ -351,8 +359,9 @@ def main() -> int:
         # the reviewer end-to-end: rescue_fired 0/100, VOID [], all gates true, "PRIMARY PASSES".
         # No arm that declares a rescue is exempt.
         if arm.startswith("KO_") and arm != a.base_arm and arm != a.ko_arm:
-            if m["rescue_fired"] != a.expect_n:
-                void.append("%s: rescue fired on %d of %d rows" % (arm, m["rescue_fired"], a.expect_n))
+            if m["rescue_fired"] != m["n_rows"]:
+                void.append("%s: rescue fired on %d of the %d rows it persisted"
+                            % (arm, m["rescue_fired"], m["n_rows"]))
         if len({tuple(meta[x]["rescue_layers"]) for x in arms if meta[x]["rescue_layers"]}) > 1:
             pass  # reported below once, not per arm
     layers_used = {x: meta[x]["rescue_layers"] for x in arms if meta[x]["rescue_layers"]}
@@ -404,10 +413,22 @@ def main() -> int:
         if m["degenerate_positions"]:
             void.append("%s: %d norm-match-degenerate positions (control injected a deterministic "
                         "basis vector rather than a projection)" % (arm, m["degenerate_positions"]))
-        if cand_norm and m["written_norm"]:
-            if abs(m["written_norm"]["mean"] - cand_norm["mean"]) > 1e-5:
-                void.append("%s: written norm %.6f != candidate %.6f -- NOT norm-matched"
-                            % (arm, m["written_norm"]["mean"], cand_norm["mean"]))
+        # NORM MATCH ON COMMON ROWS. Comparing per-arm MEANS is wrong whenever two arms persisted
+        # different row sets -- a short arm's mean is over a different population, so a real match
+        # reads as a mismatch (and a real mismatch could read as a match). This is the same
+        # "averages over non-identical key sets" defect as review R2-B1 and S-047, in a third
+        # place. The comparison is therefore per prompt_id over the intersection.
+        _cw = (meta.get(a.candidate_arm) or {}).get("written_norm_by_pid") or {}
+        _aw = m.get("written_norm_by_pid") or {}
+        if _cw and _aw:
+            shared = set(_cw) & set(_aw)
+            if not shared:
+                void.append("%s: no prompt_id shared with the candidate for a norm check" % arm)
+            else:
+                worst = max(abs(_aw[p] - _cw[p]) for p in shared)
+                if worst > 1e-5:
+                    void.append("%s: written norm differs from the candidate by up to %.3e on "
+                                "%d shared rows -- NOT norm-matched" % (arm, worst, len(shared)))
 
     # ---- IN-SAMPLE detection (review M4). The axis is fit on TRAIN, so a TRAIN evaluation is
     # in-sample BY DESIGN and is the gate, not the claim; VALIDATION is the claim. This makes the
