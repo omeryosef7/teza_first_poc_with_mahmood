@@ -1,0 +1,376 @@
+{
+ "schema": "dcs_csi_codeword_tokens/1",
+ "model": "/home/sharifm/students/matanbentov/hub/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659",
+ "rows": [
+  {
+   "word": "button",
+   "n_tok_space": 1,
+   "n_tok_bare": 1,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " button"
+   ]
+  },
+  {
+   "word": "basket",
+   "n_tok_space": 1,
+   "n_tok_bare": 1,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " basket"
+   ]
+  },
+  {
+   "word": "carrot",
+   "n_tok_space": 1,
+   "n_tok_bare": 2,
+   "n_tok_cap": 2,
+   "tok_space": [
+    " carrot"
+   ]
+  },
+  {
+   "word": "ticket",
+   "n_tok_space": 1,
+   "n_tok_bare": 1,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " ticket"
+   ]
+  },
+  {
+   "word": "lamp",
+   "n_tok_space": 1,
+   "n_tok_bare": 1,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " lamp"
+   ]
+  },
+  {
+   "word": "kettle",
+   "n_tok_space": 1,
+   "n_tok_bare": 2,
+   "n_tok_cap": 2,
+   "tok_space": [
+    " kettle"
+   ]
+  },
+  {
+   "word": "pencil",
+   "n_tok_space": 1,
+   "n_tok_bare": 2,
+   "n_tok_cap": 2,
+   "tok_space": [
+    " pencil"
+   ]
+  },
+  {
+   "word": "ladder",
+   "n_tok_space": 1,
+   "n_tok_bare": 2,
+   "n_tok_cap": 2,
+   "tok_space": [
+    " ladder"
+   ]
+  },
+  {
+   "word": "blanket",
+   "n_tok_space": 1,
+   "n_tok_bare": 2,
+   "n_tok_cap": 2,
+   "tok_space": [
+    " blanket"
+   ]
+  },
+  {
+   "word": "mirror",
+   "n_tok_space": 1,
+   "n_tok_bare": 1,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " mirror"
+   ]
+  },
+  {
+   "word": "bucket",
+   "n_tok_space": 1,
+   "n_tok_bare": 1,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " bucket"
+   ]
+  },
+  {
+   "word": "candle",
+   "n_tok_space": 1,
+   "n_tok_bare": 2,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " candle"
+   ]
+  },
+  {
+   "word": "napkin",
+   "n_tok_space": 2,
+   "n_tok_bare": 2,
+   "n_tok_cap": 2,
+   "tok_space": [
+    " nap",
+    "kin"
+   ]
+  },
+  {
+   "word": "pillow",
+   "n_tok_space": 1,
+   "n_tok_bare": 2,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " pillow"
+   ]
+  },
+  {
+   "word": "saddle",
+   "n_tok_space": 1,
+   "n_tok_bare": 2,
+   "n_tok_cap": 2,
+   "tok_space": [
+    " saddle"
+   ]
+  },
+  {
+   "word": "teapot",
+   "n_tok_space": 2,
+   "n_tok_bare": 2,
+   "n_tok_cap": 2,
+   "tok_space": [
+    " te",
+    "apot"
+   ]
+  },
+  {
+   "word": "wagon",
+   "n_tok_space": 1,
+   "n_tok_bare": 1,
+   "n_tok_cap": 2,
+   "tok_space": [
+    " wagon"
+   ]
+  },
+  {
+   "word": "mitten",
+   "n_tok_space": 2,
+   "n_tok_bare": 2,
+   "n_tok_cap": 2,
+   "tok_space": [
+    " m",
+    "itten"
+   ]
+  },
+  {
+   "word": "cushion",
+   "n_tok_space": 1,
+   "n_tok_bare": 3,
+   "n_tok_cap": 2,
+   "tok_space": [
+    " cushion"
+   ]
+  },
+  {
+   "word": "curtain",
+   "n_tok_space": 1,
+   "n_tok_bare": 2,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " curtain"
+   ]
+  },
+  {
+   "word": "envelope",
+   "n_tok_space": 1,
+   "n_tok_bare": 2,
+   "n_tok_cap": 2,
+   "tok_space": [
+    " envelope"
+   ]
+  },
+  {
+   "word": "stapler",
+   "n_tok_space": 2,
+   "n_tok_bare": 3,
+   "n_tok_cap": 2,
+   "tok_space": [
+    " stap",
+    "ler"
+   ]
+  },
+  {
+   "word": "thimble",
+   "n_tok_space": 3,
+   "n_tok_bare": 3,
+   "n_tok_cap": 3,
+   "tok_space": [
+    " th",
+    "im",
+    "ble"
+   ]
+  },
+  {
+   "word": "bottle",
+   "n_tok_space": 1,
+   "n_tok_bare": 2,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " bottle"
+   ]
+  },
+  {
+   "word": "jacket",
+   "n_tok_space": 1,
+   "n_tok_bare": 2,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " jacket"
+   ]
+  },
+  {
+   "word": "ribbon",
+   "n_tok_space": 1,
+   "n_tok_bare": 1,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " ribbon"
+   ]
+  },
+  {
+   "word": "sponge",
+   "n_tok_space": 1,
+   "n_tok_bare": 2,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " sponge"
+   ]
+  },
+  {
+   "word": "trolley",
+   "n_tok_space": 2,
+   "n_tok_bare": 2,
+   "n_tok_cap": 2,
+   "tok_space": [
+    " t",
+    "rolley"
+   ]
+  },
+  {
+   "word": "whistle",
+   "n_tok_space": 1,
+   "n_tok_bare": 2,
+   "n_tok_cap": 2,
+   "tok_space": [
+    " whistle"
+   ]
+  },
+  {
+   "word": "yogurt",
+   "n_tok_space": 1,
+   "n_tok_bare": 3,
+   "n_tok_cap": 2,
+   "tok_space": [
+    " yogurt"
+   ]
+  },
+  {
+   "word": "apple",
+   "n_tok_space": 1,
+   "n_tok_bare": 1,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " apple"
+   ]
+  },
+  {
+   "word": "banana",
+   "n_tok_space": 1,
+   "n_tok_bare": 1,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " banana"
+   ]
+  },
+  {
+   "word": "chair",
+   "n_tok_space": 1,
+   "n_tok_bare": 1,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " chair"
+   ]
+  },
+  {
+   "word": "table",
+   "n_tok_space": 1,
+   "n_tok_bare": 1,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " table"
+   ]
+  },
+  {
+   "word": "window",
+   "n_tok_space": 1,
+   "n_tok_bare": 1,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " window"
+   ]
+  },
+  {
+   "word": "garden",
+   "n_tok_space": 1,
+   "n_tok_bare": 2,
+   "n_tok_cap": 1,
+   "tok_space": [
+    " garden"
+   ]
+  },
+  {
+   "word": "balloon",
+   "n_tok_space": 1,
+   "n_tok_bare": 2,
+   "n_tok_cap": 2,
+   "tok_space": [
+    " balloon"
+   ]
+  },
+  {
+   "word": "crayon",
+   "n_tok_space": 2,
+   "n_tok_bare": 3,
+   "n_tok_cap": 3,
+   "tok_space": [
+    " cray",
+    "on"
+   ]
+  },
+  {
+   "word": "muffin",
+   "n_tok_space": 2,
+   "n_tok_bare": 3,
+   "n_tok_cap": 3,
+   "tok_space": [
+    " muff",
+    "in"
+   ]
+  },
+  {
+   "word": "tulip",
+   "n_tok_space": 2,
+   "n_tok_bare": 2,
+   "n_tok_cap": 2,
+   "tok_space": [
+    " tul",
+    "ip"
+   ]
+  }
+ ]
+}

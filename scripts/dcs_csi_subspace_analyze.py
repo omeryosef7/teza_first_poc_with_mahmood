@@ -53,7 +53,7 @@ def arm_domain_means(run_dir, assign, keep_split):
 def row_meta(run_dir):
     """Liveness, dose and basis identity, read from the rows -- never from the summary."""
     out = {"n_rows": 0, "prefill_edits_min": None, "decode_edits_total": 0,
-           "rescue_fired": 0, "rescue_layers": set(), "basis_keys": set(),
+           "rescue_fired": 0, "rescue_layers": set(), "basis_keys": set(), "rescue_basis": None,
            "norm_match_keys": set(), "written_norm": [], "captured_frac": [],
            "degenerate_positions": 0, "n_rescue_positions": set(),
            "liveness_violations": 0, "models": set(), "knockout_scopes": set()}
@@ -83,12 +83,23 @@ def row_meta(run_dir):
                 out["rescue_layers"].add(r["rescue_layer"])
             if r.get("rescue_basis_key"):
                 out["basis_keys"].add(r["rescue_basis_key"])
+            if r.get("rescue_basis"):
+                out["rescue_basis"] = r["rescue_basis"]
             if r.get("rescue_norm_match_key"):
                 out["norm_match_keys"].add(r["rescue_norm_match_key"])
+            if r.get("rescue_basis_meta"):
+                out.setdefault("basis_meta", set()).add(
+                    json.dumps(r["rescue_basis_meta"], sort_keys=True))
     out["prefill_edits_min"] = min(pre) if pre else None
     for k in ("rescue_layers", "basis_keys", "norm_match_keys", "models", "knockout_scopes",
               "n_rescue_positions"):
         out[k] = sorted(x for x in out[k] if x is not None)
+    bm = out.pop("basis_meta", None)
+    if bm:
+        if len(bm) != 1:
+            raise SystemExit("run %r mixes %d different rescue_basis_meta values -- the arm did "
+                             "not use one basis" % (run_dir, len(bm)))
+        out["basis_meta"] = json.loads(list(bm)[0])
     for k in ("written_norm", "captured_frac"):
         v = out[k]
         out[k] = {"mean": round(sum(v) / len(v), 6), "min": round(min(v), 6),
@@ -139,6 +150,16 @@ def main() -> int:
         dirs[arm] = d
         dmeans[arm], n_inst, kinds = arm_domain_means(d, assign, a.split)
         meta[arm] = row_meta(d)
+        # BANK IDENTITY. `prompt_id` is derived from the row's AXES, not its text, so it is 100%
+        # shared between the button and basket banks (measured: 4002/4002), while `prompt_sha16`
+        # overlaps only 25% (the codeword-degenerate cells). That means an arm accidentally run on
+        # the wrong codeword's bank would pass every prompt_id-based check silently. The bank path
+        # is therefore read from the run's own config and asserted here.
+        cfg = json.load(open(os.path.join(d, "config.json")))["args"]
+        meta[arm]["bank"] = cfg.get("bank")
+        meta[arm]["exclude_prompt_ids"] = cfg.get("exclude_prompt_ids")
+        meta[arm]["attn_impl"] = cfg.get("attn_impl")
+        meta[arm]["dtype"] = cfg.get("dtype")
         meta[arm]["installation_rows_all_splits"] = n_inst
         meta[arm]["channels_present"] = kinds
         print("[dir ] %-10s %-52s  %s-domains=%d"
@@ -150,6 +171,19 @@ def main() -> int:
 
     # ---------------------------------------------------------------- VOID conditions, first
     void = []
+    banks = {meta[x]["bank"] for x in arms}
+    if len(banks) != 1:
+        void.append("arms used DIFFERENT banks: %s" % sorted(banks))
+    elif a.codeword not in (list(banks)[0] or ""):
+        void.append("bank %r does not name codeword %r" % (list(banks)[0], a.codeword))
+    excls = {meta[x]["exclude_prompt_ids"] for x in arms}
+    if len(excls) != 1:
+        void.append("arms used DIFFERENT exclusion files: %s" % sorted(excls))
+    for x in arms:
+        if meta[x]["attn_impl"] != "eager":
+            void.append("%s: attn_impl=%r (the knockout requires eager)" % (x, meta[x]["attn_impl"]))
+        if meta[x]["dtype"] != "bfloat16":
+            void.append("%s: dtype=%r" % (x, meta[x]["dtype"]))
     for arm in arms:
         m = meta[arm]
         if m["n_rows"] != a.expect_n:
@@ -193,7 +227,30 @@ def main() -> int:
                 void.append("%s: written norm %.6f != candidate %.6f -- NOT norm-matched"
                             % (arm, m["written_norm"]["mean"], cand_norm["mean"]))
 
+    # ---- IN-SAMPLE detection (review M4). The axis is fit on TRAIN, so a TRAIN evaluation is
+    # in-sample BY DESIGN and is the gate, not the claim; VALIDATION is the claim. This makes the
+    # distinction a recorded fact rather than an assumption, by reading the fit-domain fingerprint
+    # off the rows and the fit-domain LIST out of the axis artifact the rows name.
+    in_sample = {}
+    for arm in arms:
+        bmeta = meta[arm].get("basis_meta")
+        if not bmeta:
+            continue
+        cand = os.path.join(REPO, "configs",
+                            os.path.basename(str(meta[arm].get("rescue_basis") or "")).replace(".pt", ".json"))
+        fit_doms = None
+        if os.path.exists(cand):
+            fit_doms = set((json.load(open(cand)).get("fit_population") or {}).get("domains") or [])
+        n_overlap = len(set(doms) & fit_doms) if fit_doms is not None else None
+        in_sample[arm] = {"fit_split": bmeta.get("fit_split"),
+                          "n_fit_domains": bmeta.get("n_fit_domains"),
+                          "fit_domains_sha16": bmeta.get("fit_domains_sha16"),
+                          "basis_sha16": bmeta.get("basis_sha16"),
+                          "scored_domains_also_in_fit": n_overlap,
+                          "evaluation_is_in_sample": (None if n_overlap is None else n_overlap > 0)}
+
     out = {"schema": "dcs_csi_subspace/1", "prereg": "configs/dcs_csi_pr001_subspace_rescue.json",
+           "in_sample": in_sample,
            "codeword": a.codeword, "split": a.split, "arms": arms,
            "run_dirs": {k: os.path.basename(v) for k, v in dirs.items()},
            "n_domains": len(doms), "arm_meta": meta,

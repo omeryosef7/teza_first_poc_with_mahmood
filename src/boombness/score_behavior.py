@@ -2037,11 +2037,38 @@ def make_rescue_basis_loader(args):
                      m.get("selected_layer"), (m.get("fit_population") or {}).get("n_domains"),
                      (m.get("bases") or {}).get(args.rescue_basis_key, {}).get("sha16"),
                      args.rescue_norm_match_key or None))
+            # REVIEW M2. This was a print-only WARNING, which is this repo's own "threshold
+            # published but never enforced" bug class -- compare assert_control_norm_matched,
+            # which SystemExits on the analogous condition. A basis fit at one layer written at
+            # another is a different experiment wearing the same arm label.
             if m.get("selected_layer") is not None and int(m["selected_layer"]) != int(args.rescue_layer):
-                print("[rescue-basis] WARNING: basis was fit at layer L%s but --rescue-layer is L%s"
-                      % (m["selected_layer"], args.rescue_layer))
+                raise SystemExit(
+                    "REFUSING: basis %r was fit at layer L%s but --rescue-layer is L%s. Pass the "
+                    "layer the basis was fit at, or fit a basis at the layer you mean to write."
+                    % (args.rescue_basis_key, m["selected_layer"], args.rescue_layer))
+            # REVIEW M3. Nothing cross-checked the axis's own declared codeword/bank against the
+            # population being scored -- and `prompt_id` is 100% shared across codeword banks, so a
+            # button-fit axis on a basket run would pass every id-based check silently.
+            _cw = m.get("codeword")
+            if _cw and _cw not in (args.bank or ""):
+                raise SystemExit(
+                    "REFUSING: basis was fit for codeword %r but --bank is %r. prompt_id is shared "
+                    "across codeword banks, so nothing downstream would catch this."
+                    % (_cw, args.bank))
         return state["B"], state["NB"]
 
+    def _meta():
+        _get()
+        m = state["meta"]
+        fp = m.get("fit_population") or {}
+        return {"codeword": m.get("codeword"), "fit_prompt": m.get("fit_prompt"),
+                "site": m.get("site"), "selected_layer": m.get("selected_layer"),
+                "bank_sha16": m.get("bank_sha16"),
+                "fit_split": fp.get("split"), "n_fit_domains": fp.get("n_domains"),
+                "fit_domains_sha16": fp.get("domains_sha16"),
+                "basis_sha16": (m.get("bases") or {}).get(args.rescue_basis_key, {}).get("sha16")}
+
+    _get.meta = _meta
     return _get
 
 
@@ -3824,6 +3851,12 @@ def main() -> int:
                                     "rescue_basis": (os.path.basename(args.rescue_basis)
                                                      if args.rescue_basis else None),
                                     "rescue_basis_key": args.rescue_basis_key or None,
+                                    # REVIEW M4: WHICH domains the axis was fit on, travelling on
+                                    # the row. Without it an analysis cannot tell an in-sample
+                                    # score from a held-out one, and the fit-domain list existed
+                                    # only on a stdout line nobody kept.
+                                    "rescue_basis_meta": (_rescue_bases.meta()
+                                                          if args.rescue_basis else None),
                                     "rescue_norm_match_key": args.rescue_norm_match_key or None,
                                     "rescue_layer": args.rescue_layer,
                                     "rescue_donor": (args.rescue_donor

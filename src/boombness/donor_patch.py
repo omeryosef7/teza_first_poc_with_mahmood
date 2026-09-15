@@ -121,7 +121,9 @@ class DonorPatch:
     def _hook(self, module, inputs, output):
         hidden = output[0] if isinstance(output, tuple) else output
         self.n_forward += 1
-        if hidden.shape[1] <= max(self.donor.positions, default=-1):
+        # REVIEW m2: see SubspaceDonorPatch._hook -- `<=` alone lets a length-1 decode step through
+        # when the only patched position is 0.
+        if hidden.shape[1] <= max(self.donor.positions, default=-1) or hidden.shape[1] == 1:
             return output                      # decode step: positions already past
         idx = torch.tensor(self.donor.positions, device=hidden.device)
         src = self.donor.acts.to(hidden.dtype).to(hidden.device)
@@ -198,7 +200,8 @@ class SubspaceDonorPatch:
 
     def __init__(self, model, donor: DonorBlock, recipient_input_ids: Sequence[int],
                  basis: torch.Tensor, *, norm_match_basis: Optional[torch.Tensor] = None,
-                 scale: float = 1.0, strict_ids: bool = True):
+                 scale: float = 1.0, strict_ids: bool = True,
+                 refuse_degenerate: bool = True):
         self.layer = dc._get_layers(model)[donor.layer_idx]
         self.donor = donor
         self.basis = orthonormalise(basis)
@@ -209,6 +212,7 @@ class SubspaceDonorPatch:
         if self.norm_basis is not None and self.norm_basis.shape[1] != self.basis.shape[1]:
             raise ValueError("norm_match_basis hidden dim differs from basis hidden dim")
         self.scale = float(scale)
+        self.refuse_degenerate = bool(refuse_degenerate)
         self.n_applied = 0
         self.n_forward = 0
         self._h = None
@@ -218,7 +222,12 @@ class SubspaceDonorPatch:
     def _hook(self, module, inputs, output):
         hidden = output[0] if isinstance(output, tuple) else output
         self.n_forward += 1
-        if hidden.shape[1] <= max(self.donor.positions, default=-1):
+        # REVIEW m2. `<=` was wrong: with a single patched position 0, a decode step of length 1
+        # satisfies 1 <= 0 == False and the hook would write into the decode step. The correct
+        # test is whether the sequence is long enough to CONTAIN every patched position, which is
+        # `shape[1] > max(positions)`; and a prefill is additionally the only forward where the
+        # positions mean what they meant at capture time.
+        if hidden.shape[1] <= max(self.donor.positions, default=-1) or hidden.shape[1] == 1:
             return output                      # decode step: positions already past
         idx = torch.tensor(self.donor.positions, device=hidden.device)
         cur = hidden[0].index_select(0, idx).to(torch.float64)          # [n_pos, hidden]
@@ -243,6 +252,19 @@ class SubspaceDonorPatch:
             rel = proj_norm / dn_all.clamp_min(1e-12)
             degen = rel < 1e-6
             n_degenerate = int(degen.sum())
+            if n_degenerate and self.refuse_degenerate:
+                # REVIEW M5. The fallback direction W.sum(0) is an artifact of whichever QR gauge
+                # `orthonormalise` happened to return -- for rank > 1 it is not even reproducible
+                # across LAPACK versions -- so a control injecting along it is norm-matched but
+                # scientifically meaningless. Counting it and continuing is the repo's own
+                # "threshold published but never enforced" bug class; `assert_control_norm_matched`
+                # SystemExits on the analogous condition and so does this.
+                raise ValueError(
+                    "REFUSING to patch: %d of %d positions are norm-match DEGENERATE (this "
+                    "subspace carries < 1e-6 of the delta, so rescaling its projection would "
+                    "amplify float noise). A control that writes an arbitrary QR-gauge direction "
+                    "is not a control. Pass refuse_degenerate=False only for a test that means "
+                    "to exercise this branch." % (n_degenerate, proj.shape[0]))
             unit = torch.where(degen.unsqueeze(1),
                                (W.sum(0) / W.sum(0).norm().clamp_min(1e-12)).expand_as(proj),
                                proj / proj_norm.clamp_min(1e-12).unsqueeze(1))

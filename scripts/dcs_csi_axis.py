@@ -221,6 +221,21 @@ def main() -> int:
     if rsha != csha:
         raise SystemExit("REFUSING: corpus bank_sha %s != readout bank_sha %s (%s) -- a mismatched "
                          "pair would pool codewords silently" % (csha, rsha, rsrc))
+    # REVIEW M1. `--fit-prompt` was a free-text LABEL written into the artifact's provenance and
+    # never checked against the corpus it describes. An artifact that misdescribes its own fit
+    # population is worse than no provenance. Derive the truth from the rows and refuse a mismatch.
+    qks = {r.get("query_kind") for r in rows}
+    if len(qks) != 1:
+        raise SystemExit("REFUSING: corpus mixes query kinds %s" % sorted(qks))
+    actual = "semantic" if list(qks)[0] == "semantic_one_word" else list(qks)[0]
+    if actual != a.fit_prompt:
+        raise SystemExit("REFUSING: --fit-prompt %r but the corpus carries query_kind %r. The "
+                         "artifact's provenance must not be able to misdescribe its own fit "
+                         "population." % (a.fit_prompt, list(qks)[0]))
+    cws = {r.get("target_surface") for r in rows if r.get("target_surface")}
+    if cws and cws != {a.codeword}:
+        raise SystemExit("REFUSING: --codeword %r but the corpus carries target_surface %s"
+                         % (a.codeword, sorted(cws)))
     corpus_doms = {r["domain"] for r in rows}
     leak = sorted(d for d in corpus_doms if assign.get(d) == "test")
     if leak:
@@ -248,7 +263,13 @@ def main() -> int:
            "installation_rows": n_inst, "installation_channels_present": kinds,
            "split_manifest": os.path.relpath(lpm.SPLIT_MANIFEST, REPO),
            "excluded_domains": sorted(EX),
-           "fit_population": {"split": "train", "n_domains": len(fit_doms), "domains": fit_doms},
+           "fit_population": {"split": "train", "n_domains": len(fit_doms), "domains": fit_doms,
+                              # REVIEW M4: a short, row-portable fingerprint of the exact fit
+                              # population, so a scoring run can record WHICH domains the axis saw
+                              # and an analysis can detect in-sample scoring without trusting a
+                              # stdout line that nobody kept.
+                              "domains_sha16": hashlib.sha256(
+                                  "|".join(fit_doms).encode()).hexdigest()[:16]},
            "held_out_validation_domains": sorted(corpus_doms & VA),
            "layer_grid": layers, "train_loo_rho_by_layer": {}}
 

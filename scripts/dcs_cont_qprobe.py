@@ -76,9 +76,25 @@ def main() -> int:
     assign = lpm.load_split(); EX = set(lpm.EXCLUDED_DOMAINS)
     TR = {d for d, v in assign.items() if v == "train"} - EX
     VA = {d for d, v in assign.items() if v == "validation"} - EX
+    TE = {d for d, v in assign.items() if v == "test"}
     # (REVIEW-10) The old `any(assign[d]=='test' for d in TR|VA)` check was vacuous -- TR/VA are
     # constructed above as exactly the train/validation domains, so it can never fire. The real,
     # non-vacuous TEST guard is the corpus-row check below.
+    # ---- (P0.3) SPLIT-LEVEL LEAKAGE GUARD. `validation_best.rho` is only an honest held-out
+    # number if the population it is scored on is non-empty and shares nothing with the fit
+    # population. The basket report's validation rho matched its train rho to 4 dp, which is
+    # exactly the shape an aliasing bug would take, so the precondition is now ASSERTED rather
+    # than assumed. These RAISE; they never warn and never fall back to a default.
+    if not TR:
+        print("REFUSING: TRAIN domain set is empty after exclusions"); return 2
+    if not VA:
+        print("REFUSING: VALIDATION domain set is empty after exclusions"); return 2
+    if TR & VA:
+        print("REFUSING: TRAIN and VALIDATION domains overlap: %s" % sorted(TR & VA)); return 2
+    if TR & TE:
+        print("REFUSING: TRAIN domains intersect TEST: %s" % sorted(TR & TE)); return 2
+    if VA & TE:
+        print("REFUSING: VALIDATION domains intersect TEST: %s" % sorted(VA & TE)); return 2
     inst, _, _ = lpm.load_installation(os.path.join(REPO, a.readout))
     mp, rows, csha = lpm.load_corpus(os.path.join(REPO, a.corpus), mmap=True)  # low-RAM on shared node
     if any(assign.get(r["domain"]) == "test" for r in rows):
@@ -127,6 +143,41 @@ def main() -> int:
             yv = [inst[k] for k in ks]; m = statistics.mean(yv)
             ys += [v - m for v in yv]; dof += [d] * len(ks)
         return torch.cat(xs, 0).double(), torch.tensor(ys, dtype=torch.float64), dof, doms
+
+    # ---- (P0.3) POPULATION-LEVEL LEAKAGE GUARD, run BEFORE any fitting. Disjoint domain
+    # NAMES are necessary but not sufficient: the rows that `build` actually returns depend on
+    # the corpus join and the reps cache, so the built populations are checked directly. Keys are
+    # enumerated the same way `build` does -- same `keep` filter, same reps-presence test, same
+    # (domain, family_slot) x cell key, same 4-cell completeness rule -- but WITHOUT reading any
+    # [site, layer] slice, so this costs no tensor I/O.
+    def _built_keys(keep):
+        byk = {}; pid = {}
+        for r in rows:
+            if r["domain"] in keep and mp["reps"].get(r["prompt_id"]) is not None:
+                k = ((r["domain"], lpm.family_slot(r["family_id"])), r["cell"])
+                if k in byk:
+                    raise SystemExit("duplicate key %r -- silent channel substitution" % (k,))
+                byk[k] = 1; pid[k] = r["prompt_id"]
+        comp = [k for k in sorted({k for k, _ in byk}) if all((k, c) in byk for c in "ABCE")]
+        return set(comp), {pid[(k, c)] for k in comp for c in "ABCE"}
+
+    _ktr, _ptr = _built_keys(TR)
+    _kva, _pva = _built_keys(VA)
+    print("[GUARD] built populations: TRAIN %d keys / %d prompt_ids over %d domains ; "
+          "VALIDATION %d keys / %d prompt_ids over %d domains"
+          % (len(_ktr), len(_ptr), len({d for d, _ in _ktr}),
+             len(_kva), len(_pva), len({d for d, _ in _kva})))
+    if not _ktr:
+        print("REFUSING: the TRAIN row population built for fitting is EMPTY"); return 2
+    if not _kva:
+        print("REFUSING: the VALIDATION row population built for transfer is EMPTY -- a "
+              "'validation' rho computed on no rows is not a held-out number"); return 2
+    if _ktr & _kva:
+        print("REFUSING: TRAIN and VALIDATION populations share %d (domain, slot) keys, e.g. %s"
+              % (len(_ktr & _kva), sorted(_ktr & _kva)[:3])); return 2
+    if _ptr & _pva:
+        print("REFUSING: TRAIN and VALIDATION populations share %d prompt_ids, e.g. %s"
+              % (len(_ptr & _pva), sorted(_ptr & _pva)[:3])); return 2
 
     def loo(X, y, dof, doms, lam):
         K = X @ X.T; pred = [0.0] * len(y)

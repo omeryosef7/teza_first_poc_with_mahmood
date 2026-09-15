@@ -819,3 +819,201 @@ the whole rescue block on the arm having a knockout, so the *clean-live / ko-don
 cannot be expressed by existing flags. Deferred, not forgotten: Phase 1 first, then a small
 additive `--rescue-donor ko` that builds the knockout hooks for the donor capture only. Noted here
 so it is not mistaken for "necessity was tested".
+
+---
+
+## S-008 — data-quality findings that change Phase 1's design (plan §13/§15 gate)
+
+Three things surfaced while preparing the Phase-1 population. Two are latent footguns worth
+recording permanently; one forces a real design decision.
+
+### (a) `prompt_id` is **100 % shared across codeword banks**; `prompt_sha16` is not
+
+Measured on 4002 sampled rows of `ts116m_button_bomb` vs `ts116m_basket_bomb`:
+
+| key | overlap across the two banks |
+|---|---|
+| `prompt_id` | **4002 / 4002 = 100 %** |
+| `prompt_sha16` (the text hash) | 1001 / 4002 = **25 %** |
+
+`prompt_id` is derived from the row's **axes**, not its text. Consequences:
+
+* An `--exclude-prompt-ids` file built from the wrong codeword's bank applies **silently** — it
+  cannot trip `score_behavior`'s "every exclusion id must be present in the population" check,
+  because every id *is* present. (Both `*_sow_validation.txt` files came out with the same
+  `exclusion_sha16 64f6bb1310332073`, which is how this was noticed.)
+* Any join on `prompt_id` across codewords pools them without a trace. This is why the existing
+  analyses carry a `bank_sha` guard, and it is why **the Phase-1 analyser now asserts bank
+  identity from each run's own `config.json`** and VOIDs on a mismatch or on a bank path that does
+  not name the declared codeword.
+* The 25 % `prompt_sha16` overlap is exactly the **codeword-degenerate cells**: where the concept
+  token replaces the codeword, button and basket rows are byte-identical. Independent confirmation
+  of the standing "verify populations differ before spending GPU" lesson.
+
+The S-002 verifier's cross-arm check was already the right one (`prompt_sha16`, i.e. text), so no
+existing result is affected.
+
+### (b) Phase-1 populations are now physically separate per split
+
+`dcs_ts_make_exclusions.py` **refuses** a multi-split selection ("split 'train,validation' is not a
+value of the frozen manifest") — a good guard, and it pushes toward the better design. Built:
+
+| file | remaining rows | domains |
+|---|---|---|
+| `exclude_{button,basket}_bomb_sow_train.txt` | 670 | 67 |
+| `exclude_{button,basket}_bomb_sow_validation.txt` (new) | 230 | 23 |
+
+TRAIN and VALIDATION are therefore **separate runs**, which makes accidental pooling impossible
+rather than merely forbidden. Sequencing: TRAIN is the gate, VALIDATION is the claim — and note
+explicitly that **the TRAIN evaluation is in-sample for the candidate** (the exported basis is fit
+on all TRAIN domains), so the honest held-out number is VALIDATION.
+
+### (c) The `semantic` candidate family is BLOCKED, for two independent reasons — and the plan is better without it
+
+Job **896371 FAILED**: `no multiposition_reps.pt under cont1_semantic_one_word_button_bomb_…`. The
+semantic corpus holds only `final_occurrence_reps.pt` (580 MB); its behavioural sibling holds both
+(12 GB). The two extractions were issued with **byte-identical flags except `--only-query-kind`**,
+both report `n_rows_captured 3720` and `skip_reasons {}`, and both wrote a clean `DONE.json` — so
+the missing multiposition cache is invisible from the run's own summary. Another instance of the
+phase's recurring shape: *a run that completes cleanly without producing what you need.*
+
+Independently, `lpm.load_corpus` **deliberately refuses** a semantic corpus as a predictor
+population:
+
+> "the predictor corpus must be the BEHAVIOURAL population; … The semantic prompt's next token IS
+> the target, so a representation read there predicts it circularly." (REVIEW-1/T0-4, CONT-ENTRY 002)
+
+**Decision, and the reasoning, stated openly.** I am *not* overriding that frozen guard silently.
+It is about **observational** circularity, and my use would be **interventional** — "does restoring
+this component restore the readout" is a causal question for which same-forward provenance is
+arguably the *correct* choice, not a defect. But that is an argument to be made explicitly and
+reviewed, not smuggled in behind a flag while a job runs.
+
+So: **the behavioural-fit axis becomes the Phase-1 primary candidate** (job 896372). This is
+strictly better on the merits:
+
+* it is non-circular *by the project's own frozen standard*;
+* it is the lineage of the TEST-confirmed Q1 probe;
+* injecting an axis learned on a **different prompt type** and having it causally control
+  installation is **stronger** evidence than a same-forward direction would be.
+
+**The cost, stated before the result is read:** this builds in a *transfer* assumption. If the
+primary comes out null, "the axis does not transfer across prompt type" is confounded with "the
+axis is not causal", and that null must be reported as **ambiguous between those two**, not as a
+clean negative. The mitigation — a semantic multiposition re-extraction (~15 GPU-min) plus an
+explicit, documented override argument — is queued behind the question of whether job 896369
+(basket semantic extraction) produces a multiposition cache at all, which will say whether the
+button-semantic absence was transient or structural.
+
+PR-CSI-001 is amended accordingly: the `semantic` family is **deferred, not withdrawn**, and the
+ambiguity clause above is added to its `must_not_be_said_if_null` list.
+
+### Operational note
+
+`python` stdout is block-buffered under SLURM, so these jobs show nothing but the shell's own
+`echo` until they exit. Progress must be read from **artifacts**, not logs. `PYTHONUNBUFFERED=1` is
+set in the new Phase-1 smoke script and should be set in every future runner.
+
+---
+
+## S-009 — P0.3 RESOLVED: the basket QPROBE validation number is a **coincidence, not a bug**, and is citable
+
+`reports/DCS_CSI_QPROBE_VALIDATION_AUDIT.md`, `scripts/dcs_csi_qprobe_valaudit.py`, job 896358.
+
+The suspicion (plan §5.3) was that basket's `validation_best.rho = 0.6525` being byte-identical to
+its TRAIN grid value at rel-6/L18 was the signature of a validation path silently re-reading the
+training population. Settled by full-precision re-derivation:
+
+| codeword | cell | TRAIN `rho_loo` | VALIDATION transfer `rho` | abs diff |
+|---|---|---|---|---|
+| button | rel-6, L20 | 0.5934700332983854 | 0.6450094807413964 | 5.15e−02 |
+| basket | rel-6, L18 | **0.6524545477487157** | **0.6525210881770593** | **6.65e−05** |
+
+They are **different floats** that happen to agree to 4 dp. Three independent lines confirm it:
+
+1. **The populations are provably disjoint.** |TRAIN| = 67, |VALIDATION| = 23, |TEST| = 23, with
+   TR∩VA = TR∩TE = VA∩TE = ∅. The basket corpus (3714 rows / 93 domains) splits into 2680 rows over
+   67 TRAIN domains and 920 rows over 23 VALIDATION domains, with **0 TEST rows**. The built fit
+   populations are 670 slots / 67 domains vs 230 slots / 23 domains, sharing **0 (domain, slot)
+   keys and 0 prompt_ids**, with different y-vector hashes. So the reported `slots=230 domains=23`
+   is what the code actually computed — explanation (c) is dead.
+2. **The validation rho moves with the fit.** Refitting on 33 of the 67 TRAIN domains shifts it to
+   0.6468854 (basket) and 0.6226473 (button). A leaked number would not move.
+3. **The same code path produces a large gap elsewhere** — 0.0515 on button, and 0.0471 for the F5
+   incumbent on basket. A systematic aliasing bug would not be selective.
+
+The collision is unsurprising once looked at: basket's rel-6 TRAIN row is a **flat plateau**
+(0.6417 / 0.6525 / 0.6512 / 0.6386 across L16–L22) and the held-out transfer lands in the same band.
+
+**Status: the basket validation figure MAY be cited as independent validation** — quoted as
+**0.65252 validation vs 0.65245 train** so the near-equality is not mistaken for identity, and
+carrying its existing caveats (rel-6 is a plateau, not a resolved peak; `train_best_perm_p` is a
+single-cell bound, not family-wise).
+
+**Hardening applied** to `scripts/dcs_cont_qprobe.py` (additive, in the file's existing
+`REFUSING:` + return-2 style, all raising, none warning or defaulting):
+
+* a **split-level** guard before any load — refuses on empty TRAIN, empty VALIDATION, TR∩VA,
+  TR∩TEST, VA∩TEST;
+* a **population-level** guard before any fitting — `_built_keys()` enumerates exactly what
+  `build()` would return (same filter, same `(domain, family_slot) × cell` key, same 4-cell
+  completeness rule) **without reading any `[site, layer]` slice**, so it costs no tensor I/O, and
+  refuses on an empty TRAIN population, an empty VALIDATION population, shared keys, or shared
+  prompt_ids.
+
+All six guards pass on current data, so **no frozen result changes**. This closes P0.3 and, with
+S-002, completes **Phase 0**.
+
+### Phase 0 closing status
+
+| item | status |
+|---|---|
+| P0.1 basket endpoint = CANNOT ANSWER, artifact committed | ✔ |
+| P0.2 size-match arm analysed | ✔ (answer: **CANNOT ANSWER**, claim **WITHDRAWN**) |
+| P0.3 QPROBE basket validation | ✔ (coincidence; citable; guards added) |
+| P0.4 `latest_dir` hardening | ✔ (`strict_run_dir`, shared by both analysers) |
+| P0.5 independent re-derivation of the button headline | ✔ (run clean; statistic **CORRECTED**) |
+| P0.6 same-node / same-architecture replicate | ⏳ jobs 896356 (3090, running), 896363 (l40s, pending) |
+
+---
+
+## S-010 — adversarial code review of the Phase-1 code: **no BLOCKERs, six MAJORs, all fixed**
+
+`reports/DCS_CSI_CODE_REVIEW_PHASE1.md`. An independent reviewer read `SubspaceDonorPatch`,
+`orthonormalise`, the factored-out `assert_token_identity`, the `score_behavior` wiring,
+`dcs_csi_axis.py` and the test file, with instructions to find bugs that produce a **wrong but
+plausible scientific number**, and to verify numerically rather than speculate.
+
+### Verified correct (the two load-bearing claims are EXACT, not approximate)
+
+* **A full-rank `SubspaceDonorPatch` equals `DonorPatch` bit-identically** in fp32 *and* bf16
+  (max|diff| = 0.0). This is what makes the whole-state arm a valid upper bound for the subspace
+  arm — the recovery-fraction denominator is sound.
+* Per-position **norm matching exact to 1e−9**; ridge dual == primal to **8.3e−17**;
+  **PLS1 deflation is genuine** (W rows mutually orthonormal, Gram off-diagonal 5.6e−17, rank 4 of
+  4) — *the historical "rank-1 in a hat" defect is absent*; `shuffled_y` preserves within-domain
+  multisets with 0/200 identity draws; the PLS fit is strictly inside the LOO fold; the TRAIN-only
+  fit population is confirmed.
+
+### The six MAJORs, and what each would have done
+
+| # | finding | what it would have produced | fix |
+|---|---|---|---|
+| **M6** | **the add-then-remove test was VACUOUS** — the two patches ran in *separate* forwards, so the "remove" patch's donor equalled the live state and delta was identically zero. **Proven**: the assertion still passed with the write path disabled (`scale=0.0`). | Phase 2's necessity arm had **no test coverage at all** while appearing to have it | rewritten to compose **both hooks in ONE forward** (which is what the intervention actually is); holds at any rank by idempotence of P; plus an explicit **anti-vacuity** check that the forward patch alone *does* change the output (it does, by 9.45e−02) |
+| **M2** | a basis fit at layer L18 could be written at any `--rescue-layer` behind a `print` **WARNING** | a different experiment wearing the same arm label | now `SystemExit` — this is the repo's own *"threshold published but never enforced"* class, and `assert_control_norm_matched` SystemExits on the analogous condition |
+| **M3** | nothing cross-checked the axis's declared codeword/bank against the population being scored | a **button-fit axis silently scored on a basket run** — and per S-008 `prompt_id` is 100 % shared across banks, so *nothing downstream would catch it* | refuses when the basis's codeword is not named by `--bank` |
+| **M1** | `--fit-prompt` was a free-text **label** never checked against the corpus | an artifact that **misdescribes its own fit population** | derived from the rows' `query_kind` and refused on mismatch; `--codeword` checked against `target_surface` too |
+| **M4** | a TRAIN-fit axis scored on TRAIN rows was undetectable from the artifact; the fit-domain list went to **stdout only** | in-sample results indistinguishable from held-out ones | the axis now carries a `fit_population.domains_sha16`; `rescue_basis_meta` travels **on every row**; the analyser reports `evaluation_is_in_sample` per arm by intersecting scored domains with the axis artifact's fit-domain list |
+| **M5** | the degenerate norm-match branch was **counted but never enforced**; its fallback direction `W.sum(0)` is an arbitrary QR-gauge artifact, not reproducible across LAPACK versions for r > 1 | a control arm that is norm-matched but **scientifically meaningless**, completing with `fired=True` | now **raises** by default (`refuse_degenerate=True`); tests opt in to exercise the branch |
+
+Plus **m2** (a real minor): the prefill/decode guard `hidden.shape[1] <= max(positions)` is wrong
+when the only patched position is 0 — a length-1 decode step satisfies `1 <= 0 == False` and the
+hook would write during decoding. Fixed in **both** patchers and covered by a new test.
+
+`tests/test_subspace_donor_patch.py` now **31/31 PASS**.
+
+**Process note.** Three of these six (M1, M2, M3) are the same defect in three places: *a
+provenance field that describes the experiment but is never checked against it.* That is worth
+naming, because the sprint will keep adding such fields. The rule going forward: **every field
+written into an artifact's provenance must have a code path that can refuse on it**, or it is
+decoration.

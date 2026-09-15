@@ -175,18 +175,43 @@ def main():
     check("captured energy fraction in (0,1]", 0 < d1["captured_energy_frac_mean"] <= 1.0 + 1e-9)
 
     print("\n[add then remove returns to start  (Phase 2 necessity uses the same primitive)]")
-    # Under the *patched* state, donating BACK the original recipient activations along the same
-    # subspace must undo exactly what was just written.
+    # *** THIS TEST WAS VACUOUS AND AN ADVERSARIAL REVIEW PROVED IT. ***
+    # The first version ran the two patches in SEPARATE forward passes. In the second pass the
+    # live forward is clean, so the "remove" patch's donor (the clean recipient activations) EQUALS
+    # the live state, delta is identically zero, and nothing is written. The assertion passed
+    # because the forward was never modified -- it still passed with the write path disabled
+    # (scale=0.0), which is the definition of a test that cannot fail.
+    #
+    # The real test composes both patches in ONE forward, which is also what an add-then-remove
+    # intervention actually is. Hooks on the same layer fire in registration order on the same
+    # tensor, so with P idempotent:
+    #     h'  = h + P(d - h)
+    #     h'' = h' + P(h - h') = h + P(d-h) - P(P(d-h)) = h
+    # and this holds at ANY rank, not just full rank -- which is the property Phase 2's necessity
+    # arm depends on.
     back = DonorBlock(layer_idx=layer, positions=list(pos), acts=recipient_acts, input_ids=list(ids))
-    sp_fwd = SubspaceDonorPatch(model, donor, ids, basis=full_basis)
-    sp_bwd = SubspaceDonorPatch(model, back, ids, basis=full_basis)
-    with sp_fwd:
-        _ = _run(model, ids)
-    with sp_bwd:
-        out_back = _run(model, ids)
-    check("remove-after-add returns the unpatched forward",
-          torch.allclose(out_back, base_out, atol=1e-5),
-          "max|diff|=%.2e" % float((out_back - base_out).abs().max()))
+    for rank_name, B in (("full-rank", full_basis), ("rank-1", w.to(torch.float32))):
+        sp_fwd = SubspaceDonorPatch(model, donor, ids, basis=B)
+        sp_bwd = SubspaceDonorPatch(model, back, ids, basis=B)
+        with sp_fwd, sp_bwd:                       # BOTH hooks live in ONE forward
+            out_back = _run(model, ids)
+        check("add-then-remove in one forward is identity (%s)" % rank_name,
+              torch.allclose(out_back, base_out, atol=1e-5),
+              "max|diff|=%.2e  fwd_wrote=%d bwd_wrote=%d"
+              % (float((out_back - base_out).abs().max()),
+                 sp_fwd.liveness()["n_positions_written"],
+                 sp_bwd.liveness()["n_positions_written"]))
+        check("  ...and both patches actually fired (%s)" % rank_name,
+              sp_fwd.liveness()["fired"] and sp_bwd.liveness()["fired"])
+    # THE ANTI-VACUITY CHECK the first version lacked: with the write path disabled the identity
+    # must still hold trivially, but the FORWARD patch must be shown to change the output when it
+    # is the only hook -- otherwise "returns to start" proves nothing.
+    sp_only = SubspaceDonorPatch(model, donor, ids, basis=full_basis)
+    with sp_only:
+        out_fwd_only = _run(model, ids)
+    check("the forward patch alone DOES change the output (anti-vacuity)",
+          not torch.allclose(out_fwd_only, base_out, atol=1e-6),
+          "max|diff|=%.2e" % float((out_fwd_only - base_out).abs().max()))
 
     print("\n[norm matching]")
     # The candidate here must look like a LEARNED axis, i.e. a generic direction that is not
@@ -229,7 +254,17 @@ def main():
     # (b) the DEGENERATE case: a subspace orthogonal to DELTA itself. Rescaling its projection
     # would amplify float noise; the implementation must inject a deterministic unit vector
     # instead AND say so.
-    deg = SubspaceDonorPatch(model, donor, ids, basis=orth_basis[:1], norm_match_basis=cand)
+    # The degenerate branch now REFUSES by default (review M5). Confirm the refusal fires...
+    try:
+        with SubspaceDonorPatch(model, donor, ids, basis=orth_basis[:1], norm_match_basis=cand):
+            _run(model, ids)
+        ok = False
+    except ValueError as e:
+        ok = "DEGENERATE" in str(e)
+    check("degenerate norm-match REFUSES by default", ok)
+    # ...then opt in, to check the fallback still writes the matched norm and flags every position.
+    deg = SubspaceDonorPatch(model, donor, ids, basis=orth_basis[:1], norm_match_basis=cand,
+                             refuse_degenerate=False)
     with deg:
         _run(model, ids)
     d = deg.liveness()
@@ -270,6 +305,17 @@ def main():
             model(input_ids=torch.tensor([[ids[0]]]))     # seq_len 1: nothing to patch
     check("single-token forward writes nothing",
           sp_dec.liveness()["n_positions_written"] == 0 and sp_dec.liveness()["n_forward_calls"] == 1)
+
+    print("\n[decode guard when the only patched position is 0  (review m2)]")
+    d0 = DonorBlock(layer_idx=layer, positions=[0], acts=donor_acts[:1], input_ids=list(ids))
+    for cls, kw in ((DonorPatch, {}), (SubspaceDonorPatch, {"basis": full_basis})):
+        pc = cls(model, d0, ids, **kw)
+        with pc:
+            with torch.no_grad():
+                model(input_ids=torch.tensor([[ids[0]]]))     # a length-1 decode step
+        check("%s does not write on a length-1 decode step at position 0" % cls.__name__,
+              pc.liveness()["n_positions_written"] == 0,
+              "wrote=%d" % pc.liveness()["n_positions_written"])
 
     print("\n[basis shape validation]")
     try:
