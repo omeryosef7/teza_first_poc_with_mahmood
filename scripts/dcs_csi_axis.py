@@ -206,6 +206,13 @@ def main() -> int:
     ap.add_argument("--max-rank", type=int, default=5)
     ap.add_argument("--n-random", type=int, default=8)
     ap.add_argument("--n-shuffled", type=int, default=5)
+    ap.add_argument("--rank-controls", default="",
+                    help="comma list of ranks needing matched controls, e.g. '5'. For each, emits "
+                         "random rank-r subspaces and rank-r PLS fits on shuffled labels. Without "
+                         "these a rank-r candidate has no comparator at its own rank and its "
+                         "advantage over rank 1 is confounded with dose (DCS-CSI-048).")
+    ap.add_argument("--n-random-rank", type=int, default=6)
+    ap.add_argument("--n-shuffled-rank", type=int, default=4)
     ap.add_argument("--seed", type=int, default=20260915)
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
@@ -349,6 +356,21 @@ def main() -> int:
         ws = ridge_w(X, yp)
         bases["ctrl_shuffled%d" % j] = (ws / ws.norm()).unsqueeze(0)
         shuf_rho["ctrl_shuffled%d" % j] = round(loo_rho(lpm, X, yp, dof, doms)[0], 4)
+
+    # ---- RANK-MATCHED controls (DCS-CSI-048) ---------------------------------------------------
+    # The frozen control set is entirely RANK 1, so a rank-r candidate has nothing to be compared
+    # against at its own rank: its advantage over the rank-1 axis is confounded with DOSE, because a
+    # rank-r subspace captures ~sqrt(r/d) of any vector before any information enters. These supply
+    # the missing comparator at each requested rank: a RANDOM rank-r subspace (pure geometry) and a
+    # rank-r PLS fit on DOMAIN-PRESERVING SHUFFLED labels (same fitting procedure, same
+    # dimensionality, no real label-feature association).
+    for R in [int(x) for x in a.rank_controls.split(",") if x.strip()]:
+        for i in range(a.n_random_rank):
+            M = torch.randn(R, X.shape[1], generator=g, dtype=torch.float64)
+            bases["ctrl_random_r%d_%d" % (R, i)] = torch.linalg.qr(M.T)[0].T.contiguous()
+        for j in range(a.n_shuffled_rank):
+            yp = shuffled_y(y, dof, doms, a.seed + 5000 + 100 * R + j)
+            bases["ctrl_shuffled_pls%d_%d" % (R, j)] = pls1(X, yp, R)
     out["shuffled_control_train_loo_rho"] = shuf_rho
     print("\n[controls] shuffled-label TRAIN LOO rho (should sit near 0): %s"
           % json.dumps(shuf_rho))

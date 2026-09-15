@@ -180,36 +180,46 @@
   "ctrl_shuffled1": 0.0172,
   "ctrl_shuffled2": 0.0683,
   "ctrl_shuffled3": 0.019,
-  "ctrl_shuffled4": 0.0251
+  "ctrl_shuffled4": 0.0251,
+  "ctrl_random_r5_0": 0.0366,
+  "ctrl_random_r5_1": 0.0254,
+  "ctrl_random_r5_2": 0.0121,
+  "ctrl_random_r5_3": 0.0142,
+  "ctrl_random_r5_4": 0.0258,
+  "ctrl_random_r5_5": 0.018,
+  "ctrl_shuffled_pls5_0": 0.2655,
+  "ctrl_shuffled_pls5_1": 0.1619,
+  "ctrl_shuffled_pls5_2": 0.1951,
+  "ctrl_shuffled_pls5_3": 0.2793
  },
  "bases": {
   "cand_rank1": {
    "rank": 1,
-   "sha16": "d543d8f0a76e78cc"
+   "sha16": "bca88149b80b827c"
   },
   "cand_pls1": {
    "rank": 1,
-   "sha16": "dec98f92e0d8e584"
+   "sha16": "1976e9b446933b37"
   },
   "cand_pls2": {
    "rank": 2,
-   "sha16": "c65f5e8d96b2d5f0"
+   "sha16": "62555782d87983e1"
   },
   "cand_pls3": {
    "rank": 3,
-   "sha16": "98a2a25a0ad57c77"
+   "sha16": "b4d9c034cef50711"
   },
   "cand_pls4": {
    "rank": 4,
-   "sha16": "588bb467763e3505"
+   "sha16": "554145e8020a2dd8"
   },
   "cand_pls5": {
    "rank": 5,
-   "sha16": "ff1252bc23739b9a"
+   "sha16": "eff7e10cbac756be"
   },
   "ctrl_orth": {
    "rank": 1,
-   "sha16": "8018e491f7e9d920"
+   "sha16": "c196c589efc1b5e5"
   },
   "ctrl_random0": {
    "rank": 1,
@@ -245,79 +255,63 @@
   },
   "ctrl_shuffled0": {
    "rank": 1,
-   "sha16": "035bb6fb7ceecfff"
+   "sha16": "6baa1dd688852ff5"
   },
   "ctrl_shuffled1": {
    "rank": 1,
-   "sha16": "e66055fd7c07f1f3"
+   "sha16": "2ba170e07c8bd00e"
   },
   "ctrl_shuffled2": {
    "rank": 1,
-   "sha16": "9d04f5fcbc186fcd"
+   "sha16": "9f03c7fd63ac1150"
   },
   "ctrl_shuffled3": {
    "rank": 1,
-   "sha16": "c7f6514412d296d5"
+   "sha16": "11d010d09fce6926"
   },
   "ctrl_shuffled4": {
    "rank": 1,
-   "sha16": "1828cb1ba6aa4fc0"
+   "sha16": "e3c60f9bc057b74c"
   },
   "ctrl_random_r5_0": {
    "rank": 5,
-   "sha16": "9e4b42075d4914b7"
+   "sha16": "d2257d4d074c3f4e"
   },
   "ctrl_random_r5_1": {
    "rank": 5,
-   "sha16": "b7247611a5832c64"
+   "sha16": "dcba61c2ae8769d8"
   },
   "ctrl_random_r5_2": {
    "rank": 5,
-   "sha16": "b8f84349eff9389e"
+   "sha16": "08fc8b24aeba4ca9"
   },
   "ctrl_random_r5_3": {
    "rank": 5,
-   "sha16": "c9acab3ca0f88478"
+   "sha16": "ad40120ec10713a0"
   },
   "ctrl_random_r5_4": {
    "rank": 5,
-   "sha16": "53ccb3af3df19a1a"
+   "sha16": "42822cab35b7f155"
   },
   "ctrl_random_r5_5": {
    "rank": 5,
-   "sha16": "29839a6197d06005"
+   "sha16": "408a83d17503134d"
   },
   "ctrl_shuffled_pls5_0": {
    "rank": 5,
-   "sha16": "4f1c48e9dfef9618"
+   "sha16": "b6ce6c74535a6046"
   },
   "ctrl_shuffled_pls5_1": {
    "rank": 5,
-   "sha16": "fd879ce37c2de26b"
+   "sha16": "f591ad8b160872fc"
   },
   "ctrl_shuffled_pls5_2": {
    "rank": 5,
-   "sha16": "f0183169e8d74b57"
+   "sha16": "4151c83802bd4a67"
   },
   "ctrl_shuffled_pls5_3": {
    "rank": 5,
-   "sha16": "91a38216bb85e61a"
+   "sha16": "07af1cf493f14021"
   }
- },
- "rank_matched_controls_added": {
-  "keys": [
-   "ctrl_random_r5_0",
-   "ctrl_random_r5_1",
-   "ctrl_random_r5_2",
-   "ctrl_random_r5_3",
-   "ctrl_random_r5_4",
-   "ctrl_random_r5_5",
-   "ctrl_shuffled_pls5_0",
-   "ctrl_shuffled_pls5_1",
-   "ctrl_shuffled_pls5_2",
-   "ctrl_shuffled_pls5_3"
-  ],
-  "source_run": "job 896950",
-  "note": "Only these keys were copied in. Every pre-existing tensor is byte-identical to the artifact group A and group B ran against -- verified by sha16 before and after -- so the candidate and the norm-match reference are unchanged."
  }
 }

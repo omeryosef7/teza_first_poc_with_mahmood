@@ -1,7 +1,8 @@
 #!/bin/bash
 # PR-CSI-001 PRIMARY ARMS. Usage: sbatch dcs_csi_p1_arms.slurm <codeword> <axis.pt> <split> <group>
 #   group A = the gates + the primary contrast + the rank-r candidate  (7 arms)
-#   group B = the control DISTRIBUTION: 4 shuffled-label + 6 random     (10 arms + 1 anchor)
+#   group B = the rank-1 control DISTRIBUTION: 4 shuffled + 6 random    (10 arms + 1 anchor)
+#   group C = the RANK-5 matched control distribution for KO_PLS         (10 arms + 1 anchor)
 #
 # WHY TWO GROUPS AND WHY KO_AXIS APPEARS IN BOTH. At ~29 min per 670-row readout arm, 17 arms do
 # not fit one allocation. The split is chosen so that everything the PREREGISTERED PRIMARY
@@ -80,9 +81,18 @@ if [ "$GROUP" = "A" ]; then
   sub KO_AXIS cand_rank1
   sub KO_PLS  "cand_pls${RANK}"
   sub KO_ORTH ctrl_orth cand_rank1
-else
+elif [ "$GROUP" = "B" ]; then
   sub KO_AXIS_ANCHOR cand_rank1
   for j in 0 1 2 3;       do sub "KO_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done
   for i in 0 1 2 3 4 5;   do sub "KO_RAND${i}" "ctrl_random${i}"   cand_rank1; done
+else
+  # GROUP C -- the RANK-MATCHED control distribution for the rank-r candidate (DCS-CSI-048).
+  # Group B's controls are all rank 1, so KO_PLS (rank 5) had nothing to be compared against at its
+  # own rank and its advantage over the rank-1 axis was confounded with DOSE: a rank-r subspace
+  # captures ~sqrt(r/d) of any vector before any information enters it. Every arm here is rank 5 and
+  # norm-matched to cand_pls5, so the only thing that varies is WHICH five directions.
+  sub KO_PLS_ANCHOR "cand_pls${RANK}"
+  for i in 0 1 2 3 4 5; do sub "KO_R5RAND${i}" "ctrl_random_r${RANK}_${i}"    "cand_pls${RANK}"; done
+  for j in 0 1 2 3;     do sub "KO_R5SHUF${j}" "ctrl_shuffled_pls${RANK}_${j}" "cand_pls${RANK}"; done
 fi
 echo "---- GROUP $GROUP DONE rc=$? $(date -Is) HOST=$(hostname)"

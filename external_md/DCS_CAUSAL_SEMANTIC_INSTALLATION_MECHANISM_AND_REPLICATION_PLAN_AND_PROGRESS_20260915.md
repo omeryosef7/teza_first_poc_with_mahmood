@@ -2809,3 +2809,55 @@ guard caught, which exposed a gap that was review round 2's other finding (R2-B1
 Defensive machinery compounds — each layer catches what the previous one's fix disturbed. The cost
 was one blocked commit; the alternative was a control arm quietly averaged over a different
 population than the candidate it is meant to bound.
+
+---
+
+## S-048 — building the control S-046 showed was missing: a **rank-5 matched** comparator for `KO_PLS`
+
+S-046's finding — rank-5 recovers significantly (+0.00302, p = 0.001) where rank-1 does not — is
+**not yet attributable to direction**, because every control in the frozen set is **rank 1**. A
+rank-r subspace captures ≈ √(r/d) of any vector *before any information enters it*, so `KO_PLS`'s
+advantage over `KO_AXIS` is confounded with dose (10.0 % vs 3.5 % captured energy). Group C supplies
+the missing comparator.
+
+**New bases** (`--rank-controls 5`, job 896950): six **random rank-5** subspaces
+(`ctrl_random_r5_0..5`, pure geometry) and four **rank-5 PLS fits on domain-preserving shuffled
+labels** (`ctrl_shuffled_pls5_0..3`, same fitting procedure, same dimensionality, no real
+label–feature association). Every group-C arm is **norm-matched to `cand_pls5`**, so the only thing
+varying across the arm set is **which five directions**.
+
+### A provenance hazard, caught and handled
+
+Regenerating the axis on a different node reproduced every **scalar** exactly but changed the
+**data-derived tensors** in their last bits — the same cross-node effect as S-014/S-019. Confirmed
+by which keys matched: the **8 seeded-random bases were identical**; all 12 data-derived ones
+differed. Using the regenerated `cand_pls5` as group C's norm-match reference would have meant the
+candidate arm (group A) and its controls (group C) were matched to **different tensors**.
+
+So rather than adopting the new file, I **merged only the genuinely new keys into the original
+artifact** and verified the originals survived untouched — against the **git-committed** copy, not
+against the JSON's own hashes (those are computed pre-float32-cast, which made my first check
+compare apples to oranges and report a spurious 20/20 "changed"):
+
+```
+original keys: 20   changed by the merge: NONE (max|diff| = 0.0 on every one)
+new keys added: 10  (ctrl_random_r5_0..5, ctrl_shuffled_pls5_0..3)
+```
+
+`cand_rank1`, `cand_pls5` and `ctrl_orth` are therefore **byte-identical** to what groups A and B
+ran against. The artifact records the merge and its provenance in `meta.rank_matched_controls_added`.
+
+**Job 896961** launched on n-350 (`geforce_rtx_3090`, matching groups A and B per S-037), 11 arms:
+`KO_PLS_ANCHOR` + 6 random-rank-5 + 4 shuffled-rank-5.
+
+### What group C can and cannot settle
+
+* If `KO_PLS` beats its rank-5 matched controls → **the specific five directions matter**, and the
+  installation subspace has causal content that rank-1 could not express.
+* If `KO_PLS` ≈ its rank-5 controls → its advantage over rank-1 was **dose, not direction**, and the
+  honest conclusion becomes that recovery scales with how much of the perturbation you restore
+  *however you restore it* — i.e. the knockout's effect on installation is **genuinely distributed**
+  and not carried by any identifiable low-dimensional subspace at this site and layer.
+
+Either way it is the contrast that decides, and it is now preregistered by this entry before the
+arms have produced a single row.
