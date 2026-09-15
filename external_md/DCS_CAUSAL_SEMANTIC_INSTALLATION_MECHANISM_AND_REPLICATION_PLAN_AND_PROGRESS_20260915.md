@@ -1964,3 +1964,39 @@ What I will do instead, at analysis time: report the primary contrast **and** a 
 re-computation restricted to rows above a per-row option-mass floor. If the Phase-1 conclusion
 flips between the two, that is itself the finding and it goes in the log; if it does not, the
 result is robust to the thinnest rows. Added to the checklist as **P1-f**.
+
+---
+
+## S-034 — P1-f implemented: the option-mass sensitivity arm, and what the floor actually removes
+
+`scripts/dcs_csi_subspace_analyze.py --option-mass-floor F`. The selection logic
+(`semantic_one_word`, cell C, the `(domain, family_slot)` key, the duplicate-key refusal, the
+missing-field refusal) is kept identical to `lpm.load_installation`, and a guard
+`_assert_matches_loader` **refuses to run unless the local re-implementation reproduces the frozen
+loader key-for-key at floor 0** — otherwise the sensitivity arm would be measuring a different
+thing from the primary and any disagreement between them would be uninterpretable. Verified:
+**PASS**.
+
+**What the floor removes, measured on the BASE arm (670 rows):**
+
+| option-mass floor | rows kept | dropped | mean `y_install` |
+|---|---|---|---|
+| 0.00 (frozen protocol) | 670 | 0 | **0.6784** |
+| 0.01 | 654 | 16 | 0.6914 |
+| 0.05 | 586 | 84 | 0.7420 |
+| 0.10 | 522 | 148 | 0.7943 |
+
+**The floor is not neutral, and that has to be said before the sensitivity result is read.**
+`y_install` rises monotonically as thin rows are dropped — from 0.678 to 0.794. This is not an
+artifact; it is the sensible reading: a row where the model entertains *neither* the concept nor
+the codeword is typically a row where **the mapping did not install at all** (the model is
+predicting some third word), and those rows carry low `y_install`. So raising the floor
+preferentially deletes low-installation rows and inflates the level.
+
+**Consequence for how P1-f may be used.** The sensitivity arm is *not* a check on whether the
+installation **level** is robust — it demonstrably is not, and it should not be. It is a check on
+whether the **contrast between arms** is robust, which is the only quantity PR-CSI-001 claims. At
+analysis time the primary contrast is reported at floor 0 (the frozen protocol, comparable with
+DR-071/A1) and re-computed at a floor; **if the sign or the conclusion of the contrast flips, that
+is the finding and it goes in the log.** A level shift between the two is expected and means
+nothing.

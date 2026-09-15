@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import math
 import os
 import sys
 
@@ -39,15 +40,69 @@ rederive = _load("rederive", "scripts/dcs_csi_rederive_patch.py")
 lpm = _load("lpm", "scripts/dcs_cont_layerpos_map.py")
 
 
-def arm_domain_means(run_dir, assign, keep_split):
+def installation_with_option_mass(run_dir, floor):
+    """`load_installation` plus a per-row OPTION-MASS floor (sprint item P1-f).
+
+    WHY THIS EXISTS. `y_install` is a two-way softmax over `logp_concept` and `logp_codeword`. On a
+    row whose option mass is ~1e-4 the model's actual prediction is some third word entirely, so the
+    ratio is arithmetically fine and epistemically thin. The phase's frozen gate is POOLED, so such
+    rows survive it. Rather than change the protocol -- which would make these numbers incomparable
+    with DR-071/A1, the very record this pipeline was validated against -- the primary contrast is
+    computed on ALL rows and RE-computed above a floor, and both are reported.
+
+    The selection logic (semantic_one_word, cell C, the (domain, family_slot) key, the duplicate-key
+    refusal, the missing-field refusal) is kept identical to `lpm.load_installation`; at floor=0.0
+    this function must reproduce it exactly, which `_assert_matches_loader` checks.
+    """
+    out, n_dropped = {}, 0
+    with open(os.path.join(run_dir, "results.jsonl"), encoding="utf-8") as fh:
+        for line in fh:
+            r = json.loads(line)
+            if r.get("query_kind") != "semantic_one_word" or r.get("cell") != "C":
+                continue
+            lc, lk = r.get("logp_concept"), r.get("logp_codeword")
+            if lc is None or lk is None:
+                raise SystemExit("row %r has no logp_concept/logp_codeword; missing != zero"
+                                 % r.get("prompt_id"))
+            om = r.get("option_mass")
+            if om is None:
+                raise SystemExit("row %r has no option_mass; cannot apply the P1-f floor"
+                                 % r.get("prompt_id"))
+            k = (r["domain"], lpm.family_slot(r["family_id"]))
+            if k in out:
+                raise SystemExit("installation key %r binds two rows" % (k,))
+            if om < floor:
+                n_dropped += 1
+                continue
+            m = max(lc, lk)
+            out[k] = math.exp(lc - m) / (math.exp(lc - m) + math.exp(lk - m))
+    return out, n_dropped
+
+
+def _assert_matches_loader(run_dir):
+    """At floor 0 the local re-implementation must equal the frozen loader, key for key."""
+    a, dropped = installation_with_option_mass(run_dir, 0.0)
+    b, _, _ = lpm.load_installation(run_dir)
+    if dropped or set(a) != set(b) or any(abs(a[k] - b[k]) > 1e-12 for k in a):
+        raise SystemExit("P1-f re-implementation disagrees with lpm.load_installation on %r -- "
+                         "the sensitivity arm must measure the same thing as the primary" % run_dir)
+
+
+def arm_domain_means(run_dir, assign, keep_split, option_mass_floor=0.0):
     """(domain -> mean y_install over that domain's slots) for one arm, restricted to one split."""
-    inst, n_rows, kinds = lpm.load_installation(run_dir)
+    if option_mass_floor > 0.0:
+        inst, n_dropped = installation_with_option_mass(run_dir, option_mass_floor)
+        n_rows, kinds = len(inst), ["semantic_one_word"]
+    else:
+        _assert_matches_loader(run_dir)
+        inst, n_rows, kinds = lpm.load_installation(run_dir)
+        n_dropped = 0
     by = {}
     for (dom, slot), p in inst.items():
         if assign.get(dom) != keep_split:
             continue
         by.setdefault(dom, []).append(p)
-    return {d: sum(v) / len(v) for d, v in by.items()}, n_rows, kinds
+    return {d: sum(v) / len(v) for d, v in by.items()}, n_rows, kinds, n_dropped
 
 
 def row_meta(run_dir):
@@ -135,6 +190,10 @@ def main() -> int:
     ap.add_argument("--self-arm", default="KO_SELF")
     ap.add_argument("--split", default="train", choices=("train", "validation"))
     ap.add_argument("--n-boot", type=int, default=20000)
+    ap.add_argument("--option-mass-floor", type=float, default=0.0,
+                    help="P1-f sensitivity: drop rows whose (concept, codeword) option mass is "
+                         "below this before computing y_install. 0.0 = the frozen protocol, which "
+                         "gates option mass POOLED and is what every number in the record used.")
     ap.add_argument("--self-inert-tol", type=float, default=0.005,
                     help="|KO_SELF - KO| above this VOIDs the run: the patch is not writing what "
                          "it read, so no rescue number is interpretable")
@@ -148,7 +207,8 @@ def main() -> int:
         d = rederive.strict_run_dir("%s_%s" % (a.tag_prefix, arm), a.expect_n,
                                     row_file="results.jsonl")
         dirs[arm] = d
-        dmeans[arm], n_inst, kinds = arm_domain_means(d, assign, a.split)
+        dmeans[arm], n_inst, kinds, n_drop = arm_domain_means(
+            d, assign, a.split, a.option_mass_floor)
         meta[arm] = row_meta(d)
         # BANK IDENTITY. `prompt_id` is derived from the row's AXES, not its text, so it is 100%
         # shared between the button and basket banks (measured: 4002/4002), while `prompt_sha16`
@@ -161,6 +221,7 @@ def main() -> int:
         meta[arm]["attn_impl"] = cfg.get("attn_impl")
         meta[arm]["dtype"] = cfg.get("dtype")
         meta[arm]["installation_rows_all_splits"] = n_inst
+        meta[arm]["rows_dropped_by_option_mass_floor"] = n_drop
         meta[arm]["channels_present"] = kinds
         print("[dir ] %-10s %-52s  %s-domains=%d"
               % (arm, os.path.basename(d), a.split, len(dmeans[arm])))
@@ -252,6 +313,7 @@ def main() -> int:
     out = {"schema": "dcs_csi_subspace/1", "prereg": "configs/dcs_csi_pr001_subspace_rescue.json",
            "in_sample": in_sample,
            "codeword": a.codeword, "split": a.split, "arms": arms,
+           "option_mass_floor": a.option_mass_floor,
            "run_dirs": {k: os.path.basename(v) for k, v in dirs.items()},
            "n_domains": len(doms), "arm_meta": meta,
            "installation_by_arm": {x: round(sum(dmeans[x][d] for d in doms) / len(doms), 5)
@@ -355,7 +417,9 @@ def main() -> int:
 
 
 def _write(out, a):
-    outp = a.out or os.path.join(REPO, "reports/DCS_CSI_SUBSPACE_%s_%s.json" % (a.codeword, a.split))
+    outp = a.out or os.path.join(REPO, "reports/DCS_CSI_SUBSPACE_%s_%s%s.json"
+                         % (a.codeword, a.split,
+                            "" if a.option_mass_floor <= 0 else "_om%g" % a.option_mass_floor))
     json.dump(out, open(outp, "w"), indent=1)
     print("wrote", os.path.relpath(outp, REPO))
 
