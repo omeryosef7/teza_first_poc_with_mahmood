@@ -13,7 +13,7 @@ This exists because every failure mode below produces a run that COMPLETES CLEAN
 It reports PASS/FAIL per condition and refuses to summarise anything as OK on missing data.
 """
 from __future__ import annotations
-import argparse, glob, importlib.util, json, os, sys
+import argparse, glob, importlib.util, json, os, re, sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -24,8 +24,13 @@ def _load(mod, path):
 
 
 def newest(tag):
+    """ANCHORED match -- see the note in dcs_csi_rederive_patch.strict_run_dir.
+
+    The unanchored version silently resolved arm "KO" to the "KO_SELF" directory, which made the
+    identity check compare KO_SELF against itself and pass vacuously (S-042)."""
+    pat = re.compile(r"^" + re.escape(tag) + r"_\d{8}_\d{6}_\d+$")
     ds = [d for d in sorted(glob.glob(os.path.join(REPO, "outputs/boombness/score_behavior", tag + "_*")))
-          if os.path.exists(os.path.join(d, "results.jsonl"))]
+          if pat.match(os.path.basename(d)) and os.path.exists(os.path.join(d, "results.jsonl"))]
     return ds[-1] if ds else None
 
 

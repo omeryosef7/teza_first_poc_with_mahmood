@@ -2389,3 +2389,81 @@ arm is administering a ~27× smaller dose than the positive control**.
 **Checklist addition P1-g:** report captured-energy fraction alongside every subspace arm, and
 express recoveries per unit dose. Already recorded on every row by the S-028 builder, so this costs
 nothing but the reporting discipline.
+
+---
+
+## S-042 — **CORRECTION.** A prefix-collision in my own run-directory matching made the identity gate VACUOUS. Gates re-derived; conclusions survive, one claim withdrawn.
+
+### The bug
+
+Run directories are named `<tag>_<YYYYmmdd>_<HHMMSS>_<pid>`. My matching globbed `<tag>_*` — which
+also matches **every sibling arm whose tag extends this one**:
+
+```
+glob("csi1_button_train_KO_*")  ->  KO, KO_AXIS, KO_AXIS_ANCHOR, KO_FULL, KO_PLS, KO_SELF
+```
+
+Ad-hoc checks that took `sorted(...)[-1]` therefore resolved arm **`KO`** to the **`KO_SELF`**
+directory. Consequences:
+
+* **The identity gate compared `KO_SELF` against `KO_SELF`** — a comparison that *cannot fail*. The
+  "max |diff| = 0.000e+00 across all 670 keys" in S-038/S-040 was that vacuity, not a measurement.
+* The same mis-resolution affected **S-029**'s hooked-forward analysis (its "KO" was `KO_SELF`) and
+  **S-031**'s smoke check (`newest()` used the same unanchored glob).
+
+`strict_run_dir` — the *real* analyser's resolver — was never fooled: it demands **exactly one**
+complete directory and would have **refused**. The defect lived only in the quick checks I wrote
+alongside it. That is a small mercy and not an excuse: the quick checks are what I reported from.
+
+**Fixed** in both `dcs_csi_rederive_patch.strict_run_dir` and
+`dcs_csi_p1_smoke_check.newest`: the tag must now be followed by exactly
+`_\d{8}_\d{6}_\d+` and nothing else. Verified: `csi1_button_train_KO` now resolves to the KO
+directory.
+
+### Gates re-derived with anchored resolution (670 rows / 67 domains)
+
+| gate | contrast | **corrected** | as reported in S-038/S-040 | pos/neg/tied | p |
+|---|---|---|---|---|---|
+| 1 manipulation | `KO − BASE` | **−0.20704** [−0.2264, −0.1886] | −0.20779 | **0/67/0** | < 1e−5 |
+| **2 identity** | `KO_SELF − KO` | **−0.00076** [−0.00165, **+0.00013**] | ~~0.00000 exactly~~ | 28/39/0 | **0.107** |
+| 3 capability | `KO_FULL − KO` | **+0.07060** [+0.0606, +0.0812] | +0.07135 | **66/1/0** | < 1e−5 |
+| — | recovery fraction, FULL | **0.3410** [0.3064, 0.3752] | 0.3434 | — | — |
+
+**WITHDRAWN:** *"`KO_SELF − KO` = 0.000e+00 on all 670 keys; zero keys differ at all"* (S-038,
+repeated in S-040). It was an artifact of comparing an arm with itself.
+
+**Gate 2 still PASSES, on the correct comparison.** The true identity difference is **−0.00076**,
+its CI **includes zero**, p = 0.107, and |diff| is **6.6× below** the preregistered tolerance
+(`self_inert_tol = 0.005`). But the honest description changes from *"bit-exact"* to
+**"inert within measurement error"**: 28 domains move up, 39 move down, no systematic direction.
+The residue is consistent with floating-point nondeterminism introduced by the extra donor-capture
+forward pass, and it is ~1 % of the `KO_FULL` effect it must not contaminate.
+
+**Gates 1 and 3 are unaffected in substance** — the point estimates move in the fourth decimal and
+every domain count is identical. So S-040's conclusion stands: the instrument is capable, the
+CANNOT-ANSWER branch is closed, and the semantic endpoint has the resolution the refusal endpoint
+lacked.
+
+### The secondary contrast, now correctly resolved
+
+| contrast | estimate | CI95 | pos/neg/tied | p | recovery fraction |
+|---|---|---|---|---|---|
+| `KO_FULL − KO` | **+0.07060** | [+0.0606, +0.0812] | 66/1/0 | < 1e−5 | **0.341** |
+| **`KO_AXIS − KO`** | **+0.00040** | **[−0.00025, +0.00106]** | 40/27/0 | **0.249** | **0.0019** |
+
+The rank-1 installation axis recovers **0.2 %** of the knockout's installation loss where the
+whole-state rescue recovers **34 %** — and its CI comfortably includes zero. This is the picture the
+24-row smoke indicated (S-031), now at full scale with the correct arms.
+
+**It is still not the primary contrast.** `KO_ORTH` is the preregistered comparator and is running.
+And S-041's constraint governs the reading: the axis administers **3.6 %** of the perturbation's
+norm, so `KO_AXIS ≈ KO` on its own is *not* licence to write "the installation component is not
+causal". The question the design can answer is `KO_AXIS` vs `KO_ORTH` **at matched dose**.
+
+### How this was caught, and what it says
+
+Not by a test — by reading a diagnostic table and noticing that the `KO` row and the `KO_SELF` row
+named **the same directory**. The lesson is the sprint's own recurring one, now self-inflicted:
+**a control that cannot fail is worse than no control**, and the way it presents is a number that
+looks *too good* — "0.000e+00 on all 670 keys" should have prompted suspicion at the time rather
+than satisfaction. Exact zeros from a floating-point pipeline are a red flag, not a triumph.

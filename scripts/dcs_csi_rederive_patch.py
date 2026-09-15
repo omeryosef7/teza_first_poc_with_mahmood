@@ -61,7 +61,16 @@ def strict_run_dir(tag: str, expect_n: int, row_file: str = "gens.jsonl") -> str
     more than one qualifies, we RAISE and name them -- picking "the newest" among several
     complete runs is a silent choice between two different experiments.
     """
-    cands = sorted(glob.glob(os.path.join(SCORE_DIR, tag + "_*")))
+    # *** ANCHORED, AND THIS IS LOAD-BEARING. ***
+    # `glob(tag + "_*")` also matches every SIBLING ARM whose tag EXTENDS this one: for tag
+    # "csi1_button_train_KO" it matches KO_SELF, KO_FULL, KO_AXIS, KO_PLS, KO_ORTH and
+    # KO_AXIS_ANCHOR. A run directory is always "<tag>_<YYYYmmdd>_<HHMMSS>_<pid>", so the tag must
+    # be followed by exactly that suffix and nothing else. (Caught the hard way: an ad-hoc check
+    # using the unanchored glob resolved arm "KO" to the KO_SELF directory and turned the identity
+    # gate into KO_SELF vs KO_SELF -- a comparison that cannot fail. See S-042.)
+    _pat = re.compile(r"^" + re.escape(tag) + r"_\d{8}_\d{6}_\d+$")
+    cands = sorted(d for d in glob.glob(os.path.join(SCORE_DIR, tag + "_*"))
+                   if _pat.match(os.path.basename(d)))
     ok, why = [], []
     for d in cands:
         dj = os.path.join(d, "DONE.json")
