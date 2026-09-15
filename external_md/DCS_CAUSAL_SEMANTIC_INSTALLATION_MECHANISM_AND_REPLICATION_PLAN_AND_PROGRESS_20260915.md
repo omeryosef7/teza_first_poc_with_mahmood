@@ -1017,3 +1017,50 @@ provenance field that describes the experiment but is never checked against it.*
 naming, because the sprint will keep adding such fields. The rule going forward: **every field
 written into an artifact's provenance must have a code path that can refuse on it**, or it is
 decoration.
+
+---
+
+## S-011 — BLOCKER: `git push` is credential-blocked. Work continues locally.
+
+```
+remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/omeryosef7/teza_first_poc_with_mahmood.git/'
+```
+
+This matches the predecessor log's standing "`git push` token-blocked" item, so it is not new and
+not something I can resolve — it needs a valid PAT from Omer. **Per the operating mode: recorded,
+the dependency is marked, and the sprint continues.** All work is committed locally on
+`behavioral-causality-sprint` and will push in one go once a token exists. I will not retry the
+same impossible push on every loop tick.
+
+**→ ACTION FOR OMER (non-blocking):** refresh the GitHub PAT (or switch the remote to SSH) when
+convenient. Nothing in the sprint waits on it.
+
+## S-012 — loop armed; jobs in flight at the end of the first working block
+
+A 30-minute operational loop is scheduled (`*/30 * * * *`). Each tick: poll SLURM, collect finished
+artifacts, launch the next valid work, append to this log, commit. A deeper adversarial code+output
+review every ~4 h (the first one is S-010).
+
+| job | what | node | status |
+|---|---|---|---|
+| 896356 | 4 button patch arms, ONE allocation (P0.6) | n-303 **RTX 3090** | RUNNING (~33 min, arm 1/4) |
+| 896363 | same 4 arms pinned **l40s** (P0.6b) | — | PENDING (Resources) |
+| 896369 | basket `semantic_one_word` corpus | n-306 | RUNNING (~23 min) |
+| 896372 | **behavioural axis fit, button** (Phase-1 primary candidate) | n-306 | RUNNING (~18 min) |
+| 896371 | semantic axis fit | — | **FAILED** — no multiposition cache (S-008c) |
+| 896365 | basket semantic extraction, first attempt | n-306 | **FAILED** — `--model` unpinned (S-006) |
+
+Ready and waiting on the axis artifact: `slurm_scripts/dcs_csi_p1_smoke.slurm` (6-arm liveness
+smoke) then `slurm_scripts/dcs_csi_p1_arms.slurm` (group A = gates + primary contrast, group B =
+control distribution with a `KO_AXIS_ANCHOR` re-run so cross-allocation drift is **measured, not
+assumed**).
+
+Housekeeping: `reports/DCS_CSI_REDERIVE_PATCH_button.json` was briefly overwritten with a
+2000-draw bootstrap while smoke-testing the `strict_run_dir` refactor; regenerated at the
+preregistered 20000 draws. Numbers unchanged (recovery +0.02778, CI [0.00556, 0.05556], 5 of 90
+domains).
+
+Two run directories need quarantining once their live siblings finish (a failed attempt left a
+sibling dir that would make `strict_run_dir` correctly refuse as ambiguous):
+`cont1_semantic_one_word_basket_bomb_20260915_170803_2607554` (from failed job 896365).
