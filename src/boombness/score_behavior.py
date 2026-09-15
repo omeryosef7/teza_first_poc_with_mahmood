@@ -3079,6 +3079,43 @@ def main() -> int:
                     out[_k] = int(ks[_k])
         return out
 
+    def _rescue_row_fields(rescue_ctx, rpos):
+        """The rescue's row record, built in ONE place.
+
+        *** WHY THIS FUNCTION EXISTS. *** These fields were written only on the GENERATION path.
+        The readout path (`_readout_knock_fields`) is a separate builder and silently carried
+        none of them, so a `--query-kinds semantic_one_word` rescue run produced rows with
+        `rescue_liveness: null`, `n_rescue_positions: null` and `rescue_basis_key: null` -- while
+        the rescue was in fact firing and moving the endpoint. The Phase-1 smoke caught it
+        (KO_FULL moved y_install 0.588 -> 0.682 while reporting "fired 0/24"), which is precisely
+        the ambiguity the liveness record exists to remove: a null from "the rescue did nothing"
+        and a null from "the rescue never ran" are indistinguishable without it.
+
+        The knockout's own fields had this exact bug before (correction C-6) and were fixed by
+        routing both paths through `record_knockout_row`. Same remedy here: one builder, two
+        callers, no hand-copied second version to fall out of date.
+        """
+        # Emit the keys even on non-rescue arms (as None) so every row in a run set shares one
+        # schema; an absent key and a null key are different things to an analysis that iterates.
+        if args.rescue_layer is None:
+            return {k: None for k in
+                    ("rescue_liveness", "rescue_basis", "rescue_basis_key",
+                     "rescue_norm_match_key", "rescue_basis_meta", "rescue_layer",
+                     "rescue_donor", "rescue_positions", "rescue_n_positions_requested",
+                     "n_rescue_positions")}
+        return {
+            "rescue_liveness": (rescue_ctx.liveness() if rescue_ctx is not None else None),
+            "rescue_basis": (os.path.basename(args.rescue_basis) if args.rescue_basis else None),
+            "rescue_basis_key": args.rescue_basis_key or None,
+            "rescue_norm_match_key": args.rescue_norm_match_key or None,
+            "rescue_basis_meta": (_rescue_bases.meta() if args.rescue_basis else None),
+            "rescue_layer": args.rescue_layer,
+            "rescue_donor": args.rescue_donor,
+            "rescue_positions": args.rescue_positions,
+            "rescue_n_positions_requested": args.rescue_n_positions,
+            "n_rescue_positions": (len(rpos) if rpos is not None else None),
+        }
+
     def _readout_knock_fields(knock_stats, dk, prot, seq_len):
         """Ledger ONE forward-only readout row into the accumulator, and return its row fields.
 
@@ -3607,6 +3644,7 @@ def main() -> int:
             # would be captured under the previous ROW's hooks, silently and plausibly. The capture
             # therefore lives here, after `ctxs` exists for THIS row, and nowhere else.
             _rescue_ctx = None
+            _rpos_row = [None]            # one-element cell so the readout builder can read it
             if args.rescue_layer is not None:
                 if not _wants_knockout or not dk:
                     ledger.fail("rescue:no_knockout_or_no_demo_keys", row["prompt_id"])
@@ -3628,6 +3666,7 @@ def main() -> int:
                         continue
                     _rng = random.Random(f"{row['prompt_id']}|{args.rescue_n_positions}")
                     _rpos = sorted(_rng.sample(list(_rpos), args.rescue_n_positions))
+                _rpos_row[0] = list(_rpos)      # published for the readout row builder
                 _cap = ActivationCapture(lm.model, args.rescue_layer, _rpos)
                 with torch.no_grad():
                     with contextlib.ExitStack() as _dst:
@@ -3696,6 +3735,7 @@ def main() -> int:
                     # under the intervention; recording nothing left the mask unobservable.
                     _kf = _readout_knock_fields(knock_stats, dk, prot, len(ids_r)) \
                         if _wants_knockout else {}
+                    _kf = {**_kf, **_rescue_row_fields(_rescue_ctx, _rpos_row[0])}
                     run.log_row({**base, **_kf, "readout": "semantic", **rec})
                     _om_val = (rec["option_mass_core_pair"] if extra_words
                                else rec["option_mass"])
@@ -3720,6 +3760,7 @@ def main() -> int:
                     rec["mapping_use_options"] = row.get("mapping_use_options")
                     _kf = _readout_knock_fields(knock_stats, dk, prot, len(ids_r)) \
                         if _wants_knockout else {}
+                    _kf = {**_kf, **_rescue_row_fields(_rescue_ctx, _rpos_row[0])}
                     run.log_row({**base, **_kf, "readout": "mapping_use", **rec})
                     option_mass[f"mapping_use/{row['query_kind']}"].append(rec["option_mass"])
                     counts["mapping_use"] += 1
@@ -3731,6 +3772,7 @@ def main() -> int:
                     # LEDGER THE HOOK (C-6) -- see the semantic branch above.
                     _kf = _readout_knock_fields(knock_stats, dk, prot, len(ids_r)) \
                         if _wants_knockout else {}
+                    _kf = {**_kf, **_rescue_row_fields(_rescue_ctx, _rpos_row[0])}
                     run.log_row({**base, **_kf, "readout": "comprehension", **rec})
                     option_mass[f"comprehension/{row['query_kind']}"].append(rec["option_mass"])
                     counts["comprehension"] += 1
@@ -3843,29 +3885,7 @@ def main() -> int:
                             _cd_ratio = (min(_v["match_ratio"] for _v in _cd.values())
                                          if _cd else None)
                             base = {**base,
-                                    "rescue_liveness": _rl,
-                                    # WHICH subspace was written. Without this the artifact cannot
-                                    # tell a candidate arm from a control arm after the fact, and
-                                    # the arm label alone is exactly the thing an analysis is
-                                    # supposed to be able to check rather than trust.
-                                    "rescue_basis": (os.path.basename(args.rescue_basis)
-                                                     if args.rescue_basis else None),
-                                    "rescue_basis_key": args.rescue_basis_key or None,
-                                    # REVIEW M4: WHICH domains the axis was fit on, travelling on
-                                    # the row. Without it an analysis cannot tell an in-sample
-                                    # score from a held-out one, and the fit-domain list existed
-                                    # only on a stdout line nobody kept.
-                                    "rescue_basis_meta": (_rescue_bases.meta()
-                                                          if args.rescue_basis else None),
-                                    "rescue_norm_match_key": args.rescue_norm_match_key or None,
-                                    "rescue_layer": args.rescue_layer,
-                                    "rescue_donor": (args.rescue_donor
-                                                     if args.rescue_layer is not None else None),
-                                    "rescue_positions": (args.rescue_positions
-                                                         if args.rescue_layer is not None else None),
-                                    "rescue_n_positions_requested": args.rescue_n_positions,
-                                    "n_rescue_positions": (len(_rpos)
-                                                           if args.rescue_layer is not None else None),
+                                    **_rescue_row_fields(_rescue_ctx, _rpos_row[0]),
                                     "control_draw": (_cd or None),
                                     "control_draw_match_ratio": _cd_ratio,
                                     "n_control_draw_positions": (

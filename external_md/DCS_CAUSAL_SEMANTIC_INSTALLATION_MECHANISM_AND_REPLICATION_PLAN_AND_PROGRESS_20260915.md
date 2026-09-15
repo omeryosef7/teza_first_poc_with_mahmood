@@ -1636,3 +1636,112 @@ transfer caveat in PR-CSI-001 stands — a null is still ambiguous between "does
 
 Controls behave: shuffled-label rho 0.0087 / 0.0426 / −0.0029 / 0.0034 / 0.0037, `ctrl_orth`
 |cos| = 0.0 exactly, `bank_sha16 79511d9e254571e6` (basket).
+
+---
+
+## S-028 — the Phase-1 SMOKE DID ITS JOB: the rescue instrumentation was blind on the readout path
+
+Job 896495 ran all six smoke arms to completion, `rc=0`, `DONE.json` on every arm — and the checker
+returned **SMOKE FAIL (13)**. This is the smoke working exactly as designed.
+
+### What the checker found
+
+| check | result |
+|---|---|
+| knockout live on semantic prompts, 0 decode edits, BASE unhooked | **PASS** on all arms |
+| `KO_SELF` reproduces `KO` on `y_install` | **PASS**, max\|diff\| = **0.000e+00** over 24 keys |
+| `KO` reduced installation vs `BASE` | **PASS** (0.804 → 0.588) |
+| **rescue fired on every row** | **FAIL — 0/24 on every rescue arm** |
+| **`n_rescue_positions` recorded** | **FAIL — None** |
+| **`rescue_basis_key` recorded** | **FAIL — None** |
+| **written norm recorded / norm-matched** | **FAIL — nothing recorded** |
+
+### The contradiction that identified the bug
+
+The arms' `y_install` on 24 rows (a sanity read, **not a result**):
+
+```
+BASE 0.804 | KO 0.588 | KO_SELF 0.588 | KO_FULL 0.682 | KO_AXIS 0.590 | KO_ORTH 0.593
+```
+
+`KO_FULL` moved the endpoint from 0.588 to 0.682 — so **the rescue was plainly firing** — while the
+artifact reported `fired: 0/24`. The rescue was not broken; **the instrumentation was blind.**
+
+**Root cause.** The rescue's row fields were written only on the **generation** path. The readout
+path has a *separate* field builder, `_readout_knock_fields`, which carried none of them. So a
+`--query-kinds semantic_one_word` rescue run — i.e. **every arm Phase 1 will ever run** — produced
+rows with `rescue_liveness: null`, `n_rescue_positions: null`, `rescue_basis_key: null`.
+
+This is the same bug class as correction **C-6**, which hit the *knockout's* own fields on this
+exact path and was fixed by routing both paths through one `record_knockout_row`. Two hand-copied
+field builders; the second one falls out of date. **Same remedy applied:** a single
+`_rescue_row_fields(rescue_ctx, rpos)` now serves the generation path and all three readout call
+sites, and it emits the full key set (as `None`) even on non-rescue arms so every row in a run set
+shares one schema.
+
+### Why this mattered more than an instrumentation nit
+
+Look again at the numbers: `KO_AXIS` 0.590 and `KO_ORTH` 0.593 both sit essentially **at KO**
+(0.588), while `KO_FULL` recovers ~44 % of the KO-induced installation loss. Taken at face value
+that is *"the rank-1 axis rescue does nothing while the whole-state rescue works"* — a substantive
+Phase-1 negative.
+
+**But it could not be believed, and that is the point.** With no `written_norm` and no `fired` flag,
+"the axis rescue fired and did nothing" and "the axis rescue never fired" are the *same artifact*.
+Drawing the negative from this run would have been exactly the error the liveness record exists to
+prevent: *a null that looks like evidence the information was not there.*
+
+**No Phase-1 conclusion is drawn from 896495.** Its numbers are recorded here as a 24-row
+diagnostic only. Smoke relaunched as **896623** against the fixed instrumentation; the same six
+arms must come back with `fired = 24/24`, a non-zero `written_norm` on `KO_AXIS`, and `KO_ORTH`
+norm-matched to it per row before any Phase-1 arm is launched at scale.
+
+**Open question flagged, not yet answered:** the minimum prefill-edit count differs between arms —
+1980 on `KO`/`KO_SELF` versus 1584 on the clean-donor arms (`KO_FULL`/`KO_AXIS`/`KO_ORTH`). Both
+are live and both have zero decode edits, so neither is broken, but a 25 % difference in the
+knockout's own edit count across arms that are supposed to differ only in the rescue needs an
+explanation before the arms are compared. Added to the checklist.
+
+---
+
+## S-029 — the 1980-vs-1584 prefill-edit anomaly: RESOLVED, benign, and the identity control is what licenses saying so
+
+S-028 flagged a 25 % difference in the knockout's own edit count between `KO`/`KO_SELF` and the
+clean-donor arms. Measured rather than theorised, on the **same `prompt_id`, same `seq_len` 208,
+same 28 query-span positions, same 48 blocked keys**:
+
+| arm | hooked forwards | prefill edits | edits per hooked forward |
+|---|---|---|---|
+| `KO` | **45** | 2160 | 48 |
+| `KO_SELF` | **45** | 2160 | 48 |
+| `KO_FULL` / `KO_AXIS` / `KO_ORTH` | **36** | 1728 | 48 |
+
+**The rate is identical (48 per hooked forward).** The arms differ only in how many forwards the
+hook observed, and 45 − 36 = 9 = the band width (layers 6–14), i.e. **exactly one model forward**.
+
+**Mechanism.** The rescue block runs a donor-capture forward before the readout. Under
+`--rescue-donor self` that forward runs *inside* `ctxs`, so it is hooked and contributes its 9
+layer-visits; under `--rescue-donor clean` it runs *outside*, unhooked, contributing none. The
+totals line up exactly: `KO` = 5 readout forwards × 9; `KO_SELF` = 1 capture × 9 + 4 × 9 = 45;
+`KO_FULL` = 0 + 4 × 9 = 36.
+
+**Does it contaminate the comparison? No — and the reason is the identity control, not an argument.**
+
+* The **scored option set is identical across arms**: `option_mass == option_mass_core_pair` on
+  every arm, so `y_install = softmax(logp_concept, logp_codeword)` is a two-way comparison over the
+  same core pair everywhere. No denominator differs.
+* **`KO_SELF` reproduces `KO` bit-exactly** on the endpoint — `max|diff| = 0.000e+00` over all 24
+  keys, and the underlying log-probs match to the last digit (`logp_codeword −1.0291664600372314`,
+  `logp_concept −1.0331529378890991` on both). `KO_SELF` *has* the donor capture and *has* an
+  active patch that writes back identical values. So the capture forward and the patch mechanics
+  demonstrably **do not perturb the readout**.
+
+That is exactly what the identity control is for, and it is why it earns its GPU time: it converts
+"the bookkeeping differs, is the comparison safe?" from an argument into a measurement. Any
+difference between `KO_FULL`/`KO_AXIS` and `KO` is therefore attributable to **the donated
+content**, not to the machinery that donates it.
+
+**Status: closed, no action.** The checklist item from S-028 is discharged. Worth keeping in the
+record because the honest first reaction to "one arm shows 25 % fewer intervention edits than
+another" is alarm, and the resolution depended on a control that was already in the design rather
+than on a post-hoc rationalisation.
