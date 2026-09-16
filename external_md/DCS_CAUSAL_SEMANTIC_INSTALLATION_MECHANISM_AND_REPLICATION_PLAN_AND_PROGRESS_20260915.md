@@ -4572,3 +4572,60 @@ believed.
 
 `KO_CW_AXIS` is scoring now; the 13 controls follow. Both basket control halves are running at the
 corrected **L18**.
+
+---
+
+# S-078 — **At the codeword row, the low-dimensional component is NEGATIVE.** (Preliminary: controls still running.)
+
+Group J's candidate arms are in. Positive control `KO_CW_FULL − KO` = **+0.03289**
+[+0.0279, +0.0380], 62/5 — the codeword row's full-state recovery, already independently replicated
+(S-077).
+
+| arm | recovery | CI95 | pos/neg | % of `KO_CW_FULL` | captured energy |
+|---|---|---|---|---|---|
+| `KO_CW_FULL` (full state, rank 4096) | **+0.03289** | [+0.0279, +0.0380] | 62/5 | 100 % | 1.000 |
+| **`KO_CW_AXIS`** (rank 1) | **−0.00062** | [−0.00122, −0.00001] | 21/46 | **−1.9 %** | 0.021 |
+| **`KO_CW_PLS`** (rank 5) | **−0.00245** | [−0.00372, −0.00122] | 26/41 | **−7.4 %** | **0.333** |
+
+Liveness is clean on both: `fired = 670/670`, `n_rescue_positions = [1]`, `rel_end = ['-10']`,
+correct basis keys.
+
+## What this says, with the caveat stated first
+
+**The controls are not in yet** (13 arms running), and per S-050/S-065 a bare `candidate − KO`
+number is not a verdict — random subspace injections were mostly *negative* in the rank-5 family
+too (−0.0053 … +0.0043). **So this is a magnitude read, not a result.**
+
+With that said, the magnitudes are striking:
+
+* **`KO_CW_PLS` restores 33 % of the delta's energy at the causally dominant position — and makes
+  installation WORSE than the knockout alone** (−0.00245, CI excluding zero, 41 of 67 domains
+  moving down). At one position, rank 5 of 4096 captures a third of the available energy, which is
+  ~3× what the whole-span rank-5 arm managed (10 %).
+* **`KO_CW_AXIS` is also negative** (−0.00062, CI excluding zero).
+* Both sit against a positive control of **+0.03289 at the same position, same layer, same row** —
+  differing **only** in the projection.
+
+## This is the branch I pre-registered — and it landed harder than the wording anticipated
+
+S-075 fixed the readings in advance. The second was:
+
+> *"`KO_CW_AXIS` inside its controls ⇒ the effect at the codeword row is also not low-dimensional,
+> and Phase 1's conclusion generalises rather than being a site artifact — a stronger negative than
+> the original, because it survives being asked at the causally dominant position."*
+
+The observed outcome is **stronger than "inside the controls"**: it is *negative*, with a CI
+excluding zero, at a dose 16× the rank-1 whole-span arm. If the controls come back near zero, the
+reading is not merely "the low-dimensional component doesn't help" but "**restoring only a
+low-dimensional slice of the right position actively hurts**" — consistent with an off-manifold
+perturbation, and flatly inconsistent with the slice carrying the installed meaning.
+
+**Phase 1's null is therefore not a site error.** The most direct rebuttal available — *"you looked
+in the wrong place"*, which S-072 showed was literally true — has now been tested at the right place
+and does not rescue the low-dimensional hypothesis.
+
+**Nothing is claimed until the 13 controls land.** The specific thing they decide: whether
+*arbitrary* norm-matched directions at the codeword row are equally negative (in which case the
+candidate is unremarkable and the story is "any low-rank perturbation at this position hurts"), or
+whether the candidate is *more* negative than arbitrary ones (which would be a stranger and more
+interesting fact, and would need its own explanation).
