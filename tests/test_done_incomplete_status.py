@@ -69,3 +69,35 @@ def test_clean_run_still_says_ok(tmp_path):
     dc.write_done(d, rows_written=7, extra={"experiment": "x", "n_rows_failed": 0})
     on_disk = json.load(open(os.path.join(d, "DONE.json")))
     assert on_disk["status"] == "ok", "a run that lost nothing must not be marked INCOMPLETE"
+
+
+def test_strict_run_dir_admits_documented_short_INCOMPLETE(tmp_path, monkeypatch):
+    """DCS-CSI-100 regression: the S-084 fix must not make documented-short runs inadmissible.
+
+    Before S-084 every run said status="ok", so `strict_run_dir`'s status gate was inert. After it,
+    a run that legitimately declined 1 row says "INCOMPLETE" -- and this gate began rejecting the
+    very runs `allow_short` exists to admit, silently shrinking a control family.
+    """
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "rp", os.path.join(REPO, "scripts", "dcs_csi_rederive_patch.py"))
+    rp = importlib.util.module_from_spec(spec); spec.loader.exec_module(rp)
+    root = tmp_path / "score"
+    run = root / "arm_A_20260916_120000_1"
+    run.mkdir(parents=True)
+    (run / "results.jsonl").write_text("".join('{"i":%d}\n' % i for i in range(669)))
+    with open(run / "DONE.json", "w") as fh:
+        json.dump({"status": "INCOMPLETE", "rows_written": 669, "n_rows_failed": 1}, fh)
+    monkeypatch.setattr(rp, "SCORE_DIR", str(root))
+    got = rp.strict_run_dir("arm_A", 670, "results.jsonl", allow_short=3)
+    assert got == str(run)
+
+    # ... but a DISHONEST ledger is still refused, which is the check that actually protects us.
+    with open(run / "DONE.json", "w") as fh:
+        json.dump({"status": "INCOMPLETE", "rows_written": 670, "n_rows_failed": 1}, fh)
+    try:
+        rp.strict_run_dir("arm_A", 670, "results.jsonl", allow_short=3)
+    except SystemExit:   # strict_run_dir refuses via SystemExit, which is NOT an Exception
+        pass
+    else:
+        raise AssertionError("a ledger claiming more rows than the file holds must be refused")

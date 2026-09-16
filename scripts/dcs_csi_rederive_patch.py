@@ -79,7 +79,17 @@ def strict_run_dir(tag: str, expect_n: int, row_file: str = "gens.jsonl",
         if not os.path.exists(dj):
             why.append("%s: no DONE.json" % os.path.basename(d)); continue
         done = json.load(open(dj))
-        if done.get("status") != "ok":
+        # STATUS. Before DCS-CSI-084 this field was ALWAYS "ok" -- `finish()` hardcoded it -- so
+        # this gate only ever caught a status that in practice never occurred. The S-084 fix made
+        # `finish()` write "INCOMPLETE" whenever ANY row failed, including the 1-2 rows the
+        # norm-match degeneracy guard legitimately declines. That flipped this gate from inert to
+        # actively wrong: it began rejecting exactly the documented-short runs `allow_short` exists
+        # to admit, and it silently shrank a 46-control family (DCS-CSI-100).
+        # "INCOMPLETE" is therefore admissible HERE, because the two checks below are strictly
+        # stronger than a status string: the ledger must agree with the file, and the shortfall
+        # must be within `allow_short`. A run that lost rows dishonestly fails the first; a run
+        # that lost too many fails the second. Any OTHER status is still refused.
+        if done.get("status") not in ("ok", "INCOMPLETE"):
             why.append("%s: DONE.status=%r" % (os.path.basename(d), done.get("status"))); continue
         rw = int(done.get("rows_written", -1))
         n_lines = sum(1 for _ in open(gj))

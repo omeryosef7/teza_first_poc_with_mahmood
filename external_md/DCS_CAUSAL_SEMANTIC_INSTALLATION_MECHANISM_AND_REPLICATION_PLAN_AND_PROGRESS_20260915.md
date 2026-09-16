@@ -5883,3 +5883,69 @@ validation's shuffled family is 9 here and was 4 in S-088.)
 
 **Status unchanged:** prohibition 20 still stands on both splits — shuffled-only is rank 1 of 10 held-out
 (floor 0.10) and untested at n = 24 on TRAIN. Jobs 898698 (2 arms to go) and 901487 (queued) decide it.
+
+---
+
+## S-100 — PROHIBITION 20 IS LIFTED ON TRAIN: zero of the twelve new shuffled controls beat the candidate. Plus a self-inflicted admissibility bug the fix created
+
+Group K finished (`GROUP K DONE rc=0`, 19:27, n-304). The **preregistered** S-095 decision rule was
+applied without modification.
+
+### The preregistered outcome: the 0-above branch
+
+| family | n | mean | sd | max | candidate rank | floor | verdict |
+|---|---|---|---|---|---|---|---|
+| **shuffled** | **24** | +0.000528 | 0.001018 | +0.002370 | **1 of 25** | **0.0400** | **PASSES** |
+| random | 22 | +0.000475 | 0.000543 | +0.001919 | 1 of 23 | 0.0435 | PASSES |
+| **pooled** | **46** | — | — | — | **1 of 47** | **0.0213** | **PASSES** |
+
+Candidate `KO_AXIS − KO` = **+0.00264** [0.00068, 0.00471], 44 pos / 23 neg, 67 domains, 642 keys.
+
+**Zero of `SHUF12–23` exceeded +0.00264.** S-083 pre-declared: *"two or more above and the S-082 pass
+does not survive its correct comparator; one leaves it INCONCLUSIVE; only zero certifies."* Zero. The
+binding subfamily — the one R5 identified and prohibition 20 was written for — now **passes on its
+own at floor 0.0400**, and the pooled family passes at **0.0213**, the sprint's first rank p not
+pinned against 0.05.
+
+**The preregistered exchangeability re-test also passes**, which was the other way this could have
+died: shuffled vs random at 24 vs 22 gives mean difference **+0.000053, permutation p = 0.8311** →
+**POOLABLE**. The pooled rank remains a legitimate single null; D12's pooled figure survives.
+And R5's structural finding reproduces a third time: **sd ratio 1.88** (R5 measured 1.9 at n=12;
+S-099 measured 2.66 held-out). Shuffled-label fitting buys variance, not recovery.
+
+**Both paths agree.** Independent re-derivation: rank 1 of 47, 1 of 25, 1 of 23. Primary analyser:
+*"PRIMARY PASSES on split=train — candidate is strictly the largest of 46 controls (rank p=0.02128)"*,
+candidate +0.00264 [0.00068, 0.00471].
+
+**Prohibition 20 is LIFTED FOR TRAIN ONLY.** Held-out, the shuffled family is 9 (floor 0.10) until job
+901739 lands; the prohibition stands there and the claim table must keep it.
+
+### The bug my own S-084 fix created, found because the two paths disagreed
+
+The primary analyser first **refused**: `REFUSING for tag 'csi1_basket_train_KO_SHUF13': DONE.status='INCOMPLETE'`.
+
+`strict_run_dir` has always required `DONE.status == "ok"`. Before S-084 that gate was **inert** —
+`finish()` hardcoded `"ok"`, so it could never fire. The S-084 fix made `finish()` write
+`"INCOMPLETE"` whenever **any** row failed, including the 1–2 rows the norm-match degeneracy guard
+legitimately declines. The gate flipped from inert to **actively wrong**: it rejected exactly the
+documented-short runs `--allow-short` exists to admit, and would have silently analysed a **41-control
+family instead of 46** — five arms dropped, the floor moved, and no error anywhere.
+
+Only the disagreement between the independent re-derivation (which does not read `status`) and the
+primary analyser surfaced it. A single analysis path would have reported a smaller family as if it
+were the whole one.
+
+**Fixed:** `status in ("ok", "INCOMPLETE")` is admissible, because the two checks that follow are
+**strictly stronger than a status string** — the ledger must equal the file on disk, and the shortfall
+must be within `allow_short`. A dishonest ledger fails the first; an excessive loss fails the second.
+Any other status is still refused. Regression test added (`tests/test_done_incomplete_status.py`, now
+6 tests) asserting **both** halves: a documented-short INCOMPLETE run is admitted, and a run whose
+ledger claims more rows than the file holds is still refused. (The test initially failed because
+`strict_run_dir` refuses via `SystemExit`, which `except Exception` does not catch — fixed in the test,
+noted because it is an easy way to write an assertion that cannot fail.)
+
+**Lesson recorded:** a change that makes an artifact more honest can make a *consumer* that was
+tuned to the old dishonesty reject it. S-089 checked blast radius by grepping for readers comparing
+`DONE.json` status to `"ok"` — and found none, because the consumer that mattered lives in
+`scripts/`, was matched by my grep's file set, but compares with `!=` inside a helper I read past.
+The grep was right; my reading of its output was not.
