@@ -6035,3 +6035,55 @@ held rank 1 under **23 of 23** drops, and that was measured at 30 controls and h
 **What R7 does NOT establish**, for the same reason R6 did not: leave-one-out probes this estimate on
 this sample. It is not a population property, not a replication, and it does not change the attainable
 floor, which is 1/47 = 0.0213 and set by the number of controls.
+
+---
+
+## S-102 — PROHIBITION 20 IS LIFTED HELD-OUT. The basket axis beats its fit-capacity-matched controls on BOTH splits, and the held-out rank is invariant to deleting any domain
+
+Job 901739 finished (`GROUP X DONE rc=0`, 21:04, n-304). VALIDATION's control family is now
+**22 random + 24 shuffled = 46**, matching TRAIN exactly. The S-096 decision rule was applied
+unmodified.
+
+### The preregistered outcome, held-out: again the 0-above branch
+
+| family | n | mean | sd | max | candidate rank | floor | verdict |
+|---|---|---|---|---|---|---|---|
+| **shuffled** | **24** | +0.000499 | 0.000880 | +0.002781 | **1 of 25** | **0.0400** | **PASSES** |
+| random | 22 | +0.000183 | 0.000380 | +0.000978 | 1 of 23 | 0.0435 | PASSES |
+| **pooled** | **46** | — | — | — | **1 of 47** | **0.0213** | **PASSES** |
+
+Candidate `KO_AXIS − KO` = **+0.00401**, 215 keys, **23 held-out domains**.
+**Zero of the sixteen new shuffled controls exceeded it.**
+
+**Both analysis paths agree.** Primary analyser: *"PRIMARY PASSES on split=validation — candidate is
+strictly the largest of 46 controls (rank p=0.02128 < 0.05)"*. Independent re-derivation: 1 of 47,
+1 of 25, 1 of 23.
+
+**The preregistered exchangeability re-test passes held-out too**: shuffled vs random at 24 vs 22,
+mean difference +0.000316, permutation **p = 0.1353** → **POOLABLE**. The pooled held-out rank is a
+legitimate single null. R5's structural finding now has its fourth measurement — **sd ratio 2.32**
+(TRAIN 1.88 at n=46, 1.9 at n=12; held-out 2.66 at n=9). Shuffled-label fitting buys variance, not
+recovery, on every family measured.
+
+**Held-out LOO (R6/R7 method, re-run at 46 controls): rank stays 1 in 23 of 23 single-domain drops**,
+candidate range +0.00276 … +0.00439. The held-out verdict is invariant to deleting **any** domain —
+as it was at 30 controls, now at 46.
+
+### Prohibition 20 is lifted, and what replaces it
+
+`reports/DCS_CSI_CLAIM_TABLE.md` prohibition 20 was: *"Basket's axis beats its fit-capacity-matched
+controls — NOT established on either split."* It is now established on **both**, by the test R5
+identified as the binding one, at a floor below 0.05 on each, with the pooling validated on each, and
+with each verdict reproduced by two independently written analysis paths.
+
+**What is still NOT licensed, and this has not changed:**
+- The effect remains **small**: +0.00401 against a knockout of −0.229 and a whole-state rescue of
+  +0.103. That is **3.9%** of the knockout and 3.9% of what the full state restores.
+- It remains **highly concentrated** (S-094): top 5 of 23 held-out domains carry 91.8%; the axis's
+  per-domain sd is 6–10x its controls'.
+- It remains **codeword-specific**. Button ranks 4 of 11 at `rel −6` and **10 of 12 at its codeword
+  row** (S-097), where the whole state recovers +0.03289. *"The installation axis is causal"*
+  unqualified stays prohibited (19), and so does *"the Phase-1 negative is overturned"* (21).
+- **The honest summary is unchanged: a codeword dissociation** — in which one side now replicates
+  held-out against its hardest available comparator, and the other fails at the position that carries
+  46.6% of the effect.
