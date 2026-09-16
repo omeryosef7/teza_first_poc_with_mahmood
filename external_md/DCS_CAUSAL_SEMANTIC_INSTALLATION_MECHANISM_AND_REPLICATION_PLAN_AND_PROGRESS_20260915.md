@@ -5006,3 +5006,56 @@ commit was retried, so it landed inside commit `2bcffba4`, whose message describ
 entry is not lost and nothing was rewritten; a reader looking for S-084 by commit message will not
 find it, and should look in `2bcffba4`. Recorded here rather than fixed by amending, because
 amending would rewrite a commit in a tree three people write to.
+
+---
+
+## S-085 — the S-082 headline INDEPENDENTLY RE-DERIVED: 34 of 34 controls agree to the digit, by a path that shares no code
+
+GPU is queued behind fair-share, so this tick spent CPU on the check that S-082 most needed: a second
+implementation. `scripts/dcs_csi_rederive_subspace.py` (new) imports nothing from
+`dcs_csi_subspace_analyze.py`, does not use `lpm.load_installation` or `family_slot`, and
+re-implements every step from the raw `results.jsonl` fields.
+
+### Agreement
+
+| quantity | primary | independent | delta |
+|---|---|---|---|
+| keys common to all 41 arms | 647 | 647 | — |
+| domains | 67 | 67 | — |
+| `KO − BASE` | −0.23129 | −0.23129 | 0 |
+| `KO_FULL − KO` | +0.12131 | +0.12131 | 0 |
+| candidate `KO_AXIS − KO` | +0.00265 | +0.00265 | **0.00e+00** |
+| **all 34 controls** | — | — | **0 disagreeing** (tol 1e−5) |
+| candidate rank | 1 of 35 | 1 of 35 | — |
+
+Per-family ranks, which R5 showed are the binding ones, reproduce as well: pooled **1 of 35** (floor
+0.0286, PASSES), random-only **1 of 23** (floor 0.0435, PASSES), shuffled-only **1 of 13** (floor
+0.0769, **INCONCLUSIVE — floor-limited**, which is exactly what group K was launched to fix).
+
+### A designed divergence that turned out to be INVALID, recorded as refuted
+
+The verifier was written with three deliberate divergences. **Divergence 1 does not exist and the
+script now says so.** The plan was to take each row's split from its own `split` field rather than
+from the domain→split manifest, so that a manifest/row disagreement could not hide in both paths. It
+does not work: `results.jsonl` rows carry `split` in **{dev, heldout}** — the *bank's* partition,
+**335 / 335 inside a single TRAIN arm** — not the ts116m train/validation/test assignment. The rows
+do not carry the sprint's split at all, so the manifest is the only source and cannot be diverged from.
+
+The first run of the verifier returned `REFUSING: the arms share no keys`, which is the correct
+behaviour for a filter that matched nothing, and is how this was found rather than silently producing
+a subset. **Replacement check, since divergence was impossible:** the verifier re-reads the manifest
+and asserts every TEST domain is **absent** from the loaded key set — the property that actually
+matters, enforced independently of the primary path. It passes.
+
+Surviving genuine divergences: the (domain, slot) key rebuilt inline from `family_id`; the two-way
+softmax written as a logistic in `logp_codeword − logp_concept`; and a sign-flip test that enumerates
+exactly at n ≤ 20 and otherwise samples with its own RNG. The gates agree under that independent test.
+
+### What this does and does not buy
+
+It buys: S-082's numbers are not an artifact of the analysis code. Key intersection, installation
+arithmetic, domain clustering and the rank statistic are all reproduced by a second implementation.
+
+It does **not** buy: any change to what may be claimed. Both paths read the same `results.jsonl`, so a
+defect in **generation** — the S-084 class — would be invisible to both. Agreement between two readers
+of one corpus is not evidence about the corpus. And the held-out verdict is still INCONCLUSIVE.
