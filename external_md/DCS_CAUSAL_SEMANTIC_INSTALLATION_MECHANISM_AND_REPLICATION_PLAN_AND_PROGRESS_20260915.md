@@ -5550,3 +5550,64 @@ about domains outside the corpus, and it does not lower the attainable rank-p fl
 
 **Unchanged and still blocking:** prohibition 20. Neither attack touches the shuffled-only subfamily,
 which remains floor-limited on both splits until group K runs.
+
+---
+
+## S-094 — why R6 found a `rail_depot`: the axis effect is HIGHLY CONCENTRATED across domains, and it tracks the thing it should track
+
+R6 found that dropping one domain of 67 moves TRAIN from rank 1 to rank 4. Rather than treat that as a
+stability footnote, this asks *why* one domain can do that. `scripts/dcs_csi_domain_heterogeneity.py`
+(new, CPU-only, runs while group K stages).
+
+### The axis does not produce a small uniform shift. It produces a few large domain effects.
+
+| | TRAIN (67 dom) | VALIDATION (23 dom) |
+|---|---|---|
+| candidate per-domain mean | +0.00265 | +0.00400 |
+| candidate per-domain **sd** | **0.00890** | **0.00840** |
+| range | −0.01641 … **+0.04354** | −0.00434 … **+0.03139** |
+| control-mean per-domain sd | 0.00137 | 0.00086 |
+| **candidate sd / control sd** | **6.5x** | **9.8x** |
+| top domain's share of the total | **24.5%** | **34.1%** |
+| top 5 domains' share | **70.8%** | **91.8%** |
+
+The pooled effect of +0.004 is a **mixture**, not a typical domain. `rail_depot` alone is +0.04354 —
+**16x the TRAIN mean** and larger than the whole-state rescue's per-domain average. Meanwhile
+`textile_mill` is −0.01641. The controls show nothing like this spread: their per-domain sd is 6–10x
+smaller, so the heterogeneity is **specific to the candidate direction**, not a property of patching.
+
+This is what makes R6's finding possible, and it also reframes D12: *"the axis recovers 3.9% of the
+knockout effect"* is arithmetically right and descriptively misleading. On the domains where it acts,
+it acts substantially; on most domains it does approximately nothing.
+
+### Coherence check: the axis restores most where there is most to restore
+
+Domain-level Spearman, with exact-permutation p (100k draws):
+
+| relation | TRAIN | VALIDATION |
+|---|---|---|
+| candidate vs **whole-state recovery** (`KO_FULL − KO`) | **+0.393, p = 0.0012** | +0.297, p = 0.168 |
+| candidate vs **knockout size** (`BASE − KO`) | **+0.255, p = 0.0374** | +0.361, p = 0.090 |
+| candidate vs baseline installation (`BASE`) | +0.297 | +0.097 |
+
+On TRAIN both relations are significant: the axis recovers more in exactly those domains where the
+knockout removes more and where the full state restores more. That is the pattern a genuine component
+of the knockout's effect should show, and it is **not** something the rank test tests — a direction
+could top its controls while recovering in the wrong places. It does not.
+
+**On VALIDATION neither correlation clears 0.05** (p = 0.090, 0.168) — same signs, same rough
+magnitudes, 23 domains instead of 67. That is consistent with an underpowered replication of a real
+relation and equally consistent with noise; it is **directional support, not a held-out confirmation**,
+and is filed as EXPLORATORY, not as a defensible claim.
+
+### What may and may not be said
+
+**MAY:** The axis's per-domain recovery is 6–10x more variable than its controls', is concentrated
+(top 5 of 67 carry 71%; top 5 of 23 carry 92%), and on TRAIN correlates with both knockout magnitude
+(ρ = +0.255, p = 0.037) and whole-state recoverability (ρ = +0.393, p = 0.0012).
+
+**MAY NOT:** *"The axis recovers installation in ~4% of cases"* — the unit is a domain mean, not a case.
+*"The effect is uniform / typical"* — refuted here. *"Heterogeneity replicates"* — the TRAIN
+correlations do **not** clear 0.05 on VALIDATION. *"rail_depot drives the result"* — R6 showed the
+**held-out** rank survives all 23 single-domain drops; concentration and single-domain robustness are
+both true, and neither may be quoted without the other.
