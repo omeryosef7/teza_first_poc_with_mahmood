@@ -4629,3 +4629,74 @@ and does not rescue the low-dimensional hypothesis.
 candidate is unremarkable and the story is "any low-rank perturbation at this position hurts"), or
 whether the candidate is *more* negative than arbitrary ones (which would be a stranger and more
 interesting fact, and would need its own explanation).
+
+---
+
+# S-079 — **BASKET PASSES: the candidate beats all 22 controls, rank p = 0.0435.** The sprint's first subspace positive — reported with the caveat that p is exactly at its floor.
+
+Basket's extended control family (18 random + 4 shuffled-label, all norm-matched per row at L18).
+`VOID: []`, all three gates pass.
+
+```
+VERDICT: PRIMARY PASSES on split=train -- candidate is strictly the largest of 22
+controls (rank p=0.04348 < 0.05)
+```
+
+| | recovery |
+|---|---|
+| **`KO_AXIS` ← candidate** | **+0.002800** |
+| `KO_SHUF2` | +0.002190 (margin **+0.00061**) |
+| `KO_SHUF3` | +0.002160 |
+| `KO_RAND2` | +0.001860 |
+| `KO_RAND11` | +0.001430 |
+| … 18 more, down to `KO_SHUF1` | −0.000610 |
+
+Control distribution: n = 22, mean **+0.000494**, sd **0.000795**, max +0.002190.
+**Candidate z vs controls = +2.90.** `candidate − KO` = +0.00280, CI [+0.00068, +0.00502], 44/23
+domains, p = 0.011.
+
+## Three caveats that travel with this, permanently
+
+**1. `p = 0.04348` IS the attainable floor.** With 22 controls the rank test cannot return anything
+below `1/23 = 0.0435`. So this passes **at exactly the minimum resolution the design allows** — the
+sprint's own standing rule (a p at its floor means the test exhausted its resolution) applies in
+full. It is a pass, not a comfortable one.
+
+**2. The margin is one control wide.** The candidate leads the best control by **+0.00061**, about
+0.8 sd of the control distribution. **One more control landing above +0.00280 would move it to rank
+2 and p to 0.087.** The z-score (+2.90) is the more stable summary and is reported alongside, but
+the preregistered statistic is the rank, and the rank is fragile by exactly one draw.
+
+**3. TRAIN only, one codeword, one layer.** There is **no basket VALIDATION** for this contrast, and
+**button fails the identical test on both splits** (rank 4 of 11 twice).
+
+## What may and may not be said
+
+**MAY:** *"On basket, the rank-1 installation axis recovers more semantic installation than all 22
+of its norm-matched random and shuffled-label controls (rank p = 0.0435, at the design's attainable
+floor; candidate +2.90 sd above the control mean). Button's axis does not, on either split."*
+
+**MAY NOT:**
+* *"The installation axis is causal"* — unqualified. It is a single-codeword, single-split,
+  single-layer pass at the resolution floor.
+* *"The Phase-1 negative is overturned."* Button's null stands on two splits with a 10-control
+  family; basket passes on one split. **The honest summary is a codeword dissociation, not a
+  reversal.**
+* Anything comparing this to button's number without noting that basket ran at **L18** and button at
+  **L20** — the confound S-062/S-064 measured (layer accounts for ~69 % of the whole-state recovery
+  gap between them).
+
+## What this needs next, in order
+
+1. **More controls.** The cheapest way to make the result robust rather than floor-limited: at
+   ~40 controls the floor drops to 0.024, and the rank stops turning on a single draw.
+2. **Basket VALIDATION.** The claim is TRAIN-only. Button's axis looked *better* on validation by
+   the bare contrast (S-053) and still ranked 4 of 11 once its controls existed (S-058) — so a
+   held-out basket control family is the test that matters most.
+3. **Button at L18 / basket at L20** for the subspace contrast, to separate codeword from layer here
+   as group F did for the whole-state effect.
+
+**This is the first time in the sprint that a low-dimensional installation candidate has beaten its
+controls.** It is also, simultaneously, contradicted at the codeword row on button (S-078, where the
+same kind of candidate came back *negative*). Both are recorded; neither is being smoothed into the
+other.
