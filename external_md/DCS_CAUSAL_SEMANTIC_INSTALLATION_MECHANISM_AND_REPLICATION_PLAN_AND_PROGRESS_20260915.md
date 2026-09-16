@@ -4064,3 +4064,73 @@ has to go too.
 **No claim is being made about localisation until that accounting closes.** The two facts that
 survive regardless are: `rel −1` and `rel −2` carry 35 % of the effect between them on 67/67
 domains, and the probe site does not.
+
+---
+
+# S-069 — **THE CODEWORD ROW IS THE CAUSAL LOCUS: 46.6 % of the whole-state effect from one position.** The accounting closes at 93 %.
+
+Group H's `rel −10` arm — the **real** codeword row, located by measurement on all 670 rows — is in,
+and it reverses S-066's narrative completely.
+
+| rel | recovery | CI95 | pos/neg | % of `KO_FULL` | what it is |
+|---|---|---|---|---|---|
+| **−10** | **+0.03289** | **[+0.0279, +0.0380]** | **62 / 5** | **46.6 %** | **THE CODEWORD ROW** |
+| −1 | +0.01721 | [+0.0154, +0.0191] | 67 / 0 | 24.4 % | last token = readout position |
+| −7 | +0.00784 | [+0.0067, +0.0091] | 64 / 3 | 11.1 % | — |
+| −2 | +0.00739 | [+0.0065, +0.0083] | 67 / 0 | 10.5 % | — |
+| −6 | +0.00071 | [+0.0000, +0.0014] | 39 / 28 | 1.0 % | **the axis / probe site** |
+| −3, −4, −5, −8, −11, −20, −28 | −0.0006 … +0.0008 | — | ~coin-flip | ≈ 0 % | — |
+
+**Four positions carry 92.6 % of the effect. Twelve measured positions sum to +0.06593 = 93.4 % of
+`KO_FULL`.**
+
+## Three things this resolves at once
+
+**1. The accounting gap closes — it was NOT superadditivity.** S-068 left 64 % unaccounted and named
+superadditivity as the leading alternative. It was simpler than that: **I had not measured the
+dominant position**, because the off-by-one put my "codeword" arm one token to the left of the
+codeword. Single-position contributions sum to ~93 % of the joint effect, so they are **roughly
+additive** after all.
+
+**2. The ladder's linearity is vindicated as additivity.** Slope × 28 = 0.0695 ≈ `KO_FULL` = 0.0706,
+and the sum of single-position effects ≈ `KO_FULL`. The ladder and the identity arms now describe
+the same object — which is exactly the consistency S-067's prediction was written to test. The
+prediction failed, and failing is what sent me to the off-by-one.
+
+**3. The intervention site IS the causal locus.** The A1 knockout's scope is
+`target_surface_row_only` — it edits **the codeword row**. And repairing **that same row alone**
+recovers **nearly half** the damage. That is the cleanest possible statement of where the knockout's
+effect on semantic installation lives.
+
+## What now stands, and what is corrected
+
+**WITHDRAWN (S-066, already flagged in S-068, now replaced by its opposite):** *"`cw_query` recovers
+nothing; the knockout's own target is causally inert."* **The codeword row is the single largest
+contributor in the span.**
+
+**STANDS, and is now much more interesting:** *"the observational probe site is causally
+near-inert."* `rel −6`, where the installation axis was fit (ρ = 0.5935) and where **every Phase-1
+subspace arm wrote**, contributes **1.0 %**. The codeword row contributes **46.6 %**.
+
+> **Phase 1's null now has a mechanical explanation.** The subspace arms restored a 1- or
+> 5-dimensional component of a direction fit at `rel −6` — a position carrying 1 % of the causal
+> effect — spread across all 28 positions. The experiment was looking for the installed meaning at
+> the wrong place, and the position map is what shows it.
+
+**STANDS:** `rel −1`'s output-adjacency caveat (S-067) — it is the readout position, so its 24.4 %
+must not be read as storage. Note this makes the codeword row's 46.6 % the *more* interpretable
+number of the two, since `rel −10` is nine tokens upstream of the readout.
+
+## The experiment Phase 1 should have run
+
+**Fit the axis AT the codeword row and redo the subspace test there.** That is now the obvious
+high-value follow-up, and it is a fair test rather than a fishing expedition: the site is selected
+by a **causal** criterion measured on TRAIN, not by re-searching the probe grid for a better ρ.
+
+⚠ **One discrepancy to resolve first.** The predecessor's query-probe notes record
+*"`cw_query` is byte-identical to `rel-11`"* in the **extraction corpus's** site convention, while
+`score_behavior`'s span convention puts the codeword at `rel −10`. Both conventions index from the
+sequence end and the query span ends at the final token, so they ought to coincide — **they do not,
+and one of them is off by one.** Until that is settled I cannot be sure which captured site the axis
+was actually fit at, which bears directly on the "probe site is inert" claim. Queued as **P1-k**,
+ahead of any codeword-row axis fit.
