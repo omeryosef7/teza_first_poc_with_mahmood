@@ -4829,3 +4829,61 @@ it at alpha = 0.05.
 **MAY NOT:** "The installation axis is causal" unqualified. "Basket replicates held-out" — it does
 **not yet**; it is INCONCLUSIVE by the design's own floor. "The Phase-1 negative is overturned" —
 button still ranks 4 of 11 on both splits, and **the honest summary remains a codeword dissociation.**
+
+---
+
+## REVIEW R5 (adversarial, ~4h cadence) — attacking the S-082 pass: is the 34-control family a legitimate single null?
+
+The S-082 verdict pools 22 random-subspace and 12 shuffled-label controls into **one** 34-member null
+and reads the candidate's rank in it. That pooling is an assumption, and it is the load-bearing one:
+if the two families are not exchangeable, the pooled rank p = 0.0286 is not a p-value at all.
+
+**The specific attack.** The candidate axis is **fit on TRAIN** and, in the TRAIN analysis, evaluated
+on the same 67 domains. Random-subspace controls are not fit to anything, so they do not carry the
+candidate's fitting capacity — a direction fit in-sample could beat them on overfitting alone.
+The shuffled-label controls are the family that *does* match fitting capacity: same fit, same data,
+permuted targets. So the hypothesis to kill is: **the candidate beats the random controls only
+because it was fit, and the shuffled family — not the random one — is the honest null.**
+
+If that were true, the shuffled controls should sit systematically above the random ones.
+
+**Test: exact two-sample permutation on the per-control paired recovery, shuffled vs random.**
+
+| split | shuffled | random | shuffled − random | exact-perm p |
+|---|---|---|---|---|
+| TRAIN | n=12, mean +0.00068, sd 0.00102, max +0.00233 | n=22, mean +0.00044, sd 0.00055, max +0.00187 | **+0.00024** | **0.714** (400k perms) |
+| VALIDATION | n=4, mean +0.00090, sd 0.00118, max +0.00255 | n=6, mean −0.00000, sd 0.00035, max +0.00053 | +0.00090 | 0.167 (210, exhaustive) |
+
+**The attack fails on TRAIN.** The two families are not distinguishable in location (p = 0.714); the
+pooling is legitimate and the 34-member null stands. This is a check that could have voided S-082's
+headline and did not.
+
+**But it found something real, and it is about spread, not location.** The shuffled family's sd is
+**1.9x** the random family's (0.00102 vs 0.00055) with essentially the same mean. Fitting capacity on
+permuted labels does not buy recovery *on average* — it buys **variance**. Consequently the controls
+that come closest to the candidate are all shuffled: the top three of 34 are SHUF11 (+0.00233),
+SHUF3 (+0.00213), SHUF2 (+0.00212), against the best random RAND2 (+0.00187). **The candidate's
+margin is set by the shuffled tail, not by the random bulk** — its lead over the best shuffled is
++0.00032, versus +0.00078 over the best random.
+
+**Rank within each family separately, both splits — candidate is rank 1 in all four:**
+
+| | TRAIN | VALIDATION |
+|---|---|---|
+| vs shuffled only | rank 1 of 13, floor **0.0769** | rank 1 of 5, floor 0.2000 |
+| vs random only | rank 1 of 23, floor **0.0435** | rank 1 of 7, floor 0.1429 |
+
+Neither subfamily alone can certify at alpha = 0.05 — **both are floor-limited**, which is exactly why
+the design pools them and why the pooling had to be tested rather than assumed.
+
+**Consequences recorded:**
+1. S-082's TRAIN pass **survives** this review. The null is legitimate.
+2. **New standing caveat:** the shuffled-label family is the binding comparator. Any future extension
+   of the control family should add **shuffled** controls preferentially — adding more random draws
+   lowers the floor while sampling the wrong tail, which would make the p-value look better without
+   making the test harder. The validation extension now in flight (897688/897689) adds 20 random and
+   only 4 shuffled; **this is the wrong mix**, and I am recording it rather than silently accepting
+   the resulting number. When it lands, the shuffled-only rank must be reported alongside the pooled one.
+3. **MAY NOT say:** "the axis beats 34 independent controls" in a way that implies 34 equally
+   informative draws. They are 34 draws from two families of unequal spread, pooled after an
+   exchangeability test that passed at n=12 vs 22 — a test with modest power.
