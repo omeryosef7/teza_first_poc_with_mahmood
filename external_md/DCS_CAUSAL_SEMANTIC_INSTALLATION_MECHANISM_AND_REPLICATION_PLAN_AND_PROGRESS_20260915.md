@@ -4771,3 +4771,61 @@ the claim table as a standing caveat on every bare `X − KO` contrast in this d
 **Status: NOT a result yet.** The analyzer's own text says it: *"only 0 control(s) present; a single
 comparator is an arbitrary draw."* The verdict line it printed is the arm-vs-comparator gate, not
 the S-079 rank test. Nothing from this entry may be quoted as a basket VALIDATION pass.
+
+---
+
+## S-082 — the basket pass SURVIVES 12 more controls (rank 1 of 35, p = 0.0286), and held-out basket is rank 1 of 11 but FLOOR-LIMITED — INCONCLUSIVE, not a failure
+
+Both remedies from S-080 landed. `reports/DCS_CSI_SUBSPACE_basket_train_n34.json`,
+`reports/DCS_CSI_SUBSPACE_basket_validation.json`.
+
+### TRAIN, control family grown 22 -> 34
+
+S-079 named the fragility precisely: *"One more control landing above +0.00280 would move it to
+rank 2 and p to 0.087."* Twelve more controls ran. **None did.**
+
+- candidate `KO_AXIS − KO` = **+0.00265** [0.00061, 0.00486], 44 pos / 23 neg, 67 domains
+- **rank 1 of 35**, rank **p = 0.02857** — still the attainable floor, but now a floor *below* 0.05
+- control spread is tight: every one of the 34 sits in 0.23888–0.24143 against KO's 0.23957
+- gates: manipulation −0.23129 (p at floor), `KO_FULL − KO` +0.12131, 67/67 domains, identity
+  `KO_SELF − KO` = **−0.00033**, p = 0.573 — properly inert
+
+The prediction that would have killed it was stated in advance and did not come true. That is the
+strongest form this design can deliver: **not** a p-value that improved with more data, but a
+pre-named refutation condition that was given 12 chances to fire and didn't.
+
+### VALIDATION, 10 controls — rank 1, and the verdict is INCONCLUSIVE
+
+- candidate `KO_AXIS − KO` = **+0.00406** [0.00105, 0.00778], 15 pos / 8 neg, 23 domains
+- **strictly the largest of all 10 controls** — rank 1 of 11
+- rank **p = 0.0909**, which is the attainable floor for 10 controls, and **0.0909 > 0.05**
+
+Verbatim from the analyzer: *"the candidate is strictly the LARGEST of its 10 controls, but with
+only 10 controls the attainable rank-p floor is 0.0909, which is above 0.05. Being top of the
+distribution is real; certifying it at alpha=0.05 needs at least 19 controls. **NOT a pass and NOT a
+failure.**"* This is the three-way branch review R3 added after finding the old PASS branch was dead
+code — and it is now firing on a result where calling it either way would have been wrong. Per the
+sprint rule, a floor-limited result is **CANNOT ANSWER**, never a negative replication.
+
+**Fix launched, not argued about:** jobs **897688 / 897689** (group I, both halves, validation, L18)
+add 24 more controls → **34 total, floor 0.0286**. Same family, same layer, same design as TRAIN.
+
+### A correction to S-081, appended not rewritten
+
+S-081 flagged `KO_SELF − KO` = +0.00102 with a CI excluding zero as "26% of the candidate's effect".
+On the **full** key-intersected set (225 keys across all 17 arms, not the 230 of group A alone) it is
+**+0.00101, CI [−0.00004, 0.00216], p = 0.092** — the CI now **includes** zero, and on TRAIN it is
+−0.00033 (p = 0.573). The caveat is weaker than S-081 stated: self-rescue is inert on TRAIN and not
+distinguishable from inert on VALIDATION. S-081's arithmetic stands; its implication does not. The
+standing caveat on bare `X − KO` contrasts is retained anyway, because the rank test is what the
+verdict rests on either way.
+
+### What may be said, as of this entry
+
+**MAY:** On basket TRAIN, the rank-1 installation axis recovers more semantic installation than
+**all 34** of its norm-matched random and shuffled-label controls (rank p = 0.0286). On held-out
+basket it is again the largest of its control family, but with 10 controls the design cannot certify
+it at alpha = 0.05.
+**MAY NOT:** "The installation axis is causal" unqualified. "Basket replicates held-out" — it does
+**not yet**; it is INCONCLUSIVE by the design's own floor. "The Phase-1 negative is overturned" —
+button still ranks 4 of 11 on both splits, and **the honest summary remains a codeword dissociation.**
