@@ -3992,3 +3992,75 @@ re-examining.
 
 That is a falsifiable prediction about an experiment already running, and it is the cleanest way I
 have to check that S-066 and S-059 are describing the same underlying object.
+
+---
+
+# S-068 — **My S-067 prediction is REFUTED**, and chasing why exposed an **off-by-one in my own position labelling**. Two corrections.
+
+## The prediction failed
+
+S-067 predicted, before the arms landed, that `rel −2 … −5` would sum to **≈ 0.052** — the 75 % of
+the ladder's slope that `rel −1` cannot explain.
+
+| rel | recovery | CI95 | pos/neg | % of `KO_FULL` | × random |
+|---|---|---|---|---|---|
+| **−1** | **+0.01721** | [+0.0154, +0.0191] | **67/0** | 24.4 % | 6.12× |
+| **−2** | **+0.00739** | [+0.0065, +0.0083] | **67/0** | 10.5 % | 2.63× |
+| −3 | −0.00052 | [−0.0011, +0.0001] | 33/34 | −0.7 % | −0.19× |
+| −4 | +0.00077 | [−0.0051, +0.0069] | 31/36 | 1.1 % | 0.27× |
+| −5 | +0.00033 | [−0.0002, +0.0009] | 36/31 | 0.5 % | 0.12× |
+| −6 | +0.00071 | [+0.0000, +0.0014] | 39/28 | 1.0 % | 0.25× |
+| −11 | −0.00025 | — | 26/41 | −0.4 % | −0.09× |
+| −20 | −0.00013 | — | 34/33 | −0.2 % | −0.05× |
+| −28 | −0.00061 | [−0.0012, −0.0000] | 26/41 | −0.9 % | −0.22× |
+
+**Observed `rel −2…−5` sum = +0.00797, against a predicted ≈ 0.052. REFUTED.**
+
+Only **`rel −1` and `rel −2`** carry anything (24.4 % and 10.5 %, both 67/0 domains). The nine
+positions measured so far sum to **+0.0249 = 35.7 %** of the whole-state effect; the remaining
+**64 % is unaccounted for**, and the four background positions sampled so far supply ≈ 0.
+
+This is exactly what a falsifiable prediction is for. Writing it down in S-067 turned "an
+interesting pattern" into "a specific number that either appears or does not", and it did not.
+
+## The off-by-one: `cw_query` is `rel −10`, NOT `rel −11`
+
+Chasing the missing 64 % sent me back to the position arithmetic, and it is wrong in S-066.
+
+`score_behavior` resolves `idx = len(span) + rel_end`. Measured on **all 670 rows**:
+
+```
+codeword rel_end across 670 rows: {-10: 670}
+
+worked example: span=[180,207] (n=28), codeword abs=198
+  rel -1  -> span idx 27 -> abs 207
+  rel -10 -> span idx 18 -> abs 198   <-- THE CODEWORD
+  rel -11 -> span idx 17 -> abs 197
+```
+
+**S-066's arm labelled "`rel −11` (`cw_query`, the row the knockout edits)" tested the token BEFORE
+the codeword.** This is precisely the bug class plan §8.5 exists for — *"a one-token position error
+can silently turn a codeword experiment into a punctuation experiment"* — and I walked into it
+while writing an entry that cited §8.5.
+
+**CORRECTED in S-066:** the claim *"`rel −11` (`cw_query`) recovers nothing, so the knockout's own
+target is causally inert"* is **WITHDRAWN**. What was measured is that the token *preceding* the
+codeword is inert. **The codeword row itself has not been tested**, and job **897483** (group H) is
+testing it now at the correct `rel −10`.
+
+**UNAFFECTED:** `rel −6` is the axis site by construction (it is where the probe grid was scored,
+in the same rel_end convention), so *"the observational probe site is causally near-inert"*
+(+0.00071, 0.25× a random position) **stands**.
+
+## Group H: the codeword row plus the accounting gap
+
+`rel −10` (the real codeword row), plus `−7, −9, −12, −15, −25` to sample the unmeasured stretch
+where the missing 64 % must live — if it lives in single positions at all. The alternative is
+**superadditivity**: positions may contribute more jointly than separately, which attention makes
+entirely plausible and which single-position arms cannot detect. If group H's positions also come
+back ≈ 0, superadditivity becomes the leading explanation and the additive reading of the ladder
+has to go too.
+
+**No claim is being made about localisation until that accounting closes.** The two facts that
+survive regardless are: `rel −1` and `rel −2` carry 35 % of the effect between them on 67/67
+domains, and the probe site does not.

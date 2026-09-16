@@ -7,6 +7,7 @@
 #   group E = POSITION IDENTITY: full-state rescue at ONE named rel_end position (5 arms)
 #   group F = LAYER control: BASE/KO/KO_FULL at a layer given as $5 (P1-j)
 #   group G = FINE SCAN of the span tail: rel -2,-3,-4,-5,-8 (5 arms)
+#   group H = the CODEWORD ROW (rel -10) + accounting-gap positions (6 arms)
 #
 # WHY TWO GROUPS AND WHY KO_AXIS APPEARS IN BOTH. At ~29 min per 670-row readout arm, 17 arms do
 # not fit one allocation. The split is chosen so that everything the PREREGISTERED PRIMARY
@@ -100,6 +101,19 @@ elif [ "$GROUP" = "B" ]; then
   sub KO_AXIS_ANCHOR cand_rank1
   for j in 0 1 2 3;       do sub "KO_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done
   for i in 0 1 2 3 4 5;   do sub "KO_RAND${i}" "ctrl_random${i}"   cand_rank1; done
+elif [ "$GROUP" = "H" ]; then
+  # GROUP H -- the CODEWORD ROW, correctly located, plus positions to close the accounting gap
+  # (DCS-CSI-068). Two problems group G exposed:
+  #   (1) rel -10 is the codeword, NOT rel -11. score_behavior resolves idx = len(span) + rel_end,
+  #       and the codeword sits at span index 18 of 28 -> rel_end -10, measured on all 670 rows.
+  #       S-066's "cw_query" arm tested rel -11, the token BEFORE the codeword.
+  #   (2) the nine positions measured so far sum to 35.7% of the whole-state effect, so most of it
+  #       is still unaccounted for; these sample the unmeasured stretch.
+  for RE in -10 -7 -9 -12 -15 -25; do
+    NAME="KO_AT$(echo $RE | tr -d '-')"
+    echo ">>> ${NAME} (rel_end ${RE}) $(date -Is)"
+    $SB $COMMON $KO $R --rescue-rel-end-rows "$RE" --arm "$NAME" --tag "${P}_${NAME}"
+  done
 elif [ "$GROUP" = "G" ]; then
   # GROUP G -- FINE SCAN of the span's tail (DCS-CSI-066). Group E found rel-1 carrying 6.1x a
   # random position while rel-6, -11, -20, -28 carry ~nothing, so the effect is concentrated near
