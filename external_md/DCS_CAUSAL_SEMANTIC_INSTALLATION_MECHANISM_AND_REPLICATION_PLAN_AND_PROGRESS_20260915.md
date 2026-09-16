@@ -5059,3 +5059,57 @@ arithmetic, domain clustering and the rank statistic are all reproduced by a sec
 It does **not** buy: any change to what may be claimed. Both paths read the same `results.jsonl`, so a
 defect in **generation** — the S-084 class — would be invisible to both. Agreement between two readers
 of one corpus is not evidence about the corpus. And the held-out verdict is still INCONCLUSIVE.
+
+---
+
+## S-086 — SLURM independently confirms the S-084 diagnosis (n-301 is DRAINED), work resumed; and the BLOCKER-S084 fix is now a known 5-line change, deliberately not applied yet
+
+### The node diagnosis was right, and it was not my inference that settled it
+
+S-084 concluded from measurement — ~1 row/45 s against ~1 row/s, including in a job that logged **no**
+CUDA error — that n-301 was degraded node-wide. `sinfo` now reports:
+
+```
+n-301 drain*  gpu:geforce_rtx_3090:7      (note: 7, not the 8 every sibling node reports)
+```
+
+The cluster drained the node on its own account, and it is short one GPU. That is an external,
+independent confirmation of the fault, and the missing GPU is consistent with the two
+`unspecified launch failure` / `unknown error` deaths. Excluding it was correct, and the four
+quarantined runs are correctly quarantined rather than documented as short.
+
+### The 30-minute rule fired, and the resubmission was widened rather than repeated
+
+The three replacement jobs sat **PENDING for 48 minutes** (submitted 10:55, still queued at 11:44) —
+past the 30-minute threshold. Rather than wait, the exclude list was re-derived from what `sinfo`
+actually reports instead of from accumulated history: `n-307` is *also* `drain`, so excluding it
+costs nothing, while `n-302` and `n-306` are `mix` (available) and were on the list only for old
+weight-load stalls. New exclude: **`n-301,n-307,n-503`**. Walltimes were sized from measured runtime
+rather than boilerplate — 01:30 for 4 x 230-row arms, 01:45 for 2 x 670, 06:00 for group K's 12 x 670.
+
+Result: **898093 / 898094 / 898095 all RUNNING within 30 seconds**, on n-302.
+
+**Node-contention check, since three of my jobs landed on one node** — the exact configuration that
+preceded the n-301 incident, and which this sprint's own rule caps at ~2/node. Measured rather than
+assumed: all three cleared weight-loading and reached `[score] population filter` within **~4 minutes**.
+No 16x load stall. Recorded as a measurement, not a permission to ignore the rule.
+
+### BLOCKER-S084: the fix is smaller than I assumed, and I am still not applying it
+
+I traced the write path. `ds_common.write_done()` builds the record with `"status": "ok"` and then
+does `rec.update(_json_safe(extra))` — **`extra` overrides `status`**. So the fix needs **no change to
+`ds_common.py`**, which is the file shared with every other experiment in the tree; it is a few lines
+in `src/boombness/common.py:697`, passing `status` and a failure summary through `extra`.
+
+I also found that the existing `--expect-n` guard does **not** cover this case and was never meant to:
+it checks the **population** size before scoring (`score_behavior.py:2641`) and raises if the filter
+selected the wrong number of rows. `KO_CW_SHUF3` passed that check with 670 rows selected and then
+lost 394 of them *during* scoring. **Two different quantities, one flag name** — which is why the
+declared threshold looked enforced and was not.
+
+**Still deferred, and the reason is now sharper than "shared file".** Jobs 898093–95 are generating
+arms *right now* that will be pooled into the same rank test as the 34 already run. Changing the
+producer mid-family would mean arms in one control family were written by two code versions. The
+change is additive and would not alter any scored value — but "would not" is an argument, and the
+design of this test is that comparability is guaranteed structurally, not argued. **Apply after group
+K lands**, before any new family is started.
