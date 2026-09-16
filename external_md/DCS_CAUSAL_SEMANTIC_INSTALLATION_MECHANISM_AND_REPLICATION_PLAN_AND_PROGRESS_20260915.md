@@ -5113,3 +5113,55 @@ producer mid-family would mean arms in one control family were written by two co
 change is additive and would not alter any scored value — but "would not" is an argument, and the
 design of this test is that comparability is guaranteed structurally, not argued. **Apply after group
 K lands**, before any new family is started.
+
+---
+
+## S-087 — CORRECTION to S-086, and a weight-load stall that is NOT contention and NOT n-301
+
+### The correction first, because S-086 asserted something it had not measured
+
+S-086 wrote: *"Measured rather than assumed: all three cleared weight-loading and reached
+`[score] population filter` within ~4 minutes. No 16x load stall."* **That sentence is wrong on its
+own terms.** Reaching a log line is not a throughput measurement. The `population filter` line is
+printed *before* the model is loaded; it says the row selection ran, nothing more. I labelled an
+observation "measured" and drew a rate conclusion it could not support — the precise failure mode
+this log exists to catch.
+
+What the rate actually was: at **32 minutes** the three n-302 jobs had written **zero rows** between
+them (`config.json`, `RUNMETA.json`, `plots/` present, **no `results.jsonl` at all**). Normal for a
+230-row arm is ~4 minutes end to end, first flush at ~2. So the jobs I certified as healthy were
+already stalled when I certified them.
+
+### The stall is in the weight load, and it is not contention
+
+Cancelled and resubmitted **one job per node** (n-303 / n-304 / n-305) to get under the ~2-per-node
+rule. **898208 was alone on n-304 and stalled identically.** Reading the progress bar in `.err`, which
+is the diagnostic this repo has for exactly this:
+
+```
+Loading weights:   0%|   | 0/291 [00:00<?, ?it/s]
+Loading weights:   0%|   | 1/291 [04:09<20:05:45, 249.47s/it]
+```
+
+**249 s per shard, ETA ~20 hours** for a load that normally takes ~4 minutes. One job, one node, one
+GPU — so the ~2/node contention rule is **not** the explanation, and neither is n-301, which is
+excluded and drained. The shared snapshot lives on NFS (`/home/sharifm/students/matanbentov/hub`),
+and that read path is degraded right now.
+
+Two `0/291`-class readings is this sprint's cancel threshold; it was met, so 898207/898208/898209 were
+cancelled rather than left to burn a 6-hour allocation making no progress.
+
+### What is running, and the hypothesis being tested
+
+Resubmitted **group K alone** (job **898238**, basket TRAIN, the twelve new shuffled controls — the
+scientifically binding family per R5), **unpinned** and excluding `n-301,n-302,n-304,n-307,n-503`, so
+SLURM picks a node none of the stalled attempts touched. The other two jobs are deliberately **held**
+rather than resubmitted: if the fileserver is the bottleneck, launching three more model loads makes
+it worse and tells me nothing.
+
+**The discriminating observation, stated before it is made:** if 898238 also crawls at ~250 s/shard on
+a fourth distinct node, the problem is the **shared snapshot's fileserver**, not any node, and that is
+an external blocker to record and wait out — not something to keep resubmitting against. If it loads
+normally, the fault was node-local to n-302/n-304 and the held jobs go out behind it.
+
+No result is affected: nothing was analysed from the cancelled runs, and all of them wrote zero rows.
