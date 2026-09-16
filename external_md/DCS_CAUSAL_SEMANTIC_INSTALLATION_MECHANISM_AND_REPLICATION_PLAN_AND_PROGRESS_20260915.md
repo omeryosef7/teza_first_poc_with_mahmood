@@ -4538,3 +4538,37 @@ all.
 
 **Only the 7.6 % remainder failed to reproduce, and it was the one number derived by subtraction
 rather than measured.**
+
+---
+
+## S-077 — group J's positive control reproduces the position map's arm **exactly**, from a different job four hours apart
+
+`KO_CW_FULL` (group J) and `KO_AT10` (group H) are the same intervention reached by two different
+routes through the launcher: restore the **full** clean state at `rel −10`, L20. They must be
+identical, and they are:
+
+```
+KO_CW_FULL dir: csi1_button_train_KO_CW_FULL_20260916_064807_79371
+KO_AT10    dir: csi1_button_train_KO_AT10_20260916_031751_1786974
+same dir? False
+
+670/670 keys identical,  max|diff| = 0.000e+00
+both: rel_end=-10, n_rescue_positions=1, layer=20, basis=None
+```
+
+Distinct directories, distinct jobs, **four hours apart**, and bit-identical output. This is worth
+more than a tidy check:
+
+* it is an **independent replication of the codeword row's +0.03289** — the sprint's headline
+  mechanistic number — produced by a code path (`group J`'s `KO_CW_FULL`) written after, and
+  separately from, the one that produced it (`group H`'s `KO_AT10`);
+* it validates **group J's positive control** before the candidate arm lands, so `KO_CW_AXIS` will
+  be compared against a benchmark already known to be correct;
+* and it independently re-confirms the `rel_end` arithmetic that R4 flagged as span-relative
+  (R4-M5) — two launcher paths, same span, same resolved position.
+
+Per S-042's standing rule, the two directories were checked to be different **before** the zero was
+believed.
+
+`KO_CW_AXIS` is scoring now; the 13 controls follow. Both basket control halves are running at the
+corrected **L18**.
