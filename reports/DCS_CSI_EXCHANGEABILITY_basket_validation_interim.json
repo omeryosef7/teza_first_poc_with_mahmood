@@ -1,0 +1,38 @@
+{
+ "schema": "dcs_csi_family_exchangeability/1",
+ "tag_prefix": "csi1_basket_validation",
+ "split": "validation",
+ "n_keys": 218,
+ "n_domains": 23,
+ "candidate": 0.003999,
+ "families": {
+  "shuffled": {
+   "n": 9,
+   "mean": 0.000501,
+   "sd": 0.001008,
+   "max": 0.002771,
+   "candidate_rank": 1,
+   "of": 10,
+   "floor": 0.1,
+   "certifiable_at_0.05": false
+  },
+  "random": {
+   "n": 22,
+   "mean": 0.000179,
+   "sd": 0.000379,
+   "max": 0.000974,
+   "candidate_rank": 1,
+   "of": 23,
+   "floor": 0.0435,
+   "certifiable_at_0.05": true
+  }
+ },
+ "exchangeability": {
+  "mean_diff": 0.000322,
+  "p_two_sided": 0.22485887570562146,
+  "p_floor": 4.9999750001249995e-06,
+  "test_mode": "monte-carlo(200000)",
+  "sd_ratio_shuffled_over_random": 2.662,
+  "poolable_at_0.05": true
+ }
+}

@@ -5834,3 +5834,52 @@ reused copy, so nothing is trusted on the grounds that a previous job wrote it.
 Group K (898698, TRAIN) is **8 of 12 arms in**, on `KO_SHUF19`, ~14.6 min per arm — on track to finish
 inside its 9 h allocation with hours to spare. The S-095 preregistration governs its analysis and is
 unchanged.
+
+---
+
+## S-099 — the preregistered exchangeability re-test is now a COMMITTED SCRIPT, written before group K's arms finished; and its structural finding replicates held-out
+
+### Written in advance, deliberately
+
+S-095 preregistered a second check to run alongside group K: *"the exchangeability test R5 ran will be
+re-run at n = 24 vs 22… if the larger shuffled family now separates from the random one, the pooled
+rank in D12 stops being a legitimate single null and must be withdrawn regardless of how the
+shuffled-only test lands."* R5 ran that test as inline code. Inline code written *after* seeing the
+data is exactly where a procedure gets chosen to fit an answer.
+
+`scripts/dcs_csi_family_exchangeability.py` is committed **now, with group K still on `KO_SHUF21`**, so
+the test is fixed before its input exists. It reports each family's n / mean / sd / max, the observed
+difference in means, and a two-sided permutation p — **exact by full enumeration** when the number of
+splits is ≤ 400k, Monte-Carlo with its reported floor otherwise — plus the candidate's rank *within*
+each family, because R5's finding was that the shuffled family binds the margin even when the means
+agree. The choice between exact and MC is made by the combinatorics, not by me.
+
+**Group K's TRAIN family has not been looked at.** Ten of twelve arms exist on disk; running the test
+at n = 22 now and again at n = 24 later is the peeking the preregistration exists to prevent.
+
+### Smoke-tested on VALIDATION, where the data is already analysed — and it replicates R5's structure
+
+Run on the held-out arms already reported in S-088 (no new data, and this is a pooling-**validity**
+check, not the prohibition-20 test):
+
+| family | n | mean | sd | max | candidate rank |
+|---|---|---|---|---|---|
+| shuffled | 9 | +0.000501 | **0.001008** | +0.002771 | 1 of 10 — **floor-limited (0.10)** |
+| random | 22 | +0.000179 | **0.000379** | +0.000974 | 1 of 23 (floor 0.0435) |
+
+- mean difference **+0.000322**, permutation **p = 0.2249** → **POOLABLE**, families not separated in
+  location. D12's pooled held-out rank remains a legitimate single null.
+- **sd ratio shuffled/random = 2.66.**
+
+That last number is the interesting one. R5 found the same structure on TRAIN — shuffled controls
+matching the random ones in mean while carrying **1.9x** their spread — and read it as: fitting
+capacity on permuted labels buys **variance, not recovery**. It now reproduces **held-out at 2.66x**,
+on a different split, a different control draw, and an independently written implementation. It is a
+small, structural, and consistent fact about what a shuffled-label control *is*, and it is the reason
+the shuffled family binds the margin on both splits.
+
+(`KO_SHUF8` from the truncated job 898996 completed with 230/230 rows and is included, which is why
+validation's shuffled family is 9 here and was 4 in S-088.)
+
+**Status unchanged:** prohibition 20 still stands on both splits — shuffled-only is rank 1 of 10 held-out
+(floor 0.10) and untested at n = 24 on TRAIN. Jobs 898698 (2 arms to go) and 901487 (queued) decide it.
