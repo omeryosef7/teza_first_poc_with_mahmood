@@ -4190,3 +4190,77 @@ it to be remembered.
 **Unblocked:** the codeword-row axis fit can now proceed. The corpus's `cw_query` site **is** the
 behavioural codeword row, so an axis fit there is fit at the causally dominant position's
 behavioural counterpart — which is the fair version of the follow-up S-069 proposed.
+
+---
+
+# S-071 — **BASKET: the candidate ranks 1 of 11 — strictly the largest of its controls. Verdict: INCONCLUSIVE, and the R3 fix is why that word exists.**
+
+Basket's full control family is in (6 random + 4 shuffled-label, all norm-matched per row, from
+basket's own axis). This is the test S-065 launched under an explicit prohibition.
+
+| | recovery |
+|---|---|
+| **`KO_AXIS` ← candidate** | **+0.00283** |
+| `KO_SHUF2` | +0.00219 |
+| `KO_SHUF3` | +0.00213 |
+| `KO_RAND2` | +0.00185 |
+| `KO_RAND3` | +0.00059 |
+| `KO_RAND4` | +0.00051 |
+| `KO_RAND5` | +0.00027 |
+| `KO_RAND0` | +0.00010 |
+| `KO_SHUF0` | −0.00014 |
+| `KO_RAND1` | −0.00027 |
+| `KO_SHUF1` | −0.00059 |
+
+```
+VERDICT: PRIMARY INCONCLUSIVE on split=train -- the candidate is strictly the LARGEST
+of its 10 controls, but with only 10 controls the attainable rank-p floor is 0.0909,
+which is above 0.05. Being top of the distribution is real; certifying it at
+alpha=0.05 needs at least 19 controls. NOT a pass and NOT a failure.
+```
+
+## The R3 blocker fix earns itself here
+
+**Before the R3-B1 fix this run would have printed "PRIMARY DOES NOT PASS — it is INSIDE the
+controls, not above them."** That sentence would have been **flatly false**: the candidate is
+strictly above *every* control. The old logic required `rank == 1 AND rank_p < 0.05`, and since
+`rank_p` bottoms out at `1/(n+1) = 0.0909`, rank-1 fell through to an else-branch whose text
+asserted the opposite of the data.
+
+The reviewer found that on a **synthetic** input. It has now occurred on a **real** one, on the most
+interesting arm in the sprint — and the honest three-way verdict reports it correctly. This is the
+clearest return the adversarial reviews have produced.
+
+## The cross-codeword contrast is real, and it is not yet significance
+
+| | button TRAIN | button VALIDATION | **basket TRAIN** |
+|---|---|---|---|
+| candidate rank in its own 10-control family | **4 of 11** | **4 of 11** | **1 of 11** |
+| controls beating it | 3 | 3 | **0** |
+| rank p | 0.364 | 0.364 | **0.0909** (= its floor) |
+
+On button the axis sits mid-distribution on both splits. On basket it is on top. That is a genuine
+difference — **and it is not a positive result yet.** The margin is thin (+0.00283 against
+`KO_SHUF2` +0.00219, a ratio of **1.3×**), and rank 1 of 11 is the *best attainable outcome* at this
+control count, which is still p = 0.0909.
+
+**Prohibitions from S-065 stay in force,** with one amendment:
+* still MAY NOT say "the installation axis is causal on basket" — INCONCLUSIVE is not a pass;
+* still MAY NOT say "the Phase-1 negative does not transfer" — button's rank 4 and basket's rank 1
+  differ, but basket has not cleared its own bar;
+* **MAY now say** "on basket the candidate is the largest of its ten norm-matched controls, which
+  button's never was on either split" — that is a description of the measured distribution, not a
+  significance claim.
+
+## The deciding experiment, and it is cheap
+
+The verdict names its own remedy: **≥ 19 controls** to make α = 0.05 attainable. **Job 897529** is
+generating 22 random + 12 shuffled basket bases; the new keys will be merged into the existing
+artifact **without touching `cand_rank1` or any existing control** (the S-048 procedure, verified
+against the git-committed copy), and the extra arms run. If the candidate stays rank 1 of ~35, the
+rank p reaches ~0.028 and basket becomes the sprint's first genuine subspace positive. If a new
+control overtakes it, the INCONCLUSIVE collapses to a negative and the cross-codeword story closes.
+
+Also launched: **job 897528**, the axis re-fit at **`cw_query`** — the behavioural codeword row,
+i.e. the behavioural counterpart of the position S-069 found carries 46.6 % of the causal effect.
+That is the S-070-unblocked follow-up, with the site chosen on a causal criterion.
