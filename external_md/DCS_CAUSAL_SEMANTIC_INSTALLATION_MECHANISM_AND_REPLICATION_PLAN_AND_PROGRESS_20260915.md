@@ -5165,3 +5165,69 @@ an external blocker to record and wait out — not something to keep resubmittin
 normally, the fault was node-local to n-302/n-304 and the held jobs go out behind it.
 
 No result is affected: nothing was analysed from the cancelled runs, and all of them wrote zero rows.
+
+---
+
+## S-088 — BASKET REPLICATES HELD-OUT. Rank 1 of 31 on VALIDATION, p = 0.0323, both analysis paths agreeing to the digit
+
+S-082 recorded, in its own "MAY NOT" list: *"'Basket replicates held-out' — it does **not yet**; it is
+INCONCLUSIVE by the design's own floor."* That sentence can now be retired, and the reason is not new
+data: **20 control arms from jobs 897688/897689 had completed cleanly before the n-301 fault** and were
+not in the key set when S-082's validation analysis ran on 10 controls. Re-running on everything
+complete gives 30.
+
+`reports/DCS_CSI_SUBSPACE_basket_validation_n30.json`, `reports/DCS_CSI_REDERIVE_basket_validation.json`.
+
+| | VALIDATION (held-out) |
+|---|---|
+| n | 218 keys, **23 domains**, 37 arms |
+| manipulation `KO − BASE` | −0.22930 [−0.28185, −0.17582], 0/23 pos, p at its floor |
+| identity `KO_SELF − KO` | +0.00112 [0.00012, 0.00223], p = 0.0536 — inside the preregistered 0.005 tol |
+| positive control `KO_FULL − KO` | +0.10306 [0.07833, 0.12673], **23/23 domains**, p at its floor |
+| candidate `KO_AXIS − KO` | **+0.00400** [0.00098, 0.00774], 15 pos / 8 neg |
+| **rank** | **1 of 31**, rank **p = 0.03226 < 0.05** |
+
+**Independently re-derived** by `dcs_csi_rederive_subspace.py`, which shares no code with the primary
+analyser: 218/218 keys, 23/23 domains, candidate +0.00400 / +0.00400, **30 of 30 controls agreeing**
+(tol 1e−5), rank 1 of 31 both ways.
+
+### The claim, stated exactly
+
+**MAY NOW SAY:** On held-out basket (23 domains never used to fit the axis), the rank-1 installation
+axis recovers more semantic installation under A1 knockout than **all 30** of its norm-matched random
+and shuffled-label controls, rank p = 0.0323. TRAIN gives the same verdict independently (rank 1 of
+35, p = 0.0286). Both splits, both analysis paths.
+
+**STILL MAY NOT SAY:**
+- *"The installation axis is causal"* unqualified. The whole-state rescue recovers 0.103 of a 0.229
+  knockout effect; the axis recovers **0.0040** — **3.9% of the knockout effect and 3.9% of what the
+  full state restores**. It is a reliably non-zero, reliably top-of-distribution, and **very small**
+  component.
+- *"The Phase-1 negative is overturned."* Button still ranks 4 of 11 on both splits. **The honest
+  summary remains a codeword dissociation** — now a dissociation where one side replicates held-out.
+- Anything about the **shuffled-only** subfamily held-out: it is **rank 1 of 9, floor 0.1111,
+  INCONCLUSIVE**. R5 showed that family is the binding comparator, and on VALIDATION it is still
+  floor-limited. The pooled and random-only passes are real; the fit-capacity-matched pass is not yet
+  established out-of-sample. `SHUF8–11` are exactly the arms the fileserver is currently blocking.
+
+### BLOCKER-S087 CONFIRMED EXTERNAL: it is the fileserver, not any node
+
+S-087 pre-declared the discriminating observation: *"if 898238 also crawls at ~250 s/shard on a fourth
+distinct node, the problem is the shared snapshot's fileserver."* It did.
+
+| node | jobs on node | weight-load rate | implied ETA |
+|---|---|---|---|
+| n-302 | 3 | 0 rows in 32 min | — |
+| n-304 | **1** | 249 s/shard | ~20 h |
+| n-306 | **1** | **335 s/shard** | **~27 h** |
+
+Direct measurement of the read path, rather than inference from the bar: `dd` of 200 MB from the
+snapshot returns **28.1 MB/s**. The volume (`netapp2-244:/Netapp5_sharifm`) is **94% full (19T of 20T)**.
+A normal load of this model is ~4 minutes; at 28 MB/s a 16 GB model is ~10 minutes at best, and under
+compute-node contention it is the hours observed.
+
+898238 cancelled rather than left to hold a 6-hour allocation making no progress. **This is an
+external blocker — a shared fileserver, not something this sprint can fix — and per the operating
+rules it is recorded and worked around, not waited on.** GPU work is paused; CPU work continues. A
+second snapshot of the identical revision exists under `markfesenko/hub`, but it is on the **same
+NetApp volume**, so it is not a mitigation and was not used.
