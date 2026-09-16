@@ -52,7 +52,26 @@ SNAP=/home/sharifm/students/matanbentov/hub/models--meta-llama--Llama-3.1-8B-Ins
 # safetensors) that transformers does not read.
 if [ "${CSI_STAGE:-0}" = "1" ]; then
   LOCAL="/tmp/dcs_snap_${USER}/$(basename "$SNAP")"
-  echo "[stage] $SNAP -> $LOCAL  $(date -Is)"
+  # PRECHECK, added after job 898957 died with "mkdir: No space left on device" on a node whose
+  # /tmp was full. `set -e` did catch it, but the message named mkdir rather than the cause, and a
+  # staging step that fails for a reason unrelated to the rack should say so in one line.
+  NEED_GB=20
+  FREE_GB=$(df -BG --output=avail /tmp 2>/dev/null | tail -1 | tr -dc '0-9')
+  FREE_GB="${FREE_GB:-0}"
+  # REUSE. The staged copy is deliberately NOT deleted at job end: a second job landing on the same
+  # node skips the whole 34-minute copy. It is re-verified below every time, so reuse is only ever
+  # as trustworthy as a fresh copy -- a truncated or half-deleted leftover fails the size check and
+  # the job refuses, exactly as a bad fresh copy would.
+  if [ -d "$LOCAL" ]; then
+    echo "[stage] REUSING existing $LOCAL (will be re-verified below)  $(date -Is)"
+  elif [ "$FREE_GB" -lt "$NEED_GB" ]; then
+    echo "[stage] REFUSING: /tmp on $(hostname) has ${FREE_GB}G free, need ${NEED_GB}G to stage the "\
+         "15G snapshot. This is a FULL NODE DISK, not the n-30x NFS fault -- resubmit elsewhere or "\
+         "run without CSI_STAGE. See DCS-CSI-096." >&2
+    exit 4
+  else
+    echo "[stage] $SNAP -> $LOCAL  (${FREE_GB}G free)  $(date -Is)"
+  fi
   mkdir -p "$LOCAL"
   # -L DEREFERENCES. Every file in an HF snapshot dir is a SYMLINK into ../../blobs/. Plain
   # `rsync -a` faithfully copies the symlinks, which then dangle because ../../blobs is not under

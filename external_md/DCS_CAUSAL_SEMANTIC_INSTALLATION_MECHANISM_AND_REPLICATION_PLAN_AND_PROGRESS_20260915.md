@@ -5674,3 +5674,55 @@ single null and must be withdrawn regardless of how the shuffled-only test lands
 **Held-out status is unaffected either way.** VALIDATION's shuffled family is still 4 arms
 (`SHUF8–11` were lost to the n-301 fault and have not been re-run), so a TRAIN result here does **not**
 license any held-out statement about the binding subfamily.
+
+---
+
+## S-096 — going after the HELD-OUT binding subfamily, and a second failure mode of staging: full node disks
+
+### The scientific move
+
+S-095 preregistered group K and noted its limit in advance: *"VALIDATION's shuffled family is still 4
+arms, so a TRAIN result here licenses no held-out statement about the binding subfamily."* That limit
+is fixable with GPU, and GPU is now usable via staging — so rather than accept it, **job 898996**
+launches `KO_SHUF8–23` on **VALIDATION**: 16 arms x 230 rows, L18, from the shuf24 axis whose
+`cand_rank1` and `ctrl_shuffled0–11` were verified bit-identical in S-083.
+
+That takes the held-out shuffled family from **4 → 20**, i.e. the shuffled-only rank floor from
+**0.2000 to 1/21 = 0.0476** — under 0.05 for the first time on either split. Combined with group K's
+TRAIN family (24), both splits would finally be able to *test* prohibition 20 rather than report it as
+unanswerable. The same preregistered decision rule from S-095 applies, with the held-out thresholds:
+0 of 20 above the candidate → PASS at 0.0476; 1 → rank 2 of 21, p = 0.095, INCONCLUSIVE; ≥2 → DOES NOT
+PASS.
+
+### Two jobs died first, and the second death is the useful one
+
+**898957 — `mkdir: cannot create directory '/tmp/dcs_snap_omeryosef': No space left on device`.**
+`set -euo pipefail` caught it, but the message named `mkdir` rather than the cause. Staging has a
+second failure mode I had not considered: **the node's local disk is full**. S-092 sized the copy
+against the *snapshot* (15 G) and against n-304's free space (171 G), and then assumed every node
+looks like n-304.
+
+Added a precheck: measure `/tmp` free, refuse below 20 G with a message that names the node, the
+actual free space, and — importantly — **distinguishes this from the NFS fault**, because "staging
+failed" on a broken-rack workaround invites exactly the wrong diagnosis.
+
+**898958 proved the precheck works**, exiting 4 in seconds:
+
+```
+[stage] REFUSING: /tmp on n-305 has 0G free, need 20G to stage the 15G snapshot.
+        This is a FULL NODE DISK, not the n-30x NFS fault -- resubmit elsewhere or run without CSI_STAGE.
+```
+
+**n-305's `/tmp` is at 0 G free.** So among 3090 nodes measured so far: n-304 usable (171 G),
+n-305 unusable (0 G), **n-306 usable (282 G free of 880 G, and NFS 11.8 MB/s — nearly 2x n-304's
+6.6 MB/s, so a ~21-minute stage)**. 898996 is pinned there.
+
+### Reuse, stated as a deliberate choice rather than an oversight
+
+The staged copy is **not deleted** at job end. A second job landing on the same node skips the entire
+copy — and the script now says `REUSING existing ...` and **re-verifies it with the same size check**,
+so a leftover is only ever as trustworthy as a fresh copy: a truncated or half-deleted one fails the
+check and the job refuses, exactly as a bad fresh copy would. The cost is 15 G of node-local disk left
+behind per node, which is the honest trade and is written down here so it is not discovered later as
+litter. Given that n-305 is already at 0 G, **this is a real obligation, not a theoretical one** — if
+the sprint ends without the rack recovering, these copies should be removed.
