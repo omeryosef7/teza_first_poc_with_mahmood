@@ -4264,3 +4264,67 @@ control overtakes it, the INCONCLUSIVE collapses to a negative and the cross-cod
 Also launched: **job 897528**, the axis re-fit at **`cw_query`** — the behavioural codeword row,
 i.e. the behavioural counterpart of the position S-069 found carries 46.6 % of the causal effect.
 That is the S-070-unblocked follow-up, with the site chosen on a causal criterion.
+
+---
+
+# S-072 — **THE COMPLETE CAUSAL POSITION MAP, with token identities.** The codeword carries 47 %; four positions carry 93 %.
+
+16 of 28 positions measured on button/TRAIN (67 domains), each restoring the full clean state at
+exactly one position. Token identities decoded from the chat-templated prompt, which
+**independently confirms** the codeword at `rel −10`.
+
+| rel | **token** | recovery | % of `KO_FULL` | pos/neg |
+|---|---|---|---|---|
+| **−10** | **`' button'` ← THE CODEWORD** | **+0.03289** | **46.6 %** | **62/5** |
+| −1 | `'\n\n'` (end of assistant header = **the generation position**) | +0.01721 | 24.4 % | 67/0 |
+| −7 | **`' to'`** (last content token of *"refer to"*) | +0.00784 | 11.1 % | 64/3 |
+| −2 | `'<\|end_header_id\|>'` | +0.00739 | 10.5 % | 67/0 |
+| −4 | `'<\|start_header_id\|>'` | +0.00077 | 1.1 % | 31/36 |
+| −6 | `'?'` | +0.00071 | 1.0 % | 39/28 |
+| −5 | `'<\|eot_id\|>'` | +0.00033 | 0.5 % | 36/31 |
+| −8 | `' refer'` | +0.00030 | 0.4 % | 33/34 |
+| −9 | `' actually'` | −0.00003 | −0.0 % | 33/34 |
+| −3 | `'assistant'` | −0.00052 | −0.7 % | 33/34 |
+| −11 | `' word'` | −0.00025 | −0.4 % | 26/41 |
+| −12, −15, −20, −25, −28 | (earlier query/context) | −0.0006 … +0.0001 | ≈ 0 % | ~coin-flip |
+
+**16 measured positions sum to +0.06523 = 92.4 % of `KO_FULL`.** The 12 unmeasured carry ≈ 7.6 %.
+**The top four carry 92.5 %.**
+
+## The structure, in three groups
+
+1. **The codeword itself — 46.6 %.** `' button'`, nine tokens upstream of the generation position,
+   is the single dominant carrier. It is also exactly the row the A1 knockout edits
+   (`target_surface_row_only`). **The intervention site is the causal locus**, and restoring that one
+   row recovers nearly half the damage on 62 of 67 domains.
+2. **The generation position and its predecessor — 34.9 %** (`'\n\n'` + `'<\|end_header_id\|>'`).
+   These are the two tokens the readout is computed from. S-067's output-adjacency caveat applies
+   in full: this is the **readout site**, and its share must not be read as storage.
+3. **`' to'` — 11.1 %**, the last content token before the `'?'`. Not predicted, and the one genuinely
+   surprising entry in the map. Its neighbours `' refer'` (0.4 %) and `'?'` (1.0 %) carry nothing, so
+   it is not a smear from the query tail.
+
+Everything else — including `' word'`, `' the'`, `' actually'` and the entire earlier context — is
+indistinguishable from zero.
+
+## Why this is the sprint's most defensible mechanistic claim
+
+* It is **causal**, not correlational: every number is an intervention on 670 rows.
+* It is **complete**: the measured positions account for 92.4 % of the quantity being explained,
+  so nothing large is hiding in the unmeasured remainder.
+* It is **additive**: singles summing to ~92 % of the joint effect is what licensed discarding the
+  superadditivity hypothesis (S-069), and it reconciles the position ladder with the identity arms.
+* Its **token identities are verified two independent ways** — from `surface_span_positions` on all
+  670 rows, and from re-tokenising the chat-templated prompt.
+
+## And it explains Phase 1's null
+
+The Phase-1 subspace arms restored a 1- or 5-dimensional component **spread across all 28
+positions**, of a direction fit at the `rel −6` offset — which in the semantic prompt is `'?'`,
+carrying **1.0 %**. The causal mass sits on `' button'`, and a norm-matched rank-1 direction spread
+uniformly over the span delivers almost none of it there.
+
+**Next:** the axis re-fit at the behavioural `cw_query` row is built (`dcs_csi_axis_button_cwrow.pt`,
+30 bases). The natural experiment is now a subspace rescue **restricted to the codeword row** — the
+site the map says carries the effect — rather than across the whole span. That is Phase 1's question
+asked at the position the causal evidence actually points to.

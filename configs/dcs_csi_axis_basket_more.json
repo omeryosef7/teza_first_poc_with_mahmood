@@ -159,7 +159,14 @@
   "ctrl_shuffled1": -0.049,
   "ctrl_shuffled2": -0.0837,
   "ctrl_shuffled3": -0.0465,
-  "ctrl_shuffled4": -0.042
+  "ctrl_shuffled4": -0.042,
+  "ctrl_shuffled5": -0.07,
+  "ctrl_shuffled6": 0.0664,
+  "ctrl_shuffled7": -0.0551,
+  "ctrl_shuffled8": -0.0358,
+  "ctrl_shuffled9": -0.0301,
+  "ctrl_shuffled10": -0.0321,
+  "ctrl_shuffled11": 0.0268
  },
  "max_abs_cosine_with_cand_rank1": {
   "cand_pls1": 0.6947,
@@ -176,16 +183,37 @@
   "ctrl_random5": 0.0102,
   "ctrl_random6": 0.0142,
   "ctrl_random7": 0.0059,
+  "ctrl_random8": 0.0086,
+  "ctrl_random9": 0.0238,
+  "ctrl_random10": 0.004,
+  "ctrl_random11": 0.0003,
+  "ctrl_random12": 0.0122,
+  "ctrl_random13": 0.0096,
+  "ctrl_random14": 0.0237,
+  "ctrl_random15": 0.0072,
+  "ctrl_random16": 0.0231,
+  "ctrl_random17": 0.0119,
+  "ctrl_random18": 0.0197,
+  "ctrl_random19": 0.0125,
+  "ctrl_random20": 0.0107,
+  "ctrl_random21": 0.0005,
   "ctrl_shuffled0": 0.0426,
   "ctrl_shuffled1": 0.0538,
   "ctrl_shuffled2": 0.0719,
   "ctrl_shuffled3": 0.0799,
-  "ctrl_shuffled4": 0.0204
+  "ctrl_shuffled4": 0.0204,
+  "ctrl_shuffled5": 0.0108,
+  "ctrl_shuffled6": 0.027,
+  "ctrl_shuffled7": 0.0114,
+  "ctrl_shuffled8": 0.0013,
+  "ctrl_shuffled9": 0.0321,
+  "ctrl_shuffled10": 0.0224,
+  "ctrl_shuffled11": 0.0365
  },
  "bases": {
   "cand_rank1": {
    "rank": 1,
-   "sha16": "0c397a778db933ba"
+   "sha16": "0494c78c31bb0243"
   },
   "cand_pls1": {
    "rank": 1,
@@ -193,35 +221,35 @@
   },
   "cand_pls2": {
    "rank": 2,
-   "sha16": "1157483ea87efaae"
+   "sha16": "6148832c72dad9d9"
   },
   "cand_pls3": {
    "rank": 3,
-   "sha16": "e2c4f267c994b055"
+   "sha16": "f6039c00c93822e1"
   },
   "cand_pls4": {
    "rank": 4,
-   "sha16": "3bd56f154c1fa630"
+   "sha16": "4691e8db78b5c28d"
   },
   "cand_pls5": {
    "rank": 5,
-   "sha16": "b44851a9afd5e7c2"
+   "sha16": "72c977543085e3cc"
   },
   "ctrl_orth": {
    "rank": 1,
-   "sha16": "88219cc95bfd7a50"
+   "sha16": "57f8b10aa1944f22"
   },
   "ctrl_random0": {
    "rank": 1,
-   "sha16": "221cc2be83823d5d"
+   "sha16": "afac61c67cbfdf6d"
   },
   "ctrl_random1": {
    "rank": 1,
-   "sha16": "de76c7b3aead7cb8"
+   "sha16": "8f5d8e24a50f2408"
   },
   "ctrl_random2": {
    "rank": 1,
-   "sha16": "1e8d468c9b5d413b"
+   "sha16": "af718548ee812db5"
   },
   "ctrl_random3": {
    "rank": 1,
@@ -229,151 +257,123 @@
   },
   "ctrl_random4": {
    "rank": 1,
-   "sha16": "9fb1aab2e48fd170"
+   "sha16": "702279b3d3b470f4"
   },
   "ctrl_random5": {
    "rank": 1,
-   "sha16": "354cf2e4c0b37c99"
+   "sha16": "16640406e6a529fa"
   },
   "ctrl_random6": {
    "rank": 1,
-   "sha16": "6d860fd245ab907f"
+   "sha16": "27b5667806bbd83c"
   },
   "ctrl_random7": {
    "rank": 1,
-   "sha16": "1c351871311e3f22"
-  },
-  "ctrl_shuffled0": {
-   "rank": 1,
-   "sha16": "f8d5ba601e0ad90a"
-  },
-  "ctrl_shuffled1": {
-   "rank": 1,
-   "sha16": "12f55651a3b5e5f4"
-  },
-  "ctrl_shuffled2": {
-   "rank": 1,
-   "sha16": "4c62f78a6279e1a5"
-  },
-  "ctrl_shuffled3": {
-   "rank": 1,
-   "sha16": "56e2c7190c4f121e"
-  },
-  "ctrl_shuffled4": {
-   "rank": 1,
-   "sha16": "2ffcbfa020826777"
+   "sha16": "8984cb10e3329060"
   },
   "ctrl_random8": {
    "rank": 1,
-   "sha16": "65a61462c8d788fb"
+   "sha16": "28dd480f429e2807"
   },
   "ctrl_random9": {
    "rank": 1,
-   "sha16": "7650afc0388dd991"
+   "sha16": "fe92da2d66634986"
   },
   "ctrl_random10": {
    "rank": 1,
-   "sha16": "4cdf7ed7e08d2c66"
+   "sha16": "96ae94bab33a7f99"
   },
   "ctrl_random11": {
    "rank": 1,
-   "sha16": "444443caa3b64842"
+   "sha16": "3d416476763caae9"
   },
   "ctrl_random12": {
    "rank": 1,
-   "sha16": "a497cafd37a3d631"
+   "sha16": "942c467ddf452dd0"
   },
   "ctrl_random13": {
    "rank": 1,
-   "sha16": "cea24dbb1afa30da"
+   "sha16": "8a9578840bca141c"
   },
   "ctrl_random14": {
    "rank": 1,
-   "sha16": "4a171efd5f1e5035"
+   "sha16": "f1948472ed2b277c"
   },
   "ctrl_random15": {
    "rank": 1,
-   "sha16": "4ee607200ebfd9ff"
+   "sha16": "c72bf53becdb8c04"
   },
   "ctrl_random16": {
    "rank": 1,
-   "sha16": "e3df9110ffc11436"
+   "sha16": "8f064769dcd37180"
   },
   "ctrl_random17": {
    "rank": 1,
-   "sha16": "fbe2660af17a7bcc"
+   "sha16": "295aba18e0a58ab7"
   },
   "ctrl_random18": {
    "rank": 1,
-   "sha16": "a589a17836b68f86"
+   "sha16": "af59dba0510420e8"
   },
   "ctrl_random19": {
    "rank": 1,
-   "sha16": "97b4049931930396"
+   "sha16": "3d1ec7970fbb0099"
   },
   "ctrl_random20": {
    "rank": 1,
-   "sha16": "906cc0f157155d4f"
+   "sha16": "cb500f83465c729d"
   },
   "ctrl_random21": {
    "rank": 1,
-   "sha16": "a2d70eee1a74af8c"
+   "sha16": "a42dd8cdf7919b0a"
+  },
+  "ctrl_shuffled0": {
+   "rank": 1,
+   "sha16": "a1a29524a1641111"
+  },
+  "ctrl_shuffled1": {
+   "rank": 1,
+   "sha16": "c5e341ce6a6ac973"
+  },
+  "ctrl_shuffled2": {
+   "rank": 1,
+   "sha16": "4853365a7c40e7d5"
+  },
+  "ctrl_shuffled3": {
+   "rank": 1,
+   "sha16": "87f7d260796b6385"
+  },
+  "ctrl_shuffled4": {
+   "rank": 1,
+   "sha16": "0022bbd5d8366d42"
   },
   "ctrl_shuffled5": {
    "rank": 1,
-   "sha16": "3fcba790f51a770c"
+   "sha16": "bb333a09a38bfbae"
   },
   "ctrl_shuffled6": {
    "rank": 1,
-   "sha16": "6d8d83c4c277cef2"
+   "sha16": "35571ade46badd60"
   },
   "ctrl_shuffled7": {
    "rank": 1,
-   "sha16": "a540c69fc292150d"
+   "sha16": "75922597240025b2"
   },
   "ctrl_shuffled8": {
    "rank": 1,
-   "sha16": "6e4194d9de6076d1"
+   "sha16": "4d13afcac8d857d8"
   },
   "ctrl_shuffled9": {
    "rank": 1,
-   "sha16": "0627a502b83b0577"
+   "sha16": "b172647005ed271e"
   },
   "ctrl_shuffled10": {
    "rank": 1,
-   "sha16": "869321fd6b0e3b7d"
+   "sha16": "261f5cedb9186cbf"
   },
   "ctrl_shuffled11": {
    "rank": 1,
-   "sha16": "cc1a1d3835617332"
-  }
- },
- "extra_controls_added": {
-  "job_897529": {
-   "keys": [
-    "ctrl_random8",
-    "ctrl_random9",
-    "ctrl_random10",
-    "ctrl_random11",
-    "ctrl_random12",
-    "ctrl_random13",
-    "ctrl_random14",
-    "ctrl_random15",
-    "ctrl_random16",
-    "ctrl_random17",
-    "ctrl_random18",
-    "ctrl_random19",
-    "ctrl_random20",
-    "ctrl_random21",
-    "ctrl_shuffled5",
-    "ctrl_shuffled6",
-    "ctrl_shuffled7",
-    "ctrl_shuffled8",
-    "ctrl_shuffled9",
-    "ctrl_shuffled10",
-    "ctrl_shuffled11"
-   ],
-   "note": "Merged to reach >=19 controls so a rank test can attain alpha=0.05 (S-071). Only NEW keys were copied; every pre-existing tensor is byte-identical, verified below."
+   "sha16": "3511e2ff0107b062"
   }
  }
 }
