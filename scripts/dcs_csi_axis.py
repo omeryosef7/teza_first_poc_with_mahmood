@@ -306,6 +306,23 @@ def main() -> int:
         if best is None or rho > best[1]:
             best = (L, rho)
     layer, train_rho = best
+    if a.force_layer:
+        # FORCE THE LAYER (DCS-CSI-073). The candidate's layer must match the layer the CAUSAL
+        # evidence was measured at: the position map, KO_FULL and every position arm ran at L20.
+        # Taking this axis's own argmax and then WRITING it at L20 would trip review M2's
+        # layer-mismatch refusal, and rightly so -- a basis fit at one layer written at another is a
+        # different experiment. Overriding that guard would be the wrong fix; fitting AT the layer
+        # is the right one, and the artifact then records `selected_layer` honestly.
+        if a.force_layer not in layers:
+            raise SystemExit("REFUSING: --force-layer %d not among the captured plateau layers %s"
+                             % (a.force_layer, layers))
+        print("[force-layer] argmax was L%d (rho=%+.4f); forcing L%d (rho=%+.4f) to match the layer "
+              "the causal position map was measured at"
+              % (layer, train_rho, a.force_layer, out["train_loo_rho_by_layer"]["L%d" % a.force_layer]))
+        layer = a.force_layer
+        train_rho = out["train_loo_rho_by_layer"]["L%d" % layer]
+        out["layer_forced"] = True
+        out["layer_argmax_not_used"] = best[0]
     print("\n[TRAIN] selected layer L%d  rho_loo=%+.4f  (site %s FROZEN, not searched)"
           % (layer, train_rho, a.site))
 

@@ -4328,3 +4328,45 @@ uniformly over the span delivers almost none of it there.
 30 bases). The natural experiment is now a subspace rescue **restricted to the codeword row** — the
 site the map says carries the effect — rather than across the whole span. That is Phase 1's question
 asked at the position the causal evidence actually points to.
+
+---
+
+## S-073 — building the codeword-row subspace test: fitting AT the causal layer rather than overriding the guard
+
+The follow-up S-072 pointed to is a subspace rescue **restricted to the codeword row** — Phase 1's
+question asked at the position the causal map says carries the effect. Building it surfaced a
+design decision worth recording.
+
+**The axis fit at `cw_query` selects L28, not L20:**
+
+| L16 | L18 | L20 | L22 | L24 | L26 | **L28** | L30 | L31 |
+|---|---|---|---|---|---|---|---|---|
+| 0.5122 | 0.5078 | **0.5254** | 0.5515 | 0.5671 | 0.5784 | **0.5871** | 0.5839 | 0.5700 |
+
+The grid rises monotonically toward the output — the **output-adjacency signature** S-027 first
+found on the semantic-fit axis, appearing again here on the behavioural corpus at the codeword row.
+
+**But the causal evidence is all at L20.** The position map, `KO_FULL`, and every position arm ran
+at L20; the codeword row's **+0.03289 (46.6 %)** is an L20 number. A subspace rescue at the codeword
+row is only interpretable against that if it is also at L20.
+
+**Two ways to get there, and only one is honest.** Fitting at the argmax L28 and then *writing* it
+at L20 would trip review R3/M2's layer-mismatch refusal — correctly, because a basis fit at one
+layer written at another is a different experiment. **Overriding a guard to get the layer I need is
+the wrong fix.** So the axis script gained `--force-layer`: it fits **at** the requested layer, and
+the artifact records `selected_layer = 20`, `layer_forced = true`, and `layer_argmax_not_used = 28`.
+The guard then passes on the merits rather than being suppressed, and the provenance says plainly
+that the layer was chosen by the causal experiment rather than by the fit.
+
+This is the same principle as S-027's rule, applied in the opposite direction: there, *don't* use a
+semantic axis at its output-adjacent argmax; here, *don't* smuggle an argmax basis into a different
+layer. Both reduce to: **the layer a basis is written at must be the layer it was fit at, and which
+layer that is should be decided by the science, not by whichever number is largest.**
+
+Job **897553** refits `cw_query` at L20 with rank-matched controls. The resulting test asks: at the
+position carrying 46.6 % of the effect, does a low-dimensional component of that position's state
+beat its norm-matched controls? Phase 1 asked this across all 28 positions with a direction fit at
+an offset carrying 1 %; this asks it where the causal mass actually is.
+
+**In flight:** group I (24 extended basket control arms, PENDING on resources), and the basket
+INCONCLUSIVE from S-071 awaiting them.
