@@ -4731,3 +4731,43 @@ rank at or near 1 in the held-out control family too. If it lands mid-distributi
 way button's did on both splits, then S-079's TRAIN pass is most likely the **one-in-23 outcome its
 own floor describes**, and the honest reading collapses to "no codeword passes its controls
 held-out". I would rather have that written down now than reconstruct it afterwards.
+
+---
+
+## S-081 — basket VALIDATION, group A: all three gates hold and the bare contrast is the largest yet — but this is the number S-080 pre-declared meaningless without controls
+
+Job 897658 finished (7 arms x 230 rows / 23 domains, L18, held-out). `reports/DCS_CSI_SUBSPACE_basket_validation_prelim.json`.
+
+| gate / contrast | point | 95% CI (domain-clustered) | p | n_pos/n_neg |
+|---|---|---|---|---|
+| manipulation `KO − BASE` | **−0.22696** | [−0.27609, −0.17805] | 5.0e−06 **at its floor** | 0 / 23 |
+| identity `KO_SELF − KO` | **+0.00102** | [0.00003, 0.00211] | 0.0733 | 14 / 9 |
+| positive control `KO_FULL − KO` | **+0.10297** | [0.07976, 0.12495] | 5.0e−06 **at its floor** | 23 / 0 |
+| bare `KO_AXIS − KO` | **+0.00390** | [0.00100, 0.00743] | 0.0164 | 15 / 8 |
+
+Installation by arm: BASE 0.4008, KO 0.1738, KO_SELF 0.1748, KO_FULL 0.2768, KO_AXIS 0.1777,
+KO_PLS 0.1887, KO_ORTH 0.1731. n = 230 raw rows, **23 domains** — the unit; MC floor 5e−06.
+
+Three things are worth saying, in decreasing order of how much I trust them.
+
+**The instrument works on held-out basket.** The knockout removes 0.227 of installation and the
+whole-state rescue puts back 0.103 of it — **45.4% recovery, 23/23 domains positive**, higher than
+button's 34.1%/32.8%. Whatever else is true, the site is causal on this split too.
+
+**The bare axis contrast is the largest bare contrast in the sprint** (+0.00390, vs button's
++0.00134 VALIDATION and +0.00040 TRAIN). It is also, per S-080, **the exact statistic I wrote down
+in advance as uninformative**: button's bare contrast also improved out-of-sample and still ranked 4
+of 11 once its controls existed. Group B (897659) is producing the held-out control family now.
+
+**A caveat the gates pass but I should not bury.** `KO_SELF − KO` is **+0.00102**, inside the
+preregistered `self_inert_tol = 0.005`, so the identity gate passes — but it is not zero, and its CI
+excludes zero. A patch that rewrites the state with *what was already there* still moves installation
+by ~0.001. That is **26% of the candidate's +0.00390**. So the bare contrast is only ~4x the drift
+of a patch that should do nothing at all. This does not invalidate the rank test — the controls are
+norm-matched patches carrying the same drift, which is precisely why the verdict is a rank against
+them and not a comparison to zero — but any reading of the *bare* number has to carry it. Added to
+the claim table as a standing caveat on every bare `X − KO` contrast in this design.
+
+**Status: NOT a result yet.** The analyzer's own text says it: *"only 0 control(s) present; a single
+comparator is an arbitrary draw."* The verdict line it printed is the arm-vs-comparator gate, not
+the S-079 rank test. Nothing from this entry may be quoted as a basket VALIDATION pass.
