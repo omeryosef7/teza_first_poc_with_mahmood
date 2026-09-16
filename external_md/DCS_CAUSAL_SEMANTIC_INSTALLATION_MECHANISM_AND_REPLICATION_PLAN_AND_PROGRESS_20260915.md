@@ -5000,3 +5000,9 @@ in flight. The fix to make is: on `DONE.json` write, if `rows_written < expect_n
 
 **No scientific conclusion is affected.** Every analysis in S-082 and R5 ran on arms that passed the
 completeness check before this fault occurred, and the quarantined runs were never in any key set.
+
+**Commit-provenance note (S-084).** The S-084 text above was written to this file before the S-083
+commit was retried, so it landed inside commit `2bcffba4`, whose message describes S-083 only. The
+entry is not lost and nothing was rewritten; a reader looking for S-084 by commit message will not
+find it, and should look in `2bcffba4`. Recorded here rather than fixed by amending, because
+amending would rewrite a commit in a tree three people write to.
