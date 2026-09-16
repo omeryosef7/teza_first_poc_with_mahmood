@@ -4887,3 +4887,116 @@ the design pools them and why the pooling had to be tested rather than assumed.
 3. **MAY NOT say:** "the axis beats 34 independent controls" in a way that implies 34 equally
    informative draws. They are 34 draws from two families of unequal spread, pooled after an
    exchangeability test that passed at n=12 vs 22 — a test with modest power.
+
+---
+
+## S-083 — R5 acted on (12 more SHUFFLED controls launched), plus TWO CORRECTIONS TO R5's OWN TEXT
+
+### Correction 1 — R5's arithmetic about the in-flight mix is WRONG
+
+R5 wrote: *"The validation extension now in flight (897688/897689) adds 20 random and only 4
+shuffled; **this is the wrong mix**."* I checked the script instead of trusting my own sentence.
+Group I half 1 emits `RAND6–11` (6) **and** `SHUF4–9` (6); half 2 emits `RAND12–21` (10) and
+`SHUF10–11` (2). That is **16 random + 8 shuffled**, which added to group B's 6 random + 4 shuffled
+gives VALIDATION **22 random + 12 shuffled — exactly the TRAIN mix**, not a distorted one.
+
+R5's complaint was aimed at a job that was already doing the right thing. The *principle* in R5
+stands (adding random draws alone lowers the floor while sampling the wrong tail); the *accusation*
+against 897688/897689 does not. Appended, not rewritten, per the sprint rule.
+
+### Correction 2 — the "ad-hoc append" is reproducible after all
+
+`configs/dcs_csi_axis_basket_behavioral.pt` carries `extra_controls_added: {job_897529: [...]}`, and
+no committed script produces that field — the 14 extra randoms were appended by an inline helper that
+was never committed. I flagged that as a reproducibility gap. It is not one: re-running the
+**committed** producer `dcs_csi_axis.py` at `--n-random 22 --n-shuffled 24` reproduces **all 41
+pre-existing bases BIT-IDENTICALLY** (sha256 of the raw buffers), `ctrl_random8`–`ctrl_random21`
+included. The ad-hoc path and the committed path agree exactly. The gap was in the provenance
+record, not in the artifact.
+
+### The new work: group K, twelve more shuffled-label controls
+
+R5's finding was that the **shuffled tail sets the margin** — the top three of 34 controls are all
+shuffled, and the candidate leads the best shuffled by +0.00032 versus +0.00078 over the best random.
+The shuffled-only rank is therefore the test that can actually fail, and at n=12 its floor is
+0.0769 — **not certifiable at alpha = 0.05 no matter what the data do**.
+
+`configs/dcs_csi_axis_basket_behavioral_shuf24.pt` (53 bases) adds `ctrl_shuffled12–23`.
+**Verification gate, run before the group was written and the reason it is safe:**
+
+| check | result |
+|---|---|
+| pre-existing bases identical | **41 / 41**, 0 different, 0 missing |
+| `cand_rank1` identical | **True** (`679c76d2d0e8fe9e`) — the norm-match reference is unchanged |
+| `ctrl_shuffled0–11` identical | **True** |
+| `ctrl_random0–21` identical | **True** |
+| new keys | `ctrl_shuffled12` … `ctrl_shuffled23` |
+| shuffled-label TRAIN LOO rho, new 12 | −0.056 … +0.079, straddling 0 as a null fit must |
+
+Because `cand_rank1` is bit-identical, the new controls are norm-matched to the **same** reference as
+the 34 already run and are directly poolable with them.
+
+**Launched: job 897872**, group K, basket TRAIN, L18, 12 arms x 670 rows.
+When it lands: **shuffled-only rank floor 1/13 = 0.0769 → 1/25 = 0.0400** (certifiable at 0.05 for
+the first time), and the pooled family becomes 22 random + 24 shuffled = **46 controls, floor 0.0213**
+— with the mix now deliberately weighted toward the tail that binds, which is the opposite of the
+p-value-shopping R5 warned against.
+
+**Pre-declared refutation condition, before the data:** if **two or more** of `SHUF12–23` exceed the
+candidate's +0.00265, the candidate falls to rank 3+ of 25 in the binding subfamily and the S-082
+pass does not survive the correct comparator. One exceeding it leaves shuffled-only rank 2 of 25
+(p = 0.080) — INCONCLUSIVE, not a pass. Only zero exceeding it certifies.
+
+---
+
+## S-084 — LIVE BLOCKER: a GPU fault on n-301 silently truncated two runs, and `DONE.json` called one of them "ok" at 276 of 670 rows
+
+The completeness guard refused a commit, which is the only reason this was found. Two runs were
+**SHORT by far more than the degeneracy guard can explain** — and `dcs_csi_known_short.py` correctly
+**declined to document them**, because its rule is that it must be able to verify the cause.
+
+| run | rows | failure recorded in-run |
+|---|---|---|
+| `csi1_basket_validation_KO_SHUF10` | **208 / 230** | `CUDA error: unknown error` x 22 |
+| `csi1_button_train_KO_CW_SHUF3` | **276 / 670** | `CUDA error: unspecified launch failure` x **394** |
+
+Both wrote `DONE.json` with **`"status": "ok"`**.
+
+**The node, not the arms.** The two faults hit two *different* jobs (897689, 897576) within ten
+minutes of each other on **n-301**. The arms that started afterwards — `KO_SHUF11`, `KO_CW_SHUF4` —
+never got past 12 rows. I measured the rate rather than guessing: **~1 row per 45 s, against a normal
+~1 row/s**, an ~80x degradation. And a **third** job on the same node, **897688, which never logged a
+CUDA error at all**, was crawling at the same rate. So the degradation is node-wide and a clean error
+log is not evidence of a clean run. (This is the S-063 lesson again — a stall is a node property.)
+
+**Actions taken, in order:**
+1. Cancelled 897576, 897688, 897689 and the still-pending 897872.
+2. **Quarantined** the two faulted runs and the two crawling ones to
+   `outputs/boombness/quarantine/VOID_CUDAFAULT_n301_*`, each with a `QUARANTINE.txt` stating the
+   cause, the measured evidence, and the fact that they are **not** documented short runs. Not
+   deleted, per section 53.
+3. Added **group X** to `dcs_csi_p1_arms.slurm`: a resume path that runs exactly the arms named in
+   `CSI_ARMS` as **space-separated** `ARM:key` pairs. Space, not comma, deliberately — a
+   comma-bearing value is the `sbatch --export` truncation hazard this repo has already been bitten
+   by. Re-running whole groups would have re-spent GPU on arms that already hold verified rows.
+4. Resubmitted with **n-301 added to the exclude list** (now `n-302,n-306,n-503,n-307,n-301`):
+   - **897877** basket VALIDATION, `SHUF8–11` (group X, L18)
+   - **897878** button TRAIN codeword-row, `CW_SHUF3–4` (group X, L20, `--rescue-rel-end-rows -10`)
+   - **897879** basket TRAIN group K, the twelve new shuffled controls from S-083
+
+### The separate defect this exposed — and it is the repo's own recurring bug class
+
+`--expect-n 670` was **declared on the command line and not enforced at write time**. The run
+completed, wrote `status: "ok"`, and only the downstream `run_completeness_check` — a guard that runs
+at commit, not at run time — noticed that 59% of the corpus was missing. A run that loses more than a
+handful of rows to a device fault should **fail loudly in its own process**, not pass its own DONE
+record and wait for a pre-commit hook to catch it hours later.
+
+This is the **"thresholds published but never enforced"** pattern already recorded twice this sprint.
+Logged as **BLOCKER-S084** and **not fixed in this tick** — `score_behavior.py` is shared with a third
+writer in this tree and mid-sprint changes to its write path would alter the producer while arms are
+in flight. The fix to make is: on `DONE.json` write, if `rows_written < expect_n`, set
+`status: "SHORT"` with the failure histogram inline, so the artifact is self-describing.
+
+**No scientific conclusion is affected.** Every analysis in S-082 and R5 ran on arms that passed the
+completeness check before this fault occurred, and the quarantined runs were never in any key set.

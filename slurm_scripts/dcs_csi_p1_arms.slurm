@@ -40,7 +40,7 @@ source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh
 conda activate poc_stage2
 export PYTHONUNBUFFERED=1
 
-CW="${1:?codeword}"; AXIS="${2:?axis .pt}"; SPLIT="${3:?train|validation}"; GROUP="${4:?A|B|C|D|E|F}"
+CW="${1:?codeword}"; AXIS="${2:?axis .pt}"; SPLIT="${3:?train|validation}"; GROUP="${4:?A|B|C|D|E|F|G|H|I|J|K}"
 SNAP=/home/sharifm/students/matanbentov/hub/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659
 BANK="data/boombness_prompts/boombness_prompt_bank_ts116m_${CW}_bomb.jsonl"
 EXCL="runargs/dcs_cont/exclude_${CW}_bomb_sow_${SPLIT}.txt"
@@ -133,6 +133,38 @@ elif [ "$GROUP" = "J" ]; then
   subcw KO_CW_PLS  "cand_pls${RANK}"
   for i in 0 1 2 3 4 5 6 7; do subcw "KO_CW_RAND${i}" "ctrl_random${i}"   cand_rank1; done
   for j in 0 1 2 3 4;       do subcw "KO_CW_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done
+elif [ "$GROUP" = "X" ]; then
+  # GROUP X -- RESUME a specific list of arms (DCS-CSI-084). A node fault or a cancellation leaves a
+  # handful of arms missing out of a group of twelve; re-running the whole group would re-spend GPU
+  # on arms that already hold complete, verified rows. CSI_ARMS names exactly the arms to run, as
+  # SPACE-separated "ARM:basis_key" pairs -- space, not comma, because a comma-bearing value is the
+  # sbatch --export truncation hazard this repo has been bitten by before, and a space-separated
+  # value survives --export=ALL intact. CSI_RELROWS optionally supplies --rescue-rel-end-rows so the
+  # codeword-row arms of group J can be resumed by the same path.
+  : "${CSI_ARMS:?group X requires CSI_ARMS=\"ARM:key ARM:key ...\" (space-separated)}"
+  RR=""; [ -n "${CSI_RELROWS:-}" ] && RR="--rescue-rel-end-rows ${CSI_RELROWS}"
+  for spec in $CSI_ARMS; do
+    arm="${spec%%:*}"; key="${spec#*:}"
+    if [ "$arm" = "$spec" ] || [ -z "$key" ]; then
+      echo "REFUSING: CSI_ARMS entry '$spec' is not ARM:key" >&2; exit 2
+    fi
+    echo ">>> $arm $(date -Is)"
+    $SB $COMMON $KO $R $RR --rescue-basis "$AXIS" --rescue-basis-key "$key" \
+        --rescue-norm-match-key cand_rank1 --arm "$arm" --tag "${P}_${arm}"
+  done
+elif [ "$GROUP" = "K" ]; then
+  # GROUP K -- TWELVE MORE SHUFFLED-LABEL CONTROLS (review R5). R5 tested whether the 22 random and
+  # 12 shuffled controls form one exchangeable null and found they do IN LOCATION (exact two-sample
+  # permutation p=0.714) -- but the shuffled family's sd is 1.9x the random family's at the same
+  # mean. Fitting capacity on permuted labels buys VARIANCE, not recovery, so the controls that come
+  # closest to the candidate are all shuffled (top three of 34) and the SHUFFLED TAIL is what sets
+  # the margin. Adding more RANDOM draws would lower the pooled rank-p floor while sampling the wrong
+  # tail -- a p-value that improves without the test getting harder. These twelve make the binding
+  # subfamily certifiable on its own: shuffled-only rank floor 1/13 = 0.0769 -> 1/25 = 0.0400.
+  # REQUIRES the shuf24 axis file, whose 41 pre-existing bases -- cand_rank1 and all 22 randoms
+  # included -- were verified BIT-IDENTICAL to the frozen file before this group was written, so the
+  # norm-match reference is unchanged and these controls are comparable to the 34 already run.
+  for j in 12 13 14 15 16 17 18 19 20 21 22 23; do sub "KO_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done
 elif [ "$GROUP" = "I" ]; then
   # GROUP I -- EXTENDED control family (DCS-CSI-072). S-071 left basket INCONCLUSIVE: the candidate
   # is strictly the largest of its 10 controls, but 1/(10+1) = 0.0909 is above 0.05, so rank 1 is
