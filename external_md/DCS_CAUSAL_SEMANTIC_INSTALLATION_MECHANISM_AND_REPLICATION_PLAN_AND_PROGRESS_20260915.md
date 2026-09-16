@@ -5990,3 +5990,48 @@ as unexplained**. At this rate the 15 arms finish in ~90 minutes.
 When they do, VALIDATION's shuffled family reaches **20** (floor 1/21 = **0.0476**) and the held-out
 half of prohibition 20 becomes testable for the first time. The decision rule is already fixed
 (S-096): 0 above the candidate → PASS; 1 → rank 2 of 21, p = 0.095, INCONCLUSIVE; ≥2 → DOES NOT PASS.
+
+---
+
+## REVIEW R7 (adversarial, ~4h cadence) — re-attacking the TRAIN pass at the full 46-control family: the single-domain fragility R6 found is GONE
+
+R6's sharpest finding was that TRAIN's rank-1 verdict rested on one domain: dropping `rail_depot`
+alone moved it from **rank 1 of 35 to rank 4 of 35**, i.e. PASSES → DOES NOT PASS. S-100 enlarged the
+family to 46, so the obvious adversarial question is whether that fragility got **worse** — more
+controls means more candidates to overtake the candidate when a domain is removed.
+
+`scripts/dcs_csi_rank_loo.py`, unchanged, re-run against the 46-control family:
+
+| | 34 controls (R6) | **46 controls (R7)** |
+|---|---|---|
+| full | +0.00265, rank 1 of 35 (p = 0.0286) | +0.00264, **rank 1 of 47 (p = 0.0213)** |
+| LOO: rank stays 1 | 66 of 67 | **65 of 67** |
+| worst single drop | `rail_depot` → **rank 4 of 35** | `pipeline_station` → **rank 2 of 47** |
+| **worst-case rank p** | **0.1143 — FAILS** | **0.0426 — still PASSES** |
+| candidate range | +0.00203 … +0.00294 | +0.00215 … +0.00289 |
+
+**Two domains now perturb the rank instead of one, and yet the result is strictly more robust.**
+More drops move it off rank 1 — but none moves it far enough to matter: the worst single-domain
+deletion leaves **rank 2 of 47, p = 0.0426**, still under 0.05. At the 34-control family the worst
+deletion produced p = 0.1143. **The verdict is now invariant to deleting any one domain**, which it
+was not before.
+
+This is not a paradox and the mechanism is worth stating: adding controls lowers the floor (1/35 →
+1/47) faster than it raises the achievable rank under perturbation. A rank-2 result in a 47-member
+family is a stronger statement than a rank-1 result in a 35-member one.
+
+**A detail I checked rather than assumed:** the worst-drop domain *changed identity*, `rail_depot` →
+`pipeline_station`. That is not instability in the statistic — the **key set changed**, 647 → 642
+common keys, because five more arms entered the intersection and each contributes its own
+degeneracy-guard losses. The candidate moved by 1e−5 (+0.00265 → +0.00264). Both are the same
+estimate on a slightly smaller common set, not two different answers.
+
+**Consequence for the claim table.** R6's caveat on D12 — *"TRAIN holds rank 1 under only 66 of 67
+drops; dropping `rail_depot` alone moves it to rank 4, i.e. PASSES → DOES NOT PASS"* — is **now
+superseded on TRAIN** and must be updated rather than left standing, since it describes a
+34-control family that is no longer the reported one. R6's *other* half stands unchanged: VALIDATION
+held rank 1 under **23 of 23** drops, and that was measured at 30 controls and has not been re-run.
+
+**What R7 does NOT establish**, for the same reason R6 did not: leave-one-out probes this estimate on
+this sample. It is not a population property, not a replication, and it does not change the attainable
+floor, which is 1/47 = 0.0213 and set by the number of controls.
