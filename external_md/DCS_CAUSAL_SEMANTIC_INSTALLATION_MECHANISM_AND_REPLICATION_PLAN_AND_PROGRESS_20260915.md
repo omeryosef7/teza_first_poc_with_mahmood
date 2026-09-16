@@ -5793,3 +5793,44 @@ one fit at a different offset on a different prompt type. *"This replicates"* �
 held-out codeword-row family exists and none is queued. *"Rank 10 of 12 is significantly bad"* — the
 floor is 0.0833 and the test is one-sided-for-passing; a low rank is **descriptive**, not a p-value.
 S-078's status changes from *preliminary* to **resolved on TRAIN**.
+
+---
+
+## S-098 — caught a walltime under-estimate before it truncated the held-out family, and the stage-reuse design paid for itself
+
+### The measurement that forced a resubmit
+
+S-096 sized job 898996's walltime from the wrong precedent. VALIDATION arms are 230 rows and had been
+costing **~4 minutes** on n-301 before the rack broke, so 16 arms plus a ~21-minute stage looked
+comfortable inside `--time=04:00:00`.
+
+Measured on n-306 instead of assumed:
+
+- `KO_SHUF8`: **230/230 rows, `wall_seconds` 596.6** (~10 min) — 2.5x the n-301 figure.
+- arm-to-arm spacing 17:46:32 → 18:04:10 = **17.6 min** including per-arm readout setup.
+
+16 x 17.6 min = **4.7 h against a 4 h limit.** The job would have been killed with roughly the last
+three or four arms missing — and a shuffled family of 16 or 17 instead of 20 keeps the held-out floor
+at 1/18 = 0.056, **still above 0.05**, which is precisely the outcome S-096 launched this job to
+escape. A silent walltime truncation would have cost the entire point of the run.
+
+The per-arm cost difference is itself worth recording: **n-306 is ~2.5x slower per arm than n-301 was**
+on identical work (230 rows, same model, same dtype, same attention impl). The GPU is the same
+advertised part (RTX 3090). I am **not** attributing this to the rack's NFS fault — the weights are
+staged locally and the arms are compute-bound — it is recorded as an unexplained node-to-node
+difference, not explained.
+
+### Resubmitted, and the reuse design did what it was for
+
+**Job 901487** — `KO_SHUF9–23` (15 arms; `KO_SHUF8` already holds 230/230 rows and is kept),
+`--time=08:00:00`, pinned to n-306 so the **staged snapshot is reused**.
+
+This is the first time S-096's reuse decision has been exercised, and it is the reason a walltime
+mistake costs a requeue rather than another 21-minute copy. The re-verification still runs on the
+reused copy, so nothing is trusted on the grounds that a previous job wrote it.
+
+### Meanwhile
+
+Group K (898698, TRAIN) is **8 of 12 arms in**, on `KO_SHUF19`, ~14.6 min per arm — on track to finish
+inside its 9 h allocation with hours to spare. The S-095 preregistration governs its analysis and is
+unchanged.
