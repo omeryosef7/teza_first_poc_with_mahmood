@@ -203,6 +203,11 @@ def main() -> int:
                          "fit's output is a direction to intervene along, never a predictive "
                          "claim. A rho from a semantic fit MUST NOT be reported as prediction.")
     ap.add_argument("--site", default="rel-6", help="FROZEN prior winner; not re-searched here")
+    ap.add_argument("--force-layer", type=int, default=0,
+                    help="Fit at THIS layer instead of the TRAIN argmax. Use when the candidate "
+                         "must match the layer the CAUSAL evidence was measured at. Fitting AT the "
+                         "layer is correct; overriding the consumer's layer-mismatch guard is not. "
+                         "The artifact records layer_forced and layer_argmax_not_used.")
     ap.add_argument("--max-rank", type=int, default=5)
     ap.add_argument("--n-random", type=int, default=8)
     ap.add_argument("--n-shuffled", type=int, default=5)

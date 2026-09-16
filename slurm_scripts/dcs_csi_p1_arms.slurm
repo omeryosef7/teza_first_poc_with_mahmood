@@ -28,7 +28,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
-#SBATCH --time=12:00:00
+#SBATCH --time=06:00:00
 #SBATCH --partition=killable
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
@@ -108,12 +108,17 @@ elif [ "$GROUP" = "I" ]; then
   # the best attainable outcome and still cannot certify. The verdict named its own remedy -- >=19
   # controls -- and these are the extra arms. Same norm-matching, same layer, same positions; only
   # the number of draws changes.
-  for i in 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21; do
-    sub "KO_RAND${i}" "ctrl_random${i}" cand_rank1
-  done
-  for j in 4 5 6 7 8 9 10 11; do
-    sub "KO_SHUF${j}" "ctrl_shuffled${j}" cand_rank1
-  done
+  # Split into halves ($5 = 1|2). A 24-arm / 12 h request pended 60 min on (Resources) and broke
+  # the 30-minute rule; two 12-arm / 6 h requests schedule. Per S-045 a readout endpoint needs the
+  # arms to share an ARCHITECTURE, not an allocation -- the anchor measured zero allocation drift --
+  # so splitting costs nothing scientifically.
+  if [ "${5:-1}" = "1" ]; then
+    for i in 6 7 8 9 10 11; do sub "KO_RAND${i}" "ctrl_random${i}" cand_rank1; done
+    for j in 4 5 6 7 8 9;    do sub "KO_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done
+  else
+    for i in 12 13 14 15 16 17 18 19 20 21; do sub "KO_RAND${i}" "ctrl_random${i}" cand_rank1; done
+    for j in 10 11;                          do sub "KO_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done
+  fi
 elif [ "$GROUP" = "H" ]; then
   # GROUP H -- the CODEWORD ROW, correctly located, plus positions to close the accounting gap
   # (DCS-CSI-068). Two problems group G exposed:

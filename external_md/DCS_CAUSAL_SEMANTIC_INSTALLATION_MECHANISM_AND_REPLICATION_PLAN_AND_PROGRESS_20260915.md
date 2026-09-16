@@ -4370,3 +4370,42 @@ an offset carrying 1 %; this asks it where the causal mass actually is.
 
 **In flight:** group I (24 extended basket control arms, PENDING on resources), and the basket
 INCONCLUSIVE from S-071 awaiting them.
+
+---
+
+## S-074 — two self-inflicted faults, both caught by the thing that should catch them
+
+### (a) A self-check that could not fail — in my own patch script
+
+The `--force-layer` flag from S-073 **was never actually added**. The job failed with
+`unrecognized arguments: --force-layer 20`.
+
+The cause is worth recording because it is the sprint's recurring shape, now one level up: my patch
+script asserted
+
+```python
+assert "--force-layer" in s, "flag missing"
+```
+
+after inserting code whose **comments and help text contain the string `--force-layer`**. The
+assertion was satisfied by the text I had just written, not by the argparse flag existing. **An
+assertion that the thing you just inserted can satisfy is not a check** — the same class as S-042's
+vacuous control and R3-B1's unreachable verdict, this time in throwaway tooling.
+
+**Fixed, and verified differently:** the flag is added, and verification now runs
+`dcs_csi_axis.py --help` and greps *its output* — an external observation of behaviour, not an
+inspection of the source I just edited. (`--help mentions force-layer: 2 time(s)`.)
+
+### (b) Group I broke the 30-minute pending rule
+
+24 arms at 12 h pinned to `geforce_rtx_3090` sat **PENDING 60 minutes** on `(Resources)` —
+double the standing limit. Cancelled and **split into two 12-arm / 6 h halves**, which schedule.
+
+Per **S-045** this costs nothing scientifically: for a *readout* endpoint the arms need only share
+an **architecture**, not an allocation — the `KO_AXIS_ANCHOR` measured allocation-to-allocation
+drift at exactly **zero** (670/670 keys identical). That measurement, made three ticks ago for a
+different reason, is what makes splitting a free move rather than a compromise. Both halves stay
+pinned to the 3090 architecture that basket's candidate arm ran on.
+
+**Jobs 897569 / 897570** (extended basket controls, 12 + 12 arms) and **897568** (the `cw_query`
+refit at L20, now with a working flag).
