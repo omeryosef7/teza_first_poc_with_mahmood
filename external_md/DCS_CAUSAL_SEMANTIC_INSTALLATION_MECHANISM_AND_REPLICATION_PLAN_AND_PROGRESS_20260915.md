@@ -4134,3 +4134,59 @@ sequence end and the query span ends at the final token, so they ought to coinci
 and one of them is off by one.** Until that is settled I cannot be sure which captured site the axis
 was actually fit at, which bears directly on the "probe site is inert" claim. Queued as **P1-k**,
 ahead of any codeword-row axis fit.
+
+---
+
+# S-070 — **P1-k RESOLVED: there is no off-by-one. The two conventions agree; the PROMPT TYPES differ.** And that sharpens the probe-site claim.
+
+S-069 flagged an apparent contradiction: the extraction corpus records `cw_query == rel-11`, while
+`score_behavior` puts the codeword at `rel −10`. Resolved by measurement.
+
+**The corpus check** (200 rows, L20, from the reps tensor directly):
+
+```
+cw_query == rel-11    max|diff| = 0.0     <<< exact
+rel-10                max|diff| = 3.0625  (a genuinely different vector)
+```
+
+**The codeword's position, per prompt type**, measured from `surface_span_positions − seq_len`:
+
+| prompt type | codeword `rel_end` | rows |
+|---|---|---|
+| **behavioural** (the corpus the axis was fit on) | **−11** | 180/180 |
+| **semantic_one_word** (the prompt Phase 1 intervenes on) | **−10** | 670/670 |
+
+**There is no bug.** Both conventions compute `idx = seq_len + rel_end`; the behavioural and
+semantic prompts simply have different tails, so the codeword sits one token further from the end in
+the behavioural prompt. The corpus's `cw_query == rel-11` label is **correct for its own prompt
+type**, and `score_behavior`'s `rel −10` is **correct for its own**. S-069's suspicion is
+withdrawn — the discrepancy was mine, not the code's.
+
+**P1-k is closed, and nothing that depended on it changes**: the codeword-row result (S-069) was
+measured on semantic prompts with the codeword located from `surface_span_positions` on all 670
+rows, so it never relied on the corpus convention at all.
+
+## But it sharpens the probe-site claim, in a way worth stating precisely
+
+The axis was fit at **`rel −6` of the BEHAVIOURAL prompt**. My position map tested **`rel −6` of the
+SEMANTIC prompt**. These are the same *offset from the end*, but in **different prompt types** — and
+the two prompts do not align token-for-token, as the codeword's own `−11` vs `−10` proves.
+
+So the precise statement is:
+
+> **MAY say:** "restoring `rel −6` of the semantic prompt — the offset at which the installation axis
+> was fit on behavioural prompts — recovers 1.0 % of the effect, while the codeword row recovers
+> 46.6 %."
+>
+> **MAY NOT say:** "the probe site is causally inert" **without that qualifier**, because the probe
+> site is defined in a prompt type the causal test did not run on.
+
+This does **not** rescue Phase 1's null — the subspace arms wrote across **all 28 semantic positions**
+including the codeword row, so they were not merely aimed at an inert offset. But it does mean the
+tidy sentence *"the position that predicts is not the position that causes"* needs the prompt-type
+qualifier attached every time it is used, and I have added it to the claim table rather than leaving
+it to be remembered.
+
+**Unblocked:** the codeword-row axis fit can now proceed. The corpus's `cw_query` site **is** the
+behavioural codeword row, so an axis fit there is fit at the causally dominant position's
+behavioural counterpart — which is the fair version of the follow-up S-069 proposed.
