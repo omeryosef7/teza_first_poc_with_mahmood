@@ -4409,3 +4409,56 @@ pinned to the 3090 architecture that basket's candidate arm ran on.
 
 **Jobs 897569 / 897570** (extended basket controls, 12 + 12 arms) and **897568** (the `cw_query`
 refit at L20, now with a working flag).
+
+---
+
+## S-075 — **GROUP J: Phase 1's question, asked where the causal mass actually is**
+
+The `cw_query` axis refit at **L20** is built and its provenance is honest:
+
+```
+selected_layer = 20   layer_forced = true   layer_argmax_not_used = 28   rho = 0.5254   rank = 5
+```
+
+**Job 897576** runs the experiment Phase 1 should have been able to run:
+
+| arm | what it restores |
+|---|---|
+| `KO_CW_FULL` | the **full** clean state at `rel −10` (the codeword row) — the positive control, benchmarked against `KO_AT10` = **+0.03289** |
+| `KO_CW_AXIS` | only the **rank-1 axis component** of that row |
+| `KO_CW_PLS` | only the rank-5 PLS subspace of that row |
+| `KO_CW_RAND0..7`, `KO_CW_SHUF0..4` | 13 norm-matched controls, same row |
+
+**Candidate and positive control differ only in the projection**, at the one position the causal map
+says carries 46.6 % of the effect.
+
+### Why this is a fair test and not a second bite at the apple
+
+Phase 1's null could be dismissed as "you looked in the wrong place" — and S-072 showed that is
+literally true: the arms restored a component **across all 28 positions** of a direction fit at an
+offset carrying **1.0 %**. Re-asking is therefore warranted. But re-asking after a null is exactly
+where a sprint starts fishing, so the guards are stated in advance:
+
+* **the site was chosen by a CAUSAL criterion** — `rel −10` carries 46.6 % of the whole-state
+  effect, measured on 670 rows before this experiment was designed — **not** by re-searching the
+  probe grid for a better ρ. In fact ρ at `cw_query`/L20 is **0.5254, LOWER** than the rel-6 axis's
+  0.5935: the site is *worse* by the observational criterion and better by the causal one, which is
+  the opposite of what fishing produces;
+* **the layer is forced to L20** to match the causal evidence, not set to this axis's own argmax
+  (L28), and the artifact records that it was forced (S-073);
+* **the control family is 13 arms**, so the rank statistic can attain **1/14 = 0.071** — still above
+  0.05, so a rank-1 outcome will be reported **INCONCLUSIVE**, not as a pass. Stated now so the
+  ceiling is not discovered after the fact;
+* **the comparison is to `KO_CW_FULL` at the same row**, not to the 28-position `KO_FULL`.
+
+**Readings fixed in advance:**
+* `KO_CW_AXIS` beats its 13 controls ⇒ a low-dimensional installation component **does** mediate,
+  once tested at the right position — Phase 1's null was a site error, and that is a substantive
+  correction to this sprint's own headline;
+* `KO_CW_AXIS` inside its controls ⇒ the effect at the codeword row is **also** not low-dimensional,
+  and Phase 1's conclusion generalises rather than being a site artifact — a stronger negative than
+  the original, because it survives being asked at the causally dominant position.
+
+**Also launched: adversarial review round 4**, which this time audits the *claims* as well as the
+code — re-deriving S-072's position map, the `rel −10` identification and the 92.4 % arithmetic
+independently from raw `results.jsonl`, without reusing either of my analysers.

@@ -9,6 +9,7 @@
 #   group G = FINE SCAN of the span tail: rel -2,-3,-4,-5,-8 (5 arms)
 #   group H = the CODEWORD ROW (rel -10) + accounting-gap positions (6 arms)
 #   group I = EXTENDED control family to reach >=19 controls (24 arms)
+#   group J = Phase 1 re-asked AT THE CODEWORD ROW: subspace rescue restricted to rel -10 (16 arms)
 #
 # WHY TWO GROUPS AND WHY KO_AXIS APPEARS IN BOTH. At ~29 min per 670-row readout arm, 17 arms do
 # not fit one allocation. The split is chosen so that everything the PREREGISTERED PRIMARY
@@ -102,6 +103,27 @@ elif [ "$GROUP" = "B" ]; then
   sub KO_AXIS_ANCHOR cand_rank1
   for j in 0 1 2 3;       do sub "KO_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done
   for i in 0 1 2 3 4 5;   do sub "KO_RAND${i}" "ctrl_random${i}"   cand_rank1; done
+elif [ "$GROUP" = "J" ]; then
+  # GROUP J -- PHASE 1 ASKED AT THE RIGHT PLACE (DCS-CSI-075). Phase 1 restored a low-dimensional
+  # component across ALL 28 positions, of a direction fit at an offset the causal map later showed
+  # carries 1% of the effect. This asks the same question at the CODEWORD ROW (rel -10), which
+  # carries 46.6%: restore only the axis component OF THAT ROW. The benchmark is KO_AT10 = +0.03289,
+  # the full state at the same row, so candidate and positive control differ only in the projection.
+  # The basis is fit at behavioural cw_query and FORCED to L20 to match the causal evidence (S-073).
+  CWR="--rescue-rel-end-rows -10"
+  echo ">>> KO_CW_FULL $(date -Is)"
+  $SB $COMMON $KO $R $CWR --arm KO_CW_FULL --tag ${P}_KO_CW_FULL
+  subcw () { local arm="$1" key="$2" nm="${3:-}"
+    echo ">>> $arm $(date -Is)"
+    if [ -z "$nm" ]; then
+      $SB $COMMON $KO $R $CWR --rescue-basis "$AXIS" --rescue-basis-key "$key" --arm "$arm" --tag "${P}_${arm}"
+    else
+      $SB $COMMON $KO $R $CWR --rescue-basis "$AXIS" --rescue-basis-key "$key"           --rescue-norm-match-key "$nm" --arm "$arm" --tag "${P}_${arm}"
+    fi; }
+  subcw KO_CW_AXIS cand_rank1
+  subcw KO_CW_PLS  "cand_pls${RANK}"
+  for i in 0 1 2 3 4 5 6 7; do subcw "KO_CW_RAND${i}" "ctrl_random${i}"   cand_rank1; done
+  for j in 0 1 2 3 4;       do subcw "KO_CW_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done
 elif [ "$GROUP" = "I" ]; then
   # GROUP I -- EXTENDED control family (DCS-CSI-072). S-071 left basket INCONCLUSIVE: the candidate
   # is strictly the largest of its 10 controls, but 1/(10+1) = 0.0909 is above 0.05, so rank 1 is
