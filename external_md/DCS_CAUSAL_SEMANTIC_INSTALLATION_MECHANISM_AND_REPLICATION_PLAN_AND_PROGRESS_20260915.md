@@ -5611,3 +5611,66 @@ and is filed as EXPLORATORY, not as a defensible claim.
 correlations do **not** clear 0.05 on VALIDATION. *"rail_depot drives the result"* — R6 showed the
 **held-out** rank survives all 23 single-domain drops; concentration and single-domain robustness are
 both true, and neither may be quoted without the other.
+
+---
+
+## S-095 — the staging workaround WORKS, the S-084 fix is live in a real artifact, and group K's analysis is PREREGISTERED before its arms finish
+
+### Staging: predicted ~38 min, took 33.8 min, and the verification passed
+
+```
+[stage] ... -> /tmp/dcs_snap_omeryosef/0e9e39f2...   15:52:39
+[stage] index sha256: 146776fce3f6db1103aa6f249e65ee55
+[stage] verified 13 files, 15G                       16:26:30
+```
+
+**33 min 51 s** against S-092's predicted ~38 min at n-304's measured 6.6 MB/s. The size check passed
+on all 13 files and the shard-index sha256 is now in the run log, so the staged snapshot's identity is
+recorded in the artifact.
+
+Then the payoff: **`KO_SHUF12` completed 670/670 rows in 876 s (14.6 min)** — the same per-arm cost as
+before the rack broke. The 20-hour load is gone. Twelve arms at ~14.6 min is **~2.9 h**, inside the
+9 h allocation. `KO_SHUF13` started 16:43.
+
+**BLOCKER-S090 is now WORKED AROUND, not resolved.** The rack is still broken; the sprint is no longer
+waiting on it.
+
+### The S-084 fix appears in its first real artifact
+
+`KO_SHUF12`'s `DONE.json`, written by the patched `finish()`:
+
+```json
+{"status": "ok", "rows_written": 670, "wall_seconds": 876.087,
+ "n_rows_failed": 0, "n_rows_attempted": 670, "failure_reasons": {...}}
+```
+
+A clean run still says `ok` (no false positive), and the completeness fields are now **in the artifact**
+rather than inferable only by a downstream guard with a copy of `--expect-n`. This is the first run in
+the sprint that can answer "did you lose anything?" by itself.
+
+### PREREGISTRATION — group K analysis, fixed before the arms finish
+
+Per the sprint rule that anything which could become a headline is preregistered, including if null:
+
+**Population.** basket TRAIN, L18, site `rel-6`, `semantic_one_word`, cell C, dose 4, 67 domains,
+`--expect-n 670 --allow-short 3`. Controls: the existing 22 random + 12 shuffled **plus** `SHUF12–23`
+= **46 controls**. Arms with a CUDA-class failure are excluded and quarantined, not documented.
+
+**The statistic that decides it.** The **shuffled-only** rank — prohibition 20's subject and, per R5,
+the binding comparator. Pooled and random-only ranks are reported but are **not** the test.
+
+**Decision rule, fixed now:**
+- **0** of `SHUF12–23` above the candidate → shuffled-only **rank 1 of 25, floor 0.0400** → prohibition
+  20 is **lifted** and D12 may say the axis beats its fit-capacity-matched controls on TRAIN.
+- **1** above → rank 2 of 25, p = 0.080 → **INCONCLUSIVE**; prohibition 20 stands.
+- **≥2** above → rank ≥3 → **DOES NOT PASS** its correct comparator; D12's TRAIN row must be
+  rewritten and the pooled pass reported as an artifact of the easier family.
+
+**Also fixed in advance:** the exchangeability test R5 ran (shuffled vs random, exact two-sample
+permutation) will be **re-run at n = 24 vs 22**. R5's p = 0.714 was measured at 12 vs 22; if the larger
+shuffled family now separates from the random one, the **pooled** rank in D12 stops being a legitimate
+single null and must be withdrawn regardless of how the shuffled-only test lands.
+
+**Held-out status is unaffected either way.** VALIDATION's shuffled family is still 4 arms
+(`SHUF8–11` were lost to the n-301 fault and have not been re-run), so a TRAIN result here does **not**
+license any held-out statement about the binding subfamily.
