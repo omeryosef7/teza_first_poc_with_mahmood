@@ -693,9 +693,33 @@ class RunDir:
         self._write_json_unchecked("summary.json", summ)
 
         self._state = "finished"
+        # BLOCKER-S084. A run that LOSES rows at scoring time used to write `status: "ok"` and say
+        # nothing else: csi1_button_train_KO_CW_SHUF3 persisted 276 of 670 rows after a GPU fault
+        # killed 394 of them, called itself ok, and was caught hours later by a pre-commit guard
+        # rather than by its own artifact. `--expect-n` did NOT cover this and was never meant to --
+        # it checks the POPULATION size BEFORE scoring (score_behavior.py) and cannot see a row that
+        # dies mid-run. Two different quantities, one flag name, which is why the declared threshold
+        # looked enforced and was not.
+        #
+        # `ds_common.write_done` builds the record with `status: "ok"` and then does
+        # `rec.update(extra)`, so `extra` OVERRIDES `status`. The fix therefore needs no change to
+        # `ds_common.py`, which every experiment in this tree shares.
+        #
+        # A run with ANY failed row is INCOMPLETE, not ok. This deliberately fires on the small,
+        # legitimate losses too (e.g. the norm-match degeneracy guard declining 1-2 control rows):
+        # the point is that the ARTIFACT is self-describing, so a later reader never has to infer
+        # completeness from a row count they may not have the expected value for. Documented,
+        # understood losses are recorded in `run_completeness_check.KNOWN_SHORT` as before -- this
+        # changes what the run SAYS about itself, not which runs are acceptable.
+        _led = ledger.as_dict()
+        _nf = int(_led.get("n_failed") or 0)
+        _extra = {"experiment": self.experiment, "n_rows_failed": _nf,
+                  "n_rows_attempted": _led.get("n_attempted"),
+                  "failure_reasons": _led.get("failure_reasons") or {}}
+        if _nf:
+            _extra["status"] = "INCOMPLETE"
         try:
-            dc.write_done(self.path, rows_written=self._n_rows,
-                          extra={"experiment": self.experiment})
+            dc.write_done(self.path, rows_written=self._n_rows, extra=_extra)
         except Exception:
             self._write_json_unchecked("DONE.json", {"ok": True, "n_result_rows": self._n_rows,
                                                      "finished_at": meta["finished_at"]})

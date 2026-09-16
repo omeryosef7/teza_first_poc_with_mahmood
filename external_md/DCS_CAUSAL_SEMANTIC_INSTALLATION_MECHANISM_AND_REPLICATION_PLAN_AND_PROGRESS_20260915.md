@@ -5231,3 +5231,63 @@ external blocker — a shared fileserver, not something this sprint can fix — 
 rules it is recorded and worked around, not waited on.** GPU work is paused; CPU work continues. A
 second snapshot of the identical revision exists under `markfesenko/hub`, but it is on the **same
 NetApp volume**, so it is not a mitigation and was not used.
+
+---
+
+## S-089 — BLOCKER-S084 FIXED (the deferral condition lifted), and the fileserver degradation confirmed on a second, independent path
+
+### The fileserver: it is the volume, not the shared snapshot
+
+S-088 measured 28.1 MB/s reading the Llama snapshot and called it an external blocker. One reading of
+one path under someone else's home directory is thin evidence for "the volume", so I checked it two
+more ways.
+
+| read | rate |
+|---|---|
+| snapshot shard 1, **re-read** (page cache) | 4.8 GB/s — *not a measurement, and recorded so it is not mistaken for one* |
+| snapshot shard 3, cold | **28.2 MB/s** |
+| snapshot shard 4, cold | **27.8 MB/s** |
+| **a file I own**, `outputs/boombness/.../directions_fit_heldout.pt` | **17.3 MB/s** |
+
+The fourth row is the one that matters: it is **my own file, not the shared snapshot**, and it is just
+as slow. So this is not contention on a popular blob and not anything about `matanbentov/hub` — the
+`netapp2-244:/Netapp5_sharifm` volume (94% full, 19T of 20T) is delivering tens of MB/s to everything.
+Also worth noting: 28.2 and 27.8 MB/s across two different cold shards is suspiciously *stable* for
+congestion, which looks more like a throttle than a queue. Either way it is outside this sprint.
+**BLOCKER-S087 stands; no GPU work is submitted while it does.**
+
+### BLOCKER-S084 fixed, because the reason for deferring it has gone
+
+S-086 deferred the fix on the grounds that arms were in flight and changing the producer mid-family
+would split one control family across two code versions. **Every GPU job is now cancelled and group K
+has not started**, so applying it now means the *entire* group-K family is written by the fixed code —
+strictly better than applying it midway, which is what S-086 said to avoid.
+
+The change is where S-086 predicted: **`src/boombness/common.py` only, no change to the shared
+`ds_common.py`**, relying on `write_done` doing `rec.update(extra)` so `extra` overrides `status`.
+`finish()` now reads the ledger it is already given and writes `n_rows_failed`, `n_rows_attempted`,
+`failure_reasons`, and — when any row failed — **`status: "INCOMPLETE"`**.
+
+It deliberately fires on *small* legitimate losses too, e.g. the norm-match degeneracy guard declining
+a control row. That is the point: the **artifact becomes self-describing**, so a later reader never has
+to infer completeness from a row count whose expected value they may not have. This changes what a run
+*says about itself*, not which runs are acceptable — documented losses still live in
+`run_completeness_check.KNOWN_SHORT` exactly as before.
+
+**`tests/test_done_incomplete_status.py`, 5 tests, all passing:**
+- `test_finish_marks_a_lossy_run_INCOMPLETE` — the regression itself: a real `RunDir` driven through
+  `finish()` with 394 failed rows must report `INCOMPLETE`, `n_rows_failed: 394`, and the reason
+  histogram. This is the exact shape of `KO_CW_SHUF3`.
+- `test_finish_leaves_a_clean_run_ok` — no false positives.
+- `test_extra_overrides_status_in_write_done` — **guards the mechanism, not just the outcome**. The
+  entire fix rests on `extra` overriding `status` in a file owned by another experiment. If someone
+  reorders that `rec.update`, the fix stops working *silently* and every incomplete run goes back to
+  claiming ok. This test fails loudly instead.
+- plus the ledger-shape contract and the clean-run case.
+
+**Blast radius checked before changing a shared producer:** no reader in `src/`, `scripts/`, `tests/`
+or `doublespeak_causality/` compares a `DONE.json` `status` to `"ok"`. The many `== "ok"` matches are
+all `judge_status`, a different field on a different record. `check_all.py`: **all 9 guards pass.**
+
+**Note for the S-088 claim:** nothing in this entry touches any scored value. The fix changes only
+what `DONE.json` records about a run's completeness, and every arm behind S-088 was written before it.
