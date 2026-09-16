@@ -5350,3 +5350,47 @@ So the blocker stands, but it is now correctly named and its shape is known:
 them reports a cold-NFS rate in the hundreds of MB/s. `n-303`, `n-306` and `n-350` are still queued
 behind other users' jobs and have not been measured yet — they are not yet known to be broken, only
 unmeasured, and the difference is recorded rather than assumed.
+
+---
+
+## S-091 — the held-out pass enters the claim table as D12, with four new prohibitions attached to it
+
+GPU is still blocked (BLOCKER-S090; all six node probes are queued behind other users). The tick's
+work was to get S-088 into the deliverable ledger, because a result that lives only in a progress log
+is a result nobody can check.
+
+**`reports/DCS_CSI_CLAIM_TABLE.md` gains row D12** — the first row in section A this sprint that rests
+on a *causal* rank test rather than a readout:
+
+> On **basket**, the rank-1 installation axis is the causally strongest direction in its control
+> family, on **both** splits. TRAIN +0.00265 [0.00061, 0.00486], rank **1 of 35**, p = 0.0286.
+> VALIDATION +0.00400 [0.00098, 0.00774], rank **1 of 31**, p = 0.0323. 67 and 23 domains.
+
+The caveat column carries, in the row itself rather than in a footnote a reader can skip:
+- the effect is **3.9 %** of the knockout and 3.9 % of what the whole state restores;
+- both rank p values are **at their attainable floors**;
+- the **shuffled-only** subfamily is **1 of 13 (TRAIN) and 1 of 9 (VALIDATION)** — **inconclusive on
+  its own, both splits**;
+- both numbers are independently re-derived, 34/34 and 30/30 controls agreeing to 1e−5.
+
+**Four prohibitions added (19–22), each tied to a way this row could be over-read:**
+
+19. *"The installation axis is causal"* unqualified — say "the strongest single direction tested,
+    recovering 3.9 % of the knockout effect".
+20. *"Basket's axis beats its fit-capacity-matched controls"* — **not established on either split**.
+    The shuffled family is floor-limited. Quoting the pooled rank without this is quoting the easier
+    of two tests. This is the prohibition I most expect to be violated, including by me, because the
+    pooled number is the one that reads as a headline.
+21. *"The Phase-1 negative is overturned"* — button ranks 4 of 11 on both splits; the honest summary
+    is a **codeword dissociation**.
+22. *"The volume / fileserver is degraded"* — **WITHDRAWN** per S-090; say "the `n-30x` rack's NFS path
+    is broken". A retracted claim about infrastructure belongs in the prohibition list for the same
+    reason a retracted scientific one does: it was written down, and future readers of this log will
+    otherwise find S-088 and S-089 asserting it.
+
+`check_all.py`: **all 9 deliverable guards pass**, including `ledger_propagation_check` (a correction
+written in the plan that never reaches the claim ledger) and `cited_artifact_check` (a claim citing a
+missing artifact) — so D12's four cited JSON artifacts exist and are admissible.
+
+**Still blocked, unchanged:** group K (the twelve shuffled controls that would resolve prohibition 20)
+needs a 3090, and every 3090 is in the broken rack. Six probe jobs are queued to detect recovery.
