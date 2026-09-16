@@ -54,7 +54,11 @@ if [ "${CSI_STAGE:-0}" = "1" ]; then
   LOCAL="/tmp/dcs_snap_${USER}/$(basename "$SNAP")"
   echo "[stage] $SNAP -> $LOCAL  $(date -Is)"
   mkdir -p "$LOCAL"
-  rsync -a --exclude 'original/' --exclude '*.pth' "$SNAP"/ "$LOCAL"/
+  # -L DEREFERENCES. Every file in an HF snapshot dir is a SYMLINK into ../../blobs/. Plain
+  # `rsync -a` faithfully copies the symlinks, which then dangle because ../../blobs is not under
+  # /tmp -- the first attempt (job 898564) staged 11 dangling links in 23 s and the size check
+  # below refused it with dst=-1 on every file. See DCS-CSI-093.
+  rsync -aL --exclude 'original/' --exclude '*.pth' "$SNAP"/ "$LOCAL"/
   # VERIFY, because a silently truncated weight file would produce a model that runs and is wrong.
   # rsync guarantees transfer fidelity by its own checksum; this re-checks SIZE against the source
   # for every file, which is the failure mode staging itself could introduce (full disk, killed copy).

@@ -5450,3 +5450,51 @@ controls that **prohibition 20** exists for: they take the binding subfamily fro
 (floor 0.0769, INCONCLUSIVE) to 1 of 25 (floor 0.0400) if the candidate survives, and the refutation
 condition pre-declared in S-083 stands unchanged — **two or more of SHUF12–23 above +0.00265 and the
 S-082 pass does not survive its correct comparator.**
+
+---
+
+## S-093 — the staging guard refused my own workaround in 23 seconds. It was right, and the bug was a symlink
+
+Job **898564 FAILED with exit 3 after 00:00:23** — the refusal path added in S-092, firing on its first
+real use, against the code I had just written.
+
+```
+[stage] SIZE MISMATCH LICENSE                        src=7627        dst=-1
+[stage] SIZE MISMATCH model-00001-of-00004.safetensors src=4976698672 dst=-1
+... (11 of 11 files)
+[stage] REFUSING: staged copy does not match source
+```
+
+**Every** file `dst=-1`, and `rsync` "finished" in 23 seconds for what should be a 38-minute 15 GB copy.
+
+### The bug
+
+Every file in a HuggingFace snapshot directory is a **symlink into `../../blobs/`** — S-090's own
+`ls -l` output shows this (`model-00001-of-00004.safetensors -> ../../blobs/2b1879f3...`) and I read
+it at the time without drawing the consequence. `rsync -a` preserves symlinks *as symlinks*. Staged
+under `/tmp/dcs_snap_$USER/<rev>/`, the relative target `../../blobs/` does not exist, so all eleven
+links dangled. `stat -Lc %s` on a dangling link fails, which is the `-1`.
+
+Fixed: **`rsync -aL`** — `-L` dereferences, copying the blob contents rather than the pointer. The
+reason is written into the script at the call site, with the job id, so the next reader does not
+re-derive it.
+
+### What this says about the guard, which is the part worth keeping
+
+S-092 argued the guard was needed because "a silently truncated weight file produces a model that
+loads, runs, and is wrong". The actual failure was **worse and quieter than truncation**: `rsync`
+exited **0**, the directory existed, it contained eleven correctly-named files, and `du` would have
+reported a plausible-looking small size. Without the size check the job would have proceeded to
+`from_pretrained` on a directory of dangling links — best case a crash, worst case a confusing
+partial-load error 40 minutes into an 8-hour allocation, diagnosed as "the rack again".
+
+Instead it cost 23 seconds and named the problem precisely. **A workaround written in a hurry to route
+around a broken rack is exactly the code most likely to be wrong, and it was.** The guard I wrote for
+the fileserver's failure mode caught my own.
+
+### Relaunched
+
+**Job 898638** — group K, basket TRAIN, `CSI_STAGE=1`, n-304, `--time=08:00:00`, identical in every
+other respect. The S-083 refutation condition is unchanged and still pre-declared: **two or more of
+`SHUF12–23` above +0.00265 and the S-082 pass does not survive its correct comparator**; one leaves it
+INCONCLUSIVE; only zero certifies the binding subfamily at the 0.0400 floor.
