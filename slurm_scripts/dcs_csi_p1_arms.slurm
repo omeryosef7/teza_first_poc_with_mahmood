@@ -42,6 +42,33 @@ export PYTHONUNBUFFERED=1
 
 CW="${1:?codeword}"; AXIS="${2:?axis .pt}"; SPLIT="${3:?train|validation}"; GROUP="${4:?A|B|C|D|E|F|G|H|I|J|K}"
 SNAP=/home/sharifm/students/matanbentov/hub/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659
+# ---- OPTIONAL NODE-LOCAL STAGING (DCS-CSI-092, BLOCKER-S090) -------------------------------
+# The n-30x rack's NFS path reads the shared snapshot at 2-7 MB/s (S-090, measured per node). A
+# sequential copy at that rate is ~40 min for the 15 GB of weights; the HF loader's RANDOM mmap
+# access over the same path is 20+ HOURS. Staging converts the pathological access pattern into one
+# sequential copy, then loads from node-local disk (measured 7-12 GB/s, 171 G free).
+# Off by default: it is a workaround for a broken rack, not the normal path. CSI_STAGE=1 enables it.
+# `original/` is excluded -- it holds a .pth duplicate of the same weights (31 G on disk vs 15 G of
+# safetensors) that transformers does not read.
+if [ "${CSI_STAGE:-0}" = "1" ]; then
+  LOCAL="/tmp/dcs_snap_${USER}/$(basename "$SNAP")"
+  echo "[stage] $SNAP -> $LOCAL  $(date -Is)"
+  mkdir -p "$LOCAL"
+  rsync -a --exclude 'original/' --exclude '*.pth' "$SNAP"/ "$LOCAL"/
+  # VERIFY, because a silently truncated weight file would produce a model that runs and is wrong.
+  # rsync guarantees transfer fidelity by its own checksum; this re-checks SIZE against the source
+  # for every file, which is the failure mode staging itself could introduce (full disk, killed copy).
+  BAD=0
+  for f in "$SNAP"/*; do
+    b=$(basename "$f"); [ -f "$f" ] || continue
+    src=$(stat -Lc %s "$f"); dst=$(stat -Lc %s "$LOCAL/$b" 2>/dev/null || echo -1)
+    if [ "$src" != "$dst" ]; then echo "[stage] SIZE MISMATCH $b src=$src dst=$dst" >&2; BAD=1; fi
+  done
+  if [ "$BAD" != "0" ]; then echo "[stage] REFUSING: staged copy does not match source" >&2; exit 3; fi
+  echo "[stage] index sha256: $(sha256sum "$LOCAL/model.safetensors.index.json" | cut -c1-32)"
+  echo "[stage] verified $(ls -1 "$LOCAL" | wc -l) files, $(du -sh "$LOCAL" | cut -f1)  $(date -Is)"
+  SNAP="$LOCAL"
+fi
 BANK="data/boombness_prompts/boombness_prompt_bank_ts116m_${CW}_bomb.jsonl"
 EXCL="runargs/dcs_cont/exclude_${CW}_bomb_sow_${SPLIT}.txt"
 [ -f "$EXCL" ] || { echo "no exclusion file $EXCL"; exit 2; }

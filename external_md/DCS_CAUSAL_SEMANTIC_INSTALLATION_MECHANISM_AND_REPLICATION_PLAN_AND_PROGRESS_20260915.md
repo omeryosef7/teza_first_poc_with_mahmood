@@ -5394,3 +5394,59 @@ missing artifact) — so D12's four cited JSON artifacts exist and are admissibl
 
 **Still blocked, unchanged:** group K (the twelve shuffled controls that would resolve prohibition 20)
 needs a 3090, and every 3090 is in the broken rack. Six probe jobs are queued to detect recovery.
+
+---
+
+## S-092 — working around BLOCKER-S090 instead of waiting it out: node-local staging, with a size verification that can refuse
+
+The rack has not recovered. Re-probing the three measured nodes 25 minutes after the first pass gives
+the same answer, and gives it stably:
+
+| node | 13:49 | 14:15 |
+|---|---|---|
+| n-302 | 2.5 MB/s | **2.3 MB/s** |
+| n-304 | 5.6 MB/s | **6.6 MB/s** |
+| n-305 | 3.1 MB/s | **3.9 MB/s** |
+
+Reproducible per-node rates, not noise — and still ~50-130x below the 309 MB/s a node outside the rack
+gets from the same volume. `n-303`, `n-306`, `n-350` remain queued and **unmeasured**.
+
+### The arithmetic that makes a workaround possible
+
+S-090 already contained the key observation without acting on it: **a sequential copy is not what the
+HF loader does.** The loader mmaps and reads 291 tensors in index order, which over a degraded NFS
+path costs 249–335 s *per tensor*. A plain `cp` of the same bytes is sequential.
+
+The weights are **15.0 GB** (`ls -lL`, excluding `original/`, which holds a `.pth` duplicate
+`transformers` never reads — that is why `du` says 31 G and only half of it matters). At n-304's
+measured **6.6 MB/s** that is **~38 minutes**, once. The staged copy then loads from node-local disk
+at the **7–12 GB/s** measured in S-090, with 171 G free.
+
+So: ~38 min of sequential copy replaces a ~20-hour random-access load. The blocker is not gone, but it
+is no longer a reason to stop.
+
+### `CSI_STAGE=1`, and the guard that makes it safe to trust
+
+Added to `slurm_scripts/dcs_csi_p1_arms.slurm`, **off by default** — it is a workaround for a broken
+rack, not the normal path, and the sprint's rule is to pin the shared snapshot.
+
+The failure mode staging *introduces* is the dangerous one: a **silently truncated weight file**
+produces a model that loads, runs, and is wrong. `rsync` guarantees transfer fidelity by its own
+checksums, but it cannot protect against a full disk or a killed copy. So after staging, the script
+compares **every file's size against the source** and, on any mismatch, prints the offending file and
+**exits 3 rather than scoring a single row**. It also logs the sha256 of `model.safetensors.index.json`
+— the shard map and architecture — into the run log, so the staged snapshot's identity is recorded in
+the artifact rather than assumed.
+
+Stated honestly: this verifies **size**, not content. A content check would mean re-reading 15 GB back
+over the same degraded NFS path, which costs as much as the copy itself. Size + rsync's transfer
+checksum is the proportionate guard; it is written down here so nobody later reads it as stronger.
+
+### Launched
+
+**Job 898564** — group K, basket TRAIN, `CSI_STAGE=1`, pinned to **n-304** (the fastest of the broken
+nodes), `--time=08:00:00` (≈38 min staging + 12 arms x 670 rows). These are the twelve shuffled-label
+controls that **prohibition 20** exists for: they take the binding subfamily from rank 1 of 13
+(floor 0.0769, INCONCLUSIVE) to 1 of 25 (floor 0.0400) if the candidate survives, and the refutation
+condition pre-declared in S-083 stands unchanged — **two or more of SHUF12–23 above +0.00265 and the
+S-082 pass does not survive its correct comparator.**
