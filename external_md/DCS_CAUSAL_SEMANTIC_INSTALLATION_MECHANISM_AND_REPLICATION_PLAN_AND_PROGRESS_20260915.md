@@ -5949,3 +5949,44 @@ tuned to the old dishonesty reject it. S-089 checked blast radius by grepping fo
 `DONE.json` status to `"ok"` — and found none, because the consumer that mattered lives in
 `scripts/`, was matched by my grep's file set, but compares with `!=` inside a helper I read past.
 The grep was right; my reading of its output was not.
+
+---
+
+## S-101 — S-100 propagated to the claim ledger, and stage reuse cut the held-out job's startup from 21 minutes to zero
+
+### Ledger propagation
+
+`reports/DCS_CSI_CLAIM_TABLE.md` updated in the two places S-100 touches, rather than left in the
+progress log:
+
+- **D12's evidence column** now quotes the **46-control family**: `KO_AXIS − KO` = **+0.00264**
+  [0.00068, 0.00471], **rank 1 of 47, p = 0.0213**, with shuffled-only (1 of 25, floor 0.0400) and
+  random-only (1 of 23) passing separately. The superseded 34-control figures are kept inline
+  (+0.00265, 1 of 35, p = 0.0286) so a reader meeting the old numbers elsewhere can reconcile them
+  rather than suspect a discrepancy.
+- **Prohibition 20** is marked **LIFTED FOR TRAIN ONLY**, with the preregistered basis named (the
+  0-above branch of S-083/S-095, plus the exchangeability re-test at p = 0.8311) and the held-out
+  status stated explicitly: VALIDATION's shuffled family is **9**, rank 1 of 10, floor 0.10 —
+  floor-limited, so **no held-out statement about the fit-capacity-matched comparator may be made**
+  until job 901739 lands. The prohibition now reads "say *on TRAIN*, never unqualified" instead of
+  disappearing.
+
+`check_all.py`: **all 9 guards pass**, including `ledger_propagation_check` — the guard whose whole
+purpose is catching a correction that stays in the plan and never reaches the ledger.
+
+### The held-out job is running, and the reuse decision paid off again
+
+Job **901739** (`KO_SHUF9–23`, 15 arms) started on n-304 at 19:33 and had its **first arm running
+immediately** — the staged snapshot left behind by group K was reused and re-verified, so the
+21-minute copy did not happen at all. S-096 recorded reuse as a deliberate trade with a disk-litter
+cost; this is the second time it has converted a job restart from "pay the stage again" into "start
+now", and the first where it saved the copy outright.
+
+Arms are landing at **~6 minutes** each (19:33:16 → 19:39:39 → 19:45:25), against **17.6 minutes** for
+the identical 230-row work on n-306 (S-098). That is a **~2.9x** per-arm difference between two nodes
+holding the same advertised GPU, with weights local on both — still **unexplained and still recorded
+as unexplained**. At this rate the 15 arms finish in ~90 minutes.
+
+When they do, VALIDATION's shuffled family reaches **20** (floor 1/21 = **0.0476**) and the held-out
+half of prohibition 20 becomes testable for the first time. The decision rule is already fixed
+(S-096): 0 above the candidate → PASS; 1 → rank 2 of 21, p = 0.095, INCONCLUSIVE; ≥2 → DOES NOT PASS.
