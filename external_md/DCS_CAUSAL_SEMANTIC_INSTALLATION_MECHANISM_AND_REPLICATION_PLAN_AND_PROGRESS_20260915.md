@@ -6087,3 +6087,52 @@ with each verdict reproduced by two independently written analysis paths.
 - **The honest summary is unchanged: a codeword dissociation** — in which one side now replicates
   held-out against its hardest available comparator, and the other fails at the position that carries
   46.6% of the effect.
+
+---
+
+## S-103 — prohibition 20 RETIRED in the ledger; and the next experiment attacks the sprint's own headline: is the dissociation about the CODEWORD or about the LAYER?
+
+### Ledger
+
+`reports/DCS_CSI_CLAIM_TABLE.md`:
+- **Prohibition 20 is retired**, with the full basis recorded in its place (46-control families on both
+  splits, shuffled-only 1 of 25 on each, zero of the 12 + 16 new shuffled controls above the candidate,
+  exchangeability p = 0.8311 / 0.1353, two independent analysis paths). It is replaced in the entry by a
+  pointer to prohibitions **19** and **21**, which are unaffected.
+- **D12** now reports both splits at 46 controls: TRAIN +0.00264, rank 1 of 47, p = 0.0213; VALIDATION
+  +0.00401, **23 held-out domains**, rank 1 of 47, p = 0.0213. Superseded 30/34-control figures kept
+  inline for reconciliation. `check_all.py`: all 9 guards pass.
+
+### The confound this sprint has not yet tested
+
+The headline is a **codeword dissociation**: basket's axis passes at `rel −6`, button's does not, and
+at button's codeword row it ranks 10 of 12 (S-097). But every basket arm ran at **L18** and every
+button arm at **L20** — the layers were chosen independently per codeword as each one's TRAIN argmax.
+So "basket ≠ button" and "L18 ≠ L20" are **perfectly confounded across every comparison in D12 and
+S-097**. S-079 listed this as remedy 3 and it has never been run.
+
+If button's axis passes at **L18**, the dissociation is about the **layer**, and the codeword framing —
+including the phrase "codeword dissociation" carried in prohibition 21 and in every summary since
+S-079 — is wrong and must be withdrawn. If it fails at L18 as it does at L20, the codeword framing
+survives a test that could have killed it.
+
+**`configs/dcs_csi_axis_button_behavioral_L18.pt`** (new, 53 bases): the same committed producer, same
+corpus, same readout, same site `rel-6`, same seed, same λ, same 67 TRAIN domains, `--force-layer 18`.
+Verified: `layer_forced: True`, `selected_layer: 18`, 22 random + 24 shuffled controls, and
+`cand_rank1` **differs** from the L20 file — which it must, since it is a different layer; an identical
+axis would have meant `--force-layer` was ignored.
+
+**Launched:** **902004** (group A: BASE/KO/KO_SELF/KO_FULL/KO_AXIS/KO_PLS/KO_ORTH) on n-304 and
+**902005** (group B: the 10-control family) on n-306, both button TRAIN at L18 with staging, one job
+per node.
+
+**Prediction fixed before the data, as in S-067 and S-083.** Button's L20 axis ranks **4 of 11** on
+both splits. If the layer is what matters, button-at-L18 should rank near 1. If the codeword is what
+matters, it should rank mid-distribution again. A mid-distribution result at L18 is the outcome that
+**preserves** the current claim; I am recording that I expect it, so that a pass cannot later be
+described as anything other than a surprise that overturns the framing.
+
+**Note on scope:** group B gives 10 controls (floor 0.0909), which **cannot certify at 0.05** — it can
+only show where button-at-L18 sits. If it lands at rank 1 the family will be extended to 46 to match;
+if it lands mid-distribution, that is already sufficient to retain the codeword framing, since the
+claim being tested is that it does **not** pass.
