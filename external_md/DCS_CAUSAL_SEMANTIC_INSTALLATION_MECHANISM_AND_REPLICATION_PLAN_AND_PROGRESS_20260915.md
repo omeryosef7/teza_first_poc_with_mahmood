@@ -5498,3 +5498,55 @@ the fileserver's failure mode caught my own.
 other respect. The S-083 refutation condition is unchanged and still pre-declared: **two or more of
 `SHUF12–23` above +0.00265 and the S-082 pass does not survive its correct comparator**; one leaves it
 INCONCLUSIVE; only zero certifies the binding subfamily at the 0.0400 floor.
+
+---
+
+## REVIEW R6 (adversarial, ~4h cadence) — attacking D12: the held-out pass is robust, the TRAIN pass turns on ONE domain
+
+Two attacks on the S-088 / D12 result, chosen because both could void it.
+
+### Attack 1: provenance — were any of the 30 VALIDATION controls damaged by the n-301 GPU fault?
+
+They were produced by jobs 897688/897689, which I **cancelled** during the incident, so "these arms
+come from a job I killed for corruption" is a fair objection. Audited every arm's completion time
+against the fault window (10:26–10:36) and its in-run failure histogram:
+
+- `897688`: **0** CUDA failures across all 12 arms. Two arms lost 1 row each to the norm-match
+  degeneracy guard — a legitimate, documented refusal.
+- `897689`: exactly **1** CUDA failure, in **`KO_SHUF10`** — which is **quarantined** and is **not**
+  one of the 30. Four other arms lost 1–2 rows to the degeneracy guard.
+
+Every control in the n30 analysis completed **before** the fault or was untouched by it. The objection
+does not survive. (`KO_SHUF7` finished at 10:30:11, inside the window, with only a degeneracy
+refusal — so it was checked individually rather than by time alone.)
+
+### Attack 2: is the rank driven by one domain? Leave-one-DOMAIN-out on the RANK itself
+
+`scripts/dcs_csi_rank_loo.py` (new) drops each domain in turn and **recomputes the candidate's rank**,
+not just its effect size — the rank is what the verdict rests on, so it is what must be perturbed.
+
+| split | n | full | LOO: rank stays 1 | worst single drop | candidate range |
+|---|---|---|---|---|---|
+| **TRAIN** | 67 | +0.00265, rank 1 of 35 | **66 of 67** | **`rail_depot` → rank 4** (+0.00203) | +0.00203 … +0.00294 |
+| **VALIDATION** | 23 | +0.00400, rank 1 of 31 | **23 of 23** | `airport_apron` → **rank 1** (+0.00275) | +0.00275 … +0.00438 |
+
+**The result inverts the intuition, and the inversion is the finding.** The split with **three times
+the domains** is the fragile one: removing a single domain out of 67 moves TRAIN from rank 1 to
+**rank 4**, which would turn its verdict from PASSES to DOES NOT PASS. The 23-domain **held-out**
+result does not move at all — rank 1 under every one of its 23 drops, with the worst case still
+comfortably top.
+
+**Consequence for what may be said.** D12 currently presents TRAIN and VALIDATION as two independent
+passes. They are not equally sturdy, and the paper-facing claim should lead with **VALIDATION**, which
+is both the held-out split *and* the robust one. TRAIN's rank should be quoted with its
+single-domain sensitivity attached. Added to the claim table as a caveat on D12 rather than a new row,
+because it qualifies an existing claim rather than establishing a new one.
+
+**What LOO does NOT show, stated so it is not over-read.** Leave-one-out probes the sensitivity of
+*this estimate on this sample*; it is not a population property and not a replication. A rank that
+survives 23 drops of 23 is evidence the estimate is not hostage to one domain — it is **not** evidence
+about domains outside the corpus, and it does not lower the attainable rank-p floor, which is still
+1/31 = 0.0323 and set by the number of controls.
+
+**Unchanged and still blocking:** prohibition 20. Neither attack touches the shuffled-only subfamily,
+which remains floor-limited on both splits until group K runs.
