@@ -5,7 +5,7 @@
 #   group C = the RANK-5 matched control distribution for KO_PLS         (10 arms + 1 anchor)
 #   group D = the POSITION ladder: full-state rescue at k of ~28 positions (7 arms)
 #   group E = POSITION IDENTITY: full-state rescue at ONE named rel_end position (5 arms)
-#   group F = LAYER control: BASE/KO/KO_FULL at a layer given as $5 (P1-j)
+#   group F = LAYER control: BASE/KO/KO_FULL at a layer given by CSI_LAYER=<n> (P1-j)
 #   group G = FINE SCAN of the span tail: rel -2,-3,-4,-5,-8 (5 arms)
 #   group H = the CODEWORD ROW (rel -10) + accounting-gap positions (6 arms)
 #   group I = EXTENDED control family to reach >=19 controls (24 arms)
@@ -54,7 +54,16 @@ for l in open(bank):
     if (r.get('query_kind')=='semantic_one_word' and r.get('bank_block')=='cds_n4_sow'
         and r.get('condition')=='natural_doublespeak' and r['prompt_id'] not in ex): n+=1
 print(n)")
-LAYER="${5:-}"
+# LAYER OVERRIDE IS AN ENV VAR, NOT $5 (DCS-CSI-076). It was $5, and group I later took $5 as its
+# half-selector -- so `... train I 1` silently meant "layer 1", and two basket control jobs ran at
+# L1/L2 instead of L18. A positional argument that means different things in different groups is
+# the bug; a named variable cannot collide with a group's own sub-selector.
+LAYER="${CSI_LAYER:-}"
+if [ -n "${5:-}" ] && [ "$GROUP" != "I" ]; then
+  echo "REFUSING: \$5 is a GROUP-SPECIFIC sub-selector (only group I uses it). To override the "\
+       "layer, set CSI_LAYER=<n> in the environment. See DCS-CSI-076." >&2
+  exit 2
+fi
 if [ -z "$LAYER" ]; then
   LAYER=$(python -c "import json;print(json.load(open('${AXIS%.pt}.json'))['selected_layer'])")
 else
@@ -130,7 +139,7 @@ elif [ "$GROUP" = "I" ]; then
   # the best attainable outcome and still cannot certify. The verdict named its own remedy -- >=19
   # controls -- and these are the extra arms. Same norm-matching, same layer, same positions; only
   # the number of draws changes.
-  # Split into halves ($5 = 1|2). A 24-arm / 12 h request pended 60 min on (Resources) and broke
+  # Split into halves ($5 = 1|2; group I is the ONLY group that reads $5 -- see DCS-CSI-076). A 24-arm / 12 h request pended 60 min on (Resources) and broke
   # the 30-minute rule; two 12-arm / 6 h requests schedule. Per S-045 a readout endpoint needs the
   # arms to share an ARCHITECTURE, not an allocation -- the anchor measured zero allocation drift --
   # so splitting costs nothing scientifically.

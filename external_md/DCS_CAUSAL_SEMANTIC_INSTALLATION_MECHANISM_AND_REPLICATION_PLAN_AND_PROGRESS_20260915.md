@@ -4462,3 +4462,79 @@ where a sprint starts fishing, so the guards are stated in advance:
 **Also launched: adversarial review round 4**, which this time audits the *claims* as well as the
 code — re-deriving S-072's position map, the `rel −10` identification and the 92.4 % arithmetic
 independently from raw `results.jsonl`, without reusing either of my analysers.
+
+---
+
+# S-076 — review round 4: **a LIVE BLOCKER caught mid-run**, plus five MAJORs. And the headline numbers all reproduced.
+
+`reports/DCS_CSI_CODE_REVIEW_PHASE1_R4.md`. This round audited the **claims** as well as the code.
+
+## BLOCKER R4-B1 — two jobs were running at the WRONG LAYER, right now
+
+S-073 made `$5` the **layer override**. S-074 then made `$5` group I's **half-selector**. So
+`... train I 1` silently meant **layer 1**. Confirmed from the running jobs' own headers:
+
+```
+JOB=897569 GROUP=I LAYER=1  ...  [layer-override] using L1
+JOB=897570 GROUP=I LAYER=2  ...  [layer-override] using L2
+```
+
+The basket extended controls were running at **L1 and L2 instead of L18**. **Cancelled**, two
+mis-parameterised run directories **quarantined** with their `rescue_layer` recorded, and relaunched
+— now verified `LAYER=18` in both headers. Group J (897576) was launched without `$5` and was
+**unaffected** (`LAYER=20`, confirmed).
+
+**Root cause, and the fix:** a positional argument that means different things in different groups.
+The layer override is now the environment variable **`CSI_LAYER`**, which cannot collide with a
+group's own sub-selector, and the launcher **refuses** a stray `$5` on any group but I. Had the
+subspace guard not been there, these arms would have produced plausible numbers at layer 1.
+
+## MAJOR R4-M2 — the position map had **no committed code and no artifact**
+
+Every number in S-059/063/066/069/072 — the sprint's most-cited mechanistic result — lived only as
+prose, computed in ad-hoc heredocs. **One grep hit repo-wide, and it was the launcher.** Those
+numbers bypassed `strict_run_dir`, the cross-arm key intersection, and every VOID check.
+
+**Fixed:** `scripts/dcs_csi_position_map.py`, which reruns the whole map under those guards and
+emits `reports/DCS_CSI_POSITION_MAP_button_train.json`. It additionally asserts that each named arm
+restored **exactly one** position, that the position matches the arm's name, that each ladder arm
+restored exactly *k*, and that `KO_POS28` and `KO_FULL` are **distinct directories** with identical
+output. Result: **every number reproduces, `PROBLEMS: none`** — 25 arms, one 670-key set, rel−10
++0.03289 (46.6 %), Σ16 = 92.4 %, ladder R² 0.99676, slope × 28 / `KO_FULL` = 0.984.
+
+## MAJOR R4-M3 — a circular remainder
+
+S-072 wrote *"the 12 unmeasured positions carry ≈ 7.6 %"*. That is just `100 − 92.4` — it **assumes
+the additivity it was cited to support**. The reviewer measured those positions from `KO_POS1`'s own
+draws and got **−0.00058 each**, with Σ over all 28 point estimates reaching **111.5 %** of
+`KO_FULL`. **The conclusion survives** (the measured positions really do sum to 92.4 %, and four
+really do carry 92.5 %) **but the number and its reasoning are withdrawn.** The new artifact refuses
+to compute the remainder by subtraction and says so in the field itself.
+
+## MAJOR R4-M5 — `rel_end` is SPAN-relative, documented as sequence-relative
+
+They coincide **only** because the query span ends at the final token; under
+`--rescue-positions demo` they differ by the whole query tail. Help text and code comments corrected;
+the published map is a **query-span** map and now says so.
+
+## MAJOR R4-M4 / R4-M6 — control ceiling and claim-table drift
+
+M4: group J has 13 controls → rank-p floor **0.0714**, so it cannot PASS at α = 0.05 — already
+stated in S-075, now also true of `KO_CW_PLS`, which has no rank-matched controls. M6: the claim
+table carried **none** of the position results and **none** of S-066's withdrawals. Added: rows
+**D9–D11**, and prohibitions **16–17** (the uniformity claims, and the `cw_query`-is-inert claim).
+
+## What reproduced
+
+The reviewer re-derived, with an independent loader and its own bootstrap: the codeword at `rel −10`
+semantic (670/670) and `rel −11` behavioural (180/180 **and** 3720/3720); **all 16 token
+identities**; **all 16 recoveries and pos/neg counts to the last digit**; Σ16 = 92.4 %; top four
+92.5 %; ladder R² 0.9971/0.9939; `KO_POS28 ≡ KO_FULL` on distinct dirs both splits; one 670-key set
+across 19 arms; rank 4/11 both splits; basket rank 1/11.
+
+**Plus a check the sprint had not run:** `KO_POS1` and the named-position arms agree on **401/401**
+shared rows — an independent proof of the `rel_end` arithmetic that does not go through my code at
+all.
+
+**Only the 7.6 % remainder failed to reproduce, and it was the one number derived by subtraction
+rather than measured.**

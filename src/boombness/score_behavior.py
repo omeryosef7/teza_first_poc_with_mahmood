@@ -2329,7 +2329,12 @@ def main() -> int:
                          "Donor and recipient are the SAME templated string, and DonorPatch "
                          "re-verifies token identity over the patched span before writing.")
     ap.add_argument("--rescue-rel-end-rows", default="",
-                    help="Restore only NAMED positions of the rescue span, by rel_end (-1 = last). "
+                    help="Restore only NAMED positions of the rescue span, by rel_end RELATIVE TO "
+                         "THE SPAN (-1 = last position OF THE SPAN, not of the sequence). With "
+                         "--rescue-positions query the two coincide, because the query span ends at "
+                         "the final token -- but that is a property of this bank, not of the flag, "
+                         "and under --rescue-positions demo they differ by the whole query tail "
+                         "(review R4-M5). "
                          "The position ladder's random subsets measure a position's AVERAGE "
                          "contribution; this measures whether specific positions differ. A row that "
                          "cannot supply every requested position is refused, never under-restored.")
@@ -3680,6 +3685,10 @@ def main() -> int:
                     # the probe sites use (-1 = last token of the span). A row that cannot supply
                     # every requested position is REFUSED, not silently under-restored -- an
                     # under-matched donor that shows no effect is an artifact of the under-matching.
+                    # SPAN-relative, not sequence-relative (review R4-M5). `_rpos` is the span,
+                    # so `len(_rpos) + rel` indexes within it. For --rescue-positions query these
+                    # coincide with sequence offsets only because the query span ends at the final
+                    # token; the published position map is a QUERY-span map and says so.
                     _want = parse_rel_end_rows(args.rescue_rel_end_rows,
                                                what="--rescue-rel-end-rows")
                     _sel = []
