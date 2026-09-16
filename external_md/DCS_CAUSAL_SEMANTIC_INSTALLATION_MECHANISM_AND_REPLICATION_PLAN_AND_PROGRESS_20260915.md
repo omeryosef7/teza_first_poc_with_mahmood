@@ -5726,3 +5726,70 @@ check and the job refuses, exactly as a bad fresh copy would. The cost is 15 G o
 behind per node, which is the honest trade and is written down here so it is not discovered later as
 litter. Given that n-305 is already at 0 G, **this is a real obligation, not a theoretical one** — if
 the sprint ends without the rack recovering, these copies should be removed.
+
+---
+
+## S-097 — S-078 RESOLVED: at button's codeword row the installation axis ranks 10 of 12. The negative is real, and the instrument was working
+
+S-078 recorded a **preliminary** negative — the low-dimensional component at button's codeword row
+looked negative, but with no control family it could not be distinguished from an arbitrary draw.
+Group J was to supply the controls; the n-301 fault took `CW_SHUF3`/`CW_SHUF4` (quarantined, S-084).
+**Eleven of the thirteen survived**, and eleven is enough to answer the question that was actually
+asked, so this was run on CPU from existing artifacts while the GPU jobs continue.
+
+`reports/DCS_CSI_REDERIVE_button_cwrow_train.json` — button TRAIN, **670 keys / 67 domains**, L20,
+`--rescue-rel-end-rows -10` (the codeword row), candidate `KO_CW_AXIS`, positive control `KO_CW_FULL`.
+
+**The instrument is capable here — this is not a null from a dead assay:**
+
+| gate | point | pos/neg | p |
+|---|---|---|---|
+| manipulation `KO − BASE` | −0.20704 | 0/67 | 5e−06 (at floor) |
+| positive control `KO_CW_FULL − KO` | **+0.03289** | **62/5** | 5e−06 (at floor) |
+
+Restoring the **whole state** at that single row recovers +0.03289 — the 46.6% figure D9 is built on.
+So the row carries a large, reliably-detectable effect, and the assay detects it.
+
+**The axis does not find it:**
+
+| | value |
+|---|---|
+| candidate `KO_CW_AXIS − KO` | **−0.00062** (negative) |
+| **pooled rank** | **10 of 12** (floor 0.0833) — **DOES NOT PASS** |
+| random-only rank | 8 of 9 |
+| shuffled-only rank | 3 of 4 |
+
+Four controls beat it outright (`CW_RAND6` +0.00095, `CW_SHUF0` +0.00072, `CW_RAND5` +0.00046,
+`CW_SHUF2` +0.00016) and the candidate sits below the middle of a distribution spanning
+−0.00135 … +0.00095. It is not merely "not significant" — it is **near the bottom** of its own controls.
+
+### Why this matters more than a null usually does
+
+This is the sharpest dissociation the sprint has produced, and it is **within one codeword**:
+
+- At the **fit offset** (`rel −6`, semantic), where the causal map says only **1.0%** of the effect
+  lives (D11), button's axis is unremarkable (rank 4 of 11, both splits).
+- At the **codeword row** (`rel −10`), where **46.6%** of the effect lives (D9), the same axis is
+  **rank 10 of 12** — worse than chance-typical.
+
+So the axis is not a weak version of the right direction that would sharpen if aimed at the right
+place. **Aimed at the position that carries the effect, on button, it is worse.** Whatever the
+codeword row's 46.6% is carried by, it is not this direction, and the whole-state arm proves something
+is there to find.
+
+**Combined with D12** (basket's axis is rank 1 of 35 / 1 of 31 at `rel −6`), the picture is a
+**codeword-by-position dissociation**, not a single effect of varying strength.
+
+### What may and may not be said
+
+**MAY:** On button TRAIN, at the codeword row that carries 46.6% of the knockout's effect, the rank-1
+installation axis recovers **−0.00062** and ranks **10 of 12** among its norm-matched controls, while
+the whole state at the same row recovers **+0.03289** (62/67 domains). The negative is not an
+instrument failure.
+
+**MAY NOT:** *"The axis is causally inert"* — it is top of its family on basket at `rel −6` (D12).
+*"The codeword row carries nothing low-dimensional"* — untested; this rules out **one** direction, the
+one fit at a different offset on a different prompt type. *"This replicates"* — **TRAIN only**; no
+held-out codeword-row family exists and none is queued. *"Rank 10 of 12 is significantly bad"* — the
+floor is 0.0833 and the test is one-sided-for-passing; a low rank is **descriptive**, not a p-value.
+S-078's status changes from *preliminary* to **resolved on TRAIN**.

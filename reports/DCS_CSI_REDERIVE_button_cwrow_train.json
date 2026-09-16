@@ -1,0 +1,85 @@
+{
+ "schema": "dcs_csi_rederive_subspace/1",
+ "tag_prefix": "csi1_button_train",
+ "split": "train",
+ "n_keys_common": 670,
+ "n_domains": 67,
+ "gates": {
+  "manipulation_ko_minus_base": {
+   "point": -0.20704,
+   "n_domains": 67,
+   "n_pos": 0,
+   "n_neg": 67,
+   "n_tied": 0,
+   "p_two_sided": 4.9999750001249995e-06,
+   "p_floor": 4.9999750001249995e-06,
+   "test_mode": "monte-carlo(200000)",
+   "p_at_its_floor": true
+  },
+  "positive_control_full_minus_ko": {
+   "point": 0.03289,
+   "n_domains": 67,
+   "n_pos": 62,
+   "n_neg": 5,
+   "n_tied": 0,
+   "p_two_sided": 4.9999750001249995e-06,
+   "p_floor": 4.9999750001249995e-06,
+   "test_mode": "monte-carlo(200000)",
+   "p_at_its_floor": true
+  }
+ },
+ "candidate_minus_ko": -0.00062,
+ "controls_minus_ko": {
+  "KO_CW_RAND0": -0.00086,
+  "KO_CW_RAND1": -0.0,
+  "KO_CW_RAND2": 0.0,
+  "KO_CW_RAND3": -2e-05,
+  "KO_CW_RAND4": -0.00036,
+  "KO_CW_RAND5": 0.00046,
+  "KO_CW_RAND6": 0.00095,
+  "KO_CW_RAND7": -0.00023,
+  "KO_CW_SHUF0": 0.00072,
+  "KO_CW_SHUF1": -0.00135,
+  "KO_CW_SHUF2": 0.00016
+ },
+ "ranks": {
+  "pooled": {
+   "rank": 10,
+   "of": 12,
+   "floor": 0.0833,
+   "certifiable_at_0.05": false,
+   "verdict": "DOES NOT PASS"
+  },
+  "random_only": {
+   "rank": 8,
+   "of": 9,
+   "floor": 0.1111,
+   "certifiable_at_0.05": false,
+   "verdict": "DOES NOT PASS"
+  },
+  "shuffled_only": {
+   "rank": 3,
+   "of": 4,
+   "floor": 0.25,
+   "certifiable_at_0.05": false,
+   "verdict": "DOES NOT PASS"
+  }
+ },
+ "run_dirs": {
+  "BASE": "csi1_button_train_BASE_20260915_190347_1702550",
+  "KO": "csi1_button_train_KO_20260915_191231_1703410",
+  "KO_CW_FULL": "csi1_button_train_KO_CW_FULL_20260916_064807_79371",
+  "KO_CW_AXIS": "csi1_button_train_KO_CW_AXIS_20260916_071058_82198",
+  "KO_CW_RAND0": "csi1_button_train_KO_CW_RAND0_20260916_074115_86923",
+  "KO_CW_RAND1": "csi1_button_train_KO_CW_RAND1_20260916_075550_88915",
+  "KO_CW_RAND2": "csi1_button_train_KO_CW_RAND2_20260916_081035_90903",
+  "KO_CW_RAND3": "csi1_button_train_KO_CW_RAND3_20260916_082510_94603",
+  "KO_CW_RAND4": "csi1_button_train_KO_CW_RAND4_20260916_083949_96637",
+  "KO_CW_RAND5": "csi1_button_train_KO_CW_RAND5_20260916_085515_100872",
+  "KO_CW_RAND6": "csi1_button_train_KO_CW_RAND6_20260916_091053_105669",
+  "KO_CW_RAND7": "csi1_button_train_KO_CW_RAND7_20260916_092559_108427",
+  "KO_CW_SHUF0": "csi1_button_train_KO_CW_SHUF0_20260916_094054_110443",
+  "KO_CW_SHUF1": "csi1_button_train_KO_CW_SHUF1_20260916_095621_113199",
+  "KO_CW_SHUF2": "csi1_button_train_KO_CW_SHUF2_20260916_101112_116569"
+ }
+}
