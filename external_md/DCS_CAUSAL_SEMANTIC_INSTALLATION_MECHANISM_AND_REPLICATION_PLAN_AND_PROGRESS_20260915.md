@@ -5291,3 +5291,62 @@ all `judge_status`, a different field on a different record. `check_all.py`: **a
 
 **Note for the S-088 claim:** nothing in this entry touches any scored value. The fix changes only
 what `DONE.json` records about a run's completeness, and every arm behind S-088 was written before it.
+
+---
+
+## S-090 — CORRECTION to S-088/S-089: the volume is FINE. The `n-30x` rack's NFS client is broken, and I proved it by measuring from inside the cluster instead of from the login node
+
+S-088 and S-089 both concluded "the `netapp2-244:/Netapp5_sharifm` volume is degraded, 94% full,
+delivering tens of MB/s to everything" and declared an external blocker on that basis. **Both
+measurements were taken on the LOGIN NODE.** A login-node read rate is evidence about the login
+node's NFS path, not about the fileserver and not about compute nodes — and I generalised it to both.
+
+`slurm_scripts/dcs_io_probe.slurm` (new, committed) runs the same `dd` **on a compute node**, plus a
+copy to node-local disk and a read back. Results, same file, same volume, same minute:
+
+| host | **cold NFS read** | node-local `/tmp` read |
+|---|---|---|
+| **rack-gww-dgx1** | **309 MB/s** | 4.2 GB/s |
+| login node | 28 MB/s | — |
+| **n-302** | **2.5 MB/s** | 7.2 GB/s |
+| **n-304** | **5.6 MB/s** | 12.3 GB/s |
+| **n-305** | **3.1 MB/s** | — |
+
+**The volume serves 309 MB/s to a node in a different rack at the same moment `n-30x` nodes get
+2.5–5.6 MB/s — a ~100x gap.** The fileserver is healthy. The `n-30x` rack's NFS client (or its
+uplink) is broken. S-088's "it is the fileserver, not any node" and S-089's "the volume is delivering
+tens of MB/s to everything" are both **WRONG and hereby withdrawn**; the correct statement is:
+
+> **BLOCKER-S090 (supersedes S-087/S-088/S-089's diagnosis): the `n-30x` GPU rack has a broken NFS
+> path. Nodes outside that rack read the same volume ~100x faster.**
+
+S-089's *reasoning* was sound — reading my own file, not just the shared snapshot, correctly ruled out
+"contention on a popular blob". What it could not rule out, and I did not think to test, was that
+**every one of those reads came through the same client**. One more measurement from a second vantage
+point was all it took, and I should have taken it before writing "the volume".
+
+The 28.2 / 27.8 MB/s stability I noted as "looks more like a throttle than a queue" was a real
+observation about the *login node* and is unrelated to the rack failure.
+
+### Why this matters scientifically, and why it does not simply unblock the sprint
+
+The sprint's hardware rule is that **compared generation arms must share GPU architecture** — the 34
+TRAIN controls and the 30 VALIDATION controls behind S-082 and S-088 all ran on **GeForce RTX 3090**.
+Every 3090 node in this cluster (`n-301`…`n-307`, `n-350`) is **in the broken rack**. The fast node,
+`rack-gww-dgx1`, is a different GPU generation, so running group K there would produce controls that
+**may not be pooled** with the 34 already in the family. Speed is available; *comparable* speed is not.
+
+So the blocker stands, but it is now correctly named and its shape is known:
+- It is **transient and rack-local** — `n-301` loaded this same model in ~4 minutes at 06:45 today,
+  so the rack was healthy this morning and degraded during the day. This is something to wait out and
+  re-probe, not to re-engineer around.
+- The **node-local staging** workaround is measured and available if the outage persists: `/tmp` on
+  these nodes is 439 G with 171 G free and reads at **7–12 GB/s**. A *sequential* copy of the 16 GB
+  snapshot is what the HF loader's *random mmap* access pattern is not — which is precisely why a
+  28 MB/s sequential figure and a 20-hour load are both true at once. At the currently measured
+  2.5–5.6 MB/s a staging copy would still take 1–2 hours, so it is a fallback, not the first move.
+
+**Next tick:** re-run `dcs_io_probe.slurm` against the 3090 nodes. Relaunch group K the moment any of
+them reports a cold-NFS rate in the hundreds of MB/s. `n-303`, `n-306` and `n-350` are still queued
+behind other users' jobs and have not been measured yet — they are not yet known to be broken, only
+unmeasured, and the difference is recorded rather than assumed.
