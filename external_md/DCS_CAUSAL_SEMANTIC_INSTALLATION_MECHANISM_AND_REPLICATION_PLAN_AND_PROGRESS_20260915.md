@@ -4700,3 +4700,34 @@ floor; candidate +2.90 sd above the control mean). Button's axis does not, on ei
 controls.** It is also, simultaneously, contradicted at the codeword row on button (S-078, where the
 same kind of candidate came back *negative*). Both are recorded; neither is being smoothed into the
 other.
+
+---
+
+## S-080 — hardening the basket pass: VALIDATION launched, and the control family is already growing to 34
+
+S-079's pass rests on a rank that turns on a single draw (p = 0.0435, *at* its floor; margin
++0.00061 over the best of 22 controls). Its three remedies, in the order S-079 listed them:
+
+**1. More controls — already in flight.** The two group-I halves are still producing: **22 random +
+12 shuffled = 34** controls when they finish, taking the attainable rank-p floor from **0.0435 to
+0.0286**. No new submission needed; the arms were queued before the result was read, which is the
+right order. If the candidate stays rank 1 of 35, the pass stops being floor-limited. If any of the
+remaining 12 lands above +0.00280, it drops to rank 2 — and that is exactly the fragility S-079
+flagged, now being tested rather than argued about.
+
+**2. Basket VALIDATION — launched.** Jobs **897658** (group A: `BASE, KO, KO_SELF, KO_FULL,
+KO_AXIS, KO_PLS, KO_ORTH`) and **897659** (group B: the 10-control family), both on the held-out
+230 rows / 23 domains at L18. This is the test S-079 called the one that matters most, and the
+reason is button's own history: on VALIDATION button's bare `KO_AXIS − KO` looked **better** than on
+TRAIN (+0.00134 vs +0.00040, one-sided p = 0.0438) and **still ranked 4 of 11** once its control
+family existed (S-053 → S-058). A bare contrast that improves out-of-sample says nothing until its
+controls are there.
+
+**3. The layer swap** (button at L18 / basket at L20 for the *subspace* contrast) remains queued
+behind these two.
+
+**Prediction fixed before the data, as in S-067:** if basket's axis is genuinely causal, it should
+rank at or near 1 in the held-out control family too. If it lands mid-distribution on VALIDATION the
+way button's did on both splits, then S-079's TRAIN pass is most likely the **one-in-23 outcome its
+own floor describes**, and the honest reading collapses to "no codeword passes its controls
+held-out". I would rather have that written down now than reconstruct it afterwards.
