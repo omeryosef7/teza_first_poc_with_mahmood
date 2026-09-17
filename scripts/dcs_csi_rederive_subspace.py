@@ -196,6 +196,17 @@ def main() -> int:
     ap.add_argument("--split", required=True, choices=("train", "validation"))
     ap.add_argument("--expect-n", type=int, required=True)
     ap.add_argument("--allow-short", type=int, default=3)
+    ap.add_argument("--direction", default="sufficiency", choices=("sufficiency", "necessity"),
+                    help="S-110 / PR-CSI-003, and re-implemented here rather than shared with the "
+                         "primary analyser -- exactly as the run-dir filters were, because a "
+                         "SIGN CONVENTION applied in one path and not the other would let the two "
+                         "paths 'agree' on a rank that one of them read upside down. "
+                         "`sufficiency` (default; what every committed number used): ADD the "
+                         "component back under a live knockout, reference arm --ko, stronger = "
+                         "MORE POSITIVE. `necessity`: REMOVE it from a clean forward, reference arm "
+                         "--base, stronger = MORE NEGATIVE. Reported values keep their natural "
+                         "sign in both directions; only the rank comparison and the capability "
+                         "gate are oriented.")
     ap.add_argument("--candidate", default="KO_AXIS")
     ap.add_argument("--ko", default="KO")
     ap.add_argument("--base", default="BASE")
@@ -245,38 +256,81 @@ def main() -> int:
                 "p_two_sided": p, "p_floor": floor, "test_mode": mode,
                 "p_at_its_floor": abs(p - floor) < 1e-12}
 
+    # ---- DIRECTION. Resolved once; four consequences, each at one site below.
+    #   1. the reference arm of the candidate/control/positive-control contrasts: KO -> BASE
+    #   2. the KEY NAMES those values are reported under, so a key never lies about its subtrahend
+    #   3. the rank comparison: `>=` (recovered at least as much) -> `<=` (dropped at least as much)
+    #   4. the capability gate: the whole-state move must be clearly POSITIVE -> clearly NEGATIVE
+    # The manipulation check is NOT a consequence: KO minus a clean forward must be negative either
+    # way. NOTHING is multiplied by -1 -- a removal that drops installation is reported NEGATIVE.
+    NEC = a.direction == "necessity"
+    ref = a.base if NEC else a.ko
+    ref_tag = "base" if NEC else "ko"
     gates = {"manipulation_ko_minus_base": summarise(a.ko, a.base),
-             "positive_control_full_minus_ko": summarise(a.full, a.ko)}
-    cand = round(sum(paired(a.candidate, a.ko)) / len(doms), 5)
-    ctls = {c: round(sum(paired(c, a.ko)) / len(doms), 5) for c in ctl_names}
+             "positive_control_full_minus_%s" % ref_tag: summarise(a.full, ref)}
+    _pc = gates["positive_control_full_minus_%s" % ref_tag]
+    # The independent path has no bootstrap CI, so capability is read off the point estimate and the
+    # sign-flip p -- a different route to the same demand as the primary path's CI check, which is
+    # the point of this file. A failing gate is CANNOT ANSWER for the direction (plan section 15),
+    # never a negative, so the per-family verdicts below are overwritten rather than printed.
+    instrument_capable = ((_pc["point"] < 0) if NEC else (_pc["point"] > 0)) \
+        and _pc["p_two_sided"] < 0.05
+    cand = round(sum(paired(a.candidate, ref)) / len(doms), 5)
+    ctls = {c: round(sum(paired(c, ref)) / len(doms), 5) for c in ctl_names}
 
     def rank_of(subset):
         vs = [ctls[c] for c in subset]
-        return 1 + sum(1 for v in vs if v >= cand), len(vs) + 1, 1.0 / (len(vs) + 1)
+        at_least_as_strong = (sum(1 for v in vs if v <= cand) if NEC
+                              else sum(1 for v in vs if v >= cand))
+        return 1 + at_least_as_strong, len(vs) + 1, 1.0 / (len(vs) + 1)
 
     fam = {"pooled": ctl_names,
            "random_only": [c for c in ctl_names if "RAND" in c],
            "shuffled_only": [c for c in ctl_names if "SHUF" in c]}
     ranks = {}
+    _cannot = ("CANNOT ANSWER -- the whole-state %s did not move installation %s (point %+.5f, "
+               "p=%.4g), so there is no capable instrument for the %s question (plan section 15). "
+               "This is NOT a negative result."
+               % ("removal" if NEC else "rescue", "DOWN" if NEC else "UP",
+                  _pc["point"], _pc["p_two_sided"], a.direction))
     for nm, sub in fam.items():
         if not sub:
             continue
         r, n, fl = rank_of(sub)
         ranks[nm] = {"rank": r, "of": n, "floor": round(fl, 4),
                      "certifiable_at_0.05": fl <= 0.05,
-                     "verdict": ("PASSES" if (r == 1 and fl <= 0.05) else
+                     "verdict": (_cannot if not instrument_capable else
+                                 "PASSES" if (r == 1 and fl <= 0.05) else
                                  "INCONCLUSIVE (floor-limited)" if r == 1 else
                                  "DOES NOT PASS")}
 
     out = {"schema": "dcs_csi_rederive_subspace/1", "tag_prefix": a.tag_prefix, "split": a.split,
            "n_keys_common": len(keys), "n_domains": len(doms), "gates": gates,
-           "candidate_minus_ko": cand, "controls_minus_ko": ctls, "ranks": ranks,
+           # P0.4: the artifact says which direction produced it, which arm every contrast
+           # subtracts and which way "stronger" points, beside the run-dir filters.
+           "direction": a.direction, "reference_arm": ref,
+           "stronger_candidate_is": "MORE NEGATIVE" if NEC else "MORE POSITIVE",
+           "sign_policy": ("values keep their natural sign; nothing is negated. Only the rank "
+                           "comparison and the capability gate are oriented by --direction."),
+           "instrument_capable": instrument_capable,
+           "identity_gate": ("SKIPPED -- no inert identity control exists for the necessity "
+                             "direction: the natural one (donor = clean, live = clean) IS the "
+                             "identity and is refused by the arm's own precondition (PR-CSI-003 "
+                             "required_gates.no_inert_identity_control_exists, S-110). This path "
+                             "never evaluated an identity gate in either direction; recorded so "
+                             "its absence here is not mistaken for a pass." if NEC else
+                             "not evaluated by this path in either direction (the primary "
+                             "analyser owns it); see dcs_csi_subspace_analyze.py"),
+           "candidate_minus_%s" % ref_tag: cand, "controls_minus_%s" % ref_tag: ctls,
+           "ranks": ranks,
            "run_dirs": {k: os.path.basename(v) for k, v in dirs.items()},
            "require_rescue_layer": a.require_rescue_layer, "require_slurm_job": jobs,
            "resolved_rescue_layers": {
                k: (json.load(open(os.path.join(v, "config.json"), encoding="utf-8"))
                    .get("args", {}).get("rescue_layer")) for k, v in dirs.items()}}
-    print(json.dumps({"gates": gates, "candidate_minus_ko": cand, "ranks": ranks}, indent=1))
+    print(json.dumps({"direction": a.direction, "reference_arm": ref, "gates": gates,
+                      "instrument_capable": instrument_capable,
+                      "candidate_minus_%s" % ref_tag: cand, "ranks": ranks}, indent=1))
     if a.out:
         json.dump(out, open(a.out, "w"), indent=1)
         print("wrote", os.path.relpath(a.out, REPO))

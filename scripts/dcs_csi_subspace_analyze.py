@@ -167,14 +167,36 @@ def row_meta(run_dir):
            "norm_match_keys": set(), "written_norm": [], "captured_frac": [],
            "degenerate_positions": 0, "n_rescue_positions": set(),
            "liveness_violations": 0, "models": set(), "knockout_scopes": set(),
-           "written_norm_by_pid": {}}
+           "written_norm_by_pid": {},
+           # S-110. The necessity arm re-aims the knockout-liveness contract at the DONOR capture,
+           # and says so per row in `hook_counters_measured_on`. The analyser used to report
+           # "knockout live on every row" without recording WHICH forward that describes, which is
+           # exactly the mislabelled-liveness trap S-110 found in the scorer. It is a fact about
+           # the arm, so it is read off the rows and carried, for both directions.
+           "counters_measured_on": set(), "necessity_directions": set(),
+           "necessity_violation_rows": 0, "necessity_readout_knockout_edits": 0,
+           "necessity_donor_delta_norm_min": None, "necessity_patch_positions_min": None,
+           "necessity_rows": 0}
     pre = []
+    nec_delta, nec_pos = [], []
     with open(os.path.join(run_dir, "results.jsonl")) as f:
         for line in f:
             r = json.loads(line)
             out["n_rows"] += 1
             out["models"].add(r.get("model"))
             out["knockout_scopes"].add(r.get("knockout_scope"))
+            out["counters_measured_on"].add(r.get("hook_counters_measured_on"))
+            if r.get("necessity_direction") is not None:
+                out["necessity_rows"] += 1
+                out["necessity_directions"].add(r.get("necessity_direction"))
+                if r.get("necessity_violations"):
+                    out["necessity_violation_rows"] += 1
+                _rk = r.get("necessity_readout_knockout_delta") or {}
+                out["necessity_readout_knockout_edits"] += abs(_rk.get("n_edits") or 0)
+                if r.get("necessity_donor_delta_norm") is not None:
+                    nec_delta.append(r["necessity_donor_delta_norm"])
+                if r.get("necessity_patch_positions_written") is not None:
+                    nec_pos.append(r["necessity_patch_positions_written"])
             if r.get("hook_liveness_violations"):
                 out["liveness_violations"] += 1
             if r.get("hook_n_prefill_edits") is not None:
@@ -203,8 +225,10 @@ def row_meta(run_dir):
                 out.setdefault("basis_meta", set()).add(
                     json.dumps(r["rescue_basis_meta"], sort_keys=True))
     out["prefill_edits_min"] = min(pre) if pre else None
+    out["necessity_donor_delta_norm_min"] = round(min(nec_delta), 6) if nec_delta else None
+    out["necessity_patch_positions_min"] = min(nec_pos) if nec_pos else None
     for k in ("rescue_layers", "basis_keys", "norm_match_keys", "models", "knockout_scopes",
-              "n_rescue_positions"):
+              "n_rescue_positions", "counters_measured_on", "necessity_directions"):
         out[k] = sorted(x for x in out[k] if x is not None)
     bm = out.pop("basis_meta", None)
     if bm:
@@ -231,6 +255,176 @@ def holm(pairs):
     return out
 
 
+# =================================================================== DIRECTION (S-110 / PR-CSI-003)
+# Every arm this analyser was written for tests SUFFICIENCY: under a live knockout, ADD BACK the
+# clean state's component along the installation axis, so the reference arm is KO and "the candidate
+# did something" means a LARGER POSITIVE difference from KO. The Phase-2 NECESSITY arm
+# (`--rescue-donor ko`) starts from a CLEAN forward and REMOVES the installed component, so its
+# reference arm is BASE and "the candidate did something" means a LARGER NEGATIVE difference.
+#
+# THE RULE THIS FILE FOLLOWS, and it is the whole point: the DECISIONS are oriented, the REPORTED
+# NUMBERS ARE NOT. No contrast is multiplied by -1 anywhere. A removal that drops installation
+# appears in the artifact as a negative number, because a reader who sees "+0.09" against an arm
+# labelled "removal" will misread it, and no amount of documentation fixes a sign that lies.
+#
+# Consequences, each implemented below at exactly one site:
+#   * the reference arm of the candidate/control/positive-control contrasts moves KO -> BASE, and
+#     the contrast KEY NAMES move `_minus_ko` -> `_minus_base` with it, so no key ever claims a
+#     subtrahend it did not use;
+#   * `instrument_capable` flips from (point > 0 and ci95_lo > 0) to (point < 0 and ci95_hi < 0);
+#   * the control-rank comparison flips from `>=` to `<=`;
+#   * the specificity one-sided alternative flips from candidate-control>0 to control-candidate>0;
+#   * the identity gate is SKIPPED and the reason is written into the artifact (no inert identity
+#     control exists for this direction -- see PR-CSI-003 required_gates);
+#   * the recovery fraction's denominator changes sign; see `effect_fraction`.
+# The MANIPULATION check does NOT move: NEC_KO - NEC_BASE is a knockout minus a clean forward in
+# both directions, and must be negative in both.
+
+DIRECTIONS = ("sufficiency", "necessity")
+
+
+def direction_profile(direction):
+    """The direction-dependent vocabulary and orientation, in ONE place.
+
+    `ref_role` names which arm role every candidate/control contrast subtracts; `ref_tag` is the
+    suffix that goes into the contrast key names so that a key can never misdescribe its own
+    subtrahend; `effect_word` names what the contrast measures ("recovery" of installation under a
+    knockout vs "removal" of it under a clean forward); `stronger_is` records the orientation in
+    the artifact itself so a reader is never left to infer it.
+    """
+    if direction == "necessity":
+        return {"direction": "necessity", "ref_role": "base_arm", "ref_tag": "base",
+                "effect_word": "removal", "stronger_is": "MORE NEGATIVE",
+                "expected_denominator_sign": -1,
+                "contract": "h' = h_clean - P_w(h_clean - h_ko): start CLEAN, REMOVE the installed "
+                            "component, expect installation to DROP. Reference arm is BASE."}
+    if direction == "sufficiency":
+        return {"direction": "sufficiency", "ref_role": "ko_arm", "ref_tag": "ko",
+                "effect_word": "recovery", "stronger_is": "MORE POSITIVE",
+                "expected_denominator_sign": +1,
+                "contract": "h' = h_ko + P_w(h_clean - h_ko): start under a live KNOCKOUT, ADD BACK "
+                            "the installed component, expect installation to RISE. Reference arm "
+                            "is KO."}
+    raise SystemExit("unknown --direction %r" % direction)
+
+
+def effect_fraction(profile, doms, full, ref, cand, n_boot, seed, min_denominator):
+    """`rederive.recovery_fraction` with a SIGN-AWARE denominator guard in front of it.
+
+    WHAT THE EXISTING GUARD DOES WITH A NEGATIVE DENOMINATOR, checked rather than assumed.
+    `rederive.recovery_fraction` rejects on `abs(den_point) < min_denominator`, so the MAGNITUDE
+    half of the guard is already sign-agnostic: a necessity denominator of -0.10 is accepted, and
+    the returned ratio num/den is then CORRECTLY SIGNED for either direction -- with numerator and
+    denominator both negative, a removal that follows the whole-state removal reads as a POSITIVE
+    fraction of it, exactly as a rescue that follows the whole-state add does in the sufficiency
+    direction. The two directions' fractions are therefore directly comparable, and the magnitude
+    guard did NOT need to be made sign-aware. It is also the guard that 164 committed results were
+    produced with, and moving it is the kind of change P0.4 exists to prevent.
+    #
+    WHAT IT DOES NOT DO, and this is the hole. It never checks that the denominator has the sign
+    the DIRECTION requires. A denominator of +0.10 in the NECESSITY direction means the whole-state
+    removal RAISED installation -- a broken instrument -- yet it clears `|den| >= 0.01` and yields
+    a plausible-looking fraction; the mirror case (negative denominator under sufficiency) is the
+    same hazard. That is precisely the "silently return a nonsense fraction" outcome, so it is
+    refused HERE, explicitly, with the sign expected and the sign observed both recorded.
+    #
+    This addition cannot move any committed number: for sufficiency `den` IS
+    `positive_control_full_minus_ko["point"]`, which the `instrument_capable` gate already requires
+    to be > 0, so a refusal here can only ever appear inside a report whose VERDICT is already
+    CANNOT ANSWER. Audited on the record: all twelve committed reports carrying a
+    `recovery_fraction_candidate_of_full` have den in [0.033, 0.123] and status "ok".
+    """
+    want = profile["expected_denominator_sign"]
+    den_point = sum(full[d] - ref[d] for d in doms) / len(doms)
+    if den_point * want <= 0:
+        return {"status": "CANNOT ANSWER",
+                "reason": "the %s fraction's denominator (FULL - %s) = %+.5f, but the %s direction "
+                          "requires a %s denominator: the whole-state %s did not move installation "
+                          "in the direction the arm is built to test, so the instrument is broken "
+                          "and the ratio is not an estimate of anything (plan section 15). NOT a "
+                          "number with a wide CI, and NOT a negative result."
+                          % (profile["effect_word"], profile["ref_tag"].upper(), den_point,
+                             profile["direction"], "NEGATIVE" if want < 0 else "POSITIVE",
+                             "removal" if want < 0 else "add-back"),
+                "denominator_point": round(den_point, 5),
+                "expected_denominator_sign": "negative" if want < 0 else "positive",
+                "direction": profile["direction"]}
+    return rederive.recovery_fraction(doms, full, ref, cand, n_boot, seed,
+                                      min_denominator=min_denominator)
+
+
+# The verdict strings, paired with the branch that emits them, per direction. REVIEW R3-B1 found a
+# PASS branch that was dead code while its FAIL text asserted something false ("It is INSIDE the
+# controls, not above them" printed at rank 1). Keeping the text beside the key that selects it is
+# what makes that reviewable: there is exactly one string per branch per direction, and the
+# direction-specific words ("above"/"below", "recover"/"drop") cannot leak across because the
+# tables are separate. The sufficiency strings are BYTE-IDENTICAL to the ones that produced the 164
+# committed results -- see test_necessity_direction.py, which reproduces one of them end to end.
+VERDICT_TEXT = {
+    "sufficiency": {
+        "cannot_answer": ("CANNOT ANSWER -- the whole-state rescue itself does not recover "
+                          "installation, so there is no capable instrument for the subspace "
+                          "question. This is NOT a negative result."),
+        "rank_pass": ("PRIMARY PASSES on split={split} -- candidate is strictly the largest "
+                      "of {n} controls (rank p={rank_p:.4g} < 0.05)"),
+        "rank_inconclusive": (
+            "PRIMARY INCONCLUSIVE on split={split} -- the candidate is strictly the LARGEST of "
+            "its {n} controls, but with only {n} controls the attainable rank-p floor is "
+            "{floor:.4g}, which is above 0.05. Being top of the distribution is real; certifying "
+            "it at alpha=0.05 needs at least {min_controls} controls. NOT a pass and NOT a failure."),
+        "rank_fail": (
+            "PRIMARY DOES NOT PASS on split={split} -- the candidate ranks {rank} of {of} in its own "
+            "control distribution (rank p={rank_p:.4g}, attainable floor {floor:.4g}): {n_tied_or_better} control(s) "
+            "recover at least as much as it does. It is INSIDE the controls, not above "
+            "them."),
+        "single_pass": ("PRIMARY PASSES on split={split} -- candidate beats its norm-matched "
+                        "comparator (NOTE: only {n} control(s) present; a single comparator is "
+                        "an arbitrary draw when the control spread is wide -- S-050)"),
+        "single_fail": ("PRIMARY DOES NOT PASS on split={split} -- see p, p_floor and the CI "
+                        "before calling this a negative"),
+    },
+    "necessity": {
+        "cannot_answer": ("CANNOT ANSWER -- the whole-state REMOVAL does not DROP installation "
+                          "(KO_NEC_FULL - NEC_BASE is not clearly negative), so there is no capable "
+                          "instrument for the necessity question. Plan section 15 and PR-CSI-003's "
+                          "decision_rule both say this outcome is CANNOT ANSWER for the whole "
+                          "direction: report the feasibility numbers and stop. This is NOT a "
+                          "negative result and the candidate's number must not be read."),
+        "rank_pass": ("PRIMARY PASSES on split={split} -- the candidate's removal is strictly the "
+                      "LARGEST DROP in installation of {n} controls, i.e. the single most NEGATIVE "
+                      "value in the distribution (rank p={rank_p:.4g} < 0.05)"),
+        "rank_inconclusive": (
+            "PRIMARY INCONCLUSIVE on split={split} -- the candidate's removal is strictly the "
+            "LARGEST DROP of its {n} controls, but with only {n} controls the attainable rank-p "
+            "floor is {floor:.4g}, which is above 0.05. Being the most negative of the distribution "
+            "is real; certifying it at alpha=0.05 needs at least {min_controls} controls. NOT a "
+            "pass and NOT a failure. PR-CSI-003 declared this floor (0.10) in advance."),
+        "rank_fail": (
+            "PRIMARY DOES NOT PASS on split={split} -- the candidate ranks {rank} of {of} in its own "
+            "control distribution (rank p={rank_p:.4g}, attainable floor {floor:.4g}): "
+            "{n_tied_or_better} control(s) drop installation at least as much as it does. It is "
+            "INSIDE the controls, not below them. Per PR-CSI-003 this is the PREDICTED outcome and "
+            "must be reported as UNDERPOWERED-or-null, not as evidence the axis is non-causal."),
+        "single_pass": ("PRIMARY PASSES on split={split} -- the candidate drops installation more "
+                        "than its norm-matched comparator (NOTE: only {n} control(s) present; a "
+                        "single comparator is an arbitrary draw when the control spread is wide -- "
+                        "S-050)"),
+        "single_fail": ("PRIMARY DOES NOT PASS on split={split} -- see p, p_floor and the CI "
+                        "before calling this a negative"),
+    },
+}
+
+IDENTITY_GATE_SKIP_REASON = (
+    "SKIPPED BY DESIGN, not absent. There is no inert identity control for the necessity "
+    "direction: the natural one (donor = clean, live = clean) IS the identity and is refused by "
+    "the necessity arm's own precondition, so no run can play the KO_SELF role. Recorded in "
+    "PR-CSI-003 required_gates.no_inert_identity_control_exists and in S-110. The nearest "
+    "available control is the norm-matched orthogonal comparator, which is NOT an inertness check "
+    "-- it is a dose-matched alternative direction. This is a real limitation of the direction, "
+    "and it means the sufficiency direction's proof that 'the patch writes what it read' is NOT "
+    "available here; the arm's own four legs (necessity_violations) are what stand in its place.")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--codeword", required=True)
@@ -239,6 +433,18 @@ def main() -> int:
     ap.add_argument("--expect-n", type=int, required=True)
     ap.add_argument("--arms", required=True,
                     help="comma list of arm names, e.g. BASE,KO,KO_SELF,KO_FULL,KO_AXIS,KO_ORTH,...")
+    ap.add_argument("--direction", default="sufficiency", choices=DIRECTIONS,
+                    help="S-110 / PR-CSI-003. `sufficiency` (the default, and what every number in "
+                         "the record was produced with): the arms ADD BACK the installed component "
+                         "under a live knockout, the reference arm is --ko-arm, and a LARGER "
+                         "POSITIVE difference means the candidate did something. `necessity` "
+                         "(--rescue-donor ko arms: NEC_BASE, NEC_KO, KO_NEC_FULL, KO_NEC_AXIS, "
+                         "KO_NEC_ORTH, KO_NEC_SHUF*, KO_NEC_RAND*): the arms REMOVE the installed "
+                         "component from a CLEAN forward, the reference arm is --base-arm, and a "
+                         "LARGER NEGATIVE difference means the candidate did something. Reported "
+                         "numbers keep their natural sign in BOTH directions -- only the decisions "
+                         "are oriented -- so a removal that drops installation is a NEGATIVE "
+                         "number in the artifact.")
     ap.add_argument("--candidate-arm", default="KO_AXIS")
     ap.add_argument("--comparator-arm", default="KO_ORTH")
     ap.add_argument("--full-arm", default="KO_FULL")
@@ -248,7 +454,10 @@ def main() -> int:
     ap.add_argument("--split", default="train", choices=("train", "validation"))
     ap.add_argument("--control-prefixes", default="KO_SHUF,KO_RAND",
                     help="arm-name prefixes forming the control distribution for the specificity "
-                         "test. Use KO_R5RAND,KO_R5SHUF when the candidate is the rank-5 subspace.")
+                         "test. Use KO_R5RAND,KO_R5SHUF when the candidate is the rank-5 subspace, "
+                         "and KO_NEC_SHUF,KO_NEC_RAND with --direction necessity. Deliberately NOT "
+                         "defaulted per direction: the family is part of the preregistration and "
+                         "naming it is the caller's job.")
     ap.add_argument("--allow-short", type=int, default=0,
                     help="accept arms short by at most N rows, provided DONE.json's count matches "
                          "the rows on disk. The cross-arm key intersection makes a short arm safe; "
@@ -287,6 +496,42 @@ def main() -> int:
     _sel = {"require_rescue_layer": a.require_rescue_layer, "require_slurm_jobs": _jobs}
     assign = lpm.load_split()
     arms = [x for x in a.arms.split(",") if x]
+
+    # ---- DIRECTION, resolved ONCE and then carried, so no site can disagree with another.
+    prof = direction_profile(a.direction)
+    NEC = a.direction == "necessity"
+    ref_arm = a.base_arm if NEC else a.ko_arm          # subtrahend of every candidate/control contrast
+    ref_tag = prof["ref_tag"]                          # and the suffix in their key names
+    for role, nm in (("--base-arm", a.base_arm), ("--ko-arm", a.ko_arm),
+                     ("--full-arm", a.full_arm), ("--candidate-arm", a.candidate_arm)):
+        if nm not in arms:
+            raise SystemExit("REFUSING: %s %r is not among --arms %s -- the %s direction needs it"
+                             % (role, nm, arms, a.direction))
+    # The SKIPPED gate is built here, not where the gates are evaluated, so that it is present in
+    # the artifact even on the VOID early-return path. A gate that quietly disappears is worse than
+    # one that fails, and it disappears most easily out of the reports nobody re-runs.
+    gates_skipped = {}
+    if NEC:
+        gates_skipped["identity_check"] = {
+            "gate": "identity_check (an inert self-patch must move installation by ~0)",
+            "status": "SKIPPED",
+            "reason": IDENTITY_GATE_SKIP_REASON,
+            "prereg": "configs/dcs_csi_pr003_necessity_basket.json"
+                      " -> required_gates.no_inert_identity_control_exists",
+            "nearest_available_control": a.comparator_arm,
+            "what_stands_in_its_place": ("the necessity arm's own four legs, re-asserted from the "
+                                         "rows in the VOID block: donor knockout live, readout "
+                                         "knockout delta exactly 0, patch fired, and "
+                                         "||h_donor - h_live|| > 0 at the patched positions"),
+        }
+    if NEC and a.self_arm in arms:
+        # A gate that quietly disappears is worse than one that fails, and an arm that pretends to
+        # be the missing gate is worse than both: under `--rescue-donor ko` the inert identity
+        # (donor = clean, live = clean) IS the identity and is refused by the arm's own
+        # precondition, so anything named as the self arm here cannot be what the gate needs.
+        raise SystemExit("REFUSING: --direction necessity was given --self-arm %r among --arms, but "
+                         "no inert identity control can exist for this direction.\n%s"
+                         % (a.self_arm, IDENTITY_GATE_SKIP_REASON))
     dirs, dmeans, meta, kv = {}, {}, {}, {}
     keep_keys = None
     if a.option_mass_floor > 0.0:
@@ -387,8 +632,13 @@ def main() -> int:
             void.append("%s: %d distinct model revisions" % (arm, len(m["models"])))
         if arm != a.base_arm:
             if not m["prefill_edits_min"]:
-                void.append("%s: knockout not live on every row (min prefill edits=%r)"
-                            % (arm, m["prefill_edits_min"]))
+                # S-110: under --direction necessity these counters describe the DONOR capture, not
+                # the readout, and a message that does not say so is the mislabelled-liveness trap
+                # in the analyser instead of the scorer. The forward is named from the rows' own
+                # `hook_counters_measured_on` rather than from the flag.
+                void.append("%s: knockout not live on every row of the %s (min prefill edits=%r)"
+                            % (arm, (m["counters_measured_on"] or ["readout forward"])[0],
+                               m["prefill_edits_min"]))
             if m["decode_edits_total"]:
                 void.append("%s: %d decode-time edits (must be 0)" % (arm, m["decode_edits_total"]))
         # REVIEW R2-M1. The identity arm was EXEMPT from this check -- and it is precisely the arm
@@ -433,6 +683,59 @@ def main() -> int:
     test_in = [d for d in doms if assign.get(d) == "test"]
     if test_in:
         void.append("TEST LEAK: %s" % test_in[:5])
+
+    # ---- THE DIRECTION MUST MATCH THE ARMS ON DISK ---------------------------------------------
+    # The sign convention is the single most dangerous thing about this arm: a necessity run read
+    # as sufficiency produces a full, VOID-free contrast table in which every decision is inverted
+    # and every number still looks plausible. `--direction` is therefore not taken on trust -- it
+    # is checked against what the rows say the run actually did (`necessity_direction`, written by
+    # score_behavior.py only under `--rescue-donor ko`). Both halves: a necessity arm read as
+    # sufficiency VOIDs, and a sufficiency arm read as necessity VOIDs.
+    _nec_arms = [x for x in arms if meta[x]["necessity_rows"]]
+    if not NEC:
+        if _nec_arms:
+            void.append("--direction sufficiency but these arms' rows declare necessity_direction "
+                         "(they REMOVED the component from a clean forward, so every sign here "
+                         "would be inverted): %s"
+                         % {x: meta[x]["necessity_directions"] for x in _nec_arms})
+    else:
+        _expect_nec = [x for x in arms if x not in (a.base_arm, a.ko_arm)]
+        for arm in _expect_nec:
+            m = meta[arm]
+            if m["necessity_rows"] != m["n_rows"]:
+                void.append("--direction necessity but %s declares necessity_direction on %d of "
+                            "its %d rows -- it is not (entirely) a necessity arm"
+                            % (arm, m["necessity_rows"], m["n_rows"]))
+                continue
+            if m["necessity_directions"] != ["remove-under-clean"]:
+                void.append("%s records necessity_direction %s, not ['remove-under-clean']"
+                            % (arm, m["necessity_directions"]))
+            # The arm's own four legs (S-110), re-asserted from the rows the analyser reads rather
+            # than trusted from the scorer's run-level verdict. A gate that never ran is not a pass.
+            if m["necessity_violation_rows"]:
+                void.append("%s: %d rows carry necessity_violations -- the arm's own legs failed"
+                            % (arm, m["necessity_violation_rows"]))
+            if m["necessity_readout_knockout_edits"]:
+                void.append("%s: leg 2 -- the READOUT forward moved the knockout counters by %d "
+                            "edits (must be exactly 0, else this is the sufficiency arm with its "
+                            "donor swapped)" % (arm, m["necessity_readout_knockout_edits"]))
+            if not m["necessity_patch_positions_min"]:
+                void.append("%s: leg 3 -- min necessity_patch_positions_written = %r; a patch that "
+                            "never fired is an unintervened clean forward wearing a necessity label"
+                            % (arm, m["necessity_patch_positions_min"]))
+            if not m["necessity_donor_delta_norm_min"]:
+                void.append("%s: leg 4 -- min ||h_donor - h_live|| = %r at the patched positions; "
+                            "there was nothing to remove, so a null is an instrument artifact"
+                            % (arm, m["necessity_donor_delta_norm_min"]))
+            if m["counters_measured_on"] != ["donor_capture_forward"]:
+                void.append("%s: hook_counters_measured_on = %s, so the knockout-liveness counters "
+                            "this analyser checked do NOT describe the donor capture -- the "
+                            "mislabelled-liveness trap S-110 found" % (arm, m["counters_measured_on"]))
+        for arm in (a.base_arm, a.ko_arm):
+            if meta[arm]["necessity_rows"]:
+                void.append("%s is the %s reference/floor arm and must be a plain forward, but its "
+                            "rows declare necessity_direction %s"
+                            % (arm, a.direction, meta[arm]["necessity_directions"]))
 
     # ---- REVIEW R2-M2: ARM IDENTITY. The analyser trusted the arm LABEL and never checked that
     # the arms actually differ in the way their names claim. The reviewer produced a run set in
@@ -519,9 +822,25 @@ def main() -> int:
                           "scored_domains_also_in_fit": n_overlap,
                           "evaluation_is_in_sample": (None if n_overlap is None else n_overlap > 0)}
 
-    out = {"schema": "dcs_csi_subspace/1", "prereg": "configs/dcs_csi_pr001_subspace_rescue.json",
+    out = {"schema": "dcs_csi_subspace/1",
+           "prereg": ("configs/dcs_csi_pr003_necessity_basket.json" if NEC
+                      else "configs/dcs_csi_pr001_subspace_rescue.json"),
            "in_sample": in_sample,
            "codeword": a.codeword, "split": a.split, "arms": arms,
+           # P0.4 / review R8-m5: a report that is not self-describing about how it was produced is
+           # what that item exists to prevent, and the DIRECTION is the single fact that decides
+           # what every sign in this file means. Recorded beside the run-dir filters, with the
+           # reference arm it implies and the orientation spelled out in words.
+           "direction": a.direction,
+           "direction_contract": prof["contract"],
+           "reference_arm": ref_arm,
+           "reference_arm_role": prof["ref_role"],
+           "stronger_candidate_is": prof["stronger_is"],
+           "gates_skipped": gates_skipped,
+           "sign_policy": ("reported contrasts keep their NATURAL sign in both directions; nothing "
+                           "is multiplied by -1. Only the DECISIONS (gates, ranks, verdicts) are "
+                           "oriented. Under --direction necessity a candidate that drops "
+                           "installation therefore appears here as a NEGATIVE number."),
            "option_mass_floor": a.option_mass_floor,
            "run_dirs": {k: os.path.basename(v) for k, v in dirs.items()},
            # REVIEW R8-m5. The independent path recorded its filters and this one did not, so the
@@ -554,28 +873,42 @@ def main() -> int:
                   "p_at_its_floor": e["p_two_sided"] <= e["p_floor"] * (1 + 1e-9)})
         return b
 
+    # The contrast KEY NAMES carry their own subtrahend (`..._minus_ko` / `..._minus_base`) so that
+    # a key can never misdescribe the arithmetic that produced it. For sufficiency `ref_tag` is
+    # "ko" and every name below is byte-identical to the one in the 164 committed results.
+    POS_KEY = "positive_control_full_minus_%s" % ref_tag
+    CAND_KEY = "candidate_minus_%s" % ref_tag
+    EFFECT_KEY = "%s_%%s_minus_%s" % (prof["effect_word"], ref_tag)   # e.g. recovery_KO_SHUF0_minus_ko
+    DIST_KEY = "control_%s_distribution" % prof["effect_word"]
+
     C = {}
-    # ---- gate 1: manipulation check ------------------------------------------------------------
+    # ---- gate 1: manipulation check. SAME in both directions, and deliberately so: KO minus a
+    #      clean forward must be negative whether we are about to add the component back or remove
+    #      it, so this is the one sign site the direction does NOT move.
     C["manipulation_ko_minus_base"] = contrast(a.ko_arm, a.base_arm)
-    # ---- gate 2: identity control --------------------------------------------------------------
-    C["identity_self_minus_ko"] = contrast(a.self_arm, a.ko_arm)
-    # ---- gate 3: instrument capability ---------------------------------------------------------
-    C["positive_control_full_minus_ko"] = contrast(a.full_arm, a.ko_arm)
+    gates = {"manipulation_check": C["manipulation_ko_minus_base"]["point"] < 0}
+    # ---- gate 2: identity control. Exists for sufficiency; SKIPPED-AND-RECORDED for necessity
+    #      (the record was written into `out["gates_skipped"]` above, before any early return).
+    if not NEC:
+        C["identity_self_minus_ko"] = contrast(a.self_arm, a.ko_arm)
+        gates["identity_check"] = abs(C["identity_self_minus_ko"]["point"]) <= a.self_inert_tol
+    # ---- gate 3: instrument capability. THE SIGN FLIPS HERE. Sufficiency: the whole-state ADD must
+    #      RAISE installation (point > 0 and the LOWER ci95 bound > 0). Necessity: the whole-state
+    #      REMOVAL must DROP it (point < 0 and the UPPER ci95 bound < 0). Same demand -- "the CI
+    #      excludes zero on the side the arm is built to move" -- read off the other end.
+    C[POS_KEY] = contrast(a.full_arm, ref_arm)
+    _pc = C[POS_KEY]
+    gates["instrument_capable"] = ((_pc["point"] < 0 and _pc["ci95"][1] < 0) if NEC
+                                   else (_pc["point"] > 0 and _pc["ci95"][0] > 0))
     # ---- the preregistered PRIMARY -------------------------------------------------------------
     C["PRIMARY_candidate_minus_comparator"] = contrast(a.candidate_arm, a.comparator_arm)
     # ---- secondary -----------------------------------------------------------------------------
-    C["candidate_minus_ko"] = contrast(a.candidate_arm, a.ko_arm)
+    C[CAND_KEY] = contrast(a.candidate_arm, ref_arm)
     for arm in arms:
         if arm in (a.base_arm, a.ko_arm, a.self_arm):
             continue
-        C["recovery_%s_minus_ko" % arm] = contrast(arm, a.ko_arm)
+        C[EFFECT_KEY % arm] = contrast(arm, ref_arm)
 
-    gates = {
-        "manipulation_check": C["manipulation_ko_minus_base"]["point"] < 0,
-        "identity_check": abs(C["identity_self_minus_ko"]["point"]) <= a.self_inert_tol,
-        "instrument_capable": (C["positive_control_full_minus_ko"]["point"] > 0
-                               and C["positive_control_full_minus_ko"]["ci95"][0] > 0),
-    }
     out["gates"] = gates
 
     # ---- specificity: candidate vs EACH shuffled/random control, Holm-corrected -----------------
@@ -587,47 +920,78 @@ def main() -> int:
         # P1-h: specificity is ONE-SIDED. The two-sided p answers "does the candidate DIFFER from
         # this control", which in S-049 fired on a control that was unusually NEGATIVE and would
         # have been read as evidence FOR the candidate. Holm is applied to the one-sided p.
-        os_ = rederive.exact_signflip_one_sided(doms, dmeans[a.candidate_arm], dmeans[c])
+        # DIRECTION. "The candidate beats this control" is one-sided BY CONSTRUCTION (P1-h), and
+        # which side that is depends on the direction: sufficiency asks candidate - control > 0
+        # (it recovered MORE), necessity asks control - candidate > 0 (it dropped MORE, i.e. is
+        # more negative). The alternative that was tested is recorded beside the p, because a
+        # one-sided p whose side is left implicit is unreadable.
+        if NEC:
+            os_ = rederive.exact_signflip_one_sided(doms, dmeans[c], dmeans[a.candidate_arm])
+        else:
+            os_ = rederive.exact_signflip_one_sided(doms, dmeans[a.candidate_arm], dmeans[c])
         C[k]["p_one_sided_candidate_beats_control"] = os_["p_one_sided"]
         C[k]["p_one_sided_floor"] = os_["p_floor"]
+        C[k]["p_one_sided_alternative"] = (
+            "mean(control - candidate) > 0, i.e. the candidate REMOVES more installation" if NEC
+            else "mean(candidate - control) > 0, i.e. the candidate RECOVERS more installation")
         pairs.append((c, os_["p_one_sided"]))
     if pairs:
         out["specificity_holm"] = holm(pairs)
-        out["specificity_test"] = ("ONE-SIDED sign-flip (candidate > control), Holm-corrected "
-                                   "across the control family (P1-h)")
+        out["specificity_test"] = (
+            ("ONE-SIDED sign-flip (candidate DROPS installation more than control, i.e. "
+             "control - candidate > 0), Holm-corrected across the control family (P1-h)") if NEC
+            else ("ONE-SIDED sign-flip (candidate > control), Holm-corrected "
+                  "across the control family (P1-h)"))
         out["specificity_all_controls_rejected"] = all(
             v["rejected_at_0.05"] for v in out["specificity_holm"].values())
-        ctrl_rec = {c: C["recovery_%s_minus_ko" % c]["point"] for c in ctrl_arms}
-        cand_rec = C["candidate_minus_ko"]["point"]
-        out["control_recovery_distribution"] = {
+        ctrl_rec = {c: C[EFFECT_KEY % c]["point"] for c in ctrl_arms}
+        cand_rec = C[CAND_KEY]["point"]
+        # RANK. The comparison operator is the third sign site. Sufficiency counts controls that
+        # recovered AT LEAST AS MUCH (`>=`); necessity counts controls that dropped installation AT
+        # LEAST AS MUCH, which on natural-signed numbers is `<=`. Ties count against the candidate
+        # in both directions, which is what `>=`/`<=` (rather than `>`/`<`) buys.
+        n_at_least_as_strong = (sum(1 for v in ctrl_rec.values() if v <= cand_rec) if NEC
+                                else sum(1 for v in ctrl_rec.values() if v >= cand_rec))
+        out[DIST_KEY] = {
             "candidate": round(cand_rec, 5),
             "controls": {c: round(v, 5) for c, v in ctrl_rec.items()},
-            "candidate_rank_among_controls": 1 + sum(1 for v in ctrl_rec.values() if v >= cand_rec),
+            "candidate_rank_among_controls": 1 + n_at_least_as_strong,
             "n_controls": len(ctrl_rec),
             "rank_p_floor": round(1.0 / (len(ctrl_rec) + 1), 4),
+            "rank_orientation": ("rank 1 = the MOST NEGATIVE value, i.e. the largest drop in "
+                                 "installation; values are NOT sign-flipped" if NEC
+                                 else "rank 1 = the MOST POSITIVE value, i.e. the largest recovery"),
         }
 
-    # ---- recovery fraction, with the degeneracy guard -------------------------------------------
-    out["recovery_fraction_candidate_of_full"] = rederive.recovery_fraction(
-        doms, dmeans[a.full_arm], dmeans[a.ko_arm], dmeans[a.candidate_arm],
+    # ---- effect fraction, with the degeneracy guard AND the sign-aware denominator check --------
+    # For necessity the denominator is (KO_NEC_FULL - NEC_BASE), which is NEGATIVE; see
+    # `effect_fraction` for what the existing min_denominator guard does with that and what had to
+    # be added. The KEY NAME carries the direction so a "recovery fraction" is never printed for a
+    # removal.
+    out["%s_fraction_candidate_of_full" % prof["effect_word"]] = effect_fraction(
+        prof, doms, dmeans[a.full_arm], dmeans[ref_arm], dmeans[a.candidate_arm],
         a.n_boot, 20260915, min_denominator=0.01)
 
     out["contrasts"] = C
     out["domain_means"] = {x: {d: round(dmeans[x][d], 5) for d in doms} for x in arms}
 
+    TXT = VERDICT_TEXT[a.direction]
     if not gates["manipulation_check"]:
         out["VERDICT"] = "VOID -- the knockout did not reduce installation on this bank"
-    elif not gates["identity_check"]:
+    elif "identity_check" in gates and not gates["identity_check"]:
         out["VERDICT"] = "VOID -- the self-patch identity control is not inert"
     elif not gates["instrument_capable"]:
-        out["VERDICT"] = ("CANNOT ANSWER -- the whole-state rescue itself does not recover "
-                          "installation, so there is no capable instrument for the subspace "
-                          "question. This is NOT a negative result.")
+        out["VERDICT"] = TXT["cannot_answer"]
     else:
         p = C["PRIMARY_candidate_minus_comparator"]
-        dist = out.get("control_recovery_distribution")
-        single_ok = (p["point"] > 0 and p["ci95"][0] > 0 and p["p_two_sided"] < 0.05
-                     and not p["p_at_its_floor"])
+        dist = out.get(DIST_KEY)
+        # The single-comparator PASS test is the fourth sign site: sufficiency wants the difference
+        # POSITIVE with its lower CI bound above zero; necessity wants it NEGATIVE with its upper
+        # bound below zero. (It is SUPPRESSED in favour of the rank whenever a family exists --
+        # S-050 -- but it is recorded, so its orientation still has to be right.)
+        single_ok = (((p["point"] < 0 and p["ci95"][1] < 0) if NEC
+                      else (p["point"] > 0 and p["ci95"][0] > 0))
+                     and p["p_two_sided"] < 0.05 and not p["p_at_its_floor"])
         if dist and dist["n_controls"] >= 2:
             # P1-i. When a control FAMILY exists, the verdict comes from the candidate's position in
             # the DISTRIBUTION, never from one named comparator. With a control spread of +-0.005
@@ -651,45 +1015,48 @@ def main() -> int:
             # false. Two separate facts are now reported separately: WHERE the candidate sits, and
             # WHETHER the control count could certify it.
             attainable = dist["rank_p_floor"] < 0.05
+            # Each branch takes its text from VERDICT_TEXT[direction] under a key NAMED after the
+            # branch, so the FAIL text cannot be emitted by the PASS branch (review R3-B1) and the
+            # sufficiency wording ("recover ... not above them") cannot be emitted for a removal.
             if rank == 1 and attainable:
-                out["VERDICT"] = ("PRIMARY PASSES on split=%s -- candidate is strictly the largest "
-                                  "of %d controls (rank p=%.4g < 0.05)" % (a.split, n, rank_p))
+                out["VERDICT"] = TXT["rank_pass"].format(split=a.split, n=n, rank_p=rank_p)
             elif rank == 1:
-                out["VERDICT"] = (
-                    "PRIMARY INCONCLUSIVE on split=%s -- the candidate is strictly the LARGEST of "
-                    "its %d controls, but with only %d controls the attainable rank-p floor is "
-                    "%.4g, which is above 0.05. Being top of the distribution is real; certifying "
-                    "it at alpha=0.05 needs at least %d controls. NOT a pass and NOT a failure."
-                    % (a.split, n, n, dist["rank_p_floor"], 19))
+                out["VERDICT"] = TXT["rank_inconclusive"].format(
+                    split=a.split, n=n, floor=dist["rank_p_floor"], min_controls=19)
             else:
-                out["VERDICT"] = (
-                    "PRIMARY DOES NOT PASS on split=%s -- the candidate ranks %d of %d in its own "
-                    "control distribution (rank p=%.4g, attainable floor %.4g): %d control(s) "
-                    "recover at least as much as it does. It is INSIDE the controls, not above "
-                    "them." % (a.split, rank, n + 1, rank_p, dist["rank_p_floor"], rank - 1))
+                out["VERDICT"] = TXT["rank_fail"].format(
+                    split=a.split, rank=rank, of=n + 1, rank_p=rank_p,
+                    floor=dist["rank_p_floor"], n_tied_or_better=rank - 1)
         elif single_ok:
-            out["VERDICT"] = ("PRIMARY PASSES on split=%s -- candidate beats its norm-matched "
-                              "comparator (NOTE: only %d control(s) present; a single comparator is "
-                              "an arbitrary draw when the control spread is wide -- S-050)"
-                              % (a.split, (dist or {}).get("n_controls", 0)))
+            out["VERDICT"] = TXT["single_pass"].format(
+                split=a.split, n=(dist or {}).get("n_controls", 0))
         else:
-            out["VERDICT"] = ("PRIMARY DOES NOT PASS on split=%s -- see p, p_floor and the CI "
-                              "before calling this a negative" % a.split)
+            out["VERDICT"] = TXT["single_fail"].format(split=a.split)
 
     _write(out, a)
     print("\ninstallation by arm:", json.dumps(out["installation_by_arm"]))
     print("gates:", json.dumps(gates))
-    for k in ("manipulation_ko_minus_base", "identity_self_minus_ko",
-              "positive_control_full_minus_ko", "PRIMARY_candidate_minus_comparator",
-              "candidate_minus_ko"):
-        print("  %-38s %s" % (k, json.dumps(C[k])))
+    if out["gates_skipped"]:
+        # A gate that quietly disappears is worse than one that fails, so it is printed as well as
+        # written -- an operator reading only stdout must still see that a gate did not run.
+        for k, v in out["gates_skipped"].items():
+            print("gate SKIPPED: %s -- %s" % (k, v["reason"]))
+    for k in ("manipulation_ko_minus_base", "identity_self_minus_ko", POS_KEY,
+              "PRIMARY_candidate_minus_comparator", CAND_KEY):
+        if k in C:
+            print("  %-38s %s" % (k, json.dumps(C[k])))
     print("\nVERDICT:", out["VERDICT"])
     return 0
 
 
 def _write(out, a):
-    outp = a.out or os.path.join(REPO, "reports/DCS_CSI_SUBSPACE_%s_%s%s.json"
-                         % (a.codeword, a.split,
+    # The direction is part of the default FILENAME, not only of the contents: basket/train has a
+    # committed sufficiency report at DCS_CSI_SUBSPACE_basket_train.json, and PR-CSI-003 runs the
+    # necessity direction on exactly that codeword/split/layer. Without this the necessity run would
+    # silently OVERWRITE the sufficiency report it is supposed to be paired with.
+    outp = a.out or os.path.join(REPO, "reports/DCS_CSI_SUBSPACE%s_%s_%s%s.json"
+                         % ("" if a.direction == "sufficiency" else "_NECESSITY",
+                            a.codeword, a.split,
                             "" if a.option_mass_floor <= 0 else "_om%g" % a.option_mass_floor))
     json.dump(out, open(outp, "w"), indent=1)
     print("wrote", os.path.relpath(outp, REPO))

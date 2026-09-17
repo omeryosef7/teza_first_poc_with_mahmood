@@ -8192,3 +8192,102 @@ mistake in one evening. It stays where it is.
 2. **My ad-hoc SLURM templates need an architecture constraint**, not just a speed choice. The
    launcher has always had one; the scripts I wrote tonight did not, and that asymmetry is the whole
    story of S-116 through S-119.
+
+---
+
+# S-120 — both analysis paths can now read the necessity arm. **Three sign sites I missed, one of which would have silently overwritten a committed report** — plus a correction to the reviewer's own diagnosis
+
+I briefed six sign sites for the `--direction {sufficiency,necessity}` work. **Three more existed**,
+and one was not a sign site at all but a destructive one.
+
+## The three I missed
+
+1. **The one-sided specificity test.** `exact_signflip_one_sided(doms, cand, control)` tests
+   `mean(candidate − control) > 0`. Left alone, **every Holm-corrected specificity p for the
+   necessity arm would have answered the exact opposite question**, and
+   `specificity_all_controls_rejected` would have been a published boolean computed backwards.
+   Now direction-aware, and each contrast records `p_one_sided_alternative` **in words** so the side
+   is never implicit.
+2. **`single_ok`**, the suppressed single-comparator verdict. Suppressed in favour of the rank, but
+   still *recorded* in `verdict_basis.single_comparator_verdict_SUPPRESSED` — so its orientation had
+   to flip too, or the artifact would carry a backwards claim in a field nobody re-derives.
+3. **The default output filename — and this is the one that matters.** `_write` builds
+   `reports/DCS_CSI_SUBSPACE_<codeword>_<split>.json`. PR-CSI-003 runs necessity on **basket/train**
+   — the same codeword and split as the committed `reports/DCS_CSI_SUBSPACE_basket_train.json`.
+   Unchanged, **the necessity run would have silently overwritten the sufficiency report it is meant
+   to be paired with.** Necessity now writes `DCS_CSI_SUBSPACE_NECESSITY_basket_train.json`, the
+   sufficiency name is byte-identical to before, and a test drives the real `_write` to lock it.
+
+That third one is a data-loss bug in a deliverable, found only because the work was reviewed rather
+than assumed, and I had not thought of it.
+
+## The recovery-fraction decision, and why it does not move the record
+
+`rederive.recovery_fraction`'s guard is `abs(den) < min_denominator`, so the **magnitude** half is
+already sign-agnostic and a necessity denominator of −0.10 is not rejected; the ratio it returns is
+**correctly signed for either direction**, so the two directions' fractions are directly comparable.
+`min_denominator` was therefore **not touched**, and neither was `rederive_patch.py` — that function
+is shared by the paths that produced the 164 committed results, and re-signing its guard is the
+class of change P0.4 exists to prevent.
+
+What it does **not** check is the denominator's **sign**. A *positive* denominator under necessity
+means the whole-state removal **raised** installation — a broken instrument — and it would clear
+`|den| ≥ 0.01` and yield a plausible-looking fraction. A wrapper now refuses on the sign with
+**CANNOT ANSWER**, citing §15, *"NOT a number with a wide CI, and NOT a negative result."*
+
+**Audited rather than argued:** for sufficiency the denominator *is*
+`positive_control_full_minus_ko`, which `instrument_capable` already requires to be > 0, so a sign
+refusal can only ever appear in a report whose verdict is *already* CANNOT ANSWER. All twelve
+committed reports carrying a recovery fraction have denominators in **+0.033 … +0.123**, all
+`status: ok`, all `instrument_capable: true`. **Zero change.**
+
+## Sufficiency is provably unmoved
+
+Key-by-key diff of the artifact from the **old** versus **patched** code on the committed
+button/TRAIN/L20 arms: **zero CHANGED, zero REMOVED** — purely additive. Stdout **byte-identical**,
+verdict string included: manipulation **−0.20558**, positive control **+0.06955**, candidate
+**+0.00040**, rank **4 of 11**, 666 keys / 67 domains. The independent path reproduces
+`DCS_CSI_REDERIVE_button_train_L20.json` exactly. Seven mutations were applied and each was caught
+by a named test; 16 new tests pass; the eight pre-existing gated-HF failures are unchanged with
+**zero new**.
+
+## The skipped identity gate is a structured record, not a silence
+
+`--direction necessity` emits `out["gates_skipped"]["identity_check"]` with the reason, the
+preregistration pointer, the nearest available control and what stands in its place — built
+**before** the VOID early-return, so it survives into the artifact most likely to be read once and
+never re-run. And it **refuses outright** if a `--self-arm` is offered: *the only thing worse than a
+missing gate is a fake one.*
+
+## CORRECTION to the reviewer's own diagnosis (a)
+
+The report attributes the zero-row control failures to **the basis file** — *"the discriminator is
+the basis, not the direction… every refusing run uses `..._shuf24.pt`, the basis PR-CSI-003
+froze"* — and concludes PR-CSI-003's whole control family yields no rows, so *"either the basis or
+the norm-match design has to change before the full arm is worth launching."*
+
+**That is wrong, and S-119 disproves it.** The 41 bases shared by `..._behavioral.pt` and
+`..._shuf24.pt` are **bitwise identical**, `ctrl_orth` included; shuf24's own `ctrl_shuffled13–23`
+ran 668–670 rows at L18. **The discriminator is the GPU**: every norm-matched **V100** arm fails,
+every norm-matched **RTX 3090** arm succeeds, every non-norm-matched V100 arm succeeds. The
+reviewer reached the same *observation* by an independent path — which is worth having — but landed
+on the same wrong attribution I did in S-117, and for the same reason: **the GPU column was never
+printed.** PR-CSI-003's basis does **not** need to change, and the preregistration stands.
+
+## Three flags from the report I am carrying forward as real
+
+* **The PASS branch is unreachable under PR-CSI-003.** With 9 controls the attainable floor is
+  1/10, and the analyser's PASS branch needs `rank_p_floor < 0.05`, i.e. **≥ 19 controls**. So even
+  a perfect candidate can only ever print **INCONCLUSIVE**. PR-CSI-003 declares the 0.10 floor in
+  advance, so this is not a surprise — but it is **R3-B1's shape again**, and it means the necessity
+  family must grow to ≥19 before any certifying statement is possible. Recorded so nobody reads
+  INCONCLUSIVE as a disappointment when it is the ceiling.
+* **`--control-prefixes KO_NEC_SHUF,KO_NEC_RAND` must be passed explicitly** or the control
+  distribution is **silently empty** and the analyser falls through to the single-comparator branch.
+  The reviewer chose an explicit requirement over a guessed default and said so; it is a live
+  foot-gun and belongs in the read commands, as PR-CSI-002's were.
+* **A live provenance hazard in this repo, not introduced by this work:** both analysers are loaded
+  via `spec_from_file_location`, which honours `__pycache__`. A `sed`-edit and restore at the **same
+  byte size within the same second** left Python running **stale mutated bytecode**. *An analyser
+  edited and immediately re-run at the same size can silently produce numbers from the old code.*
+  That is worth a guard of its own.
