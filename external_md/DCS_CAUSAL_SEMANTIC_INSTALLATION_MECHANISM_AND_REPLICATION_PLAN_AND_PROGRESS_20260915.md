@@ -7624,3 +7624,101 @@ relaunched **without** `CSI_STAGE` (job **906421**, excluding the whole 3090 rac
 Recorded because it is the mirror image of S-105d — there, moving *off* the rack fixed a stall;
 here, applying the rack's *workaround* off the rack caused one. **The rule is not "always stage";
 it is "stage only inside the n-30x rack."**
+
+---
+
+# S-113 — **NECESSITY SMOKE: four of five arms pass all four legs; the fifth CANNOT RUN AT ALL.** The orthogonal comparator degenerates in this direction and the sufficiency direction does not
+
+Job 906421, group L, `CSI_NEC_SMOKE=1`, 5 arms × 24 rows. **The job exited FAILED, and it was right
+to.** Reported as a mixed result, because it is one.
+
+## What PASSED — including the risk S-110 called most likely
+
+S-110 named the top risk: leg 1 charges the knockout-liveness contract against a **donor** forward
+for the first time in this codebase — a single prefill pass never previously gated — and if its
+counters were not populated as assumed, **every row would be ledgered and the run would yield ~0
+rows**. From `summary.json`'s `necessity_arm` block on `KO_NEC_FULL`:
+
+| leg | field | value | verdict |
+|---|---|---|---|
+| — | `n_rows` / `n_rows_ok` / `frac_rows_ok` / `violations` | 24 / 24 / **1.0** / **{}** | — |
+| **1** | `min_donor_prefill_edits` | **396** | knockout live on the donor capture, **every row**. **The top risk did not materialise.** |
+| **2** | `max_readout_knockout_edits` | **0** | readout forward is knockout-**free**, as designed |
+| **3** | `min_patch_positions_written` | **112** (median 112) | the patch fired — legs 1+2 are not being satisfied by doing nothing |
+| **4** | `min_donor_delta_norm` | **0.80638** (median 0.9473) | there **was** something to remove, every row |
+
+**Leg 4 confirms S-111's zero-GPU-cost prediction**: it forecast a displacement of order 0.87–2.15
+for basket L18 from committed artifacts, and the smoke measures a minimum of **0.806** on its 24
+rows. The feasibility calculation was made before the spend and was right.
+
+**The mislabelled-liveness trap is closed in the artifact, not only the code**: `knockout_liveness`
+now carries `counters_measured_on: "donor_capture_forward (--rescue-donor ko)"`,
+`readout_forward_had_knockout: False`, `see_also: necessity_arm`, and the necessity block reads
+`knockout_on_readout_forward: "NOT live BY DESIGN -- asserted zero-edit on every row"`.
+
+**The positive control fires, in the predicted direction:**
+
+| arm | mean `y_install` (24 smoke rows) |
+|---|---|
+| `NEC_BASE` | 0.72054 |
+| `NEC_KO` | 0.39472 |
+| **`KO_NEC_FULL`** | **0.59039** |
+
+`KO_NEC_FULL − NEC_BASE` = **−0.13016** = **39.9 %** of the 0.32582 clean→ko span. PR-CSI-003
+predicted −0.07 … −0.12.
+
+**Read as direction and order of magnitude ONLY**, and the restriction is real: the smoke takes the
+**first 24 rows** via `--limit`, not a domain-stratified sample, and its `NEC_BASE` is **0.721**
+against the full population's **0.469**. **Not the same population**, so the slight overshoot means
+nothing. What the smoke establishes is **mechanical** — the legs hold on real hardware and
+whole-state removal moves installation substantially **down**. Plan §15's requirement is met.
+
+## What FAILED, and it is a finding rather than a fault
+
+**`KO_NEC_ORTH` produced ZERO rows.** All 24 refused by the norm-match degeneracy guard:
+
+```
+REFUSING to patch: 18 of 28 positions are norm-match DEGENERATE   (24 of 24 rows)
+```
+
+Not one or two positions as in every sufficiency arm — **most of the span, on every row**.
+
+**This is a property of the DIRECTION, and the comparison that proves it is exact.** The *same*
+basis (`ctrl_orth`, norm-matched to `cand_rank1`), the *same* layer 18, the *same* codeword, the
+*same* guard, in the **sufficiency** direction:
+`csi1_basket_train_KO_ORTH_20260916_011115_1772066` — **670 attempted, 0 failed.** Only
+`--rescue-donor` changed. **0 of 670 → 24 of 24.**
+
+**The gate behaved correctly** and this is worth stating plainly: `assert_necessity_live` refused
+with *"knockout liveness has zero rows — the run generated nothing, so the mask was never observed
+to fire. This is not a pass."* A zero-row arm was **not** reported as a clean run. That is exactly
+the "a gate that never ran is not a pass" clause S-110 built in, firing on its first real
+opportunity.
+
+The run is **kept**, not deleted, and documented in `KNOWN_ZERO` with the asymmetry recorded,
+because it *is* the evidence for the asymmetry.
+
+## What this costs, and the decision I am NOT taking on a guess
+
+PR-CSI-003 named `KO_NEC_ORTH` as *"the nearest thing"* to an identity control for a direction that
+has none. **It is unavailable.** So the immediate question is whether the *rest* of the control
+family survives — `KO_NEC_SHUF0-3` and `KO_NEC_RAND0-3` are **also** norm-matched to `cand_rank1`,
+so they may hit the same wall. If they do, the control family collapses, the candidate becomes
+**untestable in this direction**, and only the positive control is readable.
+
+**Nine arms × 670 rows must not be spent to find that out.** Job **906437** is a 24-row micro-smoke
+of `KO_NEC_SHUF0` and `KO_NEC_RAND0`, with the flags **copied verbatim** from group L's `subnec` so
+it is the same experiment at 24 rows. **Half 2 is held until it reports.**
+
+Half 1 (job **906433**, on n-307) is already running and will hit the same `KO_NEC_ORTH` failure —
+its other four arms are the preregistered primary contrast at full 670-row scale and are worth
+having, so it is left to run. **Its exit code will be FAILED for this known reason**, which is
+recorded here in advance so that it is not later mistaken for a new fault.
+
+## A correction to my own draft, before it entered the record
+
+I had drafted this entry titled *"NECESSITY SMOKE PASSES"* on the strength of the first four arms'
+`failures: {}` and the leg table, and was about to commit it. The job's non-zero exit is what sent
+me back. **It was uncommitted, so nothing false entered the append-only record** — but the near-miss
+is the point: four green arms and a clean leg table are not a passing smoke when the fifth arm
+cannot run. **Read the job's exit code before the job's numbers.**

@@ -71,6 +71,19 @@ ROW_FILE = {
 #: None of them is cited by any claim in the record (checked 2026-09-11 across external_md/ and
 #: reports/). They are NOT deleted -- section 53: supersede or quarantine with provenance.
 KNOWN_ZERO = {
+    "csi1_basket_train_SMOKE_KO_NEC_ORTH_20260917_225215_2890730":
+        "DCS-CSI-113: the Phase-2 NECESSITY smoke's orthogonal comparator. 24 of 24 rows REFUSED by "
+        "the norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5) with '18 of 28 positions "
+        "are norm-match DEGENERATE' -- not 1 or 2 positions as in every sufficiency arm, but most of "
+        "the span, on every row. THIS IS A PROPERTY OF THE DIRECTION, NOT A BUG AND NOT A FLAKE: the "
+        "SAME basis (ctrl_orth, norm-matched to cand_rank1), the SAME layer 18, the SAME codeword and "
+        "the SAME guard lost 0 of 670 rows in the SUFFICIENCY direction "
+        "(csi1_basket_train_KO_ORTH_20260916_011115_1772066, n_failed=0). Only --rescue-donor changed. "
+        "The run is KEPT because it is the evidence for that asymmetry, and assert_necessity_live "
+        "correctly refused the arm rather than reporting a zero-row pass ('knockout liveness has zero "
+        "rows -- the run generated nothing, so the mask was never observed to fire. This is not a "
+        "pass.'). Whether the shuffled/random controls survive the same direction is being measured "
+        "separately before half 2 is spent; see S-113.",
     "ch_Dctrl_20260818_172957_3878938":
         "ClearHarm empty-needle bug: target_surface is the empty string on external-harmful rows, so "
         "occurrence resolution failed on all 179 (resolve:occurrence_count_mismatch). This is the bug "
