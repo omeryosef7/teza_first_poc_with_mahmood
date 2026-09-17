@@ -254,3 +254,36 @@ def test_R8_the_legitimate_cases_still_resolve(paths):
                                   require_rescue_layer=18,
                                   require_slurm_jobs=["902004", "902005"]) == ax
     assert indep.run_dir("t_KO_AXIS", 670, 0, layer=18, jobs=["902004", "902005"]) == ax
+
+
+def test_R8_m8_the_two_paths_agree_on_a_dir_with_no_config(paths):
+    """R8-m8. The independent path RAISED on a directory with no `config.json` even with no filter
+    requested, while the primary path ADMITTED it -- so the two "independent" paths disagreed on
+    admissibility, which makes their agreement on a number mean less than it claims.
+
+    Correct behaviour, now asserted for both: with no filter the directory is admitted (the 164
+    committed results were all produced unfiltered, so that path must not move); with a layer
+    required it is refused, because an absent config cannot verify one.
+    """
+    primary, indep, root = paths
+    d = _mkrun(root, "t_KO", "20260915_191231", 670, None, "896679")
+    os.remove(os.path.join(d, "config.json"))
+
+    assert primary.strict_run_dir("t_KO", 670, row_file="results.jsonl") == d
+    assert indep.run_dir("t_KO", 670, 0) == d
+    with pytest.raises(SystemExit):
+        primary.strict_run_dir("t_KO", 670, row_file="results.jsonl", require_rescue_layer=18)
+    with pytest.raises(SystemExit):
+        indep.run_dir("t_KO", 670, 0, layer=18)
+
+
+def test_R8_m6_a_space_in_the_job_list_does_not_silently_match_nothing():
+    """R8-m6. The analyser parsed `--require-slurm-job` with `.split(",")` while the other two paths
+    used `re.split(r"[ ,]+")`. So `"902004, 902005"` became ['902004', ' 902005'] in one path only,
+    and the space-prefixed entry matches no directory -- a filter satisfied by nothing. All three
+    parse identically now; a filter that differs between the paths is not a control.
+    """
+    import re as _re
+    for raw in ("902004,902005", "902004, 902005", " 902004 , 902005 "):
+        got = [x for x in _re.split(r"[ ,]+", raw or "") if x] or None
+        assert got == ["902004", "902005"], (raw, got)

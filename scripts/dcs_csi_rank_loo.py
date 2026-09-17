@@ -29,10 +29,28 @@ def run(prefix, split, expect, controls, allow_short=3, layer=None, jobs=None):
     base=ranks[0]
     loo=ranks[1:]
     worst=max(loo,key=lambda t:t[2])
-    print("%s/%s  n_domains=%d  full cand=%+.5f rank=%d of %d"%(prefix,split,len(doms),base[1],base[2],len(controls)+1))
+    best=min(loo,key=lambda t:t[2])
+    n=len(controls)+1
+    print("%s/%s  n_domains=%d  full cand=%+.5f rank=%d of %d"%(prefix,split,len(doms),base[1],base[2],n))
     print("   LOO: rank stays 1 in %d of %d drops; worst drop = %s -> rank %d (cand %+.5f)"
           %(sum(1 for t in loo if t[2]==1),len(loo),worst[0],worst[2],worst[1]))
-    print("   cand range across LOO: %+.5f .. %+.5f"%(min(t[1] for t in loo),max(t[1] for t in loo)))
+    # REVIEW R8-m10. The line above hardcodes "rank stays 1", which is the right question for a
+    # PASS and the wrong one for a NULL: on the button-L18 family it printed "rank stays 1 in 0 of
+    # 67 drops", which READS as instability while the actual finding is that the null is immovable.
+    # S-104c's load-bearing statistic -- the BEST rank any single deletion can reach, i.e. whether
+    # deleting one domain could turn the null into a pass -- was never printed by this script, so
+    # that entry's figures came from an ad-hoc script and this committed tool could not reproduce
+    # its headline. Both directions are now printed, with the full histogram, so the same command
+    # answers the question in whichever direction the result points.
+    import collections as _c
+    hist=dict(sorted(_c.Counter(t[2] for t in loo).items()))
+    print("   LOO rank histogram across the %d drops: %s"%(len(loo),hist))
+    print("   BEST attainable rank under any single deletion = %d of %d (drop(s) %s) -> %s"
+          %(best[2],n,[t[0] for t in loo if t[2]==best[2]][:3],
+            "a deletion COULD reach rank 1" if best[2]==1 else "no deletion reaches rank 1"))
+    print("   cand range across LOO: %+.5f .. %+.5f  (sign: %d of %d drops negative)"
+          %(min(t[1] for t in loo),max(t[1] for t in loo),
+            sum(1 for t in loo if t[1]<0),len(loo)))
     return loo
 
 import glob,re

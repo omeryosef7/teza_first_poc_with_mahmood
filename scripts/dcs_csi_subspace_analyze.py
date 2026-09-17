@@ -17,7 +17,7 @@ its attainable floor beside it.
 """
 from __future__ import annotations
 
-import argparse
+import argparse, re
 import importlib.util
 import json
 import math
@@ -279,7 +279,11 @@ def main() -> int:
     ap.add_argument("--out", default=None)
     a = ap.parse_args()
 
-    _jobs = [x for x in a.require_slurm_job.split(",") if x] if a.require_slurm_job else None
+    # REVIEW R8-m6. This used `.split(",")` while the other two paths use `re.split(r"[ ,]+")`, so
+    # `--require-slurm-job "902004, 902005"` parsed to ['902004', ' 902005'] here and matched
+    # nothing -- a job filter silently satisfied by no directory. All three paths now parse
+    # identically, because a filter that differs between the "independent" paths is not a control.
+    _jobs = [x for x in re.split(r"[ ,]+", a.require_slurm_job or "") if x] or None
     _sel = {"require_rescue_layer": a.require_rescue_layer, "require_slurm_jobs": _jobs}
     assign = lpm.load_split()
     arms = [x for x in a.arms.split(",") if x]
@@ -396,8 +400,8 @@ def main() -> int:
             if m["rescue_fired"] != m["n_rows"]:
                 void.append("%s: rescue fired on %d of the %d rows it persisted"
                             % (arm, m["rescue_fired"], m["n_rows"]))
-        if len({tuple(meta[x]["rescue_layers"]) for x in arms if meta[x]["rescue_layers"]}) > 1:
-            pass  # reported below once, not per arm
+        # (REVIEW R8-m11: a `if ...: pass` no-op lived here -- literally a check that cannot fail.
+        #  Removed; the cross-arm layer disagreement is reported once, below, where it belongs.)
     layers_used = {x: meta[x]["rescue_layers"] for x in arms if meta[x]["rescue_layers"]}
     if len({tuple(v) for v in layers_used.values()}) > 1:
         void.append("rescued arms used DIFFERENT layers: %s" % layers_used)
@@ -520,6 +524,14 @@ def main() -> int:
            "codeword": a.codeword, "split": a.split, "arms": arms,
            "option_mass_floor": a.option_mass_floor,
            "run_dirs": {k: os.path.basename(v) for k, v in dirs.items()},
+           # REVIEW R8-m5. The independent path recorded its filters and this one did not, so the
+           # primary report was not self-describing about the selection that produced it -- the run
+           # dirs are named, so it was auditable by hand, but "auditable by hand" is what P0.4 was
+           # written against. Recorded here, and the resolved layers alongside, so a reader can see
+           # WHICH experiment was analysed without reconstructing it from directory names.
+           "require_rescue_layer": a.require_rescue_layer,
+           "require_slurm_job": _jobs,
+           "resolved_rescue_layers": {k: meta[k]["rescue_layers"] for k in dirs},
            "n_domains": len(doms), "n_keys_common": len(common_keys), "arm_meta": meta,
            "installation_by_arm": {x: round(sum(dmeans[x][d] for d in doms) / len(doms), 5)
                                    for x in arms},

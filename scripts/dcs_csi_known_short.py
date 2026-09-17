@@ -49,9 +49,21 @@ def _domains_for(run_dir, prompt_ids):
     """
     import json as _json
     cfg = _json.load(open(os.path.join(run_dir, "config.json")))["args"]
+    # REVIEW R8-m9. `bank` is stored RELATIVE, so `os.path.exists(bank)` is false from any cwd but
+    # the repo root and this returned [] -- which the caller's `or len(ids)` fallback then turned
+    # into a fabricated "1 row per domain at most". Resolve against REPO, and RAISE rather than
+    # return a silent empty list: this function feeds a sentence that says "MEASURED", so being
+    # unable to measure must stop the run, not soften the wording. (This is review R3-M7 recurring
+    # in the one clause the R3 fix was written for.)
     bank = cfg.get("bank")
-    if not bank or not os.path.exists(bank):
-        return []
+    if not bank:
+        raise SystemExit("REFUSING: run %s records no bank, so the domain spread of its lost rows "
+                         "cannot be MEASURED -- and the entry template claims it was" % run_dir)
+    if not os.path.isabs(bank):
+        bank = os.path.join(REPO, bank)
+    if not os.path.exists(bank):
+        raise SystemExit("REFUSING: bank %r (from run %s) does not exist, so the domain spread of "
+                         "its lost rows cannot be MEASURED" % (bank, run_dir))
     want = set(prompt_ids)
     doms = []
     with open(bank) as fh:
@@ -91,13 +103,16 @@ def main() -> int:
         idnote = "(complete)" if len(ids) >= nfail else "(SAMPLE -- the ledger caps this list)"
         # MEASURE the domain spread rather than asserting it. The lost rows are the ones present in
         # the bank selection but absent from results.jsonl.
-        have_ids = {json.loads(l)["prompt_id"] for l in open(resp)}
-        lost_doms = set()
-        for i in ids:
-            if i not in have_ids:
-                lost_doms.add(i)
-        ndom = len({d for d in _domains_for(d, ids)}) or len(ids)
-        domfrac = "%d row(s) per domain at most" % 1 if ndom >= len(ids) else "clustered"
+        # REVIEW R8-m9. `lost_doms` was dead (built and never read) and `ndom`'s `or len(ids)`
+        # fallback made an unmeasurable case indistinguishable from a maximally-spread one. The
+        # fallback is gone: `_domains_for` now raises if it cannot measure, so a zero here means
+        # the lost ids genuinely are not in the bank, which is itself a refusal.
+        _doms = _domains_for(d, ids)
+        if not _doms:
+            raise SystemExit("REFUSING %s: none of the %d lost prompt_id(s) %s appear in the bank, "
+                             "so the domain spread cannot be MEASURED" % (rid, len(ids), ids))
+        ndom = len(set(_doms))
+        domfrac = "1 row(s) per domain at most" if ndom >= len(ids) else "clustered"
         add.append(TEMPLATE.format(rid=rid, have=have, want=want, nfail=nfail, ids=", ".join(ids),
                                    idnote=idnote, ndom=ndom, domfrac=domfrac))
         print("  DOCUMENT %s: %d of %d, %s %s, %d domain(s)" % (rid, have, want, ids, idnote, ndom))

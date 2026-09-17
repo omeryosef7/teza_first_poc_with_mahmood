@@ -6951,3 +6951,126 @@ The **guard** suite the pre-commit hook runs is **346 tests and green**. The **f
 identically at `HEAD`; and none of the four failing files imports any module I touched. Recorded so
 that "the full suite is not green here" is a known environmental state rather than something a later
 reader discovers and attributes to this work.
+
+---
+
+# REVIEW R8, part 4 — the MINORs, five of which were real and are fixed; and the one that means **S-104c's headline could not be reproduced by the committed tool**
+
+R8's minor findings were not cosmetic. Five were genuine and are fixed; the reviewer's
+"could-not-break" list is recorded too, because a review that only reports hits is not a review.
+
+## m10 — the committed LOO script could not print the statistic S-104c rests on. **This is the one that mattered.**
+
+`scripts/dcs_csi_rank_loo.py` hardcoded `"rank stays 1 in %d of %d drops"` and reported the **worst**
+drop. That is the right question for a **pass** and the wrong one for a **null**: on the button-L18
+family it printed
+
+```
+LOO: rank stays 1 in 0 of 67 drops; worst drop = apiary_unit -> rank 8
+```
+
+which **reads as instability** while the actual finding is that the null is immovable. S-104c's
+load-bearing statistic — the **best** rank any single deletion can reach, i.e. *could deleting one
+domain turn the null into a pass?* — was **never printed by this script**. So S-104c's claim that it
+was *"asked with the same script"* was true of the family resolution but **not of the reported
+quantity**: those figures came from an ad-hoc script of mine, and the committed tool could not
+reproduce the entry's headline. That is a reproducibility defect in an entry, not just a
+presentation nit.
+
+**Fixed.** Both directions are now printed, with the full histogram, so one command answers the
+question whichever way the result points. The committed tool now reproduces S-104c exactly:
+
+```
+full cand=-0.00028 rank=8 of 11
+LOO rank histogram across the 67 drops: {7: 2, 8: 65}
+BEST attainable rank under any single deletion = 7 of 11 (drop(s) ['news_report','printing_works'])
+   -> no deletion reaches rank 1
+cand range across LOO: -0.00042 .. -0.00009  (sign: 67 of 67 drops negative)
+```
+
+Every figure in S-104c's table now comes from the committed script. And the default invocation still
+reproduces R7 — basket TRAIN +0.00264, rank 1 of 47, histogram `{1: 65, 2: 2}`, worst
+`pipeline_station` → 2; VALIDATION rank 1 under 23 of 23.
+
+## m9 — a "MEASURED" sentence that could be printed with zero measurements
+
+`dcs_csi_known_short.py` resolved the run's `bank` as a **relative** path, so from any cwd but the
+repo root `_domains_for` returned `[]`, and the caller's `ndom = ... or len(ids)` fallback turned
+that into the fabricated claim *"1 row(s) per domain at most"*. **This is review R3-M7 recurring
+inside the very clause the R3 fix was written for** — the template was changed to say "MEASURED"
+and the measurement could still silently not happen.
+
+**Fixed:** the bank resolves against `REPO`, and being unable to measure now **raises** instead of
+softening the wording, because the sentence it feeds claims a measurement. The dead `lost_doms` set
+(built, never read) is gone. Verified from `/tmp`, where it previously fabricated:
+
+```
+cwd: /tmp
+_domains_for -> ['hospital_ward_store','theatre_backstage','council_depot','surveying_office']
+distinct domains: 4 | n lost ids: 4   -> MEASURED correctly from a foreign cwd
+```
+
+The **seven committed entries are unaffected** — R8 checked each against its own `DONE.json`,
+`results.jsonl`, `summary.json` and the bank, and every count, ledger triple, reason, `(complete)`
+label and domain spread is true, with `len(ids) == n_failed` throughout and the total 12 matching
+S-104b arm for arm.
+
+## m8 — the two "independent" paths disagreed on admissibility
+
+`dcs_csi_rederive_subspace.run_dir` **raised** on a directory with no `config.json` **even with no
+filter requested**, because its layer lookup was unconditional; the primary path **admitted** the
+same directory. Five real (non-`csi1_*`) directories are affected. Two paths that disagree about
+which runs are admissible cannot make their agreement on a number mean what S-104b claims.
+
+**Fixed by the R8-M1 sentinel change:** both now admit it unfiltered (the 164 committed results were
+produced unfiltered, so that path must not move) and both refuse it when a layer is required.
+Verified side by side, and locked by a test.
+
+## m5, m6, m11 — three smaller ones, all real
+
+* **m5** — the primary report recorded `run_dirs` but **not the filters that produced it**, while the
+  independent path recorded both. It was auditable by hand from directory names, but "auditable by
+  hand" is what P0.4 was written against. It now records `require_rescue_layer`,
+  `require_slurm_job` and `resolved_rescue_layers`.
+* **m6** — the analyser parsed `--require-slurm-job` with `.split(",")` while the other two paths used
+  `re.split(r"[ ,]+")`, so `"902004, 902005"` became `['902004', ' 902005']` **in one path only** and
+  the space-prefixed entry matched nothing — a filter satisfied by no directory. All three now parse
+  identically. **A filter that differs between the "independent" paths is not a control.**
+* **m11** — `if len({...}) > 1: pass` inside the per-arm loop: literally a check that cannot fail.
+  Removed; the disagreement it pretended to test is reported once, below, where it belongs.
+
+`tests/test_run_dir_layer_selection.py` is now **14 tests**, plus 5 in
+`tests/test_axis_sha16_is_of_the_saved_bytes.py` — **19 passing**, `check_all.py` 9 of 9.
+
+## m7 — a criticism of my own tests that I am recording rather than waving away
+
+R8 re-ran my six S-104 tests against the **pre-change** scripts with the new parameters added but
+**ignored**, and got `3 failed, 3 passed`. **Three of the six are satisfied by the old refusal
+behaviour** and so cannot detect a filter that accepts its flags and does nothing; only the three
+positive-selection tests discriminate. The six R8 tests added since are all
+positive-discriminating or assert a specific refusal *message*, which closes the gap — but the
+lesson is the general one: *a test that passes because the code refuses everything is not a test of
+the feature.* That is why `test_R8_the_legitimate_cases_still_resolve` exists.
+
+## What R8 attacked and could NOT break — recorded, because negative findings are findings
+
+* **The layer axis was already sound in the case the brief suspected.** R8 enumerated all six
+  lone-survivor cases; the survivor assertion **does** exist in the independent path, contrary to
+  the hypothesis I gave it. Two of the six cases were holes (M1, B1); four were already correct.
+* **The `KO_RAND2` near-miss reproduces on real data**, from the committed tool:
+  `[ctls] EXCLUDING KO_RAND2: … patched layer 20, not the required 18`, and the resulting
+  `rank 7 of 10` reproduces S-104's robustness check exactly. The `--allow-short` choice is not
+  load-bearing, as claimed.
+* **The control family is the same family in both tools.** `ctls()`'s regex `KO_(?:RAND|SHUF)\d+`
+  was checked against all 84 `csi1_button_train_*` directories: it does **not** match the sibling
+  arms `KO_R5RAND0`, `KO_CW_RAND0`, `KO_ORTH` or `KO_AT10`, and selects exactly the ten arms the
+  analyser's `--control-prefixes KO_SHUF,KO_RAND` selects. (The prefix-collision class that produced
+  S-042 was looked for here and is absent.)
+* **S-106's counterexample and its replacement check both reproduce independently**, to the digit.
+
+**One correction to S-106's own record, from that last check.** S-106's 22-identical / 31-moved table
+does **not name which L18 file it compared against**, and the answer matters: the comparand must be
+`configs/dcs_csi_axis_basket_behavioral_shuf24.pt` (**53** bases). Against
+`configs/dcs_csi_axis_basket_behavioral.pt` (**41** bases, only 12 shuffled) just 41 keys are
+comparable and the table reads **22 / 19**, not 22 / 31. The evidence is sound; the record was
+under-specified. **Stated here so the check is reproducible.**
