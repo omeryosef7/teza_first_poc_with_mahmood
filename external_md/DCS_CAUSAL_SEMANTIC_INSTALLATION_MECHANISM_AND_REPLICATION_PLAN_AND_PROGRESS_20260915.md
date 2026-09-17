@@ -7801,3 +7801,68 @@ caught the same way — **by going back to the code or the population rather tha
 prose.** The pattern worth naming: *an empirical contrast between two runs is not controlled merely
 because the two runs share a name.* S-113 listed four things that were the same and did not check
 the one thing that was not.
+
+---
+
+# S-115 — **basket at L20: all three PR-CSI-002 gates PASS.** Group A is complete; the verdict waits on the control family
+
+Job **905990** finished `GROUP A DONE rc=0` (7 arms, 1:58:42, n-303). Group B has ~4 arms left.
+
+**GATE 0 was discharged first** (S-112): `KO_AXIS` (post-edit) vs `KO_AXIS_ANCHOR` (pre-edit) are
+**bit-identical** on all 670 shared rows — max |diff| 0.000e+00 on every logit field, 0 of 670
+`top1_id` mismatches. The S-110c mid-run code edit provably changed nothing, and PR-CSI-002's VOID
+condition is retired.
+
+## The preregistered gates, 669 keys / 67 TRAIN domains
+
+| gate | value | |
+|---|---|---|
+| manipulation `KO − BASE` | **−0.23435**, **67/67** domains negative | **PASS** |
+| identity `KO_SELF − KO` | **−0.00004** (tol 0.005) | **PASS** — as inert as this control has ever been |
+| instrument `KO_FULL − KO` | **+0.09361**, **67/67** domains positive | **PASS** |
+
+**The run is not VOID on its gates, and the instrument is capable at L20.** That last point matters
+for how a null would have to be read: a mid-distribution rank here could not be blamed on a dead
+instrument, because the whole state recovers 0.094 on every single domain.
+
+## Why I read the gates before the controls, and what I have therefore seen
+
+The gates live entirely in group A and are **preregistered pass/fail thresholds**, so reading them
+early cannot anchor the headline — and a gate failure would have told me the run was VOID an hour
+before group B lands. That is the whole reason to read them first.
+
+Reading them required the arm means, so **I have now seen the candidate's raw value and I am
+recording it rather than pretending otherwise:**
+
+| arm | − KO | domains positive |
+|---|---|---|
+| `KO_AXIS` | **+0.00306** | 48/67 |
+| `KO_PLS` (rank 3) | +0.01522 | 55/67 |
+| `KO_ORTH` | −0.00010 | 30/67 |
+
+For reference, basket at **L18** gave candidate **+0.00264** with `KO_FULL − KO` = +0.12041.
+
+**This is NOT the result and must not be read as one.** PR-CSI-002 fixes the primary statistic as
+the candidate's **rank within its control distribution**, and every control is in group B. A raw
+contrast without its control family is exactly the quantity S-050 showed can be made to say either
+thing depending on which comparator you name — that is why P1-i exists and why the rank is the
+preregistered test.
+
+**The branches remain as frozen**, and I am not guessing which fires: rank 1 of 11 → consistent with
+codeword-only but **INCONCLUSIVE at floor 0.0909**, extend to 46 before any statement; rank 2–3 →
+ambiguous, extend first; **rank ≥ 4 → codeword × layer interaction**, and prohibition 21's wording
+must change.
+
+**One incidental data point for the open S-114 question — and I had it wrong in this entry's first
+draft.** `KO_ORTH` at L20 in the **sufficiency** direction persisted **669 of 670** rows: it lost
+**one** row to the same degeneracy guard, not zero. I wrote "no degeneracy refusals at all" and the
+completeness guard refused my commit and showed me otherwise before it reached the record.
+
+The contrast is still stark — **1 of 670 in sufficiency against 24 of 24 in necessity, same basis** —
+but it is now a *rate* comparison rather than a presence/absence one, and it is still confounded by
+the 3-domain `--limit` population (S-114). Job **906447** remains the test that settles it.
+
+That is twice in this entry that a number I asserted was corrected by a guard rather than by me:
+the `--limit` domain count in S-114, and this row count. Both were caught before commit, which is
+what the pre-commit guard is for, but the habit worth fixing is asserting counts I have not read off
+the artifact.

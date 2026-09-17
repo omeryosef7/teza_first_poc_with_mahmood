@@ -106,6 +106,34 @@ KNOWN_ZERO = {
 }
 
 KNOWN_SHORT = {
+    "csi1_basket_train_KO_ORTH_20260917_225312_3187683":
+        "DCS-CSI-047: 669 of 670 rows. 1 row(s) REFUSED by the sprint's own "
+        "norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5): the control basis was "
+        "near-orthogonal to the KO->clean delta at some position, so rescaling its projection "
+        "would have amplified float noise into an arbitrary QR-gauge direction. The guard "
+        "declines to fabricate a control rather than silently writing a meaningless one. "
+        "MECHANISM (not a verified property of this run): degeneracy is the angle between a "
+        "fixed basis and a fixed delta, both determined before any readout, and the delta is "
+        "identical across arms -- so the loss is expected to be outcome-independent. MEASURED "
+        "here: the 1 lost row(s) fall in 1 distinct domain(s) (1 row(s) per domain at most), and "
+        "dcs_csi_subspace_analyze.py intersects (domain, slot) KEYS across all arms before "
+        "averaging, so every arm is compared on the same key set regardless. Ledger: "
+        "n_attempted 670, n_succeeded 669, n_failed 1. Failing prompt_ids (complete): "
+        "5e33ca929594b66b.",
+    "csi1_basket_train_KO_RAND0_20260917_225309_3187605":
+        "DCS-CSI-047: 669 of 670 rows. 1 row(s) REFUSED by the sprint's own "
+        "norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5): the control basis was "
+        "near-orthogonal to the KO->clean delta at some position, so rescaling its projection "
+        "would have amplified float noise into an arbitrary QR-gauge direction. The guard "
+        "declines to fabricate a control rather than silently writing a meaningless one. "
+        "MECHANISM (not a verified property of this run): degeneracy is the angle between a "
+        "fixed basis and a fixed delta, both determined before any readout, and the delta is "
+        "identical across arms -- so the loss is expected to be outcome-independent. MEASURED "
+        "here: the 1 lost row(s) fall in 1 distinct domain(s) (1 row(s) per domain at most), and "
+        "dcs_csi_subspace_analyze.py intersects (domain, slot) KEYS across all arms before "
+        "averaging, so every arm is compared on the same key set regardless. Ledger: "
+        "n_attempted 670, n_succeeded 669, n_failed 1. Failing prompt_ids (complete): "
+        "1b31b7fed18e9fb0.",
     "csi1_basket_train_KO_SHUF1_20260917_221428_3183084":
         "DCS-CSI-047: 668 of 670 rows. 2 row(s) REFUSED by the sprint's own "
         "norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5): the control basis was "
