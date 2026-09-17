@@ -50,22 +50,46 @@ def _load(mod: str, path: str):
     return m
 
 
-def _runmeta_job(d: str) -> Optional[str]:
-    """The SLURM job id this run directory belongs to, from RUNMETA.json. None if unrecorded."""
+# REVIEW R8-M1. These two readers originally collapsed THREE different situations into one `None`:
+# "the arm ran no rescue", "the metadata file is absent", and "the file is there but the key is
+# not". The layer filter KEPT all three, so a directory that rescued at the wrong layer but whose
+# config had lost the key was admitted -- demonstrated by the reviewer. Missing load-bearing
+# metadata must RAISE, not default (plan section 14), so the unverifiable cases are now a distinct
+# sentinel and the filters reject it instead of waving it through.
+_UNVERIFIABLE = object()
+
+
+def _describe(v):
+    """Render a tri-state reader's value for an error message."""
+    return "UNRECORDED" if v is _UNVERIFIABLE else v
+
+
+def _runmeta_job(d: str):
+    """The SLURM allocation this run belongs to. `_UNVERIFIABLE` if the run did not record one."""
     p = os.path.join(d, "RUNMETA.json")
     if not os.path.exists(p):
-        return None
+        return _UNVERIFIABLE
     j = json.load(open(p, encoding="utf-8"))
-    v = j.get("slurm_job_id")
-    return None if v is None else str(v)
+    if "slurm_job_id" not in j or j.get("slurm_job_id") is None:
+        return _UNVERIFIABLE
+    return str(j["slurm_job_id"])
 
 
-def _config_rescue_layer(d: str) -> Optional[int]:
-    """The layer this run PATCHED, from its own frozen config. None if the arm ran no rescue."""
+def _config_rescue_layer(d: str):
+    """The layer this run PATCHED, from its own frozen config.
+
+    Returns an int, or None ONLY when the config explicitly records `rescue_layer: null` -- which
+    is how score_behavior.py writes a no-rescue arm (BASE, KO), where a layer is genuinely not a
+    property of the run. If config.json is absent, or present without the key, the layer cannot be
+    verified and `_UNVERIFIABLE` is returned so the caller can refuse rather than assume.
+    """
     p = os.path.join(d, "config.json")
     if not os.path.exists(p):
-        return None
-    v = json.load(open(p, encoding="utf-8")).get("args", {}).get("rescue_layer")
+        return _UNVERIFIABLE
+    args = json.load(open(p, encoding="utf-8")).get("args", {})
+    if "rescue_layer" not in args:
+        return _UNVERIFIABLE
+    v = args["rescue_layer"]
     return None if v is None else int(v)
 
 
@@ -150,47 +174,95 @@ def strict_run_dir(tag: str, expect_n: int, row_file: str = "gens.jsonl",
     # Neither filter may ever be a tie-break on TIME. If a filter leaves the set ambiguous we still
     # refuse, and the message names the remaining directories and the filter that would separate
     # them, because the previous failure here was a reader who did not know a choice was being made.
-    if require_rescue_layer is not None and len(ok) > 1:
+    # REVIEW R8-B1. Both filters used to be guarded by `len(ok) > 1`, and only the LAYER axis got a
+    # survivor assertion afterwards. That left two holes the reviewer demonstrated:
+    #   * when exactly one directory survived the completeness check, the filters never ran, so a
+    #     lone directory from the WRONG allocation was returned -- the KO_RAND2 near-miss S-104b was
+    #     written about, transposed onto BASE and KO, which are the two arms whose ONLY discriminator
+    #     is the job id (they run no rescue, so they carry no layer);
+    #   * when the layer filter itself reduced the set to one, the job filter became unreachable.
+    # `KO` is the subtrahend of every contrast in the table, so a wrong-allocation `KO` would have
+    # made an entire column cross-layer with no VOID anywhere. Both filters are therefore now
+    # UNCONDITIONAL, and both axes assert on the survivor below.
+    if require_rescue_layer is not None:
         kept, dropped = [], []
         for d in ok:
             lay = _config_rescue_layer(d)
-            if lay is None or lay == require_rescue_layer:
+            if lay is _UNVERIFIABLE:
+                dropped.append("%s: a layer was required but this run does not record one "
+                               "(config.json missing, or no rescue_layer key) -- cannot verify"
+                               % os.path.basename(d))
+            elif lay is None or lay == require_rescue_layer:
                 kept.append(d)
             else:
                 dropped.append("%s: rescue_layer=%r != %d" % (os.path.basename(d), lay,
                                                               require_rescue_layer))
-        if dropped:
-            why.extend(dropped)
-            ok = kept
-    if require_slurm_jobs is not None and len(ok) > 1:
+        why.extend(dropped)
+        ok = kept
+    if require_slurm_jobs is not None:
         want = {str(x) for x in require_slurm_jobs}
         kept, dropped = [], []
         for d in ok:
             job = _runmeta_job(d)
-            if job is not None and job in want:
+            if job is _UNVERIFIABLE:
+                dropped.append("%s: a SLURM allocation was required but this run does not record "
+                               "one -- cannot verify" % os.path.basename(d))
+            elif job in want:
                 kept.append(d)
             else:
                 dropped.append("%s: slurm_job_id=%r not in %s"
                                % (os.path.basename(d), job, sorted(want)))
-        if dropped:
-            why.extend(dropped)
-            ok = kept
+        why.extend(dropped)
+        ok = kept
     if len(ok) != 1:
         hint = ""
+        # DIAGNOSTIC QUALITY IS PART OF THE FIX. With the filters unconditional, a lone candidate of
+        # the wrong layer or allocation is now dropped BEFORE the survivor assertion, so without
+        # this line the refusal would read "0 complete run dirs" -- which names the wrong cause and
+        # would send a reader hunting for a missing run. Say which filter emptied the set.
+        if not ok and (require_rescue_layer is not None or require_slurm_jobs is not None):
+            hint = ("\n  CAUSE: candidates existed but ALL were rejected by the requested filters "
+                    "(require_rescue_layer=%r, require_slurm_jobs=%r). See the rejections above -- "
+                    "this is NOT a missing run." % (require_rescue_layer,
+                                                    sorted({str(x) for x in require_slurm_jobs})
+                                                    if require_slurm_jobs else None))
         if len(ok) > 1:
             hint = ("\n  HINT: these are all complete. Separate them by a property the run recorded "
                     "-- require_rescue_layer=%s / slurm_job_id=%s -- never by recency."
-                    % ([_config_rescue_layer(d) for d in ok], [_runmeta_job(d) for d in ok]))
+                    % ([_describe(_config_rescue_layer(d)) for d in ok],
+                       [_describe(_runmeta_job(d)) for d in ok]))
         raise SystemExit("REFUSING for tag %r: %d complete run dirs (need exactly 1).\n  rejected:\n%s\n"
                          "  accepted:\n%s%s" % (tag, len(ok), "\n".join("    " + w for w in why),
                                                  "\n".join("    " + os.path.basename(d) for d in ok),
                                                  hint))
+    # SURVIVOR ASSERTIONS, one per axis. These are REDUNDANT BY CONSTRUCTION while the two filters
+    # above remain unconditional -- anything they would catch has already been dropped. That is said
+    # out loud rather than left to be discovered, because an assertion that cannot fire is the exact
+    # antipattern review R3-B1 and S-074a were about, and a reader is entitled to know which of
+    # these two mechanisms is load-bearing. They are kept deliberately: they are the backstop if
+    # either filter is ever re-guarded by a condition (it was `len(ok) > 1` until review R8-B1), and
+    # in that event they become live again and are the only thing standing between a wrong-layer or
+    # wrong-allocation directory and a published number. Cheap, and tested via the filters.
     if require_rescue_layer is not None:
         lay = _config_rescue_layer(ok[0])
+        if lay is _UNVERIFIABLE:
+            raise SystemExit("REFUSING for tag %r: layer %d was required but %s records no "
+                             "rescue_layer, so it cannot be verified"
+                             % (tag, require_rescue_layer, os.path.basename(ok[0])))
         if lay is not None and lay != require_rescue_layer:
             raise SystemExit("REFUSING for tag %r: the single complete run dir %s patched layer %d, "
                              "not the required %d" % (tag, os.path.basename(ok[0]), lay,
                                                       require_rescue_layer))
+    if require_slurm_jobs is not None:
+        job = _runmeta_job(ok[0])
+        want = sorted({str(x) for x in require_slurm_jobs})
+        if job is _UNVERIFIABLE:
+            raise SystemExit("REFUSING for tag %r: allocation %s was required but %s records no "
+                             "slurm_job_id" % (tag, want, os.path.basename(ok[0])))
+        if job not in want:
+            raise SystemExit("REFUSING for tag %r: the single complete run dir %s came from SLURM "
+                             "job %s, not the required %s"
+                             % (tag, os.path.basename(ok[0]), job, want))
     return ok[0]
 
 

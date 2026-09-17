@@ -6784,3 +6784,170 @@ The `--allow-short` 3→4 sensitivity: dropping `KO_RAND2` gives **rank 7 of 10*
 own check by a third path. The L18 row-loss map (`KO_ORTH` 1, `SHUF0` 1, `SHUF1` 1, `SHUF2` 2,
 `RAND1` 1, `RAND2` 4, `RAND3` 2 = **12**) matches S-104b exactly, every one a norm-match degeneracy
 refusal.
+
+---
+
+# REVIEW R8, parts 2 and 3 — **a BLOCKER in my own S-104 fix**, two MAJORs, all demonstrated and all fixed; and the `sha16` defect fixed at its source
+
+## BLOCKER R8-B1 — the layer axis got a survivor assertion and the job axis did not
+
+S-104b's whole argument was: *"Caught because the check asserts on the SURVIVOR, not only filters
+the set."* **That was true of only half the implementation.** Both filters were guarded by
+`len(ok) > 1`, and only `require_rescue_layer` had an assertion afterwards. So:
+
+* when exactly **one** directory survived the completeness check, the job filter never ran, and a
+  lone directory **from the wrong allocation** was returned — the `KO_RAND2` near-miss transposed
+  onto `BASE` and `KO`, which are precisely the two arms whose **only** discriminator is the job id
+  (they run no rescue, so they carry no layer);
+* when the **layer** filter itself narrowed the set to one, the job filter became **unreachable**, so
+  a directory from a third, unrequested allocation passed as well.
+
+Demonstrated by the reviewer, not argued:
+
+```
+dirs on disk: ['t_BASE_20260915_190347_1', 't_BASE_20260917_001351_1']
+strict_run_dir(require_slurm_jobs=['902004','902005']) -> t_BASE_20260915_190347_1
+   its RUNMETA slurm_job_id = 896679        <-- NOT in the requested set
+indep run_dir(jobs=['902004','902005'])    -> t_BASE_20260915_190347_1
+```
+
+**What it would have done to the science.** `KO` is the **subtrahend of every contrast** in the L18
+table — manipulation, identity, positive control, candidate and all ten controls. Had `BASE` or `KO`
+lost more than four rows (`KO_RAND2` lost exactly four; the margin was **one row**), the lone
+survivor from allocation 896679 — **layer 20** — would have entered the layer-18 family silently.
+Nothing downstream would have said so: those arms' configs record `rescue_layer: null` so the layer
+filter passes them through *by design*, their rows carry no `rescue_layer` so the new row-level VOID
+exempts them (R8-M2), and the report has no field recording the filters at all. The entire S-104
+L18 column would have been cross-layer with `VOID []`.
+
+**Not live in any committed number**, checked: all four `BASE`/`KO` directories are complete at 670
+rows, so `len(ok) > 1` held, the filter did run, and it selected correctly — the committed reports
+name `BASE_20260917_001351` and `KO_20260917_002735`, both job 902004. Latent, not realised. Rated
+BLOCKER because it is the same defect class the change existed to close, on the one axis with no
+second line of defence, and because **the log's own description of the design was untrue of half the
+implementation.**
+
+**Fixed:** both filters are now **unconditional**, and both axes assert on the survivor.
+
+**And a consequence I have to state, because it is this project's favourite failure mode.** With the
+filters unconditional, the survivor assertions became **redundant by construction** — anything they
+would catch is already dropped. That is an assertion that cannot fire, which is exactly review
+R3-B1's and S-074a's antipattern. I kept them, and **said so in the code**: they are the backstop if
+either filter is ever re-guarded by a condition (it *was* `len(ok) > 1` until now), and in that event
+they become live again and are the only thing between a wrong-layer directory and a published
+number. What is *not* acceptable is leaving a reader to guess which mechanism is load-bearing, so
+the comment names it.
+
+Because the unconditional filter now drops a bad lone candidate *before* the assertion, the refusal
+would have read **"0 complete run dirs"** — naming the wrong cause and sending a reader hunting for
+a missing run. Both paths now emit an explicit `CAUSE:` line saying the filters rejected every
+candidate and *"this is NOT a missing run"*, and **the diagnostic itself is tested**.
+
+## MAJOR R8-M1 — `rescue_layer is None` meant three different things, and the filter kept all three
+
+`_config_rescue_layer` returned `None` for *(i)* the arm ran no rescue, *(ii)* `config.json` absent,
+*(iii)* `config.json` present without the key. The filter **kept** all three, so an arm that
+rescued at the **wrong layer** but whose config had lost the key was admitted:
+
+```
+rows record rescue_layer = 20
+config.json args         = {'arm': 'AXIS'}      # key gone
+strict_run_dir(require_rescue_layer=18) -> ADMITTED
+indep    run_dir(layer=18)              -> ADMITTED
+```
+
+Plan §14 says missing load-bearing fields must **raise**, never default. The unverifiable cases are
+now a distinct sentinel and are **refused**; only an explicit `rescue_layer: null` — which is how
+`score_behavior.py` writes a genuine no-rescue arm, verified on the real `BASE`/`KO` configs (key
+**present**, value **null**) — passes through.
+
+**The second half of M1 is the more serious one.** The primary analyser asserted the requested layer
+against the **rows**; the independent re-derivation asserted against **nothing**. So the two paths
+could *agree on a number* while one had silently analysed a directory whose config and rows
+disagree — and **S-084 and S-100 were both config/rows disagreements**. That defeats the stated
+reason `dcs_csi_rederive_subspace.py` shares no code with the analyser. It now performs its own
+row-level check, written independently: the rows' layers must equal the requested layer, and an arm
+that **fired** a rescue while recording no layer is refused.
+
+## MAJOR R8-M2 — the new VOID exempted arms on "the set came out empty", not on "the arm ran no rescue"
+
+`layers_used` is built only from arms whose `rescue_layers` set is non-empty, so the layer VOID
+exempted any arm whose rows omit the field. The reviewer built an arm that fired on **670 of 670**
+rows, declared `cand_rank1` and a norm-match key — passing every arm-identity and liveness check —
+and was exempt from the layer check purely because its rows carried no `rescue_layer`:
+
+```
+row_meta: n_rows=670 rescue_fired=670 rescue_layers=[] basis_keys=['cand_rank1']
+layers_used = {} ; bad = {} -> VOID raised: False ; rescue_fired VOID triggers: False
+```
+
+The exemption must key on a fact about the **arm**, not about the **file**. It now VOIDs any arm that
+fired a rescue while recording no layer in any row. Verified not live: all sixteen real button arms
+carry the field and agree with their configs.
+
+## Regression tests, and the reviewer's own failing test
+
+Six tests added to `tests/test_run_dir_layer_selection.py` (now **12**), one per finding plus a
+`test_R8_the_legitimate_cases_still_resolve` — without which all the others could be satisfied by
+refusing everything. **The reviewer's own failing test now passes.** And the numbers are untouched:
+
+| check | result |
+|---|---|
+| L18 re-derivation | **−0.00028, rank 8 of 11, 5 of 7, 4 of 5** — unchanged |
+| button L20, filtered path | **+0.00040, rank 4 of 11** — unchanged |
+| S-102 held-out basket, **unfiltered** path | **+0.00401, rank 1 of 47, 1 of 23** — unchanged |
+
+## R8 part 3 — the `sha16` defect fixed at its source
+
+S-106 diagnosed it; this fixes it. The root cause was located precisely, and it was **not** the
+hash function: fed the *saved* tensor, the old function agrees across both files. The defect was the
+**argument** — `sha16(B)` was called one line *before* the float32 downcast, on a float64 buffer
+that is never persisted.
+
+```
+RECORDED sha16     0c397a778db933ba  fad8b030ae93976e   DIFFER   <-- the defect
+torch.equal(saved) True, max abs diff 0.000e+00
+NEW hash of saved  679c76d2d0e8fe9e  679c76d2d0e8fe9e   EQUAL
+old fn on SAVED    d826942ff66335bf  d826942ff66335bf   EQUAL    <-- so the function was fine
+```
+
+The save path is now a single `save_bases()` that downcasts **first** and hashes the exact mapping
+handed to `torch.save`, so the recorded hash cannot drift from the bytes on disk again.
+
+**Redefined rather than renamed, with the reason recorded.** Greps found exactly three readers
+(`score_behavior.py` prints it and records it as `basis_sha16`; `dcs_csi_subspace_analyze.py` copies
+that into `in_sample`) and **nothing compares it** — no equality test, no pinned constant, no
+assertion. Renaming would have turned both readers into silent `None` writers, which is worse than a
+marked redefinition. So new artifacts carry a discriminator `bases_sha16_of:
+"saved_float32_tensor_bytes"` that pre-fix files **lack**, making old and new uncomparable rather
+than silently comparable.
+
+**MIGRATION NOTE, which is the part that must not be lost:** every `basis_sha16` in run metadata
+written **before** this fix is a float64 pre-downcast hash. **It must never be compared against a
+post-fix value.** Pre-fix artifacts are identified by the *absence* of `bases_sha16_of`. No committed
+`.json` or `.pt` was rewritten — the fix applies to future builds only.
+
+`tests/test_axis_sha16_is_of_the_saved_bytes.py`, 5 tests, all passing, and **shown to fail on the
+old behaviour**: reinstating the pre-fix ordering gives *"identical saved tensors recorded different
+hashes — S-106 is back"*, 3 of 5 failing. No saved tensor changed: compared storage-entry by
+storage-entry at the same path on all **53 real bases**, byte-identical, and the round-tripped
+tensors still equal the committed artifact's on 53 of 53. (A false alarm was chased down and
+recorded: whole-file `sha256` of two `.pt` files differs purely because `torch.save` embeds the
+output filename as the zip prefix, so cross-filename byte comparison of a `.pt` is meaningless.)
+
+**Residual, stated rather than hidden:** the hash is now a function of the float32 values only, so
+two axes differing *below* float32 resolution record the same hash. That is correct — `score_behavior.py`
+loads the basis from the `.pt`, so the float32 tensor is the only thing any arm ever uses, and the
+float64 tail was never an experimental quantity.
+
+## An environmental fact about the test suite, recorded because it is easy to misread
+
+The **guard** suite the pre-commit hook runs is **346 tests and green**. The **full** `tests/` tree is
+1726 tests and has **8 pre-existing failures**, all from gated Hugging Face access on this host
+(`OSError: Access to model meta-llama/Llama-3.1-8B-Instruct is restricted`), in
+`test_common_provenance`, `test_donor_patch`, `test_prompt_families_strict`, `test_tsc_request_filter`.
+
+**Verified mine, not inherited:** I re-ran two of them with my changes **stashed** and they fail
+identically at `HEAD`; and none of the four failing files imports any module I touched. Recorded so
+that "the full suite is not green here" is a known environmental state rather than something a later
+reader discovers and attributes to this work.

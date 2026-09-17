@@ -409,6 +409,20 @@ def main() -> int:
         if bad:
             void.append("--require-rescue-layer=%d but the ROWS of these arms record other layers: %s"
                         % (a.require_rescue_layer, bad))
+        # REVIEW R8-M2. `layers_used` is built only from arms whose `rescue_layers` set is NON-EMPTY,
+        # so the check above exempts any arm whose rows omit the field. The reviewer built an arm
+        # that fired a rescue on 670 of 670 rows, declared `cand_rank1` and a norm-match key --
+        # passing every arm-identity and liveness check -- and was exempt from the layer check
+        # purely because its rows carried no `rescue_layer`. The exemption must be keyed on "this
+        # arm ran no rescue", which is a fact about the arm, NOT on "the set came out empty", which
+        # is a fact about the file. BASE and KO legitimately fired nothing; anything that FIRED and
+        # recorded no layer is unverifiable and must VOID.
+        _unverifiable = {x: meta[x]["rescue_fired"] for x in arms
+                         if meta[x]["rescue_fired"] and not meta[x]["rescue_layers"]}
+        if _unverifiable:
+            void.append("--require-rescue-layer=%d but these arms FIRED a rescue while recording no "
+                        "rescue_layer in any row, so their layer cannot be verified: %s"
+                        % (a.require_rescue_layer, _unverifiable))
     if len({tuple(meta[x]["n_rescue_positions"]) for x in arms if meta[x]["n_rescue_positions"]}) > 1:
         void.append("rescued arms wrote DIFFERENT position counts: %s"
                     % {x: meta[x]["n_rescue_positions"] for x in arms})

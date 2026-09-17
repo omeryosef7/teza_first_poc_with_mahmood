@@ -187,7 +187,39 @@ def shuffled_y(y, dof, doms, seed):
 
 
 def sha16(t: torch.Tensor) -> str:
-    return hashlib.sha256(t.to(torch.float64).contiguous().numpy().tobytes()).hexdigest()[:16]
+    """Hash of THE BYTES THIS ARTIFACT PERSISTS: the tensor at the SAVED dtype, float32.
+
+    S-106. This used to hash `t.to(torch.float64)` and was called on the pre-downcast fit buffer,
+    while `torch.save` writes `B.to(torch.float32)`. `torch.linalg.solve` is not bit-reproducible
+    across runs or thread counts, so two builds of the SAME axis at the SAME layer recorded
+    DIFFERENT sha16 while their saved float32 tensors were BITWISE IDENTICAL -- demonstrated on
+    configs/dcs_csi_axis_basket_behavioral.json (0c397a778db933ba) vs
+    configs/dcs_csi_axis_basket_behavioral_shuf24.json (fad8b030ae93976e), both selected_layer 18,
+    torch.equal(saved tensors) True, max abs diff 0.000e+00. A differing hash then LOOKED like
+    evidence that the axis had changed, and S-103 leaned on exactly that inference.
+
+    Hashing at the persisted dtype makes the recorded value a property of the file on disk:
+    equal saved tensors imply an equal hash, so a differing hash now means the axis really differs.
+    """
+    return hashlib.sha256(t.to(torch.float32).contiguous().numpy().tobytes()).hexdigest()[:16]
+
+
+def save_bases(bases, out, path):
+    """Downcast FIRST, hash the downcast tensors, record, then save THOSE SAME objects.
+
+    S-106. The order is the fix and is why this is a function rather than two inline lines: the
+    hash is taken from `saved`, which is the exact mapping handed to `torch.save`, so the recorded
+    hash cannot drift from the bytes on disk again. The saved tensors themselves are unchanged --
+    `B.to(torch.float32)`, as before; the hash is metadata only.
+    """
+    saved = {k: B.to(torch.float32) for k, B in bases.items()}
+    out["bases"] = {k: {"rank": int(saved[k].shape[0]), "sha16": sha16(saved[k])} for k in bases}
+    # Discriminator for the redefinition (S-106): artifacts built before the fix carry a float64
+    # pre-downcast hash under the same key and DO NOT carry this field, so an old value and a new
+    # value can never be compared as if they meant the same thing.
+    out["bases_sha16_of"] = "saved_float32_tensor_bytes"
+    torch.save({"meta": out, "bases": saved}, path)
+    return saved
 
 
 # ------------------------------------------------------------------------------------------ main
@@ -408,9 +440,7 @@ def main() -> int:
         raise SystemExit("REFUSING: ctrl_orth is not orthogonal to the candidate (cos=%g)"
                          % cos["ctrl_orth"])
 
-    out["bases"] = {k: {"rank": int(B.shape[0]), "sha16": sha16(B)} for k, B in bases.items()}
-    torch.save({"meta": out, "bases": {k: B.to(torch.float32) for k, B in bases.items()}},
-               os.path.join(REPO, a.out))
+    save_bases(bases, out, os.path.join(REPO, a.out))
     json.dump(out, open(os.path.join(REPO, a.out.replace(".pt", ".json")), "w"), indent=1)
     print("\nwrote %s  (%d bases)" % (a.out, len(bases)))
     print("     %s" % a.out.replace(".pt", ".json"))

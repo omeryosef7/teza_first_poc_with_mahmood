@@ -51,35 +51,91 @@ def run_dir(tag: str, expect_n: int, allow_short: int, layer=None, jobs=None) ->
         if n == expect_n or (n < expect_n and expect_n - n <= allow_short):
             cands.append((d, n))
 
+    # REVIEW R8-B1 / R8-M1, fixed here INDEPENDENTLY of the primary path (this file shares no code
+    # with it on purpose, so a fix applied to one and not the other would silently break the
+    # two-path guarantee -- which is exactly what R8-M1 found: the primary path asserted the layer
+    # against the ROWS while this one asserted nothing, so cross-path agreement could not detect a
+    # config/rows disagreement, and S-084 and S-100 were both config/rows disagreements).
+    # UNRECORDED is distinct from "no rescue": a config that is missing, or present without the
+    # key, cannot verify anything and is refused rather than waved through.
+    UNREC = "UNRECORDED"
+
     def _layer_of(d):
         p = os.path.join(d, "config.json")
         if not os.path.isfile(p):
-            raise SystemExit("REFUSING %s: %s has no config.json, so its layer cannot be verified"
-                             % (tag, os.path.basename(d)))
-        v = json.load(open(p, encoding="utf-8")).get("args", {}).get("rescue_layer")
+            return UNREC
+        args = json.load(open(p, encoding="utf-8")).get("args", {})
+        if "rescue_layer" not in args:
+            return UNREC
+        v = args["rescue_layer"]
         return None if v is None else int(v)
 
     def _job_of(d):
         p = os.path.join(d, "RUNMETA.json")
         if not os.path.isfile(p):
-            return None
-        v = json.load(open(p, encoding="utf-8")).get("slurm_job_id")
-        return None if v is None else str(v)
+            return UNREC
+        j = json.load(open(p, encoding="utf-8"))
+        if "slurm_job_id" not in j or j.get("slurm_job_id") is None:
+            return UNREC
+        return str(j["slurm_job_id"])
 
-    if layer is not None and len(cands) > 1:
+    def _row_layers(d):
+        """The layers the ROWS actually record, and whether any row fired a rescue at all."""
+        lays, fired = set(), 0
+        with open(os.path.join(d, "results.jsonl"), encoding="utf-8") as fh:
+            for line in fh:
+                r = json.loads(line)
+                if r.get("rescue_layer") is not None:
+                    lays.add(int(r["rescue_layer"]))
+                if r.get("rescue_liveness"):
+                    fired += 1
+        return lays, fired
+
+    # UNCONDITIONAL, not len>1-guarded: a lone candidate from the wrong layer or the wrong
+    # allocation is precisely the case a >1 guard skips.
+    if layer is not None:
         cands = [(d, n) for d, n in cands if _layer_of(d) in (None, int(layer))]
-    if jobs is not None and len(cands) > 1:
+    if jobs is not None:
         want = {str(x) for x in jobs}
         cands = [(d, n) for d, n in cands if _job_of(d) in want]
     if len(cands) != 1:
-        raise SystemExit("REFUSING %s: %d usable run dirs (need exactly 1): %s  layers=%s jobs=%s"
+        cause = ""
+        if not cands and (layer is not None or jobs is not None):
+            cause = ("  CAUSE: candidates existed but all were rejected by the filters "
+                     "(layer=%r, jobs=%r) -- this is NOT a missing run." % (layer, jobs))
+        raise SystemExit("REFUSING %s: %d usable run dirs (need exactly 1): %s  layers=%s jobs=%s\n%s"
                          % (tag, len(cands), [os.path.basename(c) for c, _ in cands],
-                            [_layer_of(c) for c, _ in cands], [_job_of(c) for c, _ in cands]))
-    got = _layer_of(cands[0][0])
-    if layer is not None and got is not None and got != int(layer):
-        raise SystemExit("REFUSING %s: %s patched layer %d, not the required %s"
-                         % (tag, os.path.basename(cands[0][0]), got, layer))
-    return cands[0][0]
+                            [_layer_of(c) for c, _ in cands], [_job_of(c) for c, _ in cands], cause))
+    d0 = cands[0][0]
+    # SURVIVOR ASSERTIONS on both axes, plus -- new here -- a check against the ROWS, so this path
+    # can detect a config that does not describe what the run actually wrote.
+    if layer is not None:
+        got = _layer_of(d0)
+        if got == UNREC:
+            raise SystemExit("REFUSING %s: layer %s required but %s records no rescue_layer"
+                             % (tag, layer, os.path.basename(d0)))
+        if got is not None and got != int(layer):
+            raise SystemExit("REFUSING %s: %s patched layer %d, not the required %s"
+                             % (tag, os.path.basename(d0), got, layer))
+        rl, fired = _row_layers(d0)
+        if rl - {int(layer)}:
+            raise SystemExit("REFUSING %s: %s has config rescue_layer=%r but its ROWS record "
+                             "layer(s) %s -- the config does not describe what the run wrote"
+                             % (tag, os.path.basename(d0), got, sorted(rl)))
+        if fired and not rl:
+            raise SystemExit("REFUSING %s: %s fired a rescue on %d rows but no row records a "
+                             "rescue_layer, so the layer cannot be verified"
+                             % (tag, os.path.basename(d0), fired))
+    if jobs is not None:
+        job = _job_of(d0)
+        want = sorted({str(x) for x in jobs})
+        if job == UNREC:
+            raise SystemExit("REFUSING %s: allocation %s required but %s records no slurm_job_id"
+                             % (tag, want, os.path.basename(d0)))
+        if job not in want:
+            raise SystemExit("REFUSING %s: %s came from SLURM job %s, not the required %s"
+                             % (tag, os.path.basename(d0), job, want))
+    return d0
 
 
 def arm_values(d: str, split: str, assign: dict) -> dict:
