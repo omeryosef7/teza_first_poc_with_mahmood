@@ -1,0 +1,54 @@
+# PR-CSI-002 READ COMMANDS -- written BEFORE the basket-at-L20 arms finished, so the read is
+# mechanical and cannot be tuned to the answer. Frozen 2026-09-17 ~22:50, while jobs 905990
+# (group A) and 906001 (group B) were still running. See S-112.
+#
+# Jobs: 905990 = group A (BASE, KO, KO_SELF, KO_FULL, KO_AXIS, KO_PLS, KO_ORTH)
+#       906001 = group B (KO_AXIS_ANCHOR, KO_SHUF0-3, KO_RAND0-5)
+# Both on n-303, RTX 3090, basket TRAIN, rescue_layer 20, basis configs/dcs_csi_axis_basket_L20.pt
+#
+# --require-rescue-layer 20 AND --require-slurm-job are BOTH mandatory here: csi1_basket_train_*
+# tags already resolve to L18 directories from the D12 runs, so without the filters these commands
+# would silently analyse the L18 experiment. That is the S-104 ambiguity, and R8-B1 is why the
+# filters are unconditional and assert on the survivor.
+
+# ---- GATE 0, BEFORE ANY NUMBER IS READ ----------------------------------------------------------
+# S-110c: score_behavior.py was modified mid-run at 21:53:36. BASE/KO/KO_AXIS_ANCHOR ran pre-edit;
+# KO_SELF onward ran post-edit. Every behaviour-affecting hunk was read and is gated on
+# rescue_donor=="ko", so the split should be cosmetic -- but PR-CSI-002 makes it a VOID condition,
+# so it must be MEASURED, not argued. KO_AXIS (post-edit, group A) vs KO_AXIS_ANCHOR (pre-edit,
+# group B) have byte-identical configuration apart from arm/tag. If their y_install is bit-identical
+# on every shared key, the mid-run edit provably changed nothing on this path and the arms are
+# reportable. If it is NOT bit-identical, the run is VOID under PR-CSI-002 and must be re-run.
+# (Cross-node determinism was already established for button in S-105b, so a difference here would
+#  point at the edit, not at the hardware.)
+#   -> compare rescue-fired rows of csi1_basket_train_KO_AXIS_* (job 905990)
+#      against            csi1_basket_train_KO_AXIS_ANCHOR_* (job 906001)
+#      on logp_concept, logp_codeword, semantic_logodds, p_concept, p_codeword, top1_id.
+#      Expect max |diff| == 0 on all six, as S-105b measured for button.
+
+# ---- PRIMARY ANALYSER ---------------------------------------------------------------------------
+python scripts/dcs_csi_subspace_analyze.py \
+  --codeword basket --tag-prefix csi1_basket_train --expect-n 670 --allow-short 4 \
+  --arms BASE,KO,KO_SELF,KO_FULL,KO_AXIS,KO_PLS,KO_ORTH,KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5 \
+  --split train --require-rescue-layer 20 --require-slurm-job 905990,906001 \
+  --out reports/DCS_CSI_SUBSPACE_basket_train_L20.json
+
+# ---- INDEPENDENT RE-DERIVATION (shares no code with the above) -----------------------------------
+python scripts/dcs_csi_rederive_subspace.py \
+  --tag-prefix csi1_basket_train --split train --expect-n 670 --allow-short 4 \
+  --controls KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5 \
+  --require-rescue-layer 20 --require-slurm-job 905990,906001 \
+  --out reports/DCS_CSI_REDERIVE_basket_train_L20.json
+
+# ---- LEAVE-ONE-DOMAIN-OUT, both directions (R8-m10 made this tool able to answer either) ---------
+python scripts/dcs_csi_rank_loo.py --tag-prefix csi1_basket_train --split train \
+  --expect-n 670 --allow-short 4 --require-rescue-layer 20 --require-slurm-job 905990,906001
+
+# ---- ALSO REPORT, per PR-CSI-002 and S-109's surviving points ------------------------------------
+#  * the captured-fraction / displacement for basket at L20 (the reviewer already saw 0.03001 at
+#    delta_norm 1.4012 from the live job -- i.e. capture DROPS and displacement GROWS vs L18's
+#    0.03237 / 1.17153). Report it as AMPLITUDE, never "energy" (S-109's correction).
+#  * NO dose-normalised obs/pred ratio. S-109 withdrew that interpretation; the KO_AT arms show
+#    obs/pred spans -24%..+1304% at this very dose, so the statistic carries no weight.
+#  * the raw rank, its attainable floor (10 controls -> 1/11 = 0.0909), and the PR-CSI-002 branch
+#    that the rank selects. A family of 10 CANNOT certify at 0.05 and the prereg says so.

@@ -7561,3 +7561,66 @@ is to settle what unit tests cannot: whether leg 1's contract, charged for the f
 the counters it expects. If not, **every row is ledgered `necessity:knockout_not_live_on_donor_capture`
 and the run yields ~0 rows** — loud and cheap. `failures` in the smoke output is the first thing to
 read, before any number.
+
+---
+
+# S-112 — the PR-CSI-002 read is **frozen as literal commands before the arms finished**, with a VOID gate that must be measured first
+
+Group A (905990) is on its last arm and group B (906001) is half-way. Rather than read the result
+and then write down how I read it, the exact invocations are committed **now**, while the arms are
+still running: `runargs/dcs_csi_pr002_read.txt`.
+
+**Why this is not ceremony.** Both filters (`--require-rescue-layer 20` **and**
+`--require-slurm-job 905990,906001`) are **mandatory** here, because `csi1_basket_train_*` tags
+already resolve to the **L18** directories from the D12 runs. Without the filters these commands
+would silently analyse **the wrong experiment** — the S-104 ambiguity, in the codeword where it
+would do the most damage, since D12 is the sprint's only positive. R8-B1 is why the filters are now
+unconditional and assert on the survivor.
+
+## GATE 0 — measured before any number is read
+
+S-110c's defect has to be discharged, not argued. `score_behavior.py` changed at **21:53:36**
+mid-run: `BASE`, `KO` and `KO_AXIS_ANCHOR` ran **pre-edit**, `KO_SELF` onward **post-edit**. I read
+all thirteen hunks and every behaviour-affecting one is gated on `rescue_donor == "ko"`, so the
+split *should* be cosmetic — but PR-CSI-002 lists *"`score_behavior.py` modified between arms of the
+same comparison"* as a **VOID condition**, so it must be **measured**.
+
+The measurement is already built into the design: **`KO_AXIS` (post-edit, group A) and
+`KO_AXIS_ANCHOR` (pre-edit, group B) have byte-identical configuration apart from `arm`/`tag`.**
+
+* **Bit-identical `y_install` on every shared key ⇒ the mid-run edit provably changed nothing on
+  this path**, and the arms are reportable.
+* **Not bit-identical ⇒ the run is VOID under PR-CSI-002 and must be re-run.**
+
+Cross-node determinism was already established for button (S-105b), so a difference here would
+point at **the edit**, not the hardware. The anchor now earns its keep a **fourth** way — S-045
+used it for allocation drift, S-105b for cross-node determinism, S-109 recorded that it is *not* a
+replicate, and here it is the instrument that discharges a code-provenance VOID.
+
+## What the read will and will not report
+
+Fixed in advance, and two of these are restrictions carried from S-109:
+
+* the raw rank, its attainable floor (**10 controls ⇒ 1/11 = 0.0909**), and the PR-CSI-002 branch
+  that rank selects. A family of 10 **cannot certify at 0.05** and the preregistration says so;
+* basket's captured fraction and displacement at L20 — reported as **AMPLITUDE**, never "energy"
+  (S-109's correction: the energy fraction is the square, ≈0.1 %, not 3 %);
+* **NO dose-normalised obs/pred ratio.** S-109 withdrew that interpretation, and the `KO_AT` arms
+  show obs/pred spanning −24 % … +1304 % *at this very dose*, so the statistic carries no weight.
+
+**A number already visible from the live job, recorded because it is a prediction-relevant fact and
+I would rather have it on the record before the verdict than after:** basket at L20 shows captured
+fraction **0.03001** at displacement norm **1.4012**, against L18's 0.03237 / 1.17153. Basket's
+capture **drops** and its displacement **grows** at button's layer.
+
+## Operational: I cancelled my own smoke for the right reason
+
+The necessity smoke (job 906372) spent **28 minutes staging** on n-503 and had not started an arm.
+Staging exists for **the n-30x rack's broken NFS** (S-090/S-092); n-503 is **outside** that rack, so
+for a 120-row mechanical check staging was **pure overhead I added by reflex**. Cancelled and
+relaunched **without** `CSI_STAGE` (job **906421**, excluding the whole 3090 rack): it landed on
+`rack-bgw-dgx1` and **started its first arm immediately**.
+
+Recorded because it is the mirror image of S-105d — there, moving *off* the rack fixed a stall;
+here, applying the rack's *workaround* off the rack caused one. **The rule is not "always stage";
+it is "stage only inside the n-30x rack."**
