@@ -6674,3 +6674,113 @@ Two answers the workstream was asked for directly:
 3. **Heads carrying non-copy semantic transfer** — every head-level work found studies copying or task identification. Genuinely open and adjacent; per Gate C, do **not** invent a circuit to fill it.
 4. **Citation-graph crawl** of 2512.03771 / 2605.18830 / 2605.00123 — not run. Cheapest remaining high-value literature action.
 5. **Concept-free readout as an intervention-scorable DV** — nothing found; still the claim most exposed to *"this is a Patchscopes variant."*
+
+---
+
+# REVIEW R8, part 1 (adversarial, ~4h cadence) — a **third** derivation of S-104 agrees on every number; and it lands **two corrections to my own entry**, one of which was a bolded overstatement
+
+R8 was opened with three agents. The one attacking the **numbers** has reported; the code-attack and
+the `sha16` fix are still running and will be recorded as R8 parts 2–3. Last round was R7 (before
+S-102).
+
+## The third path agrees, everywhere
+
+A derivation written from the raw rows importing **nothing** from this repo — its own arm discovery
+(by `RUNMETA.slurm_job_id` only, never recency), its own `y_install` recomputed as the two-way
+softmax over `logp_concept`/`logp_codeword`, its own key intersection, its own domain bootstrap and
+sign-flip test:
+
+| | third path | record | |
+|---|---|---|---|
+| L18 keys / domains | 658 (17-arm) · 659 (14-arm) / 67 | 658 · 659 / 67 | **AGREE** |
+| L18 `KO_FULL − KO` | +0.10842, 67/67 | +0.10842 | **AGREE** |
+| L18 `KO_AXIS − KO` | −0.00027 | −0.00027 | **AGREE** |
+| L18 pooled rank | **8 of 11**, p 0.7273 | 8 of 11, 0.7273 | **AGREE** |
+| all 10 L18 control values | identical to the digit | | **AGREE 10/10** |
+| all 17 per-arm installation levels | match to 1e−9 | | **AGREE** |
+| L20 vs the committed `…button_train_rank1.json` | 666/67, −0.20558, +0.06955, +0.00040, rank 4 of 11 | identical | **AGREE** |
+
+Three independently written paths now agree on the S-104 headline. The 658-vs-659 key difference is
+**not** a discrepancy: one implementation produces both by changing only the arm list, and the single
+extra key the 14-arm set keeps is `('harbour_dock','heldout|slot4|…')`, lost by `KO_ORTH`'s
+degeneracy refusal — an arm the re-derivation does not load.
+
+## CORRECTION 1 — I mixed the two paths' figures inside one row
+
+S-104's comparison table, and D13 in the ledger, are labelled **658 keys** and quote
+`KO_FULL − KO` = **+0.10842** (the 658-key analyser) alongside manipulation **−0.20686** — which is
+the **659-key re-derivation's** figure. The analyser's own manipulation at 658 keys is **−0.20730**.
+
+Both numbers are correct *for their own key set*; quoting one beside the other under a single key
+count is the error. It changes no verdict (the manipulation gate passes at −0.207 either way, 67/67
+domains), but it is exactly the drift the `canonical_figures` guard exists to catch and did not —
+because the guard compares a figure across documents, and here both documents carried the *same*
+mixed pair consistently. **A guard that checks agreement between deliverables cannot catch an error
+introduced identically into all of them.** Recorded as a gap in the guard, not just in the entry.
+
+**D13 now quotes both figures with their own key counts and says never to mix them.**
+
+## CORRECTION 2 — "the point estimate turns **negative**" was an overstatement
+
+S-104 wrote, in bold, that at L18 the candidate's *"point estimate turns negative"*. R8 gives the
+statistics that sentence needed and I did not put beside it:
+
+| | |
+|---|---|
+| point | −0.00027 |
+| domain-clustered bootstrap CI95 (20k) | **[−0.00124, +0.00068]** |
+| sign-flip p (MC 200k, two-sided) | **0.581** |
+| domains positive / negative | **35 / 32** |
+
+The CI straddles zero with **more than half its mass positive**, p = 0.58, and **more domains move
+positive than negative** — the negative mean is carried by magnitude in a minority of domains. **The
+sign is not interpretable.** Bolding it invited exactly the reading it cannot support.
+
+And S-104c's *"negative under 67 of 67 deletions"* is **leave-one-out stability of the mean**, not
+evidence that the sign differs from zero. It was correct as written and is easy to misread as the
+latter; stated here so it cannot be.
+
+**The defensible sentence, and the only one to use from here:** *at L18 the candidate is
+indistinguishable from zero and ranks 8th of 11 in its own control distribution.* That is a
+**stronger** claim than a sign flip, because being inside the control distribution is the
+preregistered test and "negative" never was.
+
+## The S-107 flag is DISCHARGED — and in the direction that STRENGTHENS S-104
+
+S-107 flagged D13 pending this measurement, because arXiv:2606.27510 proves interaction effects
+scale with clean-vs-patched distance, so a larger `KO_FULL` recovery at L18 might reflect a larger
+state distance rather than more available signal. R8 measured the fraction of the ‖clean − ko‖ delta
+the rank-1 axis actually spans, off all 670 `KO_AXIS` rows at each layer:
+
+| | **L18** | **L20** |
+|---|---|---|
+| fraction of ‖clean − ko‖ the rank-1 axis spans | **3.87 %** | **3.48 %** |
+| ‖clean − ko‖ at the rescue site | **1.3009** | 1.5207 |
+| axis / orth alignment ratio | 2.80 | 2.71 |
+| behavioural recovery per unit ‖delta‖ | **0.0833** | 0.0457 |
+| **linear-dose prediction** = captured fraction × (`KO_FULL − KO`) | **+0.00420** | +0.00242 |
+| observed `KO_AXIS − KO` | **−0.00027 = −7 % of prediction** | +0.00040 = +17 % of prediction |
+
+**The adversarial hypothesis fails on the data.** The captured fraction is **11 % larger** at L18,
+not smaller, and the state distance is **smaller** there (1.3009 vs 1.5207) — so "the patch moved
+the state further" cannot explain L18's larger whole-state recovery. Under this sprint's own S-041
+dose rule the L18 axis had **1.7× more to win** and returned **less than nothing**.
+
+R8's L20 figures also reproduce S-041 independently: 3.48 % against S-041's 3.6 % (which was
+measured on 24 smoke rows), and orth 1.28 % against its 1.35 %.
+
+**But the wording must still change, in the way R8 recommends** — not softened, *normalised*. The raw
+`KO_FULL` ratio sentence ("the whole state recovers 56 % more, so there was most to win") is
+replaced by the **dose-normalised** comparison, which is the form S-041's P1-g already mandates and
+which a raw ratio does not satisfy. D13 has been rewritten to the dose-normalised form.
+
+The comparison is fair on provenance, checked not assumed: both axes share `fit_domains_sha16`
+`4614853e5636eb5f`, `n_fit_domains` 67, `bank_sha16` `dcd92d723f3e6d00`, site `rel-6`, `fit_split`
+train, and differ only in `selected_layer`.
+
+## Also confirmed by R8
+
+The `--allow-short` 3→4 sensitivity: dropping `KO_RAND2` gives **rank 7 of 10**, reproducing S-104's
+own check by a third path. The L18 row-loss map (`KO_ORTH` 1, `SHUF0` 1, `SHUF1` 1, `SHUF2` 2,
+`RAND1` 1, `RAND2` 4, `RAND3` 2 = **12**) matches S-104b exactly, every one a norm-match degeneracy
+refusal.
