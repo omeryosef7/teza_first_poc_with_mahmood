@@ -7487,3 +7487,77 @@ it is stated here before the arm has run.
 Either finish the run first, or have the agent work on a copy. `RUNMETA.json`'s `git_dirty` did not
 save me here — it read `None` on these runs where the button arms recorded `true`, which is a second
 thing to look at.
+
+---
+
+# S-111 — **P2 FEASIBILITY SETTLED AT ZERO GPU COST**: there is a displacement to remove on every row. PR-CSI-003 frozen, smoke launched
+
+Plan §10 is explicit: *prove the endpoint can move before spending GPU; declare CANNOT ANSWER BEFORE
+RUNNING rather than buying a fake null with GPU hours.* S-110 listed the necessity arm's largest
+unknown as *"a fact about the model, not about my code"* — whether the knockout moves the residual
+stream at the **query-span** positions at all. If it does not, leg 4 fails on every row and the whole
+direction is CANNOT ANSWER.
+
+**That question was already answered by committed artifacts, and I had the number in hand without
+realising it.** `rescue_liveness.delta_norm_mean`, recorded on every rescued row of every existing
+arm, **is** ‖h_clean − h_ko‖ at exactly those positions:
+
+| family | rows | mean | **min** | max |
+|---|---|---|---|---|
+| button L20 | 670 | 1.52068 | **1.12111** | 2.61091 |
+| button L18 | 670 | 1.30090 | **0.95250** | 2.23407 |
+| **basket L18 TRAIN** | **670** | **1.17153** | **0.86796** | 2.14745 |
+| basket L18 VALIDATION | 230 | 1.17887 | **0.89057** | 2.00106 |
+
+**Not one row of 2240 is anywhere near zero.** Leg 4 will pass on every row. The implementation's
+single biggest risk is retired for **zero GPU hours**, from data this sprint already owned.
+
+**Headroom, the second feasibility question.** basket TRAIN `BASE` = 0.46852, `KO` = 0.23901, so the
+clean→ko span is **0.22951** installation points — a removal has 0.23 of range beneath it. And for
+calibration: the whole-span **ADD** recovers `KO_FULL − KO` = **+0.12041 = 52.5 %** of that span, so
+the knockout's effect on installation is only about **half mediated by the query span at this
+layer**. Restoring the whole span does not restore the whole effect, which is a fact worth having on
+record before interpreting any removal.
+
+## PR-CSI-003 frozen — `configs/dcs_csi_pr003_necessity_basket.json`
+
+**basket at L18**, because that is where the axis **passes** (D12). Necessity matters most exactly
+there: *"adds it back AND removing it takes it away"* is the pair plan §6 asks for. Running necessity
+where sufficiency already failed (button) would mostly re-measure a null.
+
+**Expected sign: NEGATIVE** — removing the installed component should move installation *down*,
+toward KO.
+
+**The prediction, fixed before the data, and it is deliberately unflattering to the candidate:**
+
+* **Positive control** `KO_NEC_FULL − NEC_BASE` should be **strongly negative**, of order **−0.07 to
+  −0.12** (a comparable fraction of the 0.2295 span to what the ADD direction achieves). I am *not*
+  asserting the symmetry is exact — the two compositions differ — but a drop of that **order** is
+  what the control has to show.
+* **Candidate** `KO_NEC_AXIS − NEC_BASE`, if the axis does what D12's sufficiency result suggests,
+  should be negative and of order **−0.003**. At 67 domains the sufficiency CI was
+  [0.00068, 0.00471], so an effect that size is only **marginally** detectable with the same n.
+  **This is not a well-powered test of the candidate and I am saying so in advance.**
+* **Honest expectation: the control fires clearly and the candidate is underpowered or null.**
+  Recorded so that a clear candidate effect reads as the surprise it would be, and a null reads as
+  *the underpowered result it was predicted to be* rather than as evidence against the axis.
+
+**Floor declared in advance:** 9 controls ⇒ 1/10 = **0.10**. This design **cannot certify at 0.05**
+and is not intended to.
+
+**A real limitation, recorded rather than buried:** there is **no inert identity control** for this
+direction. The natural one (donor = clean, live = clean) *is* the identity and is refused by the
+arm's own precondition. `KO_NEC_ORTH` is the nearest available. That is a genuine weakness of the
+necessity design, not an oversight.
+
+**A VOID condition added from S-110c's defect:** *"`score_behavior.py` modified between arms of the
+same comparison."* The mistake I made today is now a condition that voids the run that repeats it.
+
+## Launched: the smoke only
+
+Job **906372** — group L, `CSI_NEC_SMOKE=1`, 5 arms × 24 rows. **Not the real arms.** The smoke's job
+is to settle what unit tests cannot: whether leg 1's contract, charged for the first time against a
+**donor** forward (a single prefill pass that has never been gated in this codebase), actually sees
+the counters it expects. If not, **every row is ledgered `necessity:knockout_not_live_on_donor_capture`
+and the run yields ~0 rows** — loud and cheap. `failures` in the smoke output is the first thing to
+read, before any number.

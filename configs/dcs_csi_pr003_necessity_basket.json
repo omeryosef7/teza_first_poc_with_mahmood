@@ -1,0 +1,89 @@
+{
+  "schema": "dcs_csi_prereg/1",
+  "id": "PR-CSI-003",
+  "title": "Phase-2 NECESSITY: does removing the installed component from a CLEAN forward drop installation?",
+  "frozen_at": "2026-09-17T22:15+03:00",
+  "frozen_before_reading": "any --rescue-donor ko arm. No necessity arm has ever been run; the mode was implemented in S-110 and has only unit tests.",
+  "opened_by_entry": "S-111",
+
+  "question": "Every causal arm in this sprint tests SUFFICIENCY: under a live knockout, add back the clean state's component along the installation axis. Plan section 6 (Priority 2) asks the other direction -- from a CLEAN, high-installation forward, REMOVE the installed component (h' = h_clean - P_w(h_clean - h_ko)) and ask whether installation DROPS. Add-under-KO and remove-under-CLEAN together are far stronger than either alone.",
+
+  "why_basket_and_why_L18": "basket at L18 is where the axis PASSES its 46-control family on both splits (D12). Necessity is worth most exactly there, because 'adds it back AND removing it takes it away' is the pair plan section 6 asks for. Running necessity where sufficiency already failed (button) would mostly re-measure a null.",
+
+  "population": {
+    "codeword": "basket", "concept": "bomb", "split": "train",
+    "n_domains_expected": 67, "expect_n_rows": 670,
+    "query_kind": "semantic_one_word", "condition": "natural_doublespeak",
+    "cell": "C", "dose": 4, "bank_block": "cds_n4_sow",
+    "basis": "configs/dcs_csi_axis_basket_behavioral_shuf24.pt",
+    "rescue_layer": 18, "site_axis_fit_at": "rel-6", "rescue_positions": "query"
+  },
+
+  "FEASIBILITY_ESTABLISHED_BEFORE_SPENDING_GPU": {
+    "rule": "plan section 10 -- prove the endpoint can move before spending GPU; declare CANNOT ANSWER BEFORE RUNNING rather than buying a fake null with GPU hours",
+    "is_there_a_displacement_to_remove": "YES, decisively. rescue_liveness.delta_norm_mean on the existing KO_AXIS arms IS ||h_clean - h_ko|| at the query-span positions. basket L18 TRAIN: mean 1.17153, min 0.86796, max 2.14745 over 670 of 670 rows. NOT ONE ROW is near zero, so leg 4 of the necessity contract (there was something to remove) will pass on every row. This was the implementation's single largest unknown and it is now settled from committed artifacts at zero GPU cost.",
+    "all_four_families_for_reference": {
+      "button_L20": "mean 1.52068, min 1.12111",
+      "button_L18": "mean 1.30090, min 0.95250",
+      "basket_L18_train": "mean 1.17153, min 0.86796",
+      "basket_L18_validation": "mean 1.17887, min 0.89057"
+    },
+    "is_there_headroom_to_drop_into": "YES. basket TRAIN BASE = 0.46852, KO = 0.23901, so the clean-to-ko span is 0.22951 installation points. A removal has ~0.23 of range available beneath it.",
+    "what_the_whole_state_ADD_achieves_for_calibration": "KO_FULL - KO = +0.12041 = 52.5% of the span. The knockout's effect on installation is therefore only about half mediated by the query span at this layer -- restoring the whole span does not restore the whole effect."
+  },
+
+  "arms": {
+    "half_1_primary": ["NEC_BASE", "NEC_KO", "KO_NEC_FULL", "KO_NEC_AXIS", "KO_NEC_ORTH"],
+    "half_2_controls": ["KO_NEC_AXIS_ANCHOR", "KO_NEC_SHUF0", "KO_NEC_SHUF1", "KO_NEC_SHUF2", "KO_NEC_SHUF3", "KO_NEC_RAND0", "KO_NEC_RAND1", "KO_NEC_RAND2", "KO_NEC_RAND3"],
+    "note": "NEC_ prefix is load-bearing: ${P}_BASE already exists from group A and a second complete dir under one tag is exactly the S-104 tag ambiguity."
+  },
+
+  "primary_endpoint": "y_install (concept-free semantic_one_word), domain-clustered",
+  "statistical_unit": "DOMAIN",
+  "expected_sign": "NEGATIVE. KO_NEC_AXIS - NEC_BASE should be < 0 if the axis carries installed meaning: removing it should move installation DOWN, toward KO.",
+
+  "PREDICTION_FIXED_BEFORE_THE_DATA": {
+    "positive_control": "KO_NEC_FULL - NEC_BASE should be strongly negative. By symmetry with the sufficiency direction (whole-span ADD recovers 52.5% of the span) I expect the whole-span REMOVE to drop installation by roughly a comparable fraction of the 0.22951 span, i.e. of order -0.07 to -0.12. I am NOT asserting the symmetry is exact -- the two compositions differ -- but a drop of that ORDER is what the positive control has to show.",
+    "candidate": "If the axis is doing what D12's sufficiency result suggests, KO_NEC_AXIS - NEC_BASE should be negative and of order the sufficiency effect, i.e. around -0.003. At 67 domains the sufficiency CI was [0.00068, 0.00471], so an effect of that size is marginally detectable with the same n -- this is NOT a well-powered test of the candidate and I am saying so in advance.",
+    "honest_expectation": "I expect the positive control to fire clearly and the CANDIDATE to be underpowered or null. Recorded so that a clear candidate effect reads as the surprise it would be, and a null reads as the underpowered result it was predicted to be rather than as evidence against the axis."
+  },
+
+  "required_gates": {
+    "leg_1": "the knockout was live on the DONOR capture, per row",
+    "leg_2": "zero knockout counter movement across the READOUT forward",
+    "leg_3": "the patch fired on the readout (n_positions_written > 0)",
+    "leg_4": "||h_donor - h_live|| > 0 at the patched positions -- pre-established above as certain to pass",
+    "positive_control": "KO_NEC_FULL must pull installation materially toward KO. IF IT DOES NOT, the instrument is broken and KO_NEC_AXIS's result is CANNOT ANSWER, not a negative (plan section 15).",
+    "no_inert_identity_control_exists": "the natural one (donor = clean, live = clean) IS the identity and is refused by the arm's own precondition. KO_NEC_ORTH (norm-matched orthogonal) is the nearest available. This is a real limitation of the direction, not an oversight."
+  },
+
+  "void_conditions": [
+    "any leg failing on any admitted row",
+    "compared arms not on one GPU architecture",
+    "arms disagreeing on bank, exclusion file, layer or positions",
+    "any TEST domain present",
+    "a DONE.json ledger disagreeing with the rows on disk",
+    "score_behavior.py modified between arms of the same comparison (the S-110c defect -- do not repeat it)"
+  ],
+
+  "decision_rule": {
+    "positive_control_fails": "CANNOT ANSWER for the whole direction. Report the feasibility numbers and stop; do not report the candidate.",
+    "control_fires_candidate_negative_and_outside_its_control_family": "necessity is supported for basket, and combined with D12 this is the add-and-remove pair plan section 6 asks for. Family is 9 controls, floor 1/10 = 0.10, so it CANNOT certify at 0.05 -- it can only show where the candidate sits. Extend the family before any significance claim.",
+    "control_fires_candidate_inside_its_control_family": "necessity NOT demonstrated for the rank-1 axis. Given the prediction above this is the expected outcome and must be reported as UNDERPOWERED-or-null, not as evidence the axis is non-causal.",
+    "control_fires_candidate_POSITIVE": "removing the component RAISES installation. That would be a genuine surprise and must be reported as such, not smoothed over."
+  },
+
+  "attainable_p_floor": 0.10,
+  "floor_declared_in_advance": "9 controls => 1/10 = 0.10. This design cannot certify at 0.05 and is not intended to.",
+
+  "must_not_be_said_if_positive": [
+    "the installation axis is causal (prohibition 19 stands)",
+    "necessity is established (a 9-control family at floor 0.10 cannot establish it)",
+    "this replicates D12 (it is the other direction, not a replication)"
+  ],
+  "must_not_be_said_if_null": [
+    "the axis is not causal (the test is predicted to be underpowered for the candidate)",
+    "D12 is undermined (sufficiency and necessity are different claims; a null here does not retract a pass there)",
+    "removing the component does nothing (say: this design could not detect an effect of the size D12 implies)"
+  ]
+}
