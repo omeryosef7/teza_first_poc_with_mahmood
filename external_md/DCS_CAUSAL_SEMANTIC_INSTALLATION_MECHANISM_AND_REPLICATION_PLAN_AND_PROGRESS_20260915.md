@@ -8291,3 +8291,36 @@ printed.** PR-CSI-003's basis does **not** need to change, and the preregistrati
   byte size within the same second** left Python running **stale mutated bytecode**. *An analyser
   edited and immediately re-run at the same size can silently produce numbers from the old code.*
   That is worth a guard of its own.
+
+---
+
+# S-121 — the same-node A/B closes it: **`--limit` is exonerated by a controlled experiment**, and S-119's GPU explanation is confirmed
+
+Job 906501 ran both arms **on one V100**, from one script, with one flag list, differing in exactly
+one token, both selecting the identical 670 rows:
+
+| arm | GPU | `limit` | `expect_n` | rows | failed | reason |
+|---|---|---|---|---|---|---|
+| **A** | Tesla V100 | **670** | 0 | **0** | **670** | `18 of 28 positions … DEGENERATE` |
+| **B** | Tesla V100 | 0 | **670** | **0** | **670** | `18 of 28 positions … DEGENERATE` |
+
+**Both fail, identically.** `--limit` is not the cause — proven by a control on the same node rather
+than by reading the source. That is the falsification condition S-118 pre-declared, and it fired.
+
+Combined with the 3090 column (every norm-matched arm there wrote 669–670 rows) and the
+non-norm-matched V100 column (24/24 rows every time), the explanation is fixed on all three axes:
+
+> **The refusal requires emulated bfloat16 AND the norm-matched code path.** V100 is compute
+> capability 7.0 with no native bf16; the degeneracy test `rel = ‖P(delta)‖/‖delta‖ < 1e-6` is
+> evaluated *only* when a norm-match basis is present, on a quantity that is tiny by construction.
+
+**The sequence in full, because the shape of it is the lesson.** S-113 blamed the *direction*.
+S-114 refuted that from the guard's algebra and blamed the *population*. S-117 blamed `--limit`.
+S-118 refuted its own comparison and correctly declined to name a cause. S-119 found the GPU by
+printing a column I had never printed. S-121 confirms it with the control S-118 designed. **Five
+entries, four wrong attributions, all mine, each killed by an artifact rather than an argument** —
+and the one entry that refused to attribute is the only one that has not had to be withdrawn.
+
+`--limit` does still have a genuine defect, recorded in S-114 and unaffected by any of this: it
+takes the first N of the surviving bucket, which for this population is **3 domains of 67**, so it
+is the wrong sampler for a project whose independence unit is the domain. That remains queued.

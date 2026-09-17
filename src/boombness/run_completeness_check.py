@@ -152,6 +152,29 @@ KNOWN_ZERO = {
 }
 
 KNOWN_SHORT = {
+    "csi1_basket_train_KO_RAND4_20260917_234500_3192731":
+        "DCS-CSI-047: 668 of 670 rows. 2 row(s) REFUSED by the sprint's own "
+        "norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5): the control basis was "
+        "near-orthogonal to the KO->clean delta at some position, so rescaling its projection "
+        "would have amplified float noise into an arbitrary QR-gauge direction. The guard "
+        "declines to fabricate a control rather than silently writing a meaningless one. "
+        "MECHANISM (not a verified property of this run): degeneracy is the angle between a "
+        "fixed basis and a fixed delta, both determined before any readout, and the delta is "
+        "identical across arms -- so the loss is expected to be outcome-independent. MEASURED "
+        "here: the 2 lost row(s) fall in 2 distinct domain(s) (1 row(s) per domain at most), and "
+        "dcs_csi_subspace_analyze.py intersects (domain, slot) KEYS across all arms before "
+        "averaging, so every arm is compared on the same key set regardless. Ledger: "
+        "n_attempted 670, n_succeeded 668, n_failed 2. Failing prompt_ids (complete): "
+        "0eb453873b23e638, 329e724e0c263e2b.",
+    "csi1_basket_train_AB_EXPECT670_20260917_234553_2631848":
+        "DCS-CSI-121: arm B of the same-node A/B. 0 of 670 rows -- every row refused by the "
+        "norm-match degeneracy guard with '18 of 28 positions are norm-match DEGENERATE'. It "
+        "carries --expect-n so it lands here rather than in KNOWN_ZERO. ZERO ROWS IS THE "
+        "EXPECTED AND DESIRED OUTCOME: this arm is the control that exonerates --limit. It ran "
+        "on the SAME Tesla V100 as arm A (--limit 670) with one flag changed, and both failed "
+        "identically, which proves the cause is emulated bfloat16 on compute capability 7.0 "
+        "combined with the norm-matched code path, not the row-selection flag (S-119, S-121). "
+        "The run is kept because it IS the evidence.",
     "csi1_basket_train_KO_RAND3_20260917_233155_3191525":
         "DCS-CSI-047: 668 of 670 rows. 2 row(s) REFUSED by the sprint's own "
         "norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5): the control basis was "
