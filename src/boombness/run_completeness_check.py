@@ -104,6 +104,16 @@ KNOWN_ZERO = {
         "established -- the basis files involved were shown bitwise identical and args.limit touches "
         "nothing in the rescue path, so job 906501's paired --limit 670 vs --expect-n 670 arms are "
         "what decide it.",
+    "csi1_basket_train_AB_LIMIT670_20260917_233628_3947937":
+        "DCS-CSI-119: arm A of the paired --limit vs --expect-n control, on a Tesla V100. 670 of 670 "
+        "refused with the SAME '18 of 28 positions are norm-match DEGENERATE' seen at n=24, 96 and "
+        "268 -- so POPULATION SIZE was never the variable. The variable is the GPU: V100 is compute "
+        "capability 7.0 and has NO NATIVE BFLOAT16, so --dtype bfloat16 is emulated, and the "
+        "degeneracy test rel = ||P(delta)||/||delta|| < 1e-6 is evaluated ONLY on the norm-matched "
+        "path where ||P(delta)|| is tiny by construction. Every norm-matched V100 arm fails; every "
+        "norm-matched RTX 3090 arm succeeds; every NON-norm-matched V100 arm succeeds. S-037 already "
+        "recorded the V100 bf16 prohibition. Zero rows is the expected outcome and this run is the "
+        "evidence that --limit is innocent.",
     "csi1_basket_train_NCSMOKE_KO_NEC_RAND0_20260917_231730_2312789":
         "DCS-CSI-117: ctrl_random0, NECESSITY, 24 rows. Same. Completes the demonstration that the "
         "failure is not specific to a basis family.",
@@ -142,6 +152,20 @@ KNOWN_ZERO = {
 }
 
 KNOWN_SHORT = {
+    "csi1_basket_train_KO_RAND3_20260917_233155_3191525":
+        "DCS-CSI-047: 668 of 670 rows. 2 row(s) REFUSED by the sprint's own "
+        "norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5): the control basis was "
+        "near-orthogonal to the KO->clean delta at some position, so rescaling its projection "
+        "would have amplified float noise into an arbitrary QR-gauge direction. The guard "
+        "declines to fabricate a control rather than silently writing a meaningless one. "
+        "MECHANISM (not a verified property of this run): degeneracy is the angle between a "
+        "fixed basis and a fixed delta, both determined before any readout, and the delta is "
+        "identical across arms -- so the loss is expected to be outcome-independent. MEASURED "
+        "here: the 2 lost row(s) fall in 2 distinct domain(s) (1 row(s) per domain at most), and "
+        "dcs_csi_subspace_analyze.py intersects (domain, slot) KEYS across all arms before "
+        "averaging, so every arm is compared on the same key set regardless. Ledger: "
+        "n_attempted 670, n_succeeded 668, n_failed 2. Failing prompt_ids (complete): "
+        "508c86524e73d876, 9fe51d47bb50cc16.",
     "csi1_basket_train_KO_RAND1_20260917_230544_3189125":
         "DCS-CSI-047: 667 of 670 rows. 3 row(s) REFUSED by the sprint's own "
         "norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5): the control basis was "

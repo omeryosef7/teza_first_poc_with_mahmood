@@ -8104,3 +8104,91 @@ checking the basis paths. Both were mine, both were caught within the hour, and 
 move: **going to the artifact instead of to my own previous sentence.** The corrective I am adopting
 for the rest of this sprint: **before writing "the same X", print X for both runs.** It costs one
 command and it would have prevented all three.
+
+---
+
+# S-119 — **RESOLVED: it was never `--limit`. It is V100 × norm-matching.** S-117 and S-118's framing is WITHDRAWN, and S-037 had already prohibited the hardware I chose
+
+Cross-tabulating every run against **GPU** instead of against flags separates the data perfectly:
+
+| GPU | norm-matched? | rows / failed |
+|---|---|---|
+| **RTX 3090** (sm_86) | yes | **670/0 · 669/1 · 669/0 · 669/1** — every one succeeds |
+| **Tesla V100** (sm_70) | yes | **0/24 · 0/96 · 0/268 · 0/24 · 0/24 · 0/24** — every one fails |
+| **Tesla V100** | **no** | **24/0 · 24/0 · 24/0 · 24/0** — every one succeeds |
+
+**The failure requires V100 AND norm-matching, and `--limit` is innocent.** It co-varied only
+because every ad-hoc script I wrote tonight both set `--limit` *and* landed on the node I had
+pinned. The two variables were never separated until I printed the GPU column.
+
+## The mechanism, and it is already in this log
+
+**`Tesla V100` is compute capability 7.0. Native bfloat16 requires ≥ 8.0.** So `--dtype bfloat16`
+is **emulated** there, while RTX 3090 (8.6) is native.
+
+And the degeneracy test is evaluated **only on the norm-matched path**
+(`if self.norm_basis is not None:`), where it computes
+`rel = ‖P_basis(delta)‖ / ‖delta‖ < 1e-6`. For a basis built near-orthogonal to the delta,
+`‖P_basis(delta)‖` is **tiny by construction** — which is precisely the quantity emulated bf16
+destroys. Non-norm-matched arms never evaluate `rel` at all, which is exactly why all four
+non-norm-matched V100 arms wrote every row.
+
+**S-037 already recorded the prohibition**, in this log, at line 2146:
+
+> *"**V100 has no native bfloat16.** `--dtype bfloat16` is emulated there."*
+
+S-037 caught it before it cost anything. **I re-entered the same trap tonight** — and the reason is
+worth stating exactly: **S-116's rule "do not infer a node's read speed from its rack, measure it"
+is about SPEED, and I used it to select a node without checking ARCHITECTURE.** I optimised the
+variable I had just been burned by and ignored the one the plan already prohibited. §16 requires
+compared arms to share GPU architecture and knockout runs to be bf16 + eager; my ad-hoc templates
+carried **no architecture constraint at all**, while the launcher has always been given 3090
+nodelists or excludes.
+
+## What is withdrawn
+
+* **S-117's "`--limit` changes the patch result" — WITHDRAWN.** The demonstrated fact (same rows
+  succeed in one run and fail in another) was real; the attribution was wrong.
+* **S-118's "the one difference left is `--limit` vs `--expect-n`" — WITHDRAWN.** It was not the
+  only difference; I had failed to print the GPU.
+* **S-118's own conclusion that the cause was UNIDENTIFIED was the correct call**, and refusing to
+  name `--limit` as causal there is the one thing in this sequence I got right. The code-reading that
+  said "`args.limit` touches nothing in the rescue path" was **true**, and it should have pushed me
+  straight to "then the difference is not a flag" rather than to another flag.
+
+**The A/B job (906501) is now the confirming control rather than the decisive test**, and it is
+better than the one I designed: both of its arms run on the **same V100**, differing only in
+`--limit 670` vs `--expect-n 670`. **Arm B should therefore ALSO fail** — which is exactly the
+falsification condition S-118 pre-declared (*"if both succeed… every conclusion in S-117 goes"*),
+inverted: if both **fail**, `--limit` is exonerated by a same-node control. Left running for that.
+
+## What this costs S-113's smoke, for the second time
+
+**The entire necessity smoke ran on a V100.** Its four legs are boolean checks on hook counters
+(`min_donor_prefill_edits`, `max_readout_knockout_edits`, `min_patch_positions_written`,
+`min_donor_delta_norm > 0`) and those are robust to emulated arithmetic — the knockout either edited
+cells or it did not. **The legs stand.** But every *number* in that entry was produced on
+disqualified hardware, so `KO_NEC_FULL − NEC_BASE = −0.13016` is now withdrawn for a **second**
+independent reason, on top of resting on 3 domains (S-114) — and `KO_NEC_ORTH`'s zero-row failure
+was **an artifact of the GPU**, not of the direction (S-113) and not of `--limit` (S-117).
+
+## What is unaffected, checked rather than assumed
+
+Every full-population arm in the record — D12, group K, S-104's button arms, S-115's L20 group A,
+the running group B — ran on **RTX 3090**, verified in the table above for the ORTH and SHUF0 arms
+and by S-104b's audit for the button set. **No committed claim touched a V100.**
+
+And **necessity half 1 (job 906433) is on n-307, an RTX 3090 — correct.** I was about to cancel it
+and relaunch on `rack-bgw-dgx1` for speed, which would have been the **third** instance of this
+mistake in one evening. It stays where it is.
+
+## Two fixes, one of which I am deliberately not making yet
+
+1. **A guard is warranted and this is the second occurrence.** `score_behavior.py` should **refuse**
+   `--dtype bfloat16` on a device with compute capability < 8.0, rather than silently emulating it.
+   S-037 caught this by inspection; a guard catches it always. **Not implemented now**, because
+   906433 is mid-run and re-executes that file per arm — S-110c is the entry about editing it during
+   a live run. **Queued for when the GPU jobs drain.**
+2. **My ad-hoc SLURM templates need an architecture constraint**, not just a speed choice. The
+   launcher has always had one; the scripts I wrote tonight did not, and that asymmetry is the whole
+   story of S-116 through S-119.
