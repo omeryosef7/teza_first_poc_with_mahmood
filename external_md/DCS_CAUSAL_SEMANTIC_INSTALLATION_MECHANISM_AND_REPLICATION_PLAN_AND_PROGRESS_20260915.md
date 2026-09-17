@@ -6576,3 +6576,101 @@ enforces and the reason group A's subspace arms can run here at all.
 **The prediction is already on record in PR-CSI-002**: I expect rank 1 of 11 (codeword-only). The
 decision rule, the 0.0909 floor, the gates, the VOID conditions and the must-not-be-said lists for
 both outcomes were fixed before the data.
+
+---
+
+# S-107 — the literature workstream lands two citations that bind us: one **licenses** our control design, the other **caveats our central comparison**. Both verified by me.
+
+Plan §12 makes the literature review a parallel workstream and forbids any novelty claim before it
+lands; §20 lists it as a deliverable. It has now been extended (33 arXiv works in the tables, with
+an explicit `A6. UNVERIFIED` section holding everything that could not be resolved and is therefore
+barred from citation — the right discipline, and I checked it is actually observed).
+
+Two of the additions are load-bearing enough that I verified them myself rather than trusting the
+report, as with S-105's.
+
+## (a) The citation that LICENSES our fit-capacity-matched controls
+
+**arXiv:2507.08802** — *The Non-Linear Representation Dilemma: Is Causal Abstraction Enough for
+Mechanistic Interpretability?* (Sutter, Minder, Hofmann, Pimentel; Jul 2025, rev. Nov 2025).
+
+Verified from the abstract: *"it is possible to perfectly map models to algorithms even when these
+models are incapable of solving the actual task; e.g., on an experiment using randomly initialised
+language models, our alignment maps reach 100 % interchange-intervention accuracy on the indirect
+object identification task"*, and *"causal abstraction is not enough for mechanistic
+interpretability, as it becomes vacuous without assumptions about how models encode information."*
+
+**Why this matters to us specifically.** It is the published argument for the exact control R5
+identified as our binding comparator. An intervention can succeed because the *map* is expressive,
+not because the representation means anything. Our shuffled-label controls are fit by the **same
+procedure with the same capacity** on permuted labels — so they hold expressivity fixed and vary
+only whether the labels carry information. That is the control this paper says is necessary, and it
+is why "shuffled-label fitting buys variance, not recovery" (measured four times: sd ratio 1.88,
+1.9, 2.32, 2.66) is the right thing to have measured. **We may cite this as the rationale; we may
+not claim the methodology** — rank- and norm-matched controls are published practice
+(2605.18830's rank-matched random-orthogonal and cross-task arms; 2406.11717).
+
+## (b) The citation that CAVEATS our central comparison — and it cuts at S-104's own argument
+
+**arXiv:2606.27510** — *The Curse of Multiple Mediators: Hidden Interaction Effects in Activation
+Patching* (Vaidyanathan, Arbour, Mueller, Niekum, Jensen; Jun 2026).
+
+Verified from the abstract: they prove that **"INT scales with the distance between clean and
+patched component activations"** — the interaction term in an activation-patching decomposition
+grows with how far the patch moves the state.
+
+**This is a caveat on the comparison this whole sprint is built around.** Every headline of ours
+compares a **whole-state** restore against a **low-rank** or **single-row** write:
+
+| comparison | whole-state side | low-dimensional side |
+|---|---|---|
+| D12 | `KO_FULL − KO` = +0.103 | axis +0.00401 = **3.9 %** |
+| D9 | codeword row, whole state, **46.6 %** | axis at that row, **negative** (S-097) |
+| **D13 (S-104)** | L18 +0.10842 vs L20 +0.06955 | axis 8 of 11 vs 4 of 11 |
+
+A whole-state restore moves the activation far; a rank-1 write barely moves it. So the two sides of
+every one of those comparisons sit at **different clean-vs-patched distances**, and this paper says
+the interaction term is not constant across that difference. The percentages are therefore not a
+clean "share of the mechanism" — they are ratios measured at unequal patch distances.
+
+**It cuts at my own S-104 wording.** S-104 argues the L18 null is not a dead instrument *because*
+the whole state recovers 56 % more there — "the axis lost at the layer where there was most to win."
+Under this paper, part of a larger `KO_FULL` recovery can be a larger state distance rather than
+more available signal for a *rank-1* intervention. The argument is not refuted, but it is not
+established either, and the honest position is that it needs the measurement S-041 made for L20: the
+fraction of the `clean − ko` delta the rank-1 axis actually spans (3.6 % at L20). **If that fraction
+is materially smaller at L18, S-104's "more to win" sentence must be softened.**
+
+**That measurement is in flight as part of review round R8** (`r8-numbers`), which was tasked with
+exactly it before this entry was written. **Until R8 reports, D13 keeps its current wording but is
+flagged as under test, and the `KO_FULL`-ratio sentence must not be repeated in any summary.**
+
+## (c) What the review says about our novelty, stated conservatively
+
+Two answers the workstream was asked for directly:
+
+- **Prior work localising an in-context-installed mapping to the remapped word's own query row:
+  NOT FOUND.** The nearest precedents each fall short in a specific way: 2605.18830 patches at the
+  *final* sequence position (the vocabulary collision S-105 recorded); *Label Words are Anchors*
+  studies label positions *inside demonstrations*; ROME (2202.05262) puts the decisive effect at the
+  **last subject token** with mean max restoration **19.5 %** — but for **parametric** recall, so
+  "one content-word row carries a large share" is an established *shape* of result and our 46.6 %
+  for an **in-context** denotation is what is unattested; LOCA (2605.00123), on **our exact model**,
+  localises by token *type* with no per-position ranking and never compares a low-rank edit against
+  a full-state edit. The defensible sentence is *"we did not find prior work localising an
+  in-context-installed mapping to the remapped word's own row"* — never *"we are the first"*.
+- **The layer-vs-feature confound we tested in S-104 is not a named pitfall in the literature.**
+  2309.16042 is the canonical warning that patching hyperparameters change conclusions, and
+  2404.15255 separates exploratory sweeps from confirmatory patching — which is precisely why an
+  argmax-selected layer must not then be treated as confirmed. But no paper names our specific
+  confound (two conditions each compared at its *own* argmax layer). That makes the S-104 experiment
+  clearly correct to have run, and makes claiming the *observation* as a contribution unwise: at
+  most a methods sentence applying 2309.16042's warning to a two-condition comparison.
+
+## (d) Topics still uncovered, recorded so they are not mistaken for covered
+
+1. **Doublespeak follow-ups: still zero** after two independent search passes. The attack has one paper.
+2. **Non-archival venues** (LessWrong / Alignment Forum / workshop tracks) not systematically searched — the likeliest hiding place for a close neighbour.
+3. **Heads carrying non-copy semantic transfer** — every head-level work found studies copying or task identification. Genuinely open and adjacent; per Gate C, do **not** invent a circuit to fill it.
+4. **Citation-graph crawl** of 2512.03771 / 2605.18830 / 2605.00123 — not run. Cheapest remaining high-value literature action.
+5. **Concept-free readout as an intervention-scorable DV** — nothing found; still the claim most exposed to *"this is a Patchscopes variant."*
