@@ -7171,3 +7171,179 @@ is the mechanism-shaped handle on D12 that the sprint has been missing.
   and that stands; this is a statement about the **between-codeword** contrast only.
 * Not that this replicates anything. It is one post-hoc analysis of four already-read arms.
 * The codewords are **not pooled** (rule 3.3); this is a per-codeword contrast reported side by side.
+
+---
+
+# S-109 — **S-108's INTERPRETATION IS WITHDRAWN.** All sixteen numbers reproduce exactly; the claim built on them is killed three independent ways. The pre-fixed rule fires as written
+
+The independent re-derivation S-108 was waiting on has landed. It shares no code with my path — its
+own arm resolution, its own endpoint (`sigmoid(logp_concept − logp_codeword)`), its own aggregator.
+
+**Every one of the sixteen cells AGREES**, to 4–5 significant figures: all four captured fractions
+under *both* definitions, all four `KO_FULL − KO`, all four observed `KO_AXIS − KO`, all four
+obs/pred ratios, all four ranks, and all four key/domain counts. It also reproduced D10 for free
+(through-origin R² **0.9968** TRAIN / **0.9939** VALIDATION, slope × 28 / `KO_FULL` = **0.984 /
+0.987**) and confirmed the projected and delta norms.
+
+S-108 fixed three branches in advance. The one that fired is the one I named as likeliest:
+
+> *"Agreement on the numbers but a sound objection to the linear dose model → the numbers are
+> reported and the interpretation is withdrawn."*
+
+**The interpretation is WITHDRAWN.** The numbers stand and are kept. Three objections, any one
+sufficient.
+
+## KILLER 1 — the linear dose model has no predictive validity *at the axis's own dose*
+
+This is decisive, and it uses the sprint's own arms against me. `KO_ATk` restores the full clean
+state at **exactly one** position, so **every one of the sixteen `KO_AT` arms sits at captured
+fraction 1/28 = 0.03571** — statistically indistinguishable from the axis's 0.0348. At that fixed
+dose, observed recovery as a percentage of the linear prediction:
+
+```
+AT1  +683%   AT7  +311%   AT12  -10%      AT10 +1304%
+AT2  +293%   AT8   +12%   AT15  -19%
+AT3   -21%   AT9    -1%   AT20   -5%
+AT4   +31%   AT11  -10%   AT25   +3%
+AT5   +13%                AT28  -24%
+AT6   +28%
+```
+
+**At fixed captured fraction, obs/pred spans −24 % to +1304 % — a factor of 54 in magnitude, both
+signs — determined purely by which position is touched.** The 4–7× gap I wanted to interpret sits
+**well inside the noise the normalisation itself generates**.
+
+And the position ladder's R² = 0.997 does not rescue it: `KO_POSk` draws a **uniformly random** k of
+28 positions, so its captured fraction is exactly k/28 and its linearity is an **average over random
+subsets**. **The repo's own S-066 caveat on D10 already says this** — *"linearity under random
+subsets does not imply uniformity — a concentrated effect gives the same curve"* — and D9 is the
+proof: one position (`AT10`, the codeword row) carries 46.6 % of the whole effect alone.
+I cited D10's R² as calibration for a **pointwise** prediction, which is exactly the reading the
+sprint had already prohibited. **I walked into a caveat this log wrote itself.**
+
+*(For completeness, the ladder is well calibrated on average, and at k=1 — captured fraction 0.03571,
+the axis's own dose — it delivers 111.5 %. That is what made the normalisation look sound. The
+average over positions is fine; the per-position variance is what destroys it.)*
+
+## KILLER 2 — applied consistently to the controls, the normalisation **destroys D12's headline**
+
+Captured fraction is **not** constant across a control family — candidate 0.0324, shuffled ≈ 0.021,
+random ≈ 0.0124 — so dividing by it is not a family-neutral transform. **It penalises the candidate**,
+which captures 2.6× more than a random control. Applied to candidate *and* controls alike:
+
+| cell | rank RAW | rank NORMALISED (MoR) | (RoM) | p RAW | **p NORMALISED** |
+|---|---|---|---|---|---|
+| button L20 | 4 of 11 | 4 of 11 | 4 of 11 | 0.364 | 0.364 |
+| button L18 | 8 of 11 | 8 of 11 | 7 of 11 | 0.727 | 0.727 |
+| **basket L18 TRAIN** | **1 of 47** | **8 of 47** | 12 of 47 | **0.021** | **0.170** |
+| **basket L18 VAL** | **1 of 47** | **2 of 47** | 3 of 47 | **0.021** | **0.043** |
+
+**The statistic I proposed would have destroyed the sprint's only positive on TRAIN** (rank 1 → 8,
+p 0.021 → 0.170). A statistic may not be applied to the candidate and withheld from the controls.
+
+And the "121 %" carries no weight on its own: the norm-matched controls, each normalised by its own
+captured fraction, reach **+127.2 %** (`KO_SHUF3`) on VALIDATION — **above** the candidate's 120.9 %
+— and **+126.9 %** (`KO_RAND2`) on TRAIN. *Exceeding its linear dose prediction is a property several
+null controls have.* The domain-clustered CI on the ratio is [+31.3 %, +225.0 %]: **not
+distinguishable from 100 %**, and there is no physical bar at 100 % anyway.
+
+## KILLER 3 — the premise itself is measure-dependent
+
+*"Basket captures less than button"* holds under mean-of-ratios (0.0324 vs 0.0348) but **inverts under
+ratio-of-means**: basket **0.04993** vs button-L20 **0.04453** — basket captures **more**. It survives
+both measures only against button **L18**. **The sentence must not be stated flatly**, and S-108
+stated it flatly in its own heading. That heading is wrong.
+
+## What SURVIVES, and is worth keeping
+
+* **Norm-matching is exact, verified**: `written_norm_mean` is identical to four decimals across
+  *every* arm of a family — 0.0677 for all twelve button-L20 arms, 0.0585 for all 47 basket-TRAIN,
+  0.0588 for all 47 basket-VAL. **So the rank test is already fully dose-controlled within a
+  codeword and needs no further normalisation.** S-108's normalisation was not merely invalid; it was
+  **unnecessary**.
+* **The distance objection pushes AGAINST a dose explanation**, deepening rather than closing the
+  gap: button has the *larger* displacement (1.52 / 1.30 vs 1.17) **and** the larger absolute
+  injected norm (0.0680 vs 0.0585, +16 %), so it should recover *more* per unit dose. It recovers
+  less. **Dose-as-distance cannot rescue button.** Distance also fails to predict the full-restore
+  effect: basket's `KO_FULL − KO` (0.120 / 0.104) exceeds button-L20's (0.070) despite the smaller
+  displacement.
+* **≈ 3–4 % captured amplitude is mostly a property of DIMENSION, not of these axes.** My isotropic
+  reference was wrong: for `mean(‖proj‖/‖delta‖)` with a random unit direction in d = 4096 the
+  expectation is **E|cos| = √(2/πd) = 0.01247**, not √(1/d) = 0.01562 (that is the RMS). The **40**
+  random rank-1 controls average **0.01247** — the correct prediction to four decimals. Rank 5 gives
+  0.03325, and the six random rank-5 controls average **0.0330**. **So a purely random rank-5
+  subspace captures MORE (0.0330) than basket's axis (0.0324), for free.** The real axes sit a
+  genuine but modest **2.6–3.1×** above isotropic.
+* **And at that amplitude, sign and size are set by DIRECTION, not dose**: the norm-matched random
+  rank-5 controls, at **3.3× the written dose** (0.2229 vs 0.0677), produce −0.00528, −0.00278,
+  +0.00432, −0.00465, −0.00557, −0.00064 — **mean −0.0024, mostly negative, and each individually
+  larger in magnitude than the candidate's +0.00040.** More dose in a random direction does not buy
+  recovery; it buys noise of either sign. That is a real point in favour of direction mattering, and
+  it is made *without* any dose normalisation.
+
+## CORRECTION — `captured_energy_frac_mean` is an AMPLITUDE ratio, not an energy fraction
+
+`src/boombness/donor_patch.py` computes `mean(‖proj‖ / ‖delta‖)` — a ratio of **norms**. The
+**energy** fraction is its square: **0.121 %** for button L20 and **0.105 %** for basket — a
+*thousandth* of the displacement's energy, not 3 %.
+
+**So any prose saying "the axis spans 3 % of the displacement ENERGY" is wrong by a square**, and
+S-108's own heading and table used "captured energy". The correct phrasing is *"spans ≈ 3 % of the
+displacement in AMPLITUDE (≈ 0.1 % in energy)"*. The field name is misleading at source; it is a
+persisted field with existing readers, so it is **not** renamed here — recorded instead, as with the
+`sha16` migration note, so prose stops repeating the error. **S-041's "3.6 % of the perturbation"
+is amplitude and therefore correct as written**; only the word "energy" is the defect.
+
+## CORRECTION TO THE REVIEWER, verified from the source
+
+The reviewer also asserted that arXiv:2606.27510 *"proves nothing about scaling with clean-vs-patched
+distance"* and that S-107 mischaracterised it. **I fetched the abstract verbatim and the reviewer is
+wrong on that point.** It states: *"We prove that **INT scales with the distance between clean and
+patched component activations**, is negligible when the model is locally affine, and decomposes
+combinatorially into pairwise and higher-order group interactions."* S-107's characterisation stands.
+
+**But the reviewer's substantive redirection is right and sharper than my use of it.** The paper's
+force is against **KILLER 1**, not against objection (c): the NIE *"does not solely capture the
+causal effect through the specific component"*, INT is negligible *only* when the model is locally
+affine, and INT is *"a diagnostic ... not a nuisance to be eliminated"*. That is a direct argument
+against reading a subspace's contribution as linearly additive — i.e. against exactly the dose model
+S-108 built. **Cite it as a threat to the linear dose model, not as support for the distance
+objection.** Recorded because a review's correction can itself be wrong, and checking it cost one
+fetch.
+
+## A boundary on `KO_AXIS_ANCHOR`, recorded before it can be misused
+
+The reviewer notes the anchor's `config.json` is byte-identical to `KO_AXIS` apart from `arm`/`tag`
+and its `y_install` is bit-identical on every shared key, so **it provides zero independent error
+estimate and is not a replicate.** That is correct, and the sprint has not used it as one: S-045 and
+S-105(b) use it only to measure **cross-allocation / cross-node drift**, which is a valid use
+*precisely because* the configuration is identical — that is what makes bit-identity a determinism
+result rather than a coincidence. **Stated explicitly so no later summary upgrades "the anchor
+agrees" into "the result replicates."**
+
+## Two run-directory traps the reviewer hit, which vindicate R8-B1's fix
+
+`basket/validation/KO_SHUF8` resolves to **four** directories — job 897688 with **8 rows**
+(truncated), 898093 and 898208 with **no `results.jsonl` at all**, and 898996 complete at 230.
+`basket/train/KO_SHUF12` likewise has two empty directories and one complete. A recency- or
+glob-based selector fails on both. The unconditional filters and survivor assertions from R8-B1 are
+what make these resolvable, and the LOO tool's out-loud exclusion (S-104c) is what makes the
+exclusion visible rather than silent.
+
+## What the ledger gets
+
+**Nothing.** S-108 never entered the claim table — it was written to section B *pending* this check,
+and the check killed it. That caution is the only reason no published claim has to be retracted now.
+
+**The honest headline remains the RAW rank result already in the ledger**: rank **1 of 47** on both
+basket splits at p = 0.0213, against **4 of 11** and **8 of 11** for button — stated as a
+dissociation in rank **under fixed written dose**, with **no cross-codeword ratio attached**. The
+obs/pred table stays in this log as *a probe that was tried and failed*, because a reader who runs
+the `KO_AT` arms will find exactly what the reviewer found.
+
+## And the thing that will actually settle it
+
+The reviewer observed, from the live jobs, that **basket at L20 shows captured fraction 0.03001 at
+displacement norm 1.4012** — basket's capture **drops** and its displacement **grows** at button's
+layer. Whatever that arm returns, **it** is the test that de-confounds codeword from layer, under
+PR-CSI-002's rule frozen before the data. Not a dose normalisation.
