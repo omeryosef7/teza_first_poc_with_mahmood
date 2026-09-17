@@ -6312,3 +6312,37 @@ setting — an invariant nothing enforced and nothing stated. The launcher's gro
 the layer in its tag; groups A and B did not, and S-103 used A and B. The cheaper fix would have been
 to put the layer in the tag; the fix taken instead makes *any* future re-run resolvable by what the
 run recorded rather than by what its name happens to say, which is the weaker assumption.
+
+---
+
+## S-104c — leave-one-domain-out on the L18 null, asked in the direction that could *rescue* it
+
+R6 and R7 attacked the basket **pass** by asking whether deleting one domain could destroy it. The
+symmetric question for a **null** is the opposite one, and it is the one that has to be asked here:
+could deleting a single domain turn button-at-L18 into a pass? If one domain were dragging the
+candidate down, "rank 8 of 11" would be a statement about that domain rather than about the axis.
+
+`scripts/dcs_csi_rank_loo.py`, on the L18 family, all 67 single-domain deletions:
+
+| | |
+|---|---|
+| rank across the 67 drops | **8 of 11 in 65 drops, 7 of 11 in 2** (`news_report`, `printing_works`) |
+| best attainable rank under any deletion | **7 of 11** — never 1, never a pass |
+| candidate range | −0.00042 … −0.00009 |
+| candidate sign | **negative under 67 of 67 deletions** |
+
+No domain is propping up the null. The best any single deletion achieves is to move the candidate
+from 8th to 7th while leaving it negative. This is the mirror image of R7's finding on the basket
+pass (there, no deletion could move the verdict below 0.05; here, no deletion can move the verdict
+above a null), and it is asked with the same script.
+
+**`scripts/dcs_csi_rank_loo.py` was parameterised to make this possible, and the parameterisation is
+itself a fix.** The script was hardcoded to basket and — more dangerous — defined its control family
+by *globbing every directory matching the tag*. After S-103's layer re-run that glob would have
+silently mixed L18 and L20 directories into one family. It now resolves every candidate control
+through the same `run_dir` filters the analysis uses, and **excludes, out loud, any control that does
+not resolve to exactly one directory under them**. With no arguments it does exactly what it did
+before: re-run bare, it reproduces R7 to the digit — basket TRAIN +0.00264, rank 1 of 47, rank stays
+1 in **65 of 67** drops, worst drop `pipeline_station` → rank 2, candidate range +0.00215…+0.00289;
+basket VALIDATION rank 1 under **23 of 23**. R6's and R7's published numbers remain reproducible from
+the same command that produced them.
