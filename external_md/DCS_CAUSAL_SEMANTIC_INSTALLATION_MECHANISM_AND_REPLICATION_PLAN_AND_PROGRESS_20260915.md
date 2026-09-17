@@ -7866,3 +7866,67 @@ That is twice in this entry that a number I asserted was corrected by a guard ra
 the `--limit` domain count in S-114, and this row count. Both were caught before commit, which is
 what the pre-commit guard is for, but the habit worth fixing is asserting counts I have not read off
 the artifact.
+
+---
+
+# S-116 — **CORRECTION to S-112's operating rule: "stage only inside the n-30x rack" is wrong, because n-503 is slow too.** Two of my own jobs were mis-provisioned on it and both were killed
+
+S-112 concluded, from one success and one failure, that *"the rule is not 'always stage'; it is
+'stage only inside the n-30x rack.'"* **That generalised from two data points and it is wrong.**
+
+## The measurement that refutes it
+
+The control micro-smoke (job 906437) ran **without** staging on **n-503**, which is outside the
+3090 rack. Its stderr:
+
+```
+Loading weights:   0%|  | 1/291 [05:43<27:42:16, 343.9s/it]
+```
+
+**343.9 seconds per shard, a 27-hour ETA** — exactly the *"HF loader's RANDOM mmap access over the
+same path is 20+ HOURS"* pathology the launcher's own comment attributes to the broken rack. So
+**n-503 has the same broken read path**, and S-112's rule does not partition the cluster the way I
+claimed.
+
+It also explains, retrospectively, why the **first** necessity smoke (906372) spent 28 minutes
+staging without finishing: it was **also on n-503**. I read that as "staging was unnecessary
+overhead" and drew a rule about racks. The real signal was *the node*, and I had already seen it.
+
+## And I made the mirror-image mistake at the same time
+
+Job **906447**, the paired direction test that is supposed to settle S-114's open question, was
+written with **no staging** and landed on **n-307** — which **is** inside the 3090 rack, where
+staging is exactly what is required. I provisioned my two ad-hoc jobs wrongly in **opposite**
+directions within a few minutes of each other.
+
+Both cancelled: **906437** after 18:24 and **906447** after 13:07, neither having completed an arm.
+Cost: ~31 minutes of wall-clock on jobs that could not have finished. No scientific loss — neither
+had written a row.
+
+## The rule that actually holds, stated as a measurement rather than a theory
+
+> **Do not infer a node's read speed from its rack. Measure it.** The only node this sprint has
+> *measured* to load the 15 GB snapshot fast **without** staging is **`rack-bgw-dgx1`**: job 906421
+> ran 5 arms × 24 rows there, end to end, in **8:45**.
+
+Both jobs are relaunched as **906461** (`nec_ctrl`) and **906462** (`orth_dir`), pinned with
+`--nodelist=rack-bgw-dgx1` — a **single** node, which §16 permits; the prohibition is on multi-node
+nodelists, which make SLURM wait for all of them.
+
+**Architecture is irrelevant for both of these**, and that is why pinning off the 3090 rack is
+legitimate here: one counts degeneracy refusals, the other is a mechanical liveness check. Neither
+is a compared measurement, so §16's cross-architecture rule does not bind them. **The real basket
+and necessity arms stay on 3090s.**
+
+## What this cost, and what it did not
+
+The S-114 question — is `ctrl_orth`'s necessity degeneracy a population artifact, a direction
+effect the guard's arithmetic says is impossible, or a defect in the donor capture — is **still
+open**, and is now behind two cancelled jobs rather than one. **Half 2 of the necessity run remains
+held**, which is the decision that actually matters: nine arms × 670 rows are still unspent on a
+question I cannot yet answer.
+
+Recorded because this is the third operational rule this sprint has had to correct after
+generalising from too few nodes (S-039's weight-load stall, S-090's "the volume is degraded", and
+now this one). The pattern is the same every time: **a node-level property inferred as a
+cluster-level rule.**
