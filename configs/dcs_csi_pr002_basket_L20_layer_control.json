@@ -1,0 +1,124 @@
+{
+  "schema": "dcs_csi_prereg/1",
+  "id": "PR-CSI-002",
+  "title": "The symmetric arm of the codeword/layer de-confounding: basket at button's layer (L20)",
+  "frozen_at": "2026-09-17T20:55+03:00",
+  "frozen_before_reading": "any basket-at-L20 arm. No basket L20 rescue arm has ever been run.",
+  "opened_by_entry": "S-105",
+  "question": "The sprint's headline is a CODEWORD dissociation: basket's rank-1 installation axis beats its 46-control family on both splits (D12) while button's does not (4 of 11 at L20, 8 of 11 at L18). Basket ran only at L18 and button only at L20, so CODEWORD and LAYER were perfectly confounded. S-104 broke the confound on the button side: button fails at L18 too. This is the other half -- does basket still show the effect at BUTTON's layer?",
+  "why_this_is_not_a_second_bite": "The claim under test is D12's, and the test can only weaken it. A pass adds nothing to D12's significance (the family here is 10 controls, floor 0.0909, which cannot certify at 0.05); a failure forces the framing to change. The asymmetry is deliberate.",
+  "what_is_actually_at_stake": "Neither outcome can revive 'it is only the layer' -- button-at-L18's failure (S-104) already excluded that. What is at stake is CODEWORD-ONLY versus a CODEWORD x LAYER INTERACTION. If basket passes at L20, the effect follows the codeword across both layers and 'codeword dissociation' is fully de-confounded. If basket fails at L20, then the pass requires basket AND L18 together, and the phrase 'codeword dissociation' must be qualified to a codeword x layer interaction.",
+  "population": {
+    "codeword": "basket",
+    "concept": "bomb",
+    "split": "train",
+    "n_domains_expected": 67,
+    "expect_n_rows": 670,
+    "query_kind": "semantic_one_word",
+    "condition": "natural_doublespeak",
+    "cell": "C",
+    "dose": 4,
+    "bank_block": "cds_n4_sow",
+    "bank": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl",
+    "exclusions": "runargs/dcs_cont/exclude_basket_bomb_sow_train.txt"
+  },
+  "intervention": {
+    "knockout": "demo_all:attn_knockout:6-14:1.0, scope target_surface_row_only",
+    "rescue_positions": "query",
+    "rescue_layer": 20,
+    "site_axis_fit_at": "rel-6",
+    "basis": "configs/dcs_csi_axis_basket_L20.pt",
+    "basis_verified": {
+      "note": "The check S-103 used -- 'cand_rank1 sha16 differs from the other layer's file, therefore --force-layer was honoured' -- is UNSOUND and is NOT relied on here. Demonstrated in S-106: configs/dcs_csi_axis_basket_behavioral.json and ..._shuf24.json are the SAME axis at the SAME layer 18, their recorded bases.cand_rank1.sha16 DIFFER (0c397a778db933ba vs fad8b030ae93976e), and yet the stored float32 tensors are BITWISE IDENTICAL (max abs diff 0.000e+00, cosine exactly 1.000000000000). A differing sha16 therefore carries essentially no information. Only an IDENTICAL sha16 would have been conclusive, in the opposite direction.",
+      "layer_forced": true,
+      "selected_layer": 20,
+      "layer_argmax_not_used": 18,
+      "producer_stdout": "[force-layer] argmax was L18 (rho=+0.6525); forcing L20 (rho=+0.6512)",
+      "train_loo_rho_at_selected_layer": 0.6512,
+      "full_layer_grid_reproduces_the_frozen_basket_file": "all 9 points to 4dp: L16 0.6417, L18 0.6525, L20 0.6512, L22 0.6386, L24 0.6322, L26 0.6228, L28 0.6089, L30 0.6002, L31 0.5691",
+      "SOUND_force_layer_evidence": {
+        "method": "compare the stored tensors per basis family against the L18 file, which separates the layer-dependent bases from the layer-independent ones",
+        "bitwise_identical_to_L18": "EXACTLY the 22 ctrl_random bases, and nothing else -- correct, since those are pure Gaussian draws from the same seed and dimension and do not depend on the layer",
+        "moved_vs_L18": "all 31 data-dependent bases: cand_rank1, cand_pls1-5, ctrl_orth, ctrl_shuffled0-23",
+        "abs_cosine_cand_rank1_L20_vs_L18": 0.735538,
+        "why_this_is_conclusive": "a layer override that had been silently ignored would have left the data-dependent bases bitwise identical too, and the cosine at 1.0. 22 identical / 31 moved is the exact partition the override predicts."
+      },
+      "artifact_race_resolved": {
+        "what_happened": "two jobs (905947 mine, 905948 a subagent's) independently built this same output path 17 seconds apart -- a self-inflicted race, recorded in S-106",
+        "resolution": "rebuilt once cleanly to configs/dcs_csi_axis_basket_L20_rebuild.pt with no competing job; the raced file is BITWISE IDENTICAL to the clean rebuild on all 53 of 53 bases, .pt key set equals .json key set in both, and every load-bearing json scalar agrees. The race was benign and the file is not torn -- verified, not assumed."
+      },
+      "n_bases": 53,
+      "n_random": 22,
+      "n_shuffled": 24,
+      "identical_to_frozen_basket_file_on": [
+        "corpus",
+        "readout",
+        "site",
+        "lambda",
+        "seed",
+        "bank_sha16",
+        "n_fit_domains"
+      ],
+      "fit_domains": "67, all TRAIN, zero VALIDATION and zero TEST (re-resolved through the split manifest)",
+      "selected_rank_train": 3
+    }
+  },
+  "arms": {
+    "group_A": [
+      "BASE",
+      "KO",
+      "KO_SELF",
+      "KO_FULL",
+      "KO_AXIS",
+      "KO_PLS",
+      "KO_ORTH"
+    ],
+    "group_B": [
+      "KO_AXIS_ANCHOR",
+      "KO_SHUF0",
+      "KO_SHUF1",
+      "KO_SHUF2",
+      "KO_SHUF3",
+      "KO_RAND0",
+      "KO_RAND1",
+      "KO_RAND2",
+      "KO_RAND3",
+      "KO_RAND4",
+      "KO_RAND5"
+    ]
+  },
+  "primary_endpoint": "y_install (concept-free semantic_one_word), domain-clustered",
+  "statistical_unit": "DOMAIN. Rows estimate within-domain means only and never inflate n.",
+  "primary_statistic": "the rank of KO_AXIS - KO among the 10 controls' own (control - KO) values",
+  "attainable_p_floor": 0.0909,
+  "floor_is_declared_in_advance": "1/11 = 0.0909 CANNOT certify at 0.05. This arm can show WHERE basket-at-L20 sits; it cannot on its own certify a pass.",
+  "required_gates": {
+    "manipulation": "KO - BASE clearly negative on substantially all domains",
+    "identity": "|KO_SELF - KO| <= 0.005 (the frozen tolerance)",
+    "instrument_capable": "KO_FULL - KO clearly positive. IF NOT, this arm is CANNOT ANSWER (dead instrument at this layer), NOT a negative for the axis."
+  },
+  "void_conditions": [
+    "compared arms not on one GPU architecture",
+    "rescue did not fire on every persisted row of a rescue arm",
+    "rescued arms disagree on the layer, or any arm's rows record a layer other than 20",
+    "any TEST domain present",
+    "arms used different banks or exclusion files",
+    "row loss beyond the norm-match degeneracy guard, or a DONE.json ledger disagreeing with rows on disk"
+  ],
+  "decision_rule": {
+    "rank_1_of_11": "CONSISTENT WITH CODEWORD-ONLY, but INCONCLUSIVE at this floor. Extend the family to 46 to match D12 before any statement is made. Exactly the rule S-103 fixed for button-at-L18.",
+    "rank_2_or_3_of_11": "AMBIGUOUS. Extend to 46 before saying anything either way.",
+    "rank_4_or_worse_of_11": "basket-at-L20 DOES NOT show the effect at this resolution. The honest framing becomes a CODEWORD x LAYER INTERACTION, prohibition 21's wording must be changed, and D13's limit note is discharged in the direction that weakens us."
+  },
+  "prediction_fixed_before_data": "I expect rank 1 of 11, i.e. codeword-only. I record that expectation so that a FAILURE cannot later be described as anything other than a result that overturns the framing I already held, and so that a pass is not mistaken for a surprise.",
+  "must_not_be_said_if_positive": [
+    "the dissociation is fully de-confounded (10 controls cannot certify; that needs the 46-control extension)",
+    "basket's axis is causal (prohibition 19 stands: the effect is 3.9% of the knockout)",
+    "this replicates D12 (it is the same claim at a different layer, on TRAIN, not a replication)"
+  ],
+  "must_not_be_said_if_null": [
+    "the layer explains the dissociation (button-at-L18 already excluded that)",
+    "D12 is withdrawn (D12 is a 46-control result on both splits at L18; this is 10 controls on TRAIN at L20)",
+    "basket's axis is not causal at L18"
+  ]
+}

@@ -6346,3 +6346,122 @@ before: re-run bare, it reproduces R7 to the digit — basket TRAIN +0.00264, ra
 1 in **65 of 67** drops, worst drop `pipeline_station` → rank 2, candidate range +0.00215…+0.00289;
 basket VALIDATION rank 1 under **23 of 23**. R6's and R7's published numbers remain reproducible from
 the same command that produced them.
+
+---
+
+# S-105 — **CORRECTION to S-036: the "dissociation from a published positive" was overstated. Their positive is at rank ≈70; they never test rank 1.** Plus a free cross-node determinism result, a quarantine, and a 37-minute CPU stall
+
+Four things, one of which is a correction to this sprint's own novelty framing.
+
+## (a) CORRECTION to S-036 — verified by me, not taken from the subagent
+
+S-036 recorded that arXiv:2605.18830 (*In-Context Learning Operates as Concept Subspace Learning*)
+NARROWS our novelty, and the phrasing that entered the record described our rank-1 null as **"a
+dissociation from a published positive"**. The parallel literature workstream flagged that as
+stronger than the paper supports. Per the S-035 precedent — *I verify a load-bearing literature
+claim myself* — I fetched both the abstract and the full HTML rather than relying on the report.
+
+**Verified from the abstract:** *"a 68–73-dimensional subspace of the 4096-dimensional residual
+stream restores 78.8% of the clean–corrupted accuracy gap"*; the complementary subspace *"restores
+0%"*; *"random and cross-task matched-rank controls are largely ineffective"*; Llama-3-8B, validated
+on Qwen2.5-7B.
+
+**Verified from the full text:** the patch is at **layer 30, final sequence position**. Table 1
+matched-rank override success: learned **58.8 %**, random **2.3 %**, cross-task **3.3 %**, baseline
+**2.5 %**. And the load-bearing negative: **there is no rank-1 or single-direction experiment
+anywhere in the paper, and no dimensionality sweep.** The smallest subspace they ever intervene with
+is the 68–73 dimensions their 98 %-explained-cross-variance threshold selects.
+
+**So the correction is:**
+
+> Our rank-1 null is **not** a dissociation from their positive. Their positive is at rank ≈70 of
+> 4096; ours is a null at **rank 1**. The ranks differ by roughly **70×**, and so do the layer
+> (30 vs our 18/20), the position (final sequence token vs our `rel −6` / codeword row), the task,
+> and the endpoint. Two results at rank 1 and rank 70 are not in tension; they are not the same
+> measurement.
+
+S-036's substantive finding stands — the paper does narrow our novelty, because subspace-level
+causal ICL remapping with rank-matched controls is published. What is **WITHDRAWN** is the specific
+framing that our null contradicts or dissociates from it.
+
+**Two further consequences, both of which change how we must write:**
+
+1. **A vocabulary collision that could mislead a reader badly.** Their "query token" means the
+   **final sequence position**. Our "query codeword row" means the **codeword's own row inside the
+   query span**, `rel −10`, ten tokens earlier. These are different sites with the same name. Every
+   sentence of ours using "query token" must disambiguate, exactly as prohibition 15 already
+   requires for the offset and prompt type.
+2. **A limitation we must now carry, with a citation.** arXiv:2605.16362, *When Is Rank-1 Steering
+   Cheap? Geometry, Granularity, and Budgeted Search* (Robertson, Zhu, Vikalo, Wang; May 2026),
+   argues that *"a useful rank-1 intervention often exists, but finding it can be expensive"* — i.e.
+   apparent rank-1 ineffectiveness may be a **search** failure rather than an absence. Our null must
+   therefore always be stated as a null **for the axis we fit, by our fitting procedure, at our
+   layer and position** — never as *"no rank-1 direction mediates installation"*. That sentence is
+   now prohibited.
+
+**One thing this comparison gives us rather than takes away, stated conservatively.** They report a
+single threshold-selected dimensionality and **no sweep**. We have a rank ladder (E2: r1 0.5021 …
+r5 0.5767) and two dose ladders (dimensions, S-050/S-052; positions, D10). That is a difference in
+what was measured, not a claim of priority, and it is the honest form of the only increment here.
+
+## (b) A free result the provenance audit produced: cross-node bit-determinism, measured
+
+The S-104 audit was asked only to establish provenance. It also compared the two arms that run the
+**identical** configuration in different allocations — `KO_AXIS` (job 902004, n-304) and
+`KO_AXIS_ANCHOR` (job 902005, n-306) — row for row on all 670 shared `prompt_id`s:
+
+| field | max abs difference |
+|---|---|
+| `logp_concept`, `logp_codeword`, `semantic_logodds`, `p_concept`, `p_codeword` | **0** |
+| `top1_id` | **0** |
+| `option_mass` | 5.96e−08 on 28 rows (float noise) |
+
+Both arms record the same `basis_sha16` `7d4e01f5475e6b53` and the same staged snapshot index
+sha256. **Two different nodes give bit-identical logits.** S-045 measured zero allocation drift on
+the anchor and called it zero; this is the stronger statement, at row resolution, and it is why the
+group-A / group-B split costs nothing scientifically (the argument the launcher's own comment makes
+and which was until now an assumption).
+
+It also confirms that all 18 L18 arms share `fit_domains_sha16` `4614853e5636eb5f` — candidate and
+all twelve controls were fit on the same 67 domains, which no previous check had asserted directly.
+
+## (c) A dead run directory, quarantined — and verified to have touched nothing
+
+`csi1_button_train_KO_CW_SHUF3_20260916_114642_696468` holds `config.json`, `RUNMETA.json` and an
+empty `plots/`, and **no `results.jsonl` and no `DONE.json`**: a re-attempt at the arm the n-301
+fault destroyed (S-084) that died before writing a row. The audit flagged it as able to *"silently
+poison any glob-based L20 re-aggregation"*.
+
+**Checked rather than assumed:** S-097's codeword-row result was computed on **eleven** controls —
+`RAND0–7`, `SHUF0–2` — and `reports/DCS_CSI_REDERIVE_button_cwrow_train.json` names exactly those
+eleven in `controls_minus_ko` and does not mention `KO_CW_SHUF3` in `run_dirs` at all. S-097's text
+already declared the loss. **No published number used it.** Moved to
+`outputs/boombness/quarantine/VOID_NOROWS_…` with a `QUARANTINE.txt` recording all of the above
+(plan §16: quarantine with a reason, never delete evidence). `check_all.py`: 9 of 9.
+
+## (d) Operational: a CPU job that produced **zero bytes in 37 minutes**, and what moving it measured
+
+The basket-at-L20 axis build (job **905872**, `dcs_cont_cpu.slurm`, n-304) ran 37 minutes and wrote
+**0 bytes** to both stdout and stderr, and produced no artifact. The 30-minute rule fired.
+
+Diagnosis, and the part that makes it more than a guess: `dcs_cont_cpu.slurm` prints
+`HOST=… JOB=…`, then `DCS_CMD=…`, then `----` **as shell `echo`s**, before running anything. Those
+never appeared. I cancelled it and resubmitted the *identical* command with
+`--exclude=n-301..n-307,n-350` (the whole 3090 rack). It landed on `rack-bgw-dgx1` and wrote
+**467 bytes within seconds**, including those same three echoes.
+
+**Shell `echo`s cannot be explained by Python buffering** — the only other candidate — so the
+difference is the node, not the command. Since the echoes sit *after* `cd` and
+`conda activate poc_stage2`, the stall is **upstream of the script's first print**, i.e. in the
+conda environment's own NFS metadata reads, not in the 12 GB corpus read I first suspected. That is
+consistent with BLOCKER-S090 (the `n-30x` rack's NFS client), and n-304 was carrying 8 jobs
+including four at 128 GB, which would keep every NFS metadata read cold.
+
+**Recorded as consistent-with, not proven:** I could not measure the n-304 side directly — two
+`srun --overlap` probe steps failed to start on it at all within 60 s and 110 s, which is itself
+abnormal for a healthy node but is not a measurement of the cause. The cause of the stall is
+**unexplained**; what is established is that it is node-dependent and not command-dependent.
+
+**Cost:** 37 minutes of wall-clock, no scientific loss. The axis build is bit-reproducible across
+nodes (D8), so relocating it cannot change the artifact. Job **905947** is building it now, and
+`--exclude` was used rather than `--nodelist` precisely because §16 forbids a multi-node nodelist.
