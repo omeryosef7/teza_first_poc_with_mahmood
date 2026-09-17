@@ -6465,3 +6465,114 @@ abnormal for a healthy node but is not a measurement of the cause. The cause of 
 **Cost:** 37 minutes of wall-clock, no scientific loss. The axis build is bit-reproducible across
 nodes (D8), so relocating it cannot change the artifact. Job **905947** is building it now, and
 `--exclude` was used rather than `--nodelist` precisely because §16 forbids a multi-node nodelist.
+
+---
+
+# S-106 — **CORRECTION to S-103's verification method: the `sha16` check it relied on is UNSOUND.** Plus a self-inflicted artifact race, resolved by rebuilding rather than by argument
+
+Two faults in this entry, both mine, both caught before they reached a number.
+
+## (a) CORRECTION — the `cand_rank1 sha16 differs` check proves nothing
+
+S-103 verified `configs/dcs_csi_axis_button_behavioral_L18.pt` by asserting that its
+`cand_rank1` **differed** from the L20 file's, and reasoned: *"which it must, since it is a
+different layer; an identical axis would have meant `--force-layer` was ignored."* I repeated that
+same check on the basket-L20 build, and PR-CSI-002's first draft cited it as evidence.
+
+A subagent flagged it. **I verified the counterexample myself, and it is decisive:**
+
+```
+configs/dcs_csi_axis_basket_behavioral.json        bases.cand_rank1.sha16 = 0c397a778db933ba
+configs/dcs_csi_axis_basket_behavioral_shuf24.json bases.cand_rank1.sha16 = fad8b030ae93976e
+                                                   -> sha16 DIFFER
+both files: selected_layer = 18   (the SAME axis at the SAME layer)
+stored tensors: torch.equal(...) = True,  max abs diff = 0.000e+00,  cosine = 1.000000000000
+```
+
+Two files holding a **bitwise identical** axis record **different** `sha16`. Cause: `sha16()` hashes
+the float64 buffer computed *before* the float32 downcast, and `torch.linalg.solve` is not
+bit-reproducible across runs and thread counts, so sub-float32 jitter changes the hash while the
+saved float32 tensor is unchanged.
+
+**Therefore a DIFFERING `sha16` carries essentially no information about whether the axis moved.**
+Only an *identical* `sha16` would have been conclusive, and in the opposite direction. S-103's
+verification of the button-L18 artifact **rested on this check alone**, and to that extent was not
+evidence.
+
+**What S-103's conclusion does NOT depend on, and why the L18 result stands.** The check was
+unsound, but the artifact was independently confirmed correct by things S-103 did not lean on and
+S-104 later measured directly: the `.json` records `layer_forced: true`, `selected_layer: 18`,
+`layer_argmax_not_used: 20`; the producer printed `[force-layer] argmax was L20 … forcing L18`; and
+the S-104 provenance audit read `rescue_layer: 18` out of **every row of all 18 arms** and
+`rescue_basis_meta.selected_layer: 18` from the basis itself. The L18 numbers are not in question.
+What is corrected is the *argument* offered for them.
+
+**The sound check, adopted from here on.** Compare the stored tensors per basis family against the
+other layer's file, which separates layer-dependent from layer-independent bases. On the new
+basket-L20 artifact:
+
+| | |
+|---|---|
+| bitwise identical to the L18 file | **exactly the 22 `ctrl_random` bases, and nothing else** |
+| moved vs L18 | **all 31 data-dependent bases** — `cand_rank1`, `cand_pls1–5`, `ctrl_orth`, `ctrl_shuffled0–23` |
+| \|cos(`cand_rank1` L20, `cand_rank1` L18)\| | **0.735538** (1.0 would mean the override was ignored) |
+
+The 22/31 partition is *exactly* what a real layer override predicts: the random controls are pure
+Gaussian draws from the same seed and dimension and cannot depend on the layer, while everything
+fit to data must move. A silently ignored override would have left all 53 identical and the cosine
+at 1.0. PR-CSI-002's `basis_verified` block was rewritten to this evidence **before** the
+preregistration was committed and before any L20 arm ran.
+
+**Also recorded:** the log's S-098 table quotes a basket `cand_rank1` value of `679c76d2d0e8fe9e`,
+which matches neither `.json`'s `sha16` field. That figure came from a different hashing helper
+(the raw float32 buffer) and is **not comparable** to the `bases[*].sha16` field. Two hashes of the
+same object under one name is the underlying defect in all of this.
+
+## (b) A self-inflicted artifact race — two jobs, one output path
+
+I cancelled the stalled build (905872) and resubmitted as **905947**. A subagent working the same
+task in parallel had *also* resubmitted, as **905948**. Both wrote
+`configs/dcs_csi_axis_basket_L20.pt`, finishing **17 seconds apart** (20:53:12 and 20:53:29), and
+the file's mtime (20:57:17) matched neither completion. I could not bind the `.pt` on disk to a
+single build, and the `sha16` field — the obvious way to try — is exactly the field (a) had just
+shown to be uninformative.
+
+**This was my fault**: I resubmitted without checking whether the agent I had dispatched to do this
+job had already done it. The workflow prompt told it not to launch GPU jobs and not to commit; it
+said nothing about CPU jobs, so the agent was within its brief and I was the duplicate.
+
+**Resolved by rebuilding, not by arguing.** A third build (**905953**) to a *fresh* path
+(`configs/dcs_csi_axis_basket_L20_rebuild.pt`) with no competing job, then compared:
+
+| check | result |
+|---|---|
+| basis key sets equal | yes, 53 each |
+| bases bitwise identical, raced file vs clean rebuild | **53 of 53** |
+| `.pt` key set == `.json` key set | yes, in both files |
+| `selected_layer`, `layer_forced`, `layer_argmax_not_used`, `train_loo_rho_at_selected_layer`, `selected_rank`, full layer grid, `n_fit_domains`, `bank_sha16` | **all equal** |
+
+**The race was benign and the file is not torn** — and that is a measurement, not an inference from
+"the build is deterministic". Two independent nodes computing the same deterministic fit produced
+byte-identical bases, which is also a third instance of D8.
+
+**The rule I am taking from this:** a build that writes to a fixed path is not idempotent under
+concurrency even when it is deterministic, because the failure mode is a *torn file*, not a wrong
+value. When two agents may touch one artifact, either serialise them or give each a distinct path
+and compare — which is what finally settled it.
+
+## (c) Launched, under PR-CSI-002
+
+`configs/dcs_csi_pr002_basket_L20_layer_control.json` is **frozen and committed** before any basket
+L20 arm existed. Then **905960** (group A: BASE/KO/KO_SELF/KO_FULL/KO_AXIS/KO_PLS/KO_ORTH) on
+**n-302** and **905961** (group B: the 10-control family + anchor) on **n-350**, both basket TRAIN at
+L20 with staging, one job per node, both RTX 3090 to match the architecture every basket arm in D12
+ran on.
+
+Pre-flight checked rather than assumed: the launcher reads `selected_layer = 20` and
+`selected_rank = 3` from the artifact's own `.json`, so no `CSI_LAYER` override is involved and the
+subspace arms are written at the layer they were fit at — the condition review R2-M3's guard
+enforces and the reason group A's subspace arms can run here at all.
+
+**The prediction is already on record in PR-CSI-002**: I expect rank 1 of 11 (codeword-only). The
+decision rule, the 0.0909 floor, the gates, the VOID conditions and the must-not-be-said lists for
+both outcomes were fixed before the data.
