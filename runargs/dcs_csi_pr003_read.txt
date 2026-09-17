@@ -1,0 +1,77 @@
+# PR-CSI-003 (PHASE-2 NECESSITY) READ COMMANDS -- frozen 2026-09-18 ~00:10, while job 906433
+# (half 1) was on its first arm and BEFORE any necessity number existed. See S-122.
+#
+# HARDWARE, and this is now a VOID condition rather than advice (S-119, S-121):
+#   EVERY necessity arm MUST run on an RTX 3090 (compute capability 8.6, NATIVE bfloat16).
+#   Tesla V100 is sm_70 and has NO native bf16, so --dtype bfloat16 is EMULATED there, and the
+#   norm-match degeneracy guard (rel = ||P(delta)||/||delta|| < 1e-6, evaluated ONLY on the
+#   norm-matched path, on a quantity tiny by construction) then refuses EVERY row of EVERY
+#   norm-matched control. Demonstrated on all three axes:
+#     norm-matched on 3090 : 669-670 rows every time
+#     norm-matched on V100 : 0 rows every time (n = 24, 96, 268, 670 -- size is irrelevant)
+#     NOT norm-matched V100: 24/24 rows every time (the guard is never reached)
+#   S-037 recorded the V100 bf16 prohibition long before I re-discovered it the hard way.
+#   Job 906433 is on n-307, an RTX 3090 -- correct. Do NOT relaunch necessity arms on
+#   rack-bgw-dgx1 or rack-gww-dgx1 (both tesla_v100) no matter how much faster they load.
+#
+# GATE ORDER. Read in this order and stop at the first failure:
+#   1. the four legs, from summary.json's `necessity_arm` block on EVERY rescue arm:
+#        violations == {} and frac_rows_ok == 1.0
+#        min_donor_prefill_edits    > 0   (leg 1: knockout live on the DONOR capture)
+#        max_readout_knockout_edits == 0  (leg 2: readout forward knockout-FREE)
+#        min_patch_positions_written > 0  (leg 3: the patch fired)
+#        min_donor_delta_norm       > 0   (leg 4: there was something to remove)
+#   2. the POSITIVE CONTROL, which decides whether anything else may be read at all:
+#        KO_NEC_FULL - NEC_BASE must be clearly NEGATIVE with the UPPER ci95 bound < 0.
+#        IF IT IS NOT: the verdict is CANNOT ANSWER for the whole direction (plan section 15).
+#        Report the feasibility numbers and STOP. Do not report the candidate.
+#   3. only then the candidate and its rank.
+
+# ---- PRIMARY ANALYSER -----------------------------------------------------------------------------
+# --direction necessity flips the reference arm to NEC_BASE, inverts the capability gate to
+# (point < 0 and ci95[1] < 0), inverts the rank comparator to `<=`, inverts the one-sided
+# specificity alternative, skips the identity gate WITH a structured reason in
+# out["gates_skipped"]["identity_check"], and writes to a NECESSITY-prefixed filename so it cannot
+# overwrite the paired sufficiency report (S-120 found that it otherwise would).
+#
+# --control-prefixes IS MANDATORY AND MUST BE SPELLED OUT. Omit it and the default
+# "KO_SHUF,KO_RAND" matches NOTHING here, the control distribution is SILENTLY EMPTY, and the
+# analyser falls through to the single-comparator branch that S-050 showed can be made to say
+# either thing. This is the foot-gun flagged in S-120(e).
+python scripts/dcs_csi_subspace_analyze.py \
+  --codeword basket --tag-prefix csi1_basket_train --expect-n 670 --allow-short 4 \
+  --direction necessity \
+  --arms NEC_BASE,NEC_KO,KO_NEC_FULL,KO_NEC_AXIS,KO_NEC_ORTH,KO_NEC_SHUF0,KO_NEC_SHUF1,KO_NEC_SHUF2,KO_NEC_SHUF3,KO_NEC_RAND0,KO_NEC_RAND1,KO_NEC_RAND2,KO_NEC_RAND3 \
+  --base-arm NEC_BASE --ko-arm NEC_KO --full-arm KO_NEC_FULL \
+  --candidate-arm KO_NEC_AXIS --comparator-arm KO_NEC_ORTH \
+  --control-prefixes KO_NEC_SHUF,KO_NEC_RAND \
+  --split train --require-rescue-layer 18 --require-slurm-job <HALF1>,<HALF2>
+
+# ---- INDEPENDENT RE-DERIVATION (shares no code with the above) -------------------------------------
+python scripts/dcs_csi_rederive_subspace.py \
+  --tag-prefix csi1_basket_train --split train --expect-n 670 --allow-short 4 \
+  --direction necessity --base NEC_BASE --ko NEC_KO --full KO_NEC_FULL --candidate KO_NEC_AXIS \
+  --controls KO_NEC_SHUF0,KO_NEC_SHUF1,KO_NEC_SHUF2,KO_NEC_SHUF3,KO_NEC_RAND0,KO_NEC_RAND1,KO_NEC_RAND2,KO_NEC_RAND3 \
+  --require-rescue-layer 18 --require-slurm-job <HALF1>,<HALF2> \
+  --out reports/DCS_CSI_REDERIVE_NECESSITY_basket_train.json
+
+# ---- WHAT MAY AND MAY NOT BE CONCLUDED ------------------------------------------------------------
+#  * THE PASS BRANCH IS UNREACHABLE BY DESIGN. 9 controls => attainable floor 1/10 = 0.10, and the
+#    analyser's PASS branch requires rank_p_floor < 0.05, i.e. >= 19 controls. So even a perfect
+#    candidate can only ever print INCONCLUSIVE. PR-CSI-003 declares the 0.10 floor in advance, so
+#    this is the CEILING of the design and not a disappointment (S-120 flag (a)). A certifying
+#    statement needs the family grown to >= 19 first.
+#  * KO_NEC_AXIS_ANCHOR is NOT matched by --control-prefixes and will NOT enter the control
+#    distribution. That is deliberate -- it is the cross-allocation anchor, as in group B -- but it
+#    is a silent choice, so it is named here explicitly.
+#  * KO_NEC_FULL carries rescue_basis: None, so it is exempt from the subspace-arm identity checks.
+#    It is therefore THE ONE ARM WHOSE BASIS IDENTITY NOTHING VERIFIES; if it were accidentally run
+#    WITH a basis it would still pass. Check its config.json args.rescue_basis is null by hand.
+#  * There is NO inert identity control for this direction and the four legs are NOT a substitute:
+#    they prove the knockout was live on the donor, the readout was clean, the patch fired and a
+#    displacement existed -- none proves the written state is the intended
+#    h_clean - P_w(h_clean - h_ko) rather than something arithmetically adjacent. The strongest
+#    available evidence for that is a UNIT test (S-110), not a per-row run-time gate.
+#  * The prediction is already on record in PR-CSI-003: the positive control fires clearly and the
+#    CANDIDATE IS EXPECTED TO BE UNDERPOWERED OR NULL. A null must be reported as the underpowered
+#    result it was predicted to be, never as evidence against the axis.

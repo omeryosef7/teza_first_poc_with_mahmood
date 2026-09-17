@@ -8324,3 +8324,55 @@ and the one entry that refused to attribute is the only one that has not had to 
 `--limit` does still have a genuine defect, recorded in S-114 and unaffected by any of this: it
 takes the first N of the surviving bucket, which for this population is **3 domains of 67**, so it
 is the wrong sampler for a project whose independence unit is the domain. That remains queued.
+
+---
+
+# S-122 — the PR-CSI-003 read is frozen **before any necessity number exists**, with the V100 prohibition written in as a VOID condition and three foot-guns named
+
+`runargs/dcs_csi_pr003_read.txt`, committed while job 906433 was on its **first** arm. Same
+discipline as S-112's PR-CSI-002 read, and for the same reason: write down how the result will be
+read *before* it can be read.
+
+## What the file makes non-optional
+
+**Hardware is now a VOID condition, not advice.** Every necessity arm must run on an **RTX 3090**
+(sm_86, native bf16). The demonstration from S-119/S-121 is written into the file on all three axes
+— norm-matched on 3090: 669–670 rows every time; norm-matched on V100: **0 rows every time at
+n = 24, 96, 268 and 670**, so size is irrelevant; not norm-matched on V100: 24/24 every time,
+because the guard is never reached. With the explicit instruction: **do not relaunch necessity arms
+on `rack-bgw-dgx1` or `rack-gww-dgx1` no matter how much faster they load** — which is precisely the
+temptation I gave in to three times in one evening.
+
+**Gate order, stop at the first failure.** The four legs on every rescue arm; then the positive
+control, which decides whether anything else may be read at all (`KO_NEC_FULL − NEC_BASE` clearly
+negative with the **upper** CI bound < 0, else **CANNOT ANSWER for the whole direction** per §15 —
+report the feasibility numbers and stop, do not report the candidate); only then the candidate and
+its rank.
+
+## Three foot-guns named in the file rather than discovered later
+
+1. **`--control-prefixes KO_NEC_SHUF,KO_NEC_RAND` is mandatory and spelled out.** The default
+   `KO_SHUF,KO_RAND` matches **nothing** here, the control distribution goes **silently empty**, and
+   the analyser falls through to the single-comparator branch S-050 showed can be made to say either
+   thing.
+2. **`KO_NEC_FULL` carries `rescue_basis: None`, so it is exempt from the subspace-arm identity
+   checks** — *the one arm whose basis identity nothing verifies*. If it were accidentally run
+   **with** a basis it would still pass. The file says to check its config by hand.
+3. **`KO_NEC_AXIS_ANCHOR` will not enter the control distribution**, by design (it is the
+   cross-allocation anchor, as in group B) — but that is a silent choice, so it is named.
+
+## And the ceiling, stated in advance
+
+**The PASS branch is unreachable under this preregistration.** Nine controls give an attainable
+floor of 1/10, and the analyser's PASS branch requires `rank_p_floor < 0.05`, i.e. **≥ 19
+controls**. So even a perfect candidate can only ever print **INCONCLUSIVE**. PR-CSI-003 declared
+the 0.10 floor in advance, so this is the design's **ceiling** and not a disappointment — but it is
+R3-B1's shape again, and it means a certifying necessity statement requires growing the family
+first. Recorded here so that when INCONCLUSIVE prints, nobody reads it as a result.
+
+The file also repeats the two limits that matter most: there is **no inert identity control** for
+this direction and the four legs are **not** a substitute (they prove the knockout was live on the
+donor, the readout was clean, the patch fired and a displacement existed — none proves the written
+state is the *intended* `h_clean − P_w(h_clean − h_ko)`); and PR-CSI-003's prediction already on
+record is that **the candidate is expected to be underpowered or null**, to be reported as the
+underpowered result it was predicted to be and never as evidence against the axis.
