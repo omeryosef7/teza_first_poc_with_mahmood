@@ -27,8 +27,18 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SB = os.path.join(REPO, "outputs", "boombness", "score_behavior")
 
 
-def run_dir(tag: str, expect_n: int, allow_short: int) -> str:
-    """The ONE complete run dir for `tag`. Anchored regex: `KO` must not match `KO_SELF` (S-042)."""
+def run_dir(tag: str, expect_n: int, allow_short: int, layer=None, jobs=None) -> str:
+    """The ONE complete run dir for `tag`. Anchored regex: `KO` must not match `KO_SELF` (S-042).
+
+    DISAMBIGUATION (S-104), implemented here independently of the primary path's version on purpose
+    -- this file shares no code with it, so the two must reach the same directory by two routes.
+    Since S-103 re-ran the button-TRAIN arms at a second layer under the SAME tags, a tag can resolve
+    to two complete directories. `layer` narrows by the layer the run's own config.json says it
+    patched (None for the no-rescue arms BASE/KO, where a layer is not a property of the run, so
+    those pass through); `jobs` narrows by the SLURM allocation in RUNMETA.json, which is the only
+    discriminator the no-rescue arms have. Recency is never a tie-break: if the filters leave more
+    than one, this still refuses.
+    """
     pat = re.compile(r"^%s_\d{8}_\d{6}_\d+$" % re.escape(tag))
     cands = []
     for d in sorted(glob.glob(os.path.join(SB, tag + "_*"))):
@@ -40,9 +50,35 @@ def run_dir(tag: str, expect_n: int, allow_short: int) -> str:
         n = sum(1 for _ in open(rp, encoding="utf-8"))
         if n == expect_n or (n < expect_n and expect_n - n <= allow_short):
             cands.append((d, n))
+
+    def _layer_of(d):
+        p = os.path.join(d, "config.json")
+        if not os.path.isfile(p):
+            raise SystemExit("REFUSING %s: %s has no config.json, so its layer cannot be verified"
+                             % (tag, os.path.basename(d)))
+        v = json.load(open(p, encoding="utf-8")).get("args", {}).get("rescue_layer")
+        return None if v is None else int(v)
+
+    def _job_of(d):
+        p = os.path.join(d, "RUNMETA.json")
+        if not os.path.isfile(p):
+            return None
+        v = json.load(open(p, encoding="utf-8")).get("slurm_job_id")
+        return None if v is None else str(v)
+
+    if layer is not None and len(cands) > 1:
+        cands = [(d, n) for d, n in cands if _layer_of(d) in (None, int(layer))]
+    if jobs is not None and len(cands) > 1:
+        want = {str(x) for x in jobs}
+        cands = [(d, n) for d, n in cands if _job_of(d) in want]
     if len(cands) != 1:
-        raise SystemExit("REFUSING %s: %d usable run dirs (need exactly 1): %s"
-                         % (tag, len(cands), [os.path.basename(c) for c, _ in cands]))
+        raise SystemExit("REFUSING %s: %d usable run dirs (need exactly 1): %s  layers=%s jobs=%s"
+                         % (tag, len(cands), [os.path.basename(c) for c, _ in cands],
+                            [_layer_of(c) for c, _ in cands], [_job_of(c) for c, _ in cands]))
+    got = _layer_of(cands[0][0])
+    if layer is not None and got is not None and got != int(layer):
+        raise SystemExit("REFUSING %s: %s patched layer %d, not the required %s"
+                         % (tag, os.path.basename(cands[0][0]), got, layer))
     return cands[0][0]
 
 
@@ -109,12 +145,21 @@ def main() -> int:
     ap.add_argument("--base", default="BASE")
     ap.add_argument("--full", default="KO_FULL")
     ap.add_argument("--controls", required=True, help="space- or comma-separated control arm names")
+    ap.add_argument("--require-rescue-layer", type=int, default=None,
+                    help="S-104: admit only run dirs whose own config.json says they patched this "
+                         "layer. Required whenever a tag has been run at more than one layer. "
+                         "Arms that ran no rescue (BASE, KO) carry no layer and pass through.")
+    ap.add_argument("--require-slurm-job", default=None,
+                    help="S-104: comma list of SLURM job ids; admit only run dirs from those "
+                         "allocations. The only discriminator the no-rescue arms have.")
     ap.add_argument("--out", default=None)
     a = ap.parse_args()
 
+    jobs = [x for x in re.split(r"[ ,]+", a.require_slurm_job or "") if x] or None
     ctl_names = [x for x in re.split(r"[ ,]+", a.controls) if x]
     arms = [a.base, a.ko, a.full, a.candidate] + ctl_names
-    dirs = {arm: run_dir("%s_%s" % (a.tag_prefix, arm), a.expect_n, a.allow_short) for arm in arms}
+    dirs = {arm: run_dir("%s_%s" % (a.tag_prefix, arm), a.expect_n, a.allow_short,
+                         layer=a.require_rescue_layer, jobs=jobs) for arm in arms}
     mf = json.load(open(os.path.join(REPO, "data/boombness_prompts/dcs_ts116_domain_split.json"),
                         encoding="utf-8"))
     assign = mf["assign"]
@@ -170,7 +215,11 @@ def main() -> int:
     out = {"schema": "dcs_csi_rederive_subspace/1", "tag_prefix": a.tag_prefix, "split": a.split,
            "n_keys_common": len(keys), "n_domains": len(doms), "gates": gates,
            "candidate_minus_ko": cand, "controls_minus_ko": ctls, "ranks": ranks,
-           "run_dirs": {k: os.path.basename(v) for k, v in dirs.items()}}
+           "run_dirs": {k: os.path.basename(v) for k, v in dirs.items()},
+           "require_rescue_layer": a.require_rescue_layer, "require_slurm_job": jobs,
+           "resolved_rescue_layers": {
+               k: (json.load(open(os.path.join(v, "config.json"), encoding="utf-8"))
+                   .get("args", {}).get("rescue_layer")) for k, v in dirs.items()}}
     print(json.dumps({"gates": gates, "candidate_minus_ko": cand, "ranks": ranks}, indent=1))
     if a.out:
         json.dump(out, open(a.out, "w"), indent=1)

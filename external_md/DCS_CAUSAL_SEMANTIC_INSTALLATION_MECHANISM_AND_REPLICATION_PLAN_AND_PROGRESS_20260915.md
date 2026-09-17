@@ -6136,3 +6136,179 @@ described as anything other than a surprise that overturns the framing.
 only show where button-at-L18 sits. If it lands at rank 1 the family will be extended to 46 to match;
 if it lands mid-distribution, that is already sufficient to retain the codeword framing, since the
 claim being tested is that it does **not** pass.
+
+---
+
+# S-104 — **THE DISSOCIATION IS ABOUT THE CODEWORD, NOT THE LAYER.** Button's axis fails at basket's layer too — and fails *worse*, at a layer where the whole state recovers 56 % more
+
+S-103 launched the test it said could kill this sprint's framing, and fixed its prediction before the
+data: *"Button's L20 axis ranks 4 of 11 on both splits. If the layer is what matters, button-at-L18
+should rank near 1. If the codeword is what matters, it should rank mid-distribution again."*
+
+Jobs **902004** (group A, 7 arms, n-304) and **902005** (group B, 11 arms, n-306) both finished
+`rc=0`. The answer is unambiguous, and it is the one that preserves the claim.
+
+## The result, both layers, the same 10-control family, the same code path
+
+| | **L20** (the frozen record) | **L18** (basket's layer) |
+|---|---|---|
+| `KO − BASE` (manipulation) | −0.20558, **67/67** domains | −0.20686, **67/67** domains |
+| `KO_SELF − KO` (identity) | −0.00070, inside tol | −0.00090, inside tol |
+| `KO_FULL − KO` (positive control) | +0.06955, 66/67 | **+0.10842, 67/67** |
+| **`KO_AXIS − KO` (candidate)** | **+0.00040** | **−0.00027** |
+| **pooled rank** | **4 of 11** (p = 0.3636) | **8 of 11** (p = 0.7273) |
+| random-only rank | 3 of 7 | 5 of 7 |
+| shuffled-only rank | 2 of 5 | 4 of 5 |
+| controls ≥ candidate | 3 | **7** |
+| keys / domains | 666 / 67 | 658 / 67 |
+| VOID conditions | none | **none** |
+| verdict | DOES NOT PASS | **DOES NOT PASS** |
+
+`reports/DCS_CSI_SUBSPACE_button_train_L18.json`, `reports/DCS_CSI_REDERIVE_button_train_L18.json`,
+`reports/DCS_CSI_REDERIVE_button_train_L20.json`.
+
+**Both analysis paths agree** on the new number, as they must: primary analyser *"PRIMARY DOES NOT
+PASS on split=train — the candidate ranks 8 of 11 in its own control distribution (rank p=0.7273)"*,
+candidate −0.00027; independent re-derivation (no shared code) candidate −0.00028, rank 8 of 11,
+5 of 7, 4 of 5.
+
+## Why this is a real answer and not a dead instrument
+
+A null at a new layer is worthless if the instrument stopped working there. It did not — and the
+evidence is stronger than "the gates passed":
+
+**At L18 the whole-state rescue recovers MORE than at L20: +0.10842 against +0.06955, and on 67 of
+67 domains rather than 66.** L18 is, for button, a **better** rescue layer in absolute terms — 56 %
+more of the knockout effect is restorable there. The axis nevertheless falls from 4th to 8th of 11
+and its point estimate turns **negative**. The candidate did not lose because there was less to win;
+it lost at the layer where there was most to win.
+
+The manipulation check is identical at both layers (−0.206 vs −0.206, 67/67 each), the identity
+control is inert at both, and the analyser recorded **no VOID conditions**.
+
+## What this settles
+
+Every comparison in D12 and S-097 had **codeword** and **layer** perfectly confounded: basket ran at
+L18, button at L20, each its own TRAIN argmax. S-079 listed de-confounding as remedy 3 and it had
+never been run. It has now been run in the direction that could falsify us:
+
+> **Button fails at basket's layer.** The dissociation between the two codewords is not an artifact
+> of the layers they were each fit at.
+
+Note the comparison is fair on its own terms — both layers sit on each codeword's ρ plateau
+(button L18 0.5931 / L20 0.5935; basket L18 0.6525 / L20 0.6512), so neither swap moves a codeword
+to a layer where its probe is weak. That is recorded in D2's caveat and is why the swap was possible
+at all.
+
+## What it does NOT settle, and the arm that is still missing
+
+This is **one half of a 2×2**. Button has now been tested at both layers; **basket has only ever been
+tested at L18.** The symmetric arm — basket forced to L20 — has not been built or run. Until it is:
+
+- We may say *"button's failure is not explained by its layer."* ✅
+- We may **not** say *"basket's pass is not explained by its layer."* ❌ That is a different claim and
+  it has no evidence yet. A world in which L18 is simply the layer where **any** axis passes is not
+  excluded by this entry; it is only excluded for button, which is the codeword that fails.
+
+The basket-at-L20 axis is being built now and will be launched as the closing arm.
+
+Two further limits, carried unchanged: this is **TRAIN only** (button's held-out L18 arms do not
+exist), and the control family is **10**, floor 0.0909 — which, exactly as S-103 pre-declared, is
+fine *because the claim being tested is that it does not pass*. A family of 10 cannot certify a pass
+at 0.05; it can perfectly well show a candidate sitting 8th inside it.
+
+## The prediction, and that it was recorded first
+
+S-103 wrote: *"A mid-distribution result at L18 is the outcome that **preserves** the current claim;
+I am recording that I expect it, so that a pass cannot later be described as anything other than a
+surprise that overturns the framing."* The result is mid-distribution — in fact below the middle.
+The prediction was right, which is worth exactly as much as a recorded prediction ever is: it means
+the analysis could not have been steered, not that the hypothesis gained support from being guessed.
+
+## A robustness check, because one control forced a parameter change
+
+`KO_RAND2` at L18 declined **4** rows to the norm-match degeneracy guard, over the `--allow-short 3`
+the record has always used, so the L18 family was analysed at `--allow-short 4`. That is a parameter
+moved after seeing a run, so it is checked rather than asserted: **dropping `KO_RAND2` entirely and
+returning to `--allow-short 3` gives rank 7 of 10** — the same position in the distribution, the same
+verdict. The allow-short choice is not load-bearing. All four of that arm's losses are the documented
+degeneracy refusal, and `strict_run_dir`'s ledger-equals-file check passed on every arm.
+
+---
+
+## S-104b — the BLOCKER this entry had to fix first: since S-103, eighteen run tags each name TWO different experiments
+
+S-103 re-ran the same eighteen button-TRAIN arms at L18 **under the same tags** as their L20
+originals (group A/B build tags as `csi1_<cw>_<split>_<ARM>`; only group F ever inserted the layer).
+So `csi1_button_train_KO_AXIS` now resolves to two complete run directories that differ only in which
+layer they patched — two different experiments wearing one name.
+
+**Both analysis paths refused, and they were right to.** `strict_run_dir` and the independent path's
+`run_dir` each require *exactly one* complete directory per tag, precisely so that "take the newest"
+— the silent choice between two experiments that sprint item **P0.4** was written to forbid — cannot
+happen. But a refusal is not an analysis, and the result above could not be read until this was fixed.
+
+**The fix: narrow by a property the run itself recorded, never by time.**
+
+- `--require-rescue-layer N` — admit only directories whose own `config.json` says they patched layer
+  `N`. This does not merely select, it **asserts**: a directory that is not the layer the caller
+  believes it is can no longer be analysed silently.
+- `--require-slurm-job J,K` — admit only directories from those allocations, read from `RUNMETA.json`.
+  This is the only discriminator available for `BASE` and `KO`, which run no rescue and therefore
+  carry no layer; their two directories are genuinely the same experiment run twice.
+
+Both filters are in **both** paths, implemented separately in each (the re-derivation shares no code
+with the primary analyser on purpose, so the two must reach the same directory by two routes), and
+the primary analyser additionally re-checks the requested layer **against the rows**, not only
+against `config.json` — the two can disagree only if a run's frozen config does not describe what it
+actually wrote, which is the exact class of defect that S-084 and S-100 both turned out to be.
+
+### The near-miss this immediately caught, which is the argument for the design
+
+The first L18 run of the analysis **refused**, and not for the reason expected:
+
+```
+REFUSING csi1_button_train_KO_RAND2:
+  csi1_button_train_KO_RAND2_20260915_212802_3287052 patched layer 20, not the required 18
+```
+
+`KO_RAND2`'s **L18** directory is short by 4 rows, over `--allow-short 3`, so it was not admissible —
+which left its **L20** directory as the only complete one for that tag. One layer-20 control would
+have entered a layer-18 control family. A filter written only as *"disambiguate when there is more
+than one candidate"* would have skipped this case entirely: after the completeness check there was
+only one candidate, and it was the wrong experiment. It was caught because the check is an
+**assertion on the survivor**, not only a filter on the set.
+
+`tests/test_run_dir_layer_selection.py` (6 tests) locks down both halves plus that case specifically:
+the filter selects the requested layer out of an ambiguous pair; it still **refuses** when nothing
+separates them (the BASE/KO case); the SLURM job does separate those; a **lone** directory of the
+wrong layer is refused rather than accepted; three complete dirs with two at the requested layer
+still refuse, so recency is never a tie-break; and the **unfiltered** path is unchanged, because 164
+committed results were produced through it.
+
+### Verified behaviour-preserving against the record, not just against tests
+
+Two independent regressions, both exact:
+
+1. The held-out basket headline (S-102), re-run through the patched code with **no filter**:
+   +0.00401, **rank 1 of 47**, random-only 1 of 23, shuffled-only 1 of 25 — identical to
+   `reports/DCS_CSI_REDERIVE_basket_validation_n42.json`.
+2. Button TRAIN at **L20**, re-derived through the **new filter path**, against the committed
+   `reports/DCS_CSI_SUBSPACE_button_train_rank1.json`: manipulation −0.20558, positive control
+   +0.06955, candidate +0.00040, **rank 4 of 11**, 666 keys / 67 domains, and every one of the ten
+   control values agreeing to the digit. The frozen record is reproducible through the new code.
+
+**Provenance of the L18 set, audited before the result was read.** All 18 arms have exactly one L18
+and one L20 directory. Every L18 arm ran on an **RTX 3090** (n-304 for group A, n-306 for group B),
+as did every L20 arm (n-303, n-350) — so the compared arms share a GPU architecture and §16's
+cross-architecture rule is satisfied, not merely assumed. Every L18 rescue arm names
+`dcs_csi_axis_button_behavioral_L18.pt` and `rescue_layer=18` in its own config; the analyser's
+row-level check confirms the same from the rows. Knockout liveness: `frac_rows_scope_live = 1.0`,
+`total_decode_edits = 0` on every arm. Total row loss across the 18 L18 arms is **12 rows**, every
+one of them a `norm-match DEGENERATE` refusal, with `DONE.json` honestly reporting each.
+
+**Lesson recorded.** A tag was a unique name for as long as nobody re-ran an arm with a different
+setting — an invariant nothing enforced and nothing stated. The launcher's group F already carried
+the layer in its tag; groups A and B did not, and S-103 used A and B. The cheaper fix would have been
+to put the layer in the tag; the fix taken instead makes *any* future re-run resolvable by what the
+run recorded rather than by what its name happens to say, which is the weaker assumption.

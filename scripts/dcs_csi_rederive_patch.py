@@ -50,8 +50,28 @@ def _load(mod: str, path: str):
     return m
 
 
+def _runmeta_job(d: str) -> Optional[str]:
+    """The SLURM job id this run directory belongs to, from RUNMETA.json. None if unrecorded."""
+    p = os.path.join(d, "RUNMETA.json")
+    if not os.path.exists(p):
+        return None
+    j = json.load(open(p, encoding="utf-8"))
+    v = j.get("slurm_job_id")
+    return None if v is None else str(v)
+
+
+def _config_rescue_layer(d: str) -> Optional[int]:
+    """The layer this run PATCHED, from its own frozen config. None if the arm ran no rescue."""
+    p = os.path.join(d, "config.json")
+    if not os.path.exists(p):
+        return None
+    v = json.load(open(p, encoding="utf-8")).get("args", {}).get("rescue_layer")
+    return None if v is None else int(v)
+
+
 def strict_run_dir(tag: str, expect_n: int, row_file: str = "gens.jsonl",
-                   allow_short: int = 0) -> str:
+                   allow_short: int = 0, require_rescue_layer: Optional[int] = None,
+                   require_slurm_jobs: Optional[Sequence[str]] = None) -> str:
     """The hardening `latest_dir` never had (sprint item P0.4).
 
     `dcs_cont_patch_endpoint.latest_dir` preferred a DONE.json directory but FELL BACK to the
@@ -110,10 +130,67 @@ def strict_run_dir(tag: str, expect_n: int, row_file: str = "gens.jsonl",
                                                           expect_n))
                 continue
         ok.append(d)
+    # ------------------------------------------------------------------ DISAMBIGUATION (S-104)
+    # Until S-103 every tag had exactly one complete run dir, so "complete" was also "unique" and
+    # the two never had to be separated. S-103 re-ran the SAME 18 button-TRAIN arms at layer 18
+    # under the SAME tags as the layer-20 originals, and every one of those tags now resolves to
+    # two complete directories. That is the right failure -- both paths refuse rather than choose --
+    # but a refusal is not an analysis, and "take the newest" is exactly the silent choice between
+    # two different experiments that P0.4 was written to forbid.
+    #
+    # So a caller may narrow the candidate set, but only by a property the RUN ITSELF RECORDED:
+    #   require_rescue_layer -- the layer in the run's own frozen config.json. This does not merely
+    #       select; it ASSERTS, so a directory that is not the layer the caller believes it is can
+    #       never be analysed silently. Arms that ran NO rescue (BASE, KO) carry rescue_layer=None:
+    #       the layer is not a property of those runs, so they pass through this filter untouched
+    #       and `layer_filter_applied` is reported False for them.
+    #   require_slurm_jobs -- the allocation the run belongs to, from RUNMETA.json. This is the
+    #       discriminator of last resort, and the only one available for the no-rescue arms, whose
+    #       two directories are the same experiment run twice.
+    # Neither filter may ever be a tie-break on TIME. If a filter leaves the set ambiguous we still
+    # refuse, and the message names the remaining directories and the filter that would separate
+    # them, because the previous failure here was a reader who did not know a choice was being made.
+    if require_rescue_layer is not None and len(ok) > 1:
+        kept, dropped = [], []
+        for d in ok:
+            lay = _config_rescue_layer(d)
+            if lay is None or lay == require_rescue_layer:
+                kept.append(d)
+            else:
+                dropped.append("%s: rescue_layer=%r != %d" % (os.path.basename(d), lay,
+                                                              require_rescue_layer))
+        if dropped:
+            why.extend(dropped)
+            ok = kept
+    if require_slurm_jobs is not None and len(ok) > 1:
+        want = {str(x) for x in require_slurm_jobs}
+        kept, dropped = [], []
+        for d in ok:
+            job = _runmeta_job(d)
+            if job is not None and job in want:
+                kept.append(d)
+            else:
+                dropped.append("%s: slurm_job_id=%r not in %s"
+                               % (os.path.basename(d), job, sorted(want)))
+        if dropped:
+            why.extend(dropped)
+            ok = kept
     if len(ok) != 1:
+        hint = ""
+        if len(ok) > 1:
+            hint = ("\n  HINT: these are all complete. Separate them by a property the run recorded "
+                    "-- require_rescue_layer=%s / slurm_job_id=%s -- never by recency."
+                    % ([_config_rescue_layer(d) for d in ok], [_runmeta_job(d) for d in ok]))
         raise SystemExit("REFUSING for tag %r: %d complete run dirs (need exactly 1).\n  rejected:\n%s\n"
-                         "  accepted:\n%s" % (tag, len(ok), "\n".join("    " + w for w in why),
-                                              "\n".join("    " + os.path.basename(d) for d in ok)))
+                         "  accepted:\n%s%s" % (tag, len(ok), "\n".join("    " + w for w in why),
+                                                 "\n".join("    " + os.path.basename(d) for d in ok),
+                                                 hint))
+    if require_rescue_layer is not None:
+        lay = _config_rescue_layer(ok[0])
+        if lay is not None and lay != require_rescue_layer:
+            raise SystemExit("REFUSING for tag %r: the single complete run dir %s patched layer %d, "
+                             "not the required %d" % (tag, os.path.basename(ok[0]), lay,
+                                                      require_rescue_layer))
     return ok[0]
 
 

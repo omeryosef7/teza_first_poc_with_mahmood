@@ -265,9 +265,22 @@ def main() -> int:
     ap.add_argument("--self-inert-tol", type=float, default=0.005,
                     help="|KO_SELF - KO| above this VOIDs the run: the patch is not writing what "
                          "it read, so no rescue number is interpretable")
+    ap.add_argument("--require-rescue-layer", type=int, default=None,
+                    help="S-104. Admit only run dirs whose OWN config.json records that they "
+                         "patched this layer. Mandatory whenever a tag has been run at more than "
+                         "one layer -- since S-103 the button TRAIN tags resolve to both an L20 "
+                         "and an L18 directory, and picking the newer one is the silent choice "
+                         "between two experiments that P0.4 forbids. Arms that ran no rescue "
+                         "(BASE, KO) carry no layer and pass this filter untouched; use "
+                         "--require-slurm-job to separate those.")
+    ap.add_argument("--require-slurm-job", default=None,
+                    help="S-104. Comma list of SLURM job ids; admit only run dirs produced by "
+                         "those allocations, read from each run's RUNMETA.json.")
     ap.add_argument("--out", default=None)
     a = ap.parse_args()
 
+    _jobs = [x for x in a.require_slurm_job.split(",") if x] if a.require_slurm_job else None
+    _sel = {"require_rescue_layer": a.require_rescue_layer, "require_slurm_jobs": _jobs}
     assign = lpm.load_split()
     arms = [x for x in a.arms.split(",") if x]
     dirs, dmeans, meta, kv = {}, {}, {}, {}
@@ -277,13 +290,13 @@ def main() -> int:
             raise SystemExit("--option-mass-reference %r is not among --arms" % a.option_mass_reference)
         _refdir = rederive.strict_run_dir("%s_%s" % (a.tag_prefix, a.option_mass_reference),
                                           a.expect_n, row_file="results.jsonl",
-                                          allow_short=a.allow_short)
+                                          allow_short=a.allow_short, **_sel)
         keep_keys = reference_key_set(_refdir, a.option_mass_floor)
         print("[P1-f] key set from reference arm %s at floor %g: %d keys retained"
               % (a.option_mass_reference, a.option_mass_floor, len(keep_keys)))
     for arm in arms:
         d = rederive.strict_run_dir("%s_%s" % (a.tag_prefix, arm), a.expect_n,
-                                    row_file="results.jsonl", allow_short=a.allow_short)
+                                    row_file="results.jsonl", allow_short=a.allow_short, **_sel)
         dirs[arm] = d
         kv[arm], n_inst, kinds = arm_key_values(d, assign, a.split)
         n_drop = 0
@@ -388,6 +401,14 @@ def main() -> int:
     layers_used = {x: meta[x]["rescue_layers"] for x in arms if meta[x]["rescue_layers"]}
     if len({tuple(v) for v in layers_used.values()}) > 1:
         void.append("rescued arms used DIFFERENT layers: %s" % layers_used)
+    # S-104. --require-rescue-layer selects on config.json; this checks the ROWS. The two can only
+    # disagree if a run's frozen config does not describe what it actually wrote, which is precisely
+    # the class of defect the independent-path disagreements in S-084 and S-100 both turned out to be.
+    if a.require_rescue_layer is not None:
+        bad = {x: v for x, v in layers_used.items() if tuple(v) != (a.require_rescue_layer,)}
+        if bad:
+            void.append("--require-rescue-layer=%d but the ROWS of these arms record other layers: %s"
+                        % (a.require_rescue_layer, bad))
     if len({tuple(meta[x]["n_rescue_positions"]) for x in arms if meta[x]["n_rescue_positions"]}) > 1:
         void.append("rescued arms wrote DIFFERENT position counts: %s"
                     % {x: meta[x]["n_rescue_positions"] for x in arms})

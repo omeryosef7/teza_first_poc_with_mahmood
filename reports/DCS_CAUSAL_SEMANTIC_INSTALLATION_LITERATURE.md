@@ -115,3 +115,329 @@ All via WebSearch unless noted. "Results" = distinct links returned in the resul
 **Pages fetched and read (6):** arxiv.org/abs/2512.03771; arxiv.org/html/2512.03771v1 (interpretability sections); arxiv.org/abs/2507.11878; arxiv.org/abs/2310.11634; arxiv.org/abs/2506.12880; (plus search-result verification of aclanthology.org/2026.acl-long.768).
 
 **Total: 17 searches, 5 primary-page fetches, ~170 result links inspected.**
+
+---
+
+# ADDENDUM — 2026-09-17: gap-fill pass on plan §12, with a direct answer to the two framing questions
+
+**Date:** 2026-09-17
+**Why this pass.** The 2026-09-15 review above predates the sprint's current results. Two of those
+results now govern how everything may be worded: (i) a **rank-1 / low-rank installation axis recovers
+only a few percent** of what the **whole state** recovers, and (ii) a **per-position causal map**
+puts **46.6 % of the whole-state effect on the codeword's own query row**. This pass asks the
+literature specifically whether either of those is (a) already published, (b) already explained away
+by a known artefact, or (c) already refuted as a methodology. It also re-checks §12's topic list for
+coverage.
+
+**Method.** 22 WebSearch queries and 15 direct arXiv page fetches (listed in §A7). Every row in the
+tables below was checked by fetching the paper's own arXiv/proceedings page: title, authors, date and
+abstract were read from the source, not from a search snippet. Rows that could not be verified that
+way are **not** in the tables — they are in §A6 (UNVERIFIED) and must not be cited.
+
+**Same coverage limits as §1 apply**, and one more: several judgements below ("they do not test
+rank-1", "they patch at the final position") come from the arXiv **HTML** rendering of the paper
+(abstract + numbered sections + appendix headings), not from an end-to-end PDF read. Each such
+judgement is marked *(html-read)*.
+
+---
+
+## A1. Coverage assessment against the §12 topic list
+
+| §12 topic | State before this pass | State after |
+|---|---|---|
+| Doublespeak / semantic-remapping jailbreaks | **Covered** (2512.03771; 2402.10601; 2405.14023) | unchanged; no new remapping attack surfaced |
+| In-context concept remapping | **Thin** — only MAGNIFICo, no internals | **Filled**: 2501.00070 (ICLR 2025), 2602.04212, 2412.12276 |
+| Activation patching of semantic representations | Covered on *method*, **thin on pitfalls** | **Filled**: 2309.16042, 2404.15255, 2311.17030, 2606.27510 |
+| Causal mediation in transformers | Covered (ROME, Vig, Geiger) | **Deepened**: 2606.27510 re-derives the patching estimand and shows NIE ≠ component effect |
+| Refusal circuits | Covered (2406.11717) + two *unverified* rows | **2502.17420 now VERIFIED** (ICML 2025); + 2609.14759 |
+| Semantic interpretation vs refusal | Covered (2507.11878) | **Deepened**: 2609.14759, 2606.28153 |
+| Demonstration retrieval circuits | **Thin** — retrieval heads only | **Filled**: 2505.15807 (NeurIPS 2025), Sia et al. (NeurIPS 2024) |
+| Induction / retrieval heads | Covered | unchanged |
+| Representation hijacking | Covered (2512.03771; 2506.12880) | unchanged |
+| Activation-based jailbreak mechanisms | Covered, one key row *unverified* | **2605.00123 now VERIFIED** (COLM 2026) + 2606.28153 |
+| Causal subspace interventions | Covered on *method*, **absent on negatives/controls** | **Filled — this was the biggest gap**: 2507.08802, 2501.17148, 2504.13151, 2407.12404, 2307.15771, 2402.15390, 2605.16362 |
+
+**Still uncovered after this pass** — see §A5.
+
+---
+
+## A2. Table of added works — subspace mediation, controls, and published negatives (bears on 3a)
+
+Same similarity yardstick as §2.
+
+| Citation | Model(s) | Phenomenon | Intervention | Causal / Correlational | Similarity | What remains novel for us |
+|---|---|---|---|---|---|---|
+| Makelov, Lange, Nanda. *Is This the Subspace You Are Looking for? An Interpretability Illusion for Subspace Activation Patching*. arXiv:2311.17030 (28 Nov 2023); NeurIPS 2023 Attributing-Model-Behavior workshop; **ICLR 2024 poster**. (fetched) | GPT-2 (IOI), factual-recall setting | A subspace patch can produce the *intended* end-to-end behavioural change **while being causally disconnected from the output**, by activating a *dormant parallel pathway* | Subspace activation patching + counter-analysis | **Causal** (it is a critique *of* causal claims) | **HIGH on methodology.** This is the canonical published statement that a subspace-patching **positive** need not mean the feature lives in that subspace; they tie it to rank-1 fact editing and to the known fact-editing / fact-localisation inconsistency | Directional relevance is inverted for us: it disciplines *positives*. Our load-bearing subspace result is a **negative**, which this paper's illusion cannot manufacture — worth stating explicitly, because it is one of the few respects in which a negative is *safer* than a positive |
+| Sutter, Minder, Hofmann, Pimentel. *The Non-Linear Representation Dilemma: Is Causal Abstraction Enough for Mechanistic Interpretability?* arXiv:2507.08802 (11 Jul 2025); **NeurIPS 2025 Spotlight**. (fetched) | LMs incl. randomly-initialised controls | If the alignment map is not capacity-constrained, **any network can be mapped to any algorithm**; they obtain **100 % interchange-intervention accuracy on randomly initialised models** for algorithms those models cannot solve | Interchange interventions under alignment maps of varying expressivity | **Causal** | **HIGH on methodology — this is the paper that licenses our control family.** It is the published statement that **the expressivity/capacity of the map, not the feature, can determine whether an intervention "succeeds"** | Nothing of ours is novel here; it is the *justification* for fit-capacity-matched and rank-matched controls. Cite it as the reason the control family exists, not as a result |
+| Vaidyanathan, Arbour, Mueller, Niekum, Jensen. *The Curse of Multiple Mediators: Hidden Interaction Effects in Activation Patching*. arXiv:2606.27510 (25 Jun 2026). (fetched) | GPT-2 (IOI circuit) | The activation-patching estimand (natural indirect effect) **also contains interaction effects (INT)** measuring how a component's effect depends on other components' states; components whose importance is conditional are *"either invisible or artificially inflated"*; INT variance explains documented faithfulness instability. They prove **INT scales with the distance between clean and patched activations** | Re-derivation of the estimand + IOI demonstrations | **Causal / theoretical** | **HIGH — directly bears on our 46.6 % vs ~1–4 % gap.** A whole-row restore is a large clean-vs-patched distance (large INT); a rank-1 write is a small one (small INT). Some of the gap between the two may be interaction effect, not "the direction carries less information" | Our setting (in-context installed denotation, refusal endpoint) is not theirs; but this is now a **required caveat**, not an optional one, on any statement of the form "the axis carries only k % of what the state carries" |
+| McGrath, Rahtz, Kramar, Mikulik, Legg. *The Hydra Effect: Emergent Self-repair in Language Model Computations*. arXiv:2307.15771 (Jul 2023). (search-verified; abstract read) | PaLM-family LMs | Ablating one attention layer causes **another layer to compensate**; late MLPs counterbalance. At mid layers the two together **restore ≈70 % of the logit reduction** | Layer / component ablation | **Causal** | Medium-high — a published mechanism by which **single-component interventions under-read** relative to whole-state ones | Not about subspaces or ICL; supplies a second, independent reason a rank-1 write can under-recover without the direction being wrong |
+| Rushing, Nanda. *Explorations of Self-Repair in Language Models*. arXiv:2402.15390 (Feb 2024). (search-verified; html abstract read) | GPT-2 family / small LMs | Self-repair is partial and heterogeneous; **LayerNorm rescaling alone accounts for a substantial fraction** of apparent self-repair (reported up to ~30 % of the ablated effect) | Component ablation + decomposition | **Causal** | Medium — the "mechanical" half of the Hydra story | Same as above; also a warning that norm changes at the edited site are themselves an effect channel, which is why our controls must be **norm-matched** and not merely random |
+| Tan, Chanin et al. *Analysing the Generalisation and Reliability of Steering Vectors*. arXiv:2407.12404; **NeurIPS 2024**. (search-verified; proceedings PDF located) | open chat LMs | Steerability is **highly variable across inputs**; spurious biases contribute; for several concepts steering is brittle to reasonable prompt changes; on several datasets steering produces the **opposite** behaviour for ~50 % of inputs | Steering-vector addition | **Causal** | Medium-high — the closest published statement that a single direction's causal effect is **unreliable and input-dependent** | Our concentration finding (top 5 of 23 held-out domains carrying most of the axis effect; per-domain sd 6–10× controls') is **the same shape of result** in a new domain. This is prior art for "a direction's effect can be real and still be concentrated and unreliable" — we should cite it rather than present concentration as surprising |
+| Wu, Arora, Geiger, Wang, Huang, Jurafsky, Manning, Potts. *AxBench: Steering LLMs? Even Simple Baselines Outperform Sparse Autoencoders*. arXiv:2501.17148; **ICML 2025**. (search-verified; PMLR v267 wu25a located) | Gemma-2-2B, Gemma-2-9B | On steering, **prompting beats all representation methods**, then finetuning; SAEs lag on both steering and concept detection; difference-in-means is the best representation-based detector | Steering + concept detection benchmark | **Causal** (steering evaluated behaviourally) | Medium — a large published negative on **low-dimensional feature-level control** | Not our task or endpoint. Useful as the general prior that a sparse/low-dimensional feature underperforming a cruder full-state manipulation is a **common, publishable outcome**, not an anomaly |
+| Mueller, Geiger, Wiegreffe, Arad, Arcuschin, … Bau, Belinkov. *MIB: A Mechanistic Interpretability Benchmark*. arXiv:2504.13151; **ICML 2025**. (fetched) | 5 models, 4 tasks | Two tracks: circuit localisation and **causal variable localisation**. Finding: *"the supervised DAS method performs best, while SAE features are not better than neurons, i.e., non-featurized hidden vectors"* | Benchmark over DAS / SAE / probe featurisations | **Causal** | Medium-high — a **published, benchmarked negative on low-dimensional featurisations** for causal variable localisation | It is a benchmark, not our phenomenon. But it is the cleanest citation for "a learned low-dimensional featurisation failing to beat the raw hidden vector is an outcome the field has measured and reports" |
+| Robertson, Zhu, Vikalo, Wang. *When Is Rank-1 Steering Cheap? Geometry, Granularity, and Budgeted Search*. arXiv:2605.16362 (9 May 2026; v2 20 May 2026). (fetched) | three model families (names not in abstract) | Argues variability in steering effectiveness is **search difficulty, not absence of a rank-1 direction**: *"a useful rank-1 intervention often exists, but finding it can be expensive"*; introduces a concept-granularity metric and the GRACE search framework | Budgeted search over rank-1 directions | **Causal** | **HIGH as a threat to our negative.** This is the paper a reviewer will raise against any rank-1 null | Nothing of ours is novel here. **It imposes a duty**: our rank-1 negative must be stated as a negative *for the axis we fit, by the fitting procedure we used, at the layer and position we tested* — never as "no rank-1 direction mediates installation" |
+| Tang, Jiang, Karray, Hu. *In-Context Learning Operates as Concept Subspace Learning*. arXiv:2605.18830 (12 May 2026). (fetched: abs + html) | **Llama-3-8B**, CounterFact-derived multi-relation prompts | ICL concepts occupy a low-dimensional subspace of the residual stream that **mediates** ICL behaviour | Subspace-restricted patching, with controls | **Causal** | **HIGH — and the numbers matter more than the headline**; see §A3 | Their positive is at **rank 73**, at the **final/query position**, at **layer 30**. See §A3 for what that does and does not do to our claim |
+
+### Verified detail from arXiv:2605.18830 *(html-read, layer/rank/control figures read from the paper's own HTML)*
+
+This is the single most consequential set of numbers in this addendum, so it is recorded in full.
+
+| Arm | Dimensionality | Result |
+|---|---|---|
+| Learned concept subspace `U_learned` | **73 of 4096** (rank chosen as the minimal *r* with ≥98 % of cross-covariance singular-value energy; Appendix B.2 reports 61–74 across estimation-set sizes) | **78.8 %** of the clean−corrupted accuracy gap; 60.5 % acc (baseline 40.0, clean 66.0) |
+| **Complementary** subspace `I − P` | 4023 | **0.0 %** recovery; 40.0 % acc |
+| **Random orthogonal**, rank-matched | 73 | override success **2.3 %** (baseline 2.5 %) |
+| **Cross-task**, rank-matched | 73 | override success **3.3 %** (baseline 2.5 %) |
+| **Full-space** patching | 4096 | **98.1 %** recovery; 65.5 % acc |
+
+Layer: **ℓ\* = 30** of Llama-3-8B, selected from a layerwise sweep (layers 0–14 near-zero recovery;
+15–20 emergence; 21+ steep rise). Position: *"residual stream activations at the final sequence
+position (the query token)"* — i.e. the **generation position**, used for both estimation and
+patching. **No rank-1 or very-low-rank variant is tested** *(html-read; the singular-value spectrum
+is shown as sharply concentrated at layer 30, but no rank-1 arm is run)*.
+
+---
+
+## A3. Direct answer to question 3(a)
+
+> *Is there prior work showing a LOW-DIMENSIONAL / rank-1 direction FAILS to mediate while the full
+> state does — published negatives on subspace mediation, or work on why 'dose/dimensionality'
+> rather than 'direction' explains patching recoveries? Anything on rank-matched or norm-matched
+> control subspaces as a methodology?*
+
+**Short answer, in three parts.**
+
+**(i) A published negative of our exact shape — "rank-1 fails, full state succeeds, same task, same
+layer, same position" — did not surface.** I searched for it directly (§A7 queries 3, 19) and it did
+not appear. That is a *gap in these searches*, not a proof of absence, and the §1 coverage limits
+apply.
+
+**(ii) But the nearest published positive is at rank ≈73, not rank 1 — and this is the single most
+important fact in this addendum for how our result must be worded.** arXiv:2605.18830's
+concept-subspace positive uses a **73-dimensional** subspace of a 4096-dimensional residual stream,
+with the rank chosen by a 98 %-variance criterion that would select ~61–74 dimensions, not 1. They
+never test rank 1.
+
+The consequence is direct and it cuts against an over-strong framing of our own result. **A rank-1
+null is not a contradiction of a rank-73 positive.** The two are measurements at ranks separated by a
+factor of ~70, on different tasks (CounterFact relations vs Doublespeak remapping), at different
+layers (their 30 vs our 18/20), at different positions (their final/query generation position vs our
+codeword row), and with different endpoints (their next-token accuracy vs our installation readout
+and refusal). Wording of the form *"we dissociate from a published positive"* should therefore be
+qualified to something like:
+
+> *"arXiv:2605.18830 reports a causal ICL concept subspace at rank ≈73 of 4096, at the final query
+> position of layer 30 of Llama-3-8B. Our low-rank axis, fit at a much lower rank by a different
+> criterion, at a different layer and a different position, does not reproduce that scale of
+> recovery. Whether the difference is the rank, the layer, the position, the task, or the readout is
+> not resolved by our experiments."*
+
+That is a defensible sentence. *"The low-dimensional mediation result does not replicate"* is not.
+
+**(iii) "Dose/dimensionality rather than direction" — there IS a published treatment, and it points
+both ways.**
+
+*Supporting a dimensionality/capacity account:*
+- **Sutter et al., arXiv:2507.08802 (NeurIPS 2025 Spotlight)** is the strongest citation. They prove
+  that without a capacity constraint on the alignment map, *any network maps to any algorithm*, and
+  demonstrate **100 % interchange-intervention accuracy on randomly initialised models**. This is
+  the published statement that **intervention success can be a property of the map's expressivity
+  rather than of the representation.** It is the direct justification for our fit-capacity-matched
+  control family.
+- **Vaidyanathan et al., arXiv:2606.27510** proves **INT scales with the distance between clean and
+  patched activations**. Whole-row restores move the state far; rank-1 writes move it little.
+  Part of a whole-state-vs-axis gap can therefore be interaction effect rather than information
+  content. This is now a mandatory caveat on the 46.6 % vs ~1–4 % comparison.
+- **McGrath et al., arXiv:2307.15771** and **Rushing & Nanda, arXiv:2402.15390**: self-repair
+  restores ~70 % of an ablation's logit effect at mid layers, and LayerNorm rescaling alone accounts
+  for up to ~30 %. Both predict that *small, single-component* interventions under-read relative to
+  *whole-state* ones, for reasons that have nothing to do with where the feature lives.
+
+*Cutting against a pure dimensionality account:*
+- **arXiv:2605.18830's own complement control**: the **4023-dimensional** complementary subspace
+  recovers **0.0 %** while the **73-dimensional** learned subspace recovers **78.8 %**. In that
+  setting, dimension alone buys nothing — direction/alignment is what carries the effect. So we may
+  **not** claim that "dose explains patching recoveries" as a general fact; the honest claim is that
+  *dose is a live confound that must be controlled*, which is exactly what our rank- and norm-matched
+  families do.
+- **Robertson et al., arXiv:2605.16362** argues the opposite of a dimensionality account: rank-1
+  directions usually *exist* and the variability is **search cost**. This is the strongest available
+  objection to our negative and must be cited as a limitation, not omitted.
+
+**(iv) Rank-matched / norm-matched control subspaces as methodology: PUBLISHED. We may not claim
+the method as ours.**
+- **arXiv:2605.18830** runs a **rank-matched random-orthogonal** control (73-d, 2.3 % vs 2.5 %
+  baseline) and a **rank-matched cross-task** control (73-d, 3.3 %) alongside the complement control.
+  That is, precisely, a matched-capacity control family for a subspace-patching claim, already in
+  print for ICL.
+- **Arditi et al., arXiv:2406.11717** already pairs directional ablation with random-direction
+  controls in the refusal domain.
+- **Sutter et al., arXiv:2507.08802** supplies the *principled* argument for why such matching is
+  required.
+- **Makelov et al., arXiv:2311.17030** supplies the failure mode the matching guards against.
+
+⇒ **Our control design is standard practice with a published rationale.** What is *not* obviously
+standard, and is the most we should claim methodologically, is the **size and composition** of the
+family we run (46 controls: 22 random + 24 fit-capacity-matched shuffled, with a preregistered
+exchangeability test before pooling, and a stated attainable p-floor of 1/47) and the fact that the
+**shuffled-label controls are fit by the same procedure as the candidate**, so they match fitting
+capacity and not merely rank. I did not find that specific construction in these searches, but it is
+an increment on published practice, not a new methodology.
+
+---
+
+## A4. Direct answer to question 3(b), and the added works it rests on
+
+> *(b) Is there prior work localising an in-context induced semantic mapping to the QUERY TOKEN ROW
+> of the remapped word specifically? And prior work on LAYER vs FEATURE confounds in patching
+> studies?*
+
+### A4.1 Added works bearing on token-row localisation and ICL position structure
+
+| Citation | Model(s) | Phenomenon | Intervention | Causal / Correlational | Similarity | What remains novel for us |
+|---|---|---|---|---|---|---|
+| Kahardipraja et al. *The Atlas of In-Context Learning: How Attention Heads Shape In-Context Retrieval Augmentation*. arXiv:2505.15807; **NeurIPS 2025** (poster 119839; code `pkhdipraja/in-context-atlas`). (search-verified: OpenReview + NeurIPS page + repo) | open LMs (list not verified) | Prompt decomposed into informational components; **in-context heads** that read instructions and retrieve context vs **parametric heads** holding relational knowledge | Attribution-based head identification + **attention-weight modification** + function-vector extraction | **Causal** (weights modified, effect measured) | Medium-high on the *channel* — this is the demo→query retrieval channel our knockout severs, resolved to head identity | Their unit is the **head**; ours is the **edge and the row**. They do not study a remapped word's own position, nor a safety endpoint |
+| Sia, Mueller, Duh, et al. *Where does In-context Learning Happen in Large Language Models?* **NeurIPS 2024** (proceedings hash 3979818cdc7bc8dbeec87170c11ee340); earlier as *Where does In-context Translation Happen…*, arXiv:2403.04510. (search-verified: NeurIPS proceedings PDF + poster page) | GPTNeo-2.7B, Bloom-3B, Starcoder2-7B, **Llama-3.1-8B**, **Llama-3.1-8B-Instruct** | A **"task recognition" point**: beyond some layer, attention to the context is no longer needed (e.g. layer 14/32 for MT), giving ~45 % compute savings | **Layer-wise context masking** — mask all attention to context from layer *ℓ* onward | **Causal** | **Medium-high, and newly relevant**: same masking family as our knockout, **on our exact model**, and it is the published precedent for "the demo→query channel stops mattering above some layer" | Theirs masks **all** context, wholesale, from a layer onward, and measures task accuracy. Ours masks **one edge to one row** in a band, and measures an installed denotation and refusal |
+| Park, Lee, Lubana, Yang, Okawa, Nishi, Wattenberg, Tanaka. *ICLR: In-Context Learning of Representations*. arXiv:2501.00070 (29 Dec 2024); **ICLR 2025**. (fetched) | open LMs (Llama-family; exact list unverified) | With enough context, a **sudden re-organisation from pretrained semantic representations to in-context ones**; analogised to energy minimisation | Representation analysis across context scale | **Correlational** (observational; no ablation/steering) | **Medium-high on phenomenon** — this is the benign, non-adversarial twin of Doublespeak's "the token's meaning gets overwritten by context", with a context-size threshold | No intervention, no token-row localisation, no safety coupling. Relevant to us as evidence the *phenomenon* generalises beyond jailbreaks, and as a dose/context-size prior |
+| Lepori, Linzen, Yuan, Filippova. *Language Models Struggle to Use Representations Learned In-Context*. arXiv:2602.04212 (4 Feb 2026; rev 1 May 2026). (fetched) | open-weights LMs (list unverified) | LLMs **do** induce rich representations of in-context-defined novel semantics but **fail to deploy them** downstream | Next-token evaluation + an "adaptive world modeling" probe task | **Correlational** *(no causal intervention described in the abstract; html not read end-to-end)* | **Medium-high, and it is an argument we must answer.** It is a published dissociation between *installed representation* and *downstream use* — which is structurally what our knockout/rescue asymmetry could be mistaken for | Ours is causal and adversarial; theirs is behavioural and benign. But if our installation readout moves while behaviour does not, **this paper is the prior art for that pattern** and we must cite it rather than present it as new |
+| Park, Yang, Lee, Lubana, Tanaka et al. *Emergence of Abstractions: Concept Encoding and Decoding Mechanism for In-Context Learning in Transformers*. arXiv:2412.12276 (later titled *Emergence and Effectiveness of Task Vectors in In-Context Learning: An Encoder-Decoder Perspective*). (search-verified: arXiv abs/html + HF paper page) | Gemma-2 (2B/9B/27B), **Llama-3.1 (8B/70B)** | Coupled emergence of **concept encoding** (latent concepts → separable representations) and **conditional decoding**; explains why task vectors emerge | Representation analysis + task-vector patching | **Mixed** (patching used; much of the analysis representational) | Medium — the encode/decode split is the natural frame for our "installation readout moves, behaviour may not" | Their concept is a task; ours is a lexical denotation with a refusal endpoint |
+| Kumar, Ahuja. *Minimal, Local, Causal Explanations for Jailbreak Success in Large Language Models* (**LOCA**). arXiv:2605.00123 (30 Apr 2026; v3 7 Aug 2026); **COLM 2026**. (fetched: abs + html — supersedes the unverified row in §2) | **Llama-3.1-8B-Instruct**, Gemma-2-2B-IT | Minimal set of interpretable intermediate representation changes that **causally induce refusal** on an otherwise-successful jailbreak; ~6 changes on average vs 20+ in prior work | **Directional** edits along SAE concept vectors: *"we subtract the jailbreak's projection onto v and add the original's projection onto v, leaving the orthogonal component unchanged"* | **Causal** | **HIGH on the representation→refusal framing** (as S-036 recorded) — and now with the detail that matters: their edits are **low-dimensional/directional**, at **early-to-mid layers** (Llama 3, 7, 15), and their §4.3 localisation is by **token TYPE** (punctuation vs words; instruction vs post-instruction tokens) | **They do not compare a low-rank edit against a full-state edit** *(html-read)*, and they report **no per-position causal map** — §4.3 is a categorical analysis of which token types get selected, not a ranking over positions. Our whole-state-vs-axis comparison and our per-row position map are not things LOCA does |
+| Yin, Han, Li. *Robust Harmful Features Under Jailbreak Attacks: Mechanistic Evidence from Attention Head Specialization in LLMs*. arXiv:2606.28153 (26 Jun 2026). (fetched) | open chat LLMs (list unverified) | Jailbreaks **selectively suppress** components rather than erasing safety features; Adversarially Compromised Heads (early layers) vs Safety-Aligned Heads (mid layers); "Robust Harmful Features" persist under successful attack | **Head ablation** (suppress ACHs / remove SAHs) + token-level attribution | **Causal** | Medium-high on *semantic interpretation vs refusal*; their **token-level attribution finds ACH suppression is driven by attack-TEMPLATE tokens** | Closest published "which tokens drive it" result in the jailbreak setting — and it lands on **template** tokens, not a **remapped content word's own row**. Our codeword-row finding is a different locus |
+| Reblitz-Richardson. *Refusal Reads Only a Slice of What the Model Knows: Harm-Keyed Routing and Its Exceptions Across Model Families*. arXiv:2609.14759 (13 Sep 2026). (fetched) | OLMo-3 (primary), Llama, Qwen, GPT-OSS | Refusal runs on a narrow harm-detection channel decoupled from moral comprehension; *"about three-quarters of refusal's causal input lies outside the moral subspace"* | **Nested interchange rank sweep**; single-direction edit | **Causal** (*"The central result is causal and comes from one model, OLMo-3"*) | Medium-high on the interpretation-vs-refusal axis, and note the **rank sweep** methodology — a published precedent for varying rank rather than asserting one | Very recent (4 days before this pass); not on our model family for the causal result; no ICL remapping, no codewords. Treat as a framing neighbour, and as prior art for "sweep the rank" |
+| Wollschläger, Elstner, Geisler, Cohen-Addad, Günnemann, Gasteiger. *The Geometry of Refusal in LLMs: Concept Cones and Representational Independence*. arXiv:2502.17420; **ICML 2025** (PMLR v267 wollschlager25a). (search-verified: PMLR + ICML poster + TUM portal — **this upgrades the §2 row from "authors unverified"**) | open chat LLMs | **Multiple independent** refusal directions and multi-dimensional **concept cones**, not a single direction; **orthogonality does not imply independence under intervention**, motivating "representational independence" | Gradient-based representation engineering; ablation/steering | **Causal** | Medium-high — and the orthogonality point is a **methodological warning for us**: our orthogonal-control arm (`KO_ORTH`) must not be described as an *independent* control on the strength of orthogonality alone | Their object is refusal geometry; ours is an installed denotation |
+
+### A4.2 The answer on the QUERY TOKEN ROW of the remapped word
+
+**No prior work surfaced that localises an in-context-induced semantic mapping to the remapped
+word's own query token row.** The nearest neighbours, and exactly how each falls short:
+
+1. **arXiv:2605.18830 patches at the query token — but that means the FINAL/generation position**,
+   not a content word's row: *"residual stream activations at the final sequence position (the query
+   token)"*. This is a vocabulary collision we must be careful about in writing, because "query
+   token" in that paper and "query codeword row" in ours denote **different positions**. Any sentence
+   of ours using "query token" needs disambiguating.
+2. **Wang et al., *Label Words are Anchors* (EMNLP 2023)** localises to **label-word positions inside
+   the demonstrations**, not to a position in the query.
+3. **Meng et al., ROME (arXiv:2202.05262)** is the closest *methodological* precedent and supplies the
+   comparator number: causal tracing puts the decisive effect at the **last subject token**, with an
+   average maximum restoration of **19.5 %** over the corrupted run (peaking around layer 15).
+   So "one content-word row carries a large share of the restoration effect" is an *established shape
+   of result* for **parametric** factual recall. Our 46.6 % is the same shape of claim for an
+   **in-context-installed** denotation — which is what is new, not the shape.
+4. **Geva et al.'s attention knockout (EMNLP 2023)** blocks the final position from attending to
+   **subject positions** — again parametric, again not a remapped word.
+5. **LOCA (arXiv:2605.00123)** localises by **token type** (punctuation vs word; instruction vs
+   post-instruction) on **our exact model**, with no per-position ranking *(html-read)*.
+6. **Yin et al. (arXiv:2606.28153)** localise token-level attribution to **attack-template tokens**.
+7. **Sia et al. (NeurIPS 2024)** localise by **layer**, masking the whole context, not by row.
+
+⇒ **Defensible wording for our position-map result:** the *technique* (a per-position causal map from
+a corrupt-then-restore design) is ROME/Geva standard and must be presented as such; the *comparator*
+is ROME's ~19.5 % at the last subject token for parametric recall; what appears unattested is
+applying it to an **in-context-installed denotation** and finding the **codeword's own row** dominant.
+State it as "we did not find prior work localising an in-context-installed mapping to the remapped
+word's own row", never as "we are the first to".
+
+### A4.3 The answer on LAYER vs FEATURE confounds in patching studies
+
+**Prior work exists on layer as a confound in patching, but I did not find a paper that states our
+specific confound** — that comparing two conditions *each selected at its own argmax layer* confounds
+condition with layer. The relevant prior art:
+
+| Citation | What it establishes about layer/method confounds |
+|---|---|
+| **Zhang, Nanda. *Towards Best Practices of Activation Patching in Language Models: Metrics and Methods*. arXiv:2309.16042; ICLR 2024.** (fetched) | The canonical citation. *"Varying these hyperparameters could lead to disparate interpretability results."* Systematically shows metric choice (logit difference favoured; probability discouraged; KL as a supplement) and corruption method (**Symmetric Token Replacement preferred over Gaussian Noising**, which produces out-of-distribution artefacts) change conclusions. Also treats **sliding-window layer patching** and the token-scan vs layer-scan distinction as separate design axes |
+| **Heimersheim, Nanda. *How to use and interpret activation patching*. arXiv:2404.15255 (Apr 2024).** (search-verified; PDF located) | Distinguishes **exploratory** patching (sweeps over layers, positions, components, to generate hypotheses) from **confirmatory** patching (verify a specific circuit). Results depend on source/destination prompts, corruption construction, granularity and metric; patching is *"evidence of causal contribution under a specified setup"*, not an algorithm. **This is the citation for why a layer picked by an exploratory sweep must not then be treated as confirmed** |
+| **Makelov, Lange, Nanda. arXiv:2311.17030; ICLR 2024.** | Where you patch (which bottleneck) determines whether you get an illusion; they recommend patching at **activation bottlenecks, especially the residual stream** |
+| **Vaidyanathan et al. arXiv:2606.27510.** | The estimand itself is contaminated by interaction effects whose magnitude depends on the perturbation distance — a confound that survives any layer choice |
+| **arXiv:2605.18830.** | Their own layer sweep (0–14 near-zero, 15–20 emergence, 21+ steep rise, ℓ\*=30) is a worked example of an argmax-selected layer; they use one layer for every arm, which is the design our layer-control experiment is trying to match |
+
+⇒ **The methodological point our sprint's layer-control experiment makes — run both conditions at the
+same layer before attributing a dissociation to the condition — is standard scientific practice and
+is implied by Zhang & Nanda and by Heimersheim & Nanda, but I did not find it stated as a named
+pitfall for cross-condition comparisons in patching.** That makes running the control clearly
+correct, and makes claiming the *observation* as a contribution unwise: at most a sentence in
+methods, phrased as applying Zhang & Nanda's warning to a two-condition comparison.
+
+---
+
+## A5. §12 topics still uncovered after this pass
+
+1. **Doublespeak-specific follow-ups.** Still none found (search 17 in §6 and search 16 in §A7 both
+   came back empty). The attack has one paper.
+2. **Non-archival mechanistic jailbreak work** (LessWrong / Alignment Forum / workshop tracks). Still
+   not systematically searched — unchanged from §1, and still the most likely place a close
+   neighbour hides.
+3. **Retrieval/induction heads specifically for non-copy semantic transfer.** Every head-level paper
+   found (retrieval heads 2404.15574; induction heads; Atlas 2505.15807) studies **copying or
+   task-identification**. Whether a head carries an *installed denotation* that is not a copy is
+   still not addressed by anything I found. **This is a real, open, adjacent question** and, per Gate
+   C, we should not invent a circuit to fill it.
+4. **A citation-graph crawl** (forward citations of 2512.03771, 2605.18830, 2605.00123). Not run.
+   This is the highest-value remaining literature action and it is cheap.
+5. **Norm-matched control practice stated as a named methodology.** Found in practice
+   (2605.18830, 2406.11717) and justified in principle (2507.08802), but no methods paper
+   consolidating it surfaced. Minor.
+6. **Whether any concurrent work uses a concept-free readout as an intervention-scorable DV.** Still
+   nothing found, and still the §5-item-4 claim most exposed to a "this is a Patchscopes variant"
+   reviewer response.
+
+---
+
+## A6. UNVERIFIED — surfaced in searches, NOT verified, MUST NOT be cited
+
+These returned as search results only. Titles/ids are copied from result blocks; **no arXiv page was
+fetched for any of them** and several may not exist as described. They are recorded so a later pass
+does not have to re-find them.
+
+- arXiv:2608.22985 — *What Does Activation Steering Control? Attribution Across Answer Encodings and Output-Sensitive Subspaces*
+- arXiv:2605.31183 — *Steering LLMs? Actually, Sparse Autoencoders can outperform simple baselines*
+- arXiv:2605.29634 — *Relational Rank Geometry in Transformers: Detecting and Steering Hidden-State Relation Frames*
+- arXiv:2603.28744 — *Stop Probing, Start Coding: Why Linear Probes and Sparse Autoencoders Fail at Compositional Generalisation*
+- arXiv:2602.09783 — *Why Linear Interpretability Works: Invariant Subspaces as a Result of Architectural Constraints*
+- arXiv:2607.01033 — *The Model Organism Lottery: Model Organism Interpretability Strongly Depends on Training Methodology*
+- arXiv:2603.08234 — *The Struggle Between Continuation and Refusal: A Mechanistic Analysis of the Continuation-Triggered Jailbreak in LLMs*
+- arXiv:2402.17700 — *RAVEL: Evaluating Interpretability Methods on Disentangling Language Model Representations* (very likely real and relevant; simply not fetched this pass)
+- the §2 rows still unverified from the 2026-09-15 pass: arXiv:2602.02132, 2605.16591, 2607.14147, 2608.15772, 2606.14388, 2508.20766, 2509.09708
+
+**Note on `arXiv:2606.15092`** (*High-Dimensional Random Projection for Activation Steering*, Pham,
+Do, Abdullaev, Nguyen, Than, 13 Jun 2026): the paper **is verified to exist** (abstract fetched), but
+the specific thing we wanted from it — whether it uses **norm- or dimension-matched random
+projections as controls** — **could not be determined from the abstract**. It is therefore not in the
+§A2 table. Do not cite it for control methodology without reading the full paper.
+
+---
+
+## A7. Searches run in this pass
+
+| # | Query | Useful hits |
+|---|---|---|
+| 1 | interpretability illusion subspace activation patching dormant pathway Makelov Nanda | 2311.17030 (key) |
+| 2 | activation patching best practices metrics methods layer confound Zhang Nanda | 2309.16042 (key), 2404.15255 |
+| 3 | single direction fails to mediate but full activation patching works negative result low-rank steering | 2606.27510, 2605.16362 (both key) |
+| 4 | Hydra effect self-repair ablation compensation language models McGrath | 2307.15771, 2402.15390 |
+| 5 | random control subspace rank-matched norm-matched baseline activation steering methodology null direction | 2606.15092 (abstract only) |
+| 6 | patching recovery explained by magnitude norm dose rather than direction residual stream intervention | LayerNorm-rescaling self-repair detail |
+| 7 | in-context learning token position where information stored query token attention localization last demonstration | 2505.15807 |
+| 8 | layer versus feature confound mechanistic interpretability patching which layer chosen argmax artifact | 2311.17030 resurfaced; no direct hit |
+| 9 | Atlas of In-Context Learning attention heads in-context retrieval augmentation 2025 | 2505.15807 (NeurIPS 2025 confirmed) |
+| 10 | in-context novel word meaning nonce word representation causal tracing token position language model redefinition | 0 direct |
+| 11 | concept encoding decoding mechanism in-context learning emergence of abstractions 2024 | 2412.12276 |
+| 12 | geometry of refusal concept cones multiple refusal directions Wollschlager ICML 2025 | 2502.17420 **verified** |
+| 13 | "Where does In-context Learning Happen" large language models Sia task recognition layers | NeurIPS 2024 proceedings (key) |
+| 14 | per-token position causal map activation patching jailbreak which token position carries effect residual stream | 2605.00123, 2606.28153 |
+| 15 | AxBench steering LLMs simple baselines outperform sparse autoencoders concept subspace negative | 2501.17148 (ICML 2025) |
+| 16 | in-context learning semantic remapping representation of substituted word query position patching 2026 | 2501.00070, 2602.04212; **no Doublespeak follow-up** |
+| 17 | steering vectors generalization reliability spurious brittle negative results Tan 2024 arXiv | 2407.12404 (NeurIPS 2024) |
+| 18 | linear subspace insufficient nonlinear distributed representation DAS fails negative result causal abstraction | 2507.08802 (key), 2504.13151, 2402.17700 |
+| 19 | full residual state patching recovers behavior but best single direction does not rank-1 insufficient mediator | 0 direct — **the searched-for negative did not surface** |
+| 20 | comparing conditions at different layers confound interpretability each condition own best layer unfair comparison | 0 direct |
+| 21 | word defined in context representation at its own token position hidden state patching causal effect euphemism | 0 direct |
+| 22 | Heimersheim Nanda how to use and interpret activation patching pitfalls layer choice interpretation | 2404.15255 |
+
+**Pages fetched and read this pass (15):** arxiv.org/abs/{2606.27510, 2605.16362, 2311.17030,
+2309.16042, 2605.00123, 2605.18830, 2501.00070, 2602.04212, 2507.08802, 2609.14759, 2606.15092,
+2606.28153, 2504.13151}; arxiv.org/html/2605.18830; arxiv.org/html/2605.00123v1.
+
+**This pass: 22 searches, 15 primary-page fetches.** Running totals with §6: **39 searches, 20
+primary-page fetches.**

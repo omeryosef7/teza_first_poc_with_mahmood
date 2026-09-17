@@ -1,0 +1,104 @@
+{
+ "schema": "dcs_csi_rederive_subspace/1",
+ "tag_prefix": "csi1_button_train",
+ "split": "train",
+ "n_keys_common": 666,
+ "n_domains": 67,
+ "gates": {
+  "manipulation_ko_minus_base": {
+   "point": -0.20558,
+   "n_domains": 67,
+   "n_pos": 0,
+   "n_neg": 67,
+   "n_tied": 0,
+   "p_two_sided": 4.9999750001249995e-06,
+   "p_floor": 4.9999750001249995e-06,
+   "test_mode": "monte-carlo(200000)",
+   "p_at_its_floor": true
+  },
+  "positive_control_full_minus_ko": {
+   "point": 0.06955,
+   "n_domains": 67,
+   "n_pos": 66,
+   "n_neg": 1,
+   "n_tied": 0,
+   "p_two_sided": 4.9999750001249995e-06,
+   "p_floor": 4.9999750001249995e-06,
+   "test_mode": "monte-carlo(200000)",
+   "p_at_its_floor": true
+  }
+ },
+ "candidate_minus_ko": 0.0004,
+ "controls_minus_ko": {
+  "KO_SHUF0": -0.00068,
+  "KO_SHUF1": 0.00011,
+  "KO_SHUF2": 0.00104,
+  "KO_SHUF3": -0.00138,
+  "KO_RAND0": -0.00098,
+  "KO_RAND1": 5e-05,
+  "KO_RAND2": 0.00159,
+  "KO_RAND3": 0.00049,
+  "KO_RAND4": -0.00038,
+  "KO_RAND5": 8e-05
+ },
+ "ranks": {
+  "pooled": {
+   "rank": 4,
+   "of": 11,
+   "floor": 0.0909,
+   "certifiable_at_0.05": false,
+   "verdict": "DOES NOT PASS"
+  },
+  "random_only": {
+   "rank": 3,
+   "of": 7,
+   "floor": 0.1429,
+   "certifiable_at_0.05": false,
+   "verdict": "DOES NOT PASS"
+  },
+  "shuffled_only": {
+   "rank": 2,
+   "of": 5,
+   "floor": 0.2,
+   "certifiable_at_0.05": false,
+   "verdict": "DOES NOT PASS"
+  }
+ },
+ "run_dirs": {
+  "BASE": "csi1_button_train_BASE_20260915_190347_1702550",
+  "KO": "csi1_button_train_KO_20260915_191231_1703410",
+  "KO_FULL": "csi1_button_train_KO_FULL_20260915_194003_1705849",
+  "KO_AXIS": "csi1_button_train_KO_AXIS_20260915_195425_1707119",
+  "KO_SHUF0": "csi1_button_train_KO_SHUF0_20260915_201819_3243408",
+  "KO_SHUF1": "csi1_button_train_KO_SHUF1_20260915_203022_3244525",
+  "KO_SHUF2": "csi1_button_train_KO_SHUF2_20260915_204129_3245827",
+  "KO_SHUF3": "csi1_button_train_KO_SHUF3_20260915_205337_3269833",
+  "KO_RAND0": "csi1_button_train_KO_RAND0_20260915_210502_3283637",
+  "KO_RAND1": "csi1_button_train_KO_RAND1_20260915_211634_3285581",
+  "KO_RAND2": "csi1_button_train_KO_RAND2_20260915_212802_3287052",
+  "KO_RAND3": "csi1_button_train_KO_RAND3_20260915_213946_3289474",
+  "KO_RAND4": "csi1_button_train_KO_RAND4_20260915_215120_3291182",
+  "KO_RAND5": "csi1_button_train_KO_RAND5_20260915_220252_3293290"
+ },
+ "require_rescue_layer": 20,
+ "require_slurm_job": [
+  "896679",
+  "896771"
+ ],
+ "resolved_rescue_layers": {
+  "BASE": null,
+  "KO": null,
+  "KO_FULL": 20,
+  "KO_AXIS": 20,
+  "KO_SHUF0": 20,
+  "KO_SHUF1": 20,
+  "KO_SHUF2": 20,
+  "KO_SHUF3": 20,
+  "KO_RAND0": 20,
+  "KO_RAND1": 20,
+  "KO_RAND2": 20,
+  "KO_RAND3": 20,
+  "KO_RAND4": 20,
+  "KO_RAND5": 20
+ }
+}
