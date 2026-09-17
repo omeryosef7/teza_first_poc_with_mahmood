@@ -71,6 +71,34 @@ ROW_FILE = {
 #: None of them is cited by any claim in the record (checked 2026-09-11 across external_md/ and
 #: reports/). They are NOT deleted -- section 53: supersede or quarantine with provenance.
 KNOWN_ZERO = {
+    # ---- DCS-CSI-117 diagnostic quartet. All four are DELIBERATE probes of the defect S-117
+    # demonstrates: the 24 prompt_ids that `--limit 24` selects ALL patch successfully inside the
+    # 670-row run of the same arm/basis/layer (24 of 24 present in its results.jsonl, none among
+    # its single failure) and ALL FAIL under `--limit 24`. Zero rows is the EXPECTED outcome of
+    # each of these runs, which is why they are documented rather than re-run: they are the
+    # evidence. The paired pair also RESOLVES S-114 -- sufficiency and necessity give the identical
+    # "18 of 28 positions" refusal on the same rows, so the effect is NOT direction-specific, and
+    # S-113's "property of the direction" framing is withdrawn in S-117.
+    "csi1_basket_train_DIRCMP_SUF_ORTH24_20260917_231438_1393511":
+        "DCS-CSI-117: ctrl_orth, SUFFICIENCY, the same 24 rows. 24 of 24 refused, '18 of 28 "
+        "positions are norm-match DEGENERATE'. The control half of the paired direction test.",
+    "csi1_basket_train_DIRCMP_NEC_ORTH24_20260917_231730_2312785":
+        "DCS-CSI-117: ctrl_orth, NECESSITY, the same 24 rows. 24 of 24 refused with the IDENTICAL "
+        "count and message as the sufficiency half above -- which is the result: the degeneracy is "
+        "population-dependent, not direction-dependent, as rel = ||P(delta)||/||delta|| being "
+        "sign-invariant already implied.",
+    "csi1_basket_train_NCSMOKE_KO_NEC_SHUF0_20260917_231438_1393512":
+        "DCS-CSI-117: ctrl_shuffled0, NECESSITY, 24 rows. 24 of 24 refused, same message -- so the "
+        "control family does not selectively collapse; everything norm-matched fails on this "
+        "population.",
+    "csi1_basket_train_LIMSWEEP_SUF_ORTH_L96_20260917_232008_3104274":
+        "DCS-CSI-117 diagnostic: ctrl_orth, SUFFICIENCY, --limit 96. 96 of 96 refused with the SAME "
+        "'18 of 28 positions are norm-match DEGENERATE' as --limit 24 -- so the degenerate-position "
+        "count does NOT scale with n, it is the same 18 positions at both sizes. Zero rows is the "
+        "expected outcome and this run is the evidence.",
+    "csi1_basket_train_NCSMOKE_KO_NEC_RAND0_20260917_231730_2312789":
+        "DCS-CSI-117: ctrl_random0, NECESSITY, 24 rows. Same. Completes the demonstration that the "
+        "failure is not specific to a basis family.",
     "csi1_basket_train_SMOKE_KO_NEC_ORTH_20260917_225215_2890730":
         "DCS-CSI-113: the Phase-2 NECESSITY smoke's orthogonal comparator. 24 of 24 rows REFUSED by "
         "the norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5) with '18 of 28 positions "
@@ -106,6 +134,20 @@ KNOWN_ZERO = {
 }
 
 KNOWN_SHORT = {
+    "csi1_basket_train_KO_RAND1_20260917_230544_3189125":
+        "DCS-CSI-047: 667 of 670 rows. 3 row(s) REFUSED by the sprint's own "
+        "norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5): the control basis was "
+        "near-orthogonal to the KO->clean delta at some position, so rescaling its projection "
+        "would have amplified float noise into an arbitrary QR-gauge direction. The guard "
+        "declines to fabricate a control rather than silently writing a meaningless one. "
+        "MECHANISM (not a verified property of this run): degeneracy is the angle between a "
+        "fixed basis and a fixed delta, both determined before any readout, and the delta is "
+        "identical across arms -- so the loss is expected to be outcome-independent. MEASURED "
+        "here: the 3 lost row(s) fall in 3 distinct domain(s) (1 row(s) per domain at most), and "
+        "dcs_csi_subspace_analyze.py intersects (domain, slot) KEYS across all arms before "
+        "averaging, so every arm is compared on the same key set regardless. Ledger: "
+        "n_attempted 670, n_succeeded 667, n_failed 3. Failing prompt_ids (complete): "
+        "6743ecb2e06fc1e3, 6ce8f4015279b2ce, d7f7d977211da11b.",
     "csi1_basket_train_KO_ORTH_20260917_225312_3187683":
         "DCS-CSI-047: 669 of 670 rows. 1 row(s) REFUSED by the sprint's own "
         "norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5): the control basis was "

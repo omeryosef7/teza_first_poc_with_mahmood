@@ -7930,3 +7930,103 @@ Recorded because this is the third operational rule this sprint has had to corre
 generalising from too few nodes (S-039's weight-load stall, S-090's "the volume is degraded", and
 now this one). The pattern is the same every time: **a node-level property inferred as a
 cluster-level rule.**
+
+---
+
+# S-117 — **S-114 RESOLVED, and it uncovers something worse: `--limit` changes the patch result. The same rows succeed at n=670 and fail at n=24, in BOTH directions.**
+
+## S-114's question is answered: it is NOT the direction
+
+The paired test (job 906462) ran `ctrl_orth` on the **same 24 rows** in both directions, with
+`--rescue-donor` as the only difference:
+
+| run | rows | failed | reason |
+|---|---|---|---|
+| **sufficiency** `ctrl_orth`, 24 rows | 0 | **24** | `18 of 28 positions are norm-match DEGENERATE` |
+| **necessity** `ctrl_orth`, 24 rows | 0 | **24** | `18 of 28 positions are norm-match DEGENERATE` |
+
+**Identical failure, identical count, identical positions.** Exactly what S-114's sign-invariance
+argument predicted: `rel = ‖P(delta)‖/‖delta‖` cannot depend on the sign of `delta`.
+
+**S-113's "a property of the DIRECTION, not a bug and not a flake" is now definitively WITHDRAWN.**
+It was wrong, and the geometric argument that said so was right before the experiment confirmed it.
+
+The control micro-smoke (906461) says the same for the other control families: `KO_NEC_SHUF0` also
+failed **24 of 24** with the same `18 of 28` message. So the family does not selectively collapse —
+**everything** norm-matched fails on this population.
+
+## And then the real finding, which is a BUG
+
+The 24 prompt_ids that `--limit 24` selects are **not** a degenerate subset. Measured against the
+full 670-row sufficiency run of the *same arm, same basis, same layer* (job 905990):
+
+```
+full run csi1_basket_train_KO_ORTH_20260917_225312  : 669 of 670 rows written, 1 failure
+its single failing prompt_id                        : 5e33ca929594b66b
+of the 24 ids that --limit 24 selects, how many are
+  present (i.e. SUCCEEDED) in the full run          : 24 of 24
+failing ids that are among those 24                 : none
+```
+
+> **All 24 rows patch successfully at n = 670 and all 24 fail at n = 24.** The rows are not the
+> cause. **The invocation is.**
+
+The only flag difference between the succeeding and failing commands is `--expect-n 670` versus
+`--limit 24`. `--limit` is a *stratified* round-robin over `(query_kind, condition, n_examples)`,
+but the population filter here leaves exactly **one** bucket, so it reduces to the first 24 of that
+bucket — the very ids verified above to succeed in the full run.
+
+**Therefore something in the rescue path is POPULATION-DEPENDENT**, and the norm-match reference is
+the obvious suspect, since the degeneracy test is a *ratio against that reference*.
+
+## What this invalidates, stated plainly
+
+* **Every `--limit` smoke this sprint has run is suspect**, including S-113's necessity smoke. Its
+  positive control (`KO_NEC_FULL − NEC_BASE = −0.13016`) was already restricted to *direction and
+  order only* and already known to rest on **3 domains** (S-114); it is now **also** produced by an
+  invocation demonstrated to change patch behaviour. **It must not be quoted as a number at all.**
+  What the smoke established about the **four legs** stands — those are boolean mechanical checks on
+  hook counters, not products of the patch arithmetic.
+* **The full-population results are NOT implicated by this evidence.** Every arm in D12, S-104,
+  S-115 and the running L20 groups used `--expect-n` over the whole frozen population, never
+  `--limit`. The demonstrated defect is that a *small* population behaves differently; it says
+  nothing against the 670-row runs, which are the ones every claim rests on. **I am not claiming
+  they are safe — I am saying this evidence does not reach them**, and the diagnostic below is what
+  would.
+
+## The diagnostic, launched
+
+Job **906479**: the *same* arm, basis and direction at `--limit 96`, `--limit 268`, `--limit 670`.
+
+* `--limit 670` returning **1** failure ⇒ the `--limit` code path is fine and the defect is
+  specifically about **small** populations, i.e. genuine cross-row or population-dependent state.
+* `--limit 670` returning ~24+ failures ⇒ the `--limit` **code path itself** is broken.
+* 96 and 268 probe whether the degenerate-position count **scales with n**.
+
+Either outcome is decisive, and `--limit 670` is the one that tells me whether the full-population
+runs can be reproduced through the limit path at all.
+
+**First two rungs already in, and they sharpen the question:**
+
+| invocation | rows written | failed | degenerate positions |
+|---|---|---|---|
+| `--limit 24` | 0 | 24 | **18 of 28** |
+| `--limit 96` | 0 | 96 | **18 of 28** |
+| `--expect-n 670` (the real runs) | **669** | **1** | **1 of 28** |
+
+**The count does not scale with n — it is the same 18 positions at both sizes.** So this is not
+"small samples are noisier"; it is a discrete difference between the two invocation paths. `--limit
+268` and `--limit 670` are still running, and `--limit 670` is the rung that decides whether the
+`--limit` code path is simply broken.
+
+## Consequences held, not taken
+
+**Half 2 of the necessity run stays HELD** — now for a better reason than before. I was holding it
+to learn whether the control family survives; the answer is that the question was mis-posed, because
+the arm that told me the family collapses was itself run through a defective invocation. Nine arms ×
+670 rows remain unspent, and the next thing to spend GPU on is the diagnostic, not the family.
+
+`KO_NEC_ORTH`'s `KNOWN_ZERO` entry records the direction framing that S-113 asserted and this entry
+withdraws. It is **not** rewritten — the log is append-only and the registry entry is a pointer to
+S-113 — but anyone reading it must read this entry too, and the correction is recorded in the entry
+the registry names.
