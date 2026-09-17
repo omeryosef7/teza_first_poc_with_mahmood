@@ -7,6 +7,7 @@ plausible null.
 from __future__ import annotations
 
 import os
+import re
 import sys
 
 import pytest
@@ -143,10 +144,24 @@ def test_rescue_is_inert_without_the_flag():
 
 def test_identity_control_option_exists():
     """Without a `self` donor there is no end-to-end identity control, and a rescue instrument
-    without one cannot show it writes what it read."""
+    without one cannot show it writes what it read.
+
+    UPDATED FOR THE PHASE-2 NECESSITY ARM (S-007), AND NARROWED WHILE UPDATING. `--rescue-donor`
+    grew a third, purely additive mode (`ko`), and the donor capture now enters the arm's own
+    hooks for BOTH `self` and `ko` on one shared line -- so this test's two literal assertions
+    both broke against a change that does not touch the property they exist to protect. The
+    property is pinned instead: `clean` and `self` are still available donor modes, and `self`'s
+    donor is still captured under the arm's own hooks. A future mode cannot break it again, while
+    DELETING `self` or its under-the-hooks capture still does.
+    """
     src = _score_behavior_src()
-    assert 'choices=("clean", "self")' in src
-    assert 'args.rescue_donor == "self"' in src
+    m = re.search(r'--rescue-donor",\s*choices=\(([^)]*)\)', src)
+    assert m, "--rescue-donor no longer declares argparse choices"
+    choices = {c.strip().strip("\"'") for c in m.group(1).split(",") if c.strip()}
+    assert {"clean", "self"} <= choices, choices
+    assert ('args.rescue_donor == "self"' in src
+            or 'args.rescue_donor in ("self", "ko")' in src), \
+        "the 'self' donor is no longer captured under the arm's own hooks"
 
 
 def test_rescue_liveness_is_recorded_on_the_row():

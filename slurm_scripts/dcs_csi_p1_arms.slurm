@@ -10,6 +10,8 @@
 #   group H = the CODEWORD ROW (rel -10) + accounting-gap positions (6 arms)
 #   group I = EXTENDED control family to reach >=19 controls (24 arms)
 #   group J = Phase 1 re-asked AT THE CODEWORD ROW: subspace rescue restricted to rel -10 (16 arms)
+#   group K = TWELVE more shuffled-label controls for the rank-1 candidate (12 arms)
+#   group L = PHASE 2 NECESSITY: remove-under-CLEAN (donor ko). CSI_NEC_HALF=1|2|3, CSI_NEC_SMOKE=1
 #
 # WHY TWO GROUPS AND WHY KO_AXIS APPEARS IN BOTH. At ~29 min per 670-row readout arm, 17 arms do
 # not fit one allocation. The split is chosen so that everything the PREREGISTERED PRIMARY
@@ -40,7 +42,7 @@ source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh
 conda activate poc_stage2
 export PYTHONUNBUFFERED=1
 
-CW="${1:?codeword}"; AXIS="${2:?axis .pt}"; SPLIT="${3:?train|validation}"; GROUP="${4:?A|B|C|D|E|F|G|H|I|J|K}"
+CW="${1:?codeword}"; AXIS="${2:?axis .pt}"; SPLIT="${3:?train|validation}"; GROUP="${4:?A|B|C|D|E|F|G|H|I|J|K|L|X}"
 SNAP=/home/sharifm/students/matanbentov/hub/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659
 # ---- OPTIONAL NODE-LOCAL STAGING (DCS-CSI-092, BLOCKER-S090) -------------------------------
 # The n-30x rack's NFS path reads the shared snapshot at 2-7 MB/s (S-090, measured per node). A
@@ -162,6 +164,112 @@ elif [ "$GROUP" = "B" ]; then
   sub KO_AXIS_ANCHOR cand_rank1
   for j in 0 1 2 3;       do sub "KO_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done
   for i in 0 1 2 3 4 5;   do sub "KO_RAND${i}" "ctrl_random${i}"   cand_rank1; done
+elif [ "$GROUP" = "L" ]; then
+  # GROUP L -- PHASE 2 NECESSITY, the remove-under-CLEAN direction (S-007, plan §6).
+  #
+  # WHY THIS GROUP EXISTS. Every arm in groups A-K tests SUFFICIENCY: under a LIVE knockout, add
+  # the clean state's component back along the installation axis (h' = h_ko + P_w(h_clean - h_ko))
+  # and ask whether installation recovers. That is one direction of one claim. This group asks the
+  # other: start from a CLEAN, high-installation forward and REMOVE the installed component
+  # (h' = h_clean - P_w(h_clean - h_ko)) and ask whether installation DROPS. Plan §6 is explicit
+  # that "add-under-KO and remove-under-CLEAN together are far stronger than either alone", and
+  # §22's execution checklist has carried "P2 bidirectional (CLEAN - component) necessity arms"
+  # unchecked since S-007 recorded the wiring gap. `--rescue-donor ko` is that gap closed: the
+  # donor is captured UNDER the knockout hooks and the readout forward runs WITHOUT them.
+  #
+  # THE KNOCKOUT IS DELIBERATELY NOT LIVE ON THE FORWARD THAT PRODUCES THE NUMBER, which is
+  # unique to this group and is why score_behavior judges it by its own four-leg contract
+  # (necessity_readout_violations / assert_necessity_live) rather than the ordinary one: live on
+  # the DONOR capture, zero-edit on the readout, patch demonstrably fired, and a non-zero
+  # KO-vs-CLEAN difference at the patched positions. summary.json carries a `necessity_arm` block,
+  # and on these arms `knockout_liveness` describes the DONOR capture -- read the former, not the
+  # latter. A run that cannot prove all four legs exits NON-ZERO after writing its artifact.
+  #
+  # KO_NEC_FULL IS A FREE POSITIVE CONTROL AND IT IS THE FIRST NUMBER TO READ. With no
+  # --rescue-basis, donor ko writes the ENTIRE ko state into the clean forward at those positions,
+  # so its installation should land near the KO arm's. If whole-state removal does NOT pull
+  # installation toward KO, the instrument is broken and KO_NEC_AXIS's null is CANNOT ANSWER, not
+  # a negative (plan §15). The controls are the same norm-matched families the sufficiency
+  # direction uses, so the two directions are compared against control distributions built the
+  # same way rather than against two differently-constructed nulls.
+  #
+  # BASE AND KO ARE RE-RUN HERE, UNDER THEIR OWN TAGS (${P}_NEC_BASE / ${P}_NEC_KO). Re-running
+  # them puts the whole necessity contrast -- the ceiling, the floor, the positive control and the
+  # candidate -- inside ONE allocation on ONE node, which is the same reason group A is shaped the
+  # way it is. The NEC_ prefix is not decoration: group A's ${P}_BASE already exists, and a second
+  # complete directory under one tag is exactly the two-experiments-wearing-one-name ambiguity
+  # S-104 had to build a layer filter to undo. Do not drop it.
+  #
+  # HALVES, VIA A NAMED VARIABLE AND NOT $5 (DCS-CSI-076). At ~29 min per 670-row readout arm a
+  # 22-arm group does not fit one 6 h allocation, and $5 already means "which half" to group I
+  # alone. CSI_NEC_HALF cannot collide with anything.
+  #   CSI_NEC_HALF=1  the preregistered primary contrast          (5 arms,  ~2.5 h)
+  #   CSI_NEC_HALF=2  the control distribution + the anchor       (9 arms,  ~4.4 h)
+  #   CSI_NEC_HALF=3  eight more random draws                     (8 arms,  ~3.9 h)
+  # Half 2 re-runs the candidate as KO_NEC_AXIS_ANCHOR for the reason group B does: the A-vs-B
+  # difference on that identical arm MEASURES cross-allocation drift instead of assuming it away.
+  #
+  # CSI_NEC_SMOKE=1 -- RUN THIS FIRST, AND ONLY WITH HALF 1. It swaps --expect-n for --limit 24,
+  # so five arms finish in minutes on real rows. What only a GPU run can establish, and what the
+  # smoke is therefore FOR: (i) that the knockout is live on the DONOR capture of a
+  # semantic_one_word row (the donor forward is a single prefill pass and has never been gated
+  # before); (ii) that the readout forward's knockout counter delta is exactly zero, i.e. dropping
+  # the arm's hooks really does leave the readout clean; (iii) that the patch fires on the readout
+  # and ||h_donor - h_live|| > 0 at the patched positions -- the leg that separates "removal did
+  # not lower installation" from "the knockout never moved the residual stream here"; and (iv) that
+  # KO_NEC_FULL's installation actually lands near KO's. Read `necessity_arm` in each summary.json.
+  NEC_HALF="${CSI_NEC_HALF:-1}"
+  NECCOMMON="$COMMON"
+  if [ "${CSI_NEC_SMOKE:-0}" = "1" ]; then
+    if [ "$NEC_HALF" != "1" ]; then
+      echo "REFUSING: CSI_NEC_SMOKE=1 is only meaningful with CSI_NEC_HALF=1 (the primary "\
+           "contrast). A smoke over the control family proves nothing the primary arms do not." >&2
+      exit 2
+    fi
+    # --expect-n REFUSES a population that is not exactly NKEEP rows, so it and --limit are
+    # mutually exclusive by construction; the substitution is explicit rather than additive.
+    NECCOMMON="$(echo "$COMMON" | sed "s/--expect-n $NKEEP/--limit 24/")"
+    case "$NECCOMMON" in *"--limit 24"*) ;; *)
+      echo "REFUSING: the smoke substitution did not take -- COMMON no longer carries "\
+           "'--expect-n $NKEEP', so this would have run the FULL population under a smoke tag." >&2
+      exit 2 ;;
+    esac
+    P="${P}_SMOKE"
+    echo "[nec-smoke] 24 rows per arm, tags ${P}_*"
+  fi
+  # THE NECESSITY FLAG SET. Identical to $R except for the donor, deliberately: donor is the ONLY
+  # thing that differs between the two directions, so anything else that moved would confound them.
+  RNEC="--rescue-positions query --rescue-layer $LAYER --rescue-donor ko"
+  subnec () {  # subnec <arm> <basis-key> [norm-match-key]
+    local arm="$1" key="$2" nm="${3:-}"
+    echo ">>> $arm $(date -Is)"
+    if [ -z "$nm" ]; then
+      $SB $NECCOMMON $KO $RNEC --rescue-basis "$AXIS" --rescue-basis-key "$key" \
+          --arm "$arm" --tag "${P}_${arm}"
+    else
+      $SB $NECCOMMON $KO $RNEC --rescue-basis "$AXIS" --rescue-basis-key "$key" \
+          --rescue-norm-match-key "$nm" --arm "$arm" --tag "${P}_${arm}"
+    fi
+  }
+  if [ "$NEC_HALF" = "1" ]; then
+    echo ">>> NEC_BASE $(date -Is)";     $SB $NECCOMMON           --arm BASE --tag ${P}_NEC_BASE
+    echo ">>> NEC_KO $(date -Is)";       $SB $NECCOMMON $KO       --arm KO   --tag ${P}_NEC_KO
+    # THE POSITIVE CONTROL: whole ko state, no basis. Read this before anything else.
+    echo ">>> KO_NEC_FULL $(date -Is)"
+    $SB $NECCOMMON $KO $RNEC --arm KO_NEC_FULL --tag ${P}_KO_NEC_FULL
+    subnec KO_NEC_AXIS cand_rank1
+    subnec KO_NEC_ORTH ctrl_orth cand_rank1
+  elif [ "$NEC_HALF" = "2" ]; then
+    subnec KO_NEC_AXIS_ANCHOR cand_rank1
+    for j in 0 1 2 3; do subnec "KO_NEC_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done
+    for i in 0 1 2 3; do subnec "KO_NEC_RAND${i}" "ctrl_random${i}"   cand_rank1; done
+  elif [ "$NEC_HALF" = "3" ]; then
+    for i in 4 5 6 7 8 9 10 11; do subnec "KO_NEC_RAND${i}" "ctrl_random${i}" cand_rank1; done
+  else
+    echo "REFUSING: CSI_NEC_HALF=$NEC_HALF is not 1, 2 or 3. A silently-defaulted half would "\
+         "re-spend an allocation on arms that already hold complete rows." >&2
+    exit 2
+  fi
 elif [ "$GROUP" = "J" ]; then
   # GROUP J -- PHASE 1 ASKED AT THE RIGHT PLACE (DCS-CSI-075). Phase 1 restored a low-dimensional
   # component across ALL 28 positions, of a direction fit at an offset the causal map later showed

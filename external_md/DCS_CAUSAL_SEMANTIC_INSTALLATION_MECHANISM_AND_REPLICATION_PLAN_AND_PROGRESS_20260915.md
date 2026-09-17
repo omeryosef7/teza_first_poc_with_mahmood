@@ -7347,3 +7347,143 @@ The reviewer observed, from the live jobs, that **basket at L20 shows captured f
 displacement norm 1.4012** — basket's capture **drops** and its displacement **grows** at button's
 layer. Whatever that arm returns, **it** is the test that de-confounds codeword from layer, under
 PR-CSI-002's rule frozen before the data. Not a dose normalisation.
+
+---
+
+# S-110 — **the P2 NECESSITY arm is built and unit-tested** (the last unchecked item on §22's list). Plus **two provenance defects I caused**, both recorded
+
+## (a) `--rescue-donor ko` — the direction the sprint has never tested
+
+S-007 recorded the wiring gap and prescribed the fix; plan §6 "Bidirectional (Priority 2)" says why
+it matters. Every arm so far is **sufficiency**: under a live knockout, add back the clean state's
+component. **Necessity** is the other direction — start from a clean, high-installation forward and
+**remove** the installed component, `h' = h_clean − P_w(h_clean − h_ko)`, and ask whether
+installation **drops**. Built exactly as S-007 prescribed: the knockout hooks are built for the
+**donor capture only**, then dropped for the readout.
+
+**The critical implementation fact**, verified by reading every diff hunk rather than assumed: the
+donor capture line is now shared (`if args.rescue_donor in ("self", "ko")`), which is *semantically
+identical* for `self`, and **every** other change is gated on `args.rescue_donor == "ko"` — the
+original `ctxs = list(ctxs) + [_rescue_ctx]` survives verbatim in the `else` branch. So no existing
+arm's code path moves. The readout hooks are dropped **by object identity**, not by class name, so
+the PR-057 probe captures (which read but do not intervene) survive.
+
+### The liveness contract is RE-AIMED, not relaxed — and the trap found is worse than the one I flagged
+
+I briefed this as "the knockout-liveness check would fail or be silently bypassed". The real trap is
+sharper: `knock_stats` is **one cumulative dict per row**, and under `ko` the *donor* capture
+increments it while the readout adds nothing — so **the existing gate would have silently PASSED on
+donor-forward evidence**, reporting "prefill edits > 0 on every row" while a reader takes that for
+the forward that produced the number. Not a failure — *a plausible number with a mislabelled
+liveness claim.*
+
+Four legs, asserted per row, **none of which can pass vacuously**:
+
+| leg | assertion | what it rules out |
+|---|---|---|
+| 1 | the **donor** capture satisfies `readout_liveness_violations` — same evaluator, same tables, same reduced contract every other readout arm is judged by; only the forward moved | a donor captured under a dead mask — "removing" what was never knocked out |
+| 2 | every counter in `KNOCKOUT_COUNTERS` moved by **exactly 0** across the readout | the silent bypass: hooks left entered ⇒ this is the sufficiency arm with its donor swapped, still producing a plausible number |
+| 3 | the patch **fired** (`n_positions_written > 0`) on the readout | legs 1+2 are *both satisfied by doing nothing* — leg 2 literally **is** "no intervention". Without leg 3, an unintervened clean forward passes wearing a necessity label. This is the R3-B1 / S-074a shape |
+| 4 | ‖h_donor − h_live‖ > 0 at the patched positions, measured **on the readout forward** | leg 1 proves the mask edited *attention*; it does not prove the residual stream **moved**. If it did not, the removal writes back the state already there, installation **cannot** drop, and the null is an instrument artifact |
+
+Leg 4 is free: an `ActivationCapture` is entered *ahead of* the patch on the same layer, so it reads
+that layer's pre-patch output. `min_donor_delta_norm ≤ 0` ⇒ the run is refused as **CANNOT ANSWER**,
+citing §15. **Deliberately not a leg:** the *written* norm — a norm-matched orthogonal control is
+*supposed* to be able to write ≈nothing, so refusing that would refuse the controls rather than the
+broken arms. It is recorded per row and belongs to the analyser.
+
+Nothing is skipped: `record_knockout_row` / `assert_knockout_live` still run, and the artifact says
+in **three** places that they now describe the donor forward (`hook_counters_measured_on`, the
+amended `knockout_liveness` block, the `necessity_arm` note). `assert_necessity_live` re-asserts each
+leg at run level from a **different statistic** (min/max over rows, not the per-row verdict), so a
+bug that loses the per-row verdict cannot also silence the run-level one — and it refuses zero rows,
+because *a gate that never ran is not a pass.*
+
+### The positive control is wired and is the FIRST number to read
+
+`--rescue-donor ko` with **no** `--rescue-basis` writes the **entire** KO state into the clean
+forward — the built-in §15 positive control. Wired as `KO_NEC_FULL` in the **same allocation** as
+`NEC_BASE` (ceiling), `NEC_KO` (floor) and `KO_NEC_AXIS` (candidate), so ceiling/floor/control/
+candidate are hardware-internal by construction. **If whole-state removal does not pull installation
+toward KO, the instrument is broken and `KO_NEC_AXIS`'s null is CANNOT ANSWER, not a negative** —
+that rule is written into the group's own comment, not just here.
+
+Unit-proven mechanism: whole-state ko-donor under a clean live forward reproduces the KO state to
+`atol 1e-6`, and the rank-1 removal is *strictly inside* it (`0 < d_sub < d_full`).
+
+`tests/test_necessity_arm.py`: **26 tests, all passing**, each asserting both halves, parameterised
+over 8 break modes so that each leg is shown to refuse **on its own** (a single "broken is refused"
+test passes as soon as one leg works and lets the rest rot). **Mutation-tested and reverted**: putting
+the knockout back on the readout fails one named test; deleting the `_readout_only` precondition
+fails another; making leg 2 vacuous fails three.
+
+**No inert identity control exists for this direction** — the natural one (donor = clean, live =
+clean) *is* the identity and is refused by the arm's own precondition. `KO_NEC_ORTH` is the nearest
+thing. Recorded so it is not mistaken for an oversight.
+
+### NOT launched, and what the smoke must establish first
+
+Five things could not be verified without a GPU, in priority order. The top one: **leg 1 charges the
+knockout-liveness contract against a *donor* forward for the first time** — the donor capture is a
+single prefill pass and has **never before been gated**. If its counters are not populated as
+assumed, **every row fails leg 1 and is ledgered**, and the run yields ~0 rows. It fails loudly and
+cheaply; `failures` in the smoke output is the first thing to read. Then: whether the readout counter
+delta is genuinely 0 on the real hook (a counter not in `KNOCKOUT_COUNTERS` would be an unchecked
+channel); hook registration order on a real `LlamaDecoderLayer`; whether ‖h_clean − h_ko‖ > 0 at the
+**query-span** positions at all (a fact about the model, not the code — if not, the whole direction
+is CANNOT ANSWER and the gate will say so); and whether `KO_NEC_FULL` lands near `KO`.
+
+The analysers have **not** been taught about the `necessity_*` fields. Rows and summaries are
+additive so nothing breaks, but reading the arm out is separate work.
+
+## (b) DEFECT — my `git add` swept another agent's file into a commit whose message never mentions it
+
+Commit **`eab618a7`** ("R8 part 4") contains `tests/test_necessity_arm.py | 599 +++`. **I did not
+write that file and its message does not mention it** (`grep -ci necessity` on the message: **0**).
+I ran `git add -A tests/ …` while a concurrent agent was writing into `tests/`, so a 599-line file
+belonging to entirely different work landed under an R8 heading.
+
+**The commit record misdescribes its own contents**, which is precisely the class of defect this log
+corrects explicitly. Not rewritten — it is pushed and shared, and rewriting shared history to tidy a
+message is worse than recording the truth. **The rule adopted:** when another agent may be editing a
+tree, `git add` **named paths**, never directories. The substance is committed properly with this
+entry.
+
+## (c) DEFECT — an uncommitted edit to `score_behavior.py` landed MID-RUN, and the running arms split across it
+
+`src/boombness/score_behavior.py` was modified at **21:53:36** while jobs 905990/906001 were
+executing. The launcher invokes the scorer **once per arm**, so arms split across the edit:
+
+| arm | start | code state |
+|---|---|---|
+| `BASE` | 21:39:58 | pre-edit (commit 0665fa62) |
+| `KO`, `KO_AXIS_ANCHOR` | 21:48–21:49 | pre-edit (commit eab618a7) |
+| `KO_SELF`, `KO_SHUF0` onward | 22:02 | **post-edit** |
+
+**This is a real provenance break and I caused it** by dispatching a code-writing agent against a
+file a live experiment re-executes per arm.
+
+**What it costs, established rather than assumed.** Two checks:
+
+1. The commit differences (`0665fa62 → eab618a7 → d2a4f718`) touch **only** `external_md/`,
+   `reports/`, `scripts/` and `tests/` — **nothing the scorer executes**. Those hash differences are
+   cosmetic.
+2. The uncommitted edit: **every** behaviour-affecting hunk is gated on `rescue_donor == "ko"`, the
+   one widened condition (`== "self"` → `in ("self","ko")`) is semantically identical for these
+   arms, and `ctxs = list(ctxs) + [_rescue_ctx]` is preserved **verbatim** in the `else` branch. The
+   rest is new module-level functions (never called), argparse help text and new locals.
+
+So the split is **cosmetic for these arms** — but that is a conclusion from reading all thirteen
+hunks, not a presumption from the word "additive".
+
+**And an empirical check is already scheduled by the design.** `KO_AXIS_ANCHOR` ran **pre-edit**;
+group A's `KO_AXIS` will run **post-edit** with byte-identical configuration. If their `y_install` is
+bit-identical — as it was for button (S-105b) — that is a **direct measurement** that the mid-run
+edit changed nothing on this path. The anchor now earns its keep a fourth way: it measures the effect
+of an uncommitted mid-run code change. **That comparison is the gate on reporting these arms**, and
+it is stated here before the arm has run.
+
+**Rule adopted:** never dispatch an agent to edit a module a live experiment re-executes per arm.
+Either finish the run first, or have the agent work on a copy. `RUNMETA.json`'s `git_dirty` did not
+save me here — it read `None` on these runs where the button arms recorded `true`, which is a second
+thing to look at.

@@ -810,6 +810,253 @@ def readout_liveness_violations(scope, stats):
     return list(dict.fromkeys(bad))           # stable order, no duplicate strings
 
 
+# ============================ PHASE 2: THE NECESSITY ARM'S LIVENESS CONTRACT ==================
+# S-007 recorded the wiring gap this implements, and plan §6 "Bidirectional (Priority 2)" says
+# why it matters: every arm so far ADDS the clean component under a live knockout (sufficiency);
+# this one starts from the CLEAN forward and REMOVES the installed component
+# (`h' = h_clean - P_w(h_clean - h_ko)`, i.e. donor = KO, live = CLEAN).
+#
+# *** WHY THIS NEEDS ITS OWN CONTRACT, AND WHY IT IS NOT AN EXEMPTION. ***
+# Every other knockout arm in this file is trustworthy for one reason: the knockout is verified
+# LIVE on the forward that produced the number (`readout_liveness_violations`, > 0 prefill edits
+# per row, gated at run level by `assert_knockout_live`). On the necessity arm the knockout is
+# deliberately NOT live on that forward -- the readout is the CLEAN forward with the knocked-out
+# state written into the axis component. Two tempting responses are both wrong:
+#
+#   * judge it under the ordinary contract -> every row violates it and a CORRECT arm is voided;
+#   * skip the contract for this arm -> an arm with NO liveness evidence whatsoever, which is the
+#     exact shape of the defects reviews R3-B1 and S-074a caught ("a check that cannot fail"), and
+#     it fails in the direction that looks like a clean scientific result.
+#
+# So the contract is RE-AIMED, not relaxed, and all four legs are asserted per row. Legs 1 and 2
+# alone are satisfied by an arm that does nothing at all; leg 3 is satisfied by a patch that
+# writes the state it already had; leg 4 is what makes the null falsifiable. A necessity run that
+# cannot prove all four is REFUSED (`assert_necessity_live`), after its artifact is written.
+
+#: The hook's OWN per-forward counters, named once. Leg 2 asserts every one of them is zero, so a
+#: counter the hook grows later and that is not named here would be an unchecked channel -- hence
+#: the list lives beside the check that reads it, and both sides are normalised through
+#: `knockout_row_stats` so the derived `n_prefill_edits` is never compared against a raw one.
+KNOCKOUT_COUNTERS = ("n_forward", "n_prefill_forward", "n_decode_forward",
+                     "n_edits", "n_prefill_edits", "n_decode_edits")
+
+
+def knockout_counter_delta(before, after):
+    """`after` minus `before` on every knockout counter: what ONE later forward pass added.
+
+    The hook's counters are CUMULATIVE over a row, and on the necessity arm the DONOR capture has
+    already incremented them before the readout begins. "The readout added no knockout activity"
+    is therefore a statement about a delta and cannot be read off the absolute value.
+
+    The delta is computed rather than obtained by clearing the stats dict on purpose: clearing
+    would also destroy the provenance keys the hook writes into it at construction, and a check
+    that mutates the evidence it is checking is not a check.
+    """
+    b, a = knockout_row_stats(before or {}), knockout_row_stats(after or {})
+    return {k: int(a.get(k, 0)) - int(b.get(k, 0)) for k in KNOCKOUT_COUNTERS}
+
+
+def necessity_readout_violations(scope, donor_stats, readout_delta, patch_liveness,
+                                 donor_delta_norm=None):
+    """[] iff ONE `--rescue-donor ko` row is the experiment that arm is labelled as.
+
+    The four legs, and what each one rules out:
+
+      1. **the knockout was live where the donor came from.** Judged by
+         `readout_liveness_violations` -- the SAME evaluator, the same `pair_common` tables and
+         the same reduced forward-only contract every other readout arm is judged by. Only the
+         forward it is applied to has moved. Rules out: a donor captured under a dead mask, i.e.
+         "removing" a component that was never knocked out.
+      2. **the knockout was NOT live on the readout.** Every counter in `KNOCKOUT_COUNTERS` must
+         have moved by exactly zero across the readout. Rules out the silent-bypass failure: if
+         the knockout contexts were still entered for the readout, this arm would quietly be the
+         old sufficiency arm with its donor swapped, and would still produce a plausible number.
+      3. **the patch fired on the readout.** Legs 1 and 2 are both satisfied by a row that does
+         nothing at all -- leg 2 *is* "no intervention", so without leg 3 an unintervened clean
+         forward passes this gate wearing a necessity label.
+      4. **there was something to remove.** ||h_donor - h_live|| at the patched positions, measured
+         on the readout forward itself, must be > 0. Leg 1 proves the mask edited ATTENTION; it
+         does not prove the residual stream at the rescue layer and positions moved. If it did not,
+         the removal writes the state that was already there, installation cannot drop, and the
+         null is an artifact of the instrument rather than a fact about the model.
+
+    NOT a leg, deliberately: the WRITTEN delta norm. A norm-matched orthogonal or random control in
+    this direction is *supposed* to be able to write ~nothing -- that is the null the controls
+    exist to sit at -- so refusing a zero-norm write would refuse the controls rather than the
+    broken arms. It is recorded per row (`rescue_liveness.written_norm_mean`) and read by the
+    analyser, which is where a scientific threshold belongs.
+
+    Pure and module-level so a test drives the SAME predicate main() uses, rather than a retyped
+    copy of it beside the real one.
+    """
+    bad = []
+    # ---- LEG 1: live on the DONOR capture -----------------------------------------------------
+    if not (donor_stats or {}):
+        bad.append("donor_capture: no hook counters at all -- the donor forward was never "
+                   "observed, so 'captured under the knockout' is an assumption")
+    else:
+        for v in readout_liveness_violations(scope, donor_stats):
+            bad.append("donor_capture: " + v)
+    # ---- LEG 2: NOT live on the READOUT -------------------------------------------------------
+    if readout_delta is None:
+        bad.append("readout_forward: no counter delta was recorded, so 'the knockout was not live "
+                   "on the readout' is an assumption rather than an observation")
+    else:
+        for k in KNOCKOUT_COUNTERS:
+            d = int(readout_delta.get(k, 0))
+            if d != 0:
+                bad.append(f"readout_forward: {k} moved by {d} during the readout. The necessity "
+                           f"arm's readout must be knockout-FREE; any knockout activity there "
+                           f"means this is the sufficiency composition wearing a necessity label")
+    # ---- LEG 3: the PATCH fired ---------------------------------------------------------------
+    if not patch_liveness:
+        bad.append("patch: no liveness record, and on this arm the patch is the ENTIRE "
+                   "intervention -- leg 2 has just asserted nothing else is live")
+    elif int(patch_liveness.get("n_positions_written", 0)) <= 0:
+        bad.append("patch: wrote 0 positions on the readout forward. With the knockout not live "
+                   "(leg 2) this row is an UNINTERVENED clean forward wearing a necessity label")
+    # ---- LEG 4: there was something to REMOVE -------------------------------------------------
+    if donor_delta_norm is None:
+        bad.append("donor_delta: ||h_donor - h_live|| at the patched positions was not measured, "
+                   "so a null cannot be told apart from 'the knockout moved nothing here'")
+    elif not (float(donor_delta_norm) > 0.0):
+        bad.append(f"donor_delta: ||h_donor - h_live|| is {float(donor_delta_norm):.3e} at the "
+                   f"patched positions -- the KO and CLEAN states coincide there, so the removal "
+                   f"writes back the state already present and CANNOT lower installation")
+    return list(dict.fromkeys(bad))           # stable order, no duplicate strings
+
+
+def new_necessity_live():
+    """The empty per-row NECESSITY accumulator. One definition, so a test can build a real one."""
+    return {"n_rows": 0, "n_rows_ok": 0, "violations": {},
+            "donor_prefill_edits": [], "readout_ko_edits": [],
+            "patch_positions_written": [], "donor_delta_norm": []}
+
+
+def record_necessity_row(nec_live, scope, donor_stats, readout_delta, patch_liveness,
+                         donor_delta_norm=None):
+    """Fold ONE necessity row into `nec_live`; return its violations ([] = clean).
+
+    A module-level function for the same reason `record_knockout_row` is one: the accumulator the
+    gate is computed from must be the accumulator main() actually fills.
+    """
+    bad = necessity_readout_violations(scope, donor_stats, readout_delta, patch_liveness,
+                                       donor_delta_norm=donor_delta_norm)
+    nec_live["n_rows"] += 1
+    nec_live["n_rows_ok"] += int(not bad)
+    for b in bad:
+        nec_live["violations"][b] = nec_live["violations"].get(b, 0) + 1
+    nec_live["donor_prefill_edits"].append(
+        int(knockout_row_stats(donor_stats or {}).get("n_prefill_edits", 0)))
+    nec_live["readout_ko_edits"].append(int((readout_delta or {}).get("n_edits", 0)))
+    nec_live["patch_positions_written"].append(
+        int((patch_liveness or {}).get("n_positions_written", 0)))
+    nec_live["donor_delta_norm"].append(None if donor_delta_norm is None
+                                        else float(donor_delta_norm))
+    return bad
+
+
+def necessity_summary(nec_live, scope, donor, layer=None, basis_key=None):
+    """Reduce the per-row necessity counters to the block written into summary.json.
+
+    It exists as a SEPARATE block from `knockout_liveness` because on this arm that block is a
+    statement about the DONOR CAPTURE forward and about nothing else. Folding the two together
+    would produce one artifact in which "prefill edits > 0 on every row" reads as a claim about
+    the forward that produced the number -- which on this arm is false by design, and is precisely
+    the confusion a reader cannot recover from after the fact.
+    """
+    n = int(nec_live.get("n_rows", 0))
+    ok = int(nec_live.get("n_rows_ok", 0))
+    pe = list(nec_live.get("donor_prefill_edits") or [])
+    pw = list(nec_live.get("patch_positions_written") or [])
+    dn = [x for x in (nec_live.get("donor_delta_norm") or []) if x is not None]
+    return {
+        "schema": "NECESSITY/1",
+        "direction": "remove-under-clean:  h' = h_clean - P_w(h_clean - h_ko)   (plan §6)",
+        "rescue_donor": donor,
+        "knockout_scope": scope,
+        "rescue_layer": layer,
+        "rescue_basis_key": basis_key,
+        "knockout_live_on": "donor_capture_forward",
+        "knockout_on_readout_forward": "NOT live BY DESIGN -- asserted zero-edit on every row",
+        "n_rows": n,
+        "n_rows_ok": ok,
+        "frac_rows_ok": (ok / n if n else 0.0),
+        "median_donor_prefill_edits": (statistics.median(pe) if pe else 0),
+        "min_donor_prefill_edits": (min(pe) if pe else 0),
+        "max_readout_knockout_edits": (max(nec_live.get("readout_ko_edits") or [0])),
+        "median_patch_positions_written": (statistics.median(pw) if pw else 0),
+        "min_patch_positions_written": (min(pw) if pw else 0),
+        "median_donor_delta_norm": (statistics.median(dn) if dn else None),
+        "min_donor_delta_norm": (min(dn) if dn else None),
+        "n_rows_donor_delta_measured": len(dn),
+        "violations": dict(nec_live.get("violations") or {}),
+        "note": ("On this arm summary.json's `knockout_liveness` block describes the DONOR "
+                 "CAPTURE forward, NOT the forward that produced the readout: the knockout is "
+                 "deliberately absent from the readout. Read THIS block for what the readout "
+                 "forward was."),
+    }
+
+
+def assert_necessity_live(summary):
+    """Refuse a `--rescue-donor ko` run that cannot prove it performed the necessity intervention.
+
+    Deliberately shaped like `assert_knockout_live`, including its refusals of the three ways this
+    repo has already shipped a vacuous gate: an empty summary object, zero rows, and a fraction
+    that was never computed. Each leg of `necessity_readout_violations` is re-asserted here at run
+    level from a DIFFERENT statistic (the min/max over rows, not the per-row verdict), so a bug
+    that loses the per-row verdict cannot also silence the run-level one.
+    """
+    if not summary:
+        raise SystemExit(
+            "REFUSING: --rescue-donor ko produced no necessity block at all. An arm whose whole "
+            "liveness claim is 'the knockout was live on the donor and absent from the readout' "
+            "and that carries no record of either is indistinguishable from one that never "
+            "performed the check. See necessity_arm in summary.json.")
+    if summary.get("schema") != "NECESSITY/1":
+        raise SystemExit(f"REFUSING: necessity block has schema {summary.get('schema')!r}, not "
+                         f"'NECESSITY/1'; this gate does not know what it is reading.")
+    n = int(summary.get("n_rows") or 0)
+    if n == 0:
+        raise SystemExit(
+            "REFUSING: the necessity gate saw ZERO rows. Either the run produced nothing or the "
+            "per-row check was never reached -- and a gate that never ran is the failure mode "
+            "this whole block exists to make impossible, not a pass.")
+    frac = summary.get("frac_rows_ok")
+    if frac is None:
+        raise SystemExit("REFUSING: necessity block carries no frac_rows_ok; the verdict was "
+                         "never computed. A missing verdict is not a passing one.")
+    if float(frac) < 1.0:
+        raise SystemExit(
+            f"REFUSING: only {float(frac):.3f} of {n} rows satisfied the necessity contract "
+            f"({summary.get('n_rows_ok')}/{n}). Violations: {summary.get('violations')}. Every "
+            f"failing row's number was produced by something other than the labelled "
+            f"intervention, so the arm is not reportable.")
+    if int(summary.get("max_readout_knockout_edits") or 0) != 0:
+        raise SystemExit(
+            f"REFUSING: the knockout made {summary.get('max_readout_knockout_edits')} edit(s) on "
+            f"a READOUT forward. On this arm the readout must be the CLEAN forward; a live "
+            f"knockout there makes it the sufficiency composition under a necessity label.")
+    if int(summary.get("min_patch_positions_written") or 0) <= 0:
+        raise SystemExit(
+            "REFUSING: at least one row wrote 0 patch positions. With the knockout absent from "
+            "the readout (asserted above) such a row is an UNINTERVENED clean forward, and its "
+            "'no drop' is a statement about the plumbing.")
+    if int(summary.get("min_donor_prefill_edits") or 0) <= 0:
+        raise SystemExit(
+            "REFUSING: at least one donor capture ran with ZERO knockout prefill edits, so its "
+            "donor is not a knocked-out state and there is nothing to remove.")
+    if (summary.get("min_donor_delta_norm") is None
+            or float(summary["min_donor_delta_norm"]) <= 0.0):
+        raise SystemExit(
+            f"REFUSING: min ||h_donor - h_live|| over rows is "
+            f"{summary.get('min_donor_delta_norm')!r}. On at least one row the knocked-out and "
+            f"clean states coincide at the patched positions, so the removal writes back the "
+            f"state already present and that row CANNOT show a drop. A null built on such rows "
+            f"is CANNOT ANSWER, not a negative (plan §15).")
+    return True
+
+
 #: What `loaded_attn_implementation` returns when the loaded model exposes NO attention-backend
 #: attribute at all. It is a SENTINEL, never a backend name, so it can never compare equal to
 #: "eager" and an unestablishable backend fails closed.
@@ -2315,12 +2562,28 @@ def main() -> int:
                          "damages only INDIRECTLY, by way of what it reads from the demonstrations. "
                          "This is a different POSITION SET at the same layer, not a layer sweep: "
                          "PR-13 forbade sweeping layers until one rescues, and this does not.")
-    ap.add_argument("--rescue-donor", choices=("clean", "self"), default="clean",
+    ap.add_argument("--rescue-donor", choices=("clean", "self", "ko"), default="clean",
                     help="Where the donated activations come from. 'clean' = an unhooked forward "
                          "(the RESCUE). 'self' = a forward under the SAME hooks as the arm, the "
                          "classical identity control: writing a run's own activations back into it "
                          "must reproduce it EXACTLY. If 'self' changes the output, the patch is not "
-                         "writing what it read and no rescue number means anything.")
+                         "writing what it read and no rescue number means anything. "
+                         "'ko' = PHASE 2 NECESSITY (S-007, plan §6): capture the donor UNDER the "
+                         "knockout hooks and then run the READOUT WITHOUT them, so the composition "
+                         "is h' = h_clean - P_w(h_clean - h_ko) -- start from a clean, "
+                         "high-installation forward and REMOVE the installed component, asking "
+                         "whether installation DROPS. This is the OTHER direction from every "
+                         "existing arm (which adds under a live knockout), and plan §6 says the "
+                         "two together are far stronger than either alone. The knockout is "
+                         "deliberately NOT live on the forward that produces the number, so this "
+                         "mode is judged by its own four-leg contract "
+                         "(`necessity_readout_violations` / `assert_necessity_live`) instead of "
+                         "the ordinary one: live on the DONOR capture, zero-edit on the readout, "
+                         "patch demonstrably fired, and a non-zero KO-vs-CLEAN difference to "
+                         "remove. With NO --rescue-basis it writes the WHOLE ko state, which is "
+                         "this direction's built-in positive control: installation should land "
+                         "near the KO arm's level, and if it does not the instrument is broken "
+                         "and any subspace null is CANNOT ANSWER (plan §15).")
     ap.add_argument("--rescue-layer", type=int, default=None,
                     help="Section 20 Q3 RESCUE. Capture resid_post at this layer from a CLEAN "
                          "forward over the demo-block positions, then write it back during the "
@@ -2711,6 +2974,36 @@ def main() -> int:
         print(f"[score] forward-only readout ({', '.join(_readout_kinds)}): no decode step, so "
               f"scope {_knock_scope} is judged on the reduced contract (required > 0: "
               f"{list(_rreq)}; required == 0: {list(_rzero)})", flush=True)
+    # ---- PHASE 2 NECESSITY ARM: the three things it cannot be run without (S-007) -------------
+    # Settled HERE, before the model loads, rather than 20 s into a 30-minute allocation. All
+    # three are refusals and not warnings, because each one turns the arm into something that
+    # still produces a number.
+    if args.rescue_donor == "ko":
+        if args.rescue_layer is None:
+            raise SystemExit(
+                "[score] REFUSING: --rescue-donor ko without --rescue-layer. The whole rescue "
+                "block is gated on --rescue-layer, so the necessity arm would run as a plain "
+                "clean forward and be filed under a necessity label.")
+        if not _wants_knockout:
+            raise SystemExit(
+                "[score] REFUSING: --rescue-donor ko needs an attn_knockout arm. The DONOR is the "
+                "knocked-out state; with no knockout the donor is the clean state, the patch is "
+                "the identity, and 'installation did not drop' would be a fact about the "
+                "plumbing. Pass --intervene ...:attn_knockout:... .")
+        if not _readout_only:
+            raise SystemExit(
+                f"[score] REFUSING: --rescue-donor ko is only defined for the FORWARD-ONLY "
+                f"readout kinds {list(READOUT_QUERY_KINDS)} (got {kinds}). The donor is captured "
+                f"by a SINGLE forward pass, so the only contract under which its knockout "
+                f"liveness can be judged is the reduced forward-only one "
+                f"(`readout_liveness_contract`); on a generating arm the donor capture would be "
+                f"judged against a decode requirement it can never satisfy, and the arm would be "
+                f"voided for a reason that is not a defect. Installation is a readout measure "
+                f"anyway -- score the readout kinds.")
+        print(f"[score] PHASE 2 NECESSITY (--rescue-donor ko): donor captured UNDER the knockout, "
+              f"readout run WITHOUT it, h' = h_clean - P_w(h_clean - h_ko). The knockout is NOT "
+              f"live on the readout by design; the arm is gated by assert_necessity_live "
+              f"(4 legs) and summary.json carries a `necessity_arm` block.", flush=True)
     _attn_impl = "eager" if (_wants_knockout or args.attn_impl == "eager") else args.attn_impl
     lm = dc.load_model(model_id, dtype=getattr(torch, args.dtype), attn_implementation=_attn_impl)
     # THE REQUEST AND THE LOADED STATE ARE TWO DIFFERENT FACTS, and only one of them is evidence.
@@ -3052,6 +3345,11 @@ def main() -> int:
                 f"rows silently changes the experiment.")
 
     knock_live = new_knockout_live()
+    # PHASE 2 NECESSITY (S-007). A SEPARATE accumulator, because on this arm `knock_live` records
+    # the DONOR CAPTURE forwards and this one records the readout forwards. None on every other
+    # arm, so `assert_necessity_live` can tell "this arm does not use the gate" from "the gate
+    # was reached and saw nothing", which are the two states a single dict cannot distinguish.
+    nec_live = new_necessity_live() if args.rescue_donor == "ko" else None
 
     def _pr059_cell_fields(ks):
         """DCS-PR-059 D-4. Copy the three counters the analyzer's `liveness_gate` reads out of
@@ -3135,6 +3433,79 @@ def main() -> int:
             "rescue_n_positions_requested": args.rescue_n_positions,
             "rescue_rel_end_rows": args.rescue_rel_end_rows or None,
             "n_rescue_positions": (len(rpos) if rpos is not None else None),
+        }
+
+    def _necessity_donor_delta_norm(nec):
+        """Mean ||h_donor - h_live|| over the patched positions, from the readout forward itself.
+
+        LEG 4's measurement. `clean_cap` was entered AHEAD of the patch on the same layer, so its
+        capture is that layer's output BEFORE the patch rewrote it -- the live (clean) state. The
+        arithmetic is float64 because a bf16 difference of two nearby states loses a visible
+        fraction of itself, and this quantity is compared against zero.
+
+        Returns None when the capture produced nothing, and None is NOT a pass: the gate treats an
+        unmeasured difference as a violation, because "we did not look" and "there was nothing to
+        remove" are the two states this arm must never conflate.
+        """
+        cap = (nec or {}).get("clean_cap")
+        donor = (nec or {}).get("donor")
+        if cap is None or donor is None or cap.acts is None:
+            return None
+        a = cap.acts.detach().to(torch.float64)
+        b = donor.acts.detach().to(a.device).to(torch.float64)
+        if a.shape != b.shape:
+            raise SystemExit(
+                f"[score] REFUSING: necessity donor block is {tuple(b.shape)} but the live "
+                f"capture at the same positions is {tuple(a.shape)}. They address different "
+                f"things, so the difference this arm removes is not the difference it measured.")
+        return float((b - a).norm(dim=1).mean())
+
+    def _necessity_row_fields(rescue_ctx, nec, knock_stats):
+        """Ledger ONE `--rescue-donor ko` row into `nec_live`, and return its row fields.
+
+        WRITTEN ONLY WHEN --rescue-donor ko IS GIVEN, so a results.jsonl from any other arm is
+        unchanged key-for-key (the same discipline DCS-PR-063 used for the per-cell option
+        fields). Within this arm the four load-bearing facts are NOT defaultable: a row that
+        cannot say which forward the knockout was live on, whether it stayed out of the readout,
+        whether the patch fired and whether there was anything to remove is a row whose number
+        means nothing, and plan §14 says such a field RAISES rather than becoming null.
+
+        The two ways this could have gone wrong silently, and why it cannot:
+          * the donor stats reaching here as None -> that is the "the donor capture never
+            happened" state, and it is raised on, not written as null;
+          * the arm being ledgered by the ordinary `record_knockout_row` alone -> that call still
+            happens (it is what feeds `assert_knockout_live`), but on this arm it describes the
+            DONOR forward, so this block records, per row, that the readout forward itself was
+            knockout-free. Without it the run's only liveness evidence would silently be about a
+            different forward than the number.
+        """
+        if not nec or nec.get("donor_ks") is None or nec.get("ko_before") is None:
+            raise SystemExit(
+                "[score] REFUSING: --rescue-donor ko reached the row builder with no donor-capture "
+                "record. That record IS the arm's liveness claim -- which forward the knockout was "
+                "live on -- and emitting the row with a null there would make 'the check did not "
+                "run' indistinguishable from 'the check passed' (plan §14).")
+        donor_ks = nec["donor_ks"]
+        readout_delta = knockout_counter_delta(nec["ko_before"], knock_stats)
+        donor_delta_norm = _necessity_donor_delta_norm(nec)
+        _pl = rescue_ctx.liveness() if rescue_ctx is not None else None
+        _bad = record_necessity_row(nec_live, _knock_scope, donor_ks, readout_delta, _pl,
+                                    donor_delta_norm=donor_delta_norm)
+        return {
+            # SAY IT ON THE ROW TOO. `_readout_knock_fields` above puts `hook_n_prefill_edits`
+            # and friends on this same row, and on this arm those counters were incremented by
+            # the DONOR CAPTURE -- the knockout is not entered for the readout. A row that does
+            # not say so would read, to any analyser, as a row whose readout ran under a live
+            # knockout, which is the reverse of the truth.
+            "hook_counters_measured_on": "donor_capture_forward",
+            "necessity_direction": "remove-under-clean",
+            "necessity_donor_knockout": dict(donor_ks),
+            "necessity_readout_knockout_delta": dict(readout_delta),
+            "necessity_donor_delta_norm": (None if donor_delta_norm is None
+                                           else float(donor_delta_norm)),
+            "necessity_patch_positions_written": (None if _pl is None
+                                                  else int(_pl.get("n_positions_written", 0))),
+            "necessity_violations": _bad,
         }
 
     def _readout_knock_fields(knock_stats, dk, prot, seq_len):
@@ -3624,6 +3995,14 @@ def main() -> int:
                                      hook_stats=_pr057_stats,
                                      control_base=(args.pr057_control_base or None),
                                      arm_echo=_pr057_echo)
+            # THE ARM'S OWN HOOKS, IDENTIFIED BEFORE ANYTHING IS APPENDED TO `ctxs`.
+            # `--rescue-donor ko` is the ONE arm whose readout forward must NOT carry them (the
+            # readout is the clean forward), and the only honest way to drop them is to know
+            # exactly which contexts they are. Captured here, by identity, rather than filtered
+            # later by class name: a class-name filter silently keeps a hook whose class is
+            # renamed, and "the intervention was still live" is the failure that would make this
+            # arm the sufficiency arm wearing a necessity label.
+            _arm_ctxs = list(ctxs)
             # ---- O1: the FROZEN PROBE, read INSIDE this row's intervened forward -----------
             # Built HERE, in the row loop, which is the attribution point: `row` is in scope, so
             # every record names its prompt_id and its DOMAIN -- and O1 is a domain-level
@@ -3666,6 +4045,12 @@ def main() -> int:
             # therefore lives here, after `ctxs` exists for THIS row, and nowhere else.
             _rescue_ctx = None
             _rpos_row = [None]            # one-element cell so the readout builder can read it
+            # PHASE 2 NECESSITY. One cell, like `_rpos_row`, and RESET UNCONDITIONALLY on every
+            # row for the exact reason the comment above gives about `ctxs`: a value left over
+            # from the previous iteration would be a liveness claim about the previous ROW,
+            # silently and plausibly. It is read only by being PASSED to the row builder, never
+            # by that builder closing over it.
+            _nec_row = [None]
             if args.rescue_layer is not None:
                 if not _wants_knockout or not dk:
                     ledger.fail("rescue:no_knockout_or_no_demo_keys", row["prompt_id"])
@@ -3716,7 +4101,11 @@ def main() -> int:
                 _cap = ActivationCapture(lm.model, args.rescue_layer, _rpos)
                 with torch.no_grad():
                     with contextlib.ExitStack() as _dst:
-                        if args.rescue_donor == "self":
+                        # 'self' and 'ko' capture the donor under the SAME hooks, by the SAME
+                        # line, so the two cannot drift apart: the ONLY difference between the
+                        # identity control and the necessity arm is whether those hooks are still
+                        # entered for the readout below. That is the whole of S-007's fix.
+                        if args.rescue_donor in ("self", "ko"):
                             for _c in ctxs:
                                 _dst.enter_context(_c)
                         _dst.enter_context(_cap)
@@ -3724,6 +4113,21 @@ def main() -> int:
                 if _cap.acts is None:
                     ledger.fail("rescue:donor_capture_empty", row["prompt_id"])
                     continue
+                if args.rescue_donor == "ko":
+                    # LEG 1 OF THE NECESSITY CONTRACT, CHARGED PER ROW AND CHARGED HERE.
+                    # The donated state is only a KNOCKED-OUT state if the knockout actually fired
+                    # on the forward that produced it, and that is judged by the SAME evaluator,
+                    # tables and reduced forward-only contract as every other readout arm
+                    # (`readout_liveness_violations`) -- nothing is relaxed, the contract is
+                    # simply applied to the forward it is now a statement about. A row that fails
+                    # is REFUSED before the readout is spent, rather than contributing a
+                    # "no drop" that is really "nothing was knocked out".
+                    _nec_dks = knockout_row_stats(dict(knock_stats))
+                    _nec_bad = readout_liveness_violations(_knock_scope, _nec_dks)
+                    if _nec_bad:
+                        ledger.fail("necessity:knockout_not_live_on_donor_capture",
+                                    row["prompt_id"])
+                        continue
                 _donor = DonorBlock(layer_idx=args.rescue_layer, positions=list(_rpos),
                                     acts=_cap.acts, input_ids=list(ids_r))
                 if args.rescue_basis:
@@ -3736,7 +4140,35 @@ def main() -> int:
                                                      norm_match_basis=_NB, strict_ids=True)
                 else:
                     _rescue_ctx = DonorPatch(lm.model, _donor, ids_r, strict_ids=True)
-                ctxs = list(ctxs) + [_rescue_ctx]
+                if args.rescue_donor == "ko":
+                    # *** THE ONE LINE THAT MAKES THIS THE NECESSITY DIRECTION. ***
+                    # Every other arm composes the patch ON TOP of the live knockout
+                    # (`h_ko + P_w(h_clean - h_ko)`, sufficiency). Here the arm's own hooks are
+                    # DROPPED for the readout, so the live forward is CLEAN and the patch writes
+                    # the KO state's component into it: `h_clean - P_w(h_clean - h_ko)`.
+                    # Dropped BY IDENTITY against `_arm_ctxs`, so the PR-057 probe captures
+                    # appended after `make_intervention` survive -- they read, they do not
+                    # intervene, and silently dropping them would break a different experiment.
+                    #
+                    # LEG 4's measurement, taken for free and read FIRST. `_nec_clean_cap` is
+                    # entered AHEAD of `_rescue_ctx`, and both register a forward hook on the
+                    # same layer module, so it sees that layer's output BEFORE the patch rewrites
+                    # it -- i.e. h_live, the clean state. Comparing it to the donor gives
+                    # ||h_clean - h_ko|| at the patched positions, per row, which is the only
+                    # thing that distinguishes "removal did not lower installation" from "the
+                    # knockout never moved the residual stream here, so there was nothing to
+                    # remove". The hook-ordering dependence is pinned by a unit test; if it were
+                    # ever the wrong way round the measured difference would be 0 and the arm
+                    # would be REFUSED, which is the safe direction to fail in.
+                    _nec_clean = ActivationCapture(lm.model, args.rescue_layer, _rpos)
+                    _nec_row[0] = {"donor_ks": _nec_dks,
+                                   "ko_before": knockout_row_stats(dict(knock_stats)),
+                                   "clean_cap": _nec_clean, "donor": _donor}
+                    _arm_ids = {id(_c) for _c in _arm_ctxs}
+                    ctxs = ([_c for _c in ctxs if id(_c) not in _arm_ids]
+                            + [_nec_clean, _rescue_ctx])
+                else:
+                    ctxs = list(ctxs) + [_rescue_ctx]
             with contextlib.ExitStack() as st:
                 for c in ctxs:
                     st.enter_context(c)
@@ -3781,7 +4213,9 @@ def main() -> int:
                     # under the intervention; recording nothing left the mask unobservable.
                     _kf = _readout_knock_fields(knock_stats, dk, prot, len(ids_r)) \
                         if _wants_knockout else {}
-                    _kf = {**_kf, **_rescue_row_fields(_rescue_ctx, _rpos_row[0])}
+                    _kf = {**_kf, **_rescue_row_fields(_rescue_ctx, _rpos_row[0]),
+                           **(_necessity_row_fields(_rescue_ctx, _nec_row[0], knock_stats)
+                              if args.rescue_donor == "ko" else {})}
                     run.log_row({**base, **_kf, "readout": "semantic", **rec})
                     _om_val = (rec["option_mass_core_pair"] if extra_words
                                else rec["option_mass"])
@@ -3806,7 +4240,9 @@ def main() -> int:
                     rec["mapping_use_options"] = row.get("mapping_use_options")
                     _kf = _readout_knock_fields(knock_stats, dk, prot, len(ids_r)) \
                         if _wants_knockout else {}
-                    _kf = {**_kf, **_rescue_row_fields(_rescue_ctx, _rpos_row[0])}
+                    _kf = {**_kf, **_rescue_row_fields(_rescue_ctx, _rpos_row[0]),
+                           **(_necessity_row_fields(_rescue_ctx, _nec_row[0], knock_stats)
+                              if args.rescue_donor == "ko" else {})}
                     run.log_row({**base, **_kf, "readout": "mapping_use", **rec})
                     option_mass[f"mapping_use/{row['query_kind']}"].append(rec["option_mass"])
                     counts["mapping_use"] += 1
@@ -3818,7 +4254,9 @@ def main() -> int:
                     # LEDGER THE HOOK (C-6) -- see the semantic branch above.
                     _kf = _readout_knock_fields(knock_stats, dk, prot, len(ids_r)) \
                         if _wants_knockout else {}
-                    _kf = {**_kf, **_rescue_row_fields(_rescue_ctx, _rpos_row[0])}
+                    _kf = {**_kf, **_rescue_row_fields(_rescue_ctx, _rpos_row[0]),
+                           **(_necessity_row_fields(_rescue_ctx, _nec_row[0], knock_stats)
+                              if args.rescue_donor == "ko" else {})}
                     run.log_row({**base, **_kf, "readout": "comprehension", **rec})
                     option_mass[f"comprehension/{row['query_kind']}"].append(rec["option_mass"])
                     counts["comprehension"] += 1
@@ -4218,6 +4656,23 @@ def main() -> int:
         knock_summary = knockout_liveness_summary(knock_live, _attn_impl_loaded,
                                                   scope=_knock_scope, readout=_readout_only)
         print(f"[score] KNOCKOUT LIVENESS: {knock_summary}", flush=True)
+        if args.rescue_donor == "ko":
+            # SAY SO IN THE ARTIFACT, NOT ONLY IN THE CODE. On this arm every counter in the
+            # block just printed was incremented by the DONOR CAPTURE forward, because the
+            # knockout is not entered for the readout. An artifact whose knockout_liveness block
+            # reads as a statement about the forward that produced the number -- when it is a
+            # statement about a different forward -- is unrecoverable after the fact, and this
+            # sprint has already paid for one of those (S-103's sha16).
+            knock_summary = {**knock_summary,
+                             "counters_measured_on": "donor_capture_forward (--rescue-donor ko)",
+                             "readout_forward_had_knockout": False,
+                             "see_also": "necessity_arm"}
+    nec_summary = None
+    if nec_live is not None:
+        nec_summary = necessity_summary(nec_live, _knock_scope, args.rescue_donor,
+                                        layer=args.rescue_layer,
+                                        basis_key=(args.rescue_basis_key or None))
+        print(f"[score] NECESSITY ARM: {nec_summary}", flush=True)
 
     _summary = {"model": lm.model_id, "arm": args.arm, "n_bank_rows": len(rows),
                         # THE LOADED ATTENTION BACKEND, AT THE TOP LEVEL, FOR EVERY ARM.
@@ -4240,6 +4695,11 @@ def main() -> int:
                         "semantic_remap_pool": (args.semantic_remap_pool or None),
                         "semantic_remap_pool_sha16": _remap_pool_sha16,
                         "knockout_liveness": knock_summary,
+                        # PHASE 2 NECESSITY (S-007). Present ONLY on --rescue-donor ko, so every
+                        # pre-existing summary.json keeps its keys; on that arm it is the block a
+                        # reader must consult, because `knockout_liveness` above describes the
+                        # donor capture and not the readout.
+                        "necessity_arm": nec_summary,
                         "option_mass_gate": ("PASS" if not tail_fail else
                                              "OVERRIDDEN — NOT REPORTABLE: " + "; ".join(tail_fail)),
                         "answer_prefix": args.answer_prefix,
@@ -4274,6 +4734,13 @@ def main() -> int:
     # the process still exits non-zero so no caller can mistake it for a result.
     if _wants_knockout:
         assert_knockout_live(knock_summary or {})
+    # AND THE NECESSITY GATE, IN THE SAME PLACE AND FOR THE SAME REASON. On --rescue-donor ko the
+    # gate above is satisfied by the DONOR capture forwards; it says nothing about the forward the
+    # number came from. This one does, and it is the only thing standing between "installation did
+    # not drop" and "we never removed anything". Raised AFTER run.finish() so the artifact exists
+    # and records why it is not reportable, and non-zero so no caller can mistake it for a result.
+    if nec_live is not None:
+        assert_necessity_live(nec_summary or {})
     print(f"[score] {dict(counts)} -> {run.path}")
     print(f"[score] failures: {ledger.as_dict()['failure_reasons']}")
 
