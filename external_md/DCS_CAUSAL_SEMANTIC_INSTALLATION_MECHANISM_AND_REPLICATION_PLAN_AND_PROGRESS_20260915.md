@@ -7722,3 +7722,82 @@ I had drafted this entry titled *"NECESSITY SMOKE PASSES"* on the strength of th
 me back. **It was uncommitted, so nothing false entered the append-only record** — but the near-miss
 is the point: four green arms and a clean leg table are not a passing smoke when the fifth arm
 cannot run. **Read the job's exit code before the job's numbers.**
+
+---
+
+# S-114 — **CORRECTION to S-113: its central inference rests on an uncontrolled contrast, and the smoke's `--limit` sample is 3 domains of 67.** Two defects in my own entry, found an hour after committing it
+
+S-113 concluded that `KO_NEC_ORTH`'s total degeneracy is *"a property of the DIRECTION, not a bug and
+not a flake"*, and offered as proof: **0 of 670** rows refused in the sufficiency direction against
+**24 of 24** in necessity, *"the SAME basis, the SAME layer 18, the SAME codeword and the SAME
+guard… Only `--rescue-donor` changed."*
+
+**That sentence is false, and the arithmetic of the guard says the conclusion is probably wrong too.**
+
+## (a) The geometry contradicts the conclusion
+
+`SubspaceDonorPatch` computes, per position:
+
+```
+delta = don − cur          # sufficiency: h_clean − h_ko    necessity: h_ko − h_clean
+rel   = ‖P_basis(delta)‖ / ‖delta‖.clamp_min(1e-12)
+degen = rel < 1e-6
+```
+
+The two directions differ **only in the sign of `delta`**. `‖P_basis(−x)‖ = ‖P_basis(x)‖` and
+`‖−x‖ = ‖x‖`, so **`rel` is mathematically identical in the two directions.** A basis that is
+non-degenerate against `h_clean − h_ko` is non-degenerate against `h_ko − h_clean`, necessarily.
+
+So "a property of the direction" is **not a mechanism the guard can express**, and S-113 asserted one
+without checking the code it was reasoning about.
+
+## (b) The contrast was confounded by population — by **domains**, not merely by n
+
+`--limit 24` does not sample; it takes **the first 24 rows in bank order**. Measured:
+
+```
+full eligible population : 670 rows / 67 domains
+--limit 24               : 24 rows / 3 domains
+                           power_substation 10, quarry_site 10, dairy_plant 4
+```
+
+So the comparison was **3 domains against 67**, not "the same everything but the donor". Under rule
+**3.1** — *independence unit = DOMAIN; rows are for within-domain estimation only and never inflate
+n* — the smoke's effective n is **3**, not 24.
+
+**Three hypotheses remain live and S-113 licensed none of them:** a population artifact (those three
+domains are geometrically atypical), a genuine direction-specific effect (which the guard's
+arithmetic says it cannot be), or **a defect in the necessity donor capture**. Job **906447** is the
+controlled test — same basis, **same 24 rows**, both directions, `--rescue-donor` the only
+difference. **Status: OPEN.** S-113's framing is **WITHDRAWN** pending it.
+
+## (c) The smoke's positive control is n = 3 domains, and my caveat was right for the wrong reason
+
+S-113 restricted `KO_NEC_FULL − NEC_BASE = −0.13016` to *"direction and order of magnitude only"*,
+on the grounds that the smoke's `NEC_BASE` (0.721) differs from the population's (0.469). **The real
+reason is stronger: that number has three independent domains behind it.** The restriction stands;
+its justification is corrected.
+
+What the smoke does still establish is unaffected, because it is **mechanical, not statistical**:
+the four legs hold on real hardware, the knockout fires on the donor capture and not on the readout,
+the patch writes, and the displacement is non-zero. None of that is a domain-level claim.
+
+## (d) A defect in the smoke MECHANISM, which is the reusable lesson
+
+`CSI_NEC_SMOKE=1` swaps `--expect-n` for `--limit 24`. For a project whose independence unit is the
+domain, **`--limit` is the wrong sampler**: it concentrates every mechanical check into one corner of
+the corpus. A **domain-strided** sample (every 28th row, say) would cover ~24 domains for the same
+GPU cost and would catch a domain-specific mechanical failure that `--limit` hides by construction.
+
+Recorded rather than fixed right now: the launcher is being re-executed per arm by **four live
+jobs**, and S-110c is the entry about editing that file mid-run. **The fix belongs after the running
+jobs drain, and it is logged here so it is not lost.**
+
+## What this says about how I am working
+
+Two entries in a row have needed correcting by their own author: S-108's interpretation (killed by
+the independent path in S-109) and now S-113's central inference. Both were caught, and both were
+caught the same way — **by going back to the code or the population rather than re-reading my own
+prose.** The pattern worth naming: *an empirical contrast between two runs is not controlled merely
+because the two runs share a name.* S-113 listed four things that were the same and did not check
+the one thing that was not.
