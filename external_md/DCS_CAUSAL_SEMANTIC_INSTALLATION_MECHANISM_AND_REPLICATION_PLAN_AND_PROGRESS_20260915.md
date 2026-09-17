@@ -7074,3 +7074,100 @@ does **not name which L18 file it compared against**, and the answer matters: th
 `configs/dcs_csi_axis_basket_behavioral.pt` (**41** bases, only 12 shuffled) just 41 keys are
 comparable and the table reads **22 / 19**, not 22 / 31. The evidence is sound; the record was
 under-specified. **Stated here so the check is reproducible.**
+
+---
+
+# S-108 — **POST-HOC / EXPLORATORY: basket's axis captures LESS of the displacement than button's, and yet delivers 4–10× more of its dose prediction.** Dose runs the *wrong way* for the codeword dissociation
+
+Review R8 introduced an instrument it was not asked for: `rescue_liveness.captured_energy_frac_mean`,
+recorded on every rescued row, is the fraction of the ‖h_clean − h_ko‖ displacement that the rank-1
+subspace spans at the rescue positions. R8 used it for one purpose (defending S-104's L18 wording).
+It answers a bigger question, and the data to answer it is already committed.
+
+## Status, stated before the numbers
+
+**This is POST-HOC and EXPLORATORY, and it cannot be otherwise.** Plan §3.5 requires preregistration
+of anything that could become a headline; this is computed from data already read, so it is
+**ineligible for preregistration** and goes to **section B** of the ledger, never section A. It was
+not a hypothesis this sprint held in advance — the sprint's own prior (S-050, S-052) is the
+opposite, that recovery tracks **dose**, not direction.
+
+**An independent re-derivation is in flight** (a path sharing no code with mine, re-deriving the
+endpoint, the arm resolution and the energy measure from the raw rows). **Nothing from this entry
+enters the claim ledger until it lands.** The rules for reading it are fixed here, before it returns:
+
+* **Agreement on all four cells** → the finding stands as exploratory and enters section B.
+* **Disagreement on any cell** → my figure is withdrawn and the disagreement is diagnosed as a bug
+  in one path, exactly as S-100's `DONE.status` bug was found by a path disagreement.
+* **Agreement on the numbers but a sound objection to the linear dose model** → the numbers are
+  reported and the *interpretation* is withdrawn. This is the likeliest failure mode and I am naming
+  it in advance.
+
+## The measurement
+
+Energy captured by the rank-1 axis, from the `KO_AXIS` arm of each family, averaged over rows where
+the rescue fired. Arms resolved by `RUNMETA.slurm_job_id` only (902004/902005 = L18, 896679/896771 =
+L20), never by recency, and cross-checked against each directory's `config.json`:
+
+| arm | captured fraction | ‖clean − ko‖ | ‖proj‖ |
+|---|---|---|---|
+| button L18 | **3.872 %** | 1.3009 | 0.0680 |
+| button L20 | **3.479 %** | 1.5207 | 0.0677 |
+| basket L18 TRAIN | **3.237 %** | 1.1715 | 0.0585 |
+| basket L18 VALIDATION | **3.195 %** | 1.1789 | 0.0588 |
+
+**Basket's axis captures the LEAST energy of the four — and it is the only one that passes.**
+
+## Dose-normalised, with `KO_FULL − KO` from the committed reports at matched key sets
+
+Linear dose prediction = captured fraction × (`KO_FULL − KO`), the form S-041's P1-g rule mandates:
+
+| arm | dose prediction | observed `KO_AXIS − KO` | **obs / pred** | rank |
+|---|---|---|---|---|
+| button L20 | +0.002419 | +0.00040 | **16.5 %** | 4 of 11 |
+| button L18 | +0.004198 | −0.00027 | **−6.4 %** | 8 of 11 |
+| basket L18 TRAIN | +0.003898 | +0.00264 | **67.7 %** | **1 of 47** |
+| basket L18 VALIDATION | +0.003313 | +0.00401 | **121.0 %** | **1 of 47** |
+
+**The ordering is identical under the alternative energy measure** (ratio-of-means rather than
+mean-of-ratios): 12.9 % / −4.8 % / 43.9 % / 77.5 %. The absolute percentages move; the ordering and
+the codeword separation do not. And the ordering tracks the **rank** exactly, across two codewords,
+two layers and two splits.
+
+## What this would mean, if it survives
+
+The within-codeword rank test is **already dose-controlled**: every control is norm-matched to the
+candidate, so inside a family the written norm is fixed by construction and only the *direction*
+varies. That was never in question. What was open is the **cross-codeword** contrast — basket passes,
+button does not — and the sprint's own dose story predicts that basket's axis should be capturing
+*more*. It captures **less**, on all four comparisons, and converts what it captures into
+installation **4–10× more efficiently**.
+
+If that survives, the honest statement is: *the cross-codeword dissociation is not explained by how
+much of the perturbation the axis spans; the dose runs the wrong way.* That is the first evidence in
+this sprint that anything about basket's axis is **directional** rather than **dosimetric**, and it
+is the mechanism-shaped handle on D12 that the sprint has been missing.
+
+## The four ways it could die, put to the independent path explicitly
+
+1. **Is the linear dose model defensible?** It is a *model*, not a law. The check available is the
+   POSITION ladder (D10: recovery linear in k restored, R² = 0.997) and the rank ladder, both of
+   which vary amount with direction held fixed. If recovery is strongly non-linear in captured
+   energy, the normalisation is unsound and the interpretation goes, numbers or not.
+2. **Is the normalisation redundant?** Norm-matching already fixes dose within a family — so does
+   this add anything beyond the rank test, or restate it?
+3. **Is it an artifact of ‖clean − ko‖ differing across codewords** (1.17 basket vs 1.30/1.52
+   button)? arXiv:2606.27510 proves interaction effects scale with clean-vs-patched distance, and
+   basket's absolute projected norm is *smaller* (0.0585 vs 0.0680) — which direction does that
+   objection push, and can it produce a 4–10× gap?
+4. **Is 121 % physically sensible?** Observed recovery *exceeding* the linear prediction may be a
+   real super-linearity or a broken estimator. It needs a domain-clustered CI, or an explicit
+   statement that one cannot be formed.
+
+## What may NOT be said, whatever comes back
+
+* Not *"the installation axis is causal"* — prohibition 19 stands; the effect is 3.9 % of the knockout.
+* Not *"dose does not explain the Phase-1 null"* — S-050 and S-052 measured dose **within** button
+  and that stands; this is a statement about the **between-codeword** contrast only.
+* Not that this replicates anything. It is one post-hoc analysis of four already-read arms.
+* The codewords are **not pooled** (rule 3.3); this is a per-codeword contrast reported side by side.
