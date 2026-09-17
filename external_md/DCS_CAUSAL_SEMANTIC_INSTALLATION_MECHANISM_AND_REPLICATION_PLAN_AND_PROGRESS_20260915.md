@@ -8030,3 +8030,77 @@ the arm that told me the family collapses was itself run through a defective inv
 withdraws. It is **not** rewritten — the log is append-only and the registry entry is a pointer to
 S-113 — but anyone reading it must read this entry too, and the correction is recorded in the entry
 the registry names.
+
+---
+
+# S-118 — **CORRECTION to S-117: its central claim "the same arm, same basis, same layer" was FALSE.** The basis files are bitwise identical, so the cause is still unidentified — and I have stopped guessing
+
+S-117, committed an hour ago, asserted that the 24 rows *"all patch successfully at n = 670 and all
+fail at n = 24"* comparing *"the SAME arm, same basis, same layer"*. **The three runs I compared
+used three different basis files at two different layers.** Verified:
+
+| run | layer | basis file | limit | rows / failed |
+|---|---|---|---|---|
+| `KO_ORTH` (D12 era) | 18 | `..._behavioral.pt` | – | **670 / 0** |
+| `KO_ORTH` (L20 group A) | **20** | `..._L20.pt` | – | **669 / 1** |
+| my paired test & sweep | 18 | `..._behavioral_shuf24.pt` | 24/96/268 | **0 / all** |
+
+So S-117's comparison was not controlled, for the **third** time in this sequence of entries. That
+is the same defect S-114 diagnosed in S-113 — *"an empirical contrast is not controlled merely
+because the two runs share a name"* — and I reproduced it in the very entry that recorded the lesson.
+
+## What I then checked instead of asserting, and what it rules out
+
+**The basis files are not the explanation.** All **41** bases shared by `..._behavioral.pt` and
+`..._behavioral_shuf24.pt` are **bitwise identical** — `torch.equal` true on every one, including
+`ctrl_orth`, `ctrl_shuffled0` and `cand_rank1`, each unit norm, and `cos(ctrl_orth, cand_rank1)` =
+3.399e−10 in **both** files. S-095's claim that the shuf24 file's 41 pre-existing bases were
+verified identical to the frozen file is **confirmed independently here.**
+
+**The shuf24 file is not globally broken.** Its `ctrl_shuffled13–23` — the twelve bases group K
+added, which exist *only* in that file — ran at layer 18 with **668–670 rows and 0–2 failures each**.
+D12's control family is untouched by any of this.
+
+**So `ctrl_orth` and `ctrl_shuffled0` are the same tensors in both files, and they succeed at 670
+rows without `--limit` and fail at every n with it.**
+
+## The one difference left, and why I am not yet calling it the cause
+
+`--limit N` versus `--expect-n 670` is the only token that differs. But reading the source:
+
+* `args.limit` appears **only** in row selection (a stratified round-robin that, with this
+  population's single surviving bucket, reduces to the first N) and in one provenance field;
+* `args.expect_n` appears **only** in a validation check that raises on a shrunken sample.
+
+**Neither touches the rescue, the basis loader, the donor capture or the norm match.** So there is no
+mechanism in the code I have read by which `--limit` could change a projection ratio, and asserting
+that it does would be the fourth uncontrolled claim in a row. **The cause is UNIDENTIFIED and
+recorded as such.**
+
+## The airtight control, launched (job 906501)
+
+Two arms, **one script, one flag list, differing in exactly one token**, both selecting the identical
+670 rows:
+
+* **A**: `--limit 670`
+* **B**: `--expect-n 670`
+
+If A fails and B succeeds, `--limit` is proven causal and the mechanism hunt is justified. If **both
+succeed**, then the failures were never about `--limit` at all and the real variable is something in
+my ad-hoc scripts I have still not isolated — in which case every conclusion in S-117 goes, not just
+its framing. The old sweep (906479) was cancelled because it lacked exactly this control arm.
+
+## What remains unaffected, and I want this stated precisely
+
+Every full-population arm — D12, S-104, S-115, the L20 groups, all of group K — used `--expect-n`
+over the frozen 670/230-row populations and **produced rows**. The anomaly appears only in
+`--limit` runs of mine from tonight. **No committed claim depends on a `--limit` run**; the only
+number that ever did was S-113's smoke positive control, already withdrawn as a number in S-117.
+
+## The pattern, now with three instances
+
+S-113 asserted a mechanism without reading the guard. S-117 asserted a controlled comparison without
+checking the basis paths. Both were mine, both were caught within the hour, and both by the same
+move: **going to the artifact instead of to my own previous sentence.** The corrective I am adopting
+for the rest of this sprint: **before writing "the same X", print X for both runs.** It costs one
+command and it would have prevented all three.

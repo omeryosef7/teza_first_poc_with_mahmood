@@ -96,6 +96,14 @@ KNOWN_ZERO = {
         "'18 of 28 positions are norm-match DEGENERATE' as --limit 24 -- so the degenerate-position "
         "count does NOT scale with n, it is the same 18 positions at both sizes. Zero rows is the "
         "expected outcome and this run is the evidence.",
+    "csi1_basket_train_LIMSWEEP_SUF_ORTH_L268_20260917_232145_3576430":
+        "DCS-CSI-117/118 diagnostic: ctrl_orth, SUFFICIENCY, --limit 268. 268 of 268 refused with "
+        "the SAME '18 of 28 positions are norm-match DEGENERATE' as --limit 24 and --limit 96, so "
+        "the degenerate-position count does not scale with n. Zero rows is the expected outcome and "
+        "the run is the evidence. NOTE (S-118): the causal attribution to --limit is NOT yet "
+        "established -- the basis files involved were shown bitwise identical and args.limit touches "
+        "nothing in the rescue path, so job 906501's paired --limit 670 vs --expect-n 670 arms are "
+        "what decide it.",
     "csi1_basket_train_NCSMOKE_KO_NEC_RAND0_20260917_231730_2312789":
         "DCS-CSI-117: ctrl_random0, NECESSITY, 24 rows. Same. Completes the demonstration that the "
         "failure is not specific to a basis family.",
