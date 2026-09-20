@@ -1,0 +1,249 @@
+# PR-CSI-003-A (NECESSITY CONTROL-FAMILY AMENDMENT) READ COMMANDS -- frozen 2026-09-20, while job
+# 912736 (necessity half 2) was RUNNING on n-350 and BEFORE any necessity CANDIDATE number existed.
+# Modelled on runargs/dcs_csi_pr003_read.txt, whose three foot-guns are carried forward below and
+# which remains valid and executable exactly as it was frozen. This file does not replace it: the
+# PR-CSI-003 read is the 8-control read at floor 0.1111, this is the 24-control read at floor 0.0400.
+# Prereg: configs/dcs_csi_pr003a_necessity_family.json
+#
+# HARDWARE, and this is a VOID condition rather than advice (S-119, S-121, S-037):
+#   EVERY arm in this family MUST run on an RTX 3090 (compute capability 8.6, NATIVE bfloat16).
+#   Tesla V100 is sm_70 and has NO native bf16, so --dtype bfloat16 is EMULATED there, and the
+#   norm-match degeneracy guard (rel = ||P(delta)||/||delta|| < 1e-6, evaluated ONLY on the
+#   norm-matched path, on a quantity tiny by construction) then refuses EVERY row of EVERY
+#   norm-matched control. Measured (S-119):
+#     norm-matched on 3090 : 669-670 rows every time
+#     norm-matched on V100 : 0 rows every time (n = 24, 96, 268, 670 -- size is irrelevant)
+#     NOT norm-matched V100: 24/24 rows every time (the guard is never reached)
+#   ALL TWENTY NEW ARMS ARE NORM-MATCHED to cand_rank1, so all twenty are exposed. Half 1 (906433,
+#   n-307) and half 2 (912736, n-350) both ran on RTX 3090 -- verified, S-126.
+#   Express the constraint POSITIVELY (--gpus=geforce_rtx_3090:1), never as an exclude-list. Job
+#   906421 is the counter-example: an --exclude of specific nodes excluded the whole 3090 rack,
+#   landed on rack-bgw-dgx1 and wrote ZERO rows on every norm-matched arm.
+
+# ====================================================================================================
+# STEP 0 -- THE LAUNCHER PATCH, WHICH IS A PRECONDITION AND IS NOT APPLIED
+# ====================================================================================================
+# slurm_scripts/dcs_csi_p1_arms.slurm as it stands CANNOT launch these arms. Established by reading it:
+#   CSI_NEC_HALF=3 launches EXACTLY 8 arms: KO_NEC_RAND4..KO_NEC_RAND11 (ctrl_random4..11). All
+#     random, no shuffled.
+#   Halves 2+3 together therefore give 16 controls -> pooled floor 1/17 = 0.0588, which is NOT < 0.05,
+#     and only 4 shuffled -> shuffled-only floor 0.2000. The launcher's ceiling cannot certify.
+#   GROUP X CANNOT SUBSTITUTE. Its body uses $R, defined once at the top of the script as
+#     R="--rescue-positions query --rescue-layer $LAYER --rescue-donor clean". Group X hardcodes
+#     donor CLEAN, so CSI_ARMS="KO_NEC_SHUF4:ctrl_shuffled4 ..." would run the SUFFICIENCY arm and
+#     persist it under a NECESSITY arm name -- a mislabelled experiment of the S-104 shape, with
+#     summary.json carrying necessity_arm: null and the four-leg contract never charged. PROHIBITED.
+# So two new branches (CSI_NEC_HALF=4 and =5, ten shuffled arms each, reusing `subnec` verbatim) must
+# be added and COMMITTED FIRST. The exact text is in the prereg under
+# LAUNCHER_AMENDMENT_REQUIRED_BEFORE_THESE_ARMS_CAN_BE_LAUNCHED.the_patch. Verify with:
+#   bash -n slurm_scripts/dcs_csi_p1_arms.slurm
+# and confirm the refusal message now names "1, 2, 3, 4 or 5".
+# DO NOT APPLY IT WHILE 912736 IS RUNNING unless you have confirmed SLURM staged its own copy at
+# submit time; the safe order is: 912736 finishes -> patch -> commit -> launch.
+
+# ====================================================================================================
+# STEP 1 -- LAUNCH (20 arms, 2 allocations, ~8.7 GPU-h upper bound; calibrated from job 906433,
+#           5 arms in 02:10:34 on one RTX 3090 = 26.113 min/arm)
+# ====================================================================================================
+sbatch --gpus=geforce_rtx_3090:1 --time=08:00:00 --export=ALL,CSI_NEC_HALF=4,CSI_STAGE=1 \
+       slurm_scripts/dcs_csi_p1_arms.slurm basket configs/dcs_csi_axis_basket_behavioral_shuf24.pt train L
+
+sbatch --gpus=geforce_rtx_3090:1 --time=08:00:00 --export=ALL,CSI_NEC_HALF=5,CSI_STAGE=1 \
+       slurm_scripts/dcs_csi_p1_arms.slurm basket configs/dcs_csi_axis_basket_behavioral_shuf24.pt train L
+
+# half 4 -> KO_NEC_SHUF4..KO_NEC_SHUF13   (ctrl_shuffled4..13)
+# half 5 -> KO_NEC_SHUF14..KO_NEC_SHUF23  (ctrl_shuffled14..23)
+# After each job: confirm the GPU from the log's `nvidia-smi --query-gpu=name` line AND from each
+# run's RUNMETA.json, not from the nodelist alone.
+
+# ====================================================================================================
+# GATE ORDER. Read in this order and stop at the first failure. Gates 1 and 2 are RE-READ on the
+# full arm set even though S-126 already passed them on half 1 -- a gate that passed on a subset is
+# not a gate that passed.
+# ====================================================================================================
+#   0. VOID -- hardware: every admitted run dir records gpu "NVIDIA GeForce RTX 3090", dtype
+#      bfloat16, attn_impl eager. Any V100 anywhere in the set VOIDS the comparison.
+#   1. the four legs, from summary.json's `necessity_arm` block on EVERY rescue arm (all 26):
+#        violations == {} and frac_rows_ok == 1.0
+#        min_donor_prefill_edits    > 0   (leg 1: knockout live on the DONOR capture)
+#        max_readout_knockout_edits == 0  (leg 2: readout forward knockout-FREE)
+#        min_patch_positions_written > 0  (leg 3: the patch fired)
+#        min_donor_delta_norm       > 0   (leg 4: there was something to remove)
+#      NEC_BASE and NEC_KO carry necessity_arm: null -- correct, they are not rescue arms.
+#   2. the POSITIVE CONTROL, which decides whether anything else may be read at all:
+#        KO_NEC_FULL - NEC_BASE must be clearly NEGATIVE with the UPPER ci95 bound < 0.
+#        Measured on half 1 (S-126): -0.11009, ci95 [-0.12522, -0.09514], 67/67 domains, against a
+#        manipulation NEC_KO - NEC_BASE of -0.23406 -- i.e. 47.0% of the clean->KO span.
+#        IF THE RE-READ MOVES IT: the verdict is CANNOT ANSWER for the whole direction (plan §15).
+#        Report the feasibility numbers and STOP. Do not report the candidate.
+#   3. FAMILY COMPLETENESS, which is new to this amendment and must be checked BEFORE the rank:
+#        all 24 KO_NEC_SHUF arms present, each with its own run dir, each at 670 rows (allow-short 4),
+#        each at rescue_layer 18, each norm_matched true, each with a DISTINCT basis_sha16.
+#        24 is preregistered. A family that lands at 22 has floor 0.0435 and is a DIFFERENT
+#        preregistration -- report it at its own floor with the shortfall named, never as this test.
+#   4. only then the PRIMARY rank (shuffled-only), and only then the secondary pooled rank.
+
+# ---- PRIMARY ANALYSER -- the SHUFFLED-ONLY family, K = 24, floor 0.0400 ---------------------------
+# THIS IS THE TEST. Pooled and random-only ranks are reported but are NOT the test -- the same rule
+# S-095 fixed for group K, for the same reason: R5 measured the shuffled family's sd at 1.9x the
+# random family's at the same mean, so the shuffled tail sets the margin.
+#
+# --control-prefixes IS MANDATORY AND MUST BE SPELLED OUT. Omit it and the default
+# "KO_SHUF,KO_RAND" matches NOTHING here, the control distribution is SILENTLY EMPTY, and the
+# analyser falls through to the single-comparator branch that S-050 showed can be made to say
+# either thing. Foot-gun (1), carried forward from S-120(e).
+#
+# --out IS MANDATORY ON BOTH INVOCATIONS. NEW FOOT-GUN, created by this amendment. Verified at
+# the `outp = a.out or os.path.join(...)` line of analyze.py -- the default output path is built from direction + codeword +
+# split ONLY. It does NOT include --control-prefixes. So the two reads below would BOTH default to
+# reports/DCS_CSI_SUBSPACE_NECESSITY_basket_train.json and the SECOND WOULD SILENTLY OVERWRITE THE
+# FIRST, leaving one file whose n_controls field no longer matches the read it is labelled as.
+# This is the same class of defect S-120 caught between the sufficiency and necessity reports, one
+# level down. Both --out paths below are distinct and neither is the default name.
+python scripts/dcs_csi_subspace_analyze.py \
+  --codeword basket --tag-prefix csi1_basket_train --expect-n 670 --allow-short 4 \
+  --direction necessity \
+  --arms NEC_BASE,NEC_KO,KO_NEC_FULL,KO_NEC_AXIS,KO_NEC_ORTH,KO_NEC_SHUF0,KO_NEC_SHUF1,KO_NEC_SHUF2,KO_NEC_SHUF3,KO_NEC_SHUF4,KO_NEC_SHUF5,KO_NEC_SHUF6,KO_NEC_SHUF7,KO_NEC_SHUF8,KO_NEC_SHUF9,KO_NEC_SHUF10,KO_NEC_SHUF11,KO_NEC_SHUF12,KO_NEC_SHUF13,KO_NEC_SHUF14,KO_NEC_SHUF15,KO_NEC_SHUF16,KO_NEC_SHUF17,KO_NEC_SHUF18,KO_NEC_SHUF19,KO_NEC_SHUF20,KO_NEC_SHUF21,KO_NEC_SHUF22,KO_NEC_SHUF23 \
+  --base-arm NEC_BASE --ko-arm NEC_KO --full-arm KO_NEC_FULL \
+  --candidate-arm KO_NEC_AXIS --comparator-arm KO_NEC_ORTH \
+  --control-prefixes KO_NEC_SHUF \
+  --split train --require-rescue-layer 18 \
+  --require-slurm-job 906433,912736,<HALF4>,<HALF5> \
+  --out reports/DCS_CSI_SUBSPACE_NECESSITY_basket_train_shuf24.json
+
+# ---- SECONDARY -- the POOLED family, K = 28, floor 0.0345. REPORTED, NOT THE TEST ----------------
+# KO_NEC_RAND0-3 come from half 2 (job 912736). KO_NEC_RAND4-11 (CSI_NEC_HALF=3) are DELIBERATELY
+# NOT RUN and MUST NOT be added to this family after the fact -- adding random draws lowers the
+# pooled floor while sampling the wrong tail. If they are ever run it is a separate preregistration.
+python scripts/dcs_csi_subspace_analyze.py \
+  --codeword basket --tag-prefix csi1_basket_train --expect-n 670 --allow-short 4 \
+  --direction necessity \
+  --arms NEC_BASE,NEC_KO,KO_NEC_FULL,KO_NEC_AXIS,KO_NEC_ORTH,KO_NEC_SHUF0,KO_NEC_SHUF1,KO_NEC_SHUF2,KO_NEC_SHUF3,KO_NEC_SHUF4,KO_NEC_SHUF5,KO_NEC_SHUF6,KO_NEC_SHUF7,KO_NEC_SHUF8,KO_NEC_SHUF9,KO_NEC_SHUF10,KO_NEC_SHUF11,KO_NEC_SHUF12,KO_NEC_SHUF13,KO_NEC_SHUF14,KO_NEC_SHUF15,KO_NEC_SHUF16,KO_NEC_SHUF17,KO_NEC_SHUF18,KO_NEC_SHUF19,KO_NEC_SHUF20,KO_NEC_SHUF21,KO_NEC_SHUF22,KO_NEC_SHUF23,KO_NEC_RAND0,KO_NEC_RAND1,KO_NEC_RAND2,KO_NEC_RAND3 \
+  --base-arm NEC_BASE --ko-arm NEC_KO --full-arm KO_NEC_FULL \
+  --candidate-arm KO_NEC_AXIS --comparator-arm KO_NEC_ORTH \
+  --control-prefixes KO_NEC_SHUF,KO_NEC_RAND \
+  --split train --require-rescue-layer 18 \
+  --require-slurm-job 906433,912736,<HALF4>,<HALF5> \
+  --out reports/DCS_CSI_SUBSPACE_NECESSITY_basket_train_pooled28.json
+
+# ---- INDEPENDENT RE-DERIVATION (shares no code with the above) -------------------------------------
+# The PRIMARY family only. Its rank must agree with the analyser's to the last digit; a disagreement
+# is a BLOCKER, not a rounding note.
+python scripts/dcs_csi_rederive_subspace.py \
+  --tag-prefix csi1_basket_train --split train --expect-n 670 --allow-short 4 \
+  --direction necessity --base NEC_BASE --ko NEC_KO --full KO_NEC_FULL --candidate KO_NEC_AXIS \
+  --controls KO_NEC_SHUF0,KO_NEC_SHUF1,KO_NEC_SHUF2,KO_NEC_SHUF3,KO_NEC_SHUF4,KO_NEC_SHUF5,KO_NEC_SHUF6,KO_NEC_SHUF7,KO_NEC_SHUF8,KO_NEC_SHUF9,KO_NEC_SHUF10,KO_NEC_SHUF11,KO_NEC_SHUF12,KO_NEC_SHUF13,KO_NEC_SHUF14,KO_NEC_SHUF15,KO_NEC_SHUF16,KO_NEC_SHUF17,KO_NEC_SHUF18,KO_NEC_SHUF19,KO_NEC_SHUF20,KO_NEC_SHUF21,KO_NEC_SHUF22,KO_NEC_SHUF23 \
+  --require-rescue-layer 18 --require-slurm-job 906433,912736,<HALF4>,<HALF5> \
+  --out reports/DCS_CSI_REDERIVE_NECESSITY_basket_train_shuf24.json
+
+# ---- WRITE VERIFICATION, because the exit status of a write on this filesystem is not evidence ----
+# S-124: NFS reports EDQUOT ASYNCHRONOUSLY. Two analysers wrote 0-byte reports and exited 0. After
+# EVERY command above:
+#   python -c "import json,sys; d=json.load(open(sys.argv[1])); print(sys.argv[1], len(d), d.get('VERDICT'))" <the --out path>
+# A file that does not json.load is a file that was not written, whatever the shell said.
+
+# ====================================================================================================
+# THE FOUR FOOT-GUNS, NAMED
+# ====================================================================================================
+#  (1) --control-prefixes IS MANDATORY AND MUST BE SPELLED OUT. The default "KO_SHUF,KO_RAND" matches
+#      no necessity arm, the control distribution is SILENTLY EMPTY, and the verdict falls through to
+#      the single-comparator branch S-050 discredited. Carried forward from S-120(e).
+#  (2) KO_NEC_FULL IS THE ONE ARM WHOSE BASIS IDENTITY NOTHING VERIFIES. It carries
+#      rescue_basis: None, so it is exempt from the subspace-arm identity checks; if it were
+#      accidentally run WITH a basis it would still pass. Check its config.json args.rescue_basis by
+#      hand. LITERAL-FORM WARNING from S-126: it is NOT literally `null` on disk, it is `""` (the
+#      argparse default). It resolves correctly -- score_behavior.py:4133 branches on
+#      `if args.rescue_basis:` and the empty string is falsy, and :3426 writes None into the rows, so
+#      all 670 rows carry rescue_basis: null. A reader performing this check literally will see `""`.
+#  (3) KO_NEC_AXIS_ANCHOR IS DELIBERATELY EXCLUDED FROM THE CONTROL DISTRIBUTION. It matches neither
+#      prefix string. That is correct -- it is a re-run of the CANDIDATE (basis key cand_rank1) and
+#      putting it in the distribution would compare the candidate against itself -- but it is a
+#      silent choice, so it is named here. Read it as the cross-allocation DRIFT diagnostic: half 1
+#      vs half 2 on the identical arm. A large drift is a hardware finding, not a result.
+#  (4) *** NEW, CREATED BY THIS AMENDMENT *** --out MUST BE SPELLED OUT ON EVERY INVOCATION. The
+#      default output path (the `outp = a.out or os.path.join(...)` line of analyze.py) is direction + codeword + split and does NOT include
+#      --control-prefixes, so the primary and secondary reads collide on one filename and the second
+#      silently overwrites the first. Both --out paths above are distinct and neither is the default.
+#      Corollary: reports/DCS_CSI_SUBSPACE_NECESSITY_basket_train.json -- the PR-CSI-003 default
+#      name -- stays reserved for the PR-CSI-003 8-control read and must not be written by this one.
+
+# ====================================================================================================
+# TWO ARITHMETIC CORRECTIONS THAT THE READER WILL HIT, RECORDED HERE RATHER THAN DISCOVERED LATER
+# ====================================================================================================
+#  (a) PR-CSI-003, runargs/dcs_csi_pr003_read.txt and S-126 all state "9 controls => floor 1/10 =
+#      0.10". THE ANALYSER WILL PRINT n_controls = 8 AND rank_p_floor = 0.1111. KO_NEC_ORTH is
+#      counted as the ninth in the prose, but the family is selected at the `ctrl_arms = [x for x in arms ...]` line of analyze.py by
+#      --control-prefixes, and "KO_NEC_ORTH".startswith(("KO_NEC_SHUF","KO_NEC_RAND")) is False.
+#      ORTH enters as --comparator-arm only. Nothing about any verdict changes -- 0.10 and 0.1111 are
+#      both far above 0.05 and the PASS branch is unreachable either way -- but a stated floor the
+#      tool will not print is exactly the silent discrepancy S-118 and S-126 were written about.
+#      The same mechanism governs this amendment: ORTH is NOT in the 24 and NOT in the 28.
+#  (b) THE ANALYSER'S OWN ADVICE IS OFF BY ONE. Its INCONCLUSIVE text is formatted with
+#      min_controls=19 (analyze.py's `min_controls=19` line) -- "certifying it at alpha=0.05 needs at least 19 controls".
+#      But the `attainable = dist["rank_p_floor"] < 0.05` line tests `rank_p_floor < 0.05` and round(1/20, 4) = 0.0500 is NOT < 0.05. The
+#      correct number is 20. Verified floors: K=19 -> 0.0500 (fails), K=20 -> 0.0476 (passes),
+#      K=24 -> 0.0400, K=28 -> 0.0345, K=46 -> 0.0213.
+#      NOT FIXED. The PR-CSI-003 read must be executable with the same analyser this one uses, and
+#      editing it between the two reads is the S-110c defect. REPORTED, not changed.
+
+# ====================================================================================================
+# NO LINE NUMBERS ARE QUOTED IN THIS FILE -- AND HERE IS WHY
+# ====================================================================================================
+#  Every citation in this file is a literal SOURCE LINE, not a coordinate. Relocate with grep -n:
+#    grep -n "ctrl_arms = .x for x in arms"   scripts/dcs_csi_subspace_analyze.py   # family selection
+#    grep -n "rank_p_floor.: round"           scripts/dcs_csi_subspace_analyze.py   # the 1/(K+1) floor
+#    grep -n "attainable = dist"              scripts/dcs_csi_subspace_analyze.py   # the < 0.05 test
+#    grep -n "min_controls=19"                scripts/dcs_csi_subspace_analyze.py   # the off-by-one
+#    grep -n "outp = a.out or os.path.join"   scripts/dcs_csi_subspace_analyze.py   # the default --out
+#    grep -n "if args.rescue_basis:"          src/boombness/score_behavior.py       # foot-gun (2)
+#
+#  WHY, and it is measured rather than a preference: during the ~40 minutes this file was being
+#  written, scripts/dcs_csi_subspace_analyze.py went DIRTY vs HEAD (+56/-2 -- a concurrent agent
+#  landing the S-124 atomic-write fix: _atomic_json_dump, temp file -> fsync -> non-zero size check
+#  -> json.load re-parse -> os.replace) and then back to CLEAN. Every line citation shifted +1 and
+#  then -1 inside one hour. I made neither change. Checked hunk by hunk while it was applied:
+#  "import tempfile", one new module-level function, and the call site in _write -- NOTHING in the
+#  contrast, rank, bootstrap, permutation, gate or verdict path moved, so VOID condition 7 would
+#  not have fired.
+#
+#  THE OPERATIONAL CONSEQUENCE, which is the point: condition 7 is not a formality in a tree several
+#  agents write to. BEFORE running either read, record
+#      md5sum scripts/dcs_csi_subspace_analyze.py scripts/dcs_csi_rederive_subspace.py
+#  and AFTER both reads confirm the same md5s. At this freeze the analyser was CLEAN at commit
+#  ce116c6f, 1066 lines, md5 975280800b7539bc8453e85400374ad1. If it moved, diff it and decide
+#  whether the change is I/O-only, as that one was, or computational -- in which case VOID
+#  condition 7 fires and the two reads are not comparable.
+
+# ====================================================================================================
+# WHAT MAY AND MAY NOT BE CONCLUDED
+# ====================================================================================================
+#  * THE PASS BRANCH IS REACHABLE FOR THE FIRST TIME IN THIS DIRECTION. 24 controls => floor 0.0400,
+#    and the analyser's PASS branch requires rank_p_floor < 0.05. That is the entire point of the
+#    amendment. It does NOT make a pass more likely -- at a fixed separation a larger family is
+#    HARDER to top. Computed: at the sufficiency direction's measured separation of 2.028 shuffled-sd
+#    (reports/DCS_CSI_SUBSPACE_basket_train_n46.json: candidate +0.00264, shuffled n=24 mean
+#    +0.000527 sd 0.001042), P(rank 1) is 0.6996 at K=8 and 0.5317 at K=24. The amendment buys
+#    certifiability at 0.0400 and pays ~0.17 of rank-1 probability for it.
+#  * A p OF EXACTLY 0.0400 IS THE FLOOR OF THIS DESIGN, i.e. the smallest p it can produce. If the
+#    candidate is rank 1, say so in the same sentence. S-079 is the precedent.
+#  * THE PREDICTION IS ON RECORD AND IS A NULL. PR-CSI-003 froze "the positive control fires clearly
+#    and the CANDIDATE IS EXPECTED TO BE UNDERPOWERED OR NULL", and PR-CSI-003-A restates it with a
+#    number: power ~0.53 under the most favourable assumption the record supports. A null is the
+#    PREDICTED outcome and must be reported as the underpowered result it was predicted to be, never
+#    as evidence against the axis.
+#  * THE POSITIVE CONTROL ALREADY PASSED. Whole-state necessity is DEMONSTRATED (-0.11009, 67/67
+#    domains, 47.0% of the span). A null on the candidate does NOT mean "necessity failed"; it means
+#    the rank-1 AXIS's share of a demonstrated removal could not be separated from 24 matched
+#    shuffled controls.
+#  * NO INERT IDENTITY CONTROL EXISTS FOR THIS DIRECTION and the four legs are NOT a substitute: they
+#    prove the knockout was live on the donor, the readout was clean, the patch fired and a
+#    displacement existed -- none proves the written state is the intended
+#    h_clean - P_w(h_clean - h_ko) rather than something arithmetically adjacent. The strongest
+#    available evidence for that is a UNIT test (S-110), not a per-row run-time gate.
+#  * THIS IS TRAIN, ONE CODEWORD, ONE LAYER. No held-out necessity arm has ever been run. button has
+#    never been run in this direction. basket and button are never pooled: the unit is the DOMAIN and
+#    their domains are different units.
+#  * THE FULL 46-CONTROL CEILING IS NOT BOUGHT HERE. configs/dcs_csi_axis_basket_behavioral_shuf24.pt
+#    holds 24 ctrl_shuffled and 22 ctrl_random = 46 norm-matchable control directions (floor 0.0213,
+#    the size D12 passed against on the sufficiency side). Reaching it costs 38 further arms and
+#    ~16.5 GPU-h. This amendment buys 20 arms and ~8.7 GPU-h for the binding subfamily.
