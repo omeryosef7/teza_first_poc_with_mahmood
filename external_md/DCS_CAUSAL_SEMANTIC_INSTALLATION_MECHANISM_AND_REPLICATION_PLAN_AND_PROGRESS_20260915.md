@@ -11189,3 +11189,90 @@ block commits until the family completed — a blocked commit is cheaper than a 
 `runargs/dcs_csi_pr007_read.txt` is performed **once**, after all 55 arms land. Nothing in this entry
 reads a number from that experiment. The necessity family extension remains blocked on PR-CSI-003-A's
 VOID condition 6 (S-142), with three resolutions costed and none taken.
+
+---
+
+# S-147 — **CORRECTION to REVIEW R9: co-residency is NOT free, and the measurement is 6.2×.** PR-CSI-007's four remaining jobs were heading for a timeout with 5 of 47 arms done; cancelled and relaunched one job per node
+
+## What R9 said, and why it was wrong
+
+REVIEW R9 recorded five jobs co-resident on one node as **deliberate**, with this reasoning:
+
+> *"with `CSI_STAGE=1` the model snapshot is staged node-local … §16's 'avoid two big loads on one
+> node' is about the **load**, which staging removes — not about co-residency."*
+
+**That is wrong, and it is now measured.** Per-arm wall time, from the arms' own `DONE.json`:
+
+| node | context | s/arm |
+|---|---|---|
+| **n-301** | job 914043 alone | **238** (168, 238, 251, 238, 238, 238, 236) |
+| **n-305** | 8 jobs resident | **1469** — and degrading |
+
+**6.2× slower**, and worsening within a job: `KO_AXIS_ANCHOR` took 1469 s; the next arm, `KO_SHUF0`,
+started 23:13:43 and was **still running 50 minutes later**. R9's argument was about *load time*, which
+staging genuinely does fix. The penalty is on **every arm's inference**, which staging does not touch,
+and I generalised from the half I had measured to the half I had not.
+
+## The diagnosis, and it is not simply "my own jobs"
+
+```
+n-305: CPUAlloc 48/112, CPULoad 7.88        <- NOT cpu-bound
+       AllocMem 399 G of 1546 G, FREE_MEM 128 G   <- the lowest of any 3090 node
+       8 jobs resident: my 4 + galbarak2 x3 + nadaveisen x1
+n-301: FREE_MEM 1322 G, 60 idle CPUs        <- where 238 s/arm was measured
+```
+
+CPU was not saturated and memory was not exhausted, but **free memory on n-305 was 128 G against
+n-301's 1322 G** — page-cache pressure from many processes mmap-ing large models at once, which is
+exactly the access pattern DCS-CSI-092 introduced staging to protect. Staging fixed it *for the copy*;
+it does not fix it for concurrent readers of the copy.
+
+**It was not only my four jobs.** Four other users' jobs shared the node. So the rule R9 should have
+written is not "do not co-locate your own jobs" but **"check the node's free memory before trusting a
+per-arm estimate"** — the node's *total* occupancy is the variable, and none of it is under my control.
+
+## The projection that forced the decision
+
+Each of the four had finished **exactly one arm in two hours**. Job 914044 (group B, 11 arms) had a
+`--time` of **03:00:00** with 1 hour left and needed 10 more arms at 25–50 min each: **4–8 hours**.
+914045/46/47 (12 arms each, 4 h limits) were in the same position. They would have been **killed
+mid-family**, having produced roughly 5 of 47 arms between them.
+
+**Cancelled** (`scancel 914044 914045 914046 914047`) and relaunched **one job per node**, on the four
+3090 nodes with the most free memory, with `--time=06:00:00`:
+
+```
+914417  B    --nodelist=n-301
+914418  I 1  --nodelist=n-302
+914419  I 2  --nodelist=n-304
+914420  K    --nodelist=n-350
+blob 11d2c617…  porcelain []   <- the PR-CSI-007 witness, printed at submission as its VOID condition requires
+```
+
+A single-node `--nodelist` is what §16 permits; the multi-node form is prohibited because SLURM then
+waits for all of them.
+
+## What this costs, and the one thing to be careful about
+
+**Nothing scientific.** No number was read, no arm was corrupted, and the 12 arms already on disk keep
+their `DONE.json` and their original job ids. The cost is ~2 GPU-hours of contended compute and the
+re-running of 5 arms.
+
+**The care point:** the re-run recreates the same **tags** under new job ids, so
+`csi1_button_validation_KO_AXIS_ANCHOR_*` will exist twice. That is precisely the S-104 / S-127
+duplicate-tag hazard, and it is handled the way this sprint already handles it — the frozen read
+filters on `--require-slurm-job`, and `dcs_csi_pr005_gate0.py`-style resolution **asserts the filter
+leaves exactly one candidate** rather than picking the newest.
+
+**So the read must list 914043, 914048 and the four NEW ids — and must NOT list 914044-914047.** The
+cancelled jobs' arms are real, complete and correctly written; they are simply not part of this family
+any more, and admitting them would mix a contended-node partial group into a family the preregistration
+requires to be one complete set.
+
+## The honest shape of this
+
+R9 was an adversarial review whose whole purpose was to catch unjustified assumptions, and it
+introduced one: it took a measurement about staging and extended it to a claim about co-residency
+without measuring co-residency. It then stated that extension as a finding. **The correction cost two
+GPU-hours and no science**, which is the cheap end of this class of error — but it is the same shape as
+the others recorded today: *a conclusion reached by argument where a measurement was available.*
