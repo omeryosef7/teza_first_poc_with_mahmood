@@ -11048,3 +11048,80 @@ confirmed zero reads.
 
 The necessity family extension remains blocked on PR-CSI-003-A's own VOID condition 6 (S-142), so the
 necessity floor stays **0.1111** and S-133's rank 1 of 9 is still the last word in that direction.
+
+---
+
+# S-145 — **R10 MAJOR-10 closed**, and mutation-testing the fix immediately found a residual the fix did not cover. A quiet tick: PR-CSI-007 is at 7 of 55 arms and its numbers stay sealed
+
+The last item I explicitly left undone in S-141 (*"a two-line tightening and it is not done"*).
+
+## The defect
+
+`scripts/gates/dcs_csi_pr005_gate0.py` gate 0(a) is the **architecture pin** — it asserts every arm
+admitted to the read ran on an RTX 3090. It resolved each stage-1 arm and, on failure,
+`if d is None: continue` — silently dropping it — then checked `assert n >= 50` against an expected
+**54**. So **up to four arms could go entirely un-pinned** and the gate would still print
+*"PASS -- every admitted run is RTX 3090"*. **The point of an architecture pin is that EVERY admitted
+arm is checked; "most of them" is not a pin.**
+
+Fixed: unresolved arms are collected and **named**, the expected count is derived and asserted exactly,
+and the failure message says how many arms went unchecked.
+
+## And then the mutation test found a residual in my own fix
+
+Mutation 3 (point stage-1 at a job that produced only some of them) fails correctly:
+
+```
+inspected 43 run dirs (36 new + 7 stage-1); expected 54
+UNRESOLVED stage-1 arms: ['KO_AXIS_ANCHOR', 'KO_RAND0', 'KO_RAND1', ...]
+AssertionError: inspected 43, expected 54 -- 11 arm(s) went unchecked
+```
+
+But mutation 2 (delete four arms from `STAGE1_ARMS`) **passed**:
+
+```
+inspected 50 run dirs (36 new + 14 stage-1); expected 50      <- and it PASSED
+```
+
+**`N_EXPECTED` is derived from the very list that shrank**, so the count can never catch a shrunken
+list. That is the same defect class as R10's MAJOR-5 — a size printed rather than pinned — surviving
+inside the fix for a different member of the same family. `NEW_ARMS` already had a literal pin
+(`N_NEW_ARMS = 36`, added in S-141); `STAGE1_ARMS` did not, because nobody had mutated it.
+
+Added `N_STAGE1_ARMS = 18` with a uniqueness check. Mutation 2 now fails:
+
+```
+AssertionError: STAGE1_ARMS holds 14 arms, expected 18 -- this gate would 'pass' having pinned a
+SMALLER family than the preregistered one
+```
+
+**The general lesson, third instance today:** a derived expectation is not an expectation. If the
+quantity you assert against is computed from the thing you are checking, the assertion is decorative.
+S-134 found it as a gate passing on zero rows; R10 found it as a size printed and not compared; here
+it is a count derived from the list it is meant to bound.
+
+## Baseline verdicts unchanged
+
+```
+GATE 0(c) PASS   GATE 0(a) PASS -- every admitted run is RTX 3090   GATE 0(b) PASS   GATE 0(f) FAIL
+```
+
+**0(f)'s FAIL is correct and is not a regression.** It asserts the three output paths do not exist,
+and PR-CSI-005's read has since created them. **A once-only gate necessarily fails after its read has
+been performed** — preserved exactly rather than "fixed", as S-141 already recorded.
+
+## Status, and nothing else advanced this tick on purpose
+
+**PR-CSI-007**: job 914043 (group A) COMPLETED in 29m44s on n-301, `GROUP A DONE rc=0`, `failures: {}`,
+**7 arms at 230/230 rows each**, and its knockout-liveness block is healthy —
+`frac_rows_scope_live 1.0`, `total_decode_edits 0`, `scope_violations {}`, i.e. the readout forward is
+knockout-free exactly as the contract requires. Jobs 914044-914048 continue on n-305 at ~59 min.
+**7 of 55 arms FINISHED by `DONE.json`** — counted that way, not by directory, which is S-137's
+near-miss and is now how every count in this sprint is taken.
+
+**Its numbers have not been read and will not be** until all arms land: `runargs/dcs_csi_pr007_read.txt`
+is performed once, and its Part 2 clause (e) prohibits an interim read by name.
+
+The **necessity family extension** stays blocked on PR-CSI-003-A's own VOID condition 6 (S-142). Three
+resolutions are costed there; none is taken, because the one I would choose amends a rule of mine that
+has just fired against me.

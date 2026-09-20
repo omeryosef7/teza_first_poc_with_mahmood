@@ -107,14 +107,36 @@ for a in NEW_ARMS:
     d = newest(a, NEW_JOBS)
     g = json.load(open(os.path.join(d, "RUNMETA.json"))).get("gpu")
     gpus[g] = gpus.get(g, 0) + 1; n += 1
+# REVIEW R10 MAJOR-10. `if d is None: continue` silently dropped any stage-1 arm the filter failed to
+# resolve, and `assert n >= 50` against an expected 54 tolerated losing FOUR of them -- so up to four
+# arms could have gone un-pinned to an architecture while the gate still printed PASS. The point of an
+# architecture pin is that EVERY admitted arm is checked; "most of them" is not a pin.
+missing_stage1 = []
 for a in STAGE1_ARMS:
     d = newest(a, STAGE1_JOBS)
     if d is None:
+        missing_stage1.append(a)
         continue
     g = json.load(open(os.path.join(d, "RUNMETA.json"))).get("gpu")
     gpus[g] = gpus.get(g, 0) + 1; n += 1
-assert n >= 50, "only %d run dirs inspected -- selector broken, not a result" % n
-print("  inspected %d run dirs (36 new + %d stage-1)" % (n, n - 36))
+# The count alone cannot catch a SHRUNKEN arm list, because N_EXPECTED is derived from that same
+# list: mutation "drop 4 stage-1 arms" gave "inspected 50, expected 50" and passed. The list is the
+# specification, so it is pinned to a literal too -- the same treatment NEW_ARMS already gets.
+N_STAGE1_ARMS = 18
+assert len(STAGE1_ARMS) == N_STAGE1_ARMS, (
+    "STAGE1_ARMS holds %d arms, expected %d -- this gate would 'pass' having pinned a SMALLER family "
+    "than the preregistered one (REVIEW R10 MAJOR-10, residual found by mutation)"
+    % (len(STAGE1_ARMS), N_STAGE1_ARMS))
+assert len(set(STAGE1_ARMS)) == N_STAGE1_ARMS, "STAGE1_ARMS contains duplicates"
+N_EXPECTED = len(NEW_ARMS) + len(STAGE1_ARMS)
+print("  inspected %d run dirs (%d new + %d stage-1); expected %d"
+      % (n, len(NEW_ARMS), n - len(NEW_ARMS), N_EXPECTED))
+if missing_stage1:
+    print("     UNRESOLVED stage-1 arms (each one is an arm nothing pinned): %s" % missing_stage1)
+assert n == N_EXPECTED, (
+    "inspected %d run dirs, expected %d -- %d arm(s) went unchecked and an architecture pin that "
+    "skips arms is not a pin (REVIEW R10 MAJOR-10). Unresolved: %s"
+    % (n, N_EXPECTED, N_EXPECTED - n, missing_stage1))
 for g, c in sorted(gpus.items(), key=lambda kv: -kv[1]):
     print("     %-34r %d" % (g, c))
 ok_a = set(gpus) == {"NVIDIA GeForce RTX 3090"}
