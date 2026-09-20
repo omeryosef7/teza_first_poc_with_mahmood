@@ -10200,3 +10200,144 @@ to be new, and they were.
 `scripts/gates/dcs_csi_pr005_gate0.py` and `scripts/gates/dcs_csi_pr005_primary_X.py` are committed as
 tooling, not left in a scratch directory: both print the **size** of every comparison beside its verdict
 and assert that size first, per S-134.
+
+---
+
+# S-138 — **THE AXIS SWAP. Basket's axis rescues BUTTON 32 ranks better than button's own axis does (4 of 47 vs 36 of 47).** The probe decides, not the recipient — so **C1 is SUPPORTED and the STATE hypothesis is REFUTED**. My preregistered prediction gets the cell right and the mechanism wrong, and the pre-fixed binary threshold is a poor instrument for what happened
+
+Jobs 913190 / 913191 / 913192 (3 arms, ~0.5 GPU-h) plus the staging anchor 913232. Part 3's gate block
+passed in full; Part 4 ran **once**, all three cells, both directions together, as VOID conditions 9
+and 11 require.
+
+## The measurement, with BOTH ranks computed inside ONE report on ONE key set
+
+Comparing "swap rank 4" against "native rank 36" **across two different reads** would be the S-125
+key-set trap — the reads carry different `--arms` lists and need not intersect to the same keys. So the
+recipient's own native `KO_AXIS` was re-ranked **inside the swap report itself**:
+
+| cell | swap arm | swap rank | recipient's OWN axis | native rank | n_dom | keys |
+|---|---|---|---|---|---|---|
+| **A basket→BUTTON, TRAIN** | **+0.00150** | **4 of 47** | −0.00014 | **36 of 47** | 67 | 626 |
+| **B button→BASKET, TRAIN** | +0.00090 | 13 of 47 | +0.00265 | 1 of 47 | 67 | 641 |
+| **B button→BASKET, VALIDATION** | **+0.00224** | **2 of 47** | +0.00400 | 1 of 47 | 23 | 215 |
+
+All three cells: `manipulation_check` **true**, `identity_check` **true**, `instrument_capable`
+**true**. The instrument can move installation in every cell (`KO_FULL − KO` = +0.109 / +0.121 /
++0.104), so no cell's null is a headroom artifact.
+
+**Direction A is the result.** Basket's axis, transplanted into button's knockout, recovers
+**+0.00150** with a CI excluding zero (`[+0.00047, +0.00256]`, p = 0.007, 44 of 67 domains positive) and
+ranks **4 of 47**. Button's *own* axis, on the identical rows and the identical 46 controls, recovers
+**−0.00014** and ranks **36 of 47**. **A foreign direction rescues button's knockout 32 ranks better
+than the direction fitted on button itself.**
+
+## What this does to the two surviving hypotheses
+
+**The STATE hypothesis — "basket's representation is more rescuable; the RECIPIENT decides" — is
+REFUTED.** It predicts that a direction transplanted *into* button lands wherever button's own axis
+lands, because the recipient's state is the binding constraint. Within one recipient, on one key set,
+the two axes differ by **32 ranks and a sign**. The recipient does not decide.
+
+**C1 — "there is a shared installation direction and basket's probe simply estimates it better" — is
+SUPPORTED, and by an argument the design makes available only now.** The probe ordering is preserved
+**in both recipients**:
+
+```
+inside BUTTON :  basket's axis  rank  4   >>  button's axis  rank 36
+inside BASKET :  basket's axis  rank  1    >   button's axis  rank 13 (TRAIN) / 2 (VALIDATION)
+```
+
+Basket's axis is the better rescuer **of button's knockout and of basket's own**. That is what "a
+better estimate of a shared direction" predicts, and it is not what "the recipient decides" predicts.
+
+## My prediction: the cell is right, the mechanism is wrong
+
+`prediction_fixed_before_data` was **CELL 4 — nothing transfers, both survivors die**, second CELL 2.
+
+By the pre-fixed rule (**HELPS ≡ rank ≤ 2 of 47**), read on TRAIN for both directions (the matched
+comparison), neither direction helps: A is rank 4, B is rank 13. **That is CELL 4, and it is the cell I
+predicted.** But CELL 4's preregistered *meaning* was *"C1 refuted — a shared direction estimated
+better should have transferred."* **It did transfer.** It moved button from rank 36 to rank 4 and from
+a null to a significant positive. It simply did not clear a bar set at rank ≤ 2.
+
+**So the binary threshold I fixed in advance is a poor instrument for what actually happened**, and I am
+recording that rather than quietly reading the effect sizes instead. The threshold was chosen to match
+the one that produced basket's pass and button's failure; applied here it discards the largest, most
+informative contrast in the experiment. **It does not get moved after the fact** — the cell assignment
+stands as CELL 4 on TRAIN — but the entry that cites it must carry the rank-36→4 contrast beside it or
+it is misleading by omission.
+
+## And direction B does not give one answer
+
+**TRAIN says rank 13 (does not help); VALIDATION says rank 2 (HELPS).** The 2×2 assumed one verdict per
+direction and direction B **splits across splits**. I am not resolving that by preference, and the
+preference would matter: the dissociation analysis's own §13 holds that **held-out is the strongest
+evidence in the set**, which would favour the VALIDATION reading and put the experiment in **CELL 2**
+(C1 refuted, state confirmed) — the opposite of what direction A shows.
+
+Three things make me report the split rather than pick:
+
+1. **VALIDATION is n = 23 domains and 215 keys** against TRAIN's 67 and 641. The held-out-is-stronger
+   principle is about *generalisation*, not about *power*, and at rank 2 of 47 with 23 domains the
+   ordering is one control away from rank 3.
+2. **Direction B is the weaker test by construction.** Basket's native axis already ranks 1 of 47;
+   there is almost no room for a foreign axis to demonstrate anything, and both TRAIN and VALIDATION
+   have the swap *below* the native. Direction A, where the native is at 36, is where a transplant can
+   actually show its hand.
+3. Reading direction B on the split that suits the conclusion is exactly the move PR-CSI-006's binding
+   rules were written to prevent.
+
+## What may NOT be said
+
+That the swap "proves" a shared direction — **no cell of the 2×2 was cleanly attained**, direction B
+contradicts itself across splits, and direction A misses its own preregistered bar. That C1 is
+established — it is **supported**, by one direction, on TRAIN, at rank 4 of 47 (p = 0.085, which does
+not clear 0.05). That basket's axis is "the" installation direction — it moves **+0.00150 against a
+whole-state +0.10938**, i.e. **1.4 %** of what the whole clean state recovers in button, and 98.6 % is
+elsewhere. And nothing here touches the **necessity** direction, which has only ever been run on basket.
+
+## What it does settle, narrowly and for the first time
+
+**The dissociation is a property of the PROBE, not of the recipient's representation.** Six explanations
+were killed by measurement in S-128; PR-CSI-005 then showed the dissociation survives at matched family
+size; this shows the surviving explanation is the one about the *estimate* rather than the one about the
+*state*. That is the first positive statement about the mechanism of the dissociation this sprint has
+been able to make, and it was bought with three arms and half a GPU-hour.
+
+## Gate 0g, resolved by measurement rather than by widening
+
+The gate initially FAILED three ways and all three are recorded because two were my own defects:
+
+1. **`--rescue-norm-match-key`** — a defect **in the preregistration**, which asserts "exactly 4
+   differing flags" while its own central argument (130 lines earlier) is that the native arm carries
+   *no* norm-match flag because basis == norm-basis is the identity. Discharged by the staging anchor
+   below, which measured that identity rather than assuming it.
+2. **`--model`** — the swap arms loaded `/tmp/dcs_snap_omeryosef/<rev>`, the validation native loaded
+   the shared hub path, same revision. I checked whether S-134's gate 0d already covered this: **it did
+   not** — both of *its* arms used the staged path. Genuinely unmeasured, so one arm was bought.
+3. **`basket/train`'s native resolved to the L20 twin** — a defect **in my gate script**: I took the
+   newest `KO_AXIS` without a layer filter, in code written *after* S-127 recorded that exact hazard.
+   Fixed with a documented `layer=` filter.
+
+**The staging anchor (job 913232, 230 rows, 0.08 GPU-h) settles both (1) and (2) at once:**
+
+```
+A STAGEANCHOR_AXIS  /tmp/dcs_snap_omeryosef/0e9e39f...   normkey='cand_rank1'
+B KO_AXIS           /home/sharifm/.../snapshots/0e9e39f... normkey=''
+230 common rescue-fired rows; all six readout fields max|diff| = 0.0, nonzero_rows = 0
+```
+
+Node-local staging is **inert**, and — for free — `normkey='cand_rank1'` versus no norm-match flag is
+**bit-identically the identity** when the basis *is* `cand_rank1`. The preregistration's central design
+argument is now measured, not analytic.
+
+## Gate 0f, the one that mattered most
+
+```
+cos(swap key, recipient cand_rank1) = 0.5569 in BOTH directions   (expect 0.5569 +/- 0.0002)
+n_degenerate = 0 on all 1569 admitted rows
+```
+
+Had that cosine come back ~1.0 the wrong tensor was copied and the swap arm would be a **relabelled
+native arm** — a clean, beautiful, meaningless result. It reproduces the freeze-time measurement to four
+decimals.

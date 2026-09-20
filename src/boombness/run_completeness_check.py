@@ -152,6 +152,22 @@ KNOWN_ZERO = {
 }
 
 KNOWN_SHORT = {
+    "csi1_basket_train_XSWAP_FROM_BUTTON_20260920_164831_752290":
+        "DCS-CSI-138: PR-CSI-006 axis swap, direction B (button's axis into basket's knockout), TRAIN. 1 "
+        "row of 670 REFUSED by the norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5) with "
+        "'REFUSING to patch: 1 of 28 positions are norm-match DEGENERATE': the FOREIGN direction was "
+        "near-orthogonal to the clean->KO delta at one position, so rescaling its projection would have "
+        "amplified float noise into an arbitrary QR-gauge direction. This is the expected RTX 3090 "
+        "behaviour recorded in DCS-CSI-121. MEASURED against "
+        "csi1_basket_train_KO_AXIS_20260916_004649_1768788, the 670-row native arm on the identical "
+        "population: the 1 lost row falls in 1 domain (printing_works), 1 row of that domain's 10, and "
+        "both analysers intersect keys across all 53 arms before averaging -- the committed read "
+        "intersected to 641 keys / 67 domains, so every arm is compared on the same key set regardless. "
+        "Within PR-CSI-006's declared --allow-short 4. NOTE: the automatic documenter REFUSED this run "
+        "because no full-row arm shares its tag (a swap arm is unique by construction), so it was "
+        "measured by hand against the native arm, which is why the reference is named explicitly here. "
+        "Ledger: n_attempted 670, n_succeeded 669, n_failed 1. Failing prompt_ids (complete): "
+        "c5d4c50a3c7e997f.",
     "csi1_button_train_KO_SHUF9_20260920_160010_927085":
         "DCS-CSI-133: PR-CSI-005 button L18 family. 1 row(s) of 670 REFUSED by the sprint's own "
         "norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5) with 'REFUSING to patch: N of 28 "
