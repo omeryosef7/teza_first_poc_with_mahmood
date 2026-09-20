@@ -459,3 +459,293 @@ returns **empty** and `grep -c '^| D'` confirms every pre-existing row is still 
 (2) `runargs/dcs_csi_pr003_read.txt` lines 59–61 state the necessity floor as `9 controls => 1/10 = 0.10`;
 the analyser computes **8 controls, floor 0.1111** (AM-8a). Both are **descriptions**, not computations,
 so **no committed number is affected** by either.
+
+---
+---
+
+# APPENDED 2026-09-20 (third block) — sprint entries S-137 … S-143 and REVIEW R10
+
+**Nothing above this line has been altered, reworded or deleted.** Same additive convention as the
+first two appended blocks. Verified mechanically before writing: the **461 lines above are
+byte-identical** to the file as it stood at md5 `e0b0074baf990b89977f9f03565a0b5b` (80 923 B), which
+is the file as committed at `ad1288d6` (sprint entry **S-135**) — this block closes the gap
+**S-137, S-138, REVIEW R10, S-139, S-141, S-142, S-143**. The identity is re-checked by `diff` after
+this append.
+
+## READ THIS FIRST — the one thing this block exists to get right
+
+**S-138 was committed with the headline *"C1 is SUPPORTED and the STATE hypothesis is REFUTED"*.
+REVIEW R10 WITHDREW that headline as BLOCKER-1.** It is recorded here **only** as `AM-10`, an
+explicitly-marked WITHDRAWN amendment. **It does not appear as a live claim row anywhere in this
+file and must never be entered as one.** What the claim row (`D25`) records instead is the
+**preregistration's own output**: **CELL 4 on TRAIN, direction B NOT REPLICATED, C1 REFUTED by the
+fixed rule.** The rank-36 → rank-4 contrast and the probe main effect are real and are recorded as
+**SECONDARY, UNPREREGISTERED** observations (`D25` secondary block and `D26`), which is what they
+always were.
+
+**Measured before writing, so it is a fact rather than an assumption:** `grep -ic "STATE hypothesis"`
+and `grep -ic "C1 is SUPPORTED"` over the 461 pre-existing lines both return **0**. The withdrawn
+headline had never entered this file. This block does not remove it; it forecloses it.
+
+Every number below was read by me out of the named artifact with `json.load`, recomputed by me from
+the artifact's own `domain_means` / `controls` block, recomputed from `results.jsonl`, or produced by
+running the committed script verbatim from the frozen read file — with the command given in the
+command block at the end. Numbers that live only inside `reports/reviews/attack_the-swap-conclusion.md`
+(the R10 lens artifact) — the factorial decomposition, the bootstrap Δz CIs, the cosine geometry and
+the split-fragility resampling — are **labelled `[READ, not reproduced]`** wherever they appear.
+Nothing here is taken from prose in the sprint log.
+
+**PR-CSI-007 is RUNNING** (button L18 on the held-out validation split, the first button-L18 cell that
+has ever existed off TRAIN). Its read is frozen in `runargs/dcs_csi_pr007_read.txt` and is performed
+**ONCE**, after all arms land. **No number from its run directories is read, reported or implied
+anywhere in this block**, and every TRAIN-only caveat below is written as if it will never land.
+
+---
+
+## A6. NEW ROWS — append to section A
+
+| # | claim | statistic (with CI and n_domains) | population / split / codeword / layer | caveats | source |
+|---|---|---|---|---|---|
+| D23 | **PR-CSI-005: button at L18 with 46 controls DOES NOT PASS — and for the first time button's failure is CERTIFIABLE rather than floor-limited.** The preregistered primary statistic landed inside a predictive interval fixed before the data, so the falsifier fired and the dissociation survived it | **Candidate** `KO_AXIS − KO` = **−0.00014**, ci95 **[−0.00111, +0.00081]**, **36 pos / 31 neg / 0 tied of 67 domains**, p = 0.7717. **RANK 36 of 47**, `n_controls` **46**, `rank_p` **0.766**, attainable floor **0.0213**. PRIMARY `candidate − comparator` (`KO_ORTH`) = **+0.00079** [−0.00021, +0.00178], 42/25, p = 0.1299. Identity `KO_SELF − KO` = −0.00075 [−0.00188, +0.00037], 32/35, p = 0.202 — inert. Manipulation `KO − BASE` = **−0.20682** [−0.22720, −0.18736], 0 pos / 67 neg. Positive control `KO_FULL − KO` = **+0.10938** [+0.09633, +0.12341], **67 pos / 0 neg**. `recovery_fraction_candidate_of_full` = **−0.0013** [−0.0106, +0.0073]. **PRIMARY STATISTIC, the only unread quantity**: `X` = exceedances among the **36 blind, never-read** controls. Recomputed by me from the report's own `controls` block: the 10 stage-1 controls contribute **7** exceedances (`KO_RAND1, KO_RAND2, KO_RAND3, KO_RAND5, KO_SHUF0, KO_SHUF1, KO_SHUF2`) and the 36 blind controls contribute **X = 28**; total 35 ⇒ **R47 = 36**, which reproduces the analyser's reported rank exactly. Against the pre-fixed `X ~ BetaBinomial(36, 7.5, 3.5)` — `E[X] = 24.5455`, sd 5.5307, median 25, **95 % predictive [13, 34]** — **X = 28 is INSIDE**. **No falsification threshold fired**: `X ≤ 12` (P = 2.297e−02) not fired, `X ≤ 4` (P = 2.055e−04) not fired, `X = 0` (P = 6.461e−07) not fired | **626 keys / 67 TRAIN domains**, 53 arms, **button**, **L18**, site `rel-6`, `semantic_one_word`, cell C, dose 4. `resolved_rescue_layers` = 18 on every rescue arm — measured per arm, not assumed. `VOID` **[]**; gates `manipulation_check` / `identity_check` / `instrument_capable` all **true** | **TRAIN ONLY**, and this is the caveat that governs the row: **no button-L18 VALIDATION arm existed when this was read**, and the dissociation analysis's own §13 holds held-out to be the strongest evidence in the set. **PR-CSI-007 is running to close exactly this gap and its result is NOT IN THIS FILE.** The verdict is a **negative** and is certified as one: independent re-derivation (`DCS_CSI_REDERIVE_button_train_L18_n46.json`, 7 136 B, 627 keys) gives `certifiable_at_0.05` **true** on **all three** families — pooled **36 of 47** (floor 0.0213), random-only **17 of 23** (floor 0.0435), shuffled-only **20 of 25** (floor 0.0400), every one **DOES NOT PASS**. `specificity_all_controls_rejected` is **false**, as a null requires. **A one-rank disagreement between the two paths is recorded, not smoothed**: the primary analyser's shuffled-only read (`..._L18_shufonly.json`, 976 770 B) gives candidate **−0.00025**, **rank 19 of 25** at **651** keys, while the re-derivation gives **20 of 25** at **627** keys. It is a **key-set** difference (651 vs 627, different `--arms` lists), not a contradiction; both say DOES NOT PASS. **Leave-one-domain-out — the null is immovable**, reproduced by me by running `scripts/dcs_csi_rank_loo.py` verbatim from the frozen read file: histogram **{31:1, 32:2, 33:3, 34:6, 35:12, 36:21, 37:22}** over 67 drops, **BEST attainable rank under ANY single deletion = 31 of 47** (`printing_works`) — no deletion reaches rank 1 — candidate range **−0.00029 … +0.00003**, **66 of 67** drops negative. **A REPRODUCIBILITY FOOT-GUN FOUND WHILE VERIFYING THIS, and it is new**: the report's `domain_means` are stored **rounded to 5 dp**, and the same LOO recomputed from them gives a **different histogram** — {30:1, 32:3, 33:6, 34:6, 35:16, 36:20, 37:15}, best rank **30**, **65** of 67 negative. The verdict is unchanged in every direction, but **the LOO histogram must be taken from the script on `results.jsonl`, never from `domain_means`** (see prohibition 33) | **S-137** (`reports/DCS_CSI_SUBSPACE_button_train_L18_n46.json` 1 759 285 B, `reports/DCS_CSI_REDERIVE_button_train_L18_n46.json` 7 136 B, `reports/DCS_CSI_SUBSPACE_button_train_L18_shufonly.json` 976 770 B, prereg `configs/dcs_csi_pr005_button_L18_family.json` 58 174 B) |
+| D24 | **THE CODEWORD DISSOCIATION AT MATCHED POWER: same layer, same family size, same family composition, same procedure, same 67 TRAIN domains — basket is rank 1 of 47 and button is rank 36 of 47. It is NOT a sample-size artifact, and that is now a MEASUREMENT rather than a projection** | **basket L18 TRAIN**: candidate **+0.00264**, ci95 **[+0.00068, +0.00471]**, **44 pos / 23 neg of 67 domains**, **rank 1 of 47**, rank p **0.02128**, floor 0.0213 — **PASSES**. **basket L18 VALIDATION**: candidate **+0.00401**, ci95 **[+0.00098, +0.00775]**, **15 pos / 8 neg of 23 domains**, **rank 1 of 47**, rank p **0.02128**, floor 0.0213 — **PASSES**. **button L18 TRAIN**: candidate **−0.00014**, ci95 [−0.00111, +0.00081], **36 pos / 31 neg of 67 domains**, **rank 36 of 47**, rank p **0.766**, floor 0.0213 — **DOES NOT PASS, certified** (D23). The families are matched at the arm level, not merely at the count: **22 random (`KO_RAND0..21`) + 24 shuffled (`KO_SHUF0..23`) = 46 in every cell**, and `resolved_rescue_layers` is **18** on every rescue arm of every cell | basket L18 TRAIN **642 keys / 67 TRAIN domains**; basket L18 VALIDATION **215 keys / 23 held-out domains**; button L18 TRAIN **626 keys / 67 TRAIN domains**. All three: **L18**, site `rel-6`, `semantic_one_word`, cell C, dose 4, direction `sufficiency`, `VOID []`, all three gates true | **The matched-power comparison proper is TRAIN vs TRAIN, at 67 domains in both cells.** The basket VALIDATION cell is 23 domains and is a *held-out* strengthening, **not** part of the power match — do not quote "same 67 domains" while pointing at it. **Button has no held-out L18 cell**: the dissociation at matched power is TRAIN-only on the button side (PR-CSI-007 running; nothing from it here). The two sides are not symmetric in what they can certify: button's DOES NOT PASS is certifiable at α = 0.05 on pooled, random-only and shuffled-only, while **basket's PASS sits exactly at its attainable floor** (0.02128 vs floor 0.0213) in both splits — a pass at the floor is a pass, but it has no margin. This row removes "unequal control families" as an explanation **and nothing else**: it cannot say *why* the codewords differ, and D21's caveat 2 (basket's TRAIN rank 1 is not robust to per-domain reweighting — two of five schemes move it to rank 3 of 47, p = 0.0638) is **unaffected and still binding** | **S-137**, with **S-128**/**S-131** for the projection it replaces (`reports/DCS_CSI_SUBSPACE_button_train_L18_n46.json`, `reports/DCS_CSI_SUBSPACE_basket_train_n46.json`, `reports/DCS_CSI_SUBSPACE_basket_validation_n46.json`) |
+| D25 | **THE CROSS-CODEWORD AXIS SWAP (PR-CSI-006), recorded as its PREREGISTRATION returns it: CELL 4 on TRAIN, direction B NOT REPLICATED, and C1 REFUTED BY THE FIXED RULE.** No cell of the 2×2 was cleanly attained and no direction cleared its preregistered bar | **The rule, quoted from `configs/dcs_csi_pr006_axis_swap.json`:** `definition_of_HELPS` = *"rank 1 or 2 among 46 controls … Rank 3 of 47 is p = 0.06383 and is NOT 'helps'"*; `decision_rule/step_6` = *"If they disagree, the direction is reported as **NOT REPLICATED** and **no cell is claimed for it**"*; `cell_neither_helps` (**CELL 4**) = *"**C1 is REFUTED** — a shared direction estimated BETTER should have transferred, and did not."* **All three cells, with the swap rank AND the recipient's own native rank computed inside ONE report on ONE key set — both ranks recomputed by me from each report's own `controls` block:** **(A) basket→BUTTON, TRAIN** — swap **+0.00150** ci95 **[+0.00047, +0.00256]**, **44 pos / 23 neg of 67**, p = 0.0070, **rank 4 of 47** (rank p **0.08511**); native `KO_AXIS` **−0.00014**, **rank 36 of 47**; PRIMARY cand − comparator +0.00243 [+0.00129, +0.00362], p = 1.65e−04. **(B) button→BASKET, TRAIN** — swap **+0.00090** ci95 **[−0.00029, +0.00217]**, **39 pos / 28 neg of 67**, p = 0.1606, **rank 13 of 47** (rank p **0.2766**); native **+0.00265**, **rank 1 of 47**. **(B) button→BASKET, VALIDATION** — swap **+0.00224** ci95 **[+0.00042, +0.00430]**, **16 pos / 7 neg of 23**, p = 0.0343, **rank 2 of 47** (rank p **0.04255**); native **+0.00401**, **rank 1 of 47**. **By the fixed rule read on TRAIN for both directions: A rank 4 = NOT helps, B rank 13 = NOT helps ⇒ CELL 4 ⇒ C1 REFUTED.** B train 13 and B validation 2 **DISAGREE**, so **no cell may be claimed for direction B** and it is **NOT REPLICATED**. Every one of the three reports prints the same `VERDICT`: *"PRIMARY DOES NOT PASS … It is INSIDE the controls, not above them."* **SECONDARY, UNPREREGISTERED, and labelled as such:** the rank-36 → rank-4 contrast is real — paired `XSWAP_FROM_BASKET − KO_AXIS` on the same 67 domains and the same `KO` baseline = **+0.001644**, ci95 **[+0.000664, +0.002605]**, p2 = **0.0014**, **47 of 67 domains positive**, sign test p = 6.5e−04 `[READ, not reproduced]` | **A**: 626 keys / **67 TRAIN domains**, recipient **button**, donor basket. **B train**: 641 keys / **67 TRAIN domains**, recipient **basket**, donor button. **B validation**: 215 keys / **23 held-out domains**, recipient **basket**, donor button. All three **L18**, site `rel-6`, `semantic_one_word`, cell C, dose 4, 46 controls, `VOID []`, `manipulation_check` / `identity_check` / `instrument_capable` all **true**. Instrument live in every cell: `KO_FULL − KO` = **+0.10938** (A) / **+0.12063** (B train) / **+0.10370** (B validation) — no cell's null is a headroom artifact | **THE HEADLINE THIS EXPERIMENT WAS COMMITTED WITH IS WITHDRAWN — see AM-10, and it is not restorable by any later outcome.** The secondary contrast may **never** be quoted without the preregistration's output beside it. **The swap arm's rank p is DESCRIPTIVE, not a valid permutation p** (D27) — this applies to rank 4, rank 13 **and** rank 2 alike. **Effect size, which must travel with the contrast**: the swap moves **+0.00150** against a whole-state **+0.10938** in button, i.e. **1.4 %** of what the whole clean state recovers, and **98.6 % is elsewhere**. **Direction B is the weaker test by construction** — basket's native already ranks 1 of 47, leaving a transplant almost no room — and in **both** B cells the swap sits **below** the native. Nothing here touches the **necessity** direction, which has only ever been run on basket. **TRAIN-only on direction A**: direction A has never had a validation split, so the *"no cell is claimed if the splits disagree"* clause has never been able to bind it | **S-138**, headline **WITHDRAWN by REVIEW R10 BLOCKER-1**; see **AM-10** (`reports/DCS_CSI_SWAP_button_train_L18_from_basket_n46.json` 1 759 838 B, `reports/DCS_CSI_SWAP_basket_train_L18_from_button_n46.json` 1 766 606 B, `reports/DCS_CSI_SWAP_basket_validation_L18_from_button_n46.json` 726 250 B, and the three `DCS_CSI_SWAP_REDERIVE_*.json` twins, which reproduce ranks **4 / 13 / 2** and candidates **+0.00149 / +0.00090 / +0.00224**) |
+| D26 | **R10's FACTORIAL READ: a PROBE main effect is ESTABLISHED and replicated three times; the RECIPIENT main effect was NEVER TESTED. So "the STATE hypothesis is REFUTED" is ABSENCE OF EVIDENCE — only a PURE-state model with zero probe effect is refuted** | The 2×2 the swap design implies, both TRAIN reports carrying the **same 67 domain names** (intersection 67 of 67, so it pairs): recipient=button × probe=basket **+0.001499**, recipient=button × probe=button **−0.000145**, recipient=basket × probe=basket **+0.002649**, recipient=basket × probe=button **+0.000900**. **PROBE main effect +0.001696, ci95 [+0.000912, +0.002497], p2 < 1e−4 — ESTABLISHED.** **RECIPIENT main effect +0.001097, ci95 [−0.000569, +0.002890], p2 = 0.201 — NOT TESTED, not refuted.** **INTERACTION −0.000105, ci95 [−0.001482, +0.001230], p2 = 0.888 — flat**, which is what "both factors, additively" looks like. `|recipient| / |probe|` = **0.647**. The probe effect replicates in all three cells at near-constant magnitude: **+0.001644** [+0.00066, +0.00261] p = 0.0014 (recipient button, train, n = 67); **+0.001749** [+0.00069, +0.00288] p = 0.0007 (recipient basket, train, n = 67); **+0.001770** [+0.00024, +0.00367] p = 0.019 (recipient basket, validation, n = 23). All `[READ, not reproduced]` | 67 TRAIN domains (both button-recipient and basket-recipient train cells) and 23 VALIDATION domains; **L18** throughout; recipients button and basket; probes basket and button; `semantic_one_word`, cell C, dose 4 | **Basket is a better recipient than button for BOTH probes**, at a point estimate **65 %** of the probe effect, with a CI containing values **larger** than the probe effect. **The recipient contrast crosses button and basket, which §3.3 forbids pooling — and that cuts FOR this finding**: the experiment contains **no legitimate test of the recipient factor at all**, so "REFUTED" has no measurement standing behind it. **CORRECTED WORDING, and the only permitted form**: *"a pure-state model with no probe effect is refuted; the recipient factor is not estimated by this design."* **A state-flavoured alternative the original dichotomy did not contain (R10 MAJOR-3)**: `|cos(axis, the recipient's OWN knockout delta)|` over 670 rows is **0.056749** for basket's axis, **0.051459** for button's own axis, **0.036661** for the best control — **basket's axis fits BUTTON's own knockout delta better than button's own axis does**, which reads as *"button's probe mis-estimates a real state direction"*, a **state** reading. Not proven (alignment predicts recovery only weakly among controls, r = 0.19, n = 46) but live. **Everything in this row is UNPREREGISTERED and post-hoc**, built by a reviewer after the read | **REVIEW R10 MAJOR-1 and MAJOR-3** (`reports/reviews/attack_the-swap-conclusion.md`), over the three `DCS_CSI_SWAP_*_n46.json` reports |
+| D27 | **The swap arm is NOT exchangeable with the control family it is ranked against, so its rank p is DESCRIPTIVE rather than a valid permutation p** | `\|cos\|` **with the recipient's native axis**: over the **46 controls** min **0.0001**, median **0.0156**, **max 0.1894**; the **swap axis 0.5569** (0.556893 at full precision, reproducing gate 0f's freeze-time expectation to four decimals). The swap axis is **2.9× more aligned with the native axis than ANY control**. `torch.equal(swap_cand_from_basket, basket cand_rank1)` = **True** — it really is basket's axis. The rank test's null requires the candidate to be drawn from the control family's directional distribution; **by construction the controls are near-orthogonal to the native axis while the "foreign" axis retains 56 % of it**, and `reports/DCS_CSI_EXCHANGEABILITY_basket_train_n46.json` tests shuffled-vs-random poolability only — **nothing tests candidate-vs-family exchangeability, and by construction nothing can**. All `[READ, not reproduced]` | the 46-control family of the **button TRAIN L18** cell (67 domains, 626 keys); the same construction holds in the two basket-recipient cells | **THE REVIEWER TRIED TO TURN THIS INTO AN EXPLANATION AND FAILED — and the failure is part of the record, not a footnote.** Pearson `r(|cos| with the native axis, recovery)` over the 46 controls = **−0.027**; a linear fit extrapolated to `|cos| = 0.5569` predicts **+0.000035** against an observed **+0.001499**, a residual of **+1.95 sd**. **No trend. The alignment asymmetry does NOT explain rank 4.** So this row **weakens the inferential standing of the swap ranks without explaining them away**, and both halves must be stated together or the row is misleading in whichever direction the reader is already leaning. It governs **every rank in D25** — 4, 13 and 2 alike — and it does **not** touch the **paired** contrast `XSWAP − KO_AXIS` (+0.001644, p = 0.0014), which is a within-report domain-paired bootstrap and makes no exchangeability assumption | **REVIEW R10 MAJOR-2** (`reports/reviews/attack_the-swap-conclusion.md`), from the `.pt` files directly |
+| D28 | **The S-119 bf16 compute-capability guard and the `compute_capability` provenance field are INERT on the producer path — 230 rows bit-identical across the blob change. AND that inertness is NOT verifiable after the fact from the run directories, because `RUNMETA` does not record the blob and `git_commit` is not a valid witness of what code ran** | **Recomputed by me from `results.jsonl`, not taken from S-139**: `csi1_basket_validation_CODEANCHOR_139B_20260920_190627_488644` (job **913407**, `git_commit d515cc76`, `compute_capability 8.6`) vs `csi1_basket_validation_STAGEANCHOR_AXIS_20260920_170734_754715` (job **913232**, `git_commit 1cce381e`, `compute_capability` **absent**): **rescue-fired A = 230, B = 230, common keys = 230, A-only 0, B-only 0**, and on **all six** readout fields — `logp_concept`, `logp_codeword`, `semantic_logodds`, `p_concept`, `p_codeword`, `top1_id` — **`max|diff| = 0.000e+00` with `nonzero_rows = 0 / 230`**, each field present on 230 of 230 compared rows (non-vacuity asserted before any difference was believed, per S-134). **The provenance defect, verified and STRONGER than S-143 states**: `RUNMETA.json` carries **24 keys** on the newer anchor and **23** on the older, and **not one of them mentions a blob, hash or sha** — the set is `{args, argv, compute_capability, cuda_available, cwd, experiment, git_commit, git_dirty, gpu, hostname, output_dir, plan, python, python_executable, run_id, schema, script, seed, slurm_job_id, slurm_nodelist, start_epoch, start_ts, torch, transformers}`. At `git_commit d515cc76` the two files in question are `src/boombness/score_behavior.py` blob **`e94258bd`** and `doublespeak_causality/ds_common.py` blob **`557d8669`**, and **`compute_capability` occurs 0 times in EITHER** — yet that run's own `RUNMETA` carries `compute_capability: 8.6`. **And `git_dirty` is `None` on BOTH anchors**, not `true`: the dirty flag is not recorded either, so **nothing in the run directory witnesses the worktree state at all** | **230 rows / 23 VALIDATION domains**, basket, **L18**, `--rescue-donor clean` (the **sufficiency** path), norm-match key `cand_rank1`, staged model path. Guard located at `src/boombness/score_behavior.py` at the `dc.load_model` call site: refuses `--dtype bfloat16` when `torch.cuda.get_device_capability(0)[0] < 8`. The `compute_capability` field lives in a **different file**, `doublespeak_causality/ds_common.py` (blob **`95fb640b`** at HEAD `c146f36c`; **`557d8669`** at both `d515cc76` and `1cce381e`) | **THE MEASUREMENT STANDS; ITS PROVENANCE DOES NOT.** It is true as a statement about **those two outputs**, which is what was measured; it is **not recoverable as a statement about which code produced them**. **The inertness was measured on a SUFFICIENCY arm only** — the **necessity** path is `--rescue-donor ko`, a different branch with its own four-leg contract, and nothing has measured the new blob there (S-142(c)); reasoning from "inert there" to "inert here" is an argument about code, and this sprint has three entries about arguments about code that turned out to be wrong. **No committed number is touched**: every arm in PR-CSI-003, PR-CSI-005 and PR-CSI-006 ran under blob **`e94258bd`**; the current worktree blob is **`11d2c617`** (equal to `HEAD:src/boombness/score_behavior.py`, verified by `git hash-object`). **The tests are mostly source-text assertions** — they pass if the text is present even when the code never executes, and a guard made unreachable by an early return above it would survive most of them; R10 found the truth-table test **tautological** and S-141 **deleted and replaced** it with one that locates the guard in the AST and **executes** it (9 of 9 mutations now fail). **This limitation is not confined to this row — see AM-14, which extends it to D17 and D22** | **S-139**, corrected by **S-143**; guard test replacement **S-141** (run dirs above; `RUNMETA.json`; `git hash-object` / `git rev-parse`) |
+
+---
+
+## A7. AMENDMENTS — corrections to rows above, additive and marked
+
+Each amendment names the row, entry or claim it governs. **The original is unchanged and still
+readable.** Numbering continues from AM-9.
+
+| id | marker | governs | what changed, and why |
+|---|---|---|---|
+| **AM-10** | **WITHDRAWN** | **S-138's headline claim, as it stands in the sprint log title and in `git log` at commit `d515cc76`**: *"Basket's axis rescues BUTTON 32 ranks better than button's own axis does … **C1 is SUPPORTED and the STATE hypothesis is REFUTED**."* Also governs **D25** and any future row reaching for the swap result | **WITHDRAWN as REVIEW R10 BLOCKER-1.** The preregistration `configs/dcs_csi_pr006_axis_swap.json` returns the **opposite** conclusion under its own decision rule: `definition_of_HELPS` is **rank ≤ 2 of 47** (*"Rank 3 of 47 is p = 0.06383 and is NOT 'helps'"*); measured outcome is **A = rank 4 (NOT helps)**, **B train = rank 13 (NOT helps)**, **B validation = rank 2 (helps)**; `decision_rule/step_6` says that when the splits disagree the direction is **NOT REPLICATED and no cell is claimed for it**; read on TRAIN for both directions the cell is **CELL 4**, whose preregistered meaning is verbatim *"**C1 is REFUTED** — a shared direction estimated BETTER should have transferred, and did not."* The withdrawn headline is the **CELL 1** reading — a cell attained in **neither** direction. **THE REPLACEMENT, and the only thing this table records as the experiment's output, is `D25`: CELL 4 on TRAIN, direction B NOT REPLICATED, C1 REFUTED by the fixed rule.** **The body of S-138 was honest** — it assigns CELL 4, it says *"no cell of the 2×2 was cleanly attained"*, it says *"direction A misses its own preregistered bar"*, it reports p = 0.085 and says it does not clear 0.05, and it contains the sentence *"the threshold does not get moved after the fact"* — **and then the title moved it**, and a downstream reader, `git log` and this claim table take the title. That is the exact failure the preregistration existed to prevent, committed by the author of the preregistration, in the title of the entry that quotes it. **The rank-36 → rank-4 contrast is NOT withdrawn**; it is demoted to what it always was, a **secondary, unpreregistered** observation (D25's secondary block, D26). **S-143 records that this headline is not restorable by any outcome of PR-CSI-007.** See prohibition **29** |
+| **AM-11** | **CORRECTION (backwards)** | **S-138's own account of the direction-B split** — *"VALIDATION is n = 23 domains and 215 keys against TRAIN's 67 and 641 … at rank 2 of 47 with 23 domains the ordering is one control away from rank 3"* — and any statement anywhere that **the VALIDATION cell of direction B is the fragile one** | **It is BACKWARDS.** Measured `[READ, not reproduced]`: **TRAIN rank 13 sits in a dense pileup** — nearest control **above** the candidate **+4.0e−05** away, nearest **below** **+2.3e−05** away, **six controls within 1e−4** — and its rank under resampling of the 46 controls is **[7, 19]** (median 13). **VALIDATION rank 2 has gaps of +5.4e−04 on BOTH sides** and its rank under the same resampling is **[1, 4]** (median 2). **The TRAIN number is the fragile one.** And the two splits are **statistically indistinguishable**: `VALIDATION − TRAIN` = **+0.001336**, ci95 **[−0.000895, +0.003720]**, p2 = **0.254**, with **train/validation domain overlap = 0**. **Reporting the split rather than picking a side was right; the REASON given was wrong**, and the correct reason is that the two cannot be told apart. This does **not** rescue direction B — `decision_rule/step_6` keys on *disagreement of the cell assignments*, which stands (rank 13 is not "helps", rank 2 is), so **direction B remains NOT REPLICATED with no cell claimed**. See prohibition **32** |
+| **AM-12** | **CORRECTION (one measurement printed twice)** | **S-135 and S-138**, both of which report gate 0f as *"`cos(swap key, recipient cand_rank1)` = **0.5569 in BOTH directions**"*, and read it as two independent confirmations | **Cosine is symmetric.** `cos(a, b) ≡ cos(b, a)`, so *"0.5569 in both directions"* is **ONE measurement printed twice**, not two. The gate's cosine check is nonetheless **real and load-bearing** and is what actually caught the failure mode it was built for: R10 mutations **M3** (`key` → `cand_rank1`) and **M9** (target → 0.9999) both **killed** it. What did **not** work is the same gate's `donor_sha` anchor — **R10 BLOCKER-2**: `c["donor_sha"]` appeared only inside a `print` at `dcs_csi_pr006_gate0.py:153-154` and **was never compared**, so the gate printed **PASS** while its own printed sha disagreed with its own printed expectation in **both** cells, and mutation M1 (constants → `deadbeef…`/`cafebabe…`) still printed ALL GATES PASS. **S-141 measured that the declared constants had never been computed by anyone**: the real added-key shas are **`679c76d2d0e8fe9e`** (button) and **`b2f266d711994013`** (basket); the literals `0c397a778db933ba` / `7d4e01f5475e6b53` match **neither** the tensor sha, nor the donor file sha, nor the recipient file sha. **FIXED and mutation-verified in S-141** (compute `t16(donor)` at runtime and assert sha **and** `torch.equal`; plus a `torch.equal(swap, own)` refusal). **No committed number moved**: X = 28 did not move, and ranks **4 / 36 / 13 / 2** all reproduce from `domain_means` at ~1e−6. This is R2-M5 / S-042 / S-134's pattern for the **fourth** time, in the gate S-138 called *"the one that mattered most"* |
+| **AM-13** | **OPERATIONAL — a planned discharge that did NOT happen** | **D18**'s floor caveat, **D19**'s *"necessity cannot clear any bar at `n_controls = 8`"*, **AM-8**, and **prohibitions 24 and 26** — all of which are written as if the necessity family were about to grow | **PR-CSI-003-A's necessity family extension (4 → 24 shuffled controls) is BLOCKED by its own VOID condition 6, and was NOT LAUNCHED (S-142).** The condition, quoted from the file: *"`src/boombness/score_behavior.py` modified between arms of the same comparison. Half 1 (job 906433) and half 2 (job 912736) have already run against the current file; **the 20 new arms must run against that same [file]**."* Measured: the blob when halves 1 and 2 ran is **`e94258bd5fc44c70629e707b00504b7acac2a7b7`**; the blob now is **`11d2c61747e9401e2d2cb8f4123dd1188674d61b`** (verified by me by `git hash-object`, and equal to `HEAD:src/boombness/score_behavior.py` at `c146f36c`). The drift is **the author's own S-139 edit**, made three hours earlier. **8.7 GPU-hours were not spent** on twenty arms that would have been VOID by a condition the author wrote. **The launcher patch itself IS applied and verified** (`bash -n` OK; halves 4 and 5 yield 20 arm names, range 4..23, **no gaps, no repeats**, `subnec` reused verbatim, refusal message widened to name 1–5) — **only the launch waits**, escalated rather than self-approved, because amending a VOID condition after it fires to let one's own experiment proceed is **BLOCKER-1's exact shape one day later**. **CONSEQUENCE FOR THIS TABLE, which is the whole reason this amendment exists:** **the necessity floor remains 0.1111 at `n_controls = 8`**, AM-8's *"K ≥ 20 controls required to certify"* remains **unreachable**, and **S-133's rank 1 of 9 (D18) is still the last word in the necessity direction**. Prohibition 26's three inseparable clauses — **floor-limited, TRAIN-only, in-sample** — are not about to be dropped, and nothing in this block loosens them |
+| **AM-14** | **PROVENANCE AMENDMENT — extends S-143's correction beyond the entry that raised it** | **D17** (*"`KO_AXIS` ran post-edit, job 905990, vs `KO_AXIS_ANCHOR` ran pre-edit, job 906001"*), **D22** (*"`CODEANCHOR_R0`, job 912838, node n-350, **repo commit `dabfeb854ec6`, clean tree**"* vs *"`KO_RAND0`, job 902005, commit `bc8e77793633`, **`git_dirty = true`**"*), and **D28** | **S-143 raised this against S-139; it reaches D17 and D22 too, and I checked rather than assumed.** `RUNMETA.json` **records no blob, hash or sha field in this schema at all** — verified on four run directories spanning three of these rows. Consequences, each measured: **(a)** `csi1_button_train_CODEANCHOR_R0_20260920_135631_905054` (job 912838, D22's anchor arm) records **`git_dirty: None`**, *not* `false` — so **D22's "clean tree" is NOT witnessed by the run directory**; it was a contemporaneous check whose evidence the artifact does not carry. **(b)** `csi1_button_train_KO_RAND0_20260916_223555_2963342` (job 902005, D22's other side) **does** record `git_dirty: true`, so **the direction that would falsify a clean-tree claim is recorded while the direction that would confirm it is not** — an asymmetry worth naming. **(c)** D22's identification of the diff under test (*"`git diff bc8e77793633 -- score_behavior.py` = +474/−7 against blob `e94258bd`"*) is an inference from `git_commit` plus the worktree, exactly the inference S-143 shows is unsound. **NOTHING IS WITHDRAWN.** D17's and D22's **measurements** — 670 rows bit-identical on six fields, twice — stand as statements about **those outputs**, which is what was measured. What is corrected is the **claim about which code produced them**: it is not recoverable from the run dirs. **The fix exists and was exercised for the first time at PR-CSI-007's launch**: print `git hash-object` **and** require `git status --porcelain` to be **empty** at every submission, both now VOID conditions. **The clean-worktree half is exactly what every previous run in this project was missing** |
+
+---
+
+## D4. PROHIBITIONS ADDED 2026-09-20 (third block)
+
+Numbering continues sections D, D2 and D3. **The existing 28 prohibitions are unchanged**; 24 and 26
+are additionally governed by AM-13, and 21 and 27 by D24.
+
+29. **"C1 is SUPPORTED" / "the STATE hypothesis is REFUTED" / any CELL 1 or CELL 2 reading of
+    PR-CSI-006 / "basket's axis rescues button".** — **FORBIDDEN, and WITHDRAWN rather than merely
+    discouraged (AM-10).** The preregistration's output is: **CELL 4 on TRAIN, direction B NOT
+    REPLICATED, C1 REFUTED by the fixed rule.** The defensible sentence, and the only one:
+    *"basket's axis transplanted into button's knockout recovers +0.00150 where button's own axis
+    recovers −0.00014 on the same 67 domains and the same 46 controls — a paired difference of
+    +0.00164, ci95 [+0.00066, +0.00261], p = 0.0014 — but it ranks **4 of 47**, does **not** clear
+    its preregistered bar of rank ≤ 2, and its rank p is descriptive rather than a valid permutation
+    p."* The rank-36 → rank-4 contrast may be stated; it may **never** be stated without "CELL 4,
+    C1 refuted by the fixed rule" beside it, and it must always be labelled **secondary and
+    unpreregistered**.
+
+30. **"The state hypothesis is refuted"**, in any wording, unqualified. — **FORBIDDEN (D26).** Only a
+    **PURE**-state model with **zero** probe effect is refuted. The recipient main effect is
+    **+0.001097, ci95 [−0.000569, +0.002890], p = 0.201 — NOT TESTED**, at 65 % of the probe effect
+    with a CI containing values larger than it, and the interaction is flat (p = 0.888). The
+    recipient contrast crosses codewords, which §3.3 forbids pooling, so **the design contains no
+    legitimate test of the recipient factor at all.** Permitted form: *"a pure-state model with no
+    probe effect is refuted; the recipient factor is not estimated by this design."* And carry
+    MAJOR-3 with it: basket's axis is more aligned with **button's own** knockout delta (0.056749)
+    than button's own axis is (0.051459), which is a **state**-side reading of the same data.
+
+31. **Any swap rank p quoted as a permutation p, or any swap rank quoted as if the candidate were
+    exchangeable with its controls.** — **FORBIDDEN (D27).** The swap axis retains `|cos| = 0.5569`
+    with the native axis where **no control exceeds 0.1894**. Say **descriptive**. And carry the
+    other half: the reviewer **tried** to convert the alignment into an explanation and **failed**
+    (`r = −0.027`, fit predicts +0.000035 against an observed +0.001499, residual +1.95 sd) — the
+    asymmetry is an assumption violation, **not** an explanation of rank 4.
+
+32. **"The VALIDATION cell of direction B is the fragile one" / "rank 2 of 47 is one control away
+    from rank 3".** — **FORBIDDEN, BACKWARDS (AM-11).** TRAIN rank 13 sits in a pileup of six
+    controls within 1e−4 and resamples to **[7, 19]**; VALIDATION rank 2 has **+5.4e−04** gaps both
+    sides and resamples to **[1, 4]**. The two splits are **statistically indistinguishable**
+    (+0.001336, ci95 [−0.000895, +0.003720], p = 0.254). Report the split; give **this** reason.
+
+33. **Any leave-one-domain-out histogram, LOO rank range or LOO sign count computed from a report's
+    `domain_means` block.** — **FORBIDDEN.** `domain_means` is stored **rounded to 5 dp**, and at
+    these effect sizes (1e−4) the rounding moves the histogram: button L18 n46 gives
+    **{31:1, 32:2, 33:3, 34:6, 35:12, 36:21, 37:22}** with best rank **31** and 66 of 67 negative
+    from `scripts/dcs_csi_rank_loo.py` on `results.jsonl`, against
+    **{30:1, 32:3, 33:6, 34:6, 35:16, 36:20, 37:15}** with best rank **30** and 65 of 67 negative
+    from `domain_means`. **The verdict is unchanged in both** — no deletion approaches rank 1 — but
+    a histogram quoted from the wrong source is a number nobody can reproduce. Run the committed
+    script; cite the command.
+
+---
+
+## AUDIT — every existing row re-checked against S-137 … S-143 and REVIEW R10
+
+Checked: **D1–D22, E1–E2, C1–C4, AM-1–AM-9, prohibitions 1–28.** Verdicts, with the entry that now
+governs each. **Rows not listed were checked and are UNAFFECTED.**
+
+| row | verdict | note |
+|---|---|---|
+| D1, D3, D4, D5, D6, D7, D8 | **UNAFFECTED** | nothing in S-137…S-143 touches the knockout effect size, the QPROBE validation figure, sentence-level generalisation, the behavioural endpoint, cross-architecture decoding, the button run's mechanics or the axis build's bit-reproducibility |
+| **D2** | **UNAFFECTED, and load-bearing for a THIRD time** | the L18/L20 ρ plateau (button 0.5931/0.5935, basket 0.6525/0.6512) is what makes **D24's** shared-layer L18 comparison and **D25's** cross-codeword transplant fair rather than handicapped. Quote D2 whenever D24 or D25 is quoted |
+| D9, D10, D11 | **UNAFFECTED** | all three are button position/linearity results at **L20**; this block adds no position-level measurement |
+| **D12, D19, D20** | **UNAFFECTED; basket's cells independently RE-VERIFIED at n46** | I re-read both basket L18 n46 artifacts for **D24** and they reproduce exactly: TRAIN **+0.00264** [+0.00068, +0.00471], 44/23 of 67, **rank 1 of 47**, rank p 0.02128, 642 keys; VALIDATION **+0.00401** [+0.00098, +0.00775], 15/8 of 23, **rank 1 of 47**, rank p 0.02128, 215 keys. D12 continues to carry AM-2, AM-4, AM-5 and AM-7 |
+| **D13** | **STRENGTHENED; its CERTIFICATION caveat is DISCHARGED; superseded in family size** | D13 records button at L18 as **rank 8 of 11** with candidate **−0.00027** at **658 keys**, and caveats *"Family of 10, floor 0.0909: this … could **not** have certified a pass."* **D23 supersedes that read at 46 controls**: candidate **−0.00014**, **rank 36 of 47**, floor **0.0213**, **626 keys**, and `certifiable_at_0.05` **true** on pooled, random-only **and** shuffled-only. The candidate moves −0.00027 → −0.00014 on a **different key set and a different arm list** — a key-set difference of the S-125 class, **not a disagreement**; quote each figure with its own key count and family size and never mix them. D13's headline (the dissociation is not explained by the layer) is **strengthened**. **D13's *"TRAIN only — button has no held-out L18 arms"* caveat STILL STANDS and is NOT discharged** |
+| **D14, D15** | **NOT contradicted; D15's button-L18 cell is superseded in family size** | D15's 2×2 quotes button L18 TRAIN as *"rank 8 of 11, cand −0.00027"* — the **10-control** read. The governing read is now **D23/D24's 46-control** cell: **rank 36 of 47, cand −0.00014, certified**. **The verdict does not move** (inside its controls at both layers, further inside at L18) and D15's claim is unchanged; only the family size, floor and key set are superseded. D15 also continues to carry **AM-7** (its VALIDATION cell quotes the superseded n30 read) and S-127's *refit-not-transported* wording correction |
+| **D16, D18** | **NOT contradicted; governed by AM-13** | D18's *"FLOOR-LIMITED BY DESIGN"*, `n_controls = 8`, `rank_p_floor = 0.1111`, TRAIN-only and in-sample caveats are **not about to be lifted**: PR-CSI-003-A's 4 → 24 extension is **BLOCKED by VOID condition 6 and NOT LAUNCHED** (S-142). **S-133's rank 1 of 9 remains the last word in the necessity direction.** D16 continues to carry AM-8 |
+| **D17** | **NOT contradicted; governed by AM-14** | D17's 670-row bit-identity across jobs 905990 / 906001 **stands as a statement about those outputs**. What is corrected is its provenance framing: `RUNMETA` records **no blob**, and `git_commit` is not a witness of what code ran (D28, AM-14). D17's scope limit — same-node determinism — is untouched |
+| **D21** | **STRENGTHENED on its headline; its surviving-explanation caveat is now DIRECTLY TESTED and the result CUTS AGAINST the way that caveat reads** | **(a) Strengthened**: D21 refuted "unequal control families" by *projection and matched-subset argument*; **D24 replaces the projection with a measurement at the matched size the objection demanded** — 46 controls of identical composition in every cell, basket **1 of 47** vs button **36 of 47**, same layer, same 67 TRAIN domains. **(b) The tension, stated rather than smoothed**: D21 names **exactly one survivor, C1 — *"basket simply has a better probe"*** — as the residual explanation. PR-CSI-006 was built to test C1, and **by the preregistration's own decision rule it returns C1 REFUTED (CELL 4 on train, direction B NOT REPLICATED)** — AM-10, D25. What *is* established is a **probe main effect** (+0.001696, p < 1e−4, D26), which is C1-flavoured but is **secondary and unpreregistered**, and R10's MAJOR-3 supplies a **state**-flavoured alternative the dichotomy did not contain. **So D21's C1 caveat must now be read with D25, D26 and prohibitions 29–31, and must not be quoted as though C1 were still the unexamined survivor.** **(c)** D21's caveats 1 (the TRAIN own-layer cell is the weakest evidence in the set) and 2 (basket's TRAIN rank 1 moves to rank 3 of 47 under two of five reweighting schemes) are **UNAFFECTED and still binding**. **(d)** D21's *"TRAIN-only on the button-L18 side"* caveat **still stands** |
+| **D22** | **NOT contradicted; governed by AM-14; reinforced by a third instance** | D22's 670-row cross-node bit-identity stands as a statement about those outputs. Its *"repo commit `dabfeb854ec6`, **clean tree**"* is **not witnessed by the run directory** — that arm's `RUNMETA` records `git_dirty: None`, not `false`, and carries no blob field (measured by me). **D28 is the same shape a third time** — 230 rows bit-identical across a blob change — and inherits the same limitation, which is why AM-14 is written once for all three |
+| E1 | **UNAFFECTED** | the refusal-recovery endpoint is untouched |
+| **E2** | **UNAFFECTED; gains a directly relevant number** | D21's C1 is stated in E2's currency (rank-1 LOO ρ **0.5629** basket vs **0.5021** button, and E2 records button's r1 as 0.5021). **D26 now supplies the effect that C1 would have to explain, measured**: a probe main effect of **+0.001696** [+0.000912, +0.002497]. **There is still no ρ→z calibration anywhere in this sprint and no held-out ρ recorded anywhere**, so the gap E2 and D21 name is narrowed by one measurement and **not closed** |
+| **C1** | **UNAFFECTED — and explicitly NOT touched by anything in this block** | every result here is measured on **`y_install`**, the concept-free one-word readout, **not on refusal**. Basket's behavioural endpoint is still at floor with one movable refusal event in 180 rows |
+| C2, C3 | **UNAFFECTED** | |
+| **C4** | **UNAFFECTED** | every arm in this block patches a **behavioural**-fit axis; *"is a semantic-fit axis causal?"* remains **deferred, not withdrawn** |
+| AM-1, AM-2, AM-3, AM-4, AM-9 | **UNAFFECTED** | the captured-fraction pair, the amplitude-vs-energy correction, D13's discharged half-2×2 caveat and the denominator rule are untouched. **AM-4 remains binding and is obeyed**: every fraction in this block names its denominator (D25's **1.4 %** is *of the whole-state* `KO_FULL − KO` = +0.10938 in button) |
+| AM-5, AM-7 | **UNAFFECTED; AM-7's authoritative n46 reads re-verified** | both basket n46 artifacts reproduce to 5 dp (see D12 row above) |
+| **AM-6** | **UNAFFECTED, and OBEYED** | *"an artifact's existence is not evidence it is complete."* **All nine artifacts cited in A6/A7 were `json.load`-verified by me with their byte counts before these rows were written**, and the two reports quoted at full precision were additionally recomputed from their own `controls` blocks |
+| **AM-8** | **UNAFFECTED; its remedy is BLOCKED** | AM-8b's finding stands (the analyser's `min_controls=19` string is off by one; **K ≥ 20** is required because `round(1/20, 4) = 0.05` is not `< 0.05`). **AM-13 records that the family that would have reached K = 24 was not launched**, so the correction remains a statement about an unreachable threshold |
+| prohibitions 1–18, 22, 25, 28 | **UNAFFECTED** | |
+| **19, 20** | **UNAFFECTED; still governed by AM-4** | both remain correct; nothing in this block changes the basket effect size or its denominators |
+| **21** | **STRENGTHENED on the button side** | *"button ranks 4 of 11 on both splits"* is a **L20** statement and is untouched. **At L18 button's failure is now certified at 46 controls (D23), which is a stronger form of the same prohibition's point.** Its *"do not write that the dissociation is fully de-confounded"* clause is **unaffected** |
+| **23, 24, 26** | **UNAFFECTED; 24 and 26 governed by AM-13** | 26's three clauses — **floor-limited, TRAIN-only, in-sample** — are reinforced, not loosened, because the family extension did not run |
+| **27** | **STANDS; its prescribed remedy is SUPERSEDED by a stronger one** | 27 forbids quoting *"basket rank 1 of 47 vs button rank 4 of 11"* without the **matched-10** figure beside it, because those two are not the same test. **D24 supplies a better answer than the matched-10 subset**: at L18, with **46 controls of identical composition on both sides and the same 67 TRAIN domains**, basket is **1 of 47** and button is **36 of 47** — one test, one floor (0.0213), measured rather than projected. **The prohibition is not retired**: the matched-10 pair and D21's caveat 1 remain the required companions whenever the **L20** cells are quoted, and the matched-46 measurement exists **only at L18 and only on TRAIN for button** |
+
+**The four questions this audit was specifically asked to answer:**
+
+* **Does any pre-existing row state, imply or leave room for the WITHDRAWN S-138 headline?**
+  **No — measured, not assumed.** `grep -ic "STATE hypothesis"` and `grep -ic "C1 is SUPPORTED"` over
+  the 461 pre-existing lines both return **0**. The table was last written at `ad1288d6` (**S-135**),
+  which **predates** the swap read, so the gap was a gap and never a wrong claim. **The corrected
+  version (D25) is what enters; the withdrawn version enters only as AM-10, marked WITHDRAWN.**
+* **Is anything in the table CONTRADICTED by the new results?**
+  **No row is contradicted.** Three are **superseded in family size or key set** without a change of
+  verdict (D13, D15's button-L18 cell, and D22/D17's provenance framing), and those are recorded as
+  amendments rather than rewordings. The only genuine **tension** is D21's *"exactly one survivor,
+  C1"*, which PR-CSI-006 tested and the preregistration's rule answers **against** — flagged in the
+  D21 audit row and governed by AM-10, D25, D26 and prohibitions 29–31.
+* **Does the word "swap" already mean something else in this file?**
+  **Yes, and it is a live collision.** All **three** pre-existing occurrences (lines 30, 161, 313)
+  are the **LAYER swap** of D13/D15 (*"basket's probe, refit at L20"*), not the cross-codeword
+  **AXIS swap** of D25. Every new row says **cross-codeword axis swap** in full, and any future row
+  must disambiguate or the two experiments will be read as one.
+* **Does anything in the table now rest on a provenance claim the artifacts cannot support?**
+  **Yes: D17, D22 and D28.** All three are bit-identity anchors whose *measurements* are sound and
+  whose *identification of the code that produced them* is not recoverable from the run directories,
+  because `RUNMETA` carries `git_commit` and `git_dirty` but **no blob**, and `git_dirty` is `None`
+  — unrecorded — on the arms whose cleanliness the claim depends on. **AM-14** governs all three. The
+  fix (print `git hash-object`, require `git status --porcelain` empty) is a VOID condition of
+  PR-CSI-007 and was exercised at its launch.
+
+---
+
+## Commands run to produce this block, 2026-09-20
+
+All read-only. **No SLURM job launched and none disturbed** (PR-CSI-007's 914043–914048 untouched);
+**no analyser run** — `dcs_csi_subspace_analyze.py` and `dcs_csi_rederive_subspace.py` were never
+invoked, and **no number from any `csi1_button_validation_*_20260920_*` run directory was read,
+reported or implied**; **no edit** to `src/`, `scripts/`, `configs/`, `runargs/`, `slurm_scripts/`
+or the sprint log; **no `git commit` and no `git push`**. The **only** file written is
+`reports/DCS_CSI_CLAIM_TABLE.md`, and only by appending this block.
+
+```
+# --- artifacts read with json.load (9), all verified non-empty, parseable, byte counts shown ---
+#   DCS_CSI_SUBSPACE_button_train_L18_n46.json             1 759 285 B
+#   DCS_CSI_REDERIVE_button_train_L18_n46.json                 7 136 B
+#   DCS_CSI_SUBSPACE_button_train_L18_shufonly.json          976 770 B
+#   DCS_CSI_SWAP_button_train_L18_from_basket_n46.json     1 759 838 B
+#   DCS_CSI_SWAP_basket_train_L18_from_button_n46.json     1 766 606 B
+#   DCS_CSI_SWAP_basket_validation_L18_from_button_n46.json  726 250 B
+#   DCS_CSI_SWAP_REDERIVE_button_train_L18_from_basket.json    7 173 B
+#   DCS_CSI_SWAP_REDERIVE_basket_train_L18_from_button.json    7 165 B
+#   DCS_CSI_SWAP_REDERIVE_basket_validation_L18_from_button.json 7 445 B
+#   (plus DCS_CSI_SUBSPACE_basket_train_n46.json and _basket_validation_n46.json, re-read for D24,
+#    and configs/dcs_csi_pr006_axis_swap.json + configs/dcs_csi_pr005_button_L18_family.json 58 174 B)
+
+# --- D23: the PRIMARY statistic X, recomputed by me from the report's own controls block ---
+#   candidate = -0.00014 ; controls = 46 ; convention ">=" (the analyser's own)
+#   STAGE1 = KO_RAND0..5 + KO_SHUF0..3   ->  7 exceedances
+#       KO_RAND1 KO_RAND2 KO_RAND3 KO_RAND5 KO_SHUF0 KO_SHUF1 KO_SHUF2
+#   36 NEW BLIND controls                ->  X = 28
+#   total 35  =>  R47 = 36    (report says candidate_rank_among_controls = 36 : MATCH)
+#   prereg: X ~ BetaBinomial(36, 7.5, 3.5) E[X]=24.5455 sd 5.5307 median 25 q2.5=13 q97.5=34
+#           P(X<=12)=2.297e-02  P(X<=4)=2.055e-04  P(X=0)=6.461e-07     X=28 INSIDE [13,34]
+
+# --- D23: leave-one-domain-out, run VERBATIM from runargs/dcs_csi_pr005_read.txt section 3.3 ---
+python scripts/dcs_csi_rank_loo.py --tag-prefix csi1_button_train --split train \
+  --expect-n 670 --allow-short 4 --require-rescue-layer 18 \
+  --require-slurm-job 902004,902005,912835,912836,912837
+#   -> n_domains=67  full cand=-0.00015 rank=36 of 47
+#      histogram {31:1, 32:2, 33:3, 34:6, 35:12, 36:21, 37:22}
+#      BEST attainable rank under any single deletion = 31 of 47 (printing_works)
+#      cand range -0.00029 .. +0.00003   (66 of 67 drops negative)
+#   CONTROL, and the reason prohibition 33 exists: the SAME LOO recomputed from the report's
+#   domain_means (stored ROUNDED TO 5 dp) gives {30:1, 32:3, 33:6, 34:6, 35:16, 36:20, 37:15},
+#   best rank 30, 65 of 67 negative. Same verdict, different histogram. Use the script.
+
+# --- D25: BOTH ranks recomputed inside EACH swap report, from its own controls block ---
+#   button/train  from basket : cand +0.00150 -> rank  4 of 47 (report says 4 : MATCH)
+#                               native KO_AXIS -0.00014 -> rank 36 of 47 ; ctrl max +0.00179
+#   basket/train  from button : cand +0.00090 -> rank 13 of 47 (report says 13 : MATCH)
+#                               native KO_AXIS +0.00265 -> rank  1 of 47 ; ctrl max +0.00238
+#   basket/valid  from button : cand +0.00224 -> rank  2 of 47 (report says 2 : MATCH)
+#                               native KO_AXIS +0.00401 -> rank  1 of 47 ; ctrl max +0.00278
+#   KO_ORTH is NOT in any control family (verified by name scan) -- it is the comparator.
+#   VERDICT string on all three: "PRIMARY DOES NOT PASS ... INSIDE the controls, not above them."
+#   re-derivation twins: ranks 4 / 13 / 2 and candidates +0.00149 / +0.00090 / +0.00224.
+
+# --- D24: the three matched cells, read side by side ---
+#   basket L18 TRAIN  n46  642 keys / 67 dom  cand +0.00264 [+0.00068,+0.00471] 44/23  rank  1 of 47
+#   basket L18 VALID  n46  215 keys / 23 dom  cand +0.00401 [+0.00098,+0.00775] 15/ 8  rank  1 of 47
+#   button L18 TRAIN  n46  626 keys / 67 dom  cand -0.00014 [-0.00111,+0.00081] 36/31  rank 36 of 47
+#   family composition identical in all three: KO_RAND0..21 (22) + KO_SHUF0..23 (24) = 46
+#   resolved_rescue_layers = 18 on every rescue arm of every cell (measured, not assumed)
+
+# --- D28 / AM-14: the S-139 anchor pair recomputed by me from results.jsonl ---
+#   A csi1_basket_validation_CODEANCHOR_139B_20260920_190627_488644  job 913407
+#       git_commit d515cc76  git_dirty None  compute_capability 8.6   (24 RUNMETA keys)
+#   B csi1_basket_validation_STAGEANCHOR_AXIS_20260920_170734_754715 job 913232
+#       git_commit 1cce381e  git_dirty None  compute_capability ABSENT (23 RUNMETA keys)
+#   rows selected on rescue_liveness.fired ; non-vacuity asserted before any diff (S-134)
+#   COMPARISON SIZE: A fired=230  B fired=230  common=230  A-only=0  B-only=0
+#     logp_concept / logp_codeword / semantic_logodds / p_concept / p_codeword / top1_id
+#     max|diff| = 0.000e+00   nonzero_rows = 0 / 230   present 230/230 on all six
+#   RUNMETA keys mentioning blob/hash/sha: []   on every run dir inspected
+#   git rev-parse d515cc76:src/boombness/score_behavior.py     -> e94258bd5fc44c70629e707b00504b7acac2a7b7
+#   git rev-parse d515cc76:doublespeak_causality/ds_common.py  -> 557d86698fa327e9678fb3c5a646e73edb13f8c3
+#   git show d515cc76:<both files> | grep -c compute_capability -> 0 and 0
+#     ... yet job 913407 records compute_capability 8.6  => git_commit is NOT a witness.
+#   git rev-parse HEAD:doublespeak_causality/ds_common.py      -> 95fb640b... (5 occurrences)
+#   AM-14 (a): csi1_button_train_CODEANCHOR_R0_20260920_135631_905054 job 912838
+#              git_dirty = None  (NOT false)  -- D22's "clean tree" is not witnessed
+#   AM-14 (b): csi1_button_train_KO_RAND0_20260916_223555_2963342     job 902005
+#              git_dirty = True             -- the falsifying direction IS recorded
+
+# --- AM-13: the blob that blocks PR-CSI-003-A, measured rather than quoted ---
+#   git hash-object src/boombness/score_behavior.py -> 11d2c61747e9401e2d2cb8f4123dd1188674d61b
+#   git rev-parse HEAD:src/boombness/score_behavior.py -> 11d2c617... (equal; HEAD = c146f36c)
+#   blob under which PR-CSI-003 halves 1-2, PR-CSI-005 and PR-CSI-006 ran -> e94258bd...
+#   => VOID condition 6 fires. 20 arms NOT LAUNCHED. Necessity floor stays 0.1111 at 8 controls.
+
+# --- audit greps over the 461 pre-existing lines ---
+#   grep -ic "STATE hypothesis"  -> 0      grep -ic "C1 is SUPPORTED" -> 0
+#   grep -ic "swap"              -> 3      all three are the LAYER swap (lines 30, 161, 313)
+```
+
+**Append verified per S-124 (EDQUOT is asynchronous; exit status is not evidence):** line count
+**461 → 751**, byte count **80 923 → 137386**;
+`diff <(head -461 <new>) <pre-image>` returns **empty**, `cmp -n 80923` against the pre-image
+returns **equal**, and the pre-existing `| D` rows are all still present verbatim.
+
+**Reported and deliberately NOT acted on, per the standing freeze:** (1) `RUNMETA.json` records no
+`score_behavior.py` blob, which is what makes D17, D22 and D28 unverifiable after the fact (AM-14) —
+the fix is already a VOID condition of PR-CSI-007 but the schema itself is unchanged, and
+`doublespeak_causality/ds_common.py` may not be touched while 914043–914048 run. (2) The one-rank
+disagreement between the two shuffled-only paths at button L18 (19 of 25 at 651 keys vs 20 of 25 at
+627 keys) is a key-set artifact that **no gate currently detects**; it is benign here because both
+say DOES NOT PASS, and it would not be benign near a floor. (3) `domain_means` is persisted at 5 dp,
+which silently changes any LOO recomputed from it (prohibition 33) — a **persistence-precision**
+defect, not a computation defect, and no committed number is affected.

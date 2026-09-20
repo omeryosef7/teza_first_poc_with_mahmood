@@ -10958,3 +10958,93 @@ The secondary swap arm is launched **blind**: its number is not read until the p
 and PR-CSI-006's *"no cell is claimed if the splits disagree"* clause binds direction A **for the first
 time**, because direction A has never had a validation split. **S-138's withdrawn headline is not
 restorable by any outcome here.**
+
+---
+
+# S-144 — the claim table is current through S-143, and putting it in order exposes the position plainly: **by this sprint's own preregistered rules, EVERY candidate explanation of the codeword dissociation is now refuted.** The dissociation is certified and unexplained
+
+`reports/DCS_CSI_CLAIM_TABLE.md` 461 → 751 lines. **290 additions, 0 deletions, 0 modifications**,
+verified by me and not taken on report: `git diff --numstat` = `290 0`, `grep -c "^-[^-]"` = **0**, and
+`md5(head -461 new) == md5(HEAD version) == e0b0074baf990b89977f9f03565a0b5b`. Six rows (D23-D28),
+five amendments (AM-10…AM-14), five new prohibitions (29-33).
+
+**The withdrawn headline never entered.** S-138's *"C1 is SUPPORTED and the STATE hypothesis is
+REFUTED"* appears **only** as `AM-10`, marked WITHDRAWN and citing R10 BLOCKER-1. The live row records
+the preregistration's output — CELL 4 on TRAIN, direction B NOT REPLICATED, **C1 REFUTED by the fixed
+rule** — with the rank-36→4 contrast and the probe main effect labelled **SECONDARY, UNPREREGISTERED**.
+A grep of the 461 pre-existing lines confirms the phrase had never entered the table at all.
+
+## The thing worth stating plainly, which no single entry has said
+
+S-128 killed six candidate explanations of the button/basket dissociation by measurement and concluded:
+*"exactly one survives, and it is unquantified — C1, basket simply has a better probe."*
+
+**PR-CSI-006 was built to test C1. Its preregistered decision rule returns CELL 4, whose fixed meaning
+is "C1 is REFUTED."**
+
+So the position, stated by the sprint's own rules rather than by preference:
+
+| | |
+|---|---|
+| the dissociation is **REAL** | certified at matched power: basket 1 of 47 both splits, button 36 of 47, floor 0.0213 (D24) |
+| six explanations | **killed by measurement** (S-128) |
+| the seventh and last, C1 | **refuted by its own preregistered rule** (PR-CSI-006, CELL 4) |
+| what remains | **nothing that has survived a preregistered test** |
+
+The strongest positive signal in the whole swap experiment — the **probe main effect**, +0.001696
+ci95 [+0.000912, +0.002497], p < 1e-4, **replicated in all three cells** — is
+**UNPREREGISTERED**, and R10's MAJOR-2 showed the swap arm is **not exchangeable** with the family it
+is ranked against (controls' max |cos| to the native axis is 0.1894; the swap axis is 0.5569, 2.9×
+further), so its rank p is **descriptive, not a valid permutation p**.
+
+**That is an uncomfortable position and it is the honest one.** A real, certified, replicated effect
+with no surviving explanation is a better place to be than one with an explanation that only survives
+because the rule that would have killed it got relaxed. It is recorded in the claim table as a
+standing tension against D21, and prohibitions 29-31 forbid reading any of the secondary evidence as
+if it were the preregistered result.
+
+## Two defects the audit found in work I committed today
+
+**(a) `domain_means` is persisted ROUNDED TO 5 dp, so leave-one-domain-out must NOT be computed from
+it.** Measured: `max decimal places across 67 domains = 5`. Recomputing S-137's LOO from
+`domain_means` gives `{30:1, 32:3, 33:6, 34:6, 35:16, 36:20, 37:15}`, best attainable rank **30**,
+65/67 negative — against the committed tool's `{31:1, 32:2, 33:3, 34:6, 35:12, 36:21, 37:22}`, best
+**31**, 66/67.
+
+**The committed histogram is the correct one** — `scripts/dcs_csi_rank_loo.py` reads the raw rows. The
+`domain_means` route is the wrong one, and the verdict is unchanged either way (no deletion reaches
+rank 1). But it bounds something I wrote: R10's fix to `native_vs_swap.py` recomputes the ranks from
+`domain_means` precisely so the native and the swap come from **one** source, and that is still right
+for a **mean over 67 domains** (rounding averages down to ~1e-6, which is why 4/36/13/2 all reproduce).
+It is **not** right for a statistic that re-slices those domains 67 times. Now prohibition 33.
+
+**(b) `git_dirty` is `None`, not `true`** — on both S-139 anchors *and* on gate 0d's `CODEANCHOR_R0`.
+S-143 said the worktree was dirty; the artifact says the field was **never recorded**. That is
+**stronger** than S-143 states, and worse in a specific way: the **falsifying** direction *is*
+witnessed (job 902005 records `git_dirty: true`), while the **clean** direction is not witnessed at
+all. So "that run had a clean tree" is unverifiable from any run directory in this project, which is
+exactly why PR-CSI-007 now requires `git status --porcelain` to be empty **at submission**.
+
+Independently confirmed by the audit: at commit `d515cc76`, **neither** `score_behavior.py`
+(`e94258bd`) **nor** `ds_common.py` (`557d8669`) contains `compute_capability` — yet job 913407's
+RUNMETA carries `8.6`. The commit hash is decisively not a witness.
+
+## Two smaller findings, recorded rather than smoothed
+
+* **An artifact-vs-artifact disagreement no gate detects.** Button L18 shuffled-only is **19 of 25 at
+  651 keys** from the primary analyser and **20 of 25 at 627 keys** from the re-derivation. S-137
+  attributed this to the key-set difference, which is correct — but **nothing checks it**, and a gate
+  that compared the two paths' key sets would have said so rather than leaving it to a human to notice.
+* **A terminology collision.** All three pre-existing uses of "swap" in the claim table (lines 30, 161,
+  313) mean the **layer** swap, not the cross-codeword **axis** swap. Every new row now says which in
+  full.
+
+## Status
+
+PR-CSI-007 is running — jobs 914044-914048 confirmed in the queue, 914043 already off it. Its numbers
+have **not** been read and must not be: `runargs/dcs_csi_pr007_read.txt` is performed **once**, after
+all arms land. The audit agent was barred from the run directories entirely for that reason and
+confirmed zero reads.
+
+The necessity family extension remains blocked on PR-CSI-003-A's own VOID condition 6 (S-142), so the
+necessity floor stays **0.1111** and S-133's rank 1 of 9 is still the last word in that direction.
