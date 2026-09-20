@@ -152,6 +152,39 @@ KNOWN_ZERO = {
 }
 
 KNOWN_SHORT = {
+    "csi1_button_train_KO_SHUF15_20260920_143034_911849":
+        "DCS-CSI-133: PR-CSI-005 button L18 family. 1 row(s) of 670 REFUSED by the sprint's own "
+        "norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5) with 'REFUSING to patch: N of 28 "
+        "positions are norm-match DEGENERATE': the control basis was near-orthogonal to the clean->KO "
+        "delta at some position, so rescaling its projection would have amplified float noise into an "
+        "arbitrary QR-gauge direction. The guard declines to fabricate a control rather than silently "
+        "write a meaningless one. This is the EXPECTED 3090 behaviour recorded in DCS-CSI-121's table "
+        "(norm-matched on 3090: 669-670 rows every time; the V100 column is 0 rows every time, which is "
+        "why that hardware is a VOID condition). MECHANISM (not a verified property of this run): "
+        "degeneracy is the angle between a fixed basis and a fixed delta, both determined before any "
+        "readout, and the delta is identical across arms -- so the loss is expected to be "
+        "outcome-independent. MEASURED here against the full 670-row arm KO_RAND9 of the same allocation: "
+        "the 1 lost row(s) fall in 1 distinct domain(s), at most 1 row(s) per domain out of 10, and both "
+        "analysers intersect (domain, slot) KEYS across all arms before averaging, so every arm is "
+        "compared on the same key set regardless. Within the declared --allow-short 4. Ledger: "
+        "n_attempted 670, n_succeeded 669, n_failed 1. Failing prompt_ids (complete): 2ff5aa4a1be68216.",
+    "csi1_button_train_KO_RAND15_20260920_143012_911373":
+        "DCS-CSI-133: PR-CSI-005 button L18 family. 2 row(s) of 670 REFUSED by the sprint's own "
+        "norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5) with 'REFUSING to patch: N of 28 "
+        "positions are norm-match DEGENERATE': the control basis was near-orthogonal to the clean->KO "
+        "delta at some position, so rescaling its projection would have amplified float noise into an "
+        "arbitrary QR-gauge direction. The guard declines to fabricate a control rather than silently "
+        "write a meaningless one. This is the EXPECTED 3090 behaviour recorded in DCS-CSI-121's table "
+        "(norm-matched on 3090: 669-670 rows every time; the V100 column is 0 rows every time, which is "
+        "why that hardware is a VOID condition). MECHANISM (not a verified property of this run): "
+        "degeneracy is the angle between a fixed basis and a fixed delta, both determined before any "
+        "readout, and the delta is identical across arms -- so the loss is expected to be "
+        "outcome-independent. MEASURED here against the full 670-row arm KO_RAND9 of the same allocation: "
+        "the 2 lost row(s) fall in 2 distinct domain(s), at most 1 row(s) per domain out of 10, and both "
+        "analysers intersect (domain, slot) KEYS across all arms before averaging, so every arm is "
+        "compared on the same key set regardless. Within the declared --allow-short 4. Ledger: "
+        "n_attempted 670, n_succeeded 668, n_failed 2. Failing prompt_ids (complete): 47435a07bdd6f135, "
+        "9d8c7ceb813bf6ea.",
     "csi1_button_train_KO_SHUF12_20260920_135637_905056":
         "DCS-CSI-133: PR-CSI-005 button L18 family. 1 row(s) of 670 REFUSED by the sprint's own "
         "norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5) with 'REFUSING to patch: N of 28 "

@@ -9743,3 +9743,94 @@ to be outcome-independent) and what was actually **measured**. `KO_NEC_RAND2` at
 The script that writes these entries **refuses to exempt any run whose `failure_reasons` are not
 exclusively the degeneracy guard** — a blanket exemption would have defeated the guard, which is the
 only thing standing between an unexplained row loss and a committed number.
+
+---
+
+# S-134 — **PR-CSI-005 gate 0d PASSES: the +474/−7 `score_behavior.py` change is INERT on the norm-matched sufficiency path, measured rather than argued.** And I wrote a vacuous gate that printed PASS on zero rows, caught it, and fixed it — R2-M5's shape, third instance, this time mine
+
+Job 912838 (group X, one arm, `--time=02:00:00`) finished while the three family jobs run on. Gate 0d
+is PR-CSI-005 Part 2, explicitly *"BEFORE ANY NUMBER IS READ"*, so it is evaluable now; **Part 3 stays
+sealed** under clause (e), which prohibits an interim read by name: *"reading a subset and stopping
+when the count looks good is the one thing that would turn this into a post-hoc test."*
+
+## The result
+
+```
+A CODEANCHOR_R0   job 912838  n-350  git_commit dabfeb854ec6  dirty=None   670 rows, 0 failed
+B KO_RAND0        job 902005  n-306  git_commit bc8e77793633  dirty=True   670 rows, 0 failed
+  both: layer=18  key=ctrl_random0  normkey=cand_rank1  donor=clean
+
+rows total A=670 B=670 | rescue-FIRED A=670 B=670 | common keys 670 (A-only 0, B-only 0)
+
+  logp_concept  logp_codeword  semantic_logodds  p_concept  p_codeword  top1_id
+  max|diff| =   0.0   on all six,  nonzero_rows = 0  on all six
+
+GATE 0d: PASS -- all six bit-identical on all 670 compared rows
+```
+
+**What this buys.** `RUNMETA.json` for button's ten stage-1 controls records `git_commit bc8e777…`
+with **`git_dirty = true`** — an unrecoverable tree — and `git diff bc8e777 -- score_behavior.py` is
+**+474/−7**, the DCS-CSI-110 necessity build. S-131 recorded that all seven modifying hunks are
+donor-gated and that the sufficiency path is *textually* unchanged, while saying plainly that **a
+static reading of a diff against a dirty tree is an argument, not a measurement.** One arm, 840 s,
+0.233 GPU-h, converts it into a measurement. The pooled family of 46 is **one experiment**, and Part 3
+may run as written when the 36 land.
+
+**Two things came free.**
+
+1. **The comparison is cross-node** — n-306 (stage 1) versus n-350 (today) — so it independently
+   re-confirms S-105b's cross-node bit-determinism for button, on a second pair of nodes and a
+   different arm.
+2. **It also proves the S-124 atomic-write fix is inert on the experiment path.** The anchor ran at
+   repo commit `dabfeb85`, i.e. *after* the 138-site change landed, against a stage-1 arm from before
+   it. S-130 proved that fix inert on the **analyser** path by key-by-key report diff; this proves it
+   inert on the **producer** path by bit-identity of 670 rows. Neither was designed to test the other.
+
+## The near-miss, which is the part worth keeping
+
+**My first version of this gate printed `PASS` having compared nothing.** It selected rescue-fired
+rows on a field named `rescue_positions_written`, which **does not exist** in these rows — the real
+field is `rescue_liveness.fired`. So it matched 0 rows, computed `max|diff|` over an empty set, got
+`0.0` six times, and reported:
+
+```
+rescue-fired rows: A=0  B=0   common keys=0
+GATE 0d: PASS -- all six bit-identical on every compared row
+```
+
+That is **review finding R2-M5** (*"three checks that could not fail"*) and **S-042's vacuous identity
+gate**, committed a third time — and the first two were also mine. It was caught only because the
+printout carried `A=0 B=0 common=0` next to the verdict, i.e. because the script printed the *size of
+the comparison* beside its result. Had it printed only `PASS`, a VOID condition of a preregistration
+would have been discharged by a gate that examined zero rows.
+
+**The fix is structural, not a patch.** The gate now *asserts* non-vacuity before any difference is
+believed:
+
+```python
+assert fa >= MIN_ROWS   # A fired on enough rows
+assert fb >= MIN_ROWS   # B fired on enough rows
+assert len(common) >= MIN_ROWS
+for f in FIELDS:        # and every field is actually present on every compared row
+    assert present == len(common)
+```
+
+**A gate that can pass on an empty comparison is not a gate.** The rule I am adopting and will apply
+to every gate in this sprint: *print the size of the comparison next to its verdict, and assert the
+size before trusting the verdict.* This is the same corrective as REVIEW R9's — *print what makes the
+two things comparable* — arriving from the other direction: there, the control was silently different;
+here, the control was silently **absent**.
+
+## Status of PR-CSI-005, and one release point that did NOT move
+
+13 of 37 arms have landed — `CODEANCHOR_R0`, `KO_RAND6-9`, `KO_RAND12-15`, `KO_SHUF12-15` — all on
+RTX 3090. Jobs 912835 / 912836 / 912837 continue. Gate 0(a) (architecture pin), 0(b) (no
+`[layer-override]` in the new logs), 0(c) (no row collapse) and 0(f) (output paths must not exist) are
+checked when the family is complete, together, as Part 2 specifies.
+
+**The `score_behavior.py` release point has NOT arrived.** PR-CSI-003's arms are all on disk, so *that*
+VOID condition is discharged — but PR-CSI-005's own VOID list includes **blob drift off
+`e94258bd…`**, and its 36 arms are mid-flight. So the S-119 bf16/compute-capability guard and the
+S-127(a) compute-capability `RUNMETA` field remain queued, now blocked by a *different* preregistration
+than the one that blocked them this morning. Recorded so the queue does not look like neglect: the
+blocking experiment has changed, the block has not.
