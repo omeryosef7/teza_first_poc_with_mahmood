@@ -9196,3 +9196,140 @@ hunks were checked while applied — `import tempfile`, one module-level functio
 is a good one: **every citation in both frozen files is now content, not a line number**, and VOID
 condition 7 carries an md5 protocol (`ce116c6f`, 1066 lines, md5
 `975280800b7539bc8453e85400374ad1`) instead of a presumption.
+
+---
+
+# S-130 — **the S-124 0-byte-write bug is FIXED at 138 sites, proven INERT on every committed number, and the regression test FAILS ON THE OLD CODE.** Plus a second bug the fix itself created and the author caught by looking at the output file
+
+Commit `95f62711`, 82 files, +4106/−178.
+
+## The inventory, done by AST rather than by grep
+
+`grep` misses multi-line calls and fires on docstrings, so the hit list was built by walking the
+abstract syntax tree of every file at `git HEAD`:
+
+| root | category | n | action |
+|---|---|---|---|
+| `scripts/` | `json.dump(…, open(…))` | **109** | FIXED |
+| `scripts/` | `open(p,"w").write(…)` | **5** | FIXED |
+| `src/` | `json.dump(…, open(…))` | **21** | FIXED |
+| `src/` | `open(p,"w").write(…)` | **3** | FIXED |
+| `scripts/`+`src/` | `open(os.devnull,"w")` | 22 | no data at risk, left |
+| `scripts/`+`src/` | bound handle, `.close()` present | 7 | already correct, left |
+| `scripts/`+`src/` | read-handle leak | 487 | cannot truncate an artifact, left |
+| `doublespeak_causality/` | unclosed writes | **136** | **OUT OF SCOPE — reported, NOT fixed** |
+| `tests/` | unclosed writes | 32 | out of scope |
+
+**138 sites across 81 files fixed.** The 136 in `doublespeak_causality/` are the same latent bug and
+are **not** repaired; they are recorded here so their absence is a decision rather than an oversight.
+
+## The thing I most needed checked, and it was checked mechanically
+
+PR-CSI-003's VOID conditions forbid modifying `score_behavior.py` between arms of the same comparison,
+and **job 912736 was running throughout this work**. Two levels of check:
+
+1. **`score_behavior.py` has ZERO hits of this class anyway** — its three `open(…, "a")` handles are
+   bound and explicitly `.close()`d. It is **absent from the commit**.
+2. **The whole transitive import closure was computed and confirmed untouched.** The launcher
+   re-invokes `python src/boombness/score_behavior.py` **once per arm**, so every module it imports is
+   loaded fresh per arm and editing any one of them is the same between-arms hazard. The closure —
+   `analyze_g8, common, donor_patch, extract_boombness, insubspace_null_test, refusalness, signals`
+   (src/boombness) + `dcs_ts_power, dcs_ts_pr048_analysis, dcs_ts_pr051_positional, dcs_ts_pr057_causal,
+   dcs_ts_prereg` (scripts) + `ds_common, pair_common` (doublespeak_causality) — contains **no file in
+   this commit**.
+
+**I verified that myself by blob hash rather than accepting it**, because my first check was wrong in a
+way worth recording: I grepped `git show --stat` for each basename, and `--stat` truncates long paths
+while the *commit message* names `score_behavior.py` — so every file matched and the check reported a
+VOID that had not happened. The correct check is the object hash:
+
+```
+src/boombness/score_behavior.py   e94258bd…  identical at be0e6818 (session start), 18005fed, 95f62711, worktree
+src/boombness/common.py           7e8cc031…  identical at be0e6818 and worktree
+src/boombness/donor_patch.py      2cd63224…  identical at be0e6818 and worktree
+```
+
+**Bit-identical across the whole session. The VOID condition holds.** A grep over a truncated,
+message-inclusive listing is not a test; `git hash-object` is.
+
+## The fix, and why it is temp-file-then-rename rather than merely a `with` block
+
+A `with` block *would* surface the `EDQUOT` — but the destination would **already be truncated**, because
+`open(p, "w")` truncates on open. The artifact name would hold 0 bytes and the command would fail. So
+each site now writes a sibling temp file, `flush`es, `fsync`s, asserts the size is non-zero, **re-parses
+it with `json.load`**, restores the destination's permission bits, and only then `os.replace`s it into
+place. That makes the write **atomic as well as checked**: a half-written report can never appear at the
+real name, and whatever was there before survives a failure. On any error it **raises**, naming the path
+and the byte count.
+
+The two analysers each carry **their own copy** of the helper, commented
+`DUPLICATED ON PURPOSE — DO NOT REFACTOR THIS INTO A SHARED MODULE`, citing DCS-CSI-085. **No new import
+edge was created between them.** That matters more than the duplication costs: every "the primary and
+the independent re-derivation agree" claim in this sprint — S-125's included — rests on those two files
+sharing no code. A tidy shared `io_utils` would have quietly destroyed the property the agreement claims
+are built on.
+
+## A SECOND bug, created by the fix, caught by looking at the output file
+
+`tempfile.mkstemp()` creates **0600**, and `os.replace()` carries that mode onto the destination. The
+first re-run produced `-rw-------` where every committed report is `-rw-r--r--` — i.e. the repair would
+have silently changed the permissions of every artifact it ever touched. The helper now reads
+`mode = os.stat(path).st_mode & 0o7777` (falling back to `0o644`) and `os.chmod`s the temp before the
+replace, in all 84 helper bodies.
+
+**It was not caught by a test.** It was caught by looking at `ls -l` on the output. Recorded because
+this sprint's failures are overwhelmingly of that shape — S-042's glob, S-119's GPU column, S-128's
+superseded filename — and the corrective is always the same: *look at the artifact, not at the code you
+just wrote*.
+
+## The regression test is proven to be meaningful, not merely green
+
+`tests/test_atomic_report_write.py`, 239 lines, **19 tests, all pass in 0.15 s**, driving the **real**
+helpers through `spec_from_file_location` rather than re-implementing them, parametrised over all three
+analyser paths. It covers: a normal write; `OSError(EDQUOT)` raised **mid-write**; the same raised at
+**`os.fsync`**; a **previous report present** at the destination (which must survive byte-identically); a
+0-byte temp refused even when nothing raised; and an **AST** check that the idiom has not returned.
+
+*(The AST check began life as a regex and fired on the helper's own docstring, which quotes the broken
+idiom in order to explain it. A detector that cannot tell code from prose would have had to be silenced —
+which is how detectors die.)*
+
+**And the test is proven to fail on the old code.** A mutation harness reconstructs the pre-fix line
+*from git HEAD* and runs it under two EDQUOT models:
+
+```
+PRE-FIX (git HEAD):
+  (i)  EDQUOT in the caller's frame  raised=OSError(122)                dest=0 bytes  prev_kept=False
+  (ii) EDQUOT in the finaliser       raised=NO -> returned "wrote …"    dest=0 bytes  prev_kept=False
+FIXED (working tree):
+  (i)  EDQUOT in the caller's frame  raised=OSError                     dest=22 bytes prev_kept=True
+  (ii) EDQUOT in the finaliser       raised=OSError                     dest=22 bytes prev_kept=True
+MUTATION PROOF: PASS
+```
+
+**Model (ii) is the real S-124 path and reproduces it exactly**: CPython printed
+`Exception ignored in: <function …__del__>` to stderr, the function returned `"wrote <path>"`, and a
+22-byte report became 0 bytes.
+
+## Proven INERT on the committed record
+
+Both frozen PR-CSI-002 commands were re-run with `--out` to scratch paths and diffed key-by-key against
+the committed reports:
+
+```
+DCS_CSI_SUBSPACE_basket_train_L20.json   CHANGED 0   ADDED 0   REMOVED 0
+DCS_CSI_REDERIVE_basket_train_L20.json   CHANGED 0   ADDED 0   REMOVED 0
+```
+
+**Zero changed, zero added, zero removed.** The repair moves no number in the record. `__pycache__` was
+purged under `scripts/` and `src/` before the verification, per S-120(c), so the numbers came from the
+new bytecode and not from stale.
+
+## What is NOT fixed, so it is not mistaken for fixed
+
+* **`doublespeak_causality/` — 136 unclosed write sites.** Same bug, same silent-0-byte failure mode.
+  Out of scope for this commit; queued.
+* **`tests/` — 32 sites.** Test scaffolding; lower stakes, still real.
+* The **bf16 / compute-capability guard** (S-119 fix #1) and the **compute-capability RUNMETA field**
+  (S-127a) both live in `score_behavior.py` and remain blocked until PR-CSI-003's arms are all on disk.
+  That release point has not moved.
