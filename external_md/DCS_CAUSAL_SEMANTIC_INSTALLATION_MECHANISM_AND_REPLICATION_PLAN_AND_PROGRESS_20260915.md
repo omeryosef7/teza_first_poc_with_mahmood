@@ -10442,3 +10442,182 @@ a request for the minimal behavioural test that would catch it.
 The login node `c-001` self-reports `compute_capability: "6.1"` (TITAN Xp, sm_61) — **below 8.0**. So
 the guard would refuse bf16 there, which is correct and which nothing previously recorded. The field is
 already earning its place.
+
+---
+
+# REVIEW R10 + **CORRECTION: S-138's HEADLINE IS WITHDRAWN.** The preregistration's own decision rule returns the OPPOSITE conclusion, and I moved the cell assignment in the title after writing in the body that it must not be moved
+
+Five adversarial lenses, ~820 k subagent tokens. **No committed number is wrong** — every one reproduced,
+several at higher precision than the report. Two BLOCKERs, both mine, and the first one matters more
+than anything else in this session.
+
+## BLOCKER-1 — **S-138's headline is WITHDRAWN**
+
+`configs/dcs_csi_pr006_axis_swap.json`, quoted by the reviewer from the file:
+
+* `definition_of_HELPS`: *"rank 1 or 2 among 46 controls … Rank 3 of 47 is p = 0.06383 and is NOT 'helps'."*
+* `decision_rule/step_6`: *"If they disagree, the direction is reported as **NOT REPLICATED** and **no cell is claimed for it**."*
+* `must_not_be_said_if_positive/5`: *"NOT 'replicated' unless direction B's train and validation cells AGREE."*
+* `cell_neither_helps` (CELL 4): *"**C1 is REFUTED** — a shared direction estimated BETTER should have transferred, and did not."*
+
+Measured outcome: **A = rank 4 (not helps). B train = rank 13 (not helps). B validation = rank 2
+(helps).** B disagrees across splits ⇒ **no cell may be claimed for direction B**. On train the cell is
+**CELL 4**, whose preregistered meaning is **C1 REFUTED**.
+
+**What S-138's headline says, and what commit `d515cc76` carries into `git log` and the claim table:**
+*"C1 SUPPORTED and the STATE hypothesis REFUTED."* That is the **CELL 1** reading — a cell attained in
+neither direction.
+
+**The body of S-138 is honest.** It assigns CELL 4, it says "no cell of the 2×2 was cleanly attained",
+it says "direction A misses its own preregistered bar", it reports p = 0.085 and says it does not clear
+0.05, and it contains the sentence *"the threshold does not get moved after the fact."* **And then the
+title moves it.** A downstream reader, the claim table and `git log` take the title.
+
+**WITHDRAWN: "C1 is SUPPORTED and the STATE hypothesis is REFUTED" as a headline claim.**
+**The preregistration's output is:** *CELL 4 on train; direction B **NOT REPLICATED**; **C1 REFUTED by
+the fixed rule**.* The rank-36 → rank-4 contrast is real and is reported below as a **secondary,
+unpreregistered** observation — which is what it always was.
+
+This is the exact failure the preregistration existed to prevent, committed by the person who wrote the
+preregistration, in the title of the entry that quotes it.
+
+## BLOCKER-2 — gate 0f's sha anchor is a check that cannot fail. **Fourth instance.**
+
+```
+button/train  key=swap_cand_from_basket  sha16=679c76d2d0e8fe9e (expect 0c397a778db933ba)
+basket/train  key=swap_cand_from_button  sha16=b2f266d711994013 (expect 7d4e01f5475e6b53)
+  GATE 0f: PASS
+```
+
+**The printed sha disagrees with the printed expectation in both cells and the gate says PASS**, because
+`c["donor_sha"]` appears only inside the `print` at `dcs_csi_pr006_gate0.py:153-154` and **is never
+compared**. Mutation M1 replaced both constants with `deadbeef…`/`cafebabe…` and the gate still printed
+ALL GATES PASS. The declared constants match nothing in the artifacts — not the tensor sha, not the
+donor file sha, not the recipient file sha.
+
+**This is R2-M5 / S-042 / S-134 for the fourth time, in the gate S-138 calls "the one that mattered
+most."** I wrote the S-134 rule — *print the size and assert it* — and then wrote a gate that prints a
+constant and asserts nothing.
+
+**What saves the result:** the **cosine** check in the same gate is real and load-bearing. Mutation M3
+(key → `cand_rank1`) and M9 (target → 0.9999) both **killed** it. The relabelled-native-arm failure mode
+was genuinely caught; it was caught by the cosine, not by the sha.
+
+**Secondary, also mine:** `cos(swap, recipient cand_rank1)` is **symmetric**, so "0.5569 in BOTH
+directions" is **one measurement printed twice**, not two independent confirmations. S-135 and S-138 both
+say "both directions". Corrected.
+
+## What the reviewers could NOT break — recorded, because negative findings are findings
+
+* **All four ranks reproduce**, re-derived from `domain_means` at ~1e-6 precision instead of the 5-dp
+  scalars: 36/36, 4/4, 13/13, 2/2. S-133 reproduces exactly (−0.00852, 55/67, rank 1 of 9). S-137's
+  **X = 28** reproduces. S-138's side numbers reproduce.
+* **THE DOSE OBJECTION IS DEAD**, and it was the most likely way to be wrong. Per-row `rescue_liveness`
+  over 663 common prompts: the swap arm writes `written_norm_mean` **0.067887** — bit-identical to the
+  native arm and to every control, max relative difference **8.85e-16**. `KO_AXIS` carries
+  `norm_matched=False` with `proj_norm_mean == written_norm_mean` exactly, so **basis == norm-basis is
+  the identity, now measured per row rather than argued**. The rank is not measuring dose.
+* **`captured_energy_frac` does not track recovery**: `KO_AXIS` captures *more* (0.0387) than the swap
+  (0.0376) and recovers less. "The swap captured more energy" is dead too.
+* **The staging anchor re-derived from scratch on TEN fields** (not six), across a *git-commit*
+  difference as well as a path difference: max|diff| = 0 on all ten, 230/230 rows.
+* **LOO on all four ranks**: swap-into-button rank histogram `{2:1, 3:9, 4:49, 5:8}`; native `30–37`.
+  No single domain carries any rank.
+* **The swap `.pt` artifacts verified independently**: 53/53 and 41/41 pre-existing keys byte-identical,
+  0 removed, `meta.codeword` the recipient's, added key sha-identical to the donor's `cand_rank1`.
+* **No vacuous gate was found this round.** The S-134 attack came up empty on all seven scripts — which
+  makes BLOCKER-2 a *wrong constant never compared*, not an empty comparison.
+
+## MAJOR-1 — "the STATE hypothesis is REFUTED" is absence of evidence
+
+The reviewer built the 2×2 my own argument implies. Both TRAIN reports carry the same 67 domains, so it
+pairs:
+
+```
+                    probe=basket   probe=button
+recipient=button      +0.001499      -0.000145
+recipient=basket      +0.002649      +0.000900
+
+PROBE main effect      +0.001696  ci95 [+0.000912, +0.002497]  p < 1e-4   <- ESTABLISHED
+RECIPIENT main effect  +0.001097  ci95 [-0.000569, +0.002890]  p = 0.201  <- NOT TESTED
+INTERACTION            -0.000105  ci95 [-0.001482, +0.001230]  p = 0.888
+|recipient| / |probe| = 0.647
+```
+
+**Basket is a better recipient than button for BOTH probes**, at 65 % of the probe effect, with a CI
+containing values *larger* than the probe effect. The interaction is flat — which is what "both factors,
+additively" looks like. My refutation refutes only a **pure**-state model with **zero** probe effect,
+and nobody's state hypothesis has to be pure.
+
+**CORRECTED WORDING:** *"a pure-state model with no probe effect is refuted; the recipient factor is not
+estimated by this design."* (The reviewer notes the recipient contrast crosses button and basket, which
+§3.3 forbids pooling — which cuts **for** the finding: the experiment contains **no legitimate test of
+the recipient factor at all**, so "REFUTED" has no measurement standing behind it.)
+
+**The probe main effect does replicate three times**, with near-constant magnitude:
+`+0.001644 [p 0.0014]` in button/train, `+0.001749 [p 0.0007]` in basket/train, `+0.001770 [p 0.019]`
+in basket/validation. That half stands — as a secondary.
+
+## MAJOR-2 — the swap arm is not exchangeable with its control family
+
+`|cos| with the native axis`: the 46 controls run **min 0.0001, median 0.0156, max 0.1894**; the swap
+axis is **0.5569**. It is **2.9× more aligned with the native axis than any control**. The rank test's
+null requires exchangeability with the family, and by construction the controls are near-orthogonal to
+the native axis while the "foreign" axis retains 56 % of it.
+
+**So the swap arm's rank p is DESCRIPTIVE, not a valid permutation p.** The reviewer tried to convert
+this into an explanation and **failed, and reported the failure**: `r(|cos|, recovery)` over the 46
+controls is **−0.027**, and a linear fit extrapolated to |cos| = 0.5569 predicts +0.000035 against an
+observed +0.001499 (residual +1.95 sd). No trend. The alignment asymmetry does **not** explain rank 4 —
+but it is an unstated assumption violation and it belongs in the record.
+
+## MAJOR-3 — a state-flavoured alternative my dichotomy did not contain
+
+`|cos(axis, the recipient's OWN knockout delta)|` over 670 rows:
+
+```
+XSWAP_FROM_BASKET (basket's axis)  0.056749
+KO_AXIS           (button's axis)  0.051459
+best control                       0.036661
+```
+
+**Basket's axis is a better fit to BUTTON's own knockout delta than button's own axis is.** That is not
+"the probe decides, not the state" — it is "button's state-delta has a real direction and button's
+rank-1 probe mis-estimates it while basket's lands closer", which is a **state** reading. Not proven
+(alignment predicts recovery only weakly among controls, r = 0.19, n = 46), but live, and my
+probe-versus-state dichotomy was too narrow to contain it.
+
+## CORRECTION to S-138's own account of the split
+
+S-138 said the VALIDATION cell is the fragile one — *"at rank 2 of 47 the ordering is one control away
+from rank 3."* **Backwards.**
+
+```
+TRAIN      nearest control above +4.0e-05, below +2.3e-05; rank under control resampling [7, 19]
+VALIDATION nearest gaps +5.4e-04 both sides;               rank under control resampling [1, 4]
+VALIDATION - TRAIN = +0.001336  ci95 [-0.000895, +0.003720]  p = 0.254   (domain overlap 0)
+```
+
+**Rank 13 sits in a dense pileup** — six controls within 1e-4 — and is the fragile number. The two splits
+are **statistically indistinguishable**. Reporting the split rather than picking a side was right; the
+*reason* I gave was wrong, and the correct reason is that they cannot be told apart.
+
+## The remaining MAJORs, carried forward as real
+
+Gate defects, none of which changed a committed number but all of which would have failed to catch one:
+`primary_X.py` has **no report-identity check** — aimed at a swap report it satisfies every assert and
+prints *"a falsification threshold FIRED"* (mutations P2/P3, X = 2 / X = 9); X is recomputed from
+**5-dp-rounded** values and there is a **live tie**; `native_vs_swap.py` computes the native from a
+lossier path than the controls it is ranked against, and has **no exit code**; gate (g) reads the
+degeneracy counter **by name with a silent zero default** (mutations M4/M5 survive); the two bit-identity
+anchors **never assert the contrast they exist to establish** (0d never checks the blobs differ;
+`stage_anchor` never checks the model paths differ — repeating in its own code the omission its docstring
+criticises); **"newest dir" resolution survives in two scripts**; and `document_short_runs.py` can print
+*"documented:"* having written nothing, exempt a loss **beyond `--allow-short`** while writing "within
+the declared --allow-short 4", pick its reference arm by **mtime from a pool that is 72 % wrong-layer**,
+and write a **zero-row exemption** — the S-134 pattern again, in the tool that feeds a completeness guard.
+`test_guard_predicate_truth_table` is **tautological** (it re-implements the predicate instead of calling
+it), which is the concrete form of the source-text weakness S-139 flagged in advance.
+
+**None is fixed in this entry.** Fixing a gate in the same breath as reporting it is how S-120(c)'s
+stale-bytecode hazard bites; they go in a separate, tested commit with the `__pycache__` purge.
