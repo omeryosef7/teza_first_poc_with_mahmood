@@ -9333,3 +9333,161 @@ new bytecode and not from stale.
 * The **bf16 / compute-capability guard** (S-119 fix #1) and the **compute-capability RUNMETA field**
   (S-127a) both live in `score_behavior.py` and remain blocked until PR-CSI-003's arms are all on disk.
   That release point has not moved.
+
+---
+
+# S-131 — **CORRECTION to S-128: the falsifier I named is ARITHMETICALLY UNREACHABLE.** Seven of button's ten controls already beat its candidate, so `rank ≤ 2 of 47` has probability zero before a single new arm runs. PR-CSI-005 is frozen around the statistic that *is* reachable, and launched
+
+S-128 closed by naming the experiment the dissociation analysis proposed against itself: *"run button's
+control family at L18 out to 46, where the projection says E[rank] = 32.4 and P(rank ≤ 2) ≤ 6.5e-07"*,
+and PR-CSI-005 was commissioned with the instruction to write that in as *"a prediction allowed to
+fail"*. **The prediction cannot fail, because the outcome it forbids cannot occur.** Verified from the
+committed artifact, not from the brief:
+
+```
+reports/DCS_CSI_SUBSPACE_button_train_L18.json
+  candidate = -0.00027,  rank 8 of 11
+  controls >= candidate: 7
+    KO_RAND3 +0.00151 · KO_RAND5 +0.00127 · KO_SHUF2 +0.00049 · KO_RAND2 +0.00030
+    KO_SHUF0 +0.00021 · KO_RAND1 -0.00002 · KO_SHUF1 -0.00013
+  => pooled into 46: R47 >= 8 and p >= 8/47 = 0.17021, DETERMINISTICALLY
+  => is rank <= 2 reachable?  False
+```
+
+The ten already-read controls are a **subset** of the forty-six, and seven of them beat the candidate.
+No result from the thirty-six new arms can move the pooled rank below 8. **A pooled rank test with an
+unreachable rejection region is not a test**, and I specified one.
+
+## What the preregistration does instead, and why it is the right repair
+
+**PRIMARY is `X`: the exceedance count among the 36 blind, never-read controls.** That is the only
+unread quantity in the experiment, its rejection region *is* reachable, and it is exactly what the
+analysis's Beta-binomial actually predicts. `X ~ BetaBinom(36, 7.5, 3.5)`, E[X] = 24.55, sd 5.53, 95 %
+predictive [13, 34].
+
+* **`X ≤ 12`** (P ≤ 2.297e-02) **withdraws** the analysis's §4.2 and its sentence *"extending button's
+  family cannot manufacture a pass"* — whatever the pooled rank says.
+* **`X ≤ 4`** (P ≤ 2.055e-04) resurrects the unequal-family explanation C3 and makes a **clean 46-draw
+  family mandatory** (47 arms, 10.97 GPU-h, new seed, the ten discarded).
+* **`X = 0`** must be reported as `X = 0`, **never** as "rank 8, unchanged".
+
+**SECONDARY is R47**, reported as the number comparable with basket's 1 of 47, carrying **both** its
+attainable floor (0.02128) **and** its arithmetic floor (8) — flagged as a measurement, never a test.
+The binding falsification sentence survives verbatim in the file for the one route that could still
+produce it, and the prereg quantifies that route: reaching rank ≤ 2 would need ≥ 5 of the 7 exceedances
+to flip under the key-intersection shrinkage the analyser applies, i.e. a control moving 0.84
+control-sd from a key-set change, where the analysis's own rebuild agreed to 4.5e-06. If that fired it
+would be a **pipeline-instability finding that impeaches basket's 1 of 47 too**, and the file says so.
+
+## The selection question, and why continuing here is CONSERVATIVE rather than inflationary
+
+PR-CSI-002's frozen rule continues only at `R11 ≤ 3` and stops at 4-or-worse. **Button's stage-1 rank
+is 8 of 11 — the sprint's own rule says STOP.** So the continuation event is `C = {R11 ≥ 4}`: we are
+continuing *because* stage 1 failed. Since `{R46 ≤ 2} ⊆ {R11 ≤ 2} ⊆ {R11 ≤ 3}`, which is **disjoint**
+from `C`, `P(C ∧ R46 ≤ 2 | H0) = 0`. Type-I error is **zero, not inflated**. (PR-CSI-004 continues on
+the *complement* of the same event and gets exactly 2/47 — the mirror image, and the reason both
+preregistrations had to argue this rather than assert it.)
+
+## Two defects in the analysis S-128 committed, found by re-deriving its numbers
+
+1. **The probability column is mislabelled.** `betabinom(46, 7.5, 3.5).pmf(0) = 1.331e-07`, which is
+   *not* the reported 6.5e-07 — but `betabinom(36, 7.5, 3.5).pmf(0) = 6.461e-07` reproduces it
+   **exactly**. So the analysis's *"P(rank 1 of 47)"* is really **P(none of the 36 NEW controls
+   exceeds)**: it already conditions on the seven, under which rank 1 has probability **0**, not
+   6.5e-07. The same check reproduces both L20 figures (15.6364 → "15.6"; 3.238e-03 → "3.2e-03"), so
+   it is **systematic, not a one-cell typo**. The point estimate `1 + 46 × 0.681818 = 32.3636` does
+   reproduce "32.4" exactly.
+2. **The basket calibration figure 2.22 could NOT be reproduced.** Beta(0.5, 10.5) gives 3.091 / 2.636
+   / 2.009 / 1.790 across mean × median × 46 × 36. The analysis's *"calibrated on basket's own 10 → 46
+   transition"* is therefore **weaker than it reads**, and the preregistration says so rather than
+   inheriting it.
+
+Neither defect touches S-128's **conclusion** — the dissociation is carried by the matched-family
+comparison, the Fisher exacts and the paired bootstrap, none of which use these numbers. But S-128
+quoted "P ≤ 6.5e-07" as though it were P(rank 1 of 47), and it is not.
+
+## A hazard nobody had looked for: the ten stage-1 arms ran under DIFFERENT, UNRECOVERABLE code
+
+`RUNMETA.json` for button's ten L18 controls records `git_commit bc8e777…` **with `git_dirty = true`**.
+The current blob is `e94258bd…`, and `git diff bc8e777 -- src/boombness/score_behavior.py` is
+**+474 / −7** — the DCS-CSI-110 necessity build. So pooling 36 new arms with those 10 mixes **two code
+versions, one of which cannot be reconstructed** because the tree was dirty.
+
+All seven modifying hunks were read and every one is donor-gated (`--rescue-donor` gains `'ko'`;
+`== "self"` becomes `in ("self","ko")`; an added if/else whose else-branch is the identical original
+line; three `_kf` lines gaining a conditional dict that is empty unless `rescue_donor == "ko"`). The
+sufficiency path is textually unchanged — **but that is an argument against a dirty tree, not a
+measurement.**
+
+So the preregistration buys the measurement for **one arm, 840 s, 0.233 GPU-h**: `ctrl_random0` re-run
+under current code as `CODEANCHOR_R0`, via group X, with the emitted command verified byte-equivalent
+to the original `KO_RAND0`'s `RUNMETA.argv` (`--rescue-norm-match-key cand_rank1` included) apart from
+`--arm`/`--tag`. Bit-identity on the six readout fields ⇒ pooling is one experiment. Failure ⇒ the
+pooled family is **CANNOT ANSWER**, with a prespecified fallback: read the 36 alone as K = 36, floor
+1/37 = 0.02703 — **under which X survives unchanged**. The tag deliberately does **not** begin
+`KO_RAND`/`KO_SHUF`, so `--control-prefixes` cannot sweep it in as a 47th control, and its job id is
+absent from every `--require-slurm-job` list.
+
+**That gate was not in my brief. The agent added it and it is the most valuable thing in the
+preregistration** — it converts an argument from code-reading into a measurement, which is the move
+this sprint keeps having to relearn.
+
+## CORRECTION to S-127(b), measured on the button side
+
+S-127 recorded that *"for BASE, KO and KO_SELF the `--require-rescue-layer` filter cannot disambiguate
+duplicate tags because `args.rescue_layer` is null in both copies"*. That is right for **BASE and KO**
+and **wrong for KO_SELF on the button side**: group A's `KO_SELF` line *does* pass
+`--rescue-layer $LAYER`, and the two button copies measure at layer **20**
+(`…KO_SELF_20260915_192519_1704606`) and layer **18** (`…KO_SELF_20260917_004057_1213105`). **KO_SELF
+is layer-separable for button.** Operationally nothing changes — both filters remain mandatory and
+unconditional — but the *reason* is now recorded accurately instead of over-generalised from one
+codeword.
+
+## A benign `[layer-override]` in the stage-1 logs, checked rather than assumed
+
+`outputs/boombness/logs/csi_p1_902005.out` line 4 reads
+`[layer-override] using L18 instead of the axis artifact's selected layer`, and 902004 likewise — the
+stage-1 jobs took the override branch. It is **benign**: the artifact's own `selected_layer` is 18, the
+banner reads `LAYER=18 RANK=5`, the M2 guard would have `SystemExit`ed on mismatch, all 17 arms wrote
+670 rows and every arm records `rescue_layer = 18`. **Not retroactively void.** But `CSI_LAYER` must be
+**unset** for the new arms so they take the artifact-reading branch, and a `[layer-override]` line in a
+*new* log is written into PR-CSI-005 as a VOID condition.
+
+## Feasibility and cost, measured rather than budgeted
+
+`configs/dcs_csi_axis_button_behavioral_L18.pt` is a **nested** `{'bases': …, 'meta': …}` — a naive
+`len()` returns 2, and the bases are one level down. `d['bases']` holds **53** keys: `cand_rank1`,
+`cand_pls1-5`, `ctrl_orth`, **`ctrl_random0-21` (22)** and **`ctrl_shuffled0-23` (24)** = a complete
+46-control family, already built, **zero basis-building required**. Unlike basket's group K, which
+needed a second `shuf24` artifact, button's L18 file already carries the shuffled set — so `cand_rank1`,
+the norm-match reference for all 46, is **the same tensor for old and new arms by construction**. That
+whole risk class is absent here.
+
+Must be run: **exactly 36** — `KO_RAND6…21` (16) + `KO_SHUF4…23` (20). All 36 tags were enumerated
+under both `csi1_button_train_` and `csi1_button_validation_`: **zero directories, zero tag collisions**
+(unlike PR-CSI-004, whose 36 basket tags already had L18 namesakes).
+
+Cost from the ten stage-1 arms' own `wall_seconds` (median **843.4 s**, mean **840.1 s**):
+36 × 840.1 = **8.401 GPU-h**, plus the anchor = **37 arms / 8.634 GPU-h** over four allocations, each
+~2.8 h against a `--time=08:00:00` request.
+
+## Launched
+
+```
+sbatch --gpus=geforce_rtx_3090:1 --time=08:00:00 --export=ALL,CSI_STAGE=1 \
+   slurm_scripts/dcs_csi_p1_arms.slurm button configs/dcs_csi_axis_button_behavioral_L18.pt train I 1   -> 912835
+                                                                                              … train I 2   -> 912836
+                                                                                              … train K     -> 912837
+sbatch --gpus=geforce_rtx_3090:1 --time=02:00:00 --export=ALL,CSI_STAGE=1,CSI_ARMS=CODEANCHOR_R0:ctrl_random0 \
+   … train X                                                                                              -> 912838
+```
+
+`CSI_LAYER` unset in all four, so the layer comes from the artifact. Positive architecture constraint
+only — an exclude-list is itself a VOID condition here, per job 906421. All four PENDING behind
+912736, which is at 1:00:01 with five of nine necessity arms landed.
+
+**What this cannot settle, stated before it runs:** it cannot explain *why* the codewords differ, only
+whether they still differ at matched family size; it cannot make button pass; it says nothing about the
+held-out split (**no button-L18 VALIDATION arm has ever been run**, and the analysis's own §13 says
+held-out is the strongest evidence in the set); nothing about L20 (which would need 33 new bases);
+nothing about necessity; and it does **not** test C1, the one surviving explanation.

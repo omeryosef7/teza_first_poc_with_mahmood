@@ -1,0 +1,340 @@
+# PR-CSI-005 READ COMMANDS -- the extension of the BUTTON-at-L18 SUFFICIENCY control family from
+# 10 controls to 46, the family size basket's two passing reads used. Frozen 2026-09-20 ~15:40 +03:00,
+# BEFORE a single one of the 36 new arms was submitted, so the read is mechanical and cannot be
+# tuned to the answer. Prereg: configs/dcs_csi_pr005_button_L18_family.json.
+# Opened by reports/DCS_CSI_BUTTON_BASKET_DISSOCIATION_ANALYSIS.md section 12, experiment E2.
+#
+# THIS EXPERIMENT IS A FALSIFIER OF THE ANALYSIS THAT PROPOSED IT. The analysis projected
+# E[rank] = 32.4 of 47 for button at L18. If that projection fails, section 4.2 of the analysis is
+# withdrawn. Read the prereg's `falsification_criterion` block before reading any number here.
+#
+# WHAT IS BEING ADDED, as a MEASURED set difference, not a guess:
+#   46 rank-1 control bases in configs/dcs_csi_axis_button_behavioral_L18.pt
+#   MINUS the 10 controls of reports/DCS_CSI_SUBSPACE_button_train_L18.json  ->  36 arms.
+#   The reverse difference is EMPTY: the 10 are a strict subset of the 46.
+#     16 random  : KO_RAND6 KO_RAND7 KO_RAND8 KO_RAND9 KO_RAND10 KO_RAND11 KO_RAND12 KO_RAND13
+#                  KO_RAND14 KO_RAND15 KO_RAND16 KO_RAND17 KO_RAND18 KO_RAND19 KO_RAND20 KO_RAND21
+#     20 shuffled: KO_SHUF4 KO_SHUF5 KO_SHUF6 KO_SHUF7 KO_SHUF8 KO_SHUF9 KO_SHUF10 KO_SHUF11
+#                  KO_SHUF12 KO_SHUF13 KO_SHUF14 KO_SHUF15 KO_SHUF16 KO_SHUF17 KO_SHUF18 KO_SHUF19
+#                  KO_SHUF20 KO_SHUF21 KO_SHUF22 KO_SHUF23
+#   NONE of these 36 tags has EVER been run for button, at any layer, on either split -- I
+#   enumerated outputs/boombness/score_behavior/ for csi1_button_train_<arm>_* and
+#   csi1_button_validation_<arm>_* over all 36 and found ZERO directories. Zero tag collisions.
+#
+# THE BASIS INVENTORY, verified by me and not inherited:
+#   configs/dcs_csi_axis_button_behavioral_L18.pt is a NESTED dict {'bases': {...}, 'meta': {...}}.
+#   A naive len() on it returns 2. d['bases'] has 53 keys and its key set EQUALS the .json's
+#   bases key set:
+#     cand_rank1                          (1)   the candidate
+#     cand_pls1 .. cand_pls5              (5)   rank-5 candidates, NOT controls
+#     ctrl_orth                           (1)   the KO_ORTH comparator, NOT a member of the 46
+#     ctrl_random0  .. ctrl_random21     (22)
+#     ctrl_shuffled0 .. ctrl_shuffled23  (24)
+#   22 + 24 = 46 = exactly D12's family size. The analysis's "53 bases including 22 random and
+#   24 shuffled" is CORRECT. All 36 keys the new groups ask for are present; cand_rank1,
+#   ctrl_random21 and ctrl_shuffled23 are each (1, 4096) float32.
+#
+# GROUP K NEEDS NO SECOND AXIS FILE HERE. Its header says it "REQUIRES the shuf24 axis file";
+# on the basket side at L18 that meant a second artifact whose overlapping bases had to be shown
+# bit-identical first. THE BUTTON L18 FILE ALREADY CARRIES ctrl_shuffled0..23, so cand_rank1 --
+# the norm-match reference for all 46 controls -- is the same tensor for the 10 already run and
+# the 36 to be run, by construction. That whole class of risk is absent.
+#
+# POOLING: the 10 already-read controls ARE pooled with the 36 new ones into ONE family of 46; the
+# full argument is the prereg's `pooling_question` block. The short form: the rejection region
+# {R46 <= 2} is CONTAINED in {R11 <= 2}, so continuing on button's stage-1 FAILURE (R11 = 8) has
+# type-I error exactly ZERO -- the selection is entirely conservative. Pooling is legitimate.
+# THE PRICE, DECLARED IN ADVANCE: the same containment means seven of the 46 controls ALREADY beat
+# the candidate, so R47 >= 8 and p >= 8/47 = 0.17021 BEFORE ANY NEW ARM RUNS. The pooled rank is a
+# MEASUREMENT here, never a test. The PRIMARY endpoint is X, the exceedance count among the 36
+# BLIND controls, which is the only unread quantity and the one the projection predicts.
+
+# ================================================================================================
+# PART 1 -- THE SBATCH LINES.  RUN THESE FIRST.  DO NOT EDIT THEM.
+# ================================================================================================
+#
+# GROUPS, confirmed by READING slurm_scripts/dcs_csi_p1_arms.slurm, not assumed:
+#   line 325  group K:  `for j in 12 13 ... 23; do sub "KO_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done`
+#                       -> ctrl_shuffled12-23                                     (12 arms)
+#   line 336  group I, $5 = 1:
+#               `for i in 6 7 8 9 10 11; do sub "KO_RAND${i}" "ctrl_random${i}" cand_rank1; done`
+#               `for j in 4 5 6 7 8 9;    do sub "KO_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done`
+#                       -> ctrl_random6-11 + ctrl_shuffled4-9                     (12 arms)
+#   line 340  group I, $5 = 2:
+#               `for i in 12 ... 21; do sub "KO_RAND${i}" "ctrl_random${i}" cand_rank1; done`
+#               `for j in 10 11;     do sub "KO_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done`
+#                       -> ctrl_random12-21 + ctrl_shuffled10-11                  (12 arms)
+#   12 + 12 + 12 = 36, exactly the set difference above. Nothing else is needed, nothing extra runs.
+#
+# GROUP I NEEDS ITS $5 SUB-SELECTOR; GROUP K MUST NOT BE GIVEN ONE. Script line 114:
+#     if [ -n "${5:-}" ] && [ "$GROUP" != "I" ]; then
+#       echo "REFUSING: \$5 is a GROUP-SPECIFIC sub-selector (only group I uses it) ..." ; exit 2
+#     fi
+# (the DCS-CSI-076 guard, added after $5 had silently meant "layer" and two basket control jobs ran
+#  at L1/L2). Group I is the ONLY group that reads $5 -- its own header at line 332 says so.
+#
+# HOW CSI_LAYER IS PASSED, AND THE ANSWER IS: **IT IS NOT. CSI_LAYER MUST BE UNSET.**
+#   Script line 113:  LAYER="${CSI_LAYER:-}"
+#   Script line 119-120:  if [ -z "$LAYER" ]; then
+#                           LAYER=$(python -c "import json;print(json.load(open('${AXIS%.pt}.json'))['selected_layer'])")
+#   configs/dcs_csi_axis_button_behavioral_L18.json has selected_layer == 18, so LAYER resolves to
+#   18 with NO override and the artifact speaks. Setting CSI_LAYER=18 reaches the same number by the
+#   WRONG branch (lines 121-128): it prints "[layer-override] using L18", which is the branch
+#   intended for WHOLE-STATE arms at a layer their basis was NOT fit at, and review M2 in
+#   src/boombness/score_behavior.py SystemExits a subspace arm unless the basis's own selected_layer
+#   equals --rescue-layer. A "[layer-override]" line in any of the three NEW job logs is a VOID
+#   condition.
+#
+#   MEASURED EXCEPTION, RECORDED SO IT IS NOT DISCOVERED LATER AS A DEFECT: the STAGE-1 jobs DID use
+#   the override. outputs/boombness/logs/csi_p1_902005.out line 4 reads
+#     "[layer-override] using L18 instead of the axis artifact's selected layer"
+#   and csi_p1_902004.out likewise. It is benign and is NOT retroactively void: the artifact's own
+#   selected_layer is 18, so the override resolved to the SAME layer; the banner reads
+#   "LAYER=18 RANK=5"; the M2 guard would have SystemExit'd every subspace arm had they disagreed,
+#   and instead all 17 arms wrote their full 670 rows; and every one of the 10 controls records
+#   args.rescue_layer = 18 in RUNMETA.json. The invariant that must hold across all 46 is
+#   args.rescue_layer == 18, and --require-rescue-layer 18 enforces exactly that.
+#
+# AXIS .pt FOR ALL FOUR COMMANDS: configs/dcs_csi_axis_button_behavioral_L18.pt  (1058173 bytes).
+#
+# THE GPU CONSTRAINT IS POSITIVE, NOT AN EXCLUDE LIST, AND IT IS A VOID CONDITION (S-037, S-119,
+# S-121, S-126, and the practice change in S-122): every arm here is NORM-MATCHED; Tesla V100 is
+# sm_70 with NO native bf16; --dtype bfloat16 is emulated there and the norm-match degeneracy guard
+# then refuses EVERY row of EVERY norm-matched control -- 0 rows on V100 vs 669-670 on RTX 3090,
+# measured at n = 24, 96, 268 and 670. JOB 906421 IS THE INSTANCE WHERE AN EXCLUDE-LIST FAILED:
+# --exclude=n-301,n-304 excluded the whole 3090 rack, the job landed on rack-bgw-dgx1 and wrote zero
+# rows on every norm-matched arm. --gpus=geforce_rtx_3090:1 makes V100 IMPOSSIBLE rather than
+# merely unlikely. Using an exclude-list here is itself a VOID condition.
+#
+# BEFORE EACH SUBMISSION, assert (sbatch propagates the environment by default):
+#   env | grep -c '^CSI_LAYER='                       -> must print 0
+#   git hash-object src/boombness/score_behavior.py   -> must print
+#                                 e94258bd5fc44c70629e707b00504b7acac2a7b7
+#   squeue -j 912736                                  -> must still be RUNNING and UNDISTURBED
+
+sbatch --gpus=geforce_rtx_3090:1 --time=08:00:00 --export=ALL,CSI_STAGE=1 \
+       slurm_scripts/dcs_csi_p1_arms.slurm button configs/dcs_csi_axis_button_behavioral_L18.pt train I 1
+
+sbatch --gpus=geforce_rtx_3090:1 --time=08:00:00 --export=ALL,CSI_STAGE=1 \
+       slurm_scripts/dcs_csi_p1_arms.slurm button configs/dcs_csi_axis_button_behavioral_L18.pt train I 2
+
+sbatch --gpus=geforce_rtx_3090:1 --time=08:00:00 --export=ALL,CSI_STAGE=1 \
+       slurm_scripts/dcs_csi_p1_arms.slurm button configs/dcs_csi_axis_button_behavioral_L18.pt train K
+
+# ---- THE CODE-IDENTITY ANCHOR (gate 0d). ONE ARM. RUN IT WITH THE THREE ABOVE. ------------------
+# WHY IT EXISTS AND WHY PR-CSI-004 DID NOT NEED IT. PR-CSI-004's stage-1 arms ran under the SAME
+# src/boombness/score_behavior.py blob its new arms will. PR-CSI-005's did NOT: RUNMETA.json for the
+# 10 records git_commit bc8e777936339922bb5d081fa37d827aac5fcd6a with git_dirty = true, and
+# `git diff bc8e777 -- src/boombness/score_behavior.py` is +474/-7 (the DCS-CSI-110 necessity build).
+# I read all 7 modifying hunks: every one is gated on the NEW donor (--rescue-donor gains 'ko';
+# `== "self"` becomes `in ("self","ko")`; `ctxs = list(ctxs) + [_rescue_ctx]` becomes an if/else
+# whose else-branch is the identical original line; three `_kf = {...}` lines gain
+# `**(_necessity_row_fields(...) if args.rescue_donor == "ko" else {})`). On the SUFFICIENCY path
+# the executed lines are textually unchanged. But that is a static reading of a diff against a DIRTY
+# tree, and static reading is an argument, not a measurement. One arm buys the measurement.
+#
+# Group X (script lines 294-312) emits exactly
+#   $SB $COMMON $KO $R --rescue-basis "$AXIS" --rescue-basis-key "$key" \
+#       --rescue-norm-match-key cand_rank1 --arm "$arm" --tag "${P}_${arm}"
+# which I checked against the original KO_RAND0's RUNMETA.argv: identical flag set, including
+# --rescue-norm-match-key cand_rank1, differing only in --arm and --tag.
+#
+# THE ARM NAME IS DELIBERATE. "CODEANCHOR_R0" does NOT begin with KO_RAND or KO_SHUF, so
+# --control-prefixes KO_SHUF,KO_RAND cannot sweep it into the family as a 47th control. Its job id
+# is also deliberately ABSENT from every --require-slurm-job list below, so it is excluded twice.
+# CSI_ARMS is SPACE-separated by design (a comma-bearing --export value is the sbatch truncation
+# hazard this repo has been bitten by); one entry needs no separator and carries no comma.
+
+sbatch --gpus=geforce_rtx_3090:1 --time=02:00:00 \
+       --export=ALL,CSI_STAGE=1,CSI_ARMS=CODEANCHOR_R0:ctrl_random0 \
+       slurm_scripts/dcs_csi_p1_arms.slurm button configs/dcs_csi_axis_button_behavioral_L18.pt train X
+
+# CSI_STAGE=1 is the node-local snapshot staging of DCS-CSI-092 (the n-30x rack's NFS path reads the
+# shared snapshot at 2-7 MB/s and the HF loader's random mmap access over it takes 20+ hours). It is
+# a load-time workaround and touches nothing scientific. --time=08:00:00 is headroom: the MEASURED
+# per-arm wall time for button at L18 is mean 840.110 s / median 843.404 s over the 10 stage-1
+# control arms' DONE.json, i.e. 12 arms = 10081 s = 2.80 h, but the launcher's own header budgets
+# ~29 min per 670-row readout arm and the rate is node-dependent.
+#
+# RECORD THE FOUR JOB IDS HERE AS THEY ARE ASSIGNED, and substitute them below:
+#   <I1> = group I sub-selector 1 = ____________
+#   <I2> = group I sub-selector 2 = ____________
+#   <K>  = group K                = ____________
+#   <CA> = group X, CODEANCHOR_R0 = ____________   (NEVER goes into --require-slurm-job)
+
+# ================================================================================================
+# PART 2 -- GATE 0, BEFORE ANY NUMBER IS READ
+# ================================================================================================
+# (a) THE ARCHITECTURE PIN, verified from the runs themselves and not from the sbatch line:
+#       for every one of the 53 run directories admitted by the filters in PART 3, RUNMETA.json must
+#       record  gpu == "NVIDIA GeForce RTX 3090".  The 17 stage-1 arms already satisfy this -- I
+#       checked all of them (jobs 902004 and 902005, node n-306). The three new jobs must be checked
+#       the same way. ANY other GPU string anywhere -> VOID; the family is re-run, never patched.
+# (b) NO LAYER OVERRIDE ON THE NEW JOBS: grep for '[layer-override]' in the three new job logs must
+#       find NOTHING, and the launcher banner must read "LAYER=18 RANK=5" in all three. The stage-1
+#       logs DO carry that line; see PART 1 for the measurement and why it is benign there.
+# (c) NO ROW COLLAPSE: each of the 36 new arms must have written >= 666 of 670 rows (--allow-short
+#       4). An arm at 0 rows is the V100 degeneracy signature even if the GPU string says otherwise.
+#       An arm short by more than 4 is RE-RUN via group X, never dropped (prereg
+#       incomplete_family_rule). Do NOT widen --allow-short.
+# (d) THE CODE-IDENTITY ANCHOR MUST PASS. Compare the rescue-fired rows of
+#       csi1_button_train_CODEANCHOR_R0_*            (job <CA>, current blob e94258bd)
+#     against
+#       csi1_button_train_KO_RAND0_20260916_223555_2963342   (job 902005, blob unknown, tree dirty)
+#     on logp_concept, logp_codeword, semantic_logodds, p_concept, p_codeword and top1_id.
+#     Expect max |diff| == 0 on all six, as S-105b measured for button across nodes.
+#       PASS -> the +474/-7 change is inert on the norm-matched sufficiency path; the pooled family
+#               of 46 is ONE experiment and PART 3 runs as written.
+#       FAIL -> the POOLED family is CANNOT ANSWER. Do NOT run 3.1-3.4 as written. The prespecified
+#               fallback (prereg cannot_answer_criteria) is: read the 36 NEW controls ALONE as a
+#               family of 36 (floor 1/37 = 0.02703) against a candidate RE-RUN under the current
+#               code, and DISCARD the 10. X -- the PRIMARY -- survives this failure unchanged.
+# (e) NO INTERIM READ. PART 3 is run ONCE, after all 36 arms have finished. Reading a subset and
+#       stopping when the count looks good is the one thing that would turn this into a post-hoc
+#       test, and the prereg prohibits it by name.
+# (f) OUTPUT PATHS MUST NOT EXIST. `ls` them before 3.1. In particular
+#       reports/DCS_CSI_SUBSPACE_button_train_L18.json is the committed 10-control read and is NOT
+#       the output of this preregistration.
+
+# ================================================================================================
+# PART 3 -- THE FROZEN READ.  Run in this order.  Add no flag, remove no flag.
+# ================================================================================================
+# --require-rescue-layer 18 AND --require-slurm-job ARE BOTH MANDATORY AND NEITHER IS OPTIONAL.
+#
+#  * WHY THE LAYER FILTER: EVERY one of BASE, KO, KO_SELF, KO_FULL, KO_AXIS, KO_PLS, KO_ORTH,
+#    KO_AXIS_ANCHOR, KO_RAND0-5 and KO_SHUF0-3 exists TWICE under csi1_button_train_* -- once at L20
+#    (jobs 896679 / 896771, 2026-09-15) and once at L18 (jobs 902004 / 902005). Without the layer
+#    filter these commands would silently analyse the L20 experiment. That is the S-104 ambiguity,
+#    and R8-B1 is why the filters are unconditional and assert on the survivor.
+#  * WHY THE JOB FILTER, AND IT IS NOT REDUNDANT: BASE and KO ran NO rescue -- script lines 155-156
+#    pass them no $R -- so BOTH their L18 and L20 copies record args.rescue_layer = null and BOTH
+#    pass the layer filter untouched. FOR THOSE TWO ARMS THE JOB FILTER IS THE ONLY SEPARATOR.
+#    Omitting it silently substitutes the L20 experiment's BASE/KO into an L18 read.
+#    (Correction to the inherited note, measured by me: on the BUTTON side KO_SELF IS separable by
+#     layer -- group A's KO_SELF line 157-158 does pass --rescue-layer $LAYER, and I measured
+#     csi1_button_train_KO_SELF_20260915_192519_1704606 at rescue_layer 20 against
+#     csi1_button_train_KO_SELF_20260917_004057_1213105 at rescue_layer 18. Only BASE and KO are
+#     layer-blind. Both filters stay mandatory regardless.)
+#  * WHY --control-prefixes IS SPELLED OUT: it defaults to KO_SHUF,KO_RAND, but stating it is what
+#    makes the control family explicit in the frozen command rather than implicit in a default that
+#    another agent could change. If it is ever wrong the control distribution goes SILENTLY EMPTY
+#    and the rank is computed over nothing.
+#
+# The five allocations that make up this family:
+#   902004  group A  -- BASE KO KO_SELF KO_FULL KO_AXIS KO_PLS KO_ORTH            (n-306, RTX 3090)
+#   902005  group B  -- KO_SHUF0-3 KO_RAND0-5 (+ KO_AXIS_ANCHOR, excluded)        (n-306, RTX 3090)
+#   <I1>    group I1 -- KO_RAND6-11  KO_SHUF4-9
+#   <I2>    group I2 -- KO_RAND12-21 KO_SHUF10-11
+#   <K>     group K  -- KO_SHUF12-23
+# KO_AXIS_ANCHOR is NOT in --arms and is NOT matched by --control-prefixes "KO_SHUF,KO_RAND": it is
+# the cross-allocation anchor, not a control draw. CODEANCHOR_R0 is excluded the same way, and its
+# job <CA> is absent from every --require-slurm-job list below.
+
+# ---- 3.1 PRIMARY ANALYSER (46 controls, attainable floor 1/47 = 0.02128, arithmetic floor R47>=8)
+python scripts/dcs_csi_subspace_analyze.py \
+  --codeword button --tag-prefix csi1_button_train --expect-n 670 --allow-short 4 \
+  --arms BASE,KO,KO_SELF,KO_FULL,KO_AXIS,KO_PLS,KO_ORTH,KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5,KO_RAND6,KO_RAND7,KO_RAND8,KO_RAND9,KO_RAND10,KO_RAND11,KO_RAND12,KO_RAND13,KO_RAND14,KO_RAND15,KO_RAND16,KO_RAND17,KO_RAND18,KO_RAND19,KO_RAND20,KO_RAND21 \
+  --control-prefixes KO_SHUF,KO_RAND \
+  --direction sufficiency \
+  --candidate-arm KO_AXIS --comparator-arm KO_ORTH --full-arm KO_FULL --ko-arm KO --base-arm BASE --self-arm KO_SELF \
+  --self-inert-tol 0.005 --n-boot 20000 \
+  --split train --require-rescue-layer 18 --require-slurm-job 902004,902005,<I1>,<I2>,<K> \
+  --out reports/DCS_CSI_SUBSPACE_button_train_L18_n46.json
+
+# ---- 3.2 INDEPENDENT RE-DERIVATION (shares no code with 3.1) ------------------------------------
+python scripts/dcs_csi_rederive_subspace.py \
+  --tag-prefix csi1_button_train --split train --expect-n 670 --allow-short 4 \
+  --direction sufficiency --candidate KO_AXIS --ko KO --base BASE --full KO_FULL \
+  --controls KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5,KO_RAND6,KO_RAND7,KO_RAND8,KO_RAND9,KO_RAND10,KO_RAND11,KO_RAND12,KO_RAND13,KO_RAND14,KO_RAND15,KO_RAND16,KO_RAND17,KO_RAND18,KO_RAND19,KO_RAND20,KO_RAND21 \
+  --require-rescue-layer 18 --require-slurm-job 902004,902005,<I1>,<I2>,<K> \
+  --out reports/DCS_CSI_REDERIVE_button_train_L18_n46.json
+
+# ---- 3.3 LEAVE-ONE-DOMAIN-OUT, both directions --------------------------------------------------
+python scripts/dcs_csi_rank_loo.py --tag-prefix csi1_button_train --split train \
+  --expect-n 670 --allow-short 4 --require-rescue-layer 18 \
+  --require-slurm-job 902004,902005,<I1>,<I2>,<K>
+
+# ---- 3.4 THE PRESPECIFIED SECONDARY: the SHUFFLED-ONLY subfamily (24 controls, floor 1/25 = 0.0400)
+# R5 / S-099 / S-100 found the random and shuffled families exchangeable IN LOCATION (exact
+# two-sample permutation p = 0.714) but the shuffled family's sd 1.9x the random family's, so the
+# SHUFFLED TAIL is what sets the margin -- at basket L18 the three controls closest to the candidate
+# were all shuffled. AT BUTTON L18 THE RATIO IS REVERSED (0.65, per the analysis section 11), and
+# this read tests whether that survives at 24 shuffled controls. It is SECONDARY, it is declared
+# before the data, and it may NOT be substituted for the primary if the primary disappoints.
+python scripts/dcs_csi_subspace_analyze.py \
+  --codeword button --tag-prefix csi1_button_train --expect-n 670 --allow-short 4 \
+  --arms BASE,KO,KO_SELF,KO_FULL,KO_AXIS,KO_PLS,KO_ORTH,KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23 \
+  --control-prefixes KO_SHUF \
+  --split train --require-rescue-layer 18 --require-slurm-job 902004,902005,<I1>,<I2>,<K> \
+  --out reports/DCS_CSI_SUBSPACE_button_train_L18_shufonly.json
+
+# ---- 3.5 THE PRIMARY STATISTIC IS COMPUTED FROM 3.1's OUTPUT, BY HAND, AND REPORTED FIRST --------
+# X = #{of the 36 NEW controls (KO_RAND6-21, KO_SHUF4-23) whose control_recovery_distribution value
+#      is >= the candidate's} -- the analyser's own '>=' convention, the same one that produced
+#      rank 8 of 11 for the stage-1 family.
+# Report, in this order and none omitted:
+#   X  and  X/36
+#   the analysis's predictive for X: BetaBinomial(36, 7.5, 3.5), E[X] = 24.5455, sd 5.5307,
+#     95% predictive interval [13, 34];  P(X<=12) = 2.297e-02, P(X<=4) = 2.055e-04, P(X=0) = 6.461e-07
+#   the decision-rule branch that X selects (prereg decision_rule.on_the_PRIMARY_X...)
+#   THEN R47, its p = R47/47, its attainable floor 0.02128 AND its arithmetic floor of 8,
+#     stated as having been fixed in advance by the 7 committed stage-1 exceedances
+#   THEN z = (cand - mean(46 controls))/sd(46 controls), beside basket's +2.561 (TRAIN, 46)
+#   THEN the exceedance rate (7 + X)/46 with a Clopper-Pearson 95% CI, beside basket's 0/46
+#     [0.000, 0.077]
+
+# ---- 3.6 AFTER EVERY WRITE, VERIFY IT (S-124) ---------------------------------------------------
+# The disk quota is enforced at 200 GB and NFS reports EDQUOT ASYNCHRONOUSLY: a write can print
+# "Disk quota exceeded" and still have fully succeeded, or print nothing and have written 0 bytes.
+# The frozen PR-CSI-002 read already "succeeded" into two empty files once (S-123). Exit status is
+# NOT evidence.
+for f in reports/DCS_CSI_SUBSPACE_button_train_L18_n46.json \
+         reports/DCS_CSI_REDERIVE_button_train_L18_n46.json \
+         reports/DCS_CSI_SUBSPACE_button_train_L18_shufonly.json ; do
+  ls -l "$f" && python -c "import json,sys;d=json.load(open(sys.argv[1]));print(sys.argv[1],'json.load OK, top-level keys',len(d),'n_controls',d['control_recovery_distribution']['n_controls'],'rank',d['control_recovery_distribution']['candidate_rank_among_controls'],'n_domains',d['n_domains'])" "$f"
+done
+
+# ================================================================================================
+# PART 4 -- WHAT MAY AND MAY NOT BE CONCLUDED
+# ================================================================================================
+#  * THE DECISION RULE IS IN THE PREREG AND IS NOT RESTATED LOOSELY HERE. The PRIMARY is X, not the
+#    pooled rank. X >= 13 confirms the projection; 5 <= X <= 12 REFUTES the projection and withdraws
+#    section 4.2 of the analysis; 1 <= X <= 4 is SEVERE and makes the CLEAN 46-draw family
+#    mandatory; X = 0 must be reported as X = 0 and never as "rank 8, unchanged".
+#  * THE FALSIFICATION SENTENCE, verbatim from the prereg and binding: "If button comes back at
+#    rank 1 or 2 of 47, the 'dissociation is real' conclusion of
+#    reports/DCS_CSI_BUTTON_BASKET_DISSOCIATION_ANALYSIS.md is WRONG and must be withdrawn."
+#    AND the arithmetic that goes with it: under pooling that outcome requires the analyser's
+#    recomputation on the shrunken key intersection to flip at least FIVE of the SEVEN committed
+#    stage-1 exceedances -- the seven margins over the candidate are +0.00014, +0.00025, +0.00048,
+#    +0.00057, +0.00076, +0.00154, +0.00178 against a control sd of 0.000910, so five flips means
+#    moving a control by >= 0.84 sd from a key-set change alone, where the analysis's own section-0
+#    rebuild agreed to 4.5e-06. If it fires, the pipeline instability that produced it is reported
+#    in the same breath and applied to basket's 1 of 47 as well.
+#  * THE FAMILY IS NOT EXTENDED AGAIN AFTER THIS READ. 46 is D12's resolution and this
+#    preregistration's terminal K for the pooled design. The only licensed escalation is the CLEAN
+#    46-draw family, under the single outcome X <= 4, and it REPLACES this family rather than adding
+#    to it.
+#  * THE CANDIDATE'S POINT VALUE WILL MOVE off -0.00027, because the cross-arm key intersection
+#    shrinks when 36 arms are added (17 arms -> 658 keys at button L18; basket's 53-arm read at L18
+#    -> 642). That is arithmetic, not instability, and it is declared in advance. All 47 recoveries
+#    are recomputed on the SAME key set, so the rank is unaffected by the common shrinkage.
+#    n_domains must still be 67.
+#  * REPORT THE TYPE-I ERROR HONESTLY AND IN THE RIGHT DIRECTION. Continuing on button's stage-1
+#    FAILURE (R11 = 8) puts the rejection region inside the STOP region, so the two-stage
+#    procedure's type-I error is ZERO -- conservative, not inflated. Do not present that as a
+#    strength of the test; it is the reason the pooled rank is not the test.
+#  * THIS SETTLES NOTHING ABOUT WHY. It can confirm or refute THAT the codewords differ at matched
+#    family size. It supplies no mechanism, and the residual after eight killed/partial candidates
+#    is still the codeword.
+#  * PROHIBITION 19 STANDS. Button's candidate at L18 recovers -0.25 % of what the whole clean state
+#    recovers. No rank at any family size enlarges an effect, and nothing here may be written as
+#    "button's axis is causal" or "button's axis is not causal".
+#  * A NULL IS NOT "NEARLY SIGNIFICANT". p >= 0.17021 by construction and there is nothing to be
+#    near. Nor does a null here RESTORE the layer as the explanation of the dissociation --
+#    button-at-L18 (S-104) excluded that, and no outcome here brings it back.
+#  * NO DOSE-NORMALISED obs/pred RATIO (S-109 withdrew it; the KO_AT arms span -24 % to +1304 % at
+#    this very dose). AMPLITUDE, NEVER "ENERGY" (captured_energy_frac_mean is mean(proj_norm /
+#    delta_norm), a ratio of NORMS despite the key name).
+#  * NOTHING HERE POOLS BUTTON AND BASKET (rule 3.3). Every cross-codeword contrast is reported side
+#    by side.
