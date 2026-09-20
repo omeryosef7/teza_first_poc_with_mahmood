@@ -11353,3 +11353,146 @@ surviving ids from this chain — and must **not** name `914044-914047` (S-147),
 `914472-914475`, which were cancelled before writing anything. Three cancelled generations is three
 chances to admit the wrong arms, and the only thing standing between that and a corrupted family is
 `--require-slurm-job` plus the gate assertion that the filter leaves exactly one candidate per arm.
+
+---
+
+# S-149 — **the 6.2× has a location: serialising DID fix scoring, and the one residue is a COLD MODEL LOAD that is one-time per job.** PR-CSI-007's chain is left alone, and the reason is measured. Plus: **NFS mtimes on this filesystem run ~4 minutes ahead and are not usable as timestamps**
+
+S-148 predicted that serialising would restore the uncontended rate. This tick checked that prediction
+and got the answer wrong **twice** before getting it right, each time by reaching for a quantity that
+sat next to the one that mattered. Both near-misses are recorded because the second one is a property
+of the filesystem that will bite again.
+
+## Near-miss 1 — the marker gap is not the arm's cost
+
+Job `914476` (group B, n-305, the only job of mine on the node) printed `>>> KO_AXIS_ANCHOR` at
+`00:17:14` and `>>> KO_SHUF0` at `00:41:17` — a **1 443 s** gap against a 238 s baseline. I had the
+cancellation reasoning half-written. Then the arm's own `DONE.json`:
+
+```
+"run_id": "csi1_button_validation_KO_AXIS_ANCHOR_20260921_001731_532952",
+"wall_seconds": 245.281,  "rows_written": 230,  "n_rows_failed": 0,  "status": "ok"
+```
+
+**245.281 s — the uncontended rate.** The marker-to-marker gap contains everything the next process
+does before scoring starts. **Serialising worked exactly as S-148 said it would**, and the number that
+says so is the one I almost did not read.
+
+## Near-miss 2 — **NFS mtime on this filesystem is ~4 minutes in the future**
+
+Having learned that, I decomposed the gap using directory mtimes, and concluded the corpus read cost
+268 s per arm. That was wrong, and the check that caught it is direct:
+
+```
+ls -la --time-style=+%H:%M:%S outputs/boombness/logs/csi_p1_914476.out   ->  00:49:30
+date +%H:%M:%S                                                          ->  00:45:39
+```
+
+**The mtime is 3 m 51 s AHEAD of the wall clock.** `netapp2-244` and the login/compute nodes do not
+agree, so *no* mtime on this filesystem is a usable timestamp, and "which of these two files is newer"
+is only safe when both live on the same server and are far apart in time. The valid probe was in hand
+all along: **`RunDir` stamps its construction time into the run_id**, generated in-process on the
+compute node (`score_behavior.py:2903` prints the population filter; `RunDir(...)` is seven lines
+below, before `dc.load_model`). So `…_20260921_001731_…` *is* the RunDir instant, to the second.
+
+## The decomposition, done with run_ids
+
+| phase | probe | n-301 `914043` arm 1 | n-305 `914476` arm 1 | n-305 `914476` arm 2 |
+|---|---|---|---|---|
+| population read | marker → run_id stamp | 13 s | **17 s** | **5 s** |
+| model load | run_id → (end_ts − wall_seconds) | ~15 s | **1 180 s** | **8 s** |
+| scoring | `wall_seconds` | 168.2 s | **245.3 s** | **238.7 s** |
+| marker → next marker | log | 196 s | **1 443 s** | **253 s** |
+
+```
+arm 1: 00:17:14 marker -> 00:17:31 RunDir -> 00:37:11 scoring starts -> 00:41:16 DONE   (17 + 1180 + 245 = 1442)
+arm 2: 00:41:17 marker -> 00:41:22 RunDir -> 00:41:30 scoring starts -> 00:45:29 DONE   (5 + 8 + 238.7 = 252)
+```
+
+**The corpus read is fine (5–17 s) and the scoring is fine (245.3 s, against 237.7 s for `KO_AXIS` on
+n-301 and 237.3 s for `KO_AXIS_ANCHOR` itself uncontended on 09-15).** The entire anomaly is **one cold
+model load of 1 180 s against a warm 8–15 s** — 15 G read into a node with 106 G free, and warm on
+every subsequent arm. **One-time per job, not per arm.** My draft of this entry claimed the opposite
+from the bad mtimes; that claim is withdrawn here before it was ever committed.
+
+## Two hypotheses killed by measurement
+
+```
+srun --overlap --jobid=914476 ...
+  ps:   PID 532952  ELAPSED 1235 s  TIME 00:01:08  %CPU 5.5      <- 68 s CPU in 1235 s: blocked on I/O
+  gpu0 (mine, 21 802 MiB): util 78 %, 1830/2100 MHz, 260/350 W, sw_power_cap ACTIVE
+  gpu1,2,3,6,7 (nadaveisen x6, galbarak2 x1): util 100 %, 1.6-9.4 GiB each
+```
+
+**Power capping — killed.** My GPU is genuinely clock-capped, 1830 against 2100 MHz. That is 13 %, it
+cannot make 6×, and scoring matching the uncontended rate to 3 % shows it cost nothing measurable.
+
+**An arm-type confound — killed.** Both slow numbers on record were `KO_AXIS_ANCHOR`, while the 238 s
+baseline was *other* arms: node and arm type were confounded. The `DONE.json` table breaks it two ways
+— the same arm ran in **237.3 s** uncontended on 09-15, and the five arms that started together at
+`22:17:35` on 09-20 (`KO_AXIS_ANCHOR`, `KO_RAND6`, `KO_RAND12`, `KO_SHUF12`, `XSWAP_FROM_BASKET`, five
+*different* types) finished at **1467.2, 1468.6, 1467.2, 1472.3, 1473.0 s**. A 0.4 % spread across arms
+that span 237–250 s uncontended is a shared resource, not the arms.
+
+## CORRECTION to S-147
+
+S-147 wrote: *"The penalty is on EVERY ARM'S INFERENCE, which staging does not touch."* Measured today:
+with one job on the node, **inference is untouched**. The two regimes are distinct and S-147 named only
+one:
+
+* **4 of my jobs co-resident** (09-20 22:17): scoring itself degrades — `wall_seconds` 1469 s.
+* **1 of my jobs** (today): scoring normal at 245 s; only the *first* model load degrades.
+
+S-147's *cause* — memory/page-cache pressure on a node with 106 G free — survives and is sharpened onto
+the phase that reads bytes. Staging fixed the copy; it does not make the first read of the copy warm.
+
+## CORRECTION to S-148's arithmetic (its decision stands, and is now better supported)
+
+S-148 projected *"47 arms at 238 s/arm ≈ 3.1 h"* using a scoring-only number. With the cold load
+measured, the honest projection is per job, not per arm:
+
+```
+group B  1 cold arm 1443 s + 10 warm x 253 s = 3 973 s = 1.10 h   (limit 6 h)
+I1/I2/K  1 cold arm 1443 s + 11 warm x 253 s = 4 226 s = 1.17 h   (limit 6 h)
+chain total ~= 4.7 h, and NO job is anywhere near its limit
+```
+
+S-148's 3.1 h was closer to right than the 18.8 h I had written into the first draft of this entry off
+the bad mtimes.
+
+## Why the chain is LEFT ALONE
+
+```
+NODE   STATE       GPU_alloc/tot  FreeMem_G  njobs
+n-301  MIXED       7/7            1283       7
+n-302  MIXED       8/8             524       0
+n-303  MIXED       8/8             156       1
+n-304  MIXED       8/8             632       1
+n-305  MIXED       7/8             106       7   <- my 914476
+n-306  MIXED       8/8             153       8
+n-307  DOWN+DRAIN  0/8             248       0
+n-350  MIXED       8/8             407       8
+```
+
+**Exactly one free 3090 GPU exists in the cluster, and it is on n-305.** So:
+
+1. **Cancel-and-resubmit is out.** An `--exclude=n-305` job pends indefinitely — attempt 1's trap, for a
+   fourth time. n-307 is DOWN+DRAINED; everything else is fully allocated.
+2. **Releasing the chain is out.** `scontrol update jobid=914477 Dependency=""` is otherwise clean — it
+   mints no job id, so it touches neither the read's job list nor the blob witness. But the scheduler
+   would hand the released job *the one free GPU*, on n-305 beside `914476`, rebuilding by hand the
+   co-resident regime that is the single thing measured to destroy scoring (245 → 1469 s).
+3. **And it is unnecessary**: the chain finishes in ~4.7 h with every job at a fifth of its limit.
+
+**No intervention.** The first operational decision this sprint reached by measuring the thing itself
+rather than a neighbour of it — which is the error S-147, S-148 and both near-misses above all share.
+
+## State
+
+```
+914476 R n-305 group B, 2 of 11 arms done  | 914477 914478 914479 PD (Dependency)  all --time=06:00:00
+blob 11d2c617   porcelain clean (2 untracked, unrelated)   quota 197G of 200G
+```
+
+No number was read. The read's job list must still name `914043`, `914048` and the chain survivors, and
+must **not** name `914044-914047`, `914417-914420`, `914472-914475`.
