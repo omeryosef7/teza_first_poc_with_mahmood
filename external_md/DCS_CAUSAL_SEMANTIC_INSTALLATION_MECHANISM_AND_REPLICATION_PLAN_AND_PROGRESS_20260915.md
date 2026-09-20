@@ -12036,3 +12036,102 @@ the delta, both fixed before any readout, so a rerun reproduces it. Guard after 
 
 The commit was **not** forced through with `--no-verify`. The guard found something real on its first
 attempt, which is the second time this session a check has caught a thing an argument would have missed.
+
+---
+
+# S-153 — MAJOR-1 worked: the confound is **bounded to the fitted direction**, the guard that should have caught it now exists and passes, and the size of the effect is **CANNOT ANSWER from existing artifacts**
+
+R11's MAJOR-1 established that basket's five behavioural axes were fit from V100 (emulated bf16)
+activations and button's six from an RTX 3090. This tick did the three things that can be done without
+GPU: bound the claim, build the missing guard, and establish honestly what cannot be answered.
+
+## Bounding it — three measurements that make the statement narrower and firmer
+
+**1. It is NOT "void" in the S-121 sense.** S-121 measured that V100 + the *norm-matched* path refuses
+**0 of 670 rows, every time, at n = 24, 96, 268 and 670**. That is the SCORING path. Extraction has no
+norm-match basis and no degeneracy test, which is why `cont1_behavioral_basket_bomb` produced its rows
+normally and the axis exists at all. Calling the axis "void" would overstate what is known.
+
+**2. There is no cross-hardware DELTA.** `scripts/dcs_csi_axis.py:273` takes a **single** `--corpus`:
+
+```
+ap.add_argument("--corpus", required=True, help="extract_boombness run dir (states)")
+```
+
+So the fit consumes one extract run, not a clean/KO pair. The `h_clean − h_ko` subtraction happens at
+scoring time inside `score_behavior.py`, on one device. **The confound is therefore confined to one
+quantity: the fitted direction w was estimated from activations computed in emulated bf16.** The
+scoring, the delta and the projection are all clean. That is a materially smaller claim than R11's
+entry could support on its own, and it is the accurate one.
+
+**3. The near-miss that would have made it worse.** The crossed design nearly exists and is not what it
+looks like. For basket there IS a 3090 behavioural extraction — `cont1ko_behavioral_basket_bomb_
+20260914_214823_2106024` — same bank (`..._ts116m_basket_bomb.jsonl`), same codeword. It is **not** a
+hardware replicate:
+
+```
+                     cont1 (V100)                       cont1ko (3090)
+no_knockout          True   <- CLEAN                    False  <- KNOCKOUT
+knockout_scope       legacy_all_query                   target_surface_row_only
+layers               0,2,4,...,30,31  (19 layers)       18,20,24
+capture_rel_end      -16..-1                            -6
+dtype                bfloat16                           bfloat16   (identical)
+bank                 ts116m_basket_bomb.jsonl           (identical)
+```
+
+Condition, layer set and capture positions all differ. Differencing these would measure knockout,
+layer and position simultaneously and report it as hardware.
+
+## CANNOT ANSWER — the magnitude, from what is on disk
+
+I looked for a controlled pair across the whole extract tree: **103 runs with RUNMETA, 90 distinct
+configuration stems.** Grouping by (codeword, bank sha16, row count) and by stem:
+
+```
+GPU census of extract_boombness:  L40S 80 | V100 7 | RTX 3090 4 | TITAN Xp 8 | Quadro RTX 8000 2 | none 2
+stems run on more than one GPU:   exactly 1  -- "bombspecko", and all three of its runs are 0 bytes
+```
+
+**No same-condition, same-rows extraction was ever run on two hardwares with data in it.** So the
+question "how far does emulated bf16 move the fitted axis?" **cannot be answered from existing
+artifacts**, and no arrangement of what is on disk substitutes for the measurement. Recorded as
+CANNOT ANSWER rather than estimated, per §15. Clearing it requires re-extracting
+`cont1_behavioral_basket_bomb` on a 3090 and re-fitting the five axes — GPU work, queued behind
+PR-CSI-007.
+
+## The guard that should have existed
+
+`scripts/gates/dcs_csi_axis_hardware_provenance.py` — the missing twin of the S-139 bf16 guard. That
+one sits on the SCORING path; this one sits on the FITTING path. It resolves every axis to the extract
+run it was fit from, maps the device name to a compute capability, and refuses `bfloat16` below sm_80.
+
+```
+[axis-prov] SIZE axes examined = 12                 <- non-vacuity asserted FIRST (S-134)
+   5 basket axes   -> cont1_behavioral_basket_bomb  -> Tesla V100-SXM2-32GB  bfloat16  7.0  <== EMULATED [KNOWN]
+   basket_semantic -> cont1_semantic_one_word_...   -> RTX 3090              bfloat16  8.6
+   6 button axes   -> cont1_behavioral_button_bomb  -> RTX 3090              bfloat16  8.6
+[axis-prov] axes resolved: 12 | emulated-bf16: 5 (5 documented, 0 undocumented)
+PASS (every offending axis is documented in KNOWN_VOID_PROVENANCE)
+```
+
+Design follows the repo's own `KNOWN_SHORT` pattern: the five basket axes are listed in
+`KNOWN_VOID_PROVENANCE` with the measurement and the bound from §1–2 above, so the gate is **green
+today and turns red the moment a new axis is fit on the wrong hardware.** An axis whose corpus cannot
+be resolved is a FAILURE, not a pass — the vacuity trap S-134 fell into. Its `atomic_write_json` is the
+corrected S-130 shape (verify the **temp** file, chmod fallback 0o644), not the one R11's MAJOR-5
+caught.
+
+`reports/DCS_CSI_AXIS_HARDWARE_PROVENANCE.json` (4 152 bytes, written atomically and re-read).
+
+## Status of the sprint's position
+
+Unchanged from R11 in direction, narrower in scope: the codeword dissociation is **certified, and its
+behavioural channel carries one unrefuted candidate explanation — the fitted direction for basket was
+estimated under emulated bf16.** The semantic channel is unaffected (`basket_semantic` is 3090).
+PR-CSI-006's CELL 4 inherits the confound, because the swap artifact's recipient is basket.
+
+```
+914476 COMPLETED 11/11 | 914477 R n-301 5 arms, all 230 rows status=ok | 914478/9 PD
+run_completeness: every finished run with an expect_n persisted its full row count
+blob 11d2c617   quota 197G of 200G   no PR-CSI-007 number read
+```

@@ -1,0 +1,137 @@
+{
+  "schema": "dcs_csi_axis_hardware_provenance/1",
+  "n_axes": 12,
+  "n_resolved": 12,
+  "n_emulated_bf16": 5,
+  "n_undocumented": 0,
+  "rows": [
+    {
+      "axis": "dcs_csi_axis_basket_L18_PLUS_button_swap.pt",
+      "corpus": "cont1_behavioral_basket_bomb_20260910_113902_3966018",
+      "gpu": "Tesla V100-SXM2-32GB",
+      "dtype": "bfloat16",
+      "compute_capability": "7.0",
+      "native_bf16": false,
+      "offending": true,
+      "known": true
+    },
+    {
+      "axis": "dcs_csi_axis_basket_L20.pt",
+      "corpus": "cont1_behavioral_basket_bomb_20260910_113902_3966018",
+      "gpu": "Tesla V100-SXM2-32GB",
+      "dtype": "bfloat16",
+      "compute_capability": "7.0",
+      "native_bf16": false,
+      "offending": true,
+      "known": true
+    },
+    {
+      "axis": "dcs_csi_axis_basket_behavioral.pt",
+      "corpus": "cont1_behavioral_basket_bomb_20260910_113902_3966018",
+      "gpu": "Tesla V100-SXM2-32GB",
+      "dtype": "bfloat16",
+      "compute_capability": "7.0",
+      "native_bf16": false,
+      "offending": true,
+      "known": true
+    },
+    {
+      "axis": "dcs_csi_axis_basket_behavioral_shuf24.pt",
+      "corpus": "cont1_behavioral_basket_bomb_20260910_113902_3966018",
+      "gpu": "Tesla V100-SXM2-32GB",
+      "dtype": "bfloat16",
+      "compute_capability": "7.0",
+      "native_bf16": false,
+      "offending": true,
+      "known": true
+    },
+    {
+      "axis": "dcs_csi_axis_basket_more.pt",
+      "corpus": "cont1_behavioral_basket_bomb_20260910_113902_3966018",
+      "gpu": "Tesla V100-SXM2-32GB",
+      "dtype": "bfloat16",
+      "compute_capability": "7.0",
+      "native_bf16": false,
+      "offending": true,
+      "known": true
+    },
+    {
+      "axis": "dcs_csi_axis_basket_semantic.pt",
+      "corpus": "cont1_semantic_one_word_basket_bomb_20260915_171246_2607991",
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "dtype": "bfloat16",
+      "compute_capability": "8.6",
+      "native_bf16": true,
+      "offending": false,
+      "known": false
+    },
+    {
+      "axis": "dcs_csi_axis_button_L18_PLUS_basket_swap.pt",
+      "corpus": "cont1_behavioral_button_bomb_20260910_152806_272296",
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "dtype": "bfloat16",
+      "compute_capability": "8.6",
+      "native_bf16": true,
+      "offending": false,
+      "known": false
+    },
+    {
+      "axis": "dcs_csi_axis_button_behavioral.pt",
+      "corpus": "cont1_behavioral_button_bomb_20260910_152806_272296",
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "dtype": "bfloat16",
+      "compute_capability": "8.6",
+      "native_bf16": true,
+      "offending": false,
+      "known": false
+    },
+    {
+      "axis": "dcs_csi_axis_button_behavioral_L18.pt",
+      "corpus": "cont1_behavioral_button_bomb_20260910_152806_272296",
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "dtype": "bfloat16",
+      "compute_capability": "8.6",
+      "native_bf16": true,
+      "offending": false,
+      "known": false
+    },
+    {
+      "axis": "dcs_csi_axis_button_behavioral_r5.pt",
+      "corpus": "cont1_behavioral_button_bomb_20260910_152806_272296",
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "dtype": "bfloat16",
+      "compute_capability": "8.6",
+      "native_bf16": true,
+      "offending": false,
+      "known": false
+    },
+    {
+      "axis": "dcs_csi_axis_button_cwrow.pt",
+      "corpus": "cont1_behavioral_button_bomb_20260910_152806_272296",
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "dtype": "bfloat16",
+      "compute_capability": "8.6",
+      "native_bf16": true,
+      "offending": false,
+      "known": false
+    },
+    {
+      "axis": "dcs_csi_axis_button_cwrow_L20.pt",
+      "corpus": "cont1_behavioral_button_bomb_20260910_152806_272296",
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "dtype": "bfloat16",
+      "compute_capability": "8.6",
+      "native_bf16": true,
+      "offending": false,
+      "known": false
+    }
+  ],
+  "unresolved": [],
+  "known_void_provenance": [
+    "dcs_csi_axis_basket_L18_PLUS_button_swap.pt",
+    "dcs_csi_axis_basket_L20.pt",
+    "dcs_csi_axis_basket_behavioral.pt",
+    "dcs_csi_axis_basket_behavioral_shuf24.pt",
+    "dcs_csi_axis_basket_more.pt"
+  ]
+}
