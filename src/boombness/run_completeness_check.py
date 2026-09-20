@@ -152,6 +152,35 @@ KNOWN_ZERO = {
 }
 
 KNOWN_SHORT = {
+    "csi1_button_validation_KO_RAND3_20260921_011146_558170":
+        "DCS-CSI-152: PR-CSI-007 button L18 VALIDATION family, job 914476. 1 row of 230 REFUSED by the "
+        "sprint's own norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5): 'REFUSING to "
+        "patch: 1 of 28 positions are norm-match DEGENERATE'. DONE.json is honest -- status=INCOMPLETE, "
+        "n_rows_failed=1, rows_written=229 -- and results.jsonl holds exactly 229 parseable rows, so "
+        "this is the guard declining to fabricate a control, NOT a lost or truncated write. Same class "
+        "as csi1_button_validation_KO_RAND12_20260920_221735_511934 and the EXPECTED 3090 behaviour "
+        "tabulated in DCS-CSI-121 (norm-matched on 3090 loses 0-2 rows; the V100 column is 0 rows "
+        "every time, which is why that hardware is a VOID condition). "
+        "MEASURED, not argued: the dropped row is prompt_id b70ad3ff73d1e85a (domain mountain_refuge), "
+        "identified by differencing against the full 230-row arm "
+        "csi1_button_validation_KO_AXIS_ANCHOR_20260921_001731_532952 of the SAME allocation 914476. "
+        "The dropped row does NOT overlap with either row dropped by KO_RAND4 of the same job -- "
+        "different random control bases lose different rows, which is what the mechanism (degeneracy "
+        "is an angle between a fixed basis and a fixed delta) predicts and what an outcome-selected "
+        "loss would not do. n=3 dropped rows total, so this supports rather than establishes "
+        "outcome-independence.",
+    "csi1_button_validation_KO_RAND4_20260921_011607_558762":
+        "DCS-CSI-152: the second instance in job 914476. 2 rows of 230 REFUSED by the same norm-match "
+        "degeneracy guard ('1 of 28 positions are norm-match DEGENERATE', twice). DONE.json honest -- "
+        "status=INCOMPLETE, n_rows_failed=2, rows_written=228 -- and results.jsonl holds exactly 228 "
+        "parseable rows. MEASURED: the dropped rows are prompt_ids 562e6780f81f28d4 and "
+        "d7e73441e2f7664a, BOTH in domain parks_yard, differenced against the full 230-row arm "
+        "csi1_button_validation_KO_AXIS_ANCHOR_20260921_001731_532952 of the same allocation. "
+        "CARE POINT recorded rather than waved past: because the statistical unit is the DOMAIN, this "
+        "arm computes parks_yard from 8 rows where every other arm uses 10. That is a per-domain "
+        "denominator difference in ONE control arm of 47, not a population change, and the rank test "
+        "is over control arms -- but it is the kind of asymmetry S-128 was built to notice, so the "
+        "PR-CSI-007 read must report per-arm row counts rather than assume 230.",
     "csi1_button_validation_KO_RAND12_20260920_221735_511934":
         "DCS-CSI-133: PR-CSI-005 button L18 family. 1 row(s) of 230 REFUSED by the sprint's own "
         "norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5) with 'REFUSING to patch: N of 28 "

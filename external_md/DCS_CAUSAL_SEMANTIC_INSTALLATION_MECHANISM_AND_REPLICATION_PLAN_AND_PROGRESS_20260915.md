@@ -11717,3 +11717,322 @@ at ~44 MB each is not affordable until the disk question is resolved.
 ```
 914476 R n-305 group B 7 of 11 arms  | 914477-914479 PD (Dependency)   blob 11d2c617   quota 197G
 ```
+
+---
+
+# REVIEW R11 (self, ~4 h cadence) — **the sprint's headline dissociation has an UNREFUTED candidate explanation that was never on the list: basket's behavioural axes were fit on a V100 under EMULATED bf16 and button's on an RTX 3090.** Plus **CORRECTION: S-150's blast radius was measured against a tree the tool cannot write to — the real count is 293, not 0** — and **CORRECTION: the NFS skew is a DRIFT, not a constant**
+
+Cadence: R10 was committed 2026-09-20T19:42; this ran at 2026-09-21T01:34, i.e. **5.9 h**, overdue
+against the 4 h rule. Scope: everything after R10 — S-139 … S-151 and the code they reference.
+
+Method: four independent adversarial dimensions (the new PR-CSI-008 artifacts; the measurement claims
+in S-149/S-150/S-151; PR-CSI-007's VOID bookkeeping; the guard infrastructure), each finding then
+handed to a **separate verifier instructed to REFUTE it** and to default to refuted when uncertain.
+**16 candidate findings, 13 survived, 3 were killed.** The four headline items below I then
+**re-measured myself**, because a review that changes the sprint's scientific position must not rest
+on a subagent's word.
+
+---
+
+## MAJOR-1 — **the codeword dissociation is perfectly confounded with extraction hardware**
+
+Every axis `.pt` records its `corpus` — the `extract_boombness` run whose activations it was fit from.
+Joining each axis to that run's `RUNMETA.json`:
+
+```
+axis .pt                                  corpus extract run                          GPU                     dtype
+dcs_csi_axis_basket_behavioral.pt         cont1_behavioral_basket_bomb_20260910_1139  Tesla V100-SXM2-32GB    bfloat16
+dcs_csi_axis_basket_behavioral_shuf24.pt  (same)                                      Tesla V100-SXM2-32GB    bfloat16
+dcs_csi_axis_basket_more.pt               (same)                                      Tesla V100-SXM2-32GB    bfloat16
+dcs_csi_axis_basket_L20.pt                (same)                                      Tesla V100-SXM2-32GB    bfloat16
+dcs_csi_axis_basket_L18_PLUS_button_swap  (same)                                      Tesla V100-SXM2-32GB    bfloat16
+dcs_csi_axis_button_behavioral_L18.pt     cont1_behavioral_button_bomb_20260910_1528  NVIDIA GeForce RTX 3090 bfloat16
+dcs_csi_axis_button_behavioral.pt         (same)                                      NVIDIA GeForce RTX 3090 bfloat16
+dcs_csi_axis_button_behavioral_r5.pt      (same)                                      NVIDIA GeForce RTX 3090 bfloat16
+dcs_csi_axis_button_cwrow.pt              (same)                                      NVIDIA GeForce RTX 3090 bfloat16
+dcs_csi_axis_button_cwrow_L20.pt          (same)                                      NVIDIA GeForce RTX 3090 bfloat16
+dcs_csi_axis_button_L18_PLUS_basket_swap  (same)                                      NVIDIA GeForce RTX 3090 bfloat16
+dcs_csi_axis_basket_semantic.pt           cont1_semantic_one_word_basket_bomb_2026091 NVIDIA GeForce RTX 3090 bfloat16
+```
+
+**5 of 5 basket BEHAVIOURAL axes come from a Tesla V100. 6 of 6 button axes come from an RTX 3090.**
+The split is perfect and it follows the codeword exactly. The single basket axis fit on a 3090 is the
+*semantic* one, which is a different channel.
+
+**A V100 is sm_70 and has no native bf16.** Running `--dtype bfloat16` there is emulated — this is the
+precise condition that `score_behavior.py` now raises `SystemExit` on (the guard added in S-139), and
+that S-037 / S-119 / S-121 declared **VOID** because emulation destroys the norm-match degeneracy test.
+The guard was put on the *scoring* path. **The extraction path has no such guard**: the axes were fit
+from activations produced under exactly the condition the sprint refuses to score under.
+
+### Why this is not a bookkeeping complaint
+
+S-144 recorded that *"by this sprint's own preregistered rules, EVERY candidate explanation of the
+codeword dissociation is now refuted"* — six killed by measurement in S-128, the seventh (C1) by
+PR-CSI-006's CELL 4. **Extraction hardware was never on that list.** It is not refuted; it was never
+tested, because nothing ever looked. So:
+
+> **CORRECTION to S-144's status line.** The dissociation is not "certified and UNEXPLAINED". It is
+> certified and has **one live, unrefuted candidate explanation**: the two codewords' behavioural axes
+> were fit from activations computed in different numerics on different silicon.
+
+I am deliberately **not** claiming the dissociation is an artifact. The direction of an emulation
+effect is not known a priori — that is exactly what makes it a confound rather than a correction. What
+is now measured is that button-vs-basket in the behavioural channel is **not a clean comparison**.
+
+### Why nothing caught it
+
+`configs/dcs_csi_axis_*.pt` carry **no GPU and no dtype field at all** — I checked every one of the 12:
+`meta` holds `bank_sha16`, `corpus`, `fit_population`, `layer_grid`, `lambda`, `hidden_dim` and the
+rest, and nothing about hardware. `dcs_csi_axis.py` pins five provenance dimensions and not this one;
+`dcs_extract_under_ko.py` defaults to bfloat16 and loads unguarded; and PR-CSI-005/006 gate 0(a) pin
+only `outputs/boombness/score_behavior`, so the extract tree was outside every gate's field of view.
+This is the sprint's named failure mode at the largest scale it has yet reached: **"no committed claim
+touched a V100" was an inference over SCORING metadata, extended to extraction without measuring it.**
+
+**Remedy (not run — needs GPU):** re-extract `cont1_behavioral_basket_bomb` on an RTX 3090, re-fit the
+five basket behavioural axes, and re-run the comparison. Until then every button-vs-basket behavioural
+claim carries this caveat. The semantic channel is unaffected.
+
+---
+
+## MAJOR-2 — **CORRECTION to S-150: the blast radius was measured against a tree the tool cannot write to**
+
+S-150 stated: *"native 2472, backfilled 0 … ZERO OF 2472. The defect has never been exercised on any
+run in this repo."* It called that figure "measured, not assumed". **It is wrong**, and the way it is
+wrong is worse than the number: the census was aimed at the wrong population.
+
+```
+:64   PROJ = os.path.dirname(HERE)                        # doublespeak_causality/
+:571  ap.add_argument("--outputs", default=os.path.join(PROJ, "outputs"))
+:594/:618  for d in sorted(os.listdir(args.outputs)):     # SINGLE LEVEL
+```
+
+`backfill_runmeta.py` writes at `doublespeak_causality/outputs/<dir>/DONE.json`. S-150 censused
+`outputs/boombness/*/*/DONE.json` — a different tree, one level deeper than the tool ever descends.
+**That census returns 0 whether or not the defect ever fired.** My own re-measurement of both trees:
+
+```
+root=outputs/boombness              files=2486  native=2482  BACKFILLED=0
+root=doublespeak_causality/outputs  files= 551  native= 150  BACKFILLED=293
+    source_kind: {'mtime': 293}
+    generated_ts by day: {'2026-08-05': 289, '2026-08-07': 4}
+```
+
+**293 records carry an mtime-derived `wall_seconds`, and the defect fired 47 days ago.** S-150's
+"latent, never exercised" is **WITHDRAWN**. What survives: the two-clock analysis of the defect itself,
+and the judgement not to "just subtract 240" — see MAJOR-3, which shows that caution was right.
+
+---
+
+## MAJOR-3 — **CORRECTION to S-150: the skew is a DRIFT, not a constant**
+
+S-150 said *"exactly +240 s, three for three … a constant offset in netapp2-244's clock, not jitter."*
+The three trials were two seconds apart; three samples from one instant cannot establish constancy over
+47 days, and generalising them to "constant" was the same shape of error the entry was reporting.
+
+Re-measured over **n = 2 627** native records (`mtime − end_epoch`; `end_epoch` is `time.time()` taken
+in-process microseconds before the write, so the residual is skew, not write latency):
+
+```
+2026-08-05  n=  6  median 114.2      2026-09-05  n= 47  median 198.9
+2026-08-23  n= 88  median 164.6      2026-09-16  n=163  median 227.1
+2026-08-30  n= 86  median 181.4      2026-09-20  n= 71  median 238.4
+2026-09-01  n= 25  median 188.6      2026-09-21  n= 13  median 239.5
+```
+
+Monotone on every day, within-day spread 1–2 s, non-adjacent days non-overlapping: **a drift of
+≈ +2.67 s/day**, total range 125 s. The +240 s figure was correct **for 2026-09-21 only**.
+
+**Material consequence:** the 293 backfilled records were generated on 2026-08-05/07, when the skew was
+**≈ 114 s**, not 240 s. Their `wall_seconds` is inflated by about 114 s — on a 238 s arm that is +48 %.
+Any repair must use **each record's own date**, which is precisely why S-150 refused a constant. That
+judgement stands; only its stated reason ("the server now") is sharpened into a measured slope.
+
+---
+
+## MAJOR-4 — the PR-CSI-007 blob VOID condition is **not enforced anywhere**
+
+```
+$ grep -rn 'EXPECT_BLOB' . --exclude-dir=.git
+runargs/dcs_csi_pr007_read.txt:295:EXPECT_BLOB = "11d2c61747e9401e2d2cb8f4123dd1188674d61b"
+$ grep -rn '11d2c617' scripts/ src/ slurm_scripts/ tests/
+(no output)
+```
+
+`EXPECT_BLOB` is assigned once and read by nothing; gates (a)–(d) of the read never reference code
+identity. The witness exists **only as prose I paste into log entries.** And the window is real: all
+four chain jobs were submitted 00:11:02, but `914477` started **01:24:51 — 73 minutes later**. An edit
+to `score_behavior.py` in that window would be invisible to a submission-time check. The VOID condition
+is currently enforced by my own discipline, not by the artifact that claims to enforce it.
+
+## MAJOR-5 — **my own PR-CSI-008 gate regressed both halves of the S-130 atomic-write fix** (FIXED)
+
+Written 40 minutes before this review, and it reintroduced exactly what S-124/S-130 spent 138 sites
+eliminating:
+
+* **Order.** It called `os.replace(tmp, path)` *first* and read back *after*. A short write — what
+  EDQUOT produces, with quota at 197 G of 200 G — would land at the real artifact name and destroy the
+  previous good report before anything checked it.
+* **Permissions.** It chmod'd only when the destination already existed, so on a first run mkstemp's
+  `0600` rode through. **Observed, not hypothetical:** the committed report was the **only 0600 file
+  among 237 in `reports/`.**
+
+Both fixed against the canonical helper (`scripts/rah_verify_phase1.py:230-262`): size-check and
+re-parse now happen on the **temp** file, `except OSError: mode = 0o644` restored, and the check
+`raise`s rather than `assert`s (`python -O` strips asserts). Differential test, fault injected:
+
+```
+CASE B raised: OSError  "...the destination is UNCHANGED (never truncated)"
+CASE B destination SURVIVED INTACT: True      leftover temps: []
+CASE A fresh-destination mode: 0o644
+```
+
+Gate re-run after the fix: **25 survivors of 40, 14 556 bytes, mode 0644** — the result is unchanged,
+only the write mechanics. Note the systemic finding the verifier added: **all 13 files in
+`scripts/gates/` are outside the S-130 sweep**, and the sibling `dcs_document_short_runs.py:115` has
+the same verify-after-replace order. This is a gap in a directory, not a one-file slip.
+
+## MAJOR-6 — the R10 "exempted-run integrity check" has a blind spot
+
+`_short_detail[rid]` is written only inside `if n < expect:` (`run_completeness_check.py:1663`), and
+that branch ends in `continue`, so `cell_imbalance()` at :1683 is reachable **only** for runs that have
+no `_short_detail` entry. main()'s suppression loop then does `det = _short_detail.get(rid)` and skips
+when it is `None`. Measured: `scan()` returns 98 problems, 96 on KNOWN_SHORT rids, of which **7 are
+suppressed with no ledger read and no row re-count at all** — the exact runs whose only problem is a
+cell imbalance. The check I added in R10 to stop exemptions hiding breakage does not cover them.
+
+---
+
+## MINORs (confirmed, not individually re-measured by me)
+
+1. **S-149 misquotes one value.** The five-arm list prints `1467.2, 1468.6, 1467.2, 1472.3, 1473.0`;
+   position 1 is `KO_AXIS_ANCHOR = 1469.298`. `1467.2` is duplicated and `1469.3` dropped — the printed
+   multiset differs from the artifact's under any ordering. The correct value appears correctly nine
+   lines below, so the conclusion is unaffected; the table is not.
+2. **S-149's n-301 model-load cell was back-solved, not measured.** `~15 s` came from
+   `196 − 13 − 168`; applying the entry's own declared probe gives **10.8 s**. In an entry whose thesis
+   is "measure, don't argue", one cell was argued. A better probe exists and neither S-149 nor I used
+   it: `metadata.json` `wall_seconds` spans RunDir→finish and **includes** the load, so
+   metadata − DONE = the load directly, no clock arithmetic (**11.20 s** for n-301 BASE).
+3. `run_completeness_check.py:1793` prints `len(_short_detail)` (91) where the correct denominator
+   `len(_seen_exempt)` (89) is already in scope one line above.
+4. `scripts/gates/dcs_csi_pr007_preflight.py` contains **no `assert` and no `sys.exit`** — it prints
+   `*** CIRCULAR -- STOP ***` and then exits 0. Its sibling gates all `sys.exit`.
+5. GATE (d) of `runargs/dcs_csi_pr007_read.txt` builds six counters, prints all six, and asserts three:
+   `rescue_basis` and `rescue_donor` are counted and never checked for cross-arm agreement.
+6. PR-CSI-008's L5 drops **both** members of a nested pair rather than the nested one; unreachable
+   given the sha-pinned pool (no pair in it is nested), so it stays MINOR.
+
+## Killed by the verifiers (3 of 16)
+
+* *"L5_pass is recorded FALSE for 15 rows"* — **NOT A DEFECT.** `nested` over the full 40-word pool is
+  also empty, `L5_pass == (word in survivors)` holds for all 40 rows, and the field has **zero
+  consumers** repo-wide.
+* *"L2 is a row share and inverts the domain-level measure"* — **NOT A DEFECT.** The corpus is exactly
+  balanced at **112 rows per domain** (min = max = 112), so the row share is *identically* the
+  unweighted mean of per-domain rates. L2 performs no inference, so the row-vs-cluster unit concern
+  does not arise.
+* *"The frozen read's job-id ledger is blank"* — **NOT A DEFECT.** The blanks are the repo's standing
+  convention (pr004/pr005/pr006 carry identical boilerplate and unsubstituted placeholders), and
+  pr005's completed read proves the convention harmless. The verifier noted this claim was *itself* the
+  sprint's failure mode: a conclusion by argument where a measurement was available.
+
+## Where this leaves the sprint
+
+**MAJOR-1 is the finding that matters.** Everything else is hygiene — real, worth fixing, and none of it
+touches a scientific claim. MAJOR-1 touches the central one. The sprint's position must be restated:
+the codeword dissociation is **certified, and confounded with extraction hardware**, and clearing it
+requires re-extracting basket's behavioural corpus on an RTX 3090.
+
+```
+914476 COMPLETED n-305 11/11 | 914477 R n-301 (good node, 293 s/arm incl. cold load) | 914478/9 PD
+blob 11d2c617   quota 197G of 200G   no PR-CSI-007 number read
+```
+
+---
+
+# S-152 — the pre-commit guard blocked REVIEW R11's commit, and it was **right**: two arms of the LIVE PR-CSI-007 family are short. Not a lost write — **the norm-match degeneracy guard refusing to fabricate a control**, measured and documented
+
+Committing R11 failed on `check_all.py`:
+
+```
+[run-complete] FAIL -- a finished run did not persist all its rows.
+  SHORT csi1_button_validation_KO_RAND3_20260921_011146_558170: persisted 229 rows against --expect-n 230
+  SHORT csi1_button_validation_KO_RAND4_20260921_011607_558762: persisted 228 rows against --expect-n 230
+```
+
+Both are arms of **job 914476 — the PR-CSI-007 family currently in flight.** My first reading was the
+alarming one, and it was wrong: quota is at 197 G of 200 G, so I assumed EDQUOT had silently truncated
+two artifacts. **Measured instead of assumed:**
+
+```
+KO_RAND3  DONE.json: rows_written=229  n_rows_attempted=230  n_rows_failed=1  status=INCOMPLETE
+          results.jsonl: 229 lines, 610247 bytes, last line parses
+KO_RAND4  DONE.json: rows_written=228  n_rows_attempted=230  n_rows_failed=2  status=INCOMPLETE
+          results.jsonl: 228 lines, 607656 bytes, last line parses
+```
+
+**The ledger is honest and the file matches it exactly.** `status` is `INCOMPLETE`, not `ok`; the
+failures are counted; the rows that exist parse. Nothing was lost in writing. The cause is recorded in
+`failure_reasons` and in the job log:
+
+```
+semantic_one_word:ValueError:REFUSING to patch: 1 of 28 positions are norm-match DEGENERATE
+```
+
+This is **the sprint's own guard working** (SubspaceDonorPatch, review R2-M5). The control basis was
+near-orthogonal to the clean→KO delta at one position, so rescaling its projection would have amplified
+float noise into an arbitrary QR-gauge direction. The guard declines to write a meaningless control
+rather than write one silently. Same class as `KO_RAND12` from 09-20, already in `KNOWN_SHORT` per
+DCS-CSI-133, and the expected 3090 behaviour tabulated in DCS-CSI-121.
+
+**And it is worth noticing which test this is.** The norm-match degeneracy test is exactly the one
+REVIEW R11's MAJOR-1 records as destroyed by V100 bf16 emulation — DCS-CSI-121's V100 column is 0 rows
+every time. These arms ran on an RTX 3090, so the test is live, and its firing here is evidence the
+guard is functioning on this hardware rather than silently passing.
+
+## What was dropped — differenced against a full arm of the same allocation
+
+```
+full reference: csi1_button_validation_KO_AXIS_ANCHOR_20260921_001731_532952  (230 rows, job 914476)
+
+KO_RAND3  missing 1: prompt_id b70ad3ff73d1e85a   domain mountain_refuge
+KO_RAND4  missing 2: prompt_id 562e6780f81f28d4   domain parks_yard
+                     prompt_id d7e73441e2f7664a   domain parks_yard
+
+overlap of dropped prompt_ids between the two arms: []      union: 3
+```
+
+**The zero overlap is the informative number.** If particular rows were intrinsically degenerate, both
+control arms would lose the same ones. They lose disjoint sets, which is what the mechanism predicts —
+degeneracy is the angle between *a given random basis* and a fixed delta, so it is a property of the
+(basis, position) pair and not of the row. With n = 3 dropped rows this **supports** outcome-independence;
+it does not establish it, and the exemption text says so rather than claiming more.
+
+## The care point I am not waving past
+
+KO_RAND4's two dropped rows are **both in `parks_yard`**. Because the statistical unit is the DOMAIN,
+that arm computes `parks_yard` from 8 rows where every other arm uses 10. That is a per-domain
+denominator difference in one control arm of 47 — not a population change, and the rank test is over
+control arms — but it is exactly the kind of asymmetry S-128 was built to notice.
+
+**Consequence for the read, recorded before the read happens:** PR-CSI-007's read must **report per-arm
+row counts rather than assume 230**. Two of its 47 control arms are 229 and 228 by design of the guard,
+and a gate that asserts `rows_written == 230` uniformly would either fail the family or, worse, be
+relaxed after seeing it fail.
+
+## Disposition
+
+Both run_ids added to `KNOWN_SHORT` in `src/boombness/run_completeness_check.py` with the measurements
+above — the remedy the guard itself names ("rerun it, or document it in KNOWN_SHORT with why the
+shortfall is acceptable"). **Not rerun**, because the degeneracy is determined by the control basis and
+the delta, both fixed before any readout, so a rerun reproduces it. Guard after the edit:
+
+```
+[run-complete] 875 finished runs carry an expect_n; 98 documented short   (was 96)
+[run-complete] every finished run THAT CARRIES AN expect_n persisted its full row count
+```
+
+The commit was **not** forced through with `--no-verify`. The guard found something real on its first
+attempt, which is the second time this session a check has caught a thing an argument would have missed.

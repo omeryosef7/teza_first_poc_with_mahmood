@@ -30,27 +30,55 @@ def sha16(path):
 
 
 def atomic_write_json(path, obj):
-    """Temp + fsync + os.replace, then READ BACK and re-parse. NFS reports EDQUOT ASYNCHRONOUSLY
-    (S-124): a write that returned cleanly can still have landed truncated, and the only evidence a
-    write happened is reading it back."""
-    want = (json.dumps(obj, indent=2, ensure_ascii=False) + "\n").encode()
-    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path) or ".", prefix=".tmp_")
+    """Temp + fsync + SIZE CHECK + RE-PARSE **of the temp file** + chmod + os.replace.
+
+    R11 fixed two regressions here against the canonical S-130 helper
+    (scripts/rah_verify_phase1.py:230-262), both of which R11 demonstrated rather than argued:
+
+      * ORDER. The first version called os.replace FIRST and read back afterwards, so a short write
+        -- which is exactly what EDQUOT produces, and the quota is at 197 G of 200 G -- landed at
+        the real artifact name and DESTROYED the previous good report before anything checked it.
+        That is the S-124 outcome the sprint spent 138 sites eliminating. Everything is now verified
+        on the TEMP file, so the destination is unchanged on any failure.
+      * PERMISSIONS. The first version chmod'd only when the destination already existed, so on a
+        first run mkstemp's 0600 rode through os.replace onto the report. Measured: the committed
+        report was the ONLY 0600 file among 237 in reports/. The canonical helper's `except OSError:
+        mode = 0o644` fallback is restored.
+
+    Raises rather than asserts: `python -O` strips asserts, and this is the only verification the
+    helper has.
+    """
+    d = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp = tempfile.mkstemp(dir=d, prefix=".tmp_atomic_", suffix=".json")
     try:
-        with os.fdopen(fd, "wb") as fh:
-            fh.write(want); fh.flush(); os.fsync(fh.fileno())
-        mode = os.stat(path).st_mode & 0o7777 if os.path.exists(path) else None
-        os.replace(tmp, path)
-        if mode is not None:
-            os.chmod(path, mode)
-    except BaseException:
-        if os.path.exists(tmp):
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(obj, fh, indent=2, ensure_ascii=False)
+            fh.write("\n")
+            fh.flush()
+            os.fsync(fh.fileno())          # EDQUOT surfaces HERE, not in a GC finaliser
+        n = os.path.getsize(tmp)
+        if n == 0:
+            raise OSError("temp file is 0 bytes after a flush+fsync that reported success")
+        with open(tmp, "r", encoding="utf-8") as fh:
+            json.load(fh)                  # a truncated write does not re-parse
+        try:
+            mode = os.stat(path).st_mode & 0o7777
+        except OSError:
+            mode = 0o644
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)              # atomic within the directory
+    except Exception as e:
+        try:
+            nb = os.path.getsize(tmp)
+        except OSError:
+            nb = -1
+        try:
             os.unlink(tmp)
-        raise
-    got = open(path, "rb").read()
-    assert got == want, ("READ-BACK MISMATCH on %s: wrote %d bytes, read %d. NFS/EDQUOT (S-124)."
-                         % (path, len(want), len(got)))
-    json.loads(got.decode())
-    return len(got)
+        except OSError:
+            pass
+        raise OSError("atomic_write_json FAILED for %s -- %d bytes reached the temp file; the "
+                      "destination is UNCHANGED (never truncated). Cause: %r" % (path, nb, e)) from e
+    return os.path.getsize(path)
 
 
 pr = json.load(open(PREREG))
