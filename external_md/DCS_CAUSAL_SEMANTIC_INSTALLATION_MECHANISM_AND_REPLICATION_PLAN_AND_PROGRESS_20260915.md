@@ -10621,3 +10621,108 @@ it), which is the concrete form of the source-text weakness S-139 flagged in adv
 
 **None is fixed in this entry.** Fixing a gate in the same breath as reporting it is how S-120(c)'s
 stale-bytecode hazard bites; they go in a separate, tested commit with the `__pycache__` purge.
+
+---
+
+# S-141 — **the ten R10 gate defects are fixed and mutation-verified, and closing the last one found a real ledger discrepancy that had been invisible for three weeks.** Plus: my first mutation table for that fix was itself invalid, in BLOCKER-2's exact shape
+
+## (a) The gate fixes — every mutation now fails, no survivors
+
+Eight files under `scripts/gates/` and `tests/`, 801 insertions / 64 deletions, nothing outside them.
+Every fix was broken on purpose and the mutation confirmed to fail. Selected:
+
+| defect | fix | mutation | now fails |
+|---|---|---|---|
+| **BLOCKER-2** `donor_sha` never compared | compute `t16(donor)` at runtime from the donor `.pt`, assert sha **and** `torch.equal` | point a cell at the wrong donor file | **yes** |
+| BLOCKER-2(b) swap never compared to the recipient's own axis | add `torch.equal(sw, own)` refusal | `key` → `cand_rank1` | **yes** |
+| MAJOR-4 degeneracy counter read by name, silent 0 | assert the key is **present on every admitted row** | rename the key | **yes**, `present on only 0 of 670 rows` |
+| MAJOR-5 `36 expected` printed, not asserted | `N_NEW_ARMS`, size + uniqueness + finished + row-count asserts | `NEW_ARMS = ["KO_RAND6"]` | **yes**, before the gate prints |
+| MAJOR-5 `checked 0 paths → PASS` | `N_OUT_PATHS` asserted | `OUT_PATHS = []` | **yes** |
+| MAJOR-7 anchors never assert the contrast | assert `git_commit` differ / `--model` differ | point both sides at one dir | **yes**, both |
+| MAJOR-6 `sorted(glob)[-1]` | resolve by job id, `assert len(hits)==1` | widen the pattern | **yes**, `matched 11 run dirs` |
+| MAJOR-1 no report identity | assert codeword/split/run-set/candidate arm | aim at a swap report | **yes**, refuses instead of printing a verdict |
+| MAJOR-9 tautological truth table | **deleted**; replaced by one that locates the guard in `score_behavior.py`'s AST and **executes** it | disable the guard in a copied tree | **yes**, 9 of 9 fail |
+
+**The declared donor-sha constants really were fabricated.** Measured at runtime: button's added key is
+`679c76d2d0e8fe9e`, basket's is `b2f266d711994013`. The literals in the gate (`0c397a778db933ba`,
+`7d4e01f5475e6b53`) match **neither** — not the tensor sha, not the donor file sha, not the recipient
+file sha. A constant nobody compared was also a constant nobody had ever computed.
+
+**X = 28 did not move**, and the live tie is now explicit: `KO_SHUF16` rounds to exactly `−0.00014` at
+5 dp but is `−0.0001401493` at full precision — **above** the candidate, so it counts as an exceedance
+either way. Zero exact ties at `domain_means` precision. **No rank moved**: 4 / 36 / 13 / 2 all
+reproduce from `domain_means` at ~1e-6. Test suite: **identical failure set**, 8 pre-existing, +4 passed.
+
+## (b) Closing R9b MAJOR-1 found a real discrepancy
+
+R10 flagged the biggest remaining hole and could not touch it: **a rid in `KNOWN_SHORT` received zero
+further checks.** The short-row branch `continue`s past the ledger and cell-balance checks, and the
+suppression loop then dropped the problem entirely — so any of the **95** exempted runs could have been
+truncated to 300 rows and the guard would still exit 0. **Thirteen of those entries are mine, from
+today.**
+
+**A blanket "within `--allow-short 4`" bound was considered and REJECTED as measurably wrong.** Three
+current entries are legitimately short by more than 4, the largest being
+`csi1_basket_train_AB_EXPECT670_*` at **0 of 670** — which is S-121's V100 evidence and is *deliberately*
+empty. A floor that forbids real evidence is a bug, not a floor.
+
+The floor actually added is different and narrower: **an exemption may excuse a known shortfall; it may
+not excuse the run having become shorter than the shortfall that was documented.** Each exempted run is
+re-measured against its own `DONE.json` ledger.
+
+**It fired immediately, on its first run:**
+
+```
+EXEMPTION STALE d38beh_20260829_022027_2389958:
+  results.jsonl holds 543 rows while its own DONE.json claims 586 were written
+```
+
+Investigated rather than re-suppressed. **Every file in that run directory carries the same mtime,
+2026-08-29 03:28** — so this is **not** a post-hoc truncation; the original run wrote a ledger it did
+not match, and it has sat exempted since. The run predates this sprint (the d-surface behavioural
+phase), `grep d38beh` over the sprint log returns **nothing**, and no committed DCS-CSI claim depends on
+it. Recorded in a new, separate and narrower table `KNOWN_LEDGER_DISAGREEMENT` with **both counts
+measured and stated**, because the entire point of this fix is that an exemption must describe the run
+as it actually is. **Not investigated further**: it belongs to a phase this sprint is not auditing, and
+inventing a repair for an August artifact would be worse than naming the discrepancy.
+
+## (c) **My first mutation table for that fix was invalid — BLOCKER-2's exact shape, one tick later**
+
+I copied the mutated checker to `/tmp` and ran it with `cwd=REPO`. All three mutations "failed", and I
+almost wrote that down as proof. They failed **for the same spurious reason** — the script resolves the
+corpus relative to `__file__`, so from `/tmp` there is no corpus:
+
+```
+[run-complete] FAIL -- only 0 runs carried an expect_n. The scanner has broken.
+```
+
+**A mutation table whose rows do not depend on the mutation proves nothing**, which is precisely the
+defect I had just finished writing up. Caught because two mutations that should have behaved
+*differently from each other* produced identical output — the same "print the control, not just the
+verdict" move as S-119's GPU column.
+
+Redone with the mutant written **beside** the original inside `src/boombness/` so `__file__` resolves
+identically, and with each mutation asserting its pattern actually applied:
+
+```
+BASELINE                              exit 0   88 re-measured, 0 disagree
+empty the ledger allowlist            exit 1   88 re-measured, 1 disagree -> d38beh STALE
+neuter the comparison (always equal)  exit 0   88 re-measured, 0 disagree
+neuter the _short_detail capture      exit 0    0 re-measured, 0 disagree
+```
+
+The last two are the informative rows: disabling the check does not make it *fail*, it makes it go
+**silent** — and that is visible **only because the count is printed beside the verdict**. The S-134
+rule catching its own author's disabled check is the best argument for it I have.
+
+## (d) What is still open, named rather than quietly dropped
+
+* **R10 MAJOR-10**: `pr005_gate0` gate 0(a) tolerates silently losing up to 4 stage-1 arms
+  (`assert n >= 50` against 54). Measured safe today (36/36 and 18/18 resolve uniquely) but it is a
+  two-line tightening and it is not done.
+* The documenter still ignores the completeness guard's **return code**, so a guard *crash* reads as
+  "nothing to do".
+* **BLOCKER-1 is already discharged** — S-138's headline was withdrawn in REVIEW R10's own entry.
+* `pr005_gate0` remains **FAIL on gate 0(f)**, and that is correct: 0(f) asserts the output paths do
+  not exist, and PR-CSI-005's read has since created them. A once-only gate necessarily fails after its
+  read has been performed. Preserved exactly rather than "fixed".

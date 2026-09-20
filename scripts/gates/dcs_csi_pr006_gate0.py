@@ -19,16 +19,19 @@ CELLS = [
     dict(cell="button/train", tag="csi1_button_train", arm="XSWAP_FROM_BASKET", expect_n=670,
          recip_pt="configs/dcs_csi_axis_button_behavioral_L18.pt",
          swap_pt="configs/dcs_csi_axis_button_L18_PLUS_basket_swap.pt",
-         key="swap_cand_from_basket", donor_sha="0c397a778db933ba", n_keys=53, extra=[]),
+         donor_pt="configs/dcs_csi_axis_basket_behavioral.pt", donor_key="cand_rank1",
+         key="swap_cand_from_basket", n_keys=53, extra=[]),
     dict(cell="basket/train", tag="csi1_basket_train", arm="XSWAP_FROM_BUTTON", expect_n=670,
          recip_pt="configs/dcs_csi_axis_basket_behavioral.pt",
          swap_pt="configs/dcs_csi_axis_basket_L18_PLUS_button_swap.pt",
-         key="swap_cand_from_button", donor_sha="7d4e01f5475e6b53", n_keys=41,
+         donor_pt="configs/dcs_csi_axis_button_behavioral_L18.pt", donor_key="cand_rank1",
+         key="swap_cand_from_button", n_keys=41,
          extra=["configs/dcs_csi_axis_basket_behavioral_shuf24.pt"]),
     dict(cell="basket/validation", tag="csi1_basket_validation", arm="XSWAP_FROM_BUTTON", expect_n=230,
          recip_pt="configs/dcs_csi_axis_basket_behavioral.pt",
          swap_pt="configs/dcs_csi_axis_basket_L18_PLUS_button_swap.pt",
-         key="swap_cand_from_button", donor_sha="7d4e01f5475e6b53", n_keys=41,
+         donor_pt="configs/dcs_csi_axis_button_behavioral_L18.pt", donor_key="cand_rank1",
+         key="swap_cand_from_button", n_keys=41,
          extra=["configs/dcs_csi_axis_basket_behavioral_shuf24.pt"]),
 ]
 fail = []
@@ -58,6 +61,10 @@ def t16(t):
 
 print("=" * 98)
 print("GATE (c) -- all three swap arms FINISHED, no row collapse")
+# S-134 / REVIEW R10 MAJOR-5: the size is ASSERTED, never printed as a literal. Mutation M11
+# (CELLS = []) previously printed "3 expected | 0 FINISHED" and walked straight past this gate.
+N_CELLS = 3
+assert len(CELLS) == N_CELLS, "CELLS holds %d cells, expected %d -- the comparison is not the one this gate was written for" % (len(CELLS), N_CELLS)
 dirs, missing = {}, []
 for c in CELLS:
     d = rundir(c["tag"], c["arm"], SWAP_JOBS)
@@ -65,14 +72,18 @@ for c in CELLS:
         missing.append((c["cell"], "no run dir from the swap jobs" if d is None else "no DONE.json -- STILL WRITING"))
         continue
     dirs[c["cell"]] = d
-print("  3 expected | %d FINISHED (DONE.json present) | %d not" % (len(dirs), len(missing)))
+print("  %d expected | %d FINISHED (DONE.json present) | %d not" % (len(CELLS), len(dirs), len(missing)))
+assert len(dirs) + len(missing) == len(CELLS), "accounted for %d of %d cells" % (len(dirs) + len(missing), len(CELLS))
 for cell, why in missing:
     print("     NOT FINISHED: %-20s %s" % (cell, why))
 if missing:
     print("\nABORTING. VOID conditions 9 and 11 forbid reading one direction without the other and")
     print("forbid any interim read. Re-run when all three have a DONE.json.")
     sys.exit(2)
+assert len(dirs) == N_CELLS, "only %d of %d cells resolved to a finished run dir" % (len(dirs), N_CELLS)
+n_c = 0
 for c in CELLS:
+    n_c += 1
     j = json.load(open(os.path.join(dirs[c["cell"]], "DONE.json")))
     w, lo = j.get("rows_written", 0), c["expect_n"] - 4
     print("     %-20s rows=%-4s / expect %s (allow-short 4 => >= %d)  %s"
@@ -81,6 +92,8 @@ for c in CELLS:
         fail.append("c:%s" % c["cell"])
     if w == 0:
         fail.append("c:%s ZERO ROWS (V100 degeneracy signature)" % c["cell"])
+assert n_c == N_CELLS, "row-count check ran on %d cells, expected %d" % (n_c, N_CELLS)
+print("  rows checked on %d cells (expected %d)" % (n_c, N_CELLS))
 print("  GATE (c): %s" % ("PASS" if not [f for f in fail if f.startswith("c:")] else "FAIL"))
 
 print("=" * 98)
@@ -142,18 +155,48 @@ print("  GATE 0e: %s" % ("PASS" if not [f for f in fail if f.startswith("0e")] e
 
 print("=" * 98)
 print("GATE 0f -- SWAP TENSOR IDENTITY (the relabelled-native-arm catcher)")
+# REVIEW R10 BLOCKER-2. The previous version carried a hardcoded `donor_sha` constant that appeared
+# ONLY inside the print and was NEVER COMPARED: the printed sha16 disagreed with the printed
+# expectation in BOTH cells and the gate still said PASS (mutation M1 replaced both constants with
+# deadbeef/cafebabe and ALL GATES still PASSed). The constants matched no artifact in the repo.
+# The expectation is now COMPUTED at runtime from the DONOR .pt named in the CELLS table -- the same
+# donor/recipient mapping dcs_csi_pr006_build_swap_bases.py built the artifacts from -- and
+# ASSERTED. A literal that is only printed is not a check: R2-M5 / S-042 / S-134, again.
+#
+# ON THE COSINE. cos(a, b) is SYMMETRIC, so cos(basket_axis, button_axis) is ONE scalar and it is
+# the SAME scalar in both cells. The two cos lines below are that single measurement PRINTED TWICE,
+# not two independent confirmations. Counting them as two double-counts the evidence.
+n_0f = 0
+cos_seen = []
 for c in CELLS:
     if c["cell"] == "basket/validation":
+        print("     %-16s SKIPPED: shares basket/train's swap_pt, checked on that row" % c["cell"])
         continue
     sp = torch.load(c["swap_pt"], map_location="cpu")["bases"]
-    sw, own = sp[c["key"]], sp["cand_rank1"]
+    dp = torch.load(c["donor_pt"], map_location="cpu")["bases"]
+    sw, own, dv = sp[c["key"]], sp["cand_rank1"], dp[c["donor_key"]]
+    n_0f += 1
     a = sw.flatten().double()
     b = own.flatten().double()
     cos = float((a @ b) / (a.norm() * b.norm()))
-    print("     %-16s key=%-24s sha16=%s (expect %s)"
-          % (c["cell"], c["key"], t16(sw), c["donor_sha"]))
+    cos_seen.append(cos)
+    exp_sha, got_sha = t16(dv), t16(sw)
+    print("     %-16s key=%-24s sha16=%s" % (c["cell"], c["key"], got_sha))
+    print("        donor %s[%s]" % (c["donor_pt"], c["donor_key"]))
+    print("        donor sha16=%s  -> COMPARED, match=%s" % (exp_sha, got_sha == exp_sha))
     print("        shape=%s dtype=%s norm=%.8f" % (tuple(sw.shape), sw.dtype, float(sw.norm())))
     print("        cos(swap, recipient cand_rank1) = %.4f   (expect 0.5569 +/- 0.0002)" % cos)
+    # (a) the added key IS the donor tensor, byte for byte -- ASSERTED, not merely printed
+    if got_sha != exp_sha or not torch.equal(sw, dv):
+        fail.append("0f:%s added key is NOT the donor tensor (%s != %s)" % (c["cell"], got_sha, exp_sha))
+        print("        *** THE ADDED KEY IS NOT THE DONOR TENSOR. The swap artifact is not what")
+        print("        *** its provenance claims. ABORT; DO NOT READ.")
+    # (b) and it is NOT the recipient's own axis -- the relabelled-native catcher stated as an
+    #     IDENTITY test, not only as a cosine threshold
+    if torch.equal(sw, own):
+        fail.append("0f:%s added key IS the recipient own cand_rank1" % c["cell"])
+        print("        *** THE ADDED KEY EQUALS THE RECIPIENT'S OWN cand_rank1: the swap arm is a")
+        print("        *** RELABELLED NATIVE ARM. ABORT; DO NOT READ.")
     if tuple(sw.shape) != (1, 4096) or sw.dtype != torch.float32:
         fail.append("0f:%s shape/dtype" % c["cell"])
     if abs(float(sw.norm()) - 1.0) > 1e-6:
@@ -163,6 +206,13 @@ for c in CELLS:
         if cos > 0.99:
             print("        *** COS ~ 1.0: THE WRONG TENSOR WAS COPIED. The swap arm is a")
             print("        *** RELABELLED NATIVE ARM. ABORT; DO NOT READ.")
+# MAJOR-5: the size of the comparison is ASSERTED, never implied.
+assert n_0f == 2, "0f compared %d swap artifacts, expected 2" % n_0f
+print("  swap artifacts compared: %d (of %d cells; basket/validation shares basket/train's .pt)"
+      % (n_0f, len(CELLS)))
+if len(cos_seen) == 2 and abs(cos_seen[0] - cos_seen[1]) < 1e-9:
+    print("  NOTE: the two cosines above are IDENTICAL because cosine is SYMMETRIC. That is ONE")
+    print("  measurement printed twice, NOT two independent confirmations -- do not count it twice.")
 print("  GATE 0f: %s" % ("PASS" if not [f for f in fail if f.startswith("0f")] else "FAIL"))
 
 print("=" * 98)
@@ -206,21 +256,49 @@ print("  GATE 0g: %s" % ("PASS" if not [f for f in fail if f.startswith("0g")] e
 
 print("=" * 98)
 print("GATE (g) -- S4 DEGENERACY: n_degenerate must be 0 on every admitted row")
+# REVIEW R10 MAJOR-4. Both fields used to be read BY NAME with a silent default:
+# `lv.get("fired")` and `lv.get("n_positions_norm_match_degenerate") or 0`. A typo (or a producer
+# that renames the field) therefore yields fired=0 / n_degenerate=0 and the gate PASSES on a
+# measurement it never made -- mutations M4 and M5 both SURVIVED. The keys are now asserted to be
+# PRESENT on every admitted row before their values are believed, and `fired` is asserted to be
+# TRUE on every row rather than merely counted.
+DEG_KEY, FIRED_KEY = "n_positions_norm_match_degenerate", "fired"
 for c in CELLS:
     d = dirs[c["cell"]]
     n_rows, n_deg, fired = 0, 0, 0
+    have_deg, have_fired, no_lv = 0, 0, 0
     with open(os.path.join(d, "results.jsonl")) as fh:
         for line in fh:
             r = json.loads(line)
             n_rows += 1
-            lv = r.get("rescue_liveness") or {}
-            if lv.get("fired"):
-                fired += 1
-            n_deg += int(lv.get("n_positions_norm_match_degenerate") or 0)
+            lv = r.get("rescue_liveness")
+            if not isinstance(lv, dict):
+                no_lv += 1
+                continue
+            if FIRED_KEY in lv:
+                have_fired += 1
+                if lv[FIRED_KEY]:
+                    fired += 1
+            if DEG_KEY in lv:
+                have_deg += 1
+                n_deg += int(lv[DEG_KEY] or 0)
     lo = c["expect_n"] - 4
     print("     %-16s rows=%-4d fired=%-4d n_degenerate=%d  (need rows>=%d and n_degenerate==0)"
           % (c["cell"], n_rows, fired, n_deg, lo))
+    print("        field presence: rescue_liveness missing on %d rows | %r present on %d/%d | %r present on %d/%d"
+          % (no_lv, FIRED_KEY, have_fired, n_rows, DEG_KEY, have_deg, n_rows))
     assert n_rows >= lo, "only %d rows -- comparison would be vacuous" % n_rows
+    assert no_lv == 0, "%s: rescue_liveness absent on %d of %d rows" % (c["cell"], no_lv, n_rows)
+    assert have_fired == n_rows, (
+        "%s: key %r present on only %d of %d rows -- the count above is not a measurement "
+        "(REVIEW R10 MAJOR-4, mutation M5)" % (c["cell"], FIRED_KEY, have_fired, n_rows))
+    assert have_deg == n_rows, (
+        "%s: key %r present on only %d of %d rows -- the count above is not a measurement "
+        "(REVIEW R10 MAJOR-4, mutation M4)" % (c["cell"], DEG_KEY, have_deg, n_rows))
+    if fired != n_rows:
+        fail.append("g:%s fired on %d of %d rows" % (c["cell"], fired, n_rows))
+        print("        *** THE RESCUE DID NOT FIRE ON EVERY ROW: the arm is not the arm this gate")
+        print("        *** was written for. CANNOT ANSWER.")
     if n_deg != 0:
         fail.append("g:%s n_degenerate=%d" % (c["cell"], n_deg))
         print("        *** NON-ZERO: the foreign direction carries essentially none of the")

@@ -1568,8 +1568,33 @@ def is_a_run(run_dir, rowfile):
     return os.path.isfile(os.path.join(run_dir, rowfile))
 
 
+# REVIEW R10 (R9b MAJOR-1): what was actually measured for each short run, so that a KNOWN_SHORT
+# exemption can be checked against the run it claims to describe instead of ending the matter.
+# Module-level because scan() measures it and main() enforces it.
+_short_detail = {}
+
+# Runs whose OWN DONE.json ledger disagrees with the rows on disk, measured and accepted.
+# This is a SEPARATE and NARROWER exemption than KNOWN_SHORT: KNOWN_SHORT says "this run is short
+# and that is acceptable"; this says "this run's own ledger does not match its own file, and that
+# discrepancy is understood". Nothing may be added here without the two counts measured and stated.
+KNOWN_LEDGER_DISAGREEMENT = {
+    "d38beh_20260829_022027_2389958":
+        "DCS-CSI-141, found by the R10 integrity check the moment it was added. DONE.json records "
+        "rows_written 586; results.jsonl holds 543 lines; gens.jsonl holds 531. MEASURED: every "
+        "file in the run directory carries the same mtime 2026-08-29 03:28, so this is NOT a "
+        "post-hoc truncation -- the original run wrote a ledger it did not match. The run predates "
+        "this sprint (2026-08-29, the d-surface behavioural phase) and NO claim in the "
+        "DCS-CSI sprint depends on it; a grep of the sprint log for 'd38beh' returns nothing. It is "
+        "recorded here rather than silently re-suppressed because the whole point of the R10 fix is "
+        "that an exemption must describe the run as it actually is. NOT investigated further: it "
+        "belongs to a phase this sprint is not auditing, and inventing a repair for an August "
+        "artifact would be worse than naming the discrepancy.",
+}
+
+
 def scan():
     problems, checked, non_runs = [], 0, []
+    _short_detail.clear()
     zero_row, unchecked = [], 0
     for root, rowfile in sorted(ROW_FILE.items()):
         for d in sorted(glob.glob(os.path.join(ROOT, "outputs", "boombness", root, "*/"))):
@@ -1611,6 +1636,13 @@ def scan():
             n = len(rows)
             if n < expect:
                 problems.append((rid, f"persisted {n} rows in {rowfile} against --expect-n {expect}"))
+                # REVIEW R10 (R9b MAJOR-1). A rid in KNOWN_SHORT used to receive ZERO further checks:
+                # this `continue` skips the ledger and cell-balance checks, and the suppression loop
+                # below then dropped the problem entirely. With 95 entries in the table, ANY of those
+                # runs could have been truncated to 300 rows afterwards and the guard would still
+                # exit 0. Record what was actually measured so the suppression can enforce a floor.
+                _short_detail[rid] = {"dir": d, "rows_on_disk": n, "expect": expect,
+                                      "rowfile": rowfile}
                 continue
             succeeded = None
             try:
@@ -1703,14 +1735,47 @@ def main() -> int:
     print(f"[run-complete] file agreement: {comparable} runs comparable, {not_comparable} NOT "
           f"comparable (no generations dumped) -- and file agreement sees only one-sided losses, "
           f"never rows missing from both files")
+    # REVIEW R10 (R9b MAJOR-1). An exemption may excuse a KNOWN shortfall. It may NOT excuse the run
+    # having silently become shorter than the shortfall that was documented. DONE.json's
+    # `rows_written` is what the documenting author measured and wrote the entry against; the rows on
+    # disk are what is there now. If they disagree, the file was truncated, replaced or rewritten
+    # AFTER it was exempted, and the exemption is describing a run that no longer exists.
+    # A blanket "within --allow-short 4" bound was considered and REJECTED, because it is measurably
+    # wrong: three current entries are legitimately short by more than 4, the largest being
+    # csi1_basket_train_AB_EXPECT670_* at 0 of 670 rows, which is DCS-CSI-121's V100 evidence and is
+    # deliberately empty. A floor that forbids real evidence is not a floor, it is a bug.
     ok = True
+    exempt_violations, _seen_exempt = [], set()
     for rid, why in problems:
         if rid in KNOWN_SHORT:
+            det = _short_detail.get(rid)
+            if det is None or rid in _seen_exempt:
+                continue
+            _seen_exempt.add(rid)       # a rid can raise more than one problem; report it once
+            try:
+                ledger = json.load(open(os.path.join(det["dir"], "DONE.json"),
+                                        encoding="utf-8")).get("rows_written")
+            except Exception:
+                ledger = None
+            if (ledger is not None and det["rows_on_disk"] != ledger
+                    and rid not in KNOWN_LEDGER_DISAGREEMENT):
+                exempt_violations.append(
+                    (rid, f"is exempted in KNOWN_SHORT, but {det['rowfile']} holds "
+                          f"{det['rows_on_disk']} rows while its own DONE.json claims "
+                          f"{ledger} were written. Either the file changed after the exemption was "
+                          f"written, or the run never matched its own ledger. Measure it and "
+                          f"record it in KNOWN_LEDGER_DISAGREEMENT with both counts.")
+                )
             continue
         ok = False
         print(f"  SHORT {rid}: {why}")
         print("      -> a DONE.json does not mean the rows are there. Rerun it, or document it in "
               "KNOWN_SHORT with why the shortfall is acceptable.")
+    print(f"[run-complete] exempted-run integrity: {len(_short_detail)} KNOWN_SHORT run(s) "
+          f"re-measured against their own DONE.json ledger; {len(exempt_violations)} disagree")
+    for rid, why in exempt_violations:
+        ok = False
+        print(f"  EXEMPTION STALE {rid}: {why}")
     if not ok:
         print("[run-complete] FAIL — a finished run did not persist all its rows.")
         return 1

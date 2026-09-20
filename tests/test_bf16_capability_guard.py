@@ -11,6 +11,7 @@ ALL its rows, silently, in emulated arithmetic. The silent case is the one this 
 import ast
 import os
 import re
+import types
 
 import pytest
 
@@ -60,18 +61,127 @@ def test_the_guard_names_the_device_and_the_capability_in_its_message():
         assert cite in msg or cite in s[max(0, i - 900):i], "message must cite the prior entries"
 
 
+# ------------------------------------------------------- the guard itself, EXECUTED, not restated
+# REVIEW R10 MAJOR-9. The test that used to sit here was TAUTOLOGICAL: it re-implemented the
+# predicate (`got = bool(dtype == "bfloat16" and cuda_available and cc[0] < 8)`) and never read
+# score_behavior.py at all. The reviewer copied the function into /tmp, ran pytest with no repo
+# present, and got 5 passed -- the guard could have been deleted outright and this file would still
+# have been green. A test that cannot fail is not a test.
+#
+# What follows EXECUTES THE REAL GUARD. The `if` statement is located in score_behavior.py's own
+# AST, the parsed node is compiled and run against a STUBBED torch and a stubbed `args`, and the
+# outcome (SystemExit or not) is the assertion. Delete or weaken the guard in the source and these
+# cases go red: there is no copy of the predicate here to keep them passing.
+
+
+def _guard_node():
+    """The parsed `if args.dtype == "bfloat16" ...` statement, straight out of the real source."""
+    s = _src(SB)
+    tree = ast.parse(s)
+    hits = [n for n in ast.walk(tree)
+            if isinstance(n, ast.If)
+            and isinstance(n.test, ast.BoolOp)
+            and "get_device_capability" in (ast.get_source_segment(s, n) or "")
+            and (ast.get_source_segment(s, n) or "").startswith(
+                'if args.dtype == "bfloat16" and torch.cuda.is_available():')]
+    assert len(hits) == 1, (
+        "expected EXACTLY ONE bfloat16 capability guard in %s, found %d -- the guard this test "
+        "exercises is gone or duplicated" % (SB, len(hits)))
+    return hits[0]
+
+
+class _FakeCuda(object):
+    def __init__(self, available, cc, name):
+        self._available, self._cc, self._name = available, cc, name
+        self.capability_reads = 0
+
+    def is_available(self):
+        return self._available
+
+    def get_device_capability(self, idx):
+        self.capability_reads += 1
+        return self._cc
+
+    def get_device_name(self, idx):
+        return self._name
+
+
+class _FakeTorch(object):
+    def __init__(self, available, cc, name):
+        self.cuda = _FakeCuda(available, cc, name)
+
+
+def _run_guard(dtype, cc, cuda_available=True, name="FAKE DEVICE"):
+    """Execute the real guard node with a stubbed torch. Returns the SystemExit message, or None."""
+    node = _guard_node()
+    mod = ast.Module(body=[node], type_ignores=[])
+    ast.fix_missing_locations(mod)
+    code = compile(mod, SB, "exec")
+    torch_stub = _FakeTorch(cuda_available, cc, name)
+    ns = {"torch": torch_stub, "args": types.SimpleNamespace(dtype=dtype)}
+    try:
+        exec(code, ns)
+    except SystemExit as e:
+        return str(e)
+    return None
+
+
 @pytest.mark.parametrize("cc,dtype,refuses", [
     ((7, 0), "bfloat16", True),    # Tesla V100 -- the case that cost S-113..S-121
     ((8, 6), "bfloat16", False),   # RTX 3090
     ((8, 9), "bfloat16", False),   # L40S
     ((7, 0), "float16", False),    # deliberate fp16 on a V100 is allowed
     ((7, 5), "bfloat16", True),
+    ((9, 0), "bfloat16", False),   # H100
+    ((7, 0), "float32", False),
 ])
-def test_guard_predicate_truth_table(cc, dtype, refuses):
-    """The predicate itself, evaluated exactly as written, over the devices this project has used."""
-    cuda_available = True
-    got = bool(dtype == "bfloat16" and cuda_available and cc[0] < 8)
-    assert got is refuses
+def test_the_real_guard_refuses_exactly_these_devices(cc, dtype, refuses):
+    """THE BEHAVIOURAL TEST. The guard is taken from score_behavior.py's AST and RUN."""
+    msg = _run_guard(dtype, cc)
+    assert (msg is not None) is refuses, (
+        "guard on cc=%s dtype=%s %s, expected %s"
+        % (cc, dtype, "REFUSED" if msg else "allowed", "REFUSE" if refuses else "allow"))
+    if refuses:
+        assert "REFUSING" in msg and "bfloat16" in msg
+        assert "FAKE DEVICE" in msg, "the refusal does not name the device it read"
+        assert "%d.%d" % cc in msg, "the refusal does not print the capability it read"
+
+
+def test_the_real_guard_does_not_touch_cuda_when_cuda_is_absent():
+    """On a CPU box the guard must not even ask for a capability -- it would raise, and this runs
+    at the load site of every run. (`torch.cuda.is_available()` is the short-circuit.)"""
+    node = _guard_node()
+    mod = ast.Module(body=[node], type_ignores=[])
+    ast.fix_missing_locations(mod)
+    torch_stub = _FakeTorch(False, (7, 0), "NO GPU")
+    ns = {"torch": torch_stub, "args": types.SimpleNamespace(dtype="bfloat16")}
+    exec(compile(mod, SB, "exec"), ns)
+    assert torch_stub.cuda.capability_reads == 0, \
+        "the guard read the device capability on a machine with no CUDA"
+
+
+def test_the_behavioural_test_is_not_reading_a_copy_of_the_predicate():
+    """MUTATION PROOF for the test above: flipping the threshold in the PARSED node must flip the
+    outcome. If the test were restating the predicate (the R10 MAJOR-9 defect) this would not."""
+    s = _src(SB)
+    node = _guard_node()
+    inner = [n for n in node.body if isinstance(n, ast.If)]
+    assert len(inner) == 1, "expected exactly one capability test inside the guard, found %d" % len(inner)
+    inner = inner[0]
+    # `if _cc[0] < 8:` -> `if _cc[0] < 0:`; an RTX 3090 (8,6) already fails 8, and now so does
+    # nothing -- so a V100 that DID refuse must now be allowed through.
+    assert isinstance(inner.test, ast.Compare) and isinstance(inner.test.comparators[0], ast.Constant)
+    assert inner.test.comparators[0].value == 8, \
+        "the capability threshold in the source is %r, not 8" % inner.test.comparators[0].value
+    inner.test.comparators[0] = ast.Constant(value=0)
+    mod = ast.Module(body=[node], type_ignores=[])
+    ast.fix_missing_locations(mod)
+    ns = {"torch": _FakeTorch(True, (7, 0), "FAKE DEVICE"),
+          "args": types.SimpleNamespace(dtype="bfloat16")}
+    exec(compile(mod, SB, "exec"), ns)   # must NOT raise now
+    # and unmutated, the same device is refused
+    assert _run_guard("bfloat16", (7, 0)) is not None
+    assert "get_device_capability" in s
 
 
 def test_the_guard_is_absent_from_the_pre_fix_blob():

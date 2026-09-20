@@ -30,7 +30,13 @@ fail = []
 
 
 def newest(arm, jobs):
-    """The run dir for `arm` whose RUNMETA job id is in `jobs`. Never 'the newest dir'."""
+    """The run dir for `arm` whose RUNMETA job id is in `jobs`. Never 'the newest dir'.
+
+    REVIEW R10 MAJOR-6: `sorted(hits)[-1]` silently picks a winner when the filter leaves more than
+    one candidate, which is exactly the S-127 hazard (every tag exists twice, once at L18 and once
+    at L20). The resolution is now asserted UNIQUE -- measured today: 36/36 new arms and 18/18
+    stage-1 arms resolve to exactly one dir under their job filter.
+    """
     hits = []
     for d in glob.glob(os.path.join(SB, "csi1_button_train_%s_2026*" % arm)):
         rm = os.path.join(d, "RUNMETA.json")
@@ -38,11 +44,22 @@ def newest(arm, jobs):
             continue
         if str(json.load(open(rm)).get("slurm_job_id")) in jobs:
             hits.append(d)
-    return sorted(hits)[-1] if hits else None
+    assert len(hits) <= 1, ("arm %s resolves to %d run dirs under jobs %s -- AMBIGUOUS, refusing to "
+                            "pick the newest (S-127): %s"
+                            % (arm, len(hits), ",".join(jobs), [os.path.basename(h) for h in hits]))
+    return hits[0] if hits else None
 
 
 print("=" * 96)
 print("GATE 0(c) -- the family is COMPLETE and no arm collapsed")
+# REVIEW R10 MAJOR-5. The line below used to print the literal "36 expected" while asserting
+# nothing: mutation N1 (NEW_ARMS cut to ONE element) printed "36 expected | 1 FINISHED ...
+# GATE 0(c): PASS". The S-134 rule is print the size AND ASSERT THAT SIZE.
+N_NEW_ARMS = 36
+assert len(NEW_ARMS) == N_NEW_ARMS, (
+    "NEW_ARMS holds %d arms, expected %d -- the family this gate checks is not the preregistered "
+    "one (REVIEW R10 MAJOR-5, mutation N1)" % (len(NEW_ARMS), N_NEW_ARMS))
+assert len(set(NEW_ARMS)) == N_NEW_ARMS, "NEW_ARMS contains duplicates"
 finished, unfinished, rows = [], [], {}
 for a in NEW_ARMS:
     d = newest(a, NEW_JOBS)
@@ -53,7 +70,10 @@ for a in NEW_ARMS:
         unfinished.append((a, "no DONE.json -- STILL WRITING")); continue
     j = json.load(open(p))
     finished.append(a); rows[a] = j.get("rows_written", 0)
-print("  36 expected | %d FINISHED (DONE.json present) | %d not finished" % (len(finished), len(unfinished)))
+print("  %d expected | %d FINISHED (DONE.json present) | %d not finished"
+      % (len(NEW_ARMS), len(finished), len(unfinished)))
+assert len(finished) + len(unfinished) == len(NEW_ARMS), (
+    "accounted for %d of %d arms" % (len(finished) + len(unfinished), len(NEW_ARMS)))
 for a, why in unfinished:
     print("     NOT FINISHED: %-12s %s" % (a, why))
 if unfinished:
@@ -63,8 +83,13 @@ if unfinished:
     print("from the moment an arm starts. DONE.json is what says it FINISHED.)")
     sys.exit(2)
 
+assert len(finished) == N_NEW_ARMS, (
+    "only %d of %d arms FINISHED -- the row check below would run on a partial family"
+    % (len(finished), N_NEW_ARMS))
 zero = [a for a in finished if rows[a] == 0]
 collapsed = [(a, rows[a]) for a in finished if rows[a] < EXPECT_N - ALLOW_SHORT]
+print("  arms with a row count: %d (expected %d)" % (len(rows), N_NEW_ARMS))
+assert len(rows) == N_NEW_ARMS, "row counts collected for %d of %d arms" % (len(rows), N_NEW_ARMS)
 print("  rows: min=%d max=%d | zero-row arms=%d | below %d (allow-short %d)=%d"
       % (min(rows.values()), max(rows.values()), len(zero), EXPECT_N - ALLOW_SHORT, ALLOW_SHORT, len(collapsed)))
 if zero:
@@ -117,12 +142,21 @@ print("  GATE 0(b): %s" % ("PASS" if not [f for f in fail if f.startswith("0b")]
 
 print("=" * 96)
 print("GATE 0(f) -- output paths must NOT exist")
+# REVIEW R10 MAJOR-5. Mutation N5 (OUT_PATHS = []) printed "checked 0 paths -> GATE 0(f): PASS",
+# exit 0, "ALL GATES PASS". A gate that passes having compared nothing is not a gate (S-134).
+N_OUT_PATHS = 3
+assert len(OUT_PATHS) == N_OUT_PATHS, (
+    "OUT_PATHS holds %d paths, expected %d -- this gate would 'pass' having checked the wrong set "
+    "(REVIEW R10 MAJOR-5, mutation N5)" % (len(OUT_PATHS), N_OUT_PATHS))
+n_checked = 0
 for p in OUT_PATHS:
     ex = os.path.exists(os.path.join(REPO, p))
+    n_checked += 1
     print("     %-58s exists=%s" % (p, ex))
     if ex:
         fail.append("0f:%s" % p)
-print("  checked %d paths" % len(OUT_PATHS))
+assert n_checked == N_OUT_PATHS, "checked %d paths, expected %d" % (n_checked, N_OUT_PATHS)
+print("  checked %d paths (expected %d)" % (n_checked, N_OUT_PATHS))
 print("  GATE 0(f): %s" % ("PASS" if not [f for f in fail if f.startswith("0f")] else "FAIL"))
 
 print("=" * 96)
