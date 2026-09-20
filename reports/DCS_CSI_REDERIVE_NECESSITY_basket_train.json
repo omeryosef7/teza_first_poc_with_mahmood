@@ -1,0 +1,104 @@
+{
+ "schema": "dcs_csi_rederive_subspace/1",
+ "tag_prefix": "csi1_basket_train",
+ "split": "train",
+ "n_keys_common": 664,
+ "n_domains": 67,
+ "gates": {
+  "manipulation_ko_minus_base": {
+   "point": -0.23364,
+   "n_domains": 67,
+   "n_pos": 0,
+   "n_neg": 67,
+   "n_tied": 0,
+   "p_two_sided": 4.9999750001249995e-06,
+   "p_floor": 4.9999750001249995e-06,
+   "test_mode": "monte-carlo(200000)",
+   "p_at_its_floor": true
+  },
+  "positive_control_full_minus_base": {
+   "point": -0.1095,
+   "n_domains": 67,
+   "n_pos": 0,
+   "n_neg": 67,
+   "n_tied": 0,
+   "p_two_sided": 4.9999750001249995e-06,
+   "p_floor": 4.9999750001249995e-06,
+   "test_mode": "monte-carlo(200000)",
+   "p_at_its_floor": true
+  }
+ },
+ "direction": "necessity",
+ "reference_arm": "NEC_BASE",
+ "stronger_candidate_is": "MORE NEGATIVE",
+ "sign_policy": "values keep their natural sign; nothing is negated. Only the rank comparison and the capability gate are oriented by --direction.",
+ "instrument_capable": true,
+ "identity_gate": "SKIPPED -- no inert identity control exists for the necessity direction: the natural one (donor = clean, live = clean) IS the identity and is refused by the arm's own precondition (PR-CSI-003 required_gates.no_inert_identity_control_exists, S-110). This path never evaluated an identity gate in either direction; recorded so its absence here is not mistaken for a pass.",
+ "candidate_minus_base": -0.00852,
+ "controls_minus_base": {
+  "KO_NEC_SHUF0": 0.00013,
+  "KO_NEC_SHUF1": 2e-05,
+  "KO_NEC_SHUF2": -0.00317,
+  "KO_NEC_SHUF3": -0.00478,
+  "KO_NEC_RAND0": 1e-05,
+  "KO_NEC_RAND1": -0.00022,
+  "KO_NEC_RAND2": -0.00132,
+  "KO_NEC_RAND3": -0.00025
+ },
+ "ranks": {
+  "pooled": {
+   "rank": 1,
+   "of": 9,
+   "floor": 0.1111,
+   "certifiable_at_0.05": false,
+   "verdict": "INCONCLUSIVE (floor-limited)"
+  },
+  "random_only": {
+   "rank": 1,
+   "of": 5,
+   "floor": 0.2,
+   "certifiable_at_0.05": false,
+   "verdict": "INCONCLUSIVE (floor-limited)"
+  },
+  "shuffled_only": {
+   "rank": 1,
+   "of": 5,
+   "floor": 0.2,
+   "certifiable_at_0.05": false,
+   "verdict": "INCONCLUSIVE (floor-limited)"
+  }
+ },
+ "run_dirs": {
+  "NEC_BASE": "csi1_basket_train_NEC_BASE_20260917_235902_170627",
+  "NEC_KO": "csi1_basket_train_NEC_KO_20260918_001224_171794",
+  "KO_NEC_FULL": "csi1_basket_train_KO_NEC_FULL_20260918_002642_172856",
+  "KO_NEC_AXIS": "csi1_basket_train_KO_NEC_AXIS_20260918_003905_173774",
+  "KO_NEC_SHUF0": "csi1_basket_train_KO_NEC_SHUF0_20260920_131722_900451",
+  "KO_NEC_SHUF1": "csi1_basket_train_KO_NEC_SHUF1_20260920_132636_901366",
+  "KO_NEC_SHUF2": "csi1_basket_train_KO_NEC_SHUF2_20260920_133558_902273",
+  "KO_NEC_SHUF3": "csi1_basket_train_KO_NEC_SHUF3_20260920_134517_903182",
+  "KO_NEC_RAND0": "csi1_basket_train_KO_NEC_RAND0_20260920_135435_904077",
+  "KO_NEC_RAND1": "csi1_basket_train_KO_NEC_RAND1_20260920_140345_906781",
+  "KO_NEC_RAND2": "csi1_basket_train_KO_NEC_RAND2_20260920_141307_908639",
+  "KO_NEC_RAND3": "csi1_basket_train_KO_NEC_RAND3_20260920_142231_910493"
+ },
+ "require_rescue_layer": 18,
+ "require_slurm_job": [
+  "906433",
+  "912736"
+ ],
+ "resolved_rescue_layers": {
+  "NEC_BASE": null,
+  "NEC_KO": null,
+  "KO_NEC_FULL": 18,
+  "KO_NEC_AXIS": 18,
+  "KO_NEC_SHUF0": 18,
+  "KO_NEC_SHUF1": 18,
+  "KO_NEC_SHUF2": 18,
+  "KO_NEC_SHUF3": 18,
+  "KO_NEC_RAND0": 18,
+  "KO_NEC_RAND1": 18,
+  "KO_NEC_RAND2": 18,
+  "KO_NEC_RAND3": 18
+ }
+}

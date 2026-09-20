@@ -9491,3 +9491,255 @@ whether they still differ at matched family size; it cannot make button pass; it
 held-out split (**no button-L18 VALIDATION arm has ever been run**, and the analysis's own §13 says
 held-out is the strongest evidence in the set); nothing about L20 (which would need 33 new bases);
 nothing about necessity; and it does **not** test C1, the one surviving explanation.
+
+---
+
+# REVIEW R9 (self, ~4h cadence) — **the 8 suite failures are pre-existing and NONE is attributable to the atomic-write fix.** Established by file identity after **two comparison methods that were both invalid**, and the invalidity is the reusable lesson
+
+The full suite on the post-fix tree gives **8 failed, 1780 passed, 7 skipped** (396.9 s). S-130 asserted,
+on the fixing agent's report, that these are "the eight pre-existing gated-HF failures … zero new". Four
+of the eight names are about **write** behaviour —
+`test_strict_violation_writes_nothing`, `test_strict_violation_does_not_clobber_an_existing_bank`,
+`test_non_strict_violation_still_writes_both_files`, `test_violating_input_really_violates` — which is
+**exactly what an atomic-write change could break**. That is not a claim to accept on report.
+
+## Attempt 1 — read the failure reason. Suggestive, not decisive.
+
+```
+[prompt_families] REFUSING: 142 pool sentence(s) already contain 'carrot' or 'was' incidentally,
+which breaks the exact-word-swap invariant …            assert 2 == 0   /   assert 2 == 1
+```
+
+A **corpus-invariant guard** returning exit 2 where the tests expect 0 or 1. Nothing to do with file
+persistence. Suggestive — but "this failure looks unrelated" is an argument, and S-118 is the entry
+about arguments.
+
+## Attempt 2 — a git worktree at the pre-fix commit. **INVALID, twice over.**
+
+`git worktree add --detach /a/home/cc/…/prefix_check 18005fed` (placed off-quota; the main tree must
+**not** be checked out while jobs re-invoke its code per arm). Result: **25 failures pre-fix vs 8
+post-fix** — apparently far worse before the fix, which is nonsense. Two independent contaminations:
+
+1. **`outputs/` is gitignored, so the corpus is not checked out.** Every test that scans "the REAL
+   corpus" — `test_cited_artifact_check` (5), `test_my_cited_artifacts` (7), `test_run_completeness_check`
+   (5), `test_run_index` (1) — fails in a worktree for want of a corpus, not for want of the fix.
+2. **`test_common_provenance.py::test_a_tokenizer_revision_is_a_resolved_commit_never_a_branch_name`
+   appeared to PASS pre-fix and FAIL post-fix** — the one genuinely alarming signal. It is
+   `@pytest.mark.skipif(not os.path.isdir(HF_CACHE))`. In the worktree the repo-local HF cache does not
+   exist, so it was **SKIPPED**, and a skip is not a pass. The pre-fix run's own line says
+   `43 passed, 1 skipped`.
+
+**A worktree is not a clean-room for this repo.** Its gitignored corpus and its repo-local HF cache are
+both load-bearing inputs, and both vanish. Recorded because a worktree comparison is the obvious thing
+to reach for and it produced a confidently wrong answer in both directions — first inflating the pre-fix
+failure count, then manufacturing a fake regression.
+
+## What actually settles it: file identity
+
+The only question that matters is whether commit `95f62711` can have caused any of the eight. For the
+one post-only name:
+
+```
+git show --name-only 95f62711 | grep -E "test_common_provenance|boombness/common\.py"   -> (nothing)
+
+src/boombness/common.py          now 7e8cc031…   be0e6818 7e8cc031…   IDENTICAL
+tests/test_common_provenance.py  now 99cb07e6…   be0e6818 99cb07e6…   IDENTICAL
+```
+
+**The fix touches neither the test nor its target, and both are bit-identical to session start.** The
+test additionally builds its own pre-fix comparison module (`old_common` fixture, line 73, via
+`spec_from_file_location`), so it is internally an old-vs-new provenance test whose subject this commit
+never touched. The same identity argument covers `test_donor_patch` (`donor_patch.py` blob `2cd63224…`,
+identical) — and `test_prompt_families_strict` and `test_tsc_request_filter` fail on a corpus invariant
+and an HF gate respectively.
+
+**Conclusion: 8 failures, all pre-existing, zero attributable to the fix** — established by object hash
+rather than by a comparison whose control was broken.
+
+## The standing lesson, now with a third instance
+
+S-119 found the cause by printing the **GPU column**. S-128 found its error by printing the **filename**.
+This entry found its error by printing the **blob hash**. In all three the wrong answer came from a
+comparison whose *control* was silently different, and the right answer came from printing the
+identifier of the thing being compared. **The corrective generalises: before comparing two runs, print
+what makes them the same.**
+
+## Operational, recorded
+
+* **Five jobs are co-resident on n-350** — 912736 (necessity half 2, 7 of 9 arms landed) and 912835-838
+  (PR-CSI-005, 4 arm-dirs open). That is deliberate rather than accidental: with `CSI_STAGE=1` the model
+  snapshot is staged **node-local**, 912736 staged it an hour ago, and the four new jobs reuse and
+  re-verify it instead of each pulling 15 GB over the n-30x rack's NFS. The launcher verifies every
+  staged file's size against source and exits 3 on mismatch, so a partial reuse fails loudly. §16's
+  "avoid two big loads on one node" is about the **load**, which staging removes — not about co-residency.
+* **Disk: 196.0 GiB of the enforced 200 GiB**, ~4 GiB headroom, unchanged since the S-124 relocation.
+  46 remaining arms at ~5 MB each is ~230 MB. Adequate, still thin.
+* **A stray 0-byte file `floor` sits at the repo root**, created 13:29 by a shell redirect in one of the
+  parallel agents. It is untracked, has never been committed, and is **not** removed here only because
+  deletion is blocked in this session; recorded so it is not mistaken for an artifact.
+* The pre-fix worktree at `/a/home/cc/students/math/omeryosef/prefix_check` is left in place, off-quota,
+  as the reusable clean-room — **with the caveat above written down**: symlink `outputs/` and expect
+  HF-gated tests to skip rather than pass.
+
+---
+
+# S-133 — **PR-CSI-003 READ, as frozen. The necessity direction is POSITIVE: removing the installed component along the rank-1 axis drops installation MORE than any of its 8 controls — rank 1 of 9, on 55 of 67 domains.** Floor-limited to INCONCLUSIVE by a ceiling declared in advance, and the prereg's own prediction is BEATEN
+
+Job 912736 COMPLETED in 01:36:23 on n-350. All nine half-2 arms landed on **NVIDIA GeForce RTX 3090**
+— the PR-CSI-003 hardware VOID condition, checked per arm from `RUNMETA.json`, not assumed. With half 1
+(job 906433, also 3090) all thirteen arms exist, so the frozen command in
+`runargs/dcs_csi_pr003_read.txt` ran **as written**, with `<HALF1>,<HALF2>` filled as `906433,912736`
+and no other character altered. Gates 1 and 2 were read in S-126 **before** this allocation was bought;
+they passed, which is what licensed buying it.
+
+```
+[keys] intersected to 664 keys common to all arms; 67 domains
+```
+
+## Installation by arm — the whole result in one row
+
+| arm | y_install | | arm | y_install |
+|---|---|---|---|---|
+| `NEC_BASE` | **0.47336** | | `KO_NEC_SHUF0` | 0.47349 |
+| `NEC_KO` | **0.23972** | | `KO_NEC_SHUF1` | 0.47338 |
+| `KO_NEC_FULL` | **0.36386** | | `KO_NEC_SHUF2` | 0.47018 |
+| **`KO_NEC_AXIS`** | **0.46484** | | `KO_NEC_SHUF3` | 0.46858 |
+| `KO_NEC_ORTH` | 0.47343 | | `KO_NEC_RAND0-3` | 0.47337 / 0.47314 / 0.47204 / 0.47311 |
+
+Every control sits within 0.005 of `NEC_BASE`. **The candidate is the only one that moves.**
+
+## The preregistered quantities
+
+| contrast | point | ci95 | domains ± | p |
+|---|---|---|---|---|
+| manipulation `NEC_KO − NEC_BASE` | **−0.23364** | [−0.26346, −0.20408] | 0 + / **67 −** | at MC floor |
+| positive control `KO_NEC_FULL − NEC_BASE` | **−0.10950** | [−0.12482, −0.09451] | 0 + / **67 −** | at MC floor |
+| **candidate `KO_NEC_AXIS − NEC_BASE`** | **−0.00852** | **[−0.01127, −0.00592]** | 12 + / **55 −** | at MC floor |
+| **PRIMARY `candidate − comparator`** | **−0.00859** | **[−0.01131, −0.00603]** | 12 + / **55 −** | at MC floor |
+
+The positive control reproduces S-126's `−0.11009` as `−0.10950` — the difference is the key set, which
+went from 670 (five arms) to **664** (thirteen arms). Not a disagreement.
+
+**The control removal distribution, candidate first:**
+
+```
+KO_NEC_AXIS   -0.00852   <-- RANK 1 of 9   (rank 1 = the MOST NEGATIVE, i.e. the largest drop)
+KO_NEC_SHUF3  -0.00478 · KO_NEC_SHUF2 -0.00317 · KO_NEC_RAND2 -0.00132
+KO_NEC_RAND3  -0.00025 · KO_NEC_RAND1 -0.00022 · KO_NEC_RAND0 +0.00001
+KO_NEC_SHUF1  +0.00002 · KO_NEC_SHUF0 +0.00013
+```
+
+**Rank 1 of 9 pooled. Rank 1 of 5 random-only. Rank 1 of 5 shuffled-only.** The independent
+re-derivation, which shares no analysis code, returns `candidate_minus_base = −0.00852` and the same
+three ranks. **Both paths agree exactly.**
+
+## The verdict, and the ceiling that produces it
+
+> *PRIMARY INCONCLUSIVE on split=train — the candidate's removal is strictly the LARGEST DROP of its 8
+> controls, but with only 8 controls the attainable rank-p floor is 0.1111, which is above 0.05.*
+
+**This is the ceiling PR-CSI-003 declared in advance, and it is not a disappointment.** It is also
+**S-129's correction confirmed by the tool itself**: the analyser prints **`n_controls = 8`,
+`rank_p_floor = 0.1111`** — not the `9 controls / 0.10` that S-122, `runargs/dcs_csi_pr003_read.txt`
+and S-126 all stated. `KO_NEC_ORTH` is not matched by `--control-prefixes` and never entered the
+distribution. The correction was made from the source before the read, and the read confirms it.
+
+*(The same verdict string still says "needs at least 19 controls" — the off-by-one S-129 recorded, since
+`round(1/20, 4) = 0.0500` is not `< 0.05` and the true threshold is 20. It is now visible in a committed
+artifact. Still **reported, not fixed**: editing the analyser immediately after a committed read is the
+S-120(c) `__pycache__` hazard and the S-110c defect at once.)*
+
+## The prereg's own prediction was BEATEN, and that is worth saying plainly
+
+PR-CSI-003's `prediction_fixed_before_data` was that **the candidate would be underpowered or null**,
+and the frozen file instructs that a null *"must be reported as the underpowered result it was
+predicted to be, never as evidence against the axis."* **It is not null.** The candidate is the largest
+drop in its family, on 55 of 67 domains, with a CI that excludes zero by a margin of six standard
+errors. The prediction was conservative and the data beat it. Recorded because a preregistration that
+only ever gets confirmed is not doing any work.
+
+## What this licenses, stated narrowly
+
+Basket's rank-1 installation axis now has evidence in **both** directions on the same codeword, the
+same layer and the same population:
+
+* **SUFFICIENCY** (add the component back under the knockout): rank **1 of 47**, p = 0.0213 — **PASSES
+  on TRAIN and on VALIDATION**.
+* **NECESSITY** (remove the component from a clean forward): rank **1 of 9** — the largest drop in its
+  family, floor-limited to INCONCLUSIVE.
+
+Plan §6 says add-under-KO **and** remove-under-CLEAN together are far stronger than either alone. That
+conjunction now exists for basket. **It is not certified**, and the two halves are not equally strong:
+sufficiency clears its own preregistered bar on held-out data; necessity cannot clear any bar at
+n_controls = 8 because the bar is unreachable there.
+
+**What may NOT be said.** That necessity is established or certified — the floor is 0.1111 and the PASS
+branch was unreachable before the first arm ran. That the axis is *the* causal carrier — the removal
+moves **7.8 %** of what whole-state removal moves (`−0.00852 / −0.10950`), and 92 % of the whole-state
+effect is elsewhere. That this transfers to button — it has not been tested, and the whole S-128
+dissociation says not to assume it. And **no cross-direction fraction comparison** is offered: the
+sufficiency and necessity fractions are computed against different reference arms, and S-109 killed
+dose-normalised cross-comparisons for weaker reasons than this.
+
+## The identity gate is skipped, with a structured reason, exactly as designed
+
+`gates_skipped.identity_check` records — in the artifact, not in a log entry — that there is **no inert
+identity control for this direction**: the natural one (donor = clean, live = clean) *is* the identity
+and is refused by the necessity arm's own precondition, so no run can play the `KO_SELF` role. The
+nearest available control is the norm-matched orthogonal comparator, which is a **dose-matched
+alternative direction and not an inertness check**. The arm's four legs stand in its place. This is a
+real limitation of the direction and it is now carried inside the artifact most likely to be read once
+and never re-run.
+
+## A flag: the suppressed single-comparator verdict says FAIL, and "FAIL" is the wrong word
+
+`verdict_basis.single_comparator_verdict_SUPPRESSED` reads *"would have said **FAIL** against
+`--comparator-arm KO_NEC_ORTH`"*. It is **not** a sign error — S-120's fourth sign site is correct, and
+I checked it at the source:
+
+```
+scripts/dcs_csi_subspace_analyze.py:993
+    single_ok = (((p["point"] < 0 and p["ci95"][1] < 0) if NEC
+                  else (p["point"] > 0 and p["ci95"][0] > 0))
+                 and p["p_two_sided"] < 0.05 and not p["p_at_its_floor"])
+```
+
+Both necessity clauses PASS (point −0.00859 < 0; ci95 upper −0.00603 < 0; p = 5e-06 < 0.05). What fails
+is **`not p["p_at_its_floor"]`** — the Monte-Carlo sign-flip sampler saturated at 5e-06 because the
+exact floor for 67 domains is 2⁻⁶⁷ ≈ 7e-21 and 200 000 draws cannot express it.
+
+**Two things follow, and the second is the defect.** First, refusing to certify on a saturated sampler
+is defensible and §17 explicitly says a p at its attainable floor means the test exhausted its
+resolution. Second, **the same saturated-p condition is fatal here and irrelevant three lines earlier**:
+`manipulation_check` and `instrument_capable` both carry `p_at_its_floor: true` and both **PASS**. So
+one saturating p is a gate cleared and another is a verdict denied, with no stated reason for the
+asymmetry. And calling the outcome **"FAIL"** conflates *the candidate lost* with *the test could not
+resolve* — the candidate won on point, on CI and on rank. The honest string is "CANNOT CERTIFY: the
+sign-flip p is at its sampler floor."
+
+It **changes nothing here** — the rank rule governs whenever `n_controls ≥ 2` (S-050), so `single_ok`
+decides nothing and is recorded only. But it is precisely S-120's flag 2 again: *a suppressed field
+carrying a claim nobody re-derives.* **Reported, not fixed.**
+
+## Nine row shortfalls, documented rather than tolerated
+
+The repo's own completeness guard **refused my commit** — the S-047 shape, third instance — because
+finished runs had not persisted all their rows. It was right. Every shortfall is the norm-match
+degeneracy guard, and each is now in `KNOWN_SHORT` with **measured** evidence rather than an assertion:
+
+| run | rows | domains touched | max/domain |
+|---|---|---|---|
+| `KO_NEC_RAND0` | 669/670 | 1 (`pipeline_station`) | 1 |
+| `KO_NEC_RAND2` | **666**/670 | 3 (`furniture_workshop`, `garden_centre`, `shoe_factory`) | 2 |
+| `KO_NEC_RAND3` | 669/670 | 1 (`solar_array`) | 1 |
+| + six `csi1_button_train_*` arms from the in-flight PR-CSI-005 jobs | 668–669/670 | 1–2 each | ≤ 2 |
+
+Each entry records the complete list of failing `prompt_id`s, the domain spread measured against a
+full-row arm of the same allocation, and the distinction between the **mechanism** (degeneracy is the
+angle between a fixed basis and a fixed delta, both fixed before any readout, so the loss is expected
+to be outcome-independent) and what was actually **measured**. `KO_NEC_RAND2` at 666 sits exactly on
+`--allow-short 4`, which is worth naming rather than letting pass silently.
+
+The script that writes these entries **refuses to exempt any run whose `failure_reasons` are not
+exclusively the degeneracy guard** — a blanket exemption would have defeated the guard, which is the
+only thing standing between an unexplained row loss and a committed number.
