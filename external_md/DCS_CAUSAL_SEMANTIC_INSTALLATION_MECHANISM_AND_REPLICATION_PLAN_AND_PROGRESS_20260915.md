@@ -9051,3 +9051,148 @@ PR-CSI-005.
 Job **912736** (necessity half 2): three arms landed — `KO_NEC_AXIS_ANCHOR`, `KO_NEC_SHUF0`,
 `KO_NEC_SHUF1` — at ~9 min/arm, faster than half 1's 26 min/arm because the model snapshot is already
 staged on n-350. Six arms remain.
+
+---
+
+# S-129 — **PR-CSI-003-A frozen: the necessity control family grows 4 → 24 shuffled, so the PASS branch becomes reachable in this direction for the first time.** Plus a **CORRECTION to S-126 and S-122**: the floor they both state is not the floor the analyser computes, and "≥ 19 controls" is off by one
+
+Written while job 912736 was still running and gate 3 had deliberately not been evaluated. Same
+discipline as S-112 and S-122: the rules are fixed before the numbers can be seen.
+
+`configs/dcs_csi_pr003a_necessity_family.json` (395 lines, 38 742 B, md5
+`d2ebfe670646fd1304fe4d326343c510`) and `runargs/dcs_csi_pr003a_read.txt` (249 lines, 21 080 B, md5
+`4a48ff1a01b8137dab3dd735064d9001`), both `json.load`/`wc`-verified after writing per S-124, and
+self-checked with 119 assertions, 0 failed.
+
+## (a) CORRECTION to S-126 and S-122 — two arithmetic statements, both mine, both wrong
+
+**1. The attainable floor is 0.1111, not 0.10.** S-122 wrote *"Nine controls give an attainable floor
+of 1/10"*, `runargs/dcs_csi_pr003_read.txt` repeats it, and **S-126 repeated it again yesterday**. All
+three counted `KO_NEC_ORTH` as a member of the control distribution. It is not. Verified at the source:
+
+```
+scripts/dcs_csi_subspace_analyze.py:916
+    ctrl_arms = [x for x in arms if x.startswith(tuple(a.control_prefixes.split(",")))]
+scripts/dcs_csi_subspace_analyze.py:961
+    "rank_p_floor": round(1.0 / (len(ctrl_rec) + 1), 4)
+
+>>> "KO_NEC_ORTH".startswith(("KO_NEC_SHUF", "KO_NEC_RAND"))
+False
+```
+
+`--control-prefixes KO_NEC_SHUF,KO_NEC_RAND` — which the frozen read makes **mandatory** — therefore
+matches the eight SHUF/RAND arms and **not** the orthogonal comparator. The analyser will print
+**`n_controls = 8`, `rank_p_floor = 0.1111`**. No verdict moves (0.1111 and 0.10 are both ≫ 0.05), but
+a stated floor that the tool will not print is exactly the S-118 class of defect: an assertion about a
+computation, made without running the computation.
+
+**2. "at least 19 controls" is off by one; the correct number is 20.** The analyser's INCONCLUSIVE text
+is formatted with a hardcoded `min_controls=19` (line 1026) while the gate it describes is
+
+```
+scripts/dcs_csi_subspace_analyze.py:1018
+    attainable = dist["rank_p_floor"] < 0.05
+```
+
+and `round(1/20, 4) = 0.0500`, which is **not** `< 0.05`:
+
+| K controls | floor | `< 0.05`? |
+|---|---|---|
+| 16 | 0.0588 | no |
+| **19** | **0.0500** | **no** |
+| **20** | **0.0476** | **yes** |
+
+So a family of 19 still prints INCONCLUSIVE. S-120, S-122 and S-126 all quote the tool's own "≥ 19",
+and the tool is wrong about itself. **Reported, not fixed** — editing the analyser between the
+PR-CSI-002 read and the PR-CSI-003 read is the S-110c defect and would fire this amendment's own VOID
+condition 7.
+
+## (b) What the amendment buys, and what it costs — stated as a measurement, not a hope
+
+The frozen axis file `configs/dcs_csi_axis_basket_behavioral_shuf24.pt` holds **53 bases**:
+`cand_rank1`, `cand_pls1-5`, `ctrl_orth`, **`ctrl_shuffled0-23`** and **`ctrl_random0-21`**. So 46
+norm-matchable control directions is the hard ceiling — exactly D12's sufficiency family, floor 0.0213.
+The amendment fixes **K = 24 shuffled (primary, floor 0.0400)** and **K = 28 pooled (secondary, floor
+0.0345)**, growing the shuffled family **4 → 24** and its floor **0.2000 → 0.0400**.
+
+The primary is the **shuffled-only** rank, following S-095/S-096 rather than inventing a shape: R5
+measured the shuffled family's sd at **1.9× the random family's at the same mean**, so the shuffled
+tail is what sets the margin. Sufficiency grew 12 → 24 shuffled; held-out grew 4 → 20.
+
+**And the power table is honest about the price.** At the sufficiency direction's *measured*
+separation of 2.028 shuffled-sd (candidate +0.00264 against shuffled n=24 mean +0.000527, sd 0.001042,
+from `basket_train_n46.json`): **P(rank 1) = 0.6996 at K = 8 but 0.5317 at K = 24.** Growing the family
+buys **certifiability at 0.0400 and pays ≈ 0.17 of rank-1 probability for it**. That is the correct
+trade and it is written down before the data, not discovered after. The necessity family's own sd is
+**CANNOT MEASURE** until 912736 lands, and 2.028 is labelled a transfer assumption throughout.
+
+`prediction_fixed_before_data` is **not** rank 1: modal expectation **rank 2–8**, with P(rank 1) = 0.53
+if necessity reproduces sufficiency's standardised separation and 0.04 under exchangeability — and the
+file states the second world is at least as likely. PR-CSI-003's standing "underpowered or null" is
+neither withdrawn nor quietly upgraded.
+
+## (c) A BLOCKER: the launcher cannot produce these arms, and group X is a trap
+
+Halves 2 + 3 cap the family at 16 → floor 0.0588, which is **not** `< 0.05`. So halves 2+3 alone can
+never certify, and something must produce more shuffled arms.
+
+**Group X cannot.** Its body is `$SB $COMMON $KO $R $RR …`, where `R` is defined once at the top as
+`--rescue-positions query --rescue-layer $LAYER --rescue-donor clean`. **Group X hardcodes donor
+CLEAN.** A `CSI_ARMS="KO_NEC_SHUF4:ctrl_shuffled4 …"` would therefore run the **sufficiency** arm under
+a **necessity** name, emit `necessity_arm: null`, and never charge the four-leg contract — a silently
+mislabelled arm, which is the worst failure mode available here. A launcher patch adding
+`CSI_NEC_HALF=4/5` (ten shuffled arms each, reusing the existing `subnec` body verbatim) is
+**mathematically required**. It is written out in full inside the preregistration and **not applied**,
+because the launcher stays untouched while 912736 runs.
+
+## (d) A decision I REVERSED because I read the preregistration before launching
+
+n-301 was sitting idle with seven free 3090s and I was about to launch **half 3** (`KO_NEC_RAND4-11`)
+alongside half 2 purely to use the capacity. **PR-CSI-003-A says not to buy it**, and its reason is
+right: more *random* draws lower the **pooled** floor while sampling the **wrong tail** — the shuffled
+family, at 1.9× the sd, is what the margin is actually measured against. Buying 8 random arms would
+have cost an allocation and moved the primary statistic not at all.
+
+**This is the entry's most useful line.** The temptation was free GPU, the discipline was reading the
+frozen document first, and the discipline was worth roughly 3.5 GPU-hours. It is the exact inverse of
+S-116→S-119, where free speed on the wrong node cost four wrong attributions.
+
+## (e) A defect caused and caught by the agent that wrote the freeze, recorded rather than tidied away
+
+Its first commit message was truncated mid-sentence by shell quoting. The repair was
+`git commit --amend` — **which takes the whole index and no pathspec** — and between the commit and
+the amend a concurrent agent had staged six files of its own (`dcs_csi_pr004_*`, a sprint-log append,
+three `reports/` documents). The amend **swept all six into a commit whose message never mentioned
+them**. Nothing had been pushed, so it was undone with `git reset --soft HEAD~1` and a path-limited
+`git commit -- <two paths>`; the final commit `6edfa568` contains **exactly 2 files**.
+
+This is **S-110b in a new disguise**. S-110b's rule was *"when another agent may be editing the tree,
+`git add` NAMED PATHS, never directories."* The hazard is larger than that rule says: it is **any git
+command that defaults to the whole index**. **Rule extended: `git commit --amend` is banned in a shared
+tree without an explicit pathspec.** Every commit in this session has since been path-limited.
+
+## (f) Numbering: commit-message IDs and log-entry IDs are off by one across one pair
+
+Commit `6edfa568` uses the prefix `DCS-CSI-128` for PR-CSI-003-A and wrote **no sprint-log entry**. The
+sprint log has exactly **one** S-128 and it is the correction/dissociation entry. PR-CSI-003-A is
+**this** entry, S-129. The two ID spaces are therefore off by one across that pair. Recorded rather
+than silently renumbered, because renumbering an append-only log to make a commit message tidy is
+exactly the kind of retroactive edit this file forbids.
+
+## (g) A fourth foot-gun, created by this amendment and named in its own file
+
+The analyser's default `--out` path is built from direction + codeword + split and does **not** include
+`--control-prefixes`. So the **primary (shuffled-only) and secondary (pooled) reads collide on one
+filename** and the second silently overwrites the first — S-120's third sign site, recurring. Both
+`--out` paths are spelled out in the runargs, distinct, and neither is PR-CSI-003's reserved default
+name.
+
+## (h) The analyser moved under the freeze, and the citations were re-based because of it
+
+`scripts/dcs_csi_subspace_analyze.py` went dirty (+56/−2 — a concurrent agent landing the S-124
+atomic-write fix) and back to clean inside one hour, shifting every line citation +1 then −1. The
+hunks were checked while applied — `import tempfile`, one module-level function, one call site in
+`_write` — and **no computation moved**, so VOID condition 7 would not have fired. Consequence, and it
+is a good one: **every citation in both frozen files is now content, not a line number**, and VOID
+condition 7 carries an md5 protocol (`ce116c6f`, 1066 lines, md5
+`975280800b7539bc8453e85400374ad1`) instead of a presumption.
