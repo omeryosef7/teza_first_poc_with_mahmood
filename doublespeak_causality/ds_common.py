@@ -138,10 +138,18 @@ def env_metadata() -> Dict[str, Any]:
     torch_v = tf_v = None
     cuda_avail: Optional[bool] = None
     gpu = None
+    # DCS-CSI-139. Compute capability was recorded in ZERO of 305 run directories, and it is the
+    # one field PR-CSI-003's VOID condition actually depends on (V100 = sm_70 has no native
+    # bfloat16; RTX 3090 = sm_86 does). Until now it could only be INFERRED from the gpu model
+    # string by a reader who knew the mapping. The artifact now self-describes it.
+    compute_capability = None
     try:
         torch_v = torch.__version__
         cuda_avail = bool(torch.cuda.is_available())
         gpu = torch.cuda.get_device_name(0) if cuda_avail else None
+        if cuda_avail:
+            _maj, _min = torch.cuda.get_device_capability(0)
+            compute_capability = "%d.%d" % (_maj, _min)
     except Exception:
         pass
     try:
@@ -157,6 +165,7 @@ def env_metadata() -> Dict[str, Any]:
         "transformers": tf_v,
         "cuda_available": cuda_avail,
         "gpu": gpu,
+        "compute_capability": compute_capability,
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
     }
 
@@ -238,6 +247,13 @@ def write_runmeta(out_dir: str, args: Any = None,
             "transformers": env.get("transformers"),
             "cuda_available": env.get("cuda_available"),
             "gpu": env.get("gpu"),
+            # DCS-CSI-139. RUNMETA is built from an EXPLICIT field list, not from env wholesale, so
+            # adding a key to env_metadata() alone leaves it out of the artifact. That is exactly
+            # what happened: the first version of this fix put compute_capability in env_metadata()
+            # only, and the anchor arm (job 913314) came back with the field ABSENT on a machine
+            # that self-reported "NVIDIA GeForce RTX 3090". Caught because an arm was run, not
+            # because the diff was re-read.
+            "compute_capability": env.get("compute_capability"),
             "start_ts": time.strftime("%Y-%m-%dT%H:%M:%S"),
             "start_epoch": time.time(),
             "cwd": os.getcwd(),

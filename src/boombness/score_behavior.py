@@ -3005,6 +3005,23 @@ def main() -> int:
               f"live on the readout by design; the arm is gated by assert_necessity_live "
               f"(4 legs) and summary.json carries a `necessity_arm` block.", flush=True)
     _attn_impl = "eager" if (_wants_knockout or args.attn_impl == "eager") else args.attn_impl
+    # DCS-CSI-139 / S-119 fix 1. REFUSE emulated bfloat16 instead of silently producing numbers on
+    # it. Native bf16 needs compute capability >= 8.0; Tesla V100 is sm_70 and EMULATES it. S-037
+    # recorded the prohibition by inspection and it was re-entered anyway (S-116..S-121): every
+    # norm-matched arm on a V100 wrote ZERO rows because the degeneracy test
+    # rel = ||P(delta)||/||delta|| < 1e-6 is evaluated on a quantity emulation destroys, while every
+    # NON-norm-matched V100 arm wrote all its rows SILENTLY in emulated arithmetic. The loud failure
+    # cost four wrong attributions; the silent one is the reason this guard exists. Placed at the
+    # load site, not at argparse, so no code path can reach the model without passing it.
+    if args.dtype == "bfloat16" and torch.cuda.is_available():
+        _cc = torch.cuda.get_device_capability(0)
+        if _cc[0] < 8:
+            raise SystemExit(
+                "REFUSING: --dtype bfloat16 on %s (compute capability %d.%d). Native bfloat16 "
+                "requires >= 8.0; below that it is EMULATED and the norm-match degeneracy test is "
+                "computed on a quantity the emulation destroys (S-037, S-119, S-121). Use an "
+                "RTX 3090 (sm_86) or pass --dtype float16/float32 deliberately."
+                % (torch.cuda.get_device_name(0), _cc[0], _cc[1]))
     lm = dc.load_model(model_id, dtype=getattr(torch, args.dtype), attn_implementation=_attn_impl)
     # THE REQUEST AND THE LOADED STATE ARE TWO DIFFERENT FACTS, and only one of them is evidence.
     # `_attn_impl` is what this process ASKED for; `_attn_impl_loaded` is what the model actually

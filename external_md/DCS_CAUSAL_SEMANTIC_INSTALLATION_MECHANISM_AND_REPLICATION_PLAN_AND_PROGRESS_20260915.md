@@ -10341,3 +10341,104 @@ n_degenerate = 0 on all 1569 admitted rows
 Had that cosine come back ~1.0 the wrong tensor was copied and the swap arm would be a **relabelled
 native arm** — a clean, beautiful, meaningless result. It reproduces the freeze-time measurement to four
 decimals.
+
+---
+
+# S-139 — **the two edits queued since this morning are made, and the anchor arm caught a defect in my own fix before it could become a silent provenance hole.** Both proven INERT: 230 rows bit-identical across the blob change
+
+S-119 fix #1 (the bf16 compute-capability guard) and S-127(a) (the `compute_capability` provenance
+field) sat queued for a full working day, blocked first by PR-CSI-003 and then by PR-CSI-005 and
+PR-CSI-006, each of which made `src/boombness/score_behavior.py`'s blob a VOID condition of a running
+experiment. With every arm of all three on disk and the queue empty, the block lifted.
+
+## (a) The guard, placed where it cannot be bypassed
+
+```python
+# score_behavior.py, immediately above dc.load_model(...)
+if args.dtype == "bfloat16" and torch.cuda.is_available():
+    _cc = torch.cuda.get_device_capability(0)
+    if _cc[0] < 8:
+        raise SystemExit("REFUSING: --dtype bfloat16 on %s (compute capability %d.%d) ...")
+```
+
+**At the load site, not at argparse** — a guard at argparse is bypassed by any path that builds `args`
+itself; between the caller and `dc.load_model` nothing reaches the model without passing it.
+
+**Why a loud failure was not enough, which is the part worth recording.** On a V100 (sm_70) bf16 is
+emulated. Norm-matched arms there wrote **zero rows** — loud — and it *still* cost four wrong
+attributions across S-113 → S-121 before anyone printed the GPU column. But every **non**-norm-matched
+V100 arm wrote **all** its rows, silently, in emulated arithmetic, because the degeneracy test that
+detects the problem is only evaluated on the norm-matched path. **The silent case is what the guard is
+for**, and S-037 had recorded the prohibition by inspection long before it was re-entered anyway.
+
+## (b) A defect I caused, and the anchor arm caught it
+
+The first version of the provenance fix added `compute_capability` to `env_metadata()` and stopped
+there. I ran one anchor arm to prove the edits inert. It came back:
+
+```
+gpu = "NVIDIA GeForce RTX 3090"      compute_capability = None
+```
+
+**`RUNMETA.json` is built from an EXPLICIT field list that copies selected keys out of `env`, not from
+`env` wholesale.** The field reached the producer function and **never reached the artifact**.
+
+Two things make that worse than a missing field, and both are the same shape as defects this log has
+recorded before:
+
+1. **`.get()` returning `None` is indistinguishable from "measured as `None`."** A later reader
+   checking capability on a V100 would have seen `None` and concluded the field is not populated on
+   that device, rather than that it was never written at all — a **silent** provenance hole in exactly
+   the field PR-CSI-003's VOID condition depends on.
+2. **My own check had the same ambiguity.** I printed `m.get("compute_capability")`, read `None`, and
+   for a moment took it as data. It was absence. *Distinguishing "absent" from "null" is the whole
+   subject of S-126's `rescue_basis: "" vs null` note, and I walked into it from the other side.*
+
+**Caught because an arm was run, not because the diff was re-read.** That is the third time this
+session a cheap measurement beat an argument, and the first time the argument was mine.
+
+Fixed, with the reasoning in the code, plus the two tests I should have written first: one asserting
+the field **reaches RUNMETA** rather than merely existing in `env_metadata()`, and one generalising the
+bug — *every* provenance key that matters must appear in the copy list, so the next person adding one
+cannot repeat it.
+
+## (c) Proven INERT on the producer path
+
+`CODEANCHOR_139B` (job 913407) re-ran the identical arm under the **new** blob against
+`STAGEANCHOR_AXIS` under the **old** one — same population, same basis, same norm-match key, same
+staged model path, same node class:
+
+```
+A CODEANCHOR_139B   git_commit d515cc76  compute_capability '8.6'
+B STAGEANCHOR_AXIS  git_commit 1cce381e  compute_capability None
+rescue-FIRED A=230 B=230 | common 230 | A-only 0 | B-only 0
+logp_concept · logp_codeword · semantic_logodds · p_concept · p_codeword · top1_id
+    max|diff| = 0.0 and nonzero_rows = 0 on all six
+```
+
+**230 rows bit-identical across the blob change.** The guard and the provenance field change nothing
+on the producer path, and the new field is populated where it was previously absent. Non-vacuity was
+asserted before the differences were believed, per S-134.
+
+**No committed number is touched:** every arm in PR-CSI-003, PR-CSI-005 and PR-CSI-006 ran under the
+old blob `e94258bd`, verified by `git hash-object` before each of those launches.
+
+## (d) The tests, and an honest weakness in them
+
+`tests/test_bf16_capability_guard.py`, **13 tests**, `__pycache__` purged before running them per
+S-120(c). They include a **mutation proof** that fetches the pre-fix blob `e94258bd` out of git and
+asserts the guard is *absent* from it — so the test can actually fail — and a truth table over every
+device this project has used (V100 sm_70 refuses; 3090 sm_86, L40S sm_89 pass; deliberate `--dtype
+float16` on a V100 is allowed).
+
+**The weakness, stated before a reviewer finds it:** most of these are **source-text assertions**
+(regex and substring over the file) rather than behavioural tests. They pass if the text is present
+even when the code never executes, and they would break on harmless reformatting. A guard made
+unreachable by an early return above it would survive most of them. That is flagged to REVIEW R10 with
+a request for the minimal behavioural test that would catch it.
+
+## (e) A measurement that fell out for free
+
+The login node `c-001` self-reports `compute_capability: "6.1"` (TITAN Xp, sm_61) — **below 8.0**. So
+the guard would refuse bf16 there, which is correct and which nothing previously recorded. The field is
+already earning its place.
