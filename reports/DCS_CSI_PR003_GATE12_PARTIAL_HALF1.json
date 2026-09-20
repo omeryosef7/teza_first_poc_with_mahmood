@@ -1,0 +1,218 @@
+{
+ "schema": "dcs_csi_pr003_partial_gate12/1",
+ "WHAT_THIS_IS": "PARTIAL read of PR-CSI-003: GATES 1 and 2 ONLY, from necessity HALF 1 (SLURM job 906433). Half 2 (KO_NEC_SHUF0-3, KO_NEC_RAND0-3, KO_NEC_AXIS_ANCHOR) was NEVER LAUNCHED, so the frozen full command in runargs/dcs_csi_pr003_read.txt CANNOT be run and was not run. Gate 3 (candidate + rank) is NOT evaluated here.",
+ "NOT_THE_FROZEN_ARTIFACT": "This is deliberately NOT DCS_CSI_SUBSPACE_NECESSITY_basket_train.json nor DCS_CSI_REDERIVE_NECESSITY_basket_train.json. Those names stay unused until half 2 exists.",
+ "produced_at_commit": "be0e6818",
+ "population": {
+  "codeword": "basket",
+  "split": "train",
+  "layer": 18,
+  "expect_n": 670,
+  "n_domains": 67
+ },
+ "arms_present_half1": {
+  "NEC_BASE": "csi1_basket_train_NEC_BASE_20260917_235902_170627",
+  "NEC_KO": "csi1_basket_train_NEC_KO_20260918_001224_171794",
+  "KO_NEC_FULL": "csi1_basket_train_KO_NEC_FULL_20260918_002642_172856",
+  "KO_NEC_AXIS": "csi1_basket_train_KO_NEC_AXIS_20260918_003905_173774",
+  "KO_NEC_ORTH": "csi1_basket_train_KO_NEC_ORTH_20260918_005117_174712"
+ },
+ "VOID_CONDITION_HARDWARE": {
+  "requirement": "every necessity arm on an RTX 3090 (sm_86, native bf16); Tesla V100 is a VOID condition (S-037/S-119/S-121)",
+  "observed_every_arm": {
+   "slurm_job_id": "906433",
+   "slurm_nodelist": "n-307",
+   "hostname": "n-307",
+   "gpu": "NVIDIA GeForce RTX 3090",
+   "dtype": "bfloat16",
+   "cuda_available": true
+  },
+  "verdict": "PASS -- all five arms, one allocation, one node, one GPU architecture"
+ },
+ "GATE_1_four_legs": {
+  "source": "summary.json necessity_arm block, INDEPENDENTLY recomputed from results.jsonl rows",
+  "NEC_BASE": {
+   "necessity_arm": null,
+   "rows_with_necessity_block": 0,
+   "note": "not a rescue arm; block legitimately absent, not a failure"
+  },
+  "NEC_KO": {
+   "necessity_arm": null,
+   "rows_with_necessity_block": 0,
+   "note": "not a rescue arm; block legitimately absent, not a failure"
+  },
+  "per_rescue_arm": {
+   "KO_NEC_FULL": {
+    "violations": {},
+    "n_rows": 670,
+    "n_rows_ok": 670,
+    "frac_rows_ok": 1.0,
+    "min_donor_prefill_edits": 387,
+    "median_donor_prefill_edits": 513.0,
+    "max_donor_prefill_edits_rows": 792,
+    "max_readout_knockout_edits": 0,
+    "min_patch_positions_written": 112,
+    "median_patch_positions_written": 112.0,
+    "max_patch_positions_written_rows": 112,
+    "min_donor_delta_norm": 0.8610379808032769,
+    "median_donor_delta_norm": 1.1370761014216653,
+    "max_donor_delta_norm_rows": 2.1325298671,
+    "mean_donor_delta_norm_rows": 1.1720284223,
+    "n_rows_donor_delta_measured": 670,
+    "rescue_layer": 18,
+    "rescue_donor": "ko",
+    "leg_verdict": "PASS (all four legs)"
+   },
+   "KO_NEC_AXIS": {
+    "violations": {},
+    "n_rows": 670,
+    "n_rows_ok": 670,
+    "frac_rows_ok": 1.0,
+    "min_donor_prefill_edits": 387,
+    "median_donor_prefill_edits": 513.0,
+    "max_donor_prefill_edits_rows": 792,
+    "max_readout_knockout_edits": 0,
+    "min_patch_positions_written": 112,
+    "median_patch_positions_written": 112.0,
+    "max_patch_positions_written_rows": 112,
+    "min_donor_delta_norm": 0.8610379808032769,
+    "median_donor_delta_norm": 1.1370761014216653,
+    "max_donor_delta_norm_rows": 2.1325298671,
+    "mean_donor_delta_norm_rows": 1.1720284223,
+    "n_rows_donor_delta_measured": 670,
+    "rescue_layer": 18,
+    "rescue_donor": "ko",
+    "leg_verdict": "PASS (all four legs)"
+   },
+   "KO_NEC_ORTH": {
+    "violations": {},
+    "n_rows": 670,
+    "n_rows_ok": 670,
+    "frac_rows_ok": 1.0,
+    "min_donor_prefill_edits": 387,
+    "median_donor_prefill_edits": 513.0,
+    "max_donor_prefill_edits_rows": 792,
+    "max_readout_knockout_edits": 0,
+    "min_patch_positions_written": 112,
+    "median_patch_positions_written": 112.0,
+    "max_patch_positions_written_rows": 112,
+    "min_donor_delta_norm": 0.8610379808032769,
+    "median_donor_delta_norm": 1.1370761014216653,
+    "max_donor_delta_norm_rows": 2.1325298671,
+    "mean_donor_delta_norm_rows": 1.1720284223,
+    "n_rows_donor_delta_measured": 670,
+    "rescue_layer": 18,
+    "rescue_donor": "ko",
+    "leg_verdict": "PASS (all four legs)"
+   }
+  },
+  "basis_identity_rows": {
+   "KO_NEC_FULL": {
+    "rescue_basis": null,
+    "rescue_basis_key": null,
+    "basis_sha16": null,
+    "norm_matched": null
+   },
+   "KO_NEC_AXIS": {
+    "rescue_basis": "dcs_csi_axis_basket_behavioral_shuf24.pt",
+    "rescue_basis_key": "cand_rank1",
+    "basis_sha16": "fad8b030ae93976e",
+    "norm_matched": false
+   },
+   "KO_NEC_ORTH": {
+    "rescue_basis": "dcs_csi_axis_basket_behavioral_shuf24.pt",
+    "rescue_basis_key": "ctrl_orth",
+    "basis_sha16": "59c03cffc2135030",
+    "norm_matched": true,
+    "rescue_norm_match_key": "cand_rank1"
+   },
+   "note": "AXIS and ORTH carry DIFFERENT basis_sha16 -- not the bitwise-identical condition S-118 hit."
+  },
+  "BY_HAND_KO_NEC_FULL_basis_check": {
+   "frozen_instruction": "check its config.json args.rescue_basis is null by hand",
+   "literal_config_value": "\"\" (empty string, argparse default), NOT JSON null",
+   "resolution": "src/boombness/score_behavior.py:4133 branches on `if args.rescue_basis:` -- the empty string is falsy, so DonorPatch (whole-state) was used, not SubspaceDonorPatch; and score_behavior.py:3426 writes `rescue_basis: null` into every row, which all 670 rows carry, alongside rescue_basis_key null and rescue_basis_meta null",
+   "verdict": "PASS -- KO_NEC_FULL ran with NO basis. Reported as a literal-form discrepancy only: the config records \"\" where the frozen note says null."
+  },
+  "norm_match_degeneracy": {
+   "total_degenerate_positions_KO_NEC_ORTH": 0,
+   "note": "the norm-matched arm kept all 670 rows, as expected on a 3090 (S-121)"
+  },
+  "GATE_1_VERDICT": "PASS on all three rescue arms"
+ },
+ "GATE_2_positive_control": {
+  "contrast": "KO_NEC_FULL - NEC_BASE on y_install",
+  "statistical_unit": "DOMAIN",
+  "requirement": "point < 0 AND ci95 UPPER bound < 0",
+  "path_A_existing_tool": {
+   "tool": "scripts/dcs_csi_rederive_subspace.py --direction necessity --controls \"\"",
+   "controls_absent_behaviour": "--controls is required=True but an EMPTY STRING is accepted; ctl_names becomes [], arms reduce to base/ko/full/candidate, the rank families are skipped and `ranks` is {}. It does NOT refuse.",
+   "n_keys_common": 670,
+   "n_domains": 67,
+   "point": -0.11009,
+   "n_neg": 67,
+   "n_pos": 0,
+   "n_tied": 0,
+   "p_two_sided": 4.9999750001249995e-06,
+   "p_at_its_monte_carlo_floor": true,
+   "ci95": "NOT PRODUCED BY THIS PATH -- it uses a sign-flip test, not a bootstrap",
+   "instrument_capable": true
+  },
+  "path_B_independent_bootstrap": {
+   "script": "session scratchpad gate2_indep.py (NOT in the repo); shares no code with either project analyser",
+   "convention": "project convention copied from dcs_csi_rederive_patch.boot_paired_diff: n_boot=20000, seed=20260915, percentile [2.5, 97.5]",
+   "n_rows_common": 670,
+   "n_domains": 67,
+   "point": -0.11009,
+   "point_full_precision": -0.11009441954297132,
+   "ci95": [
+    -0.12522,
+    -0.09514
+   ],
+   "ci95_full_precision": [
+    -0.12522326977522166,
+    -0.09514160916222096
+   ],
+   "n_neg": 67,
+   "n_pos": 0,
+   "n_tied": 0,
+   "intersection": "two-arm (NEC_BASE, KO_NEC_FULL); the four-arm intersection gives the IDENTICAL number because every arm carries all 670 keys",
+   "seed_stability_ci95": {
+    "1": [
+     -0.12536,
+     -0.09529
+    ],
+    "20260916": [
+     -0.1254,
+     -0.09508
+    ],
+    "987654321": [
+     -0.12535,
+     -0.09506
+    ]
+   },
+   "arm_domain_means": {
+    "KO_NEC_FULL": 0.36354,
+    "NEC_BASE": 0.473635
+   }
+  },
+  "AGREEMENT": "EXACT on the point estimate: both paths give -0.11009. No disagreement.",
+  "manipulation_check_NEC_KO_minus_NEC_BASE": {
+   "point": -0.23406,
+   "ci95": [
+    -0.26369,
+    -0.20438
+   ],
+   "n_neg": 67,
+   "n_pos": 0,
+   "n_tied": 0,
+   "note": "the knockout moves installation down by 0.23406, so the clean-to-KO span on THESE arms is 0.234060"
+  },
+  "fraction_of_span_removed": 0.47037,
+  "prereg_prediction_check": "PR-CSI-003 predicted the whole-span REMOVE would land 'of order -0.07 to -0.12'. Observed -0.11009, inside that pre-registered band.",
+  "GATE_2_VERDICT": "PASS -- point -0.11009 < 0 and ci95 upper -0.09514 < 0, 67/67 domains negative"
+ },
+ "GATE_3": "NOT EVALUATED. Requires the 9 half-2 arms. No rank exists and none was computed.",
+ "RECOMMENDATION": "Gates 1 and 2 both pass. Launch half 2 -- KO_NEC_SHUF0-3, KO_NEC_RAND0-3 plus KO_NEC_AXIS_ANCHOR -- on an RTX 3090, then run the frozen command in runargs/dcs_csi_pr003_read.txt with --require-slurm-job 906433,<HALF2>.",
+ "CAVEAT_PASS_BRANCH": "Even with half 2, the analyser's PASS branch is unreachable by design: 9 controls => floor 1/10 = 0.10 > 0.05. PR-CSI-003 declares this floor in advance."
+}

@@ -8376,3 +8376,468 @@ donor, the readout was clean, the patch fired and a displacement existed — non
 state is the *intended* `h_clean − P_w(h_clean − h_ko)`); and PR-CSI-003's prediction already on
 record is that **the candidate is expected to be underpowered or null**, to be reported as the
 underpowered result it was predicted to be and never as evidence against the axis.
+
+---
+
+# S-123 — sprint RESUMED after a 2.5-day gap. The queue is empty, **two frozen reads were never executed**, and necessity **half 2 was never launched**
+
+Opening entry of a new working session (2026-09-20 12:27 IDT). Everything below is a state
+measurement I made myself before any new science was attempted, because the previous session ended
+mid-flight and the first job of this one is to find out what actually landed.
+
+## What the cluster says
+
+`squeue -u $USER` is **empty** of this sprint's jobs. `sacct -S 2026-09-17` resolves every job the
+last three entries left in flight:
+
+| job | name | state | elapsed | node | ended |
+|---|---|---|---|---|---|
+| 905990 | `csi_p1` (PR-CSI-002 group A) | COMPLETED | 01:58:42 | n-303 | 2026-09-17T23:05:42 |
+| 906001 | `csi_p1` (PR-CSI-002 group B) | COMPLETED | 02:23:51 | n-303 | 2026-09-18T00:11:21 |
+| **906433** | `csi_p1` (**PR-CSI-003 necessity half 1**) | **COMPLETED** | 02:10:34 | **n-307** | 2026-09-18T01:03:15 |
+| 906501 | `ab_limit` (the S-121 same-node A/B) | COMPLETED | 00:18:51 | rack-bgw-dgx1 | 2026-09-17T23:55:15 |
+
+Job 906433 is on **n-307**, which S-119's table verified is an RTX 3090. The PR-CSI-003 hardware
+VOID condition is therefore satisfied for half 1 — checked, not assumed.
+
+## The three facts that set this session's agenda
+
+**1. Necessity half 1 landed; half 2 was never launched.** The five directories that exist are
+`csi1_basket_train_{NEC_BASE, NEC_KO, KO_NEC_FULL, KO_NEC_AXIS, KO_NEC_ORTH}_20260918_*`,
+timestamped 23:59 → 00:51, consistent with one 2h10m allocation. `NEC_BASE/DONE.json` reads
+`status: ok, rows_written: 670, n_rows_failed: 0`. **No full-population `KO_NEC_SHUF*` or
+`KO_NEC_RAND*` directory exists** — only the `NCSMOKE_`/`SMOKE_` n=24 smoke runs from 22:44–23:17.
+So the frozen PR-CSI-003 command, which names all thirteen arms, **cannot be run as written**, and
+the `<HALF1>,<HALF2>` placeholders in `runargs/dcs_csi_pr003_read.txt` were never filled in.
+
+**2. Neither frozen read has ever been executed.** `reports/DCS_CSI_SUBSPACE_basket_train_L20.json`
+and `reports/DCS_CSI_SUBSPACE_NECESSITY_basket_train.json` **do not exist**. The newest file in
+`reports/` is `DCS_CSI_REDERIVE_button_train_L20.json` at 2026-09-17 20:22 — *before* S-112 froze
+the PR-CSI-002 read at 22:50 and before S-122 froze the PR-CSI-003 read at 00:10. Both reads were
+written down, and then the session ended. **This is the best possible position to resume from**: the
+results are on disk and the reading rules were fixed before anyone could see them, which is exactly
+what S-112 and S-122 were for. It is also a standing hazard — an unexecuted frozen read is an
+invitation to re-freeze it once the numbers are visible, and that is not going to happen here.
+
+**3. PR-CSI-002 is fully readable at zero GPU cost, right now.** Group A (905990) and group B
+(906001) both COMPLETED, and the group-B arm directories run through `KO_RAND5` at 23:58 — the
+control family looks complete. S-115 read group A's three gates and stopped, explicitly, because
+the verdict waits on the control family. The control family is now on disk.
+
+## The gate order I am obeying, and what it saves
+
+PR-CSI-003's frozen file orders the read: four legs → **positive control** → candidate, stop at the
+first failure, and *"if the positive control is not clearly negative with the upper CI bound < 0,
+the verdict is CANNOT ANSWER for the whole direction; report the feasibility numbers and STOP"*.
+
+That ordering is worth money here. Gate 2 is computable **from half 1 alone, at zero GPU cost**, and
+half 2 is an eight-arm allocation. So the correct sequence is: read gate 2 first, and launch the
+control family only if it passes. Launching first and reading second would spend a 3090 allocation
+on a direction the instrument may not be able to move at all. Recorded before the number is seen,
+per §3.5.
+
+## Environment note, recorded because it cost me four commands
+
+The interactive shell in this session is **not bash**, and `python` is not on the default PATH.
+Every command is wrapped as
+`bash -lc 'source ~omeryosef/miniconda3/etc/profile.d/conda.sh && conda activate poc_stage2 && cd <repo> && …'`.
+The env is python 3.12.13 / torch 2.7.1+cu126. Repo footprint is **158 G** against the effective
+~200 G cap of §16, so this session has roughly 40 G of headroom and no new cache may be built
+carelessly.
+
+## What is launched
+
+Nothing on GPU. A parallel recon fan-out is running: checklist status against §22, a full on-disk
+run inventory with the **GPU column printed** (S-119's lesson, now standing practice), the reusable
+code surface, the outstanding deferred defects, and the two frozen reads above.
+
+---
+
+# S-124 — **BLOCKER, and a real BUG behind it: the disk quota was exactly full, and two analysers responded by writing 0-byte reports and exiting 0.** The frozen PR-CSI-002 read had already "succeeded" into two empty files
+
+The first thing this session tried to write failed, and the failure turned out to be more interesting
+than the quota.
+
+## (a) The quota
+
+`quota` reports `205491260` 1-K blocks against a `16384G` limit column that S-016-era notes already
+record as a **misreport**; the enforced cap is **200 GiB = 209715200 blocks**, and the session opened
+at **exactly 209715200** — full to the block. Every write to the repository returned
+`[Errno 122] Disk quota exceeded`. `df` shows the *volume* at 94 % with 1.4 T free, so this is the
+user quota, not the filesystem.
+
+**What I did, and what I deliberately did not do.** §16 says *"clean only reconstructable caches;
+quarantine invalid runs with a reason rather than deleting evidence."* I **moved, did not delete**,
+the six `cache/final_occurrence_reps.pt` files (718 081 115 B each, **4.0 GiB** total) belonging to
+the six `outputs/boombness/extract_boombness/VOID_wrongscript_run_*` directories — runs that are
+**VOID by name** and on which no committed claim depends. They now live on a different filesystem at
+`/a/home/cc/students/math/omeryosef/dcs_quota_archive_20260920/` with a `MANIFEST.json`, and each
+emptied `cache/` directory carries a `PRUNED.json` giving the archive path and the restore command.
+`config.json`, `RUNMETA.json`, `metadata.json`, `summary.json`, `results.jsonl`,
+`directions_fit_*.pt` and `plots/` are **untouched in all six**, so the evidence that those runs
+happened and were VOID is fully intact.
+
+I did **not** touch the three 11–13 GB `multiposition_reps.pt` caches (36 GB, and the input to every
+axis build), and I did **not** touch the August-era `x2fit_*` / `r18pow` / `knifefit` / `buttonfit` /
+`fullrole` / `full2352` / `phaseD_extract` caches: a grep shows every one of them is cited by a prior
+sprint log, a handover or `reports/boombness_claim_ledger_2026-08-27.json`, so committed claims sit
+on that line and 4 GB was enough without them. **Headroom is now ~4 GiB. That is thin, and it is the
+standing constraint on this session.**
+
+**An NFS behaviour worth recording, because it nearly cost me the log.** After the move, `cat >>` on
+the sprint log printed `write error: Disk quota exceeded` **and appended all 74 lines correctly**.
+The EDQUOT is reported asynchronously by the NFS client from an earlier server state, so **the error
+and the outcome are independent**. The rule I am adopting: *after every write to this repository,
+verify the result — line count, byte count, or `json.load` — and never trust the exit status.*
+
+## (b) The bug, which is the part that matters
+
+The frozen PR-CSI-002 read ran to completion, printed `wrote reports/…` for both of its output files,
+and **exited 0**. Both files were **0 bytes**:
+
+```
+-rw-r--r-- 1 omeryosef cs_sharifm 0 reports/DCS_CSI_SUBSPACE_basket_train_L20.json
+-rw-r--r-- 1 omeryosef cs_sharifm 0 reports/DCS_CSI_REDERIVE_basket_train_L20.json
+```
+
+The cause is one idiom, in both independent analysers:
+
+* `scripts/dcs_csi_subspace_analyze.py:1061` — `json.dump(out, open(outp, "w"), indent=1)`
+* `scripts/dcs_csi_rederive_subspace.py:335` — `json.dump(out, open(a.out, "w"), indent=1)`
+
+The file object is never closed explicitly. `open(...)` truncates immediately; `json.dump` writes into
+the buffer; the `EDQUOT` is raised at **flush**, which happens during garbage-collection finalisation,
+where CPython **prints the exception to stderr and swallows it**. The script then reaches its own
+`print("wrote …")` and returns 0.
+
+**Why this is worse than a lost file.** `DCS_CSI_SUBSPACE_basket_train_L20.json` is a *real,
+preregistered artifact name*. A 0-byte file at that path is indistinguishable, to `ls`, to a `[ -f ]`
+test and to `strict_run_dir`-style existence checks, from a finished report. The next analysis to
+look for it would have found it present and empty — and P0.4 exists precisely to stop "a newest
+partial directory" being silently accepted. **This is P0.4's failure mode, one level up, in the
+persistence layer rather than the selection layer.**
+
+It also means the same idiom can silently emit an empty report **any** time the quota is tight, on
+any machine, with no signal in the exit status. Both analysers are on the path that produced the 164
+committed results.
+
+**What I verified before calling it a bug rather than an accident.** The *computations* were
+unaffected — only persistence failed. Both frozen commands were re-run verbatim with `--out` pointed
+at a scratchpad, and every number in S-125 comes from those artifacts, which are now copied into
+`reports/` and `json.load`-verified at 478 798 B and 3 156 B respectively.
+
+**Fix: queued and scoped, not applied blind.** The one-line repair is
+`with open(p, "w") as fh: json.dump(out, fh, indent=1)` in both files. It is safe to make — neither
+file is `score_behavior.py` — but S-120(c) recorded that both analysers are loaded through
+`spec_from_file_location`, which honours `__pycache__`, so **an edit-and-immediate-rerun at the same
+byte size can execute stale bytecode**. The fix therefore ships with a `__pycache__` purge and a
+re-derivation check against the artifacts already written, in S-128.
+
+**And one thing I am explicitly NOT fixing yet.** S-119 queued a guard making `score_behavior.py`
+refuse `--dtype bfloat16` below compute capability 8.0. PR-CSI-003's `void_conditions` list contains,
+verbatim, *"score_behavior.py modified between arms of the same comparison (the S-110c defect — do
+not repeat it)"*. Necessity **half 1 has already run** against the current file. Editing
+`score_behavior.py` now would **VOID the entire necessity comparison**. The guard stays queued, and
+this time with a defined release point: **after PR-CSI-003's arms are all on disk**, not "when the
+GPU jobs drain".
+
+---
+
+# S-125 — **PR-CSI-002 EXECUTED: basket's axis ranks 1 of 11 at BUTTON's layer.** The 2×2 is now complete and it **exonerates the layer** as the explanation of the button/basket dissociation
+
+The frozen read in `runargs/dcs_csi_pr002_read.txt` was executed literally, in its frozen order, with
+no flag added, removed or altered. Gate 0 first, then the primary analyser, then the independent
+re-derivation, then leave-one-domain-out.
+
+## GATE 0 — the VOID condition is RETIRED, and it is retired by measurement
+
+S-110c modified `score_behavior.py` mid-run at 21:53:36; `BASE`/`KO`/`KO_AXIS_ANCHOR` ran pre-edit and
+`KO_SELF` onward post-edit. PR-CSI-002 made that a **VOID condition to be measured, not argued**.
+
+First the configs, because "byte-identical configuration apart from arm/tag" is a claim and S-118 is
+the entry about asserting sameness without printing it. Comparing the two `config.json` `args` dicts,
+57 keys each:
+
+```
+DIFFERING KEYS (2):
+    arm | 'KO_AXIS'                   vs 'KO_AXIS_ANCHOR'
+    tag | 'csi1_basket_train_KO_AXIS' vs 'csi1_basket_train_KO_AXIS_ANCHOR'
+```
+
+All 55 others identical, `rescue_layer`, `rescue_basis`, `bank`, `exclude_prompt_ids` and `seed`
+included. Then the six readout fields, on the full 670-key common set (A-only 0, B-only 0):
+
+| field | max\|diff\| |
+|---|---|
+| `logp_concept` · `logp_codeword` · `semantic_logodds` · `p_concept` · `p_codeword` · `top1_id` | **0 on all six, on all 670 rows** |
+
+**The mid-run edit provably changed nothing on this path.** VOID retired, S-112/S-115's Gate 0
+reproduced exactly.
+
+## The three preregistered gates — all PASS, and S-115's numbers reproduce to the last digit
+
+| gate | S-115 (group A, 669 keys) | my repro | frozen 17-arm read (657 keys) | |
+|---|---|---|---|---|
+| manipulation `KO − BASE` | −0.23435, 67/67 neg | **−0.23435** | −0.23538, 67/67 neg | **PASS** |
+| identity `KO_SELF − KO` | −0.00004 | **−0.00004** | −0.00000 | **PASS** |
+| instrument `KO_FULL − KO` | +0.09361, 67/67 pos | **+0.09361** | +0.09391, 67/67 pos | **PASS** |
+
+The 669 → 657 key change is the intersection widening from 7 arms to 17, not a disagreement.
+**The instrument is capable at L20** — `KO_FULL − KO` = **+0.09391**, ci95 [+0.07898, +0.10897], on
+**67 of 67 domains**. No outcome in this read can be blamed on a dead instrument.
+
+## The primary
+
+| quantity | point | ci95 | domains ± | p |
+|---|---|---|---|---|
+| manipulation `KO − BASE` | −0.23538 | [−0.26487, −0.20595] | 0/67 | at MC floor |
+| positive control `KO_FULL − KO` | **+0.09391** | [+0.07898, +0.10897] | 67/0 | at MC floor |
+| candidate `KO_AXIS − KO` | **+0.00294** | [+0.00146, +0.00455] | 46/21 | 1.70e−04 |
+| primary `KO_AXIS − KO_ORTH` | **+0.00302** | [+0.00145, +0.00470] | 47/20 | 3.35e−04 |
+
+Control family, recovery against KO, **candidate first**:
+
+```
+KO_AXIS  +0.00294   <-- RANK 1 of 11
+KO_RAND2 +0.00129 · KO_SHUF2 +0.00083 · KO_RAND4 +0.00036 · KO_SHUF3 +0.00002
+KO_RAND5 -0.00005 · KO_RAND3 -0.00012 · KO_RAND1 -0.00015 · KO_SHUF0 -0.00026
+KO_SHUF1 -0.00029 · KO_RAND0 -0.00057
+```
+
+**RANK 1 of 11**, attainable floor **1/11 = 0.0909**. The analyser prints, correctly,
+
+> *PRIMARY INCONCLUSIVE — the candidate is strictly the LARGEST of its 10 controls, but with only 10
+> controls the attainable rank-p floor is 0.0909, which is above 0.05. Being top of the distribution
+> is real; certifying it at α = 0.05 needs at least 19 controls. **NOT a pass and NOT a failure.***
+
+Holm-corrected one-sided specificity rejects **all 10** controls (p_holm 5e−05 … 0.0195);
+`specificity_all_controls_rejected = true`. Recovery fraction of the candidate against the whole-state
+positive control: **0.0313** [0.0165, 0.0466] — the axis moves **3.1 %** of what the whole clean state
+recovers. Prohibition 19 stands: that is a small fraction and it is not to be dressed up.
+
+## THE FINDING: the 2×2 is complete, and the layer is exonerated
+
+This read was designed as a **layer control** — basket's axis evaluated at *button's* layer. Put
+beside the committed reports, every cell of the cross now exists, and each codeword has been tested at
+its own layer **and** at the other's:
+
+| | **own layer** | **the other codeword's layer** |
+|---|---|---|
+| **button** (axis @ L20) | L20: cand +0.00040, **rank 4 of 11**, p 0.3636 — *inside the controls* (`button_train_rank1.json`; VALIDATION also 4 of 11, `button_validation.json`) | L18: cand −0.00027, **rank 8 of 11**, p 0.7273 — *further inside* (`button_train_L18.json`) |
+| **basket** (axis @ L18) | L18: cand +0.00264, **rank 1 of 47, p 0.0213 — PRIMARY PASSES** (`basket_train_n46.json`); VALIDATION cand +0.00400, **rank 1 of 31, p 0.0323 — PRIMARY PASSES** (`basket_validation_n30.json`) | **L20: cand +0.00294, rank 1 of 11 — top of its distribution, floor-limited** (this read) |
+
+**basket's axis is top of its control distribution at BOTH layers. button's axis is inside its controls
+at BOTH layers.** The dissociation therefore does **not** ride on the layer choice, and "we picked L18
+for basket and L20 for button" is now a refuted explanation rather than an unexamined one. That is
+exactly what a layer control is for, and it is the first thing in this sprint to actually *narrow* why
+the two codewords differ.
+
+**What this does NOT license, and the prereg says so in advance.** `must_not_be_said_if_positive`
+forbids saying the dissociation is de-confounded, that basket's axis is causal, or that this replicates
+D12. Ten controls cannot reach 0.05. PR-CSI-003's own `prediction_fixed_before_data` for this read was
+*"rank 1 of 11"* — so this is the **expected** outcome, not a surprise, and it buys nothing until the
+family is extended. The prereg's instruction is explicit: **extend the L20 control family to 46 to
+match D12 before any statement is made.** That is now a named, costed next experiment, not a wish.
+
+## Primary vs independent re-derivation: they AGREE, and the residual is one row
+
+8 of 10 controls are bit-equal at 5 dp; the rank, the ordering and the verdict are identical. The
+5th-decimal residuals on the other quantities (manipulation 2.9e−04, instrument 1.2e−04, candidate
+1e−05) are **not** a code disagreement: the two paths load different arm sets (17 vs 14) and therefore
+intersect to different key sets (657 vs 658). A **third** independent recomputation, written from the
+stated definition `installation = σ(logp_concept − logp_codeword)` and importing nothing from the
+project, reproduces **both** reports exactly on their own key sets, and identifies the difference as
+**exactly one row** — `('hospital_ward_store', 'dev|slot16|n4|none|consistent|near|plain')`, dropped
+from the 17-arm intersection because one of `KO_SELF`/`KO_PLS`/`KO_ORTH` lost it to the degeneracy
+guard. One row accounts for every digit. **No finding. Three paths agree.**
+
+## Leave-one-domain-out, both directions
+
+```
+n_domains=67  full cand=+0.00293  rank=1 of 11
+LOO rank histogram across all 67 drops: {1: 67}
+cand range +0.00249 … +0.00311     sign flips: 0 of 67
+```
+
+No single domain deletion moves the rank off 1, in either direction, and the candidate never changes
+sign. **Not driven by any one domain** — the mirror image of S-104c, where button's *null* was equally
+immovable.
+
+## CORRECTION to the frozen file's own pre-recorded figure
+
+`runargs/dcs_csi_pr002_read.txt` records, from the live job, *"captured fraction 0.03001 at
+delta_norm 1.4012"*. **That does not reproduce on the finished run.** The full-population values are
+**0.02820 / 1.36796**. Located exactly: `0.03001 / 1.40121` is the prefix mean over the **first 213 of
+670 rows** (closest-prefix search, relative-error sum 1.26e−04) — it was read off a partially-written
+`results.jsonl` while job 905990 was still running, exactly as the file itself says. **The qualitative
+claim survives; the two numbers are superseded.** The L18 reference figures 0.03237 / 1.17153
+reproduce exactly.
+
+| | basket @ **L20** | basket @ **L18** (D12) |
+|---|---|---|
+| captured fraction (**AMPLITUDE**, per S-109) | **0.02820** | 0.03237 |
+| displacement `delta_norm_mean` | **1.36796** | 1.17153 |
+
+Capture **drops** and displacement **grows** at button's layer, as the frozen file predicted. Reported
+as amplitude, never "energy": `src/boombness/donor_patch.py:290` computes
+`captured_energy_frac_mean = mean(proj_norm / delta_norm)`, a ratio of **norms** despite the key name;
+the energy fraction is its square, ≈ 0.1 %, not 3 %. S-109's correction is confirmed **against the
+source**, not merely repeated. **No dose-normalised obs/pred ratio is computed or reported** (S-109
+withdrew that interpretation).
+
+## VOID conditions — all six clear, verified independently of the analyser
+
+All 17 arms on **n-303, NVIDIA GeForce RTX 3090** (no V100 anywhere); rescue fired on every persisted
+row of every rescue arm; every rescue row records layer `{20}` and nothing else; **zero TEST domains
+present** anywhere; one bank and one exclusion file across all 17; `DONE.json` `rows_written` equals
+rows on disk for all 17, max loss 3 rows (`KO_RAND1` 667/670) which is inside `--allow-short 4`. The
+analyser's own `VOID` list is `[]`, independently corroborated.
+
+**Artifacts:** `reports/DCS_CSI_SUBSPACE_basket_train_L20.json` (478 798 B),
+`reports/DCS_CSI_REDERIVE_basket_train_L20.json` (3 156 B),
+`reports/DCS_CSI_S115_REPRO_groupA_only.json` (121 796 B). All three `json.load`-verified after the
+S-124 0-byte incident.
+
+---
+
+# S-126 — **PR-CSI-003 GATES 1 AND 2 BOTH PASS. Necessity is FEASIBLE: removing the installed component's whole-state carrier takes back 47 % of the clean→KO span, on 67 of 67 domains.** The direction the sprint had never tested now has a working instrument
+
+Read in the frozen order of `runargs/dcs_csi_pr003_read.txt`, stopping at the first failure. There was
+none. **Half 2 did not exist when this was read**, so only gates 1 and 2 were evaluated — which is
+precisely what the frozen order asks for, and it is why this was read *before* spending the allocation.
+
+## VOID condition — hardware: PASS
+
+All five half-1 arms: `slurm_job_id 906433`, `slurm_nodelist n-307`, `hostname n-307`,
+`gpu "NVIDIA GeForce RTX 3090"`, `dtype bfloat16`. One allocation, one node, one architecture, **no
+V100**. The prohibition S-037 wrote and S-119 re-learned the hard way is satisfied — printed, not
+assumed.
+
+## GATE 1 — the four legs: PASS on all three rescue arms
+
+Read from `summary.json`'s `necessity_arm` block **and independently recomputed row-by-row from
+`results.jsonl`**. Both routes agree exactly. Identical on `KO_NEC_FULL`, `KO_NEC_AXIS`, `KO_NEC_ORTH`:
+
+| leg | quantity | value | required |
+|---|---|---|---|
+| — | `violations` | `{}` | `{}` ✓ |
+| — | `frac_rows_ok` | **1.0** (670/670) | 1.0 ✓ |
+| 1 | `min_donor_prefill_edits` | **387** (median 513, max 792) | > 0 ✓ |
+| 2 | `max_readout_knockout_edits` | **0** | == 0 ✓ |
+| 3 | `min_patch_positions_written` | **112** (median 112, max 112) | > 0 ✓ |
+| 4 | `min_donor_delta_norm` | **0.86104** (median 1.13708, max 2.13253, mean 1.17203) | > 0 ✓ |
+
+`NEC_BASE` and `NEC_KO` carry `necessity_arm: null` — correct, they are not rescue arms, so the block
+is legitimately absent rather than missing.
+
+**The by-hand check the frozen file demanded, and a literal-form discrepancy worth recording.** The
+file says *"check `KO_NEC_FULL`'s `config.json` `args.rescue_basis` is null by hand"* — it is the one
+arm whose basis identity nothing verifies. It is **not literally `null`**: `config.json` records
+`"rescue_basis": ""`, the argparse default. It nonetheless resolves correctly —
+`score_behavior.py:4133` branches on `if args.rescue_basis:` and the empty string is falsy, so
+`DonorPatch` (whole-state) ran rather than `SubspaceDonorPatch`; and `score_behavior.py:3426` writes
+`rescue_basis` as `None` when the arg is empty, so **all 670 rows carry
+`rescue_basis: null, rescue_basis_key: null, rescue_basis_meta: null`**. No basis was used. Recorded
+because a future reader performing this check literally will see `""`, and the frozen instruction says
+`null`.
+
+**And, because S-118 was a bitwise-identical-basis incident:** `KO_NEC_AXIS` and `KO_NEC_ORTH` carry
+**different** `basis_sha16` (`fad8b030ae93976e` vs `59c03cffc2135030`), keys `cand_rank1` vs
+`ctrl_orth`, `norm_matched` False vs True. ORTH's norm-matched path found **0 degenerate positions**
+and kept all 670 rows — exactly the 3090 behaviour S-121 predicted, and the direct negative image of
+the V100 failure.
+
+## GATE 2 — the positive control, which decides whether anything else may be read at all: **PASS**
+
+**Path A — the existing tool.** `dcs_csi_rederive_subspace.py --direction necessity` does not refuse
+with the controls absent: `--controls` is `required=True` but accepts an **empty string**, `ctl_names`
+becomes `[]`, both family subsets are `continue`d and `ranks` comes back `{}`. Nothing is silently
+faked.
+
+```
+positive_control_full_minus_base:  point −0.11009
+n_domains 67 · n_neg 67 · n_pos 0 · n_tied 0 · p_two_sided 5.0e−06 (at its MC floor)
+instrument_capable: true
+```
+
+That path gates on the sign-flip p and carries **no bootstrap CI**, so it cannot by itself satisfy the
+frozen wording *"upper ci95 bound < 0"*.
+
+**Path B — an independent estimator**, written from scratch, importing nothing from the project, using
+the project's own convention (n_boot 20000, seed 20260915, percentile [2.5, 97.5]) copied from
+`dcs_csi_rederive_patch.boot_paired_diff`:
+
+```
+n rows 670 (common key intersection) · n domains 67 · zero TEST leak, asserted
+point   = -0.110094
+ci95    = [-0.125223, -0.095142]      <-- UPPER BOUND -0.09514 < 0
+n_neg 67 · n_pos 0 · n_tied 0
+per-domain diff  min -0.270914  median -0.106681  max -0.000374
+arm domain means: KO_NEC_FULL 0.363540   NEC_BASE 0.473635
+```
+
+**The two paths agree exactly: −0.11009.** Bootstrap is seed-stable — seeds 1 / 20260916 / 987654321
+give [−0.12536, −0.09529], [−0.12540, −0.09508], [−0.12535, −0.09506].
+
+## What the number means, stated carefully
+
+The manipulation check on this arm set is `NEC_KO − NEC_BASE` = **−0.23406**, ci95
+[−0.26369, −0.20438], 67/67 negative. So removing the whole-state carrier from a **clean** forward
+recovers **47.0 %** of the clean→KO span (0.11009 / 0.23406), in the correct direction, on **every
+single domain**.
+
+It also lands **inside PR-CSI-003's pre-registered band** of *"order −0.07 to −0.12"* — a prediction
+frozen in S-111 at zero GPU cost, before any necessity arm had run. That is the first prediction this
+sprint has made in advance and hit.
+
+**Two things I am NOT saying.** First, I am not comparing this to a sufficiency percentage across
+layers: the necessity arms are at **L18** and PR-CSI-002's sufficiency read is at **L20**, and the
+whole point of S-125 is that layer is a variable you check rather than assume. The matched comparison
+is against D12 (basket, L18) and it is deferred to the entry that reads the full family. Second,
+**this is the whole-state control, not the axis.** It establishes that the instrument can move
+installation in the removal direction. It says nothing whatever about whether the rank-1 axis carries
+that effect.
+
+## GATE 3 — deliberately NOT evaluated
+
+As instructed. No candidate number is reported here as a result. **Disclosure so the record is
+complete:** the rederive tool prints `candidate_minus_base` unconditionally (line 278/331), so
+`−0.00875` appeared in stdout. It is **uninterpretable** without its control family — `ranks` is
+`{}` — and **must not be read as a finding**. It is written down only because a number I have seen
+must not be a number I pretend I have not; S-115's entry about reading gates before controls is the
+precedent.
+
+## What this buys, and what was launched
+
+The whole reason to read gate 2 first was that it is free and half 2 is an eight-arm allocation. It
+passed, so the allocation is justified rather than hoped for. **Job 912736 launched** — necessity
+half 2, nine arms (`KO_NEC_AXIS_ANCHOR` + `KO_NEC_SHUF0-3` + `KO_NEC_RAND0-3`), basket/TRAIN, layer 18,
+basis `configs/dcs_csi_axis_basket_behavioral_shuf24.pt`.
+
+**It was launched with a POSITIVE architecture constraint, not an exclude-list**, and that is a
+deliberate change of practice:
+
+```
+sbatch --gpus=geforce_rtx_3090:1 --time=08:00:00 --export=ALL,CSI_NEC_HALF=2,CSI_STAGE=1 \
+       slurm_scripts/dcs_csi_p1_arms.slurm basket configs/dcs_csi_axis_basket_behavioral_shuf24.pt train L
+```
+
+Every previous launch in this sprint expressed the V100 prohibition as `--exclude=n-301,n-304`, which
+is an exclusion of *specific bad nodes* and not a statement about *architecture*. Job 906421 is the
+instance where that failed: it excluded the whole 3090 rack, landed on `rack-bgw-dgx1`, and every
+norm-matched arm wrote zero rows. `--gpus=geforce_rtx_3090:1` makes V100 **impossible** rather than
+merely unlikely. It landed on **n-350**, an RTX 3090.
+
+**The artifact `reports/DCS_CSI_PR003_GATE12_PARTIAL_HALF1.json` carries the full gate 1 + gate 2
+record.** It is deliberately named `_PARTIAL_HALF1` and **not** the frozen output name
+`DCS_CSI_SUBSPACE_NECESSITY_basket_train.json`, which stays unwritten until the frozen 13-arm command
+can be run as written.
+
+## The ceiling, restated because it has not moved
+
+Half 2 gives **8 shuffled/random controls** plus `KO_NEC_ORTH` = 9, so the attainable floor is
+**1/10 = 0.10** and the analyser's PASS branch (which needs `rank_p_floor < 0.05`, i.e. **≥ 19**
+controls) remains **unreachable by design**. Even a perfect candidate can only print INCONCLUSIVE.
+PR-CSI-003 declared that floor in advance; it is the design's ceiling, not a disappointment. Growing
+the necessity family past 19 is a **preregistration amendment**, and it will be frozen before any
+necessity candidate number is read — not after.

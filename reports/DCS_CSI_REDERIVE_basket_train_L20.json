@@ -1,0 +1,110 @@
+{
+ "schema": "dcs_csi_rederive_subspace/1",
+ "tag_prefix": "csi1_basket_train",
+ "split": "train",
+ "n_keys_common": 658,
+ "n_domains": 67,
+ "gates": {
+  "manipulation_ko_minus_base": {
+   "point": -0.23509,
+   "n_domains": 67,
+   "n_pos": 0,
+   "n_neg": 67,
+   "n_tied": 0,
+   "p_two_sided": 4.9999750001249995e-06,
+   "p_floor": 4.9999750001249995e-06,
+   "test_mode": "monte-carlo(200000)",
+   "p_at_its_floor": true
+  },
+  "positive_control_full_minus_ko": {
+   "point": 0.09379,
+   "n_domains": 67,
+   "n_pos": 67,
+   "n_neg": 0,
+   "n_tied": 0,
+   "p_two_sided": 4.9999750001249995e-06,
+   "p_floor": 4.9999750001249995e-06,
+   "test_mode": "monte-carlo(200000)",
+   "p_at_its_floor": true
+  }
+ },
+ "direction": "sufficiency",
+ "reference_arm": "KO",
+ "stronger_candidate_is": "MORE POSITIVE",
+ "sign_policy": "values keep their natural sign; nothing is negated. Only the rank comparison and the capability gate are oriented by --direction.",
+ "instrument_capable": true,
+ "identity_gate": "not evaluated by this path in either direction (the primary analyser owns it); see dcs_csi_subspace_analyze.py",
+ "candidate_minus_ko": 0.00293,
+ "controls_minus_ko": {
+  "KO_SHUF0": -0.00026,
+  "KO_SHUF1": -0.0003,
+  "KO_SHUF2": 0.00083,
+  "KO_SHUF3": 2e-05,
+  "KO_RAND0": -0.00057,
+  "KO_RAND1": -0.00015,
+  "KO_RAND2": 0.00129,
+  "KO_RAND3": -0.00012,
+  "KO_RAND4": 0.00036,
+  "KO_RAND5": -5e-05
+ },
+ "ranks": {
+  "pooled": {
+   "rank": 1,
+   "of": 11,
+   "floor": 0.0909,
+   "certifiable_at_0.05": false,
+   "verdict": "INCONCLUSIVE (floor-limited)"
+  },
+  "random_only": {
+   "rank": 1,
+   "of": 7,
+   "floor": 0.1429,
+   "certifiable_at_0.05": false,
+   "verdict": "INCONCLUSIVE (floor-limited)"
+  },
+  "shuffled_only": {
+   "rank": 1,
+   "of": 5,
+   "floor": 0.2,
+   "certifiable_at_0.05": false,
+   "verdict": "INCONCLUSIVE (floor-limited)"
+  }
+ },
+ "run_dirs": {
+  "BASE": "csi1_basket_train_BASE_20260917_213834_3178944",
+  "KO": "csi1_basket_train_KO_20260917_214922_3180360",
+  "KO_FULL": "csi1_basket_train_KO_FULL_20260917_221520_3183488",
+  "KO_AXIS": "csi1_basket_train_KO_AXIS_20260917_222745_3184672",
+  "KO_SHUF0": "csi1_basket_train_KO_SHUF0_20260917_220123_3181603",
+  "KO_SHUF1": "csi1_basket_train_KO_SHUF1_20260917_221428_3183084",
+  "KO_SHUF2": "csi1_basket_train_KO_SHUF2_20260917_222651_3184543",
+  "KO_SHUF3": "csi1_basket_train_KO_SHUF3_20260917_224000_3186049",
+  "KO_RAND0": "csi1_basket_train_KO_RAND0_20260917_225309_3187605",
+  "KO_RAND1": "csi1_basket_train_KO_RAND1_20260917_230544_3189125",
+  "KO_RAND2": "csi1_basket_train_KO_RAND2_20260917_231845_3190286",
+  "KO_RAND3": "csi1_basket_train_KO_RAND3_20260917_233155_3191525",
+  "KO_RAND4": "csi1_basket_train_KO_RAND4_20260917_234500_3192731",
+  "KO_RAND5": "csi1_basket_train_KO_RAND5_20260917_235816_3193909"
+ },
+ "require_rescue_layer": 20,
+ "require_slurm_job": [
+  "905990",
+  "906001"
+ ],
+ "resolved_rescue_layers": {
+  "BASE": null,
+  "KO": null,
+  "KO_FULL": 20,
+  "KO_AXIS": 20,
+  "KO_SHUF0": 20,
+  "KO_SHUF1": 20,
+  "KO_SHUF2": 20,
+  "KO_SHUF3": 20,
+  "KO_RAND0": 20,
+  "KO_RAND1": 20,
+  "KO_RAND2": 20,
+  "KO_RAND3": 20,
+  "KO_RAND4": 20,
+  "KO_RAND5": 20
+ }
+}
