@@ -9975,3 +9975,228 @@ to compare necessity's 47 % to a sufficiency percentage **has lost its stated re
 and the other L20; D19 now compares at the same L18) **but keeps its force for a stronger one**:
 different reference arms, `KO` versus `NEC_BASE`. A caveat whose reason dies and whose conclusion
 survives has to be re-argued, not inherited, and it was.
+
+---
+
+# S-136 — **PR-CSI-006's two swap artifacts are BUILT and verified, gate 0e PASSES across all three basket files, and the REVIEW M3 guard still refuses a genuinely mismatched pairing.** Zero GPU
+
+S-135 identified the blocker (the cross-codeword guard at `score_behavior.py:2299-2304`) and the shape
+of the resolution. This entry builds it. CPU-only, two new files plus two sidecars, nothing existing
+modified, and `score_behavior.py` still at blob `e94258bd…`.
+
+## What was built
+
+| | recipient (copied verbatim) | donor key added | out | keys | sha16 |
+|---|---|---|---|---|---|
+| **A** | `dcs_csi_axis_button_behavioral_L18.pt` (53) | `swap_cand_from_basket` ← basket's `cand_rank1` | `dcs_csi_axis_button_L18_PLUS_basket_swap.pt` | **54** | `62253110b50a16ff` |
+| **B** | `dcs_csi_axis_basket_behavioral.pt` (41) | `swap_cand_from_button` ← button's `cand_rank1` | `dcs_csi_axis_basket_L18_PLUS_button_swap.pt` | **42** | `309cd1b5f2d1ffd9` |
+
+Each artifact **is the recipient's own axis file**, so `meta.codeword` is truthfully the recipient's;
+the swap is an **added key**, not a foreign file. Both carry a `meta.swap_provenance` block recording
+the donor file and its sha16, the donor key, both codewords, both layers, and — in prose, inside the
+artifact — *why* the shape is what it is, so a future reader who finds a `swap_cand_from_*` key does
+not have to reconstruct the reasoning from a log entry.
+
+**Everything is asserted, then re-verified from disk rather than from the object in memory:** key
+count, `meta.codeword` unchanged, `meta.selected_layer == 18` on both recipient and donor, the donor
+tensor unit-norm and `(1, 4096) float32`, **every pre-existing key `torch.equal` to its source**, and
+the added tensor `torch.equal` to the donor's `cand_rank1`. Sidecar JSONs `json.load`-verified.
+
+## GATE 0e — PASS, and it needed three files, not two
+
+PR-CSI-006 records a measured hazard I had not considered: **basket's 46-control L18 family was not run
+out of one file.** Some controls came from `dcs_csi_axis_basket_behavioral.pt` and some from
+`..._shuf24.pt`. Since the swap arm is norm-matched to `cand_rank1`, commensurability requires that
+`cand_rank1` be the *same tensor* in whichever file each control used — across **three** files now,
+including the new one:
+
+```
+configs/dcs_csi_axis_basket_behavioral.pt                shape=(1,4096) norm=1.00000000
+configs/dcs_csi_axis_basket_behavioral_shuf24.pt         shape=(1,4096) norm=1.00000000
+configs/dcs_csi_axis_basket_L18_PLUS_button_swap.pt      shape=(1,4096) norm=1.00000000
+compared: 3 files, 2 pairwise checks
+GATE 0e: PASS -- all three byte-identical
+```
+
+The check prints the **number of comparisons** beside its verdict, per S-134's rule. Had it failed,
+the basket-recipient direction would be **CANNOT ANSWER and no amount of GPU would fix it** — the
+preregistration says so, which is why the check exists before any arm is bought.
+
+## The guard is satisfied, NOT weakened — and that is measured too
+
+The obvious worry about "make an artifact the guard accepts" is that it defeats the guard. It does
+not. I transcribed the guard's condition verbatim and ran it over five pairings:
+
+| case | `meta.codeword` | verdict |
+|---|---|---|
+| naive swap: basket `.pt` on the **button** bank | `basket` | **REFUSE** |
+| naive swap: button `.pt` on the **basket** bank | `button` | **REFUSE** |
+| new artifact **A** on the button bank | `button` | ALLOW |
+| new artifact **B** on the basket bank | `basket` | ALLOW |
+| **new artifact A on the WRONG (basket) bank** | `button` | **REFUSE** |
+
+**The last row is the one that matters.** The new artifacts do not open a hole: a genuinely mismatched
+axis/bank pairing is still caught, including a mismatch involving a swap artifact. REVIEW M3's actual
+concern — *"`prompt_id` is 100 % shared across codeword banks, so a button-fit axis on a basket run
+would pass every id-based check silently"* — remains fully covered, because the artifact really does
+belong to the codeword it claims.
+
+**What the guard no longer catches, stated plainly rather than left implicit:** it cannot tell that a
+*key inside* a correctly-labelled artifact came from another codeword. That is now the operator's
+responsibility, and PR-CSI-006 discharges it three ways — the key is **named** for its origin
+(`swap_cand_from_basket`), the provenance is **in the artifact's own metadata** with the donor's
+sha16, and the arm is **named** `XSWAP_FROM_*`. It is a real reduction in automatic protection and it
+should not be spent on anything but this experiment.
+
+## Two naming decisions carried over from the preregistration, both deliberate
+
+`XSWAP_FROM_*` does not begin with `KO_SHUF` or `KO_RAND`, so `--control-prefixes` cannot sweep a swap
+arm into the control family as a 47th control. The prereg records that it deliberately did **not** use
+`KO_SWAP`, because `KO_S` shares four characters with `KO_SHUF` and a future prefix list of `KO_S`
+would silently absorb it — the same reasoning as PR-CSI-005's `CODEANCHOR_R0`. **Measured: zero
+directories match `csi1_*_XSWAP_*` anywhere.** No swap arm has ever been run.
+
+## What is now ready, and what is still blocked
+
+**Ready to launch the moment GPU frees: three arms, 0.4920 GPU-h.** The basis artifacts exist, the read
+is frozen, the arm names are collision-checked, and every BASE / KO / KO_SELF / KO_FULL arm already
+exists at L18 in all three cells.
+
+**Still blocked, and the block has not moved:** the button-recipient direction cannot *certify* until
+PR-CSI-005's 36 arms land (K = 10 → 46, floor 0.0909 → 0.0213), and PR-CSI-006's binding rule is that
+**the K = 10 read is never performed** — both directions are read once, together, so the 2×2 is a
+single inference. 28 of 37 PR-CSI-005 arms have landed; the nine outstanding are `KO_RAND21`,
+`KO_SHUF7-11` and `KO_SHUF21-23`.
+
+---
+
+# S-137 — **PR-CSI-005 READ. The falsifier fired and the dissociation SURVIVED it: button ranks 36 of 47, X = 28 of 36 blind controls, inside a predictive interval fixed before the data.** The codeword dissociation is now measured at EQUAL POWER on both sides, and button's failure is CERTIFIED rather than floor-limited
+
+Jobs 912835 / 912836 / 912837 COMPLETED (02:15:22 / 02:15:16 / 02:15:35, all n-350). All four Part 3
+commands ran **once**, as written, with only `<I1>,<I2>,<K>` filled as `912835,912836,912837`.
+
+## PART 2 — all gates pass, and one of them nearly did not get asked
+
+```
+GATE 0(c)  36/36 FINISHED (DONE.json present), rows 667-670, zero-row arms 0, below-allow-short 0   PASS
+GATE 0(a)  54 run dirs inspected (36 new + 18 stage-1), ALL 'NVIDIA GeForce RTX 3090'               PASS
+GATE 0(b)  3 job logs, layer-override=False, banner LAYER=18 RANK=5 on all three                    PASS
+GATE 0(f)  3 output paths, none exists                                                              PASS
+GATE 0(d)  code-identity anchor, 670 rows bit-identical on six fields                    PASS (S-134)
+```
+
+**The near-miss, recorded because it would have been silent.** All 37 run *directories* existed and
+every arm name was present — by that count the family was complete and the once-only read could be
+unsealed. It was not: **`KO_SHUF9`, `KO_SHUF11` and `KO_SHUF23` had no `DONE.json` and were still
+writing.** A directory exists from the moment an arm *starts*. `DONE.json` is what says it *finished*,
+and that distinction is P0.4's entire subject. The gate now encodes it
+(`scripts/gates/dcs_csi_pr005_gate0.py`) and **refuses to evaluate any later gate on an incomplete
+family**, citing clause (e) by name; it also resolves run dirs **by RUNMETA job id** rather than "the
+newest dir", which is S-127's duplicate-tag hazard.
+
+## THE PRIMARY — X, the only unread quantity
+
+The pooled rank is a **measurement, not a test**: seven of button's ten stage-1 controls already beat
+its candidate before a single new arm ran, so `R47 ≥ 8` deterministically and `rank ≤ 2` was
+unreachable (S-131). The preregistration was rebuilt around **X, the exceedance count among the 36
+blind, never-read controls**.
+
+```
+candidate -0.00014
+exceedances among the 10 STAGE-1 (known in advance): 7
+   KO_RAND1 KO_RAND2 KO_RAND3 KO_RAND5 KO_SHUF0 KO_SHUF1 KO_SHUF2
+exceedances among the 36 NEW, BLIND controls:  X = 28
+total 35  =>  R47 = 36        (matches the analyser's reported rank 36: True)
+```
+
+| quantity | fixed BEFORE the data | observed |
+|---|---|---|
+| `X ~ BetaBinom(36, 7.5, 3.5)` | E[X] = **24.55**, 95 % predictive **[13, 34]** | **X = 28 — INSIDE** |
+| E[rank] | **32.4** of 47 | **36** of 47 |
+| `X ≤ 12` → withdraw the analysis's §4.2 | P ≤ 2.297e-02 | **not fired** |
+| `X ≤ 4` → resurrect C3, clean family mandatory | P ≤ 2.055e-04 | **not fired** |
+| `X = 0` → must be reported as X = 0 | — | **not fired** |
+
+**No falsification threshold fired. The dissociation analysis's projection is CONFIRMED**, and it was
+calibrated on basket's own 10 → 46 transition, so it had a real opportunity to fail. This experiment
+existed to break a conclusion I had already committed in S-128, and it did not break it.
+
+## The full read
+
+```
+button @ L18, 46 controls, 67 domains, 626 keys
+  manipulation      KO - BASE        -0.20682  [-0.22720, -0.18736]   0+/67-
+  identity          KO_SELF - KO     -0.00075  [-0.00188, +0.00037]   PASS, inert (p=0.202)
+  positive control  KO_FULL - KO     +0.10938  [+0.09633, +0.12341]  67+/0-
+  candidate         KO_AXIS - KO     -0.00014  [-0.00111, +0.00081]  36+/31-   p=0.772
+  PRIMARY cand-comp                  +0.00079  [-0.00021, +0.00178]            p=0.130
+  VERDICT: DOES NOT PASS -- ranks 36 of 47 (rank p=0.766, attainable floor 0.0213):
+           35 controls recover at least as much. It is INSIDE the controls.
+```
+
+**The instrument is demonstrably capable at the very layer and family where the candidate sits 36th:**
+the whole clean state recovers **+0.10938 on 67 of 67 domains**. Button's axis does not fail because
+nothing can move installation here. It fails specifically.
+
+**Independent re-derivation agrees**, and this is the first time button's failure is **certifiable**:
+
+| family | rank | floor | `certifiable_at_0.05` |
+|---|---|---|---|
+| pooled | **36 of 47** | 0.0213 | **true** |
+| random-only | 17 of 23 | 0.0435 | **true** |
+| shuffled-only | 20 of 25 | 0.0400 | **true** |
+
+At 10 controls, button's "rank 8 of 11, floor 0.0909" could certify **nothing** — the verdict was
+floor-limited in both directions. At 46 the floor is 0.0213 and **"DOES NOT PASS" is a result rather
+than an artifact of family size.**
+
+*(The shuffled-only rank differs by one between the two paths — 19 of 25 from the analyser, 20 of 25
+from the re-derivation. It is a **key-set** difference, not a disagreement: the analyser's shuffled-only
+read intersects 31 arms → **651** keys, the re-derivation intersects 50 arms → **627**. Both say DOES
+NOT PASS. The same one-row/one-rank class of residual as S-125's.)*
+
+**Leave-one-domain-out — the null is immovable:**
+
+```
+LOO rank histogram across all 67 drops: {31:1, 32:2, 33:3, 34:6, 35:12, 36:21, 37:22}
+BEST attainable rank under ANY single deletion = 31 of 47 (printing_works) -> no deletion reaches rank 1
+cand range -0.00029 .. +0.00003     sign: 66 of 67 drops negative
+```
+
+No domain carries this. The mirror image of basket's `{1: 67}` (S-125) and of S-104c's button null.
+
+## THE RESULT, stated at full strength and no further
+
+**The codeword dissociation is now measured at EQUAL POWER on both sides, same layer, same family
+size, same procedure, same 67 domains:**
+
+| | rank | rank p | floor | verdict |
+|---|---|---|---|---|
+| **basket @ L18, 46 controls** | **1 of 47** | **0.0213** | 0.0213 | **PASSES** (TRAIN *and* VALIDATION) |
+| **button @ L18, 46 controls** | **36 of 47** | 0.766 | 0.0213 | **DOES NOT PASS**, certified |
+
+S-128 refuted "unequal control families" four ways by *projection and matched-subset argument*. This
+read replaces the projection with a **measurement at the matched size the objection demanded.** The
+dissociation is not a sample-size artifact.
+
+**What this does NOT settle, and the preregistration says so in advance.** It cannot explain *why* the
+codewords differ — only that they still do when the families are equal. It cannot make button pass. It
+says **nothing about the held-out split**: no button-L18 VALIDATION subspace arm has ever been run, and
+the dissociation analysis's own §13 holds that held-out is the strongest evidence in the set, so the
+strongest form of this claim is still TRAIN-only on the button side. It says nothing about L20 (which
+would need 33 new bases), nothing about necessity for button, and **it does not test C1** — the one
+surviving explanation, that basket simply has a better probe. That remains the open question and
+PR-CSI-006 is the experiment for it.
+
+## Artifacts
+
+`reports/DCS_CSI_SUBSPACE_button_train_L18_n46.json` (1 759 285 B),
+`reports/DCS_CSI_REDERIVE_button_train_L18_n46.json` (7 136 B),
+`reports/DCS_CSI_SUBSPACE_button_train_L18_shufonly.json`. All three written by the S-124 atomic
+writer, which reported its byte count and re-parse on each. The committed 10-control read
+`reports/DCS_CSI_SUBSPACE_button_train_L18.json` is **untouched** — gate 0(f) required its output paths
+to be new, and they were.
+
+`scripts/gates/dcs_csi_pr005_gate0.py` and `scripts/gates/dcs_csi_pr005_primary_X.py` are committed as
+tooling, not left in a scratch directory: both print the **size** of every comparison beside its verdict
+and assert that size first, per S-134.
