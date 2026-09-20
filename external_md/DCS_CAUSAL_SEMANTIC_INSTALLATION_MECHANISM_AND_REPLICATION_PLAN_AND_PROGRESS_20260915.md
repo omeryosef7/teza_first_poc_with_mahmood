@@ -8841,3 +8841,92 @@ controls) remains **unreachable by design**. Even a perfect candidate can only p
 PR-CSI-003 declared that floor in advance; it is the design's ceiling, not a disappointment. Growing
 the necessity family past 19 is a **preregistration amendment**, and it will be frozen before any
 necessity candidate number is read — not after.
+
+---
+
+# S-127 — **CORRECTION to S-125's wording: "basket's axis at button's layer" is loose.** Every cell of the 2×2 uses a probe **REFIT at that layer**, not one axis transported. The conclusion survives and is in fact better supported — plus two audit gaps recorded
+
+S-125 was committed and pushed before I checked the one thing its own headline asserts. Applying the
+corrective S-118 taught this sprint — *before writing "the same X", print X for both runs* — I printed
+the basis each cell actually used:
+
+| cell | report | basis `.pt` | sidecar `selected_layer` |
+|---|---|---|---|
+| button @ L20 | `button_train_rank1.json` / `button_validation.json` | `dcs_csi_axis_button_behavioral.pt` | **20** |
+| button @ L18 | `button_train_L18.json` | `dcs_csi_axis_button_behavioral_L18.pt` | **18** |
+| basket @ L18 | `basket_train_n46.json` / `basket_validation_n30.json` | `dcs_csi_axis_basket_behavioral.pt` | **18** |
+| basket @ L20 | `basket_train_L20.json` (this session) | `dcs_csi_axis_basket_L20.pt` | **20** |
+
+**Four different `.pt` files.** Each codeword's probe was **re-fitted at the layer it is used at**. So
+the phrase *"basket's axis at button's layer"*, which S-125 uses twice, is wrong in the way that
+matters: it reads as *the L18 direction transported to L20*, and that is not what ran. The accurate
+statement is **"basket's probe, refit at L20"**.
+
+## What this does to S-125's conclusion: nothing, and it strengthens the design
+
+The conclusion was *the layer is exonerated as the explanation of the button/basket dissociation*. That
+conclusion **requires** the refit reading, not the transport reading. A transported axis would confound
+"wrong layer for this direction" with "the direction is no good"; a **refit** probe controls for that —
+each cell asks the probe's own best question at its own layer. Both codewords were put through the
+identical procedure at both layers, and the ordering is unchanged:
+
+```
+basket: rank 1 at L18 (1/47, p 0.0213) and rank 1 at L20 (1/11)   -> top at BOTH layers
+button: rank 4 at L20 (4/11, p 0.3636) and rank 8 at L18 (8/11)   -> INSIDE its controls at BOTH
+```
+
+**S-125's numbers, verdict and claim-table rows are unaffected. Only its wording is corrected**, and
+the corrected wording is the stronger claim. Any future citation of S-125 should say *refit at that
+layer*.
+
+## A second-order point I am NOT going to pretend is settled
+
+The four probes are not merely fit at different layers — they may differ in other respects. The
+sidecars record `selected_rank` **5** for both button axes and **3** for both basket axes, and the
+candidate arm in every cell is the rank-**1** direction `cand_rank1`. So the rank-1 direction is
+extracted from fits whose exported component counts differ by codeword. Whether that matters to the
+rank-1 direction itself is **NOT ESTABLISHED**, and I am recording it as an open question rather than
+waving it away: it is precisely the sort of asymmetry that could masquerade as a codeword effect. It
+is handed to the dissociation analysis as candidate explanation class 1 ("the axis itself is better for
+basket"), where it belongs.
+
+## Two audit gaps found while measuring, both recorded and neither fixed
+
+**(a) Compute capability is recorded NOWHERE in any run artifact — and it is the one field S-122 made a
+VOID condition.** A scan of every `*.json` in all 305 run directories from 2026-09-15 onward for
+`compute_capab` / `device_capab` / `capability` / `sm_70` / `sm_86` returns **0 / 305 hits**, and
+`grep -rn "get_device_capability\|is_bf16_supported" src/ scripts/` returns nothing on the producer
+side. `RUNMETA.json` records `gpu` as a **model string** ("NVIDIA GeForce RTX 3090",
+"Tesla V100-SXM2-32GB"), and capability has to be inferred from it by a human who knows the mapping.
+**The VOID condition on which PR-CSI-003 rests is checkable only by inference.** The fix is one line in
+the RUNMETA writer — and it is in `score_behavior.py`, so it is **blocked by the same rule as the bf16
+guard** until the necessity arms drain. Queued with the same release point (S-124).
+
+**(b) `--require-slurm-job` is doing more work than PR-CSI-002 says, and the prereg is right by
+accident rather than by argument.** All 18 group A/B tags exist **twice** — once at rescue_layer 18
+from jobs 897145/897416 (2026-09-16) and once at layer 20 from 905990/906001 — and for **BASE, KO and
+KO_SELF the `--require-rescue-layer 20` filter cannot disambiguate them at all**, because
+`args.rescue_layer` is `null` in *both* copies (those arms run no rescue). Only `--require-slurm-job`
+separates them. There is also a **third** family, `csi1_basket_train_L20_{BASE,KO,KO_FULL}` (job
+897386), that a bare `--tag-prefix csi1_basket_train` would sweep in. PR-CSI-002's insistence that both
+filters are mandatory is **correct, and is now measured rather than asserted** — but the reason it is
+correct is not the reason the file gives, and a reader who dropped `--require-slurm-job` believing the
+layer filter was the real guard would silently analyse the wrong experiment on three arms. This is
+S-104's ambiguity, alive, in the arms that were read today.
+
+**(c) The necessity arms are identified by TAG, not by `args.arm`.** `csi1_basket_train_NEC_BASE`
+carries `args.arm == "BASE"` and `NEC_KO` carries `"KO"`, while the three rescue arms carry the full
+`KO_NEC_*` name. The frozen command passes `--base-arm NEC_BASE --ko-arm NEC_KO`, so the analyser must
+be resolving on the **tag suffix**. That resolution path is **NOT YET VERIFIED**, and it is a
+precondition for the PR-CSI-003 read. It is on the checklist for the entry that executes that read, and
+it will be verified before, not after.
+
+## Status of the run in flight
+
+Job **912736** (necessity half 2) is on its first arm, `KO_NEC_AXIS_ANCHOR`, at 100/670 rows on
+**n-350**. Population confirmed correct from its own log: 670 rows, **67 domains at exactly 10 rows
+each**, `by_split {dev: 335, heldout: 335}`, 490 prompt ids excluded with
+`exclude_prompt_ids_sha16 = b3ba3d5ea6c91d34`, and the basis line reads
+`dcs_csi_axis_basket_behavioral_shuf24.pt key=cand_rank1 rank=1 site=rel-6 layer=18 sha16=fad8b030ae93976e`
+— the same `basis_sha16` S-126 read off half 1's `KO_NEC_AXIS`, so the anchor is anchoring what it is
+supposed to anchor.
