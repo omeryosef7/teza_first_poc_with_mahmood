@@ -1,0 +1,559 @@
+# PR-CSI-006 READ COMMANDS -- THE CROSS-CODEWORD AXIS SWAP.
+# Frozen 2026-09-20 ~15:23 +03:00, BEFORE the two swap basis artifacts were built and BEFORE a
+# single swap arm was submitted, so the read is mechanical and cannot be tuned to the answer.
+# Prereg: configs/dcs_csi_pr006_axis_swap.json (70408 bytes, json.load verified at write time).
+# Opened by reports/DCS_CSI_BUTTON_BASKET_DISSOCIATION_ANALYSIS.md section 12, experiment E1 --
+# that document's stated #1 priority, never run.
+#
+# THIS EXPERIMENT IS A FALSIFIER OF THE ANALYSIS THAT PROPOSED IT. Exactly one explanation of the
+# codeword dissociation survived six measured refutations: C1, "basket simply has a better probe".
+# Cell 2 or cell 4 of the 2x2 REFUTES C1. Read the prereg's
+# THE_DISCRIMINATING_2x2_FIXED_BEFORE_ANY_DATA block before reading any number here, and report the
+# selected cell's interpretation VERBATIM before offering a new one.
+#
+# MY PREDICTION, FIXED BEFORE THE DATA AND RECORDED SO IT CAN BE HELD AGAINST ME:
+#   CELL 4 (neither axis helps the other). R47 > 2 for both directions. S1 negative for direction B.
+#
+# ================================================================================================
+# WHAT IS BEING RUN, AND IT IS THREE ARMS
+# ================================================================================================
+#   XSWAP_FROM_BASKET   recipient button   train        basis key swap_cand_from_basket
+#   XSWAP_FROM_BUTTON   recipient basket   train        basis key swap_cand_from_button
+#   XSWAP_FROM_BUTTON   recipient basket   validation   basis key swap_cand_from_button
+#
+# ZERO TAG COLLISIONS, MEASURED: outputs/boombness/score_behavior/ contains ZERO directories
+# matching csi1_button_train_XSWAP_*, csi1_basket_train_XSWAP_* or csi1_basket_validation_XSWAP_*.
+# No swap arm has ever been run, at any layer, on either split, in either direction.
+#
+# THE ARM NAME IS DELIBERATE. "XSWAP_FROM_*" does not begin with KO_SHUF or KO_RAND, so
+# --control-prefixes KO_SHUF,KO_RAND cannot sweep a swap arm into the family as a 47th control.
+# I deliberately did NOT name it KO_SWAP: "KO_S" shares four characters with "KO_SHUF".
+#
+# EVERY BASE / KO / KO_SELF / KO_FULL / KO_AXIS ARM THIS READ NEEDS ALREADY EXISTS AT L18 FOR ALL
+# THREE CELLS AND IS NOT RE-RUN. Measured by joining DONE.json + config.json + RUNMETA.json over
+# all 311 csi1_* run dirs (237 status ok). Run dirs and job ids are in the prereg's
+# arms.REUSED_and_must_NOT_be_re_run block.
+
+# ================================================================================================
+# PART 0 -- THE BLOCKER IN THE SOURCE, AND WHY PART 1 IS SHAPED THE WAY IT IS
+# ================================================================================================
+# src/boombness/score_behavior.py lines 2296-2304 HARD-REFUSE the naive swap. READ ONLY, quoted:
+#
+#     # REVIEW M3. Nothing cross-checked the axis's own declared codeword/bank against the
+#     # population being scored -- and `prompt_id` is 100% shared across codeword banks, so a
+#     # button-fit axis on a basket run would pass every id-based check silently.
+#     _cw = m.get("codeword")
+#     if _cw and _cw not in (args.bank or ""):
+#         raise SystemExit(
+#             "REFUSING: basis was fit for codeword %r but --bank is %r. prompt_id is shared "
+#             "across codeword banks, so nothing downstream would catch this."
+#             % (_cw, args.bank))
+#
+# So `--rescue-basis configs/dcs_csi_axis_basket_behavioral.pt` with the BUTTON bank SystemExits
+# before a row is scored: "basket" is not a substring of the button bank path. THE SWAP CANNOT BE
+# RUN BY POINTING --rescue-basis AT THE OTHER CODEWORD'S FILE.
+#
+# THIS GUARD IS NOT REMOVED, WEAKENED OR EDITED. It has caught a real class of silent error, and
+# src/boombness/score_behavior.py is frozen at blob e94258bd5fc44c70629e707b00504b7acac2a7b7 while
+# PR-CSI-005's 36 arms are mid-flight. REMOVING OR WEAKENING IT TO MAKE THE SWAP RUN VOIDS THIS
+# ENTIRE PREREGISTRATION (prereg void_conditions item 4).
+#
+# THE GUARD IS SATISFIED TRUTHFULLY INSTEAD. Each direction gets a NEW basis artifact that IS the
+# RECIPIENT's own .pt -- same meta.codeword, same meta.selected_layer, same cand_rank1, every
+# control tensor byte-identical -- PLUS EXACTLY ONE new key holding the DONOR's cand_rank1 under a
+# name that says whose it is. The guard's assertion is then TRUE. This is the precedent already
+# recorded in configs/dcs_csi_axis_basket_behavioral.json under extra_controls_added.job_897529:
+# "Only NEW keys were copied; every pre-existing tensor is byte-identical, verified below."
+
+# ================================================================================================
+# PART 1 -- BUILD THE TWO SWAP ARTIFACTS.  CPU ONLY.  NO GPU.  NO SLURM.  RUN THIS FIRST.
+# ================================================================================================
+# Both output paths are NEW. Neither exists at freeze time. Verify that before writing:
+#
+#   ls configs/dcs_csi_axis_button_L18_PLUS_basket_swap.pt   -> must print "No such file"
+#   ls configs/dcs_csi_axis_basket_L18_PLUS_button_swap.pt   -> must print "No such file"
+#
+# THE BUILD CONTRACT, and a builder that does not do ALL of this is not the builder this
+# preregistration specifies:
+#   (1) torch.load the RECIPIENT's .pt; deep-copy it; add ONE key to blob['bases'] named
+#       swap_cand_from_<donor> holding the DONOR's bases['cand_rank1'] tensor, cloned.
+#   (2) Leave blob['meta']['codeword'] and blob['meta']['selected_layer'] EXACTLY as they are
+#       (button/18 and basket/18 respectively). They are the recipient's and that is true.
+#   (3) Add to blob['meta'] the provenance fields: swap_donor_codeword, swap_donor_pt,
+#       swap_donor_cand_rank1_sha16, swap_added_key, swap_prereg = "PR-CSI-006".
+#   (4) Write the sidecar .json with schema "dcs_csi_axis_swap/1" -- NOT "dcs_csi_axis/1" -- so no
+#       tooling that globs native axes picks it up, and with selected_layer 18 so the launcher's
+#       artifact-speaks branch (script lines 119-120) resolves LAYER to 18.
+#   (5) VERIFY, and the verification MUST PRINT THE SIZE OF EVERY COMPARISON IT MAKES (S-134):
+#         - number of keys compared for byte-identity, ASSERTED == 53 (button) / == 41 (basket),
+#           and the count of MISMATCHES, ASSERTED == 0.  A byte-identity check over zero keys is
+#           the vacuous gate S-134 was written about and must abort, not pass.
+#         - the added tensor's sha16, ASSERTED == 0c397a778db933ba (basket donor) /
+#           == 7d4e01f5475e6b53 (button donor).
+#         - the added tensor's shape, ASSERTED == (1, 4096), dtype float32, norm 1.0 +/- 1e-6.
+#         - cos(swap_cand_from_<donor>, cand_rank1), ASSERTED == 0.5569 +/- 0.0002.
+#           IF THIS COSINE COMES BACK ~1.0 THE WRONG TENSOR WAS COPIED and the arm would be a
+#           relabelled native arm. Abort.
+#         - os.path.getsize of the written .pt, and torch.load it BACK and re-check len(bases).
+#   (6) NFS REPORTS EDQUOT ASYNCHRONOUSLY. A write can print "Disk quota exceeded" and still have
+#       fully succeeded, or print nothing and have written 0 bytes. NEVER TRUST EXIT STATUS.
+#       The torch.load round-trip in (5) is the verification, not the absence of an error message.
+#
+# EXPECTED RESULT: 54 keys in the button swap file (53 + 1), 42 in the basket swap file (41 + 1).
+
+# ================================================================================================
+# PART 2 -- THE SBATCH LINES.  RUN THESE SECOND.  DO NOT EDIT THEM.
+# ================================================================================================
+#
+# GROUP X, CONFIRMED BY READING slurm_scripts/dcs_csi_p1_arms.slurm, NOT ASSUMED.
+# Lines 294-312. The body of the loop is:
+#     $SB $COMMON $KO $R --rescue-basis "$AXIS" --rescue-basis-key "$key" \
+#         --rescue-norm-match-key cand_rank1 --arm "$arm" --tag "${P}_${arm}"
+# Every hardcoded piece is exactly what this design needs:
+#   * $R is defined at line 141 as "--rescue-positions query --rescue-layer $LAYER
+#     --rescue-donor clean". --rescue-donor clean IS CORRECT FOR THIS EXPERIMENT AND I VERIFIED IT
+#     RATHER THAN ASSUMING IT: this is a SUFFICIENCY question -- under a LIVE knockout, write back
+#     the CLEAN forward's component along a chosen direction and ask whether installation is
+#     restored. donor "ko" is the NECESSITY direction (PR-CSI-003) and would be a different
+#     experiment; donor "self" is the inertness identity control. The 46 controls the swap arm is
+#     ranked against were ALL run with donor clean, so the swap arm must be too.
+#   * --rescue-norm-match-key cand_rank1 is HARDCODED, and in the swap artifact cand_rank1 IS THE
+#     RECIPIENT'S OWN AXIS by construction. So the hardcoded flag IS the primary design. See
+#     PART 2A below for why that is the right choice and not merely the convenient one.
+#   * $BANK is derived from $1 at line 100, i.e. the RECIPIENT's bank. Correct.
+#   * LAYER resolves to 18 from the swap sidecar's selected_layer. Correct.
+# THE LAUNCHER NEEDS NO CHANGE FOR THE PRIMARY DESIGN AND I MADE NONE.
+#
+# GROUP X MUST BE GIVEN NO $5. Script line 114:
+#     if [ -n "${5:-}" ] && [ "$GROUP" != "I" ]; then
+#       echo "REFUSING: \$5 is a GROUP-SPECIFIC sub-selector (only group I uses it) ..." ; exit 2
+#     fi
+# (the DCS-CSI-076 guard, added after $5 had silently meant "layer" and two basket control jobs
+#  ran at L1/L2). Group I is the ONLY group that reads $5. Every line below ends at $4.
+#
+# CSI_LAYER MUST BE UNSET. Line 113: LAYER="${CSI_LAYER:-}". Lines 119-120: if empty, LAYER is read
+# from '${AXIS%.pt}.json'['selected_layer'], which both swap sidecars set to 18. Setting
+# CSI_LAYER=18 reaches the same number by the WRONG branch and prints "[layer-override]", which is
+# a VOID condition here.
+#
+# CSI_ARMS IS SPACE-SEPARATED, NOT COMMA-SEPARATED. Line 304: `for spec in $CSI_ARMS`. A
+# comma-bearing --export value is the sbatch truncation hazard this repo has been bitten by. Each
+# submission below carries exactly ONE entry, so it needs no separator and carries no comma.
+#
+# THE GPU CONSTRAINT IS POSITIVE, NOT AN EXCLUDE LIST, AND IT IS A VOID CONDITION (S-119, S-121,
+# S-126). Every arm here is NORM-MATCHED; Tesla V100 is sm_70 with NO native bf16; --dtype bfloat16
+# is emulated there and the norm-match degeneracy guard in SubspaceDonorPatch then refuses EVERY
+# row of EVERY norm-matched arm -- 0 rows on V100 against 669-670 on RTX 3090, measured at n = 24,
+# 96, 268 and 670. JOB 906421 IS THE INSTANCE WHERE AN EXCLUDE-LIST FAILED: --exclude=n-301,n-304
+# was meant to avoid bad nodes and instead excluded the WHOLE 3090 RACK; the job landed on
+# rack-bgw-dgx1 and wrote ZERO rows on every norm-matched arm. --gpus=geforce_rtx_3090:1 makes V100
+# IMPOSSIBLE rather than merely unlikely. USING AN EXCLUDE-LIST HERE IS ITSELF A VOID CONDITION.
+#
+# BEFORE EACH SUBMISSION, assert (sbatch propagates the environment by default):
+#   env | grep -c '^CSI_LAYER='                       -> must print 0
+#   git hash-object src/boombness/score_behavior.py   -> must print
+#                                 e94258bd5fc44c70629e707b00504b7acac2a7b7
+#   git hash-object slurm_scripts/dcs_csi_p1_arms.slurm  -> must be unchanged from freeze time
+#   squeue -j 912835,912836,912837                    -> PR-CSI-005's arms. DO NOT DISTURB.
+
+# ---- DIRECTION A: basket's axis -> button's knockout.  TRAIN.  1 arm. ---------------------------
+sbatch --gpus=geforce_rtx_3090:1 --time=02:00:00 \
+       --export=ALL,CSI_STAGE=1,CSI_ARMS=XSWAP_FROM_BASKET:swap_cand_from_basket \
+       slurm_scripts/dcs_csi_p1_arms.slurm button configs/dcs_csi_axis_button_L18_PLUS_basket_swap.pt train X
+
+# ---- DIRECTION B: button's axis -> basket's knockout.  TRAIN.  1 arm. ---------------------------
+sbatch --gpus=geforce_rtx_3090:1 --time=02:00:00 \
+       --export=ALL,CSI_STAGE=1,CSI_ARMS=XSWAP_FROM_BUTTON:swap_cand_from_button \
+       slurm_scripts/dcs_csi_p1_arms.slurm basket configs/dcs_csi_axis_basket_L18_PLUS_button_swap.pt train X
+
+# ---- DIRECTION B: button's axis -> basket's knockout.  VALIDATION.  1 arm. ----------------------
+sbatch --gpus=geforce_rtx_3090:1 --time=02:00:00 \
+       --export=ALL,CSI_STAGE=1,CSI_ARMS=XSWAP_FROM_BUTTON:swap_cand_from_button \
+       slurm_scripts/dcs_csi_p1_arms.slurm basket configs/dcs_csi_axis_basket_L18_PLUS_button_swap.pt validation X
+
+# CSI_STAGE=1 is the node-local snapshot staging of DCS-CSI-092 (the n-30x rack's NFS path reads
+# the shared snapshot at 2-7 MB/s and the HF loader's random mmap access over it takes 20+ hours).
+# It is a load-time workaround and touches nothing scientific.
+#
+# --time=02:00:00 IS HEADROOM, and the budget is MEASURED per (codeword, split), never pooled:
+#   button train L18 subspace arms:      n=14, mean 763.7 s, median 755.9 s, min 647.1, max 906.6
+#   basket train L18 subspace arms:      n=46, mean 731.7 s, median 729.6 s
+#   basket validation L18 subspace arms: n=46, mean 275.9 s, median 275.3 s
+#   (mean of DONE.json wall_seconds over every completed arm with --rescue-basis, rescue_layer 18,
+#    --rescue-donor clean. wall_seconds is per RUN, so model load is already included.)
+#   TOTAL GPU: 763.7 + 731.7 + 275.9 = 1771.3 s = 29.52 min = 0.4920 GPU-h for the whole 2x2.
+#
+# THERE IS NO BUTTON VALIDATION CELL AND THAT IS MEASURED, NOT AN OVERSIGHT. My scan of
+# outputs/boombness/score_behavior/csi1_button_validation_* finds subspace-rescue arms at
+# rescue_layer 20 ONLY (job 897057). There are ZERO button L18 subspace arms on validation, so
+# there is no L18 control family on that split to rank a swap arm against. Direction A is TRAIN
+# ONLY and this document says so in advance rather than discovering it at read time.
+#
+# RECORD THE THREE JOB IDS HERE AS THEY ARE ASSIGNED, and substitute them below:
+#   <SA>  = direction A, button train        = ____________
+#   <SBt> = direction B, basket train        = ____________
+#   <SBv> = direction B, basket validation   = ____________
+
+# ================================================================================================
+# PART 2A -- THE NORM-MATCH DECISION, RESTATED HERE BECAUSE IT DECIDES WHAT THE NUMBERS MEAN
+# ================================================================================================
+# WHAT --rescue-norm-match-key ACTUALLY DOES, read from the source, not assumed:
+#
+#  RESOLUTION -- src/boombness/score_behavior.py lines 2271-2277, in make_rescue_basis_loader:
+#      if args.rescue_norm_match_key:
+#          if args.rescue_norm_match_key not in bases: raise SystemExit(...)
+#          nb = bases[args.rescue_norm_match_key]
+#  ...where `bases` is blob['bases'] OF THE FILE NAMED BY --rescue-basis. THE NORM-MATCH KEY IS
+#  LOOKED UP IN THE SAME FILE AS THE BASIS. IT IS STRUCTURALLY IMPOSSIBLE TO NAME A KEY THAT LIVES
+#  IN ANOTHER FILE. That single fact settles half the question before any argument is made.
+#
+#  ARITHMETIC -- src/boombness/donor_patch.py lines 237-246, SubspaceDonorPatch._hook, per position:
+#      delta  = h_donor - h_live
+#      proj   = (delta @ W.T) @ W              W = the --rescue-basis-key direction
+#      target = ((delta @ Wc.T) @ Wc).norm()   Wc = the --rescue-norm-match-key direction
+#      ...and proj is rescaled to `target`.
+#  THE NORM-MATCH BASIS IS ONLY A PER-ROW SCALAR YARDSTICK. The data it is measured on is ALWAYS
+#  the RECIPIENT's own delta -- the code never has access to the donor codeword's rows. The class
+#  docstring at lines 191-194 says it: "the written delta is rescaled per position to the norm the
+#  CANDIDATE subspace would have written on this row".
+#
+# THE CONSEQUENCE THAT COLLAPSES ONE OF THE TWO APPARENT OPTIONS:
+#   "Match to the DONOR axis's norm" is not a well-defined second option. Evaluated the only way
+#   the code can evaluate it, the donor axis's norm is ||P_donor(delta_recipient)|| -- which IS the
+#   swap arm's own unscaled projection norm. Setting --rescue-norm-match-key == --rescue-basis-key
+#   makes target == proj_norm and the rescale is the IDENTITY. So "donor norm" and "no norm-match
+#   at all" ARE THE SAME ARM. The two genuinely distinct designs are DOSE-MATCHED and NATURAL.
+#
+# THE DECISION: --rescue-norm-match-key cand_rank1 OF THE RECIPIENT'S FILE. DOSE-MATCHED.
+#
+#  (1) COMMENSURABILITY, decisive on its own. Every one of the 46 controls was run as
+#      `sub KO_RANDi ctrl_randomi cand_rank1` (script groups B/I/K), i.e. norm-matched to
+#      cand_rank1. The NATIVE candidate is run as `sub KO_AXIS cand_rank1` with only TWO arguments,
+#      i.e. NO norm-match flag -- but because basis == norm-basis is the identity, THE NATIVE
+#      CANDIDATE AND ALL 46 CONTROLS ALREADY SIT ON ONE COMMON DOSE SCALE. An arm on a different
+#      scale cannot be ranked against them: the ordering would partly measure dose, and a "rank 1"
+#      would not mean what rank 1 means for basket.
+#  (2) IT ISOLATES DIRECTION FROM DOSE, WHICH IS THE WHOLE EXPERIMENT. At cos = 0.5569 the foreign
+#      axis will generically capture LESS of the recipient's delta than the recipient's own axis
+#      does -- the recipient's axis was fit to maximise exactly that. Left unscaled, the swap arm
+#      would write a systematically smaller perturbation and a null would be uninterpretable,
+#      indistinguishable from "too small a dose". C1 versus H_STATE is a question about DIRECTION.
+#      Measure direction.
+#  (3) The rejected NATURAL design would confound DIRECTION QUALITY with DOSE, and would sit off
+#      the control family's scale so that its rank is partly an artifact of the mismatch.
+#
+# THE NATURAL ARM IS KEPT AS PRESPECIFIED SECONDARY S2 AND IS NOT EXPRESSIBLE BY THE LAUNCHER.
+#   Group X ALWAYS passes --rescue-norm-match-key cand_rank1 (line 311, unconditional) and no group
+#   runs a named arm without a norm-match key. THE MINIMAL CHANGE THAT WOULD BE NEEDED, WHICH I AM
+#   REPORTING AND DID NOT MAKE: one line in group X, in the style the script already uses for
+#   CSI_RELROWS at line 303 --
+#       NM="--rescue-norm-match-key ${CSI_NORMMATCH:-cand_rank1}"
+#   -- substituted for the literal flag on line 311, with the empty string permitted to mean "no
+#   norm-match". Backwards-compatible: every existing group-X invocation keeps cand_rank1.
+#   I DID NOT MAKE IT. slurm_scripts/dcs_csi_p1_arms.slurm is frozen while PR-CSI-005's 36 arms are
+#   mid-flight and editing it would be a VOID condition for that preregistration. S2 is OPTIONAL
+#   and NO CELL of the 2x2 depends on it.
+
+# ================================================================================================
+# PART 3 -- GATE 0, BEFORE ANY NUMBER IS READ
+# ================================================================================================
+# EVERY GATE BELOW PRINTS THE SIZE OF ITS COMPARISON AND ASSERTS THAT SIZE FIRST (S-134).
+# A GATE THAT CAN PASS ON AN EMPTY COMPARISON IS NOT A GATE. In S-134 a gate printed PASS on ZERO
+# rows. Each gate here must emit, in this order: the COUNT, the assertion on the COUNT, then the
+# verdict. A gate whose count is 0 ABORTS; it does not pass.
+#
+# (a) THE ARCHITECTURE PIN, verified from the RUNS themselves and not from the sbatch line.
+#     For every run directory admitted by the filters in PART 4, RUNMETA.json must record
+#     gpu == "NVIDIA GeForce RTX 3090".
+#     PRINT: the number of run dirs checked. ASSERT it equals the number of arms in --arms for that
+#     read (53 for button train, 51 for basket train, 51 for basket validation -- count them from
+#     the --arms list actually passed, do not hardcode a remembered number).
+#     PRINT: the number of DISTINCT gpu strings found. ASSERT it is exactly 1 and that it is
+#     "NVIDIA GeForce RTX 3090".
+#     ANY other GPU string anywhere -> VOID; the family is re-run, never patched.
+#
+# (b) NO LAYER OVERRIDE ON THE THREE NEW JOBS: grep for '[layer-override]' in the logs of <SA>,
+#     <SBt>, <SBv> must find NOTHING, and the launcher banner must read "LAYER=18" in all three.
+#     PRINT: the number of log files grepped. ASSERT it is 3. A grep over zero files finds nothing
+#     and would "pass" -- that is the S-134 failure mode and it must abort.
+#
+# (c) NO ROW COLLAPSE: each swap arm must have written >= 666 of 670 rows (train) or >= 226 of 230
+#     (validation), i.e. --allow-short 4. An arm at 0 rows is the V100 degeneracy signature even if
+#     the GPU string says otherwise. An arm short by more than 4 is RE-RUN via group X, never
+#     dropped and never read short. DO NOT WIDEN --allow-short.
+#     PRINT: rows_written for each of the three swap arms beside its expected n.
+#
+# (d) GATE 0e -- BASIS BYTE-IDENTITY. For each direction, every key present in BOTH the recipient's
+#     original .pt and the swap .pt must hold a byte-identical tensor.
+#     PRINT: the number of keys compared. ASSERT == 53 (button) / == 41 (basket).
+#     PRINT: the number of mismatches. ASSERT == 0.
+#     FOR BASKET THIS IS A THREE-FILE CHECK, NOT TWO, AND THIS IS MEASURED: basket's 46-control L18
+#     family was NOT run out of one file. My scan of the 46 basket/train L18 subspace run dirs shows
+#     TWO basis files in use -- configs/dcs_csi_axis_basket_behavioral.pt AND
+#     configs/dcs_csi_axis_basket_behavioral_shuf24.pt. The swap arm is norm-matched to cand_rank1,
+#     so bases['cand_rank1'] must be byte-identical across ALL THREE files. If it is not, the
+#     basket-recipient direction is CANNOT ANSWER and no amount of GPU fixes it.
+#
+# (e) GATE 0f -- SWAP TENSOR IDENTITY.
+#     PRINT: sha16 of the swap key. ASSERT == 0c397a778db933ba (basket donor, into button) /
+#            == 7d4e01f5475e6b53 (button donor, into basket).
+#     PRINT: shape and dtype. ASSERT == (1, 4096) float32, norm 1.0 +/- 1e-6.
+#     PRINT: cos(swap key, recipient cand_rank1). ASSERT == 0.5569 +/- 0.0002.
+#     I MEASURED THAT COSINE MYSELF at freeze time -- torch.load both files, bases['cand_rank1']
+#     from each, flatten to float64, normalised dot product -> 0.5569. This REPRODUCES the 0.5569
+#     that reports/DCS_CSI_BUTTON_BASKET_DISSOCIATION_ANALYSIS.md reports at L18. NO DISAGREEMENT.
+#     IF THE COSINE COMES BACK ~1.0 THE WRONG TENSOR WAS COPIED and the swap arm is a relabelled
+#     native arm. Abort; do not read.
+#
+# (f) GATE 0g -- ARM IDENTITY AUDIT. Diff RUNMETA.argv of each swap arm against RUNMETA.argv of the
+#     recipient's own KO_AXIS arm at L18.
+#     PRINT: the number of differing flags. ASSERT == exactly 4, and that they are exactly
+#     --rescue-basis, --rescue-basis-key, --arm and --tag.
+#     Any other difference -- a different --rescue-layer, a MISSING --rescue-norm-match-key, a
+#     different --bank, a different --seed -- and the comparison is not the comparison this
+#     document describes. CANNOT ANSWER.
+#
+# (g) S4 DEGENERACY. The swap arm's n_degenerate (SubspaceDonorPatch's proj_norm/||delta|| < 1e-6
+#     counter) must be 0 on every admitted row.
+#     PRINT: n_degenerate and the number of admitted rows it was counted over. ASSERT the row count
+#     is >= 666 / >= 226 and that n_degenerate == 0.
+#     A non-zero count means the foreign direction carries essentially none of the recipient's
+#     delta and the arm is measuring rounding error, not direction. CANNOT ANSWER. NOT A NULL.
+#
+# (h) THE THREE SCIENTIFIC GATES, from the analyser's own output for each read:
+#     gates.manipulation_check (KO - BASE clearly negative), gates.identity_check (KO_SELF inert
+#     within --self-inert-tol 0.005), gates.instrument_capable (KO_FULL - KO clearly positive).
+#     ALL THREE MUST BE true. I verified all three are already true in the committed reads for all
+#     three cells. instrument_capable is the one that makes a NULL interpretable: without headroom,
+#     "the foreign axis did not help" and "nothing could have helped" are the same measurement.
+#
+# (i) DIRECTION A IS SEALED UNTIL PR-CSI-005 UNSEALS, AND THE K=10 READ IS PROHIBITED BY NAME.
+#     MEASURED AT FREEZE TIME: reports/DCS_CSI_SUBSPACE_button_train_L18.json records
+#     control_recovery_distribution.n_controls == 10 and rank_p_floor == 0.0909. My independent scan
+#     of the run dirs agrees -- exactly 10 DISTINCT control basis keys have a completed
+#     button/train/L18 subspace arm: ctrl_random0, 4, 5, 9, 14, 16 and ctrl_shuffled3, 13, 14, 16.
+#     SAY IT PLAINLY: A CERTIFYING FAMILY IS NOT ACHIEVABLE TODAY FOR THE BUTTON-RECIPIENT
+#     DIRECTION. With K = 10 the best attainable p is 1/11 = 0.090909 > 0.05. The floor that IS
+#     achievable today is 0.090909.
+#     PR-CSI-005 is at this moment running the 36 missing button L18 controls as jobs
+#     912835/912836/912837, with --rescue-norm-match-key cand_rank1 out of
+#     configs/dcs_csi_axis_button_behavioral_L18.pt -- the SAME tensor that is cand_rank1 in the
+#     swap artifact by construction. So the single swap arm can be ranked against 46 controls with
+#     NO additional GPU the moment those land, reaching floor 1/47 = 0.021277.
+#     READING AT K=10 AND THEN AGAIN AT K=46 WOULD BE TWO LOOKS AT ONE HYPOTHESIS AND WOULD
+#     INVALIDATE BOTH. RESOLUTION, BINDING: THE K=10 READ IS NEVER PERFORMED. Direction A is read
+#     EXACTLY ONCE, at K=46, after PR-CSI-005's Part 3 has completed and passed its own gates.
+#     The GPU for the swap arm may be spent before then -- the arm is blind -- but no number from
+#     it is looked at.
+#
+# (j) BOTH DIRECTIONS ARE READ IN ONE SITTING. The 2x2 is a SINGLE inference. Reading direction B
+#     (whose family is complete and committed today) first, then A, would let B shape A's
+#     interpretation. PART 4 is run ONCE, for both directions. Reading either direction alone is a
+#     VOID condition.
+#
+# (k) OUTPUT PATHS MUST NOT EXIST. `ls` every --out below before running 4.1. In particular
+#     reports/DCS_CSI_SUBSPACE_basket_train_n46.json, ..._basket_validation_n46.json,
+#     ..._button_train_L18.json and ..._button_train_rank1.json are COMMITTED reads and are NOT
+#     outputs of this preregistration. Nothing here may overwrite them.
+
+# ================================================================================================
+# PART 4 -- THE FROZEN READ.  Run in this order.  Add no flag, remove no flag.
+# ================================================================================================
+# --require-rescue-layer 18 AND --require-slurm-job ARE BOTH MANDATORY AND NEITHER IS OPTIONAL.
+#
+#  * WHY THE LAYER FILTER: BASE, KO, KO_SELF, KO_FULL, KO_AXIS, KO_PLS, KO_ORTH and the control
+#    arms exist TWICE under csi1_button_train_* and csi1_basket_train_* -- once at L20 and once at
+#    L18. Without the layer filter these commands would silently analyse the L20 experiment.
+#
+#  * WHY THE JOB FILTER, AND IT IS NOT REDUNDANT -- THIS IS THE S-127 FOOT-GUN AND I RE-MEASURED IT
+#    RATHER THAN INHERITING IT: BASE and KO ran NO rescue (script lines 155-156 pass them no $R),
+#    so BOTH their L18 and L20 copies record args.rescue_layer = null and BOTH pass the layer
+#    filter untouched. FOR THOSE TWO ARMS THE JOB FILTER IS THE ONLY SEPARATOR. Omitting it
+#    silently substitutes a different experiment's BASE/KO into an L18 read. Measured instances:
+#      button train BASE: job 902004 (L18 family) vs job 896679 (L20 family), both rescue_layer null
+#      button train KO:   job 902004              vs job 896679,              both rescue_layer null
+#      basket train BASE: job 897145 / 905990 (L18) vs job 897386 (L20 family), all rescue_layer null
+#      basket train KO:   job 897145              vs job 897386,              both rescue_layer null
+#    AND THE STRONGEST CASE OF ALL: csi1_basket_train_SMOKE_NEC_BASE_* and _SMOKE_NEC_KO_*
+#    (job 906421) carry arm names BASE and KO, rescue_layer null, and only 24 ROWS. Nothing but the
+#    job filter keeps a 24-row smoke test out of a 670-row read.
+#    Also present and excluded by job id: csi1_basket_train_NEC_BASE_* / NEC_KO_* (job 906433).
+#
+#  * --control-prefixes MUST BE SPELLED OUT ON EVERY CALL. Its default is "KO_SHUF,KO_RAND", but
+#    relying on a default means a future default change silently empties the control distribution,
+#    and an EMPTY control distribution makes the rank test vacuous -- rank 1 of 1. SPELL IT OUT.
+#    And then ASSERT THE SIZE (PART 5 step 2): n_controls == 46, printed, before any rank is read.
+#
+#  * --out MUST BE SPELLED OUT ON EVERY CALL. The analyser's default --out omits --control-prefixes
+#    from the generated filename, so two reads that differ ONLY in their control prefixes COLLIDE
+#    on one filename and the second silently overwrites the first (S-129 flag g). Every call below
+#    names its own --out and every one is a NEW path.
+#
+#  * THE SWAP ARM IS THE --candidate-arm, NOT A CONTROL. --candidate-arm XSWAP_FROM_<donor>.
+#    The recipient's own KO_AXIS stays in --arms so S1 can be computed against it, but it is NOT
+#    the candidate in these reads. "XSWAP_FROM_*" cannot be prefix-matched by KO_SHUF or KO_RAND,
+#    so it cannot leak into the control family.
+
+# ---- 4.1 DIRECTION A -- PRIMARY.  basket's axis into button.  TRAIN.  K = 46. -------------------
+# DO NOT RUN THIS UNTIL PR-CSI-005 PART 3 HAS COMPLETED AND PASSED ITS GATES. See gate (i).
+# <I1> <I2> <K> are PR-CSI-005's three job ids; take them from runargs/dcs_csi_pr005_read.txt after
+# it has recorded them. <CA> (PR-CSI-005's CODEANCHOR_R0) MUST NOT appear here, for the same reason
+# it does not appear there: it is an anchor, not a family member.
+python scripts/dcs_csi_subspace_analyze.py \
+  --codeword button --tag-prefix csi1_button_train --expect-n 670 --allow-short 4 \
+  --arms BASE,KO,KO_SELF,KO_FULL,KO_AXIS,KO_ORTH,XSWAP_FROM_BASKET,KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5,KO_RAND6,KO_RAND7,KO_RAND8,KO_RAND9,KO_RAND10,KO_RAND11,KO_RAND12,KO_RAND13,KO_RAND14,KO_RAND15,KO_RAND16,KO_RAND17,KO_RAND18,KO_RAND19,KO_RAND20,KO_RAND21 \
+  --control-prefixes KO_SHUF,KO_RAND \
+  --direction sufficiency \
+  --candidate-arm XSWAP_FROM_BASKET --comparator-arm KO_ORTH --full-arm KO_FULL --ko-arm KO --base-arm BASE --self-arm KO_SELF \
+  --self-inert-tol 0.005 --n-boot 20000 \
+  --split train --require-rescue-layer 18 --require-slurm-job 902004,902005,<I1>,<I2>,<K>,<SA> \
+  --out reports/DCS_CSI_SWAP_button_train_L18_from_basket_n46.json
+
+# ---- 4.2 DIRECTION B -- PRIMARY.  button's axis into basket.  TRAIN.  K = 46. -------------------
+# basket's 46-control L18 train family is COMPLETE AND COMMITTED TODAY: I read
+# control_recovery_distribution.n_controls == 46 and rank_p_floor == 0.0213 out of
+# reports/DCS_CSI_SUBSPACE_basket_train_n46.json, whose VERDICT is "PRIMARY PASSES on split=train
+# -- candidate is strictly the largest of 46 controls (rank p=0.02128 < 0.05)".
+# SUBSTITUTE the job ids of basket's own L18 family from that committed read's run_dirs block --
+# do not guess them. The gate arms are jobs 897145 (BASE/KO/KO_SELF/KO_FULL at L18) and the control
+# allocations; <SBt> is this preregistration's new arm.
+python scripts/dcs_csi_subspace_analyze.py \
+  --codeword basket --tag-prefix csi1_basket_train --expect-n 670 --allow-short 4 \
+  --arms BASE,KO,KO_SELF,KO_FULL,KO_AXIS,KO_ORTH,XSWAP_FROM_BUTTON,KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5,KO_RAND6,KO_RAND7,KO_RAND8,KO_RAND9,KO_RAND10,KO_RAND11,KO_RAND12,KO_RAND13,KO_RAND14,KO_RAND15,KO_RAND16,KO_RAND17,KO_RAND18,KO_RAND19,KO_RAND20,KO_RAND21 \
+  --control-prefixes KO_SHUF,KO_RAND \
+  --direction sufficiency \
+  --candidate-arm XSWAP_FROM_BUTTON --comparator-arm KO_ORTH --full-arm KO_FULL --ko-arm KO --base-arm BASE --self-arm KO_SELF \
+  --self-inert-tol 0.005 --n-boot 20000 \
+  --split train --require-rescue-layer 18 --require-slurm-job <BASKET_TRAIN_L18_JOBS>,<SBt> \
+  --out reports/DCS_CSI_SWAP_basket_train_L18_from_button_n46.json
+
+# ---- 4.3 DIRECTION B -- PRIMARY.  button's axis into basket.  VALIDATION.  K = 46. --------------
+# basket's 46-control L18 validation family is likewise complete and committed: n_controls == 46,
+# rank_p_floor == 0.0213, VERDICT "PRIMARY PASSES on split=validation", n_domains == 23.
+python scripts/dcs_csi_subspace_analyze.py \
+  --codeword basket --tag-prefix csi1_basket_validation --expect-n 230 --allow-short 4 \
+  --arms BASE,KO,KO_SELF,KO_FULL,KO_AXIS,KO_ORTH,XSWAP_FROM_BUTTON,KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5,KO_RAND6,KO_RAND7,KO_RAND8,KO_RAND9,KO_RAND10,KO_RAND11,KO_RAND12,KO_RAND13,KO_RAND14,KO_RAND15,KO_RAND16,KO_RAND17,KO_RAND18,KO_RAND19,KO_RAND20,KO_RAND21 \
+  --control-prefixes KO_SHUF,KO_RAND \
+  --direction sufficiency \
+  --candidate-arm XSWAP_FROM_BUTTON --comparator-arm KO_ORTH --full-arm KO_FULL --ko-arm KO --base-arm BASE --self-arm KO_SELF \
+  --self-inert-tol 0.005 --n-boot 20000 \
+  --split validation --require-rescue-layer 18 --require-slurm-job 897658,<BASKET_VAL_L18_CTRL_JOBS>,<SBv> \
+  --out reports/DCS_CSI_SWAP_basket_validation_L18_from_button_n46.json
+
+# ---- 4.4 INDEPENDENT RE-DERIVATION (shares no code with 4.1-4.3) --------------------------------
+python scripts/dcs_csi_rederive_subspace.py \
+  --tag-prefix csi1_button_train --split train --expect-n 670 --allow-short 4 \
+  --direction sufficiency --candidate XSWAP_FROM_BASKET --ko KO --base BASE --full KO_FULL \
+  --controls KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5,KO_RAND6,KO_RAND7,KO_RAND8,KO_RAND9,KO_RAND10,KO_RAND11,KO_RAND12,KO_RAND13,KO_RAND14,KO_RAND15,KO_RAND16,KO_RAND17,KO_RAND18,KO_RAND19,KO_RAND20,KO_RAND21 \
+  --require-rescue-layer 18 --require-slurm-job 902004,902005,<I1>,<I2>,<K>,<SA> \
+  --out reports/DCS_CSI_SWAP_REDERIVE_button_train_L18_from_basket.json
+
+python scripts/dcs_csi_rederive_subspace.py \
+  --tag-prefix csi1_basket_train --split train --expect-n 670 --allow-short 4 \
+  --direction sufficiency --candidate XSWAP_FROM_BUTTON --ko KO --base BASE --full KO_FULL \
+  --controls KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5,KO_RAND6,KO_RAND7,KO_RAND8,KO_RAND9,KO_RAND10,KO_RAND11,KO_RAND12,KO_RAND13,KO_RAND14,KO_RAND15,KO_RAND16,KO_RAND17,KO_RAND18,KO_RAND19,KO_RAND20,KO_RAND21 \
+  --require-rescue-layer 18 --require-slurm-job <BASKET_TRAIN_L18_JOBS>,<SBt> \
+  --out reports/DCS_CSI_SWAP_REDERIVE_basket_train_L18_from_button.json
+
+python scripts/dcs_csi_rederive_subspace.py \
+  --tag-prefix csi1_basket_validation --split validation --expect-n 230 --allow-short 4 \
+  --direction sufficiency --candidate XSWAP_FROM_BUTTON --ko KO --base BASE --full KO_FULL \
+  --controls KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5,KO_RAND6,KO_RAND7,KO_RAND8,KO_RAND9,KO_RAND10,KO_RAND11,KO_RAND12,KO_RAND13,KO_RAND14,KO_RAND15,KO_RAND16,KO_RAND17,KO_RAND18,KO_RAND19,KO_RAND20,KO_RAND21 \
+  --require-rescue-layer 18 --require-slurm-job 897658,<BASKET_VAL_L18_CTRL_JOBS>,<SBv> \
+  --out reports/DCS_CSI_SWAP_REDERIVE_basket_validation_L18_from_button.json
+
+# ================================================================================================
+# PART 5 -- WHAT IS REPORTED, IN THIS ORDER, NONE OMITTED
+# ================================================================================================
+# STEP 1. The gate block of PART 3, every gate with ITS COUNT PRINTED BESIDE ITS VERDICT (S-134).
+#
+# STEP 2. THE SIZE ASSERTION, BEFORE ANY RANK IS SPOKEN. For each of 4.1, 4.2, 4.3 print
+#         control_recovery_distribution.n_controls and ASSERT it == 46. A rank in a distribution of
+#         unknown size is not read. A rank of 1 among 0 controls is the vacuous PASS of S-134.
+#         PRINT ALSO n_domains (expect 67, 67, 23) and n_keys_common, and assert n_domains.
+#
+# STEP 3. R47 for each swap arm, with its p = R47/47 and the attainable floor 1/47 = 0.021277
+#         stated beside it. HELPS iff R47 <= 2 (p = 0.021277 or 0.042553). Rank 3 of 47 is
+#         p = 0.063830 and is NOT "helps". This threshold is the same one that produced basket's
+#         pass and button's failure; nothing is redefined for this experiment.
+#
+# STEP 4. THE CELL OF THE 2x2, and its prespecified interpretation quoted VERBATIM from
+#         configs/dcs_csi_pr006_axis_swap.json before any new interpretation is offered:
+#           CELL 1 (A yes, B no)  -> C1 CONFIRMED in its strongest form; the direction is SHARED and
+#                                    button's estimate of it was noisy. B failing is EXPECTED under
+#                                    C1 and is not evidence against it.
+#           CELL 2 (A no, B yes)  -> C1 REFUTED, H_STATE CONFIRMED. The RECIPIENT decides. The locus
+#                                    moves from the PROBE to the REPRESENTATION. Most informative.
+#           CELL 3 (both yes)     -> CANNOT ANSWER PENDING gate 0g's audit. A direction at cos 0.5569
+#                                    to a useless direction being useful is strong enough that it is
+#                                    checked before it is believed. If the audit passes: the swap is
+#                                    MORE effective than the native, which no hypothesis predicted,
+#                                    and both C1 and H_STATE are inadequate.
+#           CELL 4 (both no)      -> NOTHING IS TRANSFERABLE. C1 REFUTED (a shared direction
+#                                    estimated better should have transferred) AND H_STATE REFUTED
+#                                    (button's axis should then have helped basket). BOTH survivors
+#                                    die. This is my predicted cell.
+#
+# STEP 5. THE GRADED READ, never omitted because the binary read was clean:
+#         S1  Delta = recovery(XSWAP) - recovery(KO_AXIS) on the recipient's own rows, both
+#             dose-matched to the same cand_rank1, domain-clustered bootstrap, 20000 resamples,
+#             seed 20260913, percentile 95% CI. Delta > 0 means the FOREIGN axis rescues better.
+#             BESIDE IT, the native anchors I measured: basket train KO_AXIS recovery +0.00264,
+#             basket validation +0.00401, button train L18 KO_AXIS recovery -0.00027.
+#             AND THE WARNING THAT GOES WITH THE LAST ONE: button's native recovery is essentially
+#             ZERO, so a positive S1 for direction A can mean only "beats nothing". S1 NEVER
+#             licenses "helps". Only R47 <= 2 does.
+#         S3  the dose-penalty distribution: median and IQR over admitted rows of
+#             ||P_recipient_cand_rank1(delta)|| / ||P_donor_axis(delta)||, i.e. the per-row rescale
+#             the norm-match applied. Near 1.0 means the dose-matching was nearly inert.
+#         S4  n_degenerate, with the row count it was computed over. MUST be 0.
+#         S5  specificity_holm / specificity_test / specificity_all_controls_rejected, unmodified.
+#         S6  exceedance count out of 46 with a Clopper-Pearson 95% CI, beside basket's native 0/46
+#             and button's native 7/10.
+#
+# STEP 6. THE REPLICATION. Direction B's validation cell beside its train cell. If they DISAGREE,
+#         direction B is reported as NOT REPLICATED and NO CELL is claimed for it. One split is not
+#         a replication.
+#
+# STEP 7. WHAT THIS CANNOT SETTLE, read out of the prereg's
+#         what_this_experiment_does_NOT_settle list, in full, in the same report: not causality
+#         (prohibition 19 stands in every cell); not WHY the codewords differ; not the rho-to-z
+#         calibration C1 still lacks; not any layer but 18; not any rank but 1; not necessity; and
+#         with n = 1 arm per cell, not run-to-run variation of a single arm.
+#
+# STEP 8. THE PROHIBITIONS, checked against the draft before it is committed:
+#         must_not_be_said_if_positive (7 items) and must_not_be_said_if_null (7 items) in
+#         configs/dcs_csi_pr006_axis_swap.json. In particular: NEVER report a rank without its
+#         denominator; NEVER pool button and basket; NEVER call a gate failure or a non-zero
+#         degeneracy count a NULL -- design failure is not a null and CANNOT ANSWER is not a null;
+#         and on cell 4 NEVER report that C1 is refuted without also reporting that H_STATE is
+#         refuted by the same cell.
+
+# ================================================================================================
+# PART 6 -- AFTER EVERY WRITE, VERIFY IT (S-124, and the EDQUOT hazard)
+# ================================================================================================
+# Disk quota is tight (197 G used of a 200 G cap at freeze time) and NFS reports EDQUOT
+# ASYNCHRONOUSLY: a write can print "Disk quota exceeded" and still have fully succeeded, or print
+# NOTHING and have written 0 BYTES. NEVER TRUST EXIT STATUS.
+# For every file this preregistration writes -- the two swap .pt files, their two .json sidecars,
+# and the six report JSONs -- do ALL THREE:
+#   1. os.path.getsize / `wc -c`  -> print the byte count, assert > 0
+#   2. json.load (reports, sidecars) or torch.load (the .pt files) -> assert the round-trip parses
+#   3. assert a KNOWN FIELD survived: n_controls == 46 in each report; len(bases) == 54 / 42 in the
+#      two .pt files; selected_layer == 18 in both sidecars.
+# A file that passes (1) but fails (2) is a truncated write and must be re-written, not read.
+#
+# ================================================================================================
+# PART 7 -- WHAT I DID NOT DO, RECORDED SO IT IS NOT DISCOVERED LATER AS A DEFECT
+# ================================================================================================
+#  * I did NOT edit src/boombness/score_behavior.py. The codeword/bank guard at lines 2299-2304
+#    blocks the naive swap and I designed around it truthfully instead of removing it.
+#  * I did NOT edit slurm_scripts/dcs_csi_p1_arms.slurm. The one-line CSI_NORMMATCH change that
+#    would make the S2 natural-dose secondary expressible is SPECIFIED in PART 2A and NOT MADE.
+#  * I did NOT edit any analyser in scripts/.
+#  * I did NOT run any analyser. PR-CSI-005 Part 3 is SEALED and an interim read is prohibited.
+#  * I did NOT launch any SLURM job. Jobs 912835/912836/912837 were RUNNING and were not disturbed.
+#  * I did NOT build the two swap artifacts. They are SPECIFIED in PART 1 and in the prereg's
+#    required_new_basis_artifacts block, and do not exist yet.
+#  * I did NOT modify any existing file in configs/, runargs/ or reports/. Both files this task
+#    produced are NEW.

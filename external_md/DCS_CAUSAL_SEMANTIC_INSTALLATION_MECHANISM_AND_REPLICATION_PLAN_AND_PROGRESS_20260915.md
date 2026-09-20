@@ -9834,3 +9834,144 @@ VOID condition is discharged — but PR-CSI-005's own VOID list includes **blob 
 S-127(a) compute-capability `RUNMETA` field remain queued, now blocked by a *different* preregistration
 than the one that blocked them this morning. Recorded so the queue does not look like neglect: the
 blocking experiment has changed, the block has not.
+
+---
+
+# S-135 — **PR-CSI-006 (the cross-codeword AXIS SWAP) is frozen, and it is BLOCKED by a guard that is right.** Plus the check nobody had asked for: the bidirectional conjunction is about **literally the same tensor**, `torch.equal` True
+
+The dissociation analysis named the axis swap its #1 priority and the **only** design that separates the
+one surviving explanation — C1, *"basket simply has a better probe"* — from *"basket's **state** is more
+rescuable"*. It is now preregistered: `configs/dcs_csi_pr006_axis_swap.json` (70 408 B, 44 keys,
+`json.load` verified) and `runargs/dcs_csi_pr006_read.txt` (43 762 B, 559 lines).
+
+## (a) THE BLOCKER, and it is a guard doing its job
+
+`src/boombness/score_behavior.py:2299-2304` **hard-refuses this experiment**, and I read it at the
+source rather than taking the report:
+
+```python
+# REVIEW M3. Nothing cross-checked the axis's own declared codeword/bank against the
+# population being scored -- and `prompt_id` is 100% shared across codeword banks, so a
+# button-fit axis on a basket run would pass every id-based check silently.
+_cw = m.get("codeword")
+if _cw and _cw not in (args.bank or ""):
+    raise SystemExit("REFUSING: basis was fit for codeword %r but --bank is %r. ...")
+```
+
+Pointing `--rescue-basis` at the other codeword's `.pt` **SystemExits before a row is scored**. The
+guard was added by an earlier adversarial review for exactly the reason it states: `prompt_id` is 100 %
+shared across codeword banks (S-008a), so a mismatched axis would otherwise pass every id-based check
+**silently**. **It is correct and it is protective, and it must not be weakened to run this
+experiment.**
+
+**The resolution that satisfies it truthfully**, and it is cheap: build, per direction, a basis artifact
+that **is the recipient's own `.pt`** — same `meta.codeword`, same `cand_rank1`, every control
+byte-identical — with **one added key** holding the donor's `cand_rank1`. The guard then sees the
+recipient's codeword because that is genuinely whose artifact it is, and the swap is expressed as an
+extra *key*, not a foreign *file*. There is in-repo precedent: `extra_controls_added.job_897529` in
+basket's own sidecar did exactly this. CPU-only, ~1.9 MB. **Specified in the preregistration, NOT
+built** — `score_behavior.py` is frozen at blob `e94258bd…` (re-verified by `git hash-object` just now)
+while PR-CSI-005's arms fly.
+
+## (b) The norm-match question is not a choice — it is structurally resolved
+
+I briefed this as *"the single most important design decision"*: whether the swap arm matches its dose
+to the **donor** axis's norm or the **recipient's** own. Read at the source, `--rescue-norm-match-key`
+is resolved in `bases` of **the same blob as `--rescue-basis`** (`score_behavior.py:2268-2277`), so it
+is **structurally impossible to name a key in another file**. And arithmetically the norm basis is only
+a per-row scalar yardstick — `target = ‖P_Wc(δ)‖` measured on the **recipient's own δ**; the code never
+sees the donor codeword's rows.
+
+**That collapses the option I thought existed.** "Match to the donor axis's norm", evaluated the only
+way the code can, is `‖P_donor(δ_recipient)‖` — which *is* the swap arm's own unscaled projection norm.
+Setting `norm-key == basis-key` makes the rescale the **identity**, so *"donor norm"* and *"no
+norm-match"* are the same arm.
+
+**Decision: match to the RECIPIENT's `cand_rank1`.** The decisive reason is commensurability, and it is
+a measured one: all 46 controls ran as `ctrl_random_i` norm-matched to `cand_rank1`, and the native
+`KO_AXIS` runs with **no** norm flag — but basis == norm-basis is the identity, **so the native
+candidate and all 46 controls already sit on one common dose scale.** An arm off that scale cannot be
+ranked against them. Natural-dose is kept as a secondary arm and the dose penalty
+`‖P_recip(δ)‖/‖P_donor(δ)‖` as a third.
+
+## (c) The outcome 2×2, with every cell's meaning fixed before any data
+
+"HELPS" ≡ rank ≤ 2 of 47 (p ≤ 0.0426) — the same threshold that produced basket's pass and button's
+failure.
+
+| | **button→basket helps** | **does not** |
+|---|---|---|
+| **basket→button helps** | **CELL 3** — the axes are causally interchangeable; cos 0.5569 understates the overlap. Neither hypothesis is needed and the dissociation must relocate. **CANNOT ANSWER pending a further gate** — a direction at cos 0.5569 to a *useless* direction being useful is strong enough to check before believing. | **CELL 1** — **C1 CONFIRMED**, strongest form. The direction is SHARED and button's estimate was noisy. B failing is *expected* under C1. |
+| **does not** | **CELL 2** — **C1 REFUTED, the STATE hypothesis CONFIRMED.** The RECIPIENT decides. The locus moves from PROBE to REPRESENTATION. The most informative cell. | **CELL 4** — **nothing transfers.** C1 refuted (a shared direction estimated *better* should have transferred) **and** the state hypothesis refuted (button's axis should then have helped basket). **Both survivors die.** |
+
+**`prediction_fixed_before_data`: CELL 4, second CELL 2 — i.e. against C1.** Reasoning recorded in the
+file: the recipient's own axis is by construction the maximiser and basket's native only just clears its
+family (+0.00264); and the dissociation analysis's sixth explanation already **reverses** (button's axis
+tracks the causal carrier *better* and rescues *worse*), which decouples the tracking↔rescue link C1's
+whole mechanism rests on.
+
+## (d) Cost, and an optional-stopping trap closed in advance
+
+**Three arms. 0.4920 GPU-h.** Measured per codeword and never pooled, from completed L18 subspace arms'
+own `wall_seconds`: button train mean 763.7 s (n=14), basket train 731.7 s (n=46), basket validation
+275.9 s (n=46). Every BASE / KO / KO_SELF / KO_FULL arm already exists at L18 for all three cells, so
+nothing is re-run.
+
+**Controls, stated plainly including where it fails:** the swap arm joins the **recipient's own existing
+family** — the donor's shuffled probes are not used, which would be the unequal-family error already
+refuted four ways. basket-as-recipient has **K = 46 today, floor 0.021277, certifies, zero new arms**.
+**button-as-recipient has K = 10, floor 0.090909, and does NOT certify today** — but PR-CSI-005's 36
+in-flight arms take it to K = 46 at **zero extra GPU**, because they carry the same `cand_rank1`
+norm-match target by construction.
+
+**The optional-stopping trap is closed by a binding rule: the K = 10 read is NEVER performed.** Direction
+A is read exactly once, at K = 46, after PR-CSI-005 unseals, and both directions are read in one sitting
+so the 2×2 is a single inference. Reading the cheap direction first and stopping when it looked good is
+precisely how this becomes post-hoc.
+
+## (e) THE CHECK NOBODY ASKED FOR, and it closes a hole in S-133's headline
+
+S-133 reported *"basket's rank-1 axis now has evidence in both directions"*. But the sufficiency arms
+load `configs/dcs_csi_axis_basket_behavioral.pt` and the necessity arms load
+`configs/dcs_csi_axis_basket_behavioral_shuf24.pt` — **different files with different hashes**
+(`9fd89754…` vs `0aadd0e2…`), and the per-arm `basis_sha16` differs too. So "both directions agree about
+the same axis" was an **assumption**, and S-118 is the entry about exactly that.
+
+Measured, by me:
+
+```
+cand_rank1  shapes (1,4096) / (1,4096)   dtype float32 / float32
+torch.equal(A, B) = True        max abs diff = 0.0
+selected_layer 18 / 18          codeword basket / basket
+```
+
+**They are literally the same tensor.** The differing hash is a *whole-file* hash — the shuf24 artifact
+carries extra shuffled controls — not the candidate's. **S-133's bidirectional claim survives, and it is
+now measured rather than assumed.** This is the objection a reviewer would have raised first, and it
+would have been fair.
+
+## (f) A live foot-gun found while enumerating run directories
+
+`csi1_basket_train_SMOKE_NEC_BASE_*` and `..._SMOKE_NEC_KO_*` (job 906421) carry `args.arm` of **`BASE`
+and `KO`**, `rescue_layer: null` in both, and **24 rows**. Since both analysers resolve run dirs by
+**tag** (`"%s_%s" % (tag_prefix, arm)`, S-127c) and BASE/KO cannot be disambiguated by the layer filter
+because their `rescue_layer` is null in every copy, these are exactly the shape that `--require-slurm-job`
+exists to exclude. They are on a **V100** and 24 rows, so `--expect-n 670 --allow-short 4` would also
+reject them — but that is a second line of defence, not the first. Named in PR-CSI-006's read file.
+
+## (g) The claim table is current, and append-only is VERIFIED not asserted
+
+`reports/DCS_CSI_CLAIM_TABLE.md` 218 → 461 lines. **0 deletions, 0 changes, 243 additions**, and
+`md5(head -218 new) == md5(original) == eee384beaf3c44130a7e53b1064c38cc`, with the first 218 lines
+equal line-for-line in order. Five new rows (necessity; the bidirectional conjunction carrying the
+**7.8 %** and "92 % of the effect is elsewhere"; the removal-direction positive control; the dissociation
+at matched family size with all three caveats; gate 0d), three amendments (the superseded n30 validation
+read; the 0.10→0.1111 floor and the 19→20 threshold; the prefix-mean captured fraction), and three new
+prohibitions.
+
+Two audit results worth carrying: **D16's central caveat is DISCHARGED** — *"gate 3 deliberately not
+evaluated, `ranks` is `{}`"* — the arms landed and the answer is rank 1 of 9. And D16's instruction not
+to compare necessity's 47 % to a sufficiency percentage **has lost its stated reason** (that one was L18
+and the other L20; D19 now compares at the same L18) **but keeps its force for a stronger one**:
+different reference arms, `KO` versus `NEC_BASE`. A caveat whose reason dies and whose conclusion
+survives has to be re-argued, not inherited, and it was.
