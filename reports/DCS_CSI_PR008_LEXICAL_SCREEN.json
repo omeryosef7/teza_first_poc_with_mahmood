@@ -1,0 +1,708 @@
+{
+  "schema": "dcs_csi_pr008_lexical_screen/1",
+  "prereg": "configs/dcs_csi_pr008_codeword_screen.json",
+  "prereg_id": "PR-CSI-008",
+  "corpus": {
+    "path": "data/boombness_prompts/boombness_prompt_bank_cds116_button_bomb.jsonl",
+    "sha16": "de4818a6c08fd6ada7f086650320bc6e",
+    "n_rows": 12992,
+    "n_domains": 116
+  },
+  "candidate_pool": {
+    "artifact": "reports/DCS_CSI_CODEWORD_TOKEN_AUDIT.json",
+    "sha16": "b578459f66dbbc0d6693d7e8e15b942a",
+    "n": 40
+  },
+  "tokenizer": {
+    "snapshot": "0e9e39f249a16976918f6564b8830bc894c89659"
+  },
+  "thresholds": {
+    "L2": 0.005,
+    "L2_exempt": [
+      "button"
+    ],
+    "L3_denylist_n": 33
+  },
+  "rows": [
+    {
+      "word": "button",
+      "n_tok_space": 1,
+      "n_tok_bare": 1,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġbutton"
+      ],
+      "incidence_rows": 9744,
+      "incidence_rate": 0.75,
+      "L1_pass": true,
+      "L2_exempt": true,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "basket",
+      "n_tok_space": 1,
+      "n_tok_bare": 1,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġbasket"
+      ],
+      "incidence_rows": 52,
+      "incidence_rate": 0.004002,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "carrot",
+      "n_tok_space": 1,
+      "n_tok_bare": 2,
+      "n_tok_cap": 2,
+      "tok_space": [
+        "Ġcarrot"
+      ],
+      "incidence_rows": 0,
+      "incidence_rate": 0.0,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "ticket",
+      "n_tok_space": 1,
+      "n_tok_bare": 1,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġticket"
+      ],
+      "incidence_rows": 72,
+      "incidence_rate": 0.005542,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": false,
+      "L3_pass": true,
+      "L5_pass": false
+    },
+    {
+      "word": "lamp",
+      "n_tok_space": 1,
+      "n_tok_bare": 1,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġlamp"
+      ],
+      "incidence_rows": 32,
+      "incidence_rate": 0.002463,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "kettle",
+      "n_tok_space": 1,
+      "n_tok_bare": 2,
+      "n_tok_cap": 2,
+      "tok_space": [
+        "Ġkettle"
+      ],
+      "incidence_rows": 4,
+      "incidence_rate": 0.000308,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "pencil",
+      "n_tok_space": 1,
+      "n_tok_bare": 2,
+      "n_tok_cap": 2,
+      "tok_space": [
+        "Ġpencil"
+      ],
+      "incidence_rows": 0,
+      "incidence_rate": 0.0,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "ladder",
+      "n_tok_space": 1,
+      "n_tok_bare": 2,
+      "n_tok_cap": 2,
+      "tok_space": [
+        "Ġladder"
+      ],
+      "incidence_rows": 32,
+      "incidence_rate": 0.002463,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "blanket",
+      "n_tok_space": 1,
+      "n_tok_bare": 2,
+      "n_tok_cap": 2,
+      "tok_space": [
+        "Ġblanket"
+      ],
+      "incidence_rows": 24,
+      "incidence_rate": 0.001847,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "mirror",
+      "n_tok_space": 1,
+      "n_tok_bare": 1,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġmirror"
+      ],
+      "incidence_rows": 72,
+      "incidence_rate": 0.005542,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": false,
+      "L3_pass": true,
+      "L5_pass": false
+    },
+    {
+      "word": "bucket",
+      "n_tok_space": 1,
+      "n_tok_bare": 1,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġbucket"
+      ],
+      "incidence_rows": 4,
+      "incidence_rate": 0.000308,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "candle",
+      "n_tok_space": 1,
+      "n_tok_bare": 2,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġcandle"
+      ],
+      "incidence_rows": 8,
+      "incidence_rate": 0.000616,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "napkin",
+      "n_tok_space": 2,
+      "n_tok_bare": 2,
+      "n_tok_cap": 2,
+      "tok_space": [
+        "Ġnap",
+        "kin"
+      ],
+      "incidence_rows": 8,
+      "incidence_rate": 0.000616,
+      "L1_pass": false,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": false
+    },
+    {
+      "word": "pillow",
+      "n_tok_space": 1,
+      "n_tok_bare": 2,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġpillow"
+      ],
+      "incidence_rows": 8,
+      "incidence_rate": 0.000616,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "saddle",
+      "n_tok_space": 1,
+      "n_tok_bare": 2,
+      "n_tok_cap": 2,
+      "tok_space": [
+        "Ġsaddle"
+      ],
+      "incidence_rows": 0,
+      "incidence_rate": 0.0,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "teapot",
+      "n_tok_space": 2,
+      "n_tok_bare": 2,
+      "n_tok_cap": 2,
+      "tok_space": [
+        "Ġte",
+        "apot"
+      ],
+      "incidence_rows": 8,
+      "incidence_rate": 0.000616,
+      "L1_pass": false,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": false
+    },
+    {
+      "word": "wagon",
+      "n_tok_space": 1,
+      "n_tok_bare": 1,
+      "n_tok_cap": 2,
+      "tok_space": [
+        "Ġwagon"
+      ],
+      "incidence_rows": 0,
+      "incidence_rate": 0.0,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "mitten",
+      "n_tok_space": 2,
+      "n_tok_bare": 2,
+      "n_tok_cap": 2,
+      "tok_space": [
+        "Ġm",
+        "itten"
+      ],
+      "incidence_rows": 0,
+      "incidence_rate": 0.0,
+      "L1_pass": false,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": false
+    },
+    {
+      "word": "cushion",
+      "n_tok_space": 1,
+      "n_tok_bare": 3,
+      "n_tok_cap": 2,
+      "tok_space": [
+        "Ġcushion"
+      ],
+      "incidence_rows": 0,
+      "incidence_rate": 0.0,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "curtain",
+      "n_tok_space": 1,
+      "n_tok_bare": 2,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġcurtain"
+      ],
+      "incidence_rows": 8,
+      "incidence_rate": 0.000616,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "envelope",
+      "n_tok_space": 1,
+      "n_tok_bare": 2,
+      "n_tok_cap": 2,
+      "tok_space": [
+        "Ġenvelope"
+      ],
+      "incidence_rows": 0,
+      "incidence_rate": 0.0,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "stapler",
+      "n_tok_space": 2,
+      "n_tok_bare": 3,
+      "n_tok_cap": 2,
+      "tok_space": [
+        "Ġstap",
+        "ler"
+      ],
+      "incidence_rows": 0,
+      "incidence_rate": 0.0,
+      "L1_pass": false,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": false
+    },
+    {
+      "word": "thimble",
+      "n_tok_space": 3,
+      "n_tok_bare": 3,
+      "n_tok_cap": 3,
+      "tok_space": [
+        "Ġth",
+        "im",
+        "ble"
+      ],
+      "incidence_rows": 0,
+      "incidence_rate": 0.0,
+      "L1_pass": false,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": false
+    },
+    {
+      "word": "bottle",
+      "n_tok_space": 1,
+      "n_tok_bare": 2,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġbottle"
+      ],
+      "incidence_rows": 52,
+      "incidence_rate": 0.004002,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "jacket",
+      "n_tok_space": 1,
+      "n_tok_bare": 2,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġjacket"
+      ],
+      "incidence_rows": 0,
+      "incidence_rate": 0.0,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "ribbon",
+      "n_tok_space": 1,
+      "n_tok_bare": 1,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġribbon"
+      ],
+      "incidence_rows": 8,
+      "incidence_rate": 0.000616,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "sponge",
+      "n_tok_space": 1,
+      "n_tok_bare": 2,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġsponge"
+      ],
+      "incidence_rows": 0,
+      "incidence_rate": 0.0,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "trolley",
+      "n_tok_space": 2,
+      "n_tok_bare": 2,
+      "n_tok_cap": 2,
+      "tok_space": [
+        "Ġt",
+        "rolley"
+      ],
+      "incidence_rows": 104,
+      "incidence_rate": 0.008005,
+      "L1_pass": false,
+      "L2_exempt": false,
+      "L2_pass": false,
+      "L3_pass": true,
+      "L5_pass": false
+    },
+    {
+      "word": "whistle",
+      "n_tok_space": 1,
+      "n_tok_bare": 2,
+      "n_tok_cap": 2,
+      "tok_space": [
+        "Ġwhistle"
+      ],
+      "incidence_rows": 40,
+      "incidence_rate": 0.003079,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "yogurt",
+      "n_tok_space": 1,
+      "n_tok_bare": 3,
+      "n_tok_cap": 2,
+      "tok_space": [
+        "Ġyogurt"
+      ],
+      "incidence_rows": 8,
+      "incidence_rate": 0.000616,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "apple",
+      "n_tok_space": 1,
+      "n_tok_bare": 1,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġapple"
+      ],
+      "incidence_rows": 88,
+      "incidence_rate": 0.006773,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": false,
+      "L3_pass": true,
+      "L5_pass": false
+    },
+    {
+      "word": "banana",
+      "n_tok_space": 1,
+      "n_tok_bare": 1,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġbanana"
+      ],
+      "incidence_rows": 16,
+      "incidence_rate": 0.001232,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "chair",
+      "n_tok_space": 1,
+      "n_tok_bare": 1,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġchair"
+      ],
+      "incidence_rows": 64,
+      "incidence_rate": 0.004926,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "table",
+      "n_tok_space": 1,
+      "n_tok_bare": 1,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġtable"
+      ],
+      "incidence_rows": 580,
+      "incidence_rate": 0.044643,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": false,
+      "L3_pass": true,
+      "L5_pass": false
+    },
+    {
+      "word": "window",
+      "n_tok_space": 1,
+      "n_tok_bare": 1,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġwindow"
+      ],
+      "incidence_rows": 168,
+      "incidence_rate": 0.012931,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": false,
+      "L3_pass": true,
+      "L5_pass": false
+    },
+    {
+      "word": "garden",
+      "n_tok_space": 1,
+      "n_tok_bare": 2,
+      "n_tok_cap": 1,
+      "tok_space": [
+        "Ġgarden"
+      ],
+      "incidence_rows": 404,
+      "incidence_rate": 0.031096,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": false,
+      "L3_pass": true,
+      "L5_pass": false
+    },
+    {
+      "word": "balloon",
+      "n_tok_space": 1,
+      "n_tok_bare": 2,
+      "n_tok_cap": 2,
+      "tok_space": [
+        "Ġballoon"
+      ],
+      "incidence_rows": 52,
+      "incidence_rate": 0.004002,
+      "L1_pass": true,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": true
+    },
+    {
+      "word": "crayon",
+      "n_tok_space": 2,
+      "n_tok_bare": 3,
+      "n_tok_cap": 3,
+      "tok_space": [
+        "Ġcray",
+        "on"
+      ],
+      "incidence_rows": 0,
+      "incidence_rate": 0.0,
+      "L1_pass": false,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": false
+    },
+    {
+      "word": "muffin",
+      "n_tok_space": 2,
+      "n_tok_bare": 3,
+      "n_tok_cap": 3,
+      "tok_space": [
+        "Ġmuff",
+        "in"
+      ],
+      "incidence_rows": 20,
+      "incidence_rate": 0.001539,
+      "L1_pass": false,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": false
+    },
+    {
+      "word": "tulip",
+      "n_tok_space": 2,
+      "n_tok_bare": 2,
+      "n_tok_cap": 2,
+      "tok_space": [
+        "Ġtul",
+        "ip"
+      ],
+      "incidence_rows": 0,
+      "incidence_rate": 0.0,
+      "L1_pass": false,
+      "L2_exempt": false,
+      "L2_pass": true,
+      "L3_pass": true,
+      "L5_pass": false
+    }
+  ],
+  "survivors": [
+    "button",
+    "basket",
+    "carrot",
+    "lamp",
+    "kettle",
+    "pencil",
+    "ladder",
+    "blanket",
+    "bucket",
+    "candle",
+    "pillow",
+    "saddle",
+    "wagon",
+    "cushion",
+    "curtain",
+    "envelope",
+    "bottle",
+    "jacket",
+    "ribbon",
+    "sponge",
+    "whistle",
+    "yogurt",
+    "banana",
+    "chair",
+    "balloon"
+  ],
+  "n_survivors": 25,
+  "nested_pairs_dropped": [],
+  "failures": []
+}

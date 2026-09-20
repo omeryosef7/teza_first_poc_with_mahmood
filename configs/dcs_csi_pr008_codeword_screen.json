@@ -1,0 +1,127 @@
+{
+  "schema": "dcs_csi_prereg/1",
+  "id": "PR-CSI-008",
+  "title": "P3 codeword replication bank -- PRE-GPU LEXICAL SCREEN of the candidate pool",
+  "phase": "PHASE 2 (plan section 7), checklist item P3",
+  "frozen_utc": "2026-09-21",
+  "status": "frozen before any P3 GPU number exists",
+  "question": "Which candidate codewords may enter the P3 replication bank at all? This preregistration fixes ONLY the pre-GPU lexical screen. It decides membership of the pool that the later GPU screen (plan section 7 criteria 1,2,3,5,6) will operate on. It reads no model output and no GPU.",
+  "why_pre_gpu": "Plan section 7 requires: 'Audit tokenised inputs across concepts/codewords BEFORE GPU to prevent byte-identical cells recurring (the B/E codeword-degeneracy lesson).' A candidate that fails a lexical criterion cannot be rescued by any amount of GPU, and screening it afterwards would mean choosing the pool after seeing scores.",
+  "candidate_pool_source": {
+    "artifact": "reports/DCS_CSI_CODEWORD_TOKEN_AUDIT.json",
+    "sha256_16": "b578459f66dbbc0d6693d7e8e15b942a",
+    "n_candidates": 40,
+    "note": "button, basket and carrot enter the pool but are NOT privileged (plan section 7). They are scored by the same rules as every other candidate."
+  },
+  "corpus": {
+    "path": "data/boombness_prompts/boombness_prompt_bank_cds116_button_bomb.jsonl",
+    "sha256_16": "de4818a6c08fd6ada7f086650320bc6e",
+    "n_rows": 12992,
+    "n_domains": 116,
+    "note": "The codeword of THIS bank is 'button', so button's own incidence is by construction and is reported but exempt from L2. For every other candidate the incidence is purely incidental, which is what L2 measures."
+  },
+  "tokenizer": {
+    "model": "meta-llama/Llama-3.1-8B-Instruct",
+    "snapshot": "0e9e39f249a16976918f6564b8830bc894c89659",
+    "void_if_different": true
+  },
+  "criteria": [
+    {
+      "id": "L1",
+      "name": "single-token with leading space",
+      "rule": "len(tokenizer.tokenize(' ' + word)) == 1",
+      "hard": true,
+      "rationale": "The A1 knockout is demo_all:attn_knockout:6-14:1.0 with scope target_surface_row_only: it masks the CODEWORD TOKEN. Every landed arm records exactly one knockout target token (' button' x 180, ' basket' x 180). A multi-token codeword makes the knockout mask 2-3 positions instead of 1, so it is a DIFFERENT INTERVENTION and its result is not commensurable with button/basket. This is not a convenience threshold; it is what keeps the experiment the same experiment.",
+      "predeclared_expectation": "31 of 40 pass (recomputed live by the gate; a mismatch against the stored audit ABORTS rather than being accepted)."
+    },
+    {
+      "id": "L2",
+      "name": "low incidental literal incidence",
+      "rule": "share of corpus rows whose full_prompt matches the case-insensitive word-boundary regex for the candidate, measured on the corpus above, MUST be <= 0.005",
+      "hard": true,
+      "threshold": 0.005,
+      "rationale": "Plan section 7 criterion (4), low literal/judge confounding. A codeword that already occurs in domain scenery is read literally by the judge and by the model, so an installation effect and a scenery effect become inseparable. The threshold is set at 0.5 percent because it ADMITS THE WORKING INCUMBENT basket at 0.4 percent, and is therefore calibrated to a codeword already demonstrated to carry the effect rather than chosen for convenience.",
+      "exempt": [
+        "button"
+      ],
+      "exempt_reason": "button is this corpus's own codeword; its 75 percent is by construction, not incidental."
+    },
+    {
+      "id": "L3",
+      "name": "concept disjointness",
+      "rule": "the candidate must not be a synonym, hypernym or component of the installed concept (bomb / explosive device)",
+      "hard": true,
+      "rationale": "The whole design holds the CONCEPT fixed at BOMB and varies the INNOCENT codeword. A candidate carrying harmful semantics reintroduces exactly the concept-installability confound that knife/gun caused and that plan section 7 exists to avoid.",
+      "method": "predeclared denylist, applied literally; no model judgement",
+      "denylist": [
+        "bomb",
+        "bombs",
+        "explosive",
+        "explosives",
+        "grenade",
+        "detonator",
+        "detonate",
+        "dynamite",
+        "tnt",
+        "ordnance",
+        "warhead",
+        "missile",
+        "shell",
+        "ied",
+        "blast",
+        "fuse",
+        "charge",
+        "primer",
+        "shrapnel",
+        "munition",
+        "munitions",
+        "incendiary",
+        "napalm",
+        "c4",
+        "semtex",
+        "knife",
+        "gun",
+        "club",
+        "weapon",
+        "rifle",
+        "pistol",
+        "blade",
+        "firearm"
+      ],
+      "denylist_note": "knife/gun/club are on the list not because they are bomb-synonyms but because they are the codewords whose concept-installability confound plan section 7 was written to avoid; admitting one would reintroduce it."
+    },
+    {
+      "id": "L4",
+      "name": "capitalisation stability",
+      "rule": "record n_tok_cap; NOT a hard gate",
+      "hard": false,
+      "rationale": "A candidate whose capitalised form tokenises differently behaves differently at sentence-initial positions. Recorded so a later anomaly is attributable rather than surprising. Not a gate, because the codeword slot is mid-sentence in every bank cell."
+    },
+    {
+      "id": "L5",
+      "name": "pairwise distinctness",
+      "rule": "no surviving candidate may be a substring of another surviving candidate",
+      "hard": true,
+      "rationale": "L2 uses word-boundary regexes; nested candidates would make two rows' incidence counts read each other and the degeneracy check unreliable."
+    }
+  ],
+  "non_vacuity_assertions": [
+    "n_candidates_examined > 0",
+    "n_corpus_rows > 0 and equals the declared n_rows",
+    "every candidate in the stored audit is re-tokenised LIVE and agrees with the stored value, else ABORT",
+    "the number of survivors is reported, and a survivor count of 0 is a FAILURE not a pass"
+  ],
+  "outputs": {
+    "report": "reports/DCS_CSI_PR008_LEXICAL_SCREEN.json",
+    "frozen_pool_field": "survivors"
+  },
+  "void_conditions": [
+    "1. The tokenizer snapshot differs from 0e9e39f249a16976918f6564b8830bc894c89659.",
+    "2. The corpus sha256_16 differs from de4818a6c08fd6ada7f086650320bc6e.",
+    "3. The candidate pool is edited after any P3 GPU number has been read.",
+    "4. Any threshold in this file is changed after any P3 GPU number has been read.",
+    "5. The TEST split is inspected at any point in P3 screening (plan section 7: TEST is never inspected).",
+    "6. A candidate is admitted to the frozen pool that fails a hard criterion."
+  ],
+  "what_this_does_NOT_decide": "Nothing about installation strength, KO-induced semantic change, behavioural headroom, concept-free readout validity or cross-domain variance. Those are plan section 7 criteria 1,2,3,5,6, they require GPU, they run on TRAIN ONLY, and they will be preregistered separately once this pool is frozen."
+}

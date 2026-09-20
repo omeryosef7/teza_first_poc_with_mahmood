@@ -11594,3 +11594,126 @@ rather than silently adjusting a constant.
 ```
 914476 R n-305 group B  | 914477 914478 914479 PD (Dependency)   blob 11d2c617   quota 197G of 200G
 ```
+
+---
+
+# S-151 — **P3 opened.** PR-CSI-008 freezes the pre-GPU lexical screen for the codeword replication bank; gate 0 run, **25 of 40 candidates survive** — and the one criterion that matters scientifically is the one about *knockout arity*, not about word frequency
+
+§22's next unblocked item is **P3 — codeword screening + replication bank (concept fixed = BOMB)**. It
+had no entry in this log. GPU is saturated for ~4 h by PR-CSI-007's chain, which is the right moment
+for P3's first step, because §7 specifies that step as a **pre-GPU** one:
+
+> *"Audit tokenised inputs across concepts/codewords **before** GPU to prevent byte-identical cells
+> recurring (the B/E codeword-degeneracy lesson)."*
+
+## What was frozen
+
+`configs/dcs_csi_pr008_codeword_screen.json` (7 089 bytes). It decides **only** which candidates may
+enter the pool that the later GPU screen operates on. It reads no model output.
+
+Two deliberate constructions, both against failure modes this sprint has already produced:
+
+* **Every threshold lives in the preregistration, and the gate reads them from it.** Nothing is
+  hardcoded in the script. S-138's lesson was a headline and a prereg rule disagreeing about which
+  cell a result fell in; the cheapest way to make that impossible is to give the prose and the code
+  one source.
+* **The L3 denylist is in the preregistration too**, not in the gate. My first draft wrote *"method:
+  predeclared denylist"* and did not include the list — which would have left the gate to define the
+  rule it was supposedly enforcing. Fixed before the gate existed.
+
+## The criterion that is actually about the science: L1
+
+L1 requires `len(tokenizer.tokenize(" " + word)) == 1`, and it is **hard**. Not for tidiness:
+
+The A1 knockout is `demo_all:attn_knockout:6-14:1.0` with scope `target_surface_row_only` — **it masks
+the codeword token**. Every landed arm records exactly one knockout target token (`" button"` × 180,
+`" basket"` × 180; S-002's audit table). A two-token codeword makes the same flag mask **two
+positions**, so `KO` for that codeword is a *different intervention* and its result is not
+commensurable with button's or basket's. Admitting a multi-token codeword would produce a replication
+bank whose cells are silently not replicating the same thing — the B/E degeneracy lesson in its exact
+shape. **This is what keeps the experiment the same experiment**, and it is why the screen is hard
+rather than advisory.
+
+## Gate 0, run
+
+```
+/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python \
+    scripts/gates/dcs_csi_pr008_gate0_lexical.py
+```
+
+```
+[gate0] corpus  boombness_prompt_bank_cds116_button_bomb.jsonl  sha16 de4818a6... == prereg
+[gate0] audit   DCS_CSI_CODEWORD_TOKEN_AUDIT.json               sha16 b578459f... == prereg
+[gate0] SIZE candidates = 40          <- asserted FIRST (S-134); 0 aborts
+[gate0] SIZE corpus rows = 12992      <- 116 domains, both asserted against the prereg
+[gate0] live re-tokenisation agrees with stored audit on 40 candidates x 3 fields
+[gate0] survivors: 25 of 40
+GATE 0 PASS
+```
+
+**The gate re-tokenises live rather than trusting the stored audit**, and aborts on disagreement. That
+is S-139's lesson — a field added to one code path that never reached the artifact, caught only by
+running the thing. Here the artifact and the live tokenizer agreed on all 120 comparisons, which is a
+result, not a formality: it means the 2026-09-15 audit is still valid under the snapshot in use.
+
+**L1: 31 of 40 pass** — exactly the number the preregistration predeclared. Dropped for arity:
+`napkin`(2) `teapot`(2) `mitten`(2) `stapler`(2) `thimble`(3) `crayon`(2) `muffin`(2) `tulip`(2)
+`trolley`(2).
+
+**L2, incidental literal incidence** in the frozen 12 992-row corpus (case-insensitive word boundary):
+
+```
+table   4.46%   garden 3.11%   window 1.29%   apple 0.68%   ticket 0.55%   mirror 0.55%
+chair   0.49%   basket 0.40%   bottle 0.40%   balloon 0.40%  ... carrot/pencil/saddle/wagon 0.00%
+button 75.00%  [exempt: it is THIS corpus's own codeword, so its rate is by construction]
+```
+
+`table`, `garden` and `window` are common scenery nouns in these domains; a codeword that already
+appears in the prompt is read literally by model and judge alike, and an installation effect and a
+scenery effect become inseparable. That is §7 criterion (4).
+
+## The limitation, stated plainly
+
+**The 0.5 % threshold was chosen after I had computed the incidence distribution.** I ran the
+incidence measurement as a prototype, saw that `table` sat at 4.5 % and the incumbent `basket` at
+0.4 %, and then set the threshold at 0.5 %. That is not a blind preregistration and should not be
+described as one.
+
+What makes it defensible, and the distinction worth keeping straight: **the incidence is a property
+of the corpus, not of any outcome.** No P3 GPU number exists, so nothing was selected on a result.
+Choosing a covariate threshold with the covariate distribution in view is ordinary; choosing it with
+the *outcome* in view is the sin. This is the former.
+
+What it costs is sensitivity, and the boundary is tight:
+
+```
+chair  0.0049 KEEP  |  ticket 0.0055 drop
+                    |  mirror 0.0055 drop
+```
+
+**0.0006 in incidence rate decides three candidates.** A threshold of 0.6 % would admit `ticket` and
+`mirror` and make the pool 27. Recorded here so that if the pool is ever re-opened, the fact that
+ticket and mirror failed *by a hair* is visible rather than buried in a boolean.
+
+## The frozen pool — 25
+
+```
+button basket carrot pencil saddle wagon cushion envelope jacket sponge kettle bucket candle
+pillow curtain ribbon yogurt banana blanket lamp ladder whistle bottle balloon chair
+```
+
+L5 (pairwise distinctness) found **no nested pairs**; `nested_pairs_dropped` is empty and `failures`
+is empty. Artifact: `reports/DCS_CSI_PR008_LEXICAL_SCREEN.json` (14 556 bytes, written atomically and
+read back).
+
+## What this does NOT decide
+
+Nothing about installation strength, KO-induced semantic change, behavioural headroom, concept-free
+readout validity, or cross-domain variance — §7's criteria (1), (2), (3), (5), (6). Those need GPU,
+they run on **TRAIN only**, TEST is never inspected, and they will be preregistered separately once
+this pool is frozen. **No bank was generated this tick**: quota stands at 197 G of 200 G and 25 banks
+at ~44 MB each is not affordable until the disk question is resolved.
+
+```
+914476 R n-305 group B 7 of 11 arms  | 914477-914479 PD (Dependency)   blob 11d2c617   quota 197G
+```
