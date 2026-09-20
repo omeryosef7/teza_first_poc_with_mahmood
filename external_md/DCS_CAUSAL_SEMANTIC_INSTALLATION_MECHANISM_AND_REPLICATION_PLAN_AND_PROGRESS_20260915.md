@@ -10726,3 +10726,98 @@ rule catching its own author's disabled check is the best argument for it I have
 * `pr005_gate0` remains **FAIL on gate 0(f)**, and that is correct: 0(f) asserts the output paths do
   not exist, and PR-CSI-005's read has since created them. A once-only gate necessarily fails after its
   read has been performed. Preserved exactly rather than "fixed".
+
+---
+
+# S-142 — **the launcher patch is applied and verified, and then VOID CONDITION 6 FIRED: my own S-139 edit blocks the experiment the patch exists to enable.** Not launched. The conflict is mine, and I am not bending the rule that caught it
+
+## (a) The launcher patch — applied exactly as PR-CSI-003-A specifies, and verified
+
+`slurm_scripts/dcs_csi_p1_arms.slurm` gains `CSI_NEC_HALF=4` and `=5`, ten shuffled-label necessity
+controls each, reusing `subnec` **verbatim** so the twenty new arms are the same experiment as
+`KO_NEC_SHUF0-3`, differing only in the basis key. The verification the preregistration demands, run
+rather than asserted:
+
+```
+bash -n slurm_scripts/dcs_csi_p1_arms.slurm : OK
+half 4: 10 arm names [4..13]    arm=KO_NEC_SHUF${j}  key=ctrl_shuffled${j}  norm-match=cand_rank1
+half 5: 10 arm names [14..23]   arm=KO_NEC_SHUF${j}  key=ctrl_shuffled${j}  norm-match=cand_rank1
+union: 20 values, range 4..23   gaps: NONE   repeats: NONE
+refusal message now names      : 1, 2, 3, 4 or 5
+subnec / RNEC / NECCOMMON / halves 1-3 : all still present
+```
+
+The refusal message was widened deliberately, because PR-CSI-003-A says so in as many words:
+*"a refusal message that names the wrong set is how a half gets silently defaulted."*
+
+## (b) And then the gate I wrote caught me
+
+PR-CSI-003-A's **VOID condition 6**, quoted from the file:
+
+> *"`src/boombness/score_behavior.py` modified between arms of the same comparison. Half 1 (job
+> 906433) and half 2 (job 912736) have already run against the current file; **the 20 new arms must
+> run against that same [file]**."*
+
+```
+blob when halves 1 and 2 ran : e94258bd5fc44c70629e707b00504b7acac2a7b7
+blob now                     : 11d2c61747e9401e2d2cb8f4123dd1188674d61b
+```
+
+**I changed it myself, in S-139, three hours ago** — the bf16 compute-capability guard. Launching
+halves 4 and 5 now would produce twenty arms under a different blob from the four `KO_NEC_SHUF0-3`
+they are pooled with, and the family would be VOID by a condition I wrote into the preregistration
+that the patch exists to serve.
+
+**NOT LAUNCHED.** 8.7 GPU-hours not spent on arms that would be unusable.
+
+## (c) Why I am not simply declaring it discharged
+
+S-139 measured the S-139 edits **inert**: 230 rows bit-identical on six readout fields across exactly
+this blob change. That is real evidence and it is tempting. It is **not sufficient**, for a reason
+worth stating precisely:
+
+**the inertness was measured on a SUFFICIENCY arm** (`STAGEANCHOR_AXIS` vs `CODEANCHOR_139B`, basket
+validation, `--rescue-donor clean`). The necessity path is `--rescue-donor ko`, a different branch
+through `score_behavior.py` with its own four-leg contract. Nothing has measured the new blob on
+**that** path. Reasoning from "inert there" to "inert here" is an argument about code, and S-134,
+S-138 and S-141 are each an entry about an argument about code that turned out to be wrong.
+
+And the deeper reason: **amending a VOID condition after it fires, to let my own experiment proceed,
+is the exact shape of BLOCKER-1.** In S-138 I wrote "the threshold does not get moved after the fact"
+in the body and then moved it in the title. Declaring condition 6 discharged because the measurement I
+happen to have is *nearly* the right measurement would be the same move, one day later, with more
+GPU-hours attached.
+
+## (d) The three resolutions, costed, none taken unilaterally
+
+1. **Revert `score_behavior.py` to `e94258bd` for the duration of the family, re-apply after.**
+   Scientifically clean — the family runs under one blob, matching its siblings. Costs: the 20 arms
+   lack the `compute_capability` field (so do all their siblings, so the family stays internally
+   consistent); and it puts a temporary revert of a safety guard into the tree, which is the kind of
+   thing that gets forgotten. The V100 risk it guards is separately covered by launching with the
+   positive `--gpus=geforce_rtx_3090:1` constraint.
+2. **Extend the inertness proof onto the necessity path, then amend condition 6 on the measurement.**
+   Honest only if done *before* any candidate number from the extended family exists — which is true
+   today. But there is no single-necessity-arm launcher path: the halves are fixed sets, so the
+   cheapest necessity-path anchor is a re-run of half 2 (9 arms, ~1.5 h) compared arm-by-arm for
+   bit-identity. That is a 9-arm bit-identity proof on the right path for ~1.5 GPU-h, after which
+   condition 6's **purpose** is demonstrably satisfied even though its **letter** is not.
+3. **Accept the 16-control ceiling** and never grow the necessity family. Floor stays 0.0588, the
+   necessity PASS branch stays permanently unreachable, and S-133's rank 1 of 9 remains the last word
+   in that direction.
+
+**My recommendation is (2)**, because it converts the question into a measurement on the exact path in
+dispute, it is cheap, and it can be decided now while no number from the extended family exists. But it
+amends a VOID condition, and the one thing I have learned today is that I am not the right party to
+wave through a rule of my own that has just fired against me. **Escalated to Omer.**
+
+## (e) What this cost, stated plainly
+
+The S-139 edits were correct, well-tested and proven inert on the path they were measured on. They were
+also made **while a preregistered experiment was still pending on the blob they changed** — and I
+checked PR-CSI-003's VOID conditions before launching *each of the three experiments that ran today*,
+and did not check them before *editing*. The release point I recorded in S-124 and S-134 was "when the
+arms are on disk"; the correct release point was "when the **family** is complete", and PR-CSI-003-A had
+already declared twenty more arms outstanding when I made the edit.
+
+**The launcher patch is committed** — it is correct, verified, and blocks nothing. Only the launch waits.

@@ -11,7 +11,7 @@
 #   group I = EXTENDED control family to reach >=19 controls (24 arms)
 #   group J = Phase 1 re-asked AT THE CODEWORD ROW: subspace rescue restricted to rel -10 (16 arms)
 #   group K = TWELVE more shuffled-label controls for the rank-1 candidate (12 arms)
-#   group L = PHASE 2 NECESSITY: remove-under-CLEAN (donor ko). CSI_NEC_HALF=1|2|3, CSI_NEC_SMOKE=1
+#   group L = PHASE 2 NECESSITY: remove-under-CLEAN (donor ko). CSI_NEC_HALF=1..5, CSI_NEC_SMOKE=1
 #
 # WHY TWO GROUPS AND WHY KO_AXIS APPEARS IN BOTH. At ~29 min per 670-row readout arm, 17 arms do
 # not fit one allocation. The split is chosen so that everything the PREREGISTERED PRIMARY
@@ -206,6 +206,8 @@ elif [ "$GROUP" = "L" ]; then
   #   CSI_NEC_HALF=1  the preregistered primary contrast          (5 arms,  ~2.5 h)
   #   CSI_NEC_HALF=2  the control distribution + the anchor       (9 arms,  ~4.4 h)
   #   CSI_NEC_HALF=3  eight more random draws                     (8 arms,  ~3.9 h)
+#   CSI_NEC_HALF=4  ten more SHUFFLED controls (PR-CSI-003-A)    (10 arms, ~4.4 h)
+#   CSI_NEC_HALF=5  ten more SHUFFLED controls (PR-CSI-003-A)    (10 arms, ~4.4 h)
   # Half 2 re-runs the candidate as KO_NEC_AXIS_ANCHOR for the reason group B does: the A-vs-B
   # difference on that identical arm MEASURES cross-allocation drift instead of assuming it away.
   #
@@ -265,8 +267,20 @@ elif [ "$GROUP" = "L" ]; then
     for i in 0 1 2 3; do subnec "KO_NEC_RAND${i}" "ctrl_random${i}"   cand_rank1; done
   elif [ "$NEC_HALF" = "3" ]; then
     for i in 4 5 6 7 8 9 10 11; do subnec "KO_NEC_RAND${i}" "ctrl_random${i}" cand_rank1; done
+  elif [ "$NEC_HALF" = "4" ]; then
+    # PR-CSI-003-A (DCS-CSI-142). Twenty more SHUFFLED-LABEL necessity controls, in two tens. The
+    # reason they are shuffled and not random is group K's: fitting capacity on permuted labels buys
+    # VARIANCE, the shuffled tail sets the margin (R5: shuffled sd is 1.9x random sd at the same
+    # mean), and more RANDOM draws would lower the pooled floor while sampling the WRONG TAIL.
+    # Halves 2+3 cap the family at 16 -> floor 1/17 = 0.0588, which is NOT < 0.05 and can never
+    # certify. These two halves take the shuffled family 4 -> 24, floor 0.2000 -> 0.0400.
+    # They reuse `subnec` VERBATIM so they are the same experiment as KO_NEC_SHUF0-3, differing
+    # only in the basis key.
+    for j in 4 5 6 7 8 9 10 11 12 13; do subnec "KO_NEC_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done
+  elif [ "$NEC_HALF" = "5" ]; then
+    for j in 14 15 16 17 18 19 20 21 22 23; do subnec "KO_NEC_SHUF${j}" "ctrl_shuffled${j}" cand_rank1; done
   else
-    echo "REFUSING: CSI_NEC_HALF=$NEC_HALF is not 1, 2 or 3. A silently-defaulted half would "\
+    echo "REFUSING: CSI_NEC_HALF=$NEC_HALF is not 1, 2, 3, 4 or 5. A silently-defaulted half would "\
          "re-spend an allocation on arms that already hold complete rows." >&2
     exit 2
   fi
