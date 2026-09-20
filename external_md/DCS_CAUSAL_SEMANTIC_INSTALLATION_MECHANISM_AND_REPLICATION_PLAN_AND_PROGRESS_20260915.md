@@ -11276,3 +11276,80 @@ introduced one: it took a measurement about staging and extended it to a claim a
 without measuring co-residency. It then stated that extension as a finding. **The correction cost two
 GPU-hours and no science**, which is the cheap end of this class of error — but it is the same shape as
 the others recorded today: *a conclusion reached by argument where a measurement was available.*
+
+---
+
+# S-148 — the relaunch took three attempts, and the third is right for a reason the first two missed: **the contention was self-inflicted, and serialising is FASTER in wall-clock than running four jobs at once**
+
+S-147 cancelled four contended jobs and relaunched them. That relaunch was wrong, and so was the next
+one. Recorded in full because the reasoning improved at each step and the final answer inverts the
+assumption all three started from.
+
+## Attempt 1 — pin one job per node. **PENDED, indefinitely.**
+
+```
+914417 B n-301 | 914418 I1 n-302 | 914419 I2 n-304 | 914420 K n-350
+all four: PENDING (Resources)
+```
+
+Measured why:
+
+```
+n-301  AllocTRES gres/gpu=7 of CfgTRES 7      n-302  8 of 8
+n-304  8 of 8                                  n-350  8 of 8
+```
+
+**Every GPU on every 3090 node is allocated.** A hard `--nodelist` therefore waits for one *named*
+node to free a GPU, which is strictly worse than waiting for *any* node. I chose the four nodes with
+the most free **memory** — the variable S-147 correctly identified — and forgot that memory is not
+what SLURM schedules on.
+
+**This also refines S-147's diagnosis.** Since every node is fully GPU-allocated, the eight jobs on
+n-305 each had **their own GPU**. The 6.2× was therefore **not** GPU over-subscription. It was the
+memory/page-cache pressure S-147 measured (128 G free against n-301's 1322 G) — the right cause,
+reached for the right reason, but S-147 left the GPU question open and it is now closed.
+
+## Attempt 2 — drop the pin. **Landed straight back on n-305.**
+
+Predictable in hindsight and circular: **cancelling my own four jobs is what freed the GPUs on n-305**,
+so the scheduler put the replacements exactly where the capacity had just appeared. Same node, same
+neighbours, same page-cache pressure — the only change being a 6 h limit instead of 3–4 h, i.e. the
+timeout was deferred rather than fixed.
+
+## Attempt 3 — **serialise**, and the arithmetic says this was always right
+
+```
+914476 B    RUNNING        n-305
+914477 I 1  PENDING (Dependency, after 914476)
+914478 I 2  PENDING (Dependency, after 914477)
+914479 K    PENDING (Dependency, after 914478)
+```
+
+The reframing the first two attempts missed: **four concurrent jobs are not faster than four sequential
+ones here — they are slower.**
+
+```
+4 concurrent, contended : 47 arms at 1469 s/arm, spread over 4 jobs  ~= 4.8 h  (and DEGRADING to 50 min/arm)
+4 sequential, uncontended: 47 arms at  238 s/arm, one after another  ~= 3.1 h
+```
+
+Concurrency bought nothing and cost 6.2× per arm, because the bottleneck is a **node-level shared
+resource** (page cache), not a per-job one. Four of the eight jobs on that node were mine, so **half
+the contention was self-inflicted and is the half I control.** `--dependency=afterany` chaining is the
+repo's own idiom (job 906001 used `--dependency=after:905990+40`), and it removes exactly that half
+while leaving the other users' jobs — which are not mine to schedule around — as an unavoidable
+background.
+
+`afterany` rather than `afterok` deliberately: a failure in one group should not strand the remaining
+three, and each job is checked on landing regardless.
+
+## What is unchanged
+
+The blob and clean-worktree witness was printed at **every** submission, as PR-CSI-007's VOID condition
+requires (`11d2c617…`, porcelain empty). No number was read. The 12 arms already on disk are untouched.
+
+**The read's job list now has four more ids to exclude.** It must name `914043`, `914048` and the
+surviving ids from this chain — and must **not** name `914044-914047` (S-147), nor `914417-914420` or
+`914472-914475`, which were cancelled before writing anything. Three cancelled generations is three
+chances to admit the wrong arms, and the only thing standing between that and a corrupted family is
+`--require-slurm-job` plus the gate assertion that the filter leaves exactly one candidate per arm.
