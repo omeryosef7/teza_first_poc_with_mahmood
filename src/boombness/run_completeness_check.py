@@ -152,6 +152,25 @@ KNOWN_ZERO = {
 }
 
 KNOWN_SHORT = {
+    "csi1_button_validation_KO_RAND12_20260920_221735_511934":
+        "DCS-CSI-133: PR-CSI-005 button L18 family. 1 row(s) of 230 REFUSED by the sprint's own "
+        "norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5) with 'REFUSING to patch: N of 28 "
+        "positions are norm-match DEGENERATE': the control basis was near-orthogonal to the clean->KO "
+        "delta at some position, so rescaling its projection would have amplified float noise into an "
+        "arbitrary QR-gauge direction. The guard declines to fabricate a control rather than silently "
+        "write a meaningless one. This is the EXPECTED 3090 behaviour recorded in DCS-CSI-121's table "
+        "(norm-matched on 3090: 669-670 rows every time; the V100 column is 0 rows every time, which is "
+        "why that hardware is a VOID condition). MECHANISM (not a verified property of this run): "
+        "degeneracy is the angle between a fixed basis and a fixed delta, both determined before any "
+        "readout, and the delta is identical across arms -- so the loss is expected to be "
+        "outcome-independent. MEASURED here against the full 230-row arm "
+        "csi1_button_validation_XSWAP_FROM_BASKET_20260920_221736_511938 (from slurm allocation 914048, "
+        "while the short run is 914046 -- no full-row arm of the same allocation was available, "
+        "rescue_layer 18): the 1 lost row(s) fall in 1 distinct domain(s), at most 1 row(s) per domain "
+        "out of 10, and both analysers intersect (domain, slot) KEYS across all arms before averaging, so "
+        "every arm is compared on the same key set regardless. Within the declared --allow-short 4 "
+        "(measured shortfall 1). Ledger: n_attempted 230, n_succeeded 229, n_failed 1. Failing prompt_ids "
+        "(complete): 8a9ec86383d3a50e.",
     "csi1_basket_train_XSWAP_FROM_BUTTON_20260920_164831_752290":
         "DCS-CSI-138: PR-CSI-006 axis swap, direction B (button's axis into basket's knockout), TRAIN. 1 "
         "row of 670 REFUSED by the norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5) with "

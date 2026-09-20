@@ -11125,3 +11125,67 @@ is performed once, and its Part 2 clause (e) prohibits an interim read by name.
 The **necessity family extension** stays blocked on PR-CSI-003-A's own VOID condition 6 (S-142). Three
 resolutions are costed there; none is taken, because the one I would choose amends a rule of mine that
 has just fired against me.
+
+---
+
+# S-146 — PR-CSI-007 at 12 of 55; the blind swap arm landed clean; and the R10 documenter fixes are visibly doing their job. **The seal was checked rather than assumed.**
+
+A routine tick, recorded because two small things in it were verified rather than taken on trust.
+
+## Progress
+
+```
+914043 group A  COMPLETED 00:29:44  n-301  rc=0  7 arms
+914048 group X  COMPLETED 01:08:27  n-305  rc=0  1 arm (the BLIND secondary swap)  failures: {}
+914044-914047   RUNNING   ~1:29
+12 of 55 arms FINISHED by DONE.json | rows {230: 11, 229: 1} | status {ok: 11, INCOMPLETE: 1}
+```
+
+The blind direction-A swap arm at validation is therefore **on disk and unread**, which is exactly
+its design: PR-CSI-007 launches it blind and PR-CSI-006's rules forbid reading it until the primary is
+written down.
+
+## The R10 documenter fixes, working on their first real case
+
+One arm came in at 229/230. The documenter's output shows all four R10 repairs firing at once:
+
+```
+declared ceiling: --allow-short 4 (READ from configs/dcs_csi_pr003a_necessity_family.json)
+documented: csi1_button_validation_KO_RAND12_...  (229/230, 1 lost, 1 domains,
+            ref csi1_button_validation_XSWAP_FROM_BASKET_... [DIFFERENT alloc 914048])
+wrote 153295 bytes ... (read back and re-parsed; 1 entries added)
+```
+
+* the ceiling is **read from the preregistration**, not a literal pasted into a template;
+* the reference arm is named by **full run_id**, and its allocation is stated **truthfully as
+  DIFFERENT** rather than the old template's blanket "of the same allocation";
+* the write is **read back and re-parsed** before it claims to have written anything;
+* and the guard's own exempted-run integrity check now re-measures **89** entries against their
+  ledgers, 0 disagreeing.
+
+## The seal, checked rather than assumed
+
+Documenting a shortfall means opening a PR-CSI-007 run directory, and PR-CSI-007's Part 2 clause (e)
+prohibits an interim read **by name**. So the question is whether the documenter reads anything
+scientific. Measured, not argued:
+
+```
+grep -E "y_install|logp_concept|semantic_logodds|p_concept|recovery|installation"
+     scripts/gates/dcs_document_short_runs.py
+  -> no hits
+```
+
+It reads **row identity only** — `domain`, `family_id`, `prompt_id` — to determine *which* rows are
+missing. It computes no recovery, reads no readout field, and touches no rank. **The seal is intact**,
+and the distinction that makes it intact is worth stating: *operational metadata about completeness is
+not the experiment's result*, and the completeness guard requires the former precisely so that nobody
+has to trust the latter.
+
+Had the grep hit, the correct move would have been to leave the arm undocumented and let the guard
+block commits until the family completed — a blocked commit is cheaper than a broken seal.
+
+## Unchanged
+
+`runargs/dcs_csi_pr007_read.txt` is performed **once**, after all 55 arms land. Nothing in this entry
+reads a number from that experiment. The necessity family extension remains blocked on PR-CSI-003-A's
+VOID condition 6 (S-142), with three resolutions costed and none taken.
