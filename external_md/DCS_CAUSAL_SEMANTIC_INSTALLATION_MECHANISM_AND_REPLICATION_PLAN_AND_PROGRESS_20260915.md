@@ -8930,3 +8930,124 @@ each**, `by_split {dev: 335, heldout: 335}`, 490 prompt ids excluded with
 `dcs_csi_axis_basket_behavioral_shuf24.pt key=cand_rank1 rank=1 site=rel-6 layer=18 sha16=fad8b030ae93976e`
 — the same `basis_sha16` S-126 read off half 1's `KO_NEC_AXIS`, so the anchor is anchoring what it is
 supposed to anchor.
+
+---
+
+# S-128 — **CORRECTION to S-125/S-127: I quoted the SUPERSEDED validation read.** And the dissociation survives its hardest test: **at matched control-family size, composition, domains and prompts, basket is rank 1 and button rank 4 on BOTH splits**
+
+Two things in one entry because the second depends on the first.
+
+## (a) CORRECTION — the VALIDATION cell of the 2×2 was wrong, and my error made the result look WEAKER than it is
+
+S-125's 2×2 table and S-127's restatement both cite basket VALIDATION as **"rank 1 of 31, p = 0.0323"**.
+That is `reports/DCS_CSI_SUBSPACE_basket_validation_n30.json` — a **superseded** read. Three validation
+reports exist and I picked the middle one:
+
+| file | n_controls | cand | rank | p |
+|---|---|---|---|---|
+| `DCS_CSI_SUBSPACE_basket_validation.json` | 10 | 0.00406 | 1 of 11 | 0.0909 (INCONCLUSIVE) |
+| `DCS_CSI_SUBSPACE_basket_validation_n30.json` | 30 | 0.00400 | 1 of 31 | 0.0323 ← **what I quoted** |
+| **`DCS_CSI_SUBSPACE_basket_validation_n46.json`** | **46** | **0.00401** | **1 of 47** | **0.0213** ← **authoritative** |
+
+The authoritative held-out read is **rank 1 of 47, p = 0.0213** — the **same family size as TRAIN**, which
+is the thing that makes the two splits comparable at all. S-103 records D12 at 46 controls on both splits.
+
+**The corrected 2×2**, which every future citation should use:
+
+| | own layer | other codeword's layer |
+|---|---|---|
+| **button** | L20: rank **4 of 11**, p 0.3636 (TRAIN **and** VALIDATION) | L18: rank **8 of 11**, p 0.7273 |
+| **basket** | L18: rank **1 of 47**, p 0.0213 (TRAIN) · rank **1 of 47**, p 0.0213 (**VALIDATION**) | L20: rank **1 of 11** |
+
+S-125's *conclusion* (the layer is exonerated) and S-127's *conclusion* (the cells use refit probes) are
+both **unaffected**; only the validation number moves, and it moves in the direction that strengthens the
+finding. **How this happened is the lesson**: I globbed `reports/DCS_CSI_SUBSPACE_basket_validation*` and
+read the cell out of a file whose name I did not check against the family size I was claiming. The
+corrective is the same one S-118 wrote and S-127 applied one entry ago — *print the thing you are about to
+assert* — and I applied it to the basis files while failing to apply it to the report files in the same
+table. **Checking one column is not checking the table.**
+
+## (b) The dissociation is REAL. The explanation I most wanted ruled out is REFUTED, four ways
+
+`reports/DCS_CSI_BUTTON_BASKET_DISSOCIATION_ANALYSIS.md` (587 lines). Its rank routine reproduces the
+committed rank in **all 8 cells** and its rebuilt candidate matches the reported candidate to ≤ 4.8e-06 in
+all 6 reports, so nothing below is an artifact of the analysis code.
+
+**The hypothesis that had to die first: "button was judged against 10 controls and basket against 46, so
+this is a sample-size artifact."** It is refuted:
+
+* **Matched family.** Basket restricted to the **identical ten arm names** button ran
+  (`KO_RAND0..5`, `KO_SHUF0..3` — same 6-random / 4-shuffled composition): **rank 1 of 11 on TRAIN and on
+  VALIDATION** (z = +1.939 / +3.567). Button: **4 of 11** on both splits, **8 of 11** at L18. Corroborated
+  independently by the committed 10-control files (`basket_validation.json` 1 of 11,
+  `basket_train_L20.json` 1 of 11).
+* **Projection.** A Jeffreys Beta-binomial predictive from button's own observed exceedances gives
+  **E[rank] = 15.6** at L20 and **32.4** at L18 out of 47, with **P(rank 1 of 47) ≤ 3.2e-03** — and the
+  projection is **calibrated on basket's own 10 → 46 transition**, where it predicts E[rank] 2.22 / 1.01
+  against an actual 1 / 1.
+* **Fisher exact** on exceedance counts: both-at-L18 matched-10 **p = 0.0015**; full families **p = 0.0043**.
+* **Paired domain bootstrap** (20 000, seed 20260920, identical domain sets) on Δz:
+  both-at-L18 **+2.832 [+0.606, +5.057]**; VALIDATION **+4.209 [+0.630, +7.078]**; VALIDATION matched-10
+  **+2.871 [+0.267, +4.977]** — all excluding zero.
+
+**Four more explanations KILLED**, each by measurement:
+
+* **Headroom (C2).** Ordered by positive control: button L20 +0.06955 → cand +0.00040; basket L20 +0.09391
+  → +0.00294; **button L18 +0.10842 → −0.00027**; basket L18 +0.12041 → +0.00264. Button at L18 has the
+  *second-largest* headroom and the *only negative candidate*. **Headroom does not order the candidates.**
+* **Population (C4).** `fit_domains_sha16 = 4614853e5636eb5f` in all six reports; `domain_means` key sets
+  identical; at prompt level **670 family keys each, intersection 670, button-only 0, basket-only 0**;
+  `n_target_occurrences` = 5 in both; both codewords are **single tokens**. **The arms differ in exactly
+  one input token.**
+* **Axis geometry / dose (C5).** Cosines: button L20↔L18 **+0.7470**, basket L18↔L20 **+0.7355** —
+  *equally* layer-stable. The measure-robust statistic (cand/random capture) runs the **wrong way**:
+  button 2.70–3.07× vs basket 2.20–2.62×. Button captures relatively **more** and recovers **less**.
+  Consistent with S-109's withdrawal, and not a revival of it — S-109's three killers are respected and
+  the entry says which.
+* **Power (C8).** Control sd is **codeword-independent** (0.00057–0.00135 everywhere). The cleanest
+  refutation: **button L18 B = 119.2 and basket-matched-10 B = 119.8 — 0.5 % apart — with A = −0.00316 vs
+  +0.01619, opposite signs.**
+
+**And one that REVERSES (C6, new).** Rank of `corr_d(KO_AXIS − KO, KO_FULL − KO)` inside the same control
+family: **button 1 of 11 at both layers and both splits; basket 8 of 47 (TRAIN), 4 of 47 (VAL).** Button's
+axis tracks the causal carrier *better* and rescues *worse*. Recorded with four caveats (post-hoc
+statistic, 10-control floor, shared `KO` noise inflating all r, an unexplained sign in button's control
+mean) and it is **not** being made into a story.
+
+## Three caveats that must travel with the headline, because two of them weaken it
+
+1. **The TRAIN own-layer cell — the one the headline is usually quoted from — is the WEAKEST evidence in
+   the set.** Its Δz bootstrap CI **includes zero** (+2.023 [−0.226, +4.288]) and its matched-10 Fisher
+   p = **0.105**. The dissociation is carried by the **held-out split** and by the **shared-layer L18**
+   comparison, not by the TRAIN headline.
+2. **Basket's TRAIN rank-1 is not robust to per-domain reweighting.** Under family-wide logit
+   delta-method trimming (applied to the whole family, per S-109's KILLER 2, not just the candidate),
+   two of five schemes move it **1 of 47 → 3 of 47, p 0.0213 → 0.0638**. VALIDATION and basket@L20 are
+   rank 1 under **all five**.
+3. **Nothing here explains it.** Six candidates removed, one partial (power: 1.2–2.4× of a 4–6× z gap),
+   and exactly **one survivor, unquantified** — basket's probe is simply better: rank-1 LOO rho **0.5629
+   vs 0.5021**, +12 % relative. But relative degradation from best rank to rank-1 is *identical*
+   (87.9 % vs 87.1 %), **no sidecar records a held-out rho (CANNOT MEASURE)**, and a 12 % rho gap has to
+   explain a **4.3–5.6× z gap** with no rho→z calibration anywhere in this sprint. **The residual is
+   still the codeword.**
+
+## What is being done about it
+
+The analysis names the experiment that turns its own central projection into a measurement, and it is a
+**falsifier of the analysis itself**: run **button's control family at L18 out to 46**, where the
+projection says E[rank] = 32.4 and P(rank ≤ 2) ≤ 6.5e-07. `configs/dcs_csi_axis_button_behavioral_L18.json`
+is reported to already hold a complete 46-control family of which only 10 were ever run, so the cost is
+arms, not basis-building. **PR-CSI-005 is being frozen for it now — before the arms run, and with the
+projection written into the file as the prediction that is allowed to fail.**
+
+The other named experiment, **E1 the AXIS SWAP** (button's KO rescued along *basket's* rank-1 axis and
+vice versa), has never been run — `DCS_CSI_PROMPT_TRANSFER_*` is *sentence* transfer, not axis transfer —
+and at cross-codeword cosine 0.50–0.56 the swap is informative rather than a near-identity. It is the only
+design that separates "basket has a better probe" from "basket's state is more rescuable". Queued behind
+PR-CSI-005.
+
+## Run in flight
+
+Job **912736** (necessity half 2): three arms landed — `KO_NEC_AXIS_ANCHOR`, `KO_NEC_SHUF0`,
+`KO_NEC_SHUF1` — at ~9 min/arm, faster than half 1's 26 min/arm because the model snapshot is already
+staged on n-350. Six arms remain.

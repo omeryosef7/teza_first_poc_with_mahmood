@@ -1,0 +1,210 @@
+# PR-CSI-004 READ COMMANDS -- the extension of the basket-at-L20 SUFFICIENCY control family from
+# 10 controls to 46. Frozen 2026-09-20 ~13:20 +03:00, BEFORE a single one of the 36 new arms was
+# submitted, so the read is mechanical and cannot be tuned to the answer. Prereg:
+# configs/dcs_csi_pr004_basket_L20_family.json. Opened by S-125 under PR-CSI-002's own
+# decision_rule: "Extend the control family to 46 to match D12 before any statement is made."
+#
+# WHAT IS BEING ADDED, and it is a MEASURED set difference, not a guess:
+#   set(controls of reports/DCS_CSI_SUBSPACE_basket_train_n46.json)   -> 46
+#   set(controls of reports/DCS_CSI_SUBSPACE_basket_train_L20.json)   -> 10
+#   n46 MINUS L20 -> 36 arms.  L20 MINUS n46 -> EMPTY (the 10 are a strict subset of the 46).
+#     16 random  : KO_RAND6 KO_RAND7 KO_RAND8 KO_RAND9 KO_RAND10 KO_RAND11 KO_RAND12 KO_RAND13
+#                  KO_RAND14 KO_RAND15 KO_RAND16 KO_RAND17 KO_RAND18 KO_RAND19 KO_RAND20 KO_RAND21
+#     20 shuffled: KO_SHUF4 KO_SHUF5 KO_SHUF6 KO_SHUF7 KO_SHUF8 KO_SHUF9 KO_SHUF10 KO_SHUF11
+#                  KO_SHUF12 KO_SHUF13 KO_SHUF14 KO_SHUF15 KO_SHUF16 KO_SHUF17 KO_SHUF18 KO_SHUF19
+#                  KO_SHUF20 KO_SHUF21 KO_SHUF22 KO_SHUF23
+#
+# POOLING: the 10 already-read controls ARE pooled with the 36 new ones into ONE family of 46, and
+# the full argument is in the prereg's `pooling_question` block. The short form: the continuation
+# gate ({R11<=3} from PR-CSI-002, frozen before any L20 number existed) CONTAINS the rejection
+# region ({R46<=2}), because at most one of 46 controls beating the candidate implies at most one
+# of the 10 does. A futility stop can only discard rejections, never create one, so the
+# unconditional type-I error of the whole two-stage procedure is exactly 2/47 = 0.0426, verified on
+# 4e6 simulated exchangeable draws. Pooling is LEGITIMATE. A clean 46-draw family is NOT needed.
+
+# ================================================================================================
+# PART 1 -- THE SBATCH LINES.  RUN THESE FIRST.  DO NOT EDIT THEM.
+# ================================================================================================
+#
+# GROUPS, confirmed by reading slurm_scripts/dcs_csi_p1_arms.slurm, not assumed:
+#   group I  takes a 5th POSITIONAL sub-selector, 1 or 2, and is the ONLY group that reads $5.
+#              $5 = 1 -> ctrl_random6-11  + ctrl_shuffled4-9    (12 arms)
+#              $5 = 2 -> ctrl_random12-21 + ctrl_shuffled10-11  (12 arms)
+#   group K  takes NO 5th argument -> ctrl_shuffled12-23        (12 arms)
+#            The script REFUSES a 5th argument for any group other than I and exits 2
+#            (`if [ -n "${5:-}" ] && [ "$GROUP" != "I" ]` -- the DCS-CSI-076 guard, added after $5
+#             had silently meant "layer" and two basket jobs ran at L1/L2).
+#   12 + 12 + 12 = 36, which is exactly the set difference above. Nothing else is needed and
+#   nothing extra is produced.
+#
+# AXIS .pt FOR ALL THREE COMMANDS: configs/dcs_csi_axis_basket_L20.pt
+#   sha256-16 131255c343bcc924, 1057524 B. VERIFIED to contain every basis key these groups ask
+#   for: 53 bases = cand_rank1 + cand_pls1-5 + ctrl_orth + ctrl_random0-21 (22) + ctrl_shuffled0-23
+#   (24). Group K's header says it "REQUIRES the shuf24 axis file" -- at L18 that meant a SECOND
+#   file, configs/dcs_csi_axis_basket_behavioral_shuf24.pt, whose overlapping bases had to be shown
+#   bit-identical to the frozen file first. AT L20 THERE IS ONLY ONE FILE AND IT ALREADY HAS 24
+#   SHUFFLED, so the norm-match reference cand_rank1 is the same tensor for the candidate and all
+#   46 controls by construction. That whole class of risk is absent here.
+#
+# CSI_LAYER VALUE EACH COMMAND NEEDS: **NONE. CSI_LAYER MUST BE UNSET.**
+#   The launcher does LAYER="${CSI_LAYER:-}" and, when empty, reads selected_layer from
+#   ${AXIS%.pt}.json. configs/dcs_csi_axis_basket_L20.json selected_layer == 20, so LAYER resolves
+#   to 20 with no override. Setting CSI_LAYER=20 would give the same number by the WRONG branch:
+#   it prints "[layer-override] using L20", which is the branch intended for whole-state arms at a
+#   layer their basis was not fit at. Subspace arms cannot use that branch --
+#   src/boombness/score_behavior.py:2291 (review M2) SystemExits unless the basis's own
+#   selected_layer equals --rescue-layer -- so the correct configuration is to let the artifact
+#   speak. A "[layer-override]" line in any of these three job logs is a VOID condition.
+#
+# BEFORE EACH SUBMISSION, assert (sbatch propagates the environment by default):
+#   env | grep -c '^CSI_LAYER='                              -> must print 0
+#   git hash-object src/boombness/score_behavior.py          -> must print
+#                                     e94258bd5fc44c70629e707b00504b7acac2a7b7
+#     (that blob is what all 17 arms of S-125's read executed; a change VOIDs the family)
+#
+# THE GPU CONSTRAINT IS POSITIVE, NOT AN EXCLUDE LIST, AND IT IS A VOID CONDITION (S-037, S-119,
+# S-121, and the practice change recorded in S-122): every arm here is NORM-MATCHED, V100 is sm_70
+# with no native bf16, --dtype bfloat16 is emulated there, and the norm-match degeneracy guard then
+# refuses EVERY row of EVERY norm-matched control -- 0 rows on V100 vs 669-670 on 3090, measured at
+# n = 24, 96, 268 and 670. Job 906421 is the case where --exclude=n-301,n-304 excluded the whole
+# 3090 rack, landed on rack-bgw-dgx1 and wrote zero rows on every norm-matched arm.
+# --gpus=geforce_rtx_3090:1 makes V100 IMPOSSIBLE rather than merely unlikely.
+
+sbatch --gpus=geforce_rtx_3090:1 --time=08:00:00 --export=ALL,CSI_STAGE=1 \
+       slurm_scripts/dcs_csi_p1_arms.slurm basket configs/dcs_csi_axis_basket_L20.pt train I 1
+
+sbatch --gpus=geforce_rtx_3090:1 --time=08:00:00 --export=ALL,CSI_STAGE=1 \
+       slurm_scripts/dcs_csi_p1_arms.slurm basket configs/dcs_csi_axis_basket_L20.pt train I 2
+
+sbatch --gpus=geforce_rtx_3090:1 --time=08:00:00 --export=ALL,CSI_STAGE=1 \
+       slurm_scripts/dcs_csi_p1_arms.slurm basket configs/dcs_csi_axis_basket_L20.pt train K
+
+# CSI_STAGE=1 is the node-local snapshot staging of DCS-CSI-092 (the n-30x rack's NFS path reads
+# the shared snapshot at 2-7 MB/s and the HF loader's random mmap access over it takes 20+ hours).
+# It is a load-time workaround and touches nothing scientific; drop it if the allocation lands on a
+# node with a fast path. --time=08:00:00 is headroom: the measured rate at L20 on n-303 was ~13 min
+# per arm (consecutive start_ts in job 906001), i.e. ~2.6 h for 12 arms, but the launcher's own
+# header budgets ~29 min per 670-row readout arm and the rate is node-dependent.
+#
+# RECORD THE THREE JOB IDS HERE AS THEY ARE ASSIGNED, and substitute them below:
+#   <I1> = group I sub-selector 1 = ____________
+#   <I2> = group I sub-selector 2 = ____________
+#   <K>  = group K                = ____________
+
+# ================================================================================================
+# PART 2 -- GATE 0, BEFORE ANY NUMBER IS READ
+# ================================================================================================
+# (a) THE ARCHITECTURE PIN, verified from the runs themselves rather than from the sbatch line:
+#       for every one of the 53 run directories admitted by the filters below, RUNMETA.json must
+#       record  gpu == "NVIDIA GeForce RTX 3090".  Jobs 905990 and 906001 are already known to
+#       satisfy this (all 17 arms on n-303, S-125). The three new jobs must be checked the same way.
+#       ANY other GPU string anywhere -> VOID, and the family must be re-run, not patched.
+# (b) NO LAYER OVERRIDE: grep for '[layer-override]' in the three new job logs must find NOTHING,
+#       and the launcher's own banner line must read LAYER=20 RANK=3 in all three.
+# (c) NO ROW COLLAPSE: each of the 36 new arms must have written >= 666 of 670 rows (--allow-short
+#       4). An arm at 0 rows is the V100 degeneracy signature even if the GPU string says otherwise;
+#       an arm short by more than 4 is RE-RUN via group X, never dropped (prereg
+#       incomplete_family_rule). Do NOT widen --allow-short.
+# (d) NO OVERWRITE: the tags csi1_basket_train_KO_SHUF4..23 and _KO_RAND6..21 ALREADY have L18
+#       directories from 2026-09-16 (csi1_basket_train_KO_SHUF12 has three). score_behavior writes
+#       <tag>_<UTC>_<pid>, so the new runs sit beside them. Confirm the new directories exist and
+#       the old ones are untouched (mtime unchanged) before reading anything.
+# (e) NO INTERIM READ. The commands in PART 3 are run ONCE, after all 36 arms have finished. Reading
+#       a subset and stopping when the rank looks good is the one thing that would turn this into a
+#       post-hoc test, and the prereg prohibits it by name.
+
+# ================================================================================================
+# PART 3 -- THE FROZEN READ.  Run in this order.  Add no flag, remove no flag.
+# ================================================================================================
+# --require-rescue-layer 20 AND --require-slurm-job ARE BOTH MANDATORY AND NEITHER IS OPTIONAL.
+# csi1_basket_train_* tags resolve to L18 directories from the D12 runs, so without the layer filter
+# these commands would silently analyse the L18 experiment (the S-104 ambiguity, R8-B1). And BASE
+# and KO ran NO rescue, so they carry NO layer and pass the layer filter untouched: the JOB FILTER
+# ALONE separates them from their L18 namesakes. Omitting it silently substitutes D12's BASE/KO.
+#
+# The five allocations that make up this family:
+#   905990  group A  -- BASE KO KO_SELF KO_FULL KO_AXIS KO_PLS KO_ORTH        (n-303, RTX 3090)
+#   906001  group B  -- KO_SHUF0-3 KO_RAND0-5 (+ KO_AXIS_ANCHOR, excluded)    (n-303, RTX 3090)
+#   <I1>    group I1 -- KO_RAND6-11  KO_SHUF4-9
+#   <I2>    group I2 -- KO_RAND12-21 KO_SHUF10-11
+#   <K>     group K  -- KO_SHUF12-23
+# KO_AXIS_ANCHOR is NOT in --arms and is NOT matched by --control-prefixes "KO_SHUF,KO_RAND". That
+# is deliberate: it is the cross-allocation anchor, not a control draw.
+
+# ---- 3.1 PRIMARY ANALYSER (46 controls, attainable floor 1/47 = 0.0213) --------------------------
+python scripts/dcs_csi_subspace_analyze.py \
+  --codeword basket --tag-prefix csi1_basket_train --expect-n 670 --allow-short 4 \
+  --arms BASE,KO,KO_SELF,KO_FULL,KO_AXIS,KO_PLS,KO_ORTH,KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5,KO_RAND6,KO_RAND7,KO_RAND8,KO_RAND9,KO_RAND10,KO_RAND11,KO_RAND12,KO_RAND13,KO_RAND14,KO_RAND15,KO_RAND16,KO_RAND17,KO_RAND18,KO_RAND19,KO_RAND20,KO_RAND21 \
+  --control-prefixes KO_SHUF,KO_RAND \
+  --split train --require-rescue-layer 20 --require-slurm-job 905990,906001,<I1>,<I2>,<K> \
+  --out reports/DCS_CSI_SUBSPACE_basket_train_L20_n46.json
+
+# ---- 3.2 INDEPENDENT RE-DERIVATION (shares no code with 3.1) ------------------------------------
+python scripts/dcs_csi_rederive_subspace.py \
+  --tag-prefix csi1_basket_train --split train --expect-n 670 --allow-short 4 \
+  --controls KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5,KO_RAND6,KO_RAND7,KO_RAND8,KO_RAND9,KO_RAND10,KO_RAND11,KO_RAND12,KO_RAND13,KO_RAND14,KO_RAND15,KO_RAND16,KO_RAND17,KO_RAND18,KO_RAND19,KO_RAND20,KO_RAND21 \
+  --require-rescue-layer 20 --require-slurm-job 905990,906001,<I1>,<I2>,<K> \
+  --out reports/DCS_CSI_REDERIVE_basket_train_L20_n46.json
+
+# ---- 3.3 LEAVE-ONE-DOMAIN-OUT, both directions --------------------------------------------------
+python scripts/dcs_csi_rank_loo.py --tag-prefix csi1_basket_train --split train \
+  --expect-n 670 --allow-short 4 --require-rescue-layer 20 \
+  --require-slurm-job 905990,906001,<I1>,<I2>,<K>
+
+# ---- 3.4 THE PRESPECIFIED SECONDARY: the SHUFFLED-ONLY subfamily (24 controls, floor 1/25 = 0.04)
+# R5 (recorded in group K's own header) found the random and shuffled families exchangeable IN
+# LOCATION (exact two-sample permutation p = 0.714) but the shuffled family's sd 1.9x the random
+# family's at the same mean, so the SHUFFLED TAIL is what sets the margin -- at L18 the three
+# controls closest to the candidate were all shuffled. This is SECONDARY. It is declared before the
+# data and it may NOT be substituted for the primary if the primary disappoints.
+python scripts/dcs_csi_subspace_analyze.py \
+  --codeword basket --tag-prefix csi1_basket_train --expect-n 670 --allow-short 4 \
+  --arms BASE,KO,KO_SELF,KO_FULL,KO_AXIS,KO_PLS,KO_ORTH,KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23 \
+  --control-prefixes KO_SHUF \
+  --split train --require-rescue-layer 20 --require-slurm-job 905990,906001,<I1>,<I2>,<K> \
+  --out reports/DCS_CSI_SUBSPACE_basket_train_L20_shufonly.json
+
+# ---- 3.5 AFTER EVERY WRITE, VERIFY IT (S-124) ---------------------------------------------------
+# The disk quota is enforced at 200 GB and NFS reports EDQUOT ASYNCHRONOUSLY: a write can print
+# "Disk quota exceeded" and still have fully succeeded, or print nothing and have written 0 bytes.
+# The frozen PR-CSI-002 read already "succeeded" into two empty files once. Exit status is not
+# evidence.
+for f in reports/DCS_CSI_SUBSPACE_basket_train_L20_n46.json \
+         reports/DCS_CSI_REDERIVE_basket_train_L20_n46.json \
+         reports/DCS_CSI_SUBSPACE_basket_train_L20_shufonly.json ; do
+  ls -l "$f" && python -c "import json,sys;d=json.load(open(sys.argv[1]));print(sys.argv[1],'json.load OK, top-level keys',len(d))" "$f"
+done
+# NONE of these three output paths may overwrite an existing file. In particular
+# reports/DCS_CSI_SUBSPACE_basket_train_L20.json is S-125's frozen 10-control read and is NOT the
+# output of this preregistration. Check with `ls` before running 3.1.
+
+# ================================================================================================
+# PART 4 -- WHAT MAY AND MAY NOT BE CONCLUDED
+# ================================================================================================
+#  * THE DECISION RULE IS IN THE PREREG AND IS NOT RESTATED LOOSELY HERE. rank 1 or 2 of 47 PASSES
+#    (p = 0.0213 / 0.0426); rank 3 or worse DOES NOT PASS; rank 3-5 is "upper tail, not certified"
+#    and rank 6+ reveals S-125's rank-1-of-11 as a small-family artefact.
+#  * THE FAMILY IS NOT EXTENDED AGAIN AFTER THIS READ, whatever it says. 46 is D12's resolution and
+#    this preregistration's terminal K. Extending after seeing a 47-family rank is the second bite
+#    PR-CSI-002 deliberately avoided, and neither this file nor the prereg licenses it.
+#  * THE CANDIDATE'S POINT VALUE WILL MOVE off S-125's +0.00294, because the cross-arm key
+#    intersection shrinks when 36 arms are added (17 arms -> 657 keys at L20; D12's 53-arm read at
+#    L18 -> 642). That is arithmetic, not instability, and it is declared in advance. All 47
+#    recoveries are recomputed on the SAME key set, so the rank is unaffected by the shrinkage.
+#    n_domains must still be 67.
+#  * REPORT THE UNCONDITIONAL GUARANTEE. The whole two-stage procedure, run from its own start,
+#    rejects a true null with probability at most 2/47 = 0.0426. Do NOT claim that, GIVEN stage 2
+#    was reached, a rank-1 outcome had probability 1/47: conditional on the gate it is
+#    11/141 = 0.0780 (and rank <= 2 is 22/141 = 0.1560). Both numbers are in the prereg; state the
+#    unconditional one as the result and do not hide the conditional one.
+#  * PROHIBITION 19 STANDS. At L20 the candidate recovers 3.1 % of what the whole clean state
+#    recovers (S-125, recovery_fraction 0.0313). A certified rank does not enlarge an effect, and a
+#    pass must not be written as "basket's axis is causal".
+#  * NO DOSE-NORMALISED obs/pred RATIO. S-109 withdrew that interpretation and S-108's explanation
+#    of the dissociation is dead. Do not revive it.
+#  * AMPLITUDE, NEVER "ENERGY". donor_patch.py:290 computes captured_energy_frac_mean as
+#    mean(proj_norm / delta_norm), a ratio of NORMS despite the key name (S-109, confirmed against
+#    the source in S-125).
+#  * A NULL IS NOT "NEARLY SIGNIFICANT". And a null does NOT restore the layer as the explanation of
+#    the button/basket dissociation -- button-at-L18 (S-104) excluded that, and no outcome here can
+#    bring it back.

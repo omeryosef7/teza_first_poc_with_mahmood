@@ -1,0 +1,394 @@
+{
+  "schema": "dcs_csi_prereg/1",
+  "id": "PR-CSI-004",
+  "title": "Extending the basket-at-L20 SUFFICIENCY control family from 10 to 46, to match D12's resolution",
+  "frozen_at": "2026-09-20T13:20+03:00",
+  "frozen_before_reading": "any of the 36 new L20 control arms. None of them has ever been run at layer 20: every csi1_basket_train_KO_SHUF4..23 / KO_RAND6..21 directory on disk today is an L18 directory from the D12 extension of 2026-09-16, and this preregistration is written before a single L20 job for them is submitted.",
+  "opened_by_entry": "S-125",
+  "opened_by_instruction": "PR-CSI-002.decision_rule.rank_1_of_11, frozen 2026-09-17T20:55+03:00: 'CONSISTENT WITH CODEWORD-ONLY, but INCONCLUSIVE at this floor. Extend the family to 46 to match D12 before any statement is made.' S-125 selected that branch by measurement (rank 1 of 11). This file is that extension, and nothing in it is a new question.",
+  "question": "basket's installation axis, evaluated at BUTTON's layer (L20), is strictly the largest of its 10 matched controls (S-125: candidate +0.00294, rank 1 of 11). Ten controls cannot certify at alpha=0.05, because the attainable p-floor is 1/11 = 0.0909. Does the candidate stay at the top when the family is grown to the SAME 46 controls that D12 used at L18, where the attainable floor is 1/47 = 0.0213?",
+  "why_this_is_not_a_second_bite": "The extension was PRESCRIBED IN ADVANCE, in PR-CSI-002's frozen decision_rule, for ranks 1, 2 and 3 alike -- i.e. before any L20 number existed, and not as a response to the number that arrived. The 46 control DIRECTIONS all existed inside the frozen basis file configs/dcs_csi_axis_basket_L20.pt before the first L20 arm ran; none is drawn now, and the 36 being added are the ENTIRE complement of the 10 already run, not a subset chosen after looking. The continuation gate is analysed formally in the `pooling_question` block below, and shown to be a FUTILITY stop that cannot manufacture a rejection.",
+  "what_is_actually_at_stake": "Whether the sprint may say, at D12's own resolution, that basket's axis is top of a 46-control matched family at BOTH layers. S-125 already exonerated the LAYER as the explanation of the button/basket dissociation (button fails at L18 and at L20; basket is rank 1 at L18 and at L20), but it did so with an uncertifiable family at L20. If the candidate holds rank 1 or 2 of 47, the codeword-only reading is established at the same resolution on both layers. If it does not, the L20 cell is a non-certifying cell and the 2x2 must be reported with that asymmetry stated, NOT smoothed over.",
+  "population": {
+    "codeword": "basket",
+    "concept": "bomb",
+    "split": "train",
+    "n_domains_expected": 67,
+    "expect_n_rows": 670,
+    "query_kind": "semantic_one_word",
+    "condition": "natural_doublespeak",
+    "cell": "C",
+    "dose": 4,
+    "bank_block": "cds_n4_sow",
+    "bank": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl",
+    "bank_sha16": "79511d9e254571e6",
+    "exclusions": "runargs/dcs_cont/exclude_basket_bomb_sow_train.txt",
+    "identical_to_PR_CSI_002": "Yes, field for field. This is the same population, the same instrument and the same layer as S-125; only the number of control draws changes."
+  },
+  "intervention": {
+    "knockout": "demo_all:attn_knockout:6-14:1.0, scope target_surface_row_only",
+    "rescue_positions": "query",
+    "rescue_layer": 20,
+    "site_axis_fit_at": "rel-6",
+    "basis": "configs/dcs_csi_axis_basket_L20.pt",
+    "basis_sha256_16": "131255c343bcc924",
+    "basis_bytes": 1057524,
+    "basis_cand_rank1_sha16": "d53e3fcd87a0b273",
+    "basis_seed": 20260915,
+    "basis_lambda": 100.0,
+    "norm_match_reference": "cand_rank1, for every one of the 46 controls, exactly as in group B and in D12",
+    "basis_is_unchanged_from_S_125": "The SAME file, unmodified since 2026-09-17. Its provenance -- the forced-layer evidence, the benign artifact race, the 22-identical/31-moved partition -- is recorded in PR-CSI-002.intervention.basis_verified and is not re-litigated here.",
+    "basis_carries_the_whole_family_already": {
+      "measured": "torch.load('configs/dcs_csi_axis_basket_L20.pt')['bases'] has 53 keys: cand_rank1, cand_pls1-5, ctrl_orth, ctrl_random0-21 (22), ctrl_shuffled0-23 (24).",
+      "why_this_matters": "At L18 the twelve extra shuffled controls of group K needed a SECOND axis file (configs/dcs_csi_axis_basket_behavioral_shuf24.pt), whose 41 pre-existing bases had to be verified bit-identical to the frozen file before group K could be compared to the 34 already run. AT L20 THAT WHOLE CLASS OF RISK DOES NOT EXIST: there is one file, it already contains all 24 shuffled and all 22 random draws, and the norm-match reference cand_rank1 is therefore the SAME TENSOR for the candidate and for all 46 controls by construction, not by comparison.",
+      "verification_command": "python -c \"import torch;b=torch.load('configs/dcs_csi_axis_basket_L20.pt',map_location='cpu')['bases'];print(len(b),sum(k.startswith('ctrl_random') for k in b),sum(k.startswith('ctrl_shuffled') for k in b))\"  ->  53 22 24"
+    },
+    "layer_is_taken_from_the_artifact_and_NOT_overridden": {
+      "measured_from_the_launcher": "slurm_scripts/dcs_csi_p1_arms.slurm resolves LAYER=\"${CSI_LAYER:-}\" and, when empty, reads it from ${AXIS%.pt}.json['selected_layer'].",
+      "configs/dcs_csi_axis_basket_L20.json selected_layer": 20,
+      "therefore": "CSI_LAYER MUST BE UNSET for every job of this preregistration. The launcher then resolves LAYER=20 on its own, prints no '[layer-override]' line, and src/boombness/score_behavior.py's review-M2 guard (line 2291: refuse unless basis meta selected_layer == --rescue-layer) is satisfied 20 == 20 rather than bypassed.",
+      "why_an_override_would_be_WRONG_here": "The override path exists so a WHOLE-STATE arm can be written at a layer its basis was not fit at (group F). A subspace arm cannot use it: score_behavior refuses. Setting CSI_LAYER=20 would resolve to the same number but would take the override branch, which is a different code path for no reason, and would leave a misleading '[layer-override] using L20' line in the log."
+    }
+  },
+  "what_the_10_already_read_controls_are": {
+    "arms": [
+      "KO_SHUF0",
+      "KO_SHUF1",
+      "KO_SHUF2",
+      "KO_SHUF3",
+      "KO_RAND0",
+      "KO_RAND1",
+      "KO_RAND2",
+      "KO_RAND3",
+      "KO_RAND4",
+      "KO_RAND5"
+    ],
+    "produced_by": "group B of slurm_scripts/dcs_csi_p1_arms.slurm, jobs 905990 (group A) and 906001 (group B), both on n-303, NVIDIA GeForce RTX 3090, 2026-09-17",
+    "read_in": "S-125, reports/DCS_CSI_SUBSPACE_basket_train_L20.json (478798 B), on 657 common keys",
+    "their_values_are_known": {
+      "KO_AXIS": 0.00294,
+      "KO_RAND2": 0.00129,
+      "KO_SHUF2": 0.00083,
+      "KO_RAND4": 0.00036,
+      "KO_SHUF3": 2e-05,
+      "KO_RAND5": -5e-05,
+      "KO_RAND3": -0.00012,
+      "KO_RAND1": -0.00015,
+      "KO_SHUF0": -0.00026,
+      "KO_SHUF1": -0.00029,
+      "KO_RAND0": -0.00057
+    }
+  },
+  "control_arms_to_be_ADDED": {
+    "n_new": 36,
+    "arms": [
+      "KO_RAND6",
+      "KO_RAND7",
+      "KO_RAND8",
+      "KO_RAND9",
+      "KO_RAND10",
+      "KO_RAND11",
+      "KO_SHUF4",
+      "KO_SHUF5",
+      "KO_SHUF6",
+      "KO_SHUF7",
+      "KO_SHUF8",
+      "KO_SHUF9",
+      "KO_RAND12",
+      "KO_RAND13",
+      "KO_RAND14",
+      "KO_RAND15",
+      "KO_RAND16",
+      "KO_RAND17",
+      "KO_RAND18",
+      "KO_RAND19",
+      "KO_RAND20",
+      "KO_RAND21",
+      "KO_SHUF10",
+      "KO_SHUF11",
+      "KO_SHUF12",
+      "KO_SHUF13",
+      "KO_SHUF14",
+      "KO_SHUF15",
+      "KO_SHUF16",
+      "KO_SHUF17",
+      "KO_SHUF18",
+      "KO_SHUF19",
+      "KO_SHUF20",
+      "KO_SHUF21",
+      "KO_SHUF22",
+      "KO_SHUF23"
+    ],
+    "derivation": "set(control_recovery_distribution.controls of reports/DCS_CSI_SUBSPACE_basket_train_n46.json) MINUS set(... of reports/DCS_CSI_SUBSPACE_basket_train_L20.json). Measured, not assumed: 46 - 10 = 36, and the reverse difference (L20 has, n46 lacks) is EMPTY, so the 10 are a strict subset of the 46 and the union is exactly D12's family.",
+    "by_launcher_group": {
+      "group_I_sub_selector_1": {
+        "arms": [
+          "KO_RAND6",
+          "KO_RAND7",
+          "KO_RAND8",
+          "KO_RAND9",
+          "KO_RAND10",
+          "KO_RAND11",
+          "KO_SHUF4",
+          "KO_SHUF5",
+          "KO_SHUF6",
+          "KO_SHUF7",
+          "KO_SHUF8",
+          "KO_SHUF9"
+        ],
+        "n": 12,
+        "script_lines": "for i in 6 7 8 9 10 11; do sub \"KO_RAND${i}\" \"ctrl_random${i}\" cand_rank1; done ; for j in 4 5 6 7 8 9; do sub \"KO_SHUF${j}\" \"ctrl_shuffled${j}\" cand_rank1; done"
+      },
+      "group_I_sub_selector_2": {
+        "arms": [
+          "KO_RAND12",
+          "KO_RAND13",
+          "KO_RAND14",
+          "KO_RAND15",
+          "KO_RAND16",
+          "KO_RAND17",
+          "KO_RAND18",
+          "KO_RAND19",
+          "KO_RAND20",
+          "KO_RAND21",
+          "KO_SHUF10",
+          "KO_SHUF11"
+        ],
+        "n": 12,
+        "script_lines": "for i in 12 13 14 15 16 17 18 19 20 21; do sub \"KO_RAND${i}\" \"ctrl_random${i}\" cand_rank1; done ; for j in 10 11; do sub \"KO_SHUF${j}\" \"ctrl_shuffled${j}\" cand_rank1; done"
+      },
+      "group_K": {
+        "arms": [
+          "KO_SHUF12",
+          "KO_SHUF13",
+          "KO_SHUF14",
+          "KO_SHUF15",
+          "KO_SHUF16",
+          "KO_SHUF17",
+          "KO_SHUF18",
+          "KO_SHUF19",
+          "KO_SHUF20",
+          "KO_SHUF21",
+          "KO_SHUF22",
+          "KO_SHUF23"
+        ],
+        "n": 12,
+        "script_lines": "for j in 12 13 14 15 16 17 18 19 20 21 22 23; do sub \"KO_SHUF${j}\" \"ctrl_shuffled${j}\" cand_rank1; done"
+      }
+    },
+    "group_I_takes_a_5th_POSITIONAL_argument_and_group_K_MUST_NOT_BE_GIVEN_ONE": "Confirmed from the script, not assumed: `if [ -n \"${5:-}\" ] && [ \"$GROUP\" != \"I\" ]; then echo REFUSING ... exit 2; fi`. Group I is the only group that reads $5. Passing a 5th argument to group K makes the job exit 2 immediately. This guard exists because DCS-CSI-076 found that $5 had previously meant the LAYER, so `... train I 1` had silently meant 'layer 1' and two basket control jobs ran at L1/L2.",
+    "axis_pt_each_command_needs": "configs/dcs_csi_axis_basket_L20.pt, for all three commands, with NO CSI_LAYER set. CSI_LAYER value required: NONE (unset). The launcher resolves LAYER=20 from configs/dcs_csi_axis_basket_L20.json, and the required basis keys ctrl_random6..21 and ctrl_shuffled4..23 are all present in that one file (verified above).",
+    "no_file_is_overwritten": "score_behavior writes outputs/boombness/score_behavior/<tag>_<UTC timestamp>_<pid>/. The tags csi1_basket_train_KO_SHUF4.. and _KO_RAND6.. already have L18 directories from 2026-09-16 (csi1_basket_train_KO_SHUF12 has three). New runs create new timestamped directories beside them; nothing on disk is replaced. This is exactly why --require-rescue-layer AND --require-slurm-job are unconditional in the read."
+  },
+  "arms": {
+    "gates_and_candidate_REUSED_from_job_905990": [
+      "BASE",
+      "KO",
+      "KO_SELF",
+      "KO_FULL",
+      "KO_AXIS",
+      "KO_PLS",
+      "KO_ORTH"
+    ],
+    "controls_REUSED_from_job_906001": [
+      "KO_SHUF0",
+      "KO_SHUF1",
+      "KO_SHUF2",
+      "KO_SHUF3",
+      "KO_RAND0",
+      "KO_RAND1",
+      "KO_RAND2",
+      "KO_RAND3",
+      "KO_RAND4",
+      "KO_RAND5"
+    ],
+    "controls_NEW": [
+      "KO_RAND6",
+      "KO_RAND7",
+      "KO_RAND8",
+      "KO_RAND9",
+      "KO_RAND10",
+      "KO_RAND11",
+      "KO_SHUF4",
+      "KO_SHUF5",
+      "KO_SHUF6",
+      "KO_SHUF7",
+      "KO_SHUF8",
+      "KO_SHUF9",
+      "KO_RAND12",
+      "KO_RAND13",
+      "KO_RAND14",
+      "KO_RAND15",
+      "KO_RAND16",
+      "KO_RAND17",
+      "KO_RAND18",
+      "KO_RAND19",
+      "KO_RAND20",
+      "KO_RAND21",
+      "KO_SHUF10",
+      "KO_SHUF11",
+      "KO_SHUF12",
+      "KO_SHUF13",
+      "KO_SHUF14",
+      "KO_SHUF15",
+      "KO_SHUF16",
+      "KO_SHUF17",
+      "KO_SHUF18",
+      "KO_SHUF19",
+      "KO_SHUF20",
+      "KO_SHUF21",
+      "KO_SHUF22",
+      "KO_SHUF23"
+    ],
+    "not_in_the_control_family": {
+      "KO_AXIS_ANCHOR": "ran in job 906001; it is the cross-allocation anchor for group B and is deliberately NOT matched by --control-prefixes KO_SHUF,KO_RAND. It must not enter the 46.",
+      "KO_ORTH": "the comparator arm, not a control draw. D12's 46 did not include it and neither does this.",
+      "KO_PLS": "the rank-5 candidate; its own matched family is group C and is a different preregistration."
+    },
+    "n_arms_in_the_read": 53
+  },
+  "n_controls": 46,
+  "attainable_p_floor": 0.0213,
+  "attainable_p_floor_exact": "1/(46+1) = 1/47 = 0.021276595744680851",
+  "rank_needed_to_certify_at_alpha_0_05": "rank <= 2 of 47 (2/47 = 0.0426 <= 0.05). Rank 3 gives 3/47 = 0.0638 and does NOT certify.",
+  "pooling_question": {
+    "why_this_block_exists": "The 10 stage-1 controls were ALREADY READ (S-125). Extending a control family after seeing where the candidate sits inside it is the classic way a valid rank test becomes a post-hoc one. This block decides the question from the rank statistic's null distribution rather than by assertion, and it is written BEFORE any new arm runs.",
+    "the_null": "H0: the candidate direction cand_rank1 is exchangeable with its norm-matched control directions with respect to y_install recovery (KO_X - KO), domain-clustered. Under H0 the candidate's rank among itself and its K controls is uniform on {1,...,K+1}, so p = rank/(K+1).",
+    "the_two_ways_this_could_have_been_illegitimate": {
+      "1_control_SELECTION_after_seeing_the_data": {
+        "the_hazard": "If which controls were added depended on the 10 already-read values, exchangeability is destroyed: one could add draws known to be weak.",
+        "REFUTED_three_ways": [
+          "All 46 control directions were drawn into configs/dcs_csi_axis_basket_L20.pt (seed 20260915) BEFORE any L20 arm was ever submitted. No direction is drawn now.",
+          "The 10 run first were not chosen: group B's arm list (ctrl_shuffled0-3, ctrl_random0-5) is hard-coded in slurm_scripts/dcs_csi_p1_arms.slurm and was written for PR-CSI-001 long before basket-at-L20 existed. The stage-1 subset is therefore fixed by a script, not by an outcome.",
+          "The 36 being added are the ENTIRE complement. There is no selection among them: the family is D12's family, named in PR-CSI-002's decision rule, and is taken whole."
+        ]
+      },
+      "2_data_dependent_CONTINUATION_optional_stopping": {
+        "the_hazard": "This is the real one. PR-CSI-002's frozen decision rule continues to 46 controls only when the stage-1 rank is 1, 2 or 3 of 11, and stops at 'DOES NOT show the effect' at rank 4 or worse. K is therefore data-dependent, and a reader who conditions on 'stage 2 happened' is looking at a selected sample.",
+        "the_procedure_stated_as_one_test": "Stage 1: run 10 controls; let R11 be the candidate's rank among the 11. If R11 >= 4, STOP and do not reject. If R11 <= 3, run the other 36; let R46 be the candidate's rank among the 47. REJECT iff R46 <= 2.",
+        "the_decisive_structural_fact": "{R46 <= 2} is a SUBSET of {R11 <= 3}. R46 <= 2 means at most one of the 46 controls beats the candidate; a fortiori at most one of the 10 does; so R11 <= 2 <= 3. The continuation gate is therefore a pure FUTILITY stop: it can only DISCARD rejections, never create one. More generally REJECT iff R46 <= m implies R11 <= m, so the containment holds for every m <= 3, and alpha = 0.05 at 46 controls forces m <= 2.",
+        "therefore_the_unconditional_type_I_error_of_the_WHOLE_two_stage_procedure": "P(continue AND R46 <= 2 | H0) = P(R46 <= 2 | H0) = 2/47 = 0.042553, and for the rank-1 outcome alone 1/47 = 0.021277. Unchanged by the gate.",
+        "verified_by_simulation_not_only_by_argument": {
+          "command": "4,000,000 draws of 47 exchangeable uniforms, rng seed 20260920, candidate = index 0, stage-1 controls = indices 1..10",
+          "P(R11<=3)": "0.27253  (exact 3/11 = 0.272727)",
+          "P(R46<=2)": "0.042635  (exact 2/47 = 0.042553)",
+          "P(continue AND R46<=2)": "0.042635  -- IDENTICAL to P(R46<=2) to every printed digit; zero draws in the set difference",
+          "R46<=2 implies R11<=3 on all 4e6 draws": true
+        },
+        "VERDICT": "POOLING THE 10 ALREADY-READ CONTROLS WITH THE 36 NEW ONES INTO ONE FAMILY OF 46 IS LEGITIMATE. A clean family is NOT required.",
+        "the_honest_caveat_that_must_be_reported_WITH_the_p_value": {
+          "what_is_NOT_true": "It is not true that, GIVEN this experiment reached stage 2, a rank-1 outcome had probability 1/47 under H0.",
+          "the_conditional_numbers": {
+            "P(R46=1 | R11<=3)": "11/141 = 0.078014  (simulated 0.078159)",
+            "P(R46<=2 | R11<=3)": "22/141 = 0.156028  (simulated 0.156438)"
+          },
+          "how_to_say_it": "The guarantee claimed is the UNCONDITIONAL one -- the whole procedure, run from its own start, rejects a true null with probability at most 2/47 = 0.0426. That is the identical guarantee D12 claims for its own 46-control family, and it is the standard frequentist guarantee. The conditional figure is recorded here so that nobody can later present it as a discovered flaw: it is a known and declared property of any futility-gated design, and it is the price of not having spent 36 GPU-arms on a candidate that was already 4th of 11."
+        }
+      }
+    },
+    "what_WOULD_make_this_post_hoc_and_is_therefore_PROHIBITED_BY_NAME": [
+      "Adding only SOME of the 36, or choosing which to add after the fact. All 36 run; all 46 enter.",
+      "Reading the new arms in sub-batches and stopping when the rank looks good. NO INTERIM READ of the 36 is permitted. Exactly one read, at the end, over all 47. A per-arm recovery value must not be computed until every arm that is going to run has finished.",
+      "Re-running any of the 10 stage-1 arms and keeping whichever copy helps. The 10 are frozen at jobs 905990/906001 by the --require-slurm-job filter in the frozen read.",
+      "Extending the family AGAIN after this read. 46 is D12's resolution and this preregistration's terminal K. If rank 3-5 of 47 comes back, that is a non-certifying result and the answer is NOT more controls; a further extension after seeing a 47-family rank would be the second bite that PR-CSI-002 avoided and this file must not be used to license it.",
+      "Reporting the stage-1 rank-1-of-11 result and the stage-2 result as two independent confirmations. They share 10 controls, the candidate and the same rows. There is ONE result."
+    ],
+    "the_alternative_design_if_the_answer_had_been_NO": "Had the containment failed -- e.g. had the rejection rule been 'rank <= 4 of 47' while the gate continued only at R11 <= 3 -- the fix would have been a CLEAN family: draw 46 fresh norm-matched control directions with a NEW seed into a new axis file (configs/dcs_csi_axis_basket_L20_family2.pt), run all 46 at L20, and DISCARD the 10 already read entirely. Cost: 46 arms instead of 36, plus one axis rebuild. It is recorded here so that the decision to pool is visibly a choice between two designs and not the absence of a choice. It is NOT taken, because the containment holds.",
+    "a_separate_and_purely_arithmetic_caveat_which_is_NOT_a_pooling_problem": {
+      "what_will_happen": "The candidate's own point value WILL CHANGE from the +0.00294 of S-125. The analyser intersects keys across every arm in --arms; at 17 arms that intersection was 657 keys, and D12's 53-arm read at L18 intersected to 642. Adding 36 arms can only shrink it.",
+      "why_it_is_not_a_problem": "All 47 recoveries are recomputed on the SAME key set, so candidate and controls stay matched domain for domain; the rank statistic is unaffected by the common shrinkage. The domain count must remain 67.",
+      "why_it_is_declared_in_advance": "So that a candidate value of, say, +0.0028 instead of +0.00294 is read as the intersection changing and NOT as instability of the effect. S-125 already had to correct two numbers that were read off a partially-written results.jsonl; a prediction that the number will move slightly is cheaper than an explanation afterwards."
+    }
+  },
+  "primary_endpoint": "y_install (concept-free semantic_one_word), domain-clustered",
+  "statistical_unit": "DOMAIN. Rows estimate within-domain means only and never inflate n. button and basket are never pooled; this file concerns basket only.",
+  "primary_statistic": "the rank of KO_AXIS - KO among the 46 controls' own (control - KO) values, rank 1 = most positive",
+  "secondary_statistic_PRESPECIFIED": {
+    "name": "the SHUFFLED-ONLY subfamily rank",
+    "definition": "the rank of KO_AXIS - KO among the 24 KO_SHUF* controls alone; attainable floor 1/25 = 0.0400",
+    "why": "Review R5 (recorded in group K's own header) found the random and shuffled families exchangeable IN LOCATION (exact two-sample permutation p = 0.714) but the shuffled family's sd 1.9x the random family's at the same mean, so the SHUFFLED TAIL sets the margin and adding randoms lowers the pooled floor while sampling the wrong tail. Group K exists to make the binding subfamily certifiable alone. This is SECONDARY, it is declared here before the data, and it may NOT be substituted for the primary if the primary disappoints.",
+    "must_not_be_said": "that the shuffled-only test 'is the real test'. The primary is the 46-control rank, and the secondary is reported beside it in both directions of outcome."
+  },
+  "required_gates": {
+    "manipulation": "KO - BASE clearly negative on substantially all domains (S-125 measured -0.23538, 67/67, on 657 keys; it will be recomputed on the new key set)",
+    "identity": "|KO_SELF - KO| <= 0.005 (the frozen tolerance; S-125 measured -0.00000)",
+    "instrument_capable": "KO_FULL - KO clearly positive. IF NOT, this read is CANNOT ANSWER (dead instrument at this layer), NOT a negative for the axis. S-125 measured +0.09391, ci95 [+0.07898, +0.10897], 67/67.",
+    "family_complete": "all 46 controls present after the run-dir filters. If any arm is missing or short beyond --allow-short 4, see incomplete_family_rule."
+  },
+  "incomplete_family_rule": {
+    "rule": "An arm that fails (missing, ledger/disk disagreement, or short by more than 4 rows) is RE-RUN via group X of the launcher, not dropped. Only if the re-run also fails may it be dropped, and then it must be NAMED in the report and the read reported at its actual K with floor 1/(K+1).",
+    "why": "Dropping arms silently makes K data-dependent for a second reason. Dropping for a technical reason recorded BEFORE the arm's recovery value is read is defensible; dropping after seeing the value is not, so the re-run is the default and the drop is the exception that must be spelled out.",
+    "--allow-short must stay 4": "It is 4 in PR-CSI-002 and in D12. A short arm is made safe by the cross-arm key intersection, so widening the tolerance now would be tuning a knob between arms of one comparison."
+  },
+  "void_conditions": [
+    "ANY of the 53 arms not on NVIDIA GeForce RTX 3090. This is a VOID condition and not advice: V100 is sm_70 with NO native bfloat16, --dtype bfloat16 is emulated there, and the norm-match degeneracy guard (rel = ||P(delta)||/||delta|| < 1e-6, evaluated ONLY on the norm-matched path) then refuses EVERY row of EVERY norm-matched control -- measured 0 rows on V100 vs 669-670 on 3090, at n = 24, 96, 268 and 670 (S-119, S-121). S-037 recorded the prohibition before it was re-discovered the hard way. All 36 new arms are norm-matched, so this failure mode would take the entire family.",
+    "The architecture pin expressed as a node EXCLUDE list rather than a positive --gpus=geforce_rtx_3090:1 constraint. Job 906421 is the instance where an exclude list excluded the whole 3090 rack, landed on rack-bgw-dgx1, and every norm-matched arm wrote zero rows.",
+    "Any rescue arm whose rows record a rescue layer other than 20, or a '[layer-override]' line in any job log.",
+    "Any run directory admitted from a SLURM job outside the frozen five-job list. BASE and KO carry no layer and are therefore separated from their L18 namesakes by the JOB FILTER ALONE -- omitting --require-slurm-job silently admits the D12 L18 run of the same tag.",
+    "src/boombness/score_behavior.py modified between any two arms of this comparison. See code_identity below: it is a MEASURED fact for the 10 already-run controls and a standing prohibition for the 36 new ones.",
+    "compared arms not on one GPU architecture",
+    "rescue did not fire on every persisted row of a rescue arm",
+    "any TEST domain present",
+    "arms used different banks or exclusion files",
+    "row loss beyond the norm-match degeneracy guard, or a DONE.json ledger disagreeing with rows on disk",
+    "the candidate or any control run with a basis file other than configs/dcs_csi_axis_basket_L20.pt (sha256-16 131255c343bcc924, 1057524 B), or with a norm-match key other than cand_rank1",
+    "any arm's y_install computed on a different domain set: n_domains must be 67"
+  ],
+  "code_identity": {
+    "the_requirement": "All 53 arms must have run the same src/boombness/score_behavior.py.",
+    "the_10_stage_1_controls_and_the_candidate": "MEASURED. The working-tree edit of S-110c landed at 2026-09-17 21:53:36. Every one of the 10 controls started at or after 22:02:00 (KO_SHUF0 22:02:00, KO_SHUF1 22:14:35, KO_SHUF2 22:27:32, KO_SHUF3 22:40:39, KO_RAND0 22:53:25, KO_RAND1 23:06:22, KO_RAND2 23:19:25, KO_RAND3 23:32:33, KO_RAND4 23:45:41, KO_RAND5 23:58:57), as did KO_SELF (22:02:00), KO_FULL (22:15:26), KO_AXIS (22:27:55), KO_PLS (22:40:39) and KO_ORTH (22:53:25) -- all post-edit. Only BASE (21:39:58) and KO (21:49:55) ran pre-edit, and they carry no rescue. S-125's Gate 0 then MEASURED the edit to be inert on this path anyway: KO_AXIS (post-edit, job 905990) and KO_AXIS_ANCHOR (pre-edit, job 906001) have byte-identical configs apart from arm/tag and max|diff| == 0 on logp_concept, logp_codeword, semantic_logodds, p_concept, p_codeword and top1_id on all 670 rows.",
+    "the_file_the_36_new_arms_must_run": "git blob e94258bd5fc44c70629e707b00504b7acac2a7b7, sha256 5d459d5ed6c2d50a2f2552d38d0f272eadaa90eb331beefff814a2d7cc3c74c6, clean against HEAD a853d5b6 at freeze time. THIS IS THE SAME BLOB THE 10 STAGE-1 CONTROLS RAN.",
+    "standing_prohibition": "src/boombness/score_behavior.py MUST NOT be modified between this freeze and the completion of the last of the 36 arms. Verify before each submission: `git hash-object src/boombness/score_behavior.py` == e94258bd5fc44c70629e707b00504b7acac2a7b7. A change, however cosmetic, VOIDs the family unless it is retired by an S-125-style bit-identity measurement.",
+    "RUNMETA_git_commit_is_NOT_sufficient_evidence_and_this_is_recorded_so_nobody_relies_on_it": "RUNMETA.json records git_commit (the HEAD at launch) and a git_dirty field that is absent/None on all 17 L20 arms. HEAD is not the working tree: KO_SELF and KO_SHUF0 launched at 22:02:00 under commit d2a4f718, whose committed blob is the PRE-edit 6f184ede, while the working tree they actually executed already held the post-edit content. The timestamps above, not the commit ids, are what establishes the split."
+  },
+  "cross_allocation_anchor_DECLARED_LIMIT": {
+    "what_is_missing": "Groups I and K contain no KO_AXIS anchor arm, so the three new allocations carry no in-allocation re-run of the candidate. Group X cannot supply one: it hardcodes --rescue-norm-match-key cand_rank1 for every arm it runs, and KO_AXIS runs with NO norm match, so a group-X 'anchor' would not be configuration-identical to KO_AXIS and would anchor nothing.",
+    "why_it_is_accepted_rather_than_fixed": "D12's own 46-control family at L18 was assembled the same way -- group A + group B + group I(x2) + group K, with an anchor in group B only. Requiring one here would hold the L20 arm to a stricter standard than the result it is being compared to.",
+    "what_stands_in_its_place_and_it_is_MEASURED_not_assumed": "S-045 established that a readout endpoint needs the arms to share an ARCHITECTURE, not an allocation, and the group-B anchor measured zero allocation drift. S-105b measured cross-node bit-identity of this readout on RTX 3090 for button. S-125's Gate 0 measured max|diff| == 0 across jobs 905990/906001 at L20 on all six readout fields on all 670 rows. The architecture pin is therefore the guarantee, and it is a VOID condition above.",
+    "what_would_close_it_properly": "a one-line addition of `sub KO_AXIS_ANCHOR cand_rank1` -- with NO norm-match argument -- at the head of groups I and K in slurm_scripts/dcs_csi_p1_arms.slurm. REPORTED, NOT MADE: that file is the launcher for the necessity job currently running, and this preregistration's job is to freeze a read, not to change an instrument."
+  },
+  "decision_rule": {
+    "rank_1_of_47 (p = 0.0213)": "PRIMARY PASSES. Licensed statement: basket's installation axis is strictly the largest of a 46-control matched family at BOTH L18 and L20, on TRAIN. Combined with button failing at both layers, the button/basket dissociation is a CODEWORD effect at D12's resolution and the layer is excluded as its explanation.",
+    "rank_2_of_47 (p = 0.0426)": "PRIMARY PASSES, and the margin must be reported as thin: one control beat the candidate. Same licensed statement, with 'strictly the largest' replaced by 'second of 47, p = 0.0426'.",
+    "rank_3_to_5_of_47": "DOES NOT PASS. The candidate is near the top of a 46-control family but does not certify at alpha = 0.05. Honest wording: 'basket at L20 sits in the upper tail of its 46 controls but the test does not certify it; basket at L18 certifies on both splits.' The 2x2 must be reported with that asymmetry visible. NO FURTHER EXTENSION (see prohibitions).",
+    "rank_6_or_worse_of_47": "DOES NOT PASS, and the rank-1-of-11 of S-125 is revealed as an artefact of a 10-control family. The L20 cell becomes a genuine non-result; the codeword-only reading is then supported at L18 only, and every sentence in the record that leans on S-125's rank 1 must be re-checked and, where it overreaches, corrected in an entry that says so.",
+    "CANNOT_ANSWER": "any required gate fails, any VOID condition fires, or fewer than 46 controls survive after the incomplete_family_rule is applied and the survivors' floor exceeds 0.05. Report the gates and STOP; do not report the candidate's rank as a finding."
+  },
+  "prediction_fixed_before_data": {
+    "point_prediction": "rank 1 of 47, with the candidate's point value in the range +0.0025 to +0.0032.",
+    "confidence": "moderate, and deliberately not high.",
+    "the_reasoning_stated_so_it_can_be_held_against_me": [
+      "The candidate is already known to be rank 1 of 11 at L20 -- that is the whole reason this extension is being run -- so the prediction is NOT independent of the data and I am not pretending it is. What is genuinely unknown is only whether any of the 36 UNSEEN controls exceeds +0.00294.",
+      "The naive calibration is discouraging on its own terms: the largest of the 10 seen controls is +0.00129, which is 44% of the candidate; but at L18 the largest control in the 46-family reached +0.00237 against a candidate of +0.00264, i.e. 90%, and the three controls closest to the candidate there were all SHUFFLED, while only 4 of the 10 seen at L20 are shuffled. The 20 unseen shuffled draws are precisely the high-variance tail (R5: shuffled sd 1.9x random sd at the same mean), so the binding competition has NOT yet been sampled at L20.",
+      "Against that, L20 is the weaker layer for basket by every amplitude measure already taken: captured fraction 0.02820 at L20 vs 0.03237 at L18, displacement 1.36796 vs 1.17153 (S-125), and the whole-state positive control recovers +0.09391 at L20 vs +0.12041 at L18. A candidate that is proportionally no stronger while the tail it must beat is the same shape is a real risk of landing 2nd or 3rd.",
+      "I therefore expect rank 1, I record that rank 2 would not surprise me, and I record explicitly that a rank of 3 or worse would overturn the reading I currently hold -- that basket's axis is top of its distribution at both layers -- rather than being absorbed as noise."
+    ],
+    "why_recording_it_matters_here": "S-125 selected the 'extend to 46' branch, and PR-CSI-002's prediction for that read was also 'rank 1 of 11'. Two predictions of rank 1 in a row must not be allowed to become a habit of confirmation: this one is written down with its counter-argument attached so that a failure is a recorded loss and not a re-description."
+  },
+  "must_not_be_said_if_positive": [
+    "that basket's axis is causal. Prohibition 19 stands: at L20 the candidate recovers 3.1% of what the whole clean state recovers (S-125, recovery_fraction 0.0313). A certified rank does not enlarge an effect.",
+    "that this replicates D12. It is the SAME claim, the SAME codeword, the SAME split (TRAIN) and the SAME 46 control directions, at a DIFFERENT layer. It is a layer generalisation, not a replication, and it is in-sample (the axis is fit on these 67 TRAIN domains).",
+    "that the dissociation is explained. The layer is now excluded as the explanation; WHY the two codewords differ remains UNEXPLAINED, and S-108's dose-normalised explanation was withdrawn by S-109 and must not be revived.",
+    "that this says anything about VALIDATION at L20. No basket-at-L20 validation arm exists.",
+    "that the p-value is 0.0213 unconditionally on having run stage 2. See pooling_question.the_honest_caveat: report the unconditional guarantee, and do not claim the conditional one."
+  ],
+  "must_not_be_said_if_null": [
+    "that the LAYER explains the button/basket dissociation. button-at-L18 (S-104) already excluded that, and no outcome of this read can restore it.",
+    "that D12 is withdrawn. D12 is a 46-control result at L18 on BOTH splits. This is TRAIN only, at L20.",
+    "that basket's axis is not causal at L18.",
+    "that the result is 'nearly significant' or that a few more controls would settle it. At 46 controls the floor is 0.0213 and the family is D12's; a non-certifying rank here is a non-certifying rank, and extending again is prohibited by name above.",
+    "that S-125 was wrong. S-125 reported rank 1 of 11 with an attainable floor of 0.0909 and said in its own words that it buys nothing until the family is extended. A rank 6 of 47 would make S-125 UNDERPOWERED, which is what it declared itself to be, not mistaken."
+  ],
+  "cost_and_footprint": {
+    "n_new_arms": 36,
+    "measured_wall_per_arm_at_L20_on_n_303": "~13 min, from consecutive start_ts in job 906001 (22:53:25 -> 23:06:22 -> 23:19:25 -> 23:32:33 -> 23:45:41 -> 23:58:57)",
+    "expected_wall_per_12_arm_allocation": "~2.6 h at the measured rate; --time=08:00:00 is requested as headroom, because the launcher's own header budgets ~29 min per 670-row readout arm and the rate is node-dependent",
+    "disk": "1.8 MB per arm directory (measured: du -sh csi1_basket_train_KO_SHUF12_20260916_162716_1143108), so ~65 MB for 36 arms. Free space on /home/sharifm at freeze time: 1.4 T on the filesystem, but the ENFORCED per-user cap is 200 GB and NFS reports EDQUOT ASYNCHRONOUSLY. Per S-124, every artifact written by this preregistration's read must be json.load-verified and byte-counted after writing; a zero-byte report that exited 0 is a failure mode this sprint has already suffered."
+  },
+  "read": "runargs/dcs_csi_pr004_read.txt -- frozen at the same moment as this file and BEFORE any of the 36 arms was submitted.",
+  "outputs": {
+    "primary": "reports/DCS_CSI_SUBSPACE_basket_train_L20_n46.json (NEW file; it must not overwrite reports/DCS_CSI_SUBSPACE_basket_train_L20.json, which is the frozen 10-control read of S-125)",
+    "rederivation": "reports/DCS_CSI_REDERIVE_basket_train_L20_n46.json",
+    "shuffled_only_secondary": "reports/DCS_CSI_SUBSPACE_basket_train_L20_shufonly.json"
+  }
+}
