@@ -12135,3 +12135,111 @@ PR-CSI-006's CELL 4 inherits the confound, because the swap artifact's recipient
 run_completeness: every finished run with an expect_n persisted its full row count
 blob 11d2c617   quota 197G of 200G   no PR-CSI-007 number read
 ```
+
+---
+
+# S-154 — S-152's care point is **discharged by the frozen read itself, with no amendment**; and PR-CSI-007's preflight now ASSERTS its verdicts instead of printing them — R11 MINOR-4 and the dead `EXPECT_BLOB` of MAJOR-4, both fixed and mutation-tested
+
+Two things had to be settled **before** PR-CSI-007 is read, and both are the kind that cannot honestly
+be settled afterwards.
+
+## 1. The short arms — the preregistration had already handled it
+
+S-152 recorded that two control arms carry 229 and 228 rows (the norm-match degeneracy guard refusing
+to fabricate a control) and warned that *"a gate that asserts `rows_written == 230` uniformly would
+either fail the family or, worse, be relaxed after seeing it fail."* Measured against the frozen read:
+
+```
+runargs/dcs_csi_pr007_read.txt:294   EXPECT_N, ALLOW_SHORT = 230, 4
+GATE (c)   short = [a for a in finished if rows[a] is None or rows[a] < EXPECT_N-ALLOW_SHORT]   # < 226
+analyser   scripts/dcs_csi_subspace_analyze.py:627
+           if m["n_rows"] != a.expect_n and (a.expect_n - m["n_rows"]) > a.allow_short: void.append(...)
+```
+
+**`--allow-short 4` is per arm**, and both short arms are inside it (shortfalls of 1 and 2 against a
+tolerance of 4; GATE (c) fires only below 226). Every analysis command in the file already carries
+`--expect-n 230 --allow-short 4`.
+
+**The read was frozen on 2026-09-20, before these arms existed, and it anticipated them.** So the
+correct action is the one that required no action: **the frozen read is NOT amended, and nothing was
+re-frozen after seeing a row count.** Recording this is the point — the alternative history, where I
+discover the mismatch at read time and widen a tolerance, is indistinguishable in the artifact from
+this one, and only the timestamp on this entry separates them.
+
+## 2. The preflight was a gate in name only — R11 MINOR-4, fixed
+
+R11 measured that `scripts/gates/dcs_csi_pr007_preflight.py` contained **no `assert`, no `sys.exit`
+and no failure list**: it printed `*** CIRCULAR -- STOP ***` and then exited 0, while every sibling
+(`dcs_csi_pr005_gate0.py:187`, `dcs_csi_pr006_gate0.py:311`) exits non-zero. Now every verdict is
+asserted, and the vacuous shapes are refused rather than reported as passes:
+
+* **NKEEP / domains / split** — `NKEEP == 230`, `23` domains, labels purely `validation`; zero rows or
+  zero domains exits as VACUOUS.
+* **Circularity** — the load-bearing verdict. `overlap` must be empty **and** `fit_population.split`
+  must be `train`; an **empty fit-domain list exits VACUOUS**, because "NOT CIRCULAR" would otherwise
+  print for the wrong reason. R11 noted section 2 is the more load-bearing vacuity than the section 4
+  the original reviewer named, and that is where the guard went.
+* **Swap basis** — zero shared keys exits VACUOUS (`"mismatches: 0"` over an empty set is the exact
+  shape of the gate that printed PASS on zero rows in S-134); mismatches and a missing donor key fail.
+* **Blob / worktree** — see below.
+
+## 3. `EXPECT_BLOB` is no longer dead prose — R11 MAJOR-4, fixed on the runnable side
+
+R11 measured that `EXPECT_BLOB` at `runargs/dcs_csi_pr007_read.txt:295` was assigned once and read by
+nothing, and that `grep -rn '11d2c617' scripts/ src/ slurm_scripts/ tests/` was empty — the PR-CSI-007
+code-identity VOID condition existed **only as prose I pasted into log entries.** The preflight now
+pins and checks it:
+
+```
+=== 5. BLOB / WORKTREE STATE FOR THE LAUNCH ===
+   score_behavior.py blob : 11d2c61747e9401e2d2cb8f4123dd1188674d61b
+   worktree porcelain     : ''  (empty == clean, required by PR-CSI-007)
+   EXPECT_BLOB            : 11d2c61747e9401e2d2cb8f4123dd1188674d61b
+```
+
+This does not close MAJOR-4 — the *read* still does not check it, and the 73-minute submit-to-start
+window R11 measured is unchanged — but the witness is now verifiable by running something rather than
+by trusting a paste.
+
+## 4. Current preflight state, all asserted
+
+```
+NKEEP = 230   distinct domains = 23   rows per domain = {10: 23}   split labels = {'validation': 23}
+axis: selected_layer=18 codeword='button'  fit_population.split='train' n_domains=67 (all 'train')
+INTERSECTION(fit domains, validation population) = 0   -> NOT CIRCULAR
+meta.held_out_validation_domains == this population? True (n=23)
+swap vs native bases: keys compared 53, mismatches 0, donor key present
+blob 11d2c617…  == EXPECT_BLOB    worktree porcelain ''    EXIT 0
+=== PREFLIGHT PASS -- every verdict above was asserted, not printed ===
+```
+
+Section 3 still reports the `--out` collision: the default output path is occupied by the committed
+**L20** read, so PR-CSI-007 must write elsewhere or overwrite a different experiment's result. That
+hazard is printed, not fixed, and stays on the list.
+
+## 5. Mutation table — a gate never seen to fail is not known to work
+
+Mutants written **beside** the original (S-147's lesson: mutants run from `/tmp` all failed for the
+same spurious reason, the corpus resolving relative to `__file__`), run, then deleted.
+
+| mutant | change | result |
+|---|---|---|
+| `blob` | `EXPECT_BLOB` → all zeros | **KILLED** — "BLOB DRIFT … This is the VOID condition" |
+| `circular` | `set(fitd) & set(doms)` → `set(fitd) \| set(doms)[:3]` | **KILLED** — "CIRCULAR: 3 fit domain(s) …" |
+| `nkeep` | expected NKEEP 230 → 231 | **KILLED** |
+| `vacuous_k` | `shared` → `[]` | **KILLED** — "VACUOUS: … share ZERO keys" |
+
+Original exits 0; no mutant files left behind.
+
+**The mutation caught a defect in my own fix, which is why it was worth running.** The `nkeep` mutant
+printed `NKEEP is 230, expected 230` — self-contradictory, because the message hardcoded the literal
+`230` rather than interpolating the threshold it was comparing against. A gate whose failure message
+lies about what it wanted is worse than one that stays silent. Thresholds are now named
+(`EXPECT_NKEEP, EXPECT_DOMS = 230, 23`) and interpolated; re-mutated, it reads `NKEEP is 230,
+expected 231`.
+
+```
+914476 COMPLETED 11/11 | 914477 R n-301, 9 of 12 arms | 914478/9 PD | 31 validation arms on disk
+run_completeness: every finished run with an expect_n persisted its full row count
+blob 11d2c617   quota 197G of 200G   NO PR-CSI-007 NUMBER READ
+```
