@@ -1103,6 +1103,50 @@ def _fix_bank(cw, cc):
     return rows
 
 
+def _atomic_json_dump(obj, path, **kw):
+    """Atomic, VERIFIED JSON write. Fix for sprint entry S-124.
+
+    Replaces `json.dump(x, open(p, "w"), ...)`, whose handle is never closed: `open` truncates the
+    destination immediately and the buffered bytes are flushed only in the GC finaliser, where
+    CPython PRINTS and then SWALLOWS an EDQUOT. A full quota therefore produced a 0-byte file at a
+    real artifact name, with "wrote <path>" on stdout and exit status 0 -- indistinguishable from a
+    finished report. Temp file + fsync + size check + re-parse + os.replace makes the write ATOMIC
+    as well as checked: a half-written file never appears at the real name, and whatever was there
+    before survives a failure. On any error this RAISES, naming the path and the byte count.
+    """
+    import tempfile                        # local: keeps this helper drop-in and import-order-free
+    d = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp = tempfile.mkstemp(dir=d, prefix=".tmp_atomic_", suffix=".json")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(obj, fh, **kw)
+            fh.flush()
+            os.fsync(fh.fileno())          # EDQUOT surfaces HERE, not in a GC finaliser
+        n = os.path.getsize(tmp)
+        if n == 0:
+            raise OSError("temp file is 0 bytes after a flush+fsync that reported success")
+        with open(tmp, "r", encoding="utf-8") as fh:
+            json.load(fh)                  # a truncated write does not re-parse
+        try:
+            mode = os.stat(path).st_mode & 0o7777   # keep the artifact's existing permissions:
+        except OSError:                             # mkstemp makes the temp file 0600 and
+            mode = 0o644                            # os.replace would carry that onto the report
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)              # atomic within the directory
+    except Exception as e:
+        try:
+            n = os.path.getsize(tmp)
+        except OSError:
+            n = -1
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise OSError("atomic_json_dump FAILED for %s -- %d bytes reached the temp file; the "
+                      "destination is UNCHANGED (never truncated). Cause: %r" % (path, n, e)) from e
+    return os.path.getsize(path)
+
+
 def _fix_write(root, seed=20260906, n_perm=FIX_NPERM, verbose=False):
     """Materialise banks, rep caches, run metadata, results.jsonl and a producer-style JSON.
 
@@ -1153,16 +1197,15 @@ def _fix_write(root, seed=20260906, n_perm=FIX_NPERM, verbose=False):
                     for j, L in enumerate(FIX_LAYERS):
                         row[f"hnorm|L{L}"] = float(np.linalg.norm(v[j]))
                     fh.write(json.dumps(row) + "\n")
-            json.dump(dict(schema="DONE/1", status="ok"), open(os.path.join(d, "DONE.json"), "w"))
-            json.dump(dict(
+            _atomic_json_dump(dict(schema="DONE/1", status="ok"), os.path.join(d, "DONE.json"))
+            _atomic_json_dump(dict(
                 schema="BOOMBNESS_META/1", run_id=os.path.basename(d),
                 bank_path=os.path.abspath(bp), bank_file_sha16=sha16_of_file(bp),
                 bank_n_rows=len(bank), layers=list(FIX_LAYERS),
                 model="synthetic/fixture-model", dtype="torch.bfloat16", seed=20260905,
                 attn_implementation="sdpa", tokenizer_files_sha16="fixture000tok",
                 layer_convention="block_L == hidden_states[L+1]",
-                model_revision_resolved_commit="fixturecommit", hidden_size=FIX_H, num_layers=32),
-                open(os.path.join(d, "metadata.json"), "w"), indent=1)
+                model_revision_resolved_commit="fixturecommit", hidden_size=FIX_H, num_layers=32), os.path.join(d, "metadata.json"), indent=1)
 
     # ---- build the producer-style JSON with this file's own re-implementation
     def vecrows(cw, classes, name):
@@ -1261,7 +1304,7 @@ def _fix_write(root, seed=20260906, n_perm=FIX_NPERM, verbose=False):
                             above_null=bool(above), fit_capable=bool(fit_capable),
                             null_control_passed=bool(p0["p_one_sided"] > ALPHA)))
     out = os.path.join(root, "producer.json")
-    json.dump(res, open(out, "w"), indent=1, default=str)
+    _atomic_json_dump(res, out, indent=1, default=str)
     if verbose:
         print(f"[fixture] null p={p0['p_one_sided']:.3f} acc={obs0['mean_acc']:.4f} | "
               f"primary p={pp['p_one_sided']:.3f} acc={prim['mean_acc']:.4f} | verdict {cat}")
@@ -1363,7 +1406,7 @@ def _rebase_fixture(root):
             mp = os.path.join(d, "metadata.json")
             m = json.load(open(mp))
             m["bank_path"] = bp
-            json.dump(m, open(mp, "w"), indent=1)
+            _atomic_json_dump(m, mp, indent=1)
     _save_res(root, res)
 
 
@@ -1404,7 +1447,7 @@ def m3_unbalance_exclusion(root):
     d = _run_dir(root, "button", "knife")
     m = json.load(open(os.path.join(d, "metadata.json")))
     m["bank_file_sha16"] = sha16_of_file(bp)
-    json.dump(m, open(os.path.join(d, "metadata.json"), "w"), indent=1)
+    _atomic_json_dump(m, os.path.join(d, "metadata.json"), indent=1)
     banks, pools = _fix_pools(root)
     res = _load_res(root)
     res["provenance"]["button_knife"]["bank_sha16"] = m["bank_file_sha16"]
@@ -1427,7 +1470,7 @@ def m4_wrong_bank_sha(root):
     p = os.path.join(d, "metadata.json")
     m = json.load(open(p))
     m["bank_file_sha16"] = "deadbeefdeadbeef"
-    json.dump(m, open(p, "w"), indent=1)
+    _atomic_json_dump(m, p, indent=1)
 
 
 def m5_domain_in_own_fold(root):
@@ -1484,7 +1527,7 @@ def m10_config_drift(root):
     p = os.path.join(d, "metadata.json")
     m = json.load(open(p))
     m["layers"] = [6, 7, 8, 9, 10, 11, 12, 13]
-    json.dump(m, open(p, "w"), indent=1)
+    _atomic_json_dump(m, p, indent=1)
 
 
 def m11_null_picks_not_from_B(root):

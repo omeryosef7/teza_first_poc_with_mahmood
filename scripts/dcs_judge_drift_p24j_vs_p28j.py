@@ -73,6 +73,50 @@ def _t_sf_local(t, df):
     return 0.5 * ib if t > 0 else 1.0 - 0.5 * ib
 
 
+def _atomic_json_dump(obj, path, **kw):
+    """Atomic, VERIFIED JSON write. Fix for sprint entry S-124.
+
+    Replaces `json.dump(x, open(p, "w"), ...)`, whose handle is never closed: `open` truncates the
+    destination immediately and the buffered bytes are flushed only in the GC finaliser, where
+    CPython PRINTS and then SWALLOWS an EDQUOT. A full quota therefore produced a 0-byte file at a
+    real artifact name, with "wrote <path>" on stdout and exit status 0 -- indistinguishable from a
+    finished report. Temp file + fsync + size check + re-parse + os.replace makes the write ATOMIC
+    as well as checked: a half-written file never appears at the real name, and whatever was there
+    before survives a failure. On any error this RAISES, naming the path and the byte count.
+    """
+    import tempfile                        # local: keeps this helper drop-in and import-order-free
+    d = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp = tempfile.mkstemp(dir=d, prefix=".tmp_atomic_", suffix=".json")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(obj, fh, **kw)
+            fh.flush()
+            os.fsync(fh.fileno())          # EDQUOT surfaces HERE, not in a GC finaliser
+        n = os.path.getsize(tmp)
+        if n == 0:
+            raise OSError("temp file is 0 bytes after a flush+fsync that reported success")
+        with open(tmp, "r", encoding="utf-8") as fh:
+            json.load(fh)                  # a truncated write does not re-parse
+        try:
+            mode = os.stat(path).st_mode & 0o7777   # keep the artifact's existing permissions:
+        except OSError:                             # mkstemp makes the temp file 0600 and
+            mode = 0o644                            # os.replace would carry that onto the report
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)              # atomic within the directory
+    except Exception as e:
+        try:
+            n = os.path.getsize(tmp)
+        except OSError:
+            n = -1
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise OSError("atomic_json_dump FAILED for %s -- %d bytes reached the temp file; the "
+                      "destination is UNCHANGED (never truncated). Cause: %r" % (path, n, e)) from e
+    return os.path.getsize(path)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--arms", nargs="+",
@@ -174,10 +218,9 @@ def main():
               f"the primary by (5/8)*{d_asr:+.5f} = {5/8*d_asr:+.5f} on a -0.0391 effect.")
 
     os.makedirs(os.path.join(REPO, os.path.dirname(a.out)), exist_ok=True)
-    json.dump({"per_arm": per_arm, "pooled": {**tot, "net": net, "d_asr": d_asr,
+    _atomic_json_dump({"per_arm": per_arm, "pooled": {**tot, "net": net, "d_asr": d_asr,
                "binom_p": p, "systematic": systematic},
-               "arm_level": arm_level, "verdict": verdict},
-              open(os.path.join(REPO, a.out), "w"), indent=1)
+               "arm_level": arm_level, "verdict": verdict}, os.path.join(REPO, a.out), indent=1)
     print(f"\n-> {a.out}")
 
 

@@ -104,6 +104,50 @@ def holm(pvals):
     return adj
 
 
+def _atomic_json_dump(obj, path, **kw):
+    """Atomic, VERIFIED JSON write. Fix for sprint entry S-124.
+
+    Replaces `json.dump(x, open(p, "w"), ...)`, whose handle is never closed: `open` truncates the
+    destination immediately and the buffered bytes are flushed only in the GC finaliser, where
+    CPython PRINTS and then SWALLOWS an EDQUOT. A full quota therefore produced a 0-byte file at a
+    real artifact name, with "wrote <path>" on stdout and exit status 0 -- indistinguishable from a
+    finished report. Temp file + fsync + size check + re-parse + os.replace makes the write ATOMIC
+    as well as checked: a half-written file never appears at the real name, and whatever was there
+    before survives a failure. On any error this RAISES, naming the path and the byte count.
+    """
+    import tempfile                        # local: keeps this helper drop-in and import-order-free
+    d = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp = tempfile.mkstemp(dir=d, prefix=".tmp_atomic_", suffix=".json")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(obj, fh, **kw)
+            fh.flush()
+            os.fsync(fh.fileno())          # EDQUOT surfaces HERE, not in a GC finaliser
+        n = os.path.getsize(tmp)
+        if n == 0:
+            raise OSError("temp file is 0 bytes after a flush+fsync that reported success")
+        with open(tmp, "r", encoding="utf-8") as fh:
+            json.load(fh)                  # a truncated write does not re-parse
+        try:
+            mode = os.stat(path).st_mode & 0o7777   # keep the artifact's existing permissions:
+        except OSError:                             # mkstemp makes the temp file 0600 and
+            mode = 0o644                            # os.replace would carry that onto the report
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)              # atomic within the directory
+    except Exception as e:
+        try:
+            n = os.path.getsize(tmp)
+        except OSError:
+            n = -1
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise OSError("atomic_json_dump FAILED for %s -- %d bytes reached the temp file; the "
+                      "destination is UNCHANGED (never truncated). Cause: %r" % (path, n, e)) from e
+    return os.path.getsize(path)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default="outputs/boombness/score_behavior")
@@ -240,7 +284,7 @@ def main():
                     key=lambda t: t[2]) if adj_i else None)
 
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
-    json.dump(res, open(a.out, "w"), indent=1, default=str)
+    _atomic_json_dump(res, a.out, indent=1, default=str)
     print(f"[write] {a.out}\n")
     print(f"{'K':>4} {'new':>4} {'mean_delta':>11} {'%ofK8':>7} {'neg/dom':>9} {'p':>10} "
           f"{'holm':>8} {'opt_mass':>9}")

@@ -2152,6 +2152,50 @@ def _live_record_all(**kw) -> Dict[str, Any]:
     return r
 
 
+def _atomic_json_dump(obj, path, **kw):
+    """Atomic, VERIFIED JSON write. Fix for sprint entry S-124.
+
+    Replaces `json.dump(x, open(p, "w"), ...)`, whose handle is never closed: `open` truncates the
+    destination immediately and the buffered bytes are flushed only in the GC finaliser, where
+    CPython PRINTS and then SWALLOWS an EDQUOT. A full quota therefore produced a 0-byte file at a
+    real artifact name, with "wrote <path>" on stdout and exit status 0 -- indistinguishable from a
+    finished report. Temp file + fsync + size check + re-parse + os.replace makes the write ATOMIC
+    as well as checked: a half-written file never appears at the real name, and whatever was there
+    before survives a failure. On any error this RAISES, naming the path and the byte count.
+    """
+    import tempfile                        # local: keeps this helper drop-in and import-order-free
+    d = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp = tempfile.mkstemp(dir=d, prefix=".tmp_atomic_", suffix=".json")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(obj, fh, **kw)
+            fh.flush()
+            os.fsync(fh.fileno())          # EDQUOT surfaces HERE, not in a GC finaliser
+        n = os.path.getsize(tmp)
+        if n == 0:
+            raise OSError("temp file is 0 bytes after a flush+fsync that reported success")
+        with open(tmp, "r", encoding="utf-8") as fh:
+            json.load(fh)                  # a truncated write does not re-parse
+        try:
+            mode = os.stat(path).st_mode & 0o7777   # keep the artifact's existing permissions:
+        except OSError:                             # mkstemp makes the temp file 0600 and
+            mode = 0o644                            # os.replace would carry that onto the report
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)              # atomic within the directory
+    except Exception as e:
+        try:
+            n = os.path.getsize(tmp)
+        except OSError:
+            n = -1
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise OSError("atomic_json_dump FAILED for %s -- %d bytes reached the temp file; the "
+                      "destination is UNCHANGED (never truncated). Cause: %r" % (path, n, e)) from e
+    return os.path.getsize(path)
+
+
 def selftest() -> int:
     ck = Checks()
     pr = load_prereg(PREREG_DEFAULT, for_extraction=False)
@@ -2421,7 +2465,7 @@ def selftest() -> int:
         ck.add("order_enforced", "stage h2 refuses while q1/smoke/h1 have no DONE.json", ok, 1, "")
         for s in ("q1", "smoke", "h1"):
             os.makedirs(os.path.join(td, "%s_x" % s))
-            json.dump({"status": "ok"}, open(os.path.join(td, "%s_x" % s, "DONE.json"), "w"))
+            _atomic_json_dump({"status": "ok"}, os.path.join(td, "%s_x" % s, "DONE.json"))
         ck.add("order_satisfied", "with all three complete, stage h2 proceeds",
                assert_stage_order(td, "h2", "test")["stage"] == "h2", 1, "")
 
@@ -2430,7 +2474,7 @@ def selftest() -> int:
     with tempfile.TemporaryDirectory() as td:
         for s in ("q1", "smoke"):
             os.makedirs(os.path.join(td, "%s_x" % s))
-            json.dump({"status": "ok"}, open(os.path.join(td, "%s_x" % s, "DONE.json"), "w"))
+            _atomic_json_dump({"status": "ok"}, os.path.join(td, "%s_x" % s, "DONE.json"))
         try:
             assert_stage_order(td, "h2", "test")
             ok = False
@@ -2555,8 +2599,7 @@ def selftest() -> int:
         # resume
         sd = os.path.join(td, "man")
         os.makedirs(sd)
-        json.dump({"arms": {"a": {"status": "done", "run_dir": os.path.join(td, "nope")}}},
-                  open(os.path.join(sd, MANIFEST_FILE), "w"))
+        _atomic_json_dump({"arms": {"a": {"status": "done", "run_dir": os.path.join(td, "nope")}}}, os.path.join(sd, MANIFEST_FILE))
         m = manifest_load(sd, td)
         ck.add("resume_verifies", "a 'done' arm with no DONE.json on disk is reset to pending",
                m["arms"]["a"]["status"] == "pending", 1, m["arms"]["a"]["_reset_reason"][:60])
@@ -2846,8 +2889,7 @@ def mutate() -> int:
             with _tf.TemporaryDirectory() as td:
                 for s in ("q1", "smoke"):
                     os.makedirs(os.path.join(td, "%s_x" % s))
-                    json.dump({"status": "ok"},
-                              open(os.path.join(td, "%s_x" % s, "DONE.json"), "w"))
+                    _atomic_json_dump({"status": "ok"}, os.path.join(td, "%s_x" % s, "DONE.json"))
                 assert_stage_order(td, "h2", "test", pr=pr, payload_keys=payload_keys)
         finally:
             globals()["constructibility"] = _real
@@ -3008,12 +3050,11 @@ def _fake_run_dir(td: str, n_rows: int, records: Sequence[Dict[str, Any]],
     exercised end to end rather than a re-typed copy of its arithmetic."""
     d = os.path.join(td, "run")
     os.makedirs(d, exist_ok=True)
-    json.dump({"status": "ok", "rows_written": n_rows}, open(os.path.join(d, "DONE.json"), "w"))
-    json.dump({"option_mass": {}}, open(os.path.join(d, "summary.json"), "w"))
-    json.dump({"model": "stub"}, open(os.path.join(d, "RUNMETA.json"), "w"))
-    json.dump({"realized_dose": ({"v_bomb_specific|L9|alpha1": {"cell_residual_frac_removed": 0.09}}
-                                 if realized_dose else {})},
-              open(os.path.join(d, "metadata.json"), "w"))
+    _atomic_json_dump({"status": "ok", "rows_written": n_rows}, os.path.join(d, "DONE.json"))
+    _atomic_json_dump({"option_mass": {}}, os.path.join(d, "summary.json"))
+    _atomic_json_dump({"model": "stub"}, os.path.join(d, "RUNMETA.json"))
+    _atomic_json_dump({"realized_dose": ({"v_bomb_specific|L9|alpha1": {"cell_residual_frac_removed": 0.09}}
+                                 if realized_dose else {})}, os.path.join(d, "metadata.json"))
     with open(os.path.join(d, "results.jsonl"), "w") as fh:
         for i in range(n_rows):
             fh.write(json.dumps({"prompt_id": "p%d" % i, "domain": "d", "semantic_logodds": 0.0,
@@ -3023,7 +3064,7 @@ def _fake_run_dir(td: str, n_rows: int, records: Sequence[Dict[str, Any]],
         for r in records:
             fh.write(json.dumps(r) + "\n")
     if arm_manifest:
-        json.dump({"arm": "stub"}, open(os.path.join(d, CONTRACT_ARM), "w"))
+        _atomic_json_dump({"arm": "stub"}, os.path.join(d, CONTRACT_ARM))
     return d
 
 
@@ -3051,6 +3092,47 @@ def _swap(argv: List[str], flag: str, value: str) -> List[str]:
     out = list(argv)
     out[out.index(flag) + 1] = value
     return out
+
+
+def _atomic_text_write(text, path, encoding="utf-8"):
+    """Atomic, VERIFIED text write. Fix for sprint entry S-124.
+
+    `open(p, "w").write(s)` never closes the handle: `open` truncates the destination immediately
+    and the buffered bytes are flushed only in the GC finaliser, where CPython PRINTS and then
+    SWALLOWS an EDQUOT. A full quota therefore left a 0-byte file at a real artifact name with an
+    exit status of 0. Temp file + fsync + size check + os.replace makes the write ATOMIC as well as
+    checked: a half-written file never appears at the real name, and whatever was there before
+    survives a failure. On any error this RAISES, naming the path and the byte count.
+    """
+    import tempfile                        # local: keeps this helper drop-in and import-order-free
+    d = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp = tempfile.mkstemp(dir=d, prefix=".tmp_atomic_")
+    try:
+        with os.fdopen(fd, "w", encoding=encoding) as fh:
+            fh.write(text)
+            fh.flush()
+            os.fsync(fh.fileno())          # EDQUOT surfaces HERE, not in a GC finaliser
+        n = os.path.getsize(tmp)
+        if n == 0 and text:
+            raise OSError("temp file is 0 bytes after a flush+fsync that reported success")
+        try:
+            mode = os.stat(path).st_mode & 0o7777   # keep the artifact's existing permissions:
+        except OSError:                             # mkstemp makes the temp file 0600 and
+            mode = 0o644                            # os.replace would carry that onto the report
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)              # atomic within the directory
+    except Exception as e:
+        try:
+            n = os.path.getsize(tmp)
+        except OSError:
+            n = -1
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise OSError("atomic_text_write FAILED for %s -- %d bytes reached the temp file; the "
+                      "destination is UNCHANGED (never truncated). Cause: %r" % (path, n, e)) from e
+    return os.path.getsize(path)
 
 
 # ============================================================================================
@@ -3128,8 +3210,8 @@ def main() -> int:
             txt = json.dumps(p, indent=2, default=str)
             AN.assert_sayable(txt, AN.forbidden_from_prereg(pr))
             if a.out:
-                open(a.out, "w").write(txt)
-                print("wrote %s" % a.out)
+                _nb = _atomic_text_write(txt, a.out)
+                print("wrote %s (%d bytes, verified)" % (a.out, _nb))
             else:
                 print(txt)
             return 0

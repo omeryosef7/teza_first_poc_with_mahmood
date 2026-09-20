@@ -47,6 +47,50 @@ def arm(tag_prefix, name, expect_n, split, assign, allow_short):
     return kv, meta
 
 
+def _atomic_json_dump(obj, path, **kw):
+    """Atomic, VERIFIED JSON write. Fix for sprint entry S-124.
+
+    Replaces `json.dump(x, open(p, "w"), ...)`, whose handle is never closed: `open` truncates the
+    destination immediately and the buffered bytes are flushed only in the GC finaliser, where
+    CPython PRINTS and then SWALLOWS an EDQUOT. A full quota therefore produced a 0-byte file at a
+    real artifact name, with "wrote <path>" on stdout and exit status 0 -- indistinguishable from a
+    finished report. Temp file + fsync + size check + re-parse + os.replace makes the write ATOMIC
+    as well as checked: a half-written file never appears at the real name, and whatever was there
+    before survives a failure. On any error this RAISES, naming the path and the byte count.
+    """
+    import tempfile                        # local: keeps this helper drop-in and import-order-free
+    d = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp = tempfile.mkstemp(dir=d, prefix=".tmp_atomic_", suffix=".json")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(obj, fh, **kw)
+            fh.flush()
+            os.fsync(fh.fileno())          # EDQUOT surfaces HERE, not in a GC finaliser
+        n = os.path.getsize(tmp)
+        if n == 0:
+            raise OSError("temp file is 0 bytes after a flush+fsync that reported success")
+        with open(tmp, "r", encoding="utf-8") as fh:
+            json.load(fh)                  # a truncated write does not re-parse
+        try:
+            mode = os.stat(path).st_mode & 0o7777   # keep the artifact's existing permissions:
+        except OSError:                             # mkstemp makes the temp file 0600 and
+            mode = 0o644                            # os.replace would carry that onto the report
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)              # atomic within the directory
+    except Exception as e:
+        try:
+            n = os.path.getsize(tmp)
+        except OSError:
+            n = -1
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise OSError("atomic_json_dump FAILED for %s -- %d bytes reached the temp file; the "
+                      "destination is UNCHANGED (never truncated). Cause: %r" % (path, n, e)) from e
+    return os.path.getsize(path)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--codeword", default="button")
@@ -143,7 +187,7 @@ def main() -> int:
             "slope": round(sl, 8), "r2": round(1 - sum((r - sl * k) ** 2 for k, r in zip(ks, rec)) / syy, 5),
             "slope_times_28": round(sl * 28, 6), "ratio_to_KO_FULL": round(sl * 28 / full, 4)}
     outp = a.out or os.path.join(REPO, "reports/DCS_CSI_POSITION_MAP_%s_%s.json" % (a.codeword, a.split))
-    json.dump(out, open(outp, "w"), indent=1)
+    _atomic_json_dump(out, outp, indent=1)
     print("arms: %d  keys: %d  domains: %d  KO_FULL=%+.5f" % (len(have), len(common), len(doms), full))
     for k, v in sorted(sp.items(), key=lambda kv: -kv[1]["recovery"])[:6]:
         print("  %-8s %+.5f  %5.1f%%  %d/%d" % (k, v["recovery"], 100 * v["frac_of_full"], v["n_pos"], v["n_neg"]))

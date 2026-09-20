@@ -21,7 +21,7 @@ It reports the candidate's rank among the controls, which is the statistic the v
 plus the per-family ranks (random-only, shuffled-only) that review R5 showed are the binding ones.
 """
 from __future__ import annotations
-import argparse, glob, itertools, json, math, os, random, re, sys
+import argparse, glob, itertools, json, math, os, random, re, sys, tempfile
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SB = os.path.join(REPO, "outputs", "boombness", "score_behavior")
@@ -332,9 +332,67 @@ def main() -> int:
                       "instrument_capable": instrument_capable,
                       "candidate_minus_%s" % ref_tag: cand, "ranks": ranks}, indent=1))
     if a.out:
-        json.dump(out, open(a.out, "w"), indent=1)
-        print("wrote", os.path.relpath(a.out, REPO))
+        _nbytes = _atomic_json_dump(out, a.out, indent=1)
+        print("wrote", os.path.relpath(a.out, REPO), "(%d bytes, re-parsed)" % _nbytes)
     return 0
+
+
+
+def _atomic_json_dump(obj, path, **kw):
+    """Write `obj` to `path` as JSON, ATOMICALLY and VERIFIED. Fix for sprint entry S-124.
+
+    THE BUG THIS REPLACES. `json.dump(out, open(path, "w"), indent=1)` never closes the handle.
+    `open` truncates the destination immediately; the buffered bytes are flushed only when the
+    handle is garbage-collected, and an error raised inside a file object's finaliser -- EDQUOT
+    when the disk quota is full -- is PRINTED by CPython and then SWALLOWED. The script went on to
+    print "wrote <path>" and exit 0, leaving a 0-byte file at a real preregistered artifact name,
+    indistinguishable from a finished report. That happened on 2026-09-20 to both PR-CSI-002
+    reports. See S-124.
+
+    THE FIX, and why it is temp-file-then-rename rather than merely a with-block. A with-block
+    would surface the error, but the destination would ALREADY be truncated: the artifact name
+    would hold 0 bytes and the command would fail. Writing a sibling temp file, fsync-ing it,
+    checking its size is non-zero, re-parsing it with json.load, and only then os.replace()-ing it
+    into place makes the write ATOMIC as well as checked -- a half-written report can never appear
+    at the real name at all, and the previous contents survive a failure. That is the stronger
+    property and it costs nothing.
+
+    DUPLICATED ON PURPOSE -- DO NOT REFACTOR THIS INTO A SHARED MODULE. dcs_csi_subspace_analyze.py
+    and dcs_csi_rederive_subspace.py are two INDEPENDENT re-derivation paths that share no analysis
+    code (DCS-CSI-085), and the sprint's agreement-is-evidence argument rests on that independence.
+    Importing one helper from the other would create the first import edge between them. Fifteen
+    duplicated lines is the correct price here.
+    """
+    d = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp = tempfile.mkstemp(dir=d, prefix=".tmp_atomic_", suffix=".json")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(obj, fh, **kw)
+            fh.flush()
+            os.fsync(fh.fileno())          # EDQUOT surfaces HERE, not in a GC finaliser
+        n = os.path.getsize(tmp)
+        if n == 0:
+            raise OSError("temp file is 0 bytes after a flush+fsync that reported success")
+        with open(tmp, "r", encoding="utf-8") as fh:
+            json.load(fh)                  # a truncated write does not re-parse
+        try:
+            mode = os.stat(path).st_mode & 0o7777   # keep the artifact's existing permissions:
+        except OSError:                             # mkstemp makes the temp file 0600 and
+            mode = 0o644                            # os.replace would carry that onto the report
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)              # atomic within the directory
+    except Exception as e:
+        try:
+            n = os.path.getsize(tmp)
+        except OSError:
+            n = -1
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise OSError("atomic_json_dump FAILED for %s -- %d bytes reached the temp file; the "
+                      "destination is UNCHANGED (never truncated). Cause: %r" % (path, n, e)) from e
+    return os.path.getsize(path)
 
 
 if __name__ == "__main__":

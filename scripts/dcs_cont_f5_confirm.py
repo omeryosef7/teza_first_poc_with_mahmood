@@ -21,6 +21,50 @@ def _load(mod, path):
     s = importlib.util.spec_from_file_location(mod, os.path.join(REPO, path))
     m = importlib.util.module_from_spec(s); s.loader.exec_module(m); return m
 
+def _atomic_json_dump(obj, path, **kw):
+    """Atomic, VERIFIED JSON write. Fix for sprint entry S-124.
+
+    Replaces `json.dump(x, open(p, "w"), ...)`, whose handle is never closed: `open` truncates the
+    destination immediately and the buffered bytes are flushed only in the GC finaliser, where
+    CPython PRINTS and then SWALLOWS an EDQUOT. A full quota therefore produced a 0-byte file at a
+    real artifact name, with "wrote <path>" on stdout and exit status 0 -- indistinguishable from a
+    finished report. Temp file + fsync + size check + re-parse + os.replace makes the write ATOMIC
+    as well as checked: a half-written file never appears at the real name, and whatever was there
+    before survives a failure. On any error this RAISES, naming the path and the byte count.
+    """
+    import tempfile                        # local: keeps this helper drop-in and import-order-free
+    d = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp = tempfile.mkstemp(dir=d, prefix=".tmp_atomic_", suffix=".json")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(obj, fh, **kw)
+            fh.flush()
+            os.fsync(fh.fileno())          # EDQUOT surfaces HERE, not in a GC finaliser
+        n = os.path.getsize(tmp)
+        if n == 0:
+            raise OSError("temp file is 0 bytes after a flush+fsync that reported success")
+        with open(tmp, "r", encoding="utf-8") as fh:
+            json.load(fh)                  # a truncated write does not re-parse
+        try:
+            mode = os.stat(path).st_mode & 0o7777   # keep the artifact's existing permissions:
+        except OSError:                             # mkstemp makes the temp file 0600 and
+            mode = 0o644                            # os.replace would carry that onto the report
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)              # atomic within the directory
+    except Exception as e:
+        try:
+            n = os.path.getsize(tmp)
+        except OSError:
+            n = -1
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise OSError("atomic_json_dump FAILED for %s -- %d bytes reached the temp file; the "
+                      "destination is UNCHANGED (never truncated). Cause: %r" % (path, n, e)) from e
+    return os.path.getsize(path)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default=os.path.join(REPO, "configs/dcs_cont_dr072_f5_confirmation.json"))
@@ -174,7 +218,7 @@ def main() -> int:
         print("   - %s" % s)
 
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
-    json.dump({"config": os.path.basename(a.config), "config_id": cfg["id"], "rho_test": rho,
+    _atomic_json_dump({"config": os.path.basename(a.config), "config_id": cfg["id"], "rho_test": rho,
                "rho_comparator": rho_comp, "f5_beats_comparator": beats, "p": p, "n_perm": nperm,
                "per_domain_rho": per, "frac_domains_positive": frac_pos,
                "n_fit_domains": len(df), "n_fit_slots": len(yf),
@@ -182,8 +226,7 @@ def main() -> int:
                "fit_corpus": pv["corpus"], "test_corpus": a.test_corpus, "config_sha16": cfg_sha,
                "criteria": {"rho_gt_0": ok_sign, "p_lt_0.05": ok_p, "frac_ge_0.60": ok_frac},
                "verdict": verdict,
-               "things_that_must_not_be_said": cfg["things_that_must_not_be_said"]},
-              open(a.out, "w"), indent=1)
+               "things_that_must_not_be_said": cfg["things_that_must_not_be_said"]}, a.out, indent=1)
     print("\n  wrote %s" % a.out)
     return 0
 

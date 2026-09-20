@@ -74,12 +74,53 @@ def build(run: str) -> tuple[str, str]:
     return tag, " ".join(f)
 
 
+def _atomic_text_write(text, path, encoding="utf-8"):
+    """Atomic, VERIFIED text write. Fix for sprint entry S-124.
+
+    `open(p, "w").write(s)` never closes the handle: `open` truncates the destination immediately
+    and the buffered bytes are flushed only in the GC finaliser, where CPython PRINTS and then
+    SWALLOWS an EDQUOT. A full quota therefore left a 0-byte file at a real artifact name with an
+    exit status of 0. Temp file + fsync + size check + os.replace makes the write ATOMIC as well as
+    checked: a half-written file never appears at the real name, and whatever was there before
+    survives a failure. On any error this RAISES, naming the path and the byte count.
+    """
+    import tempfile                        # local: keeps this helper drop-in and import-order-free
+    d = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp = tempfile.mkstemp(dir=d, prefix=".tmp_atomic_")
+    try:
+        with os.fdopen(fd, "w", encoding=encoding) as fh:
+            fh.write(text)
+            fh.flush()
+            os.fsync(fh.fileno())          # EDQUOT surfaces HERE, not in a GC finaliser
+        n = os.path.getsize(tmp)
+        if n == 0 and text:
+            raise OSError("temp file is 0 bytes after a flush+fsync that reported success")
+        try:
+            mode = os.stat(path).st_mode & 0o7777   # keep the artifact's existing permissions:
+        except OSError:                             # mkstemp makes the temp file 0600 and
+            mode = 0o644                            # os.replace would carry that onto the report
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)              # atomic within the directory
+    except Exception as e:
+        try:
+            n = os.path.getsize(tmp)
+        except OSError:
+            n = -1
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise OSError("atomic_text_write FAILED for %s -- %d bytes reached the temp file; the "
+                      "destination is UNCHANGED (never truncated). Cause: %r" % (path, n, e)) from e
+    return os.path.getsize(path)
+
+
 def main() -> int:
     os.makedirs(OUT, exist_ok=True)
     for pop, runs in RUNS.items():
         for arm, run in zip(("A", "C"), runs):
             tag, line = build(run)
-            open(os.path.join(OUT, tag + ".txt"), "w", encoding="utf-8").write(line + "\n")
+            _atomic_text_write(line + "\n", os.path.join(OUT, tag + ".txt"))
             print(f"  {pop:13s} {arm}  {tag}")
     print(f"[k640] {2 * len(RUNS)} argsfiles written to {OUT}")
     return 0

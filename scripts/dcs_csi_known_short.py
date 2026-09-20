@@ -73,6 +73,47 @@ def _domains_for(run_dir, prompt_ids):
                 doms.append(r.get("domain"))
     return doms
 
+def _atomic_text_write(text, path, encoding="utf-8"):
+    """Atomic, VERIFIED text write. Fix for sprint entry S-124.
+
+    `open(p, "w").write(s)` never closes the handle: `open` truncates the destination immediately
+    and the buffered bytes are flushed only in the GC finaliser, where CPython PRINTS and then
+    SWALLOWS an EDQUOT. A full quota therefore left a 0-byte file at a real artifact name with an
+    exit status of 0. Temp file + fsync + size check + os.replace makes the write ATOMIC as well as
+    checked: a half-written file never appears at the real name, and whatever was there before
+    survives a failure. On any error this RAISES, naming the path and the byte count.
+    """
+    import tempfile                        # local: keeps this helper drop-in and import-order-free
+    d = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp = tempfile.mkstemp(dir=d, prefix=".tmp_atomic_")
+    try:
+        with os.fdopen(fd, "w", encoding=encoding) as fh:
+            fh.write(text)
+            fh.flush()
+            os.fsync(fh.fileno())          # EDQUOT surfaces HERE, not in a GC finaliser
+        n = os.path.getsize(tmp)
+        if n == 0 and text:
+            raise OSError("temp file is 0 bytes after a flush+fsync that reported success")
+        try:
+            mode = os.stat(path).st_mode & 0o7777   # keep the artifact's existing permissions:
+        except OSError:                             # mkstemp makes the temp file 0600 and
+            mode = 0o644                            # os.replace would carry that onto the report
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)              # atomic within the directory
+    except Exception as e:
+        try:
+            n = os.path.getsize(tmp)
+        except OSError:
+            n = -1
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise OSError("atomic_text_write FAILED for %s -- %d bytes reached the temp file; the "
+                      "destination is UNCHANGED (never truncated). Cause: %r" % (path, n, e)) from e
+    return os.path.getsize(path)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--pattern", default="csi1_button_train_*")
@@ -123,7 +164,7 @@ def main() -> int:
     if not a.apply:
         print("\n(dry run; pass --apply to write %d entr(ies))" % len(add)); return 0
     src = src.replace("KNOWN_SHORT = {\n", "KNOWN_SHORT = {\n" + "".join(add), 1)
-    open(GUARD, "w").write(src)
+    _atomic_text_write(src, GUARD)
     print("\nwrote %d entr(ies) into %s" % (len(add), os.path.relpath(GUARD, REPO)))
     return 0
 

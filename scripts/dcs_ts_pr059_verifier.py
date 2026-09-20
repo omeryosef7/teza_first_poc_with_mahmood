@@ -735,6 +735,50 @@ def parse_domains(cfg):
     return list(range(n_rows // per_dom))
 
 
+def _atomic_json_dump(obj, path, **kw):
+    """Atomic, VERIFIED JSON write. Fix for sprint entry S-124.
+
+    Replaces `json.dump(x, open(p, "w"), ...)`, whose handle is never closed: `open` truncates the
+    destination immediately and the buffered bytes are flushed only in the GC finaliser, where
+    CPython PRINTS and then SWALLOWS an EDQUOT. A full quota therefore produced a 0-byte file at a
+    real artifact name, with "wrote <path>" on stdout and exit status 0 -- indistinguishable from a
+    finished report. Temp file + fsync + size check + re-parse + os.replace makes the write ATOMIC
+    as well as checked: a half-written file never appears at the real name, and whatever was there
+    before survives a failure. On any error this RAISES, naming the path and the byte count.
+    """
+    import tempfile                        # local: keeps this helper drop-in and import-order-free
+    d = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp = tempfile.mkstemp(dir=d, prefix=".tmp_atomic_", suffix=".json")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(obj, fh, **kw)
+            fh.flush()
+            os.fsync(fh.fileno())          # EDQUOT surfaces HERE, not in a GC finaliser
+        n = os.path.getsize(tmp)
+        if n == 0:
+            raise OSError("temp file is 0 bytes after a flush+fsync that reported success")
+        with open(tmp, "r", encoding="utf-8") as fh:
+            json.load(fh)                  # a truncated write does not re-parse
+        try:
+            mode = os.stat(path).st_mode & 0o7777   # keep the artifact's existing permissions:
+        except OSError:                             # mkstemp makes the temp file 0600 and
+            mode = 0o644                            # os.replace would carry that onto the report
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)              # atomic within the directory
+    except Exception as e:
+        try:
+            n = os.path.getsize(tmp)
+        except OSError:
+            n = -1
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise OSError("atomic_json_dump FAILED for %s -- %d bytes reached the temp file; the "
+                      "destination is UNCHANGED (never truncated). Cause: %r" % (path, n, e)) from e
+    return os.path.getsize(path)
+
+
 # =============================================================================================
 # 4. A SYNTHETIC BUT COMPLETE FIXTURE -- so --self-test and --mutate need no GPU run
 # =============================================================================================
@@ -803,11 +847,9 @@ def build_fixture(tmp, cfg, banks=("button_bomb",)):
         with open(os.path.join(d, "results.jsonl"), "w") as f:
             for r in out:
                 f.write(json.dumps(r) + "\n")
-        json.dump({"ok": True}, open(os.path.join(d, "DONE.json"), "w"))
-        json.dump({"knockout_liveness": ({"attn_implementation": "eager"} if rel else None)},
-                  open(os.path.join(d, "summary.json"), "w"))
-        json.dump({"attn_implementation": ("eager" if rel else "sdpa")},
-                  open(os.path.join(d, "metadata.json"), "w"))
+        _atomic_json_dump({"ok": True}, os.path.join(d, "DONE.json"))
+        _atomic_json_dump({"knockout_liveness": ({"attn_implementation": "eager"} if rel else None)}, os.path.join(d, "summary.json"))
+        _atomic_json_dump({"attn_implementation": ("eager" if rel else "sdpa")}, os.path.join(d, "metadata.json"))
         if rel:
             with open(os.path.join(argsroot, tag + ".args"), "w") as f:
                 f.write("--knockout-scope query_last_k_rows --knockout-rel-end-rows %s\n"
@@ -817,7 +859,7 @@ def build_fixture(tmp, cfg, banks=("button_bomb",)):
             "controls": {b: {} for b in banks}, "liveness": {}, "population": DECLARED_POPULATION,
             "channel": "semantic_one_word"}
     prod_path = os.path.join(tmp, "producer.json")
-    json.dump(prod, open(prod_path, "w"))
+    _atomic_json_dump(prod, prod_path)
     return arm_root, prod_path, bank_dir, argsroot
 
 
@@ -936,7 +978,7 @@ def self_test():
     # ---- an EMPTY tree must not "pass" by having nothing to check
     with tempfile.TemporaryDirectory() as tmp:
         os.makedirs(os.path.join(tmp, "arms"))
-        json.dump({}, open(os.path.join(tmp, "p.json"), "w"))
+        _atomic_json_dump({}, os.path.join(tmp, "p.json"))
         fails, notes, _ = verify(cfg, os.path.join(tmp, "arms"), os.path.join(tmp, "p.json"),
                                  tmp, tmp, banks=("button_bomb",))
         check("T19 an EMPTY producer fails R5 rather than passing vacuously", "R5" in fails,
@@ -1092,7 +1134,7 @@ def _write_option_mass(cfg, ar, tag, median_true):
         "n": 230, "median_true": median_true, "p10": 0.0001146425711340271,
         "frac_above_1pct": 0.6478260869565218,
         "reportable": median_true >= option_mass_gate_from_cfg(cfg)}
-    json.dump(j, open(fp, "w"))
+    _atomic_json_dump(j, fp)
     return d
 
 
@@ -1103,7 +1145,7 @@ def m_below_gate_arm_vanishes(cfg, ar, pp, bd, ag):
     j = json.load(open(pp))
     j["arms"].pop(_t("S_D"), None)
     j.pop("cannot_answer_arms", None)
-    json.dump(j, open(pp, "w"))
+    _atomic_json_dump(j, pp)
 
 
 def m_healthy_arm_labelled_cannot_answer(cfg, ar, pp, bd, ag):
@@ -1113,7 +1155,7 @@ def m_healthy_arm_labelled_cannot_answer(cfg, ar, pp, bd, ag):
     j = json.load(open(pp))
     j["arms"].pop(_t("S_D"), None)
     j["cannot_answer_arms"] = [{"arm_id": _t("S_D"), "median_option_mass": 0.001}]
-    json.dump(j, open(pp, "w"))
+    _atomic_json_dump(j, pp)
 
 
 def m_arm_reported_twice(cfg, ar, pp, bd, ag):
@@ -1122,26 +1164,26 @@ def m_arm_reported_twice(cfg, ar, pp, bd, ag):
     _write_option_mass(cfg, ar, _t("S_D"), option_mass_gate_from_cfg(cfg) / 2.0)
     j = json.load(open(pp))
     j["cannot_answer_arms"] = [{"arm_id": _t("S_D"), "median_option_mass": 0.02}]
-    json.dump(j, open(pp, "w"))
+    _atomic_json_dump(j, pp)
 
 
 def m_producer_drops_a_block(cfg, ar, pp, bd, ag):
     j = json.load(open(pp))
     for k in ("controls", "liveness", "reference"):
         j.pop(k, None)
-    json.dump(j, open(pp, "w"))
+    _atomic_json_dump(j, pp)
 
 
 def m_producer_drops_an_arm(cfg, ar, pp, bd, ag):
     j = json.load(open(pp))
     j["arms"].pop(_t("S_D"), None)
-    json.dump(j, open(pp, "w"))
+    _atomic_json_dump(j, pp)
 
 
 def m_producer_invents_an_arm(cfg, ar, pp, bd, ag):
     j = json.load(open(pp))
     j["arms"]["pr059_button_bomb_s_z_scope_n4"] = {}
-    json.dump(j, open(pp, "w"))
+    _atomic_json_dump(j, pp)
 
 
 def m_absolute_index(cfg, ar, pp, bd, ag):
@@ -1172,9 +1214,8 @@ def m_no_decoded_tokens(cfg, ar, pp, bd, ag):
 
 def m_sdpa_arm(cfg, ar, pp, bd, ag):
     d = newest_done(ar, _t("S_G"))
-    json.dump({"knockout_liveness": {"attn_implementation": "sdpa"}},
-              open(os.path.join(d, "summary.json"), "w"))
-    json.dump({"attn_implementation": "sdpa"}, open(os.path.join(d, "metadata.json"), "w"))
+    _atomic_json_dump({"knockout_liveness": {"attn_implementation": "sdpa"}}, os.path.join(d, "summary.json"))
+    _atomic_json_dump({"attn_implementation": "sdpa"}, os.path.join(d, "metadata.json"))
 
 
 def m_dead_hook(cfg, ar, pp, bd, ag):
@@ -1201,7 +1242,7 @@ def m_impossible_control_shipped(cfg, ar, pp, bd, ag):
 def m_producer_claims_the_impossible_control(cfg, ar, pp, bd, ag):
     j = json.load(open(pp))
     j["controls"]["button_bomb"] = {"S_D": {"random_row_control": {"m": 22}}}
-    json.dump(j, open(pp, "w"))
+    _atomic_json_dump(j, pp)
 
 
 MUTATIONS = [

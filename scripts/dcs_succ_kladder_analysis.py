@@ -905,6 +905,91 @@ def render(res):
     return "\n".join(L)
 
 
+def _atomic_json_dump(obj, path, **kw):
+    """Atomic, VERIFIED JSON write. Fix for sprint entry S-124.
+
+    Replaces `json.dump(x, open(p, "w"), ...)`, whose handle is never closed: `open` truncates the
+    destination immediately and the buffered bytes are flushed only in the GC finaliser, where
+    CPython PRINTS and then SWALLOWS an EDQUOT. A full quota therefore produced a 0-byte file at a
+    real artifact name, with "wrote <path>" on stdout and exit status 0 -- indistinguishable from a
+    finished report. Temp file + fsync + size check + re-parse + os.replace makes the write ATOMIC
+    as well as checked: a half-written file never appears at the real name, and whatever was there
+    before survives a failure. On any error this RAISES, naming the path and the byte count.
+    """
+    import tempfile                        # local: keeps this helper drop-in and import-order-free
+    d = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp = tempfile.mkstemp(dir=d, prefix=".tmp_atomic_", suffix=".json")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(obj, fh, **kw)
+            fh.flush()
+            os.fsync(fh.fileno())          # EDQUOT surfaces HERE, not in a GC finaliser
+        n = os.path.getsize(tmp)
+        if n == 0:
+            raise OSError("temp file is 0 bytes after a flush+fsync that reported success")
+        with open(tmp, "r", encoding="utf-8") as fh:
+            json.load(fh)                  # a truncated write does not re-parse
+        try:
+            mode = os.stat(path).st_mode & 0o7777   # keep the artifact's existing permissions:
+        except OSError:                             # mkstemp makes the temp file 0600 and
+            mode = 0o644                            # os.replace would carry that onto the report
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)              # atomic within the directory
+    except Exception as e:
+        try:
+            n = os.path.getsize(tmp)
+        except OSError:
+            n = -1
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise OSError("atomic_json_dump FAILED for %s -- %d bytes reached the temp file; the "
+                      "destination is UNCHANGED (never truncated). Cause: %r" % (path, n, e)) from e
+    return os.path.getsize(path)
+
+
+def _atomic_text_write(text, path, encoding="utf-8"):
+    """Atomic, VERIFIED text write. Fix for sprint entry S-124.
+
+    `open(p, "w").write(s)` never closes the handle: `open` truncates the destination immediately
+    and the buffered bytes are flushed only in the GC finaliser, where CPython PRINTS and then
+    SWALLOWS an EDQUOT. A full quota therefore left a 0-byte file at a real artifact name with an
+    exit status of 0. Temp file + fsync + size check + os.replace makes the write ATOMIC as well as
+    checked: a half-written file never appears at the real name, and whatever was there before
+    survives a failure. On any error this RAISES, naming the path and the byte count.
+    """
+    import tempfile                        # local: keeps this helper drop-in and import-order-free
+    d = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp = tempfile.mkstemp(dir=d, prefix=".tmp_atomic_")
+    try:
+        with os.fdopen(fd, "w", encoding=encoding) as fh:
+            fh.write(text)
+            fh.flush()
+            os.fsync(fh.fileno())          # EDQUOT surfaces HERE, not in a GC finaliser
+        n = os.path.getsize(tmp)
+        if n == 0 and text:
+            raise OSError("temp file is 0 bytes after a flush+fsync that reported success")
+        try:
+            mode = os.stat(path).st_mode & 0o7777   # keep the artifact's existing permissions:
+        except OSError:                             # mkstemp makes the temp file 0600 and
+            mode = 0o644                            # os.replace would carry that onto the report
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)              # atomic within the directory
+    except Exception as e:
+        try:
+            n = os.path.getsize(tmp)
+        except OSError:
+            n = -1
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise OSError("atomic_text_write FAILED for %s -- %d bytes reached the temp file; the "
+                      "destination is UNCHANGED (never truncated). Cause: %r" % (path, n, e)) from e
+    return os.path.getsize(path)
+
+
 # --------------------------------------------------------------------------- #
 # selftest
 # --------------------------------------------------------------------------- #
@@ -918,14 +1003,13 @@ def _synth(base_dir, *, n_dom=12, per_dom=2, ks=range(1, 15), control_ks=(8, 9, 
     os.makedirs(root, exist_ok=True)
     bank = os.path.join(base_dir, "bank_button_bomb.jsonl")
     excl = os.path.join(base_dir, "exclude_button_bomb_sow_train.txt")
-    open(bank, "w").write("{}\n")
-    open(excl, "w").write("x\n")
+    _atomic_text_write("{}\n", bank)
+    _atomic_text_write("x\n", excl)
 
     doms = ["dom%02d" % i for i in range(n_dom)]
     keys = [(d, j) for d in doms for j in range(per_dom)]
     split_path = os.path.join(base_dir, "split.json")
-    json.dump({"assign": {d: "train" for d in doms}, "manifest_sha16": "0" * 16},
-              open(split_path, "w"))
+    _atomic_json_dump({"assign": {d: "train" for d in doms}, "manifest_sha16": "0" * 16}, split_path)
 
     base_vals = {k: 1.5 + 0.3 * rnd.gauss(0, 1) for k in keys}
     draws_l = ["nondemo_matched_d1", "nondemo_matched_d2", "nondemo_matched_d3"]
@@ -964,8 +1048,7 @@ def _synth(base_dir, *, n_dom=12, per_dom=2, ks=range(1, 15), control_ks=(8, 9, 
                  "knockout_last_k": 0 if kind == "baseline" else K}
         if cfg_break:
             cargs["n_examples"] = "8"
-        json.dump({"experiment": "score_behavior", "run_id": os.path.basename(d), "args": cargs},
-                  open(os.path.join(d, "config.json"), "w"))
+        _atomic_json_dump({"experiment": "score_behavior", "run_id": os.path.basename(d), "args": cargs}, os.path.join(d, "config.json"))
         om = 0.02 if gate_fail else 0.33
         rows = []
         for (dom, j) in keys:
@@ -987,16 +1070,13 @@ def _synth(base_dir, *, n_dom=12, per_dom=2, ks=range(1, 15), control_ks=(8, 9, 
         with open(os.path.join(d, "results.jsonl"), "w") as fh:
             for r in rows:
                 fh.write(json.dumps(r) + "\n")
-        json.dump({"option_mass": {"semantic/semantic_one_word": {
+        _atomic_json_dump({"option_mass": {"semantic/semantic_one_word": {
                        "n": len(rows), "median_true": om, "reportable": om >= 0.05}},
-                   "option_mass_gate": "PASS" if om >= 0.05 else "OVERRIDDEN — NOT REPORTABLE"},
-                  open(os.path.join(d, "summary.json"), "w"))
-        json.dump({"knockout_feasibility": ({"control_draw_seeds": {draw: draw_seed}}
-                                            if draw_seed is not None else {})},
-                  open(os.path.join(d, "metadata.json"), "w"))
+                   "option_mass_gate": "PASS" if om >= 0.05 else "OVERRIDDEN — NOT REPORTABLE"}, os.path.join(d, "summary.json"))
+        _atomic_json_dump({"knockout_feasibility": ({"control_draw_seeds": {draw: draw_seed}}
+                                            if draw_seed is not None else {})}, os.path.join(d, "metadata.json"))
         if not no_done:
-            json.dump({"status": "ok", "rows_written": len(rows), "wall_seconds": 1.0},
-                      open(os.path.join(d, "DONE.json"), "w"))
+            _atomic_json_dump({"status": "ok", "rows_written": len(rows), "wall_seconds": 1.0}, os.path.join(d, "DONE.json"))
         return dict(arm_id=arm_id, kind=kind, k=K, draw=draw, argv=argv,
                     rc=(4 if gate_fail else 0))
 
@@ -1034,7 +1114,7 @@ def _synth(base_dir, *, n_dom=12, per_dom=2, ks=range(1, 15), control_ks=(8, 9, 
     if break_ == "missing_arm":
         man["arms"] = [a for a in man["arms"] if a["arm_id"] != "K07_demo"]
     mp = os.path.join(base_dir, "MANIFEST.json")
-    json.dump(man, open(mp, "w"))
+    _atomic_json_dump(man, mp)
     return mp, root, split_path
 
 
@@ -1187,14 +1267,14 @@ def selftest():
         m, rt, s = _synth(os.path.join(tmp, "midflight"))
         man = json.load(open(m))
         man.pop("finished")
-        json.dump(man, open(m, "w"))
+        _atomic_json_dump(man, m)
         refuses("refuses a MID-FLIGHT manifest", lambda: _run(m, rt, s), "mid-flight")
 
         # ---- a runner whose REL_END_ROLE drifted from the manifest's copy
         m, rt, s = _synth(os.path.join(tmp, "roles"))
         man = json.load(open(m))
         man["rung_roles"]["-10"] = "something else entirely"
-        json.dump(man, open(m, "w"))
+        _atomic_json_dump(man, m)
         refuses("refuses when the rung->token map has drifted",
                 lambda: _run(m, rt, s), "disagrees with the map persisted")
 
@@ -1203,7 +1283,7 @@ def selftest():
         p = glob.glob(os.path.join(rt, "ts116m_sowk_K10_demo_*", "summary.json"))[0]
         j = json.load(open(p))
         j["option_mass"]["semantic/semantic_one_word"]["median_true"] = 0.99
-        json.dump(j, open(p, "w"))
+        _atomic_json_dump(j, p)
         refuses("refuses when the two gate copies disagree", lambda: _run(m, rt, s),
                 "disagrees with the producer")
 
@@ -1214,7 +1294,7 @@ def selftest():
         j = json.loads(lines[0])
         j.pop("semantic_logodds")
         lines[0] = json.dumps(j)
-        open(p, "w").write("\n".join(lines) + "\n")
+        _atomic_text_write("\n".join(lines) + "\n", p)
         refuses("refuses a row missing the readout (missing != zero)",
                 lambda: _run(m, rt, s), "missing is not zero")
 
@@ -1225,7 +1305,7 @@ def selftest():
         j = json.loads(lines[0])
         j["surface_span_positions"] = list(range(100, 110))
         lines[0] = json.dumps(j)
-        open(p, "w").write("\n".join(lines) + "\n")
+        _atomic_text_write("\n".join(lines) + "\n", p)
         refuses("refuses a rung whose cut is not the last K query rows",
                 lambda: _run(m, rt, s), "not the rung it is labelled as")
     finally:
