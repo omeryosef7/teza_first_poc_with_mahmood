@@ -10821,3 +10821,140 @@ arms are on disk"; the correct release point was "when the **family** is complet
 already declared twenty more arms outstanding when I made the edit.
 
 **The launcher patch is committed** — it is correct, verified, and blocks nothing. Only the launch waits.
+
+---
+
+# S-143 — **PR-CSI-007 frozen and LAUNCHED: button's L18 family on the HELD-OUT split, which has never been run.** It has no arithmetic floor, so its pooled rank is a live test — and freezing it produced a **CORRECTION to S-139**: `RUNMETA` does not record the blob, and `git_commit` is not a valid witness of what code ran
+
+Two gaps this sprint had already written down against itself, both closed by one family:
+
+* **S-137** says in its own *"what this does NOT settle"*: button's certified failure at rank 36 of 47
+  is **TRAIN-only**, and *"no button-L18 VALIDATION subspace arm has ever been run."*
+* **S-138 / REVIEW R10**: direction A of the axis swap — basket's axis into button's knockout at rank
+  4 of 47 against button's own at 36 — is likewise **TRAIN-only**, while direction B has both splits
+  and they are statistically indistinguishable (p = 0.254).
+
+**Measured, not assumed:** `csi1_button_validation_*` holds 23 run dirs at rescue_layer 20 and 2 at
+null. **Zero at layer 18.** The family is entirely new.
+
+`configs/dcs_csi_pr007_button_L18_validation.json` (87 376 B, 57 keys) and
+`runargs/dcs_csi_pr007_read.txt` (720 lines), both verified after writing.
+
+## The population and the circularity check, both re-derived by me
+
+```
+NKEEP = 230   distinct domains = 23   rows per domain = {10: 23}
+split labels of those domains: {'validation': 23}      <- zero TRAIN, zero TEST
+axis meta.fit_population.split = 'train', n_domains = 67, all 67 labelled train
+INTERSECTION(fit domains, validation population) = 0   []
+meta.held_out_validation_domains == this population    True (n = 23)
+-> NOT CIRCULAR
+```
+
+The artifact **names this experiment's population as its own held-out set**, and the layer was
+*forced* to 18 (from basket) rather than selected, so no selection step ever saw a validation domain.
+Had the intersection been non-empty the whole experiment would have been circular and there would have
+been nothing to launch; that is why it was the first thing checked.
+
+## The design property that makes this a better experiment than the one it extends
+
+**Nothing is reused. Every one of the 54 arms is new, including BASE and KO.** They are physically
+layer-independent and could in principle have been carried over, and they are re-run anyway on three
+grounds: the existing pair ran under blob `73e541f1…` (+527/−7 from current) **with
+`git_dirty = true`**, so their code is unrecoverable; `KO` is the **subtrahend of all 47 recoveries**,
+so admitting an unrecoverable-code `KO` contaminates every number at once; and the layer filter
+**cannot** separate them, because `rescue_layer` is null in both copies — the S-104 / S-127 / R8-B1
+foot-gun. Cost of refusing the shortcut: **2 arms of 54, 0.117 GPU-h.**
+
+The consequence is the point:
+
+> **No pooling question. No optional-stopping question. NO ARITHMETIC FLOOR.**
+
+PR-CSI-005 had all three. Seven of button's ten original controls already beat its candidate, so
+`rank ≤ 2` was **unreachable before a single arm ran** (S-131), and the entire preregistration had to
+be rebuilt around a secondary statistic. **Here the pooled rank is the PRIMARY and it is a live test**:
+every rank 1…47 attainable, `{R47 ≤ 2}` reachable, floor 1/47 = 0.021277.
+
+## The prediction, deliberately wide because two derivations disagree
+
+**Point R47 = 32 of 47 (X = 31 of 46), 95 % band [24, 43]** — the *union* of two routes, because
+taking the narrower one was not earned:
+
+* **Route 1**, the Jeffreys Beta-binomial PR-CSI-005 used, carried from TRAIN's measured 35/46:
+  E[R47] = **35.7**, band [27, 43]. Weakness stated: it ignores the split's 2.9× smaller domain count
+  entirely, so its tails are far too thin.
+* **Route 2**, the one weighted: each arm's recovery is a mean over domain means, so noise scales
+  1/√n_domains; sd(controls) inflates by √(67/23) = 1.707 while the candidate's systematic offset does
+  not, so |z| shrinks (−0.570 → −0.334) and the rank regresses toward the uniform-null centre 24.
+  E[R47] = **30.0**, band [24, 37].
+
+**REFUTATION of the certified-failure claim: R47 ≤ 2** — the only outcome that certifies at α = 0.05,
+and the same bar basket cleared on this split. Predictive P ≈ 6e-15 / 1e-18. A weaker second threshold
+is declared now rather than later: **R47 ≤ 12** (top quartile, p = 0.255, does **not** certify) = the
+train result fails to replicate.
+
+**A counterweight recorded in advance so it cannot be invented afterwards:** button at its **own**
+layer L20 on **this same validation split** ranks 4 of 11 with candidate **+0.00132** — its largest
+candidate value anywhere in the 2×2. That is why the band reaches down to 24, and the pre-committed
+sentence is: *if 3 ≤ R47 ≤ 15 the reading is NOT "button works held-out".*
+
+## CORRECTION to S-139 — `git_commit` is not a witness of what code ran
+
+S-139 reported the bf16 guard and the `compute_capability` field **inert**, on 230 rows bit-identical
+across the blob change. **The measurement stands. Its provenance does not.**
+
+`RUNMETA.json` **does not record the blob.** It records `git_commit`, and that is demonstrably not a
+valid witness:
+
+> `csi1_basket_validation_CODEANCHOR_139B_*` (job 913407) records `git_commit d515cc76`, at which
+> `score_behavior.py` is blob `e94258bd` — yet its own `RUNMETA` carries
+> **`compute_capability: 8.6`**, a field that exists in **neither** blob at that commit. The worktree
+> was dirty and the commit hash says nothing about it.
+
+So **S-139's inertness claim is not verifiable after the fact from the run directories.** It is true as
+a statement about the two outputs, which is what was measured; it is not recoverable as a statement
+about which code produced them. That is a real limitation on an entry committed today, and it is
+recorded rather than left for a reviewer.
+
+**The fix is now a VOID condition of PR-CSI-007 and was exercised at this launch:** print
+`git hash-object` **and** require `git status --porcelain` to be **empty** at every submission, so the
+recorded commit becomes a valid after-the-fact witness. The clean-worktree half is exactly what every
+previous run in this project was missing.
+
+```
+=== PR-CSI-007 LAUNCH WITNESS ===
+score_behavior.py blob: 11d2c61747e9401e2d2cb8f4123dd1188674d61b
+ds_common.py blob:      95fb640b4d710c42fc0bacd87bcc7c498b03ee0b
+worktree porcelain:     []            <- EMPTY, as required
+HEAD: 27f78f98    CSI_LAYER: UNSET
+```
+
+**And the blob question that VOIDED the necessity extension does not arise here**, for a reason worth
+naming: S-142's defect was a family **straddling** the drift. This family is entirely new, so *"all
+arms share one `score_behavior.py` blob"* is true **by construction** — and it is written in as a VOID
+condition rather than left as a happy accident. What that licenses is everything *within* the family;
+what it does **not** license, and the file says so, is any arm-to-arm point-value comparison against
+PR-CSI-005's TRAIN family across the blob boundary. A rank is a within-family ordinal and inherits no
+cross-blob calibration. The experiment does not need that comparison.
+
+## A live foot-gun found while freezing, now a VOID condition
+
+The analyser's **default** `--out` for `--codeword button --split validation --direction sufficiency`
+is `reports/DCS_CSI_SUBSPACE_button_validation.json` — **and that file already exists**: 180 750 B, the
+committed L20 K=10 read, rank 4 of 11. **Omitting `--out` would silently overwrite a committed
+report.** This is S-120's third sign site recurring in a new place, and every one of the seven analyser
+invocations in the read file now carries a distinct explicit `--out`.
+
+## Launched
+
+Jobs **914043** (A, 7 arms), **914044** (B, 11), **914045** (I 1, 12), **914046** (I 2, 12),
+**914047** (K, 12) and **914048** (the blind secondary swap arm, 1). 55 arms, **3.82 GPU-h** measured
+from the ten existing button-validation control arms (mean 249.98 s). Positive architecture constraint
+on every line; `CSI_LAYER` unset so the layer comes from the sidecar, with a `[layer-override]` line in
+any new log a VOID condition **with no exception** — unlike PR-CSI-005, which carried a measured
+stage-1 exception for it.
+
+The secondary swap arm is launched **blind**: its number is not read until the primary is written down,
+and PR-CSI-006's *"no cell is claimed if the splits disagree"* clause binds direction A **for the first
+time**, because direction A has never had a validation split. **S-138's withdrawn headline is not
+restorable by any outcome here.**

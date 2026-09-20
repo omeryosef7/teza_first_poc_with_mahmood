@@ -1,0 +1,720 @@
+# PR-CSI-007 READ COMMANDS -- the BUTTON-at-L18 SUFFICIENCY family on the HELD-OUT VALIDATION split.
+# Frozen 2026-09-20 ~22:30 +03:00, BEFORE a single one of the 54 arms was submitted, so the read is
+# mechanical and cannot be tuned to the answer.
+# Preregistration: configs/dcs_csi_pr007_button_L18_validation.json.
+# Opened by sprint entry S-137's own "what this does NOT settle" section, which states that no
+# button-L18 VALIDATION subspace arm has ever been run and that held-out is, by the dissociation
+# analysis's section 13, the strongest evidence in the set.
+#
+# THIS EXPERIMENT CAN ONLY HURT THE SPRINT'S COMMITTED HEADLINE. PR-CSI-005 (S-137) certified
+# button's L18 failure at rank 36 of 47 on TRAIN. If this read comes back at rank 1 or 2 of 47, that
+# certification is a TRAIN-only statement and the dissociation may no longer be stated as a property
+# of the codeword. Read the prereg's `prediction_fixed_before_data` block -- in particular
+# WHAT_WOULD_REFUTE_THE_CERTIFIED_FAILURE_CLAIM -- before reading any number here.
+#
+# ================================================================================================
+# WHAT IS NEW, AS A MEASURED FACT AND NOT A GUESS
+# ================================================================================================
+# I enumerated outputs/boombness/score_behavior/csi1_button_validation_* : 25 directories.
+#     23 at args.rescue_layer == 20   (jobs 897057, 897114, 897291)
+#      2 at args.rescue_layer == null (BASE and KO, job 897057)
+#      0 at args.rescue_layer == 18
+# ALL 54 ARMS OF THIS FAMILY ARE NEW. NOTHING IS REUSED. That is the single most important property
+# of this design and every other property follows from it:
+#   * no pooling question          -- no control has ever been read on this split at this layer
+#   * no optional-stopping question-- there is no stage-1 read to continue from
+#   * NO ARITHMETIC FLOOR          -- unlike PR-CSI-005, whose pooled rank was bounded at R47 >= 8
+#                                     by seven committed exceedances, EVERY rank from 1 to 47 is
+#                                     attainable here and {R47 <= 2} is a LIVE rejection region
+#   * no code-identity anchor is structurally required -- no arm predates the current blob
+# THE POOLED RANK IS THEREFORE THE PRIMARY, and it is a real test, floor 1/47 = 0.021277.
+#
+# WHY BASE AND KO ARE RE-RUN RATHER THAN REUSED. They run no rescue (launcher lines 155-156 pass
+# them no $R), so their RUNMETA records args.rescue_layer = null and "BASE at L18" and "BASE at L20"
+# are physically the same computation. They are nevertheless RE-RUN, on three grounds:
+#   (1) BLOB. The existing copies ran under score_behavior.py blob 73e541f1625deb139a8c7572547904ee
+#       ffdd350c -- +527/-7 lines from the blob this family runs under -- with git_dirty = true, so
+#       the bytes they executed are UNRECOVERABLE. KO is the SUBTRAHEND of all 47 recoveries
+#       (recovery = arm - KO); an unverifiable KO contaminates every number at once.
+#   (2) KEY INTERSECTION. A BASE/KO pair from different code can shift which prompt keys survive the
+#       option-mass gate, and that shift propagates into all 47 recoveries through the shared
+#       intersection.
+#   (3) THE LAYER FILTER CANNOT PROTECT THE READ FOR THESE TWO ARMS. rescue_layer is null in BOTH
+#       copies, so --require-rescue-layer 18 passes both SILENTLY. Re-running removes the ambiguity
+#       at its source instead of relying on --require-slurm-job to catch it.
+# Cost of re-running them: 2 arms of 54, ~0.117 GPU-hours.
+#
+# THE POPULATION, derived exactly as the launcher derives it (slurm_scripts/dcs_csi_p1_arms.slurm
+# lines 101-112, READ ONLY):
+#     bank  data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl
+#     excl  runargs/dcs_cont/exclude_button_bomb_sow_validation.txt  (930 ids, sha16 64f6bb1310332073)
+#     predicate query_kind == semantic_one_word AND bank_block == cds_n4_sow
+#               AND condition == natural_doublespeak AND prompt_id not in excl
+#     -> NKEEP = 230.  EXPECT_N IS 230, NOT 670.
+#     -> 23 DISTINCT DOMAINS, exactly 10 rows each.
+#     -> every one labelled 'validation' in data/boombness_prompts/dcs_ts116_domain_split.json:
+#        Counter(assign[d]) == {'validation': 23}.  ZERO TRAIN.  ZERO TEST.
+#     The identical computation against the TRAIN exclusion file prints 670 and 67 domains, which
+#     reproduces the committed train numbers -- so the transcription of the launcher's predicate is
+#     verified, not assumed.
+#
+# THE BASIS IS NOT CIRCULAR, and this was checked before anything else because a circular basis
+# would make the whole experiment worthless:
+#     configs/dcs_csi_axis_button_behavioral_L18.pt is {'meta': ..., 'bases': ...}; a naive len()
+#     returns 2. bases has 53 keys: cand_rank1 (1), cand_pls1-5 (5), ctrl_orth (1),
+#     ctrl_random0-21 (22), ctrl_shuffled0-23 (24). 1+5+1+22+24 = 53. The 46-control family is
+#     22 + 24; ctrl_orth is the comparator and the PLS bases are rank-5 candidates.
+#     meta.codeword = 'button', meta.selected_layer = 18, meta.selected_rank = 5,
+#     meta.layer_forced = true, meta.layer_argmax_not_used = 20.
+#     PROVENANCE -- the field is meta.fit_population, NOT meta.fit_split:
+#       meta.fit_population.split         = 'train'
+#       meta.fit_population.n_domains     = 67
+#       meta.fit_population.domains_sha16 = 4614853e5636eb5f
+#       meta.n_fit_domains = 67, meta.n_fit_rows = 670
+#     AND THE FOUR MEASUREMENTS THAT SETTLE IT:
+#       - all 67 fit domains carry assign == 'train'. Counter == {'train': 67}.
+#       - intersection(fit domains, this experiment's 23 domains) == EMPTY. Printed as [], size 0.
+#       - set(meta.held_out_validation_domains) == set(this experiment's 23 domains), EXACTLY.
+#       - the layer was forced (not selected on validation) and rank 1 is the artifact's own row,
+#         so no selection step in this pipeline has ever seen a validation domain.
+#     VERDICT: NOT CIRCULAR. The experiment proceeds.
+#
+# THE BLOB. src/boombness/score_behavior.py is at 11d2c61747e9401e2d2cb8f4123dd1188674d61b, which is
+# also HEAD's blob (HEAD 27f78f98) and the worktree is CLEAN for that path. PR-CSI-003/005/006 ran
+# under e94258bd5fc44c70629e707b00504b7acac2a7b7; the +17/-0 diff between them is ONE hunk, the
+# DCS-CSI-139 bf16 compute-capability guard above dc.load_model(), whose branch is NOT TAKEN on an
+# RTX 3090 (sm_86). S-142 records that this drift already VOIDED the necessity family extension --
+# but that family was HALF-RUN under the old blob. THIS FAMILY IS ENTIRELY NEW, so it is internally
+# consistent under ONE blob by construction, and "all arms share one blob" is a VOID condition below.
+# WHAT THAT LICENSES: every within-family statistic (the rank, z, exceedance rate, subfamily ranks,
+# LOO, all contrasts and CIs). The rank is a WITHIN-family ordinal and inherits no cross-blob
+# calibration, so comparing this family's rank with PR-CSI-005's 36-of-47 is licensed WITH THE BLOB
+# BOUNDARY NAMED. WHAT IT DOES NOT LICENSE: any arm-to-arm POINT-VALUE comparison across the boundary
+# ("the candidate moved from -0.00014 to Y"), or a train-vs-validation difference with a CI, or
+# pooling the two families' controls. The domains are disjoint anyway, so such a statement would be
+# confounded with the split even if the blobs matched. This experiment does not need that comparison.
+#
+# A PROVENANCE DEFECT I MEASURED, WHICH IS WHY THE BLOB CHECK BELOW IS A PRE-SUBMISSION CHECK:
+# RUNMETA.json DOES NOT RECORD THE score_behavior.py BLOB. It records git_commit, and git_dirty is
+# true or null on every run I inspected. Worse, there is a demonstrated case where git_commit is not
+# a valid witness: csi1_basket_validation_CODEANCHOR_139B_20260920_190627_488644 (job 913407) records
+# git_commit d515cc76adb6, whose blob for that path is e94258bd, yet its RUNMETA carries a field
+# `compute_capability: 8.6` and the string "compute_capability" appears in NEITHER blob e94258bd NOR
+# the current blob 11d2c617 NOR anywhere under src/ today. So the blob CANNOT be verified after the
+# fact. It can only be PINNED before submission -- which is what PART 1 does, and it additionally
+# requires a CLEAN worktree so that git_commit becomes a valid after-the-fact witness.
+#
+# ================================================================================================
+# PART 1 -- THE SBATCH LINES.  RUN THESE FIRST.  DO NOT EDIT THEM.
+# ================================================================================================
+# GROUPS, confirmed by READING slurm_scripts/dcs_csi_p1_arms.slurm (blob
+# 1a3174e8c7efee7845cc08d8777fb261ebb39336, 423 lines), not assumed:
+#   lines 154-162  group A: BASE, KO, KO_SELF, KO_FULL, KO_AXIS (cand_rank1),
+#                           KO_PLS (cand_pls${RANK} -> cand_pls5), KO_ORTH (ctrl_orth)     7 arms
+#   lines 163-166  group B: KO_AXIS_ANCHOR (cand_rank1) + KO_SHUF0-3 + KO_RAND0-5         11 arms
+#   lines 350-352  group I, $5 = 1: KO_RAND6-11 + KO_SHUF4-9                              12 arms
+#   lines 353-355  group I, $5 = 2: KO_RAND12-21 + KO_SHUF10-11                           12 arms
+#   line  339      group K:        KO_SHUF12-23                                           12 arms
+#   7 + 11 + 12 + 12 + 12 = 54 arms; controls = 24 shuffled + 22 random = 46.
+#
+# HOW "validation" REACHES THE ARMS: SPLIT is $3 and feeds BOTH the exclusion file (line 101,
+# EXCL=runargs/dcs_cont/exclude_${CW}_bomb_sow_${SPLIT}.txt) AND the tag prefix (line 149,
+# P=csi1_${CW}_${SPLIT}). Passing "validation" is sufficient: NKEEP recomputes to 230 and every tag
+# becomes csi1_button_validation_*. No other change is needed anywhere.
+#
+# GROUP I NEEDS ITS $5 SUB-SELECTOR; GROUPS A, B, K AND X MUST NOT BE GIVEN ONE. Script lines 114-117:
+#     if [ -n "${5:-}" ] && [ "$GROUP" != "I" ]; then
+#       echo "REFUSING: \$5 is a GROUP-SPECIFIC sub-selector (only group I uses it) ..." ; exit 2
+#     fi
+# (the DCS-CSI-076 guard, added after $5 had silently meant "layer" and two basket control jobs ran
+#  at L1/L2). Group I is the ONLY group that reads $5 -- line 350, `if [ "${5:-1}" = "1" ]`.
+#
+# HOW CSI_LAYER IS PASSED, AND THE ANSWER IS: **IT IS NOT. CSI_LAYER MUST BE UNSET.**
+#   Script line 113:      LAYER="${CSI_LAYER:-}"
+#   Script lines 119-120: if [ -z "$LAYER" ]; then
+#                           LAYER=$(python -c "...json.load(open('${AXIS%.pt}.json'))['selected_layer']")
+#   configs/dcs_csi_axis_button_behavioral_L18.json has selected_layer == 18, so LAYER resolves to 18
+#   with NO override and THE ARTIFACT SPEAKS. Setting CSI_LAYER=18 reaches the same number by the
+#   WRONG branch (lines 121-128): it prints "[layer-override] using L18", the branch intended for
+#   WHOLE-STATE arms at a layer their basis was NOT fit at, and review M2 in score_behavior.py
+#   SystemExits a subspace arm unless the basis's own selected_layer equals --rescue-layer.
+#   A "[layer-override]" LINE IN ANY OF THE FIVE JOB LOGS IS A VOID CONDITION, WITH NO EXCEPTION.
+#   (PR-CSI-005 had to carry a measured exception because its stage-1 arms DID use the override.
+#    This family is entirely new and has no such exception. There is nothing to excuse.)
+#
+# THE BANNER MUST READ:  LAYER=18 RANK=5 EXPECT_N=230
+#   RANK comes from line 133 (selected_rank from the sidecar = 5), so group A's KO_PLS resolves to
+#   cand_pls5, which exists in the file. EXPECT_N=670 in the banner would mean the TRAIN exclusion
+#   file was used and is a VOID condition.
+#
+# AXIS .pt FOR THE FIVE PRIMARY SUBMISSIONS: configs/dcs_csi_axis_button_behavioral_L18.pt (1058173 B).
+#
+# THE GPU CONSTRAINT IS POSITIVE, NOT AN EXCLUDE LIST, AND IT IS A VOID CONDITION (S-037, S-119,
+# S-121, S-126, and the practice change in S-122): every control here is NORM-MATCHED; Tesla V100 is
+# sm_70 with NO native bf16; --dtype bfloat16 is emulated there and the norm-match degeneracy guard
+# then refuses EVERY row of EVERY norm-matched control. JOB 906421 IS THE INSTANCE WHERE AN
+# EXCLUDE-LIST FAILED: --exclude=n-301,n-304 excluded the whole RTX 3090 rack, the job landed on
+# rack-bgw-dgx1 and wrote ZERO rows on every norm-matched arm. --gpus=geforce_rtx_3090:1 makes V100
+# IMPOSSIBLE rather than merely unlikely. USING AN EXCLUDE-LIST HERE IS ITSELF A VOID CONDITION.
+#
+# BEFORE EACH SUBMISSION, assert (sbatch propagates the environment by default):
+#   env | grep -c '^CSI_LAYER='                             -> must print 0
+#   git hash-object src/boombness/score_behavior.py         -> must print
+#                                   11d2c61747e9401e2d2cb8f4123dd1188674d61b
+#   git status --porcelain src/boombness/score_behavior.py  -> must print NOTHING (clean worktree,
+#                                   so that the recorded git_commit is a valid witness afterwards)
+#   git hash-object slurm_scripts/dcs_csi_p1_arms.slurm     -> must print
+#                                   1a3174e8c7efee7845cc08d8777fb261ebb39336
+#   squeue -u $USER                                         -> note what is running; disturb nothing
+
+sbatch --gpus=geforce_rtx_3090:1 --time=03:00:00 --export=ALL,CSI_STAGE=1 \
+       slurm_scripts/dcs_csi_p1_arms.slurm button configs/dcs_csi_axis_button_behavioral_L18.pt validation A
+
+sbatch --gpus=geforce_rtx_3090:1 --time=03:00:00 --export=ALL,CSI_STAGE=1 \
+       slurm_scripts/dcs_csi_p1_arms.slurm button configs/dcs_csi_axis_button_behavioral_L18.pt validation B
+
+sbatch --gpus=geforce_rtx_3090:1 --time=04:00:00 --export=ALL,CSI_STAGE=1 \
+       slurm_scripts/dcs_csi_p1_arms.slurm button configs/dcs_csi_axis_button_behavioral_L18.pt validation I 1
+
+sbatch --gpus=geforce_rtx_3090:1 --time=04:00:00 --export=ALL,CSI_STAGE=1 \
+       slurm_scripts/dcs_csi_p1_arms.slurm button configs/dcs_csi_axis_button_behavioral_L18.pt validation I 2
+
+sbatch --gpus=geforce_rtx_3090:1 --time=04:00:00 --export=ALL,CSI_STAGE=1 \
+       slurm_scripts/dcs_csi_p1_arms.slurm button configs/dcs_csi_axis_button_behavioral_L18.pt validation K
+
+# ---- THE PRESPECIFIED SECONDARY: direction-A axis swap at VALIDATION. ONE ARM. ------------------
+# MAY be submitted with the five above -- the arm is BLIND and spending the GPU early costs nothing.
+# ITS NUMBER IS NOT LOOKED AT until PART 5, after the PRIMARY has been read and written down.
+# PR-CSI-006's binding optional-stopping rule, carried forward verbatim: "Direction A is read
+# EXACTLY ONCE, at K = 46 ... The GPU for the swap arm may be spent before then -- the arm is blind
+# and spending it early costs nothing -- but no number from it is looked at."
+# The swap file's 53 pre-existing bases are BIT-IDENTICAL to configs/dcs_csi_axis_button_behavioral_L18.pt
+# (I checked torch.equal on all 53), so cand_rank1 -- the norm-match reference of all 46 controls --
+# is the SAME tensor and the swap arm sits on exactly the control family's dose scale. Group X
+# hardcodes --rescue-norm-match-key cand_rank1 (line 322), which IS the primary design here, not a
+# substitution. cos(swap_cand_from_basket, cand_rank1) = 0.5569 -- ONE symmetric measurement, quoted
+# once, per REVIEW R10's correction.
+# "XSWAP_FROM_BASKET" does NOT begin with KO_RAND or KO_SHUF, so --control-prefixes cannot sweep it
+# into the family as a 47th control. CSI_ARMS is SPACE-separated by design (a comma-bearing --export
+# value is the sbatch truncation hazard this repo has been bitten by); one entry carries no comma.
+
+sbatch --gpus=geforce_rtx_3090:1 --time=02:00:00 \
+       --export=ALL,CSI_STAGE=1,CSI_ARMS=XSWAP_FROM_BASKET:swap_cand_from_basket \
+       slurm_scripts/dcs_csi_p1_arms.slurm button configs/dcs_csi_axis_button_L18_PLUS_basket_swap.pt validation X
+
+# CSI_STAGE=1 is the node-local snapshot staging of DCS-CSI-092 (the n-30x rack's NFS path reads the
+# shared snapshot at 2-7 MB/s and the HF loader's random mmap access over it takes 20+ hours). It is
+# a load-time workaround and touches nothing scientific.
+#
+# COST, MEASURED from the 10 existing button VALIDATION norm-matched control arms' DONE.json
+# (job 897114 -- same codeword, same split, same 230 rows, same norm-matching, same 3090 class):
+#   [238.450 239.041 239.860 247.613 250.314 256.064 256.828 257.024 257.278 257.370] s
+#   mean 249.984  median 253.189  min 238.450  max 257.370
+#   group A  (7 arms, measured sum of the seven gate arms) = 1760.547 s = 0.4890 h
+#   group B  (11 arms: anchor 237.333 + the ten 2499.8)    = 2737.175 s = 0.7603 h
+#   groups I1, I2, K (12 arms each @ 249.984)              = 2999.8 s  = 0.8333 h each
+#   TOTAL 54 arms = 13497.2 s = 3.749 GPU-hours   (at the observed max: 13763.0 s = 3.823 GPU-h)
+#   + the secondary swap arm, 249.984 s = 0.069 GPU-h  ->  55 arms = 3.819 GPU-hours.
+# The --time requests above are 4-5x the measured rate, which is headroom for node variation and for
+# a 15 GB staging copy before the first arm starts.
+#
+# RECORD THE SIX JOB IDS HERE AS THEY ARE ASSIGNED, and substitute them below:
+#   <A>  = group A,  7 arms  = ____________
+#   <B>  = group B, 11 arms  = ____________
+#   <I1> = group I, $5 = 1   = ____________
+#   <I2> = group I, $5 = 2   = ____________
+#   <K>  = group K, 12 arms  = ____________
+#   <SW> = group X, the SECONDARY swap arm = ____________   (PART 5 ONLY; never in PARTS 3-4)
+#
+# THE ANGLE BRACKETS ARE PLACEHOLDERS AND EVERY ONE MUST BE SUBSTITUTED BEFORE ANYTHING IS RUN.
+# This is the same convention runargs/dcs_csi_pr005_read.txt and runargs/dcs_csi_pr006_read.txt use,
+# and it carries the same hazard, stated here explicitly: in a LIVE shell command `<A>` is an INPUT
+# REDIRECTION operator, not a token. A --require-slurm-job list left unsubstituted does NOT produce
+# a clear error about a missing job id; it produces a redirection attempt on a file named A. So:
+#   grep -c '<' runargs/dcs_csi_pr007_read.txt    -- after substitution, the only matches left must
+#                                                    be in COMMENT lines, never in a command line.
+# The python gate in 2.1 additionally refuses to run on placeholders (`assert j.isdigit()`), and the
+# gate in 2.2 uses a shell variable instead of brackets for exactly this reason.
+
+# ================================================================================================
+# PART 2 -- GATE 0, BEFORE ANY NUMBER IS READ
+# ================================================================================================
+# EVERY GATE BELOW PRINTS THE SIZE OF ITS COMPARISON AND ASSERTS THAT SIZE BEFORE ANY VERDICT IS
+# TRUSTED. S-134: a gate that can pass on an empty comparison is not a gate. REVIEW R10's BLOCKER-2
+# is the FOURTH instance of a gate that printed a constant and asserted nothing, in the gate its own
+# entry called "the one that mattered most". The gates below are written as inline commands rather
+# than by calling scripts/gates/dcs_csi_pr005_gate0.py, because that script hardcodes PR-CSI-005's
+# family (NEW_JOBS, NEW_ARMS, EXPECT_N 670, csi1_button_train_ prefix) and pointing it at this family
+# would be exactly the "no report-identity check" defect REVIEW R10 recorded against primary_X.py.
+#
+# SUBSTITUTE the six job ids before running anything in this part.
+
+# ---- 2.0  PRE-FLIGHT: the output paths must not exist, and the default --out collision -----------
+# MEASURED AND LIVE: the analyser's DEFAULT --out for --codeword button --split validation
+# --direction sufficiency is reports/DCS_CSI_SUBSPACE_button_validation.json (analyser lines
+# 1115-1118), AND THAT FILE ALREADY EXISTS -- 180750 bytes, the committed L20 K=10 read
+# (n_controls 10, rank 4, floor 0.0909, 23 domains). OMITTING --out OVERWRITES A COMMITTED REPORT.
+# Every command in PARTS 3-5 names its own NEW --out. Check that none of them exists:
+for f in reports/DCS_CSI_SUBSPACE_button_validation_L18_n46.json \
+         reports/DCS_CSI_REDERIVE_button_validation_L18_n46.json \
+         reports/DCS_CSI_SUBSPACE_button_validation_L18_shufonly.json \
+         reports/DCS_CSI_SUBSPACE_button_validation_L18_randonly.json \
+         reports/DCS_CSI_SWAP_button_validation_L18_from_basket_n46.json \
+         reports/DCS_CSI_SWAP_REDERIVE_button_validation_L18_from_basket.json ; do
+  if [ -e "$f" ]; then echo "GATE 2.0 FAIL: $f EXISTS"; else echo "GATE 2.0 ok (absent): $f"; fi
+done
+# AND the five that must never be touched:
+ls -l reports/DCS_CSI_SUBSPACE_button_validation.json \
+      reports/DCS_CSI_SUBSPACE_button_train_L18_n46.json \
+      reports/DCS_CSI_REDERIVE_button_train_L18_n46.json \
+      reports/DCS_CSI_SUBSPACE_button_train_L18_shufonly.json \
+      reports/DCS_CSI_SWAP_button_train_L18_from_basket_n46.json
+
+# ---- 2.1  FAMILY COMPLETENESS, ARCHITECTURE, ROWS, PROVENANCE -- one pass, every size asserted ---
+# A RUN DIRECTORY IS NOT A FINISHED ARM. A directory exists from the moment an arm STARTS; DONE.json
+# is what says it FINISHED. S-137's near-miss: all 37 directories existed and every arm name was
+# present, and KO_SHUF9, KO_SHUF11 and KO_SHUF23 were still writing. Resolution is BY RUNMETA JOB ID,
+# never "the newest dir" (S-127's duplicate-tag hazard; REVIEW R10 MAJOR-6).
+python - <<'PYGATE'
+import json, os, glob, sys, collections
+REPO = "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
+SB   = os.path.join(REPO, "outputs/boombness/score_behavior")
+
+# ---- SUBSTITUTE THE SIX JOB IDS. The swap job <SW> is DELIBERATELY ABSENT from PRIMARY_JOBS. ----
+JOB_A, JOB_B, JOB_I1, JOB_I2, JOB_K = "<A>", "<B>", "<I1>", "<I2>", "<K>"
+PRIMARY_JOBS = [JOB_A, JOB_B, JOB_I1, JOB_I2, JOB_K]
+
+GROUP = {
+ JOB_A : ["BASE","KO","KO_SELF","KO_FULL","KO_AXIS","KO_PLS","KO_ORTH"],
+ JOB_B : ["KO_AXIS_ANCHOR"] + ["KO_SHUF%d"%j for j in range(4)] + ["KO_RAND%d"%i for i in range(6)],
+ JOB_I1: ["KO_RAND%d"%i for i in range(6,12)]  + ["KO_SHUF%d"%j for j in range(4,10)],
+ JOB_I2: ["KO_RAND%d"%i for i in range(12,22)] + ["KO_SHUF%d"%j for j in range(10,12)],
+ JOB_K : ["KO_SHUF%d"%j for j in range(12,24)],
+}
+EXPECT_N, ALLOW_SHORT = 230, 4
+EXPECT_BLOB = "11d2c61747e9401e2d2cb8f4123dd1188674d61b"
+CONTROLS = ["KO_SHUF%d"%j for j in range(24)] + ["KO_RAND%d"%i for i in range(22)]
+ARMS_IN_READ = ["BASE","KO","KO_SELF","KO_FULL","KO_AXIS","KO_PLS","KO_ORTH"] + CONTROLS
+
+# ---- SIZE ASSERTIONS ON THE GATE'S OWN INPUTS, BEFORE IT TOUCHES THE DISK (mutation-resistant:
+#      a gate whose arm list has been truncated must FAIL, not pass on a smaller comparison).
+allarms = [a for j in PRIMARY_JOBS for a in GROUP[j]]
+print("EXPECTED FAMILY: %d arms across %d jobs" % (len(allarms), len(PRIMARY_JOBS)))
+assert len(allarms) == 54, "arm list holds %d, expected 54" % len(allarms)
+assert len(set(allarms)) == 54, "arm list has duplicates"
+assert len(CONTROLS) == 46, "control list holds %d, expected 46" % len(CONTROLS)
+assert len(ARMS_IN_READ) == 53, "read list holds %d, expected 53" % len(ARMS_IN_READ)
+assert set(CONTROLS) <= set(allarms), "a control is not produced by any group"
+assert "KO_AXIS_ANCHOR" not in ARMS_IN_READ, "the anchor must not enter the read"
+assert not any(a.startswith(("KO_SHUF","KO_RAND")) for a in ["KO_AXIS_ANCHOR","KO_ORTH","KO_PLS"]), \
+    "an excluded arm is prefix-matchable by --control-prefixes"
+for j in PRIMARY_JOBS:
+    assert j.isdigit(), "JOB ID %r NOT SUBSTITUTED -- refusing to run on placeholders" % j
+
+def resolve(arm, job):
+    hits = [d for d in glob.glob(os.path.join(SB, "csi1_button_validation_%s_2026*" % arm))
+            if os.path.exists(os.path.join(d,"RUNMETA.json"))
+            and str(json.load(open(os.path.join(d,"RUNMETA.json"))).get("slurm_job_id")) == job]
+    assert len(hits) <= 1, "arm %s resolves to %d dirs under job %s -- ambiguous" % (arm,len(hits),job)
+    return hits[0] if hits else None
+
+fail, dirs = [], {}
+# (a) COMPLETENESS -- by DONE.json, not by directory
+finished, unfinished = [], []
+for j in PRIMARY_JOBS:
+    for a in GROUP[j]:
+        d = resolve(a, j)
+        if d is None: unfinished.append((a,"no run dir under job %s"%j)); continue
+        if not os.path.exists(os.path.join(d,"DONE.json")):
+            unfinished.append((a,"dir exists, NO DONE.json -- still writing")); continue
+        finished.append(a); dirs[a] = d
+print("GATE (a) COMPLETENESS: %d expected | %d FINISHED (DONE.json) | %d unfinished"
+      % (len(allarms), len(finished), len(unfinished)))
+for a,why in unfinished: print("     UNFINISHED %-16s %s" % (a,why))
+assert len(finished)+len(unfinished) == len(allarms), "accounting lost arms"
+if len(finished) != len(allarms):
+    print("REFUSING to evaluate any later gate on an incomplete family (prereg VOID: no interim read).")
+    sys.exit(1)
+
+# (b) ARCHITECTURE -- from the runs, never from the sbatch line
+gpus = collections.Counter(json.load(open(dirs[a]+"/RUNMETA.json")).get("gpu") for a in finished)
+print("GATE (b) GPU: %d run dirs inspected | distinct GPU strings: %s" % (len(finished), dict(gpus)))
+assert len(finished) == 54, "inspected %d dirs, expected 54" % len(finished)
+if set(gpus) != {"NVIDIA GeForce RTX 3090"}: fail.append("GPU: %s" % dict(gpus))
+
+# (c) ROWS -- no collapse, no widening of --allow-short
+rows = {a: json.load(open(dirs[a]+"/DONE.json")).get("rows_written") for a in finished}
+short = [(a,rows[a]) for a in finished if rows[a] is None or rows[a] < EXPECT_N-ALLOW_SHORT]
+zero  = [a for a in finished if rows[a] == 0]
+print("GATE (c) ROWS: %d arms counted (expect %d) | min %s max %s | zero-row %d | below %d: %d"
+      % (len(rows), len(finished), min(rows.values()), max(rows.values()), len(zero),
+         EXPECT_N-ALLOW_SHORT, len(short)))
+assert len(rows) == 54, "row counts for %d of 54 arms" % len(rows)
+if short: fail.append("SHORT/ZERO arms: %s" % short)
+
+# (d) POPULATION AND INTERVENTION PROVENANCE -- per arm, from config.json args
+exp = collections.Counter(); lay = collections.Counter(); bas = collections.Counter()
+nm  = collections.Counter(); don = collections.Counter(); exc = collections.Counter()
+for a in finished:
+    g = json.load(open(dirs[a]+"/config.json"))["args"]
+    exp[g.get("expect_n")] += 1
+    lay[str(g.get("rescue_layer"))] += 1
+    bas[os.path.basename(g.get("rescue_basis") or "-")] += 1
+    don[str(g.get("rescue_donor"))] += 1
+    exc[os.path.basename(g.get("exclude_prompt_ids") or "-")] += 1
+    if a.startswith(("KO_SHUF","KO_RAND")): nm[str(g.get("rescue_norm_match_key"))] += 1
+print("GATE (d) PROVENANCE over %d arms:" % len(finished))
+print("     expect_n            %s" % dict(exp))
+print("     rescue_layer        %s" % dict(lay))
+print("     rescue_basis        %s" % dict(bas))
+print("     rescue_donor        %s" % dict(don))
+print("     exclude file        %s" % dict(exc))
+print("     norm_match_key over %d CONTROLS: %s" % (sum(nm.values()), dict(nm)))
+assert sum(nm.values()) == 46, "norm-match checked on %d arms, expected 46 controls" % sum(nm.values())
+if set(exp) != {230}: fail.append("expect_n not uniformly 230: %s" % dict(exp))
+if set(exc) != {"exclude_button_bomb_sow_validation.txt"}: fail.append("wrong exclusion file: %s"%dict(exc))
+if set(nm) != {"cand_rank1"}: fail.append("norm_match_key not uniformly cand_rank1: %s" % dict(nm))
+# BASE and KO run no rescue and legitimately carry null; everything else must be 18.
+for a in finished:
+    g = json.load(open(dirs[a]+"/config.json"))["args"]
+    if a in ("BASE","KO"):
+        if g.get("rescue_layer") is not None: fail.append("%s carries rescue_layer %s"%(a,g.get("rescue_layer")))
+    else:
+        if g.get("rescue_layer") != 18: fail.append("%s at rescue_layer %s"%(a,g.get("rescue_layer")))
+
+print()
+print("GATE VERDICT:", "ALL PASS" if not fail else "FAIL")
+for x in fail: print("   FAIL:", x)
+sys.exit(0 if not fail else 1)
+PYGATE
+
+# ---- 2.2  NO LAYER OVERRIDE, AND THE BANNER.  Substitute the five job ids. -----------------------
+# grep must find NOTHING for '[layer-override]' and the banner must read LAYER=18 RANK=5 EXPECT_N=230
+# in ALL FIVE logs. PRINT THE NUMBER OF LOGS INSPECTED AND ASSERT IT IS 5 -- a grep over zero files
+# also finds nothing, which is the S-134 vacuous-gate shape.
+#
+# FILL THE FIVE JOB IDS INTO THE LINE BELOW. They are written as a shell variable and NOT as
+# <A> <B> ... placeholders, because in a LIVE shell command `<A>` is an INPUT REDIRECTION operator,
+# not a placeholder -- `for J in <A>` would try to open a file named A and fail with a syntax or
+# redirection error rather than with a useful message. The angle-bracket placeholders are safe only
+# inside the comma-separated --require-slurm-job values and inside the quoted python heredocs.
+PR007_JOBS="JOBID_A JOBID_B JOBID_I1 JOBID_I2 JOBID_K"     # <-- SUBSTITUTE THE FIVE IDS HERE
+
+n_logs=0
+for J in $PR007_JOBS ; do
+  case "$J" in (*[!0-9]*|"") echo "GATE 2.2 FAIL: job id '$J' NOT SUBSTITUTED"; continue;; esac
+  f=outputs/boombness/logs/csi_p1_${J}.out
+  if [ ! -f "$f" ]; then echo "GATE 2.2 FAIL: missing log $f"; continue; fi
+  n_logs=$((n_logs+1))
+  echo "--- $f"
+  echo "    layer-override lines: $(grep -c 'layer-override' "$f")   (MUST be 0)"
+  grep -m1 -o 'LAYER=[0-9]* RANK=[0-9]* EXPECT_N=[0-9]*' "$f" || echo "    BANNER NOT FOUND -- FAIL"
+done
+echo "logs inspected: $n_logs  (MUST be 5)"
+[ "$n_logs" -eq 5 ] || echo "GATE 2.2 FAIL: inspected $n_logs logs, expected 5 -- a grep over too few files finds nothing and proves nothing (S-134)"
+
+# ---- 2.3  NO INTERIM READ.  PARTS 3-4 are run ONCE, after 2.1 exits 0 for all 54 arms. -----------
+# Reading a subset and stopping when the count looks good is the one thing that would turn this into
+# a post-hoc test, and the preregistration prohibits it by name. There is no stage-1 read here to be
+# tempted by: nothing on this split at this layer has ever been read.
+
+# ================================================================================================
+# PART 3 -- THE FROZEN READ.  Run in this order.  Add no flag, remove no flag.
+# ================================================================================================
+# --require-rescue-layer 18 AND --require-slurm-job ARE BOTH MANDATORY AND NEITHER IS OPTIONAL.
+#
+#  * WHY THE LAYER FILTER: EVERY one of BASE, KO, KO_SELF, KO_FULL, KO_AXIS, KO_PLS, KO_ORTH,
+#    KO_AXIS_ANCHOR, KO_RAND0-5 and KO_SHUF0-3 ALREADY EXISTS under csi1_button_validation_* at L20
+#    (jobs 897057 / 897114, 2026-09-15), out of a DIFFERENT basis file
+#    (configs/dcs_csi_axis_button_behavioral.pt). Without the layer filter these commands would
+#    silently mix the L20 experiment into an L18 read. I verified all 18 namesakes by hand.
+#  * WHY THE JOB FILTER, AND IT IS NOT REDUNDANT: BASE and KO run NO rescue -- script lines 155-156
+#    pass them no $R -- so BOTH their new L18 copies and the old L20 copies record
+#    args.rescue_layer = null and BOTH pass the layer filter untouched. FOR THOSE TWO ARMS THE JOB
+#    FILTER IS THE ONLY SEPARATOR. Omitting it silently substitutes the L20 experiment's BASE/KO,
+#    and KO is the subtrahend of all 47 recoveries. This is the S-104 / S-127 / R8-B1 foot-gun,
+#    re-measured by me on the button VALIDATION side rather than inherited.
+#    (MEASURED CORRECTION, same as on the train side: KO_SELF IS separable by layer -- group A's
+#     KO_SELF line does pass --rescue-layer $LAYER, and the existing validation copy records
+#     rescue_layer 20. Only BASE and KO are layer-blind. Both filters stay mandatory regardless.)
+#  * WHY --control-prefixes IS SPELLED OUT: it defaults to KO_SHUF,KO_RAND, but stating it is what
+#    makes the control family explicit in the frozen command rather than implicit in a default that
+#    another agent could change. If it is ever wrong THE CONTROL DISTRIBUTION GOES SILENTLY EMPTY
+#    and the rank is computed over nothing -- rank 1 of 1, the vacuous PASS of S-134.
+#  * WHY --out IS SPELLED OUT: the default for button/validation/sufficiency is
+#    reports/DCS_CSI_SUBSPACE_button_validation.json, WHICH ALREADY EXISTS as the committed L20
+#    K=10 read. Omitting --out overwrites it. Every call below names a distinct NEW path.
+#  * WHY --expect-n IS 230 AND NOT 670: the launcher's NKEEP over the VALIDATION exclusion file.
+#    670 here would admit nothing and is a VOID condition.
+#
+# The five allocations that make up this family:
+#   <A>   group A  -- BASE KO KO_SELF KO_FULL KO_AXIS KO_PLS KO_ORTH
+#   <B>   group B  -- KO_SHUF0-3 KO_RAND0-5 (+ KO_AXIS_ANCHOR, excluded from --arms)
+#   <I1>  group I1 -- KO_RAND6-11  KO_SHUF4-9
+#   <I2>  group I2 -- KO_RAND12-21 KO_SHUF10-11
+#   <K>   group K  -- KO_SHUF12-23
+# KO_AXIS_ANCHOR is NOT in --arms and is NOT matched by --control-prefixes "KO_SHUF,KO_RAND": it is
+# the cross-allocation anchor, not a control draw. <SW>, the swap job, is ABSENT from every
+# --require-slurm-job list in PARTS 3-4, so the swap arm is excluded twice over.
+
+# ---- 3.1 PRIMARY ANALYSER (46 controls, attainable floor 1/47 = 0.021277, NO arithmetic floor) ---
+python scripts/dcs_csi_subspace_analyze.py \
+  --codeword button --tag-prefix csi1_button_validation --expect-n 230 --allow-short 4 \
+  --arms BASE,KO,KO_SELF,KO_FULL,KO_AXIS,KO_PLS,KO_ORTH,KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5,KO_RAND6,KO_RAND7,KO_RAND8,KO_RAND9,KO_RAND10,KO_RAND11,KO_RAND12,KO_RAND13,KO_RAND14,KO_RAND15,KO_RAND16,KO_RAND17,KO_RAND18,KO_RAND19,KO_RAND20,KO_RAND21 \
+  --control-prefixes KO_SHUF,KO_RAND \
+  --direction sufficiency \
+  --candidate-arm KO_AXIS --comparator-arm KO_ORTH --full-arm KO_FULL --ko-arm KO --base-arm BASE --self-arm KO_SELF \
+  --self-inert-tol 0.005 --n-boot 20000 \
+  --split validation --require-rescue-layer 18 --require-slurm-job <A>,<B>,<I1>,<I2>,<K> \
+  --out reports/DCS_CSI_SUBSPACE_button_validation_L18_n46.json
+
+# ---- 3.2 INDEPENDENT RE-DERIVATION (shares no code with 3.1) ------------------------------------
+python scripts/dcs_csi_rederive_subspace.py \
+  --tag-prefix csi1_button_validation --split validation --expect-n 230 --allow-short 4 \
+  --direction sufficiency --candidate KO_AXIS --ko KO --base BASE --full KO_FULL \
+  --controls KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5,KO_RAND6,KO_RAND7,KO_RAND8,KO_RAND9,KO_RAND10,KO_RAND11,KO_RAND12,KO_RAND13,KO_RAND14,KO_RAND15,KO_RAND16,KO_RAND17,KO_RAND18,KO_RAND19,KO_RAND20,KO_RAND21 \
+  --require-rescue-layer 18 --require-slurm-job <A>,<B>,<I1>,<I2>,<K> \
+  --out reports/DCS_CSI_REDERIVE_button_validation_L18_n46.json
+
+# ---- 3.3 LEAVE-ONE-DOMAIN-OUT -------------------------------------------------------------------
+# NOTE the non-default --expect-n: this script's default is 670 and would silently admit nothing on
+# the validation split. --split validation is also non-default (its default is train).
+python scripts/dcs_csi_rank_loo.py --tag-prefix csi1_button_validation --split validation \
+  --expect-n 230 --allow-short 4 --require-rescue-layer 18 \
+  --require-slurm-job <A>,<B>,<I1>,<I2>,<K>
+
+# ---- 3.4 PRESPECIFIED SECONDARY S3a: SHUFFLED-ONLY subfamily (24 controls, floor 1/25 = 0.0400) --
+# R5 / S-099 / S-100 found the random and shuffled families exchangeable IN LOCATION but the
+# shuffled family's sd 1.9x the random family's on the basket side, so the SHUFFLED TAIL sets the
+# margin. AT BUTTON L18 ON TRAIN THE RATIO IS 0.8714 (random sd 0.000803025, shuffled sd 0.00069977,
+# MEASURED BY ME over the 46 committed recoveries) -- which CORRECTS the dissociation analysis's
+# section-11 figure of 0.65, computed on the 10-control family. This read asks whether the reversal
+# survives held-out. It is SECONDARY, it is declared before the data, and it may NOT be substituted
+# for the primary if the primary disappoints.
+python scripts/dcs_csi_subspace_analyze.py \
+  --codeword button --tag-prefix csi1_button_validation --expect-n 230 --allow-short 4 \
+  --arms BASE,KO,KO_SELF,KO_FULL,KO_AXIS,KO_PLS,KO_ORTH,KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23 \
+  --control-prefixes KO_SHUF \
+  --direction sufficiency \
+  --candidate-arm KO_AXIS --comparator-arm KO_ORTH --full-arm KO_FULL --ko-arm KO --base-arm BASE --self-arm KO_SELF \
+  --self-inert-tol 0.005 --n-boot 20000 \
+  --split validation --require-rescue-layer 18 --require-slurm-job <A>,<B>,<I1>,<I2>,<K> \
+  --out reports/DCS_CSI_SUBSPACE_button_validation_L18_shufonly.json
+
+# ---- 3.5 PRESPECIFIED SECONDARY S3b: RANDOM-ONLY subfamily (22 controls, floor 1/23 = 0.043478) --
+# The counterpart of 3.4. S-137's committed TRAIN values are random-only 17 of 23 and shuffled-only
+# 19-20 of 25, both certifiable at 0.05. Both subfamilies are read here so that neither can be
+# reported selectively.
+python scripts/dcs_csi_subspace_analyze.py \
+  --codeword button --tag-prefix csi1_button_validation --expect-n 230 --allow-short 4 \
+  --arms BASE,KO,KO_SELF,KO_FULL,KO_AXIS,KO_PLS,KO_ORTH,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5,KO_RAND6,KO_RAND7,KO_RAND8,KO_RAND9,KO_RAND10,KO_RAND11,KO_RAND12,KO_RAND13,KO_RAND14,KO_RAND15,KO_RAND16,KO_RAND17,KO_RAND18,KO_RAND19,KO_RAND20,KO_RAND21 \
+  --control-prefixes KO_RAND \
+  --direction sufficiency \
+  --candidate-arm KO_AXIS --comparator-arm KO_ORTH --full-arm KO_FULL --ko-arm KO --base-arm BASE --self-arm KO_SELF \
+  --self-inert-tol 0.005 --n-boot 20000 \
+  --split validation --require-rescue-layer 18 --require-slurm-job <A>,<B>,<I1>,<I2>,<K> \
+  --out reports/DCS_CSI_SUBSPACE_button_validation_L18_randonly.json
+
+# ---- 3.6 AFTER EVERY WRITE, VERIFY IT, AND ASSERT THE SIZE (S-123, S-124, S-134) ----------------
+# The disk quota is enforced at 200 GB and NFS reports EDQUOT ASYNCHRONOUSLY: a write can print
+# "Disk quota exceeded" and still have fully succeeded, or print nothing and have written 0 bytes.
+# The frozen PR-CSI-002 read already "succeeded" into two empty files once (S-123). EXIT STATUS IS
+# NOT EVIDENCE. Each line below prints n_controls and n_domains and ASSERTS them; a report whose
+# control distribution is empty FAILS here rather than producing a rank.
+python - <<'PYVERIFY'
+import json, os, sys
+REPO = "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
+EXPECT = {
+ "reports/DCS_CSI_SUBSPACE_button_validation_L18_n46.json":      46,
+ "reports/DCS_CSI_SUBSPACE_button_validation_L18_shufonly.json": 24,
+ "reports/DCS_CSI_SUBSPACE_button_validation_L18_randonly.json": 22,
+}
+bad = []
+for rel, k in EXPECT.items():
+    p = os.path.join(REPO, rel)
+    n = os.path.getsize(p)
+    d = json.load(open(p))                      # a 0-byte or truncated write raises HERE
+    cr = d["control_recovery_distribution"]
+    got_k, got_dom = cr["n_controls"], d["n_domains"]
+    rank = cr["candidate_rank_among_controls"]
+    print("%-58s %8d B | n_controls %2d (expect %2d) | n_domains %2d (expect 23) | rank %s of %s"
+          % (os.path.basename(rel), n, got_k, k, got_dom, rank, got_k+1))
+    if n == 0:        bad.append("%s is 0 bytes" % rel)
+    if got_k != k:    bad.append("%s: n_controls %d, expected %d -- THE RANK IS NOT READ" % (rel,got_k,k))
+    if got_dom != 23: bad.append("%s: n_domains %d, expected 23" % (rel, got_dom))
+    if not (1 <= rank <= got_k+1): bad.append("%s: rank %s outside 1..%d" % (rel,rank,got_k+1))
+# the re-derivation, which has a different schema
+p = os.path.join(REPO, "reports/DCS_CSI_REDERIVE_button_validation_L18_n46.json")
+print("%-58s %8d B | json.load OK, top-level keys %d"
+      % ("DCS_CSI_REDERIVE_button_validation_L18_n46.json", os.path.getsize(p), len(json.load(open(p)))))
+print()
+print("WRITE VERIFICATION:", "ALL PASS" if not bad else "FAIL")
+for b in bad: print("   FAIL:", b)
+sys.exit(0 if not bad else 1)
+PYVERIFY
+
+# ================================================================================================
+# PART 4 -- THE PRIMARY STATISTIC, REPORTED FIRST AND IN THIS ORDER
+# ================================================================================================
+# R47 = the candidate KO_AXIS's rank among itself and the 46 controls, analyser '>=' convention.
+# Report, in this order and none omitted:
+#   1. n_controls == 46 and n_domains == 23, PRINTED AND ASSERTED, BEFORE the rank. S-134.
+#      A rank without its denominator is the vacuous gate wearing a result's clothes, and REVIEW
+#      R10's BLOCKER-2 is the fourth instance of exactly that.
+#   2. R47 and p = R47/47, beside the attainable floor 1/47 = 0.021277, AND the statement that
+#      THERE WAS NO ARITHMETIC FLOOR -- every rank from 1 to 47 was attainable, unlike PR-CSI-005
+#      whose pooled rank was bounded at >= 8 before its experiment ran.
+#   3. the three gates: KO - BASE (expect clearly negative, cf. -0.29095 at button/validation/L20),
+#      |KO_SELF - KO| <= 0.005, KO_FULL - KO (expect clearly positive, cf. +0.09508 at L20 and
+#      +0.1037 for basket at L18 validation). A gate failure is CANNOT ANSWER, never a negative
+#      for the axis.
+#   4. the decision-rule branch that R47 selects, from the prereg's decision_rule.on_R47, reported
+#      VERBATIM before any new interpretation is offered:
+#        R47 = 1 or 2    -> REFUTATION. p <= 0.042553 certifies. S-137's "certified failure" is
+#                           TRAIN-only. Interrogate the pipeline first, then report regardless.
+#        3 <= R47 <= 12  -> top quartile, does NOT certify. The train result does not replicate.
+#                           NOT a pass, NOT "nearly significant".
+#        13 <= R47 <= 23 -> upper-middle, INDETERMINATE.
+#        R47 >= 24       -> the expected regime. The failure REPLICATES held-out.
+#   5. z = (cand - mean(46 controls))/sd(46 controls), beside button TRAIN L18's -0.5702
+#      (control mean +0.000283696, sd 0.00074304, candidate -0.00014 -- MEASURED BY ME from
+#      reports/DCS_CSI_SUBSPACE_button_train_L18_n46.json).
+#   6. the exceedance rate (R47 - 1)/46 with a Clopper-Pearson 95% CI, beside button TRAIN's
+#      35/46 = 0.76087 [0.6123, 0.8741] and basket's 0/46 [0.000, 0.077].
+#   7. the two subfamily ranks (3.4, 3.5) with their own floors 0.0400 and 0.043478.
+#   8. the leave-one-domain-out histogram and the BEST attainable rank under any single deletion,
+#      beside button TRAIN's {31:1,32:2,33:3,34:6,35:12,36:21,37:22} best 31 and basket's {1:67}.
+#      DECLARED IN ADVANCE: with 23 domains this histogram WILL be wider than train's. That is
+#      arithmetic, not instability.
+#   9. THE PREDICTION, and whether it held. Fixed before the data in the prereg:
+#        point R47 = 32 of 47; 95% band [24, 43] (union of the two routes);
+#        route 1 (Jeffreys BetaBinom(46, 35.5, 11.5) carried forward from TRAIN's 35/46):
+#                E[R47] = 35.74, band [27, 43];
+#        route 2 (normal-z shrunk by sqrt(23/67) = 0.5859: z_val = -0.3341, p_exceed = 0.63085):
+#                E[R47] = 30.02, band [24, 37].
+#      Report which route was closer. A result outside [24, 43] is a SURPRISE and must be reported
+#      as one.
+#  10. THE BLOB BOUNDARY, named, wherever this rank is printed beside PR-CSI-005's 36 of 47.
+#
+# WHAT MAY NOT BE SAID -- the prereg's must_not_be_said lists are binding and are not restated
+# loosely here. The three that catch the most likely errors:
+#   * NOT "button passes" or "the dissociation is refuted" on anything short of R47 <= 2.
+#   * NOT "nearly significant" about any R47 >= 3. p = R47/47 and the nearest certifying value is 2.
+#   * NOT any claim at all if step 1's size assertion was not printed.
+#   * NOT "button's axis is causal" in any branch. Prohibition 19 stands: on TRAIN the candidate
+#     recovers -0.13% of what the whole clean state recovers, and a rank cannot enlarge an effect.
+#   * NOT any statement pooling button with basket, or pooling this family's controls with the
+#     TRAIN family's. The domains are disjoint and the blobs differ.
+
+# ================================================================================================
+# PART 5 -- THE SECONDARY.  DO NOT RUN UNTIL PART 4 IS WRITTEN DOWN.
+# ================================================================================================
+# THE DIRECTION-A AXIS SWAP AT VALIDATION: basket's axis into button's held-out knockout.
+# THIS IS A SECONDARY. It is not the primary, it may not be substituted for the primary, and its
+# number is not looked at until PART 4 is complete and recorded. PR-CSI-006's binding rule:
+# "Direction A is read EXACTLY ONCE, at K = 46." There is no smaller validation family to read it
+# against and none may be constructed.
+#
+# WHAT PR-CSI-006 REQUIRES OF IT, FIXED HERE BEFORE THE DATA:
+#   Direction A on TRAIN is rank 4 of 47, which is NOT HELPS by PR-CSI-006's own definition
+#   ("rank 1 or 2 among 46 controls ... Rank 3 of 47 is p = 0.06383 and is NOT 'helps'").
+#   PR-CSI-006 decision_rule step_6: "If they disagree, the direction is reported as NOT REPLICATED
+#   and no cell is claimed for it." And must_not_be_said_if_positive item 5: "NOT 'replicated'
+#   unless ... train and validation cells AGREE. One split is not a replication."
+#   THIS CLAUSE HAS NEVER APPLIED TO DIRECTION A BEFORE, BECAUSE DIRECTION A HAD NO VALIDATION SPLIT.
+#     * validation R47 <= 2  -> the splits DISAGREE (train 4, validation <= 2). DIRECTION A IS
+#       REPORTED AS **NOT REPLICATED** AND **NO CELL IS CLAIMED FOR IT**. It joins direction B in
+#       exactly the state REVIEW R10 put it in, and the 2x2 is unresolved in BOTH directions.
+#       This may NOT be reported as "basket's axis rescues button held-out".
+#     * validation R47 >= 3  -> the splits AGREE at "does not help". CELL 4 on direction A becomes
+#       a TWO-SPLIT finding and PR-CSI-006's preregistered CELL 4 text -- "C1 is REFUTED: a shared
+#       direction estimated BETTER should have transferred, and did not" -- is reported VERBATIM,
+#       as REVIEW R10's BLOCKER-1 requires. The rank-36-to-rank-4 contrast may be reported beside it
+#       as a SECONDARY, UNPREREGISTERED observation and labelled as such, which is what R10 ruled it
+#       always was.
+#   AND: REVIEW R10 WITHDREW "C1 is SUPPORTED and the STATE hypothesis is REFUTED" as a headline.
+#   NO OUTCOME HERE RESTORES IT. A validation rank of 1 or 2 produces NOT REPLICATED and no cell,
+#   which is further from a claim, not closer to one.
+#   AND: "disagree" in the decision rule is about which side of the R47 <= 2 bar the two splits fall,
+#   NOT a claim that the two recoveries differ. REVIEW R10's CORRECTION measured direction B's two
+#   splits as statistically INDISTINGUISHABLE (VALIDATION - TRAIN = +0.001336, ci95
+#   [-0.000895, +0.003720], p = 0.254, domain overlap 0) even though their CELLS disagreed. If the
+#   word "disagree" is used in a statistical sense it must carry the corresponding test, and the
+#   domains are disjoint so that test is a TWO-SAMPLE contrast, never a paired one.
+#
+# THE SWAP ARM IS THE --candidate-arm, NOT A CONTROL. The recipient's own KO_AXIS stays in --arms so
+# the native-versus-swap contrast is computed inside ONE report on ONE key set -- comparing a swap
+# rank against a native rank across two different reads is the S-125 key-set trap.
+# <SW> ENTERS --require-slurm-job HERE AND ONLY HERE.
+
+python scripts/dcs_csi_subspace_analyze.py \
+  --codeword button --tag-prefix csi1_button_validation --expect-n 230 --allow-short 4 \
+  --arms BASE,KO,KO_SELF,KO_FULL,KO_AXIS,KO_PLS,KO_ORTH,XSWAP_FROM_BASKET,KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5,KO_RAND6,KO_RAND7,KO_RAND8,KO_RAND9,KO_RAND10,KO_RAND11,KO_RAND12,KO_RAND13,KO_RAND14,KO_RAND15,KO_RAND16,KO_RAND17,KO_RAND18,KO_RAND19,KO_RAND20,KO_RAND21 \
+  --control-prefixes KO_SHUF,KO_RAND \
+  --direction sufficiency \
+  --candidate-arm XSWAP_FROM_BASKET --comparator-arm KO_ORTH --full-arm KO_FULL --ko-arm KO --base-arm BASE --self-arm KO_SELF \
+  --self-inert-tol 0.005 --n-boot 20000 \
+  --split validation --require-rescue-layer 18 --require-slurm-job <A>,<B>,<I1>,<I2>,<K>,<SW> \
+  --out reports/DCS_CSI_SWAP_button_validation_L18_from_basket_n46.json
+
+python scripts/dcs_csi_rederive_subspace.py \
+  --tag-prefix csi1_button_validation --split validation --expect-n 230 --allow-short 4 \
+  --direction sufficiency --candidate XSWAP_FROM_BASKET --ko KO --base BASE --full KO_FULL \
+  --controls KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5,KO_RAND6,KO_RAND7,KO_RAND8,KO_RAND9,KO_RAND10,KO_RAND11,KO_RAND12,KO_RAND13,KO_RAND14,KO_RAND15,KO_RAND16,KO_RAND17,KO_RAND18,KO_RAND19,KO_RAND20,KO_RAND21 \
+  --require-rescue-layer 18 --require-slurm-job <A>,<B>,<I1>,<I2>,<K>,<SW> \
+  --out reports/DCS_CSI_SWAP_REDERIVE_button_validation_L18_from_basket.json
+
+# ---- 5.1 VERIFY THE SWAP WRITES AND ASSERT THEIR SIZES -------------------------------------------
+python - <<'PYSWAP'
+import json, os, sys
+REPO = "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
+p = os.path.join(REPO, "reports/DCS_CSI_SWAP_button_validation_L18_from_basket_n46.json")
+n = os.path.getsize(p); d = json.load(open(p))
+cr = d["control_recovery_distribution"]
+print("swap report: %d bytes | n_controls %d (MUST be 46) | n_domains %d (MUST be 23)"
+      % (n, cr["n_controls"], d["n_domains"]))
+print("  SWAP   XSWAP_FROM_BASKET rank %s of %s" % (cr["candidate_rank_among_controls"], cr["n_controls"]+1))
+con = d.get("contrasts", {})
+for k in ("recovery_XSWAP_FROM_BASKET_minus_ko", "recovery_KO_AXIS_minus_ko",
+          "manipulation_ko_minus_base", "identity_self_minus_ko", "positive_control_full_minus_ko"):
+    if k in con: print("  %-42s %s" % (k, con[k].get("point")))
+print("  TRAIN reference (committed, DCS_CSI_SWAP_button_train_L18_from_basket_n46.json):")
+print("     swap +0.00150 rank 4 of 47 | native KO_AXIS -0.00014 rank 36 of 47 | 67 domains, 626 keys")
+bad = []
+if n == 0: bad.append("0 bytes")
+if cr["n_controls"] != 46: bad.append("n_controls %d != 46 -- THE RANK IS NOT READ" % cr["n_controls"])
+if d["n_domains"] != 23:   bad.append("n_domains %d != 23" % d["n_domains"])
+print("SWAP VERIFICATION:", "PASS" if not bad else "FAIL")
+for b in bad: print("   FAIL:", b)
+sys.exit(0 if not bad else 1)
+PYSWAP
+
+# ================================================================================================
+# PART 6 -- WHAT MAY AND MAY NOT BE CONCLUDED
+# ================================================================================================
+#  * THE DECISION RULE IS IN THE PREREGISTRATION AND IS NOT RESTATED LOOSELY HERE. The PRIMARY is
+#    R47. R47 <= 2 certifies and REFUTES the held-out form of S-137's certified-failure claim;
+#    3 <= R47 <= 12 is a replication failure that certifies nothing; 13 <= R47 <= 23 is
+#    indeterminate; R47 >= 24 is the expected regime and closes S-137's declared gap.
+#  * THE PREDICTION WAS FIXED BEFORE THE DATA and is quoted in PART 4 step 9. It is not adjusted
+#    afterwards, and a result outside the band is reported as a surprise rather than absorbed.
+#  * THIS EXPERIMENT CAN ONLY HURT THE SPRINT'S HEADLINE. A null here does NOT strengthen the
+#    dissociation beyond what S-137 already established; it extends it to a second split. A
+#    positive here DAMAGES it. Report accordingly.
+#  * THE FAMILY IS NOT EXTENDED AFTER THIS READ. 46 is the resolution basket's passing reads used
+#    and it is this preregistration's terminal K. No control is added, dropped or reweighted after
+#    any number is read, and no domain is.
+#  * PROHIBITION 19 STANDS in every branch. Nothing here may be written as "button's axis is causal"
+#    or "button's axis is not causal".
+#  * A NULL IS NOT "NEARLY SIGNIFICANT" and a HIGH RANK IS NOT A PASS. p = R47/47 and the only
+#    certifying values are 1 and 2.
+#  * CANNOT ANSWER IS NOT A NULL. If the instrument gate (KO_FULL - KO) fails, or the identity gate
+#    fails, or the family is short of 46, the answer is CANNOT ANSWER and it is reported as such.
+#    Design failure is not a result about the axis.
+#  * NOTHING HERE POOLS BUTTON AND BASKET (rule 3.3). Every cross-codeword contrast is reported side
+#    by side, never combined.
+#  * AMPLITUDE, NEVER "ENERGY" (captured_energy_frac_mean is mean(proj_norm / delta_norm), a ratio
+#    of NORMS despite the key name). NO DOSE-NORMALISED obs/pred RATIO (S-109 withdrew it).
+#  * IF A VOID CONDITION FIRES, THE FAMILY IS RE-RUN, NEVER PATCHED -- and the rule is not amended
+#    after it fires to let the experiment through. That is S-142's discipline and BLOCKER-1's shape,
+#    and it is the one rule this file will not bend for its own convenience.
