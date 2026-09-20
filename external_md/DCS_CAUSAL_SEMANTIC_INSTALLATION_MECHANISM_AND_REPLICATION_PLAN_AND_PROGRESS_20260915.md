@@ -11496,3 +11496,101 @@ blob 11d2c617   porcelain clean (2 untracked, unrelated)   quota 197G of 200G
 
 No number was read. The read's job list must still name `914043`, `914048` and the chain survivors, and
 must **not** name `914044-914047`, `914417-914420`, `914472-914475`.
+
+---
+
+# S-150 — the NFS skew from S-149, run down: it is **exactly +240 s and constant**, and it reaches exactly one piece of code — `backfill_runmeta.py`, which derives `wall_seconds` by **subtracting a compute-node clock from a fileserver clock**. Blast radius measured at **0 of 2472**
+
+S-149 found the sprint log's timings could have been read off a filesystem whose mtimes run ahead of
+the wall clock. That was a near-miss on one entry. The question it leaves is whether any *code* makes
+a decision on those mtimes, because that would be a defect rather than a misreading.
+
+## The skew, pinned
+
+Write to NFS and to local disk in the same breath, then stat both:
+
+```
+trial 1: local_clock=1789941098  local_fs_mtime=1789941098 (d=0)  NFS_mtime=1789941338 (d=+240s)
+trial 2: local_clock=1789941100  local_fs_mtime=1789941100 (d=0)  NFS_mtime=1789941340 (d=+240s)
+trial 3: local_clock=1789941102  local_fs_mtime=1789941102 (d=0)  NFS_mtime=1789941342 (d=+240s)
+```
+
+**Exactly +240 s, three for three, and the local filesystem has no skew at all.** So this is a constant
+offset in `netapp2-244`'s clock, not jitter and not attribute-cache lag — which makes it correctable in
+principle and, more usefully, makes its effect on any consumer exactly computable. (Probe files were
+removed; `outputs/boombness/.skewprobe` does not exist.)
+
+## The audit
+
+```
+grep -rnE "getmtime|st_mtime|getctime|-newer|sort.*mtime|key=.*mtime" src/ scripts/ doublespeak_causality/
+```
+
+**Run selection is not at risk.** Every resolution path is `sorted(glob.glob(...))` over run
+*directory names*, and a run_id carries the `RunDir` construction instant stamped **in-process on the
+compute node** (`…_20260921_001731_532952`). Lexicographic order on those names is therefore
+chronological order on the compute clock, and the fileserver's opinion never enters.
+`scripts/gates/dcs_document_short_runs.py:30` already states the rule outright — *"selection is
+deterministic (sorted run_id), never mtime."* Four hits total, of which two are real decisions:
+
+**1. `src/boombness/run_completeness_check.py:1696` — benign, quantified.**
+
+```python
+if _time.time() - os.path.getmtime(cfg_p) < 6 * 3600:
+    continue  # still in flight; flagging it would make the check cry wolf
+```
+
+`getmtime` is 240 s high, so the difference is 240 s low and the in-flight grace window is really
+**6 h 4 min**. It errs toward *not* flagging a run for four extra minutes. 1.1 % of the window, in the
+safe direction, on a heuristic whose whole purpose is to avoid crying wolf. No change warranted.
+
+**2. `doublespeak_causality/scripts/backfill_runmeta.py:504-515` — a real defect.**
+
+```python
+mt = [os.path.getmtime(os.path.join(dpath, f)) for f in files ...]
+end = max(mt)
+done["end_ts"] = _field(time.strftime(...localtime(end)), "mtime", "latest mtime in the run dir")
+t0 = time.mktime(time.strptime(st["value"], "%Y-%m-%dT%H:%M:%S"))   # start_ts: written IN-PROCESS
+done["wall_seconds"] = _field(round(end - t0, 1), "mtime", ...)
+```
+
+`end` comes from the **fileserver clock**; `t0` comes from a `start_ts` written by the run itself on the
+**compute node**. The subtraction mixes two clocks, so every backfilled `wall_seconds` is inflated by
+**exactly +240 s**, and `end_ts` is 240 s late. On a 238 s arm that is **+101 %** — it would read 478 s.
+This is the same class as the arm-vs-ceiling population mismatch the file guards against elsewhere: a
+number that is wrong while looking entirely reasonable.
+
+## Blast radius — measured, not assumed
+
+`backfill_runmeta.py` wraps derived fields in `_field(value, provenance, description)`, so a backfilled
+`wall_seconds` is a **dict** while a natively written one is a bare float. That makes the census exact:
+
+```
+native wall_seconds (written in-process):  2472
+backfilled wall_seconds (_field dict):        0
+no wall_seconds / unparsable:                 4
+PR-CSI arms with backfilled wall_seconds:     0
+```
+
+**Zero of 2472.** The defect has never been exercised on any run in this repo. Two consequences:
+
+* **S-147, S-148 and S-149 are unaffected.** Every arm quoted in those entries — the 1469 s cluster, the
+  238/245/253 s figures, the whole per-phase decomposition — is a native in-process measurement. I
+  checked this rather than assuming it, because S-149's entire argument is built on `wall_seconds` and
+  a 240 s inflation would have moved the 245.3 s arm to 485 s and inverted the conclusion.
+* **It stays latent only until someone runs the backfill**, and the natural occasion for running it is
+  precisely the case it corrupts: old runs missing a `DONE.json`, where nobody can check the number
+  against a log any more.
+
+## Status
+
+Not fixed in this tick, deliberately. `backfill_runmeta.py` is outside the PR-CSI-007 blob witness but
+the honest sequencing is to record the measurement first and change code second; the fix is also not
+obviously "subtract 240" — the skew is a property of the server *now*, and a backfill run against
+historical files cannot assume it held then. **Recorded as a known defect with a measured blast radius
+of zero**, to be fixed before any backfill is run, and the fix must carry its own provenance marker
+rather than silently adjusting a constant.
+
+```
+914476 R n-305 group B  | 914477 914478 914479 PD (Dependency)   blob 11d2c617   quota 197G of 200G
+```
