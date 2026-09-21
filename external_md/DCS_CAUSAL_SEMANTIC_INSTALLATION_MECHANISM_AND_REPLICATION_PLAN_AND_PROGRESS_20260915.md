@@ -15017,3 +15017,99 @@ h19 leads 42/67, NEGATIVE 67/67, P(rank1) > 1-1e-4, gap over h17 = 130.7 CI [103
 reconstruction 1.968e-10 | third bit-identical reproduction of S[h] | bootstrap unit = DOMAIN
 OPEN DESIGN CALL FOR THE USER: select section 4's head set by TRUE PATCH EFFECT, not AtP rank (R14-3)
 ```
+
+---
+
+# S-190 — **PR-CSI-010 is FROZEN and its GATE 0 passes.** The open selector question is **resolved by the preregistration, against my own instinct** — and gate 0 caught my freezer rounding a p-value floor in the flattering direction
+
+24 arms per split, `HD_TOPK = [19, 17, 23, 6, 13, 2, 24, 28]`,
+`HD_BOTK = [29, 11, 30, 10, 15, 16, 0, 9]`, 20 reproducible control draws, floor `1/21`.
+
+## The selector question is answered by §5 clause 7, and the answer is "do not change it"
+
+I flagged twice that R14-3 (top-10 cell overlap with truth **8 of 10**) and S-189 (h19 leads outright
+in only **42 of 67** domains) argue for selecting §4's head set by **true patch effect** instead of
+AtP rank. Re-reading the design closed it:
+
+> §5.7 — *"If §3.4's true-patch gate **fails** and the fallback selection is used, the fallback is
+> still a single preregistered candidate set…"*
+
+**The fallback exists only for a gate FAILURE. The gate passed (0.7817 / 0.7852).** And both of my
+reasons became visible *only after* the gate result — so substituting the selector now would be a
+**post-hoc selector change justified by data already seen**, which is precisely what a
+preregistration exists to forbid. The instinct was not wrong as physics; it was wrong as procedure.
+Both are recorded in the prereg as limitations on **interpretation**, under
+`selector_justification`, and neither is grounds to re-select. **This resolves the question I put to
+the user; no decision is needed.**
+
+## Gate 0 found a defect in the freezer I had just written
+
+```
+[C] the floor arithmetic
+  FAIL floor p == 1/(n_controls+1)  -- 0.0476
+```
+
+`round(1/21, 4) = 0.0476`, but the true floor is `0.047619…`, so the stored value sat **below** the
+real floor. The consequence is `1.9e-5` and changes no verdict. **The principle is that a threshold
+must never be stored more favourably than it is** — a rounded-down p-floor is the same species of
+error as a control family that silently narrows. Now stored exactly, with a separate
+`floor_p_display` for prose. This is the payoff from writing the checker **without importing the
+freezer**: a checker that shares the producer's code cannot catch the producer's bug.
+
+## What gate 0 verifies, re-derived rather than trusted
+
+```
+[A] HD_TOPK/HD_BOTK re-derived from the screen, disjoint, pool = the 24 non-candidates
+[B] all 20 draws reproduce from seed_base+index | K heads each | NO candidate leakage | 20 distinct
+    | HD_BOTK absent from the family (S-120(e))
+[C] floor == 1/21 exactly | clears alpha only at rank 1 | rank 2 = 0.0952 does NOT pass | 24 arms
+[D] gate2 pearson/spearman/min_corr/TRUSTWORTHY all match the artifact | 40 domains
+[E] screen ran under LOADED eager | 670 rows | 67 domains | model id matches
+[F] no TEST domain in either population | 67 train / 23 validation
+```
+
+## ⛔ Coverage is stated, not implied
+
+REVIEW R13 found `pr009_gate0.py` announcing "every VOID condition checked" while covering four of
+seven. This gate prints its own coverage per condition:
+
+```
+VOID 1 one GPU architecture          NOT CHECKABLE -- no arms exist yet
+VOID 2 LOADED eager                  PARTIAL -- verified for the SCREEN; each arm must re-verify
+VOID 3 clean worktree + provenance   NOT CHECKABLE -- enforced by dcs_csi_submit.sh at submit
+VOID 4 score_behavior.py unmodified  NOT CHECKABLE -- a run-time condition
+VOID 5 head sets/seeds match         CHECKED (for the prereg; each arm's config on read)
+VOID 6 HD_BOTK excluded              CHECKED
+VOID 7 no TEST domain                CHECKED (for the axis; each arm's population on read)
+
+3 of 7 in full, 1 partial, 3 not checkable before the arms exist.
+THIS GATE CLEARS THE PREREGISTRATION, NOT THE FAMILY.
+```
+
+## Recorded before the arms run
+
+`K = 8` was fixed in the design **before any AtP number existed** and is not re-chosen here. TRAIN is
+**descriptive** and its rank is selection-contaminated by construction — the prereg requires those
+words printed beside it. VALIDATION adjudicates with **one** test, so no multiplicity correction is
+applied and that is a consequence of the design. And the design's own honest expectation stands on
+record: **PARTIALLY LOCALISED or DISTRIBUTED, with `F` well under 0.50**; a WE FOUND THE WRITER
+verdict should read as the surprise it would be.
+
+## Commands
+
+```
+python scripts/gates/dcs_csi_pr010_freeze.py \
+  --screen outputs/boombness/dcs_csi/w1_screen_train_basket_916132.json \
+  --gate   outputs/boombness/dcs_csi/w2_patch_gate_train_basket_916044.json \
+  --screen-blob b56d5d16 --out configs/dcs_csi_pr010_head_causal_basket.json
+python scripts/gates/dcs_csi_pr010_gate0.py \
+  --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+  --screen outputs/boombness/dcs_csi/w1_screen_train_basket_916132.json \
+  --gate   outputs/boombness/dcs_csi/w2_patch_gate_train_basket_916044.json
+```
+
+```
+PR-CSI-010 FROZEN | GATE 0 PASSED | 24 arms/split | floor 1/21 stored EXACTLY after gate 0 caught it
+SELECTOR QUESTION CLOSED BY THE PREREG, NOT BY MY JUDGEMENT -- the fallback is for a gate FAILURE only
+NOTHING LAUNCHED: the arms need the user's call on GPU budget (48 arms over both splits) | quota 198G
+```
