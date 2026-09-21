@@ -16661,3 +16661,52 @@ THE K x IDENTITY IS RELATIVE: train 16416/2052 and validation 16128/2016 both gi
 A check hard-coded to train's 16416 would have VOIDED every validation arm -- a fourth way to get the
 same identity wrong, after the three K/32 sites. NO ENDPOINT VALUE READ for validation.
 ```
+
+---
+
+# S-216 — 12 of 24 VALIDATION arms, all passing GATE 0. **The paired-contrast assumption is verified on the split that ADJUDICATES**, not just on the descriptive one
+
+R16-6 verified that the TRAIN arms carry identical `prompt_id` sets. TRAIN adjudicates nothing. The
+check that matters is on the held-out split, and it had not been run there:
+
+```
+VALIDATION arms landed: 12
+  identical prompt_id sets : ALL (size 230)
+  identical domain sets    : ALL (size 23)
+  slurm_job_id             : {'916536': 12}
+  TEST domains present     : NONE
+```
+
+**Every landed validation arm carries the same 230 prompts over the same 23 domains, row for row.** So
+`E(arm) − E(HD_BASE)` on the adjudicating split is a genuine **within-prompt** paired contrast, which is
+the assumption the rank test rests on. Three PR-CSI-010 VOID conditions are cleared for these arms in
+passing: **no TEST domain** (VOID 7, the re-check gate 0 delegated to the reader), a single uniform
+`slurm_job_id` so `--require-slurm-job 916536` will admit every arm (VOID 5's resolution path), and the
+population matching the preregistered 230/23.
+
+## State
+
+```
+GATE 0 SWEEP -- validation | 12 of 24 | every landed arm PASSES
+~324 s per K=8 arm | 12 remaining -> ~1.1 h | hooks_after=0 throughout
+```
+
+**No endpoint value has been read for validation.** When the family completes, the amended read's
+VALIDATION stage runs and GATE 1 is adjudicated on the held-out split — and if `E(HD_KO)` is not clearly
+negative there, the verdict is **CANNOT ANSWER and the candidate is not reported**, regardless of what
+TRAIN showed.
+
+## Commands
+
+```
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+  --tag-prefix csi3_head_basket_validation --split validation
+# prompt_id / domain set identity and RUNMETA job ids read per arm, anchored regex per tag
+```
+
+```
+12 of 24 VALIDATION arms, ALL PASS GATE 0 | ~1.1 h remaining
+THE ADJUDICATING SPLIT'S PAIRED CONTRAST IS VERIFIED WITHIN-PROMPT: identical 230-prompt, 23-domain
+sets across every landed arm | no TEST domain | one uniform slurm_job_id
+NO ENDPOINT VALUE READ for validation. GATE 1 there can still return CANNOT ANSWER.
+```
