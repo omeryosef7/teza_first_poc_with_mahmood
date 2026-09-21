@@ -13705,3 +13705,96 @@ against the next script that needs a blob witness.
 914750 RUNNING n-301 19 min / 2 h | gate 0 written, self-caught, and now REFUSING the unfinished corpus
 VOID 1 verified live | VOID 3 verified equivalent | 33 args identical | NO COSINE COMPUTED
 ```
+
+---
+
+# S-169 — **PR-CSI-009 READ. abs(cos) = 0.998406 at L18 and 0.997866 at L20 — the V100 extraction-hardware confound is CLEARED at both layers, and the prediction held.** REVIEW R11's MAJOR-1 is closed
+
+Job `914750` COMPLETED on n-301 in **36:35**, rc = 0. Gate 0 exited 0. The refits ran, the cosine was
+computed once, and the preregistration's branch was selected by the number rather than by me.
+
+## Gate 0 — every VOID condition checked before any cosine
+
+```
+VOID 1  GPU 'NVIDIA GeForce RTX 3090'  compute_capability 8.6        -> bf16 NATIVE
+VOID 2  bank sha16 79511d9e254571e6 == the committed axis's own bank_sha16
+VOID 3  33 non-exempt arguments compared, EVERY ONE IDENTICAL; --layers the only manipulation
+VOID 3  model revision: committed 0e9e39f249a1 | new 0e9e39f249a1 | required 0e9e39f249a1
+        population: n_bank_rows_used 3720 == 3720 | n_result_rows 3714 == 3714
+VOID 7  dcs_csi_axis_basket_behavioral.pt  9fd89754...  UNCHANGED
+        dcs_csi_axis_basket_L20.pt         131255c3...  UNCHANGED
+GATE 0 PASS
+```
+
+## The result
+
+```
+                         cos          abs(cos)     1 - abs(cos)
+L18   committed vs new   +0.998406    0.998406     0.001594
+L20   committed vs new   +0.997866    0.997866     0.002134
+
+calibration scale, from D27's COMMITTED numbers:
+   46 controls vs the native axis:  min 0.0001 | median 0.0156 | MAX 0.1894
+   cross-codeword swap axis:        0.5569
+fit population: 670 rows / 67 domains on ALL FOUR axes.  All four vectors unit-norm, dim 4096.
+```
+
+**Branch selected, quoted verbatim, at both layers:**
+
+> *"THE CONFOUND IS CLEARED AT THIS LAYER. The extraction hardware did not move the fitted direction,
+> and R11 MAJOR-1 stops being a live candidate explanation of the dissociation at this layer. **It does
+> NOT become evidence FOR any other explanation.**"*
+
+**The prediction held.** It was fixed before the data at *"≥ 0.99 at BOTH layers"*, and it is the
+outcome that keeps the sprint's existing claims standing — which is exactly why it was committed at
+08:07:11, nine minutes before the job existed.
+
+## The residual is not zero, and should not be
+
+The axes are **not** bit-identical: 1 − abs(cos) is 0.0016 at L18 and 0.0021 at L20. Both sit **inside
+bf16's ~2⁻⁸ = 0.0039 relative precision**, which is the reasoning the 0.99 threshold was built on. Two
+different devices accumulating in a different order should differ by about this much and no more.
+A cosine of exactly 1.0 would have been the surprising result.
+
+## What this closes, and what it does not
+
+**Closes:** REVIEW R11 MAJOR-1. The behavioural channel of the codeword dissociation is **not**
+confounded with extraction hardware at the layers the committed axes use. S-153's CANNOT ANSWER on the
+magnitude is now answered: the magnitude is 0.0016–0.0021 in cosine distance, i.e. float noise.
+
+**Does not close, and the preregistration says so by name:**
+* **NOT** *"the dissociation is explained"* or *"unexplained"* — this removes **one** candidate of
+  several. **S-160's held-out non-replication is untouched by it and remains live.**
+* **NOT** any statement about button, which has no arm in this experiment and may not be pooled.
+* **NOT** *"basket's axis is correct"* — a direction unchanged under a hardware swap is not thereby a
+  right direction.
+* **NOT** anything about the layer grid: the new corpus carries `layer_grid [18, 20]` against the
+  committed `[16, 18, 20, 22, 24, 26, 28, 30, 31]`, so the argmax was **not** re-run. This asks whether
+  the direction moved at the layer each committed axis selected, and answers only that.
+
+## A code-identity difference found by measuring, not by the witness that should have caught it
+
+The new corpus captures **23 sites** where the committed one captured **20** — the same 16 `rel-*` plus
+three extra codeword sites (`cw_demo_prev_mean`, `cw_demo_next_mean`, `cw_demo_rand_mean`) appended
+after `cw_demo_mean`. **All 33 arguments were identical, so the extraction CODE changed between
+2026-09-10 and today.** That is precisely what a blob witness exists to catch — and **the launch banner
+printed `blob ` empty** (the defect S-168 recorded one tick earlier). The witness that should have
+caught it printed nothing.
+
+**Checked rather than assumed** whether it invalidates the comparison: `dcs_csi_axis.py:67` resolves the
+site **by name** (`si = sites_all.index(site)`) and refuses at `:350` if the name is absent;
+`:68` resolves the layer **by value** (`li = layers_all.index(layer)`); and `:352` builds the grid as the
+intersection of the plateau constant with what was captured. The three extra sites are appended at the
+end and `rel-6` is untouched, so the fit reads the same `[site, layer]` slice in both corpora. **The
+comparison is valid, and that is a measurement of the code path, not a reassurance.**
+
+## Cost
+
+36 min of one 3090, 1.31 GB (23 sites × 2 layers, slightly above S-162's 1.13 GB estimate for 20 sites
+— the three extra sites account for the difference). Quota 197 G → 198 G.
+
+```
+abs(cos) L18 0.998406 | L20 0.997866 | BOTH CLEARED | prediction HELD
+reports/DCS_CSI_PR009_HARDWARE_AB.json 2457 B, written atomically and re-parsed
+R11 MAJOR-1 CLOSED | S-160's held-out non-replication REMAINS the live unrefuted candidate
+```

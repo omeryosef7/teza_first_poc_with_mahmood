@@ -1,0 +1,81 @@
+{
+  "schema": "dcs_csi_pr009_hardware_ab/1",
+  "prereg": "configs/dcs_csi_pr009_basket_reextract_3090.json",
+  "question": "does the fitted basket behavioural direction change under native bf16 (RTX 3090) vs emulated (Tesla V100)?",
+  "new_corpus": "outputs/boombness/extract_boombness/cont1re_behavioral_basket_bomb_20260921_081723_897277",
+  "committed_corpus": "outputs/boombness/extract_boombness/cont1_behavioral_basket_bomb_20260910_113902_3966018",
+  "slurm_job": "914750",
+  "gate0": "PASS",
+  "layers": {
+    "L18": {
+      "committed_axis": "configs/dcs_csi_axis_basket_behavioral.pt",
+      "new_axis": "configs/dcs_csi_axis_basket_behavioral_RE3090_L18.pt",
+      "cos": 0.99840599,
+      "abs_cos": 0.99840599,
+      "residual_1_minus_abs_cos": 0.00159401,
+      "committed_norm": 1.0,
+      "new_norm": 1.0,
+      "committed_n_fit_rows": 670,
+      "new_n_fit_rows": 670,
+      "committed_n_fit_domains": 67,
+      "new_n_fit_domains": 67,
+      "committed_layer_grid": [
+        16,
+        18,
+        20,
+        22,
+        24,
+        26,
+        28,
+        30,
+        31
+      ],
+      "new_layer_grid": [
+        18,
+        20
+      ],
+      "branch": "abs_cos >= 0.99",
+      "verdict": "CONFOUND CLEARED AT THIS LAYER"
+    },
+    "L20": {
+      "committed_axis": "configs/dcs_csi_axis_basket_L20.pt",
+      "new_axis": "configs/dcs_csi_axis_basket_behavioral_RE3090_L20.pt",
+      "cos": 0.99786556,
+      "abs_cos": 0.99786556,
+      "residual_1_minus_abs_cos": 0.00213444,
+      "committed_norm": 1.0,
+      "new_norm": 1.0,
+      "committed_n_fit_rows": 670,
+      "new_n_fit_rows": 670,
+      "committed_n_fit_domains": 67,
+      "new_n_fit_domains": 67,
+      "committed_layer_grid": [
+        16,
+        18,
+        20,
+        22,
+        24,
+        26,
+        28,
+        30,
+        31
+      ],
+      "new_layer_grid": [
+        18,
+        20
+      ],
+      "branch": "abs_cos >= 0.99",
+      "verdict": "CONFOUND CLEARED AT THIS LAYER"
+    }
+  },
+  "calibration_scale_from_D27": {
+    "46_controls_vs_native_min": 0.0001,
+    "median": 0.0156,
+    "max": 0.1894,
+    "cross_codeword_swap_axis": 0.5569
+  },
+  "prediction_fixed_before_data": ">= 0.99 at BOTH layers (CLEARED)",
+  "prediction_held": true,
+  "bf16_relative_precision": 0.0039,
+  "restriction": "two layers captured, so the argmax over the committed grid was NOT re-run; this asks whether the direction moved AT THE LAYER EACH COMMITTED AXIS SELECTED"
+}

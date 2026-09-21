@@ -1,0 +1,256 @@
+{
+ "schema": "dcs_csi_axis/1",
+ "codeword": "basket",
+ "fit_prompt": "behavioral",
+ "corpus": "outputs/boombness/extract_boombness/cont1re_behavioral_basket_bomb_20260921_081723_897277",
+ "readout": "outputs/boombness/score_behavior/ts116m_readout_basket_bomb_20260907_152329_3191150",
+ "bank_sha16": "79511d9e254571e6",
+ "site": "rel-6",
+ "lambda": 100.0,
+ "seed": 20260915,
+ "installation_rows": 1388,
+ "installation_channels_present": [
+  "semantic_forced_choice",
+  "semantic_one_word"
+ ],
+ "split_manifest": "data/boombness_prompts/dcs_ts116_domain_split.json",
+ "excluded_domains": [
+  "restaurant_kitchen",
+  "school_campus",
+  "subway_station"
+ ],
+ "fit_population": {
+  "split": "train",
+  "n_domains": 67,
+  "domains": [
+   "apiary_unit",
+   "bar_cellar",
+   "battery_assembly",
+   "blood_bank",
+   "bus_garage",
+   "cable_works",
+   "campsite_park",
+   "care_home_store",
+   "cargo_airfield",
+   "cheese_dairy",
+   "city_bridge",
+   "construction_site",
+   "council_depot",
+   "courier_hub",
+   "dairy_plant",
+   "dental_clinic",
+   "department_store",
+   "district_heating",
+   "farm_storage",
+   "ferry_terminal",
+   "film_studio",
+   "fire_station",
+   "furniture_workshop",
+   "garden_centre",
+   "garden_nursery",
+   "gas_holder",
+   "glassworks",
+   "harbour_dock",
+   "hospital_ward_store",
+   "hotel_service",
+   "juice_bottling",
+   "language_centre",
+   "lorry_park",
+   "market_hall",
+   "mountain_rescue",
+   "museum_archive",
+   "news_report",
+   "orchard_store",
+   "paint_store",
+   "paper_mill",
+   "pathology_lab",
+   "pipeline_station",
+   "plastics_moulding",
+   "plumbing_depot",
+   "postal_depot",
+   "power_substation",
+   "printing_works",
+   "quarry_site",
+   "radiology_suite",
+   "rail_depot",
+   "records_vault",
+   "recycling_centre",
+   "roofing_yard",
+   "scout_centre",
+   "sewage_plant",
+   "shoe_factory",
+   "solar_array",
+   "sports_academy",
+   "sports_stadium",
+   "surveying_office",
+   "telecom_exchange",
+   "textile_mill",
+   "theatre_backstage",
+   "tunnel_works",
+   "warehouse_logistics",
+   "weighbridge_office",
+   "winery_cellar"
+  ],
+  "domains_sha16": "4614853e5636eb5f"
+ },
+ "held_out_validation_domains": [
+  "airport_apron",
+  "airport_ground",
+  "ambulance_station",
+  "botanic_glasshouse",
+  "canal_lock",
+  "catering_unit",
+  "cement_plant",
+  "ceramics_kiln",
+  "coal_yard",
+  "coastguard_post",
+  "concert_hall",
+  "fish_farm",
+  "fishing_harbour",
+  "freight_yard",
+  "game_manual",
+  "hospital_supply",
+  "library_stacks",
+  "mountain_refuge",
+  "parks_yard",
+  "shipyard_slip",
+  "toy_factory",
+  "university_lab",
+  "water_treatment"
+ ],
+ "layer_grid": [
+  18,
+  20
+ ],
+ "train_loo_rho_by_layer": {
+  "L18": 0.654,
+  "L20": 0.6545
+ },
+ "layer_forced": true,
+ "layer_argmax_not_used": 20,
+ "selected_layer": 20,
+ "train_loo_rho_at_selected_layer": 0.6545,
+ "n_fit_rows": 670,
+ "n_fit_domains": 67,
+ "hidden_dim": 4096,
+ "train_loo_rho_by_rank": {
+  "r1": 0.5556,
+  "r2": 0.6298,
+  "r3": 0.6425,
+  "r4": 0.6269,
+  "r5": 0.6161
+ },
+ "selected_rank": 3,
+ "selected_rank_train_rho": 0.6425,
+ "shuffled_control_train_loo_rho": {
+  "ctrl_shuffled0": -0.0498,
+  "ctrl_shuffled1": -0.0871,
+  "ctrl_shuffled2": -0.0238,
+  "ctrl_shuffled3": -0.0541,
+  "ctrl_shuffled4": -0.0136
+ },
+ "max_abs_cosine_with_cand_rank1": {
+  "cand_pls1": 0.5975,
+  "cand_pls2": 0.5975,
+  "cand_pls3": 0.5975,
+  "cand_pls4": 0.5975,
+  "cand_pls5": 0.5975,
+  "ctrl_orth": 0.0,
+  "ctrl_random0": 0.0038,
+  "ctrl_random1": 0.0126,
+  "ctrl_random2": 0.0251,
+  "ctrl_random3": 0.0046,
+  "ctrl_random4": 0.0308,
+  "ctrl_random5": 0.0155,
+  "ctrl_random6": 0.013,
+  "ctrl_random7": 0.0053,
+  "ctrl_shuffled0": 0.0585,
+  "ctrl_shuffled1": 0.0489,
+  "ctrl_shuffled2": 0.0286,
+  "ctrl_shuffled3": 0.0781,
+  "ctrl_shuffled4": 0.0257
+ },
+ "bases": {
+  "cand_rank1": {
+   "rank": 1,
+   "sha16": "ebe2e106b2b3e710"
+  },
+  "cand_pls1": {
+   "rank": 1,
+   "sha16": "ea82230541081ac4"
+  },
+  "cand_pls2": {
+   "rank": 2,
+   "sha16": "88f2eded4ae0f7f0"
+  },
+  "cand_pls3": {
+   "rank": 3,
+   "sha16": "06df5085d7519be8"
+  },
+  "cand_pls4": {
+   "rank": 4,
+   "sha16": "ba44982b7a450134"
+  },
+  "cand_pls5": {
+   "rank": 5,
+   "sha16": "fe23cf876673602b"
+  },
+  "ctrl_orth": {
+   "rank": 1,
+   "sha16": "d53d38ea760c1e23"
+  },
+  "ctrl_random0": {
+   "rank": 1,
+   "sha16": "1f9e122b48665f83"
+  },
+  "ctrl_random1": {
+   "rank": 1,
+   "sha16": "7d64939b13f443f5"
+  },
+  "ctrl_random2": {
+   "rank": 1,
+   "sha16": "65620aa020d74ca7"
+  },
+  "ctrl_random3": {
+   "rank": 1,
+   "sha16": "f7158c14a3e58474"
+  },
+  "ctrl_random4": {
+   "rank": 1,
+   "sha16": "2af30fe39f40315b"
+  },
+  "ctrl_random5": {
+   "rank": 1,
+   "sha16": "6de7a365dd4f164c"
+  },
+  "ctrl_random6": {
+   "rank": 1,
+   "sha16": "2afbdc7363a4ab10"
+  },
+  "ctrl_random7": {
+   "rank": 1,
+   "sha16": "e440d4b99aaffd1e"
+  },
+  "ctrl_shuffled0": {
+   "rank": 1,
+   "sha16": "55ed0309f1d4f8b8"
+  },
+  "ctrl_shuffled1": {
+   "rank": 1,
+   "sha16": "e6843fa85684671e"
+  },
+  "ctrl_shuffled2": {
+   "rank": 1,
+   "sha16": "b66e9f7b82530eb1"
+  },
+  "ctrl_shuffled3": {
+   "rank": 1,
+   "sha16": "11a1b2a188ff73ab"
+  },
+  "ctrl_shuffled4": {
+   "rank": 1,
+   "sha16": "f9de83e66cdf6e87"
+  }
+ },
+ "bases_sha16_of": "saved_float32_tensor_bytes"
+}
