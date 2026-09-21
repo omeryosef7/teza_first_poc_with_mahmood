@@ -12977,3 +12977,148 @@ in the 751-line claim table the committed evidence now contradicts. Its findings
 ```
 queue idle | 54 of 54 read | quota 197G of 200G | blob 11d2c617 | R12 in flight
 ```
+
+---
+
+# REVIEW R12 (self, ~4 h cadence) — the read survives, the **write-up does not**: S-160 omitted a required statistic (**S5, reported here**), quoted the decision branch **three sentences of five** and so missed an obligation it imposed, and the frozen read's **own freeze declaration is impossible**. Plus **CORRECTION to S-158 and S-160 on the gate-2.2 placeholder**
+
+Cadence: R11 committed 2026-09-21T01:46, this at 06:04 — 4.3 h. Scope: the PR-CSI-007 read (S-160,
+S-161) and the claim table. Four adversarial dimensions, each finding handed to a separate verifier
+told to refute it. **12 candidates, 10 confirmed, 2 killed.** The load-bearing ones I re-measured
+myself.
+
+**The numbers are not in question.** Nothing below touches R47 = 6, the swap's rank 1, the gates, or
+the artifacts. What R12 found is in the *reporting*, and in one case in the preregistration's own
+self-description.
+
+---
+
+## MAJOR-1 — a required statistic was omitted. **S5 is reported here.**
+
+`configs/dcs_csi_pr007_button_L18_validation.json` `decision_rule.step_5` is explicit:
+
+> *"Report S1 (z), S2 (exceedance rate with Clopper-Pearson CI), S3 (subfamily ranks), S4
+> (leave-one-domain-out histogram), **S5 (specificity_holm)** and S6 (candidate minus comparator).
+> **The graded read is never omitted because the binary read was clean.**"*
+
+S-160's PART 4 reported S1–S4 and S6 (the candidate−comparator contrast, +0.00151, is in its gate
+block) — **but not S5**, while the section header claimed "reported in the prescribed order, none
+omitted". That header was false. **S5, from the committed artifact, no re-run:**
+
+```
+S5  specificity_holm -- one-sided sign-flip (candidate > control), Holm-corrected over 46 controls
+    controls REJECTED at 0.05 : 0 of 46
+    smallest p_holm           : 0.05497 (KO_SHUF13)
+    next                      : KO_RAND0 0.05783, KO_SHUF5 0.06886, KO_RAND14 0.14469
+    p_holm == 1.0             : 33 of 46 controls
+```
+
+**Zero of 46.** The candidate is not significantly greater than *any* individual control after
+correction. S5 does not soften R47 = 6; it points the same way, which is exactly why "the binary read
+was clean" is not a licence to skip it — and why the prereg says so in advance.
+
+## MAJOR-2 — the decision branch was quoted **three sentences of five**, and one of the missing two was an instruction
+
+S-160 introduced the branch as quoted "verbatim before any interpretation of mine". The branch in the
+config has five sentences; three were carried. Genuinely absent:
+
+1. *"Every sentence in the sprint that states button's L18 failure without naming the split is amended
+   to name it."*
+2. *"The counterweight in `prediction_fixed_before_data` applies verbatim and its pre-committed
+   sentence is reported."*
+
+The first is **not a caveat, it is an action the branch obliges**, and quoting around it meant the
+obligation went unnoticed. It is now open work: every sentence in this log asserting button's L18
+failure without naming TRAIN or VALIDATION needs amending, and that sweep has not been done.
+
+## MAJOR-3 — S-161 omitted the secondary's required reporting
+
+`…pr007…json:593` requires of the direction-A secondary: *"the paired contrast recovery(XSWAP) −
+recovery(KO_AXIS) with a domain-clustered bootstrap CI over the 23 domains; the dose-penalty
+distribution (PR-CSI-006 S3); and the degeneracy count, which must be 0."* S-161 printed the two
+recoveries **side by side** (+0.00338, +0.00218) but **not the paired contrast with its CI**, which is
+a different quantity on a paired design. PR-CSI-006 backs the requirement twice, at `:402` and `:158`
+(*"the binary 2×2 is the DECISION; the prespecified secondary S1 … is the GRADED read and must be
+reported beside every cell so the decision is never the whole story"*). Outstanding.
+
+## MAJOR-4 — **the frozen read's freeze declaration is impossible**
+
+`runargs/dcs_csi_pr007_read.txt:2` reads *"Frozen 2026-09-20 ~22:30 +03:00, BEFORE a single one of the
+54 arms was submitted."* Measured:
+
+```
+jobs 914043 (group A, 7 arms) and 914048 (the PART 5 swap arm) SUBMITTED  2026-09-20T22:05:15
+the commit carrying that very sentence (c146f36c)                         2026-09-20T22:07:19
+earliest in-family arm to produce a number (BASE, DONE end_ts)            2026-09-20T22:09:13
+```
+
+Both halves of the sentence are wrong: the stated time is **23 minutes after** the commit that contains
+it, and two of the 54 arms were submitted **124 s before** that commit. **The property that actually
+matters survives, and is now measured rather than asserted: the read was committed 114 seconds before
+the first arm of the family produced a number**, so no number of this family existed when it was
+frozen. The protection held; its self-description did not. Recorded rather than quietly amended,
+because a preregistration that misstates its own freeze time is exactly the artifact a reader is
+entitled to distrust.
+
+## MINOR — **CORRECTION to S-158 and S-160: the gate-2.2 placeholder** (fixed)
+
+S-160 attributed gate 2.2's `inspected 0 logs` failure to zsh not word-splitting. That is real — zsh
+*is* this session's shell and it *does* fail to split even with real ids — but it was **not the whole
+cause, and the remedy sentence was false**:
+
+```
+runargs/dcs_csi_pr007_read.txt:409   PR007_JOBS="JOBID_A JOBID_B JOBID_I1 JOBID_I2 JOBID_K"
+git show 341e9530 -- runargs/dcs_csi_pr007_read.txt | grep -c PR007_JOBS   ->  0   (never touched)
+the file's own block, run verbatim under POSIX sh  ->  5x "NOT SUBSTITUTED", logs inspected: 0
+```
+
+So S-160's *"Re-run under a POSIX shell, as the file intends: 5 logs, all clean"* is **false against the
+file as committed** — it worked for me only because I had typed the five ids into my own command line,
+which is itself an unrecorded substitution. And **S-158's claim "live non-comment lines still
+containing a placeholder: 0" is WITHDRAWN**: my check looked for `<…>`-style tokens and
+`--require-slurm-job`, and line 409 uses the `JOBID_` convention instead, so the check could not see
+it. Two faults in one block, and I recorded one.
+
+**Blast radius: zero on the science.** Line 409 selects *logs* for gate 2.2 and feeds no analysis; every
+analysis command takes its ids from the python assignment and the `--require-slurm-job` lists, all
+substituted and committed at S-158 *before any number existed*. The gate is fail-closed and loud, and
+its substance was independently confirmed — 5 logs, 0 layer-override lines, correct banner.
+
+**Fixed** (post-read, changes no number): line 409 now carries the five ids, plus the zsh warning and a
+note naming the S-158 miss. Re-run from the file verbatim under `sh`: **logs inspected: 5**.
+
+## The claim table — four items now contradicted by committed artifacts
+
+`reports/DCS_CSI_CLAIM_TABLE.md` was last committed 2026-09-20T22:55, before the read.
+
+| line | says now | committed evidence |
+|---|---|---|
+| ~540-547 | *"CELL 4 on TRAIN, direction B NOT REPLICATED, C1 REFUTED by the fixed rule"*, made a **mandatory companion** by prohibition 29 | direction A now has a validation split at rank 1; step_6 fires → **NOT REPLICATED, no cell** (S-161) |
+| D25 headline | claims **CELL 4** for direction A | same — no cell may be claimed |
+| 511 | *"direction A has never had a validation split, so the … clause has never been able to bind it"* | it has one now, and the clause bound it |
+| 30, 498, 510 | *"button has no held-out L18 cell"*, *"PR-CSI-007 is RUNNING"* | 54 of 54 read; R47 = 6 committed at `92423c5f` |
+
+Not edited this tick. The reconciliation is the next entry's work and is a rewrite of claims, not a
+number, so it gets its own entry rather than being folded into a review.
+
+## Killed by the verifiers (2 of 12)
+
+* *"S-161's swap verdict is unsafe because PR-CSI-006 gate 0g / cannot_answer item 6 was not run"* —
+  **NOT A DEFECT.** PR-CSI-006 excludes that arm **by name**: `population.split.direction_A_recipient_button
+  == ["train"]`, with *"Direction A is TRAIN ONLY and this preregistration says so in advance rather
+  than discovering it at read time."* Job 914048 is not one of its three arms.
+* *"the file's placeholder self-check is blind to line 409"* — **NOT A DEFECT.** Line 409's trailing
+  `# <--` means it *does* match the file's `grep '<'` rule; the rule works, I did not run it.
+
+## The shape, again
+
+S-149 (marker gap, not `wall_seconds`), S-150 (wrong tree), S-157 (arm name is not the basis), and now
+R12: **the reporting checklist lives in the preregistration, and I reported from the read file's PART 4
+instead.** PART 4 is a summary of the obligation, not the obligation. Same shape as S-159's lesson in
+the opposite direction — there the prereg had already solved a problem I was about to build around;
+here it imposed a duty I did not go back and read.
+
+```
+R47 = 6 and swap rank 1 UNCHANGED | S5 now reported: 0 of 46 rejected | line 409 fixed
+read sha16 5353f954 | blob 11d2c617 | claim table reconciliation OPEN
+```

@@ -406,7 +406,13 @@ PYGATE
 # not a placeholder -- `for J in <A>` would try to open a file named A and fail with a syntax or
 # redirection error rather than with a useful message. The angle-bracket placeholders are safe only
 # inside the comma-separated --require-slurm-job values and inside the quoted python heredocs.
-PR007_JOBS="JOBID_A JOBID_B JOBID_I1 JOBID_I2 JOBID_K"     # <-- SUBSTITUTE THE FIVE IDS HERE
+PR007_JOBS="914043 914476 914477 914478 914479"   # substituted DCS-CSI-163 (REVIEW R12), AFTER the
+# read; this line selects LOGS for gate 2.2 only and feeds no analysis, so it changes no number.
+# S-158 asserted "live non-comment lines still containing a placeholder: 0" and MISSED THIS LINE:
+# its check looked for <...>-style tokens, and this line uses the JOBID_ convention instead.
+# NOTE FOR ANY RE-RUN: quote the expansion or use a POSIX shell. Under zsh (this session's shell)
+# an unquoted $PR007_JOBS does NOT word-split and the loop sees ONE token -- gate 2.2 then fails
+# closed with "logs inspected: 0", which is the S-134 non-vacuity protection doing its job.
 
 n_logs=0
 for J in $PR007_JOBS ; do
