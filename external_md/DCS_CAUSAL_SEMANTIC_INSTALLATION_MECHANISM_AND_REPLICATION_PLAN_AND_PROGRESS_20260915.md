@@ -13798,3 +13798,72 @@ abs(cos) L18 0.998406 | L20 0.997866 | BOTH CLEARED | prediction HELD
 reports/DCS_CSI_PR009_HARDWARE_AB.json 2457 B, written atomically and re-parsed
 R11 MAJOR-1 CLOSED | S-160's held-out non-replication REMAINS the live unrefuted candidate
 ```
+
+---
+
+# S-170 — PR-CSI-009's result propagated to the two places that still described the confound as open, and **the live-candidate list is now down to one**
+
+Queue idle. R12 was committed 06:28:23 and this tick is 09:34, so the 4 h review cadence is **not** due
+(next ~10:28). This tick closes the loop on S-169 instead of opening anything new.
+
+## The gap worth naming first
+
+**REVIEW R11's MAJOR-1 never had a claim-table row.** A confound serious enough to put the sprint's
+headline dissociation in question lived for eight hours in the sprint log and in one gate's
+`KNOWN_VOID_PROVENANCE` docstring — and `reports/DCS_CSI_CLAIM_TABLE.md` describes itself as *"the file
+to read before writing any sentence for Matan or Mahmood."* Anyone who had done exactly that would
+have written a sentence the log already contradicted. That is the failure mode the claim table exists
+to prevent, and it happened to the biggest finding of the session.
+
+Both halves are now fixed, and the second is the one that mattered.
+
+## 1. The provenance gate: the FACT stays flagged, the CONSEQUENCE is now measured
+
+`scripts/gates/dcs_csi_axis_hardware_provenance.py` still reports **5 of 14 axes with emulated-bf16
+provenance**, and it should — *they did come from a V100*, and that fact does not change. What changed
+is the explanation attached to it. `KNOWN_VOID_PROVENANCE` now records the measurement rather than the
+open question: the one-token A/B, 33 args verified identical, and **abs(cos) 0.998406 / 0.997866
+against a 0.99 threshold committed nine minutes before the job existed**.
+
+The design point is deliberate: **a resolved confound is not a deleted exemption.** The gate keeps
+flagging the provenance so that a *new* axis fit on a V100 still turns it red; what the entry now says
+is that for these five, the consequence was measured at float-noise scale.
+
+Gate re-run after the edit: 14 axes resolved, 5 documented, 0 undocumented, **PASS**.
+
+## 2. The claim table: D31 and AM-21
+
+**D31** records the result with its calibration scale, its population identity, its one-token design,
+and — at equal prominence — the four things it does **not** establish: not evidence for any other
+explanation, nothing about button, not that basket's axis is *correct*, and **not** anything about the
+layer argmax, which was not re-run (`layer_grid [18, 20]` against the committed nine-layer grid). The
+23-vs-20-site code-identity difference is in the row too, with the reason it is inert (`:67` resolves
+the site by name, `:68` the layer by value) stated as a measurement rather than a reassurance.
+
+**AM-21** does the part that changes what may be written:
+
+> R11's MAJOR-1 is **no longer a live unrefuted candidate explanation**. **One candidate remains live:
+> the held-out non-replication** — D29's rank 36 → 6, z −0.5702 → +1.3999, exceedance 35/46 → 5/46 with
+> non-overlapping CIs, and a prespecified band [24, 43] missed by 18 ranks.
+
+## Where the sprint's position stands after the propagation
+
+```
+basket   passes on BOTH splits, at its attainable floor with no margin (D24), D21's reweighting caveat binding
+button   does not pass on EITHER split -- TRAIN rank 36 (D23), VALIDATION rank 6 (D29) -- and the
+         TRAIN failure's REPLICATION, which was the thing under test, did not happen
+swap     no cell claimed in EITHER direction (AM-15); the 2x2 is empty
+hardware CLEARED (D31) -- was a live candidate for eight hours, is not one now
+live     ONE: the held-out non-replication itself
+```
+
+S-144's *"every candidate explanation of the codeword dissociation is now refuted"* remains false, and
+remains uncorrectable in place because the log is append-only — but the claim table now carries the
+accurate list, which is what a reader is directed to.
+
+Verified after the writes: claim table 778 → 790 lines, D31 six fields against a six-column header,
+AM-21 five against five, and the split-naming checker still exits 0.
+
+```
+provenance gate 14 axes / 5 documented / PASS | claim table 790 lines | queue idle | quota 198G of 200G
+```

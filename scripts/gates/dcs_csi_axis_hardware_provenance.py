@@ -35,18 +35,25 @@ CC = {
 
 KNOWN_VOID_PROVENANCE = {
     "dcs_csi_axis_basket_behavioral.pt":
-        "REVIEW R11 MAJOR-1: fit from cont1_behavioral_basket_bomb_20260910_113902_3966018, which ran "
-        "on a Tesla V100-SXM2-32GB (sm_70) under --dtype bfloat16 -- EMULATED. Button's six axes came "
-        "from an RTX 3090, so the codeword dissociation is confounded with extraction hardware, 5 of 5 "
-        "against 6 of 6. NOT void in the S-121 sense: S-121's 0-of-670 refusal is the norm-matched "
-        "SCORING path, and extraction has no norm-match and no degeneracy test, which is why this run "
-        "produced its 1388 installation rows normally. What is unknown is how much the emulated "
-        "numerics moved the fitted axis, and S-153 records that as CANNOT ANSWER: no controlled "
-        "cross-hardware extraction pair exists on disk (90 stems, only one ran on two GPUs and it has "
-        "0 bytes). Clearing it requires re-extracting on a 3090 and re-fitting.",
-    "dcs_csi_axis_basket_behavioral_shuf24.pt": "Same corpus and same finding as dcs_csi_axis_basket_behavioral.pt.",
-    "dcs_csi_axis_basket_more.pt":              "Same corpus and same finding as dcs_csi_axis_basket_behavioral.pt.",
-    "dcs_csi_axis_basket_L20.pt":               "Same corpus and same finding as dcs_csi_axis_basket_behavioral.pt.",
+        "REVIEW R11 MAJOR-1, RESOLVED by PR-CSI-009 (S-169). THE PROVENANCE FACT IS UNCHANGED and is "
+        "why this entry still exists: this axis was fit from cont1_behavioral_basket_bomb_20260910_"
+        "113902_3966018, which ran on a Tesla V100-SXM2-32GB (sm_70) under --dtype bfloat16 -- "
+        "EMULATED -- while button's six axes came from an RTX 3090, 5 of 5 against 6 of 6. WHAT IS NO "
+        "LONGER UNKNOWN IS THE CONSEQUENCE. PR-CSI-009 re-extracted the same corpus on an RTX 3090 "
+        "with EXACTLY ONE argument changed (--layers 18,20), 33 non-exempt args verified identical, "
+        "same bank sha16 79511d9e254571e6, same model revision 0e9e39f249a1, same population "
+        "(3720 bank rows -> 3714 results, 670 fit rows / 67 domains), and refit the axis at a forced "
+        "layer. MEASURED: abs(cos(new, committed)) = 0.998406 at L18 and 0.997866 at L20. Both clear "
+        "the 0.99 threshold that was committed at 08:07:11, nine minutes before the job existed. The "
+        "residual (0.0016, 0.0021) sits inside bf16's ~2^-8 = 0.0039 relative precision, so it is "
+        "float noise and a cosine of exactly 1.0 would have been the surprising result. "
+        "THE EXTRACTION HARDWARE DID NOT MOVE THE FITTED DIRECTION at the layers the committed axes "
+        "use. It does NOT become evidence for any other explanation, it says nothing about button, "
+        "and the layer ARGMAX was not re-run (the new corpus carries layer_grid [18,20]). "
+        "Artifact: reports/DCS_CSI_PR009_HARDWARE_AB.json.",
+    "dcs_csi_axis_basket_behavioral_shuf24.pt": "Same corpus, same provenance fact, and same PR-CSI-009 resolution as dcs_csi_axis_basket_behavioral.pt (S-169).",
+    "dcs_csi_axis_basket_more.pt":              "Same corpus, same provenance fact, and same PR-CSI-009 resolution as dcs_csi_axis_basket_behavioral.pt (S-169).",
+    "dcs_csi_axis_basket_L20.pt":               "Same corpus, same provenance fact, and same PR-CSI-009 resolution as dcs_csi_axis_basket_behavioral.pt (S-169).",
     "dcs_csi_axis_basket_L18_PLUS_button_swap.pt":
         "Same corpus and same finding as dcs_csi_axis_basket_behavioral.pt. Note this is the swap "
         "artifact whose RECIPIENT is basket, so PR-CSI-006's CELL 4 inherits the confound.",
