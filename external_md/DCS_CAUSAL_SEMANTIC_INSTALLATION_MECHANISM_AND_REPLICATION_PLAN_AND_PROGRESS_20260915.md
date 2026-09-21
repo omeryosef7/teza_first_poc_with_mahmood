@@ -13239,3 +13239,91 @@ toward one. Nothing here says button's axis is or is not causal. Nothing pools b
 paired contrast +0.00120 [-0.00043,+0.00283] p=0.1719 | S3 dose penalty 1.0292 | degeneracy 0
 R47 = 6 and swap rank 1 UNCHANGED | read sha16 5353f954 | blob 11d2c617 | queue idle
 ```
+
+---
+
+# S-164 — the claim table is reconciled with the read, and the reconciliation **empties the 2×2 in both directions**: prohibition 29's mandatory companion sentence said "CELL 4 … C1 REFUTED", and that is now **withdrawn along with the opposite claim R10 already withdrew**
+
+R12 found four places where `reports/DCS_CSI_CLAIM_TABLE.md` — *"the file to read before writing any
+sentence for Matan or Mahmood"* — contradicted committed artifacts. It was last committed 2026-09-20
+22:55, before the read. Reconciled now, **additively**, in the file's own convention.
+
+## What was added, not rewritten
+
+The table's amendment sections (A3, A5, A7) are headed *"corrections to rows above, **additive and
+marked**"*, and AM-10 is the precedent: it withdrew D25's headline without touching D25's text. The
+same discipline here — **no prior sentence was edited away**. `751 → 777` lines; the original D25
+headline is still in the file verbatim; one forward-pointer was inserted beside the stale *"PR-CSI-007
+is RUNNING"* paragraph, marking it superseded while leaving it legible.
+
+**A8, two new rows.** D29 carries the primary read in full — R47 = 6 of 47, the three gates, S1–S6
+including the `specificity_holm` S-163 recovered, the subfamilies, the LOO histogram, the missed
+prediction band and the operative counterweight sentence. D30 carries the secondary — rank 1 of 47,
+**with the paired contrast (+0.00120, CI [−0.00043, +0.00283], exact p = 0.171858) and the S3 dose
+penalty 1.0292 that R12 found missing**, and with the CANNOT ANSWER on the dose median recorded in the
+row rather than left in the log.
+
+## A9, five amendments — and AM-15 is the consequential one
+
+`AM-15` is not a housekeeping fix. **Prohibition 29 makes one sentence a mandatory companion wherever
+the swap is mentioned**, and that sentence was:
+
+> *"CELL 4 on TRAIN, direction B NOT REPLICATED, and C1 REFUTED BY THE FIXED RULE."*
+
+CELL 4 was reached by reading **both** directions on TRAIN and finding neither helped. Direction A now
+has a validation split, and its splits fall on opposite sides of the R47 ≤ 2 bar — firing
+`decision_rule/step_6` exactly as it fired for direction B. **A cell requires both directions to yield
+a claimable reading. Neither now does.** The companion sentence is replaced by:
+
+> **"NO CELL IS CLAIMED FOR EITHER DIRECTION — direction B NOT REPLICATED (train 13 vs validation 2),
+> direction A NOT REPLICATED (train 4 vs validation 1). The 2×2 is unresolved in both directions and C1
+> is neither refuted nor supported by it."**
+
+**Both claims are now gone, and that is the honest state.** R10 withdrew *"C1 is SUPPORTED and the
+STATE hypothesis is REFUTED"*. This withdraws *"C1 is REFUTED"*. The experiment that was built to
+discriminate between C1 and H_STATE **discriminates between them in neither direction**, and the way it
+failed is not that a number came out wrong — every arm ran clean, `VOID []`, all gates true in all four
+cells — but that the preregistered rule for converting ranks into cells **refuses to convert these
+ranks into cells at all**. That rule was fixed before any of the data existed and has now voided a
+conclusion I had already written up and committed. It working against me is the only evidence that it
+was worth having.
+
+The other four: `AM-16` withdraws *"direction A has never had a validation split, so the clause has
+never been able to bind it"* — the clause was described as structurally inapplicable when it was merely
+untested, and it bound on its first opportunity. `AM-17` supersedes D23's *"its result is NOT IN THIS
+FILE"*, leaving D23's TRAIN certification intact and recording that **the held-out cell does not
+replicate the TRAIN failure** (rank 36 → 6, z −0.5702 → +1.3999, exceedance 35/46 → 5/46 with
+non-overlapping CIs). `AM-18` supersedes D24's *"button has no held-out L18 cell"*, leaving the
+TRAIN-vs-TRAIN matched-power comparison untouched and noting both held-out cells now exist — **button 6
+of 47 beside basket 1 of 47, side by side and never pooled**. `AM-19` supersedes D13's *"button has no
+held-out L18 arms"*, with the distinction stated: D13 is a 10-control floor-0.0909 L18-vs-L20
+comparison and D29 is a 46-control family at L18, so only that clause is stale and **D13's second
+caveat still binds — basket has never been run at L20.**
+
+## What the table says about the sprint now
+
+Three rows in section A6 (D23, D24, D25) were written to carry the dissociation, and all three now
+carry an amendment. What survives them:
+
+* **basket passes on both splits** (D24), at its attainable floor with no margin, and D21's
+  reweighting caveat still binding;
+* **button does not pass on either split** (D23 TRAIN, D29 VALIDATION) — but the *held-out* failure is
+  nothing like the TRAIN one, and the TRAIN failure's replication was the thing being tested;
+* **the swap experiment claims no cell in either direction** (AM-15);
+* and two live unrefuted candidate explanations stand against S-144's *"every candidate explanation is
+  refuted"* — **extraction hardware** (R11 MAJOR-1: 5 of 5 basket behavioural axes fit from V100
+  emulated bf16) and **the held-out non-replication** itself.
+
+S-144's sentence is not amended here because it lives in the sprint log, which is append-only; the
+claim table now disagrees with it, and the disagreement is the point.
+
+## Still open
+
+The **amendment sweep** the decision branch obliges — *"every sentence in the sprint that states
+button's L18 failure without naming the split is amended to name it"* — is not done, and is now the
+last outstanding item from R12. It is a pass over ~164 log entries and needs its own tick.
+
+```
+claim table 751 -> 777 lines, additive, original text preserved | 2 new rows, 5 amendments
+R47 = 6 and swap rank 1 UNCHANGED | queue idle | blob 11d2c617 | quota 197G of 200G
+```
