@@ -279,7 +279,19 @@ def main():
         F_ci = [pct(fb, lo_q), pct(fb, hi_q)] if len(fb) > a.B // 2 else None
 
     # ---- the verdict, read in the design's order ------------------------------------------
-    if not gate0 or not dose_ok:
+    # ⛔ THE VERDICT TABLE IS FOR VALIDATION ONLY. Design 6 reads "Then, on **VALIDATION**:" before
+    # the four verdicts, and design 5.3 says a TRAIN rank is "selection-contaminated, not an
+    # inferential statement" -- the heads were CHOSEN on TRAIN activations, so TRAIN rank 1 is partly
+    # a restatement of the selection. W4 applied the table regardless of split and wrote
+    # "WE FOUND (part of) THE WRITER" into a TRAIN artifact, which is the overclaim S-205 was about,
+    # one level worse: not a headline missing its scope but a headline that does not exist for this
+    # split. A TRAIN run now reports the gates and the numbers and NO verdict.
+    if a.split == "train":
+        verdict = ("DESCRIPTIVE -- NO VERDICT IS DEFINED FOR TRAIN. Design 6 applies the verdict "
+                   "table to VALIDATION only, and this rank is SELECTION-CONTAMINATED by "
+                   "construction (design 5.3): the head set was chosen using these activations. "
+                   "GATE 0 and GATE 1 are still adjudicated below and still mean what they say.")
+    elif not gate0 or not dose_ok:
         verdict = "VOID -- GATE 0 (liveness or the realised-dose identity) failed; this is not a result"
     elif not gate1:
         verdict = ("CANNOT ANSWER -- GATE 1 failed: the instrument did not move the endpoint "

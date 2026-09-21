@@ -16451,3 +16451,77 @@ python scripts/gates/dcs_csi_pr010_gate0_sweep.py --prereg configs/dcs_csi_pr010
 is a property of the counter, not of HD_TOPK's heads | ~30 min to TRAIN completion
 NO ENDPOINT VALUE READ
 ```
+
+---
+
+# S-213 — **TRAIN IS COMPLETE (24/24, GATE 0 passes on every arm) and GATE 1 PASSES: the instrument is capable.** The descriptive numbers are large — and **CORRECTION: W4 emitted a VALIDATION verdict on a TRAIN run**, which is fixed before any of them are quoted
+
+`916535` **COMPLETED**, `6:18:42`, **24/24 arms ok, ONE model load**. `916536` (VALIDATION) is running.
+
+## GATE 0 — all 24 arms
+
+```
+HD_BASE      670 rows / 67 domains / prefill 0        / decode 0 / viol 0   PASS
+HD_KO        670 / 67 / prefill 1385460 / median  2052.0                    PASS
+22 x K=8 arms 670 / 67 / prefill 11083680 / median 16416.0 EVERY ONE        PASS
+```
+
+Twenty-two arms at exactly `16416.0`, `hooks_after=0` throughout.
+
+## ⚠ CORRECTION, made before quoting a single number — W4 applied the verdict table to TRAIN
+
+The first TRAIN run printed **`VERDICT: WE FOUND (part of) THE WRITER`**. Design §6 reads
+*"Then, on **VALIDATION**:"* before the four verdicts, and §5.3 states a TRAIN rank is
+*"selection-contaminated, not an inferential statement"* — **the head set was chosen using these very
+activations.** W4 applied the branches regardless of split.
+
+**This is worse than S-205's missing scope**: not a headline lacking its qualifier, but **a headline
+that does not exist for this split at all.** A TRAIN run now reports the gates and the numbers and
+**no verdict**, and the artifact was rewritten. Caught because the numbers were checked against the
+design before being believed, not after.
+
+## What TRAIN says — and the distinction that matters
+
+**NOT contaminated. `HD_KO` involves no selection** — it is all 32 heads:
+
+```
+GATE 1: E(HD_KO) = -0.234060   ci95 [-0.262770, -0.204775]   upper bound < 0   PASS
+```
+
+**The instrument moves the endpoint.** A null from this family would now be interpretable, which is
+the whole purpose of a positive control (plan §15). It also lands close to the independently recorded
+`-0.22951` from the earlier NEC arms — a consistency check nobody arranged.
+
+**CONTAMINATED BY SELECTION — descriptive only, adjudicates nothing:**
+
+```
+E(HD_TOPK) = -0.213094  ci95 [-0.238347, -0.188000]     rank 1 of 21, p = floor = 0.047619
+E(HD_BOTK) = -0.005609                                  F = 0.9104  ci95 [0.8575, 0.9653]
+```
+
+`HD_TOPK` and `HD_BOTK` carry an **identical dose** (`16416.0`, same band, same scope) and differ by
+**38×**. `F = 0.91` would mean 8 of 32 head indices carrying ~91% of the all-head effect, against a
+uniform-null expectation of `≈ -0.057` for any 8 heads (§6) — the measured `-0.213` is **3.7× that**.
+
+**Every number in that block was computed on the split the heads were selected from, so none of it is
+evidence for localisation.** §6's honest expectation, on record before the data, was **PARTIALLY
+LOCALISED or DISTRIBUTED with `F` well under 0.50**. TRAIN points the other way, and **that is exactly
+the pattern selection contamination produces.** VALIDATION decides, on 23 held-out domains, with the
+head sets and seeds frozen since S-190.
+
+## Commands
+
+```
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py --prereg configs/... --tag-prefix csi3_head_basket_train --split train
+python scripts/dcs_csi_head_analyze.py --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+  --tag-prefix csi3_head_basket_train --split train --expect-n 670 \
+  --require-slurm-job 916535 --out reports/DCS_CSI_PR010_HEAD_train.json
+```
+
+```
+TRAIN COMPLETE 24/24 | GATE 0 PASSES ON EVERY ARM | GATE 1 PASSES: E(HD_KO) -0.2341 ci95 upper -0.2048
+CORRECTION: W4 emitted a VALIDATION verdict on a TRAIN run; design 6 defines none for TRAIN. Fixed and
+the artifact rewritten BEFORE any number was quoted.
+DESCRIPTIVE ONLY, SELECTION-CONTAMINATED: rank 1 of 21, F 0.9104, HD_BOTK -0.0056 at identical dose.
+NOT EVIDENCE FOR LOCALISATION. VALIDATION (916536) adjudicates on 23 held-out domains, ~2.2 h.
+```
