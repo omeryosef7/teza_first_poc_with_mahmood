@@ -13520,3 +13520,100 @@ than by reasoning about it, which is the only reason it was cheap.
 checker: backtick rule added | corpus PASS | raw violation CAUGHT | 3 of 3 historical lines still seen
 log 13 462 -> this entry | claim table 778 | queue idle | blob 11d2c617
 ```
+
+---
+
+# S-167 — **PR-CSI-009 is frozen, amended, scripted and LAUNCHED, in that order, with every step committed before the job existed.** The one-token controlled A/B that can close REVIEW R11's MAJOR-1
+
+All R12 items closed, GPU idle, 3090s free (n-301 0/7, n-305 0/8, n-350 0/8). The next unblocked item
+with a scientific payoff is R11's **MAJOR-1** — the V100 confound on basket's five behavioural axes —
+which S-162 costed at **1.13 GB** and which therefore needs no disk decision.
+
+## The ordering, because last time it was the defect
+
+REVIEW R12 MAJOR-4 measured PR-CSI-007's read declaring *"Frozen ~22:30, BEFORE a single one of the 54
+arms was submitted"* when its own commit was 22:07:19 and two jobs had been submitted at 22:05:15. The
+property that mattered survived — the read was committed 114 s before the first arm produced a number
+— but the self-description did not. **This time the ordering is a fact in the git log, not a sentence
+in a file:**
+
+```
+08:07:11  04a11da7  prereg + frozen read committed          <- no corpus, no job
+08:09:43  51731fc8  VOID condition 3 amended                <- still no job
+08:12:07  0a087d57  launch script committed
+08:14:39  65b07ebd  launch script corrected
+08:16:21            sbatch -> job 914750, RUNNING on n-301
+```
+
+## The design: one token
+
+The new extraction repeats the committed `cont1_behavioral_basket_bomb_20260910_113902_3966018` with
+**exactly one argument changed** — the same shape as S-121's `--limit` exoneration:
+
+```
+--layers 0,2,4,6,8,10,11,12,13,14,16,18,20,22,24,26,28,30,31   ->   --layers 18,20
+```
+
+Verified rather than asserted: **16 non-exempt flags compared against that run's own `config.json`
+args, zero mismatches**; bank sha16 `79511d9e254571e6`, equal to the committed axis's own recorded
+`bank_sha16`; and all 19 flags in the launch command confirmed present in the CLI.
+
+## Two things caught before submission, not after
+
+**(1) A VOID condition my own script would have violated.** Condition 3 said *"any argument other than
+`--layers` differs"*. But `--tag` must differ or the corpus collides with the committed directory, and
+`--model` was `null` in the committed run — which resolves to the HF id, and
+`slurm_scripts/dcs_csi_extract_sow_basket.slurm` records **job 896365 dying in 71 s** with *"does not
+appear to have a file named model.safetensors"* because that id has no weights cached on some nodes.
+So the re-extraction must pass the snapshot path explicitly. **Amended before submission, in a separate
+commit, with the justification — rather than deviating silently and explaining afterwards.** It is the
+same model: snapshot `0e9e39f249a1…`, the revision every committed axis and every PR-CSI-007 arm
+records, and a `--model` resolving to any other revision is still VOID.
+
+**(2) A flag that does not exist.** My first script passed `--multipos`, copied from the committed run's
+`config.json`, which records `_multipos: True`. **There is no such flag** — `_multipos` is *derived* at
+`dcs_extract_under_ko.py:1358-1361`, set True whenever `--capture-rel-end` parses or
+`--capture-codeword-occ` is passed, both of which this command passes. It would have been an argparse
+error. Caught by checking every flag in the command against the CLI **before** submitting, instead of
+by watching a job die 71 seconds in — which is exactly how the repo learned lesson (1).
+
+## The statistic, and the threshold, fixed before the number
+
+`abs(cos(w_new, w_committed))` on `cand_rank1`, **per layer, never pooled** — L18 against
+`dcs_csi_axis_basket_behavioral.pt`, L20 against `dcs_csi_axis_basket_L20.pt`, both verified unit-norm
+fp32 `(1, 4096)`. Cosine and not recovery because S-153 bounded the confound to the *direction*; if it
+is unchanged no scoring re-run is needed, and if it moved a scoring re-run gets its own preregistration.
+
+```
+abs_cos >= 0.99  -> CONFOUND CLEARED at that layer
+abs_cos <  0.90  -> CONFOUND REAL; claims resting on that axis are VOID pending a re-run
+0.90 .. 0.99     -> INDETERMINATE, reported as such
+```
+
+0.99 because bf16 carries ~8 mantissa bits (~2⁻⁸ = 0.0039 relative), so equivalent paths should agree
+far inside that. The calibration scale is taken from **D27's committed numbers**, not invented: 46
+controls against the native axis give min 0.0001, median 0.0156, **max 0.1894**, and the cross-codeword
+swap axis is 0.5569.
+
+**Prediction, fixed before the data: ≥ 0.99 at both layers — I expect the confound CLEARED**, because
+PyTorch on sm_70 emulates bf16 by upcasting to fp32, which should make V100 activations at least as
+precise as native. **What would surprise me, and why it is possible:** S-121 measured V100 + the
+norm-matched path refusing **0 of 670 rows every time** at n = 24, 96, 268 and 670 — a catastrophic,
+deterministic difference in exactly the projection geometry an axis lives in. If emulation can do that
+to a projection norm it can move a fitted direction. A result below 0.99 is not excluded by my
+reasoning and would be reported as a surprise.
+
+**A cleared confound is the outcome that keeps the sprint's existing claims standing. That is precisely
+why the threshold and the prediction are in a commit that predates the job.**
+
+## The restriction, stated rather than glossed
+
+Two layers cannot re-run the argmax over the committed grid `[16,18,20,22,24,26,28,30,31]`. This asks
+whether the direction moved **at the layer each committed axis selected**, not whether the selection
+would have moved. That is disk-driven (1.13 GB against 5.10 GB for the full grid, ~3 GB free) and it
+travels with every sentence reporting this result.
+
+```
+914750 R n-301, --time 02:00:00 | prereg 04a11da7 amended 51731fc8 | queue: 1 job | quota 197G of 200G
+NO COSINE COMPUTED. NO ACTIVATION OF THE NEW CORPUS EXISTED AT ANY COMMIT ABOVE.
+```
