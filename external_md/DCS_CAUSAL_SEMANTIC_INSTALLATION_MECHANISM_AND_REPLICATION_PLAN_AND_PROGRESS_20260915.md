@@ -16166,3 +16166,88 @@ per-arm time drifting DOWN 4.6% (1.4 sd) -- a real trend: the node got quieter, 
 K=8/all-head ratio now 1.44 on the recent block vs 1.515 on the first: A COST MEASURED IN ONE WINDOW
 IS A MEASUREMENT OF THAT WINDOW | ~3.1 h remaining | NO ENDPOINT VALUE READ
 ```
+
+---
+
+# REVIEW R16 (self, ~4 h cadence) — **the GATE 0 sweep I have been trusting for 14 arms was weaker than the tool it imitates, and it counted a missing denominator as a pass**. Both fixed and shown to fire. The arms themselves verify clean
+
+Scope: everything since R15 — the GATE 0 sweep, W4's R15 fixes and its `REPORTABLE_AS`/`CANNOT_DO`
+addition, the inert W3 patch, entries S-202…S-207, and the output of **14 landed TRAIN arms**.
+
+## R16-1 (MODERATE, FIXED) — the sweep globbed where `strict_run_dir` anchors
+
+```
+sweep          : glob(tag + "_*")                                   <- unanchored
+strict_run_dir : re.compile(r"^" + re.escape(tag) + r"_\d{8}_\d{6}_\d+$")   <- anchored
+```
+
+`strict_run_dir`'s anchor exists because of **S-042**, which records the unanchored form resolving
+arm `KO` to the `KO_SELF` directory and *"turning the identity gate into KO_SELF vs KO_SELF — a
+comparison that cannot fail."* **I wrote the weaker form into the gate I have been running every
+tick.**
+
+**Measured before claiming it mattered:** zero PR-CSI-010 arm names prefix-extend another, and across
+all 14 landed arms the unanchored glob and the anchored regex return **identical** candidate sets.
+**Latent, not live.** Fixed anyway — *a gate should not be weaker than the tool it imitates, least of
+all one whose weaker form has already cost this repo a silent false pass.*
+
+## R16-2 (MODERATE, FIXED) — a missing denominator read as a pass
+
+```python
+if mk and arm != "HD_KO":      # mk = HD_KO's median_prefill_edits
+```
+
+Before `HD_KO` lands, `mk` is `None`, so **every K=8 arm printed `PASS` with its dose never
+compared.** The dose identity is the check that S-175's 32× error made necessary and that S-201
+confirmed to the digit — and the sweep would have skipped it silently for any arm examined first.
+**This is the shape of S-168's gate and of the vacuous provenance witness (S-182): absence reading as
+a pass.** It recurs because it is always the *comfortable* default.
+
+Now an absent denominator is reported as `DOSE UNCHECKED` and fails. **Shown to fire** on a stand-in
+with one K=8 arm and `HD_KO` deliberately absent:
+
+```
+HD_TOPK  670  67  11083680  16416.0  0  0  FAIL: DOSE UNCHECKED (HD_KO has not landed; no denominator)
+rc = 1        cleanup: residue 0
+```
+
+## R16-6 (VERIFICATION, PASSES) — the arms compare the same rows, not merely the same counts
+
+The sweep checks row and domain **counts**; nothing checked that the arms contain the **same rows**.
+Two arms could hold 670 rows over 67 domains drawn from different subsets and every count would
+agree. Measured directly:
+
+```
+14 landed arms | identical prompt_id sets: ALL | set size 670
+```
+
+**Every arm carries the same 670 prompts, row for row.** The paired contrast `E(arm) − E(HD_BASE)`
+is therefore a genuine within-prompt comparison, which is the assumption the whole design rests on
+and which had not been tested until now.
+
+## R16-3 (MINOR, accepted as written)
+
+`REPORTABLE_AS.get(verdict, …)` falls back when a verdict string does not match a key. The fallback
+says *"no preregistered reporting language applies to this verdict; report the gates and the refusal,
+not a headline"* — correct behaviour for the dynamically-built CANNOT ANSWER strings, so no change.
+
+## What R16 did NOT find
+
+No defect in the arms, the dose identity, W4's R15 fixes, the `REPORTABLE_AS`/`CANNOT_DO` addition,
+or the inert W3 patch. The R15-0 lock has held through five commits: nothing `916536` executes has
+been touched.
+
+## Commands
+
+```
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py --prereg configs/... --tag-prefix csi3_head_basket_train --split train
+# prefix-extension and glob-vs-anchor comparison over all 14 landed arms; prompt_id set identity
+# DOSE UNCHECKED proven on a csi3_r16probe_ stand-in, deleted in a finally (residue 0)
+```
+
+```
+R16: 2 defects FIXED in my own GATE 0 gate -- an unanchored glob (S-042's exact hazard) and a
+missing denominator that read as a PASS (S-168's exact shape). Both latent here, both shown to fire.
+VERIFIED: all 14 landed arms carry the SAME 670 prompt_ids -- the paired contrast is within-prompt.
+14 of 24 TRAIN arms landed, all passing | NO ENDPOINT VALUE READ.
+```

@@ -10,7 +10,7 @@ after a VOID is GPU time spent on a result that cannot be reported.
 cannot become a peek at the answer. The frozen read still governs what may be reported, and the
 order there is GATE 0, then GATE 1, then the candidate.
 """
-import argparse, glob, json, os, statistics, sys
+import argparse, glob, json, os, re, statistics, sys
 
 ENDPOINT_FIELDS = ("logp_concept", "logp_codeword", "semantic_logodds", "y_install")
 
@@ -71,7 +71,17 @@ def main():
 
     landed, fails = {}, []
     for arm in arms:
-        cands = sorted(glob.glob(os.path.join(a.root, "%s_%s_*" % (a.tag_prefix, arm))))
+        # ANCHORED, for the reason strict_run_dir gives at dcs_csi_rederive_patch.py:116 --
+        # an unanchored glob also matches every SIBLING ARM whose tag EXTENDS this one, and
+        # S-042 records that exact form resolving arm "KO" to the "KO_SELF" directory and
+        # turning an identity gate into a comparison that could not fail. No PR-CSI-010 arm
+        # name extends another (checked: zero prefix-extending pairs), so this is latent
+        # here -- but a gate should not be weaker than the tool it imitates, least of all
+        # one whose weaker form has already cost this repo a silent false pass.
+        _tag = "%s_%s" % (a.tag_prefix, arm)
+        _pat = re.compile(r"^" + re.escape(_tag) + r"_\d{8}_\d{6}_\d+$")
+        cands = sorted(d for d in glob.glob(os.path.join(a.root, _tag + "_*"))
+                       if _pat.match(os.path.basename(d)))
         cands = [d for d in cands if os.path.exists(os.path.join(d, "DONE.json"))
                  and json.load(open(os.path.join(d, "DONE.json"))).get("status") == "ok"
                  and json.load(open(os.path.join(d, "DONE.json"))).get("rows_written") == want_rows]
@@ -99,10 +109,17 @@ def main():
         else:
             if L["total_prefill"] <= 0: bad.append("no prefill edits")
             # the realised-dose identity: a K-head arm records K x the all-head arm (S-175)
-            if mk and arm != "HD_KO":
-                want = mk * K
-                if abs(L["median_prefill"] - want) > 1e-6:
-                    bad.append("dose %.1f != %.1f (K x)" % (L["median_prefill"], want))
+            if arm != "HD_KO":
+                # AN ABSENT DENOMINATOR IS "UNCHECKED", NOT "FINE". The previous form was
+                # `if mk and ...`, so before HD_KO landed every K=8 arm printed PASS with its dose
+                # never compared -- absence reading as a pass, which is the shape of S-168's gate
+                # and of the vacuous provenance witness (S-182). The row now says so out loud.
+                if not mk:
+                    bad.append("DOSE UNCHECKED (HD_KO has not landed; no denominator)")
+                else:
+                    want = mk * K
+                    if abs(L["median_prefill"] - want) > 1e-6:
+                        bad.append("dose %.1f != %.1f (K x)" % (L["median_prefill"], want))
             if arm in hs and L["heads"] != ",".join(str(h) for h in hs[arm]):
                 bad.append("HEAD SET DRIFT vs prereg")
         print("%-11s %6d %5d %14d %12.1f %7d %5d  %s"
