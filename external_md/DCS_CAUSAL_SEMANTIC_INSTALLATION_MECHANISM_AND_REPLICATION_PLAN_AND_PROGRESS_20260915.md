@@ -14245,3 +14245,78 @@ honest repair is to make it read the prereg, not to soften the banner.
 P4 UNBLOCKED | §4.2 re-derived, 513 -> 16 416 | fail-open CLOSED and tested both ways
 9 guards green | queue idle | quota 198G of 200G
 ```
+
+---
+
+# S-176 — W1's foundations verified before a line of it is written, and the verification found **the same false K/32 claim in a SECOND place my own §4.2 fix had missed**
+
+Queue idle, P4 unblocked. W1 (`dcs_csi_head_atp.py`, the AtP attribution) is the critical path, and its
+spec is *"~250 lines, and it is mostly deletion"* from five cited `file:line` sources. S-171 and R13
+both taught the same thing — **verify the design's claims before building on them** — so this tick
+checked all five rather than starting to write.
+
+## The finding: one false claim, two locations
+
+§1.1's dose row still read:
+
+> *"A K-head arm must record **exactly K/32** of the all-head arm's prefill edits on the same rows.
+> That makes dose-matching … **verifiable from the artifact**, not assumed."*
+
+**That is the identical claim S-175 corrected in §4.2 one tick ago, sitting in a second row of the same
+document.** I fixed the instance the reviewer pointed at and did not sweep for others — which is
+precisely the shape R13 caught with my bf16 sentence, where the same wrong justification was live in
+three places at once. Twice in two ticks.
+
+Corrected in place, and this time **swept**: a regex over the whole document for `K/32` / `exactly K`
+outside banner lines and struck-through text now returns **nothing live**. The one surviving `8/32`
+(§4.2's *"8/32 = 25 % of the head budget"*) is the **scientific** claim and is correct — masking 8 of
+32 heads really is a quarter of the head budget. It was only ever the counter arithmetic that was
+wrong.
+
+## The five references, checked
+
+```
+pair_common.py   _attn_head_dims         doc :1064  actual :1066   EXISTS, drifted 2
+                 ZHeadPatch              doc :1072  actual :1074   EXISTS, drifted 2
+                 AllPositionZHeadAblate  doc :1115  actual :1118   EXISTS, drifted 3
+                 ZHeadCapture            doc :1161  actual :1166   EXISTS, drifted 5
+49_head_attribution.py                   9 194 B, AtP + true-patch gate present at the cited region
+dcs_cont_layerpos_map.py  load_installation   EXISTS at :107
+the metric M = logp_concept - logp_codeword      PRESENT AS PERSISTED FIELDS
+```
+
+**Every primitive W1 is "mostly deletion" from exists.** The four line numbers had drifted by 2–5 and
+are now re-verified in the doc, with the note that they resolve by name regardless — a drifted citation
+is an annoyance, not a blocker, and saying so is more useful than silently renumbering.
+
+**The metric is real, not aspirational.** On an actual arm's rows:
+
+```
+csi1_basket_train_NEC_KO_.../results.jsonl[0]
+   cell C | query_kind semantic_one_word | logp_concept -2.918053 | logp_codeword -1.367015
+```
+
+and `semantic_logodds = logp_concept − logp_codeword` is already computed and persisted
+(`aggressive_patching.py:768`). W1's corruption metric does not need deriving; it needs reading.
+
+## What W1 still needs, stated so the next tick does not rediscover it
+
+* the **corruption** is the A1 knockout (`demo_all:attn_knockout:6-14:1.0`, scope
+  `target_surface_row_only`), **not** 49's corruption — §1.2's whole point;
+* the ranking must aggregate to a **head index `h` over the whole band**, never `(L, h)`, or it
+  proposes an experiment `--knockout-heads` cannot express (§0, and that constraint I re-verified in
+  S-175 while re-deriving §4.2);
+* the true-patch correlation gate is what turns attribution from a proposal into a screen — *"attribution
+  proposes; intervention decides"* — and it is the piece most worth lifting intact from 49.
+
+## The pattern, since it is now twice in two ticks
+
+S-175 fixed §4.2's K/32 and stopped. R13 found my bf16 justification live in three files after I had
+corrected one. **A claim that is wrong once is wrong everywhere it was copied, and copying is what
+documents do.** The cheap fix is a regex sweep at the moment of correction, which takes seconds and
+which I did not do either time. Doing it here turned one fix into two.
+
+```
+W1 foundations VERIFIED | K/32 corrected in BOTH locations, swept clean | 4 line refs re-verified
+metric M confirmed as a persisted field | P4 still unblocked | queue idle | quota 198G of 200G
+```
