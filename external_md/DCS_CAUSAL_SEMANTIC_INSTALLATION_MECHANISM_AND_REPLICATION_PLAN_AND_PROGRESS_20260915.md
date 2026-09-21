@@ -15783,3 +15783,71 @@ CORRECTION: the head-restricted factor is 1.515, not S-193's 1.276 -- crossing s
 re-derived total 9.15 GPU-h; the decision is unchanged but the re-derivation was OWED
 NO ENDPOINT VALUE READ. 21 arms remain and GATE 1 can still return CANNOT ANSWER.
 ```
+
+---
+
+# S-202 — an **incremental GATE 0 sweep**, so a liveness failure stops the family at the arm that fails rather than six hours later — and its no-peek claim is **machine-checked, not promised**
+
+`916535` is ~1 h in with 3 of 24 arms complete. W4 does GATE 0, but it resolves all 24 arms through
+`strict_run_dir` and **cannot run until the family is complete**. A failure on arm 7 would surface
+when arm 24 lands, and **every arm after a VOID is GPU time spent on a result that cannot be
+reported.**
+
+## The sweep
+
+```
+PR-CSI-010 GATE 0 SWEEP -- train | landed 3 of 24 arms
+arm           rows   dom  total_prefill   median_pre  decode  viol  verdict
+HD_BASE        670    67              0          0.0       0     0  PASS
+HD_KO          670    67        1385460       2052.0       0     0  PASS
+HD_TOPK        670    67       11083680      16416.0       0     0  PASS
+```
+
+Per arm it checks rows, domains, `decode == 0`, no violations, `HD_BASE` unintervened, every other
+arm live — **plus the realised-dose identity against the live `HD_KO` denominator (K×, S-175) and
+each arm's recorded `knockout_heads` against the frozen prereg set (VOID 5).** A duplicate tag is
+reported as a failure rather than silently resolved.
+
+## ⛔ The no-peek claim is enforced by the file on itself
+
+This script's entire licence to be run **repeatedly while the family is in flight** is that it does
+not touch the endpoint. I had written that as a docstring promise, and declared
+`ENDPOINT_FIELDS = ("logp_concept", "logp_codeword", "semantic_logodds", "y_install")` — **and then
+never used it.** A constant naming the forbidden fields, declared and never referenced, is the exact
+shape of *a check that was intended and never written*; my own dead-flag gate could not catch it,
+because that gate only inspects argparse flags.
+
+It now re-reads its own source at startup and refuses if any endpoint field is **accessed**
+(`r.get("…")` or `r["…"]`), excluding the declaration itself — naming a field is not reading one.
+**Shown to fire**, on a throwaway copy with a single line injected:
+
+```
+REFUSING: this sweep accesses an ENDPOINT field, so running it during a live family
+would be a peek at the answer:
+  45: _peek = [r.get("semantic_logodds") for r in sel]
+```
+
+and the real file still runs. **A gate never shown to fire is not a gate** — and this one guards the
+discipline the whole sprint rests on: *never re-freeze a read after seeing numbers.* Monitoring a
+live family is precisely where that discipline is easiest to lose by accident, so the guard is
+mechanical rather than a matter of my remembering.
+
+## Where the family stands
+
+3 of 24 TRAIN arms complete, all passing. ~21 arms remain at ~972 s each (~5.7 h), then VALIDATION on
+`afterany`. `916536`'s witness stays truthful: this commit adds a **new** file and touches nothing it
+executes (R15-0). The deferred W3 fixes (R15-1, R15-2, R15-11) remain deferred for the same reason.
+
+## Commands
+
+```
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py \
+  --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+  --tag-prefix csi3_head_basket_train --split train
+```
+
+```
+GATE 0 SWEEP: 3 of 24 landed, ALL PASS -- rows, domains, decode 0, dose K x, head sets vs prereg
+the no-peek claim is now MACHINE-CHECKED and SHOWN TO FIRE on an injected endpoint read
+NO ENDPOINT VALUE READ, and the file now refuses to let me read one by accident
+```
