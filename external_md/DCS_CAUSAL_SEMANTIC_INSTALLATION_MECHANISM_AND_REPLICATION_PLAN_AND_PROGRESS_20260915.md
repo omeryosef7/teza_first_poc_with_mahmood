@@ -13947,3 +13947,75 @@ to answer.
 P4 gate met (basket passes both splits) | W3 justification CORRECTED 12x | W1 is the critical path
 queue idle | quota 198G of 200G | nothing launched this tick
 ```
+
+---
+
+# S-172 — **CORRECTION to S-169 and D31: a layer argmax WAS computed on the new corpus, and it DISAGREES with the committed one.** The direction at a fixed layer is stable; **which layer the procedure picks is not** — and the evidence was inside the artifacts I wrote the entry from
+
+S-169 and claim-table row D31 both say the layer argmax *"was NOT re-run"*. That is too strong, and I
+had the number in hand when I wrote it: `dcs_csi_axis.py` records `train_loo_rho_by_layer` in every
+axis it writes, and I read `layer_grid` out of those same `meta` dicts without reading the field beside
+it. Found while checking a REVIEW R13 reviewer's claim, not by the reviewer.
+
+## What actually happened
+
+```
+                  V100 (committed)      3090 (new)        delta
+   L18                0.6525              0.6540          +0.0015
+   L20                0.6512              0.6545          +0.0033
+
+   margin L18 - L20:  +0.0013            -0.0005
+   ARGMAX:            L18                 L20             <- the ordering FLIPS
+```
+
+The new axes record `layer_forced: True` **and** `layer_argmax_not_used: 20`. So a two-layer argmax was
+computed and it chose **L20**, while the committed full-grid argmax chose **L18**.
+
+**The per-layer rho is computed independently of the grid** — `dcs_csi_axis.py:382-387` builds each
+layer separately in a loop, so restricting the grid to `{18, 20}` cannot change either value. The shift
+is attributable to the corpus, i.e. to the hardware.
+
+## What is and is not corrected
+
+**Stands, unchanged:** abs(cos) = 0.998406 at L18 and 0.997866 at L20. **At a fixed layer the fitted
+direction is the same direction.** That measurement is untouched by this.
+
+**Corrected:** *"the layer argmax was not re-run"* → **a two-layer argmax WAS run, and it disagrees
+with the committed nine-layer one.** What was not re-run is the argmax over the full committed grid
+`[16,18,20,22,24,26,28,30,31]`, which is what I should have written and what the prereg's restriction
+actually said. D31's blunter phrasing is the one that needs the amendment.
+
+**Qualified:** the "CLEARED" verdict. It is correct for what it measured — the direction at the layer
+each committed axis selected — and it does **not** extend to the selection itself. **The hardware moved
+the L18−L20 margin by 0.0018, and the margin that picked L18 in the first place was 0.0013.** The
+selection statistic is less stable than the thing it selects between.
+
+## This CONFIRMS a caveat the sprint already had, rather than overturning one
+
+The claim table already records, at line 161: *"D2's L18/L20 **plateau** (basket 0.6525 / 0.6512) is
+what makes the layer swap in D15 a fair comparison rather than a handicap."* And D2 itself says *"the
+layer is a **plateau** … L20 is a consistent choice, not an identified peak."*
+
+**Those numbers are exactly the two I just re-measured.** The sprint has known since D2 that L18 and
+L20 are separated by about 0.001 in LOO rho and that neither is an identified peak. What PR-CSI-009
+adds is the scale of the noise the plateau sits in: **a hardware change alone moves the gap by more
+than the gap.** That is a sharper statement of D2's caveat, from an experiment that was not designed to
+test it.
+
+It also means the flip is **not evidence of a hardware problem.** Both corpora agree the two layers are
+interchangeable to within noise; they disagree only about which side of a coin-flip landed up. Reading
+the flip as "the 3090 prefers L20" would be reading a 0.0005 margin as a finding, which is the error
+D2's caveat exists to prevent.
+
+## What this does not touch
+
+Not the cosines. Not gate 0's VOID checks. Not S-170's AM-21 — extraction hardware is still removed as
+a live candidate explanation of the codeword dissociation, because that claim was about the fitted
+direction and the fitted direction is stable. Not button, which has no arm here.
+
+The amendment to D31's wording, and REVIEW R13's own findings, follow in the next entry.
+
+```
+L18 argmax on V100 by +0.0013 | L20 argmax on 3090 by +0.0005 | margin moved -0.0018
+abs(cos) 0.998406 / 0.997866 UNCHANGED | D2's plateau caveat CONFIRMED, not overturned
+```
