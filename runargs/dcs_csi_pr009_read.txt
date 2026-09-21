@@ -1,0 +1,56 @@
+# PR-CSI-009 -- FROZEN READ. Basket behavioural axis, V100 vs RTX 3090, one-token controlled A/B.
+# Frozen and COMMITTED BEFORE the extraction was submitted; the commit timestamp of this file and of
+# configs/dcs_csi_pr009_basket_reextract_3090.json is the witness. (REVIEW R12 MAJOR-4 found the
+# PR-CSI-007 read claiming a freeze time 23 minutes AFTER its own commit and "before a single arm was
+# submitted" when two jobs were already in; this file states only what its own commit can prove.)
+#
+# THRESHOLDS ARE IN THE PREREGISTRATION AND ARE READ FROM IT, NOT RESTATED HERE (S-151's rule: the
+# prose and the code must not be able to disagree).
+
+# ---- PART 1 -- THE EXTRACTION. One token differs from the committed run: --layers.
+# sbatch --gpus=geforce_rtx_3090:1 ...   (POSITIVE architecture constraint, never an exclude-list)
+#   python scripts/dcs_extract_under_ko.py \
+#     --bank data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl \
+#     --layers 18,20 \
+#     --capture-rel-end -16..-1 --capture-codeword-occ --multipos --position codeword_last \
+#     --arm demo_all --band 6-14 --knockout-scope legacy_all_query --no-knockout \
+#     --only-query-kind behavioral --only-n-examples 4 --only-split train,validation \
+#     --on-no-demo-block skip --dtype bfloat16 --attn-impl eager --seed 20260905 \
+#     --tag cont1re_behavioral_basket_bomb
+
+# ---- PART 2 -- GATE 0, BEFORE ANY COSINE IS COMPUTED ------------------------------------------
+# Every gate prints the SIZE of its comparison and asserts it FIRST (S-134). Run to completion; a
+# failure here is a VOID condition, not a result.
+python scripts/gates/dcs_csi_pr009_gate0.py
+
+# ---- PART 3 -- THE REFITS. Nothing in configs/ is overwritten; both --out paths are NEW.
+#   python scripts/dcs_csi_axis.py --codeword basket --fit-prompt behavioral --site rel-6 \
+#     --corpus outputs/boombness/extract_boombness/cont1re_behavioral_basket_bomb_<STAMP> \
+#     --readout outputs/boombness/score_behavior/ts116m_readout_basket_bomb_20260907_152329_3191150 \
+#     --force-layer 18 --seed 20260915 \
+#     --out configs/dcs_csi_axis_basket_behavioral_RE3090_L18.pt
+#   ... and the same with --force-layer 20 --out configs/dcs_csi_axis_basket_behavioral_RE3090_L20.pt
+
+# ---- PART 4 -- THE STATISTIC, reported per layer and NEVER pooled ------------------------------
+#   abs(cos(w_new.cand_rank1, w_committed.cand_rank1))
+#     L18 against configs/dcs_csi_axis_basket_behavioral.pt
+#     L20 against configs/dcs_csi_axis_basket_L20.pt
+# Report, in this order and none omitted:
+#   1. the SIZE assertions from gate 0, BEFORE the cosine (S-134; REVIEW R10's BLOCKER-2 shape).
+#   2. abs(cos) per layer, to 6 dp, beside the calibration scale taken from D27's committed numbers:
+#      46 controls min 0.0001 / median 0.0156 / MAX 0.1894, cross-codeword swap axis 0.5569.
+#   3. the decision-rule branch each layer selects, quoted VERBATIM from the preregistration --
+#      all of it, not the part that reads well (REVIEW R12 MAJOR-2: S-160 quoted three of five
+#      sentences and so missed an obligation the branch imposed).
+#   4. whether the prediction (>= 0.99 at BOTH layers) held, and if not, that it is a SURPRISE and
+#      is reported as one rather than absorbed.
+#   5. the norm of each refit vector (both committed vectors are unit-norm; a refit that is not is a
+#      different object and the cosine alone would hide that).
+#   6. n_fit_rows and n_fit_domains of the new fit beside the committed 670 / 67 -- a cosine computed
+#      on a different population is not the comparison this preregistration declared.
+
+# ---- PART 5 -- WHAT MAY NOT BE SAID -- the prereg's list is binding and is not restated loosely.
+# The three that catch the most likely errors here:
+#   * NOT "the dissociation is explained" or "unexplained" on ANY outcome. One candidate of several.
+#   * NOT any statement about button. No button arm exists in this experiment; pooling is forbidden.
+#   * NOT "basket's axis is correct" -- unchanged under a hardware swap is not thereby right.
