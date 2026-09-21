@@ -6,6 +6,11 @@
 # plus the two exemptions VOID condition 3 names (--tag, --model), amended into the prereg BEFORE
 # this script was written. Every other flag is copied verbatim from that run's own config.json args.
 #
+# NOTE: there is no --multipos flag. `_multipos` is DERIVED in dcs_extract_under_ko.py:1358-1361
+# -- True whenever --capture-rel-end parses or --capture-codeword-occ is passed, both of which
+# this command passes. The committed run's config.json records `_multipos: True` for the same
+# reason. Passing --multipos would be an argparse error; caught by a flag check before launch.
+#
 # THE COMMAND IS INLINE. `sbatch --export=ALL,CMD="..."` truncates at the first comma and --layers is
 # a comma list -- the lesson slurm_scripts/dcs_csi_extract_sow_basket.slurm records in its header.
 #
@@ -37,7 +42,7 @@ python scripts/dcs_extract_under_ko.py \
   --no-knockout \
   --arm demo_all --band 6-14 --knockout-scope legacy_all_query --knockout-random-row-draw -1 \
   --layers 18,20 \
-  --multipos --position codeword_last \
+  --position codeword_last \
   --only-query-kind behavioral --only-n-examples 4 --only-split train,validation \
   --on-no-demo-block skip \
   --capture-rel-end=-16..-1 --capture-codeword-occ \
