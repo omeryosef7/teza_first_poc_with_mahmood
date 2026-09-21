@@ -14932,3 +14932,88 @@ CORRECTION: gate is 0.7817 / 0.7852 over 40 domains, NOT 0.8455 / 0.8022 over 4 
 S-185's "40 of 40 rows" WITHDRAWN -> "37 of 40 DOMAINS"; three fail, one at 0.461
 R14-3 STANDS AS A LIMITATION: the gate licenses the estimator, NOT the top-k rank order section 4 uses
 ```
+
+---
+
+# S-189 — **W1.1 closes S-181's open limitation**: the ranking now carries an interval, and the answer to *"60 domains or 12 with outliers?"* is **neither — h19 leads outright in 42 of 67 and is negative in 67 of 67**
+
+Screen **916132** (`BLOB b56d5d16`, 670 rows / 67 domains) now emits per-domain `S[h]`; the bootstrap
+runs on CPU. `S[h]` values are **bit-identical to 915891 and 915941** — a third independent
+reproduction.
+
+```
+[boot] SIZE domains = 67 | heads = 32 | B = 10000 | seed = 20260921
+[boot] reconstruction vs published S[h]: worst abs diff 7.000e-08 (rel 1.968e-10)
+[boot] top head h19: leads in 42/67 domains | negative in 67/67 | P(rank1) = 1.0000
+[boot] S[h19] -355.7  CI [-390.8, -321.7]
+[boot] gap h17 - h19 = 130.7  CI [103.3, 158.6]  P(>0) = 1.0000
+```
+
+## The two statistics that need no distributional assumption
+
+```
+WHICH HEAD LEADS, PER DOMAIN            h19 negative in 67 of 67 domains
+   h19  42 domains (63%)                   -- perfect sign consistency
+   h2    7 (10%)   h17  6 (9%)
+   h3    5 ( 7%)   h0   3 (4%)
+   h23   2 ( 3%)   h1 1 | h13 1
+```
+
+**S-181 asked whether h19 leads in 60 domains or in 12 with three outliers carrying it. Measured: 42
+outright, and negative in every single one.** The aggregate ranking is stable *because* of the second
+fact, not the first — h19 pulls in the same direction everywhere, so no resample can displace it.
+
+## The interval
+
+```
+head   point S[h]        95% CI            gap h17 - h19 = 130.67
+h19      -355.68   [-390.79, -321.72]      CI [103.34, 158.60], P(>0) = 1.0000
+h17      -225.01   [-246.32, -203.97]
+h23      -103.61   [-125.17,  -81.64]      P(rank1) for h19 over 10,000 resamples:
+h6        -87.43   [-100.87,  -74.30]        never displaced, so P > 1 - 1e-4
+h13       -86.04   [-100.15,  -70.72]        (reported as 1.0000; the honest form is an upper
+                                              bound on the complement, not a proved certainty)
+```
+
+All five exclude zero. **The resampling unit is the DOMAIN**, not the row: rule 3.3 makes the domain
+the unit, and resampling rows would treat ten rows of one domain as ten independent observations,
+shrinking every interval by roughly √10 and manufacturing confidence the design forbids.
+
+## The check that had to come first
+
+The per-domain terms are new code, so they were required to **reconstruct the published `S[h]`** to a
+relative 1e-6 before any interval was computed — measured **1.968e-10**. A ranking built on terms
+that did not sum to the published statistic would be a silent fork between the screen and its own
+uncertainty. The analyzer also refuses a pre-W1.1 screen outright rather than reporting nothing.
+
+## ⛔ What this does NOT say
+
+**CANNOT ANSWER — the held-out 23 domains.** A bootstrap describes resampling variability of *these*
+67. It says nothing about the domains the validation split reserves.
+
+**It cannot repair a biased estimator.** R14 measured **3 of 40 domains failing the true-patch gate
+individually** (0.461, 0.652, 0.697); resampling a domain where AtP is wrong returns the same wrong
+value. Stability and correctness are different properties and only the first is measured here.
+
+**h19 is not the leader in 37% of domains.** Eight different heads take the lead somewhere. The
+*aggregate* is stable; the *per-domain circuit* is not claimed to be uniform, and §4 should not be
+read as testing a head that wins everywhere. Together with **R14-3** — the gate licenses the
+estimator, not the top-k rank order — this is the second reason to prefer selecting §4's final head
+set by **true patch effect** rather than by AtP rank. **That is a design decision and it is the
+user's; it is flagged here, not taken.**
+
+## Commands
+
+```
+./scripts/gates/dcs_csi_submit.sh slurm_scripts/dcs_csi_w1_screen_train.slurm      # 916132
+python scripts/dcs_csi_head_atp_bootstrap.py \
+  --screen outputs/boombness/dcs_csi/w1_screen_train_basket_916132.json \
+  --B 10000 --seed 20260921 --out outputs/boombness/dcs_csi/w1_bootstrap_train_basket.json
+```
+
+```
+W1.1 DONE -- S-181's limitation is CLOSED: the ranking has an interval and the interval is tight
+h19 leads 42/67, NEGATIVE 67/67, P(rank1) > 1-1e-4, gap over h17 = 130.7 CI [103.3, 158.6]
+reconstruction 1.968e-10 | third bit-identical reproduction of S[h] | bootstrap unit = DOMAIN
+OPEN DESIGN CALL FOR THE USER: select section 4's head set by TRUE PATCH EFFECT, not AtP rank (R14-3)
+```
