@@ -85,6 +85,38 @@ modified between arms of the same comparison".
 | Domain-clustered analyser, rank test, VOID gates | `scripts/dcs_csi_subspace_analyze.py` (args at `:431-489`), independent re-derivation `scripts/dcs_csi_rederive_subspace.py`, run-dir strictness + bootstrap from `scripts/dcs_csi_rederive_patch.py` | `--candidate-arm` / `--comparator-arm` / `--control-prefixes` / `--base-arm` / `--ko-arm` / `--full-arm` is exactly the arm shape a head experiment has. Reusable **unchanged**. |
 | Reference arms already on disk, right population, right GPU | `outputs/boombness/score_behavior/csi1_basket_train_NEC_BASE_...` and `..._NEC_KO_...` (job `906433`, `n-307`, `NVIDIA GeForce RTX 3090`, `expect_n 670`); validation twins under `csi1_basket_validation_BASE/KO` (job `897658`, RTX 3090, `expect_n 230`) | See section 4.4 — reusable **only** under stated conditions; the design does NOT rely on that and re-runs them in-allocation. |
 
+### 1.6 W1's INTEGRATION MAP — every call it makes, signature verified 2026-09-21 (S-178)
+
+Added because W1 is *"mostly deletion"* only if it deletes from the right place. Every row below was
+checked against the source this tick; nothing here is quoted from memory or from §1.1.
+
+| W1 needs | call | verified at |
+|---|---|---|
+| demo key positions | `sb.demo_key_positions(tok, row, templated)` | `score_behavior.py:176` |
+| query span | `sb.query_span_positions(tok, row, templated, demo_keys)` | `:1289` |
+| target-surface span (`p*`) | `sb.target_surface_positions(tok, row, templated, query_span)` | `:1317` |
+| the A1 hook itself | `pc.ScopedAttentionKnockout(model, band, blocked_keys=…, mode=…, query_span=…, demo_span=…, heads=…, stats=…, surface_span=…)` | construction site `score_behavior.py:1833-1838` |
+| z capture **with grad** | `pc.ZHeadCapture(model, layer_idxs)`, then `acts[L]` and `acts[L].grad` after `M.backward()` | `pair_common.py:1166`; it calls `z.retain_grad()` and keeps the graph node |
+| head/dim split | `pc._attn_head_dims(model)` → `(n_heads, head_dim)` | `pair_common.py:1066` |
+| true-patch validator | `pc.ZHeadPatch(model, layer_idx, head, positions, corrupt_vec)`, `corrupt_vec` is `[head_dim]` | `pair_common.py:1074` |
+| readout token groups | `signals.readout_id_pair(tokenizer, concept, codeword, …)` | `signals.py:169` |
+| the metric M | `sb.next_token_readout(lm, templated, groups, …)` → `logp_concept`, `logp_codeword`; `M = logp_concept − logp_codeword` | `score_behavior.py:58`, combined at `:4202` |
+
+**THE DECISION THIS MAP ENCODES: W1 IMPORTS `score_behavior` AND REUSES ITS SPAN RESOLUTION. It does
+NOT re-derive spans.** Re-deriving them is the *prompt/mask mismatch* hazard this repo already refuses
+by name — `score_behavior.py:2903`ff refuses `--demo-deleted` under a knockout precisely because "the
+mask would address different text than the model reads", and a mis-resolved `surface_span` would
+produce a healthy-looking liveness block over the wrong tokens. A span resolver reimplemented in a
+second file is two resolvers that can disagree, and only one of them is the one the arms ran under.
+
+**Importing is not editing.** The PR-CSI-003 VOID condition prohibits *modifying* `score_behavior.py`;
+W3 already establishes the import-and-call pattern (`pr057_run_causal.py`). Nothing here writes to it.
+
+**One doc/code mismatch found while checking:** `ZHeadCapture`'s docstring promises `grads[L]`
+alongside `acts[L]`, but the class only ever sets `self.acts`. The gradient is reached as
+`acts[L].grad`, which is what `49_head_attribution.py:108` actually does. Harmless, but a caller
+trusting the docstring gets `AttributeError`.
+
 ### 1.2 EXISTS but is bound to a DIFFERENT experiment (reuse the code, not the result)
 
 `49_head_attribution.py` and `50_path_patching.py` were written for **NEXT5/NEXT6**, whose

@@ -14391,3 +14391,72 @@ foundations verified in S-176.
 4 live sites: 1 corrected, 2 deliberately preserved, 1 false positive | artifact 2457 -> 3999 B
 PR-CSI-009 CLEARED unchanged | P4 unblocked, W1 next | queue idle | quota 198G of 200G
 ```
+
+---
+
+# S-178 — W1's integration map, every signature verified against source: **the decision that matters is that W1 IMPORTS `score_behavior`'s span resolution rather than re-deriving it**
+
+Queue idle. W1 is *"~250 lines, and it is mostly deletion"* — true only if it deletes from the right
+place, so this tick established where every one of its calls lands before writing any of them.
+
+## What tracing the estimator actually turned up
+
+§3.2 defines `AtP[L,h,p] = ⟨g_z, z_ko − z_clean⟩` at `p*`, the target-surface row, and §3.3 sums it
+over the band, **signed**, to `S[h]`. Following that through the code, the pieces divide sharply:
+
+**Already exact, lift verbatim** — `49_head_attribution.py` does the AtP arithmetic in four lines
+(`g = z.grad[0].view(-1, n_heads, head_dim)`, `delta = cor[pos] − zc[pos]`,
+`contrib = (g[pos]*delta).sum(-1)`), and its true-patch gate patches the top-k `|AtP|` cells with a
+real `ZHeadPatch` and correlates estimate against truth. `ZHeadCapture` really does `z.retain_grad()`
+and keep the graph node. `align_z` is genuinely deletable here, because clean and corrupt are the
+**same `input_ids`** under a hook rather than two different prompts.
+
+**The trap, and it is the whole tick.** The A1 hook needs `query_span`, `demo_span` and
+`surface_span`, and those are resolved *per row* inside `score_behavior`'s loop from the prompt's
+token structure. Rebuilding that in W1 is the **prompt/mask mismatch** hazard this repo already
+refuses by name: `score_behavior.py:2903`ff refuses `--demo-deleted` under a knockout because *"the
+mask would address different text than the model reads"*. **A span resolver reimplemented in a second
+file is two resolvers that can disagree — and only one of them is the one the arms ran under.**
+
+So the architecture decision, now written into the design as **§1.6**: **W1 imports `score_behavior`
+and calls its resolvers.** They are module-level and directly callable —
+`demo_key_positions:176`, `query_span_positions:1289`, `target_surface_positions:1317` — and the hook
+construction site at `:1833-1838` shows exactly how the three spans reach
+`ScopedAttentionKnockout`. **Importing is not editing**: PR-CSI-003's VOID condition prohibits
+*modifying* that file, and `pr057_run_causal.py` already establishes the import-and-call pattern.
+
+## The map, nine rows, every signature checked this tick
+
+```
+demo/query/surface spans   sb.demo_key_positions / query_span_positions / target_surface_positions
+the A1 hook                pc.ScopedAttentionKnockout(..., mode, query_span, demo_span, surface_span, heads)
+z capture WITH grad        pc.ZHeadCapture(model, layers) -> acts[L], acts[L].grad after M.backward()
+head/dim split             pc._attn_head_dims(model) -> (n_heads, head_dim)
+true-patch validator       pc.ZHeadPatch(model, L, h, positions, corrupt_vec[head_dim])
+readout groups             signals.readout_id_pair(tokenizer, concept, codeword)
+the metric M               sb.next_token_readout(...) -> logp_concept, logp_codeword; M = difference
+```
+
+Nothing in it is quoted from §1.1 — §1.1 is where the false K/32 claim survived two ticks, so it is
+not a source I am willing to build 250 lines on without re-checking, and re-checking is cheap.
+
+## A defect found in passing
+
+`ZHeadCapture`'s docstring promises *"`grads[L]` / `acts[L]`"*, but the class only ever assigns
+`self.acts`. There is no `grads` attribute. The gradient is reached as `acts[L].grad`, which is what
+`49_head_attribution.py:108` actually does — so the working code is right and the docstring would hand
+a new caller an `AttributeError`. Recorded in §1.6 rather than fixed, because `pair_common.py` is on
+the necessity path and the pending PR-CSI-003 family-extension decision is the user's.
+
+## Why W1's code is not in this commit
+
+Because the honest order is map-then-write, and the map is what stops the 250 lines from containing a
+re-derived span resolver. The last four ticks have each found a claim in this design that did not
+survive being checked — K/32 twice, the W3 budget 12×, four drifted line numbers — and every one was
+in a document I would otherwise have coded straight from. W1 now has a foundation where each row was
+read from source this tick.
+
+```
+§1.6 added, 9 rows, all signatures verified | design doc 634 -> 666 lines
+W1 architecture DECIDED: import, never re-derive | P4 unblocked | queue idle | quota 198G of 200G
+```
