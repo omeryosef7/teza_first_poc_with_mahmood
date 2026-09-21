@@ -19,8 +19,20 @@ source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh
 conda activate poc_stage2
 echo "HOST=$(hostname) JOB=${SLURM_JOB_ID:-none} $(date -Is)"
 nvidia-smi --query-gpu=name,compute_cap --format=csv,noheader || true
-# PROVENANCE WITNESS: the code state this screen was produced under.
-echo "BLOB $(git rev-parse --short HEAD)  PORCELAIN [$(git status --porcelain --untracked-files=no | tr '\n' ';')]"
+# PROVENANCE WITNESS -- CAPTURED ON THE SUBMITTING HOST, NOT HERE.
+# `git` DOES NOT EXIST ON THE COMPUTE NODES. The previous form ran it here, so it printed
+# "BLOB   PORCELAIN []" on every job: an EMPTY blob and an empty porcelain, and an empty porcelain
+# is indistinguishable from a CLEAN WORKTREE. A witness that cannot fail is not a witness, so the
+# values are exported by the submitter and their ABSENCE IS A REFUSAL.
+if [ -z "${CSI_GIT_BLOB:-}" ]; then
+  echo "REFUSING: CSI_GIT_BLOB not exported by the submitter; this run would have no provenance" >&2
+  exit 3
+fi
+echo "BLOB ${CSI_GIT_BLOB}  PORCELAIN [${CSI_GIT_PORCELAIN:-<UNSET>}]"
+if [ "${CSI_GIT_PORCELAIN:-<UNSET>}" != "clean" ]; then
+  echo "REFUSING: worktree was NOT clean at submit time: ${CSI_GIT_PORCELAIN}" >&2
+  exit 4
+fi
 SNAP=/home/sharifm/students/matanbentov/hub/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659
 python scripts/dcs_csi_head_atp.py \
   --bank data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl \

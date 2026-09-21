@@ -119,8 +119,8 @@ def main():
     ap.add_argument("--band", default="6-14", help="the A1 band; the knockout and the AtP sum share it")
     ap.add_argument("--answer-prefix", default=" Answer:")
     ap.add_argument("--limit", type=int, default=0, help="0 = every eligible row")
-    ap.add_argument("--topk", type=int, default=40, help="cells taken into the true-patch gate")
-    ap.add_argument("--min-corr", type=float, default=0.5)
+    ap.add_argument("--topk", type=int, default=40,
+                    help="size of the convenience top-cell list; ALL cells are emitted regardless")
     ap.add_argument("--model", default=None)
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
@@ -320,6 +320,13 @@ def main():
         "S_signed_by_head": {str(h): round(float(S[h]), 8) for h in range(n_heads)},
         "abs_diagnostic_by_head": {str(h): round(float(A[h]), 8) for h in range(n_heads)},
         "ranking_most_negative_first": order,
+        # THE GATE'S INPUT (design 3.4): per-CELL AtP, not per-head. 9 layers x 32 heads = 288.
+        # Emitted in FULL -- a top-k written alone cannot be re-ranked by any other rule later,
+        # and the screen must not quietly decide what a downstream gate is allowed to see.
+        "AtP_by_cell": {("%d,%d" % lh): round(v, 8) for lh, v in sorted(per_cell.items())},
+        "topk_cells_by_abs": [{"layer": L, "head": h, "atp": round(per_cell[(L, h)], 8)}
+                              for (L, h) in sorted(per_cell, key=lambda c: -abs(per_cell[c]))[:a.topk]],
+        "topk": a.topk,
         "SELECTION_RULE": ("S[h] SIGNED, summed over the band at p*. The |.| column is a DIAGNOSTIC "
                            "and the ranking for the true-patch gate only -- never the selector "
                            "(design section 3.3)."),
