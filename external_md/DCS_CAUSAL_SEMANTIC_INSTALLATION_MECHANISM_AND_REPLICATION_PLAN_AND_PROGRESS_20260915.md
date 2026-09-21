@@ -13327,3 +13327,136 @@ last outstanding item from R12. It is a pass over ~164 log entries and needs its
 claim table 751 -> 777 lines, additive, original text preserved | 2 new rows, 5 amendments
 R47 = 6 and swap rank 1 UNCHANGED | queue idle | blob 11d2c617 | quota 197G of 200G
 ```
+
+---
+
+# S-165 — the amendment sweep, the last outstanding R12 item, is **done and measured**: the obligation touched **four sentences in 14 000 lines**, not the hundred I had budgeted for — and the one that mattered was in the dissociation's own headline table
+
+PR-CSI-007's decision branch, fired at R47 = 6, obliges: *"Every sentence in the sprint that states
+button's L18 failure without naming the split is amended to name it."* S-163 carried it forward as "a
+pass over ~164 entries". **That estimate was wrong by two orders of magnitude, and measuring instead of
+estimating is the whole content of this entry.**
+
+## Why the obligation exists
+
+Until this week "button's L18 failure" picked out one fact. It no longer does:
+
+```
+button @ L18 TRAIN       rank 36 of 47   z -0.5702   exceedance 35/46 [0.6123, 0.8741]
+button @ L18 VALIDATION  rank  6 of 47   z +1.3999   exceedance  5/46 [0.0362, 0.2357]
+                                                     the two intervals DO NOT OVERLAP
+```
+
+An unqualified sentence now silently picks whichever of these the reader already believes.
+
+## The sweep, and its denominator
+
+```
+button + L18 + a failure word, sprint log (13 329 lines), split named within +-3 lines
+   examined           6
+   already compliant  4
+   NOT compliant      2      L6208, L6211
+table rows judged on their OWN text (a row is quoted alone)
+   NOT compliant      1      L10176
+claim-table headlines (778 lines)
+   examined           2      D23, D29
+   NOT compliant      1      D23
+```
+
+**Four sentences in total.** The discipline was already being followed almost everywhere — 4 of 6 log
+sentences and 1 of 2 headlines named their split unprompted — which is worth recording as plainly as a
+failure would be.
+
+## The three log sentences — amended by RESTATEMENT, because the log is append-only
+
+The log cannot be edited. An append-only record discharges an amendment obligation by restating the
+sentence in a later entry, which is what follows. The originals stay exactly where they are.
+
+**L6208** (S-104 context — the L18-vs-L20 layer swap, 10-control family, floor 0.0909):
+> original: *"We may say **'button's failure is not explained by its layer.'**"*
+> **amended: "We may say 'button's TRAIN L18-vs-L20 failure is not explained by its layer' — TRAIN
+> only, on a 10-control family whose floor is 0.0909, which could never have certified a pass."**
+
+**L6211** (same context, subordinate clause):
+> original: *"…it is only excluded for button, **which is the codeword that fails**."*
+> **amended: "…which is the codeword that fails ON TRAIN at L18."**
+
+**L10176** — S-137's dissociation table, and **this is the one that mattered**:
+```
+original  | **button @ L18, 46 controls** | **36 of 47** | 0.766 | 0.0213 | **DOES NOT PASS**, certified |
+amended   | **button @ L18, 46 controls, TRAIN** | **36 of 47** | 0.766 | 0.0213 | **DOES NOT PASS on TRAIN**, certified on TRAIN |
+```
+**The basket row directly above it already read "PASSES (TRAIN *and* VALIDATION)".** One row named its
+splits and the row beneath it did not, in the table whose entire purpose is the side-by-side
+comparison — so a reader scanning it saw basket qualified and button unqualified, which is precisely
+the asymmetry the obligation exists to prevent. It was invisible to me until the sweep put the two
+rows in the same field of view.
+
+## The claim table — amended in place, because it CAN be
+
+`reports/DCS_CSI_CLAIM_TABLE.md` is live and editable, and an amendment recorded 250 lines below the
+sentence does not stop a reader meeting the sentence. D23's headline now reads **"DOES NOT PASS ON
+TRAIN … button's TRAIN failure is CERTIFIABLE"**, with a pointer to D29. `AM-20` records the change for
+traceability. **No statistic, caveat or source moved**: the row's population cell already said *626 keys
+/ 67 TRAIN domains* and its caveat already said *TRAIN ONLY*. **Only the headline was unqualified —
+and a headline is what gets quoted.** `git diff --stat`: 2 insertions, 1 deletion, one file.
+
+## Made durable rather than one-time
+
+`scripts/gates/dcs_csi_split_naming_check.py`. It flags any line asserting button + L18 + a failure
+word without naming a split, over both files, and exits 1. The three pre-existing log lines sit in
+`AMENDED_BY_RESTATEMENT`, **keyed by their own text rather than by line number** so that the log's
+growth cannot silently re-exempt a different line — and the ledger is itself checked, failing if a key
+is no longer present in the log.
+
+**Writing it caught a defect in my own sweep.** The first version judged compliance over a ±3-line
+window, which called **L10176 compliant** — the table preamble and the basket row both contain "TRAIN"
+within three lines. A table row is quoted on its own, so a split named three lines away does not travel
+with it. Rows are now judged on their own text, and the checker's log-hit count went **2 → 3**: it now
+sees the case that motivated the whole obligation. A checker that missed the worst instance while
+passing would have been worse than none.
+
+**Mutation-tested**: an unqualified `| D99 | button at L18 DOES NOT PASS and the failure is certified |`
+appended to the claim table is **caught, exit 1**; restored, **exit 0**; `git diff` confirms the table
+came back byte-identical.
+
+```
+4 sentences amended (3 by restatement, 1 in place) | checker added, mutation-tested, exit 1 on injection
+log 13 329 lines | claim table 778 | queue idle | blob 11d2c617 | ALL R12 ITEMS NOW CLOSED
+```
+
+### Addendum, appended minutes later — **the checker failed on the entry above, and it was right to look**
+
+Appending S-165 made `dcs_csi_split_naming_check.py` exit 1, on two lines of S-165 itself:
+
+```
+L13355  "button + L18 + a failure word, sprint log (13 329 lines), split named within +-3 lines"
+L13419  "an unqualified | D99 | button at L18 DOES NOT PASS and the failure is certified |"
+```
+
+Neither asserts the claim: the first describes the sweep's own criteria, the second quotes the
+deliberately-unqualified mutant. **A checker that scans prose will always flag prose ABOUT the
+checker** — and the entry discharging an obligation is exactly the prose most likely to quote what the
+obligation forbids.
+
+The `META` exclusion is now named explicitly rather than left to chance, and deliberately narrow —
+every token describes *talking about* the claim, never *making* it: `a failure word`, `Mutation-tested`,
+`unqualified`, `D99`, and leading `original:` / `amended`. Re-verified both directions after the fix:
+**PASS on the real corpus (exit 0)**, and a freshly injected
+`| D98 | button at L18 DOES NOT PASS, certified |` is still **caught (exit 1)**, with the table
+restored byte-identical afterwards.
+
+Worth noting which way this cuts. The three `original:` quotations of the unqualified sentences were
+**never** flagged, because each sits within three lines of its amended form and those name the split —
+so the amendment structure itself kept them compliant, without my having planned that.
+
+**Second iteration, same tick.** The addendum above then failed the checker too — it quotes a `D98`
+mutant while `META` had been taught only `D99`. Chasing sentinels one at a time is the wrong fix, so
+**`D90`–`D99` are now RESERVED as mutation-test sentinels** and matched as a range; they are never real
+claim-table rows, so quoting one is always talk about the check. Re-verified in both directions with a
+**non-sentinel** id, which is the case that matters: `| D31 | button at L18 DOES NOT PASS, certified |`
+is **caught (exit 1)**, the corpus **passes (exit 0)**, and the table restores byte-identical.
+
+Two false-positive rounds on one checker, both caused by the entry that documents it. That is the cost
+of a text-scanning guard, and it is worth paying here only because the thing it guards — a claim whose
+TRAIN and VALIDATION cells now disagree — is one a reader cannot repair for themselves.
