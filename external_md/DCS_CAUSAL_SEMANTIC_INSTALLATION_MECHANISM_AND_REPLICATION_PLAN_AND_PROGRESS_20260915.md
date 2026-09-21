@@ -16121,3 +16121,48 @@ K=8 / all-head ratio holds at 1.495 vs the 1.515 of S-201 | disk ~27 MB for all 
 NOTHING ELSE WAS DUE. No analyser was run on real arms: that would read the endpoint before GATE 0
 has cleared on all 24, which the frozen read forbids. NO ENDPOINT VALUE READ.
 ```
+
+---
+
+# S-207 — 12 of 24 TRAIN arms, all passing GATE 0. The per-arm time is **drifting down, and the drift is real rather than noise** — which is a caution about per-arm cost models, not about the arms
+
+```
+GATE 0 SWEEP -- train | landed 12 of 24 | every landed arm PASSES
+```
+
+## The only new measurement
+
+```
+K=8 arms in order:  972.5  970.5  966.6  972.4  966.9  963.1  959.3  908.5  898.3  895.6
+first 5 mean 969.8 | last 5 mean 925.0 | delta 44.8 s = 4.6%
+overall sd 32.5 s  ->  the drift is 1.4 sd, so it is a TREND, not noise
+remaining 12 arms at the RECENT rate -> 3.08 h  (3.73 h at the pooled rate, S-206)
+```
+
+**Nothing about the arms changed** — same code, same population, same dose (`16416.0` on every K=8
+arm). The node got quieter: an eight-arm block at ~968 s gives way to a four-arm block at ~900 s with
+almost no scatter inside either. This is the same **node-level shared-resource** effect S-147 measured
+at 6.2× in its severe form, appearing here in its mild one.
+
+**The caution it carries is about cost models, not about this family.** S-201 corrected the
+head-restricted factor from 1.276 to 1.515 after measuring at 670 rows instead of 24; the ratio is now
+`925.0 / 642.0 = 1.44` on the recent block, against `1.515` on the first. **A per-arm cost measured
+over one window is a measurement of that window** — the arms are identical and the number still moved
+4.6%. Any future estimate from these timings should carry the window it was taken in.
+
+**It changes no verdict and no gate.** Wall time is not an endpoint.
+
+## Commands
+
+```
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+  --tag-prefix csi3_head_basket_train --split train
+# per-arm wall times parsed in order from the W3 log
+```
+
+```
+12 of 24 TRAIN arms, ALL PASS GATE 0 | dose 16416.0 on every K=8 arm, unchanged
+per-arm time drifting DOWN 4.6% (1.4 sd) -- a real trend: the node got quieter, the arms did not change
+K=8/all-head ratio now 1.44 on the recent block vs 1.515 on the first: A COST MEASURED IN ONE WINDOW
+IS A MEASUREMENT OF THAT WINDOW | ~3.1 h remaining | NO ENDPOINT VALUE READ
+```
