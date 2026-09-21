@@ -1,3 +1,20 @@
+> ## ⛔ BLOCKER, 2026-09-21 (REVIEW R13) — READ BEFORE BUILDING ANYTHING FROM THIS DOCUMENT
+>
+> **§4.2's realised-dose identity is INVERTED and off by a factor of 32.** The doc asserts a K-head
+> arm edits `K/32` of what the all-head arm edits. Measured in `doublespeak_causality/pair_common.py:955-959`:
+> the head-dim expansion `am.expand(-1, self.n_heads, -1, -1)` is guarded by
+> `if self.heads is not None and am.shape[1] == 1`, so the **all-head arm (`heads=None`) never expands**
+> and takes `n_heads_edited = am.shape[1] = 1`, while a K-head arm expands to 32 and takes
+> `n_heads_edited = len(self.heads)`. A K=8 arm therefore records **8× the all-head arm, not 1/4**.
+> Reproduced on the real hook: `heads=None` → 61 prefill edits, `heads=[0..7]` → 488, ratio **8.0**
+> against the claimed 0.25. An existing artifact already refutes the doc:
+> `csi1_basket_train_NEC_KO_20260918_001224_171794/summary.json` has `median_prefill_edits 2052`, and
+> `2052 % 32 = 4` — unreachable if `n_heads_edited` were 32.
+>
+> **Consequence:** the realised-dose control is how this design separates a head effect from a dose
+> effect, so an arm set built on the K/32 identity would be dose-confounded in the direction OPPOSITE
+> to the one intended. **§4.2 must be re-derived before P4 spends any GPU.**
+
 # Plan section 8.2 — DESIGN of the attention-HEAD level of the demonstration -> query circuit, for `basket`
 
 STATUS: **DESIGN ONLY. NOTHING HERE HAS BEEN RUN. NO GPU JOB WAS LAUNCHED.**
@@ -128,7 +145,7 @@ deliberately validates against it rather than restating it — `:2674`, `:2804`)
 |---|---|---|---|
 | W1 | `scripts/dcs_csi_head_atp.py` — AtP on the per-head z channel with **the A1 knockout as the corruption** and **`M = logp_concept - logp_codeword`** as the metric | ~250 lines, and it is mostly deletion: `ZHeadCapture` + `ZHeadPatch` from `pair_common`, the ranking and the true-patch correlation gate lifted from `49_head_attribution.py:100-158`, the scoring arithmetic from `src/boombness/signals.py:693-745`. The `align_z` layer is dropped. | 49's corruption and metric are both wrong for this sprint (section 1.2). |
 | W2 | A **head-set draw** module: deterministic, seeded, reproducible K-of-32 draws written to a frozen JSON before any arm runs | ~60 lines | The control family must be fixed in the pre-registration, not generated at launch time. |
-| W3 | A **loop-the-arms runner** for the CSI arm shape (load the model once, run N arms in-process) | ~120 lines, pattern lifted from `src/boombness/pr057_run_causal.py:1-30` (memoising `ds_common.load_model`, counted as `--model-loads`) | **Measured**: job `906433` spent `7834 s` wall on 5 arms whose own `DONE.json wall_seconds` sum to `3503.23 s`. **4330.77 s — 55.3% of the allocation — was model loading**, `866 s` per arm. At 24 arms that is 5.8 GPU-hours spent on `from_pretrained`. This file is worth more than everything else in this table. It does **not** edit `score_behavior.py`; it sets `sys.argv` and calls its `main()`, exactly as `pr057_run_causal.py` already does. |
+| W3 | A **loop-the-arms runner** for the CSI arm shape (load the model once, run N arms in-process) | ~120 lines, pattern lifted from `src/boombness/pr057_run_causal.py:1-30` (memoising `ds_common.load_model`, counted as `--model-loads`) | **Measured**: job `906433` spent `7834 s` wall on 5 arms whose own `DONE.json wall_seconds` sum to `3503.23 s`. **4330.77 s — 55.3% of the allocation — was model loading**, `866 s` per arm. At 24 arms that is 5.8 GPU-hours spent on `from_pretrained`. This file is worth more than everything else in this table. It does **not** edit `score_behavior.py`; it sets `sys.argv` and calls its `main()`, exactly as `pr057_run_causal.py` already does.  **⛔ WITHDRAWN 2026-09-21 (S-171 / REVIEW R13): the 866 s/arm figure divides a TOTAL by an arm count when 92% of it (3971 s of 4331 s) is ONE-TIME staging, measured before the first arm. Per-arm overhead is 72 s, so W3 saves 0.48 GPU-h at 24 arms, not 5.77 — a 12× overestimate. EVERY 'Without W3' FIGURE IN §7.2 INHERITS THIS and is ~12× too large. W1 is the critical path.** |
 | W4 | `scripts/dcs_csi_head_analyze.py` — a thin wrapper choosing arm names and calling `dcs_csi_subspace_analyze.py` | ~40 lines, or **zero** if the arm names are chosen to fit the existing flags (they are; see section 4.2) | Optional. Prefer zero. |
 | — | per-`(L, h)` knockout | **NOT WRITTEN, REPORTED ONLY** | Would require editing `score_behavior.py`. Prohibited while job 912736 runs. Section 0. |
 | — | a `rel-6 <- rel-11` intra-query head knockout | **NOT WRITTEN, REPORTED ONLY** | Would require a new `SCOPED_KNOCKOUT_MODES` entry. Section 2, leg (ii). |

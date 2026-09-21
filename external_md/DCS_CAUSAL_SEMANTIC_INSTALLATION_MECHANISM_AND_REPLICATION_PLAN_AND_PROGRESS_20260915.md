@@ -14019,3 +14019,108 @@ The amendment to D31's wording, and REVIEW R13's own findings, follow in the nex
 L18 argmax on V100 by +0.0013 | L20 argmax on 3090 by +0.0005 | margin moved -0.0018
 abs(cos) 0.998406 / 0.997866 UNCHANGED | D2's plateau caveat CONFIRMED, not overturned
 ```
+
+---
+
+# REVIEW R13 (self, ~4 h cadence) — **13 of 16 confirmed, including a BLOCKER that would have dose-confounded P4 in the direction opposite to the one intended**, and a MAJOR showing my bf16 justification was wrong twice over — **in a way that makes PR-CSI-009's result STRONGER**
+
+R12 06:28:23 → this 10:34, **4.1 h**. Scope: 13 commits, `0fe645f7..f4ff14c8` (S-163 … S-171). Four
+adversarial dimensions, each finding handed to a separate verifier told to refute it. **16 candidates,
+13 confirmed, 3 killed.** Every load-bearing one I re-measured myself.
+
+---
+
+## BLOCKER — P4 §4.2's realised-dose identity is INVERTED and 32× wrong (fixed in place)
+
+The design asserts a K-head arm edits `K/32` of what the all-head arm edits — the control that
+separates *a head effect* from *a dose effect*. Measured at `pair_common.py:955-959`: the head-dim
+expansion is guarded by `if self.heads is not None and am.shape[1] == 1`, so the **all-head arm never
+expands** and takes `n_heads_edited = 1`, while a K-head arm expands to 32 and takes
+`len(self.heads)`.
+
+```
+real hook, fresh probe:  heads=None -> 61 prefill edits | heads=[0..7] -> 488 | ratio 8.0  (doc claims 0.25)
+existing artifact:       NEC_KO summary.json median_prefill_edits 2052, and 2052 % 32 = 4
+                         -- unreachable if n_heads_edited were 32
+```
+
+**A K=8 arm records 8× the all-head arm, not a quarter.** An arm set built on the doc's identity would
+be dose-confounded *opposite* to the intent. A ⛔ BLOCKER banner now sits above the document's title:
+**§4.2 must be re-derived before P4 spends GPU.**
+
+## MAJOR — my bf16 justification is wrong twice, and the truth is a better result
+
+S-169, D31 and the provenance gate all said the residuals were *"inside bf16's ~2⁻⁸ = 0.0039 relative
+precision — float noise."* Both halves fail:
+
+```
+1 - cos is SECOND order:  theta^2/2 = 0.00159442 / 0.00213476  vs measured 0.001594 / 0.002134  (exact)
+   so a squared angle was being compared against a FIRST-order precision. sin(theta) = 0.0564 / 0.0653,
+   i.e. 14.5x / 16.7x the 0.0039 invoked.
+the activations themselves (my own mmap'd comparison, 600 shared prompt_ids, site rel-6):
+   ||h_new - h_old|| / ||h_old||   L18 median 0.02565  p90 0.03380   L20 median 0.02757  p90 0.03845
+   ~7x OUTSIDE the bound the sentence claimed they sat inside.
+```
+
+**The corrected statement is stronger than the one it replaces.** The two corpora's activations
+genuinely differ by ~2.6 %, and the fitted direction still agrees at **cos 0.998**. That is robustness
+of the fit to a real perturbation, not agreement under float noise — and the comparison took two
+minutes and was available before the sentence was written. Corrected in all three places.
+
+**The verdict is untouched.** The 0.99 threshold was committed at 08:07:11, before the job; the bf16
+argument was the *rationale offered for choosing it*, not the test. CLEARED stands.
+
+## MAJOR — S-171 said it corrected the design doc. It did not. (fixed)
+
+`git show --stat f4ff14c8` is one file, the progress log. The design doc still read *"866 s per arm"*
+and *"worth more than everything else in this table"* verbatim — and **§7.2's entire "Without W3"
+budget column is derived from 866 s/arm** (~17.5 vs ~8.6 GPU-h), so a ~8.9 GPU-h spread sat ~12× too
+large in the live, next-to-be-executed artifact. A log entry is not an amendment to a document that
+someone builds from. Now marked in place, in the repo's own ⛔-annotation convention.
+
+## MAJOR — three claim-table rows the reconciliation missed (AM-22, AM-23, AM-24)
+
+* **D21** still said *"no button-L18 VALIDATION arm has ever been run."* The 2026-09-21 sweep amended
+  that identical clause in **four** sibling rows and skipped the fifth. A9/A10 also carry no
+  *"Checked: D1–Dn"* line, unlike the three earlier reconciliation blocks, so nothing recorded that
+  D21 had been looked at.
+* **Two audit rows (~316, ~599)** assert D13's caveat *"still stands and is not discharged"* while
+  AM-19 says superseded. Their own headers read *"Verdicts, with the entry that now governs each."*
+  Reproducible from the trail: S-163's sweep returned **five** hits; its table recorded **three**.
+* **`pr006_axis_swap.json:75`** rests *"the swap is clean"* on basket's selected layer **being** its
+  argmax while button was forced — which S-172 showed is **hardware-contingent**. Not withdrawn: at a
+  0.0005 margin the layers are tied, which is D2's plateau.
+
+## MAJOR — the split-naming checker is fail-open (recorded, not yet fixed)
+
+`AMENDED_BY_RESTATEMENT` is keyed by **line text alone**, no position component, and the membership
+test is `if txt in AMENDED_BY_RESTATEMENT`. A *new* entry that re-quotes S-137's table row is therefore
+auto-exempted. The checker I built two ticks ago to stop unqualified claims will not stop the most
+likely one — a future entry quoting the row it exempts. **Not fixed this tick**; it needs the key to
+carry a line number or a one-time-use flag, and that is a design decision, not a patch.
+
+## MINORs, confirmed
+
+`pr009_gate0.py` loads the preregistration and consumes only `pr["id"]`, while its docstring claims
+thresholds are read from it at runtime — the sibling `pr008_gate0_lexical.py` does this for real. Its
+banner *"every VOID condition checked"* covers 1, 2, 3, 7 and not 5 or 6, and that overclaim propagated
+into D31 (both now corrected). The backtick rule added in S-166 is **one-sided**: the strip runs on the
+flagging test and not the excusing one, so backticks can only ever reduce flagging.
+
+## Killed by the verifiers (3 of 16)
+
+The reported L20 cosine; one of the two D21 audit-row claims; and the assertion that S-171's one-time
+staging figure was itself miscounted — all three refuted on measurement.
+
+## The shape
+
+Two of this tick's findings are the same error in opposite directions. S-171 caught the design doc
+dividing a **total** by an arm count; R13 caught **me** comparing a **second-order** residual to a
+**first-order** precision. Both are dimensional slips that survive because the surrounding arithmetic
+is right, and both were settled in about two minutes by measuring the thing itself — the activation
+difference, the head-edit ratio — rather than reasoning about what it should be.
+
+```
+BLOCKER fixed in place | bf16 corrected in 3 sites | design doc marked | AM-22/23/24 added
+claim table 790 -> 793 | split-naming green | CLEARED verdict UNCHANGED | P4 GATED on §4.2
+```
