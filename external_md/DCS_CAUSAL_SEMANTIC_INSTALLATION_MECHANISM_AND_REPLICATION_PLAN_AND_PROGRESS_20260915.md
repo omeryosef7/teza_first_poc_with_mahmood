@@ -13460,3 +13460,63 @@ is **caught (exit 1)**, the corpus **passes (exit 0)**, and the table restores b
 Two false-positive rounds on one checker, both caused by the entry that documents it. That is the cost
 of a text-scanning guard, and it is worth paying here only because the thing it guards — a claim whose
 TRAIN and VALIDATION cells now disagree — is one a reader cannot repair for themselves.
+
+---
+
+# S-166 — **CORRECTION to S-165's checker: three rounds of sentinel whack-a-mole had one structural answer I should have written first** — text inside backticks is a quotation, not an assertion
+
+S-165 shipped `dcs_csi_split_naming_check.py` and then failed it **three times in one tick**, each time
+on the entry documenting it:
+
+```
+round 1   D99   the mutation example quoted in the entry
+round 2   D98   a second mutation example, after META had been taught only D99
+round 3   D31   a NON-sentinel id, quoted to show the checker catches non-sentinels
+```
+
+Each round I widened `META` by one token. **That was the wrong shape, and the third round is what
+made it obvious**: reserving `D90`–`D99` could never cover `D31`, because the whole point of that
+example was to use an id outside the reserved range. A rule that needs a new exception every time it
+is exercised is not a rule.
+
+## The structural fact all three shared
+
+**Every one of those quotations was inside backticks. The real offender, L10176, is a raw table row and
+is not.** Inline code is how this log quotes text it is *talking about* — and the distinction between
+asserting a claim and quoting it is exactly what the checker needed and did not have.
+
+```python
+bare = re.sub(r"`[^`]*`", " ", l)      # text inside backticks is a QUOTATION, not an assertion
+if not (BUTTON.search(bare) and FAIL.search(bare)):
+    continue
+```
+
+One line, and the entire class disappears — including the two `META` tokens and the `D90`–`D99`
+reservation I had added, which are now belt-and-braces rather than the mechanism.
+
+## Verified in all three directions, because two would have been misleading
+
+```
+corpus (log 13 462 lines + claim table 778)          PASS, exit 0
+raw un-backticked violation appended to the table    CAUGHT, exit 1     | D32 | ... |
+the three historical log lines                       still seen, still exempted: 3 of 3
+```
+
+The third check is the one that could have been skipped and should not have been: a fix that silenced
+the false positives by making the checker blind would also have stopped it seeing L10176, the case the
+whole obligation exists for. **It still sees all three.**
+
+## The lesson, which is not about regexes
+
+I patched a symptom three times before asking what the three symptoms had in common, and the common
+structure was visible in the first one. This is the same shape as S-149 (marker gap instead of
+`wall_seconds`), S-150 (a glob aimed at the wrong tree) and S-157 (an arm name that does not identify a
+basis): **reaching for the nearest handle instead of asking what the thing actually is.** The
+difference here is that it cost three iterations inside a single tick rather than an entry, which is
+the cheapest this class of error has been all session — and it was caught by running the check rather
+than by reasoning about it, which is the only reason it was cheap.
+
+```
+checker: backtick rule added | corpus PASS | raw violation CAUGHT | 3 of 3 historical lines still seen
+log 13 462 -> this entry | claim table 778 | queue idle | blob 11d2c617
+```

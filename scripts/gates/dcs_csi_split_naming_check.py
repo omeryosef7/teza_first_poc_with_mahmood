@@ -61,6 +61,14 @@ def scan(path, window=True):
             continue
         if META.search(l):
             continue
+        # STRUCTURAL RULE, and the one that should have been written first: text inside backticks is a
+        # QUOTATION, not an assertion. Three rounds of sentinel whack-a-mole (D99, then D98, then D31)
+        # all had the same shape -- the entry documenting this checker quotes rows it must not assert --
+        # and every one of those quotations was inside inline code, while the real offender L10176 is a
+        # RAW table row that is not. Strip code spans first and the whole class disappears.
+        bare = re.sub(r"`[^`]*`", " ", l)
+        if not (BUTTON.search(bare) and FAIL.search(bare)):
+            continue
         # A TABLE ROW is quoted on its own, so a split named three lines away does not travel with
         # it. That is exactly how L10176 read: the basket row beside it named "TRAIN *and*
         # VALIDATION" while the button row named nothing, and the windowed test called that
