@@ -12681,3 +12681,122 @@ because I could not read one, rather than a guessed field being written down as 
 914479 R n-301, 8 of 12 | 49 of 54 finished | read sha16 5f4ecd4d | blob 11d2c617
 quota 197G of 200G | NO PR-CSI-007 NUMBER READ
 ```
+
+---
+
+# S-160 — **PR-CSI-007 READ. R47 = 6 of 47.** The prespecified band was [24, 43] and the point prediction 32, so this is **a SURPRISE and is reported as one**: by the preregistration's own decision rule, **S-137's TRAIN-certified failure DOES NOT REPLICATE held-out** — and it is still **not a pass**
+
+`914479` COMPLETED at 00:53:51. The family is 54 of 54. The read was run **once**, in the frozen file's
+order, with no flag added and none removed.
+
+## PART 2 — gate 0, all pass
+
+```
+PREFLIGHT   NKEEP 230 / 23 domains / labels {'validation': 23} | NOT CIRCULAR (0 overlap, fit split 'train', 67 domains)
+            blob 11d2c61747e9401e2d2cb8f4123dd1188674d61b == EXPECT_BLOB | porcelain '' | exit 0
+GATE (a)    54 expected | 54 FINISHED | 0 unfinished
+GATE (b)    54 dirs | {'NVIDIA GeForce RTX 3090': 54}
+GATE (c)    min 228 max 230 | zero-row 0 | below 226: 0
+GATE (d)    expect_n {230:54} | rescue_layer {None:2, 18:52} | basis {-:4, ..._L18.pt:50}
+            donor {clean:53, self:1} | exclusion file uniform | norm_match_key {cand_rank1:46}
+GATE 2.2    5 logs inspected (MUST be 5) | layer-override lines 0 in all five | banner LAYER=18 RANK=5 EXPECT_N=230
+GATE VERDICT: ALL PASS
+```
+
+**GATE 2.2 caught a live foot-gun of my own making.** Run in this session's shell it reported
+`inspected 0 logs` and FAILED: the session shell is **zsh**, where an unquoted `$PR007_JOBS` does not
+word-split, so `for J in $PR007_JOBS` saw one token. The gate's own non-vacuity assertion — *"a grep
+over zero files also finds nothing, which is the S-134 vacuous-gate shape"* — is exactly what caught
+it. Re-run under a POSIX shell, as the file intends: 5 logs, all clean.
+
+## PART 4 — reported in the prescribed order, none omitted
+
+**1. Sizes first (S-134).** `n_controls = 46`, `n_domains = 23`, printed and asserted **before** the
+rank, in all three reports plus the independent re-derivation. Write verification: **ALL PASS**
+(722 373 B / 402 976 B / 373 772 B / 7 386 B, each re-parsed).
+
+**2. R47 = 6 of 47. p = 6/47 = 0.12766.** Attainable floor 1/47 = 0.021277. **There was no arithmetic
+floor**: every rank from 1 to 47 was attainable, unlike PR-CSI-005 whose pooled rank was bounded at
+≥ 8 before its experiment ran.
+
+**3. The three gates.**
+
+```
+KO - BASE        -0.28319  [-0.33649, -0.23910]  p at its floor   (cf. -0.29095 at L20)  CLEARLY NEGATIVE
+KO_SELF - KO     +0.00084  [-0.00092, +0.00253]  p = 0.365        |0.00084| <= 0.005      INERT
+KO_FULL - KO     +0.13326  [+0.11327, +0.15390]  p at its floor, 23/23 domains positive   CLEARLY POSITIVE
+```
+
+All three pass, so this is **a result and not a CANNOT ANSWER**. The instrument is capable: the whole
+clean state recovers +0.133 at this layer on this split.
+
+**4. The decision-rule branch, quoted verbatim before any interpretation of mine:**
+
+> `3 <= R47 <= 12` → **top quartile, does NOT certify. The train result does not replicate. NOT a
+> pass, NOT "nearly significant".**
+
+**5. z = +1.3999**, against button **TRAIN** L18's **−0.5702**. Control mean +0.00085739, sd
+0.00094478, candidate +0.00218. **The sign is flipped.**
+
+**6. Exceedance (R47−1)/46 = 5/46 = 0.10870, Clopper-Pearson 95% [0.0362, 0.2357]**, against button
+TRAIN's **35/46 = 0.76087 [0.6123, 0.8741]**. **The two intervals do not overlap** — 0.2357 < 0.6123.
+
+**7. Subfamilies**, both prespecified, both read so neither could be reported selectively:
+
+```
+shuffled-only  rank 4 of 25   floor 0.0400     DOES NOT PASS
+random-only    rank 3 of 23   floor 0.043478   DOES NOT PASS
+```
+
+**8. Leave-one-domain-out.** `{3:2, 4:1, 5:4, 6:12, 7:3, 8:1}`; **best attainable rank under any
+single deletion = 3**, reached by dropping `ambulance_station` or `botanic_glasshouse`; **no deletion
+reaches rank 1**; candidate range +0.00180 … +0.00266, sign negative in **0 of 23** drops. Against
+button TRAIN's `{31:1, 32:2, 33:3, 34:6, 35:12, 36:21, 37:22}`, best 31. The width was **declared in
+advance** to be larger here — 23 domains against 67 — so the spread is arithmetic, not instability.
+
+**9. THE PREDICTION, and it did not hold.** Fixed before the data: **point R47 = 32 of 47, 95 % band
+[24, 43]**; route 1 (Jeffreys BetaBinom carried forward from TRAIN's 35/46) E[R47] = 35.74, [27, 43];
+route 2 (normal-z shrunk by √(23/67) = 0.5859) E[R47] = 30.02, [24, 37].
+
+> **Observed R47 = 6. That is 18 ranks below the bottom of a 95 % band fixed before the data.**
+
+Route 2 was nearer (30.02 against 35.74) but **neither route was close, and the file's instruction is
+explicit: a result outside [24, 43] is a SURPRISE and must be reported as one.** It is not absorbed,
+and the prediction is not adjusted after the fact.
+
+**10. The blob boundary.** This family ran entirely at `score_behavior.py` blob **`11d2c617`**. The
+PR-CSI-005 TRAIN family it is being compared with ran **before the S-139 bf16-guard edit**, i.e. on
+the other side of a code boundary. Every sentence above that sets 6 of 47 beside 36 of 47 crosses that
+boundary, and says so.
+
+## What this does and does not mean
+
+**What it does.** By the preregistration's own rule, the branch is a **replication failure that
+certifies nothing**. S-137's certified failure was explicitly TRAIN-only, and its held-out form is now
+tested and **does not replicate**: rank 36 → 6, z −0.57 → +1.40, exceedance 35/46 → 5/46 with
+non-overlapping CIs. The file warned that **this experiment could only hurt the sprint's headline**,
+and it has — not by making button pass, but by removing the held-out support the headline was
+reaching for.
+
+**What it does not.** R47 = 6 is **not a pass**; the only certifying values are 1 and 2. It is **not
+"nearly significant"** — p = R47/47 and the nearest certifying value is 2. Five controls recover at
+least as much as the candidate does; it is **inside** the control distribution. Nothing here says
+button's axis is causal or is not causal (prohibition 19). Nothing here pools button with basket, or
+this family's controls with TRAIN's — the domains are disjoint and the blobs differ.
+
+**The family is not extended.** 46 is this preregistration's terminal K. No control is added, dropped
+or reweighted, and no domain is, now that the numbers are known.
+
+## Consequence for the sprint's position — stated, not yet rewritten
+
+S-144 recorded that every candidate explanation of the codeword dissociation had been refuted, and
+R11 added extraction hardware as one live unrefuted candidate. This read adds a second, and a blunter
+one: **the button side of the dissociation does not survive its own held-out test in the regime the
+preregistration predicted.** The claim table needs revisiting against this; that is the next tick's
+work and is not done here, because PART 4 is written down first and PART 5 — the swap secondary —
+has not been run.
+
+```
+54 of 54 | R47 = 6 of 47, p = 0.12766, floor 0.021277 | gates all pass | prediction [24,43] MISSED
+read sha16 5f4ecd4d | blob 11d2c617 | PART 5 NOT YET RUN
+```
