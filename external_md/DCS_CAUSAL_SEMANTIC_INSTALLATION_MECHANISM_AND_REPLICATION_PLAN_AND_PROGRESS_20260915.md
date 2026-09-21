@@ -15304,3 +15304,101 @@ saves 16.55 GPU-h of the 48-arm family at the MEASURED load; the family is ~9.3 
 score_behavior.py UNCHANGED -- the memo is external, so PR-CSI-003's VOID condition is honoured
 STILL NOT LAUNCHED: the 48-arm budget remains the user's call | quota 198G of 200G
 ```
+
+---
+
+# S-196 — **⛔ CORRECTION to design §4.2 and §9: the "existing analyser, no new code" premise is FALSE.** `dcs_csi_subspace_analyze.py` **VOIDs every head arm structurally** — found by dry-running the frozen read **before** spending 9.3 GPU-hours
+
+The read was frozen in S-191 and its flags verified against argparse *statically*. Static
+verification cannot tell whether the command **works**. It does not.
+
+## What the design claims
+
+> §4.2 — *"Named so the **existing** `dcs_csi_subspace_analyze.py` consumes them with no new
+> analyser"* — and §9 — *"Analysis, with the EXISTING analyser and no new code"*.
+
+## What it actually does, run on a 24-arm stand-in family
+
+```
+VERDICT: VOID -- 26 condition(s) triggered; no contrast is reported
+  VOID: HD_TOPK declares no rescue_basis_key -- it is not a subspace arm
+  VOID: HD_BOTK is not norm-matched (no rescue_norm_match_key) -- it cannot be the matched-dose comparator
+  VOID: HD_RAND00..19 carries rescue_basis=None but is treated as a subspace arm   (x20)
+```
+
+**25 of those 26 are STRUCTURAL, not artifacts of the stand-in data.** A head-knockout row carries
+`rescue_basis`, `rescue_basis_key`, `rescue_norm_match_key` and `rescue_layer` **all `None`,
+always** — head arms perform no subspace rescue — and the analyser VOIDs on exactly that at
+`dcs_csi_subspace_analyze.py:752,754`. **No head-level arm can ever satisfy it.** The 26th (*"HD_BASE
+has a LIVE knockout"*) **is** an artifact of the stand-in and is not counted against the design.
+
+`dcs_csi_subspace_analyze.py` is a **subspace-rescue** analyser. The head experiment is not a
+subspace experiment. Naming the arms `--base-arm`/`--candidate-arm` made them *look* consumable; it
+did not make them consumable.
+
+## The roles are inverted: the INDEPENDENT check is the one that works
+
+`dcs_csi_rederive_subspace.py` mentions `rescue_basis` **nowhere**, and run on the same stand-in
+family it executes cleanly:
+
+```
+rederive rc = 0    "rank": 21, "of": 21, "floor": 0.0476, "certifiable_at_0.05": true
+verdict: CANNOT ANSWER -- the whole-state removal did not move installation DOWN
+         (point +0.00000, p=1), so there is no capable instrument ... This is NOT a negative result.
+```
+
+**That CANNOT ANSWER is the correct answer** for a family whose arms are identical by construction —
+the capability gate firing exactly as designed. The path intended as the *second opinion* is the only
+one that runs.
+
+## ✅ VOID condition 6 is clear, which was the other thing worth knowing
+
+```
+control family size, from the analyser's own expression startswith('HD_RAND'): 20
+HD_BOTK in the family: False        HD_TOPK in the family: False
+non-control arms matching the prefix: []        rederive: "of": 21, floor 0.0476
+```
+
+S-120(e) named a silently-widened control family as this sprint's known foot-gun. It is not present.
+
+## ⚠ A defect in my own harness, caught and repaired
+
+The first dry run isolated the *run dirs* and **not the analyser's output path**. It overwrote the
+**tracked, committed** `reports/DCS_CSI_SUBSPACE_basket_train.json` with synthetic output. `git
+checkout --` restored it byte-exactly and the worktree is clean — **but only because that file
+happened to be committed.** Isolating inputs and not outputs is half an isolation. The harness now
+redirects `--out` to scratch, diffs `reports/` before and after, and restores anything that moved.
+Stand-in run dirs use a `csi3_dryrun_` prefix no frozen read matches and are deleted in a `finally`:
+**removed 24 of 24, residue 0.**
+
+## What this costs, and what it saves
+
+**It blocks the launch on an analysis question, not a compute one.** The 48 arms would have run fine
+and then had no primary analyser. Options, none taken here because the choice is the user's:
+
+1. **Extend `dcs_csi_subspace_analyze.py`** with a head-arm mode that skips the rescue-specific VOIDs.
+   It is not `score_behavior.py`, so PR-CSI-003 does not forbid it — but it is the file every
+   committed subspace number came from, and touching it puts those at risk.
+2. **Promote `dcs_csi_rederive_subspace.py` to primary.** It already runs, already has
+   `--direction necessity`, and already prints the floor beside the p — but then the design's
+   *independent second path* becomes the only path, and the cross-check is lost.
+3. **Write a third analyser for the head family**, keeping rederive as its independent check.
+
+**Option 3 preserves the two-path structure the design relies on; option 2 is cheapest and silently
+discards a cross-check.** ⛔ **Nothing is launched and nothing is chosen.**
+
+## Commands
+
+```
+python scripts/gates/dcs_csi_pr010_read_dryrun.py \
+  --prereg configs/dcs_csi_pr010_head_causal_basket.json
+# stand-in arms: real rows from csi3_w3_basket_W3_HD_8 copied under 24 PR-CSI-010 arm names
+```
+
+```
+DESIGN 4.2/9's "no new analyser" PREMISE IS FALSE -- 25 STRUCTURAL VOIDs, unsatisfiable by any head arm
+the INDEPENDENT re-derivation RUNS and the PRIMARY does not -- the intended roles are inverted
+VOID 6 CLEAR: family resolves to exactly 20, HD_BOTK and HD_TOPK excluded, floor 0.0476, "of": 21
+my harness overwrote a TRACKED report and was repaired; restored byte-exact, worktree clean
+FOUND BEFORE the 9.3 GPU-h launch, which is the only cheap time to find it | quota 198G of 200G
+```
