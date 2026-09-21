@@ -14460,3 +14460,144 @@ read from source this tick.
 §1.6 added, 9 rows, all signatures verified | design doc 634 -> 666 lines
 W1 architecture DECIDED: import, never re-derive | P4 unblocked | queue idle | quota 198G of 200G
 ```
+
+---
+
+# S-179 — **W1 RUNS end-to-end on the real model**, and the five bugs between here and there include one that S-178's own integration map created
+
+`scripts/dcs_csi_head_atp.py`, 336 lines, smoke job **915886 COMPLETED**. Every bug below was caught
+by a guard or a test rather than by reading a number and believing it — which is the only reason this
+entry can claim the path works.
+
+## The result, and what it is NOT
+
+```
+[atp] SIZE rows = 2 over 67 domains | band = 6-14 (9 layers) | split = train | block = cds_n4_sow
+[atp] attn_implementation loaded = 'eager' (asserted eager)
+[atp] n_heads = 32  head_dim = 128
+[atp] rows used = 2 | skipped = 0
+[atp] LIVENESS g_norm_total = 74.972104 | ko_delta_total = 2854.956715
+[atp] wrote+verified outputs/boombness/dcs_csi/w1_smoke_915886.json (4393 bytes)
+[atp] most negative S[h]: [(19, -0.9559), (4, -0.56865), (21, -0.49342), (17, -0.45094), ...]
+```
+
+⛔ **THAT HEAD RANKING IS NOT A RESULT AND MUST NOT BE QUOTED AS ONE.** `n = 2 rows`, drawn by
+`--limit 2` as the first two eligible rows — not a sample, not a domain-level unit, not a screen.
+It is evidence that the *arithmetic runs*, nothing more. The artifact carries `NOT_YET_RUN` for the
+§3.4 true-patch gate, and **no candidate head set may be frozen from this file.**
+
+Identical liveness totals across two independent jobs (915878, 915886: `74.972104 / 2854.956715`) —
+the path is deterministic run to run.
+
+## The five bugs, and where each was caught
+
+| # | bug | caught by |
+|---|---|---|
+| 1 | `load_model(attn_impl=...)` — the kwarg is `attn_implementation`, and `dtype` takes a `torch.dtype`, not `"bfloat16"` | GPU smoke 915775 `TypeError` |
+| 2 | `M.backward()` with unfrozen params — allocates a `.grad` for all 8B params **on top of** 16 GB of weights | **reading `phase6_jacobian_readout:365` before running**; never hit |
+| 3 | span **return shapes**: two of the three return `(positions, reason)` tuples, not bare sequences | GPU smoke 915817 `int(None)` |
+| 4 | `--out` pointed at a session scratchpad that does not exist on the compute node | the atomic writer **refused**; 915878 |
+| 5 | band touching the top layer would emit a guaranteed-zero column | new refusal, from the probe below |
+
+**Bug 3 is the one worth dwelling on, because S-178 caused it.** S-178 verified the *argument list* of
+all nine integration points and called the map complete. It verified **no return shape**. Read from
+source this tick:
+
+```
+demo_key_positions       -> (pos, reason)   TUPLE     score_behavior:176
+query_span_positions     -> set             BARE      score_behavior:1289
+target_surface_positions -> (pos, reason)   TUPLE     score_behavior:1317
+```
+
+So `surf[-1]` read the *reason* slot and `p_star` became `None`. The same bug sat one line above in
+`dk`, which is passed as `blocked_keys` and would have died next. **Verifying what a function TAKES is
+not verifying what it GIVES BACK**, and the map that felt rigorous last tick was half a map. The
+reason strings are now consumed as the skip cause — they are the resolvers' own designed failure
+channel (`empty_target_surface`, `no_target_surface_occurrence_inside_query_span`), and the blanket
+`try/except` I had written would have flattened every one of them into `"span resolution"`.
+
+`p_star = max(surf)` is the last subtoken of the final target-surface occurrence inside the query span
+— which `score_behavior:1380` states is the repo's canonical `codeword_last` position, *"the same index
+the extraction pipeline reads its representations at."*
+
+## A structural fact, measured, not argued
+
+The **top layer's** AtP at a non-final site is **exactly zero**, always. The readout is at the last
+position; nothing above the top layer can carry position `p*` there. Measured on a tiny Llama
+(`w1_zerograd_probe.py`), four conditions:
+
+```
+2 layers, band [0,1], p* = 5 (LAST)      -> {0: 1.360, 1: 1.626}    top layer nonzero
+2 layers, band [0,1], p* = 4 (not last)  -> {0: 0.252, 1: 0.000}    top layer EXACTLY zero
+4 layers, band [0,1], p* = 4             -> {0: 0.265, 1: 0.205}    layers above -> nonzero
+4 layers, band [2,3], p* = 4             -> {2: 0.130, 3: 0.000}    top layer EXACTLY zero again
+```
+
+Band 6-14 sits far below layer 31, so W1 is unaffected — but a zero column is *indistinguishable from
+"this head does nothing"*, so `max(band) >= n_layers - 1` is now a refusal rather than a comment.
+
+## Liveness: both factors, separately
+
+`AtP = ⟨g_z, z_ko − z_clean⟩` is zero if **either** factor is dead, and a zeroed `S[h]` is exactly what
+"no head matters" looks like — `pair_common:1205`'s *"a dead hook scores as a clean null."* Both are
+now refusals, and neither is inferred from the other. The knockout half was additionally tested on CPU
+(`w1_ko_test.py`) against the thing that would silently ruin the screen:
+
+```
+layer 1: delta ON surface rows = 3.665333 | OFF surface rows = 0.000000
+```
+
+`target_surface_row_only` fires, and edits **nothing** outside the surface rows — exactly zero, not
+merely small.
+
+## Page-cache, confirmed a third time
+
+Job 915817 spent **22 minutes** loading weights on n-350. Jobs 915878 and 915886, same node minutes
+later, loaded in **under 37 seconds total wall time**. Same snapshot, same code path, ~35× — S-147's
+page-cache diagnosis, visible now in the *helpful* direction. The smoke script does not set
+`CSI_STAGE=1`; on a cold node it should.
+
+## Commands
+
+```
+sbatch slurm_scripts/dcs_csi_w1_smoke.slurm                  # 915817, 915878, 915886
+python scripts/dcs_csi_head_atp.py --codeword basket --concept bomb --split train \
+  --band 6-14 --limit 2 --out outputs/boombness/dcs_csi/w1_smoke_915886.json
+python scratchpad/w1_mech_test.py      # frozen params + embeds root; 0 param grad buffers
+python scratchpad/w1_zerograd_probe.py # the top-layer zero is structural
+python scratchpad/w1_ko_test.py        # knockout is live AND scoped
+```
+
+```
+W1 EXISTS AND RUNS: 336 lines | smoke 915886 COMPLETED rc=0 | artifact 4393 B re-parsed from disk
+5 bugs caught, 0 numbers believed | n=2 is NOT a screen | §3.4 true-patch gate still NOT_YET_RUN
+next: W2 seeded head-set draw, then the real screen over all 670 train rows | quota 198G of 200G
+```
+
+---
+
+# S-180 — **CORRECTION to S-179's command block**: the three CPU tests are named at scratchpad paths that do not survive the session
+
+S-179 lists
+
+```
+python scratchpad/w1_mech_test.py
+python scratchpad/w1_zerograd_probe.py
+python scratchpad/w1_ko_test.py
+```
+
+Those are **session-local paths**, not repo paths. The commands as written are unreproducible by
+anyone reading this log later, including me next week — and three of S-179's load-bearing claims
+(no param grad buffers; the top-layer zero is structural; the knockout is live *and* scoped) rest
+entirely on those files. A measurement whose command cannot be re-run is an assertion.
+
+The three are now committed and **re-run from their committed paths**, all passing:
+
+```
+scripts/gates/dcs_csi_w1_mech_test.py       2418 B   PASS
+scripts/gates/dcs_csi_w1_zerograd_probe.py  1695 B   PASS
+scripts/gates/dcs_csi_w1_ko_test.py         3050 B   PASS
+```
+
+Read S-179's command block with those substitutions. Nothing else in S-179 changes: no number moves,
+and the smoke artifact `outputs/boombness/dcs_csi/w1_smoke_915886.json` is untouched.
