@@ -15920,3 +15920,80 @@ R15-1/2/11 fixed in a patch that COMPILES and APPLIES CLEANLY, and is deliberate
 the lock HELD: nothing 916536 executes has changed since its witness was fixed at 9aebc6bc
 apply the patch once BOTH allocations finish | NO ENDPOINT VALUE READ
 ```
+
+---
+
+# S-204 — **the pending VALIDATION job's environment is verified by experiment, not assumed**, and W4 is confirmed to fail safe on a partial family. 6 of 24 TRAIN arms landed, all passing
+
+```
+PR-CSI-010 GATE 0 SWEEP -- train | landed 6 of 24 arms
+HD_BASE    670  67           0        0.0   0  0  PASS
+HD_KO      670  67     1385460     2052.0   0  0  PASS
+HD_TOPK    670  67    11083680    16416.0   0  0  PASS
+HD_BOTK    670  67    11083680    16416.0   0  0  PASS
+HD_RAND00  670  67    11083680    16416.0   0  0  PASS
+HD_RAND01  670  67    11083680    16416.0   0  0  PASS
+```
+
+**Every K=8 arm — candidate, comparator and both controls — carries an identical
+`total_prefill = 11,083,680`.** The control family is dose-matched to the candidate *by
+construction*, which is what makes the rank test a test of **which** heads rather than **how many**.
+~970 s per arm; 18 remain (~4.9 h).
+
+## W4 fails safe on an incomplete family
+
+Run against the 6 landed arms it refuses and names the arm and the reason, and writes **no**
+artifact:
+
+```
+REFUSING for tag 'csi3_head_basket_train_HD_RAND02': 0 complete run dirs (need exactly 1).
+  rejected: ..._HD_RAND02_20260921_202834_1038347: no DONE.json
+```
+
+Worth knowing *before* it matters: an analyser that half-analysed a partial family would be the worst
+possible failure mode, since a family missing the arms that happened to be slowest is not missing
+them at random.
+
+## The pre-flight that was worth doing five hours early
+
+`916536` receives `SPLIT` through a combined `--export`, and if it had not propagated the job would
+refuse **after TRAIN finishes**, wasting the queue position. `scontrol show job` does not display a
+job's exported environment, so inspection could not settle it. **Submitted a 1-minute probe using the
+identical `--export` form:**
+
+```
+SPLIT=[validation]   CSI_GIT_BLOB=[probe]   CSI_GIT_PORCELAIN=[clean]
+```
+
+All three propagate. `916536` will run correctly. **This is the cheap end of verify-don't-assume**: a
+one-minute job now against a five-hour-late refusal.
+
+## Two traps re-encountered while probing, both already on this sprint's record
+
+**1. Node-local `/tmp` is invisible from the login node.** The first probe wrote to `/tmp` and
+completed successfully with **no readable output** — exactly the failure that broke the first W1 smoke
+(S-179, defect 4). I walked into it again in a throwaway script. The second probe wrote to the repo
+and worked.
+
+**2. NFS attribute caching makes a written file briefly "absent".** `sacct` said COMPLETED, `ls -l`
+and `cat` both failed, and `find` located the file immediately afterwards. **The file existed the
+whole time.** This is the read-side twin of the asynchronous `EDQUOT` the sprint guards its writes
+against, and it means *"the file is not there yet"* is never conclusive on first look — a retry is
+part of the read, not a workaround.
+
+Neither affected an arm or a number; both are recorded because each was a lesson already learned once.
+
+## Commands
+
+```
+sbatch --export=ALL,CSI_GIT_BLOB=probe,CSI_GIT_PORCELAIN=clean,SPLIT=validation <1-min probe>
+python scripts/dcs_csi_head_analyze.py --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+  --tag-prefix csi3_head_basket_train --split train --expect-n 670 --out /tmp/w4_partial_probe.json
+```
+
+```
+6 of 24 TRAIN arms landed, ALL PASS | every K=8 arm dose-matched to the edit (11,083,680)
+916536's SPLIT/BLOB/PORCELAIN propagation PROVEN by a 1-minute probe, not assumed
+W4 REFUSES a partial family and names the missing arm; no artifact written
+probe log deleted; quota 1.4T free on the filesystem | NO ENDPOINT VALUE READ
+```
