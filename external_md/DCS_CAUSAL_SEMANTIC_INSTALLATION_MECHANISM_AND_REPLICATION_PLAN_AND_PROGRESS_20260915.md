@@ -16525,3 +16525,87 @@ the artifact rewritten BEFORE any number was quoted.
 DESCRIPTIVE ONLY, SELECTION-CONTAMINATED: rank 1 of 21, F 0.9104, HD_BOTK -0.0056 at identical dose.
 NOT EVIDENCE FOR LOCALISATION. VALIDATION (916536) adjudicates on 23 held-out domains, ~2.2 h.
 ```
+
+---
+
+# S-214 — ⚠ **WITHDRAWN: S-195's "W3 saves 16.55 GPU-hours" is an UPPER BOUND quoted as a value.** A warm same-node load is **14.4 s**, not 1295 s, so the realised saving on this family is **~0.18 GPU-h**. W3 was still the right call, for a different reason
+
+VALIDATION (`916536`) is running on n-301, the same node TRAIN finished on. Its model load:
+
+```
+TRAIN      MODEL LOAD (cold)                     1347.9 s
+VALIDATION MODEL LOAD (warm, same node)             14.4 s      <- 94x
+```
+
+## The error, and it is mine
+
+S-195 costed W3 as **48 avoided loads × ~1295 s = 16.55 GPU-h**. **But W3 avoids loads 2..N *within an
+allocation*, and those are on the same node as load 1 — so they are page-cache WARM.** The assumption
+that each avoided load would have cost a *cold* load is wrong by construction.
+
+Checked against the separate-process regime I already had on disk. Job `916390` ran four independent
+`score_behavior` processes in one allocation:
+
+```
+SMOKE_HD_KO  36.4 s | SMOKE_HD_8  44.6 s | SMOKE_HD_KO2  35.0 s      (24 rows each)
+24-row compute, scaled from the 670-row arm: ~23.0 s
+=> a WARM separate-process arm's load+startup overhead is ~12-22 s
+```
+
+Re-derived:
+
+```
+                                          without W3   with W3    saved
+S-195's assumption (all avoided COLD)        31133 s     1348 s   8.27 h per split
+design 7.1's measurement (job 906433)        21271 s     1348 s   5.53 h per split
+MEASURED warm, same node (this job)           1679 s     1348 s   0.09 h per split
+                                                  both splits:  16.55 h  vs  0.18 GPU-h
+```
+
+**S-195's headline is withdrawn.** The realised saving on this family is **~0.18 GPU-h**, not 16.55 —
+off by ~90×.
+
+## Why the design's 866 s/arm is not wrong either, and what that means
+
+§7.1 measured **866.2 s/arm** of overhead in job `906433` — five arms, one allocation, so loads 2–5
+should have been warm and cheap. They were not. **So the per-arm load penalty is not a constant at
+all**: it has been measured at **14.4 s**, **~20 s**, **866 s** and **1348 s** in this sprint, and the
+spread is node cache state, not code.
+
+**This is the third time the same error has appeared** — S-201 (a cost measured on 24 rows quoted for
+670), S-209 (a bimodal cost quoted as one mean), and now this. The shape is always: **a measurement
+taken in one regime, quoted as a property of the workload.** I have now made it three times in four
+days, which says it is not carelessness but a default I have to actively check against.
+
+## W3 was still the right call, and this is the honest reason
+
+Not the mean saving — **the variance**. W3 pays exactly **one** load per allocation *whatever the node
+cache state*, so the family's cost is bounded and predictable instead of ranging over 90×. And its
+real contribution was never the hours: it is that **the arms are proven bit-identical to separate
+processes** (72/72 rows, `max |delta| = 0.0`, S-195) and that **`hooks_after=0` after all 48 arms**
+means no arm ran under a leaked intervention. **Those claims stand untouched; only the cost headline
+was wrong.**
+
+## GATE 0, validation, first arm
+
+```
+HD_BASE  230 rows / 23 domains / prefill 0 / decode 0 / viol 0   PASS
+SPLIT=validation EXPECT_N=230 -- the export propagated exactly as the S-204 probe predicted
+```
+
+## Commands
+
+```
+grep -h "MODEL LOAD" outputs/boombness/logs/csi_pr010arms_91653[56].out
+# warm separate-process overhead from job 916390's three arms; re-derivation in the table above
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py --prereg configs/... --tag-prefix csi3_head_basket_validation --split validation
+```
+
+```
+WITHDRAWN: S-195's "W3 saves 16.55 GPU-h". A warm same-node load is 14.4 s, not 1295 s; the realised
+saving is ~0.18 GPU-h -- off by ~90x. The per-arm load penalty is NOT a constant: 14.4 / 20 / 866 /
+1348 s all measured in this sprint, the spread being node cache state.
+THIRD INSTANCE of "a measurement from one regime quoted as a property of the workload" (S-201, S-209).
+W3's REAL value is variance and the bit-identical equivalence proof, NOT hours. Those claims stand.
+VALIDATION running, first arm PASSES GATE 0 | NO ENDPOINT VALUE READ for validation.
+```
