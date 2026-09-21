@@ -14124,3 +14124,40 @@ difference, the head-edit ratio — rather than reasoning about what it should b
 BLOCKER fixed in place | bf16 corrected in 3 sites | design doc marked | AM-22/23/24 added
 claim table 790 -> 793 | split-naming green | CLEARED verdict UNCHANGED | P4 GATED on §4.2
 ```
+
+### Addendum to REVIEW R13 — **its commit carries the message `cat > /dev/null`, and that is not being rewritten**
+
+REVIEW R13's content is committed as **`1efc2667`** — 4 files, 134 insertions, exactly right — under
+the message **`cat > /dev/null`**. My command had a stray backgrounded `git commit -F -` whose heredoc
+was swallowed by a `cat > /dev/null` in the same line; git took that literal string as the message.
+
+I amended it locally to the real message (`201a67cc`, byte-identical tree, verified with
+`git diff --stat 201a67cc 1efc2667` → empty). **Then discovered the malformed commit had already been
+pushed**, so the amend was a rewrite of *shared* history. An earlier `git branch -r --contains` had
+returned blank only because the background push had not yet landed — I checked at the one moment the
+answer was wrong.
+
+**The amend is discarded and origin is left as it stands.** Force-pushing would rewrite a pushed
+commit, and this sprint's entire record-keeping principle is that history is appended to and corrected
+in place, never rewritten — the log is append-only, corrections are new entries, and AM-10 withdrew a
+headline without touching the row it withdrew. Applying a different standard to git than to the log
+because git makes it easy would be the wrong way round.
+
+**Nothing of substance was lost.** REVIEW R13's findings are the 105 lines immediately above this
+addendum, in the append-only log, which is the authoritative record. What `1efc2667` lost is its
+*summary*, and this paragraph replaces it:
+
+> R13, 4.1 h after R12, over commits `0fe645f7..f4ff14c8`. 16 candidates, 13 confirmed, 3 killed.
+> One **BLOCKER** (P4 §4.2's realised-dose identity inverted and 32× wrong — a K=8 arm records **8×**
+> the all-head arm, not ¼, measured at 61 vs 488 prefill edits). Five **MAJOR**: my bf16 residual
+> justification wrong on dimensions *and* on the measured 2.6 % activation difference, corrected in
+> three places and **stronger** for it; S-171 having claimed a design-doc correction it never made;
+> three claim-table rows the reconciliation missed (AM-22/23/24); and the split-naming checker being
+> **fail-open** on a text-only exemption key. Three **MINOR** on `pr009_gate0.py` and the S-166
+> backtick rule. **PR-CSI-009's CLEARED verdict is untouched** — the 0.99 threshold predated the job
+> and bf16 was only the rationale offered for choosing it.
+
+**The operational lesson**: a `git commit` whose message arrives on stdin, backgrounded, in a compound
+command is a message that can be silently replaced by whatever else in that line touches stdin. Every
+commit this session has used `-F <file>` for exactly this reason — S-142 recorded heredocs breaking
+four commits — and the one time I piped instead, it broke again in a new way.
