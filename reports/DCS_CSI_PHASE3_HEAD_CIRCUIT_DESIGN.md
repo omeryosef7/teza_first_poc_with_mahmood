@@ -14,6 +14,12 @@
 > **Consequence:** the realised-dose control is how this design separates a head effect from a dose
 > effect, so an arm set built on the K/32 identity would be dose-confounded in the direction OPPOSITE
 > to the one intended. **§4.2 must be re-derived before P4 spends any GPU.**
+>
+> **RESOLVED 2026-09-21 by S-175: §4.2 re-derived in place.** The counter measures MASK WRITES,
+> not heads masked; `HD_KO` writes one broadcast row (counter 1, `median_prefill_edits` 2052) and a
+> K=8 arm writes eight (counter 8, expected **16 416**, not 513). The scientific dose claim (8/32 of
+> the head budget) and the control-vs-candidate gate are **unaffected**; only the `HD_KO`-vs-K
+> comparison was wrong, and §4.2 now forbids it by name. **P4 is UNBLOCKED.**
 
 # Plan section 8.2 — DESIGN of the attention-HEAD level of the demonstration -> query circuit, for `basket`
 
@@ -323,13 +329,44 @@ the head budget is small enough that a large effect is a localisation claim and 
 of `HD_KO`, and large enough that 8 heads spread over 9 layers is a plausible circuit size. K is
 **not** tuned to the screen.
 
-**Dose matching is by construction and is VERIFIED, not asserted.** Because
-`n_edits += n_rows * n_heads_edited` (`pair_common.py:1011`), every K=8 arm must record
-`knockout_liveness.median_prefill_edits` equal to **8/32 = 1/4** of `HD_KO`'s on the same rows.
-A pre-registered gate refuses the analysis if any control's realised dose differs from the
-candidate's by more than one edit-count unit. `HD_KO`'s all-head value on this exact population is
-already on disk (`median_prefill_edits 2052.0`), so the expected K=8 value — **513.0** — is
-predictable **before the run**, and a deviation is a bug, not a result.
+**Dose matching is by construction and is VERIFIED, not asserted.** — **RE-DERIVED 2026-09-21
+(S-175, after REVIEW R13's BLOCKER). The paragraph this replaces said the expected K=8 value was
+`8/32 = 1/4` of `HD_KO`'s, i.e. `513.0`. That was wrong by a factor of 32, and the mechanism is worth
+stating because it is not the one the error suggests.**
+
+`n_edits += n_rows * n_heads_edited` (`pair_common.py:1011`), but `n_heads_edited` is set at
+`:959` as `am.shape[1] if self.heads is None else len(self.heads)`, and the head-dim expansion one
+line above is guarded by `if self.heads is not None and am.shape[1] == 1`. So:
+
+* **the all-head arm (`heads=None`) never expands.** The Llama eager mask arrives with head-dim 1, it
+  writes **one** row, that row **broadcasts to all 32 heads**, and the counter records **1**;
+* **a K-head arm expands to 32** and writes **K** explicit rows, and the counter records **K**.
+
+**The counter measures MASK WRITES, not heads masked.** Verified against the artifact already on disk:
+`csi1_basket_train_NEC_KO_.../summary.json` has `knockout_liveness.median_prefill_edits 2052.0`, and
+**9 band layers × 228 demo keys × 1 target-surface row × n_heads_edited 1 = 2052** exactly, where the
+same product with 32 would be 65 664.
+
+**Corrected predictions, before any arm runs:**
+
+| arm | heads | n_heads_edited | expected `median_prefill_edits` |
+|---|---|---|---|
+| `HD_KO` | all 32, by broadcast | **1** | **2052** (measured, on disk) |
+| `HD_TOPK` / `HD_BOTK` / `HD_RAND*` | K = 8 explicit | **8** | **8 × 2052 = 16 416** |
+
+**What survives unchanged:** the *scientific* dose claim. Masking 8 of 32 heads really is 8/32 of the
+head budget, and `HD_KO` really is the ceiling. It was the **verification arithmetic** that was wrong,
+never the design's dose logic.
+
+**What survives and is the gate that matters:** the control-vs-candidate dose check. Every K=8 arm has
+identical K, so identical counters, and *"refuses the analysis if any control's realised dose differs
+from the candidate's by more than one edit-count unit"* is valid as written and unaffected.
+
+**What must NOT be done:** compare `median_prefill_edits` between `HD_KO` and any K arm and read the
+ratio as a dose ratio. The two are counted in different units — broadcast writes versus per-head
+writes — and the 8× the counters will show is an artifact of the accounting, **pointing the opposite
+way to the 1/4 the causal dose actually is.** A gate built on that comparison would fire on correct
+runs and pass on broken ones.
 
 **Control draws**: 8 heads drawn uniformly without replacement from the **24 non-candidate** heads,
 so overlap with `HD_TOPK` is 0 by construction and is recorded as 0. Seeds `20260920 + j`, frozen

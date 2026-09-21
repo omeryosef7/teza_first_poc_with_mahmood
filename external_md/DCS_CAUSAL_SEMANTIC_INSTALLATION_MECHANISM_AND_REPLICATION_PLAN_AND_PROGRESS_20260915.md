@@ -14161,3 +14161,87 @@ addendum, in the append-only log, which is the authoritative record. What `1efc2
 command is a message that can be silently replaced by whatever else in that line touches stdin. Every
 commit this session has used `-F <file>` for exactly this reason — S-142 recorded heredocs breaking
 four commits — and the one time I piped instead, it broke again in a new way.
+
+---
+
+# S-175 — **R13's BLOCKER is resolved and P4 is unblocked**: §4.2 re-derived, and the diagnosis is sharper than "inverted" — **the counter measures MASK WRITES, not heads masked.** The fail-open exemption key is closed too
+
+Queue idle. Both items R13 left blocking are closed this tick, each verified in both directions.
+
+## §4.2 — what was actually wrong
+
+The paragraph said every K=8 arm must record `median_prefill_edits` equal to **8/32 = ¼** of
+`HD_KO`'s, predicting **513.0** and calling any deviation *"a bug, not a result"*. Read at
+`pair_common.py:955-959`:
+
+```python
+am = am.clone()
+if self.heads is not None and am.shape[1] == 1:          # <- guard: only expands when heads IS given
+    am = am.expand(-1, self.n_heads, -1, -1).clone()
+hs             = range(am.shape[1]) if self.heads is None else self.heads
+n_heads_edited = am.shape[1]        if self.heads is None else len(self.heads)
+```
+
+* **the all-head arm (`heads=None`) never expands.** The Llama eager mask arrives with head-dim 1, so
+  it writes **one** row — which **broadcasts to all 32 heads** — and the counter records **1**;
+* **a K-head arm expands to 32**, writes **K** explicit rows, and the counter records **K**.
+
+**The counter measures mask WRITES, not heads MASKED.** Verified against an artifact already on disk
+rather than by argument:
+
+```
+csi1_basket_train_NEC_KO_.../summary.json   knockout_liveness.median_prefill_edits = 2052.0
+9 band layers x 228 demo keys x 1 target-surface row x n_heads_edited 1  =  2052   EXACT
+the same product with n_heads_edited 32                                   = 65 664
+```
+
+So the expected K=8 value is **8 × 2052 = 16 416**, not 513 — wrong by a factor of 32, and pointing
+the **opposite way**.
+
+**What survives, and this is why the fix is small:** the *scientific* dose claim is untouched. Masking
+8 of 32 heads really is 8/32 of the head budget; `HD_KO` really is the ceiling. **It was the
+verification arithmetic that was wrong, never the design's dose logic.** The control-vs-candidate gate
+also survives unchanged — every K=8 arm has identical K, hence identical counters, so *"refuses if any
+control's realised dose differs from the candidate's by more than one edit-count unit"* is valid as
+written.
+
+**What §4.2 now forbids by name:** comparing `median_prefill_edits` between `HD_KO` and any K arm and
+reading the ratio as a dose ratio. The two are counted in different units — broadcast writes versus
+per-head writes — and **a gate built on that comparison would fire on correct runs and pass on broken
+ones.** The BLOCKER banner now carries its own resolution, and **P4 is unblocked.**
+
+## The fail-open exemption key — closed
+
+R13 found `AMENDED_BY_RESTATEMENT` keyed by **line text alone**, so a *new* entry re-quoting S-137's
+table row would be silently exempted: the checker built to stop unqualified claims would not have
+stopped the likeliest one.
+
+Now keyed by **(line number, text)**, and the second key is sound *here* for a reason that would not
+transfer: **the log is append-only, so the line numbers of existing content are immutable.** A staleness
+check asserts each pair still holds — a key that no longer sits at its line is a failure, not a silent
+re-exemption.
+
+Verified in a sandbox copy, both directions, with the real log untouched:
+
+```
+baseline                                            PASS, exit 0
+a NEW entry re-quoting the exempt S-137 row         CAUGHT at line 14167, exit 1   <- the fail-open
+line 6211 corrupted (button -> basket)              "key (6211, ...) NO LONGER MATCHES the log"
+```
+
+**The first version of this patch never reached disk**: my string-surgery on the dict keys produced a
+`SyntaxError`, `ast.parse` raised before the atomic write, and the file was left exactly as it was —
+which is the write discipline behaving as intended rather than a near miss.
+
+## What is still open from R13
+
+`pr009_gate0.py` claims in its docstring that thresholds are read from the preregistration at runtime
+and in fact consumes only `pr["id"]`; its banner still says *"every VOID condition checked"* when it
+covers 1, 2, 3 and 7. D31's copy of that overclaim is corrected, the gate's own is not. Both are MINOR
+and both are recorded rather than fixed — the gate's verdict on this family was correct, and the
+honest repair is to make it read the prereg, not to soften the banner.
+
+```
+P4 UNBLOCKED | §4.2 re-derived, 513 -> 16 416 | fail-open CLOSED and tested both ways
+9 guards green | queue idle | quota 198G of 200G
+```

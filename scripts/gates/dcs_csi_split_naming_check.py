@@ -22,15 +22,19 @@ LOG = "external_md/DCS_CAUSAL_SEMANTIC_INSTALLATION_MECHANISM_AND_REPLICATION_PL
 TABLE = "reports/DCS_CSI_CLAIM_TABLE.md"
 
 # Pre-existing, in the append-only log, amended by restatement in S-165 rather than by edit.
-# Keyed by the line's stripped text so a line-number shift (the log only grows) cannot silently
-# re-exempt a DIFFERENT line.
+# Keyed by (LINE NUMBER, stripped text). REVIEW R13 found the text-only key FAIL-OPEN: a NEW entry
+# that re-quotes S-137's table row would have been auto-exempted, so the checker built to stop
+# unqualified claims would not have stopped the likeliest one. The line number is the right second
+# key HERE and would be wrong almost anywhere else: THE LOG IS APPEND-ONLY, so the line numbers of
+# existing content are immutable. Both must match, and the staleness check asserts the pair still
+# holds -- a key that no longer sits at its line is a FAILURE, not a silent re-exemption.
 AMENDED_BY_RESTATEMENT = {
-    '- We may say *"button\'s failure is not explained by its layer."* ✅':
+    (6208, '- We may say *"button\'s failure is not explained by its layer."* \u2705'):
         "S-104 context: the L18-vs-L20 layer swap, 10-control family, floor 0.0909, TRAIN only. "
         "Amended form in S-165.",
-    "excluded by this entry; it is only excluded for button, which is the codeword that fails.":
+    (6211, "excluded by this entry; it is only excluded for button, which is the codeword that fails."):
         "Same S-104 context; subordinate clause. Amended form in S-165.",
-    "| **button @ L18, 46 controls** | **36 of 47** | 0.766 | 0.0213 | **DOES NOT PASS**, certified |":
+    (10176, "| **button @ L18, 46 controls** | **36 of 47** | 0.766 | 0.0213 | **DOES NOT PASS**, certified |"):
         "S-137's dissociation table. The basket row beside it already named its splits "
         "('TRAIN *and* VALIDATION') while this one did not, which hid the asymmetry from a reader "
         "scanning the table. Amended form in S-165.",
@@ -93,7 +97,7 @@ def main():
 
     print("[split-naming] log hits %d | claim-table hits %d" % (len(log_hits), len(tab_hits)))
     for ln, txt in log_hits:
-        if txt in AMENDED_BY_RESTATEMENT:
+        if (ln, txt) in AMENDED_BY_RESTATEMENT:
             print("   exempt (append-only, amended in S-165)  L%-6d %s" % (ln, txt[:90]))
         else:
             fail.append("%s:%d states button's L18 failure without naming the split: %s" % (LOG, ln, txt[:140]))
@@ -101,12 +105,14 @@ def main():
         fail.append("%s:%d states button's L18 failure without naming the split: %s" % (TABLE, ln, txt[:140]))
 
     # the exemption ledger must not rot: every key must still be present in the log
-    body = open(LOG, encoding="utf-8").read()
-    for k in AMENDED_BY_RESTATEMENT:
-        if k not in body:
-            fail.append("AMENDED_BY_RESTATEMENT holds a line that is NO LONGER IN THE LOG (the log is "
-                        "append-only, so this means the key is wrong): %r" % k[:90])
-    print("[split-naming] exemption ledger: %d entries, all still present in the log" % len(AMENDED_BY_RESTATEMENT))
+    loglines = open(LOG, encoding="utf-8").read().splitlines()
+    for (kln, ktxt) in AMENDED_BY_RESTATEMENT:
+        got = loglines[kln - 1].strip() if kln <= len(loglines) else "<past EOF>"
+        if got != ktxt:
+            fail.append("AMENDED_BY_RESTATEMENT key (%d, %r) NO LONGER MATCHES the log at that line "
+                        "(found %r). The log is append-only, so an existing line cannot move: this "
+                        "means the key is wrong." % (kln, ktxt[:60], got[:70]))
+    print("[split-naming] exemption ledger: %d (line, text) pairs, all still matching the log" % len(AMENDED_BY_RESTATEMENT))
 
     if fail:
         print("\nSPLIT-NAMING FAILURES:")
