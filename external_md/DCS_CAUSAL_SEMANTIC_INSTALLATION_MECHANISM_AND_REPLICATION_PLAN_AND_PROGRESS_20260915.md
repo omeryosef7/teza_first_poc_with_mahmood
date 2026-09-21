@@ -15997,3 +15997,71 @@ python scripts/dcs_csi_head_analyze.py --prereg configs/dcs_csi_pr010_head_causa
 W4 REFUSES a partial family and names the missing arm; no artifact written
 probe log deleted; quota 1.4T free on the filesystem | NO ENDPOINT VALUE READ
 ```
+
+---
+
+# S-205 — **the intervention is coarser than the attribution, by construction** — read §10 *before* the numbers land, and found W4 emitting bare verdict strings that invited exactly the overclaim §6 wrote wording to prevent
+
+8 of 24 TRAIN arms landed, all passing GATE 0. Read the design's §10 now, deliberately, **while no
+result exists**: interpretive limits discovered after seeing a number are indistinguishable from
+excuses.
+
+## §10's four limits, and the one that binds this family
+
+```
+* cannot test leg (ii) (rel-11 -> rel-6): no scope exists for it
+* CANNOT RESOLVE WHICH LAYER A HEAD ACTS AT -- --knockout-heads ties the index across 6-14
+* cannot test blocks 0-5 or 15-18 causally without an all-head ceiling there first
+* does NOT do cross-codeword transfer to button; only meaningful after a POSITIVE basket result
+```
+
+**The second one matters more than it looks.** W1's screen ranks **cells** `(L, h)` — its single
+largest was **L14 h19** at `-398.87` (S-181) — but `--knockout-heads` takes a **flat list of head
+indices applied at every band layer**. So no arm in this family can address `L14 h19`. **The
+intervention is strictly coarser than the attribution that proposed it.**
+
+This is not a defect: W1 aggregates to `h` for exactly that reason, and the prereg's selector is
+`S[h]` summed over the band. **It is a limit on what any verdict may say** — and it was already why
+§1.6 insisted the screen aggregate to head index rather than cell.
+
+## ⚠ W4 emitted a headline with no scope attached
+
+§6 does not merely name the verdicts; it fixes the **words** a positive one may be reported in:
+
+> *"8 head indices, applied across blocks 6-14 on the query-codeword row, carry at least half of the
+> A1 knockout's effect on installation for `basket` — for leg (i) of the circuit only."*
+
+W4 wrote `"WE FOUND (part of) THE WRITER"` **and nothing else**. An artifact carrying a bare headline
+invites a later reader — including me, tired, at the end of this sprint — to quote it without the
+scope that makes it true. **A verdict without its scope is not a shorter true statement; it is a
+different, false one.**
+
+Fixed: every verdict now ships `REPORTABLE_AS` with the design's own wording, and all four of §10's
+limits travel **inside the artifact** as `CANNOT_DO`, so they cannot be separated from the result they
+bound. Verified by the ground-truth self-test, which still passes 11/11 and now emits both fields.
+
+**The preregistration was NOT touched** — `configs/dcs_csi_pr010_head_causal_basket.json` is read by
+`916536`, so R15-0's lock covers it. W4 is executed by no arm, which is why it could be fixed now.
+
+## GATE 0, 8 of 24
+
+```
+HD_BASE 0 edits | HD_KO 2052.0 | HD_TOPK/HD_BOTK/HD_RAND00..03 all 16416.0, all 670 rows / 67 domains
+decode 0 and violations 0 everywhere | every K=8 arm dose-identical
+```
+
+16 arms remain (~4.3 h), then VALIDATION on `afterany`.
+
+## Commands
+
+```
+sed -n '659,700p' reports/DCS_CSI_PHASE3_HEAD_CIRCUIT_DESIGN.md      # section 10, read pre-result
+python scripts/gates/dcs_csi_head_analyze_selftest.py                # 11/11, REPORTABLE_AS present
+```
+
+```
+SECTION 10 READ BEFORE ANY NUMBER EXISTS: the intervention CANNOT resolve which layer a head acts at
+W1 ranks CELLS (top: L14 h19) but --knockout-heads ties an index across 6-14 -- NO ARM CAN ADDRESS A CELL
+W4 now ships REPORTABLE_AS (the design's own wording) and CANNOT_DO (all four limits) IN the artifact
+the prereg was NOT touched: 916536 reads it, so the R15-0 lock covers it | NO ENDPOINT VALUE READ
+```

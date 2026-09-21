@@ -293,8 +293,39 @@ def main():
     else:
         verdict = "CANNOT ANSWER -- no preregistered branch matched; reported as such rather than forced"
 
+    # ⛔ A BARE VERDICT STRING IS AN OVERCLAIM WAITING TO BE QUOTED.
+    # Design 6 does not merely name the verdicts, it fixes the WORDS a positive one may be reported
+    # in -- "8 head indices, applied across blocks 6-14 on the query-codeword row ... for leg (i) of
+    # the circuit only". W4 emitted "WE FOUND (part of) THE WRITER" and nothing else, so the artifact
+    # invited a later reader to quote the headline without the scope that makes it true. The scope is
+    # not decoration: design 10 states that --knockout-heads TIES A HEAD INDEX ACROSS 6-14, so no arm
+    # in this family can address a single (layer, head) cell -- even though the SCREEN ranks cells and
+    # its top cell was L14 h19. The intervention is coarser than the attribution, by construction.
+    REPORTABLE_AS = {
+        "WE FOUND (part of) THE WRITER":
+            ("8 head INDICES, applied across blocks 6-14 on the query-codeword row, carry at least "
+             "half of the A1 knockout's effect on installation for basket -- for leg (i) of the "
+             "circuit ONLY. NOT a claim about any single (layer, head) cell."),
+        "PARTIALLY LOCALISED":
+            ("those 8 head indices carry a real but MINORITY share of the A1 knockout's effect. "
+             "NOT 'the writer', and not a claim about any single (layer, head) cell."),
+        "IT IS DISTRIBUTED (candidate sits inside the control family)":
+            ("no 8-head subset is privileged: the demo->codeword-row write is spread across heads. "
+             "Plan section 19 Gate C then says KEEP THE REPRESENTATION RESULT AND DO NOT INVENT A "
+             "CIRCUIT."),
+    }
     out = {
         "schema": "dcs_csi_head_analyze/1",
+        "REPORTABLE_AS": REPORTABLE_AS.get(verdict,
+                         "no preregistered reporting language applies to this verdict; report the "
+                         "gates and the refusal, not a headline"),
+        "CANNOT_DO": [
+            "cannot test leg (ii) (rel-11 -> rel-6): no scope exists for it",
+            "cannot resolve WHICH LAYER a head acts at -- --knockout-heads ties the index across 6-14",
+            "cannot test blocks 0-5 or 15-18 causally without first establishing an all-head ceiling there",
+            "does NOT do cross-codeword transfer to button; that is only meaningful after a POSITIVE "
+            "basket head result, and is the NEXT design",
+        ],
         "prereg": a.prereg, "prereg_id": pr["id"], "tag_prefix": a.tag_prefix, "split": a.split,
         "n_domains": len(doms), "expect_n": a.expect_n,
         "ON_PROTOCOL": on_protocol,
