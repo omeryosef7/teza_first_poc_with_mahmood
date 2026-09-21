@@ -4,13 +4,9 @@
   "title": "Does basket's behavioural axis CHANGE when its activations are extracted on an RTX 3090 instead of a Tesla V100? The one-token controlled A/B that closes REVIEW R11's MAJOR-1",
   "frozen_utc": "2026-09-21",
   "status": "FROZEN AND COMMITTED BEFORE THE EXTRACTION IS SUBMITTED. The commit timestamp of this file is the witness; no activation of the new corpus exists at that moment.",
-
   "why_this_exists": "REVIEW R11 MAJOR-1 measured that all FIVE basket BEHAVIOURAL axes were fit from cont1_behavioral_basket_bomb_20260910_113902_3966018, which ran on a Tesla V100-SXM2-32GB (sm_70, NO native bf16 -- EMULATED) under --dtype bfloat16, while all SIX button axes came from an RTX 3090 (sm_86, native). The codeword dissociation's behavioural channel is therefore confounded with extraction hardware, 5 of 5 against 6 of 6, and S-144's 'every candidate explanation is refuted' has been false since. S-153 bounded the confound to ONE quantity -- the fitted direction, since dcs_csi_axis.py takes a single --corpus and the clean/KO subtraction happens at scoring time on one device -- and recorded CANNOT ANSWER on its magnitude, because no controlled cross-hardware extraction pair exists on disk (103 runs, 90 stems, exactly one stem on two GPUs and all three of its runs are 0 bytes).",
-
   "the_question": "At the layer each committed basket axis actually selected, does the fitted direction change when the activations come from native bf16 instead of emulated bf16?",
-
   "what_this_does_NOT_ask": "Whether the LAYER SELECTION would have moved. The re-extraction captures only layers 18 and 20, so the argmax over the committed layer_grid [16,18,20,22,24,26,28,30,31] cannot be re-run. That is a deliberate, disk-driven restriction (S-162: 2 layers = 1.13 GB against 10.77 GB for 19, with ~3 GB free) and it must be stated wherever this result is reported. A separate preregistration would be needed to re-run the grid.",
-
   "design": {
     "shape": "A ONE-TOKEN CONTROLLED A/B, the same shape as S-121's --limit exoneration. The new extraction repeats the committed one with EXACTLY ONE argument changed.",
     "the_only_difference": "--layers 0,2,4,6,8,10,11,12,13,14,16,18,20,22,24,26,28,30,31  ->  --layers 18,20",
@@ -18,13 +14,11 @@
     "hardware": "RTX 3090 ONLY, via the positive constraint --gpus=geforce_rtx_3090:1. NEVER an exclude-list (job 906421's counter-example).",
     "then": "Refit TWO axes from the new corpus with dcs_csi_axis.py --force-layer 18 and --force-layer 20, --codeword basket --fit-prompt behavioral --site rel-6 --readout outputs/boombness/score_behavior/ts116m_readout_basket_bomb_20260907_152329_3191150 --seed 20260915, i.e. the committed axes' own settings."
   },
-
   "the_comparison_statistic_DECLARED_BEFORE_THE_DATA": {
     "primary": "abs(cos(w_new, w_committed)) on the cand_rank1 basis vector, computed at L18 against configs/dcs_csi_axis_basket_behavioral.pt and at L20 against configs/dcs_csi_axis_basket_L20.pt. Both committed vectors are unit-norm fp32 of shape (1, 4096), VERIFIED.",
     "why_cosine_and_not_recovery": "Recovery would require re-running scoring arms, which is a different and larger experiment. The confound S-153 isolated is in the DIRECTION, so the direction is what this measures. If the direction is unchanged, no scoring re-run is needed; if it moved, a scoring re-run becomes necessary and gets its own preregistration.",
     "the_calibration_SCALE_taken_from_COMMITTED_numbers": "D27 measured abs(cos) between the recipient's native axis and its 46 controls: min 0.0001, median 0.0156, MAX 0.1894; and the cross-codeword swap axis at 0.5569. So on this sprint's own measured scale, 0.19 is 'as aligned as the most aligned random control ever got' and 0.56 is 'a different codeword's axis'. Anything near 1.0 is the same direction."
   },
-
   "decision_rule": {
     "abs_cos >= 0.99": "THE CONFOUND IS CLEARED AT THIS LAYER. The extraction hardware did not move the fitted direction, and R11 MAJOR-1 stops being a live candidate explanation of the dissociation at this layer. It does NOT become evidence FOR any other explanation.",
     "abs_cos < 0.90": "THE CONFOUND IS REAL AT THIS LAYER. Every claim resting on that axis is VOID pending a re-run -- not reinterpretation. The five basket behavioural axes and PR-CSI-006's CELL-4-adjacent direction-B cells all inherit it.",
@@ -32,24 +26,21 @@
     "why_0.99": "bf16 carries ~8 mantissa bits, a relative precision of ~2^-8 = 0.0039. Two numerically equivalent paths should agree far inside that, so a cosine below 0.99 is not float noise -- it is a systematic difference. The 0.90 floor is set where the disagreement would exceed half the gap between 'same direction' and the 0.5569 cross-codeword axis.",
     "reported_per_layer_never_pooled": "L18 and L20 get separate verdicts. They are different bases and different committed artifacts."
   },
-
   "prediction_fixed_before_data": {
     "point": "abs(cos) >= 0.99 at BOTH layers. I expect the confound to be CLEARED.",
     "confidence": "Moderate, and the reasoning is stated so it can be held against me: PyTorch on sm_70 emulates bf16 by upcasting to fp32 for compute, which should make the V100 activations at least as precise as native bf16, not less -- so the fitted direction should be essentially identical.",
     "what_would_surprise_me_and_why_it_is_possible": "S-121 measured that V100 + the norm-matched path refuses 0 of 670 rows EVERY time, at n = 24, 96, 268 and 670. That is a catastrophic, deterministic difference in exactly the projection geometry an axis lives in. If emulation can do that to a projection norm, it can move a fitted direction. So a result below 0.99 is NOT excluded by my reasoning above; it would mean the upcast story is wrong or incomplete, and it must be reported as a surprise, not absorbed.",
     "I_am_not_entitled_to_the_flattering_outcome": "A cleared confound is the outcome that keeps the sprint's existing claims standing. That is exactly why the threshold and the prediction are written down before the number exists."
   },
-
   "void_conditions": [
     "1. The extraction runs on anything other than an NVIDIA GeForce RTX 3090, verified from the run's own RUNMETA.gpu and NOT from the sbatch line.",
     "2. The bank sha16 of the new corpus differs from 79511d9e254571e6.",
-    "3. Any argument other than --layers differs from the committed extraction's config.json args.",
+    "3. Any argument other than --layers, --tag and --model differs from the committed extraction's config.json args. THE THREE EXEMPTIONS ARE NAMED HERE, BEFORE ANY DATA EXISTS, AND EACH IS FORCED: --layers IS the manipulation; --tag must differ or the new corpus would collide with the committed run's directory; and --model was null in the committed run, which resolved to the HF id 'meta-llama/Llama-3.1-8B-Instruct' -- slurm_scripts/dcs_csi_extract_sow_basket.slurm records that job 896365 died in 71 s with 'does not appear to have a file named model.safetensors' because that id has no weights cached on some nodes. The re-extraction therefore passes the snapshot path explicitly. IT IS THE SAME MODEL: snapshot 0e9e39f249a16976918f6564b8830bc894c89659, which is the revision every committed axis and every PR-CSI-007 arm records. A --model that resolves to any OTHER revision is still a VOID condition.",
     "4. The TEST split is inspected at any point.",
     "5. The refit uses a --readout, --site, --seed or --codeword other than the committed axes'.",
     "6. Any threshold or prediction in this file is changed after any cosine has been computed.",
     "7. The new corpus is used to REPLACE any committed axis. It is a comparison artifact only; nothing in configs/ is overwritten."
   ],
-
   "what_may_and_may_not_be_concluded": {
     "may_not_1": "NOT 'the dissociation is explained' or 'unexplained' on any outcome. This removes or confirms ONE candidate explanation of several; S-160 added held-out non-replication as another and it is untouched by this.",
     "may_not_2": "NOT 'basket's axis is correct' -- a direction unchanged under a hardware swap is not thereby a right direction.",
@@ -57,11 +48,13 @@
     "may_not_4": "NOT a claim about the layer grid, per what_this_does_NOT_ask.",
     "may": "That the fitted basket behavioural direction at L18 and at L20 is, or is not, the same direction under native bf16 -- reported per layer with its cosine and the calibration scale beside it."
   },
-
   "outputs": {
     "extraction": "outputs/boombness/extract_boombness/cont1re_behavioral_basket_bomb_*",
     "axes": "configs/dcs_csi_axis_basket_behavioral_RE3090_L18.pt and ..._RE3090_L20.pt (NEW paths; nothing committed is overwritten)",
     "report": "reports/DCS_CSI_PR009_HARDWARE_AB.json",
     "frozen_read": "runargs/dcs_csi_pr009_read.txt"
-  }
+  },
+  "amendment_log": [
+    "2026-09-21T08:1x, BEFORE SUBMISSION and before any activation of the new corpus exists: VOID condition 3 amended to name --tag and --model as forced exemptions, with the justification above. Recorded rather than done silently. The amendment is committed separately from the original freeze so the git history shows both the original text and the change, and both precede the job."
+  ]
 }
