@@ -177,7 +177,11 @@ def main():
         "VERDICT": ("the screen's ranking MAY be used by the causal stage" if trustworthy else
                     "UNTRUSTWORTHY -- the causal stage is NOT launched on this ranking; design 3.4's "
                     "fallback is selection by true single-head patch effect on a 40-row subsample"),
-        "pairs": recs[:400],
+        # EVERY pair, not a prefix. The truncated form stored the first 400 -- which is the
+        # first 10 ROWS, not a sample of 400 -- so any post-hoc robustness check (drop the
+        # dominant head, drop the largest cell) silently ran on a quarter of the rows while
+        # the headline ran on all of them. ~1600 records is under 120 KB.
+        "pairs": recs,
         "NOTE": ("every atp here is the ROW'S OWN first-order estimate, not the screen's summed "
                  "S[h]; the screen chose the cells and nothing else"),
     }
