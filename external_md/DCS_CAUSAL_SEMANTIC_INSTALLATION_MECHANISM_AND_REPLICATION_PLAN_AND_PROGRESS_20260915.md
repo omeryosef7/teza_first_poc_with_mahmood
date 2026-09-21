@@ -13122,3 +13122,120 @@ here it imposed a duty I did not go back and read.
 R47 = 6 and swap rank 1 UNCHANGED | S5 now reported: 0 of 46 rejected | line 409 fixed
 read sha16 5353f954 | blob 11d2c617 | claim table reconciliation OPEN
 ```
+
+---
+
+# S-163 — R12's two reporting debts are paid, and **the one I owed changes the reading**: the required paired contrast says the swap and button's own axis are **NOT distinguishable** (p = 0.172, CI spans 0), and the pre-committed counterweight sentence — written before the data precisely so it could not be upgraded — **applies verbatim**
+
+Queue idle. No arms in flight. This tick discharges the two obligations REVIEW R12 found outstanding,
+both from the governing preregistration rather than from the read file's summary of it.
+
+## 1. MAJOR-3 paid — the secondary's required reporting
+
+`configs/dcs_csi_pr007_button_L18_validation.json:593` requires of the direction-A secondary: *"the
+swap arm's R47 with its printed and asserted size 46; the native KO_AXIS rank inside the SAME report;
+**the paired contrast recovery(XSWAP) − recovery(KO_AXIS) with a domain-clustered bootstrap CI over the
+23 domains**; the dose-penalty distribution (PR-CSI-006 S3); and the degeneracy count, which must be 0."*
+
+S-161 gave the first two and printed the two recoveries side by side. It did **not** give the paired
+contrast, which is a different quantity on a paired design. Computed now from the committed artifact's
+own `domain_means` — **no re-run, no new arm**:
+
+```
+PAIRED CONTRAST   recovery(XSWAP_FROM_BASKET) - recovery(KO_AXIS)      23 domains, same key set
+   point                                      +0.00120
+   domain-clustered bootstrap 95% CI          [-0.00043, +0.00283]     B = 20000, seed 20260913
+   domains positive / negative / tied         13 / 10 / 0
+   EXACT two-sided sign-flip p                 0.171858   (all 2^23 = 8 388 608 permutations)
+   CI excludes zero                            NO
+```
+
+**The swap and button's own axis are not statistically distinguishable on these 23 domains.**
+
+This is the number that had to be reported, and it is the one that most changes how S-161 reads. That
+entry set +0.00338 beside +0.00218 and, although it claimed nothing, the juxtaposition invites *"the
+transplanted axis does better"*. **It does not do measurably better.** Thirteen domains favour the
+swap, ten favour the native axis, and an exact test over every one of 8.4 million sign assignments puts
+that at p = 0.17.
+
+**This is R10's direction-B precedent repeating on direction A**, which the read file warned of in
+advance: there the two splits' *cells* disagreed while the recoveries were statistically
+indistinguishable (+0.001336, ci95 [−0.000895, +0.003720], p = 0.254). Here the two arms' *ranks*
+differ sharply — 1 against 6 — while their recoveries are indistinguishable. **A rank gap is not an
+effect gap**, and the prereg required the graded read beside the binary one for exactly this reason.
+
+### S3 dose penalty
+
+The prereg defines it as the per-row rescale factor `target/proj_norm` = ‖P_recipient(δ)‖/‖P_donor(δ)‖
+and fixes its interpretation in advance: *"If its median is near 1.0 the two axes capture the
+recipient's delta about equally and the dose-matching was nearly inert."*
+
+```
+captured_frac = ||P(delta)|| / ||delta||        (AMPLITUDE, a ratio of NORMS -- the prereg's own note)
+   XSWAP_FROM_BASKET  (P_donor,     basket axis)  mean 0.037871   min 0.021375   max 0.060955
+   KO_AXIS            (P_recipient, button axis)  mean 0.038978   min 0.020598   max 0.055891
+S3 dose penalty  =  native / swap  =  1.0292     (ratio of means)
+```
+
+**1.0292 — near 1.0.** By the preregistration's own rule, the two axes capture button's clean→KO delta
+about equally and the dose-matching was nearly inert. Basket's axis is not a weaker instrument on
+button's rows; it is an almost equally strong one, which is consistent with the paired contrast finding
+nothing to separate them.
+
+**CANNOT ANSWER on the exact form requested:** the prereg asks for the *distribution* and names the
+*median*. The per-row rescale factor is not persisted in `results.jsonl` — only `captured_frac`'s mean,
+min and max survive in `arm_meta`. The ratio of means is reported above as the closest recoverable
+substitute, and the median is **not** recoverable from committed artifacts. Recovering it would require
+re-running the arm, which the prereg forbids after the read.
+
+### Degeneracy count
+
+```
+arm_meta.XSWAP_FROM_BASKET   degenerate_positions 0    liveness_violations 0   n_rows 230
+                             n_rescue_positions [28]   basis_keys ['swap_cand_from_basket']
+arm_meta.KO_AXIS             degenerate_positions 0
+VOID = []
+```
+
+**0, as required.** And the basis key confirms the swap arm used the donor tensor, not a relabelled
+native one — the failure mode REVIEW R10's BLOCKER-2 was about.
+
+## 2. MAJOR-2 paid — the pre-committed counterweight, reported verbatim
+
+The branch S-160 quoted at three sentences of five required that *"the counterweight in
+`prediction_fixed_before_data` applies verbatim and its pre-committed sentence is reported."* That
+block is headed **`THE_COUNTERWEIGHT_I_RECORD_SO_IT_CANNOT_BE_INVENTED_AFTERWARDS`**, and its
+pre-commitment names the window this result landed in:
+
+> *"If the L18 validation cell comes back in the top third WITHOUT certifying (3 ≤ R47 ≤ 15), the
+> honest reading is NOT 'button works held-out'. It is **'the L18 validation cell is closer to button's
+> own-layer behaviour than the L18 train cell was, and nothing certifies'**. I am writing that sentence
+> now, before the data, so that it cannot be upgraded later."*
+
+**R47 = 6 is inside [3, 15], so that is the operative reading**, and it is better calibrated than
+anything S-160 wrote. The measurement it rests on was also fixed in advance: button's axis at **its own
+layer L20** ranks **4 of 11 on VALIDATION** (+0.00132) and **4 of 11 on TRAIN** (+0.00040) — upper
+third of a small family on both splits, certifying nothing either way (rank 4 of 11 is p = 0.364).
+
+So the L18 validation cell at rank 6 of 47 is **closer to button's own-layer L20 behaviour than the L18
+train cell (rank 36) was** — which is what the counterweight predicted the top-third outcome would mean,
+and which it deliberately denied the right to call "button works held-out".
+
+## What this does NOT change
+
+R47 = 6 stands. The swap's rank 1 stands. Direction A remains **NOT REPLICATED with no cell claimed**
+(S-161) — the paired contrast does not rescue a cell, it removes the informal reading that was drifting
+toward one. Nothing here says button's axis is or is not causal. Nothing pools button with basket.
+
+## Still open, carried forward
+
+* **The amendment sweep.** The branch also obliges: *"Every sentence in the sprint that states button's
+  L18 failure without naming the split is amended to name it."* Not done. It is a sweep over ~163
+  entries and needs its own pass.
+* **The claim table**, four items (R12), unreconciled.
+* **The freeze-declaration defect** (R12 MAJOR-4), recorded and not amended.
+
+```
+paired contrast +0.00120 [-0.00043,+0.00283] p=0.1719 | S3 dose penalty 1.0292 | degeneracy 0
+R47 = 6 and swap rank 1 UNCHANGED | read sha16 5353f954 | blob 11d2c617 | queue idle
+```
