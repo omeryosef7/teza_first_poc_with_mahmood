@@ -13867,3 +13867,83 @@ AM-21 five against five, and the split-naming checker still exits 0.
 ```
 provenance gate 14 axes / 5 documented / PASS | claim table 790 lines | queue idle | quota 198G of 200G
 ```
+
+---
+
+# S-171 — P4 opened, and the first thing measured was **a 12× overestimate in the design's own strongest engineering claim**: W3's justification attributes a ONE-TIME staging cost to every arm. **CORRECTION to `DCS_CSI_PHASE3_HEAD_CIRCUIT_DESIGN.md` §1.5, made before a line of it was written**
+
+Queue idle, R11's MAJOR-1 closed, so §22's next item is **P4 — the demonstration → query circuit**.
+Its gate in plan §8 is *"Only after Phase 1 has a credible positive result"*, and the design doc is
+written **for basket**, the side that passes on both splits (D24) — so the gate is met, with basket's
+"at the floor, no margin" caveat travelling with it.
+
+## What the design says to build first
+
+`reports/DCS_CSI_PHASE3_HEAD_CIRCUIT_DESIGN.md` §1.5 lists four things that must be written, and says
+of **W3** (an in-process arm-loop runner):
+
+> *"**Measured**: job 906433 spent 7834 s wall on 5 arms whose own DONE.json wall_seconds sum to
+> 3503.23 s. **4330.77 s — 55.3% of the allocation — was model loading**, 866 s per arm. At 24 arms
+> that is 5.8 GPU-hours spent on `from_pretrained`. **This file is worth more than everything else in
+> this table.**"*
+
+## The headline reproduces exactly. The per-arm figure does not.
+
+```
+job 906433   elapsed 7834 s | sum(arm wall_seconds) 3503.23 s | overhead 4331 s = 55.3%
+```
+
+Every number in the doc's first sentence is correct. But 866 s/arm is `4330.77 / 5`, and that division
+assumes the overhead is *per arm*. Decomposed against the job's own Start time and its `>>> ARM`
+markers:
+
+```
+ONE-TIME, before the first arm (stage 15 GB + FIRST model load)   3971 s   <- 92% of ALL overhead
+PER-ARM, between markers                     132, 59, 64, 53, 51  ->  mean 72 s/arm
+```
+
+**92 % of the overhead is a single staging cost that happens once per JOB, not once per arm.** An
+in-process loop cannot remove it — the model still has to be staged and loaded the first time.
+
+```
+W3's actual saving:   doc claims  866 s/arm x 24 = 5.77 GPU-h
+                      MEASURED     72 s/arm x 24 = 0.48 GPU-h
+                      overestimate factor  12.0x
+```
+
+**W3 is worth about 8 % of a 24-arm P4 run, not the majority of it**, and *"worth more than everything
+else in this table"* is withdrawn. It remains worth building — 0.48 GPU-h is real — but it is an
+optimisation, not the critical path, and building it first would have been building the wrong thing
+first.
+
+## Why this is the same error the sprint keeps finding
+
+S-149 nearly recorded that serialising had failed, because it read the **marker gap** where
+`wall_seconds` was the right quantity. This is that error's mirror image: the doc read a **total** and
+divided it by an arm count, when the total was dominated by a term that does not scale with arms. In
+both cases the arithmetic is fine and the *denominator* is the mistake. The fix both times was to ask
+what the number is a total *of* before dividing it.
+
+It was caught here for a specific reason worth keeping: **I verified the design's measurement before
+building on it**, rather than treating a figure written by me a day earlier as a fact. The doc's
+headline was right, which is exactly what makes the derived figure easy to accept.
+
+## Revised build order for P4
+
+**W1** — `dcs_csi_head_atp.py`, the AtP attribution on the per-head z channel — is the critical path,
+because without it there is no candidate head set and nothing else in the design can start. W3 drops
+behind it. W2 (the seeded head-set draw) stays where it is: cheap, and the control family has to be
+frozen in the preregistration rather than generated at launch.
+
+**§0's constraint stands and is the strongest thing in the document**: `--knockout-heads` takes a flat
+list of head **indices** applied to every layer of the band (`score_behavior.py:2540-2542`,
+`pair_common.py:958`), so attribution must aggregate to `h`, not `(L, h)`, or it proposes an
+experiment the instrument cannot express. A per-`(L,h)` flag would mean editing `score_behavior.py` —
+**not done**: no necessity arm is running right now, but that file's blob is still the pending
+PR-CSI-003 family-extension decision, and touching it would complicate a question that is the user's
+to answer.
+
+```
+P4 gate met (basket passes both splits) | W3 justification CORRECTED 12x | W1 is the critical path
+queue idle | quota 198G of 200G | nothing launched this tick
+```
