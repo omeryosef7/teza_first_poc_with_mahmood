@@ -15216,3 +15216,91 @@ section 7.2 RE-COSTED from the measured 1.276: 8.55 GPU-h compute for the 48 pri
 W3 (one load per allocation) is worth ~11.5 GPU-h and is NOT optional at this scale
 STILL NOT LAUNCHED -- the 48-arm budget is the user's call | quota 198G of 200G
 ```
+
+---
+
+# S-194 / S-195 — **W3 exists, pays the model load ONCE, and is proven BIT-IDENTICAL to separate processes.** It saves **16.6 GPU-hours** of the 48-arm family, measured
+
+Commits `a1b45919` (the runner) and this entry. Job **916406** COMPLETED.
+
+## It does not edit `score_behavior.py`, which was the binding constraint
+
+PR-CSI-003's VOID condition prohibits modifying that file, so W3 does **not** add an inject-a-model
+parameter to it. It **memoises `ds_common.load_model` from the outside** and calls
+`score_behavior.main()` per arm with a rewritten `sys.argv`. `score_behavior` reaches the loader as
+`dc.load_model`, where `dc` **is** the `ds_common` module object
+(`score_behavior.py:2716  dc, pc = ds(), pair()`), so replacing the module attribute is seen at call
+time and **not one byte of that file changes.**
+
+## The measurement
+
+```
+[w3] MODEL LOAD #1 (1295.1 s)   <- ONE load, for three arms
+[w3]  1/3 W3_HD_KO   ok  1337.8 s  hooks_after=0     (1337.8 - 1295.1 = 42.7 s of compute)
+[w3]  2/3 W3_HD_8    ok    34.5 s  hooks_after=0
+[w3]  3/3 W3_HD_KO2  ok    23.6 s  hooks_after=0
+[w3] arms ok 3/3 | MODEL LOADS 1
+```
+
+## ⭐ The equivalence test, which is the only reason to trust it
+
+The same three arms had already run as **separate processes** in job 916390. Every row compared:
+
+```
+subprocess      in-process     rows   max |delta|   verdict
+SMOKE_HD_KO     W3_HD_KO         24   0.0           BIT-IDENTICAL
+SMOKE_HD_8      W3_HD_8          24   0.0           BIT-IDENTICAL
+SMOKE_HD_KO2    W3_HD_KO2        24   0.0           BIT-IDENTICAL
+```
+
+**72 of 72 rows identical, `max |delta| = 0.0` exactly.** Had in-process looping moved any number,
+the hours it saves would have been bought with a silent difference in every arm of the family.
+
+## The three silent-corruption routes, and what closes each
+
+**1. A leaked hook.** `pair_common` registers hooks in **28 places**. If arm N fails to remove one,
+arm N+1 runs under an intervention nobody requested and **its artifact records nothing**. Every
+submodule's four hook dicts are counted before *and* after each arm; residue is a **REFUSAL**, so the
+family stops rather than emitting a contaminated arm. Measured: `hooks_after=0` on all three.
+
+**2. The wrong model from the cache.** A naive memo hands arm N+1 arm N's model when dtype, backend,
+revision or model id differs — and the arm records what it *requested* while running on something
+else. The memo is **keyed on every load parameter**, so a differing request misses and loads fresh.
+Correct by construction rather than by assertion.
+
+**3. RNG carry-over.** Checked and a non-issue: `main()` calls `seed_everything(args.seed)` at
+`score_behavior.py:2714` before any work, so each arm re-seeds exactly as a fresh process would.
+The bit-identical result is the confirmation.
+
+**One recorded consequence, not a defect.** `common.SEED_LOG` is per-**process**, and `RunDir.finish`
+writes both `applied` (whole log) and `since` (this run's slice). In-process, `applied` grows across
+arms — still literally what the process applied. **`since` is the per-arm field a verifier must
+read**, and every W3 artifact records `in_process_runner: true` so a reader knows which convention
+applies.
+
+## What it saves, measured rather than assumed
+
+```
+48 primary arms, compute 8.55 GPU-h (S-193, includes the measured 1.276 factor)
+
+load = 866 s   (design 7.1)     without W3  20.10 h | with W3  9.04 h | SAVED 11.07 GPU-h
+load = 1295.1 s (MEASURED here)  without W3  25.82 h | with W3  9.27 h | SAVED 16.55 GPU-h
+```
+
+**The load is larger in practice than the design assumed, so W3 is worth more than the design
+thought — 16.6 GPU-hours, nearly twice the arms' own compute.** Its own overhead is zero: no extra
+compute, and `0.0` difference in all 72 measured rows.
+
+## Commands
+
+```
+./scripts/gates/dcs_csi_submit.sh slurm_scripts/dcs_csi_w3_validate.slurm     # 916406
+# equivalence: per-row semantic_logodds, job 916390 (subprocess) vs 916406 (in-process)
+```
+
+```
+W3 PROVEN: 1 model load for 3 arms | hooks_after=0 everywhere | 72/72 rows BIT-IDENTICAL
+saves 16.55 GPU-h of the 48-arm family at the MEASURED load; the family is ~9.3 h with it, ~25.8 without
+score_behavior.py UNCHANGED -- the memo is external, so PR-CSI-003's VOID condition is honoured
+STILL NOT LAUNCHED: the 48-arm budget remains the user's call | quota 198G of 200G
+```
