@@ -13617,3 +13617,91 @@ travels with every sentence reporting this result.
 914750 R n-301, --time 02:00:00 | prereg 04a11da7 amended 51731fc8 | queue: 1 job | quota 197G of 200G
 NO COSINE COMPUTED. NO ACTIVATION OF THE NEW CORPUS EXISTED AT ANY COMMIT ABOVE.
 ```
+
+---
+
+# S-168 — PR-CSI-009's gate 0 written **while the corpus was still extracting**, and running it early caught it **passing vacuously** — the exact S-134 shape, in the gate written to refuse it
+
+Job `914750` RUNNING on n-301, 19 min elapsed of a 2 h limit. Gate 0 had to exist before any cosine
+could be computed, and writing it against an unfinished corpus turned out to be the useful part.
+
+## VOID 1 already verified, from the run's own metadata
+
+```
+[gate0] VOID 1 GPU: 'NVIDIA GeForce RTX 3090'  compute_capability 8.6
+```
+
+Read from `RUNMETA`, not from the sbatch line — the distinction PR-CSI-007's gate (b) exists for.
+**8.6 ≥ 8.0, so bf16 is native**, which is the entire point of the experiment.
+
+## VOID 3 is now VERIFIED equivalent, not merely argued
+
+S-167a amended VOID 3 to exempt `--model`, arguing the snapshot path resolves to the same model. The
+committed run's own `metadata.json` settles it:
+
+```
+committed  model_revision_requested          None
+committed  model_revision_resolution_source  hf_cache_ref:main
+committed  model_revision_resolved_commit    0e9e39f249a16976918f6564b8830bc894c89659
+```
+
+**The committed run resolved to exactly the snapshot this preregistration pins.** The exemption was
+argued yesterday and is measured today, and gate 0 asserts it on both runs rather than trusting it.
+
+`33 non-exempt arguments compared, every one IDENTICAL`, with `--layers` the only manipulation —
+`0,2,4,…,31` against `18,20`.
+
+## The population matches, which the cosine depends on
+
+```
+committed  n_bank_rows_used 3720   n_result_rows 3714
+in flight  [ko-extract] --only-split ['train','validation']: 3720/4640 rows over 93 domains
+```
+
+The new run is selecting **the same 3720 bank rows**. The frozen read's PART 4 item 6 requires this be
+checked because *"a cosine computed on a different population is not the comparison this
+preregistration declared"* — and gate 0 now enforces it rather than leaving it to the write-up.
+
+## The defect, and it is mine
+
+Gate 0's first version **PASSED**, and it should not have:
+
+```
+[gate0] population n_bank_rows_used   committed=3720  new=None
+[gate0] population n_result_rows      committed=3714  new=None
+=== GATE 0 PASS ===
+```
+
+`metadata.json` does not exist yet, so both guards — written as `if b is not None and a != b` — simply
+**skipped**. Likewise `if new_rev is not None and new_rev != SNAP`. **Absent evidence was read as
+passing evidence.** That is the precise S-134 vacuous-gate shape, and it was in the gate I had just
+written with "a gate that can pass on an empty comparison is not a gate" in its own docstring.
+
+**It was caught only because I ran the gate before the data existed.** Had I written it and waited for
+the job, it would have been run once, on a complete corpus, and the vacuous branch would never have
+executed — it would have sat there passing correctly for the wrong reason until some future corpus
+arrived incomplete.
+
+Fixed: an absent `metadata.json` is now a **refusal**, not a skip; an absent
+`model_revision_resolved_commit` is a refusal ("an unmeasurable VOID condition is not a satisfied
+one"); and an absent population field is a failure ("an uncomparable population is not a matching
+one"). Re-run against the still-unfinished corpus: **exit 1**, refusing to certify it.
+
+## One logging defect, recorded not fixed
+
+The launch banner printed `blob ` empty:
+
+```
+PR-CSI-009 | prereg 51731fc8 | blob  | porcelain ''
+```
+
+`git hash-object src/boombness/score_behavior.py` produced nothing on the compute node. **Not a VOID
+condition** — `score_behavior.py` is not on the extraction path, and this experiment's code identity
+rests on `dcs_extract_under_ko.py` and `dcs_csi_axis.py` — but a witness that prints empty is a witness
+that would print empty if it mattered, which is REVIEW R12 MAJOR-4's complaint in miniature. Recorded
+against the next script that needs a blob witness.
+
+```
+914750 RUNNING n-301 19 min / 2 h | gate 0 written, self-caught, and now REFUSING the unfinished corpus
+VOID 1 verified live | VOID 3 verified equivalent | 33 args identical | NO COSINE COMPUTED
+```
