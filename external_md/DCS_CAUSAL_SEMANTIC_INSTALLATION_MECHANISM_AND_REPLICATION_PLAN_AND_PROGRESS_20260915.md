@@ -15580,3 +15580,117 @@ W3 IDEMPOTENT: a preempted allocation now RESUMES instead of duplicating tags an
 disk 198G -> 193G (hardlinks explain the gap); Qwen3-14B 17G deliberately LEFT -- their scripts use it
 NO NUMBER READ YET. The frozen read governs and GATE 1 can still return CANNOT ANSWER.
 ```
+
+---
+
+# REVIEW R15 (self, ~4 h cadence) — **the edit lock is wider than `score_behavior.py`**, W3's hook guard censuses only the FIRST cached model, its resume logic **fails open into the exact corruption it exists to prevent**, and W4 never re-checked VOID 7 that gate 0 explicitly delegated to it
+
+Scope: W3, W4, the launcher, the argv generator, the prereg freezer, gate 0, the smoke checker, the
+dry-run harness and the self-test — commits `82d6cfe6`…`7bed8374`. **24 TRAIN arms are running
+(`916535`), 24 VALIDATION arms pending (`916536`)**, which constrains what may be repaired *now*.
+
+## R15-0 (MAJOR, structural) — the edit lock covers more files than the one it names
+
+The standing rule is *"never edit `src/boombness/score_behavior.py` while necessity arms are
+running"*, and PR-CSI-010's VOID 4 says the same. **But `916536` is PENDING with its witness already
+fixed at `CSI_GIT_BLOB=9aebc6bc`, and when it starts it will execute:**
+
+```
+scripts/gates/dcs_csi_pr010_argv.py     scripts/dcs_csi_arm_runner.py
+src/boombness/score_behavior.py         slurm_scripts/dcs_csi_pr010_arms.slurm
+configs/dcs_csi_pr010_head_causal_basket.json   scripts/dcs_csi_rederive_patch.py
+```
+
+**Editing any of those before it starts makes it run code its own witness does not describe** — a
+silent provenance falsification, and exactly the class of error the witness exists to prevent. The
+lock that matters is *"any file a pending allocation will execute"*, and it is wider than the one
+file the rule names.
+
+**Checked rather than assumed:** `git diff --name-only 9aebc6bc..HEAD` returns **only** the sprint
+log, which `916536` does not execute. **Its witness is TRUTHFUL.** Consequence for this review: W4 is
+repaired now (no arm executes it); **every W3 finding below is DEFERRED until both allocations
+finish**, and that deferral is the finding being respected, not an omission.
+
+## R15-1 (MAJOR, deferred) — W3's hook census inspects only the first cached model
+
+```python
+hook_census(next(iter(cache.values())).model)      # arm_runner.py:138 and :156
+```
+
+`next(iter(...))` is the **first inserted** entry. I documented the memo as keyed on every load
+parameter *precisely so a differing request loads a second model* — and the moment it does, a hook
+leaked on that second model is **invisible**, while the code reports `hooks_after=0`. A guard that
+reports zero because it looked in the wrong place is worse than no guard.
+
+**Not live for PR-CSI-010** — all 24 arms share one load key, so the cache holds exactly one model,
+which is why `hooks_after=0` in `916406` is trustworthy. It becomes live the first time the memo
+does the job I wrote it for.
+
+## R15-2 (MAJOR, deferred) — the resume logic fails OPEN into the corruption it prevents
+
+```python
+except Exception:
+    keep.append(line)          # "not complete" -> RE-RUN
+```
+
+`strict_run_dir` raising anything unexpected is treated as *"this arm has not run"*, so the arm
+**re-runs and creates a second run dir under the same tag** — which is precisely the S-104/S-127
+duplicate that makes `strict_run_dir` refuse the whole family. **The skip logic added in S-198 to
+prevent family corruption can therefore cause it**, on any error it did not anticipate. The only safe
+default is to refuse.
+
+## R15-3 (MODERATE, FIXED) — matched domain sets are not matched populations
+
+`by_domain` returned domain means and the only cross-arm check compared **domain sets**. Two arms
+binding different **slot counts** for the same domain both pass, while their means average different
+rows — a paired delta then contrasts different populations inside a domain that looks matched.
+
+Measured: the 24-row smoke arms bind `[4, 10]` slots per domain; the real 670-row arms bind a uniform
+`[10]` across all 67. **So it is latent, not live — and latent only because `strict_run_dir` enforces
+`expect_n`.** A guard that is safe only because another guard holds should say so. Slot sets are now
+compared per domain.
+
+## R15-9 (MAJOR, FIXED) — W4 never re-checked VOID 7, which gate 0 explicitly delegated to it
+
+`pr010_gate0` prints, in as many words, *"CHECKED HERE for the axis; **each arm's population must be
+re-checked**"* for VOID 7 (no TEST domain) and the head sets. **W4 did neither.** It consulted the
+preregistration for the head sets and the control family and **never looked at `population` at all**:
+no assertion that 67 (or 23) domains were analysed, and **no check that `restaurant_kitchen`,
+`school_campus` or `subway_station` were absent.** `strict_run_dir` pins the ROW count; nothing
+pinned the DOMAIN count, and the domain is the statistical unit.
+
+Both are now enforced. The domain-count check **binds when the run claims to be the preregistered
+one** — derived from `--expect-n` matching the preregistered row count, deliberately **not** an
+override flag, because an override can be passed to a real run to silence a guard whereas `expect_n`
+is already pinned by the arms themselves. An off-protocol row count now prints
+`⛔ OFF-PROTOCOL … THIS IS NOT A PREREGISTERED ANALYSIS` and the artifact records `ON_PROTOCOL`.
+**The TEST-domain check always applies, on or off protocol.** Verified: the guard refused the
+self-test's 3-domain stand-in until the regime was made explicit, and the 11-check ground-truth
+self-test passes again.
+
+## R15-11 (MINOR, deferred) — `line.split()` cannot carry an argument containing a space
+
+W3 parses each generated command with `line.split()`. Every value in play today is space-free
+(`Answer:`, the snapshot path), so nothing is wrong now; the first argument with a space would be
+silently torn in two. `shlex.split` is the correct call.
+
+## What R15 did NOT find
+
+No defect in the dose identity, the floor arithmetic, the family composition, the provenance
+witnesses, or the equivalence proof. The rounding defect of S-197 stays fixed. Gate 0's coverage
+statement remains honest — and **R15-9 is the first case of that honesty paying off: it named a
+re-check it could not perform, and the reader that was supposed to perform it did not.**
+
+## Commands
+
+```
+git diff --name-only 9aebc6bc..HEAD          # only the sprint log -- 916536's witness is truthful
+python scripts/gates/dcs_csi_head_analyze_selftest.py    # 11/11 after the R15-3/9 fixes
+```
+
+```
+R15: 6 findings. FIXED NOW: R15-3, R15-9 (W4 -- no arm executes it).
+DEFERRED BY THE LOCK: R15-1, R15-2, R15-11 (W3 -- 916536 is PENDING against blob 9aebc6bc).
+R15-0 IS THE FINDING THAT GOVERNS: the edit lock is "any file a pending allocation executes",
+which is WIDER than the score_behavior.py rule that names it. Verified truthful before proceeding.
+```

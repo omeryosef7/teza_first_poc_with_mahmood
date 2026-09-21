@@ -75,12 +75,21 @@ def atomic_write_json(path, obj):
 
 
 def by_domain(run_dir):
-    """(domain -> mean y_install over that domain's slots). Slots average WITHIN the domain."""
+    """(domain -> mean y_install over that domain's slots), plus the per-domain SLOT SET.
+
+    The slot set is returned because comparing domain SETS is not enough (R15-3): if two arms bind
+    a different number of slots for the same domain, both pass a set comparison while their domain
+    means average DIFFERENT ROWS, and the paired delta then contrasts slightly different
+    populations inside a domain that looks matched. Measured: the real 670-row arms are uniformly
+    10 slots per domain, so this is latent rather than live -- but it is latent only because
+    `strict_run_dir` enforces `expect_n`, and a guard that depends on another guard should say so.
+    """
     inst, n_seen, kinds = lpm.load_installation(run_dir)
-    per = {}
-    for (dom, _slot), p in inst.items():
+    per, slots = {}, {}
+    for (dom, slot), p in inst.items():
         per.setdefault(dom, []).append(float(p))
-    return {d: statistics.fmean(v) for d, v in per.items()}, n_seen, kinds
+        slots.setdefault(dom, set()).add(slot)
+    return ({d: statistics.fmean(v) for d, v in per.items()}, slots, n_seen, kinds)
 
 
 def liveness(run_dir):
@@ -144,13 +153,13 @@ def main():
     if "HD_BOTK" in controls or "HD_TOPK" in controls:
         sys.exit("REFUSING: the comparator or the candidate entered the control family (VOID 6)")
 
-    dirs, per, live = {}, {}, {}
+    dirs, per, live, slots = {}, {}, {}, {}
     for arm in arms:
         d = rederive.strict_run_dir("%s_%s" % (a.tag_prefix, arm), a.expect_n,
                                     row_file="results.jsonl", allow_short=a.allow_short,
                                     require_slurm_jobs=jobs)
         dirs[arm] = d
-        per[arm], n_seen, kinds = by_domain(d)
+        per[arm], slots[arm], n_seen, kinds = by_domain(d)
         live[arm] = liveness(d)
 
     doms = sorted(set.intersection(*(set(v) for v in per.values())))
@@ -162,6 +171,47 @@ def main():
     if ragged:
         sys.exit("REFUSING: arms disagree on their domain sets, so a paired contrast would silently "
                  "compare different populations: %s" % {k: v[:4] for k, v in list(ragged.items())[:4]})
+
+    # R15-3: the SLOT SETS must match per domain, not merely the domain sets.
+    ref = slots[arms[0]]
+    for arm in arms[1:]:
+        bad = {d for d in doms if slots[arm].get(d) != ref.get(d)}
+        if bad:
+            sys.exit("REFUSING: arm %s binds different SLOTS from %s in %d domain(s) (e.g. %s) -- "
+                     "the domain means would average different rows and the paired delta would "
+                     "contrast different populations inside a matched-looking domain"
+                     % (arm, arms[0], len(bad), sorted(bad)[:3]))
+
+    # R15-9a: the DOMAIN count is the statistical unit and must equal the preregistered population.
+    # strict_run_dir enforces the ROW count; nothing enforced the DOMAIN count, so a changed
+    # exclusion file could have delivered 670 rows over the wrong number of domains, silently.
+    # The count binds when this run CLAIMS TO BE THE PREREGISTERED ONE, which is exactly when
+    # --expect-n equals the preregistered row count for the split. Deriving the condition from
+    # expect_n rather than adding an override flag matters: an override could be passed to a real
+    # run to silence the guard, whereas expect_n is already pinned by the arms themselves
+    # (strict_run_dir admits no arm whose rows_written differs). An off-protocol row count is
+    # announced loudly instead of being quietly treated as compliant.
+    want_dom = pr["population"]["%s_domains" % a.split]
+    want_n = pr["population"]["%s_expect_n" % a.split]
+    on_protocol = (a.expect_n == want_n)
+    if on_protocol:
+        if len(doms) != want_dom:
+            sys.exit("REFUSING: %d domains analysed but PR-CSI-010 preregisters %d for %s"
+                     % (len(doms), want_dom, a.split))
+    else:
+        print("[head] ⛔ OFF-PROTOCOL: --expect-n %d != the preregistered %d for %s, so the "
+              "domain-count check does NOT apply and THIS IS NOT A PREREGISTERED ANALYSIS."
+              % (a.expect_n, want_n, a.split))
+
+    # R15-9b: VOID condition 7 AT READ TIME. pr010_gate0 checked the AXIS and said in as many words
+    # that "each arm's population must be re-checked" on read. This is that re-check.
+    test_doms = set(pr["population"]["test_domains"])
+    leaked = sorted(set(doms) & test_doms)
+    if leaked:
+        sys.exit("REFUSING (VOID 7): TEST domain(s) present in the analysed population: %s" % leaked)
+    if on_protocol:
+        print("[head] population OK: %d domains == preregistered %d | no TEST domain present"
+              % (len(doms), want_dom))
 
     # ---- GATE 0: liveness -----------------------------------------------------------------
     g0 = {}
@@ -246,7 +296,11 @@ def main():
     out = {
         "schema": "dcs_csi_head_analyze/1",
         "prereg": a.prereg, "prereg_id": pr["id"], "tag_prefix": a.tag_prefix, "split": a.split,
-        "n_domains": len(doms), "expect_n": a.expect_n, "B": a.B, "seed": a.seed, "ci": a.ci,
+        "n_domains": len(doms), "expect_n": a.expect_n,
+        "ON_PROTOCOL": on_protocol,
+        "protocol_note": (None if on_protocol else
+                          "OFF-PROTOCOL: expect_n != the preregistered row count, so "
+                          "the domain-count check did not apply; NOT a preregistered analysis"), "B": a.B, "seed": a.seed, "ci": a.ci,
         "run_dirs": {k: os.path.basename(v) for k, v in dirs.items()},
         "GATE_0_liveness": {"pass": gate0, "per_arm": g0},
         "REALISED_DOSE": {"pass": dose_ok, "expected_ratio": K,
