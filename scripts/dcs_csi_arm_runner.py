@@ -59,15 +59,53 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--argv-file", required=True,
                     help="one full score_behavior command per line (from dcs_csi_pr010_argv.py)")
+    ap.add_argument("--expect-n", type=int, default=0,
+                    help="row count that defines a COMPLETE arm; enables skip-if-done")
     ap.add_argument("--out", required=True)
     ap.add_argument("--stop-on-fail", action="store_true",
                     help="stop the family at the first failing arm instead of continuing")
     a = ap.parse_args()
 
     lines = [l.strip() for l in open(a.argv_file) if l.strip() and not l.startswith("#")]
-    print("[w3] SIZE arms = %d" % len(lines), flush=True)
+
+    # ⛔ SKIP ARMS THAT ARE ALREADY COMPLETE, AND THIS IS A CORRECTNESS REQUIREMENT, NOT A SAVING.
+    # A preempted allocation keeps every arm that finished -- each writes its own run dir. Re-running
+    # such an arm creates a SECOND run dir under the SAME TAG, and `strict_run_dir` then refuses the
+    # whole family for having more than one candidate (S-104/S-127). So a resubmission must not
+    # re-run what already landed. A tag that resolves to exactly one COMPLETE run is skipped; a tag
+    # that resolves to several is REFUSED here rather than at read time.
+    if a.expect_n:
+        import importlib.util as _il
+        _sp = _il.spec_from_file_location("rederive", os.path.join(REPO, "scripts",
+                                                                   "dcs_csi_rederive_patch.py"))
+        _rd = _il.module_from_spec(_sp); _sp.loader.exec_module(_rd)
+        keep, skipped_done = [], []
+        for line in lines:
+            av = line.split()
+            tag = av[av.index("--tag") + 1] if "--tag" in av else None
+            if tag is None:
+                keep.append(line); continue
+            try:
+                _rd.strict_run_dir(tag, a.expect_n, row_file="results.jsonl")
+                skipped_done.append(tag)          # exactly one complete run exists
+            except SystemExit as e:
+                msg = str(e)
+                if "more than one" in msg or "resolved to" in msg:
+                    sys.exit("REFUSING: tag %r already resolves to MORE THAN ONE complete run; "
+                             "re-running would deepen the duplicate. Resolve it first. (%s)"
+                             % (tag, msg[:160]))
+                keep.append(line)
+            except Exception:
+                keep.append(line)
+        if skipped_done:
+            print("[w3] SKIPPING %d arm(s) already complete: %s"
+                  % (len(skipped_done), ", ".join(t.split("_")[-1] for t in skipped_done)), flush=True)
+        lines = keep
+
+    print("[w3] SIZE arms to run = %d" % len(lines), flush=True)
     if not lines:
-        sys.exit("VACUOUS: no arms to run")
+        print("[w3] every requested arm is already complete -- nothing to run")
+        return 0
 
     # ---- the memo, keyed on EVERY load parameter -------------------------------------------
     real_load = dc.load_model
