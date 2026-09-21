@@ -12243,3 +12243,172 @@ expected 231`.
 run_completeness: every finished run with an expect_n persisted its full row count
 blob 11d2c617   quota 197G of 200G   NO PR-CSI-007 NUMBER READ
 ```
+
+---
+
+# S-155 — the duplicate-tag hazard is **much larger than S-147 described (19 tags, not 3)**, and the read's resolver was dry-run against every one of them and selects correctly in BOTH directions. Third short arm documented
+
+`914477` COMPLETED 12/12; `914478` is running on n-301 and has landed its first arm. **31 of 54
+in-family arms are on disk.**
+
+## The hazard, measured rather than recalled
+
+S-147/S-148 framed the duplicate-tag risk as *"three cancelled generations is three chances to admit
+the wrong arms."* That undercounted it, and my own census one tick ago undercounted it too — I globbed
+`_2026092[01]_*` and saw 4 duplicates. Globbing `_2026*`, which is what the read's resolver actually
+does:
+
+```
+[dryrun] tags on disk: 40 | DUPLICATED tags: 19
+  BASE KO KO_SELF KO_FULL KO_AXIS KO_PLS KO_ORTH
+  KO_SHUF0 KO_SHUF1 KO_SHUF2 KO_SHUF3
+  KO_RAND0 KO_RAND1 KO_RAND2 KO_RAND3 KO_RAND4 KO_RAND5 KO_RAND6 KO_AXIS_ANCHOR
+```
+
+**Nineteen tags exist in more than one copy**, because the 09-15/09-16 PR-CSI-005 family used the same
+tag vocabulary as PR-CSI-007, on top of the four cancelled-generation arms. A resolver that picked
+"the newest dir" would have had 19 opportunities to be wrong, in a family whose whole claim is that
+its 47 controls are one matched set.
+
+Arms by job, from each run's own `RUNMETA.slurm_job_id`:
+
+```
+IN FAMILY   914043: 7   914476: 11   914477: 12   914478: 1 (running)   [914048 swap, 914479 pending]
+CANCELLED   914044: KO_AXIS_ANCHOR | 914045: KO_RAND6 | 914046: KO_RAND12 | 914047: KO_SHUF12
+```
+
+The four cancelled arms carry tags that the in-family jobs also produce — `KO_AXIS_ANCHOR` and
+`KO_RAND6` already collide on disk; `KO_RAND12` and `KO_SHUF12` collide as `914478`/`914479` run.
+
+## The dry-run — the mechanism exercised against real duplicates, before the read
+
+`scripts/gates/dcs_csi_pr007_resolution_dryrun.py` runs the read's `resolve()` **verbatim**
+(`runargs/dcs_csi_pr007_read.txt:314-319`) against the current on-disk state. It reads **only
+`RUNMETA.json`** — no `results.jsonl`, no summary, no scientific number — which is precisely why it
+can be run now, while the family is still in flight, rather than at read time when it would be too
+late to matter.
+
+It checks **two directions**, and the second is the one a passing first would hide:
+
+1. every in-family arm resolves to exactly one dir, under the job it should belong to;
+2. **no cancelled-generation dir is ever selected** — because a resolver that returned the newest dir
+   would also satisfy (1) whenever the in-family arm happened to be newer, which it usually is.
+
+```
+[dryrun] SIZE family = 54 arms across 5 jobs
+[dryrun] resolved 31 arms | not yet on disk 23 (jobs still running/pending)
+[dryrun] selected dirs by job: {'914043': 7, '914476': 11, '914477': 12, '914478': 1}
+[dryrun] cancelled-generation dirs present on disk: 4
+     job 914044  arm KO_AXIS_ANCHOR   correctly NOT selected
+     job 914045  arm KO_RAND6         correctly NOT selected
+     job 914046  arm KO_RAND12        correctly NOT selected
+     job 914047  arm KO_SHUF12        correctly NOT selected
+=== DRY-RUN PASS: 31 arms resolved, 0 cancelled-generation dirs selected, 19 duplicate tags
+    correctly disambiguated ===
+```
+
+The script refuses a wrong family up front (`GROUP` must hold exactly 54) and says so explicitly when
+a direction is untestable — *"no cancelled dir on disk, so direction (2) is vacuous this run"* — rather
+than reporting a pass over an empty comparison, which is the S-134 shape.
+
+**The group mapping is now confirmed by measurement, not assumed.** 914043 → 7 arms (group A), 914476
+→ 11 (group B), 914477 → 12 (group I1), and 914478's first arm is `KO_RAND12`, which is group I2's
+first arm. That mapping is what the read's job substitution depends on, and until now it was an
+inference from the launcher.
+
+## Third short arm — same guard, still disjoint
+
+```
+KO_SHUF7 (job 914477): rows_written=229  n_rows_failed=1  status=INCOMPLETE
+  reason: REFUSING to patch: 1 of 28 positions are norm-match DEGENERATE
+  dropped prompt_id 8bf1041da9c509fa  domain water_treatment
+  overlap with KO_RAND3's dropped row: none | with KO_RAND4's: none
+```
+
+Census over all 35 arms on disk: **4 short, shortfall distribution `{0: 31, 1: 3, 2: 1}`, max 2**,
+against the frozen read's `--allow-short 4`. Three of the four are in-family (`KO_RAND3`, `KO_RAND4`,
+`KO_SHUF7`); the fourth is the cancelled `KO_RAND12` under 914046, already exempted per DCS-CSI-133
+and excluded from the family by job id.
+
+**Four dropped rows across three arms, in three different domains, with no row dropped twice.** That is
+what the mechanism predicts — degeneracy is the angle between a *given* random basis and a fixed delta,
+so it is a property of the (basis, position) pair, not of the row. Still n = 4: this supports
+outcome-independence, it does not establish it, and the exemption text says so.
+
+Added to `KNOWN_SHORT`; guard green again (99 documented short, was 98).
+
+```
+914476 COMPLETED 11/11 | 914477 COMPLETED 12/12 | 914478 R n-301 1 arm | 914479 PD
+31 of 54 in-family arms on disk | blob 11d2c617 | quota 197G of 200G | NO PR-CSI-007 NUMBER READ
+```
+
+---
+
+# S-156 — an **accidental replicate upgrades the degeneracy mechanism from ARGUED to MEASURED**: the same control arm, run twice on different nodes 4 h 44 m apart, dropped the *identical* row
+
+While S-155 was being committed, `914478` landed `KO_RAND12` and the completeness guard failed again —
+a fourth in-family short arm. Documenting it produced a result worth more than the exemption.
+
+## The replicate nobody designed
+
+`KO_RAND12` has now run **twice**, in two independent SLURM allocations:
+
+```
+csi1_button_validation_KO_RAND12_20260920_221735_511934   job 914046  node n-305  2026-09-20 22:17  229 rows
+csi1_button_validation_KO_RAND12_20260921_030100_865646   job 914478  node n-301  2026-09-21 03:01  229 rows
+```
+
+The first is from the **cancelled** generation S-147 scrapped for contention — an arm that exists only
+because that relaunch happened, and which the read excludes by job id. Differenced against a full
+230-row arm:
+
+```
+914046 dropped: ['8a9ec86383d3a50e']
+914478 dropped: ['8a9ec86383d3a50e']
+SAME ROW DROPPED IN BOTH INDEPENDENT RUNS: True      domain = university_lab
+```
+
+**Both runs lost exactly one row, and it was the same row** — different node, different allocation,
+4 h 44 m apart.
+
+## What this changes
+
+Every `KNOWN_SHORT` entry from DCS-CSI-133 onward has been careful to label the outcome-independence
+argument as what it was:
+
+> *"MECHANISM (not a verified property of this run): degeneracy is the angle between a fixed basis and
+> a fixed delta, both determined before any readout … so the loss is expected to be
+> outcome-independent."*
+
+**It is now a verified property.** The loss is a deterministic function of (control basis, row): the
+basis is fixed by the control's seed, the clean→KO delta is fixed before any readout, and the
+resulting refusal is therefore **not stochastic, not node-dependent, and not outcome-dependent.** That
+is the difference between a mechanism one believes and one that has been measured, and this sprint has
+spent fifteen entries on exactly that distinction.
+
+Three supporting facts already in hand point the same way and now have a spine: the four dropped rows
+across `KO_RAND3`, `KO_RAND4` and `KO_SHUF7` are pairwise **disjoint** and in **three different
+domains** (S-152, S-155) — different bases lose different rows — while the *same* basis loses the
+*same* row twice.
+
+**It also retroactively justifies S-152's disposition.** That entry declined to re-run the short arms,
+reasoning that "degeneracy is determined by the control basis and the delta, both fixed before any
+readout, so a rerun reproduces it." A rerun then happened by accident and reproduced it exactly. The
+prediction was made before the evidence existed, which is the only kind of confirmation worth much.
+
+## Book-keeping
+
+Added to `KNOWN_SHORT` (100 documented short, was 99). In-family short arms are now four —
+`KO_RAND3` (1), `KO_RAND4` (2), `KO_SHUF7` (1), `KO_RAND12` (1) — every shortfall inside the frozen
+read's `--allow-short 4`, which was frozen before any of them existed (S-154).
+
+**Operational note.** This is the second commit in a row blocked by a short arm landing between the
+check and the `git commit`, because the family is producing arms while I work. That is the guard doing
+its job rather than a nuisance — each block has so far produced a measurement — but the pattern is
+worth naming: while a family is in flight, `check_all.py` is a moving target, and a green run five
+minutes ago is not evidence of a green run now.
+
+```
+914478 R n-301, 2 arms | 914479 PD | 32 of 54 in-family arms on disk
+blob 11d2c617 | quota 197G of 200G | NO PR-CSI-007 NUMBER READ
+```

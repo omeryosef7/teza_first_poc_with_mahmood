@@ -152,6 +152,40 @@ KNOWN_ZERO = {
 }
 
 KNOWN_SHORT = {
+    "csi1_button_validation_KO_RAND12_20260921_030100_865646":
+        "DCS-CSI-156: PR-CSI-007 family, job 914478. 1 row of 230 REFUSED by the norm-match degeneracy "
+        "guard; DONE.json honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229) and "
+        "results.jsonl holds exactly 229 parseable rows. "
+        "THIS ONE IS A REPLICATE AND IT UPGRADES THE MECHANISM CLAIM FROM ARGUED TO MEASURED. The "
+        "SAME arm KO_RAND12 ran in the CANCELLED generation as "
+        "csi1_button_validation_KO_RAND12_20260920_221735_511934 (job 914046, node n-305, 2026-09-20 "
+        "22:17) and here under job 914478 (node n-301, 2026-09-21 03:01) -- two independent SLURM "
+        "allocations on different nodes at different times. BOTH lost exactly one row and BOTH lost "
+        "THE SAME ROW: prompt_id 8a9ec86383d3a50e, domain university_lab. "
+        "Every KNOWN_SHORT entry before this one labelled outcome-independence as 'MECHANISM (not a "
+        "verified property of this run)'. It is now a verified property: the loss is a DETERMINISTIC "
+        "function of (control basis, row) -- the basis is fixed by the control's seed and the "
+        "clean->KO delta is fixed before any readout -- and is therefore not stochastic, not "
+        "node-dependent and not outcome-dependent. It also retroactively justifies S-152's decision "
+        "not to re-run the short arms: a re-run reproduces the identical loss, which is exactly what "
+        "happened here by accident. Inside the frozen read's --allow-short 4 (S-154).",
+    "csi1_button_validation_KO_SHUF7_20260921_023743_862173":
+        "DCS-CSI-155: PR-CSI-007 button L18 VALIDATION family, job 914477. The THIRD in-family "
+        "instance. 1 row of 230 REFUSED by the norm-match degeneracy guard (SubspaceDonorPatch, "
+        "R2-M5): 'REFUSING to patch: 1 of 28 positions are norm-match DEGENERATE'. DONE.json honest "
+        "-- status=INCOMPLETE, n_rows_failed=1, rows_written=229 -- and results.jsonl holds exactly "
+        "229 parseable rows, so this is the guard declining to fabricate a control, not a lost write. "
+        "MEASURED: the dropped row is prompt_id 8bf1041da9c509fa (domain water_treatment), "
+        "differenced against the full 230-row arm "
+        "csi1_button_validation_KO_RAND6_20260921_012545_850700 of the SAME allocation 914477. "
+        "ZERO OVERLAP with the rows dropped by KO_RAND3 (b70ad3ff73d1e85a, mountain_refuge) or "
+        "KO_RAND4 (562e6780f81f28d4 and d7e73441e2f7664a, parks_yard). Three in-family short arms now "
+        "drop four rows between them, in four different (arm, row) pairs and three different domains, "
+        "with no row dropped twice -- which is what the mechanism predicts (degeneracy is the angle "
+        "between a GIVEN random basis and a fixed delta, so it is a property of the (basis, position) "
+        "pair) and what an outcome-selected loss would not do. Still n=4, so this supports rather "
+        "than establishes outcome-independence. All shortfalls are inside the frozen read's "
+        "--allow-short 4 (S-154).",
     "csi1_button_validation_KO_RAND3_20260921_011146_558170":
         "DCS-CSI-152: PR-CSI-007 button L18 VALIDATION family, job 914476. 1 row of 230 REFUSED by the "
         "sprint's own norm-match degeneracy guard (SubspaceDonorPatch, review R2-M5): 'REFUSING to "
