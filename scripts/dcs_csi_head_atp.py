@@ -211,6 +211,12 @@ def main():
     S = torch.zeros(n_heads, dtype=torch.float64)          # signed, the selection statistic
     A = torch.zeros(n_heads, dtype=torch.float64)          # |.| diagnostic, never the selector
     per_cell = {}                                          # (L, h) -> summed AtP, for the gate
+    # W1.1 -- THE UNIT OF ANALYSIS IS THE DOMAIN, SO THE SCREEN MUST EMIT PER-DOMAIN TOTALS.
+    # Without these, S[h] is a point ranking with no interval: nothing distinguishes "h19 leads in
+    # 60 domains" from "h19 leads in 12 with three outliers carrying it". A domain-clustered
+    # bootstrap needs the per-domain terms, and they cannot be recovered from the sum afterwards.
+    S_by_dom = {}                                          # domain -> [n_heads] signed totals
+    rows_by_dom = {}                                       # domain -> rows actually used
     g_norm_total = 0.0        # LIVENESS: a dead hook and a null result look identical
     ko_delta_total = 0.0      # LIVENESS: a no-op knockout and a null result look identical
     n_used, skipped = 0, []
@@ -295,9 +301,15 @@ def main():
             contrib = (g[L] * (z_ko[L] - z_clean[L])).sum(dim=-1).double()   # [n_heads]
             S += contrib
             A += contrib.abs()
+            _d = row.get("domain")
+            if _d not in S_by_dom:
+                S_by_dom[_d] = torch.zeros(n_heads, dtype=torch.float64)
+                rows_by_dom[_d] = 0
+            S_by_dom[_d] += contrib
             for h in range(n_heads):
                 per_cell[(L, h)] = per_cell.get((L, h), 0.0) + float(contrib[h])
         n_used += 1
+        rows_by_dom[row.get("domain")] = rows_by_dom.get(row.get("domain"), 0) + 1
         if n_used % 25 == 0:
             print("[atp] %d rows" % n_used, flush=True)
 
@@ -339,6 +351,10 @@ def main():
         # THE GATE'S INPUT (design 3.4): per-CELL AtP, not per-head. 9 layers x 32 heads = 288.
         # Emitted in FULL -- a top-k written alone cannot be re-ranked by any other rule later,
         # and the screen must not quietly decide what a downstream gate is allowed to see.
+        # W1.1: the per-domain terms a domain-clustered bootstrap needs. 67 x 32 numbers.
+        "S_by_domain_head": {d: [round(float(v[h]), 8) for h in range(n_heads)]
+                             for d, v in sorted(S_by_dom.items())},
+        "rows_per_domain_used": {d: rows_by_dom[d] for d in sorted(rows_by_dom)},
         "AtP_by_cell": {("%d,%d" % lh): round(v, 8) for lh, v in sorted(per_cell.items())},
         "topk_cells_by_abs": [{"layer": L, "head": h, "atp": round(per_cell[(L, h)], 8)}
                               for (L, h) in sorted(per_cell, key=lambda c: -abs(per_cell[c]))[:a.topk]],
