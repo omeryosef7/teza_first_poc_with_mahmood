@@ -12,5 +12,18 @@ if [ -n "$DIRTY" ]; then
   echo "  $DIRTY" >&2
   exit 1
 fi
+# A CALLER-SUPPLIED --export SILENTLY REPLACES OURS AND STRIPS THE PROVENANCE.
+# Measured: job 915945 exited 3 because `--export=ALL,SCREEN=...` passed through here
+# overrode `--export=ALL,CSI_GIT_BLOB=...`. sbatch takes the LAST --export and does not warn.
+# Extra variables belong in the environment (they propagate via ALL), so this refuses instead.
+for arg in "$@"; do
+  case "$arg" in
+    --export=*)
+      echo "REFUSING: pass extra variables in the ENVIRONMENT, not --export -- a second" >&2
+      echo "  --export replaces this script's and strips CSI_GIT_BLOB (see job 915945)." >&2
+      echo "  Use:  VAR=value $0 <script>" >&2
+      exit 2 ;;
+  esac
+done
 echo "provenance: BLOB $BLOB  PORCELAIN clean"
 exec sbatch --export=ALL,CSI_GIT_BLOB="$BLOB",CSI_GIT_PORCELAIN=clean "$@" "$S"
