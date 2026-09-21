@@ -14601,3 +14601,89 @@ scripts/gates/dcs_csi_w1_ko_test.py         3050 B   PASS
 
 Read S-179's command block with those substitutions. Nothing else in S-179 changes: no number moves,
 and the smoke artifact `outputs/boombness/dcs_csi/w1_smoke_915886.json` is untouched.
+
+---
+
+# S-181 — the **W1 screen is run on the full TRAIN split**: 670 rows, 0 skipped, and the signed and |AtP| rankings **disagree hard enough to vindicate §3.3's selector choice**
+
+Job **915891 COMPLETED**, 3:56 wall, `w1_screen_train_basket_915891.json` (4502 B, re-parsed from
+disk). VALIDATION was not touched and is not in the script.
+
+```
+[atp] rows used = 670 | skipped = 0
+[atp] LIVENESS g_norm_total = 33282.680195 | ko_delta_total = 925282.917654
+```
+
+## The screen
+
+```
+rank  head      S[h]      share of negative mass   |AtP| rank
+  1   h19    -355.682      26.7%  (cum 26.7%)          1
+  2   h17    -225.010      16.9%  (cum 43.6%)          7
+  3   h23    -103.608       7.8%  (cum 51.4%)          5
+  4   h6      -87.432       6.6%  (cum 58.0%)         18
+  5   h13     -86.039       6.5%  (cum 64.4%)          9
+  6   h2      -78.268       5.9%  (cum 70.3%)          6
+  7   h24     -65.977       5.0%  (cum 75.3%)         25
+  8   h28     -58.269       4.4%  (cum 79.6%)         20
+  9   h4      -57.986       4.4%  (cum 84.0%)         24
+ 10   h3      -55.438       4.2%  (cum 88.2%)          3
+
+sum over all 32 heads: -608.4      heads with S < 0: 17 of 32
+most POSITIVE (opposing): h18 +143.708, h31 +86.239, h14 +82.068
+```
+
+**h19 alone carries 26.7% of the negative mass**, h19+h17 carry 43.6%, and the top three pass half.
+
+## §3.3's selector choice is now a measured decision, not a stylistic one
+
+The design insists `S[h]` **signed** is the selector and `|AtP|` is a *diagnostic only*. Those two
+orderings are not cosmetically different here — **they disagree on which heads even make the top
+ten**. h6 is 4th signed and **18th** by `|AtP|`; h24 is 7th and **25th**; h4 is 9th and **24th**.
+Had `|AtP|` selected, a materially different head set would have been proposed. `|AtP|` cannot
+distinguish a head that *drives* the readout toward the concept from one that drives it away, and
+the screen contains real heads of the second kind — h18 at **+143.7** is the third-largest magnitude
+in the table and points the opposite way.
+
+## Rule 3.3 checked against the aggregation, not assumed
+
+`S[h]` sums over **rows**, while the statistical unit is the **domain**. That is only safe if the
+domains are balanced, so it was counted rather than trusted:
+
+```
+rows 670 | domains 67 | rows per domain: min 10, max 10, distinct [10]
+```
+
+Exactly 10 everywhere, so the row-sum is 10x the domain-mean-sum and **the ranking is identical to a
+domain-mean ranking**. No domain is over-weighted.
+
+## ⛔ What this is NOT, and the limitation that blocks the next claim
+
+**No head set is frozen, and h19 is not "the" head.** The artifact still carries `NOT_YET_RUN` for
+the §3.4 true-patch gate: *attribution PROPOSES; intervention DECIDES.* AtP is a **first-order
+estimate** of an intervention nobody has performed yet, and this sprint's own record — R47 = 6 of 47,
+the K/32 identity wrong twice, the bf16 bound off by 7x — is a record of first-order arguments that
+did not survive being measured.
+
+**The limitation that matters most is mine, not the estimator's: the screen records only a
+point ranking.** `S[h]` is a single summed number per head with **no per-domain breakdown**, so
+there is *no* uncertainty on it and *no* way to ask whether h19 leads in 60 domains or in 12 with
+three outliers carrying it. With 67 domains available, a domain-clustered interval is affordable and
+its absence is the gap between "h19 ranks first" and "h19 ranks first *reliably*". **W1.1: emit
+per-domain `S[h]` so the ranking can carry a domain-clustered bootstrap.** Until then the ordering
+above is a proposal with no stability estimate attached.
+
+## Commands
+
+```
+sbatch slurm_scripts/dcs_csi_w1_screen_train.slurm            # 915891, TRAIN only, 3:56
+# domain balance, re-derived from the axis artifact + bank:
+#   rows 670 | domains 67 | rows/domain min 10 max 10 distinct [10]
+```
+
+```
+W1 SCREEN DONE on TRAIN: 670 rows / 67 domains / 0 skipped | h19 26.7%, h19+h17 43.6% of neg mass
+signed vs |AtP| DISAGREE (h6 4th vs 18th) -- section 3.3's selector vindicated by measurement
+NO HEAD SET FROZEN | section 3.4 true-patch gate NOT_YET_RUN | W1.1 needed: per-domain S for a CI
+next: the section 3.4 true-patch gate -- the intervention that decides | quota 198G of 200G
+```
