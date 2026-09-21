@@ -12895,3 +12895,85 @@ PART 4 and PART 5 both read, ONCE, in order. Family not extended; K remains 46.
 swap 736112 B | rederive 7407 B | both verified and re-parsed
 read sha16 5f4ecd4d | blob 11d2c617 | quota 197G of 200G
 ```
+
+---
+
+# S-162 — with the family read and **the GPU idle for the first time this session**, R11's MAJOR-1 becomes actionable: the minimal basket re-extraction is **measured at 1.13 GB, not 10.8 GB**, and therefore **fits in current headroom without touching the disk question**
+
+PR-CSI-007 is complete and read (S-160, S-161). `squeue` is empty. That is the first idle GPU of this
+session, and it makes the one open item with a measurable scientific payoff — REVIEW R11's MAJOR-1,
+the V100 extraction-hardware confound on basket's five behavioural axes — actionable rather than
+theoretical.
+
+The obstacle was disk: quota sits at 197 G of 200 G and the original extraction's cache is 10.77 GB.
+**That obstacle is smaller than it looked, and the difference is measured rather than estimated.**
+
+## What the cache actually is
+
+```
+cont1_behavioral_basket_bomb_20260910_113902_3966018/cache/multiposition_reps.pt   10.77 GB
+  schema            multiposition_reps/1
+  layers            list[19]   [0, 2, 4, 6, 8, 10, 11, 12, 13, 14, 16, 18, 20, 22, 24, 26, 28, 30, 31]
+  sites             list[20]   rel-16 ... rel-1, plus the codeword-occurrence sites
+  dtype             float16
+  reps              dict[3714] tensors, each shape (20 sites, 19 layers, 4096)
+```
+
+3714 × 20 × 19 × 4096 × 2 B = 10.77 GB exactly. **The size is strictly linear in layers and in sites**,
+so the cost of a re-extraction is set by how many of each it needs.
+
+## What the fit actually needs
+
+The committed basket axes report `layer_grid = [16, 18, 20, 22, 24, 26, 28, 30, 31]` — **9 layers, not
+19** — and `selected_layer` 18 for four of the five, 20 for `dcs_csi_axis_basket_L20.pt` (which carries
+`layer_forced: True`, so forcing a layer is an existing, exercised code path).
+
+Sites cannot be trimmed: `load_corpus` (`scripts/dcs_cont_layerpos_map.py:149`) reads
+**`multiposition_reps.pt`**, not the 0.58 GB single-site `final_occurrence_reps.pt`, and the rescue
+applies across a span of positions. Checked rather than assumed.
+
+## The three options, costed
+
+```
+(a) layers {18, 20}           3714 x 20 x  2 x 4096 x 2 B =  1.13 GB   FITS NOW (~3 GB free)
+(b) the full 9-layer grid     3714 x 20 x  9 x 4096 x 2 B =  5.10 GB   needs ~3 GB reclaimed first
+(c) the original 19 layers    3714 x 20 x 19 x 4096 x 2 B = 10.77 GB   needs ~9 GB reclaimed
+```
+
+**(a) is runnable today without touching the disk question at all**, which has been open and awaiting a
+decision for several ticks.
+
+## What (a) can and cannot answer — stated as a restriction, not glossed
+
+A two-layer corpus cannot re-run the argmax over the grid, so a refit on it is a fit **at a forced
+layer**, not a reproduction of the original layer selection. What it answers is therefore:
+
+> **at the layer each committed axis actually selected, does the fitted direction change when the
+> activations come from an RTX 3090 (native bf16) instead of a Tesla V100 (emulated)?**
+
+That is the question bearing on the five committed axes — four at L18, one at L20 — and on
+PR-CSI-006's CELL 4, whose recipient is basket. What it leaves open is whether the *layer selection
+itself* would have moved, which only (b) can address. Both halves should be said whenever this is
+reported.
+
+## Not launched
+
+Deliberately. Two reasons, and the first is this sprint's own rule: **a preregistration comes before
+the measurement**, and there is none for a re-extraction yet — it needs its arms, its comparison
+statistic (cosine of the refit direction against the committed one is the obvious candidate but has
+not been declared), its VOID conditions and its frozen read. The second is that REVIEW R12 is in
+flight against the read that just landed, and a finding there could change what is worth extracting.
+
+## REVIEW R12 launched
+
+R11 was committed 2026-09-21T01:46; this tick is 06:04, so the 4 h cadence is due. R12 is running
+against the highest-stakes output this session has produced — the read itself — across four
+dimensions: whether the frozen commands were executed faithfully (including whether the S-158 job-id
+substitution disturbed anything), whether the interpretation is inside the preregistration's rules,
+whether the artifacts contain what S-160/S-161 claim (with the primary rank **independently recomputed
+from raw per-arm rows**, and the 221-key intersection probed for whether it moves the rank), and what
+in the 751-line claim table the committed evidence now contradicts. Its findings are the next entry.
+
+```
+queue idle | 54 of 54 read | quota 197G of 200G | blob 11d2c617 | R12 in flight
+```
