@@ -76,6 +76,24 @@
   },
   "prediction_fixed_before_data": ">= 0.99 at BOTH layers (CLEARED)",
   "prediction_held": true,
-  "bf16_relative_precision": 0.0039,
-  "restriction": "two layers captured, so the argmax over the committed grid was NOT re-run; this asks whether the direction moved AT THE LAYER EACH COMMITTED AXIS SELECTED"
+  "restriction": "two layers captured, so the argmax over the committed grid was NOT re-run; this asks whether the direction moved AT THE LAYER EACH COMMITTED AXIS SELECTED",
+  "residual_interpretation": {
+    "CORRECTED_2026-09-21_S-177": "The original artifact carried 'bf16_relative_precision: 0.0039' as the justification for calling the residuals float noise. REVIEW R13 showed that is wrong twice: 1-abs(cos) is SECOND order in the angle (theta^2/2 reproduces both residuals exactly), so it was being compared against a FIRST-order relative precision; and the activations themselves differ far more than that bound.",
+    "measured_activation_difference_rel_norm": {
+      "note": "||h_new - h_old|| / ||h_old|| at site rel-6, 600 shared prompt_ids of 3714, seed 7",
+      "L18": {
+        "median": 0.02565,
+        "p90": 0.0338,
+        "max": 0.07941
+      },
+      "L20": {
+        "median": 0.02757,
+        "p90": 0.03845,
+        "max": 0.09887
+      }
+    },
+    "the_corrected_reading_is_STRONGER": "inputs differing by ~2.6% in relative norm still yield fitted directions agreeing at cos 0.998 -- this is ROBUSTNESS of the fit, not agreement under noise.",
+    "the_verdict_is_unaffected": "the 0.99 threshold was committed at 08:07:11, before the job existed; bf16 was the RATIONALE OFFERED FOR CHOOSING it, not the test. CLEARED stands.",
+    "the_preregistration_is_NOT_amended": "configs/dcs_csi_pr009_basket_reextract_3090.json still carries the flawed why_0.99 rationale verbatim. It is a FROZEN pre-registration and the experiment has been read, so amending it now would rewrite the record of what was frozen. The correction lives here and in the append-only log instead -- the same choice S-174 made about the git history."
+  }
 }

@@ -14320,3 +14320,74 @@ which I did not do either time. Doing it here turned one fix into two.
 W1 foundations VERIFIED | K/32 corrected in BOTH locations, swept clean | 4 line refs re-verified
 metric M confirmed as a persisted field | P4 still unblocked | queue idle | quota 198G of 200G
 ```
+
+---
+
+# S-177 — the sweep S-176 said to do, actually done on the bf16 claim: **four live sites, three different treatments, one false positive.** Not everything wrong gets edited
+
+S-176 ended by naming the lesson — *"a claim that is wrong once is wrong everywhere it was copied, and
+copying is what documents do; the cheap fix is a regex sweep at the moment of correction"* — after
+failing to do it twice. This tick does it, on the bf16 claim R13 found, before building W1.
+
+## The sweep, and a methodological note on it
+
+First attempt was useless: `0.0039` is a **p-value that appears all over this repo**, so a bare grep
+returned 127 KB of unrelated hits from four other sprints. Narrowing to the phrasing
+(`bf16` within a line also matching `inside|precision|relative|noise`) and to the files that actually
+carried the claim gave a tractable answer. **A sweep that returns everything is the same as a sweep
+that returns nothing** — both leave you reading the corpus by hand.
+
+## Four live sites, and they do NOT all get the same treatment
+
+**1. `reports/DCS_CSI_PR009_HARDWARE_AB.json` — CORRECTED.** It carried
+`"bf16_relative_precision": 0.0039` as a top-level field, i.e. the flawed justification shipped inside
+the result artifact. Replaced with the quantity that was actually available:
+
+```json
+"residual_interpretation": {
+  "measured_activation_difference_rel_norm": {
+     "L18": {"median": 0.02565, "p90": 0.03380, "max": 0.07941},
+     "L20": {"median": 0.02757, "p90": 0.03845, "max": 0.09887}},
+  "the_corrected_reading_is_STRONGER": "inputs differing by ~2.6% ... still yield directions
+     agreeing at cos 0.998 -- ROBUSTNESS of the fit, not agreement under noise."
+}
+```
+
+**2. `configs/dcs_csi_pr009_basket_reextract_3090.json:26` — DELIBERATELY NOT TOUCHED.** Its
+`why_0.99` still reads *"a cosine below 0.99 is not float noise"*, which is the flawed rationale. It is
+a **frozen preregistration and the experiment has been read**. Amending it now would rewrite the record
+of what was frozen — the same thing force-pushing would have done to the git history in S-174, and
+refused for the same reason. The correction lives in the artifact and the log; the prereg stays as
+evidence of what I actually committed to in advance, mistake included.
+
+**3. Sprint log lines 13593 and 13755 — NOT TOUCHED, and cannot be.** Append-only. 13593 is S-167
+recording the rationale as frozen; 13755 is S-169 asserting it. Both are governed by the correction at
+14053. That is what an append-only record does instead of editing.
+
+**4. Claim table D16 line 105 — FALSE POSITIVE.** Its `bf16` is a run's dtype in a provenance list
+(*"SLURM 906433, n-307, RTX 3090, bf16"*), not a precision argument. Checked rather than assumed, and
+left alone.
+
+## Why the differentiation is the point
+
+The instinct after R13 was *"find every instance and fix it"*. That instinct is wrong in two of these
+four cases, and wrong in opposite ways: the frozen prereg **must not** be corrected because correcting
+it destroys the thing it exists to prove, and D16 must not be corrected because it was never wrong.
+**A sweep tells you where a string is; it does not tell you what to do when you get there**, and the
+answer differed at every site.
+
+The one place a sweep would have been unambiguously right is site 1 — a wrong justification shipped as
+a machine-readable field in a result artifact, where anything consuming that JSON inherits the error
+silently.
+
+## Status
+
+R13's remaining open item is unchanged and is now the only one: `pr009_gate0.py` still claims in its
+docstring that thresholds are read from the preregistration while consuming only `pr["id"]`, and its
+banner still says *"every VOID condition checked"* when it covers 1, 2, 3 and 7. **W1 is next**, its
+foundations verified in S-176.
+
+```
+4 live sites: 1 corrected, 2 deliberately preserved, 1 false positive | artifact 2457 -> 3999 B
+PR-CSI-009 CLEARED unchanged | P4 unblocked, W1 next | queue idle | quota 198G of 200G
+```
