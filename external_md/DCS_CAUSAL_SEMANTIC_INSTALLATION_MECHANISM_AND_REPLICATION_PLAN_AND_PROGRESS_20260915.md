@@ -15113,3 +15113,106 @@ PR-CSI-010 FROZEN | GATE 0 PASSED | 24 arms/split | floor 1/21 stored EXACTLY af
 SELECTOR QUESTION CLOSED BY THE PREREG, NOT BY MY JUDGEMENT -- the fallback is for a gate FAILURE only
 NOTHING LAUNCHED: the arms need the user's call on GPU budget (48 arms over both splits) | quota 198G
 ```
+
+---
+
+# S-192 — the §7.3 smoke **ran and failed its own checker**, and both failures are mine, not `score_behavior`'s. **§7.3's "1/4" is the K/32 error in a THIRD place** — now refuted on live data
+
+Job **916332** COMPLETED; all three smoke items ran. Commit `72e60886`.
+
+## ⚠ CORRECTION — the dose identity is **K**, not 1/4, and the measurement says so exactly
+
+```
+median_prefill_edits:  8-head 16128.0   all-head 2016.0   ratio = 8.000000
+```
+
+§7.3 requires *"`median_prefill_edits` is **exactly 1/4** of `SMOKE_HD_KO`'s"*. That is the **same
+K/32 inversion S-175 corrected in §4.2 and S-176 found again in §1.1. §7.3 is the third site and was
+never updated.** The counter measures **mask writes**: the all-head arm (`heads=None`) never
+expands — the eager mask arrives with head-dim 1, writes **one** row, and that row broadcasts to all
+32 heads — while a K-head arm takes `am.expand(-1, 32, …)` and writes **K explicit rows**. A K-head
+arm therefore records **K times more**, not a quarter as much.
+
+**The measured 8.000000 is exactly K, and this is the first time S-175's re-derivation has been
+confirmed against live data rather than by reading the source.**
+
+## Two defects in my own checker
+
+**F2 — it looked for `y_install` in the wrong file.** It read `summary["y_install"]`, got `None` for
+*both* arms, and reported a FAILURE for a quantity it had simply not found. `y_install` is not a
+summary field: it is `sigmoid(semantic_logodds)` and the per-row term lives in `results.jsonl`. **A
+check that reports failure from absent data is the same species of error as one that reports PASS
+from absent data (S-168), just pointing the other way.**
+
+**F3 — the cost-risk check compared a COLD arm with a WARM one and "passed".**
+
+```
+SMOKE_HD_KO 1355.327 s  (first in the allocation -- paid the model load)
+SMOKE_HD_8    45.095 s  (warm)        ratio 0.033  <- cleared a <= 1.5 threshold
+```
+
+It measured the page cache, not the `am.expand(...).clone()` branch §7.2 is worried about. **A
+comparison between a cold arm and a warm one is not a comparison.** `SMOKE_HD_KO2` — the all-head arm
+repeated **third** in the allocation, warm — was added, and without it the checker now says **CANNOT
+ANSWER** on the cost risk rather than passing.
+
+## What passed and is not in doubt
+
+24 rows on both arms, `status ok`; `scope_violations {}`, `frac_rows_scope_live 1.0`,
+`total_decode_edits 0` on both; the placeholder list persisted to `config.json` while the all-head arm
+recorded none; and `score_behavior` printed `knockout restricted to 8 of 32 heads` — which
+**measures** `num_attention_heads = 32` where §0 only asserted it.
+
+---
+
+# S-193 — **the §7.3 smoke PASSES**, and §7.2 is re-costed from the measured slowdown rather than the assumed one
+
+Job **916390** COMPLETED (`BLOB 72e60886`), 3:06 — every condition passes.
+
+```
+[2] dose identity      16128.0 / 2016.0 = 8.000000   (expected K = 8)
+[5] not a no-op        mean y_install 0.385699 (all-head) vs 0.685342 (8-head), delta 0.299643
+[6] WARM cost ratio    44.632 / 34.975 = 1.276  <= 1.50
+[7] SMOKE_ATP          ko_delta 11153.57 | g_norm 348.02 | LOADED eager | 8 rows
+```
+
+**[5] is the right sign**: knocking out 8 heads damages installation **less** than knocking out all
+32 (0.685 vs 0.386), which is what a subset should do and is a sanity check the design did not
+demand.
+
+**[6] gives §7.2 the number it asked for.** The factor is **1.276**, under the 1.5 threshold, so the
+table is not invalidated — but it is not free either, and the honest cost uses the measured value:
+
+```
+                design assumed      measured (x1.276 on the 22 head-restricted arms)
+TRAIN   compute      5.33 h                 6.68 h
+VALID.  compute      1.49 h                 1.87 h
+TOTAL   compute      6.82 h                 8.55 GPU-h
+model load                       866 s per ALLOCATION with W3, versus 11.5 h without
+```
+
+**W3 (one model load per allocation) is worth ~11.5 GPU-hours** and is the difference between ~9 h
+and ~20 h for the primary. It is not a nicety.
+
+## The placeholder is discarded
+
+`0,1,2,3,4,5,6,7` was a **wiring** set, never an AtP result, and the design requires it discarded
+before the real arms run. The real arms use PR-CSI-010's frozen
+`HD_TOPK = [19, 17, 23, 6, 13, 2, 24, 28]`.
+
+## Commands
+
+```
+./scripts/gates/dcs_csi_submit.sh slurm_scripts/dcs_csi_pr010_smoke.slurm       # 916332, 916390
+python scripts/gates/dcs_csi_pr010_smoke_check.py \
+  --atp outputs/boombness/dcs_csi/pr010_smoke_atp_916390.json --job 916390
+python -m pytest tests/test_knockout_heads.py tests/test_scoped_knockout_wiring.py \
+  doublespeak_causality/tests/test_zhead_synthetic.py -q      # 58 passed (7.3 item 4)
+```
+
+```
+SECTION 7.3 SMOKE: PASSED, all conditions | the 1/4 claim REFUTED on live data, ratio is K = 8.000000
+section 7.2 RE-COSTED from the measured 1.276: 8.55 GPU-h compute for the 48 primary arms
+W3 (one load per allocation) is worth ~11.5 GPU-h and is NOT optional at this scale
+STILL NOT LAUNCHED -- the 48-arm budget is the user's call | quota 198G of 200G
+```
