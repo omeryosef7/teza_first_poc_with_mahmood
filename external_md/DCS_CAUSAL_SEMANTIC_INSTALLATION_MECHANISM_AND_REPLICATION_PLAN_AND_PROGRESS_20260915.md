@@ -12800,3 +12800,98 @@ has not been run.
 54 of 54 | R47 = 6 of 47, p = 0.12766, floor 0.021277 | gates all pass | prediction [24,43] MISSED
 read sha16 5f4ecd4d | blob 11d2c617 | PART 5 NOT YET RUN
 ```
+
+---
+
+# S-161 — **PART 5: the swap PASSES at rank 1 of 47 — and by PR-CSI-006's own rule that makes DIRECTION A "NOT REPLICATED" with NO CELL CLAIMED.** The preregistration forbids the sentence this result most invites
+
+PART 4 was written down and committed (S-160, `92423c5f`) before PART 5 was run, which is the
+condition the file imposes. Queue idle; no job in flight.
+
+## The numbers
+
+```
+XSWAP_FROM_BASKET   rank 1 of 47   p = 0.02128 < 0.05   VERDICT: PRIMARY PASSES
+   candidate_minus_ko              +0.00338  [+0.00122, +0.00559]  p = 0.00737   18 of 23 domains positive
+   candidate_minus_comparator      +0.00271  [+0.00055, +0.00489]  p = 0.02566
+independent re-derivation (shares no code):  pooled 1 of 47 | random-only 1 of 23 | shuffled-only 1 of 25
+   -- all three PASS, all three reproduced exactly
+5.1 verification: 736 112 B | n_controls 46 | n_domains 23 | PASS
+gates unchanged and all passing: KO-BASE -0.28319 | SELF-KO +0.00084 | FULL-KO +0.13326
+```
+
+Computed **inside one report on one key set**, as the file requires precisely so the next two lines can
+be compared without the S-125 key-set trap:
+
+```
+recovery_XSWAP_FROM_BASKET_minus_ko   +0.00338      (basket's axis, into button's held-out knockout)
+recovery_KO_AXIS_minus_ko             +0.00218      (button's OWN axis, same rows, same domains)
+```
+
+## What the preregistration says this means — and it is not what it looks like
+
+PR-CSI-006 fixed the rule before any of this existed, and PART 5 restates it before the data:
+
+> *"validation R47 ≤ 2 → the splits **DISAGREE** (train 4, validation ≤ 2). **DIRECTION A IS REPORTED
+> AS NOT REPLICATED AND NO CELL IS CLAIMED FOR IT.** It joins direction B in exactly the state REVIEW
+> R10 put it in, and the 2×2 is unresolved in BOTH directions. **This may NOT be reported as 'basket's
+> axis rescues button held-out'.**"*
+
+TRAIN gave rank **4** of 47 — which PR-CSI-006 defines as *not* "helps" (*"Rank 3 of 47 is p = 0.06383
+and is NOT 'helps'"*). VALIDATION gives rank **1**. The two splits fall on **opposite sides of the
+R47 ≤ 2 bar**, so by step 6 of the decision rule the direction is **NOT REPLICATED**, and **no cell of
+the 2×2 is claimed.**
+
+**So: DIRECTION A IS NOT REPLICATED. NO CELL IS CLAIMED. The 2×2 is now unresolved in both
+directions.** PR-CSI-006's CELL 4 text is **not** reported here — that text belongs to the R47 ≥ 3
+branch, and that branch did not fire.
+
+**And the headline stays withdrawn.** The file anticipated this exact temptation: *"REVIEW R10
+WITHDREW 'C1 is SUPPORTED and the STATE hypothesis is REFUTED' as a headline. NO OUTCOME HERE RESTORES
+IT. A validation rank of 1 or 2 produces NOT REPLICATED and no cell, which is further from a claim,
+not closer to one."* A passing swap moves the 2×2 **further** from resolution, not closer.
+
+## The one word that needs care
+
+"Disagree" here means **which side of the R47 ≤ 2 bar the two splits fall on** — it is not a claim that
+the two recoveries differ. The file is explicit that if the word is used statistically it must carry
+the corresponding test, and that the test is a **two-sample** contrast because the TRAIN and VALIDATION
+domains are disjoint. TRAIN's swap recovery was +0.00150 on 67 domains; VALIDATION's is +0.00338 on 23.
+**I have not tested whether those differ, and I am not asserting that they do.** R10's precedent on
+direction B is the reason to be careful: there the two splits' CELLS disagreed while the recoveries
+were statistically indistinguishable (+0.001336, ci95 [−0.000895, +0.003720], p = 0.254).
+
+## What may be said, and what may not
+
+**May be said.** In one report, on one key set, over the same 23 held-out domains: the transplanted
+basket axis recovers +0.00338 and ranks 1 of 47; button's own axis recovers +0.00218 and ranks 6 of 47
+(S-160). Both are secondary to the fact that **neither result licenses a cell.**
+
+**May NOT be said**, and each of these is a sentence this result actively invites:
+* NOT *"basket's axis rescues button held-out"* — forbidden by name in PART 5.
+* NOT *"C1 is supported"* or *"the STATE hypothesis is refuted"* — withdrawn by R10 and not restored
+  by any outcome here.
+* NOT *"direction A replicates"* — one split is not a replication, and these two disagree at the bar.
+* NOT *"button's axis is causal"* or *"is not causal"* — prohibition 19, every branch.
+* NOT any pooling of button with basket, or of this family's controls with TRAIN's.
+
+## Where the sprint now stands
+
+Three things are true at once and none of them is the headline the sprint was reaching for:
+
+1. **Button's own axis does not pass on its held-out split** (R47 = 6, S-160), and the failure it was
+   predicted to show does not replicate either — the prespecified band [24, 43] was missed by 18 ranks.
+2. **The swap passes on that same split**, at rank 1 with both subfamilies at rank 1 — and the
+   preregistration converts that into **NOT REPLICATED, no cell**.
+3. **The 2×2 is unresolved in both directions**, which is exactly the state R10 left direction B in.
+
+The claim table (`reports/DCS_CSI_CLAIM_TABLE.md`, 751 lines) has not been touched this tick. It now
+disagrees with the log in at least two places — S-144's "every candidate explanation refuted", and
+whatever it says about direction A — and reconciling it is the next tick's work, done against the
+committed artifacts rather than from memory.
+
+```
+PART 4 and PART 5 both read, ONCE, in order. Family not extended; K remains 46.
+swap 736112 B | rederive 7407 B | both verified and re-parsed
+read sha16 5f4ecd4d | blob 11d2c617 | quota 197G of 200G
+```
