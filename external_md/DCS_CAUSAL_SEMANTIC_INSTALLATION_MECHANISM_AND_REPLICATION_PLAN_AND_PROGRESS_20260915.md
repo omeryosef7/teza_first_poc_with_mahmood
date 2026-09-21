@@ -15694,3 +15694,92 @@ DEFERRED BY THE LOCK: R15-1, R15-2, R15-11 (W3 -- 916536 is PENDING against blob
 R15-0 IS THE FINDING THAT GOVERNS: the edit lock is "any file a pending allocation executes",
 which is WIDER than the score_behavior.py rule that names it. Verified truthful before proceeding.
 ```
+
+---
+
+# S-201 — **the realised-dose identity is EXACT at 670 rows: 16,416.0 measured against 16,416 predicted.** GATE 0 passes on the first three arms. Plus **CORRECTION to S-193's slowdown factor: 1.276 was measured on 24 rows and the real figure is 1.515**, which crosses §7.2's own threshold
+
+Job `916535`, three of 24 TRAIN arms landed. **Liveness and dose only — no endpoint value has been
+read, and the frozen read forbids reporting any contrast before GATE 0 clears on every arm.**
+
+## ⭐ S-175's re-derivation, confirmed to the digit
+
+```
+HD_KO   median_prefill_edits =  2052.0    all 32 heads, heads=None -> ONE broadcast row
+HD_TOPK median_prefill_edits = 16416.0    K=8 heads -> K EXPLICIT rows
+ratio = 8.000000                          exactly K
+
+S-175 PREDICTED 16,416 and NOT 513.   measured 16416.0   EXACT MATCH
+the inverted K/32 claim would have required 513.0
+```
+
+The claim that a K-head arm records `K/32` of the all-head count was wrong by a factor of 32, was
+found in **§4.2** (S-175), again in **§1.1** (S-176) and a third time in **§7.3** (S-192), and was
+re-derived from source each time. **It is now confirmed on live 670-row arms, to the digit.** The
+mechanism is the one S-175 gave: the counter measures **mask writes**, the all-head arm never
+expands and writes one broadcasting row, a K-head arm expands and writes K explicit rows.
+
+## GATE 0, the first three arms
+
+```
+HD_BASE   670 rows / 67 domains / 10 per domain | prefill 0 | decode 0 | violations 0   PASS
+HD_KO     670 rows / 67 domains | prefill 1,385,460 | decode 0 | violations 0           PASS
+HD_TOPK   670 rows / 67 domains | prefill 11,083,680 | decode 0 | violations 0          PASS
+HD_TOPK config knockout_heads = 19,17,23,6,13,2,24,28   <- exactly the frozen set (VOID 5 clear)
+```
+
+`hooks_after=0` after every arm, so W3 is leaking nothing. **HD_BASE recording exactly zero edits is
+the one that mattered most** — a BASE arm with a live knockout would have voided the family, and it
+is the failure my own stand-in data simulated in S-197.
+
+**A correction to my own commentary, not to a number:** I printed an expectation that
+`hook_n_query_rows_edited` would be 9 (the band layers). It is **36 on all 670 rows**, exactly equal
+to `hook_n_prefill_forward` — so every prefill hook firing performed an edit, which is the liveness
+signal. The "9" came from a different knockout scope in an earlier phase. **I am not asserting a
+layers × positions decomposition of the 36, because I have not established one.**
+
+## ⚠ CORRECTION to S-193 — the head-restricted slowdown is 1.515, not 1.276
+
+```
+measured at 670 rows (net of the model load):
+  HD_BASE 490.3 s | HD_KO 642.0 s | HD_TOPK 972.5 s      factor = 972.5 / 642.0 = 1.515
+S-193 measured 1.276 -- ON 24-ROW ARMS.
+```
+
+**§7.2's own rule: *"if it exceeds 1.5×, the table is re-derived from the measured factor and nothing
+is launched on the old estimate."* It is 1.515, so the rule is triggered** — and the honest
+sequence is that the family was already launched on the 24-row figure. Re-derived now:
+
+```
+                 from 1.276 (S-193)   from 1.515 (measured here)
+TRAIN compute          6.68 h                6.26 h
+VALIDATION compute     1.87 h                2.15 h
+TOTAL compute          8.55 h                8.41 GPU-h
++ 2 model loads                              0.75 h  ->  9.15 GPU-h
+```
+
+**The decision does not change and the launch is not invalidated** — the totals agree to ~2% because
+the per-arm times measured here are lower than §7.1's 800 s baseline, which offsets the larger
+factor. But **the threshold was crossed and the re-derivation was owed**, and a small smoke
+understated a cost risk by 19%: **24 rows is not a sample of 670 rows for a cost that scales with
+sequence length.**
+
+## Timing
+
+Arms are faster than costed: TRAIN should complete ~6.3 h after its load, VALIDATION follows on
+`afterany`. `916536`'s witness remains truthful — nothing it executes has been edited (R15-0).
+
+## Commands
+
+```
+squeue/sacct on 916535; per-arm liveness read from each run's results.jsonl
+grep -E "^\[w3\] +[0-9]+/" outputs/boombness/logs/csi_pr010arms_916535.out
+```
+
+```
+DOSE IDENTITY EXACT AT 670 ROWS: 16416.0 measured == 16416 predicted (S-175), ratio 8.000000
+GATE 0 PASSES on HD_BASE, HD_KO, HD_TOPK | hooks_after=0 | HD_TOPK carries the frozen head set
+CORRECTION: the head-restricted factor is 1.515, not S-193's 1.276 -- crossing section 7.2's threshold
+re-derived total 9.15 GPU-h; the decision is unchanged but the re-derivation was OWED
+NO ENDPOINT VALUE READ. 21 arms remain and GATE 1 can still return CANNOT ANSWER.
+```
