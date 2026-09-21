@@ -219,12 +219,20 @@ sbatch --gpus=geforce_rtx_3090:1 --time=02:00:00 \
 # a 15 GB staging copy before the first arm starts.
 #
 # RECORD THE SIX JOB IDS HERE AS THEY ARE ASSIGNED, and substitute them below:
-#   <A>  = group A,  7 arms  = ____________
-#   <B>  = group B, 11 arms  = ____________
-#   <I1> = group I, $5 = 1   = ____________
-#   <I2> = group I, $5 = 2   = ____________
-#   <K>  = group K, 12 arms  = ____________
-#   <SW> = group X, the SECONDARY swap arm = ____________   (PART 5 ONLY; never in PARTS 3-4)
+#   <A>  = group A,  7 arms  = 914043
+#   <B>  = group B, 11 arms  = 914476
+#   <I1> = group I, $5 = 1   = 914477
+#   <I2> = group I, $5 = 2   = 914478
+#   <K>  = group K, 12 arms  = 914479
+#   <SW> = group X, the SECONDARY swap arm = 914048   (PART 5 ONLY; never in PARTS 3-4)
+#
+#   SUBSTITUTED 2026-09-21T04:05+03:00 by DCS-CSI-158, BEFORE ANY NUMBER OF THIS FAMILY WAS READ.
+#   The group->job mapping is MEASURED, not assumed: each run's own RUNMETA.slurm_job_id gives
+#   914043->7 arms (group A), 914476->11 (B), 914477->12 (I1), 914478->12 (I2), 914479->group K,
+#   and 914478's first arm is KO_RAND12, which is group I2's first arm (DCS-CSI-155).
+#   CANCELLED GENERATIONS DELIBERATELY ABSENT: 914044-914047, 914417-914420, 914472-914475.
+#   Only these six ids and the thresholds already in this file decide the read; NOTHING ELSE
+#   IN THIS FILE WAS TOUCHED BY THE SUBSTITUTION (verified by diff, DCS-CSI-158).
 #
 # THE ANGLE BRACKETS ARE PLACEHOLDERS AND EVERY ONE MUST BE SUBSTITUTED BEFORE ANYTHING IS RUN.
 # This is the same convention runargs/dcs_csi_pr005_read.txt and runargs/dcs_csi_pr006_read.txt use,
@@ -281,7 +289,7 @@ REPO = "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
 SB   = os.path.join(REPO, "outputs/boombness/score_behavior")
 
 # ---- SUBSTITUTE THE SIX JOB IDS. The swap job <SW> is DELIBERATELY ABSENT from PRIMARY_JOBS. ----
-JOB_A, JOB_B, JOB_I1, JOB_I2, JOB_K = "<A>", "<B>", "<I1>", "<I2>", "<K>"
+JOB_A, JOB_B, JOB_I1, JOB_I2, JOB_K = "914043", "914476", "914477", "914478", "914479"
 PRIMARY_JOBS = [JOB_A, JOB_B, JOB_I1, JOB_I2, JOB_K]
 
 GROUP = {
@@ -465,7 +473,7 @@ python scripts/dcs_csi_subspace_analyze.py \
   --direction sufficiency \
   --candidate-arm KO_AXIS --comparator-arm KO_ORTH --full-arm KO_FULL --ko-arm KO --base-arm BASE --self-arm KO_SELF \
   --self-inert-tol 0.005 --n-boot 20000 \
-  --split validation --require-rescue-layer 18 --require-slurm-job <A>,<B>,<I1>,<I2>,<K> \
+  --split validation --require-rescue-layer 18 --require-slurm-job 914043,914476,914477,914478,914479 \
   --out reports/DCS_CSI_SUBSPACE_button_validation_L18_n46.json
 
 # ---- 3.2 INDEPENDENT RE-DERIVATION (shares no code with 3.1) ------------------------------------
@@ -473,7 +481,7 @@ python scripts/dcs_csi_rederive_subspace.py \
   --tag-prefix csi1_button_validation --split validation --expect-n 230 --allow-short 4 \
   --direction sufficiency --candidate KO_AXIS --ko KO --base BASE --full KO_FULL \
   --controls KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5,KO_RAND6,KO_RAND7,KO_RAND8,KO_RAND9,KO_RAND10,KO_RAND11,KO_RAND12,KO_RAND13,KO_RAND14,KO_RAND15,KO_RAND16,KO_RAND17,KO_RAND18,KO_RAND19,KO_RAND20,KO_RAND21 \
-  --require-rescue-layer 18 --require-slurm-job <A>,<B>,<I1>,<I2>,<K> \
+  --require-rescue-layer 18 --require-slurm-job 914043,914476,914477,914478,914479 \
   --out reports/DCS_CSI_REDERIVE_button_validation_L18_n46.json
 
 # ---- 3.3 LEAVE-ONE-DOMAIN-OUT -------------------------------------------------------------------
@@ -481,7 +489,7 @@ python scripts/dcs_csi_rederive_subspace.py \
 # the validation split. --split validation is also non-default (its default is train).
 python scripts/dcs_csi_rank_loo.py --tag-prefix csi1_button_validation --split validation \
   --expect-n 230 --allow-short 4 --require-rescue-layer 18 \
-  --require-slurm-job <A>,<B>,<I1>,<I2>,<K>
+  --require-slurm-job 914043,914476,914477,914478,914479
 
 # ---- 3.4 PRESPECIFIED SECONDARY S3a: SHUFFLED-ONLY subfamily (24 controls, floor 1/25 = 0.0400) --
 # R5 / S-099 / S-100 found the random and shuffled families exchangeable IN LOCATION but the
@@ -498,7 +506,7 @@ python scripts/dcs_csi_subspace_analyze.py \
   --direction sufficiency \
   --candidate-arm KO_AXIS --comparator-arm KO_ORTH --full-arm KO_FULL --ko-arm KO --base-arm BASE --self-arm KO_SELF \
   --self-inert-tol 0.005 --n-boot 20000 \
-  --split validation --require-rescue-layer 18 --require-slurm-job <A>,<B>,<I1>,<I2>,<K> \
+  --split validation --require-rescue-layer 18 --require-slurm-job 914043,914476,914477,914478,914479 \
   --out reports/DCS_CSI_SUBSPACE_button_validation_L18_shufonly.json
 
 # ---- 3.5 PRESPECIFIED SECONDARY S3b: RANDOM-ONLY subfamily (22 controls, floor 1/23 = 0.043478) --
@@ -512,7 +520,7 @@ python scripts/dcs_csi_subspace_analyze.py \
   --direction sufficiency \
   --candidate-arm KO_AXIS --comparator-arm KO_ORTH --full-arm KO_FULL --ko-arm KO --base-arm BASE --self-arm KO_SELF \
   --self-inert-tol 0.005 --n-boot 20000 \
-  --split validation --require-rescue-layer 18 --require-slurm-job <A>,<B>,<I1>,<I2>,<K> \
+  --split validation --require-rescue-layer 18 --require-slurm-job 914043,914476,914477,914478,914479 \
   --out reports/DCS_CSI_SUBSPACE_button_validation_L18_randonly.json
 
 # ---- 3.6 AFTER EVERY WRITE, VERIFY IT, AND ASSERT THE SIZE (S-123, S-124, S-134) ----------------
@@ -654,14 +662,14 @@ python scripts/dcs_csi_subspace_analyze.py \
   --direction sufficiency \
   --candidate-arm XSWAP_FROM_BASKET --comparator-arm KO_ORTH --full-arm KO_FULL --ko-arm KO --base-arm BASE --self-arm KO_SELF \
   --self-inert-tol 0.005 --n-boot 20000 \
-  --split validation --require-rescue-layer 18 --require-slurm-job <A>,<B>,<I1>,<I2>,<K>,<SW> \
+  --split validation --require-rescue-layer 18 --require-slurm-job 914043,914476,914477,914478,914479,914048 \
   --out reports/DCS_CSI_SWAP_button_validation_L18_from_basket_n46.json
 
 python scripts/dcs_csi_rederive_subspace.py \
   --tag-prefix csi1_button_validation --split validation --expect-n 230 --allow-short 4 \
   --direction sufficiency --candidate XSWAP_FROM_BASKET --ko KO --base BASE --full KO_FULL \
   --controls KO_SHUF0,KO_SHUF1,KO_SHUF2,KO_SHUF3,KO_SHUF4,KO_SHUF5,KO_SHUF6,KO_SHUF7,KO_SHUF8,KO_SHUF9,KO_SHUF10,KO_SHUF11,KO_SHUF12,KO_SHUF13,KO_SHUF14,KO_SHUF15,KO_SHUF16,KO_SHUF17,KO_SHUF18,KO_SHUF19,KO_SHUF20,KO_SHUF21,KO_SHUF22,KO_SHUF23,KO_RAND0,KO_RAND1,KO_RAND2,KO_RAND3,KO_RAND4,KO_RAND5,KO_RAND6,KO_RAND7,KO_RAND8,KO_RAND9,KO_RAND10,KO_RAND11,KO_RAND12,KO_RAND13,KO_RAND14,KO_RAND15,KO_RAND16,KO_RAND17,KO_RAND18,KO_RAND19,KO_RAND20,KO_RAND21 \
-  --require-rescue-layer 18 --require-slurm-job <A>,<B>,<I1>,<I2>,<K>,<SW> \
+  --require-rescue-layer 18 --require-slurm-job 914043,914476,914477,914478,914479,914048 \
   --out reports/DCS_CSI_SWAP_REDERIVE_button_validation_L18_from_basket.json
 
 # ---- 5.1 VERIFY THE SWAP WRITES AND ASSERT THEIR SIZES -------------------------------------------

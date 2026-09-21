@@ -12516,3 +12516,89 @@ actually identifies before using it as an identifier.
 914478 R n-301 7 of 12 | 914479 PD | 37 of 54 in-family arms resolved, 0 cancelled dirs selected
 blob 11d2c617 | quota 197G of 200G | NO PR-CSI-007 NUMBER READ
 ```
+
+---
+
+# S-158 — the six job ids are **substituted into the frozen read BEFORE any number of this family exists**, the substitution is verified by diff to have touched nothing else, and the read's own "no interim read" VOID protection was **exercised and fired**
+
+`914478` COMPLETED 12/12; `914479` — the last job — is RUNNING on n-301. **43 of 54 in-family arms
+resolved**, 11 outstanding, all of them group K under `914479`.
+
+The family completes in roughly an hour, which makes this the last moment at which the read's inputs
+can be filled in with the honesty the whole exercise depends on.
+
+## Why now and not at read time
+
+The file reserves a ledger for exactly this and says so: *"RECORD THE SIX JOB IDS HERE AS THEY ARE
+ASSIGNED, and substitute them below … THE ANGLE BRACKETS ARE PLACEHOLDERS AND EVERY ONE MUST BE
+SUBSTITUTED BEFORE ANYTHING IS RUN."* Substituting is not re-freezing: no threshold, no gate, no arm
+list and no decision rule is touched. But it is still an edit to a frozen read, and an edit made
+**after** a number has been seen is indistinguishable in the artifact from one made before. The only
+thing that separates them is when it happened, so it happened now, while **no arm of group K has even
+finished** and the `--out` files do not exist.
+
+```
+pre-edit  sha16  b1fd55ec4363938077a3075b04cf51b4
+post-edit sha16  5f4ecd4db85c4115825a18df1febbabd
+```
+
+## The substitution, and the diff that bounds it
+
+```
+<A>  group A,  7 arms  = 914043      <I2> group I, $5 = 2   = 914478
+<B>  group B, 11 arms  = 914476      <K>  group K, 12 arms  = 914479
+<I1> group I, $5 = 1   = 914477      <SW> group X, swap arm = 914048   (PART 5 ONLY)
+```
+
+Eight live lines changed and nothing else: the `JOB_A … JOB_K` assignment at what is now line 292, and
+seven `--require-slurm-job` lists (five without `<SW>`, two with). **Every other `<A>`-style token in
+the file is explanatory prose and was deliberately left alone** — including the paragraph warning that
+*"in a LIVE shell command `<A>` is an INPUT REDIRECTION operator"*, which would have been silently
+corrupted by a blanket `sed`. Verified by printing the complete unified diff; live non-comment lines
+still containing a placeholder: **0**.
+
+**The mapping is measured, not assumed.** Each run's own `RUNMETA.slurm_job_id` gives 914043 → 7 arms
+(group A), 914476 → 11 (B), 914477 → 12 (I1), 914478 → 12 (I2), and `914478`'s first arm is
+`KO_RAND12`, which is group I2's first arm (S-155). That sentence is now written into the ledger block
+itself, along with the cancelled generations that must stay absent — `914044-914047`, `914417-914420`,
+`914472-914475` — so the exclusion survives in the artifact rather than only in this log.
+
+## The VOID protection, exercised rather than trusted
+
+With the ids in place the PYGATE block is runnable, so I ran it. It reads `DONE.json`, `RUNMETA.json`
+and `config.json` only — **no `results.jsonl`, no summary, no scientific number**:
+
+```
+EXPECTED FAMILY: 54 arms across 5 jobs
+GATE (a) COMPLETENESS: 54 expected | 43 FINISHED (DONE.json) | 11 unfinished
+     UNFINISHED KO_SHUF13   dir exists, NO DONE.json -- still writing
+     UNFINISHED KO_SHUF14..KO_SHUF23   no run dir under job 914479
+REFUSING to evaluate any later gate on an incomplete family (prereg VOID: no interim read).
+exit code 1
+```
+
+Three things are established by that, none of which was previously more than an assumption:
+
+1. **The substituted ids parse and resolve** — the family is recognised as 54 arms across 5 jobs, and
+   the 11 outstanding arms are attributed to the right job.
+2. **The no-interim-read rule is real code, and it fires.** It stopped at gate (a) and never reached
+   gate (b), so nothing downstream was evaluated on a partial family. The prereg's most important
+   protection had never actually been triggered before.
+3. **It exits 1.** A gate that refuses but returns success is the shape R11 found in the preflight
+   (MINOR-4) and fixed in S-154; this one was already correct, and now that is measured rather than
+   read off the source.
+
+`KO_SHUF13`'s state is worth noting as a live illustration of why gate (a) keys on `DONE.json` and not
+on the directory: its directory exists and it is still writing. A completeness check that counted
+directories would already call this family 44 of 54.
+
+## Remaining before the read
+
+The family needs `914479`'s remaining 10 arms (it is on arm 2). When `GATE (a)` reports 54 of 54, the
+read runs **once**, per the frozen file, with the `--out` collision from S-154 §3 handled — the default
+output path is still occupied by the committed L20 read.
+
+```
+914479 R n-301, 2 of 12 arms | 43 of 54 resolved, 0 cancelled dirs selected
+read sha16 5f4ecd4d | blob 11d2c617 | quota 197G of 200G | NO PR-CSI-007 NUMBER READ
+```
