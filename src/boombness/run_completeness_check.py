@@ -152,6 +152,22 @@ KNOWN_ZERO = {
 }
 
 KNOWN_SHORT = {
+    "csi1_button_validation_KO_SHUF14_20260921_040940_877308":
+        "DCS-CSI-159: PR-CSI-007 family, job 914479 (group K), rescue_layer 18. SIXTH in-family "
+        "instance. 2 rows of 230 REFUSED by the norm-match degeneracy guard ('1 of 28 positions are "
+        "norm-match DEGENERATE', twice); DONE.json honest (status=INCOMPLETE, n_rows_failed=2, "
+        "rows_written=228) and results.jsonl holds exactly 228 parseable rows. MEASURED: dropped "
+        "prompt_ids ac37ca8a8faab027 (domain catering_unit) and e156d54707476f5e (water_treatment), "
+        "differenced against the full 230-row csi1_button_validation_KO_AXIS_ANCHOR_20260921_001731_"
+        "532952. Neither row was dropped by any earlier short arm. No other run of this tag exists on "
+        "disk, so unlike KO_RAND12 this one carries no replicate. Inside --allow-short 4 (S-154).",
+    "csi1_button_validation_KO_SHUF16_20260921_041836_878507":
+        "DCS-CSI-159: PR-CSI-007 family, job 914479 (group K), rescue_layer 18. SEVENTH in-family "
+        "instance. 1 row of 230 REFUSED by the same guard; DONE.json honest (status=INCOMPLETE, "
+        "n_rows_failed=1, rows_written=229) and results.jsonl holds exactly 229 parseable rows. "
+        "MEASURED: dropped prompt_id 5fe95ed1cdafdc11 (domain library_stacks), differenced against "
+        "the same full arm. Not dropped by any earlier short arm; no other run of this tag on disk. "
+        "Inside --allow-short 4 (S-154).",
     "csi1_button_validation_KO_RAND16_20260921_032440_870974":
         "DCS-CSI-157: PR-CSI-007 family, job 914478. FIFTH in-family instance. 1 row of 230 REFUSED by "
         "the norm-match degeneracy guard; DONE.json honest (status=INCOMPLETE, n_rows_failed=1, "

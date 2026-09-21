@@ -12602,3 +12602,82 @@ output path is still occupied by the committed L20 read.
 914479 R n-301, 2 of 12 arms | 43 of 54 resolved, 0 cancelled dirs selected
 read sha16 5f4ecd4d | blob 11d2c617 | quota 197G of 200G | NO PR-CSI-007 NUMBER READ
 ```
+
+---
+
+# S-159 — 49 of 54; the `--out` collision I flagged in S-154 turns out to be **the third thing the preregistration had already handled**, and the read's six output paths are verified clear. Sixth and seventh short arms documented
+
+`914479` is on arm 8 of 12; **49 of 54 in-family arms finished**, five outstanding, all group K. GATE (a)
+still refuses:
+
+```
+GATE (a) COMPLETENESS: 54 expected | 49 FINISHED (DONE.json) | 5 unfinished
+     UNFINISHED KO_SHUF19   dir exists, NO DONE.json -- still writing
+     UNFINISHED KO_SHUF20..KO_SHUF23   no run dir under job 914479
+REFUSING to evaluate any later gate on an incomplete family (prereg VOID: no interim read).
+```
+
+## The `--out` collision was never an open item
+
+S-154 recorded the collision as *"printed, not fixed … stays on the list"*, on the strength of the
+preflight reporting it. Reading the frozen read itself instead of the preflight's report of it:
+
+```
+260  # ---- 2.0 PRE-FLIGHT: the output paths must not exist, and the default --out collision ------
+264  #     (n_controls 10, rank 4, floor 0.0909, 23 domains). OMITTING --out OVERWRITES A COMMITTED REPORT.
+452  #  * WHY --out IS SPELLED OUT: the default for button/validation/sufficiency is
+454  #    K=10 read. Omitting --out overwrites it. Every call below names a distinct NEW path.
+```
+
+**Every one of the six analysis calls names a distinct new path**, and the hazard is documented twice
+in the file. The collision is a property of the analyser's default (`--out` defaults to `None` and it
+will happily overwrite), not of this read — which never omits `--out`. Verified rather than assumed:
+
+```
+clear: DCS_CSI_SUBSPACE_button_validation_L18_n46.json        clear: ..._L18_shufonly.json
+clear: DCS_CSI_REDERIVE_button_validation_L18_n46.json        clear: ..._L18_randonly.json
+clear: DCS_CSI_SWAP_button_validation_L18_from_basket_n46.json
+clear: DCS_CSI_SWAP_REDERIVE_button_validation_L18_from_basket.json
+occupied (as documented): DCS_CSI_SUBSPACE_button_validation.json  180750 bytes   <- the L20 read
+```
+
+All six destinations are clear; the occupied path is the one the read is written to avoid.
+
+**That is the third time this family's preregistration had already handled something I raised as open.**
+S-152 worried a uniform `rows_written == 230` gate would fail the family — `--allow-short 4` was
+already there (S-154). S-158 worried the job-id ledger was a loose end — the file reserved a ledger and
+a `j.isdigit()` refusal for exactly that. Now the `--out` collision. The pattern is worth naming
+because it cuts against the instinct that drove the last several ticks: **when the prereg was written
+carefully, the correct action on discovering a hazard is to go read the prereg before building
+anything.** Twice I built or planned a fix for something already solved.
+
+## Sixth and seventh short arms
+
+```
+KO_SHUF14 (914479, layer 18): rows 228, failed 2, INCOMPLETE
+    dropped ac37ca8a8faab027  catering_unit
+    dropped e156d54707476f5e  water_treatment
+KO_SHUF16 (914479, layer 18): rows 229, failed 1, INCOMPLETE
+    dropped 5fe95ed1cdafdc11  library_stacks
+```
+
+Same guard, same refusal string. Neither arm has another run of its tag on disk, so unlike `KO_RAND12`
+neither carries a replicate — the S-157 determinism test gains no new case from these.
+
+Seven in-family short arms now drop **nine rows across nine distinct (arm, row) pairs and seven
+domains, with no row dropped twice.** Every shortfall is 1 or 2, against the frozen read's
+`--allow-short 4`. Both added to `KNOWN_SHORT` (103 documented short).
+
+One correction to my own probe rather than to any claim: I read `rescue_basis_sha16` off the result
+rows to record each arm's basis, and got `None` — that is not the field's name there. The layer came
+from `config.json args.rescue_layer` and is correct; **no basis sha is cited in the exemptions**,
+because I could not read one, rather than a guessed field being written down as if measured.
+
+## Remaining
+
+`914479`'s last four arms, roughly 20 minutes. Then GATE (a) reports 54 of 54 and the read runs **once**.
+
+```
+914479 R n-301, 8 of 12 | 49 of 54 finished | read sha16 5f4ecd4d | blob 11d2c617
+quota 197G of 200G | NO PR-CSI-007 NUMBER READ
+```
