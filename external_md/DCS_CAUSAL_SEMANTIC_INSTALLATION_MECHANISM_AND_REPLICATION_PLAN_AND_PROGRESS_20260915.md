@@ -15491,3 +15491,92 @@ the self-test caught S-190's rounding defect REPEATED IN MY OWN ANALYSER -- refu
 OPTIONS 1 AND 2 REMAIN OPEN: W4 is additive and nothing existing was touched
 UNPROVEN UNTIL REAL ARMS EXIST: every number above is degenerate or synthetic BY CONSTRUCTION
 ```
+
+---
+
+# S-198 — **PR-CSI-010 IS LAUNCHED.** 24 TRAIN arms running (`916535`), 24 VALIDATION arms chained behind them (`916536`); disk reclaimed first; and W3 made **idempotent** because a resubmission would otherwise have corrupted the family
+
+User authorised all three open items: keep W4, launch the arms, reclaim disk as I judged fit.
+
+## 1. Disk, reclaimed before launching — and the honest number
+
+Deleted, all pure caches, nothing a committed artifact depends on:
+
+```
+.cache/uv                                      6.5G   (package cache)
+.uv_cache                                      5.8G   (package cache)
+.cache/pip                                      95M   (package cache)
+.cache/huggingface/hub/models--google--gemma-2b 4.7G  (referenced only inside the
+                                                       transformers library's own source)
+```
+
+**Reported total went 198G -> 193G, i.e. 5G, not the ~17G the individual sizes sum to.** Stated
+rather than glossed: `uv` hardlinks its cache, so the same bytes were counted twice by the per-
+directory `du` and once by the parent. **The measurement that matters is the write test** — a 200 MB
+file created, listed and removed under `outputs/`, because NFS reports `EDQUOT` asynchronously and a
+free-space figure is not proof that a write will land. It landed.
+
+**`Qwen3-14B` (17G) was NOT deleted.** It is named by `slurm_scripts/stage4a_*`,
+`stage4a2_*` and `stage4b_*` — the user's own earlier phase. It is a re-downloadable cache, so it is
+the obvious next 17G **if they want it**, but deleting something their scripts reference was not mine
+to decide. Some historical `metadata.json` files reference my HF cache path; those are **provenance
+strings, not live dependencies**, and deleting a cache does not invalidate a recorded artifact.
+
+## 2. ⚠ The hazard that had nothing to do with compute
+
+A 24-arm allocation on `killable` can be preempted. **Every arm that finished persists** — each
+writes its own run dir — so a naive resubmission re-runs those arms and creates a **second run dir
+under the same tag**. `strict_run_dir` then refuses the **whole family** for having more than one
+candidate (S-104/S-127), and 24 arms become unreadable **because of a scheduling event rather than a
+scientific one.**
+
+W3 now **skips** any arm already resolving to exactly one complete run, and **refuses** outright if a
+tag already resolves to more than one — failing at submit rather than at read time, when the family
+is needed. This makes the launch resumable, which on a preemptible partition is a correctness
+property, not a convenience.
+
+## 3. The launch
+
+```
+916535  train       RUNNING  n-301   BLOB 9aebc6bc  PORCELAIN [clean]
+916536  validation  PENDING (Dependency, afterany:916535)
+CHECK PASSED: 24 arms, every flag declared by score_behavior.py;
+              22 carry a frozen head list, 2 carry none (HD_BASE no intervention, HD_KO = all 32)
+SPLIT=train EXPECT_N=670        [w3] SIZE arms to run = 24
+```
+
+**Chained, not concurrent** — S-147/S-148 measured co-residency at **6.2× slower per arm**, and
+serialising was faster in wall-clock. Every arm's command is **generated from the preregistration**
+and `--check` re-verifies each flag against the real argparse and each head list against the frozen
+sets before a GPU-second is spent, so an arm's dose cannot drift from PR-CSI-010 (VOID condition 5).
+
+Expected: TRAIN ~7.4 h compute + one ~0.4 h load; VALIDATION ~2 h; **~10 h wall to both families**,
+against ~25.8 h without W3.
+
+## ⛔ What must be true before any number is read
+
+The frozen read (`runargs/dcs_csi_pr010_read.txt`) governs, **stop at the first failure**:
+**GATE 0** liveness and the realised-dose identity (**K×**, not K/32 — S-175, confirmed live in
+S-193) on every arm; **GATE 1** `E(HD_KO) < 0` with ci95 upper bound `< 0`, or **CANNOT ANSWER** and
+the candidate is not reported; then the verdict, with the p **always** beside its floor `1/21`.
+**TRAIN is descriptive and its rank is selection-contaminated by construction.** W4 adjudicates and
+`dcs_csi_rederive_subspace.py --direction necessity` remains the independent second path.
+
+And the expectation stays on record from before the data existed: **PARTIALLY LOCALISED or
+DISTRIBUTED, with `F` well under 0.50.**
+
+## Commands
+
+```
+SPLIT=train ./scripts/gates/dcs_csi_submit.sh slurm_scripts/dcs_csi_pr010_arms.slurm    # 916535
+sbatch --dependency=afterany:916535 --export=ALL,CSI_GIT_BLOB=9aebc6bc,\
+CSI_GIT_PORCELAIN=clean,SPLIT=validation slurm_scripts/dcs_csi_pr010_arms.slurm         # 916536
+dd if=/dev/zero of=outputs/.quota_probe bs=1M count=200    # 200 MB write+delete verified
+```
+
+```
+PR-CSI-010 LAUNCHED: 916535 (train, 24 arms) -> 916536 (validation, 24 arms, afterany)
+W3 IDEMPOTENT: a preempted allocation now RESUMES instead of duplicating tags and voiding the family
+disk 198G -> 193G (hardlinks explain the gap); Qwen3-14B 17G deliberately LEFT -- their scripts use it
+NO NUMBER READ YET. The frozen read governs and GATE 1 can still return CANNOT ANSWER.
+```
