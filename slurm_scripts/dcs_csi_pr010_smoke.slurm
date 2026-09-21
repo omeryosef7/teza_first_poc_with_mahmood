@@ -51,6 +51,14 @@ python src/boombness/score_behavior.py $COMMON \
   --knockout-heads 0,1,2,3,4,5,6,7 \
   --arm SMOKE_HD_8 --tag csi3_smoke_basket_SMOKE_HD_8
 
+echo "===== 2b. SMOKE_HD_KO2 (all heads AGAIN, now WARM) ====="
+# THE COST RISK NEEDS TWO WARM ARMS. The first arm in an allocation pays the model load: on 916332
+# the all-head arm took 1355 s COLD against the 8-head arm's 45 s WARM, a ratio of 0.033 that says
+# nothing about the am.expand(...).clone() branch. Repeating the all-head arm here, third in the
+# allocation, makes the comparison a comparison.
+python src/boombness/score_behavior.py $COMMON \
+  --arm SMOKE_HD_KO2 --tag csi3_smoke_basket_SMOKE_HD_KO2
+
 echo "===== 3. SMOKE_ATP (W1 on 8 rows) ====="
 python scripts/dcs_csi_head_atp.py \
   --bank $BANK --codeword basket --concept bomb --split train --band 6-14 \
