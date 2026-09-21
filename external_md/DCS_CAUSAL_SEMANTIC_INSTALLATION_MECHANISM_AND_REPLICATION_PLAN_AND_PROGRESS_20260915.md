@@ -12412,3 +12412,107 @@ minutes ago is not evidence of a green run now.
 914478 R n-301, 2 arms | 914479 PD | 32 of 54 in-family arms on disk
 blob 11d2c617 | quota 197G of 200G | NO PR-CSI-007 NUMBER READ
 ```
+
+---
+
+# S-157 — S-156's single replicate generalised into a **four-case test with its own positive and negative controls**, and the determinism claim survives. **I nearly withdrew S-156 on a reading that the arm NAME identifies the basis — it does not**
+
+`914478` is on arm 7 of 12; **37 of 54 in-family arms resolved**. A fifth in-family short arm
+(`KO_RAND16`) blocked the commit again, and chasing it produced the generalisation of S-156.
+
+## First: the automation I considered and rejected
+
+Five near-identical `KNOWN_SHORT` paragraphs, with 17 arms still to land, is the wrong shape, and my
+first instinct was a cause-specific rule: auto-exempt when the failure reasons are exclusively the
+degeneracy refusal and the ledger and file agree. **Rejected, and for a reason the sprint should keep:
+S-156's finding exists only because I hand-documented `KO_RAND12` and noticed it had run before.** A
+rule would have exempted it silently and the replicate would never have surfaced. The blocked commit
+is not a nuisance, it is the mechanism that forces a look, and looking has now paid twice.
+
+(The code already records a *different* rejected proposal at `run_completeness_check.py:1825` — a
+blanket "within `--allow-short 4`" bound — rejected because entries legitimately short by more than 4
+exist, the largest being `csi1_basket_train_AB_EXPECT670_*` at 0 of 670, which is DCS-CSI-121's V100
+evidence. That rejection is about a bound being too *narrow*; mine is about an exemption being too
+*automatic*. Both stand.)
+
+## The near-miss
+
+Running the replicate test across **all 20 duplicated tags** rather than the one S-156 happened on,
+four arms have at least one short copy:
+
+```
+arm         job      node    rows fail  dropped
+KO_RAND12   914046   n-305   229  1     ['8a9ec86383d3a50e']
+KO_RAND12   914478   n-301   229  1     ['8a9ec86383d3a50e']      -> IDENTICAL
+KO_RAND3    897114   n-350   230  -     -
+KO_RAND3    914476   n-305   229  1     ['b70ad3ff73d1e85a']      -> DIFFERENT
+KO_RAND4    897114   n-350   230  -     -
+KO_RAND4    914476   n-305   228  2     ['562e6780…','d7e73441…'] -> DIFFERENT
+KO_SHUF2    897114   n-350   229  -     ['adb82858dc0ed88c']
+KO_SHUF2    914476   n-305   230  0     -                          -> DIFFERENT
+```
+
+Three of four disagree, and `KO_SHUF2` disagrees in the *opposite direction* — short in the old run,
+complete in the new one. **Read as "same arm, different loss", this refutes S-156 outright**, and I had
+the CORRECTION half-drafted.
+
+**It does not, because the arm NAME does not identify the basis or the layer.** Checking instead of
+trusting the label:
+
+| arm | jobs | rescue_layer | basis_sha16 | loss |
+|---|---|---|---|---|
+| `KO_RAND12` | 914046 / 914478 | **18 / 18** | **same** `81fbfcd3f0ebc960` | **identical** |
+| `KO_RAND3` | 897114 / 914476 | **20 / 18** | same `6e227a76e9f7b103` | different |
+| `KO_RAND4` | 897114 / 914476 | **20 / 18** | same `9fb1aab2e48fd170` | different |
+| `KO_SHUF2` | 897114 / 914476 | **20 / 18** | **different** | different |
+
+Job `897114` is the **L20** family — exactly the twin S-127 warned about, where every tag exists once
+at L18 and once at L20.
+
+## What the four cases are, as a design
+
+Degeneracy is the angle between the control basis and the **clean→KO delta at the rescue layer**. So
+the predicted pattern is: identical loss when *both* basis and layer match, otherwise anything.
+
+```
+basis SAME + layer SAME  (KO_RAND12)           -> IDENTICAL loss      <- positive control
+basis SAME + layer DIFFERS (KO_RAND3, KO_RAND4)-> different loss      <- negative control, delta moved
+basis DIFFERS + layer DIFFERS (KO_SHUF2)       -> different loss      <- negative control, both moved
+```
+
+**All four cases match the prediction, and none contradicts it.** S-156 rested on a single pair with no
+contrast; S-157 supplies the contrast that makes it a test — the one matched pair replicates exactly
+across different nodes 4 h 44 m apart, and every mismatched pair diverges. The claim survives, better
+supported and more precisely stated:
+
+> the loss is a deterministic function of **(basis vector, rescue layer, row)** — not of the arm's
+> name, not of the node, not of the outcome.
+
+S-156's wording, *"a deterministic function of (control basis, row)"*, omitted the layer. It was not
+wrong for the case it described (both runs were L18) but it is **incomplete as stated**, and this entry
+supersedes that phrasing.
+
+## Fifth short arm
+
+```
+KO_RAND16 (job 914478): rows_written=229 n_rows_failed=1 status=INCOMPLETE
+  dropped prompt_id 13efbf763def2f2b   domain hospital_supply
+  overlap with KO_RAND3 / KO_RAND4 / KO_SHUF7 / KO_RAND12 dropped rows: none
+```
+
+Five in-family short arms now drop **six rows across six distinct (arm, row) pairs and five domains,
+none twice**. Every shortfall inside the frozen read's `--allow-short 4` (S-154). Added to
+`KNOWN_SHORT`.
+
+## The shape of this, since it is the third time
+
+S-149 nearly recorded that serialising failed, off the marker gap instead of `wall_seconds`. S-150
+nearly recorded a blast radius of zero, off a glob aimed at the wrong tree. S-157 nearly withdrew a
+correct finding, off an arm name that does not identify what the finding is about. **Each time the
+wrong quantity was the one sitting closest to hand**, and each time the fix was to ask what the number
+actually identifies before using it as an identifier.
+
+```
+914478 R n-301 7 of 12 | 914479 PD | 37 of 54 in-family arms resolved, 0 cancelled dirs selected
+blob 11d2c617 | quota 197G of 200G | NO PR-CSI-007 NUMBER READ
+```

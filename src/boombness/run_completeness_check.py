@@ -152,6 +152,16 @@ KNOWN_ZERO = {
 }
 
 KNOWN_SHORT = {
+    "csi1_button_validation_KO_RAND16_20260921_032440_870974":
+        "DCS-CSI-157: PR-CSI-007 family, job 914478. FIFTH in-family instance. 1 row of 230 REFUSED by "
+        "the norm-match degeneracy guard; DONE.json honest (status=INCOMPLETE, n_rows_failed=1, "
+        "rows_written=229) and results.jsonl holds exactly 229 parseable rows. MEASURED: dropped "
+        "prompt_id 13efbf763def2f2b (domain hospital_supply), differenced against the full 230-row "
+        "csi1_button_validation_KO_AXIS_ANCHOR_20260921_001731_532952. No overlap with any row "
+        "dropped by KO_RAND3, KO_RAND4, KO_SHUF7 or KO_RAND12 -- five in-family short arms now drop "
+        "six rows in six distinct (arm,row) pairs across five domains, none twice. Inside the frozen "
+        "read's --allow-short 4 (S-154). S-157 generalises S-156's single replicate into a four-case "
+        "test with matched and mismatched controls; the determinism claim survives it.",
     "csi1_button_validation_KO_RAND12_20260921_030100_865646":
         "DCS-CSI-156: PR-CSI-007 family, job 914478. 1 row of 230 REFUSED by the norm-match degeneracy "
         "guard; DONE.json honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229) and "
