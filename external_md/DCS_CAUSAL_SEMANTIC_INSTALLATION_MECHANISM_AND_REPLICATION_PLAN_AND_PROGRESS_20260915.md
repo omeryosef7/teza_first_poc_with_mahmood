@@ -15402,3 +15402,92 @@ VOID 6 CLEAR: family resolves to exactly 20, HD_BOTK and HD_TOPK excluded, floor
 my harness overwrote a TRACKED report and was repaired; restored byte-exact, worktree clean
 FOUND BEFORE the 9.3 GPU-h launch, which is the only cheap time to find it | quota 198G of 200G
 ```
+
+---
+
+# S-197 — **W4, the head-family analyser (S-196 option 3), exists and is proven against GROUND TRUTH** — and its self-test caught me repeating the *exact* p-value rounding defect gate 0 caught in S-190
+
+`scripts/dcs_csi_head_analyze.py`, 290 lines. **Additive: nothing existing changes.**
+
+## Why option 3, taken without waiting
+
+S-196 left three options with the user. I built the one that **forecloses nothing**: option 1 edits
+the file every committed subspace number came from, option 2 spends the design's independent
+cross-check — both destroy something. A new file costs only effort, and if the user prefers 1 or 2 it
+is simply unused. **Options 1 and 2 remain open.**
+
+## What it reuses rather than reinvents
+
+* `dcs_cont_layerpos_map.load_installation` — **the sole definition of the endpoint**, including the
+  concept-free channel filter and the duplicate-key refusal. Re-implementing `y_install` would mean
+  measuring a different thing under the same name.
+* `dcs_csi_rederive_patch.strict_run_dir` — so *"a complete run"* means one thing sprint-wide.
+* It does **not** re-implement the independent path: `dcs_csi_rederive_subspace.py
+  --direction necessity` stays the second opinion, which S-196 measured **does** run on head arms.
+
+The unit is the **domain** everywhere: `load_installation` keys on `(domain, family_slot)`, so slots
+average *within* a domain and every statistic resamples domains.
+
+## Proven twice, and the second test is the one that mattered
+
+**(a) Refusal paths, on the degenerate stand-in family** (all 24 arms identical by construction):
+
+```
+GATE 0 FAIL | dose FAIL | GATE 1 FAIL
+rank 21 of 21 | p = 1.000000 | FLOOR = 0.047619 | F = None
+VERDICT: VOID -- GATE 0 ... failed; this is not a result
+```
+
+Every gate fired, it **stopped at the first failure** as the design's read order requires, refused
+`F` on a degenerate denominator, and printed the floor beside the p.
+
+**(b) Ground truth, where the answer was known before the analyser ran.** Real rows with a
+per-arm constant shift in `logp_concept`, `HD_TOPK` built strongest:
+
+```
+GATE 0 PASS | dose PASS (ratio K=8) | GATE 1 PASS
+E(HD_KO)   = -0.152341  ci95 [-0.194327, -0.099266]
+E(HD_TOPK) = -0.088861  ci95 [-0.110891, -0.071840]
+rank 1 of 21 | p = 0.047619 = FLOOR | F = 0.5833 ci95 [0.5131, 0.7237]
+VERDICT: WE FOUND (part of) THE WRITER          <- the branch those numbers select
+11 of 11 ground-truth checks PASS
+```
+
+⛔ **Neither is a scientific result.** (a) is degenerate by construction and (b)'s shifts are
+synthetic — the point of (b) is that an estimator is tested against an answer you already hold.
+
+## ⚠ The self-test caught a defect the dry run could not
+
+```
+FAIL rank 1 gives p == the attainable floor    p=0.047619 floor=0.047619
+```
+
+Printed identically, unequal in fact: W4 stored `round(p, 6) = 0.047619`, **below** the true
+`1/21 = 0.047619047…`. **This is precisely the defect gate 0 caught in the prereg freezer (S-190) —
+and I wrote it a second time, in the file that actually reports the p.** A rounded-down p is
+rounding in the direction that flatters the result. Now stored exactly, with `p_display` for prose
+that is never compared.
+
+**The dry run could not have found this**: it only exercised refusal paths, where `p = 1.0` and the
+comparison never runs. **Testing that something refuses correctly is not testing that it computes
+correctly**, and the two need different harnesses.
+
+## Isolation, since the harness writes into the real outputs tree
+
+Stand-in dirs use `csi3_dryrun_` / `csi3_selftest_` prefixes that **no frozen read matches**, are
+deleted in a `finally`, and the deletion is verified: **removed 24 of 24, residue 0** on both runs.
+`reports/` is diffed before and after and restored if it moves (S-196's lesson). Worktree clean.
+
+## Commands
+
+```
+python scripts/gates/dcs_csi_pr010_read_dryrun.py --prereg configs/dcs_csi_pr010_head_causal_basket.json
+python scripts/gates/dcs_csi_head_analyze_selftest.py
+```
+
+```
+W4 EXISTS and is proven on GROUND TRUTH: 11/11 checks, rank 1 of 21, p == floor == 0.047619 exactly
+the self-test caught S-190's rounding defect REPEATED IN MY OWN ANALYSER -- refusal tests cannot find it
+OPTIONS 1 AND 2 REMAIN OPEN: W4 is additive and nothing existing was touched
+UNPROVEN UNTIL REAL ARMS EXIST: every number above is degenerate or synthetic BY CONSTRUCTION
+```

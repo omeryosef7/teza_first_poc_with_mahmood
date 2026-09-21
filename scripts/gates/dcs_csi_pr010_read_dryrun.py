@@ -116,6 +116,18 @@ def main():
         for line in out2.strip().splitlines()[-12:]:
             print("  " + line)
 
+        # the THIRD path: W4, the head-family analyser written for exactly these arms (S-196 opt 3)
+        cmd3 = [sys.executable, "scripts/dcs_csi_head_analyze.py",
+                "--prereg", a.prereg, "--tag-prefix", a.prefix, "--split", "train",
+                "--expect-n", str(a.expect_n), "--B", "2000",
+                "--out", os.path.join(a.scratch, "dryrun_head.json")]
+        print("[dry] running W4, the HEAD-FAMILY analyser ...")
+        p3 = _sp.run(cmd3, cwd=REPO, capture_output=True, text=True, timeout=900)
+        out3 = (p3.stdout or "") + (p3.stderr or "")
+        print("[dry] head-analyser rc = %d" % p3.returncode)
+        for line in out3.strip().splitlines()[-14:]:
+            print("  " + line)
+
         after = _sp.run(["git", "status", "--porcelain", "reports/"], cwd=REPO,
                         capture_output=True, text=True).stdout
         if after != before:

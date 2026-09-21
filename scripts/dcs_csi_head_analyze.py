@@ -1,0 +1,295 @@
+"""W4 -- the analyser for the PR-CSI-010 HEAD family. Option 3 of S-196.
+
+WHY THIS FILE EXISTS. S-196 measured that `dcs_csi_subspace_analyze.py` VOIDs every head arm on
+conditions a head arm can never satisfy (`rescue_basis_key`, `rescue_norm_match_key` -- always None
+for a knockout arm, subspace_analyze.py:752,754). Design 4.2's "no new analyser" premise is false.
+
+WHY OPTION 3 AND NOT THE CHEAPER ONE. Promoting `dcs_csi_rederive_subspace.py` to primary would work
+today and would spend the design's CROSS-CHECK: it is the independent path, written to share no code,
+and a sprint in which three consecutive reviews each found a real defect should not retire its second
+opinion to save a file. Editing `subspace_analyze.py` would put every committed subspace number at
+risk of a regression for an experiment that is not a subspace experiment. This file is ADDITIVE:
+nothing existing changes, and if the user prefers option 1 or 2 it is simply unused.
+
+WHAT IT SHARES, DELIBERATELY, AND WHAT IT DOES NOT.
+  SHARES `dcs_cont_layerpos_map.load_installation` -- the SOLE definition of the endpoint, including
+    the concept-free channel filter and the duplicate-key refusal. Re-implementing y_install would
+    mean measuring a different thing and calling it the same name.
+  SHARES `dcs_csi_rederive_patch.strict_run_dir` -- so "a complete run" means exactly one thing
+    across this sprint (DONE.json ok, rows_written == expect_n, row count agrees, exactly one
+    candidate or RAISE).
+  DOES NOT share the subspace VOID battery, because none of it applies.
+  DOES NOT re-implement the rank test's independent path: `dcs_csi_rederive_subspace.py`
+    --direction necessity remains the second opinion, and S-196 measured that it RUNS on head arms.
+
+THE UNIT IS THE DOMAIN, EVERYWHERE (rule 3.3). load_installation keys on (domain, family_slot), so
+slots are averaged WITHIN a domain first and every statistic below resamples DOMAINS.
+"""
+import argparse, importlib.util, json, math, os, random, statistics, sys, tempfile
+
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(REPO, "scripts"))
+
+
+def _load(name, path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
+
+
+lpm = _load("lpm", os.path.join(REPO, "scripts", "dcs_cont_layerpos_map.py"))
+rederive = _load("rederive", os.path.join(REPO, "scripts", "dcs_csi_rederive_patch.py"))
+
+
+def atomic_write_json(path, obj):
+    d = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp = tempfile.mkstemp(dir=d, prefix=".tmp_atomic_", suffix=".json")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(obj, fh, indent=2, ensure_ascii=False); fh.write("\n")
+            fh.flush(); os.fsync(fh.fileno())
+        if os.path.getsize(tmp) == 0:
+            raise OSError("0 bytes after flush+fsync")
+        with open(tmp, "r", encoding="utf-8") as fh:
+            json.load(fh)
+        try:
+            mode = os.stat(path).st_mode & 0o7777
+        except OSError:
+            mode = 0o644
+        os.chmod(tmp, mode); os.replace(tmp, path)
+        try:
+            dfd = os.open(d, os.O_RDONLY)
+            try: os.fsync(dfd)
+            finally: os.close(dfd)
+        except OSError:
+            pass
+    except Exception as e:
+        try: nb = os.path.getsize(tmp)
+        except OSError: nb = -1
+        try: os.unlink(tmp)
+        except OSError: pass
+        raise OSError("atomic_write_json FAILED for %s -- %d bytes reached temp; destination "
+                      "UNCHANGED. Cause: %r" % (path, nb, e)) from e
+    return os.path.getsize(path)
+
+
+def by_domain(run_dir):
+    """(domain -> mean y_install over that domain's slots). Slots average WITHIN the domain."""
+    inst, n_seen, kinds = lpm.load_installation(run_dir)
+    per = {}
+    for (dom, _slot), p in inst.items():
+        per.setdefault(dom, []).append(float(p))
+    return {d: statistics.fmean(v) for d, v in per.items()}, n_seen, kinds
+
+
+def liveness(run_dir):
+    """GATE 0 reads the ROWS, not a summary: a summary can be written by a run that edited nothing."""
+    pre, dec, viol, rows, qrows = [], 0, {}, 0, []
+    with open(os.path.join(run_dir, "results.jsonl"), encoding="utf-8") as fh:
+        for line in fh:
+            r = json.loads(line)
+            if r.get("query_kind") != "semantic_one_word" or r.get("cell") != "C":
+                continue
+            rows += 1
+            pre.append(int(r.get("hook_n_prefill_edits") or 0))
+            dec += int(r.get("hook_n_decode_edits") or 0)
+            qrows.append(int(r.get("hook_n_query_rows_edited") or 0))
+            v = r.get("hook_liveness_violations")
+            if v:
+                viol[str(v)] = viol.get(str(v), 0) + 1
+    return {"n_rows": rows, "total_prefill_edits": sum(pre),
+            "median_prefill_edits": (statistics.median(pre) if pre else 0),
+            "min_prefill_edits": (min(pre) if pre else 0),
+            "total_decode_edits": dec, "violations": viol,
+            "median_query_rows_edited": (statistics.median(qrows) if qrows else 0)}
+
+
+def boot_mean(vals, B, rng):
+    n = len(vals)
+    return [statistics.fmean([vals[rng.randrange(n)] for _ in range(n)]) for _ in range(B)]
+
+
+def pct(xs, q):
+    ys = sorted(xs)
+    k = (len(ys) - 1) * q
+    lo, hi = int(k), min(int(k) + 1, len(ys) - 1)
+    return ys[lo] + (ys[hi] - ys[lo]) * (k - lo)
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--prereg", required=True)
+    ap.add_argument("--tag-prefix", required=True)
+    ap.add_argument("--split", required=True, choices=("train", "validation"))
+    ap.add_argument("--expect-n", type=int, required=True)
+    ap.add_argument("--allow-short", type=int, default=0)
+    ap.add_argument("--require-slurm-job", default=None)
+    ap.add_argument("--B", type=int, default=10000)
+    ap.add_argument("--seed", type=int, default=20260921)
+    ap.add_argument("--ci", type=float, default=0.95)
+    ap.add_argument("--out", required=True)
+    a = ap.parse_args()
+
+    pr = json.load(open(a.prereg))
+    hs = pr["head_sets"]
+    controls = sorted(k for k in hs if k.startswith("HD_RAND"))
+    arms = ["HD_BASE", "HD_KO", "HD_TOPK", "HD_BOTK"] + controls
+    jobs = a.require_slurm_job.split(",") if a.require_slurm_job else None
+
+    # VOID 6, CHECKED HERE AND NOT ASSUMED (S-120(e)): the family must be exactly the prereg's.
+    if len(controls) != pr["n_controls"]:
+        sys.exit("REFUSING: control family is %d arms, the prereg says %d"
+                 % (len(controls), pr["n_controls"]))
+    if "HD_BOTK" in controls or "HD_TOPK" in controls:
+        sys.exit("REFUSING: the comparator or the candidate entered the control family (VOID 6)")
+
+    dirs, per, live = {}, {}, {}
+    for arm in arms:
+        d = rederive.strict_run_dir("%s_%s" % (a.tag_prefix, arm), a.expect_n,
+                                    row_file="results.jsonl", allow_short=a.allow_short,
+                                    require_slurm_jobs=jobs)
+        dirs[arm] = d
+        per[arm], n_seen, kinds = by_domain(d)
+        live[arm] = liveness(d)
+
+    doms = sorted(set.intersection(*(set(v) for v in per.values())))
+    print("[head] SIZE arms = %d | domains common to ALL arms = %d | expect-n = %d | split = %s"
+          % (len(arms), len(doms), a.expect_n, a.split))
+    if not doms:
+        sys.exit("VACUOUS: no domain is present in every arm")
+    ragged = {arm: sorted(set(per[arm]) - set(doms)) for arm in arms if set(per[arm]) - set(doms)}
+    if ragged:
+        sys.exit("REFUSING: arms disagree on their domain sets, so a paired contrast would silently "
+                 "compare different populations: %s" % {k: v[:4] for k, v in list(ragged.items())[:4]})
+
+    # ---- GATE 0: liveness -----------------------------------------------------------------
+    g0 = {}
+    for arm in arms:
+        L = live[arm]
+        if arm == "HD_BASE":
+            ok = (L["total_prefill_edits"] == 0 and L["total_decode_edits"] == 0)
+            why = "the BASE arm must be UNINTERVENED"
+        else:
+            ok = (L["total_prefill_edits"] > 0 and L["total_decode_edits"] == 0 and not L["violations"])
+            why = "an intervened arm must edit in prefill, never in decode, with no violations"
+        g0[arm] = {"pass": bool(ok), "why": why, **L}
+    gate0 = all(v["pass"] for v in g0.values())
+
+    # THE REALISED-DOSE IDENTITY (S-175, confirmed on live data in S-193): the all-head arm writes
+    # ONE broadcast row per (row, layer); a K-head arm expands and writes K explicit rows. So a
+    # K-head arm records K TIMES MORE, never K/32 of it.
+    K = pr["K"]
+    mk = g0["HD_KO"]["median_prefill_edits"] or 0
+    dose = {}
+    for arm in ["HD_TOPK", "HD_BOTK"] + controls:
+        m = g0[arm]["median_prefill_edits"] or 0
+        r = (m / mk) if mk else None
+        dose[arm] = {"median": m, "ratio_to_all_head": r,
+                     "expected": K, "pass": bool(r is not None and abs(r - K) < 1e-6)}
+    dose_ok = all(v["pass"] for v in dose.values())
+
+    # ---- the contrasts, domain unit -------------------------------------------------------
+    base = per["HD_BASE"]
+    rng = random.Random(a.seed)
+    lo_q, hi_q = (1 - a.ci) / 2, 1 - (1 - a.ci) / 2
+    E, CI, deltas = {}, {}, {}
+    for arm in arms:
+        if arm == "HD_BASE":
+            continue
+        dv = [per[arm][d] - base[d] for d in doms]
+        deltas[arm] = dv
+        E[arm] = statistics.fmean(dv)
+        bs = boot_mean(dv, a.B, random.Random(a.seed))
+        CI[arm] = [pct(bs, lo_q), pct(bs, hi_q)]
+
+    # ---- GATE 1: the positive control -----------------------------------------------------
+    gate1 = bool(E["HD_KO"] < 0 and CI["HD_KO"][1] < 0)
+
+    # ---- the rank test: ONE candidate against the 20 controls -----------------------------
+    fam = controls + ["HD_TOPK"]
+    order = sorted(fam, key=lambda x: E[x])          # more NEGATIVE = stronger (necessity)
+    rank = order.index("HD_TOPK") + 1
+    n_fam = len(fam)
+    p_rank = rank / float(n_fam)
+    floor = 1.0 / float(n_fam)
+
+    # ---- F, with a degenerate-denominator refusal -----------------------------------------
+    F = F_ci = None
+    if gate1 and abs(E["HD_KO"]) > 1e-9:
+        F = E["HD_TOPK"] / E["HD_KO"]
+        r2 = random.Random(a.seed + 1)
+        fb = []
+        for _ in range(a.B):
+            idx = [r2.randrange(len(doms)) for _ in range(len(doms))]
+            num = statistics.fmean([deltas["HD_TOPK"][i] for i in idx])
+            den = statistics.fmean([deltas["HD_KO"][i] for i in idx])
+            if abs(den) > 1e-9:
+                fb.append(num / den)
+        F_ci = [pct(fb, lo_q), pct(fb, hi_q)] if len(fb) > a.B // 2 else None
+
+    # ---- the verdict, read in the design's order ------------------------------------------
+    if not gate0 or not dose_ok:
+        verdict = "VOID -- GATE 0 (liveness or the realised-dose identity) failed; this is not a result"
+    elif not gate1:
+        verdict = ("CANNOT ANSWER -- GATE 1 failed: the instrument did not move the endpoint "
+                   "(E(HD_KO) not clearly negative). Feasibility is reported; THE CANDIDATE IS NOT.")
+    elif rank == 1 and F is not None and F >= 0.50 and F_ci and not (F_ci[0] <= 0 <= F_ci[1]):
+        verdict = "WE FOUND (part of) THE WRITER"
+    elif rank == 1 and F is not None and 0 < F < 0.50:
+        verdict = "PARTIALLY LOCALISED"
+    elif p_rank > 0.05:
+        verdict = "IT IS DISTRIBUTED (candidate sits inside the control family)"
+    else:
+        verdict = "CANNOT ANSWER -- no preregistered branch matched; reported as such rather than forced"
+
+    out = {
+        "schema": "dcs_csi_head_analyze/1",
+        "prereg": a.prereg, "prereg_id": pr["id"], "tag_prefix": a.tag_prefix, "split": a.split,
+        "n_domains": len(doms), "expect_n": a.expect_n, "B": a.B, "seed": a.seed, "ci": a.ci,
+        "run_dirs": {k: os.path.basename(v) for k, v in dirs.items()},
+        "GATE_0_liveness": {"pass": gate0, "per_arm": g0},
+        "REALISED_DOSE": {"pass": dose_ok, "expected_ratio": K,
+                          "note": "K x the all-head arm (S-175); NEVER K/32", "per_arm": dose},
+        "GATE_1_positive_control": {"pass": gate1, "E_HD_KO": E["HD_KO"], "ci95": CI["HD_KO"]},
+        "E": {k: round(v, 8) for k, v in E.items()},
+        "ci95": {k: [round(v[0], 8), round(v[1], 8)] for k, v in CI.items()},
+        # ⛔ THE p IS STORED EXACTLY, NOT ROUNDED, AND SO IS THE FLOOR. round(1/21, 6) = 0.047619
+        # is BELOW the true 0.047619047..., so rounding moves a p-value in the direction that
+        # FLATTERS the result and makes p == floor compare FALSE at rank 1. This is the same
+        # defect gate 0 caught in the prereg freezer (S-190) -- I wrote it a second time, in the
+        # file that reports the p. `p_display` exists for prose and is never compared.
+        "rank_test": {"candidate": "HD_TOPK", "rank": rank, "of": n_fam,
+                      "p": p_rank, "p_display": "%.6f" % p_rank, "attainable_floor": floor,
+                      "floor_note": ("the p is reported WITH its floor, always. rank 1 of %d gives "
+                                     "p = the floor = %.6f; rank 2 gives %.6f and does NOT clear "
+                                     "alpha = 0.05" % (n_fam, floor, 2.0 / n_fam)),
+                      "order_most_negative_first": order},
+        "F": None if F is None else round(F, 8),
+        "F_ci95": None if F_ci is None else [round(F_ci[0], 8), round(F_ci[1], 8)],
+        "VERDICT": verdict,
+        "comparator_HD_BOTK": {"E": round(E["HD_BOTK"], 8), "ci95": CI["HD_BOTK"],
+                               "note": "the COMPARATOR; it is NOT in the control family (VOID 6)"},
+        "TRAIN_CAVEAT": ("selection-contaminated, not an inferential statement"
+                         if a.split == "train" else None),
+        "INDEPENDENT_PATH": ("dcs_csi_rederive_subspace.py --direction necessity shares no code with "
+                             "this file and must be run as the second opinion (S-196 measured that "
+                             "it RUNS on head arms)"),
+    }
+    n = atomic_write_json(a.out, out)
+    print("[head] wrote+verified %s (%d bytes)" % (a.out, n))
+    print("[head] GATE 0 %s | dose %s | GATE 1 %s"
+          % ("PASS" if gate0 else "FAIL", "PASS" if dose_ok else "FAIL", "PASS" if gate1 else "FAIL"))
+    print("[head] E(HD_KO) = %.6f ci95 %s" % (E["HD_KO"], [round(x, 6) for x in CI["HD_KO"]]))
+    print("[head] E(HD_TOPK) = %.6f ci95 %s" % (E["HD_TOPK"], [round(x, 6) for x in CI["HD_TOPK"]]))
+    print("[head] rank %d of %d | p = %.6f | FLOOR = %.6f" % (rank, n_fam, p_rank, floor))
+    print("[head] F = %s ci95 %s" % (F, F_ci))
+    if a.split == "train":
+        print("[head] TRAIN IS DESCRIPTIVE: this rank is SELECTION-CONTAMINATED, not an "
+              "inferential statement.")
+    print("[head] VERDICT: %s" % verdict)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
