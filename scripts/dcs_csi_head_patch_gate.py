@@ -52,10 +52,14 @@ def main():
     ap.add_argument("--axis", default="configs/dcs_csi_axis_basket_behavioral.pt")
     ap.add_argument("--codeword", required=True)
     ap.add_argument("--concept", required=True)
+    ap.add_argument("--allow-heldout", action="store_true",
+                    help="required to touch VALIDATION; absent, --split validation refuses")
     ap.add_argument("--split", default="train")
     ap.add_argument("--bank-block", default="cds_n4_sow")
     ap.add_argument("--band", default="6-14")
     ap.add_argument("--answer-prefix", default=" Answer:")
+    ap.add_argument("--row-sampling", choices=("stratified", "head"), default="stratified",
+                    help="stratified = round-robin over domains; head = the first N rows")
     ap.add_argument("--gate-rows", type=int, default=40, help="row subsample the gate is measured on")
     ap.add_argument("--topk", type=int, default=40, help="cells taken from the screen")
     ap.add_argument("--min-corr", type=float, default=0.7, help="design 3.4: BOTH correlations")
@@ -64,6 +68,18 @@ def main():
     a = ap.parse_args()
 
     scr = json.load(open(a.screen))
+
+    # THE GATE MUST AGREE WITH THE SCREEN IT IS GATING (R14 finding 4).
+    # Before this, the gate read topk_cells_by_abs and NOTHING ELSE: a `basket` screen could be
+    # gated against `button` rows, a TRAIN screen against VALIDATION rows, or a screen from another
+    # band, block or model -- and it would report a correlation. Worse, the artifact records the
+    # GATE's own split/codeword, so the mismatch would be invisible to every later reader.
+    for field, mine in (("split", a.split), ("band", a.band), ("bank_block", a.bank_block),
+                        ("codeword", a.codeword), ("concept", a.concept)):
+        theirs = scr.get(field)
+        if theirs != mine:
+            sys.exit("REFUSING: screen %s=%r but this gate was invoked with %r -- a gate that does "
+                     "not match its screen measures nothing" % (field, theirs, mine))
     cells = [(int(c["layer"]), int(c["head"])) for c in scr["topk_cells_by_abs"][:a.topk]]
     if not cells:
         sys.exit("VACUOUS: the screen proposed no cells")
@@ -73,6 +89,9 @@ def main():
         sys.exit("REFUSING: the screen proposes cells outside the band under test")
 
     ax = torch.load(a.axis, map_location="cpu", weights_only=False)["meta"]
+    if a.split == "validation" and not a.allow_heldout:
+        sys.exit("REFUSING: --split validation touches HELD-OUT domains. Pass "
+                 "--allow-heldout to say so deliberately.")
     keep = set(ax["fit_population"]["domains"] if a.split == "train"
                else ax["held_out_validation_domains"])
     rows = [json.loads(l) for l in open(a.bank)]
@@ -80,7 +99,26 @@ def main():
             if r.get("query_kind") == "semantic_one_word" and r.get("cell") == "C"
             and r.get("condition") == "natural_doublespeak" and r.get("n_examples") == 4
             and r.get("bank_block") == a.bank_block and r.get("domain") in keep]
-    rows = rows[:a.gate_rows]
+    # THE STATISTICAL UNIT IS THE DOMAIN, SO THE SUBSAMPLE SPANS DOMAINS (R14 finding 1).
+    # `rows[:40]` looked like "40 rows". The bank is ordered by domain at 10 consecutive rows each,
+    # so it was the first FOUR domains -- power_substation, quarry_site, dairy_plant, textile_mill --
+    # and "40 of 40 rows pass" was really n=4 units. Round-robin over domains instead: the k-th row
+    # of every domain before the (k+1)-th of any, so any prefix covers as many domains as possible.
+    if a.row_sampling == "stratified":
+        by_dom = {}
+        for r in rows:
+            by_dom.setdefault(r.get("domain"), []).append(r)
+        ordered = []
+        for k in range(max(len(v) for v in by_dom.values())):
+            for dom in sorted(by_dom):
+                if k < len(by_dom[dom]):
+                    ordered.append(by_dom[dom][k])
+        rows = ordered[:a.gate_rows]
+    else:
+        rows = rows[:a.gate_rows]
+    n_dom_gate = len({r.get("domain") for r in rows})
+    print("[gate] domain coverage: %d domains over %d rows (sampling=%s)"
+          % (n_dom_gate, len(rows), a.row_sampling), flush=True)
     print("[gate] SIZE rows = %d | cells = %d | band = %s | split = %s"
           % (len(rows), len(cells), a.band, a.split), flush=True)
     if not rows:
@@ -90,6 +128,9 @@ def main():
                        attn_implementation="eager")
     attn_loaded = sb.loaded_attn_implementation(lm.model)
     sb.assert_eager_for_knockout(attn_loaded, "eager")
+    if scr.get("model_id") and scr["model_id"] != lm.model_id:
+        sys.exit("REFUSING: screen was produced on model %r, this gate loaded %r"
+                 % (scr["model_id"], lm.model_id))
     n_heads, head_dim = pc._attn_head_dims(lm.model)
     c_l, w_l, id_meta = sg.readout_id_pair(lm.tokenizer, a.concept, a.codeword)
     dev = lm.model.device
@@ -170,6 +211,7 @@ def main():
         "codeword": a.codeword, "concept": a.concept,
         "n_rows_requested": a.gate_rows, "n_rows_used": len(rows) - len(skipped),
         "n_cells": len(cells), "n_pairs": len(est), "skipped": skipped[:20],
+        "row_sampling": a.row_sampling, "n_domains_in_gate": n_dom_gate,
         "model_id": lm.model_id, "revision": lm.revision, "dtype": lm.dtype,
         "attn_implementation_loaded": attn_loaded,
         "pearson": pear, "spearman": spear, "min_corr": a.min_corr,

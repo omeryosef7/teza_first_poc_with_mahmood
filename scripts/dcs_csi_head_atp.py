@@ -58,6 +58,15 @@ def atomic_write_json(path, obj):
         except OSError:
             mode = 0o644
         os.chmod(tmp, mode); os.replace(tmp, path)
+        # os.replace makes the CONTENT visible; the DIRECTORY ENTRY is not durable until the
+        # directory itself is synced. Best-effort: some filesystems refuse an O_RDONLY dir
+        # fsync, and failing to sync is not a reason to discard a file already in place.
+        try:
+            dfd = os.open(d, os.O_RDONLY)
+            try: os.fsync(dfd)
+            finally: os.close(dfd)
+        except OSError:
+            pass
     except Exception as e:
         try: nb = os.path.getsize(tmp)
         except OSError: nb = -1
@@ -112,6 +121,8 @@ def main():
     ap.add_argument("--bank", default="data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl")
     ap.add_argument("--codeword", required=True)
     ap.add_argument("--concept", required=True)
+    ap.add_argument("--allow-heldout", action="store_true",
+                    help="required to touch VALIDATION; absent, --split validation refuses")
     ap.add_argument("--split", default="train", help="DOMAIN-level split: train/validation")
     ap.add_argument("--axis", default="configs/dcs_csi_axis_basket_behavioral.pt",
                     help="the committed axis whose fit_population defines the domain set")
@@ -143,6 +154,11 @@ def main():
     if a.split == "train":
         keep_domains = set(_ax["fit_population"]["domains"])
     elif a.split == "validation":
+        # HELD-OUT DATA IS SPENT ONCE. A typo should not be able to spend it, so the
+        # flag is required and its absence is a refusal, not a warning (R14 finding 5).
+        if not a.allow_heldout:
+            sys.exit("REFUSING: --split validation touches HELD-OUT domains. Pass "
+                     "--allow-heldout to say so deliberately.")
         keep_domains = set(_ax["held_out_validation_domains"])
     else:
         sys.exit("--split must be train or validation; TEST is touched by nothing here")
