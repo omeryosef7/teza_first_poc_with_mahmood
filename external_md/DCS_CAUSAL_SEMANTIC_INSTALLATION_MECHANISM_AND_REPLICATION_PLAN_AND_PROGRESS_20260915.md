@@ -16297,3 +16297,70 @@ REFINEMENT to S-207: not a drift but a STEP -- two plateaus (967.3 sd 4.9, 900.1
 the per-arm cost here is BIMODAL, so a single mean conceals the regime it was measured in
 NO ENDPOINT VALUE READ.
 ```
+
+---
+
+# S-210 — ⚠ **CORRECTION / AMENDMENT to the FROZEN READ, made in the last window in which it is honest: the read's primary path named an analyser that CANNOT RUN on these arms.** 18 of 24 TRAIN arms landed, all passing
+
+## The defect, and why the timing is the whole point
+
+`runargs/dcs_csi_pr010_read.txt` was frozen in S-191 **before any arm existed** — correct discipline —
+and names `dcs_csi_subspace_analyze.py` as the primary analyser for **both** TRAIN (line 23) and
+VALIDATION (line 32). **S-196 then measured that analyser VOIDing all 24 head arms** on conditions no
+head arm can ever satisfy:
+
+> `VOID: HD_TOPK declares no rescue_basis_key -- it is not a subspace arm`  (25 structural VOIDs)
+
+A head-knockout row carries `rescue_basis`, `rescue_basis_key` and `rescue_norm_match_key` as `None`
+**always**. So **the frozen read, as frozen, cannot be executed for its primary path.** I built W4 in
+S-197 and never went back to the read.
+
+**Why amending now is the honest option and amending later would not be.** The discipline is *never
+re-freeze a read **after seeing numbers***. No endpoint value has been read — 18 arms have landed and
+every inspection has been liveness and dose only, under a sweep that **refuses at startup** to access
+an endpoint field (S-202). TRAIN completes in ~1.5 h. **Had I left this until then, the only remaining
+options would have been to amend the read after seeing results — the forbidden thing — or to report
+nothing.** Leaving a known-inoperable read in place does not preserve the discipline; it *guarantees*
+it gets broken.
+
+## What changed, and what did not
+
+**Changed:** the primary path is now `scripts/dcs_csi_head_analyze.py` (W4) for both splits — written
+for these arms, proven 11/11 against ground truth (S-197), and carrying §6's reporting language and
+§10's limits inside its own artifact (S-205). The GATE 0 sweep is named as runnable at any time. Every
+flag was re-verified against each script's argparse: **ALL FLAGS EXIST**.
+
+**Not changed — and this is the part that matters:** the gate order, **stop at the first failure**,
+`E(HD_KO) < 0` with ci95 upper `< 0` or **CANNOT ANSWER with the candidate not reported**, the floor
+`1/21` printed **with** the p, the four verdict definitions, TRAIN being descriptive and
+selection-contaminated, and the honest expectation on record before the data — **PARTIALLY LOCALISED
+or DISTRIBUTED, `F` well under 0.50.** None of the decision content moved. **Only the name of the
+program that computes it.**
+
+**The inoperable invocations are retained in the file, struck through with the reason**, not deleted:
+this file is part of the append-only record, and a reader must be able to see that the primary path
+was changed, when, and on what evidence.
+
+## The arms
+
+```
+GATE 0 SWEEP -- train | landed 18 of 24 | every landed arm PASSES
+dose 16416.0 on every K=8 arm | 670 rows / 67 domains | decode 0 | violations 0 | hooks_after 0
+~893 s per arm, 6 remaining -> ~1.5 h, then VALIDATION on afterany
+```
+
+## Commands
+
+```
+# the amended read, flags re-verified by AST against W4, the sweep and the re-derivation
+sed -n '1,60p' runargs/dcs_csi_pr010_read.txt
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py --prereg configs/... --tag-prefix csi3_head_basket_train --split train
+```
+
+```
+FROZEN READ AMENDED: its primary analyser could not run on head arms (S-196) and W4 replaces it
+DONE IN THE LAST HONEST WINDOW -- no endpoint number read, TRAIN lands in ~1.5 h; later would have
+forced either a post-hoc re-freeze or reporting nothing. Leaving it broken GUARANTEES the breach.
+NO DECISION CONTENT CHANGED: gates, floor, verdicts, expectation all as frozen. Only the program name.
+18 of 24 TRAIN arms, ALL PASS GATE 0 | NO ENDPOINT VALUE READ
+```

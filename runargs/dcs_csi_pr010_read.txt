@@ -18,6 +18,50 @@
 #   both >= 0.7, over 40 domains). The fallback selection is therefore NOT in use.
 # ---------------------------------------------------------------------------------------------
 
+# =============================================================================================
+# AMENDED 2026-09-21, BEFORE ANY ENDPOINT NUMBER WAS READ. See S-210.
+#
+# The two dcs_csi_subspace_analyze.py invocations below are INOPERABLE and are retained, struck
+# through, rather than deleted -- this file is part of the append-only record.
+# S-196 MEASURED that analyser VOIDing all 24 head arms on conditions no head arm can satisfy:
+#   "HD_TOPK declares no rescue_basis_key -- it is not a subspace arm"   (25 structural VOIDs)
+# A head-knockout row carries rescue_basis / rescue_basis_key / rescue_norm_match_key = None ALWAYS.
+#
+# WHY IT IS LEGITIMATE TO AMEND A FROZEN READ HERE, AND ONLY HERE. The discipline is "never re-freeze
+# a read AFTER SEEING NUMBERS". No endpoint value has been read: 18 of 24 TRAIN arms have landed and
+# every inspection so far has been liveness and dose only, under a sweep that REFUSES to access an
+# endpoint field. Amending now is the honest option; amending after TRAIN lands would be precisely
+# the forbidden thing, and leaving it inoperable would FORCE that.
+#
+# The PRIMARY path is now scripts/dcs_csi_head_analyze.py (W4), written for these arms (S-197),
+# proven against ground truth 11/11, and carrying section 6's reporting language and section 10's
+# limits inside its artifact (S-205). Every flag below was verified against W4's argparse.
+# NOTHING ELSE CHANGES: the gate order, the stop-at-first-failure rule, the floor 1/21 reported with
+# the p, the four verdicts and the honest expectation are all as frozen.
+# =============================================================================================
+
+# --- PRIMARY, TRAIN (DESCRIPTIVE ONLY; the rank is SELECTION-CONTAMINATED -- design 5.3)
+python scripts/dcs_csi_head_analyze.py \
+  --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+  --tag-prefix csi3_head_basket_train --split train --expect-n 670 \
+  --require-slurm-job <TRAIN_JOB_IDS> \
+  --out reports/DCS_CSI_PR010_HEAD_train.json
+
+# --- PRIMARY, VALIDATION (THIS adjudicates: ONE preregistered test, family of one, NO correction)
+python scripts/dcs_csi_head_analyze.py \
+  --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+  --tag-prefix csi3_head_basket_validation --split validation --expect-n 230 \
+  --require-slurm-job <VALIDATION_JOB_IDS> \
+  --out reports/DCS_CSI_PR010_HEAD_validation.json
+
+# --- GATE 0 may be swept incrementally at any time; it refuses to read an endpoint field (S-202)
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py \
+  --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+  --tag-prefix csi3_head_basket_train --split train
+
+# =============================================================================================
+# INOPERABLE, RETAINED FOR THE RECORD -- the two invocations below cannot run on head arms (S-196)
+# =============================================================================================
 # --- TRAIN (DESCRIPTIVE ONLY; its rank is SELECTION-CONTAMINATED and must be printed with those
 # --- words beside it -- design section 5.3). TRAIN DOES NOT ADJUDICATE.
 python scripts/dcs_csi_subspace_analyze.py \
