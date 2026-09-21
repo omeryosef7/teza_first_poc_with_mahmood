@@ -16413,3 +16413,41 @@ python scripts/gates/dcs_csi_pr010_gate0_sweep.py --prereg configs/dcs_csi_pr010
 --require-slurm-job 916535 ADMITS 21 of 21 arm dirs -- the filter matches, it does not silently reject
 NO ENDPOINT VALUE READ
 ```
+
+---
+
+# S-212 — 22 of 24 TRAIN arms, **all 22 passing GATE 0 with an identical dose**. Two arms remain (~30 min); a background waiter is armed on `916535` so the transition to VALIDATION is not missed
+
+```
+GATE 0 SWEEP -- train | landed 22 of 24 | every landed arm PASSES
+HD_BASE 0 edits | HD_KO median 2052.0 | the other 20 arms all 16416.0
+670 rows / 67 domains / decode 0 / violations 0 / hooks_after 0 on every one
+```
+
+**Twenty consecutive K=8 arms at exactly `16416.0`.** The realised-dose identity has now held to the
+digit on twenty independent head sets, which is a stronger statement than S-201's single confirmation:
+the `K×` mechanism S-175 re-derived is not a property of `HD_TOPK`'s particular heads but of the
+counter, exactly as the re-derivation said.
+
+## State
+
+`916535` is at 6:02 with arm 23 in flight; ~893 s per arm on the late plateau, so **~30 min to
+completion**, then `916536` (VALIDATION, 24 arms, ~2.2 h) starts on `afterany`. Its environment was
+proven to propagate (S-204) and its witness is still truthful (nothing it executes has been touched).
+
+**When TRAIN completes, the amended read's descriptive stage runs** — the first endpoint numbers of
+this experiment. Its rank is **selection-contaminated by construction** and adjudicates nothing; only
+VALIDATION does, and only after GATE 1 clears.
+
+## Commands
+
+```
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+  --tag-prefix csi3_head_basket_train --split train
+```
+
+```
+22 of 24 TRAIN arms, ALL PASS | TWENTY consecutive K=8 arms at exactly 16416.0 -- the K x identity
+is a property of the counter, not of HD_TOPK's heads | ~30 min to TRAIN completion
+NO ENDPOINT VALUE READ
+```
