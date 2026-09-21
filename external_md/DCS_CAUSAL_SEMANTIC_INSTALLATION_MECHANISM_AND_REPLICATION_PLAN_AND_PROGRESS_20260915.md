@@ -16364,3 +16364,52 @@ forced either a post-hoc re-freeze or reporting nothing. Leaving it broken GUARA
 NO DECISION CONTENT CHANGED: gates, floor, verdicts, expectation all as frozen. Only the program name.
 18 of 24 TRAIN arms, ALL PASS GATE 0 | NO ENDPOINT VALUE READ
 ```
+
+---
+
+# S-211 — 20 of 24 TRAIN arms, all passing GATE 0. **The `--require-slurm-job` filter is verified to ADMIT rather than silently reject**, which is the one pre-flight that would have failed at the worst moment
+
+```
+GATE 0 SWEEP -- train | landed 20 of 24 | every landed arm PASSES
+~893 s per arm (the late plateau, S-209) | 4 remaining -> ~1.0 h | then VALIDATION on afterany
+```
+
+## The pre-flight
+
+The amended read (S-210) passes `--require-slurm-job <TRAIN_JOB_IDS>`, which exists because a re-run
+recreates the same **tag** under a new job id and picking "the newest" silently admits the wrong arm
+(S-104 / S-127). But a filter that matches **nothing** rejects the whole family just as effectively as
+one that matches too much — and it reads a field nothing had confirmed was written:
+
+```
+arm dirs inspected: 21
+slurm_job_id values found: {'916535': 21}
+dirs WITHOUT a usable slurm_job_id: 0
+--require-slurm-job 916535 would admit 21 of 21 arm dirs
+```
+
+**Every arm dir carries the id, and they all carry the same one** — which is expected, since W3 runs
+the whole family inside one allocation. Worth checking rather than assuming: had `RUNMETA.json` used a
+different key, the read would have resolved **zero** complete runs for every arm and reported a
+refusal that looks exactly like a missing family. **The cheapest possible time to discover that is
+before the family is complete; the most expensive is at 01:00 with 24 arms on disk.**
+
+## Everything else is unchanged
+
+Dose `16416.0` on every K=8 arm, 670 rows over 67 domains, `decode 0`, `violations 0`, `hooks_after 0`.
+The R15-0 lock still holds — nothing `916536` executes has been touched, and the deferred W3 patch is
+still waiting. **No endpoint value has been read.**
+
+## Commands
+
+```
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+  --tag-prefix csi3_head_basket_train --split train
+# slurm_job_id read from each arm's RUNMETA.json and counted
+```
+
+```
+20 of 24 TRAIN arms, ALL PASS GATE 0 | ~1.0 h to TRAIN completion
+--require-slurm-job 916535 ADMITS 21 of 21 arm dirs -- the filter matches, it does not silently reject
+NO ENDPOINT VALUE READ
+```
