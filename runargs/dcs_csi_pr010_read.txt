@@ -1,0 +1,74 @@
+# FROZEN READ for PR-CSI-010 (section 4 head-level causal experiment, basket).
+# Frozen 2026-09-21, BEFORE ANY ARM HAS RUN. Never re-freeze after seeing numbers.
+#
+# Read in the order below. STOP AT THE FIRST FAILURE -- the design's gates are sequential and a
+# later number read after an earlier gate failed is not a result, it is a number.
+#
+# ---------------------------------------------------------------------------------------------
+# GATE 0 -- liveness, every arm. Any failure => VOID, not a result.
+#   per arm: knockout_liveness.scope_violations == {}, frac_rows_scope_live == 1.0,
+#            total_prefill_edits > 0, total_decode_edits == 0,
+#            and the realised-dose identity (all-head arm writes 1 broadcast row; a K-head arm
+#            writes K explicit rows -- S-175, NOT K/32 of the all-head count)
+#
+# GATE 1 -- positive control. E(HD_KO) < 0 with ci95 UPPER bound < 0.
+#   If it fails => CANNOT ANSWER. Report feasibility and STOP. DO NOT REPORT THE CANDIDATE.
+#
+# GATE 2 -- attribution trustworthiness: already PASSED (916044, pearson 0.7817, spearman 0.7852,
+#   both >= 0.7, over 40 domains). The fallback selection is therefore NOT in use.
+# ---------------------------------------------------------------------------------------------
+
+# --- TRAIN (DESCRIPTIVE ONLY; its rank is SELECTION-CONTAMINATED and must be printed with those
+# --- words beside it -- design section 5.3). TRAIN DOES NOT ADJUDICATE.
+python scripts/dcs_csi_subspace_analyze.py \
+  --codeword basket --tag-prefix csi3_head_basket_train --expect-n 670 \
+  --arms HD_BASE,HD_KO,HD_TOPK,HD_BOTK,HD_RAND00,HD_RAND01,HD_RAND02,HD_RAND03,HD_RAND04,HD_RAND05,HD_RAND06,HD_RAND07,HD_RAND08,HD_RAND09,HD_RAND10,HD_RAND11,HD_RAND12,HD_RAND13,HD_RAND14,HD_RAND15,HD_RAND16,HD_RAND17,HD_RAND18,HD_RAND19 \
+  --base-arm HD_BASE --ko-arm HD_KO --full-arm HD_KO \
+  --candidate-arm HD_TOPK --comparator-arm HD_BOTK \
+  --control-prefixes HD_RAND \
+  --split train --require-slurm-job <TRAIN_JOB_IDS>
+
+# --- VALIDATION (THIS is the adjudication: ONE preregistered test, family of one, NO correction)
+python scripts/dcs_csi_subspace_analyze.py \
+  --codeword basket --tag-prefix csi3_head_basket_validation --expect-n 230 \
+  --arms HD_BASE,HD_KO,HD_TOPK,HD_BOTK,HD_RAND00,HD_RAND01,HD_RAND02,HD_RAND03,HD_RAND04,HD_RAND05,HD_RAND06,HD_RAND07,HD_RAND08,HD_RAND09,HD_RAND10,HD_RAND11,HD_RAND12,HD_RAND13,HD_RAND14,HD_RAND15,HD_RAND16,HD_RAND17,HD_RAND18,HD_RAND19 \
+  --base-arm HD_BASE --ko-arm HD_KO --full-arm HD_KO \
+  --candidate-arm HD_TOPK --comparator-arm HD_BOTK \
+  --control-prefixes HD_RAND \
+  --split validation --require-slurm-job <VALIDATION_JOB_IDS>
+
+# --- the INDEPENDENT re-derivation, which shares no code with the analyser.
+# ITS CLI IS DIFFERENT FROM THE PRIMARY ANALYSER'S AND WAS READ FROM SOURCE, NOT ASSUMED:
+# it takes --candidate/--ko/--base/--full/--controls, and has NO --codeword and NO --arms.
+# --direction necessity is REQUIRED here: these arms REMOVE heads from a clean forward, so the
+# reference is --base and stronger = MORE NEGATIVE. The default is `sufficiency`, and its own help
+# warns that a sign convention applied in one path and not the other lets the two paths "agree" on
+# a rank one of them read UPSIDE DOWN.
+python scripts/dcs_csi_rederive_subspace.py \
+  --tag-prefix csi3_head_basket_validation --split validation --expect-n 230 \
+  --direction necessity \
+  --base HD_BASE --ko HD_KO --full HD_KO --candidate HD_TOPK \
+  --controls HD_RAND00,HD_RAND01,HD_RAND02,HD_RAND03,HD_RAND04,HD_RAND05,HD_RAND06,HD_RAND07,HD_RAND08,HD_RAND09,HD_RAND10,HD_RAND11,HD_RAND12,HD_RAND13,HD_RAND14,HD_RAND15,HD_RAND16,HD_RAND17,HD_RAND18,HD_RAND19 \
+  --require-slurm-job <VALIDATION_JOB_IDS>
+
+# ---------------------------------------------------------------------------------------------
+# THE ATTAINABLE FLOOR IS REPORTED WITH THE p, ALWAYS. 20 controls -> floor 1/21 = 0.047619...
+#   rank 1 of 21 => p = 0.047619 (== the floor; clears alpha=0.05 ONLY here)
+#   rank 2 of 21 => p = 0.095238 => DOES NOT PASS
+# HD_BOTK is the COMPARATOR and must NOT match --control-prefixes. If the control family resolves
+# to anything other than 20 arms, that is VOID condition 6 -- a silently-widened or silently-
+# narrowed family is this sprint's known foot-gun (S-120(e)).
+#
+# VERDICTS (design section 6, written before the experiment):
+#   WE FOUND (part of) THE WRITER : HD_TOPK rank 1 of 21 AND F >= 0.50 with ci95 on F excluding 0
+#   PARTIALLY LOCALISED           : rank 1 of 21 AND 0 < F < 0.50
+#   IT IS DISTRIBUTED             : GATE 1 passes AND HD_TOPK inside the HD_RAND distribution
+#                                   (p > 0.05) AND the HD_RAND arms themselves show a clear effect
+#   CANNOT ANSWER                 : GATE 1 fails; or GATE 0 fails on any arm; or E(HD_KO) and the
+#                                   whole HD_RAND family are indistinguishable from 0 on validation;
+#                                   or candidate and controls are separated by less than single-arm
+#                                   run-to-run reproducibility
+# F = E(HD_TOPK) / E(HD_KO), E(arm) = mean over DOMAINS of (y_install(arm) - y_install(HD_BASE))
+#
+# HONEST EXPECTATION ON RECORD BEFORE THE DATA: PARTIALLY LOCALISED or DISTRIBUTED, with F well
+# under 0.50. A WE FOUND THE WRITER verdict should read as the surprise it would be.
