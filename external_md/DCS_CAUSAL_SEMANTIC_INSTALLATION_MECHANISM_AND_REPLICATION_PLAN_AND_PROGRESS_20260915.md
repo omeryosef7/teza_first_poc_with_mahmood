@@ -15851,3 +15851,72 @@ GATE 0 SWEEP: 3 of 24 landed, ALL PASS -- rows, domains, decode 0, dose K x, hea
 the no-peek claim is now MACHINE-CHECKED and SHOWN TO FIRE on an injected endpoint read
 NO ENDPOINT VALUE READ, and the file now refuses to let me read one by accident
 ```
+
+---
+
+# S-203 — the deferred W3 fixes are **written, compiled and proven to apply — and deliberately NOT applied**, because `916536` is still pending against blob `9aebc6bc`
+
+4 of 24 TRAIN arms complete, **all passing GATE 0**. The two K=8 arms are **exactly dose-matched**,
+which is the comparator doing its job:
+
+```
+arm           rows   dom  total_prefill   median_pre  decode  viol  verdict
+HD_BASE        670    67              0          0.0       0     0  PASS
+HD_KO          670    67        1385460       2052.0       0     0  PASS
+HD_TOPK        670    67       11083680      16416.0       0     0  PASS
+HD_BOTK        670    67       11083680      16416.0       0     0  PASS
+```
+
+`HD_BOTK` matches `HD_TOPK` to the edit — same K, same band, same scope, **different heads**. §4.2
+asked for a "matched 'same procedure, opposite end'" comparator and that is what is on disk.
+
+## The patch exists; applying it would falsify a witness
+
+R15-0 established that the edit lock is **any file a pending allocation will execute**, and
+`916536` executes `dcs_csi_arm_runner.py`. So the three deferred findings are fixed **in a scratch
+copy** and the result committed as an **inert patch file** that no job runs:
+
+```
+patches/R15_w3_deferred_fixes.patch   88 lines, 34 additions
+patched copy compiles;  patch --dry-run -p0 applies cleanly
+```
+
+* **R15-1** — `hook_census_all(cache)` censuses **every** model the memo holds. The old form read
+  `next(iter(cache.values()))`, the first inserted entry, so the moment the memo did the job it was
+  keyed for — loading a second model — a leak on that model was invisible while the census reported
+  0.
+* **R15-2** — the resume logic now **fails closed**. `except Exception: keep.append(line)` treated an
+  unexplained error as *"this arm has not run"*, so the arm re-ran and created the duplicate tag that
+  makes `strict_run_dir` refuse the whole family: **the S-198 logic written to prevent family
+  corruption could cause it.** An error whose meaning is unknown is not evidence that an arm is
+  missing.
+* **R15-11** — `shlex.split` replaces `line.split()`, so the first argument containing a space cannot
+  be torn in two.
+
+**Verified that the lock held**: `git status --porcelain` on all six files `916536` executes returns
+empty. Nothing it runs has changed since its witness was fixed.
+
+## Why not just apply it and re-submit 916536
+
+Because cancelling and re-submitting would cost the ~1.4 h of TRAIN already computed **and** the
+queue position, to fix three findings of which **none is live for this family**: all 24 arms share a
+single load key (so R15-1's second model never exists), no arm has hit an unexplained
+`strict_run_dir` error (R15-2 is dormant), and every generated value is space-free (R15-11 cannot
+bite). **Fixing a dormant defect by discarding live compute is a bad trade**, and the patch costs
+nothing to hold.
+
+## Commands
+
+```
+diff -u scripts/dcs_csi_arm_runner.py <patched scratch copy> > patches/R15_w3_deferred_fixes.patch
+patch --dry-run -p0 scripts/dcs_csi_arm_runner.py < patches/R15_w3_deferred_fixes.patch
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+  --tag-prefix csi3_head_basket_train --split train
+```
+
+```
+4 of 24 TRAIN arms landed, ALL PASS GATE 0 | HD_TOPK and HD_BOTK dose-matched to the edit (16416.0)
+R15-1/2/11 fixed in a patch that COMPILES and APPLIES CLEANLY, and is deliberately NOT applied
+the lock HELD: nothing 916536 executes has changed since its witness was fixed at 9aebc6bc
+apply the patch once BOTH allocations finish | NO ENDPOINT VALUE READ
+```
