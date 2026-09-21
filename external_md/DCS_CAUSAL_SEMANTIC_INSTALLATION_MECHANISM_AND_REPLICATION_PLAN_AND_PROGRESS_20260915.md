@@ -16609,3 +16609,55 @@ THIRD INSTANCE of "a measurement from one regime quoted as a property of the wor
 W3's REAL value is variance and the bit-identical equivalence proof, NOT hours. Those claims stand.
 VALIDATION running, first arm PASSES GATE 0 | NO ENDPOINT VALUE READ for validation.
 ```
+
+---
+
+# S-215 — 6 of 24 VALIDATION arms, all passing GATE 0. **The K× dose identity is RELATIVE, not absolute** — the split's own `HD_KO` is the denominator, and confirming that mattered because the absolute dose changed
+
+```
+GATE 0 SWEEP -- validation | landed 6 of 24 | every landed arm PASSES
+HD_BASE  230 rows / 23 domains / prefill 0       / decode 0 / viol 0
+HD_KO    230 / 23 / prefill  466488 / median  2016.0
+HD_TOPK  230 / 23 / prefill 3731904 / median 16128.0   (and HD_BOTK, HD_RAND00, HD_RAND01 identical)
+```
+
+## The absolute dose moved between splits, and that is correct
+
+```
+TRAIN      all-head 2052.0 | K=8 16416.0 | ratio 8.000000
+VALIDATION all-head 2016.0 | K=8 16128.0 | ratio 8.000000
+```
+
+**`16416 ≠ 16128`.** A check hard-coded to TRAIN's 16416 would have failed every validation arm and
+called the family VOID. The sweep compares each arm to **its own split's `HD_KO` median**, so the
+identity holds at exactly `8.000000` in both — because the quantity that is invariant is the **ratio**,
+not the count. The absolute count depends on the prompts: 230 held-out rows have different
+`target_surface` span lengths from the 670 train rows, so the number of mask writes differs while the
+per-head multiplication does not.
+
+This is worth stating because **it is the kind of constant that gets hard-coded.** The K× identity was
+already wrong in three places in the design as `K/32` (S-175, S-176, S-192); pinning it to a
+split-specific *absolute* would have been a fourth way to get the same check wrong.
+
+## State
+
+~325 s per K=8 validation arm (against ~893 s on train, ratio `0.364` ≈ `230/670 = 0.343`), 18 arms
+remaining → **~1.6 h**. `hooks_after=0` throughout. The R15-0 lock still holds; the deferred W3 patch
+still waits on `916536` completing.
+
+**No endpoint value has been read for validation.** GATE 1 on the held-out split is the next thing
+that can be adjudicated, and it can still return CANNOT ANSWER.
+
+## Commands
+
+```
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+  --tag-prefix csi3_head_basket_validation --split validation
+```
+
+```
+6 of 24 VALIDATION arms, ALL PASS GATE 0 | ~1.6 h remaining
+THE K x IDENTITY IS RELATIVE: train 16416/2052 and validation 16128/2016 both give EXACTLY 8.000000.
+A check hard-coded to train's 16416 would have VOIDED every validation arm -- a fourth way to get the
+same identity wrong, after the three K/32 sites. NO ENDPOINT VALUE READ for validation.
+```
