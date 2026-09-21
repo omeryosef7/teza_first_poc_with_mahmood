@@ -16710,3 +16710,86 @@ THE ADJUDICATING SPLIT'S PAIRED CONTRAST IS VERIFIED WITHIN-PROMPT: identical 23
 sets across every landed arm | no TEST domain | one uniform slurm_job_id
 NO ENDPOINT VALUE READ for validation. GATE 1 there can still return CANNOT ANSWER.
 ```
+
+---
+
+# REVIEW R17 (self, ~4 h cadence) — I attacked the **TRAIN numbers** rather than the code, and the honest finding is that **the train picture is exactly what a real localisation AND a pure selection artifact both look like.** It cannot distinguish them; only VALIDATION can
+
+Scope since R16: W4's verdict-table fix, the read amendment (S-210), S-214's withdrawal, the R16 sweep
+fixes, and **the TRAIN result itself**. 17 of 24 VALIDATION arms have landed, all passing GATE 0.
+
+## The train control distribution, in full
+
+```
+HD_KO   -0.234060  ci95 [-0.2628, -0.2048]      <- all 32 heads, NOT selection-contaminated
+HD_TOPK -0.213094  ci95 [-0.2383, -0.1880]      <- candidate, SELECTED ON THIS SPLIT
+HD_BOTK -0.005609                               <- comparator, not in the family
+
+20 HD_RAND controls: mean +0.006527  median +0.009064  sd 0.013283
+                     min -0.016689  max +0.026451
+```
+
+**Thirteen of the twenty controls are POSITIVE.** Knocking out 8 arbitrary non-candidate heads does
+nothing to installation — it scatters around zero.
+
+## The adversarial question I set out to answer, and its answer
+
+*Is the candidate merely the most extreme of 21 draws from one distribution?*
+
+```
+candidate is 16.5 sd below the control mean
+gap candidate -> most negative control : 0.196405
+spread across all 20 controls          : 0.043140
+ratio                                  : 4.55x
+```
+
+**No. The candidate is separated from the entire control distribution by 4.55× the controls' own full
+range.** That is not a rank-1-of-21 result at the edge of a continuum; the candidate and the controls
+are in different regimes. Rank 1 is the *weakest* way to describe this picture.
+
+**It also rejects the uniform null, and that part leans less on the selection.** §6 predicted that if
+the effect were spread evenly over 32 heads, any 8 would give `≈ -0.057`. Twenty independent 8-head
+draws measured `+0.0065 ± 0.0133` — **not a smaller effect, no effect.** The complement of the
+candidate set is empty of the A1 effect.
+
+## ⛔ Why none of that is evidence, and I want to be blunt about it
+
+**The candidate was chosen to maximise exactly this quantity on exactly this split.** A selector that
+takes the 8 most negative `S[h]` will produce this picture on its own fitting data whether or not it
+generalises — and the controls being empty is *also* partly downstream of the selection, because the
+control pool is *defined* as "the 24 heads that are not the candidates." If AtP mis-ranked, the effect
+would sit in the complement and the controls would show it; they don't, which says AtP ranked something
+real **on TRAIN**. It says nothing yet about the other 23 domains.
+
+So: **a 4.55× separation and a 16.5 sd gap are the expected appearance of a genuine localisation and
+the expected appearance of a selection artifact alike.** The train split cannot tell them apart, which
+is precisely why §5.3 calls its rank *"selection-contaminated, not an inferential statement"* and why
+§6 puts the verdict table under *"Then, on VALIDATION."* **I am recording the shape of the train
+result, not believing it.**
+
+**§6's honest pre-data expectation was PARTIALLY LOCALISED or DISTRIBUTED with `F` well under 0.50.**
+Train shows `F = 0.9104`. Either the expectation was too pessimistic or the train number is inflated by
+selection. **Both remain open, and validation settles it in ~35 minutes.**
+
+## What R17 found in the code
+
+Nothing new. The verdict-table fix behaves (train artifact now carries `DESCRIPTIVE -- NO VERDICT IS
+DEFINED FOR TRAIN` and the `REPORTABLE_AS` fallback rather than a headline), `F = 0.213094/0.234060 =
+0.9104` reproduces by hand, the rank is computed on the domain-mean deltas as specified, and the R15-0
+lock still holds across eight commits.
+
+## Commands
+
+```
+# control distribution, sd gap and gap/spread ratio read from reports/DCS_CSI_PR010_HEAD_train.json
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py --prereg configs/... --tag-prefix csi3_head_basket_validation --split validation
+```
+
+```
+R17: attacked the TRAIN NUMBERS. Candidate is 16.5 sd below the control mean and 4.55x the controls'
+whole range away from the nearest one; 20 random 8-head draws give +0.0065 +/- 0.0133, REJECTING the
+uniform null's -0.057 prediction.
+AND NONE OF IT IS EVIDENCE: the candidate was selected to maximise this quantity on this split, so a
+real localisation and a selection artifact have the SAME train signature. Recorded, not believed.
+No new code defect. VALIDATION (17 of 24) settles it in ~35 min.
+```
