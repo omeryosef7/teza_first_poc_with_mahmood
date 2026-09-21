@@ -16065,3 +16065,59 @@ W1 ranks CELLS (top: L14 h19) but --knockout-heads ties an index across 6-14 -- 
 W4 now ships REPORTABLE_AS (the design's own wording) and CANNOT_DO (all four limits) IN the artifact
 the prereg was NOT touched: 916536 reads it, so the R15-0 lock covers it | NO ENDPOINT VALUE READ
 ```
+
+---
+
+# S-206 — monitoring tick: 10 of 24 TRAIN arms landed, all passing GATE 0. **Per-arm time is stable to sd 21.3 s** and disk is not a constraint. **No new work was warranted and none was invented.**
+
+```
+PR-CSI-010 GATE 0 SWEEP -- train | landed 10 of 24 | every landed arm PASSES
+HD_BASE 0 edits | HD_KO 2052.0 | HD_TOPK, HD_BOTK, HD_RAND00..05 all 16416.0
+670 rows / 67 domains, decode 0, violations 0, hooks_after 0 on every arm
+```
+
+## The two measurements that bear on the rest of the run
+
+```
+HD_KO (all 32 heads)  : 642.0 s
+K=8 arms (n=8)        : mean 960.0  median 966.8  min 908.5  max 972.5  sd 21.3
+remaining 14 arms     : ~13440 s = 3.73 h
+```
+
+**sd 21.3 s on a 960 s arm is 2.2%** — the per-arm cost is stable enough that the projection is a
+projection and not a guess, which is exactly what S-201's correction to the 1.276 factor was about.
+The ratio to the all-head arm holds at `960.0 / 642.0 = 1.495`, consistent with the 1.515 measured
+from the first three arms.
+
+```
+disk: 11 arm dirs, mean 1.2 MB each
+remaining 14 TRAIN + 24 VALIDATION -> ~27 MB      filesystem available: 1377.2 GB
+```
+
+**Disk is not a constraint for this family** — the whole remaining 38 arms cost ~27 MB. Worth stating
+plainly given that quota was a live blocker two days ago at 198 G of 200 G: the thing that was tight
+is not the thing this experiment consumes.
+
+## Why this entry is short
+
+Nothing substantive was available this tick. The family is running cleanly, every gate that can be
+run before completion has been run, the analysers are built and self-tested, the frozen read governs
+what happens next, and **the W3 fixes are correctly blocked by R15-0's lock.** Running either
+analyser on the real arms now would produce endpoint numbers before GATE 0 has cleared on all 24 —
+which the frozen read forbids and which no amount of care afterwards could undo. **A tick with
+nothing to add is better recorded as such than padded.**
+
+## Commands
+
+```
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+  --tag-prefix csi3_head_basket_train --split train
+# per-arm wall times parsed from the W3 log; per-arm disk from du -sk on the run dirs
+```
+
+```
+10 of 24 TRAIN arms, ALL PASS GATE 0 | per-arm 960.0 s sd 21.3 (2.2%) | 3.73 h remaining
+K=8 / all-head ratio holds at 1.495 vs the 1.515 of S-201 | disk ~27 MB for all 38 remaining arms
+NOTHING ELSE WAS DUE. No analyser was run on real arms: that would read the endpoint before GATE 0
+has cleared on all 24, which the frozen read forbids. NO ENDPOINT VALUE READ.
+```
