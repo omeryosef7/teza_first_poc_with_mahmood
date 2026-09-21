@@ -16251,3 +16251,49 @@ missing denominator that read as a PASS (S-168's exact shape). Both latent here,
 VERIFIED: all 14 landed arms carry the SAME 670 prompt_ids -- the paired contrast is within-prompt.
 14 of 24 TRAIN arms landed, all passing | NO ENDPOINT VALUE READ.
 ```
+
+---
+
+# S-209 — 16 of 24 TRAIN arms, all passing GATE 0. **REFINEMENT to S-207: the per-arm time is not a "drift" but a STEP between two very tight plateaus** — which sharpens the cost caution rather than softening it
+
+```
+GATE 0 SWEEP -- train | landed 16 of 24 | every landed arm PASSES
+```
+
+## S-207 called it a drift; the shape is a step
+
+```
+early block  n=7   mean 967.3 s   sd 4.9
+late  block  n=7   mean 900.1 s   sd 4.3
+last 6 arms        898.3 895.6 903.1 898.9 899.3 897.3   mean 898.8  sd 2.5  (0.3%)
+remaining 8 arms at 898.8 s -> 2.00 h
+```
+
+**Within each regime the arms are reproducible to ~0.5% (sd ≈ 5 s on ~900–970 s); between regimes
+there is a single 67 s step (7%).** S-207 described a gradual 4.6% drift over ten arms. That reading
+was wrong in shape: there is no gradual anything — **two plateaus and one transition**, and the last
+six arms sit inside 2.5 s of each other.
+
+**This makes the cost caution stronger, not weaker.** A gradual drift could be averaged away; a
+**bimodal** cost cannot. Quoting a single per-arm mean for this workload conceals which regime it was
+measured in, and the two differ by more than ten times the within-regime scatter. S-201's correction
+(1.276 → 1.515) and S-207's (1.515 → 1.44) are now both explicable as the **same measurement taken in
+different node states**, not as three disagreeing estimates.
+
+Nothing about the arms changed: dose `16416.0` on every K=8 arm, 670 rows over 67 domains, decode 0,
+violations 0, `hooks_after` 0. **Wall time is not an endpoint and this changes no gate.**
+
+## Commands
+
+```
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+  --tag-prefix csi3_head_basket_train --split train
+# per-arm wall times parsed in order from the W3 log; blocks split at the observed transition
+```
+
+```
+16 of 24 TRAIN arms, ALL PASS GATE 0 | ~2.00 h remaining, then VALIDATION on afterany
+REFINEMENT to S-207: not a drift but a STEP -- two plateaus (967.3 sd 4.9, 900.1 sd 4.3), one 67 s jump
+the per-arm cost here is BIMODAL, so a single mean conceals the regime it was measured in
+NO ENDPOINT VALUE READ.
+```
