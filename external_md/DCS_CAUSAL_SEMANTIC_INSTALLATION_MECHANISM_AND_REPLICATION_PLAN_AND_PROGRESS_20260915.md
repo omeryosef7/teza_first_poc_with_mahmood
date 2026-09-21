@@ -14826,3 +14826,109 @@ robust to dropping h19, h17, h23, layer 14, or the largest cell | calibration 1.
 screen 915941 reproduces 915891 EXACTLY on committed code with a real provenance witness
 next: W1.1 per-domain S[h] for an interval, then section 4's causal arms | quota 198G of 200G
 ```
+
+---
+
+# REVIEW R14 (self, ~4 h cadence) — **the gate's "40 of 40 rows" was FOUR DOMAINS**, and the gate verified **nothing** about the screen it was gating. Plus **CORRECTION to S-185's breadth claim**: the honest, domain-spanning gate is **0.7817 / 0.7852**, not 0.8455 / 0.8022
+
+Scope: `dcs_csi_head_atp.py`, `dcs_csi_head_patch_gate.py`, the two new gates, the slurm scripts, and
+the artifacts of S-179…S-185 (commits `d79ffe39`…`34258f20`). Six findings, four of them defects in
+code I shipped in the last two ticks. **None was caught by an existing test.**
+
+## R14-1 (MAJOR) — the gate's subsample was four domains, not forty rows
+
+W2 took `rows[:40]`. The bank is ordered by domain at **ten consecutive rows each**, so that is
+exactly the first four domains. Measured:
+
+```
+W2 GATE USED rows[:40] -> DOMAINS COVERED: 4 of 67
+    power_substation 10 | quarry_site 10 | dairy_plant 10 | textile_mill 10
+```
+
+The statistical unit is the **domain** (rule 3.3), so S-185's *"40 of 40 rows clear the threshold"*
+was **n = 4 units**, and the estimator's behaviour on the other 63 domains was untested **while being
+reported as breadth**. Fixed by round-robin over domains — the k-th row of every domain before the
+(k+1)-th of any — so any prefix spans as many domains as possible. Verified: **40 domains over 40
+rows**.
+
+## ⚠ CORRECTION to S-185 — the corrected gate, and it is lower
+
+Job **916044** (`BLOB 23077f89`), stratified, 40 domains:
+
+```
+                       pearson   spearman
+S-185, 4 domains        0.8455     0.8022      <- optimistic
+R14,  40 domains        0.7817     0.7852      <- the honest number
+```
+
+**Still a PASS — both ≥ 0.7 — so §3.4's verdict does not change and the causal stage stays
+unblocked.** But Pearson was overstated by **0.064**, and the margin is thinner everywhere:
+
+```
+                        pearson   spearman           within-domain stability
+full (40 domains)        0.7817     0.7852     median 0.8659 | min 0.4609 | max 0.9767
+drop every h19 cell      0.7433     0.7715     domains >= 0.7:  37 of 40
+drop every h17 cell      0.7749     0.7795     domains <  0.7:  0.461, 0.652, 0.697
+drop every h23 cell      0.7723     0.7808
+drop every layer-14 cell 0.7314     0.7574     <- thinnest margin, 0.031 above threshold
+```
+
+**S-185's "40 of 40 rows clear the threshold individually" is WITHDRAWN and replaced by "37 of 40
+domains".** Three domains fail, one of them badly (**0.461**). The estimator is *not* uniformly
+reliable across domains; it is reliable *on average* and poor somewhere. Calibration is unchanged
+(median `true/est` **1.009**) and sign agreement is 80.6%.
+
+## R14-4 (MAJOR) — the gate verified nothing about the screen it consumed
+
+W2 read `topk_cells_by_abs` and **nothing else**. A `basket` screen could be gated against `button`
+rows, a TRAIN screen against VALIDATION rows, or a screen from another band, block or model — and it
+would report a correlation, while the artifact recorded the **gate's own** split and codeword, making
+the mismatch invisible to every later reader. **Same shape as the vacuous provenance witness of
+S-182: nothing would fail.** Fixed: `split`, `band`, `bank_block`, `codeword`, `concept` must agree,
+and `model_id` is checked once the model resolves. Verified firing on a mismatched codeword and a
+mismatched band.
+
+## R14-5 (MODERATE) — `--split validation` had no friction in either tool
+
+Held-out data is spent once, and a typo could spend it. `--allow-heldout` is now required and its
+absence is a refusal, not a warning. Verified refusing.
+
+## R14-6 (MINOR) — `atomic_write_json` never synced the directory
+
+`os.replace` makes the content visible; the **directory entry** is not durable until the directory is
+synced. Fixed best-effort — some filesystems refuse an `O_RDONLY` directory fsync, and failing to
+sync is not a reason to discard a file already in place.
+
+## R14-2 and R14-3 — not defects, but they bound the claim
+
+**R14-2.** The 79.6% sign agreement is concentrated in the **noise floor**: median `|AtP|` **0.039**
+among disagreeing pairs against **0.108** among agreeing, and only **2.2%** of cells at ≥ 25% of max
+`|AtP|` disagree. The sign errors are where the signal is smallest — the harmless direction.
+
+**R14-3.** ⛔ **A passing correlation gate does not license the RANK ORDER.** Cell-level, summed over
+rows, the leader agrees (**L14 h19** in both estimate and truth) but the top-5 *sets differ* and
+top-10 overlap is **8 of 10**:
+
+```
+   est 2. L7  h23     truth 4.        L10 h2 : estimated 6th, truly 3rd
+   est 6. L10 h2      truth 3.        L7  h23: estimated 2nd, truly 4th
+```
+
+**§4 selects BY RANK.** "The estimator tracks truth" and "the top-k set is correct" are different
+claims and **only the first is gated.** Choosing a top-10 head set from the estimate would carry
+roughly two wrong cells.
+
+## Commands
+
+```
+SCREEN=outputs/boombness/dcs_csi/w1_screen_train_basket_915941.json \
+  ./scripts/gates/dcs_csi_submit.sh slurm_scripts/dcs_csi_w2_patch_gate.slurm   # 916044, stratified
+# domain coverage of the OLD subsample, re-derived from the axis + bank: 4 of 67
+```
+
+```
+R14: 6 findings, 4 DEFECTS FIXED (subsample breadth, screen/gate agreement, held-out guard, dir fsync)
+CORRECTION: gate is 0.7817 / 0.7852 over 40 domains, NOT 0.8455 / 0.8022 over 4 -- still a PASS
+S-185's "40 of 40 rows" WITHDRAWN -> "37 of 40 DOMAINS"; three fail, one at 0.461
+R14-3 STANDS AS A LIMITATION: the gate licenses the estimator, NOT the top-k rank order section 4 uses
+```
