@@ -14687,3 +14687,142 @@ signed vs |AtP| DISAGREE (h6 4th vs 18th) -- section 3.3's selector vindicated b
 NO HEAD SET FROZEN | section 3.4 true-patch gate NOT_YET_RUN | W1.1 needed: per-domain S for a CI
 next: the section 3.4 true-patch gate -- the intervention that decides | quota 198G of 200G
 ```
+
+---
+
+# S-182 — **CORRECTION, two defects in what S-179/S-181 shipped**: the screen could not feed its own gate, and the provenance witness **could not fail**
+
+Commit `81351365`. Both found while building W2, neither by a test that existed.
+
+## Defect 1 — `--topk` and `--min-corr` were declared and did nothing
+
+`dcs_csi_head_atp.py` computed `per_cell[(L,h)]` and **never wrote it**. §3.4 needs the top-40
+**cells**; the artifact carried only per-**head** sums. So a run invoked `--min-corr 0.7` would have
+recorded that it gated at 0.7 **while gating at nothing at all.**
+
+Fixed: the full **288-cell** grid (9 layers × 32 heads) is emitted plus a top-k convenience list —
+in full deliberately, because a top-k written alone cannot be re-ranked by any other rule later.
+`--min-corr` is removed from the screen; it belongs to the gate.
+
+New gate `scripts/gates/dcs_csi_dead_flag_check.py`: argparse cannot catch an unread attribute, so an
+AST pass refuses any flag declared and never read. **Self-tested against the real bug** — it fires on
+the shipped blob `f34962dd` and passes on the fix. Swept all 32 CSI scripts; **W1 was the only
+offender.**
+
+## Defect 2 — `BLOB   PORCELAIN []` on every screen job
+
+From the job's own stderr: **`git: command not found`** — git does not exist on the compute nodes.
+Both `$(git rev-parse)` and `$(git status --porcelain)` expanded to empty, and **an empty porcelain is
+indistinguishable from a clean worktree.** The witness could not fail, which makes it not a witness.
+
+Affected 915891 (the screen reported in S-181) and 915914. **S-181's science stands** — 915891 did run
+on committed code `d79ffe39` — but the witness did not prove it. Provenance is now captured on the
+submitting host and exported; absence is `exit 3`, a dirty tree `exit 4`, and
+`scripts/gates/dcs_csi_submit.sh` refuses to submit a dirty worktree at all.
+
+**915914 cancelled and its artifact deleted**: it ran with uncommitted modifications, so nothing on
+disk could be reproduced from any commit.
+
+---
+
+# S-183 — the submit helper refuses a caller-supplied `--export`, because a second one **silently strips the provenance**
+
+Commit `39d5aac1`. Job **915945 exited 3** — S-182's guard firing on my own misuse. The helper runs
+`sbatch --export=ALL,CSI_GIT_BLOB=… "$@"`, and I passed `--export=ALL,SCREEN=…` through `"$@"`.
+**sbatch takes the last `--export` and does not warn**, so `CSI_GIT_BLOB` was dropped.
+
+The refusal worked, but a guard that only fires *after* a GPU allocation costs a queue slot to
+consult. A `--export` in `"$@"` is now refused at submit time, before anything is scheduled
+(verified: `rc=2`, no GPU consumed).
+
+---
+
+# S-184 — the gate artifact stored the first 400 pairs, which is the first **10 rows**
+
+Commit `2133c444`. `recs[:400]` looked like a size cap; it is a **row** cap — pairs are emitted
+row-major at 40 cells per row, so 400 records is rows 0–9 of 40. The headline correlations are
+computed over all 1600 in memory and are unaffected, but **every post-hoc robustness check silently
+re-measured a quarter of the rows.** Measured consequence: median calibration read **0.971** on the
+truncated pairs and **1.011** on all of them.
+
+All ~1600 pairs are now emitted (193 KB).
+
+---
+
+# S-185 — **the §3.4 TRUE-PATCH GATE PASSES.** Pearson 0.8455, Spearman 0.8022 over 1600 pairs — and it survives every ablation I could think to run against it
+
+Job **916000 COMPLETED** (`BLOB 2133c444 PORCELAIN [clean]`), 40 rows × 40 cells.
+Correlations **bit-identical** to the earlier 915986 run — deterministic.
+
+```
+[gate] SIZE rows = 40 | cells = 40 | band = 6-14 | split = train
+[gate] SIZE pairs = 1600 (rows_used x cells)
+[gate] pearson = 0.8455443409882326 | spearman = 0.8021804941374747 | min_corr = 0.7 | TRUSTWORTHY = True
+```
+
+**§3.4's condition is Pearson AND Spearman both ≥ 0.7. Both clear it.** The screen's ranking may be
+used by the causal stage.
+
+## What the gate actually did
+
+For each of the 40 top cells it patched the **knockout `z` for that one head at `p*`** into an
+otherwise clean forward with a real `ZHeadPatch`, measured the true `ΔM`, and correlated it against
+that row's own first-order estimate. **The estimate validated is the row's own, never the screen's
+summed `S[h]`** — correlating a per-row truth against a 670-row sum would mix between-row variation
+into a within-row comparison. The screen chose *which* cells and nothing else.
+
+## A pass is when to check hardest
+
+```
+                                   pairs    pearson   spearman
+full set                            1600     0.8455     0.8022
+drop every h19 cell                 1480     0.8300     0.7909
+drop every h17 cell                 1480     0.8395     0.7949
+drop every h23 cell                 1560     0.8304     0.7961
+drop every layer-14 cell            1400     0.8156     0.7738
+drop the single largest |AtP| pair  1599     0.8404     0.8018
+```
+
+**Not one ablation drops either correlation below the threshold**, so the pass is not an artefact of
+the dominant head, the dominant layer, or one outsized cell.
+
+The sharper test is *within* rows, where pooling cannot help:
+
+```
+40 rows | median within-row pearson 0.8869 | min 0.7390 | max 0.9527
+rows with within-row pearson >= 0.7: 40 of 40
+```
+
+**Every single row clears the threshold on its own.** Calibration over all 1600 pairs: median
+`true/est` = **1.011** — AtP is essentially unbiased here, neither over- nor under-stating the
+intervention. Sign agreement 1273/1600 = 79.6%.
+
+This also settles §3.4's stated worry in the *reassuring* direction: the bf16 gradient was flagged in
+advance as the thing most likely to fail this gate, and it did not.
+
+## What is now unblocked, and what still is not
+
+**Unblocked:** the screen is trustworthy, so §4's causal stage may be launched on its ranking rather
+than on the §3.4 fallback (true single-head patch selection on a 40-row subsample).
+
+**Still not established:** the gate says the *estimator* tracks truth for the cells tested. It says
+**nothing** about whether h19 matters more than a matched control head, which is §4's job and needs
+the arms. And S-181's limitation is untouched — `S[h]` is still a point ranking with **no per-domain
+breakdown and therefore no interval**. A trustworthy estimator of an unstable quantity is still
+unstable. **W1.1 remains the next correctness item, not an optional one.**
+
+## Commands
+
+```
+SCREEN=outputs/boombness/dcs_csi/w1_screen_train_basket_915941.json \
+  ./scripts/gates/dcs_csi_submit.sh slurm_scripts/dcs_csi_w2_patch_gate.slurm   # 916000
+# screen rerun on committed code with a real witness (915941): S[h] BIT-IDENTICAL to 915891
+#   liveness 33282.680195 / 925282.917654 | h19 -355.68223 | h17 -225.00968 | h23 -103.60832
+```
+
+```
+SECTION 3.4 GATE: PASS (0.8455 / 0.8022, both >= 0.7) | 1600 pairs | 40/40 rows pass individually
+robust to dropping h19, h17, h23, layer 14, or the largest cell | calibration 1.011
+screen 915941 reproduces 915891 EXACTLY on committed code with a real provenance witness
+next: W1.1 per-domain S[h] for an interval, then section 4's causal arms | quota 198G of 200G
+```
