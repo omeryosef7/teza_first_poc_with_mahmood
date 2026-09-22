@@ -62,3 +62,34 @@
 #   The DOSE IDENTITY IS BLIND on BT_SINGLE and BT_CTRL_* exactly as it is on PR-012's singletons
 #   (S-246: a 1-head arm records the same 2016 as the all-32 arm), so the census reader's arm-identity
 #   check is mandatory on this family too.
+
+# ================================================================================================
+# AMENDMENT 1 -- added 2026-09-22 by REVIEW R21, WHILE reports/DCS_CSI_PR012_CENSUS_validation.json
+# STILL DOES NOT EXIST (census at 18 of 44 arms; verified by `ls` at the moment of writing, recorded
+# in the R21 entry). NOTHING ABOVE IS ALTERED -- Rule 2 gains a third clause.
+#
+# WHY. R21 ran the freezer on a synthetic census in which EVERY head's effect was POSITIVE -- i.e.
+# knocking the head out RAISES installation, the opposite of the phenomenon being localised. The rule
+# as written said GO and nominated head 0, the WEAKEST of the 32:
+#     RULE 1  h* = 0  E = +0.050000  ci95 [+0.040000, +0.060000]
+#     RULE 2  |E| 0.050000 vs |E(HD_BOTK)| 0.012600 -> exceeds: True | ci95 excludes 0: True -> GO
+# Two holes, both mine:
+#   (i)  Rule 2 tested |E| and CI-excludes-0 and NEVER TESTED THE SIGN. A positive effect satisfies
+#        both, so a sign-flipped result could have been carried to button as a "replication".
+#   (ii) argmin over positives returns the LEAST extreme head, so the nomination would not even have
+#        been the largest of the wrong-signed effects.
+# This is LATENT, not live: HD_KO is -0.227 and HD_TOPK -0.196, so the family's effects are solidly
+# negative and all-32-positive is not a realistic census. It is recorded and closed anyway, because
+# S-246's dose collision was also latent and was also worth catching before it mattered.
+#
+# --- RULE 2, CLAUSE (c). PR-CSI-013 additionally DOES NOT RUN UNLESS:
+#       E(SINGLE_h*) < 0
+#     The effect must point the way the phenomenon does -- knocking the head out must LOWER
+#     installation, the same sign as E(HD_KO) and E(HD_TOPK). A positive single-head effect is a real
+#     measurement and belongs in the census table, but it is NOT the thing PR-013 replicates, and
+#     nominating one would be testing a sign-flipped effect on a second codeword.
+#
+# WHY THIS IS AN AMENDMENT AND NOT A RE-FREEZE: no census number exists to have shaped it. The
+# amendment tightens the gate (it can only ever turn a GO into a NO-GO) and cannot widen what
+# qualifies. It is enforced in scripts/gates/dcs_csi_pr013_freeze.py and asserted by its self-test.
+# ================================================================================================

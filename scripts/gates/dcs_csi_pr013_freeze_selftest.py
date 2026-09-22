@@ -69,6 +69,27 @@ def main():
     else:
         print("[selftest] C ok (NO-GO on ci95 straddling 0)")
 
+    # G -- AMENDMENT 1 (R21): an ALL-POSITIVE census must be a NO-GO. Before the amendment this
+    #      returned GO and nominated head 0, the WEAKEST of the 32 -- a sign-flipped effect would have
+    #      been carried to button as a "replication".
+    cpos = census(14, -0.0850, [-0.1100, -0.0600])
+    for h in range(32):
+        k = "SINGLE_%02d" % h
+        cpos["E"][k] = +(0.05 + 0.001 * h)
+        cpos["ci95"][k] = [+(0.04 + 0.001 * h), +(0.06 + 0.001 * h)]   # exclude 0, |E| > |HD_BOTK|
+    p = run(cpos, tmp, "allpos.json")
+    out = p.stdout + p.stderr
+    if p.returncode == 0:
+        fails.append("G: an ALL-POSITIVE census returned GO -- clause (c) is not enforced and a "
+                     "sign-flipped effect would be carried to button")
+    elif "MUST NOT LAUNCH" not in out:
+        fails.append("G: refused for the wrong reason: %s" % out.strip().splitlines()[-1][:140])
+    elif "E < 0 (amendment 1): False" not in out:
+        fails.append("G: stopped, but did not report the SIGN clause as the cause: %s"
+                     % [l for l in out.splitlines() if "RULE 2" in l][:1])
+    else:
+        print("[selftest] G ok (NO-GO on sign, amendment 1): all-positive census refused")
+
     # D -- tie-break: two heads with IDENTICAL E; the more negative ci LOWER bound must win.
     c = census(14, -0.0850, [-0.1100, -0.0600])
     c["E"]["SINGLE_03"] = -0.0850

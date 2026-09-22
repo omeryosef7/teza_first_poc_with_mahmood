@@ -48,9 +48,16 @@ def go_no_go(cen, h_star):
     botk = cen["E"]["HD_BOTK"]
     bigger = abs(e) > abs(botk)
     excl = (ci[0] < 0 and ci[1] < 0) or (ci[0] > 0 and ci[1] > 0)
+    # AMENDMENT 1 (R21), clause (c): the effect must point the way the phenomenon does. |E| and
+    # ci-excludes-0 are BOTH satisfiable by a POSITIVE effect -- knocking the head out RAISING
+    # installation -- and R21 measured the rule saying GO on an all-positive synthetic census while
+    # nominating the WEAKEST head. A positive single-head effect belongs in the census table; it is
+    # not what PR-013 replicates.
+    negative = (e < 0)
     return {"head": h_star, "E": e, "ci95": ci, "E_HD_BOTK": botk,
             "abs_exceeds_HD_BOTK": bool(bigger), "ci95_excludes_0": bool(excl),
-            "GO": bool(bigger and excl)}
+            "E_is_negative": bool(negative),
+            "GO": bool(bigger and excl and negative)}
 
 
 def draw_controls(h_star):
@@ -172,9 +179,10 @@ def main():
           % (h_star, gate["E"], gate["ci95"][0], gate["ci95"][1]))
     print("[pr013]         next three: %s"
           % ["head %d E %+.6f" % (h, e) for e, _, h in table[1:4]])
-    print("[pr013] RULE 2  |E| %.6f vs |E(HD_BOTK)| %.6f -> exceeds: %s | ci95 excludes 0: %s"
+    print("[pr013] RULE 2  |E| %.6f vs |E(HD_BOTK)| %.6f -> exceeds: %s | ci95 excludes 0: %s | "
+          "E < 0 (amendment 1): %s"
           % (abs(gate["E"]), abs(gate["E_HD_BOTK"]), gate["abs_exceeds_HD_BOTK"],
-             gate["ci95_excludes_0"]))
+             gate["ci95_excludes_0"], gate["E_is_negative"]))
     if not gate["GO"]:
         print("[pr013] RULE 2 GATE: NO-GO.")
         sys.exit("STOPPING, AS PREREGISTERED: Rule 2(b) fails, so nothing replicates and PR-CSI-013 "

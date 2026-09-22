@@ -19754,3 +19754,119 @@ NOT DONE PR-CSI-013 itself -- no prereg exists and none can until the census lan
 
 **No census number was read** — the sweep is endpoint-blind and the freezer refuses to run without a
 census. `score_behavior.py` was not opened.
+
+---
+
+# REVIEW R21 (self, ~4 h cadence) — attacked the **six tools written since R20**. ⚠ **A REAL DEFECT IN MY OWN FROZEN NOMINATION RULE: on an all-positive census it says GO and nominates the WEAKEST head — the rule never tested the SIGN.** Amended and enforced while the census report still does not exist. And the census reader's validation against W4 is now **frozen with its tolerance, before the numbers**
+
+R20 attacked the provenance of a landing family. R21 attacks the **new code**: `pr012_freeze`,
+`head_census`, its self-test, `pr012_gate0_sweep`, `pr013_freeze` and its self-test. Census at **19 of 44,
+GATE 0 clean on every landed arm.**
+
+## R21-1 ⚠⚠ **The nomination rule had no SIGN requirement, and the failure is not subtle**
+
+Ran the PR-013 freezer on a synthetic census in which **every head's effect is POSITIVE** — knocking the
+head out **raises** installation, the opposite of the phenomenon:
+
+```
+[pr013] RULE 1  h* = 0   E = +0.050000  ci95 [+0.040000, +0.060000]
+[pr013] RULE 2  |E| 0.050000 vs |E(HD_BOTK)| 0.012600 -> exceeds: True | ci95 excludes 0: True
+[pr013] RULE 2 GATE: GO.
+[pr013] RULE 3  20 distinct controls: [24, 19, 3, 5, 21, 11, ...]
+```
+
+**Two holes, both mine:**
+
+1. **Rule 2 tested `|E|` and *CI-excludes-0* and never tested the sign.** A positive effect satisfies
+   both, so a **sign-flipped result could have been carried to `button` as a "replication."**
+2. **`argmin` over positives returns the LEAST extreme head** — so the nomination would not even have
+   been the largest of the wrong-signed effects. It picked head 0, the weakest of 32.
+
+**Latent, not live:** `E(HD_KO) = −0.227` and `E(HD_TOPK) = −0.196`, so this family's effects are solidly
+negative and an all-32-positive census is not a realistic outcome. **Closed anyway — S-246's dose
+collision was also latent, and that one mattered.**
+
+**AMENDMENT 1 to the frozen rule, appended (nothing above it altered):**
+
+> **Rule 2, clause (c): PR-CSI-013 additionally does not run unless `E(SINGLE_h*) < 0`** — the effect must
+> point the way the phenomenon does, the same sign as `E(HD_KO)` and `E(HD_TOPK)`. A positive single-head
+> effect is a real measurement and belongs in the census table, but it is **not what PR-013 replicates.**
+
+**Why this is an amendment and not a re-freeze:** `ls reports/DCS_CSI_PR012_CENSUS_validation.json` →
+**no such file**, verified at the moment of writing. **No census number exists to have shaped it.** And
+the amendment can only ever turn a GO into a NO-GO — **it cannot widen what qualifies.** Enforced in
+`pr013_freeze.py` and asserted by a new self-test case:
+
+```
+G  ALL-POSITIVE census -> STOPPED, "MUST NOT LAUNCH", reporting "E < 0 (amendment 1): False"
+   self-test now 7 of 7 (A GO, B/C/G NO-GO, D tie-break, E emit, F determinism)
+```
+
+## R21-2 ✅ The census reader's validation against W4, **frozen with its tolerance, before the data**
+
+The census re-runs `HD_BASE/HD_KO/HD_TOPK/HD_BOTK` — the same arms on the same rows PR-010 and PR-011
+ran. **So the reader is checkable against a tool that produced a published result**, and
+`scripts/gates/dcs_csi_pr012_anchor_crosscheck.py` freezes that expectation now:
+
+```
+E(HD_KO)   = -0.22696123      E(HD_TOPK) = -0.19598350      E(HD_BOTK) = -0.01256722
+(reports/DCS_CSI_PR011_ALL32_validation.json, job 918169)
+```
+
+**⚠ And the honest limit, which changes the prediction.** S-243 §5 found these bit-identical across jobs
+916536 and 918169 — **but both ran on n-301.** Measured:
+
+```
+PR-010 val    job 916536  node n-301  RTX 3090  cc 8.6
+PR-011 val    job 918169  node n-301  RTX 3090  cc 8.6
+PR-012 census job 918631  node n-303  RTX 3090  cc 8.6   <- DIFFERENT PHYSICAL NODE
+```
+
+**Cross-node bit-identity has never been measured in this sprint.** Predicting it would extend a
+same-node result to a cross-node case — **the exact shape of the R9/S-147 error.** So **three** outcomes
+are preregistered, not one:
+
+```
+exact           PASS-STRONG: validates the reader AND establishes cross-node determinism (a free result)
+|diff| <= 1e-4  PASS: reader validated; cross-node bit-identity DOES NOT hold -- a finding, not a fault
+|diff| >  1e-4  STOP: reader wrong or the run did not reproduce; the census MUST NOT BE USED
+```
+
+**Why 1e-4, derived rather than chosen:** `|E(HD_BOTK)| = 0.01256722` is this family's own near-null
+comparator and **1 % of it is 1.26e-4**, so a 1e-4 tolerance cannot move the anchors relative to the
+comparator that defines "no effect" here. **After seeing a mismatch, any threshold would have been a
+threshold chosen to accommodate it.**
+
+**All four branches proved to fire** on synthetic censuses in scratch (never `reports/`):
+
+```
+(i)   EXACT            rc=0  PASS-STRONG
+(ii)  +3e-5 on all     rc=0  PASS, reports cross-node bit-identity does not hold
+(iii) +5e-3 on all     rc=1  STOP
+(iv)  one anchor ABSENT rc=1  STOP        <- absence is not a pass (R20-6's rule)
+```
+
+## R21-3 What R21 checked and did NOT find a defect in
+
+`pr012_gate0_sweep`'s extended endpoint guard (tested in S-249 — fires on both access forms, silent on a
+comment, scans imported callables). `recorded_heads`' `"ALL"` sentinel — verified against a **real**
+`HD_KO` arm, which passes identity as `ALL 32`. The census reader's `NO_RANK_TEST` mirror refusal and the
+four rank tools' reciprocal refusal. The census self-test's case D, which still catches the S-246 dose
+collision. Dead-flag AST gate clean on both new tools.
+
+## R21-4 The pattern in R21, and it differs from R20's
+
+**R20's three defects were in my PROBES** — throwaway checks that mis-read absence. **R21's is in a FROZEN
+ARTEFACT**: a preregistered decision rule that would have licensed the wrong experiment. It was found
+only by **executing the rule against a case designed to break it**, which is a thing prose cannot be
+subjected to. **That is the third time this sprint that implementing a frozen rule found the rule wrong**
+(S-246's arm count 42→44, S-250's 24→23 and under-specified draw, now the missing sign clause) — and all
+three were found by code written **before** the data it would consume. **The lesson is not "write the
+prose more carefully." It is: a frozen rule is not frozen in any useful sense until something executes
+it against adversarial input.**
+
+## R21-5 What R21 did not do
+
+**No census number was read — the report does not exist.** The nomination rule's original text is
+untouched; Amendment 1 is appended (file md5 now `fae4adc6…`, was `4227a940…`, and the change is an
+append). No GPU work was submitted. `score_behavior.py` was not opened (19 of 44 arms running).
