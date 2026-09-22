@@ -21521,3 +21521,80 @@ it: **a cold load here is an NFS read measured at 2-7 MB/s on this rack**, so 22
 range and n-302's 48+ min sits inside it.
 
 **No PR-013 number exists.** `score_behavior.py` was not opened.
+
+---
+
+## S-268 — **S-267's precondition is discharged, and ⚠ S-267's own proposed remedy was WRONG: `revision` is `None`, so comparing it would have been a NO-OP GUARD.** The real identity is `basename(model_id)`, which staging preserves exactly. The port is now a one-line change in ONE named file
+
+### 1. What actually checks the model, measured
+
+```
+dcs_csi_head_analyze.py (W4)   -- NO model comparison at all
+dcs_csi_head_census.py         -- NO model comparison at all
+dcs_csi_head_single_rank.py    -- NO model comparison at all
+dcs_csi_head_patch_gate.py:131 -- if scr.get("model_id") and scr["model_id"] != lm.model_id: REFUSE
+```
+
+**Only one tool compares it, and it compares the FULL PATH by equality.** The three readers do not —
+arm-level model identity is enforced upstream instead, because the argv generator emits one `--model`
+constant for every arm in a family.
+
+### 2. ⚠ CORRECTION to S-267's remedy
+
+S-267 wrote the precondition as: *"verify that the provenance checks compare the snapshot
+**revision/identity**, not the literal path."* **Measured on the real screen artefact:**
+
+```
+model_id : /home/sharifm/students/matanbentov/hub/models--meta-llama--.../snapshots/0e9e39f249a1...
+revision : None
+```
+
+**`revision` is `None`.** A guard comparing it would compare `None` to `None` and pass **whatever the
+paths were** — **a no-op guard, which is worse than no guard**, because it would look like a check.
+**S-267 proposed exactly that remedy and it would have been a false comfort.**
+
+### 3. The correct identity, and staging preserves it by construction
+
+```
+staging:  LOCAL="/tmp/dcs_snap_${USER}/$(basename "$SNAP")"
+basename(model_id) = 0e9e39f249a16976918f6564b8830bc894c89659   <- THE SNAPSHOT HASH
+```
+
+**The staged directory is named after the snapshot hash, so `basename(model_id)` is IDENTICAL under
+staging and under the NFS path.** That — not `revision` — is the thing to compare.
+
+### 4. What the port would actually require
+
+```
+dcs_csi_head_patch_gate.py:131
+  -  if scr.get("model_id") and scr["model_id"] != lm.model_id:
+  +  if scr.get("model_id") and os.path.basename(scr["model_id"]) != os.path.basename(lm.model_id):
+```
+
+**One line, in one file.** And **that file is not in PR-CSI-013's path** — W2's attribution gate already
+passed (916044) and is carried forward unchanged, so **porting staging could not affect any currently
+planned read.** It would matter only for a future W1 screen or W2 gate run.
+
+**⛔ Still not porting it now, and S-266/S-267's reason is unchanged:** 919296 has already paid its cold
+load, so the saving is zero for the running family, and a launcher change mid-run buys nothing. **What has
+changed is that the port is no longer an open-ended risk — it is a located one-line edit with a named
+test.**
+
+### 5. The arms, and the anomaly is resolved as NOT anomalous
+
+```
+date 01:0x | 919296 RUNNING ~52 min on n-302 | "MODEL LOAD" lines: 0 | 0 of 23
+```
+
+**S-267's own citation settles the question I had been holding open across four entries:** a cold load
+here is an NFS read of ~15 GB at a **measured 2-7 MB/s** on this rack.
+
+```
+15 GB at 7 MB/s = 2143 s = 36 min        15 GB at 2 MB/s = 7500 s = 125 min
+n-302 at 52 min and n-307 at 100 min BOTH SIT INSIDE THAT RANGE.
+```
+
+**There was never an anomaly to explain — only a range I had not looked up.** S-257 built a whole entry
+around the host class being the cause; the measured rack figure covers every observation without it.
+
+**No PR-013 number exists.** `score_behavior.py` was not opened.
