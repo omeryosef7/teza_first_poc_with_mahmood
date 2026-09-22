@@ -16793,3 +16793,110 @@ AND NONE OF IT IS EVIDENCE: the candidate was selected to maximise this quantity
 real localisation and a selection artifact have the SAME train signature. Recorded, not believed.
 No new code defect. VALIDATION (17 of 24) settles it in ~35 min.
 ```
+
+---
+
+# ⭐ S-218 — **PR-CSI-010 IS DECIDED ON HELD-OUT DATA: the preregistered verdict is WE FOUND (part of) THE WRITER.** Two paths sharing no code agree to `3.5e-06`. **This contradicts the design's own honest expectation, and that is why it was written down first**
+
+`916536` **COMPLETED**, `2:07:20`, **24/24 arms, one model load**. GATE 0 passes on **all 24**
+validation arms. Head sets and control seeds frozen since **S-190**, before any arm existed.
+
+## The adjudicating result — 23 held-out domains
+
+```
+E(HD_KO)    -0.226961   ci95 [-0.275864, -0.178680]     GATE 1 PASS (upper bound < 0)
+E(HD_TOPK)  -0.195984   ci95 [-0.243068, -0.153491]
+E(HD_BOTK)  -0.012567   (comparator, NOT in the control family)
+
+20 controls  mean -0.004006  median -0.003160  sd 0.013205  range [-0.024571, +0.019694]
+controls more negative than the candidate: 0 of 20
+rank 1 of 21 | p = 0.047619 == the attainable floor, exactly
+F = 0.8635  ci95 [0.7871, 0.9478]   excludes 0, and >= 0.50
+```
+
+**Both preregistered conditions for the positive verdict are met**: rank 1 of 21 **and** `F >= 0.50`
+with the ci95 on `F` excluding 0.
+
+## The independent path agrees — which is what makes it evidence
+
+`dcs_csi_rederive_subspace.py --direction necessity` shares **no code** with W4: different run-dir
+resolution, different bootstrap, its own sign-flip test, and it was written before either.
+
+```
+quantity                     W4            independent
+E(HD_TOPK) - E(HD_BASE)      -0.195984     -0.19598
+instrument capable / GATE 1  True          True
+rank                         1 of 21       1 of 21
+attainable floor             0.047619      0.0476
+certifiable at 0.05          True          True
+verdict                      WE FOUND...   PASSES
+```
+
+**Agreement on the point estimate: `|delta| = 3.5e-06`.** Two independent implementations reaching the
+same number is the design's stated criterion for believing either.
+
+## It replicates from TRAIN, and the candidate is not the extreme of a continuum
+
+```
+            train        validation
+HD_KO      -0.234060     -0.226961
+HD_TOPK    -0.213094     -0.195984
+HD_BOTK    -0.005609     -0.012567
+F             0.9104        0.8635
+```
+
+On held-out data the candidate sits **14.5 sd** below the control mean and **3.87×** the controls'
+entire spread away from the nearest one. **Zero of twenty controls beat it.** The uniform null — §6's
+prediction that any 8 heads would give `≈ -0.057` — is refuted again: 20 held-out draws give
+`-0.004 ± 0.013`, **no effect at all.**
+
+## ⛔ What this does and does not say
+
+**Reportable as, in the design's own words** (carried inside the artifact):
+
+> *8 head **indices**, applied across blocks 6-14 on the query-codeword row, carry at least half of the
+> A1 knockout's effect on installation for `basket` — for leg (i) of the circuit **only**. NOT a claim
+> about any single (layer, head) cell.*
+
+And the four limits travel with it: **cannot** test leg (ii); **cannot** resolve which layer a head acts
+at, because `--knockout-heads` ties an index across 6-14; **cannot** touch blocks 0-5 or 15-18 without
+an all-head ceiling there; and **no** cross-codeword transfer to `button` — that is the next design, now
+unblocked by a positive `basket` result.
+
+## The expectation was wrong, and writing it down first is what makes that legible
+
+§6, on record before any data: *"I expect **PARTIALLY LOCALISED or DISTRIBUTED**, and I expect `F` to be
+well under `0.50`. A **WE FOUND THE WRITER** verdict should read as the surprise it would be."*
+Measured `F = 0.8635` on held-out domains.
+
+**The prediction failed in the direction of a stronger result, and that is the failure mode most likely
+to be a mistake rather than a discovery.** What protects it here is that nothing was chosen after the
+fact: K=8 fixed before any AtP number existed (S-190), head sets and 20 seeds frozen before the arms
+ran, the read frozen before the arms existed and amended only while **no endpoint number had been read**
+(S-210), GATE 0 passing on all 48 arms with the dose identity exact, and two independent analysers
+agreeing to six decimal places. **R17 said the train picture could not distinguish a real localisation
+from a selection artifact. Held-out data can, and it came down on localisation.**
+
+## Commands
+
+```
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+  --tag-prefix csi3_head_basket_validation --split validation
+python scripts/dcs_csi_head_analyze.py --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+  --tag-prefix csi3_head_basket_validation --split validation --expect-n 230 \
+  --require-slurm-job 916536 --out reports/DCS_CSI_PR010_HEAD_validation.json
+python scripts/dcs_csi_rederive_subspace.py --tag-prefix csi3_head_basket_validation --split validation \
+  --expect-n 230 --direction necessity --base HD_BASE --ko HD_KO --full HD_KO --candidate HD_TOPK \
+  --controls HD_RAND00,...,HD_RAND19 --require-slurm-job 916536 \
+  --out reports/DCS_CSI_PR010_HEAD_validation_REDERIVE.json
+```
+
+```
+PR-CSI-010 DECIDED: WE FOUND (part of) THE WRITER, on 23 HELD-OUT domains, verdict preregistered
+rank 1 of 21, p = floor = 0.047619 | F = 0.8635 ci95 [0.7871, 0.9478] | 0 of 20 controls beat it
+TWO PATHS SHARING NO CODE AGREE TO 3.5e-06 | GATE 0 passes on all 48 arms | dose identity exact
+THE DESIGN EXPECTED F WELL UNDER 0.50 AND SAID SO FIRST. The expectation failed toward a STRONGER
+result, which is the direction most likely to be a mistake -- so what carries it is that nothing was
+chosen after the fact. LIMITS TRAVEL INSIDE THE ARTIFACT: 8 head INDICES across 6-14, leg (i) ONLY,
+never a single (layer, head) cell.
+```

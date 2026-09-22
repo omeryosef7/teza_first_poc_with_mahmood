@@ -1,0 +1,630 @@
+{
+  "schema": "dcs_csi_head_analyze/1",
+  "REPORTABLE_AS": "8 head INDICES, applied across blocks 6-14 on the query-codeword row, carry at least half of the A1 knockout's effect on installation for basket -- for leg (i) of the circuit ONLY. NOT a claim about any single (layer, head) cell.",
+  "CANNOT_DO": [
+    "cannot test leg (ii) (rel-11 -> rel-6): no scope exists for it",
+    "cannot resolve WHICH LAYER a head acts at -- --knockout-heads ties the index across 6-14",
+    "cannot test blocks 0-5 or 15-18 causally without first establishing an all-head ceiling there",
+    "does NOT do cross-codeword transfer to button; that is only meaningful after a POSITIVE basket head result, and is the NEXT design"
+  ],
+  "prereg": "configs/dcs_csi_pr010_head_causal_basket.json",
+  "prereg_id": "PR-CSI-010",
+  "tag_prefix": "csi3_head_basket_validation",
+  "split": "validation",
+  "n_domains": 23,
+  "expect_n": 230,
+  "ON_PROTOCOL": true,
+  "protocol_note": null,
+  "B": 10000,
+  "seed": 20260921,
+  "ci": 0.95,
+  "run_dirs": {
+    "HD_BASE": "csi3_head_basket_validation_HD_BASE_20260922_010114_1091762",
+    "HD_KO": "csi3_head_basket_validation_HD_KO_20260922_010419_1091762",
+    "HD_TOPK": "csi3_head_basket_validation_HD_TOPK_20260922_010759_1091762",
+    "HD_BOTK": "csi3_head_basket_validation_HD_BOTK_20260922_011331_1091762",
+    "HD_RAND00": "csi3_head_basket_validation_HD_RAND00_20260922_011900_1091762",
+    "HD_RAND01": "csi3_head_basket_validation_HD_RAND01_20260922_012429_1091762",
+    "HD_RAND02": "csi3_head_basket_validation_HD_RAND02_20260922_012954_1091762",
+    "HD_RAND03": "csi3_head_basket_validation_HD_RAND03_20260922_013522_1091762",
+    "HD_RAND04": "csi3_head_basket_validation_HD_RAND04_20260922_014049_1091762",
+    "HD_RAND05": "csi3_head_basket_validation_HD_RAND05_20260922_014617_1091762",
+    "HD_RAND06": "csi3_head_basket_validation_HD_RAND06_20260922_015143_1091762",
+    "HD_RAND07": "csi3_head_basket_validation_HD_RAND07_20260922_015704_1091762",
+    "HD_RAND08": "csi3_head_basket_validation_HD_RAND08_20260922_020230_1091762",
+    "HD_RAND09": "csi3_head_basket_validation_HD_RAND09_20260922_020758_1091762",
+    "HD_RAND10": "csi3_head_basket_validation_HD_RAND10_20260922_021334_1091762",
+    "HD_RAND11": "csi3_head_basket_validation_HD_RAND11_20260922_021855_1091762",
+    "HD_RAND12": "csi3_head_basket_validation_HD_RAND12_20260922_022428_1091762",
+    "HD_RAND13": "csi3_head_basket_validation_HD_RAND13_20260922_022954_1091762",
+    "HD_RAND14": "csi3_head_basket_validation_HD_RAND14_20260922_023520_1091762",
+    "HD_RAND15": "csi3_head_basket_validation_HD_RAND15_20260922_024043_1091762",
+    "HD_RAND16": "csi3_head_basket_validation_HD_RAND16_20260922_024614_1091762",
+    "HD_RAND17": "csi3_head_basket_validation_HD_RAND17_20260922_025147_1091762",
+    "HD_RAND18": "csi3_head_basket_validation_HD_RAND18_20260922_025715_1091762",
+    "HD_RAND19": "csi3_head_basket_validation_HD_RAND19_20260922_030243_1091762"
+  },
+  "GATE_0_liveness": {
+    "pass": true,
+    "per_arm": {
+      "HD_BASE": {
+        "pass": true,
+        "why": "the BASE arm must be UNINTERVENED",
+        "n_rows": 230,
+        "total_prefill_edits": 0,
+        "median_prefill_edits": 0.0,
+        "min_prefill_edits": 0,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 0.0
+      },
+      "HD_KO": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 466488,
+        "median_prefill_edits": 2016.0,
+        "min_prefill_edits": 1620,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_TOPK": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_BOTK": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND00": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND01": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND02": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND03": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND04": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND05": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND06": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND07": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND08": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND09": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND10": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND11": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND12": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND13": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND14": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND15": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND16": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND17": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND18": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_RAND19": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      }
+    }
+  },
+  "REALISED_DOSE": {
+    "pass": true,
+    "expected_ratio": 8,
+    "note": "K x the all-head arm (S-175); NEVER K/32",
+    "per_arm": {
+      "HD_TOPK": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_BOTK": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND00": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND01": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND02": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND03": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND04": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND05": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND06": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND07": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND08": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND09": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND10": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND11": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND12": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND13": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND14": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND15": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND16": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND17": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND18": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_RAND19": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      }
+    }
+  },
+  "GATE_1_positive_control": {
+    "pass": true,
+    "E_HD_KO": -0.22696123287577621,
+    "ci95": [
+      -0.27586413557561107,
+      -0.17868012283446946
+    ]
+  },
+  "E": {
+    "HD_KO": -0.22696123,
+    "HD_TOPK": -0.1959835,
+    "HD_BOTK": -0.01256722,
+    "HD_RAND00": 0.00440625,
+    "HD_RAND01": -0.01107788,
+    "HD_RAND02": -0.00129957,
+    "HD_RAND03": 0.00799047,
+    "HD_RAND04": -0.01763247,
+    "HD_RAND05": 0.00371146,
+    "HD_RAND06": -0.02233807,
+    "HD_RAND07": -0.02457135,
+    "HD_RAND08": 0.01160677,
+    "HD_RAND09": 0.00925085,
+    "HD_RAND10": -0.01357714,
+    "HD_RAND11": -0.01068139,
+    "HD_RAND12": -0.02231809,
+    "HD_RAND13": -0.00501994,
+    "HD_RAND14": 0.00381644,
+    "HD_RAND15": 0.0127055,
+    "HD_RAND16": 0.00052604,
+    "HD_RAND17": -0.00664978,
+    "HD_RAND18": -0.01866978,
+    "HD_RAND19": 0.01969408
+  },
+  "ci95": {
+    "HD_KO": [
+      -0.27586414,
+      -0.17868012
+    ],
+    "HD_TOPK": [
+      -0.24306753,
+      -0.15349093
+    ],
+    "HD_BOTK": [
+      -0.02020293,
+      -0.00465766
+    ],
+    "HD_RAND00": [
+      -0.00795613,
+      0.01572179
+    ],
+    "HD_RAND01": [
+      -0.01909424,
+      -0.00341789
+    ],
+    "HD_RAND02": [
+      -0.01125533,
+      0.00815432
+    ],
+    "HD_RAND03": [
+      -0.00198741,
+      0.01837514
+    ],
+    "HD_RAND04": [
+      -0.02705387,
+      -0.00873195
+    ],
+    "HD_RAND05": [
+      -0.00580914,
+      0.01333623
+    ],
+    "HD_RAND06": [
+      -0.03527554,
+      -0.00957489
+    ],
+    "HD_RAND07": [
+      -0.04413587,
+      -0.00693413
+    ],
+    "HD_RAND08": [
+      0.00539383,
+      0.01728925
+    ],
+    "HD_RAND09": [
+      0.00241832,
+      0.01611177
+    ],
+    "HD_RAND10": [
+      -0.02808893,
+      -0.00078169
+    ],
+    "HD_RAND11": [
+      -0.02011807,
+      -0.0014453
+    ],
+    "HD_RAND12": [
+      -0.03160545,
+      -0.01375611
+    ],
+    "HD_RAND13": [
+      -0.01409047,
+      0.00390119
+    ],
+    "HD_RAND14": [
+      -0.01048994,
+      0.01823357
+    ],
+    "HD_RAND15": [
+      0.0062293,
+      0.01895195
+    ],
+    "HD_RAND16": [
+      -0.01037692,
+      0.01122345
+    ],
+    "HD_RAND17": [
+      -0.01692532,
+      0.00240648
+    ],
+    "HD_RAND18": [
+      -0.02840993,
+      -0.00935315
+    ],
+    "HD_RAND19": [
+      0.01265418,
+      0.02653204
+    ]
+  },
+  "rank_test": {
+    "candidate": "HD_TOPK",
+    "rank": 1,
+    "of": 21,
+    "p": 0.047619047619047616,
+    "p_display": "0.047619",
+    "attainable_floor": 0.047619047619047616,
+    "floor_note": "the p is reported WITH its floor, always. rank 1 of 21 gives p = the floor = 0.047619; rank 2 gives 0.095238 and does NOT clear alpha = 0.05",
+    "order_most_negative_first": [
+      "HD_TOPK",
+      "HD_RAND07",
+      "HD_RAND06",
+      "HD_RAND12",
+      "HD_RAND18",
+      "HD_RAND04",
+      "HD_RAND10",
+      "HD_RAND01",
+      "HD_RAND11",
+      "HD_RAND17",
+      "HD_RAND13",
+      "HD_RAND02",
+      "HD_RAND16",
+      "HD_RAND05",
+      "HD_RAND14",
+      "HD_RAND00",
+      "HD_RAND03",
+      "HD_RAND09",
+      "HD_RAND08",
+      "HD_RAND15",
+      "HD_RAND19"
+    ]
+  },
+  "F": 0.86351092,
+  "F_ci95": [
+    0.78710197,
+    0.94784347
+  ],
+  "VERDICT": "WE FOUND (part of) THE WRITER",
+  "comparator_HD_BOTK": {
+    "E": -0.01256722,
+    "ci95": [
+      -0.020202934110706113,
+      -0.004657663440108941
+    ],
+    "note": "the COMPARATOR; it is NOT in the control family (VOID 6)"
+  },
+  "TRAIN_CAVEAT": null,
+  "INDEPENDENT_PATH": "dcs_csi_rederive_subspace.py --direction necessity shares no code with this file and must be run as the second opinion (S-196 measured that it RUNS on head arms)"
+}
