@@ -19054,3 +19054,83 @@ frozen read runargs/dcs_csi_pr011_read.txt EXECUTED IN ORDER, NOT amended after 
 **PR-CSI-011 did NOT revise D32, as its own read said it could not** — a second family is a second
 experiment with its own verdict. Its verdict is the same, against a harder family. **The new information
 is in §6, and it is a bound, not a promotion.**
+
+---
+
+## S-244 — the false-negative bound landed in the same hour, and **it reaches S-243 §6's conclusion from a completely unrelated direction: the screen HAS false negatives, and at least HALF the selected cells are weaker than the strongest UNSELECTED one**
+
+```
+sacct -j 918175  ->  csi_fnbound  COMPLETED  00:12:11  ExitCode 0:0
+reports/DCS_CSI_PR010_FN_BOUND.json  (3555 bytes, wrote+verified)
+[fn] SIZE rows used = 40 | pairs = 1920
+```
+
+### 1. What it measured
+
+288 cells (32 heads × blocks 6–14). The W2 gate verified **40**; **248** were never patched. This samples
+**48 of those 248** and patches them, so the screen's *misses* get a magnitude:
+
+```
+UNVERIFIED (sampled 48)  mean 0.023395  sd 0.017971  median 0.019043  max 0.088477  min 0.000195
+                         one-sided 95 % upper bound on the MEAN = 0.027662
+VERIFIED (gate's 40)     mean 0.140276  median 0.085840  min 0.002148  max 0.954981
+Welch t = -3.8386 (dof 39.57)
+max_unverified_below_min_verified : FALSE
+```
+
+**The separation in means is real and large — 6.0× — and the screen is not selecting noise.**
+
+### 2. ⚠ But the distributions OVERLAP, and the overlap is not marginal
+
+```
+strongest UNSELECTED cell   0.088477   <- cell (layer 6, head 21); head 21 is NOT in HD_TOPK
+median SELECTED cell        0.085840
+```
+
+`0.088477 > 0.085840`, so **at least 20 of the 40 gate-verified cells are weaker than the single
+strongest sampled cell the screen threw away.** The weakest verified cell is `0.002148` — 41× smaller
+than that discard. **The screen's cell-level ordering is therefore not trustworthy near the boundary in
+either direction: it admitted near-null cells and discarded real ones.**
+
+### 3. The tool's own CANNOT ANSWER, quoted because it is the honest limit
+
+> *"a sample bounds the sample: this does not prove no UNSAMPLED cell is large, and the bound is on the
+> sampled distribution rather than the worst case over 248. It also inherits the screen's site choice —
+> only `p*` and only the band are ever patched, so a head mattering elsewhere is invisible to this AND
+> to the screen alike."*
+
+**48 of 248 is 19.4 % coverage.** The 0.027662 figure bounds a *mean over a sample*, not a maximum over
+the population, and nothing here can see a head that matters outside the band or off `p*`.
+
+### 4. ⚠⚠ Why this matters more than it first looks: it CONVERGES with S-243 §6
+
+Two findings from the same hour, sharing **no data path** — one from PR-011's control structure on
+**validation**, one from patching unselected cells on **train**:
+
+```
+S-243 section 6  an 8-set sharing ONE head with the candidate reaches 77.8 % of its effect; the
+                 count-wise dose-response is rho = -0.09
+S-244            the screen that CHOSE the candidate discards cells as strong as its own median
+                 selection
+```
+
+**Both say the same thing: the candidate 8-set is SUFFICIENT and is not OPTIMAL, and a better 8-set
+plausibly exists untested.** S-243 §6 reaches it by showing other sets do nearly as well; S-244 reaches
+it by showing the selection procedure had no power to rank cells near its own boundary.
+
+**What is NOT threatened, and the reason is structural.** D32's rank is established **by intervention
+against a preregistered family**, not by the screen. **A screen with false negatives can only mean the
+candidate was not the best available choice — it cannot make a candidate that beat 20 controls stop
+having beaten them.** The certified claim is *"this 8-set carries ≥ half the A1 knockout effect and is
+rank 1 of 21"*; nothing in it says *"no better set exists"*, and **AM-30 already forbids the uniqueness
+reading.** S-244 supplies a second, independent reason for that prohibition.
+
+### 5. What it adds to the record
+
+* The 15 %-of-ceiling MDE and power 1.0 (AM-25) were computed for the head *endpoint*. **S-244 is the
+  matching statement for the screen's SELECTION step**, and it is much weaker: the screen separates on
+  average and does not order reliably near its boundary.
+* **The hypothesis in AM-30 gains a second motivation.** A leave-one-out plus singleton family would
+  measure per-head load directly and would not depend on AtP's cell ordering at all — which S-244 shows
+  is the weakest link in the chain that produced the candidate.
+* ⛔ **No number in D32, D33, F or the rank changes.** Nothing is re-read and nothing is re-frozen.
