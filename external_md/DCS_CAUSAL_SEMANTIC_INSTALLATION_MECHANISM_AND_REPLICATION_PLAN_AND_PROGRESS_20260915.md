@@ -20888,3 +20888,105 @@ frozen  pr013_read 911c3a20 | prereg 5ab06e3a | nomination rule fae4adc6 -- UNTO
 
 **No PR-013 number was read.** `score_behavior.py` was not opened. **The arms in flight are unaffected:
 both edits are to READERS, and neither runs until 23 of 23.**
+
+---
+
+## S-260 — ⛔⛔ **PR-CSI-013 (918967) IS VOID. `BT_BASE` ran WITH `--intervene` and no `--knockout-heads`, so the family's CLEAN REFERENCE was a full all-32 knockout.** `argv_for` compared the arm name to the literal `"HD_BASE"`. **Cancelled at 14 of 23; fixed; relaunched as 919240**
+
+### 1. ⛔ The defect
+
+```
+scripts/gates/dcs_csi_pr010_argv.py:78
+  if arm != "HD_BASE":
+      a += ["--intervene", ..., "--knockout-scope", ...]
+      if heads is not None:
+          a += ["--knockout-heads", ...]
+```
+
+PR-013's base arm is named **`BT_BASE`**, so `arm != "HD_BASE"` was **True** → it received `--intervene`,
+and because a base arm has `heads is None` it received **no `--knockout-heads`** — which
+`score_behavior.py` reads as **ALL 32 HEADS**.
+
+```
+BT_BASE  argv: --intervene TRUE | --knockout-scope TRUE | --knockout-heads FALSE
+BT_BASE  rows: median prefill 2016.0 | min 1620 | max 2736 | decode 0 | n 230
+PR-012 HD_BASE (correct): --intervene FALSE | median prefill 0.0 | min 0 | max 0
+```
+
+**Every effect in PR-013 would have been `y(arm) − y(KNOCKED-OUT BASELINE)`. The family is VOID.**
+
+### 2. ⚠ And this is S-251's defect, in the same function, one tick after I claimed to have swept it
+
+**S-251 generalised `all_arms()` to take `base_arms` from the prereg. It did not generalise `argv_for`,
+four lines below.** The **enumeration** was fixed and the **emission** was left hard-coded. S-252 then
+audited *"every tool on PR-013's path"* for **codeword** literals and found W4's — **and did not look for
+ARM-NAME literals in the function it had just edited.**
+
+**`argv --check` passed on the broken argv**, because it verified only that flags **exist** and that head
+lists **match the prereg**. **It never asserted the one thing that makes a base arm a base arm.**
+
+### 3. How it was found — and neither sweep could see this family at all
+
+```
+pr010 gate0 sweep on PR-013  ->  KeyError: 'K'                    (PR-013's prereg has no K)
+pr012 gate0 sweep on PR-013  ->  "REFUSING: ... use scripts/gates/dcs_csi_pr010_gate0_sweep.py"
+```
+
+**A loop, whose refusal message pointed at the tool that crashes.** Rather than write a **third** sweep —
+the fork-the-generator antipattern S-251 named — **pr012's was generalised**: arms from `base_arms`
+(default verified to bind) plus every `head_sets` entry, `control_pool` skipped explicitly. **Its first run
+on PR-013 said:**
+
+```
+BT_BASE   230   median_pre 2016.0   want 0   decode 0   viol 0   not intervened   FAIL
+GATE 0: 1 of 14 landed arm(s) FAILED.
+```
+
+**Regression:** PR-012's sweep output **byte-identical**; it now also reads **PR-011 (24 of 24 PASS)**, a
+family it previously refused.
+
+**⚠ Worth stating plainly: the reader would have caught this too** — `dcs_csi_head_single_rank.py` derives
+`want = 0` for `base_arms[0]` and its GATE 0 would have refused with `CANNOT ANSWER`. **So the result was
+never at risk; ~4 GPU-hours were.** The sweep turned a 4-hour discovery into a 2.5-hour one, and the
+generalisation is what made the sweep able to look.
+
+### 4. The fixes
+
+```
+argv_for  ->  if arm != base_arms_of(prereg)[0]:
+--check   ->  asserts the clean-reference arm carries NO --intervene/--knockout-scope/--knockout-heads
+              AND that every other arm DOES carry --intervene
+
+BASE-ARM CHECK PASSED: 'BT_BASE' carries no intervention flag; all 22 other arms carry --intervene
+REGRESSION: three published basket families, 6 of 6 BYTE-IDENTICAL (3 preregs x 2 splits)
+BT_BASE's --intervene count after the fix: 0
+```
+
+### 5. VOID bookkeeping, and what the read must now say
+
+```
+918967  CANCELLED at 14 of 23. VOID -- VOID condition: the clean reference carried an intervention.
+        Its 14 arm dirs are KEPT, not deleted: they are the evidence, and the sprint's standing handling
+        of duplicate tags is --require-slurm-job, not deletion (S-147/S-155).
+919240  SUBMITTED, PENDING (Priority). provenance: BLOB c62cfee5 PORCELAIN clean
+```
+
+**⛔ `csi6_btnhead_button_validation_*` tags now exist TWICE — once void, once live. The frozen read's
+`<VALIDATION_JOB_IDS>` must be `919240` and MUST NOT name 918967.** `strict_run_dir` asserts exactly one
+complete candidate per tag after the job filter, so naming both would refuse rather than mix — but naming
+the wrong one would silently analyse the void family. **This is the S-104/S-155 hazard and it is live.**
+
+**The frozen read itself is UNCHANGED** (`911c3a20`): `<VALIDATION_JOB_IDS>` was always a placeholder to be
+filled at read time, and filling it with the surviving job id is what it is for — not an amendment.
+
+### 6. The honest shape of this
+
+**Three consecutive ticks claimed to have generalised this pipeline** — S-251 (bank + enumeration), S-252
+(claim text + arm names in W4), S-259 (sign clauses across verdict tools) — **and a hard-coded arm name
+survived all three, in the function S-251 edited.** The audits were real and each found something; **none
+of them re-read the function they had just changed.**
+
+**The rule this earns: after generalising a function, grep THAT FUNCTION for every other literal of the
+same kind before moving on.** S-251 replaced one arm-name literal in `all_arms()` and left one in
+`argv_for`; a single `grep 'HD_' scripts/gates/dcs_csi_pr010_argv.py` at the end of S-251 would have shown
+both.
