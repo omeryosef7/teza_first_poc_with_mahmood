@@ -1274,3 +1274,53 @@ methods that only find positive components."*
 **⛔ UNVERIFIED — the abstract was not fetched and nothing here may be cited.** Recorded because it bears
 on a finding already on record and because it suggests the positives are a known phenomenon rather than
 noise. **The census reports them with CIs and claims nothing about them; that does not change.**
+
+---
+
+# ADDENDUM N — 2026-09-23: **Addendum M's flagged lead is discharged. "Negative heads" IS an established category with a solid reference — and ⚠ my own summary of it was WRONG in one attribution and over-reaching in another**
+
+## N1. VERIFIED — arXiv:2310.04625, *Copy Suppression: Comprehensively Understanding an Attention Head*
+
+Callum McDougall, Arthur Conmy, Cody Rushing, Thomas McGrath, Neel Nanda. **6 October 2023.** Fetched.
+
+```
+mechanism  "If components in earlier layers predict a certain token, and this token appears earlier in
+           the context, the head suppresses it."
+model      GPT-2 SMALL, a SINGLE head: L10H7
+coverage   76.9 % of that head's impact, on weights-based evidence
+term       "Negative Heads" appears in the abstract: "This explains why multiple prior works studying
+           certain narrow tasks found negative heads that systematically favored the wrong answer"
+```
+
+## N2. ⚠ CORRECTION to Addendum M4 / S-263 §4, on two counts
+
+**(a) The term "anti-induction heads" was attributed to this reference. It is not this paper's term** —
+the paper uses *"negative heads"* and does not use *"anti-induction heads"*. **M4 took a search summary's
+phrasing and attached it to a specific citation without checking.** That is the same shape as R19's
+*"AtP\*'s estimator is ours"*: a plausible pairing asserted rather than read.
+
+**(b) "Suggests the positives are a known phenomenon rather than noise" was over-reaching.** What is
+established is that **a CATEGORY of negative heads exists** — that much is solid and well-referenced.
+**Whether our five are instances of it is untested**, and copy suppression is a *specific* mechanism:
+
+```
+Copy Suppression   GPT-2 Small, ONE head, weights-based, NEXT-TOKEN copying of a token already in context
+S-254's positives  Llama-3.1-8B-Instruct, FIVE heads, ablation on y_install, a concept-vs-codeword
+                   LOG-ODDS readout -- not a next-token copying endpoint at all
+```
+
+**Our endpoint is not the one copy suppression is defined on**, so the mechanism may not apply even in
+principle. **Nothing in the census may be described as copy suppression, and "negative head" may be used
+only as a category label with this reference, never as a mechanism claim about heads 18, 31, 27, 14 or 7.**
+
+## N3. What survives, stated at the strength the evidence supports
+
+> **Permitted:** *"Heads whose ablation moves an endpoint in the direction opposite to the studied
+> behaviour are an established category ('negative heads'; McDougall et al., arXiv:2310.04625). The census
+> records five such heads descriptively, with CIs and no mechanism claim."*
+
+> **Forbidden:** calling them copy-suppression heads; calling them anti-induction heads; treating their
+> existence as explained; or citing them as evidence for anything about the candidate heads.
+
+**S-254 already recorded these five as descriptive with no claim attached. That does not change — this
+addendum removes a gloss I added afterwards, not a finding.**

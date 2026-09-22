@@ -21251,3 +21251,72 @@ frozen  read 911c3a20 | prereg 5ab06e3a -- UNTOUCHED.  <VALIDATION_JOB_IDS> = 91
 ```
 
 `score_behavior.py` was not opened.
+
+---
+
+## S-264 — **S-263's flagged lead is discharged in one tick, and ⚠ my own gloss on it was WRONG twice.** "Negative heads" is a real category with a solid reference; attributing "anti-induction heads" to it was not checked, and calling our five positives "a known phenomenon" over-reached
+
+S-263 §4 recorded the lead as **⛔ UNVERIFIED — no abstract fetched, nothing citable**. Fetched this tick.
+
+### 1. VERIFIED — arXiv:2310.04625, *Copy Suppression*
+
+McDougall, Conmy, Rushing, McGrath, Nanda, **6 Oct 2023**.
+
+```
+mechanism  "If components in earlier layers predict a certain token, and this token appears earlier in
+           the context, the head suppresses it."
+model      GPT-2 SMALL, a SINGLE head: L10H7 | coverage 76.9 % of that head's impact, weights-based
+term       "Negative Heads" IS in the abstract: "...prior works studying certain narrow tasks found
+           negative heads that systematically favored the wrong answer"
+```
+
+### 2. ⚠ CORRECTION to S-263 §4, on two counts
+
+**(a) I attributed *"anti-induction heads"* to this reference. It is not this paper's term.** It uses
+*"negative heads"* and does not use *"anti-induction"*. **I took a search summary's phrasing and attached
+it to a specific citation without reading the citation** — the same shape as R19's *"AtP\*'s estimator is
+ours"*: a plausible pairing asserted rather than checked. **The flag `UNVERIFIED` is what made this cheap
+to correct; the error was in the gloss, not in the flag.**
+
+**(b) *"Suggests the positives are a known phenomenon rather than noise"* over-reached.** What is
+established is that **a CATEGORY exists**. Whether ours are instances is untested, and the gap is large:
+
+```
+Copy Suppression   GPT-2 Small | ONE head | weights-based | NEXT-TOKEN copying of a token already in context
+S-254's positives  Llama-3.1-8B | FIVE heads | ablation | y_install, a concept-vs-codeword LOG-ODDS readout
+```
+
+**Our endpoint is not the one copy suppression is defined on, so the mechanism may not apply even in
+principle.**
+
+### 3. What survives, at the strength the evidence supports
+
+> **Permitted:** *"Heads whose ablation moves an endpoint opposite to the studied behaviour are an
+> established category ('negative heads'; McDougall et al., arXiv:2310.04625). The census records five
+> such heads descriptively, with CIs and no mechanism claim."*
+>
+> **Forbidden:** calling them copy-suppression heads; calling them anti-induction heads; treating their
+> existence as explained; citing them as evidence for anything about the candidate heads.
+
+**S-254 recorded these five as descriptive with no claim attached, and that does not change. This entry
+removes a gloss I added afterwards, not a finding.**
+
+### 4. The arms — still in the cold load, and the log position confirms it
+
+```
+date 00:46:45 | 919296 RUNNING 37:30 on n-302 | "MODEL LOAD" lines in the log: 0
+log: 19 lines, last non-giant line = "[score] EXCLUDED 930 declared prompt_ids ... 1160 -> 230 rows"
+     -- the position PR-012 reached IMMEDIATELY BEFORE its [w3] MODEL LOAD line (S-258's method)
+cold loads: n-303 1311.6 s | n-301 1851.5 s | n-302 >2250 s and counting | n-307 6008.8 s
+                                                                          (warm on n-307: 47.5 s)
+```
+
+**n-302 has now passed every prior large-host cold load.** ⛔ **Still no conclusion — the arm has not
+finished, and S-257 is the entry that exists for exactly this temptation.** The wall is 12 h and ~11 h
+remain, so nothing is at risk but wall-clock.
+
+**A cost worth naming, since it is now systematic:** every relaunch has landed on a NEW node and paid a
+fresh cold load — n-307 (6008.8 s), then n-302 (>2250 s). **S-261 established the warm load is 126×
+cheaper. Pinning a relaunch to the node that already holds the snapshot would avoid this**, and §16 permits
+a single-node `--nodelist`. **Not done now** — cancelling a job that is minutes from finishing its load to
+save a load would be self-defeating — **but it is the right move for the NEXT relaunch, if there is one.**
