@@ -22009,3 +22009,76 @@ frozen  read 911c3a20 | prereg 5ab06e3a | nomination rule fae4adc6 | reading cri
 
 **No PR-013 number has ever been read**, across four generations, every one stopped by a gate or a
 tooling finding rather than by an endpoint. `score_behavior.py` was not opened.
+
+---
+
+## S-274 — ⚠⚠ **the warm-node helper I built to apply S-147's lesson CHECKED GPUs AND IGNORED MEMORY.** It returned `PIN n-307` for a node with 12 GB schedulable against a 64 GB request; SLURM scheduled the pinned job **10 hours out**. Fixed. ⚠ **And a CORRECTION to S-272: the relaunch arithmetic omitted FAIRSHARE, which is the cost that is now biting**
+
+### 1. ⚠ The helper's defect, and the irony
+
+```
+scontrol show node n-307
+  RealMemory=257570   AllocMem=245760   ->  12 GB schedulable
+slurm_scripts/dcs_csi_pr010_arms.slurm:13   #SBATCH --mem=64G
+```
+
+**64 GB requested against 12 GB schedulable — the job could not start on n-307 at all.** SLURM said so:
+
+```
+scontrol show job 919526 -> Reason=Priority   StartTime=2026-09-23T12:18:18    <- TEN HOURS OUT
+```
+
+**`dcs_csi_warm_node.sh` checked GPU counts only.** S-266 built it citing S-147, whose *entire* finding was
+that **memory is the variable** — and the helper that encodes that lesson ignored memory. **Cancelled
+919526 and resubmitted unpinned as 919531.**
+
+**Fixed to require both, and proven on the node that fooled it:**
+
+```
+n-307: gpus 2/8 allocated, 6 free | mem 11G schedulable, need 64G
+DO NOT PIN -- no candidate has BOTH a free GPU and 64G of schedulable memory      rc=1
+n-301: gpus 0/7 allocated, 7 free | mem 1510G schedulable, need 64G
+PIN n-301                                                                        rc=0
+```
+
+### 2. ⚠⚠ CORRECTION to S-272 — the arithmetic omitted the cost that now dominates
+
+S-272 concluded *"RELAUNCH WINS IN BOTH BRANCHES"* by comparing **load times**. S-273 then bounded
+**pending time**. **Neither counted FAIRSHARE, and that is what is now holding the job:**
+
+```
+sshare -U -u omeryosef   ->  RawUsage 9092852   FairShare 0.019231
+tonight's CANCELLED work: 918967 2:56:32 + 919240 0:27:42 + 919296 1:56:21  ~= 5.3 GPU-HOURS
+cluster: 159 PENDING, 90 RUNNING
+919531 (unpinned): Reason=Priority, StartTime=Unknown -- while n-301 sits COMPLETELY FREE (7 GPUs, 1510 GB)
+```
+
+**A free node plus `Reason=Priority` means the scheduler is withholding the job on priority, not
+placement — so pinning cannot fix it and neither can choosing a better node.** Four cancellations spent
+~5.3 GPU-hours of fairshare, and the fifth submission now queues behind 159 jobs. **919296 started
+instantly at 00:09; the difference is what I spent since.**
+
+**Had I modelled this, S-272's calculus would plausibly have favoured STAYING on n-302** — it was at
+94/291 with a printed ETA and would have finished ~06:00. **Instead the churn bought a better node and
+lost the priority to use it.**
+
+### 3. ⛔ The standing rule, and an immediate commitment
+
+> **Any relaunch decision must count fairshare, not only wall-clock.** A cancelled job's elapsed time is
+> charged in full, so `scancel` + resubmit is never free — it costs the elapsed time **twice**: once as
+> wasted compute and again as priority for every later submission.
+
+**And concretely: NO FURTHER CANCELLATIONS for PR-CSI-013.** 919531 waits as long as it waits. A fresh job
+carries a 12 h wall, the read is frozen, nothing else is blocked, and **the only thing another relaunch can
+buy now is a worse position in the queue.**
+
+### 4. State
+
+```
+date 02:13 | 919531 PENDING (Priority), StartTime Unknown, UNPINNED
+cancelled tonight: 918967 (VOID), 919240 (orphaned), 919296 (slow load), 919526 (unschedulable pin)
+quarantine 22 dirs | 0 csi6 dirs live | <VALIDATION_JOB_IDS> = 919531 ALONE at read time
+frozen  read 911c3a20 | prereg 5ab06e3a | nomination rule fae4adc6 | reading criteria 5b99971c
+```
+
+**No PR-013 number has ever been read.** `score_behavior.py` was not opened.
