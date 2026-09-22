@@ -18760,3 +18760,133 @@ hidden it; this is the same class as S-042's *"an empty porcelain reads as clean
 is untouched, and `score_behavior.py` was not opened (918175's necessity chain is still pending).
 The R15-0 lock list (`head_fn_bound`, `head_atp`, `score_behavior`, `pair_common`, `ds_common`,
 `signals`) does not include the harness.
+
+---
+
+# REVIEW R20 (self, ~4 h cadence) — attacked the **PROVENANCE of the family now landing**, endpoint-blind. **The arms are clean and the read's pre-data arithmetic is exact — but the family spans SEVEN COMMITS, and the check I wrote to prove that inert VERIFIED TWO FILES BY HASHING THE EMPTY STRING.** Three absence-as-a-value errors in one review, all mine
+
+R19 attacked the literature reasoning. R20 attacks what will produce PR-CSI-011's verdict: the **arms**
+and the **read's frozen commitments**. **Nothing here reads an endpoint.** 21 of 24 landed at 14:38.
+
+## R20-1 ✅ Arm identity: every landed arm carries EXACTLY the preregistered head set, in order
+
+The S-227 hazard was *right names, wrong heads*. Checked against the prereg on every landed arm:
+
+```
+arms checked: 20   mismatches: 0   duplicate tags: 0
+HD_TOPK config knockout_heads = 19,17,23,6,13,2,24,28  == prereg HD_TOPK, SAME ORDER
+```
+
+`control_pool` is genuinely all 32 (`sorted(pool) == range(32)`), all 20 draws are distinct, each is 8
+distinct indices in 0–31, and **no draw equals `HD_TOPK` or `HD_BOTK`.**
+
+**A note on the first attempt:** it printed `MATCH=False` on all 20. The arms were right; **my comparison
+was comparing a string to a list** (`knockout_heads` is stored `"19,17,..."`). The 20/20 pass above is
+after parsing.
+
+## R20-2 ✅ The read's pre-data claims are EXACT — ⚠ **and the realised family is 12.5 % lighter on candidate heads than the theoretical draw**
+
+`runargs/dcs_csi_pr011_read.txt` committed, before any arm, to *"the mean control now carries **1.75**
+candidate heads and one carries **four**."* Recomputed from the prereg:
+
+```
+overlap with HD_TOPK over ALL 20 draws: [0,1,1,2,1,4,2,1,2,1,0,3,2,1,2,3,1,3,3,2]
+total = 35   mean = 1.750000   max = 4 (exactly ONE draw)   dist {0:2, 1:7, 2:6, 3:4, 4:1}
+```
+
+**Both numbers are exactly right.** ⚠ **But the THEORETICAL mean is `8 × 8/32 = 2.0000`.** These 20
+specific draws sit **0.25 candidate heads below expectation — a 12.5 % relative shortfall.**
+
+**This does not invalidate anything:** the family is preregistered and fixed, and the rank p is exact
+*conditional on the family drawn*. **It bounds the interpretation.** The read asks *"is this set
+privileged among ARBITRARY 8-head sets?"* — and its realised comparison set is slightly **less**
+candidate-loaded than an ideal all-32 draw, i.e. **slightly easier than the question as worded.** That
+sentence must accompany any PR-011 verdict, and it is the same species as R18's finding that PR-010's
+complement pool sat on the *opposite side of zero*.
+
+## R20-3 ✅ `--require-slurm-job` will bind — after a **false alarm I created**
+
+```
+_runmeta_job(arm) -> '918169' on ALL 22 dirs; one id, one node n-301, one seed 20260913
+```
+
+**My first probe reported "22 dirs with NO job id."** It searched four **guessed** filenames —
+`config.json`, `DONE.json`, `env.json`, `provenance.json` — and **not `RUNMETA.json`, which is where the
+field actually lives.** Had I stopped there I would have recorded that the frozen read cannot execute.
+**Absence in my search, reported as absence in the world.** The fix was to stop guessing the schema and
+**read the resolver** (`strict_run_dir` → `_runmeta_job`). Note the resolver is fail-closed: an
+unrecordable job id **drops** the directory rather than admitting it.
+
+## R20-4 ⚠ `git_dirty` is `None` on all 22 arms — it carries NO cleanliness information
+
+```
+git_dirty : {'None': 22}     <- not False. NOT EVIDENCE OF A CLEAN TREE.
+```
+
+`git` is absent on the compute nodes, so the in-arm field is unpopulated. **Nothing is currently fooled:**
+no CSI gate tests it — `dcs_csi_pr005_gate0d.py:69` only *prints* it — and the real witness is the
+submitter's export, **verified present** in the job log:
+
+```
+outputs/boombness/logs/csi_pr010arms_918169.out:10
+BLOB 45321a2e  PORCELAIN [clean]
+```
+
+So this is documentation-grade, not a live defect — **but the field a VOID condition nominally rests on
+reads `None`, and any future truthiness test (`if not rm["git_dirty"]`) would score `None` as clean.**
+
+## R20-5 ⚠⚠ **The family spans SEVEN COMMITS** — and the check that proves it inert was itself broken
+
+```
+git_commit across the 22 arms: 383a8dbf x5, f6f65639 x4, 358643fe x4, 233ddf81 x4,
+                              1f0c57ab x3, 45321a2e x1, eb08150d x1     <- SEVEN
+```
+
+The arms read HEAD at **arm start**, and I committed S-239…S-242 while the job ran. **A family spanning
+seven commits is not obviously one experiment**, so it must be proven. It is:
+
+```
+FILE                     uniq   md5        bytes
+score_behavior.py          1  891cd1ab   320289   IDENTICAL across all 7
+signals.py                 1  ae15c204    40052   IDENTICAL
+ds_common.py               1  0051fe2d    46684   IDENTICAL
+pair_common.py             1  131d97cc   151004   IDENTICAL
+dcs_csi_arm_runner.py      1  1c0028b7    12193   IDENTICAL
+dcs_csi_head_atp.py        1  f800dc6c    22162   IDENTICAL
+on-disk NOW == every one of those;  modified TRACKED files: 0
+```
+
+**⛔ THE FINDING IS IN MY OWN CHECK.** Its first version reported `d41d8cd9` — *"identical"* — for
+`ds_common.py` and `pair_common.py`:
+
+```
+printf '' | md5sum  ->  d41d8cd9...      <- md5 of the EMPTY STRING
+```
+
+I had guessed the paths as `src/boombness/{ds,pair}_common.py`; **they live in
+`doublespeak_causality/`.** `git show <commit>:<nonexistent path>` prints **nothing**, and my pipeline
+hashed nothing and called two empty strings equal. **A check written to guard the family's integrity
+returned PASS for two files it never read** — and it would have returned PASS just the same had they been
+deleted. Fixed with an explicit `git cat-file -e` existence test **and** an `assert len(blob) > 0`.
+
+## R20-6 The pattern, and it is the sprint's oldest
+
+**Three absence-as-a-value errors in ONE review, all mine, all in probes rather than in the pipeline:**
+guessed filenames (R20-3), `None` read as a value (R20-4), empty blob hashed as content (R20-5). With the
+four already on record — the rank-power sweep defaulting on an absent field, `git: command not found`
+yielding an empty porcelain that reads as clean, an absent `y_install` field, a missing GATE 0 denominator
+counted as a pass — **the running count for this class is 7, and it is the sprint's most recurrent defect
+by a wide margin.**
+
+**What distinguishes today's three:** all were caught, and each was caught by *asking the artefact instead
+of my memory of it* — reading `strict_run_dir` instead of guessing the schema, checking `md5("")`, running
+`git ls-tree`. **The standing rule this earns: any check whose PASS is consistent with reading nothing is
+not a check.** An existence assertion is not optional decoration on a hash comparison; it is the half that
+carries the meaning.
+
+## R20-7 What R20 did NOT do
+
+No endpoint was read; the frozen read is not begun; `score_behavior.py` was not opened (918175's necessity
+chain is pending and it is in the R15-0 lock). **No code was changed in this review** — R20-5's fix is to
+a throwaway probe, not to a repository tool. R20-2 and R20-4 are recorded as constraints on interpretation
+and as a documentation gap; neither licenses editing a frozen artefact.
