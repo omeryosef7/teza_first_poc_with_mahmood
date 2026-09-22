@@ -128,9 +128,19 @@ def main():
                        attn_implementation="eager")
     attn_loaded = sb.loaded_attn_implementation(lm.model)
     sb.assert_eager_for_knockout(attn_loaded, "eager")
-    if scr.get("model_id") and scr["model_id"] != lm.model_id:
-        sys.exit("REFUSING: screen was produced on model %r, this gate loaded %r"
-                 % (scr["model_id"], lm.model_id))
+    # S-277, discharging S-267's precondition. COMPARE THE SNAPSHOT IDENTITY, NOT THE LITERAL PATH.
+    # Node-local staging (dcs_csi_p1_arms.slurm:45-78, DCS-CSI-092) loads from
+    # /tmp/dcs_snap_$USER/<snapshot-hash> instead of the NFS path, so a full-path equality test would
+    # REFUSE a staged run even though it is the same weights. S-268 measured that `revision` is None in
+    # every artefact here, so comparing THAT would be a no-op guard -- the identity that actually
+    # survives staging is basename(model_id), which IS the snapshot hash (the staging block names the
+    # local directory `$(basename "$SNAP")`).
+    # The check is NOT weakened: two different snapshots have different hashes and still refuse.
+    if scr.get("model_id") and os.path.basename(str(scr["model_id"]).rstrip("/")) !=             os.path.basename(str(lm.model_id).rstrip("/")):
+        sys.exit("REFUSING: screen was produced on snapshot %r, this gate loaded %r (paths %r vs %r)"
+                 % (os.path.basename(str(scr["model_id"]).rstrip("/")),
+                    os.path.basename(str(lm.model_id).rstrip("/")),
+                    scr["model_id"], lm.model_id))
     n_heads, head_dim = pc._attn_head_dims(lm.model)
     c_l, w_l, id_meta = sg.readout_id_pair(lm.tokenizer, a.concept, a.codeword)
     dev = lm.model.device

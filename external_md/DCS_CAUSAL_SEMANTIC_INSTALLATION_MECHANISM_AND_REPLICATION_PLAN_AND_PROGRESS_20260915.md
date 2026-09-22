@@ -22212,3 +22212,65 @@ absent. **The one thing that would genuinely fix this class of cost is porting n
 deliberate post-PR-013 action, not a mid-flight one.**
 
 **No PR-013 number has ever been read.** `score_behavior.py` was not opened.
+
+---
+
+## S-277 — **S-267's precondition is DISCHARGED with a proof, not an argument.** The one provenance check that staging would have broken now compares the SNAPSHOT HASH, and it is shown to accept a staged path while still refusing a different snapshot. ⛔ **Built and proven — NOT adopted by the running family**
+
+### 1. The distinction this entry rests on, stated before the work
+
+S-276 wrote that porting staging is *"a deliberate post-PR-013 action, not a mid-flight one."* **That
+constraint was about not disturbing the running family, and it is respected here: nothing in 919531's path
+is touched and the launcher is unchanged.** What S-267 asked for was a **precondition** —
+*"verify that the provenance checks compare the snapshot identity, not the literal path … and prove it on a
+completed family before any new family uses it."* **Discharging a precondition is not adopting the change.
+Doing it now costs nothing because the alternative is idle waiting on a 3.5 h load.**
+
+### 2. The change, in the one file S-268 identified
+
+`scripts/dcs_csi_head_patch_gate.py:131` compared the **full path** by equality:
+
+```python
+-  if scr.get("model_id") and scr["model_id"] != lm.model_id:
++  if scr.get("model_id") and os.path.basename(str(scr["model_id"]).rstrip("/")) != \
++          os.path.basename(str(lm.model_id).rstrip("/")):
+```
+
+**`basename` IS the snapshot hash**, because the staging block names its local directory
+`$(basename "$SNAP")` — so the identity survives staging by construction (S-268). **`revision` is `None`
+in every artefact here, so comparing that would have been the no-op guard S-268 warned about.**
+
+### 3. ⛔ Proven, including that it is NOT weakened
+
+```
+OK  same snapshot, same path          refuses=False
+OK  same snapshot, STAGED path        refuses=False   <- the new behaviour
+OK  same snapshot, trailing slash     refuses=False
+OK  DIFFERENT snapshot                refuses=True    <- NOT WEAKENED
+OK  DIFFERENT snapshot, staged form   refuses=True    <- NOT WEAKENED
+the OLD full-path test on the staged case: True  -> it would have REFUSED a correct run
+ALL CASES CORRECT: True
+```
+
+**The guard still refuses two different snapshots, in both path forms.** What changed is that it no longer
+refuses the *same* snapshot read from a different location — which is the only thing staging alters.
+
+### 4. What is explicitly NOT done
+
+* **Staging is NOT ported into `dcs_csi_pr010_arms.slurm`.** The launcher is untouched; 919531 and every
+  future family still read from NFS until that is a separate, deliberate change.
+* **`CSI_STAGE=1` remains inert on this launcher** (S-267), and no submit line was altered.
+* **This file is not on PR-CSI-013's path** — W2's attribution gate passed in 916044 and is carried forward
+  unchanged, so the edit cannot affect the running family or its frozen read.
+
+**What is now true that was not before: the blocker S-267 named is gone, so porting staging is a
+launcher-only change whose provenance consequence has been measured and closed.**
+
+### 5. The arms
+
+```
+date 02:40 | 919531 RUNNING ~20 min on n-302 | 0/291 -- shard 1 still loading (~13 min)
+tracking 919296's cold profile on this node (its shard 1 took 21:19), exactly as S-276 projected
+```
+
+**No PR-013 number has ever been read.** `score_behavior.py` was not opened.
