@@ -62,7 +62,31 @@ def main():
 
     pr = json.load(open(a.prereg))
     hs = pr["head_sets"]
-    arms = ["HD_BASE", "HD_KO", "HD_TOPK", "HD_BOTK"] + sorted(k for k in hs if k.startswith("HD_RAND"))
+
+    # ⛔ S-242. THIS HARNESS IS PR-CSI-010-HISTORICAL AND MUST NOT BE RE-TARGETED SILENTLY.
+    # Two reasons, both verified rather than argued:
+    #  (1) the prefix `HD_RAND` below is a CONSTANT. S-227 moved the control prefix into the
+    #      preregistration as `control_prefix` and converted five consumers; THIS FILE WAS MISSED.
+    #      Pointed at PR-CSI-011 (control_prefix `HD_ALL32_`) the comprehension matches NOTHING and
+    #      the harness would synthesise 4 arms instead of 24, pass an EMPTY --controls to the
+    #      re-derivation, and print "SIZE arms to synthesise = 4" without any assertion firing.
+    #      Silent degradation is the S-120(e) foot-gun with its sign flipped.
+    #  (2) it exercises `dcs_csi_subspace_analyze.py`, which S-196 then found VOIDs every head arm
+    #      structurally and which runargs/dcs_csi_pr010_read.txt now retains STRUCK THROUGH as
+    #      INOPERABLE. The frozen reads' primary path has been W4 since S-210, so this harness no
+    #      longer exercises the read it is named for.
+    # It is left runnable for PR-CSI-010 because it is the tool that FOUND (2) -- but the two silent
+    # failure modes are now loud.
+    cprefix = pr.get("control_prefix", "HD_RAND")
+    if cprefix != "HD_RAND":
+        sys.exit("REFUSING: this harness hard-codes HD_RAND and exercises the INOPERABLE analyser "
+                 "(S-196); prereg %r declares control_prefix %r. It is PR-CSI-010-historical -- do "
+                 "NOT use it as another family's pre-flight (S-242)." % (a.prereg, cprefix))
+    controls = sorted(k for k in hs if k.startswith("HD_RAND"))
+    if len(controls) != pr["n_controls"]:
+        sys.exit("REFUSING: prefix HD_RAND resolved %d controls, prereg declares n_controls=%d"
+                 % (len(controls), pr["n_controls"]))
+    arms = ["HD_BASE", "HD_KO", "HD_TOPK", "HD_BOTK"] + controls
     src = sorted(glob.glob(os.path.join(SCORE_DIR, a.source_tag + "_*")))
     if len(src) != 1:
         sys.exit("REFUSING: source tag %r resolved to %d dirs" % (a.source_tag, len(src)))

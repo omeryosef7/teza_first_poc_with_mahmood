@@ -18639,3 +18639,124 @@ NOT DONE     the frozen read runargs/dcs_csi_pr011_read.txt -- it runs ONLY on 2
 **The read is not begun.** GATE 0 may be swept incrementally because it cannot see an endpoint; the W4
 primary and the necessity re-derivation may not, and they wait for the full family. **PR-CSI-011 cannot
 revise D32 in either direction** — it is a second experiment with its own verdict.
+
+---
+
+## S-242 — **PR-CSI-011's frozen read verifies statically on every axis I can check without seeing a number — and the check found that the PRE-FLIGHT HARNESS ITSELF is stale on two axes. ⚠ CORRECTION to S-227: five consumers were converted, not four, and a SIXTH WAS MISSED.** The harness is the tool I was about to reach for
+
+### 1. The arms — 17 of 24, GATE 0 clean
+
+```
+date  2026-09-22T14:07:52+0300
+squeue  918169 RUNNING 2:42:03 n-301 | 918175 PENDING (Dependency)
+
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py \
+  --prereg configs/dcs_csi_pr011_head_all32_controls_basket.json \
+  --tag-prefix csi4_all32_basket_validation --split validation
+PR-CSI-011 GATE 0 SWEEP -- validation | landed 17 of 24 arms
+... HD_ALL32_11  230  23  3731904  16128.0  0  0  PASS
+... HD_ALL32_12  230  23  3731904  16128.0  0  0  PASS
+GATE 0: every landed arm passes. No endpoint field was read.
+```
+
+Seven arms remain (`HD_ALL32_13..19`) at ~495 s ≈ 58 min → **finish ≈ 15:06** against the 23:25 wall.
+
+### 2. The unblocked work this tick: verify the frozen read STATICALLY, since it cannot be run yet
+
+The frozen read cannot execute until 24 of 24, and **it must not be amended after numbers are seen**. So
+the failure mode to fear is a read that *cannot run at all* discovered at the moment it matters —
+S-210's PR-010 amendment exists because that happened once. Everything below is endpoint-blind.
+
+```
+--- flags actually declared, scraped from argparse (not assumed) ---
+dcs_csi_rederive_subspace.py : --allow-short --base --candidate --controls --direction --expect-n
+                               --full --ko --out --require-rescue-layer --require-slurm-job
+                               --split --tag-prefix
+dcs_csi_head_analyze.py (W4) : --allow-short --ci --expect-n --out --prereg --require-slurm-job
+                               --seed --split --tag-prefix
+--direction choices          : {sufficiency,necessity}   <- the read names `necessity`: VALID
+```
+
+**Every flag the PR-011 read names exists on the tool it names it on, and `necessity` is an accepted
+choice.** Note W4 has **no** `--control-prefixes`; it takes the prefix from the prereg, which is why the
+read passes only `--prereg`. The read's footer sentence *"--control-prefixes/--controls must name
+HD_ALL32_"* refers to whichever tool has each flag; it is not an instruction to pass a flag W4 lacks.
+
+**Control-family resolution, computed from both preregs:**
+
+```
+PR-011  control_prefix='HD_ALL32_'  n_controls=20  -> resolves EXACTLY 20 (HD_ALL32_00..19)
+PR-010  control_prefix='HD_RAND'    n_controls=20  -> resolves EXACTLY 20 (HD_RAND00..19)
+both    HD_BOTK.startswith(prefix) = False   HD_TOPK.startswith(prefix) = False
+both    head_sets also holds `control_pool` (the DRAW POOL, not an arm) -- correctly excluded
+```
+
+**So PR-011's read resolves the family the preregistration declares, with the comparator out.**
+
+### 3. ⚠ **CORRECTION to S-227.** It said *"four consumers hard-coded `startswith("HD_RAND")`"* and that `control_prefix` is now *"read by every consumer."* **Both counts are wrong.**
+
+```
+reads control_prefix from the prereg (6):
+  dcs_csi_head_analyze.py:147   dcs_csi_head_power.py:84      <- power.py NOT named by S-227
+  pr010_gate0.py:63             pr010_gate0_sweep.py:70       pr010_argv.py:75
+STILL HARD-CODES THE LITERAL (1):
+  scripts/gates/dcs_csi_pr010_read_dryrun.py:65, 95, 110      <- MISSED BY S-227
+```
+
+**Five consumers were converted, not four** (S-227 named W4, gate 0, the argv generator and the sweep;
+`dcs_csi_head_power.py` was converted and went unnamed), **and a sixth was missed.**
+
+### 4. ⛔ And the missed file is the PRE-FLIGHT HARNESS — **the tool I was reaching for as PR-011's pre-flight this tick.** It is stale on TWO axes
+
+```
+(1) prefix   lines 65/95/110 hard-code HD_RAND. Pointed at PR-011 the comprehension matches NOTHING.
+             It would synthesise 4 arms instead of 24, pass an EMPTY --controls to the re-derivation,
+             print "SIZE arms to synthesise = 4" -- AND NO ASSERTION WOULD FIRE. There is no
+             len(controls) == n_controls check in the harness; that line only PRINTS.
+(2) analyser it runs scripts/dcs_csi_subspace_analyze.py, which S-196 found VOIDs EVERY HEAD ARM
+             structurally and which runargs/dcs_csi_pr010_read.txt now retains STRUCK THROUGH as
+             INOPERABLE. The primary path has been W4 since S-210. The harness no longer exercises
+             the read it is named for.
+```
+
+**Axis (1) is S-120(e)'s foot-gun with its sign flipped** — that hazard was a silently *widened* control
+family; this is a silently *emptied* one, and an empty family is the shape that makes any rank look
+perfect. **Axis (2) is not a scandal:** this harness is the tool that *discovered* the inoperability
+(S-196). It is simply historical now, and nothing said so.
+
+**Fixed by making both silent failures loud, not by re-targeting it** — re-targeting would claim a
+pre-flight value it cannot deliver, and PR-011's arms are 17/24 already, so a dry run has no remaining
+purpose for this family:
+
+```
+cprefix = pr.get("control_prefix", "HD_RAND")
+if cprefix != "HD_RAND": sys.exit("REFUSING: ... PR-CSI-010-historical -- do NOT use it as another
+                                   family's pre-flight (S-242)")
+controls = sorted(k for k in hs if k.startswith("HD_RAND"))
+if len(controls) != pr["n_controls"]: sys.exit("REFUSING: prefix resolved %d, prereg declares %d")
+```
+
+**Shown to fire, and shown NOT to break the tool for its own family:**
+
+```
+(A) --prereg configs/dcs_csi_pr011_...json
+    REFUSING: this harness hard-codes HD_RAND and exercises the INOPERABLE analyser (S-196);
+    prereg '...pr011...' declares control_prefix 'HD_ALL32_'.        real rc = 1
+(B) --prereg configs/dcs_csi_pr010_...json --source-tag NO_SUCH_TAG_XYZ
+    REFUSING: source tag 'NO_SUCH_TAG_XYZ' resolved to 0 dirs        real rc = 1
+    -> it got PAST both new guards, so PR-010 still resolves 24 arms; nothing was copied
+(C) run dirs matching csi3_dryrun_* left on disk: 0
+```
+
+**A note on how (A)/(B) were checked.** The first reading of those exit codes was through a pipe to
+`tail` and printed `rc=0` for both — **that was `tail`'s status, not the tool's.** Re-run with output
+discarded, both are **rc = 1**. A refusal that exits 0 is not a refusal, and the pipeline would have
+hidden it; this is the same class as S-042's *"an empty porcelain reads as clean."*
+
+### 5. What this tick did NOT do
+
+**No number from PR-CSI-011 was read**, and the frozen read is not begun. §3 is a correction to a
+*count in a log entry*; §4 is a fix to a *harness*, not to any tool the read names — every one of those
+is untouched, and `score_behavior.py` was not opened (918175's necessity chain is still pending).
+The R15-0 lock list (`head_fn_bound`, `head_atp`, `score_behavior`, `pair_common`, `ds_common`,
+`signals`) does not include the harness.
