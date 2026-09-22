@@ -17219,3 +17219,65 @@ underpowered rather than the splits differing. D30 not withdrawn; this is the bo
 TWO DEFECTS IN MY OWN SWEEP, both fixed before recording: orientation DEFAULTED on an absent field
 (4th instance of absence-as-a-value) and the tie convention was off by one.
 ```
+
+---
+
+# S-223 — ⚠ **CORRECTION to S-222: its headline was not a discovery.** The claim table already establishes the floor limitation for six of those cells, in those words. What the sweep actually adds is the **power numbers** and the **D30 bound**
+
+S-222 led with *"7 of 21 could never have certified at α = 0.05"* and wrote *"S-125 recorded this once
+for one cell; **it is true of seven**."* Checked against the claim table before building anything on it:
+
+**D21, already in the table:** *"Attainable floor 0.0909 in all six cells, so **all six are the same
+test**."*
+**D15, already in the table:** *"rank 1 of 11, floor 0.0909 — top of distribution, **floor-limited**
+(D14)"*, and its caveat column: *"'rank 1 of 47' and 'rank 1 of 11' are therefore **not comparable as
+p-values**."*
+The phrase *"could **not** have [certified]"* appears verbatim in the table, and `0.0909` appears
+**31 times** across it and **27 times** in the sprint log.
+
+**So the sprint had already identified the floor limitation, named the six cells it covers, marked them
+`floor-limited`, and refused to read their ranks as p-values.** S-222 re-derived that and presented it
+as new. **The "once, for one cell" clause is simply false.**
+
+## What the sweep does add, and it is narrower than S-222 claimed
+
+1. **Two cells not in D21's six**: `button_train` (n_ctrl **4**, floor `1/5 = 0.20`) and
+   `button_train_rank5` (n_ctrl 10). D21 enumerates basket L18 TRAIN/VAL matched-10, basket L20 TRAIN,
+   button L20 TRAIN/VAL and button L18 TRAIN. **The n=4 cell's floor of 0.20 is the most extreme in the
+   sprint and I find it named nowhere.**
+2. **Power, not just the floor.** A floor says *no outcome could certify*; power says *how often a real
+   effect of the observed size would have certified where one could*. Nothing in the table carried
+   that: **basket's positives 0.68–1.00, every non-certifying button-L18 / train-swap cell 0.002–0.45.**
+3. **The D30 bound** — train swap cells at **42.7%** and **11.6%** power, so "opposite sides of the bar"
+   is consistent with train being underpowered rather than the splits differing. **That is the finding
+   worth having, and S-222 buried it under a restatement.**
+
+## Why this happened, plainly
+
+I swept 21 cells, got a striking count, and wrote the headline **before** checking whether the sprint
+already knew. The check took one `grep`. **The failure was not the analysis — the sweep is correct and
+its numbers stand — it was reporting a re-derivation as a discovery**, which inflates a 17,000-line
+record with false novelty and makes the genuinely new parts harder to find. S-222's numbers are not
+withdrawn; its framing is.
+
+## What stands from S-222, unchanged
+
+Every number in the sweep table, both self-caught defects (the orientation default — **still** the
+fourth instance of absence-as-a-value — and the off-by-one tie convention), and the D30 power bound.
+`reports/DCS_CSI_RANK_POWER_SWEEP.json` is unaffected.
+
+## Commands
+
+```
+grep -c '0\.0909' reports/DCS_CSI_CLAIM_TABLE.md                                  # 31
+grep -n 'all six are the same test\|floor-limited' reports/DCS_CSI_CLAIM_TABLE.md # D21, D15, D14
+```
+
+```
+CORRECTION to S-222: "7 of 21 could never certify" RESTATED what D21 and D15 already establish for six
+of those cells, in those words -- 0.0909 appears 31 times in the claim table. The "recorded once, for
+one cell" clause is FALSE.
+WHAT IS GENUINELY NEW: the n=4 cell (floor 0.20, named nowhere), the POWER numbers as distinct from the
+floor, and the D30 bound (train swap at 42.7% and 11.6%).
+S-222's NUMBERS STAND; its FRAMING is withdrawn. The check that would have caught it was one grep.
+```
