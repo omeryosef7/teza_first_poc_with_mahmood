@@ -21089,3 +21089,97 @@ REGRESSION: the PR-012 census report reproduces FULL-OBJECT IDENTICAL (29750 byt
 
 **No PR-013 number has ever been read**; every generation was stopped on a GATE 0 / argv finding, not on
 an endpoint. `score_behavior.py` was not opened.
+
+---
+
+## S-262 — ⚠ **a COMMIT silently did not happen, and the "verify every repo write" discipline did not cover commits.** Every file write in this log is verified by line delta and prefix md5; **the commits were trusted.** Now mechanised — and testing the new verifier caught **S-242's exit-code trap in my own test**
+
+### 1. ⚠ The write that did not happen
+
+S-261's log entry was written, staged, and **not committed.** Found by checking `HEAD` at the start of
+this tick:
+
+```
+HEAD:   59d27bbc  (the TOOLING commit)          expected: the LOG commit
+origin: 59d27bbc                                 dirty tracked: 1
+.git/index.lock : absent          .git/COMMIT_EDITMSG : 2104 bytes, written 00:13
+git status      : "M  external_md/...20260915.md"   <- STAGED, not committed
+sprint log      : S-261 present exactly once, 21091 lines   <- CONTENT WAS NEVER AT RISK
+```
+
+**git staged the file and wrote the commit message, then the process ended mid-hook** (the command had
+been moved to the background and truncated). **It reported nothing, because it never got to.**
+
+**The gap is mine and it is specific.** The standing instruction is *"verify every repo write."* Every
+**file** write in this sprint is verified by **line delta + prefix md5**, every time, without exception.
+**Commits were verified by reading the command's own output** — and an output that never arrives looks
+exactly like one that was not checked. **A commit is a repo write.**
+
+**Recovered by re-running from a message file:** `HEAD 90f92b84 = origin`, `dirty 0`, S-261 present once.
+
+### 2. The durable fix, and it is not "remember to check"
+
+`scripts/gates/dcs_csi_commit_verify.sh` — commits, pushes, then **reads the state back** and compares it
+to what was expected, the same way a file write is verified:
+
+```
+REFUSES  a missing or empty message file                                     rc=2
+REFUSES  when nothing is staged -- "a commit here would be empty and would report success"   rc=3
+FAILS    if HEAD did not move after the commit                               rc=4
+FAILS    if origin does not match the new HEAD after the push                rc=5
+REPORTS  HEAD <before> -> <after> | origin matches | dirty tracked: N | staged: N
+```
+
+**The empty-staging refusal matters most:** `git commit` on an empty index would have exited non-zero with
+*"nothing to commit"*, but in a chain that is indistinguishable from a hook failure — **the refusal names
+the cause before git has to.**
+
+### 3. ⚠ And testing it caught S-242's trap in my own test
+
+First run of the refusal tests printed:
+
+```
+REFUSING: message file %s is missing or empty /tmp/.../NOSUCH.txt     <- literal %s: `echo`, not `printf`
+  rc=0                                                                <- WRONG
+```
+
+**`rc=0` was `tail`'s status, not the tool's** — I had piped the output. **S-242 recorded this exact trap
+(*"a refusal that exits 0 is not a refusal, and the pipeline would have hidden it"*) and I reproduced it
+while testing a tool written to stop me trusting unverified output.** Re-run with output redirected
+instead of piped:
+
+```
+missing msg file : rc=2      empty msg file : rc=3->2      nothing staged : rc=3
+```
+
+Both defects fixed (`printf` for the format string; real codes confirmed).
+
+### 4. The relaunched family, and a live test of S-261's rule
+
+```
+date 00:37 | 919296 RUNNING 27:45 on n-302 | 0 of 23 arms | no MODEL LOAD line yet | no SKIPPING line
+n-302: CPUTot 112, RealMemory 1546700 M, jobs on node: 1 (mine)  <- LARGE class, like n-301
+```
+
+**Cold-load comparison so far:**
+
+```
+n-301  112 CPU  1546 GB   1851.5 s
+n-303  128 CPU   774 GB   1311.6 s
+n-307   40 CPU   257 GB   6008.8 s        and WARM on the same node: 47.5 s (126x)
+n-302  112 CPU  1546 GB   IN PROGRESS at >1660 s
+```
+
+**n-302 is already past n-303's cold load and approaching n-301's.** ⛔ **No conclusion is drawn yet —
+the arm has not finished and S-257 is the entry that exists for projecting from an unfinished one.** When
+it lands it is a real test of S-261's claim that the cold-load cost is cache residency rather than host
+class: a large host should land near 1300–1900 s, not near 6000.
+
+### 5. State
+
+```
+919296  RUNNING on n-302, 0 of 23 | frozen read 911c3a20, prereg 5ab06e3a -- UNTOUCHED
+<VALIDATION_JOB_IDS> must be 919296 ALONE at read time
+```
+
+**No PR-013 number has ever been read.** `score_behavior.py` was not opened.
