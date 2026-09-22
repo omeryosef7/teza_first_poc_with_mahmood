@@ -20417,3 +20417,86 @@ frozen   pr013_read.txt md5 911c3a20 | pr013 prereg md5 5ab06e3a | nomination ru
 
 `score_behavior.py` was not opened. **PR-013 cannot revise D32, D33 or the census** — it tests one head on
 one other codeword, and a failure retracts none of them.
+
+---
+
+## S-256 — the guards S-255 **declined to claim** are now read and they pass, including **S-251's codeword check firing in a real job**. And the button population is **exactly domain-matched to basket** — which strengthens PR-CSI-013 and ⚠ **bounds it in a way worth saying out loud: it tests CODEWORD-generality, not DOMAIN-generality**
+
+### 1. The guards, now verified rather than assumed
+
+S-255 recorded: *"the in-job guard output is NOT yet verified and is not claimed"* — both logs read 0 bytes
+at the time. They have flushed:
+
+```
+HOST=n-307 JOB=918967 2026-09-22T20:40:39+03:00
+BLOB 539ee024  PORCELAIN [clean]
+SPLIT=validation EXPECT_N=230 PREREG=configs/dcs_csi_pr013_button_head_replication.json
+                 TAG_PREFIX=csi6_btnhead_button FAMILY=pr013
+CODEWORD CHECK PASSED: 'button' -> bank boombness_prompt_bank_ts116m_button_bomb.jsonl,
+                       exclusions exclude_button_bomb_sow_validation.txt (both exist; every arm agrees)
+CHECK PASSED: 23 arms, every flag declared by score_behavior.py; 2 carry none (BT_BASE has no
+              intervention, BT_KO = all 32)
+argv lines: 23        [w3] SIZE arms to run = 23
+```
+
+**S-251's codeword check fired in a real job on the real button path** — the defect it was written for
+would have silently produced basket rows here.
+
+**And the population resolved as the prereg says:**
+
+```
+[score] EXCLUDED 930 declared prompt_ids (sha16=64f6bb1310332073): 1160 -> 230 rows
+by_domain: 10 rows in each of 23 domains | by_split: dev 115, heldout 115 | by_n_examples: {4: 230}
+exclude file: runargs/dcs_cont/exclude_button_bomb_sow_validation.txt
+```
+
+**Waiting one tick to read them rather than asserting them cost nothing and is the whole difference
+between a record and a hope.**
+
+### 2. ✅ The button and basket validation populations are EXACTLY domain-matched
+
+Compared two completed arms directly through `load_installation` (PR-013's own `BT_BASE` is still
+running, so an existing `csi1_button_validation_BASE` arm was used and is named in the output):
+
+```
+basket  csi5_census_basket_validation_HD_BASE_20260922_164221_939328
+button  csi1_button_validation_BASE_20260920_220614_804136
+
+basket validation domains: 23 | button validation domains: 23
+IDENTICAL DOMAIN SET: True     basket only: none     button only: none
+slots per domain -- basket [10] | button [10]        per-domain counts identical: True
+```
+
+**The statistical unit is the DOMAIN (rule 3.3), so a matched domain set means the unit of analysis is
+literally the same across the two codewords.** PR-013 is therefore a **paired** replication, which is the
+strongest form this test could take and better than the design assumed.
+
+### 3. ⚠ And the same fact is a LIMIT, which is the half that would otherwise go unsaid
+
+**Because the 23 domains are identical, PR-CSI-013 controls for the CODEWORD and NOT for the DOMAIN
+SAMPLE.** Head 2 was nominated from its effect on *these* 23 domains under basket; it is now tested on
+*these same* 23 domains under button. **If anything about this particular domain sample makes head 2 look
+strong, it carries straight over.**
+
+```
+what PR-013 tests   : is head 2's effect general across CODEWORDS?
+what it does NOT test: is head 2's effect general across DOMAINS?
+the untouched axis  : the 3 TEST domains, never used by any preregistration in this sprint
+```
+
+**These are different questions and a PASS on the first must never be reported as evidence for the
+second.** The frozen read already forbids *"head 2 is the writer"*; **this adds the specific reason the
+button result, however it lands, cannot close the domain question** — and it is recorded now, before the
+arms finish, so it cannot be mistaken for a caveat invented to explain a result.
+
+### 4. State
+
+```
+918967  RUNNING 25:38 on n-307, 1 arm dir (BT_BASE) in progress; 23 arms x ~320 s ~= 2.0 h -> ~22:45
+        against EndTime 2026-09-23T08:39. Node: 1 job, mine (S-249's replacement rule).
+frozen  pr013_read.txt 911c3a20 | pr013 prereg 5ab06e3a | nomination rule fae4adc6 | pr012 read
+        7088590f | pr012 reading criteria 5b99971c -- ALL UNTOUCHED
+```
+
+**No PR-013 number exists to have been read.** `score_behavior.py` was not opened. **REVIEW R22 is due
+~22:38.**
