@@ -32,7 +32,7 @@ across arms -- still literally "what this process applied". `since` remains the 
 the one a per-arm verifier must read. Every run dir W3 produces records `in_process_runner: true`
 so a reader knows which convention applies.
 """
-import argparse, json, os, sys, time
+import argparse, json, os, shlex, sys, time
 
 REPO = "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
 sys.path.insert(0, os.path.join(REPO, "doublespeak_causality"))
@@ -40,6 +40,23 @@ sys.path.insert(0, os.path.join(REPO, "src", "boombness"))
 
 import torch                                    # noqa: E402
 import ds_common as dc                          # noqa: E402
+
+
+def hook_census_all(cache):
+    """Census EVERY model the memo holds, not just the first (R15-1).
+
+    The previous form was `hook_census(next(iter(cache.values())).model)`, which inspects the FIRST
+    INSERTED entry. The memo is keyed on every load parameter precisely so a differing request LOADS
+    A SECOND MODEL -- and the moment it did, a hook leaked on that second model was invisible while
+    the census reported 0. A guard that reports zero because it looked in the wrong place is worse
+    than no guard.
+    """
+    tot, where = 0, []
+    for key, lm in cache.items():
+        n, w = hook_census(lm.model)
+        tot += n
+        where.extend("[%s] %s" % (key[4], x) for x in w)   # key[4] = attn_implementation
+    return tot, where
 
 
 def hook_census(model):
@@ -81,7 +98,7 @@ def main():
         _rd = _il.module_from_spec(_sp); _sp.loader.exec_module(_rd)
         keep, skipped_done = [], []
         for line in lines:
-            av = line.split()
+            av = shlex.split(line)
             tag = av[av.index("--tag") + 1] if "--tag" in av else None
             if tag is None:
                 keep.append(line); continue
@@ -95,8 +112,15 @@ def main():
                              "re-running would deepen the duplicate. Resolve it first. (%s)"
                              % (tag, msg[:160]))
                 keep.append(line)
-            except Exception:
-                keep.append(line)
+            except Exception as e:
+                # ⛔ FAIL CLOSED (R15-2). Treating an unexpected error as "this arm has not run"
+                # makes the arm RE-RUN and create a second run dir under the same tag -- exactly
+                # the S-104/S-127 duplicate that makes strict_run_dir refuse the WHOLE family. The
+                # skip logic added in S-198 to PREVENT family corruption would then CAUSE it. An
+                # error whose meaning is unknown is not evidence that the arm is missing.
+                sys.exit("REFUSING: could not determine whether arm %r has already completed "
+                         "(%r). Re-running it blind risks a duplicate tag that would VOID the "
+                         "whole family; resolve the run directory by hand instead." % (tag, e))
         if skipped_done:
             print("[w3] SKIPPING %d arm(s) already complete: %s"
                   % (len(skipped_done), ", ".join(t.split("_")[-1] for t in skipped_done)), flush=True)
@@ -130,12 +154,14 @@ def main():
 
     results, argv0 = [], list(sys.argv)
     for i, line in enumerate(lines):
-        argv = line.split()
+        # shlex, not split(): every value in play today is space-free, but the first
+        # argument containing a space would be silently torn in two (R15-11).
+        argv = shlex.split(line)
         if argv and argv[0] == "python":
             argv = argv[1:]
         arm = argv[argv.index("--arm") + 1] if "--arm" in argv else "arm%d" % i
         # hooks BEFORE -- a leak from the previous arm must stop this one, not ride along
-        pre_n, pre_w = (hook_census(next(iter(cache.values())).model) if cache else (0, []))
+        pre_n, pre_w = (hook_census_all(cache) if cache else (0, []))
         if pre_n:
             sys.exit("REFUSING before arm %s: %d hook(s) survive from the previous arm -- the next "
                      "arm would run under an intervention nobody requested and its artifact would "
@@ -153,7 +179,7 @@ def main():
         finally:
             sys.argv = argv0
         wall = round(time.time() - t0, 3)
-        post_n, post_w = (hook_census(next(iter(cache.values())).model) if cache else (0, []))
+        post_n, post_w = (hook_census_all(cache) if cache else (0, []))
         rec = {"i": i, "arm": arm, "status": status, "rc": rc, "wall_seconds": wall,
                "hooks_after": post_n, "hooks_where": post_w[:6]}
         results.append(rec)

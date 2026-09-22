@@ -16900,3 +16900,67 @@ result, which is the direction most likely to be a mistake -- so what carries it
 chosen after the fact. LIMITS TRAVEL INSIDE THE ARTIFACT: 8 head INDICES across 6-14, leg (i) ONLY,
 never a single (layer, head) cell.
 ```
+
+---
+
+# S-219 — the **R15-0 lock has LIFTED and the deferred W3 patch is applied**, verified idempotent on the completed family; and **PR-CSI-010 is entered in the claim table as D32**
+
+Both allocations are `COMPLETED` (`916535` 6:18:42, `916536` 2:07:20) and the queue is empty, so the
+lock R15-0 established — *any file a pending allocation will execute* — no longer binds.
+
+## The patch that waited three hours
+
+```
+patches/R15_w3_deferred_fixes.patch    applied cleanly | compiles | no dead flags
+R15-1   hook_census_all(cache)  censuses EVERY cached model, not the first inserted
+R15-2   the resume path FAILS CLOSED -- an unexplained error is a refusal, not "this arm has not run"
+R15-11  shlex.split replaces line.split()
+```
+
+**Verified on real data, which is the test that mattered.** Re-running W3 against the completed TRAIN
+family:
+
+```
+[w3] SKIPPING 24 arm(s) already complete: BASE, KO, TOPK, BOTK, RAND00 ... RAND19
+[w3] SIZE arms to run = 0
+[w3] every requested arm is already complete -- nothing to run        rc=0
+```
+
+**It re-ran nothing and created no duplicate tag** — the idempotence property S-198 added to stop a
+preemption from voiding the family, now demonstrated against 24 genuinely complete arms rather than
+argued for.
+
+## D32 is in the claim table
+
+`reports/DCS_CSI_CLAIM_TABLE.md` 793 → 801 lines, prefix md5 unchanged. The row carries the held-out
+numbers, the independent re-derivation agreeing to `3.5e-06`, the exact-and-relative dose identity, and
+a limits column that states in the claim table itself that this is **8 head INDICES and not 8 (layer,
+head) cells**, that it is **leg (i) only**, that the TRAIN rank is selection-contaminated, that
+**`F = 0.86` is not an additivity claim** because knockouts do not compose, and that **the design's own
+expectation failed toward the stronger result** — the direction most likely to be a mistake.
+
+## §22 status
+
+**P4** (*demo→query circuit decomposition: layers → heads → source positions → paths*) has its
+**heads** stage complete and adjudicated for `basket`, leg (i). Source positions and paths are
+untouched, and §10 forbids reading this as a layer-resolved result.
+
+**Newly unblocked and NOT started**: cross-codeword transfer to `button`, which §10 says is *"only
+meaningful once `basket` has a positive head result"* and calls **the next design**. It needs its own
+preregistration, and starting it is the user's call.
+
+## Commands
+
+```
+patch -p0 scripts/dcs_csi_arm_runner.py < patches/R15_w3_deferred_fixes.patch
+python scripts/gates/dcs_csi_pr010_argv.py --prereg configs/... --split train > /tmp/w3_recheck_argv.txt
+python scripts/dcs_csi_arm_runner.py --argv-file /tmp/w3_recheck_argv.txt --expect-n 670 --out /tmp/w3_recheck.json
+```
+
+```
+R15-0 LOCK LIFTED: both allocations COMPLETED, W3's three deferred fixes applied and idempotence
+VERIFIED on 24 complete arms -- nothing re-run, no duplicate tag created
+D32 ENTERED in the claim table with its limits in the row itself, not in a footnote
+P4's HEADS stage is done for basket leg (i) | cross-codeword transfer to button is the NEXT design,
+unblocked but NOT started -- it needs its own preregistration
+```
