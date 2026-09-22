@@ -21875,3 +21875,83 @@ build to protect them**, and each review has found it in a place the previous on
 **No PR-013 number exists** — 919296 is still in its cold load at ~85 min of the measured 36–125 min
 range, with the 02:20 threshold not yet reached. `score_behavior.py` was not opened. The scratch repo used
 for the rc=5 test was deleted.
+
+---
+
+## S-272 — ⛔⛔ **THERE WAS A LIVE PROGRESS BAR WITH AN ETA IN THE `.err` FILE THE WHOLE TIME.** Seven entries reasoned about whether the load was progressing, built a wall-clock threshold, tested telemetry that does not exist and nearly cancelled a healthy job — **while `Loading weights: 32%|███▏| 94/291 [1:45:24<2:13:48, 40.75s/it]` sat on disk unread.** Relaunched on n-307, where the arithmetic now favours it in BOTH branches
+
+### 1. ⛔ The signal I never opened
+
+```
+tr '\r' '\n' < outputs/boombness/logs/csi_pr010arms_919296.err | grep -o "Loading weights: .*"
+  Loading weights:  32%|███▏      | 94/291 [1:45:24<2:13:48, 40.75s/it]
+```
+
+**291 shards, a per-shard rate and an ETA, updating live.** And it was not new to this job:
+
+```
+918967 (.err, 20394 bytes)  ->  291/291 [1:36:59<00:00, 20.00s/it]    <- the 6008 s "cold load"
+```
+
+**Every job in this sprint has been writing this.** I read `.out` obsessively and checked `.err` exactly
+once — for 918967, early, when it was 0 bytes — **and generalised from that single observation that `.err`
+was uninformative.** That is absence-as-a-value again, and it is the most expensive instance yet.
+
+### 2. What it cost, stated plainly
+
+**S-257, S-258, S-261, S-264, S-266, S-270 and S-271 — seven entries — were spent on a question the file
+answered.** Specifically:
+
+* **S-271 enumerated "the progress signals that actually exist"**, listed three, and concluded wall-clock
+  was *"the ONLY yardstick"*. **It was wrong: there was a fourth, and it was strictly better than all
+  three.** The entry's reasoning was sound and its premise was unchecked.
+* **S-270's 02:20 threshold was built to bound an unbounded wait.** With the bar, no threshold was
+  needed — the ETA was printed.
+* **S-271 nearly cancelled a healthy job** on `TotalCPU = 0`. The bar would have shown progress instantly.
+* **S-257's host-class theory and S-261's page-cache correction** were both reasoning about aggregate load
+  times when per-shard rates were available the whole time.
+
+**The numbers are untouched** — no result depended on any of this. **What it cost was ~2 h of wall-clock
+and seven entries of misdirected effort.**
+
+### 3. What the bar actually shows, and why it flips S-266's decision
+
+```
+919296 on n-302:  94/291 at 1:45:24, ETA +2:13:48        first shard 1279 s, then ~40 s/it
+                  n-302 now carries 6 jobs (was 1); the rate is DEGRADING
+918967 on n-307:  291/291 in 1:36:59 at 20.00 s/it        uncontended, MEASURED
+```
+
+```
+STAY on n-302        load ends ~04:18, then 22 arms      -> ~06:00
+RELAUNCH n-307 COLD  1:36:59 at a MEASURED 20.00 s/it    -> ~05:35
+RELAUNCH n-307 WARM  ~1 min                              -> ~04:00
+```
+
+**⚠ S-266 declined to relaunch because the favourable branch rested on an unmeasurable cache state. That
+objection is now GONE — the UNFAVOURABLE branch also wins**, by ~25 min, because n-307's cold rate is
+*measured* at 20.00 s/it while n-302 is currently running at 40.75 s/it under contention. **A decision
+that was a coin-flip an hour ago is now one-sided, and only because the right file got opened.**
+
+### 4. Relaunched, with the warm-node rule actually applied
+
+```
+sh scripts/gates/dcs_csi_warm_node.sh n-307   ->  n-307: gpus 2/8 allocated, 6 free ... PIN n-307
+scancel 919296                                     (COMPLETING at 1:56:21)
+quarantined 919296's single INCOMPLETE BT_BASE dir -> 22 dirs held, 0 csi6 dirs in score_behavior
+provenance: BLOB b42f94c3  PORCELAIN clean     Submitted batch job 919526  --nodelist=n-307
+```
+
+**S-266 built that helper and this is its first real use.** The incomplete `BT_BASE` dir was quarantined
+even though an incomplete arm is not skipped by the runner — S-261's lesson was that a write-time problem
+needs a write-time remedy, and leaving a duplicate tag on disk for no reason is how that starts.
+
+### 5. ⛔ The standing rule this earns
+
+**READ EVERY STREAM A JOB WRITES BEFORE REASONING ABOUT WHAT IT IS DOING.** `.out` and `.err` are two
+files, progress bars go to `stderr` by convention, and this sprint has a launcher that separates them
+(`--output`/`--error`). **Seven entries of inference were avoidable by one `tail` on the other file.**
+
+**And the narrower lesson, which is the one that actually bit:** I checked `.err` once, found it empty
+because the job was 32 s old, and never checked again. **A stream that is empty early is not a stream that
+is empty.**
