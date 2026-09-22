@@ -17603,3 +17603,76 @@ PR-010 byte-identical through the change (regression + gate 0 + sweep + power + 
 PR-011 RE-FROZEN as HD_ALL32_00..19, GATE 0 PASSES, ITS READ IS FROZEN -- and NOTHING IS LAUNCHED.
 Expectation on record: rank 1 SURVIVES, F FALLS. A failure would BOUND D32, not retract it.
 ```
+
+---
+
+# S-228 — PR-CSI-011's launcher is built and **guarded against sharing a tag namespace with PR-CSI-010**. Everything is now staged; **nothing is launched.** Plus **CORRECTION to S-225's cost: 24 arms, not 22**
+
+## The last hazard in the chain, and it was one level below S-227's
+
+S-227 fixed two preregs naming different head sets `HD_RAND00`. The same collision existed in the
+**tags**: the launcher hard-coded `PREREG=...pr010...` and never passed `--tag-prefix`, so the argv
+generator's default `csi3_head_basket` would have written **PR-011's arms into PR-010's tag
+namespace**. `strict_run_dir` would then resolve a tag to two complete runs and refuse **both**
+families — or admit the wrong one.
+
+Fixed by parameterising `PREREG` / `TAG_PREFIX` / `FAMILY` (defaults preserve PR-010 exactly) **and
+deriving the required prefix from the preregistration's own id**:
+
+```
+PR-CSI-010 -> csi3_head_basket        PR-CSI-011 -> csi4_all32_basket
+a mismatch exits 7 BEFORE any GPU work; an unregistered prereg id exits 6
+```
+
+Verified: PR-011's 24 emitted tags are `csi4_all32_basket_validation_*`, with **zero** occurrences of
+`csi3_head_basket`.
+
+## ⚠ CORRECTION to S-225 — the cost was understated by two arms
+
+```
+S-225 stated                 22 arms x 325 s = 1.99 h compute
+the launcher actually emits  24 arms x 325 s = 2.17 h compute
+```
+
+S-225 described the family as *"HD_BASE + HD_TOPK + 20 controls"*. **`HD_KO` and `HD_BOTK` are not
+optional**: `HD_KO` is GATE 1's positive control **and** the denominator of the K× dose identity, and
+`HD_BOTK` is the design's matched comparator. The argv generator always emits all four fixed arms,
+which is correct; **the arithmetic in S-225 was mine and it was wrong.** With one model load the wall
+estimate is **2.17 h warm to 2.54 h cold** (S-214's 14 s vs 1348 s).
+
+## PR-CSI-011 is fully staged
+
+```
+prereg   configs/dcs_csi_pr011_head_all32_controls_basket.json   GATE 0 PASSES
+read     runargs/dcs_csi_pr011_read.txt                          every flag AST-verified
+launcher slurm_scripts/dcs_csi_pr010_arms.slurm                  PREREG/TAG_PREFIX/FAMILY parameterised
+argv     24 arms, --check passes, tags disjoint from PR-010
+cost     2.17-2.54 h, VALIDATION only, one allocation via W3
+```
+
+**The command, for when it is wanted:**
+
+```
+PREREG=configs/dcs_csi_pr011_head_all32_controls_basket.json \
+TAG_PREFIX=csi4_all32_basket FAMILY=pr011 SPLIT=validation \
+  ./scripts/gates/dcs_csi_submit.sh slurm_scripts/dcs_csi_pr010_arms.slurm
+```
+
+**It is not run.** The expectation is on record from S-227 — rank 1 survives, `F` falls — and D32 is
+already bounded by AM-26 either way, so nothing degrades while this waits.
+
+## Commands
+
+```
+python scripts/gates/dcs_csi_pr010_argv.py --prereg configs/dcs_csi_pr011_... --split validation \
+  --tag-prefix csi4_all32_basket        # 24 arms, 0 csi3_head_basket collisions
+sh -n slurm_scripts/dcs_csi_pr010_arms.slurm
+```
+
+```
+LAUNCHER BUILT AND GUARDED: the required TAG_PREFIX is DERIVED FROM THE PREREG'S OWN ID; a mismatch
+exits 7 before any GPU work. PR-011's tags are disjoint from PR-010's -- verified, 0 collisions.
+CORRECTION to S-225: 24 arms, not 22 -- HD_KO (GATE 1 and the dose denominator) and HD_BOTK (the
+comparator) are not optional. 2.17 h compute, 2.17-2.54 h wall.
+PR-CSI-011 IS FULLY STAGED AND NOT LAUNCHED. One command away.
+```
