@@ -20787,3 +20787,104 @@ these effects", R22's defect would not have existed.
 **No PR-013 number was read** — the report does not exist; 2 of 23 arms have landed. `score_behavior.py`
 was not opened (the family is running). The frozen read is **unchanged** (`911c3a20`); the amendment is to
 the reader's verdict logic and is recorded here, not by re-freezing the read.
+
+---
+
+## S-259 — **R22-5's obligation discharged: I asked which OTHER artefacts are guarded by the same principle, and one of the two had the defect.** The **independent path** could emit `PASSES` on a positive candidate; **W4 could not, but only by an IMPLICATION across two conditions**, now made explicit. Both regressed against published results
+
+R22-5 said: *"when an amendment is made to one artefact, the next tick must ask which other artefact is
+guarded by the same principle."* This is that tick. **8 of 23 PR-013 arms landed; no number read.**
+
+### 1. The audit: every tool that emits a verdict from these effects
+
+```
+scripts/dcs_csi_head_single_rank.py   GUARDED (R22 amendment 1)
+scripts/gates/dcs_csi_pr013_freeze.py GUARDED (R21 amendment 1, clause (c))
+scripts/dcs_csi_head_census.py        NO VERDICT BY DESIGN -- reports positives descriptively. Correct.
+scripts/dcs_csi_head_analyze.py (W4)  SAFE, BUT ONLY BY IMPLICATION  <- see section 3
+scripts/dcs_csi_rederive_subspace.py  ⚠ HAD THE DEFECT                <- see section 2
+```
+
+### 2. ⚠ The independent path had it, and that is the worst place for it
+
+```python
+"verdict": (_cannot if not instrument_capable else
+            "PASSES" if (r == 1 and fl <= 0.05) else ...)
+```
+
+`rank_of` orders *"more negative is stronger"* for necessity (`v <= cand`, **ties correctly against the
+candidate**), and `instrument_capable` requires the **positive-control arm** to be negative — **it says
+nothing about the candidate.** So a positive candidate that is merely *less* positive than every control
+ranks 1 and gets `PASSES`.
+
+**⛔ Why this was the worst place for it:** `dcs_csi_rederive_subspace.py` is the **independent path named
+in PR-CSI-013's frozen read.** With only the primary reader fixed (R22), a positive-but-rank-1 button
+result would have produced **`DOES NOT REPLICATE` from the primary and `PASSES` from the independent
+path** — and the two paths exist precisely so that agreement means something. **The disagreement would
+have been an artefact of which tool had been fixed.**
+
+**Fixed, narrowing only,** with `candidate_sign_ok`, `candidate_point` and a `sign_clause` note added to
+every rank block.
+
+**Shown to fire on REAL arms** — no fixture. Using the census family, candidate `SINGLE_08` (`+0.000139`)
+against the 12 heads whose effects are *more* positive, so it ranks 1 while being positive:
+
+```
+rank 1 of 13 | candidate_point +0.00014 | candidate_sign_ok False
+verdict: DOES NOT PASS -- rank 1 but the candidate point +0.00014 is not negative, so it does not
+         move the endpoint the way the necessity question asks
+```
+
+**⚠ Stated precisely, because the demonstration is narrower than it looks:** with 12 controls the floor is
+`1/13 = 0.0769 > 0.05`, so the *old* logic would have said *"INCONCLUSIVE (floor-limited)"* here, not
+`PASSES`. **What this proves is that the sign branch fires and takes precedence.** The case the clause
+actually exists for needs 20 controls — floor `1/21 = 0.0476 ≤ 0.05` — where the old branch order
+**would** have produced `PASSES`, and that is exactly PR-013's shape. **The census has no 20 heads more
+positive than any candidate, so that configuration cannot be built from real arms; the mechanism is
+demonstrated on real arms and the arithmetic of the branch it pre-empts is stated rather than staged.**
+
+**An earlier attempt failed to exercise it and is recorded because the failure was informative:** running
+the rederive with `--direction sufficiency` on the PR-011 arms was caught first by the **pre-existing
+capability gate** (*"the whole-state rescue did not move installation UP"*). Good defence-in-depth — and
+it left the new branch untested, so it was not a test of it.
+
+### 3. W4 does NOT have the defect — and the reason is worth writing down
+
+```
+GATE 1 (reached before the verdict)  ->  E(HD_KO) < 0
+F = E(HD_TOPK) / E(HD_KO) >= 0.50 with a NEGATIVE denominator  ->  E(HD_TOPK) < 0
+```
+
+**The sign is forced, but by an implication across two separate conditions rather than by a clause — and
+an implication is only as durable as both of its halves.** Added an assertion that **cannot fire under the
+current logic** and will fire if either GATE 1 or the `F >= 0.50` threshold is ever weakened. **No
+behaviour change; the point is to make a real guarantee legible.**
+
+### 4. ⛔ Regression against published results
+
+```
+W4 re-run on PR-011 (918169) -> FULL-OBJECT IDENTICAL to the committed report : TRUE
+W4 re-run on PR-010 (916536) -> FULL-OBJECT IDENTICAL to the committed report : TRUE
+   (and the assertion confirms the invariant on real data: E(HD_TOPK) = -0.196, E(HD_KO) = -0.227)
+
+rederive re-run on PR-011 -> NOT byte-identical, and that is CORRECT and EXPECTED:
+   the ONLY difference is three ADDED fields in ranks.pooled
+   rank 1 | of 21 | floor 0.0476 | certifiable_at_0.05 true | verdict "PASSES"   <- UNCHANGED
+   candidate_sign_ok: true | candidate_point: -0.19598                            <- NEW
+   keys differing other than `ranks`: NONE
+```
+
+**`candidate_sign_ok: true` confirms PR-011's candidate was negative all along, so D32/D33's independent
+cross-check stands unaltered.** The committed `..._REDERIVE.json` is **not** regenerated — append-only
+discipline: it records what the frozen read produced at the time, and this entry records the re-run.
+
+### 5. State
+
+```
+date 23:06:57 | 918967 RUNNING 2:27:36 | 8 of 23 arms | BT_CTRL_05 at 287.3 s
+steady-state ~287 s/arm on n-307 -> 15 arms remaining ~= 1.2 h -> finish ~00:20, wall 08:39
+frozen  pr013_read 911c3a20 | prereg 5ab06e3a | nomination rule fae4adc6 -- UNTOUCHED
+```
+
+**No PR-013 number was read.** `score_behavior.py` was not opened. **The arms in flight are unaffected:
+both edits are to READERS, and neither runs until 23 of 23.**

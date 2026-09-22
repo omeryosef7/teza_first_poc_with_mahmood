@@ -327,6 +327,16 @@ def main():
         verdict = ("CANNOT ANSWER -- GATE 1 failed: the instrument did not move the endpoint "
                    "(E(HD_KO) not clearly negative). Feasibility is reported; THE CANDIDATE IS NOT.")
     elif rank == 1 and F is not None and F >= 0.50 and F_ci and not (F_ci[0] <= 0 <= F_ci[1]):
+        # S-259, per R22-5: W4's sign guarantee is IMPLICIT and this records why it holds, plus an
+        # assertion that cannot fire under the current logic and WILL fire if either half is ever
+        # weakened. GATE 1 (reached above) forces E(HD_KO) < 0, and F = E(HD_TOPK)/E(HD_KO) >= 0.50
+        # with a negative denominator forces E(HD_TOPK) < 0. So W4 does NOT have R22's defect -- but
+        # it is protected by an IMPLICATION across two separate conditions, not by a clause, and an
+        # implication is only as durable as both of its halves.
+        assert E["HD_TOPK"] < 0 and E["HD_KO"] < 0, (
+            "W4 INVARIANT BROKEN: a positive verdict requires both effects negative "
+            "(E(HD_TOPK)=%r, E(HD_KO)=%r). GATE 1 or the F threshold has been weakened." % (
+                E["HD_TOPK"], E["HD_KO"]))
         verdict = "WE FOUND (part of) THE WRITER"
     elif rank == 1 and F is not None and 0 < F < 0.50:
         verdict = "PARTIALLY LOCALISED"

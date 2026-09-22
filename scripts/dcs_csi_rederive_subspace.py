@@ -297,9 +297,28 @@ def main() -> int:
         if not sub:
             continue
         r, n, fl = rank_of(sub)
+        # ⛔ S-259 (propagating R22's amendment, per R22-5). THE CANDIDATE'S SIGN.
+        # `rank_of` orders "more negative is stronger" for necessity, so a POSITIVE candidate can
+        # still rank 1 if every control is MORE positive -- and `instrument_capable` does not catch
+        # it, because it constrains the POSITIVE CONTROL arm, not the candidate. R22 measured exactly
+        # this failure in the single-head reader (E = +0.016024, rank 1, "REPLICATES"). This file is
+        # the INDEPENDENT path named in PR-CSI-013's frozen read, so leaving it unguarded would make
+        # the two paths disagree for no reason other than one of them having been fixed.
+        # NARROWING ONLY: it can turn PASSES into a non-pass and can never create one.
+        cand_ok = (cand < 0) if NEC else (cand > 0)
         ranks[nm] = {"rank": r, "of": n, "floor": round(fl, 4),
                      "certifiable_at_0.05": fl <= 0.05,
+                     "candidate_sign_ok": bool(cand_ok),
+                     "candidate_point": cand,
+                     "sign_clause": "S-259: rank 1 passes ONLY if the candidate moves the endpoint in "
+                                    "the direction the question asks (negative for necessity, "
+                                    "positive for sufficiency). instrument_capable constrains the "
+                                    "POSITIVE CONTROL, not the candidate.",
                      "verdict": (_cannot if not instrument_capable else
+                                 ("DOES NOT PASS -- rank %d but the candidate point %+.5f is not %s, "
+                                  "so it does not move the endpoint the way the %s question asks"
+                                  % (r, cand, "negative" if NEC else "positive", a.direction))
+                                 if not cand_ok else
                                  "PASSES" if (r == 1 and fl <= 0.05) else
                                  "INCONCLUSIVE (floor-limited)" if r == 1 else
                                  "DOES NOT PASS")}
