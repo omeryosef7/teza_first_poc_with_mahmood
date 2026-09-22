@@ -19870,3 +19870,130 @@ it against adversarial input.**
 **No census number was read — the report does not exist.** The nomination rule's original text is
 untouched; Amendment 1 is appended (file md5 now `fae4adc6…`, was `4227a940…`, and the change is an
 append). No GPU work was submitted. `score_behavior.py` was not opened (19 of 44 arms running).
+
+---
+
+## S-251 — ⛔⛔ **the argv generator HARD-CODED THE BASKET BANK, and `--check` never compared it to the preregistration.** PR-CSI-013 is a BUTTON family: launched through it, every arm would have carried **basket rows under button tags**, with every gate passing. Found before launch; fixed; **six argv files proven byte-identical**
+
+Census at **27 of 44**, GATE 0 clean. This tick's work is on PR-013's critical path and it found the worst
+latent defect of the sprint.
+
+### 1. ⛔ The defect
+
+```
+scripts/gates/dcs_csi_pr010_argv.py  (before)
+  "--bank", "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl",   <- CONSTANT
+  SPLIT = {"train": {"exclude": ".../exclude_basket_bomb_sow_train.txt", ...},
+           "validation": {"exclude": ".../exclude_basket_bomb_sow_validation.txt", ...}}
+```
+
+**Every family so far is basket, so nothing was wrong in fact.** But S-248 established `button` as
+PR-013's held-out axis, and **launching a button family through this generator would have produced 23 arms
+of BASKET data under `csi6_btnhead_button_*` tags.**
+
+**And nothing would have caught it.** Measured:
+
+```
+argv --check verifies : every flag EXISTS in score_behavior.py's argparse; head lists match the prereg
+argv --check NEVER verified : the BANK, or the EXCLUSIONS, against the preregistration
+prereg `codeword` field : ABSENT from PR-010, PR-011 and PR-012 -- no prereg declared its codeword
+VOID conditions mentioning the bank : NONE, in any prereg in this sprint
+```
+
+**This is the one error in this pipeline that produces entirely plausible numbers.** A wrong head list
+shows up as a liveness or identity failure; a wrong dose shows up in GATE 0; **a wrong bank produces a
+clean, complete, internally consistent 23-arm family that answers a question nobody asked.**
+
+### 2. The fix, and the default that makes it safe
+
+Bank and exclusions are now **derived from the prereg's `codeword`**, which defaults to `"basket"` because
+PR-010/011/012 predate the field — **the same treatment `control_prefix` got in S-227, and the default is
+verified to bind, never assumed (S-168).** `--check` now refuses unless the emitted bank *and* exclusions
+carry the codeword, **both files exist on disk** (absence is not a pass — R20-6), and **every arm agrees**:
+
+```
+CODEWORD CHECK PASSED: 'basket' -> bank ..._basket_bomb.jsonl, exclusions exclude_basket_bomb_sow_validation.txt
+                       (both exist; every arm agrees)
+```
+
+### 3. ⚠ A SECOND defect, found only by running the button path end to end
+
+`all_arms()` required `HD_TOPK` and `HD_BOTK` as keys, and hard-coded the base arm names. PR-013's arms are
+`BT_SINGLE` and `BT_CTRL_*`:
+
+```
+Traceback ... in all_arms
+    ("HD_TOPK", hs["HD_TOPK"]), ("HD_BOTK", hs["HD_BOTK"])]
+KeyError: 'HD_TOPK'
+```
+
+Fail-closed, **but a bare `KeyError` naming the symptom rather than the cause** — the defect S-246 fixed in
+the four rank tools, still present here. Now: **`base_arms` comes from the prereg** (default
+`["HD_BASE","HD_KO"]`, refused if either name also appears in `head_sets`), the `HD_TOPK`/`HD_BOTK` pair is
+emitted **only if present**, and a rank family's candidate is picked up generically — so `BT_SINGLE` is
+emitted even though it is not named `HD_TOPK`. `dcs_csi_pr013_freeze.py` now declares
+`base_arms: ["BT_BASE","BT_KO"]`.
+
+**A third, cosmetic one in the same region:** `CHECK PASSED` printed *"(HD_BASE has no intervention, HD_KO
+= all 32)"* unconditionally — **wrong text on any family that names them otherwise.** It now names the
+actual base arms.
+
+### 4. ⛔ Regression: this file generates the argv for three already-published families
+
+**Snapshotted all six outputs (3 preregs × 2 splits) BEFORE touching anything, then diffed after each of
+the two structural changes:**
+
+```
+6 of 6 byte-identical   (pr010 train/validation, pr011 train/validation, pr012 train/validation)
+PR-011 --check : CHECK PASSED: 24 arms   PR-012 --check : CHECK PASSED: 44 arms
+```
+
+**Byte-identity on the emitted argv, not agreement of the summary lines** — the summary is a lossy view,
+and S-246 recorded that lesson when comparing W4's reports.
+
+### 5. End-to-end proof that a BUTTON family resolves to BUTTON data
+
+Synthetic census → the real `pr013_freeze` → a real button prereg → the argv generator:
+
+```
+CODEWORD CHECK PASSED: 'button' -> bank ..._ts116m_button_bomb.jsonl, exclusions exclude_button_bomb_sow_validation.txt
+CHECK PASSED: 23 arms, every flag declared by score_behavior.py; 21 carry a frozen head list,
+              2 carry none (BT_BASE has no intervention, BT_KO = all 32)
+populations: validation expect-n 230, exclusions runargs/dcs_cont/exclude_button_bomb_sow_validation.txt
+
+BT_SINGLE:  --bank .../boombness_prompt_bank_ts116m_button_bomb.jsonl
+            --exclude-prompt-ids runargs/dcs_cont/exclude_button_bomb_sow_validation.txt
+            --knockout-heads 14        --tag csi6_btnhead_button_validation_BT_SINGLE
+```
+
+**And the guard fires on a codeword with no data:**
+
+```
+REFUSING: the bank for codeword 'nosuchword' does not exist:
+  'data/boombness_prompts/boombness_prompt_bank_ts116m_nosuchword_bomb.jsonl' -- absence is not a pass
+```
+
+`PR-CSI-013 -> csi6_btnhead_button` is registered in the launcher's tag-namespace guard.
+
+### 6. The pattern, and what it says about R21's lesson
+
+R21 concluded: *"a frozen rule is not frozen in any useful sense until something executes it against
+adversarial input."* **S-251 extends that from rules to PIPELINES.** This defect could not be found by
+reading the generator, by `--check`, or by any gate — **only by running the button path, which nothing had
+ever done.** Three families deep, every guard green, and the generator would still have run the wrong
+codeword.
+
+**The generalisable rule: a parameter that has only ever had ONE value is a CONSTANT WEARING A
+PARAMETER'S NAME.** `codeword` was never even a parameter here; `split` and `tag_prefix` were, and both
+have been wrong at least once (S-227's tag namespaces, S-247's argv arm count). **The first run of a second
+value is the test, and it must happen before the launch, not with it.**
+
+### 7. State
+
+```
+918631   RUNNING, 27 of 44, GATE 0 clean
+NOT DONE the census read (needs 44 of 44); PR-CSI-013 has no prereg and cannot until the census lands
+frozen   pr013 nomination rule + amendment 1 (md5 fae4adc6), anchor cross-check, both UNTOUCHED
+```
+
+**No census number was read.** `score_behavior.py` was not opened.

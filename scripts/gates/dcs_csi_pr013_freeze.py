@@ -110,6 +110,7 @@ def build(cen_path, cen, h_star, gate, controls, seeds, src_prereg):
                          "knockout_scope": "target_surface_row_only", "band": "6-14"},
         "split": "validation",
         "head_sets": hs,
+        "base_arms": ["BT_BASE", "BT_KO"],
         "control_prefix": "BT_CTRL_",
         "n_controls": N_CONTROLS,
         "n_arms_per_split": 2 + 1 + N_CONTROLS,
