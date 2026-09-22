@@ -441,3 +441,67 @@ projections as controls** — **could not be determined from the abstract**. It 
 
 **This pass: 22 searches, 15 primary-page fetches.** Running totals with §6: **39 searches, 20
 primary-page fetches.**
+
+---
+
+# ADDENDUM — 2026-09-22: **assessing PR-CSI-010's head result (D32) against this review.** No new citations; no search was run in this pass
+
+§12 states **"No novelty claim before this review lands."** D32 is the sprint's first positive
+head-level claim, and this review was written **2026-09-17, before the head experiment existed**. This
+addendum asks one question: **what may D32 claim, given only what is already verified here?**
+
+## B1. The review anticipated D32's question, and said it was open
+
+**§A5 item 3, written five days before the arms ran:**
+
+> *"**Retrieval/induction heads specifically for non-copy semantic transfer.** Every head-level paper
+> found (retrieval heads 2404.15574; induction heads; Atlas 2505.15807) studies **copying or
+> task-identification**. Whether a head carries an *installed denotation* that is not a copy is still
+> not addressed by anything I found. **This is a real, open, adjacent question** and, per Gate C, we
+> should not invent a circuit to fill it."*
+
+**D32 answers that question by measurement rather than invention**, which is what Gate C asked for: a
+preregistered intervention on held-out domains, 8 head indices against 20 dose-matched controls, rank
+1 of 21 at the attainable floor, two independent analysers agreeing to `3.5e-06`. **The question the
+review flagged as open is now answered for one codeword, on one leg, at one band.**
+
+## B2. ⛔ But a NOVELTY CLAIM REMAINS BLOCKED, by this review's own open items
+
+**§A5 item 2 — non-archival mechanistic jailbreak work** (LessWrong / Alignment Forum / workshop
+tracks) is *"still not systematically searched — and still **the most likely place a close neighbour
+hides**."* **§A5 item 4 — the citation-graph crawl** of 2512.03771 / 2605.18830 / 2605.00123 is *"not
+run … the **highest-value remaining literature action** and it is cheap."* **Neither has been run since,
+and D32 does not change that.**
+
+**A new gap this assessment adds, and it is specific to how D32's candidate was chosen:**
+
+```
+"attribution patching"  0 mentions      "AtP"  0 mentions      "path patching"  0 mentions
+"attention head" 5 | "head ablation" 4 | "retrieval head" 6 | "induction head" 4
+```
+
+**The review covers head-level *phenomena* and not the *method* that selected our heads.** W1 is an
+attribution-patching screen (`⟨g_z, z_ko − z_clean⟩`) validated by a true-patch gate — and **AtP as a
+method has zero coverage here.** Until it is covered, this review cannot say whether the
+screen-then-intervene pipeline is standard practice, a known-flawed shortcut, or a contribution. **That
+bears on method novelty, not on whether D32's result is correct**, which rests on the intervention and
+not on the screen.
+
+## B3. What D32 may say today, and what it may not
+
+**MAY**: report the measurement, its gates, its floor, and its scope — *8 head indices across blocks
+6-14 on the query-codeword row carry at least half of the A1 knockout's effect on installation for
+`basket`, leg (i) only* — and note that **this review found no work addressing installed-denotation
+(non-copy) head carriage** as of 2026-09-17.
+
+**MAY NOT**: call any of it **novel**, or **first**, or **unaddressed in the literature**. §A5 items 2
+and 4 are unrun, the AtP method is uncovered, and *"I found nothing"* over a search that excludes the
+most likely venue is **not** evidence that nothing exists. **§12's rule is not discharged by this
+addendum; it is re-stated with one more topic on the list.**
+
+## B4. Added to §A5's uncovered list
+
+7. **Attribution patching / AtP and path patching as methods.** Zero coverage. Our candidate head set
+   was *selected* by AtP and validated by a true-patch gate; the method's standing, known failure
+   modes and accepted validation practice are unreviewed. **Highest-value next literature action
+   alongside item 4.**

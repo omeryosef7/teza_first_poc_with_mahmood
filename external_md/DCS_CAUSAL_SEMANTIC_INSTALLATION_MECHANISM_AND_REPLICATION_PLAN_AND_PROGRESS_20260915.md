@@ -17676,3 +17676,75 @@ CORRECTION to S-225: 24 arms, not 22 -- HD_KO (GATE 1 and the dose denominator) 
 comparator) are not optional. 2.17 h compute, 2.17-2.54 h wall.
 PR-CSI-011 IS FULLY STAGED AND NOT LAUNCHED. One command away.
 ```
+
+---
+
+# S-229 — **§22's LIT item: the review already exists and it ANTICIPATED D32's question five days before the arms ran.** D32 answers it by measurement — **and a novelty claim is still blocked**, by the review's own unrun items plus one I am adding
+
+`reports/DCS_CAUSAL_SEMANTIC_INSTALLATION_LITERATURE.md` (443 lines, 2026-09-17) was **not** unstarted;
+§22's checkbox is stale. What had never been done is checking it **against the head result**, which
+§12 requires: *"No novelty claim before this review lands."*
+
+## The review called D32's question open before D32 existed
+
+**§A5 item 3, 2026-09-17:**
+
+> *"Every head-level paper found (retrieval heads 2404.15574; induction heads; Atlas 2505.15807)
+> studies **copying or task-identification**. Whether a head carries an *installed denotation* that is
+> not a copy is still not addressed by anything I found. This is a real, open, adjacent question and,
+> **per Gate C, we should not invent a circuit to fill it**."*
+
+**The sprint then measured one instead of inventing one** — preregistered, held-out, 20 dose-matched
+controls, rank 1 of 21 at the floor, two independent analysers agreeing to `3.5e-06`. Gate C asked for
+exactly that restraint and it was kept, which is only visible because the caution was written down
+first.
+
+## ⛔ A novelty claim remains blocked, and I am adding a reason
+
+The review's own open items, unrun and unchanged:
+
+* **§A5-2** non-archival work (LessWrong / Alignment Forum / workshops) — *"still not systematically
+  searched, and still **the most likely place a close neighbour hides**."*
+* **§A5-4** the citation-graph crawl of the three anchor papers — *"not run … the **highest-value
+  remaining literature action** and it is cheap."*
+
+**New, and specific to how D32's candidate was chosen:**
+
+```
+"attribution patching" 0 | "AtP" 0 | "path patching" 0
+"attention head" 5 | "head ablation" 4 | "retrieval head" 6 | "induction head" 4
+```
+
+**The review covers head-level PHENOMENA and not the METHOD that selected our heads.** W1 is an
+attribution-patching screen validated by a true-patch gate, and AtP has **zero** coverage. That bears
+on **method** novelty, not on whether D32 is correct — D32 rests on the intervention, not the screen —
+but it is exactly the kind of thing a reviewer asks first. Recorded as **§A5 item 7**.
+
+## What D32 may and may not say, now written into the review itself
+
+**MAY**: the measurement, its gates, its floor, its scope, and *"this review found no work addressing
+installed-denotation (non-copy) head carriage as of 2026-09-17."*
+**MAY NOT**: **novel**, **first**, or **unaddressed in the literature**. *"I found nothing"* over a
+search that excludes the most likely venue is **not** evidence that nothing exists. **§12's rule is not
+discharged by this pass; it now carries one more topic.**
+
+**No search was run in this pass and no citation was added.** The assessment is of the existing
+verified content against the new result — which is the only literature work that can be done honestly
+without retrieval, and it is the work that was actually missing.
+
+## Commands
+
+```
+grep -ci 'attribution patching\|AtP\|path patching' reports/DCS_CAUSAL_SEMANTIC_INSTALLATION_LITERATURE.md
+sed -n '364,390p' reports/...LITERATURE.md        # §A5's uncovered list, read before adding to it
+# addendum appended: 443 -> 507 lines, prefix md5 unchanged
+```
+
+```
+LIT WAS NOT UNSTARTED -- the review exists and its section A5-3 CALLED D32'S QUESTION OPEN five days
+before the arms ran, and told us not to invent a circuit to fill it. We measured one instead.
+NOVELTY REMAINS BLOCKED: A5-2 (non-archival, the likeliest neighbour) and A5-4 (citation crawl) are
+unrun, and I add A5-7: AtP / path patching have ZERO coverage though AtP SELECTED our head set.
+D32 may report its measurement and its scope; it may NOT say novel, first, or unaddressed.
+No search run, no citation added -- the assessment uses only already-verified content.
+```
