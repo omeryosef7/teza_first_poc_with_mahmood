@@ -17037,3 +17037,84 @@ the MDE is SMALLER than the uniform null's -0.057, so the design could see the n
 NOISE MODEL CAVEAT STATED: the control sd conflates domain noise with head-set heterogeneity and this
 analysis cannot separate them.
 ```
+
+---
+
+# S-221 — **POWER applied to a LIVE claim: PR-CSI-007's non-certification had only 34% power at the effect actually present.** D29 stands as written; **AM-25 bounds how it may be read**
+
+§22's POWER item says *"for every behavioural endpoint"*. S-220 did the head endpoint. The one that
+mattered more is the endpoint where a **negative** conclusion is on the books.
+
+## What the artifacts actually say — and one number I had not seen before
+
+```
+BUTTON L18, from each split's own control_recovery_distribution:
+  TRAIN       67 domains | candidate -0.00014 | rank 36 of 47 | controls mean +0.000284 sd 0.000743
+  VALIDATION  23 domains | candidate +0.00218 | rank  6 of 47 | controls mean +0.000857 sd 0.000945
+```
+
+**TRAIN L18 was rank 36 of 47 with a NEGATIVE recovery.** That is why PR-CSI-007's prespecified band
+was `[24, 43]` with point prediction 32, and why rank 6 was recorded as a **surprise in the favourable
+direction that still does not certify**. D29 is consistent with this throughout; I had been carrying a
+vaguer picture of "the train result" than the artifact supports, and the artifact is the authority.
+
+## The power question, and it is not rhetorical
+
+D29's certifying threshold is `R47 ≤ 2`. Simulating that cell's own null — 46 empirical control
+recoveries resampled with replacement, candidate = a control draw plus a constant shift, B = 20 000:
+
+```
+delta       P(rank<=2)   P(rank<=1)
++0.00000      0.0546       0.0342
++0.00100      0.2362       0.1966
++0.00132      0.3382                 <- THE OBSERVED SHIFT
++0.00200      0.6205       0.5424
++0.00300      0.9215       0.8831     <- MDE at 80% power
+```
+
+**At the effect actually present, this cell would certify roughly one time in three.** The MDE at 80%
+power is `+0.00300`, **2.3× the observed shift**. So **failing to certify was the modal outcome under a
+real effect of the observed size**, and *"does not pass"* must not be read as *"there is nothing
+there."* In ceiling units: the cell could only certify effects ≥ **2.3%** of its own positive control
+(`KO_FULL − KO` = +0.13326); the observed was **1.6%**.
+
+**D29 is not withdrawn and nothing in it is wrong.** It refuses *"nearly significant"* by name and
+quotes its decision branch verbatim. AM-25 adds the bound in the *other* direction, which nothing in
+the row supplied.
+
+## The contrast with PR-CSI-010 is the useful part
+
+Same machinery, same domain count (23), fewer controls (20 vs 46):
+
+```
+PR-CSI-010 head cell   observed effect 86% of its ceiling  ->  power 1.0000
+PR-CSI-007 L18 cell    observed effect  1.6% of its ceiling ->  power 0.3382
+```
+
+**The difference is effect size, not design competence** — and **neither cell's power was knowable
+before its arms ran**, because both nulls had to be measured. That is an argument for computing power
+*after* every family and attaching it to the claim, not for having predicted it.
+
+## ⛔ Limits
+
+Same noise-model caveat as S-220: the null spread is the control arms' own recovery sd, conflating
+domain sampling noise with arm-to-arm heterogeneity, and it cannot be decomposed from these arms.
+The simulation assumes a candidate behaving as **a control draw plus a constant shift**; a candidate
+whose per-domain *pattern* differs from the controls' is outside it. **CANNOT ANSWER**: the power of
+the paired `candidate − comparator` contrast, of the S2 exceedance interval, or of any subfamily rank.
+
+## Commands
+
+```
+# inputs: reports/DCS_CSI_SUBSPACE_button_{train,validation}_L18_n46.json control_recovery_distribution
+# simulation: 46 controls resampled with replacement, candidate = control draw + delta, B = 20000, seed 20260922
+```
+
+```
+POWER applied to a LIVE claim. PR-CSI-007's L18 validation cell: P(certify) = 0.3382 AT THE OBSERVED
+EFFECT; MDE at 80% power is 2.3x larger. FAILING TO CERTIFY WAS THE MODAL OUTCOME UNDER A REAL EFFECT.
+D29 STANDS AS WRITTEN; AM-25 bounds how it may be read -- "does not pass" is NOT "nothing is there".
+ALSO RECORDED: TRAIN L18 was rank 36 of 47 with a NEGATIVE recovery, which is what made the [24,43]
+band and the "surprise" framing correct.
+CONTRAST: PR-CSI-010 reached power 1.0000 on 23 domains because its effect was 86% of ceiling, not 1.6%.
+```
