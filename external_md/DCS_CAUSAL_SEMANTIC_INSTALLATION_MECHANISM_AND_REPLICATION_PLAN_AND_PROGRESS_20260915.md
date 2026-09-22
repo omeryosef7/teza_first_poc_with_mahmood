@@ -20990,3 +20990,102 @@ of them re-read the function they had just changed.**
 same kind before moving on.** S-251 replaced one arm-name literal in `all_arms()` and left one in
 `argv_for`; a single `grep 'HD_' scripts/gates/dcs_csi_pr010_argv.py` at the end of S-251 would have shown
 both.
+
+---
+
+## S-261 — ⚠ **CORRECTION to S-260's bookkeeping: "keep the void arms and filter by job id" was WRONG.** The runner's skip-if-complete read them as done and **919240 resumed at arm 15**, reusing the void ones. Both generations quarantined, relaunched clean as **919296**. Plus: **the model load was 47.5 s on the node where it had taken 6008.8 s** — and that refines S-257's rule a third time
+
+### 1. ⛔ CORRECTION to S-260
+
+S-260 wrote: *"Its 14 arm dirs are KEPT, not deleted: they are the evidence, and the sprint's standing
+handling of duplicate tags is `--require-slurm-job`, not deletion (S-147/S-155)."*
+
+**That reasoning ignored the arm runner.** Measured, from 919240's own log:
+
+```
+[w3] SKIPPING 14 arm(s) already complete: BASE, KO, 00, 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11
+919240's completed arms: BT_CTRL_12, BT_CTRL_13, BT_CTRL_14, BT_CTRL_15, BT_CTRL_16
+```
+
+**The "relaunch" resumed at arm 15 and reused the VOID arms**, including the broken `BT_BASE`. It would
+have produced a family of 14 void + 9 good arms.
+
+**The runner is not at fault** — its skip-if-complete exists precisely to avoid creating duplicate tags
+that would make `strict_run_dir` refuse a whole family (`dcs_csi_arm_runner.py:90-92`). **It cannot know
+that a *complete* arm is *scientifically void*.** `--require-slurm-job` separates generations **at read
+time**; it does nothing at **write** time, and S-260 applied a read-time remedy to a write-time problem.
+
+**Done instead:** every `csi6_btnhead_button_validation_*` dir moved out of `score_behavior/` to
+`outputs/boombness/QUARANTINE_pr013_918967_void_and_919240_orphaned/` — **21 dirs, 11 MB** (15 from
+918967, 6 from 919240). Evidence preserved, resolver path clear:
+
+```
+csi6 dirs left in score_behavior: 0        quarantined by job: {'918967': 15, '919240': 6}
+```
+
+**919240's five arms were GOOD** (produced by the fixed argv) and are quarantined anyway, so the family
+comes from **one** job id and `--require-slurm-job` has nothing to disambiguate. **~25 min of correct GPU
+work discarded to buy an unambiguous family; that is the right trade.**
+
+**Two process notes, both mine:**
+* The quarantine's first pass moved only **7 of 21** dirs: I piped the loop through `head -6`, and the
+  closed pipe killed the loop. **Caught by counting what remained rather than trusting the loop.**
+* The submitter then **refused the relaunch** — *"REFUSING TO SUBMIT: worktree is dirty"* — because the
+  census-reader fix was uncommitted. **The guard did exactly its job.**
+
+### 2. ⚠⚠ The model load took 47.5 s on the node where it had taken 6008.8 s
+
+```
+918967  n-307, COLD  ->  [w3] MODEL LOAD #1 (6008.8 s)
+919240  n-307, WARM  ->  [w3] MODEL LOAD #1 (   47.5 s)      126x faster, SAME NODE, 3 h later
+```
+
+**S-257 concluded the penalty was the HOST CLASS (40 CPUs / 257 GB).** It is not — **it is a COLD PAGE
+CACHE.** 918967 pulled the ~16 GB snapshot into n-307's cache and 919240 read it warm. The host's RAM
+makes a cold cache more likely and eviction faster; **it does not cause the penalty.**
+
+**Third refinement of the same rule, and the variable moved every time:**
+
+```
+S-147  "check the node's FREE MEMORY"            -> refuted by S-249 (lowest FreeMem, fastest arms)
+S-249  "count the BIG-MODEL JOBS on the node"    -> incomplete in S-257 (1 job, still slow)
+S-257  "check the HOST CLASS (CPUTot/RealMemory)" -> WRONG CAUSE: same host, 126x spread
+S-261  the load cost is WHETHER THE SNAPSHOT IS WARM IN THAT NODE'S PAGE CACHE -- a ONE-OFF
+       per node, not a property of the node. Arm SCORING was ~1.20x throughout (S-253/R22) and was
+       never the issue.
+```
+
+**This also explains S-258's 87 % figure without contradicting it:** the load dominates the first arm
+**when the cache is cold**, and is negligible when warm.
+
+### 3. Relaunched clean
+
+```
+provenance: BLOB 59d27bbc  PORCELAIN clean       Submitted batch job 919296
+919296  RUNNING on n-302 (a DIFFERENT node -> expect a COLD load again, ~1-1.7 h, then ~280-320 s/arm)
+```
+
+**No skip line is possible this time — `score_behavior/` holds no `csi6` tag.**
+
+### 4. The pipeline audit S-260's rule demanded, completed
+
+```
+pr010_argv.py        CLEAN -- remaining HD_ literals are verified-to-bind DEFAULTS and a GUARDED branch
+pr012_gate0_sweep.py CLEAN -- one default
+head_single_rank.py  CLEAN -- `cand = "BT_SINGLE"` is deliberate; it refuses other shapes BY NAME
+head_analyze.py (W4) OWNS the HD_* shape and refuses others by name (S-252). Correct.
+head_census.py       HAD IT -- 8 sites, no base_arms fallback. FIXED, and the anchor print guarded.
+REGRESSION: the PR-012 census report reproduces FULL-OBJECT IDENTICAL (29750 bytes); self-test 4 of 4.
+```
+
+**The `base_arms` default is verified to bind by that regression, not assumed (S-168).**
+
+### 5. State
+
+```
+919296  RUNNING on n-302, 0 of 23 arms | frozen read 911c3a20, prereg 5ab06e3a -- UNTOUCHED
+<VALIDATION_JOB_IDS> at read time must be 919296 ALONE. 918967 is VOID; 919240 is ORPHANED but valid.
+```
+
+**No PR-013 number has ever been read**; every generation was stopped on a GATE 0 / argv finding, not on
+an endpoint. `score_behavior.py` was not opened.
