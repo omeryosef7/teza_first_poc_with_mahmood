@@ -750,3 +750,77 @@ measured for our cell and none is claimed.** The direction of the bias is argued
 
 **A5-2 is still not closed.** One domain-restricted query and one fetched post are not a sweep of two
 forums.
+
+---
+
+# ADDENDUM F — 2026-09-22: **the CLAIM SHAPE is populated and recent.** A June 2026 paper localises a semantic override to a sparse causally-necessary head set across three model families. **What remains distinctive about D32 narrows sharply, and it is not the idea**
+
+## F1. VERIFIED — arXiv:2606.28273, *Vision-Default, Prior-Override: Causal Mechanisms of Perception-Knowledge Conflict in Vision-Language Models*
+
+Niclas Lietzow, Danielle Bitterman, Carsten Eickhoff, William Rudman, Michal Golovanevsky. **Submitted
+26 June 2026.** Abstract fetched verbatim.
+
+> *"We combine activation patching across three granularities (residual stream, attention heads, and MLP
+> sublayers) with model-component ablation studies … Across three VLM families, we find that visual
+> grounding emerges by default, whereas **prior grounding depends on a small set of causally necessary
+> attention heads (2.5-4.8%)** concentrated in the second half of the network."*
+
+**This is D32's claim shape**: a **semantic override** localised to a **sparse, causally necessary head
+set**, established by **patching plus ablation**. Published **three months** after this review's original
+pass and nine days before the sprint's head arms ran.
+
+## F2. Where D32 stands against it, honestly
+
+| | 2606.28273 | PR-CSI-010 / D32 |
+|---|---|---|
+| phenomenon | perception vs **memorised prior knowledge** in VLMs | **in-context-installed denotation** of a remapped word in a text LLM |
+| localisation | sparse head set, **2.5-4.8%** of heads | 8 head **indices** tied across blocks 6-14 |
+| method | activation patching + ablation | AtP screen + **true-patch gate** + knockout arms |
+| model coverage | **three VLM families** | **one** model (Llama-3.1-8B) |
+| held-out split | **not stated in the abstract** | **23 held-out domains**, selection frozen beforehand |
+| matched control family | **not stated in the abstract** | **20 dose-matched draws**, seeds preregistered |
+| attainable floor reported | not stated | `1/21 = 0.047619`, reported with the p |
+
+**Their coverage is broader; our controls are stronger.** Both statements are checkable and neither is
+rhetorical. **The sparsity figures are NOT comparable** and no comparison is made: theirs is a percentage
+of all heads, ours is 8 of 32 **head indices** tied across a 9-layer band, and §10 already forbids reading
+ours as a per-(layer, head) claim.
+
+## F3. ⛔ What this does to the novelty position
+
+**Removed from the novelty column: the idea itself.** *"A semantic override is carried by a sparse set of
+causally necessary attention heads"* is **established, recent, and multi-family**. D32 may **not** be
+presented as showing that such localisation is possible, nor as the first causal head-level account of a
+semantic override.
+
+**What remains distinctive, subject to A5-2 still being open:**
+1. **The phenomenon** — an **in-context-installed** denotation, i.e. a meaning the prompt *creates* rather
+   than one the model *memorised*. A5-3's narrowing holds: every neighbour found concerns copying,
+   task-identification, attention redistribution, or **retrieval of prior knowledge** — not a denotation
+   installed at inference time.
+2. **The adjudication** — held-out split, preregistered dose-matched control family, attainable floor
+   reported with the p, verdicts frozen before the data, two independent analysers agreeing to `3.5e-06`.
+   That is a **methodological** distinction, not a conceptual one, and it should be claimed as such.
+
+**§12 still not discharged.** A5-2 remains open and this pass found its closest neighbour **on the third
+query** — which is itself evidence that the search space is not exhausted.
+
+## F4. UNVERIFIED — surfaced here, NOT fetched, MUST NOT be cited
+
+* `arXiv:2602.04613` — *"Translation Heads: Disentangling meaning from language in LLM-based machine
+  translation"* — **potentially close** (heads carrying meaning separably); unfetched.
+* `arXiv:2606.12917` — *"Where Computation Lives Inside TabPFN: Causal Localisation of Attention Head
+  Function"*
+* `arXiv:2605.19250` — *"Causal Evidence for Attention Head Imbalance in Modality Conflict Hallucination"*
+* `arXiv:2608.22332` — *"Mechanistic Interpretability of Chain-of-Thought Reasoning via Sequential
+  Activation Patching"*
+* `arXiv:2209.11895` — *"In-context Learning and Induction Heads"* (already known to §2 as induction-head
+  work)
+
+## F5. Searches run in this pass
+
+```
+WebSearch "attention head causally carries in-context redefined word meaning patching ablation semantic
+           override not copying"
+WebFetch  arxiv.org/abs/2606.28273   -> abstract read verbatim (F1)
+```

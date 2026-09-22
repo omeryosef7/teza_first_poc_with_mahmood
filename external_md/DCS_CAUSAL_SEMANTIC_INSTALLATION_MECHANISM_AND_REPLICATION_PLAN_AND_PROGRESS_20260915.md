@@ -18055,3 +18055,79 @@ was true but was not the main reason.
 BOTH GAPS SURVIVE: signed-vs-|AtP| (aggregation, unaffected) and the missing false-negative bound.
 The compensation asymmetry re-derives correctly and the rank test's exemption holds.
 ```
+
+---
+
+# S-234 — **§A5-2 found D32's closest neighbour, and it removes the IDEA from the novelty column.** A June 2026 paper localises a semantic override to a sparse causally-necessary head set across three model families. **What remains distinctive is the phenomenon and the adjudication — not the concept**
+
+## The neighbour, verified
+
+`arXiv:2606.28273`, *Vision-Default, Prior-Override: Causal Mechanisms of Perception-Knowledge Conflict in
+Vision-Language Models* — Lietzow, Bitterman, Eickhoff, Rudman, Golovanevsky, **26 June 2026**. Abstract
+fetched verbatim:
+
+> *"activation patching across three granularities … with model-component ablation studies … Across
+> **three VLM families**, … **prior grounding depends on a small set of causally necessary attention heads
+> (2.5-4.8%)** concentrated in the second half of the network."*
+
+**That is D32's claim shape** — a semantic override localised to a sparse, causally necessary head set by
+patching plus ablation — **published nine days before our head arms ran.**
+
+## Where D32 stands, stated both ways
+
+```
+                        2606.28273                 D32
+phenomenon              perception vs MEMORISED    IN-CONTEXT-INSTALLED denotation
+                        prior knowledge (VLM)      of a remapped word (text LLM)
+model coverage          THREE VLM families         ONE model
+held-out split          not stated in abstract     23 HELD-OUT domains, frozen first
+matched control family  not stated in abstract     20 DOSE-MATCHED draws, seeds preregistered
+floor reported with p   not stated                 1/21 = 0.047619, always
+```
+
+**Their coverage is broader; our controls are stronger.** Both are checkable. **The sparsity figures are
+not comparable and I make no comparison** — theirs is a share of all heads, ours is 8 of 32 head *indices*
+tied across a 9-layer band, and §10 already forbids reading ours per-(layer, head).
+
+## ⛔ What leaves the novelty column
+
+**The idea.** *"A semantic override is carried by a sparse set of causally necessary attention heads"* is
+**established, recent and multi-family.** D32 may **not** be presented as showing such localisation is
+possible, nor as a first causal head-level account of a semantic override. **Had this sprint written a
+novelty claim before running A5-2, that is the sentence it would have written and it would have been
+wrong.** §12's rule earned its keep.
+
+**What remains, subject to A5-2 still being open:** the **phenomenon** — a denotation the prompt *creates*
+rather than one the model *memorised*, which every neighbour found so far does not cover (copying,
+task-identification, attention redistribution, or retrieval of prior knowledge) — and the
+**adjudication**: held-out split, preregistered dose-matched controls, floor with the p, verdicts frozen
+before the data, two independent analysers at `3.5e-06`. **The second is methodological, not conceptual,
+and must be claimed as such.**
+
+## §12 is still not discharged, and now for a sharper reason
+
+**The closest neighbour turned up on the third query.** That is direct evidence the space is not
+exhausted, not a reason for confidence. Four further leads are recorded unverified in §F4 — one of them,
+*"Translation Heads: Disentangling meaning from language"*, is potentially closer still and has not been
+fetched.
+
+## Commands
+
+```
+WebSearch "attention head causally carries in-context redefined word meaning patching ablation semantic
+           override not copying"
+WebFetch  https://arxiv.org/abs/2606.28273     # abstract read verbatim
+# LIT Addendum F appended: 752 -> 826 lines, prefix md5 unchanged
+```
+
+```
+A5-2 FOUND THE CLOSEST NEIGHBOUR: arXiv:2606.28273 (26 Jun 2026) localises a semantic override to a sparse
+CAUSALLY NECESSARY head set (2.5-4.8%) across THREE VLM families, by patching + ablation.
+THE IDEA LEAVES THE NOVELTY COLUMN. D32 may NOT claim to show such localisation is possible or to be a
+first causal head-level account of a semantic override.
+WHAT REMAINS: the PHENOMENON (an in-context-INSTALLED denotation, not a memorised one) and the
+ADJUDICATION (held-out, preregistered dose-matched controls, floor with the p) -- the latter METHODOLOGICAL.
+Their coverage is broader (3 families); our controls are stronger. Both stated, neither rhetorical.
+SECTION 12 STILL NOT DISCHARGED -- the neighbour appeared on the THIRD QUERY, which shows the space is not
+exhausted; four leads remain unfetched, one potentially closer.
+```
