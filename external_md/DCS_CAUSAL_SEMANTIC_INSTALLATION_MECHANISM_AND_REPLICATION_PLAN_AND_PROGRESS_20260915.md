@@ -20500,3 +20500,98 @@ frozen  pr013_read.txt 911c3a20 | pr013 prereg 5ab06e3a | nomination rule fae4ad
 
 **No PR-013 number exists to have been read.** `score_behavior.py` was not opened. **REVIEW R22 is due
 ~22:38.**
+
+---
+
+## S-257 — **PR-CSI-013's first arm is ~2× slow, and the cause is measured: n-307 is a DIFFERENT CLASS OF HOST — 40 CPUs and 257 GB against n-303's 128 and 774 GB.** ⚠ **A second refinement to S-147's rule.** The wall still has ~7 h of margin, and the intervention threshold is pre-committed here
+
+### 1. The anomaly, measured against two prior first-arms
+
+```
+date 21:35:43 | 918967 RunTime 00:56:23 | BT_BASE STILL RUNNING, 0 of 23 arms complete
+
+first arm of each family (all three include the model load):
+  PR-011  HD_BASE  n-301   2122 s  (35.4 min)
+  PR-012  HD_BASE  n-303   1479 s  (24.6 min)
+  PR-013  BT_BASE  n-307   >2960 s (>49 min, unfinished)   <- ~2x PR-012
+
+job start -> arm dir created:  PR-012  16:41:57 -> 16:42:38   (41 s)
+                               PR-013  20:40:39 -> 20:46:17   (5 min 38 s)
+```
+
+### 2. ⚠ The cause, and it is NOT what S-249's rule predicts
+
+```
+node    CPUTot   RealMemory   GPUs
+n-301     112     1546700 M   7 x RTX 3090
+n-303     128      773800 M   8 x RTX 3090
+n-307      40      257570 M   8 x RTX 3090     <- SAME GPU, MUCH SMALLER HOST
+```
+
+**Same GPU model and compute capability; a materially different machine** — a third of the CPUs and a
+third of the memory of the nodes every previous family ran on.
+
+**And job count does not explain it.** A second user's job (`919044`, `nadaveisen`) arrived on n-307 at
+~21:24, **38 minutes into my arm.** The first 38 minutes were uncontended and already slow. At the time of
+writing: 2 jobs, `CPUAlloc=8` of 40, `CPULoad=2.37`, `FreeMem=238 GB` — **not contended, not memory-starved,
+and still half speed.**
+
+**⚠ So S-147's rule has now been wrong twice, in opposite directions, and S-249's replacement is
+incomplete:**
+
+```
+S-147 rule        "check the node's FREE MEMORY"         -> refuted by S-249 (lowest FreeMem, fastest arms)
+S-249 replacement "count the BIG-MODEL JOBS on the node" -> incomplete here: 1 job, still ~2x slow
+S-257 addition    CHECK THE HOST CLASS (CPUTot / RealMemory), not only the GPU model and the job count.
+                  `ActiveFeatures=geforce_rtx_3090` is IDENTICAL on all three nodes and says nothing
+                  about the host the GPU is bolted to.
+```
+
+**The honest shape: three ticks, three different variables, each found only by running somewhere new.**
+This is S-251's lesson again — *a parameter that has only ever had one value is a constant wearing a
+parameter's name* — and "the node" was that parameter until tonight.
+
+### 3. Is it stuck, or slow? Measured, not assumed
+
+```
+sstat 918967.batch    -> the step is live
+n-307 CPULoad 2.37 with 8 of 40 CPUs allocated -> consistent with GPU-bound work, not a hang
+arm dir mtime 20:50:21, nothing since  -> EXPECTED: score_behavior writes results.jsonl at the END of
+                                          an arm, so an empty dir mid-arm is not evidence of a stall
+                                          (and treating it as evidence would be absence-as-a-value again)
+```
+
+**Slow, not stuck.**
+
+### 4. The projection and the pre-committed intervention threshold
+
+```
+if n-307 runs ~2x n-303's 318.5 s/arm  ->  ~640 s/arm
+22 arms remaining x 640 s = 3.9 h  ->  finish ~01:30
+EndTime 2026-09-23T08:39:21         ->  MARGIN ~7 h
+```
+
+**⛔ THE THRESHOLD, COMMITTED NOW SO IT IS NOT DECIDED UNDER PRESSURE LATER:** if at any tick the
+projected finish exceeds `EndTime − 1 h` (i.e. ~07:39), **cancel and relaunch the whole family** on a
+node of n-301/n-303 class with a single-node `--nodelist` (which §16 permits; the multi-node form is
+prohibited because SLURM then waits for all of them). **A relaunch re-creates the same tags under a new
+job id — the S-104/S-155 duplicate-tag hazard — and the frozen read's `--require-slurm-job` is what
+handles it: the read must then name ONLY the surviving job id.** Partial arms from a cancelled generation
+are real and complete but are NOT part of this family.
+
+**No such action is warranted now: 7 h of margin against a 3.9 h projection.**
+
+### 5. What is NOT affected
+
+**Internal validity is untouched.** All 23 arms run in **one allocation on one node**, so every arm shares
+the host — PR-CSI-003's VOID condition is about arms compared *across* architectures, and there is no
+cross-node comparison anywhere in PR-013's frozen read. **The slowness costs wall-clock and nothing else.**
+
+### 6. State
+
+```
+918967  RUNNING 00:56:23 on n-307, 0 of 23 arms, BT_BASE in progress
+frozen  pr013_read 911c3a20 | prereg 5ab06e3a | nomination rule fae4adc6 -- UNTOUCHED
+```
+
+**No PR-013 number exists.** `score_behavior.py` was not opened. **REVIEW R22 due ~22:38.**
