@@ -1199,3 +1199,78 @@ original wording would have supported — would now be false.
 
 **Addendum D's two flagged leads are both discharged (E1, L1), and both narrowed our wording rather than
 the field's.** That is the fifth consecutive pass with that outcome. **§A5-2 remains open by construction.**
+
+---
+
+# ADDENDUM M — 2026-09-23: **a paper whose whole subject is the question PR-CSI-013 is running right now**, and it supplies an EVIDENCE LADDER our claims can be placed on. ⚠ **But PR-013 is NOT its rung 4, and saying so would be the R19 error again**
+
+## M1. VERIFIED — arXiv:2606.08292, *Ablation-Reversible Heads Don't Transfer: A Stress Test for Mechanistic Role Claims in Transformers*
+
+**Fetched and read.** Three instruction-tuned 7–8B models — **Qwen2.5-7B-Instruct, Llama-3-8B-Instruct,
+Mistral-7B-Instruct-v0.2** — so **our model family is one of the three.** Five computation families
+(arithmetic, comparison, digits, dates, times) plus a factual control; 25-item inventories per family with
+fixed templates; templates *"matched on surface factors (template, item set, answer format) but differ in
+the requested computation."*
+
+**Its central claim, quoted:**
+
+> *"Passing 1–3 does not imply passing 4. The four forms of evidence are separable."*
+> *"Mechanistic role claims should therefore name the exact evidence they rest on. Necessity,
+> decodability, repair, and transfer are different claims, not interchangeable labels."*
+
+**The ladder:**
+
+```
+1 NECESSITY (ablation damage)   -- "does not tell us why they matter"
+2 DECODABILITY                  -- "Information may be readable at a site without being used there"
+3 SAME-PROMPT REPAIR            -- "does not establish that the component carries a reusable computation"
+4 CROSS-PROMPT TRANSFER         -- required for "interventional generalizability"
+```
+
+Screen: 256 stratified masks (32 heads zeroed per mask), OMP sparse recovery, 1024-mask follow-up;
+18 model–family cells, 13 "clean"; the **full matched-control transfer assay covers ~8 of 15 cells**, and
+*"Random-mask recovery partially supports these findings … but not all top-5 aggregates."* They test both
+single heads and cumulative top-k sets, warning that *"Aggregate top-5 patches therefore conflate distinct
+roles."*
+
+## M2. ⛔ Where THIS sprint's claims sit on that ladder — and the distinction that must not be fudged
+
+```
+D32 / D33  8-head set, ablation necessity + rank test vs 20 preregistered controls   -> RUNG 1
+D34        per-head census, ablation necessity, 32 singletons + 8 LOO               -> RUNG 1
+PR-CSI-013 the SAME ablation re-run on a DIFFERENT CODEWORD, ranked again           -> NOT RUNG 4
+```
+
+**⚠ PR-CSI-013 is NOT their rung 4, and claiming it were would be R19's error exactly.** Their rung 4
+**transfers an activation STATE** — patching a head's state from a prompt requiring operation A into a
+prompt requiring operation B. **PR-013 transfers NOTHING: it re-runs the same knockout on a new item set
+and asks whether the same head ranks 1 again.** That is **replication of a rung-1 finding across stimuli**,
+which sits between their rungs 1 and 4 and has no number on their ladder.
+
+**The form matches; the operation does not** — the same reason R19 withdrew *"AtP\*'s estimator is ours"*.
+
+## M3. What it does license, and it is a caution rather than a prediction
+
+* **Their warning applies to us directly.** Everything this sprint has certified is **rung 1**. `D32`'s
+  `REPORTABLE_AS` and `D34`'s `CENSUS_DELIVERABLE` already name their evidence exactly — *"carry at least
+  half of the A1 knockout's effect"*, *"32 effects with CIs"* — and **neither has ever been stated as
+  decodability, repair or transfer.** This addendum is the external confirmation that naming the rung is
+  the right discipline, not a new obligation.
+* **It makes a PR-013 failure unsurprising in the field's terms.** Ablation-identified head roles are
+  documented as frequently failing to generalise. The frozen read already says a failure *"would be
+  INFORMATIVE rather than disappointing"* — **written before the arms and before this paper was found.**
+* ⛔ **It does NOT predict PR-013's outcome.** Their negative result is about state portability across
+  *computations*; ours is rank replication across *codewords* with the domain set held fixed (S-256).
+  **Different question, so their result transfers no more to us than ours would to them.**
+
+## M4. A lead for S-254's five positive singletons, recorded and NOT yet verified
+
+S-254 recorded — descriptively — five heads whose knockout **raises** installation (18, 31, 27, 14, 7).
+The search names this as an established category: **"negative name mover heads" and "anti-induction
+heads"**, with `arXiv:2310.04625` *Copy Suppression: Comprehensively Understanding an Attention Head* as
+the standing reference, and the general warning that *"negative components may be ignored by attribution
+methods that only find positive components."*
+
+**⛔ UNVERIFIED — the abstract was not fetched and nothing here may be cited.** Recorded because it bears
+on a finding already on record and because it suggests the positives are a known phenomenon rather than
+noise. **The census reports them with CIs and claims nothing about them; that does not change.**

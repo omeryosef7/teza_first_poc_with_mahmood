@@ -21183,3 +21183,71 @@ class: a large host should land near 1300–1900 s, not near 6000.
 ```
 
 **No PR-013 number has ever been read.** `score_behavior.py` was not opened.
+
+---
+
+## S-263 — **a paper whose whole subject is PR-CSI-013's question was found while PR-CSI-013 was running**, and it supplies an evidence ladder our claims can be placed on: **everything certified in this sprint is RUNG 1.** ⚠ **PR-013 is NOT its rung 4, and saying so would be R19's error again**
+
+Zero GPU cost; the arms were loading. **No PR-013 number exists.**
+
+### 1. LIT Addendum M — arXiv:2606.08292, *Ablation-Reversible Heads Don't Transfer*
+
+Three instruction-tuned 7–8B models, **Llama-3-8B-Instruct among them** — our model family. Its central
+claim, quoted:
+
+> *"Passing 1–3 does not imply passing 4. The four forms of evidence are separable."*
+> *"Mechanistic role claims should therefore name the exact evidence they rest on. Necessity,
+> decodability, repair, and transfer are different claims, not interchangeable labels."*
+
+```
+1 NECESSITY (ablation damage)  2 DECODABILITY  3 SAME-PROMPT REPAIR  4 CROSS-PROMPT TRANSFER
+```
+
+### 2. ⛔ Where this sprint sits — and the distinction that must not be fudged
+
+```
+D32 / D33   8-head set, ablation necessity + rank vs 20 preregistered controls  -> RUNG 1
+D34         per-head census, 32 singletons + 8 LOO                              -> RUNG 1
+PR-CSI-013  the SAME ablation on a DIFFERENT CODEWORD, ranked again             -> NOT RUNG 4
+```
+
+**Their rung 4 transfers an activation STATE** — patching a head's state from a prompt requiring operation
+A into one requiring operation B. **PR-013 transfers nothing**: it re-runs the same knockout on a new item
+set and asks whether the same head ranks 1 again. **That is replication of a rung-1 finding across
+stimuli**, which has no number on their ladder.
+
+**The form matches and the operation does not — the same reason R19 withdrew *"AtP\*'s estimator is
+ours"*.** It would be easy and flattering to call PR-013 a rung-4 test; it is not one.
+
+### 3. What it licenses: a caution, not a prediction
+
+* **Everything certified here is rung 1**, and `REPORTABLE_AS`/`CENSUS_DELIVERABLE` already say exactly
+  that — *"carry at least half of the A1 knockout's effect"*, *"32 effects with CIs"*. **Neither has ever
+  been stated as decodability, repair or transfer.** External confirmation that naming the rung was right,
+  **not a new obligation**.
+* **A PR-013 failure would be unsurprising in the field's terms** — ablation-identified roles are
+  documented as often failing to generalise. The frozen read already calls a failure *"INFORMATIVE rather
+  than disappointing"*, **written before the arms and before this paper was found.**
+* ⛔ **It does NOT predict PR-013's outcome.** Their negative result concerns state portability across
+  *computations*; ours is rank replication across *codewords* with the domain set held fixed (S-256).
+  **Their result transfers to us no more than ours would to them.**
+
+### 4. A lead for S-254's five positive singletons — recorded, NOT verified
+
+The five heads whose knockout *raises* installation (18, 31, 27, 14, 7) match an established category:
+**"negative name mover heads"** and **"anti-induction heads"**, with `arXiv:2310.04625` *Copy Suppression*
+as the standing reference. **⛔ UNVERIFIED — no abstract fetched, nothing citable.** Recorded because it
+suggests the positives are a known phenomenon rather than noise. **The census reports them with CIs and
+claims nothing; that does not change.**
+
+### 5. State
+
+```
+919296 RUNNING on n-302, still in the COLD model load at ~33 min (~1970 s)
+  cold loads for comparison: n-303 1311.6 s | n-301 1851.5 s | n-307 6008.8 s (warm there: 47.5 s)
+  n-302 is now PAST n-301's. ⛔ NO CONCLUSION -- the arm has not finished, and S-257 exists precisely
+  for the error of projecting from an unfinished one. n-302: 112 CPU, 1546 GB, FreeMem 694 GB, 1 job.
+frozen  read 911c3a20 | prereg 5ab06e3a -- UNTOUCHED.  <VALIDATION_JOB_IDS> = 919296 ALONE.
+```
+
+`score_behavior.py` was not opened.
