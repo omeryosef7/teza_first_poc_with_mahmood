@@ -19134,3 +19134,108 @@ reading.** S-244 supplies a second, independent reason for that prohibition.
   measure per-head load directly and would not depend on AtP's cell ordering at all — which S-244 shows
   is the weakest link in the chain that produced the candidate.
 * ⛔ **No number in D32, D33, F or the rank changes.** Nothing is re-read and nothing is re-frozen.
+
+---
+
+## S-245 — **the screen's per-head ordering and the intervention's per-head ordering DO NOT AGREE: Spearman ρ = −0.11 over all 32 heads.** Five of the eight selected heads show load of the wrong sign, and the head with the third-largest load was ranked **30 of 32** and excluded. **Neither surrogate can arbitrate — which is what makes PR-CSI-012 a census rather than a test**
+
+Zero GPU cost: both inputs already exist. S-244 said the screen *"does not order reliably near its
+boundary."* This asks the sharper question — **does it order reliably at all?**
+
+### 1. The two per-head measures, side by side
+
+`S[h]` is the TRAIN AtP screen's signed summed attribution (`w1_screen_train_basket_916132.json`,
+67 domains); `gap` is S-243 §6's VALIDATION statistic — mean `E` of the 20 all-32 control draws
+**containing** head `h` minus mean `E` of those **without** it. Both are *negative = stronger*.
+
+```
+scr_rank head     S[h]       in_TOPK    gap        n_draws
+    1     19    -355.68        YES    -0.051761       2      <- agrees
+    2     17    -225.01        YES    +0.006971       8      <- WRONG SIGN
+    3     23    -103.61        YES    +0.002437       4      <- WRONG SIGN
+    4      6     -87.43        YES    -0.002532       7
+    5     13     -86.04        YES    +0.017479       2      <- WRONG SIGN
+    6      2     -78.27        YES    -0.081221       5      <- LARGEST gap, ranked 6th
+    7     24     -65.98        YES    +0.018211       4      <- WRONG SIGN
+    8     28     -58.27        YES    +0.019027       3      <- WRONG SIGN
+   ...
+   27      7     +47.44         .     -0.037028       2
+   30     14     +82.07         .     -0.052771       6      <- 3rd LARGEST gap, ranked 30 of 32
+```
+
+```
+Pearson  r(S[h], gap) = +0.1840
+Spearman rho          = -0.1056      <- a POSITIVE value would mean agreement
+```
+
+**The three largest validation gaps:** head **2** (screen rank 6), head **14** (screen rank **30**, *not
+selected*), head **19** (screen rank 1). **Only one of the three is where the screen put it.** And **five
+of the eight `HD_TOPK` members have a gap of the wrong sign**, including the screen's rank-2 and rank-3.
+
+### 2. ⛔ Two readings, and I can rule out NEITHER. This section claims nothing
+
+**Reading A — the screen's per-head ordering is poor**, and `HD_TOPK` works as an aggregate rather than
+as eight individually load-bearing heads.
+
+**Reading B — the `gap` statistic is too noisy to order heads.** It rests on 2–9 non-orthogonal draws per
+head; a head's gap absorbs every co-occurrence in those draws. Its apparent structure may be mostly noise.
+
+**⚠ I cannot arbitrate, and it would be a S-147-class error to try by argument.** `S[h]` is a *gradient
+surrogate* for an intervention (and R19 already recorded that AtP's corruption differs from ours);
+`gap` is a *post-hoc marginal* over a small non-orthogonal design. **Neither is a per-head causal
+measurement, so their disagreement tells us one of them is wrong without telling us which.**
+
+**⛔ I therefore do NOT claim "only three of the eight heads matter."** That sentence would be Reading A
+asserted as fact. What is licensed is strictly weaker and still useful:
+
+> **Three independent signals now say the same thing about the SCREEN, not about the heads:** S-244 (it
+> discards cells as strong as its own median selection), R19 (its corruption is not our intervention's),
+> and S-245 (its per-head ordering is uncorrelated with the only intervention-derived per-head statistic
+> we have). **AtP was adequate to choose a SET that demonstrably works — D32 and D33 are intervention
+> results and stand — and it is NOT adequate to rank heads within that set.**
+
+### 3. The design consequence, and it inverts what AM-30 proposed
+
+AM-30 proposed testing the post-hoc winners ≈{2,19}. **That design is contaminated and this section is
+why.** The hypothesis was generated on **validation**, from PR-011's own control arms; testing head 2 on
+validation is selection on the same data. Train is no escape — the 8-set was selected there. And §22's 3
+TEST domains cannot power a 21-arm rank test.
+
+**⚠ And a rank test among the eight could never have certified anyway:** 8 singletons give an attainable
+floor of **1/8 = 0.125**, which does not clear α = 0.05 **for any effect size**. The floor discipline
+kills that design before a GPU-hour is spent — the same check that caught D21/D15's seven never-certifying
+cells.
+
+**So PR-CSI-012 is a CENSUS, not a test:**
+
+```
+HD_BASE                        1 arm    (no knockout)
+HD_KO                          1 arm    (all 32 band heads -- the denominator)
+SINGLETON h, for ALL h in 0..31   32 arms
+LEAVE-ONE-OUT of HD_TOPK        8 arms   (7 heads each: sufficiency vs necessity-within-the-set)
+                               -------
+                               42 arms  ~= 490 s/arm ~= 5.7 h on one allocation
+```
+
+**Why a census has no selection problem at all:** nothing is chosen. Every head is measured, so there is
+no multiplicity to correct and no floor to clear — the deliverable is **32 effects with CIs**, not a
+p-value. **Selection re-enters only if a single head is then singled out for a claim**, and the
+preregistration will state in advance that any confirmatory per-head claim requires a **held-out axis** —
+the 3 TEST domains or, better, **a different codeword** (`button`, for which banks already exist), because
+a different codeword is a genuine replication rather than a reused split.
+
+**This also advances §22's P4** (*"demo→query circuit decomposition (layers → heads → source positions →
+paths)"*) at the **heads** step, and it is the first PR in this sprint whose primary output is a map
+rather than a verdict.
+
+### 4. State
+
+```
+squeue: EMPTY. 918169 and 918175 both COMPLETED; nothing in flight.
+disk  : outputs/boombness/score_behavior 1.4 G | home total 7.4 G against the 200 GB cap -- ample
+NOT DONE: PR-CSI-012 is DESIGNED here and NOT frozen. The prereg and its read are the next tick's
+          work, and no arm may launch before both are frozen and the argv gate passes.
+```
+
+**Nothing was re-read and nothing re-frozen.** `S[h]` and the PR-011 `E` block are both already-published
+artefacts; this section only correlates them.
