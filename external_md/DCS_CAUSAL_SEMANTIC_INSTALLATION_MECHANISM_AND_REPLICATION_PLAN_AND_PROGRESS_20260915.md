@@ -17903,3 +17903,75 @@ Doublespeak is now an ACL 2026 long paper (was: ICLR withdrawn) -- bibliographie
 The nearest head-level neighbour is Ben-Tov/Geva/SHARIF on GCG suffixes -- adjacent, different question,
 and from this lab, so NOT an independent check.
 ```
+
+---
+
+# S-232 — **the backup-head lead is VERIFIED and it cuts the other way: `F = 0.8635` is biased DOWNWARD, not upward.** AM-27 records it. The evidence is qualitative and licenses no number change
+
+S-231 called this *"the most important unverified lead"*. Fetched:
+
+```
+Redundant Attention Heads in LLMs For In Context Learning -- skunnavakkam, LessWrong, 2024-09-01
+model   llama-3-8b                     <- our family
+ablated ALL heads on WHOLE LAYERS (10+11, then 13, then 15)
+finding "backup heads on layer 13 activate very strongly after the initial ablation", cascading
+        to 15; checked on attention patterns AND on whether the answer stayed correct
+task    a y = 2x + 3 regression with numerical in-context examples
+missing NO quantitative recovery magnitude -- only "very strongly"
+```
+
+**Weaker than its search summary implied**: non-archival, single author, whole-layer ablation rather than
+8 head indices across a band, arithmetic ICL rather than semantic installation, and no magnitude.
+**It licenses no revision of any number.**
+
+## ⚠ But it exposes an asymmetry I had not seen, and it runs the opposite way to my worry
+
+S-231 warned that compensation might mean `F` **understates** the heads' contribution. Verifying it made
+the argument sharper and gave it a direction:
+
+```
+F = E(HD_TOPK) / E(HD_KO)
+HD_TOPK : 8 of 32 band heads masked -> 24 REMAIN and can compensate
+HD_KO   : all 32 masked             -> ZERO remain; IN-BAND COMPENSATION IMPOSSIBLE
+```
+
+**The numerator has in-band compensation available and the denominator does not.** If compensation
+happens it shrinks `|E(HD_TOPK)|` while leaving the denominator's in-band part alone — so
+**`F = 0.8635` is biased DOWNWARD and is a conservative estimate.**
+
+**Assumptions named, because this is reasoning and not measurement:** it assumes compensation scales with
+surviving in-band heads, and it ignores out-of-band compensation (layers 0-5 and 15-31 survive in **both**
+arms). **No compensation magnitude has been measured for our cell and none is claimed** — the direction is
+argued, the size is unknown.
+
+## What changes, and what does not
+
+**Changes (AM-27):** `F` must be described as **a ratio of two net-of-compensation causal effects**, never
+as *"the fraction of the mechanism these eight heads implement"* — that second reading is the one
+compensation distorts. **Every knockout figure in this sprint is net-of-compensation**, which is inherent
+to ablation and was stated nowhere.
+
+**Does not change:** **the rank test.** Every arm in the family masks exactly 8 heads, so candidate and
+controls have **identical compensation opportunity** — rank 1 of 21 at `p = 0.047619` is untouched. Nor
+does it touch GATE 0, GATE 1, or the independent path's `3.5e-06` agreement.
+
+**And it makes the design's own expectation the harder bar.** §6 predicted `F` *"well under 0.50"*. A
+downward-biased `F` clearing 0.50 is **stronger** evidence than an unbiased one doing so — so the
+prediction failed against a conservative statistic, not a flattering one. That is worth knowing given how
+much of S-218 turned on the failure being in the surprising direction.
+
+## Commands
+
+```
+WebFetch https://www.lesswrong.com/posts/Q8KmWzbituyGCkSro/redundant-attention-heads-in-large-language-models-for-in
+# AM-27 appended to the claim table (817 -> 825 lines); LIT Addendum E (691 -> 752)
+```
+
+```
+BACKUP-HEAD COMPENSATION VERIFIED in llama-3-8b -- qualitative, whole-layer, arithmetic-ICL, NO magnitude.
+IT CUTS THE OTHER WAY: HD_TOPK leaves 24 band heads to compensate, HD_KO leaves ZERO, so F = 0.8635 is
+biased DOWNWARD -- a CONSERVATIVE estimate. Direction argued, SIZE UNKNOWN, assumptions named.
+AM-27: F is a ratio of two NET-OF-COMPENSATION effects, never "the fraction of the mechanism".
+THE RANK TEST IS UNTOUCHED -- every arm masks 8 heads, so compensation opportunity is identical.
+Section 6's "F well under 0.50" was therefore the HARDER bar, and it still failed.
+```

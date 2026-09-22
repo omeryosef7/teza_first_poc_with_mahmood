@@ -689,3 +689,64 @@ WebSearch "LessWrong Alignment Forum attention head in-context word meaning over
 WebFetch  arxiv.org/pdf/2506.12880   -> insufficient (PDF excerpt)
 WebFetch  arxiv.org/abs/2506.12880   -> abstract read (D3)
 ```
+
+---
+
+# ADDENDUM E — 2026-09-22: **the backup-head lead is VERIFIED, and it is weaker evidence than its summary suggested — but it exposes a REAL ASYMMETRY in how `F` must be read**
+
+Addendum D flagged this as *"the most important unverified lead in this pass."* It has now been fetched.
+
+## E1. VERIFIED — *Redundant Attention Heads in Large Language Models For In Context Learning*
+
+**skunnavakkam**, LessWrong, **1 September 2024**. **Fetched and read.** Non-archival, single author, not
+peer reviewed.
+
+```
+model    llama-3-8b                          <- same family as this sprint
+ablated  ALL attention heads on WHOLE LAYERS (10 and 11, then 13, then 15)
+finding  "backup heads on layer 13 activate very strongly after the initial ablation", cascading
+         to layer 15; assessed on attention patterns AND on whether the model's answer stayed correct
+task     a LINEAR REGRESSION task, y = 2x + 3, with numerical in-context examples
+missing  NO quantitative measure of recovery magnitude -- only "very strongly"
+```
+
+**So the phenomenon is documented in our model family, and the evidence is qualitative.** It ablates
+**whole layers** (all heads at a layer), not **8 head indices across a band**, and the task is arithmetic
+ICL, not semantic installation. **It cannot quantify compensation for our intervention, and it does not
+license revising any number.**
+
+## E2. What it nevertheless establishes, and it is worth having
+
+**Backup-head compensation is real in `llama-3-8b`-class models under head ablation.** That makes the
+concern legitimate rather than hypothetical, and it means one sentence in our claim must change: **every
+knockout figure in this sprint is a NET-OF-COMPENSATION effect.** That is inherent to ablation, not a
+defect of our design — but it is not currently stated anywhere.
+
+**⚠ And it exposes an asymmetry specific to `F`.**
+
+```
+F = E(HD_TOPK) / E(HD_KO)
+
+HD_TOPK : 8 of 32 band heads masked  -> 24 band heads REMAIN and can compensate
+HD_KO   : all 32 band heads masked   -> ZERO band heads remain; in-band compensation IMPOSSIBLE
+```
+
+**The numerator has in-band compensation available to it and the denominator does not.** If compensation
+occurs, it shrinks `|E(HD_TOPK)|` while leaving `|E(HD_KO)|`'s in-band component untouched — so
+**`F = 0.8635` is biased DOWNWARD and is a conservative estimate of the candidate heads' share.**
+
+**Named assumptions, because this is reasoning and not measurement:** it assumes compensation is
+available in proportion to surviving in-band heads, and it ignores out-of-band compensation (layers 0-5
+and 15-31 survive in **both** arms and could compensate in either). **No compensation magnitude has been
+measured for our cell and none is claimed.** The direction of the bias is argued; its size is unknown.
+
+## E3. Consequence for the record
+
+* `F` must be described as **a ratio of two net-of-compensation causal effects**, not as *"the fraction of
+  the mechanism these eight heads implement."* The second reading is what compensation distorts.
+* The asymmetry argument means **a failure of `F` to reach 0.50 would have been harder to explain away
+  than its success** — the design's own honest expectation (`F` well under 0.50) was the harder bar.
+* §A5-3's wording still needs narrowing per Addendum D item 2 (**"Antonym Heads"** remains unfetched).
+
+**A5-2 is still not closed.** One domain-restricted query and one fetched post are not a sweep of two
+forums.
