@@ -19353,3 +19353,116 @@ structurally VOIDed every arm, found only after 9.3 GPU-hours were committed.
 **Next tick, in this order:** write `scripts/dcs_csi_head_census.py` → freeze
 `runargs/dcs_csi_pr012_read.txt` naming it → verify every flag statically against argparse (S-242's
 method) → `dcs_csi_pr010_argv.py --check` on all 44 arms → launch. **44 arms ≈ 490 s each ≈ 6.0 h.**
+
+---
+
+## S-247 — **the census reader, its self-test, PR-CSI-012's frozen read, and 44 arms LAUNCHED** (918631). The self-test's decisive case builds a singleton that **lies about itself with a perfectly legal dose**, and the reader catches it. ⚠ Two defects found on the way, one of them **mine, in this file's first version**
+
+Executed in exactly the order S-246 committed to — reader → read frozen → static flag check → argv gate →
+launch. Nothing was launched until all four were green.
+
+### 1. What the census reader shares rather than re-implements
+
+`scripts/dcs_csi_head_census.py`. It imports W4's `by_domain` (hence `load_installation`, the **sole**
+definition of `y_install` and its concept-free channel filter), W4's `liveness`, `boot_mean`, `pct` and
+`atomic_write_json`, plus `rederive_patch.strict_run_dir`. **No endpoint and no resampler is
+re-implemented** — re-implementing `y_install` would mean measuring a different thing under the same name.
+
+### 2. ⚠ The one check that is new, and why it has to be
+
+S-246 measured that the dose identity is **blind** here. So arm identity is asserted from **each run's own
+recorded `knockout_heads`** against the preregistered head set, and the expected dose is derived from
+`len(head_set)` rather than one `K` constant:
+
+```
+HD_BASE 0 | HD_KO 2016 | SINGLE_* 2016 | LOO_* 14112 | HD_TOPK, HD_BOTK 16128
+```
+
+The reader emits **`dose_is_diagnostic_of_identity: false`** for every arm whose expected dose is 2016, so
+**a passing dose can never be mistaken for a verified arm.**
+
+**The mirror refusal:** S-246 gave the four rank tools a `NO_RANK_TEST` refusal; the census reader refuses
+a **rank** prereg in return (`rc=1`, naming PR-CSI-011 and pointing at `head_analyze`). **Neither family
+can be read by the wrong estimator in either direction.**
+
+### 3. Self-test: 4 of 4, residue 0. **Case D is the one that matters**
+
+```
+A  a well-formed 44-arm family PASSES and recovers the constructed ordering (strongest singleton
+   SINGLE_02, as built); HD_KO < HD_TOPK < SINGLE_02 < 0; and it asserts that a SINGLETON's dose is
+   reported NOT identity-diagnostic while an 8-head arm's still is
+D  a singleton whose config records ALL 32 HEADS, with a perfectly LEGAL dose of 2016:
+     GATE 0 FAIL SINGLE_07  dose 2016.0 want 2016 | identity: config records ALL 32 heads but the
+     prereg says [7] -- THIS IS THE S-246 COLLISION: the dose check would have passed
+   THE DOSE CHECK PASSED AND THE ARM WAS STILL REFUSED.
+E  a recorded head list of [31] where the prereg says [9] -- refused
+F  a RANK prereg -- refused by the census reader
+```
+
+**If case D ever goes green, a mis-specified singleton reads as one head carrying the entire effect.** It
+is in the self-test precisely so that it cannot go green quietly.
+
+### 4. ⚠ Defect 1 — **mine, in this file's first version: a second convention where one existed**
+
+I made the domain-count check **unconditional**. W4 binds it only when `--expect-n` equals the
+preregistered row count, **and W4 says why**: the condition is derived from `expect_n` rather than offered
+as an override flag, because *"an override could be passed to a real run to silence the guard, whereas
+`expect_n` is already pinned by the arms themselves."*
+
+My version was **stricter**, and stricter is not better when it is a **second convention** — a second
+convention is a second thing to get wrong, and the divergence had no stated reason. Adopted W4's exactly,
+including its loud `OFF-PROTOCOL` banner and an `ON_PROTOCOL` field in the output. **Found by the
+self-test refusing a well-formed family** (`3 domains, prereg declares 23` on a 24-row fixture), which is
+the self-test doing its job on its first run.
+
+### 5. ⚠ Defect 2 — the argv gate was not census-aware
+
+`all_arms()` prefix-matched controls, so on PR-012 it built **4** arms and the `n_arms_per_split`
+assertion refused. **Fail-closed and loud, which is right** — but the generator is the **one place** an
+arm's argv is defined, and forking it for a second family would fork the flag-verification logic with it.
+It now enumerates every `head_sets` entry on a `NO_RANK_TEST` prereg, **skipping `control_pool`
+explicitly** (a draw pool, not an arm — `pr010_freeze.py:128`).
+
+**Regression checked, because this file generates the argv for families already published:**
+
+```
+PR-010 --check : CHECK PASSED: 24 arms   <- unchanged
+PR-011 --check : CHECK PASSED: 24 arms   <- unchanged
+PR-012 --check : CHECK PASSED: 44 arms, every flag declared by score_behavior.py,
+                 head lists verified token-for-token against the prereg
+```
+
+### 6. The frozen read, and the four readings it forbids in advance
+
+`runargs/dcs_csi_pr012_read.txt`, 74 lines, md5 `7088590f5cf871a18cc774e678731fb5`, **frozen before any
+arm**. Static flag verification (S-242's method): every flag it names — `--prereg --tag-prefix --split
+--expect-n --require-slurm-job --out` — is declared by the reader's argparse.
+
+**It forbids four readings by name, each a mistake this sprint has already made once:** (1) *"head X is
+the writer"* — selection on the split that produced the ordering; (2) summing singletons and comparing to
+`E(HD_KO)` — PR-011 measured ρ = −0.09 against additivity; (3) reading a per-arm ci95 excluding 0 as
+certified, with 40 intervened arms read at once; (4) declaring either `S[h]` or the gap statistic
+vindicated — S-245 measured ρ = −0.11 and the census **replaces** both rather than adjudicating them.
+
+**And it commits in advance to the outcome that would otherwise be spun:** *if the singletons are all near
+zero AND the LOO marginals are all near zero*, that is **coherent and informative** — the effect carried
+by the **set**, not decomposable per head — **not a null result to be explained away.**
+
+### 7. Launched
+
+```
+SPLIT=validation PREREG=configs/dcs_csi_pr012_head_census_basket.json \
+TAG_PREFIX=csi5_census_basket FAMILY=pr012 CSI_STAGE=1 \
+  sh scripts/gates/dcs_csi_submit.sh slurm_scripts/dcs_csi_pr010_arms.slurm
+provenance: BLOB 6e81a1e6  PORCELAIN clean
+Submitted batch job 918631
+
+918631 RUNNING on n-303, 2026-09-22T16:41:57
+  BLOB 6e81a1e6  PORCELAIN [clean]                    <- the submitter's witness, in the job
+  tag-namespace guard: PASSED (PR-CSI-012 -> csi5_census_basket, newly registered)
+  CHECK PASSED: 44 arms, every flag declared by score_behavior.py
+  argv lines: 44
+```
+
+**44 arms ≈ 490 s each ≈ 6.5 h against a 12 h wall — margin ≈ 5.5 h** (the S-147 projection, run before
+it is needed). `score_behavior.py` was not opened.
