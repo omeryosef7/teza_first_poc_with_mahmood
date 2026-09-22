@@ -1,0 +1,164 @@
+{
+  "id": "PR-CSI-013",
+  "title": "Does head 2's single-head effect, selected on BASKET by a rule frozen before the census, replicate on the BUTTON codeword at rank 1 of 21?",
+  "frozen_utc_date": "2026-09-22",
+  "EMITTED_MECHANICALLY_BY": "scripts/gates/dcs_csi_pr013_freeze.py, per the rule frozen in runargs/dcs_csi_pr013_nomination_rule.txt (S-248) BEFORE the census existed. No head was chosen by hand.",
+  "nomination_rule": "runargs/dcs_csi_pr013_nomination_rule.txt",
+  "nomination_rule_md5": "fae4adc66ddfa3dec4f6933fdb5d1444",
+  "census_source": "reports/DCS_CSI_PR012_CENSUS_validation.json",
+  "census_md5": "d2e146272399e0883811d9fe4d743cbe",
+  "census_prereg_id": "PR-CSI-012",
+  "h_star": 2,
+  "RULE_2_GATE": {
+    "head": 2,
+    "E": -0.04947467,
+    "ci95": [
+      -0.06973814,
+      -0.03265628
+    ],
+    "E_HD_BOTK": -0.01256722,
+    "abs_exceeds_HD_BOTK": true,
+    "ci95_excludes_0": true,
+    "E_is_negative": true,
+    "GO": true
+  },
+  "codeword": "button",
+  "codeword_justification": "S-248 measured 84 existing button VALIDATION runs at the semantic endpoint, ALL at 230 rows, 82 of them with demo_all:attn_knockout:6-14:1.0 and target_surface_row_only -- and NONE has ever used --knockout-heads. The endpoint, band, scope and population are established on button and NO head-restricted button arm exists that could have informed the choice of h*. A head chosen on basket and tested on button is a replication across codewords, not a reused split.",
+  "endpoint": "y_install; concept-free semantic_one_word; cell C; n_examples 4",
+  "statistical_unit": "DOMAIN (never the row); button is NEVER pooled with basket",
+  "intervention": {
+    "intervene": "demo_all:attn_knockout:6-14:1.0",
+    "knockout_scope": "target_surface_row_only",
+    "band": "6-14"
+  },
+  "split": "validation",
+  "head_sets": {
+    "BT_SINGLE": [
+      2
+    ],
+    "BT_CTRL_00": [
+      24
+    ],
+    "BT_CTRL_01": [
+      19
+    ],
+    "BT_CTRL_02": [
+      3
+    ],
+    "BT_CTRL_03": [
+      5
+    ],
+    "BT_CTRL_04": [
+      21
+    ],
+    "BT_CTRL_05": [
+      11
+    ],
+    "BT_CTRL_06": [
+      6
+    ],
+    "BT_CTRL_07": [
+      10
+    ],
+    "BT_CTRL_08": [
+      15
+    ],
+    "BT_CTRL_09": [
+      7
+    ],
+    "BT_CTRL_10": [
+      28
+    ],
+    "BT_CTRL_11": [
+      29
+    ],
+    "BT_CTRL_12": [
+      26
+    ],
+    "BT_CTRL_13": [
+      31
+    ],
+    "BT_CTRL_14": [
+      25
+    ],
+    "BT_CTRL_15": [
+      27
+    ],
+    "BT_CTRL_16": [
+      16
+    ],
+    "BT_CTRL_17": [
+      1
+    ],
+    "BT_CTRL_18": [
+      0
+    ],
+    "BT_CTRL_19": [
+      20
+    ]
+  },
+  "base_arms": [
+    "BT_BASE",
+    "BT_KO"
+  ],
+  "control_prefix": "BT_CTRL_",
+  "n_controls": 20,
+  "n_arms_per_split": 23,
+  "arms": {
+    "BT_BASE": "no --intervene; the clean reference",
+    "BT_KO": "--knockout-heads omitted = all 32 band heads; the denominator",
+    "BT_SINGLE": "--knockout-heads 2; the nominated head",
+    "BT_CTRL_ii": "--knockout-heads <one head>; 20 DISTINCT single heads from the 31 heads other than h*"
+  },
+  "control_pool_note": "the 31 heads OTHER than h*. A control equal to h* would BE the candidate.",
+  "control_draw_rule": "single seed counter from 20261101, +1 per attempt, accept iff the head is not already drawn, until 20 distinct heads",
+  "control_draw_rule_disambiguation": "runargs/dcs_csi_pr013_nomination_rule.txt Rule 3 says 'rejecting and RE-SEEDING any draw already drawn' without saying by how much. The reading implemented is a single counter incremented by 1 per attempt. Declared because an under-specified rule is a place a choice could enter; it could not enter HERE because this file was frozen before the census existed.",
+  "control_seeds_used": [
+    20261101,
+    20261102,
+    20261103,
+    20261105,
+    20261106,
+    20261108,
+    20261109,
+    20261110,
+    20261111,
+    20261112,
+    20261117,
+    20261118,
+    20261119,
+    20261121,
+    20261123,
+    20261124,
+    20261126,
+    20261127,
+    20261129,
+    20261134
+  ],
+  "attainable_floor": {
+    "n_controls": 20,
+    "floor_p": 0.047619047619047616,
+    "note": "rank 1 of 21 gives p = the floor = 0.047619 and is the ONLY certifying outcome at alpha = 0.05; rank 2 gives 0.095238 and does not clear it. The p is reported WITH its floor, always."
+  },
+  "population": {
+    "validation_domains": 23,
+    "validation_expect_n": 230,
+    "test_domains": 3,
+    "test_note": "TEST is NEVER touched"
+  },
+  "DOSE_IDENTITY_IS_BLIND_HERE": "BT_SINGLE and every BT_CTRL_* is a ONE-head arm and records 2016 prefill edits -- exactly what the all-32 BT_KO records (S-246). The dose check cannot distinguish them. Arm identity MUST be asserted from each run's own knockout_heads against head_sets.",
+  "WHAT_THIS_CANNOT_DO": [
+    "revise D32, D33 or the PR-CSI-012 census -- it tests ONE head on ONE other codeword",
+    "license 'head 2 is the writer'. A PASS licenses only: head 2, selected on basket by a preregistered rule, is rank 1 of 21 against 20 arbitrary single heads on button",
+    "say anything about the other 31 heads on button",
+    "retract the census on a FAILURE -- the census is a basket measurement and D32/D33 are set-level results"
+  ],
+  "VOID_CONDITIONS": [
+    "1. compared arms not all on one GPU architecture",
+    "2. attn_implementation not eager on any arm",
+    "3. any arm's recorded knockout_heads not equal to its head_sets entry",
+    "4. src/boombness/score_behavior.py edited while any arm of this family is running",
+    "5. a TEST domain appearing in any arm",
+    "6. the read amended after any number from this family has been seen"
+  ]
+}

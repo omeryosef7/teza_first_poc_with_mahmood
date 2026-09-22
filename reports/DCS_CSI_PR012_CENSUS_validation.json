@@ -1,0 +1,1299 @@
+{
+  "schema": "dcs_csi_head_census/1",
+  "prereg": "configs/dcs_csi_pr012_head_census_basket.json",
+  "prereg_id": "PR-CSI-012",
+  "split": "validation",
+  "tag_prefix": "csi5_census_basket_validation",
+  "expect_n": 230,
+  "n_domains": 23,
+  "B": 10000,
+  "seed": 20260922,
+  "ci": 0.95,
+  "ON_PROTOCOL": true,
+  "E": {
+    "HD_KO": -0.22696123,
+    "HD_BOTK": -0.01256722,
+    "HD_TOPK": -0.1959835,
+    "LOO_02": -0.12290861,
+    "LOO_06": -0.19196075,
+    "LOO_13": -0.18908912,
+    "LOO_17": -0.15802607,
+    "LOO_19": -0.12379209,
+    "LOO_23": -0.17782564,
+    "LOO_24": -0.19885624,
+    "LOO_28": -0.20012267,
+    "SINGLE_00": -0.00065196,
+    "SINGLE_01": -0.00222167,
+    "SINGLE_02": -0.04947467,
+    "SINGLE_03": -0.00873165,
+    "SINGLE_04": -0.00640128,
+    "SINGLE_05": 0.00095084,
+    "SINGLE_06": -0.00847502,
+    "SINGLE_07": 0.00373227,
+    "SINGLE_08": 0.000139,
+    "SINGLE_09": 0.00196786,
+    "SINGLE_10": -0.0054211,
+    "SINGLE_11": -0.01043769,
+    "SINGLE_12": -0.00317881,
+    "SINGLE_13": -0.00827564,
+    "SINGLE_14": 0.00407016,
+    "SINGLE_15": -0.00134051,
+    "SINGLE_16": 0.00210247,
+    "SINGLE_17": -0.02921839,
+    "SINGLE_18": 0.00967428,
+    "SINGLE_19": -0.04010869,
+    "SINGLE_20": -0.00414804,
+    "SINGLE_21": -0.00373771,
+    "SINGLE_22": 0.00313934,
+    "SINGLE_23": -0.01650303,
+    "SINGLE_24": -0.00275031,
+    "SINGLE_25": -0.00064492,
+    "SINGLE_26": 0.00047539,
+    "SINGLE_27": 0.00411325,
+    "SINGLE_28": 0.0004196,
+    "SINGLE_29": -0.0028283,
+    "SINGLE_30": 0.00208584,
+    "SINGLE_31": 0.00493364
+  },
+  "ci95": {
+    "HD_KO": [
+      -0.27584751,
+      -0.17803182
+    ],
+    "HD_BOTK": [
+      -0.02047273,
+      -0.00473518
+    ],
+    "HD_TOPK": [
+      -0.24387458,
+      -0.1535463
+    ],
+    "LOO_02": [
+      -0.15244296,
+      -0.0956975
+    ],
+    "LOO_06": [
+      -0.23685261,
+      -0.15137201
+    ],
+    "LOO_13": [
+      -0.23684204,
+      -0.14710818
+    ],
+    "LOO_17": [
+      -0.20036518,
+      -0.12105983
+    ],
+    "LOO_19": [
+      -0.16072019,
+      -0.09297582
+    ],
+    "LOO_23": [
+      -0.22615459,
+      -0.13409511
+    ],
+    "LOO_24": [
+      -0.24571779,
+      -0.15549407
+    ],
+    "LOO_28": [
+      -0.24883996,
+      -0.15731397
+    ],
+    "SINGLE_00": [
+      -0.00244779,
+      0.00116391
+    ],
+    "SINGLE_01": [
+      -0.00875554,
+      0.00455896
+    ],
+    "SINGLE_02": [
+      -0.06973814,
+      -0.03265628
+    ],
+    "SINGLE_03": [
+      -0.01509173,
+      -0.00270731
+    ],
+    "SINGLE_04": [
+      -0.00976198,
+      -0.00323189
+    ],
+    "SINGLE_05": [
+      -0.00011309,
+      0.00213274
+    ],
+    "SINGLE_06": [
+      -0.01202834,
+      -0.00545038
+    ],
+    "SINGLE_07": [
+      0.00058985,
+      0.00677343
+    ],
+    "SINGLE_08": [
+      -0.00440428,
+      0.00400934
+    ],
+    "SINGLE_09": [
+      -0.00322446,
+      0.0073779
+    ],
+    "SINGLE_10": [
+      -0.00802334,
+      -0.00299681
+    ],
+    "SINGLE_11": [
+      -0.01602542,
+      -0.00549196
+    ],
+    "SINGLE_12": [
+      -0.00745888,
+      0.00099838
+    ],
+    "SINGLE_13": [
+      -0.01304965,
+      -0.00435142
+    ],
+    "SINGLE_14": [
+      0.00052918,
+      0.007511
+    ],
+    "SINGLE_15": [
+      -0.00273943,
+      -8.906e-05
+    ],
+    "SINGLE_16": [
+      -0.00010267,
+      0.00532269
+    ],
+    "SINGLE_17": [
+      -0.03880694,
+      -0.02090066
+    ],
+    "SINGLE_18": [
+      0.00563461,
+      0.01375371
+    ],
+    "SINGLE_19": [
+      -0.05037628,
+      -0.03052043
+    ],
+    "SINGLE_20": [
+      -0.0073035,
+      -0.00126668
+    ],
+    "SINGLE_21": [
+      -0.00554042,
+      -0.00201027
+    ],
+    "SINGLE_22": [
+      -0.00012202,
+      0.00653793
+    ],
+    "SINGLE_23": [
+      -0.02320141,
+      -0.01006879
+    ],
+    "SINGLE_24": [
+      -0.00484392,
+      -0.00059665
+    ],
+    "SINGLE_25": [
+      -0.00223118,
+      0.00091748
+    ],
+    "SINGLE_26": [
+      -0.00143966,
+      0.00236776
+    ],
+    "SINGLE_27": [
+      0.00187868,
+      0.00638222
+    ],
+    "SINGLE_28": [
+      -0.00109625,
+      0.00193209
+    ],
+    "SINGLE_29": [
+      -0.0080236,
+      0.00270081
+    ],
+    "SINGLE_30": [
+      -0.00031961,
+      0.00457533
+    ],
+    "SINGLE_31": [
+      0.00057522,
+      0.00924292
+    ]
+  },
+  "loo_marginal": {
+    "LOO_02": -0.07307489,
+    "LOO_06": -0.00402275,
+    "LOO_13": -0.00689438,
+    "LOO_17": -0.03795743,
+    "LOO_19": -0.07219141,
+    "LOO_23": -0.01815786,
+    "LOO_24": 0.00287274,
+    "LOO_28": 0.00413917
+  },
+  "GATE_0_and_identity": {
+    "per_arm": {
+      "HD_BASE": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 0.0,
+        "expected_median_prefill_edits": 0,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": true,
+        "pass": true
+      },
+      "HD_KO": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "HD_BOTK": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 16128.0,
+        "expected_median_prefill_edits": 16128,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": true,
+        "pass": true
+      },
+      "HD_TOPK": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 16128.0,
+        "expected_median_prefill_edits": 16128,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": true,
+        "pass": true
+      },
+      "LOO_02": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 14112.0,
+        "expected_median_prefill_edits": 14112,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": true,
+        "pass": true
+      },
+      "LOO_06": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 14112.0,
+        "expected_median_prefill_edits": 14112,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": true,
+        "pass": true
+      },
+      "LOO_13": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 14112.0,
+        "expected_median_prefill_edits": 14112,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": true,
+        "pass": true
+      },
+      "LOO_17": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 14112.0,
+        "expected_median_prefill_edits": 14112,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": true,
+        "pass": true
+      },
+      "LOO_19": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 14112.0,
+        "expected_median_prefill_edits": 14112,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": true,
+        "pass": true
+      },
+      "LOO_23": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 14112.0,
+        "expected_median_prefill_edits": 14112,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": true,
+        "pass": true
+      },
+      "LOO_24": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 14112.0,
+        "expected_median_prefill_edits": 14112,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": true,
+        "pass": true
+      },
+      "LOO_28": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 14112.0,
+        "expected_median_prefill_edits": 14112,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": true,
+        "pass": true
+      },
+      "SINGLE_00": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_01": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_02": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_03": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_04": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_05": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_06": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_07": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_08": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_09": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_10": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_11": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_12": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_13": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_14": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_15": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_16": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_17": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_18": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_19": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_20": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_21": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_22": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_23": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_24": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_25": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_26": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_27": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_28": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_29": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_30": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      },
+      "SINGLE_31": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "pass": true
+      }
+    },
+    "identity": {
+      "HD_BASE": {
+        "k": 0,
+        "recorded": null,
+        "expected": null,
+        "ok": true,
+        "why": "not intervened"
+      },
+      "HD_KO": {
+        "k": 32,
+        "recorded": "ALL",
+        "expected": null,
+        "ok": true,
+        "why": "omitted flag == all 32"
+      },
+      "HD_BOTK": {
+        "k": 8,
+        "recorded": [
+          29,
+          11,
+          30,
+          10,
+          15,
+          16,
+          0,
+          9
+        ],
+        "expected": [
+          29,
+          11,
+          30,
+          10,
+          15,
+          16,
+          0,
+          9
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "HD_TOPK": {
+        "k": 8,
+        "recorded": [
+          19,
+          17,
+          23,
+          6,
+          13,
+          2,
+          24,
+          28
+        ],
+        "expected": [
+          19,
+          17,
+          23,
+          6,
+          13,
+          2,
+          24,
+          28
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "LOO_02": {
+        "k": 7,
+        "recorded": [
+          6,
+          13,
+          17,
+          19,
+          23,
+          24,
+          28
+        ],
+        "expected": [
+          6,
+          13,
+          17,
+          19,
+          23,
+          24,
+          28
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "LOO_06": {
+        "k": 7,
+        "recorded": [
+          2,
+          13,
+          17,
+          19,
+          23,
+          24,
+          28
+        ],
+        "expected": [
+          2,
+          13,
+          17,
+          19,
+          23,
+          24,
+          28
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "LOO_13": {
+        "k": 7,
+        "recorded": [
+          2,
+          6,
+          17,
+          19,
+          23,
+          24,
+          28
+        ],
+        "expected": [
+          2,
+          6,
+          17,
+          19,
+          23,
+          24,
+          28
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "LOO_17": {
+        "k": 7,
+        "recorded": [
+          2,
+          6,
+          13,
+          19,
+          23,
+          24,
+          28
+        ],
+        "expected": [
+          2,
+          6,
+          13,
+          19,
+          23,
+          24,
+          28
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "LOO_19": {
+        "k": 7,
+        "recorded": [
+          2,
+          6,
+          13,
+          17,
+          23,
+          24,
+          28
+        ],
+        "expected": [
+          2,
+          6,
+          13,
+          17,
+          23,
+          24,
+          28
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "LOO_23": {
+        "k": 7,
+        "recorded": [
+          2,
+          6,
+          13,
+          17,
+          19,
+          24,
+          28
+        ],
+        "expected": [
+          2,
+          6,
+          13,
+          17,
+          19,
+          24,
+          28
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "LOO_24": {
+        "k": 7,
+        "recorded": [
+          2,
+          6,
+          13,
+          17,
+          19,
+          23,
+          28
+        ],
+        "expected": [
+          2,
+          6,
+          13,
+          17,
+          19,
+          23,
+          28
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "LOO_28": {
+        "k": 7,
+        "recorded": [
+          2,
+          6,
+          13,
+          17,
+          19,
+          23,
+          24
+        ],
+        "expected": [
+          2,
+          6,
+          13,
+          17,
+          19,
+          23,
+          24
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_00": {
+        "k": 1,
+        "recorded": [
+          0
+        ],
+        "expected": [
+          0
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_01": {
+        "k": 1,
+        "recorded": [
+          1
+        ],
+        "expected": [
+          1
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_02": {
+        "k": 1,
+        "recorded": [
+          2
+        ],
+        "expected": [
+          2
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_03": {
+        "k": 1,
+        "recorded": [
+          3
+        ],
+        "expected": [
+          3
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_04": {
+        "k": 1,
+        "recorded": [
+          4
+        ],
+        "expected": [
+          4
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_05": {
+        "k": 1,
+        "recorded": [
+          5
+        ],
+        "expected": [
+          5
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_06": {
+        "k": 1,
+        "recorded": [
+          6
+        ],
+        "expected": [
+          6
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_07": {
+        "k": 1,
+        "recorded": [
+          7
+        ],
+        "expected": [
+          7
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_08": {
+        "k": 1,
+        "recorded": [
+          8
+        ],
+        "expected": [
+          8
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_09": {
+        "k": 1,
+        "recorded": [
+          9
+        ],
+        "expected": [
+          9
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_10": {
+        "k": 1,
+        "recorded": [
+          10
+        ],
+        "expected": [
+          10
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_11": {
+        "k": 1,
+        "recorded": [
+          11
+        ],
+        "expected": [
+          11
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_12": {
+        "k": 1,
+        "recorded": [
+          12
+        ],
+        "expected": [
+          12
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_13": {
+        "k": 1,
+        "recorded": [
+          13
+        ],
+        "expected": [
+          13
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_14": {
+        "k": 1,
+        "recorded": [
+          14
+        ],
+        "expected": [
+          14
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_15": {
+        "k": 1,
+        "recorded": [
+          15
+        ],
+        "expected": [
+          15
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_16": {
+        "k": 1,
+        "recorded": [
+          16
+        ],
+        "expected": [
+          16
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_17": {
+        "k": 1,
+        "recorded": [
+          17
+        ],
+        "expected": [
+          17
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_18": {
+        "k": 1,
+        "recorded": [
+          18
+        ],
+        "expected": [
+          18
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_19": {
+        "k": 1,
+        "recorded": [
+          19
+        ],
+        "expected": [
+          19
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_20": {
+        "k": 1,
+        "recorded": [
+          20
+        ],
+        "expected": [
+          20
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_21": {
+        "k": 1,
+        "recorded": [
+          21
+        ],
+        "expected": [
+          21
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_22": {
+        "k": 1,
+        "recorded": [
+          22
+        ],
+        "expected": [
+          22
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_23": {
+        "k": 1,
+        "recorded": [
+          23
+        ],
+        "expected": [
+          23
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_24": {
+        "k": 1,
+        "recorded": [
+          24
+        ],
+        "expected": [
+          24
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_25": {
+        "k": 1,
+        "recorded": [
+          25
+        ],
+        "expected": [
+          25
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_26": {
+        "k": 1,
+        "recorded": [
+          26
+        ],
+        "expected": [
+          26
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_27": {
+        "k": 1,
+        "recorded": [
+          27
+        ],
+        "expected": [
+          27
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_28": {
+        "k": 1,
+        "recorded": [
+          28
+        ],
+        "expected": [
+          28
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_29": {
+        "k": 1,
+        "recorded": [
+          29
+        ],
+        "expected": [
+          29
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_30": {
+        "k": 1,
+        "recorded": [
+          30
+        ],
+        "expected": [
+          30
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      },
+      "SINGLE_31": {
+        "k": 1,
+        "recorded": [
+          31
+        ],
+        "expected": [
+          31
+        ],
+        "ok": true,
+        "why": "matches prereg"
+      }
+    }
+  },
+  "NO_RANK_TEST": true,
+  "REPORTABLE_AS": "32 single-head effects E(SINGLE_h) = mean over domains of (y_install(SINGLE_h) - y_install(HD_BASE)), each with a domain-clustered bootstrap ci95; plus 8 leave-one-out effects E(LOO_h); plus HD_KO as the all-32 denominator and HD_TOPK/HD_BOTK for continuity with D32/D33. Reported as a table, ordered by point estimate, WITH the CIs.",
+  "CANNOT_DO": [
+    "which (layer, head) CELL carries the effect -- the band 6-14 is knocked out as a whole, exactly as in D32; this census is over HEAD INDICES, not cells",
+    "whether per-head effects ADD. Singletons measure each head alone and LOOs measure each head's marginal contribution to the 8-set; a gap between the two is interpretable but a full interaction model over 2^8 subsets is not run and is not claimed",
+    "anything about a head that matters OUTSIDE the band or off p* -- inherited from the screen's site choice (S-244's own CANNOT_ANSWER)",
+    "whether the AtP screen or S-243/6's gap statistic was right. The census REPLACES both surrogates with an intervention; it does not adjudicate between them retrospectively"
+  ],
+  "SELECTION_RE_ENTERS_WHEN": "the moment any single head is singled out for a claim. Any CONFIRMATORY per-head claim requires a HELD-OUT AXIS: the 3 untouched TEST domains, or -- preferred, because it is a genuine replication rather than a reused split -- the `button` codeword, whose banks already exist. This preregistration licenses a MAP and explicitly does not license 'head X is the writer'.",
+  "DOSE_IDENTITY_IS_BLIND_HERE": "Measured from PR-011's landed arms: HD_KO records median 2016.0 prefill edits and a K-head arm records K x 2016 (the all-head arm never expands, S-215). A SINGLETON records 1 x 2016 = 2016.0 -- IDENTICAL TO HD_KO. The realised-dose check that guarded PR-010 and PR-011 therefore CANNOT distinguish a singleton arm from the all-head arm. Arm identity on this family must be asserted from the run's own recorded `knockout_heads` against head_sets, which the argv gate already does (R20-1: 20 arms, 0 mismatches). Expected counts: SINGLE_* 2016.0, LOO_* 14112.0 (7x), HD_TOPK/HD_BOTK 16128.0 (8x), HD_KO 2016.0, HD_BASE 0.",
+  "NO_VERDICT": "This file contains NO verdict, NO rank and NO p-value by design. Singling out any one head for a claim requires a HELD-OUT AXIS -- see SELECTION_RE_ENTERS_WHEN."
+}

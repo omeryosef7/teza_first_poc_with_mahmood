@@ -20173,3 +20173,145 @@ NOT DONE the read itself. Order when 44 of 44 lands: GATE 0 sweep -> the census 
 
 **No census number has been read.** `score_behavior.py` was not opened. **Every document the read depends
 on is now frozen, and every one of them was frozen before a number existed.**
+
+---
+
+## S-254 — **THE CENSUS IS IN. Four heads carry the load, all four are inside HD_TOPK, and NO head outside it clears the bar.** ⚠ **WITHDRAWAL of S-245's headline: the AtP screen was SUBSTANTIALLY RIGHT (ρ = +0.77) and the gap statistic was the wrong one (ρ = +0.07).** PR-CSI-013 is GO on head 2, decided mechanically
+
+```
+sacct -j 918631 -> COMPLETED 03:35:23, 2026-09-22T20:17:09 | 44 of 44 arms
+GATE 0: every arm passes (44 of 44). Identity verified from each arm's own knockout_heads.
+```
+
+The frozen read `runargs/dcs_csi_pr012_read.txt` (md5 `7088590f…`, untouched since S-247) executed in
+order. **No number was seen before the read ran, and nothing was re-frozen after.**
+
+### 1. ⛔ GATE FIRST: the anchor cross-check, frozen in R21 with its tolerance
+
+```
+arm                census      W4 published     abs diff   verdict
+HD_KO         -0.22696123     -0.22696123      0.000e+00   EXACT
+HD_TOPK       -0.19598350     -0.19598350      0.000e+00   EXACT
+HD_BOTK       -0.01256722     -0.01256722      0.000e+00   EXACT
+
+PASS-STRONG: all three anchors BIT-IDENTICAL to W4's published values.
+```
+
+**R21 preregistered three outcomes and this is the strongest one.** It validates the census reader's
+endpoint against a tool that produced a published result, **and it establishes CROSS-NODE determinism
+(n-301 → n-303), which S-243 §5 explicitly did not test.** A free result, and R21's refusal to assume it
+is why it counts as one.
+
+### 2. The census, and the frozen criteria applied mechanically
+
+`|E(HD_BOTK)| = 0.012567` is the null anchor (S-253, frozen before the data).
+
+**READING A HOLDS — four heads clear the bar:**
+
+```
+head  2   E = -0.049475  ci95 [-0.069738, -0.032656]
+head 19   E = -0.040109  ci95 [-0.050376, -0.030520]
+head 17   E = -0.029218  ci95 [-0.038807, -0.020901]
+head 23   E = -0.016503  ci95 [-0.023201, -0.010069]
+```
+
+**And the structure is cleaner than anything the sprint predicted:**
+
+```
+HD_TOPK's eight, by their own singleton and their LOO marginal:
+ head   singleton E    clears bar   LOO marginal
+   2    -0.049475        YES        -0.073075
+  19    -0.040109        YES        -0.072191
+  17    -0.029218        YES        -0.037957
+  23    -0.016503        YES        -0.018158
+   6    -0.008475        no         -0.004023
+  13    -0.008276        no         -0.006894
+  24    -0.002750        no         +0.002873   <- marginal points the WRONG WAY
+  28    +0.000420        no         +0.004139   <- marginal points the WRONG WAY
+
+-> 4 of HD_TOPK's 8 clear the bar; 4 do not
+-> heads OUTSIDE HD_TOPK that clear the bar: NONE
+```
+
+**The singleton ordering and the marginal ordering agree on the top four, in the same order.** Two
+independent quantities from the same family, and they converge.
+
+### 3. ⚠⚠ **WITHDRAWAL: S-245's headline about the screen is refuted by the intervention**
+
+S-245 measured ρ = −0.11 between the screen's `S[h]` and S-243 §6's *gap* statistic and concluded:
+*"AtP … is NOT adequate to rank heads within that set,"* adding that it could not tell **which** of the
+two surrogates was wrong. **The census is the arbiter, and it has arbitrated:**
+
+```
+Spearman rho(S[h],  census E) over all 32 = +0.7713      Pearson r = +0.7697
+Spearman rho(gap,   census E) over all 32 = +0.0696
+
+screen's top 3 = heads 19, 17, 23  -> census E -0.0401, -0.0292, -0.0165  ALL in Reading A's four
+gap's    top 3 = heads  2, 14, 19  -> census E -0.0495, +0.0041, -0.0401  head 14 is WRONG-SIGNED
+```
+
+**⛔ S-245's headline is WITHDRAWN.** The screen's per-head ordering correlates with the intervention at
+**ρ = +0.77**, its top three are all genuinely load-bearing, and it even got the *sign* right at the other
+end (it ranked head 18 last of 32; head 18 has the most positive singleton). **The gap statistic was the
+wrong one.** S-245 was right that one of the two had to be wrong and right to refuse to guess — **but its
+headline named the screen, and that was the wrong half.**
+
+**What survives from S-245:** the screen is not perfect — **it ranked head 2, the single strongest head,
+only 6th.** And S-244's finding is untouched, because it measured cell-level ordering near the screen's
+boundary *directly* rather than through a surrogate.
+
+**AM-30's post-hoc hypothesis — *"load concentrated in ≈{2, 19}"* — is CONFIRMED**: those are the top two
+by singleton *and* by marginal. **AM-30 was flagged as post-hoc and hypothesis-generating only; it
+generated the right hypothesis, and the census is what promoted it.**
+
+### 4. A finding nobody preregistered, recorded as descriptive only
+
+**Five heads have significantly POSITIVE singletons — knocking them out *raises* installation:**
+
+```
+head 18  +0.009674  ci95 [+0.005635, +0.013754]      head 31  +0.004934
+head 27  +0.004113                                    head 14  +0.004070
+head  7  +0.003732
+```
+
+⛔ **Descriptive. 32 unadjusted intervals are read at once and the frozen criteria forbid treating any
+per-arm ci95 as certified.** It is recorded because R21's Amendment 1 was written for exactly this shape —
+a positive effect is a real measurement that is *not* what PR-013 replicates — and because the screen
+independently ranked head 18 **last of 32**.
+
+### 5. PR-CSI-013: GO, decided by the rule and not by me
+
+```
+[pr013] RULE 1  h* = 2   E = -0.049475  ci95 [-0.069738, -0.032656]
+                next three: head 19 -0.040109, head 17 -0.029218, head 23 -0.016503
+[pr013] RULE 2  |E| 0.049475 vs |E(HD_BOTK)| 0.012567 -> exceeds: True | ci95 excludes 0: True |
+                E < 0 (amendment 1): True
+[pr013] RULE 2 GATE: GO.
+[pr013] RULE 3  20 distinct controls: [24,19,3,5,21,11,6,10,15,7,28,29,26,31,25,27,16,1,0,20]
+                seeds 20261101..20261134 (34 attempts)
+[pr013] wrote+verified configs/dcs_csi_pr013_button_head_replication.json (5584 bytes)
+        md5 5ab06e3a0a6c9c184dbd7292cae1ccd2
+```
+
+**The head was chosen by a rule frozen in S-248 and amended in R21, both before any census number
+existed, and executed by code written in S-250 while the census was at 11 of 44.** I did not pick head 2;
+the argmin did.
+
+### 6. ⛔ NOT LAUNCHED, and the reason is S-252
+
+**PR-CSI-013 has no frozen read, and it cannot have one yet: S-252 established that W4 REFUSES this
+family by name** — its candidate is `BT_SINGLE`, one head, and W4's reporting language describes a K-head
+subset. **The independent path is fine** (`dcs_csi_rederive_subspace.py` already takes `--candidate` and
+`--controls` as parameters), **but the primary reader does not exist.** Launching 23 arms against a read
+that names a tool which refuses them is precisely S-196, which cost 9.3 GPU-hours.
+
+**Next tick, in order:** write the single-head rank reader → freeze `runargs/dcs_csi_pr013_read.txt` →
+static flag verification → `argv --check` on all 23 arms (the button path, proven in S-251) → launch.
+
+### 7. What the census may NOT be used to say
+
+Per the frozen criteria: **no summing singletons against `E(HD_KO)`** — and the arithmetic invites it
+(head 2 alone is 25.2 % of `HD_TOPK` and 21.8 % of `HD_KO`), which is exactly why the prohibition was
+written down first. **No per-arm ci95 read as certified. No "head 2 is the writer"** — that requires the
+held-out axis, which is what PR-013 is for. **D32 and D33 are unchanged**; the census measures per-head
+load and revises no rank.
