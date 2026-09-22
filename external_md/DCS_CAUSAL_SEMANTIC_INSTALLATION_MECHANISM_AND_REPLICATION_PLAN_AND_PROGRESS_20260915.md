@@ -20087,3 +20087,89 @@ the census decides whether the family happens at all. `score_behavior.py` was no
 tag namespace (S-227/S-246), arm enumeration (S-247), bank + exclusions (S-251), claim text + arm names
 (S-252). Five, all in the same pipeline, and every one found by preparing a SECOND value rather than by
 reviewing the first.**
+
+---
+
+## S-253 — **the last thing the frozen read left undecidable is now decided, BEFORE the data: "near zero" has a threshold.** And the census reader is re-proven correct after S-252 touched W4, which is in its import chain
+
+Census at **41 of 44**, GATE 0 clean; the last three arms are ~16 min out. This tick closes the two
+things that had to be settled before the read rather than after it.
+
+### 1. ⛔ The regression S-252 created the risk of, and closing it
+
+S-252 edited `dcs_csi_head_analyze.py` (W4). **The census reader loads W4 and calls five of its
+functions** (`by_domain`, `liveness`, `boot_mean`, `pct`, `atomic_write_json`), so W4 is in the import
+chain of the tool that will produce the census. My edit was in W4's `main()`, which the reader never
+calls — **but "the edit was somewhere else" is an argument, and the self-test is a measurement:**
+
+```
+python scripts/gates/dcs_csi_head_census_selftest.py
+  A ok: strongest singleton = SINGLE_02, E = -0.065712
+  D ok: the S-246 collision is CAUGHT -- dose 2016.0 want 2016 | identity: config records ALL 32
+        heads but the prereg says [7] -- THIS IS THE S-246 COLLISION: the dose check would have passed
+  E ok: a mismatched head list is refused      F ok: a RANK prereg is refused
+  cleanup: removed 44 | residue 0              wrote 29803 bytes -- the same size as before the edit
+SELFTEST PASSED
+```
+
+**The reader that will produce the census is unchanged in behaviour.**
+
+### 2. ⚠ The frozen read made a commitment it could not evaluate
+
+`runargs/dcs_csi_pr012_read.txt` says:
+
+> *"IF the singletons are all near zero AND the LOO marginals are all near zero, that is a COHERENT and
+> INFORMATIVE outcome, not a failure: it would mean the effect is carried by the SET and is not
+> decomposable into per-head contributions at this site."*
+
+**That is the right commitment and it is not decidable as written.** *"Near zero"* has no threshold. After
+the data, any boundary I drew would be a boundary drawn to fit what I saw — **the same defect R21 found in
+the nomination rule's missing sign clause and S-250 found in Rule 3's unspecified re-seed.** A commitment
+that cannot be evaluated is not a commitment.
+
+`runargs/dcs_csi_pr012_reading_criteria.txt`, 55 lines, md5 `5b99971cd122fa83d72b3b8e424f0cf9`, **frozen
+while `ls reports/DCS_CSI_PR012_CENSUS_validation.json` returns no such file.** It does **not** amend the
+read — `runargs/dcs_csi_pr012_read.txt` is still md5 `7088590f…`, byte-identical to its S-247 freeze.
+
+```
+NULL ANCHOR  |E(HD_BOTK)| from THIS census, on THESE rows, in THIS job. No external constant, so
+             nothing to tune. (PR-013's Rule 2 uses the same anchor, so the two cannot disagree.)
+READING A    "at least one head carries detectable load alone" iff EXISTS h with
+             |E(SINGLE_h)| > |E(HD_BOTK)|  AND  E(SINGLE_h) < 0  AND ci95 excluding 0.
+             Same three clauses as PR-013's Rule 2 INCLUDING R21's sign amendment. DESCRIPTIVE: 32
+             unadjusted intervals read at once identify heads worth a PREREGISTERED test, nothing more.
+READING B    "carried by the SET, not decomposable per head" iff (i) NO head satisfies A and (ii) NO
+             LOO marginal's ci95 excludes 0. If B holds, PR-013 does not launch and THAT IS THE
+             RESULT, not an absence of one.
+READING C    neither A nor B -> report the TABLE with its CIs and claim NO headline reading.
+```
+
+**⚠ The one asymmetry I had to state so it cannot be read the other way later.** `HD_BOTK` is an
+**8-head** arm and a singleton is a **1-head** arm, so this bar asks a single head to exceed what eight of
+the screen's *worst* heads do together. **A singleton that clears it is clearly non-trivial; a singleton
+that fails it is NOT thereby shown to be zero.** The bar is deliberately conservative in one direction
+only, and Reading B's force depends on that — which is why it also requires (ii), a condition on the LOO
+marginals that does not use `HD_BOTK` at all.
+
+**Reading C exists so that "neither" has a prescribed behaviour instead of becoming an argument.**
+
+### 3. What it forbids, restated because a second document is a second chance to soften the first
+
+No summing singletons against `E(HD_KO)` (PR-011 measured ρ = −0.09 against additivity); no per-arm ci95
+read as certified; no declaring `S[h]` or the gap statistic vindicated (S-245 measured ρ = −0.11, and the
+census **replaces** both); no *"head X is the writer"* without a held-out axis (S-248).
+
+### 4. State
+
+```
+918631   RUNNING 3:23:57, 41 of 44, GATE 0 clean; last 3 arms ~16 min out
+frozen   pr012_read.txt md5 7088590f (UNTOUCHED since S-247)
+         pr012_reading_criteria.txt md5 5b99971c (NEW, frozen before the data)
+         pr013_nomination_rule.txt md5 fae4adc6 (untouched since R21's amendment)
+         pr012_anchor_crosscheck.py (frozen tolerance, untouched since R21)
+NOT DONE the read itself. Order when 44 of 44 lands: GATE 0 sweep -> the census reader (the only read)
+         -> the anchor cross-check -> pr013_freeze, which decides GO/NO-GO mechanically.
+```
+
+**No census number has been read.** `score_behavior.py` was not opened. **Every document the read depends
+on is now frozen, and every one of them was frozen before a number existed.**

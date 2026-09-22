@@ -1,0 +1,55 @@
+# PR-CSI-012 READING CRITERIA -- FROZEN 2026-09-22 20:05, WHILE 41 OF 44 ARMS HAVE LANDED AND
+# reports/DCS_CSI_PR012_CENSUS_validation.json DOES NOT EXIST (verified by `ls` at the moment of
+# writing; the read has not been run and no census number has been seen).
+#
+# ⛔ THIS FILE DOES NOT AMEND runargs/dcs_csi_pr012_read.txt. That read is frozen and is untouched.
+# This file supplies the ONE thing the read left undecidable, and it supplies it BEFORE the data.
+#
+# WHY IT IS NEEDED. The read's honest-expectation block says:
+#     "IF the singletons are all near zero AND the LOO marginals are all near zero, that is a
+#      COHERENT and INFORMATIVE outcome, not a failure: it would mean the effect is carried by the
+#      SET and is not decomposable into per-head contributions at this site."
+# That is the right commitment and it is NOT DECIDABLE AS WRITTEN. "Near zero" has no threshold, so
+# after the data any boundary I drew would be a boundary drawn to fit what I saw -- the same defect
+# R21 found in the nomination rule's missing sign clause, and the same one S-250 found in Rule 3's
+# unspecified re-seed. A commitment that cannot be evaluated is not a commitment.
+# ------------------------------------------------------------------------------------------------
+
+# --- THE NULL ANCHOR. |E(HD_BOTK)| from THIS census, on THESE rows, in THIS job.
+#   HD_BOTK is the 8 heads the screen ranked LAST. It is the family's own near-null comparator and it
+#   is measured alongside everything else, so it needs no external constant and cannot be tuned after
+#   the fact. (PR-CSI-013's Rule 2 uses the same anchor for the same reason.)
+#   ⚠ It is an 8-HEAD arm and a singleton is a 1-HEAD arm, so this is a DELIBERATELY CONSERVATIVE
+#   bar for a singleton: it asks a single head to exceed what eight of the screen's worst do together.
+#   A singleton that clears it is clearly non-trivial; a singleton that does NOT clear it is NOT
+#   thereby shown to be zero. That asymmetry is stated here so it cannot be read the other way later.
+
+# --- READING A. "AT LEAST ONE HEAD CARRIES DETECTABLE LOAD ALONE"
+#   holds iff there EXISTS a head h with  |E(SINGLE_h)| > |E(HD_BOTK)|  AND  E(SINGLE_h) < 0
+#   AND ci95(SINGLE_h) excluding 0.
+#   (Same three clauses as PR-013's Rule 2, including R21's Amendment 1 sign clause, so the two
+#   documents cannot disagree about what counts.)
+#   ⚠ DESCRIPTIVE. 32 unadjusted intervals are read at once; this identifies heads worth a
+#   PREREGISTERED test, and identifies nothing else. It is not a p-value and no p-value is computed.
+
+# --- READING B. "THE EFFECT IS CARRIED BY THE SET AND IS NOT DECOMPOSABLE PER HEAD"
+#   holds iff BOTH:
+#     (i)  NO head satisfies Reading A, and
+#     (ii) NO LOO marginal -- marginal(h) = E(HD_TOPK) - E(LOO_h) -- has a ci95 excluding 0.
+#   Reading B is the outcome the frozen read already called coherent and informative. If it holds,
+#   PR-CSI-013 does not launch (its Rule 2(b) fails by construction, since Reading A failing means no
+#   head clears the same bar), and THAT IS THE RESULT, not an absence of one.
+
+# --- READING C. NEITHER A NOR B (some head clears the bar, or some marginal excludes 0, but not the
+#   pattern either reading describes). Then the census is reported as a TABLE with its CIs and NO
+#   headline reading is claimed. This branch exists so that "neither" has a prescribed behaviour
+#   instead of becoming an argument.
+
+# --- WHAT NO READING MAY DO, restated because the read already forbids it and a second document is a
+#   second chance to soften it:
+#   * no summing of singleton effects and comparing the total to E(HD_KO) -- PR-011 measured
+#     Spearman rho = -0.09 between candidate-head COUNT and effect, which argues against additivity;
+#   * no treating a per-arm ci95 excluding 0 as a certified finding about that head;
+#   * no declaring the AtP screen's S[h] or S-243/6's gap statistic vindicated -- S-245 measured
+#     rho = -0.11 between them and the census REPLACES both surrogates rather than adjudicating them;
+#   * no claim of the form "head X is the writer" without a HELD-OUT AXIS (S-248).
