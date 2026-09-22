@@ -21376,3 +21376,73 @@ frozen  read 911c3a20 | prereg 5ab06e3a | nomination rule fae4adc6 -- UNTOUCHED
 ```
 
 **No PR-013 number exists.** `score_behavior.py` was not opened.
+
+---
+
+## S-266 — S-264 said pinning to a warm node was *"the right move for the NEXT relaunch"*. **That is now a decidable rule with both costs measured, not a note** — and ⚠ **the rule says `PIN n-307` right now, and I am NOT acting on it. The reason is the point of the entry**
+
+### 1. Both sides of the tradeoff are measured, so this needs no judgement
+
+```
+COST OF A COLD LOAD   n-303 1311.6 s | n-301 1851.5 s | n-302 >2600 s | n-307 6008.8 s
+COST OF A WARM LOAD   n-307 47.5 s on the SAME node minutes later -- 126x cheaper        (S-261)
+COST OF PINNING       S-148: a hard --nodelist waits for ONE NAMED node and is strictly worse than
+                      waiting for ANY node when every GPU is allocated -- four jobs PENDED INDEFINITELY.
+                      And a --nodelist=n-303 pin once cost 25 min of PENDING (Resources) before the job
+                      was resubmitted unpinned.
+```
+
+**So the rule is conditional and the condition is checkable before submitting:** pin **only** if the
+candidate node has a **free GPU right now**; otherwise submit unpinned and pay a cold load, which is
+**bounded (22–100 min)** where an indefinite PEND is not.
+
+`scripts/gates/dcs_csi_warm_node.sh` implements exactly that, with both measurements in its header:
+
+```
+sh scripts/gates/dcs_csi_warm_node.sh n-307 n-303 n-301 n-302
+  n-307: gpus 0/8 allocated, 8 free
+PIN n-307                                         rc=0
+sh scripts/gates/dcs_csi_warm_node.sh n-999
+  n-999: no such node
+DO NOT PIN -- no candidate node has a free GPU    rc=1
+```
+
+### 2. ⚠ The rule fires, and I am not acting on it
+
+**`n-307` is entirely free (0 of 8 GPUs) and is the node that produced the 47.5 s warm load.** A relaunch
+pinned there would plausibly load in about a minute instead of the 2700+ s `919296` has spent so far.
+
+**I am not cancelling 919296, and the reason is that the case for doing so rests on something I cannot
+measure:**
+
+```
+IF n-307's page cache still holds the snapshot  -> relaunch loads in ~1 min, done ~02:45
+IF it does not (257 GB host, 3.5 h elapsed)     -> ANOTHER 6008 s cold load, done ~04:25
+919296 as it stands                             -> load finishes, then 23 arms x ~300 s, done ~03:00
+```
+
+**I cannot inspect another node's page cache from the login node**, so the favourable branch is a
+hypothesis. **Cancelling a job that has already paid most of a cold load, to gamble on an unmeasurable
+cache state, is exactly the churn that has already cost this sprint two relaunches** (S-260, S-261) —
+and S-148 is on record that three successive relaunch decisions were each wrong in a new way.
+
+**The helper exists so the NEXT relaunch is decided by a check rather than by an estimate. It does not
+create a reason to relaunch now.**
+
+### 3. The arms
+
+```
+date 00:5x | 919296 RUNNING ~45 min on n-302 | "MODEL LOAD" lines: 0 | 0 of 23
+```
+
+⛔ **Still no conclusion on the load time; the monitor is armed and the number will be read, not
+estimated.** ~11 h of wall remain.
+
+### 4. State
+
+```
+frozen  read 911c3a20 | prereg 5ab06e3a | nomination rule fae4adc6 -- UNTOUCHED
+        <VALIDATION_JOB_IDS> = 919296 ALONE at read time
+```
+
+**No PR-013 number exists.** `score_behavior.py` was not opened.
