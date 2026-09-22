@@ -22082,3 +22082,70 @@ frozen  read 911c3a20 | prereg 5ab06e3a | nomination rule fae4adc6 | reading cri
 ```
 
 **No PR-013 number has ever been read.** `score_behavior.py` was not opened.
+
+---
+
+## S-275 — **919531 is RUNNING: 7 minutes of pending, not ten hours.** ⚠ **CORRECTION to S-274: the fairshare MECHANISM is real and the CONSEQUENCE I predicted from it was overstated.** And it landed on n-302, where 919296 had already pulled 94 of 291 shards
+
+### 1. It started, and quickly
+
+```
+sacct -j 919531  ->  RUNNING, Start 2026-09-23T02:20:24      submitted 02:12:xx
+  -> ~7 MINUTES of PENDING (Priority), on a node it was not pinned to
+NodeList = n-302
+```
+
+### 2. ⚠ CORRECTION to S-274
+
+S-274 wrote: *"the fifth submission now queues behind 159 jobs"*, and framed the fairshare cost as the
+thing that had cost me the relaunch. **The mechanism is real** — `RawUsage 9092852`, `FairShare 0.019231`,
+and ~5.3 GPU-hours of cancelled work are all measured, and a cancelled job's elapsed time genuinely is
+charged in full. **The consequence I drew from it was not:** the job started in **seven minutes**.
+
+**`Reason=Priority` with `StartTime=Unknown` means "not yet scheduled", not "scheduled far away."** I read
+it as the latter because the *pinned* job's `StartTime` had been a firm `12:18:18` — **and I carried that
+reading across to the unpinned job, where it did not apply.** The pinned estimate was 10 h because the pin
+was **unschedulable** (12 GB against 64 GB); remove the pin and the estimate was simply unknown, which is
+the normal state of a queued job.
+
+**What survives from S-274, unchanged:** the standing rule that a relaunch decision must count fairshare,
+because the charge is real and cumulative. **What is withdrawn: the claim that it had already cost me the
+queue.** S-274's own commitment — *no further cancellations* — remains the right call and is now cheap to
+keep.
+
+### 3. The guards, all passing for the fifth time
+
+```
+HOST=n-302 JOB=919531 | BLOB fa072db6  PORCELAIN [clean]
+BASE-ARM CHECK PASSED: 'BT_BASE' carries no intervention flag; all 22 other arms carry --intervene
+CODEWORD CHECK PASSED: 'button' -> ..._ts116m_button_bomb.jsonl, exclude_button_bomb_sow_validation.txt
+CHECK PASSED: 23 arms, every flag declared by score_behavior.py
+argv lines: 23
+```
+
+**S-260's BASE-ARM CHECK is the reason this generation cannot repeat 918967's VOID**, and it is now the
+third job to pass it.
+
+### 4. A favourable accident worth recording
+
+**919531 landed on n-302 — the same node 919296 was cancelled on 15 minutes earlier, after loading 94 of
+291 shards.** So roughly a third of the snapshot may still be in that node's page cache. **⛔ Stated as a
+possibility, not a claim:** S-261 established page cache as the mechanism, and S-266/S-272 both recorded
+that cache residency is not inspectable from the login node. **The progress bar will settle it**, and
+unlike every previous generation I am watching the right file from the start.
+
+### 5. `.err` is 0 bytes, and this time that is read correctly
+
+```
+outputs/boombness/logs/csi_pr010arms_919531.err   0 bytes at 02:22, job 2 min old
+```
+
+**S-272's lesson applied rather than repeated:** *a stream that is empty early is not a stream that is
+empty.* 919296's first shard took 21:19, so the bar is not expected yet. **This is the exact observation
+that misled me for seven entries, and it is now annotated instead of generalised from.**
+
+**Contention note, for the record and not for action:** n-302 now carries **6 jobs**, `CPULoad 7.08`,
+`AllocMem 622 GB` — busier than when 919296 ran there alone. **S-274 forbids another cancellation and that
+stands.**
+
+**No PR-013 number has ever been read.** `score_behavior.py` was not opened.
