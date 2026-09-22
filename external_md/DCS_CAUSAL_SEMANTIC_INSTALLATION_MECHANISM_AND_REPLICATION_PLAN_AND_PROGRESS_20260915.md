@@ -20315,3 +20315,105 @@ Per the frozen criteria: **no summing singletons against `E(HD_KO)`** — and th
 written down first. **No per-arm ci95 read as certified. No "head 2 is the writer"** — that requires the
 held-out axis, which is what PR-013 is for. **D32 and D33 are unchanged**; the census measures per-head
 load and revises no rank.
+
+---
+
+## S-255 — **PR-CSI-013's primary reader, its frozen read, and 23 BUTTON arms LAUNCHED** (918967). The self-test's decisive cases are a **GATE 1 failure that writes no rank at all** and an **exact tie that counts AGAINST the candidate**. This is the sprint's **first cross-codeword test at any granularity**
+
+Executed in the order S-254 committed to: reader → read frozen → static flag verification → argv gate →
+launch. **Nothing launched until all four were green.**
+
+### 1. Why a new reader, and what it does not re-implement
+
+S-252 measured that **W4 refuses this family by name**: it hard-codes `HD_BASE/HD_KO/HD_TOPK/HD_BOTK`, and
+its `REPORTABLE_AS` describes *"K head INDICES … carry at least half"* — language about a **subset**.
+PR-013's candidate is `BT_SINGLE`, **one head**. Bending W4 would mean either renaming this family's arms
+to borrow a tool — **hiding what is being tested** — or loosening the assertions that protect D32/D33.
+`scripts/dcs_csi_head_single_rank.py` is **additive**.
+
+It imports W4's `by_domain` (hence `load_installation`, the sole definition of `y_install`), `liveness`,
+`boot_mean`, `pct`, `atomic_write_json`; `strict_run_dir`; and the census reader's `recorded_heads`.
+**No endpoint, resampler or run-resolver is re-implemented.**
+
+### 2. ⚠ The dose identity is blind on the ENTIRE rank family here
+
+On PR-012 only the **singletons** collided with `HD_KO`'s 2016. **Here `BT_SINGLE` and all twenty
+`BT_CTRL_*` are one-head arms** — the whole rank family records exactly what the all-32 arm does. Identity
+is asserted from each run's own `knockout_heads`, and every such arm is marked
+`dose_is_diagnostic_of_identity: false`.
+
+### 3. Self-test: 7 of 7, residue 0, on REAL 230-row rows
+
+```
+A  candidate strongest      -> rank 1 of 21, p = 0.047619 = the floor, REPLICATES
+B  ONE stronger control     -> rank 2 of 21, p = 0.095238 (does not clear alpha = 0.05)
+C  GATE 1 FAILS             -> CANNOT ANSWER, and NO RANK IS WRITTEN AT ALL
+D  S-246 COLLISION on a CONTROL, dose a perfectly legal 2016  -> CAUGHT by identity
+E1 a CENSUS prereg refused  |  E2 a K-head SUBSET prereg refused by name (that is W4's family)
+F  an EXACT TIE counts AGAINST the candidate -> rank 2, p = 0.095238. A tie can never certify.
+```
+
+**C and F are the cases that matter.** C is where a tool could report a headline it has no right to — if
+the all-32 knockout does not fire on this codeword, a single-head result there is **uninterpretable**, not
+a failure of head 2, and no rank may exist to be quoted. **F is the tie convention that S-224's rank-power
+sweep once had off by one.**
+
+### 4. The frozen read, and an expectation I actually cannot predict
+
+`runargs/dcs_csi_pr013_read.txt`, 74 lines, md5 `911c3a2099281f37280900056a3c426d`, **frozen before any
+arm.** Static flag verification (S-242's method): **every flag it names is declared by that tool's
+argparse**, on both the primary and the independent re-derivation — which already parameterises
+`--candidate`/`--controls` and so reads this family unchanged.
+
+It records **how the candidate was chosen** — `argmin` under a rule frozen in S-248, amended in R21, run
+by code written in S-250 at 11 of 44 arms — **and states plainly that I do not know whether this
+replicates:**
+
+> *"No cross-codeword test has ever been run in this sprint, at ANY granularity. This is the first one. A
+> failure here would be INFORMATIVE rather than disappointing: it would bound the census to basket and
+> make codeword-specificity the finding."*
+
+That is on record **before** the arms, because a prediction written afterwards is not a prediction.
+
+### 5. The argv gate on the button path — S-251's fix, exercised for real
+
+```
+CODEWORD CHECK PASSED: 'button' -> bank ..._ts116m_button_bomb.jsonl,
+                       exclusions exclude_button_bomb_sow_validation.txt (both exist; every arm agrees)
+CHECK PASSED: 23 arms, every flag declared by score_behavior.py; 21 carry a frozen head list,
+              2 carry none (BT_BASE has no intervention, BT_KO = all 32)
+```
+
+**This is the first time a second codeword has gone through that generator** — the exact path S-251 found
+would otherwise have emitted basket rows under button tags.
+
+### 6. Launched
+
+```
+SPLIT=validation PREREG=configs/dcs_csi_pr013_button_head_replication.json \
+TAG_PREFIX=csi6_btnhead_button FAMILY=pr013 CSI_STAGE=1 \
+  sh scripts/gates/dcs_csi_submit.sh slurm_scripts/dcs_csi_pr010_arms.slurm
+provenance: BLOB 539ee024  PORCELAIN clean
+Submitted batch job 918967        RUNNING on n-307, TimeLimit 12:00:00, EndTime 2026-09-23T08:39
+
+n-307 occupancy: 1 job, mine  <- S-249's REPLACEMENT rule (count big-model jobs, not free memory)
+```
+
+**⚠ The in-job guard output is NOT yet verified and is not claimed.** Both log files read **0 bytes** at
+20:39 with the job 32 s old — buffering plus NFS attribute caching, both known to this sprint. **The
+submitter's own witness is confirmed (`BLOB 539ee024 PORCELAIN clean`), because that is printed on the
+login node; the tag-namespace guard and the in-job `argv --check` will be read next tick.** Saying they
+passed now would be asserting something I have not seen.
+
+**23 arms × ~320 s ≈ 2.0 h against a 12 h wall.**
+
+### 7. State
+
+```
+918967   RUNNING, 0 of 23 arms
+frozen   pr013_read.txt md5 911c3a20 | pr013 prereg md5 5ab06e3a | nomination rule fae4adc6
+         pr012_read.txt 7088590f, pr012_reading_criteria 5b99971c -- all UNTOUCHED
+```
+
+`score_behavior.py` was not opened. **PR-013 cannot revise D32, D33 or the census** — it tests one head on
+one other codeword, and a failure retracts none of them.
