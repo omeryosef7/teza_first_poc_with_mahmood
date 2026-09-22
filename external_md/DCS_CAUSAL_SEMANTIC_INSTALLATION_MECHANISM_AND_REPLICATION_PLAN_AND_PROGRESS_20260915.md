@@ -21785,3 +21785,93 @@ load elapsed ~79 min of the measured 36-125 min range | THRESHOLD 02:20 | ~46 mi
 
 **No PR-013 number exists.** `score_behavior.py` was not opened. **R23 due ~02:38, just after the
 threshold.**
+
+---
+
+# REVIEW R23 (self, ~4 h cadence; run ~1 h early because it had material and the alternative was idle waiting) — ⚠⚠ **the COMMIT VERIFIER I built in S-262 to stop me trusting unverified output had TWO GUARDS THAT COULD NEVER FIRE.** A failing push gave `rc=128` and git's generic error, never the named `rc=5`. Fixed and proven on a scratch repo
+
+R22 attacked the single-head reader. **R23 attacks the tooling written since — the sign-clause
+propagation (S-259), the argv base-arm fix (S-260), the census generalisation (S-261), the commit
+verifier (S-262) and the warm-node helper (S-266).** The verifier is where the defect was.
+
+## R23-1 ⚠⚠ Two of the verifier's four guards were dead code
+
+S-262 claimed four checks. **Only two had ever been exercised** — `rc=2` (bad message file) and `rc=3`
+(nothing staged). **The two that matter most had never been tested**, so I built a throwaway git repo and
+tested them:
+
+```
+scratch repo, remote deliberately broken, then run the verifier:
+  rc=128
+  fatal: '/tmp/.../NOSUCH.git' does not appear to be a git repository
+  ...
+  -> the COMMIT happened; the PUSH failed; the named rc=5 message NEVER PRINTED
+```
+
+**Cause: `set -eu`.** A failing `git push` aborts the script with git's own status **before** the
+`REMOTE != AFTER` comparison runs. **The same applies to `rc=4`** — a failing `git commit` aborts before
+the `HEAD` comparison. **Both named diagnostics were unreachable.**
+
+**⛔ The irony is the point: S-262 built this tool because I had trusted a command's output instead of
+reading state back, and two of its own guards were never read back.** R20-6's rule — *any check whose PASS
+is consistent with reading nothing is not a check* — applies to the checker itself, and I did not apply it
+when I wrote it.
+
+**Severity, stated honestly: fail-LOUD, not fail-silent.** `rc=128` is non-zero and git's error is
+visible, so no commit was ever silently lost. **What was lost is the actionable message** — *"the commit
+landed locally and is NOT on origin"* — which is the one thing an operator needs in that state. This is
+the "names the symptom, not the cause" defect I criticised in S-246 and S-260, in a tool I wrote after
+both.
+
+**Fixed by capturing both statuses explicitly**, and proven:
+
+```
+rc=5  FAILED: git push exited 128. The COMMIT LANDED LOCALLY (adf56a91...) and is NOT on origin.
+        The working tree is clean and the entry is safe; re-run the push alone.
+happy path on a good remote: VERIFIED  HEAD adf56a91 -> 060cc0be | origin matches | dirty 0   rc=0
+```
+
+**And `rc=5` is now honest about its own scope:** a push that *exits non-zero* is caught by the new
+explicit check; the `REMOTE != AFTER` comparison catches the different case of a push that *succeeds* but
+leaves the ref disagreeing. **S-262 described one guard where there are two conditions.**
+
+## R23-2 The sibling tool, checked for the same class — clean
+
+`dcs_csi_warm_node.sh` also runs `set -eu`, so it was checked for the same defect:
+
+```
+scontrol failure   handled EXPLICITLY with `|| { echo ...; continue; }`  -- not left to set -e
+sed extractions    cannot fail under set -e (sed exits 0 on no match)
+non-numeric guard  `case "$ALC" in ''|*[!0-9]*) ALC=0 ;;`  -- reached normally
+```
+
+**No unreachable branch.** The difference is that its failure paths were written with explicit `||`
+handlers from the start, which is what the verifier should have done.
+
+## R23-3 Checked and clean since R22
+
+The generalised `pr012_gate0_sweep` still reproduces PR-012's output **byte-identically** (S-261) and now
+also reads PR-011 and PR-013. The census reader reproduces its report **full-object identical** after the
+`base_arms` change (S-261). `argv` reproduces all six published argv files **byte-identically** after the
+base-arm fix (S-260). W4 and the rederive reproduce their published reports after the sign clauses
+(S-259). **Every one of those was a regression against a committed artefact rather than a re-run compared
+to itself.**
+
+## R23-4 The pattern across R20–R23
+
+```
+R20  defects in my PROBES                     -- throwaway checks that mis-read absence
+R21  a defect in a FROZEN RULE                -- a preregistered rule that licensed the wrong experiment
+R22  a LESSON THAT DID NOT PROPAGATE          -- the sign clause reached one tool of three
+R23  a defect in THE CHECKER ITSELF           -- two guards in the verify tool could never fire
+```
+
+**Four reviews, four distinct failure locations, and none of them in the scientific pipeline.** The
+numbers (D32, D33, D34) have survived every review unchanged; **what keeps breaking is the machinery I
+build to protect them**, and each review has found it in a place the previous one had no reason to look.
+
+## R23-5 Not done
+
+**No PR-013 number exists** — 919296 is still in its cold load at ~85 min of the measured 36–125 min
+range, with the 02:20 threshold not yet reached. `score_behavior.py` was not opened. The scratch repo used
+for the rc=5 test was deleted.

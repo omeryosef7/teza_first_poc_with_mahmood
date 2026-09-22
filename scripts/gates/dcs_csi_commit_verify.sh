@@ -26,17 +26,32 @@ if [ "$STAGED" -eq 0 ]; then
   exit 3
 fi
 
-git commit -q -F "$MSG"
+# R23: `set -e` would abort here with git's own exit code, so the NAMED checks below were DEAD CODE
+# (measured: a failing push gave rc=128 and git's generic error, never the rc=5 message). The statuses
+# are captured explicitly so the named diagnostic is the thing the operator sees.
+COMMIT_RC=0
+git commit -q -F "$MSG" || COMMIT_RC=$?
 
 AFTER=$(git rev-parse HEAD)
 if [ "$BEFORE" = "$AFTER" ]; then
-  echo "FAILED: HEAD did not move ($BEFORE). The commit did NOT happen." >&2
+  echo "FAILED: HEAD did not move ($BEFORE). The commit did NOT happen (git commit rc=$COMMIT_RC)." >&2
+  exit 4
+fi
+if [ "$COMMIT_RC" -ne 0 ]; then
+  echo "FAILED: git commit exited $COMMIT_RC yet HEAD moved -- inspect before trusting $AFTER" >&2
   exit 4
 fi
 
-git push -q origin "$(git rev-parse --abbrev-ref HEAD)"
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+PUSH_RC=0
+git push -q origin "$BRANCH" || PUSH_RC=$?
+if [ "$PUSH_RC" -ne 0 ]; then
+  echo "FAILED: git push exited $PUSH_RC. The COMMIT LANDED LOCALLY ($AFTER) and is NOT on origin." >&2
+  echo "  The working tree is clean and the entry is safe; re-run the push alone." >&2
+  exit 5
+fi
 
-REMOTE=$(git rev-parse "origin/$(git rev-parse --abbrev-ref HEAD)")
+REMOTE=$(git rev-parse "origin/$BRANCH" 2>/dev/null || echo NONE)
 if [ "$REMOTE" != "$AFTER" ]; then
   echo "FAILED: push did not land. local $AFTER, origin $REMOTE" >&2
   exit 5
