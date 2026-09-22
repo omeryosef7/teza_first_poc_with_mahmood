@@ -1,0 +1,74 @@
+# FROZEN READ for PR-CSI-013 -- does head 2's single-head effect replicate on the BUTTON codeword?
+# Frozen 2026-09-22, BEFORE ANY ARM HAS RUN. Never re-freeze after seeing numbers.
+#
+# HOW THE CANDIDATE WAS CHOSEN, AND WHY THAT IS NOT SELECTION.
+#   h* = 2 was produced by `argmin over ALL 32 heads of E(SINGLE_h)` from the PR-CSI-012 census, under
+#   a rule frozen in S-248 (before the census existed), amended in R21 to require E < 0 (also before
+#   the census existed), and EXECUTED BY CODE written in S-250 while the census stood at 11 of 44
+#   arms. No head was picked by hand. configs/dcs_csi_pr013_button_head_replication.json records the
+#   census md5 it was derived from and the rule file's md5.
+#   THE HEAD COMES FROM BASKET AND IS TESTED ON BUTTON. A different codeword is a genuine replication
+#   axis, not a reused split -- and S-248 measured that NO head-restricted button arm has ever
+#   existed, so nothing on button could have informed the choice.
+#
+# WHAT THIS ASKS: is head 2 privileged among ARBITRARY SINGLE HEADS on a second codeword?
+# WHAT IT CANNOT DO: revise D32, D33 or the census; license "head 2 is the writer"; say anything
+#   about the other 31 heads on button. A FAILURE retracts none of those either.
+#
+# ⚠ THE DOSE IDENTITY IS BLIND ON THE ENTIRE RANK FAMILY HERE. BT_SINGLE and all 20 BT_CTRL_* are
+#   ONE-head arms recording 2016 prefill edits -- exactly what the all-32 BT_KO records (S-246). On
+#   PR-CSI-012 only the singletons collided; here the WHOLE FAMILY does. Arm identity is asserted
+#   from each run's own `knockout_heads`, and the reader marks every such arm
+#   `dose_is_diagnostic_of_identity: false` so a passing dose is never mistaken for a verified arm.
+#
+# Read in order. STOP AT THE FIRST FAILURE.
+#   GATE 0  liveness + ARM IDENTITY on every arm (in the reader; it refuses to go further)
+#   GATE 1  E(BT_KO) < 0 with ci95 UPPER bound < 0. If it fails the answer is CANNOT ANSWER, the
+#           candidate is NOT reported, and no rank is written -- the all-32 knockout failing on this
+#           codeword would mean a single-head result there is uninterpretable, not that head 2 failed.
+# ------------------------------------------------------------------------------------------------
+
+# --- PRIMARY. W4 REFUSES this family by name (S-252): its candidate is ONE head and W4's reporting
+# --- language describes a K-head SUBSET. This reader exists for that reason and refuses W4's families
+# --- in return.
+python scripts/dcs_csi_head_single_rank.py \
+  --prereg configs/dcs_csi_pr013_button_head_replication.json \
+  --tag-prefix csi6_btnhead_button_validation --split validation --expect-n 230 \
+  --require-slurm-job <VALIDATION_JOB_IDS> \
+  --out reports/DCS_CSI_PR013_BUTTON_HEAD_validation.json
+
+# --- THE INDEPENDENT RE-DERIVATION, sharing no code with the primary. It already parameterises
+# --- --candidate/--controls, so it reads this family unchanged (S-254). --direction necessity is
+# --- REQUIRED: these arms REMOVE a head from a clean forward, so the reference is --base and
+# --- stronger = MORE NEGATIVE. The default is sufficiency and would read the rank upside down.
+python scripts/dcs_csi_rederive_subspace.py \
+  --tag-prefix csi6_btnhead_button_validation --split validation --expect-n 230 \
+  --direction necessity \
+  --base BT_BASE --ko BT_KO --full BT_KO --candidate BT_SINGLE \
+  --controls BT_CTRL_00,BT_CTRL_01,BT_CTRL_02,BT_CTRL_03,BT_CTRL_04,BT_CTRL_05,BT_CTRL_06,BT_CTRL_07,BT_CTRL_08,BT_CTRL_09,BT_CTRL_10,BT_CTRL_11,BT_CTRL_12,BT_CTRL_13,BT_CTRL_14,BT_CTRL_15,BT_CTRL_16,BT_CTRL_17,BT_CTRL_18,BT_CTRL_19 \
+  --require-slurm-job <VALIDATION_JOB_IDS> \
+  --out reports/DCS_CSI_PR013_BUTTON_HEAD_validation_REDERIVE.json
+
+# ------------------------------------------------------------------------------------------------
+# THE FLOOR IS REPORTED WITH THE p, ALWAYS. 20 controls -> floor 1/21 = 0.047619...
+#   rank 1 of 21 => p = the floor, the ONLY certifying outcome at alpha = 0.05
+#   rank 2 of 21 => 0.095238 => DOES NOT PASS, for any effect size
+#   TIES COUNT AGAINST THE CANDIDATE (>=), so a tie can never certify. Asserted by the reader's
+#   self-test case F.
+#
+# VERDICTS:
+#   REPLICATES                  : rank 1 of 21
+#   DOES NOT REPLICATE AT RANK 1: rank >= 2. This is a REAL OUTCOME, not a failure of the pipeline.
+#   CANNOT ANSWER               : GATE 1 fails, or GATE 0 fails on any arm.
+#
+# HONEST EXPECTATION ON RECORD BEFORE THE DATA.
+#   On BASKET, head 2's singleton was -0.049475 against an |E(HD_BOTK)| null anchor of 0.012567 --
+#   about 4x the anchor, and 25.2% of the whole 8-head effect. If head 2 carries a codeword-general
+#   part of the mechanism, it should rank 1 here comfortably. If instead the basket census was
+#   picking up something specific to the token "basket", it should not.
+#   ⚠ I GENUINELY DO NOT KNOW WHICH, and the reason is on record: D32/D33 established that the
+#   8-head SET transfers nothing yet -- no cross-codeword test has ever been run in this sprint, at
+#   ANY granularity. This is the first one. A failure here would be INFORMATIVE rather than
+#   disappointing: it would bound the census to basket and make codeword-specificity the finding.
+#   I expect GATE 1 to pass easily (82 existing button runs use this exact all-32 knockout), so the
+#   experiment should be decidable either way.
