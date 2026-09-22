@@ -872,3 +872,75 @@ is the axis on which nothing found so far overlaps, and it is now the **only** c
 
 **§12 still not discharged.** Two fetched neighbours in two passes, on the third and then the first query,
 is a rate that says the space is still productive. §F4's remaining leads are unfetched.
+
+---
+
+# ADDENDUM H — 2026-09-22: ⚠ **THE PHENOMENON AXIS IS OCCUPIED.** A paper studies in-context redefinition overriding a word's lexical prior, causally, with held-out splits, across 11 models — **and stops at positions/layers, not heads.** §A5-3's open question is now open only at the head level
+
+This is the most consequential literature finding of the sprint and it narrows D32's contribution sharply.
+
+## H1. VERIFIED — arXiv:2606.07555, *Persistent Priors, Preserved Targets: A Stroop-Style Paradigm for Lexical Override*
+
+Han-yu Wang (University of Hong Kong), **v5, 8 August 2026**. Abstract fetched verbatim.
+
+**⚠ Title discrepancy, recorded rather than smoothed over:** the search result listed this id as *"Priors
+Persist Through Suppression: A Stroop Paradigm for Lexical Override"*. The **fetched v5** is titled
+*"Persistent Priors, Preserved Targets: A Stroop-Style Paradigm for Lexical Override."* **The fetched title
+is authoritative here; the earlier one may belong to an earlier version.** Anyone citing this must check
+the version.
+
+> *"**Local definitions can assign a familiar word a temporary meaning** while its usual associations remain
+> useful elsewhere … A conflict prompt **defines doctor as forest** and compares forest with the familiar
+> associate hospital … we **patch neutral-control activations into antonym prompts** in five 11B-22B models.
+> **Patching the defined word, the target word in the definition, and the later query word together restores
+> almost all of the target-minus-distractor margin** lost in conflict (normalized recovery R ∈ [0.92, 1.06])."*
+
+```
+phenomenon   an in-context definition overriding a word's PRETRAINED lexical prior   <- OUR AXIS
+setting      BENIGN lexical override (Stroop-style), not jailbreak
+localisation TOKEN POSITIONS and LAYERS in the RESIDUAL STREAM -- "No head-level analysis is reported"
+method       residual-stream activation patching, neutral-control donor
+held-out     YES -- 200 discovery/held-out splits per model, plus different-item donor controls
+             ("recovery remains below zero in every model")
+models       11 behavioural (Qwen2.5, Gemma-2, OLMo, Mistral); 5 for patching. NOT Llama.
+```
+
+## H2. ⛔ What this removes, and it is the axis I said was the last one
+
+Addenda F and G concluded that the surviving conceptual distinction was **"a denotation the prompt creates
+rather than one the model memorised."** **That distinction is occupied.** This paper studies exactly that —
+a locally-defined meaning competing with a pretrained prior — **causally**, with **held-out splits** and
+**matched different-item controls**, across **eleven models**.
+
+**D32 may therefore NOT claim the phenomenon as unaddressed.** §A5-3's question survives **only** in its
+narrower form: *whether an in-context-installed denotation is carried by identifiable **attention heads***.
+This paper localises to **positions and layers and explicitly not to heads.**
+
+**And a claim of mine must be withdrawn.** Addenda F/G contrasted *"their coverage is broader; our controls
+are stronger."* **Against this paper that is false**: 200 held-out splits per model across 11 models, with
+different-item donor controls, is **stronger** than one model with 23 held-out domains. **The
+methodological-superiority framing does not survive contact with this work and is withdrawn.**
+
+## H3. ✅ And it independently supports our site choice
+
+Their three causally-necessary positions are *"the defined word, the target word in the definition, and
+**the later query word**."* **Our knockout is scoped `target_surface_row_only` — the query-codeword row.**
+Independent work, different models, different paradigm, converges on the query-word position being
+causally load-bearing for an in-context redefinition. **That is convergent support for a design choice this
+sprint made on other grounds**, and it is worth more than a novelty claim.
+
+## H4. What D32's contribution reduces to
+
+Stated plainly, and it is narrower than anything written so far:
+
+1. **Head-level** causal localisation of a prompt-installed denotation, where the nearest work on the same
+   phenomenon stops at positions/layers.
+2. A **jailbreak-relevant** instantiation (a harmful concept installed under a benign codeword) rather than
+   a benign Stroop analogue.
+3. The **dose-matched rank test with a reported attainable floor** — a specific control design, not a claim
+   of general rigour.
+
+**Not**: the phenomenon, the idea of sparse semantic heads, or superior methodology in general.
+
+**§12 remains undischarged**, and the reason is now the opposite of comfortable: **three passes have each
+found a closer neighbour than the last.** The rate has not fallen.

@@ -18208,3 +18208,83 @@ THE ONLY CONCEPTUAL AXIS LEFT: their meaning is MEMORISED or INTRINSIC; ours is 
 contradicts the token's lexical sense.
 "Not stated in the abstract" is NOT "absent from the paper" -- neither full text was read.
 ```
+
+---
+
+# S-237 — ⚠ **the PHENOMENON axis is occupied too.** A paper studies in-context redefinition overriding a lexical prior — causally, 200 held-out splits per model, 11 models — **and stops at positions/layers, not heads.** Two of my earlier framings are WITHDRAWN; one finding supports us
+
+## The neighbour
+
+`arXiv:2606.07555`, *Persistent Priors, Preserved Targets: A Stroop-Style Paradigm for Lexical Override*,
+**Han-yu Wang (HKU), v5, 8 August 2026.** Abstract fetched verbatim.
+
+```
+phenomenon   an in-context definition overriding a word's PRETRAINED lexical prior   <- OUR AXIS
+setting      BENIGN Stroop-style ("defines doctor as forest"), not jailbreak
+localisation TOKEN POSITIONS and LAYERS in the residual stream -- "no head-level analysis is reported"
+method       residual-stream activation patching from a neutral-control donor
+held-out     200 discovery/held-out splits PER MODEL + different-item donor controls
+models       11 behavioural, 5 for patching (Qwen2.5, Gemma-2, OLMo, Mistral). NOT Llama.
+```
+
+**⚠ Title discrepancy recorded, not smoothed:** the search listed this id as *"Priors Persist Through
+Suppression…"*; the fetched **v5** is *"Persistent Priors, Preserved Targets…"*. The fetched title is
+authoritative; a citation must pin the version.
+
+## Two of my own framings are withdrawn
+
+**1. WITHDRAWN — "their coverage is broader, our controls are stronger"** (Addenda F/G). Against this paper
+it is **false**: 200 held-out splits per model over 11 models with different-item donor controls **exceeds**
+one model with 23 held-out domains. I had generalised from two abstracts that happened not to mention
+splits.
+
+**2. WITHDRAWN as a phenomenon claim — "no work addresses installed-denotation head carriage."** The
+**phenomenon** is addressed, causally and at scale. It survives **only** at the head level, because this
+paper localises to positions and layers and says so explicitly.
+
+## ✅ And one finding is worth more than the novelty it cost
+
+Their three causally-necessary positions are *"the defined word, the target word in the definition, and
+**the later query word**."* **Our knockout is scoped `target_surface_row_only` — the query-codeword row.**
+Independent work, different models, different paradigm, **converges on the query-word position being
+causally load-bearing for an in-context redefinition.** This sprint chose that site from `score_behavior`'s
+span resolution and §1.8's ladder, on entirely different grounds. **Convergent support for a design choice
+is a better outcome than an uncontested novelty claim.**
+
+## What D32's contribution reduces to (AM-28)
+
+1. **Head-level** causal localisation of a prompt-installed denotation, where the nearest same-phenomenon
+   work stops at positions/layers.
+2. A **jailbreak-relevant** instantiation rather than a benign Stroop analogue.
+3. The **dose-matched rank test with its attainable floor reported** — a specific control design, **not**
+   general rigour.
+
+**Not** the phenomenon, **not** the idea of sparse semantic heads, **not** methodological superiority.
+
+## §12 and the rate that will not fall
+
+**Three passes, three progressively closer neighbours** — the claim shape, then the phenomenon at
+position level, then the phenomenon with held-out validation at scale. **The rate has not declined, which
+is the opposite of evidence that the space is exhausted.** A novelty claim remains blocked, and the honest
+read is that **the sprint's defensible contribution is narrow and specific** rather than broad.
+
+## Commands
+
+```
+WebSearch "in-context word redefinition overrides lexical meaning mechanistic interpretability causal
+           attention head inference-time installed sense"
+WebFetch  https://arxiv.org/html/2606.07555      # abstract read verbatim, v5
+# LIT Addendum H: 874 -> 946 lines | AM-28: claim table 825 -> 833
+```
+
+```
+THE PHENOMENON AXIS IS OCCUPIED: arXiv:2606.07555 studies in-context redefinition overriding a lexical
+prior, causally, with 200 held-out splits PER MODEL across 11 models -- and localises to POSITIONS and
+LAYERS, with NO head-level analysis.
+WITHDRAWN: "our controls are stronger" (false against this paper) and "no work addresses installed-
+denotation head carriage" as a claim about the PHENOMENON. It survives only at the HEAD level.
+SUPPORTING: its three necessary positions include THE LATER QUERY WORD -- exactly our
+target_surface_row_only site, chosen on unrelated grounds. Convergent support beats a novelty claim.
+D32 REDUCES TO: head-level localisation where others stop at positions; a jailbreak instantiation; a
+dose-matched rank test with its floor. THREE PASSES, THREE CLOSER NEIGHBOURS -- the rate has not fallen.
+```
