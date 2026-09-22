@@ -17831,3 +17831,75 @@ error -- exactly what section 3.4 measures -- and reports 72-90% top-5 error on 
 on Llama-3.1-8B. We measured our own: 0.7817 / 0.7852.
 D32 UNAFFECTED (it rests on the intervention). NOVELTY STILL BLOCKED: A5-2 and A5-4 unrun.
 ```
+
+---
+
+# S-231 — **§A5-4 run (and empty), §A5-2 partially run — and it surfaced a lead that would change how `F` must be described: BACKUP-HEAD COMPENSATION.** Doublespeak is now an ACL 2026 paper; the nearest head-level neighbour is from this lab and asks a different question
+
+## The lead that matters, and it is unverified
+
+A domain-restricted search of lesswrong.com / alignmentforum.org surfaced **"Redundant Attention Heads in
+Large Language Models for In-Context …"**, whose summary reports that **ablating heads makes backup heads
+on later layers activate strongly**.
+
+**If backup heads compensate for our eight, then `E(HD_TOPK)` is a NET-OF-COMPENSATION quantity and
+`F = 0.8635` understates what those heads contribute in an uncompensated model.** Neither D32, AM-26 nor
+any entry in this sprint mentions compensation. **I have not fetched that post and cannot characterise it
+further — it is recorded as an unverified lead and may not be cited — but it bears directly on the
+headline statistic and has to be resolved before any novelty claim.**
+
+A second lead narrows our own wording: **"Antonym Heads Predict Semantic Opposites"** suggests non-copy
+*semantic* head function **is** studied, so §A5-3's *"whether a head carries an installed denotation that
+is not a copy is not addressed"* should be narrowed once verified — the untouched part is specifically an
+**in-context-installed** denotation, not semantic head function in general.
+
+## §A5-4 — run, and it returns nothing
+
+Two searches for work citing or following Doublespeak returned **only the paper itself**, across arXiv,
+OpenReview, ACL Anthology, ResearchGate, alphaXiv and emergentmind. §A5-1's *"the attack has one paper"*
+holds nine months on. **A5-4 is closed as run-and-empty**, which is a weaker statement than "nothing
+exists" and is recorded as such.
+
+## A verified status change
+
+`arXiv:2512.03771` (Doublespeak, Yona & Sarid) was recorded here as an **ICLR 2026 withdrawn submission**.
+It is now also **`aclanthology.org/2026.acl-long.768` — an ACL 2026 long paper.** Any bibliography must
+use the ACL version. Its mechanism is **layer-wise and correlational** (logit lens, Patchscopes); **no
+head-level causal claim** — which is the space PR-CSI-010 occupies.
+
+## ⚠ The nearest head-level neighbour is from this lab
+
+`arXiv:2506.12880`, *Universal Jailbreak Suffixes Are Strong Attention Hijackers* — **Ben-Tov, Geva,
+Sharif**. Abstract fetched: the mechanism is *"information flow from the adversarial suffix to the final
+chat template tokens"*, i.e. **GCG suffixes and attention redistribution**, with **no** small-head-set
+localisation and **no** head-level causal intervention stated.
+
+**It is adjacent, not the same question** — ours is a head carrying an installed denotation for a remapped
+word at the query row. And it is worth saying plainly: **it shares an author with the group this sprint
+runs in**, so it is certainly known here and **is not an independent check that nothing closer exists.**
+
+## §12 is still not discharged, and the reason is now specific
+
+Not *"the search is incomplete"* but: **there is a named, unverified mechanism — backup-head compensation
+— that would change how `F = 0.8635` must be described.** That must be resolved before any novelty claim.
+A5-2 remains open; one domain-restricted query is not a systematic sweep of two forums.
+
+## Commands
+
+```
+WebSearch "Doublespeak jailbreak semantic remapping codeword in-context LLM 2026"
+WebSearch "\"representation hijacking\" OR \"Doublespeak\" ... follow-up citing 2026"
+WebSearch "LessWrong Alignment Forum attention head in-context word meaning override semantic remapping ablation"
+          (allowed_domains lesswrong.com, alignmentforum.org)
+WebFetch  arxiv.org/abs/2506.12880     # abstract read; the PDF fetch returned an insufficient excerpt
+```
+
+```
+A5-4 RUN AND EMPTY: no work citing Doublespeak surfaced anywhere. A5-2 PARTIALLY run.
+THE FINDING THAT MATTERS IS UNVERIFIED AND BEARS ON THE HEADLINE: backup/redundant heads may COMPENSATE
+for ablated ones, which would make F = 0.8635 a NET-OF-COMPENSATION figure. Nothing in this sprint
+mentions compensation. Must be resolved before any novelty claim.
+Doublespeak is now an ACL 2026 long paper (was: ICLR withdrawn) -- bibliographies must update.
+The nearest head-level neighbour is Ben-Tov/Geva/SHARIF on GCG suffixes -- adjacent, different question,
+and from this lab, so NOT an independent check.
+```

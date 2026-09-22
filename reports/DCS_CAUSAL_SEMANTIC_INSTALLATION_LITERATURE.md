@@ -607,3 +607,85 @@ WebFetch  arxiv.org/html/2606.09899v1 -> read (C2)
 
 **§A5-2 (non-archival venues) and §A5-4 (citation-graph crawl) remain UNRUN.** A novelty claim is still
 blocked by §12.
+
+---
+
+# ADDENDUM D — 2026-09-22: **§A5-4 run, §A5-2 PARTIALLY run.** Doublespeak is now an **ACL 2026 long paper**; the nearest head-level neighbour is **from this lab and asks a different question**; and the non-archival space holds **two leads that bear on D32** and are not yet verified
+
+## D1. VERIFIED status change — the anchor paper is published
+
+`arXiv:2512.03771`, *In-Context Representation Hijacking* (Doublespeak), **Itay Yona (Mentaleap), Amir
+Sarid**. §1 and §A5-1 recorded it as an **ICLR 2026 withdrawn submission**. It now also appears as
+**`aclanthology.org/2026.acl-long.768`** — an **ACL 2026 long paper**. The attack still has one paper,
+but its citation status has changed and any bibliography must use the ACL version.
+
+Mechanism as the abstract states it: substituting a benign token for a harmful one across in-context
+examples makes the benign token's representation converge to the harmful one, analysed with **logit lens
+and Patchscopes**, *"progressively across the network's layers"*. **Layer-wise and correlational; no
+head-level causal claim** — which is the space PR-CSI-010 occupies.
+
+## D2. §A5-4, the forward-citation crawl — RUN, and it returns nothing
+
+Two searches for work citing or following up Doublespeak returned **only the paper itself** across
+arXiv, OpenReview, ACL Anthology, ResearchGate, alphaXiv and emergentmind. **No follow-up work
+surfaced.** §A5-1's *"the attack has one paper"* still holds nine months on.
+
+## D3. ⚠ The nearest head-level neighbour is from THIS LAB, and it asks a different question
+
+`arXiv:2506.12880`, *Universal Jailbreak Suffixes Are Strong Attention Hijackers*, **Matan Ben-Tov, Mor
+Geva, Mahmood Sharif** (v1 2025-06-15, v2 2025-12-21). **Abstract fetched and read.**
+
+> *"a shallow, critical mechanism drives GCG's effectiveness … the information flow from the adversarial
+> suffix to the final chat template tokens before generation … GCG irregularly and aggressively hijacks
+> the contextualization process."*
+
+**It is adjacent and it is not the same question.** It concerns **GCG suffix** attacks and **attention
+redistribution toward suffix tokens**; PR-CSI-010 concerns **heads carrying an installed denotation for a
+remapped word at the query row**. The abstract states **no** localisation to a small head set and **no**
+head-level causal intervention. **This is A5-3's prediction holding again: every head-level neighbour
+found studies redistribution, copying or task identification — not installed denotation.**
+
+**Recorded plainly: this work shares an author with the group this sprint runs in** (`Mahmood Sharif`).
+It is therefore certainly known here, and **it is not an independent check that nothing closer exists.**
+
+## D4. §A5-2, non-archival — PARTIALLY run, with TWO LEADS THAT BEAR ON D32
+
+A domain-restricted search of lesswrong.com and alignmentforum.org surfaced relevant work. **None of the
+following was fetched, so none may be cited** — they are recorded because two of them bear on D32's
+interpretation and **must be checked before any novelty claim**.
+
+1. ⚠ **"Redundant Attention Heads in Large Language Models for In-Context …"** (LessWrong). Search
+   summary reports that ablating heads causes **backup heads on later layers to activate strongly**.
+   **If backup heads compensate for our eight, then `E(HD_TOPK)` is a NET-OF-COMPENSATION figure and
+   `F = 0.8635` understates what those heads contribute in an uncompensated model.** D32 and AM-26 do
+   not mention compensation anywhere. **This is the most important unverified lead in this pass.**
+2. ⚠ **"Antonym Heads Predict Semantic Opposites in Language Models"** (LessWrong). Heads performing a
+   **semantic** operation rather than copying. **This softens §A5-3's scope**: non-copy *semantic* head
+   function is studied; what remains unaddressed is specifically an **in-context-installed denotation**.
+   A5-3's wording should be narrowed once this is verified.
+3. *"Fork Around and Find Out Part 2: One Head Does The Summing"* (LessWrong); *"Polysemantic Attention
+   Head in a 4-Layer Transformer"* (LessWrong); *"In-Context Learning: An Alignment Survey"* (LessWrong);
+   `arXiv:2509.21012` *"Mechanism of Task-oriented Information Removal in In-Context Learning"*
+   (implicit steering heads); `arXiv:2509.21534` *"A circuit for predicting hierarchical structure
+   in-context"*; `arXiv:2408.17322` *"Investigating Neuron Ablation in Attention Heads"*.
+
+**A5-2 is not closed.** One domain-restricted query is not a systematic sweep of two forums, and the
+backup-head lead alone could change how `F` is read.
+
+## D5. §12's rule — still NOT discharged
+
+A5-4 is run and empty. A5-2 is **partially** run and produced **a lead that bears directly on D32's
+headline statistic**. **No novelty claim is licensed**, and the reason is now sharper than "the search is
+incomplete": there is a **specific unverified mechanism (backup-head compensation) that would change how
+`F` must be described**, and it has to be resolved first.
+
+## D6. Searches run in this pass
+
+```
+WebSearch "Doublespeak jailbreak semantic remapping codeword in-context LLM 2026"
+WebSearch "\"representation hijacking\" OR \"Doublespeak\" jailbreak mechanistic attention head circuit follow-up citing 2026"
+WebSearch "LessWrong Alignment Forum attention head in-context word meaning override semantic remapping ablation"
+          (allowed_domains: lesswrong.com, alignmentforum.org)
+WebFetch  arxiv.org/pdf/2506.12880   -> insufficient (PDF excerpt)
+WebFetch  arxiv.org/abs/2506.12880   -> abstract read (D3)
+```
