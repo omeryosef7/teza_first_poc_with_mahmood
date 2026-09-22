@@ -82,7 +82,17 @@ def main():
         sys.exit("REFUSING: prereg says split %r, invoked with %r" % (pr["split"], a.split))
 
     hs = pr["head_sets"]
-    arms = ["HD_BASE", "HD_KO"] + sorted(hs)
+    # S-261, discharging S-260's rule. The base arms are NAMED BY THE PREREG, defaulting to
+    # PR-CSI-010's names (verified to bind by the byte-identity regression in S-261). Before this they
+    # were literals throughout this file. That was FAIL-CLOSED -- a family with other names would have
+    # missed at strict_run_dir and refused loudly, never silently -- but it is the same latent shape
+    # that made PR-CSI-013 VOID in S-260, and it left this reader inconsistent with the argv generator
+    # and the GATE 0 sweep, which both read `base_arms` now.
+    base_arm, ko_arm = list(pr.get("base_arms", ["HD_BASE", "HD_KO"]))
+    for b in (base_arm, ko_arm):
+        if b in hs:
+            sys.exit("REFUSING: base arm %r also appears in head_sets -- it carries no head list" % b)
+    arms = [base_arm, ko_arm] + sorted(hs)
     if len(arms) != pr["n_arms_per_split"]:
         sys.exit("REFUSING: resolved %d arms, prereg declares n_arms_per_split=%d"
                  % (len(arms), pr["n_arms_per_split"]))
@@ -141,12 +151,12 @@ def main():
     g0, ident = {}, {}
     for arm in arms:
         L = live[arm]
-        k = 0 if arm == "HD_BASE" else (32 if arm == "HD_KO" else len(hs[arm]))
-        want_dose = 0 if arm == "HD_BASE" else (DOSE_UNIT if arm == "HD_KO" else DOSE_UNIT * k)
-        got = recorded_heads(dirs[arm]) if arm != "HD_BASE" else None
-        if arm == "HD_BASE":
+        k = 0 if arm == base_arm else (32 if arm == ko_arm else len(hs[arm]))
+        want_dose = 0 if arm == base_arm else (DOSE_UNIT if arm == ko_arm else DOSE_UNIT * k)
+        got = recorded_heads(dirs[arm]) if arm != base_arm else None
+        if arm == base_arm:
             ok_id, why = (got in (None, "ALL", []) or True), "not intervened"
-        elif arm == "HD_KO":
+        elif arm == ko_arm:
             ok_id = (got == "ALL")
             why = "omitted flag == all 32" if ok_id else "expected ALL, recorded %r" % (got,)
         elif got is None:
@@ -158,7 +168,7 @@ def main():
         else:
             ok_id = (list(got) == list(hs[arm]))
             why = "matches prereg" if ok_id else "recorded %s != prereg %s" % (got, hs[arm])
-        ident[arm] = {"k": k, "recorded": got, "expected": (None if arm in ("HD_BASE", "HD_KO")
+        ident[arm] = {"k": k, "recorded": got, "expected": (None if arm in (base_arm, ko_arm)
                                                             else list(hs[arm])),
                       "ok": bool(ok_id), "why": why}
         g0[arm] = {"n_rows": L["n_rows"], "violations": L["violations"],
@@ -187,9 +197,9 @@ def main():
     lo_q, hi_q = (1 - a.ci) / 2.0, 1 - (1 - a.ci) / 2.0
     E, CI = {}, {}
     for arm in arms:
-        if arm == "HD_BASE":
+        if arm == base_arm:
             continue
-        d = [per[arm][x] - per["HD_BASE"][x] for x in doms]
+        d = [per[arm][x] - per[base_arm][x] for x in doms]
         E[arm] = statistics.fmean(d)
         bs = w4.boot_mean(d, a.B, rng)
         CI[arm] = [w4.pct(bs, lo_q), w4.pct(bs, hi_q)]
@@ -206,8 +216,11 @@ def main():
     for k in sorted(loos, key=lambda x: -marg[x]):
         print("   %-11s E = %+.6f  ci95 [%+.6f, %+.6f]   marginal %+.6f"
               % (k, E[k], CI[k][0], CI[k][1], marg[k]))
-    print("\n[census] anchors:  HD_KO %+.6f   HD_TOPK %+.6f   HD_BOTK %+.6f"
-          % (E["HD_KO"], E["HD_TOPK"], E["HD_BOTK"]))
+    # S-261: print only the anchors this family actually has. Bare E["HD_TOPK"] would KeyError on a
+    # census whose prereg declares no K-head comparators -- after everything was computed and before
+    # anything was written, which is fail-closed but needlessly destructive of a completed run.
+    _anch = [(k, E[k]) for k in (ko_arm, "HD_TOPK", "HD_BOTK") if k in E]
+    print("\n[census] anchors:  " + "   ".join("%s %+.6f" % (k, v) for k, v in _anch))
 
     out = {
         "schema": "dcs_csi_head_census/1",
