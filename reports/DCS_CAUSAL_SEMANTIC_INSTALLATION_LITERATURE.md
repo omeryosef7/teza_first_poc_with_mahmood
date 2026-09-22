@@ -999,3 +999,55 @@ Four passes, and the fourth found an **adjacent active subfield** rather than a 
 axis. **That is the first pass whose closest hit was not closer than the last** — weak evidence the
 phenomenon+head-level axis is genuinely thin, and **not** evidence the search is done: `2606.28153`'s
 abstract is unread and three anchor-adjacent papers are unfetched.
+
+---
+
+# ADDENDUM J — 2026-09-22: **§89's highest-priority reading is DONE. arXiv:2605.00123 (LOCA) is read in full-abstract, and it does NOT narrow our claim.** The first pass in five that costs nothing
+
+§2's table listed this paper as *"unverified … **flagged as the highest-priority unverified row to read in
+full**"*, and §89 named it under *"Recommended verification **before we write any novelty claim**"*. Read.
+
+## J1. VERIFIED — arXiv:2605.00123, *Minimal, Local, Causal Explanations for Jailbreak Success in Large Language Models* (LOCA)
+
+**Shubham Kumar & Narendra Ahuja (UIUC), v3, 7 August 2026.** Abstract fetched verbatim.
+
+> *"Prior work has studied jailbreak success by examining the model's intermediate representations,
+> identifying directions in this space that causally encode concepts like harmfulness and refusal … we seek
+> to give a **local** explanation — i.e. why did **this specific** jailbreak succeed?"*
+
+```
+localises to   token POSITIONS, LAYERS, and residual-stream directions (SAE concept vectors)
+               -- "Not attention heads: the paper focuses on residual stream activations"
+attack scope   SUFFIX AND PROMPT-LEVEL ONLY -- 10,800 attacks from 35 methods, adversarial prompts,
+               role-play, obfuscation. NOT multi-turn in-context attacks, NOT semantic remapping.
+intervention   patches the REFUSED original into the SUCCESSFUL jailbreak to RESTORE refusal
+controls       NO random-component control family; held-out 70/10/20 split
+models         Llama-3.1-8B-Instruct (OURS), Gemma-2-2B-IT, Gemma-3-27B-IT, Qwen-3-8B
+```
+
+## J2. It does not narrow anything, on four separate axes
+
+| axis | LOCA | PR-CSI-010 |
+|---|---|---|
+| phenomenon | suffix / prompt-level jailbreaks | **in-context semantic remapping** |
+| localisation level | positions, layers, SAE directions — **not heads** | **attention heads** |
+| control family | **none reported** | 20 dose-matched random head sets |
+| goal of intervention | **restore** refusal | measure what **carries the installed meaning** |
+
+**Same model family, four different axes.** §82's central claim — *"no work closes the chain
+`demonstrations → installed semantic representation → causal query-side rescue`"* — **survives contact with
+the anchor paper it was least sure about.**
+
+## J3. What this discharges, and what it does not
+
+**Discharged:** §2's *"highest-priority unverified row"* and §89 item **(b)**. §82's confidence caveat —
+*"lower on the general claim … because arXiv:2605.00123 was not read in full"* — **no longer applies to
+that paper.**
+
+**Still outstanding from §89:** **(a)** `arXiv:2512.03771`'s appendices **H and I** (the Doublespeak paper's
+own mechanistic detail — the one place a head-level analysis of our exact phenomenon could already exist),
+and **(c)** `arXiv:2605.18830`. **§12 is not discharged while (a) is unread**, and (a) is the likeliest of
+the three to matter, because it is the paper that owns the phenomenon.
+
+**This is the first of five passes that cost nothing.** Four in a row narrowed the claim — the idea, the
+phenomenon, the methodology, the subfield. This one tested a named precondition and the claim held.

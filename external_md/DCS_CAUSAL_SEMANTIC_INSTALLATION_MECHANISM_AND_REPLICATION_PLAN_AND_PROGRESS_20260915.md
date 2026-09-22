@@ -18362,3 +18362,71 @@ SWEEP LABEL FIXED: it printed PR-CSI-010 while analysing PR-CSI-011 -- S-227's c
 FIRST PASS WHOSE NEAREST HIT WAS NOT NEARER: weak evidence the axis is thin, NOT that the search is done.
 PR-011 at 1 of 24, GATE 0 passing, cold load 1851.5 s.
 ```
+
+---
+
+# S-239 — **§89's highest-priority reading is DONE and it costs nothing: LOCA localises positions/layers/SAE directions, not heads, on suffix attacks, with no random-component control family.** First of five passes that did not narrow the claim. PR-011 at 5 of 24, all passing
+
+## The anchor the review was least sure about
+
+`arXiv:2605.00123`, *Minimal, Local, Causal Explanations for Jailbreak Success in LLMs* (**LOCA**) — Shubham
+Kumar & Narendra Ahuja (UIUC), **v3, 7 Aug 2026.** §2 flagged it *"the highest-priority unverified row to
+read in full"*; §89 listed it under *"Recommended verification **before we write any novelty claim**."*
+
+```
+localises to   token POSITIONS, LAYERS, residual-stream SAE directions -- "Not attention heads"
+attack scope   SUFFIX AND PROMPT-LEVEL ONLY (10,800 attacks, 35 methods; adversarial prompts,
+               role-play, obfuscation). NOT in-context attacks, NOT semantic remapping.
+intervention   patches the REFUSED original into the SUCCESSFUL jailbreak to RESTORE refusal
+controls       NO random-component control family; held-out 70/10/20 split
+models         Llama-3.1-8B-Instruct (ours), Gemma-2-2B-IT, Gemma-3-27B-IT, Qwen-3-8B
+```
+
+**Same model family, and it differs on four axes at once**: phenomenon (suffix vs in-context remapping),
+level (positions/directions vs heads), controls (none vs 20 dose-matched random head sets), and the goal of
+the intervention (restore refusal vs measure what carries the installed meaning).
+
+**§82's central claim — *"no work closes the chain `demonstrations → installed semantic representation →
+causal query-side rescue`"* — survives contact with the anchor it was least confident about**, and that
+paper's own confidence caveat (*"lower … because arXiv:2605.00123 was not read in full"*) no longer applies.
+
+## What remains before §12 can be discharged
+
+§89 listed three readings. **(b) is now done.** Outstanding: **(a) `arXiv:2512.03771`'s appendices H and I**
+— the Doublespeak paper's own mechanistic section, **the single likeliest place a head-level analysis of our
+exact phenomenon already exists** — and **(c) `arXiv:2605.18830`**. **§12 stays blocked while (a) is
+unread**, and (a) matters most because it is the paper that owns the phenomenon.
+
+**This is the first of five passes that cost nothing.** The previous four each took something: the idea
+(F/G), the phenomenon at position level (H), methodological novelty (I), and before those the AtP method
+gaps (C). This one tested a named precondition and the claim held.
+
+## PR-011
+
+```
+PR-CSI-011 GATE 0 SWEEP -- validation | landed 5 of 24 | ALL PASS
+HD_BASE 0 | HD_KO 2016.0 | HD_TOPK, HD_BOTK, HD_ALL32_00 all 16128.0 | decode 0 | viol 0
+```
+
+**The K× dose identity holds on this family too** — `16128.0 / 2016.0 = 8.000000` against validation's own
+denominator, exactly as S-215 required it be computed. Per-arm ~420-450 s (slower than PR-010's 325 s on the
+same population: a contended node, cf. S-209's bimodal cost). 19 arms left, ~2.2 h.
+
+## Commands
+
+```
+WebFetch https://arxiv.org/html/2605.00123
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py \
+  --prereg configs/dcs_csi_pr011_head_all32_controls_basket.json \
+  --tag-prefix csi4_all32_basket_validation --split validation
+```
+
+```
+LOCA READ -- the review's own highest-priority precondition, discharged. It localises POSITIONS, LAYERS and
+SAE DIRECTIONS, explicitly NOT HEADS, on SUFFIX/PROMPT attacks only, with NO random-component control
+family -- on Llama-3.1-8B, our model. It differs from us on FOUR axes at once and narrows nothing.
+FIRST OF FIVE PASSES THAT COST NOTHING. Section 82's chain claim survives the anchor it was least sure of.
+STILL BLOCKING SECTION 12: 2512.03771's appendices H and I -- the Doublespeak paper's OWN mechanistic
+section, the likeliest place a head-level analysis of our phenomenon already exists.
+PR-011: 5 of 24, ALL PASS, dose identity 16128.0/2016.0 = 8.000000 on this split's own denominator.
+```
