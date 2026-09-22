@@ -18288,3 +18288,77 @@ target_surface_row_only site, chosen on unrelated grounds. Convergent support be
 D32 REDUCES TO: head-level localisation where others stop at positions; a jailbreak instantiation; a
 dose-matched rank test with its floor. THREE PASSES, THREE CLOSER NEIGHBOURS -- the rate has not fallen.
 ```
+
+---
+
+# S-238 — the jailbreak head-localisation subfield is **active, and our pipeline shape is STANDARD PRACTICE there.** The surviving distinction sharpens to one sentence: **safety/refusal heads are not meaning-installation heads.** PR-011 at 1 of 24; sweep label fixed
+
+## PR-011 and a label that would have misfiled it
+
+```
+918169 RUNNING 38:26 | MODEL LOAD 1851.5 s (cold) | 1/24 HD_BASE ok 2192.6 s hooks_after=0
+GATE 0: HD_BASE 230 rows / 23 domains / prefill 0 / decode 0 / viol 0  PASS
+```
+
+**The sweep printed `PR-CSI-010 GATE 0 SWEEP` while analysing PR-CSI-011.** Hard-coded family label — the
+S-227 arm-identity confusion reappearing **in the output rather than the data**, and it would have let a
+PR-011 sweep be filed as PR-010's. Now it prints the prereg's own `id`; verified on both:
+
+```
+PR-CSI-010 GATE 0 SWEEP -- validation | landed 24 of 24 arms
+PR-CSI-011 GATE 0 SWEEP -- validation | landed  1 of 24 arms
+```
+
+## ⛔ Our pipeline's shape is standard practice in this subfield
+
+The search surfaced, as established practice in jailbreak head-localisation work: *"ablation-based methods
+explicitly quantify the degradation … induced by head ablation"*; *"proxy screens for head discovery … with
+head-output norm delta producing the strongest **held-out effect** among proxy screens"*; and *"causal
+validation of head roles uses ablation experiments … **with random heads as controls**."*
+
+**Screen, validate causally, compare against random head sets — that is our pipeline, and it is the
+convention.** This closes any residual claim that the screen→gate→dose-matched-control design is
+methodologically novel, and it corroborates AtP∗ Gap 1/Gap 2 from a second direction. *(Search-only; no
+paper fetched for these statements and none may be cited.)*
+
+## The surviving distinction, now one sentence
+
+Surfaced: `2606.28153` (*Robust Harmful Features … Attention Head Specialization*, **partially fetched** —
+title/authors/date and a Llama-3-70B section read, **abstract NOT extractable**, head-function attribution
+provisional), plus `2603.05772` *Depth Charge*, `2605.00236` *Attention Is Where You Attack*, and
+`2605.00123` — **already one of A5-4's anchors.** All unfetched or partial; none citable as characterised.
+
+**They localise the SAFETY/REFUSAL machinery** — which heads enforce refusal, which carry harmful-feature
+representations, which an attack must defeat. **Doublespeak never triggers refusal, because the word's
+MEANING is changed.** So:
+
+> **The jailbreak head literature asks which heads enforce or fail to enforce refusal. PR-CSI-010 asks
+> which heads carry the installed denotation that makes refusal inapplicable. Those are different objects.**
+
+**That is what remains of the contribution, and it is smaller than anything this sprint claimed before.**
+
+## §12, and the first pass that did not get closer
+
+Four passes: the claim shape (F), the phenomenon at position level (H), then an **adjacent active subfield**
+rather than a closer neighbour on our axis. **This is the first pass whose nearest hit was not nearer than
+the last** — weak evidence the phenomenon-plus-head-level axis is genuinely thin. **Not** evidence the
+search is finished: `2606.28153`'s abstract is unread and three anchor-adjacent papers are unfetched.
+
+## Commands
+
+```
+WebSearch "head-level causal localization prompt-installed word meaning jailbreak codeword attention
+           heads ablation held-out controls"
+WebFetch  https://arxiv.org/pdf/2606.28153        # PARTIAL -- structure read, abstract not extractable
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py --prereg <each prereg> --tag-prefix <each> --split validation
+```
+
+```
+OUR PIPELINE SHAPE -- screen, causal validation, random-head controls -- IS STANDARD PRACTICE in jailbreak
+head localisation. No methodological novelty remains; corroborates AtP* Gap 1/Gap 2 independently.
+SURVIVING DISTINCTION, ONE SENTENCE: that literature localises the heads that ENFORCE REFUSAL; we localise
+the heads that carry the INSTALLED DENOTATION which makes refusal inapplicable. Different objects.
+SWEEP LABEL FIXED: it printed PR-CSI-010 while analysing PR-CSI-011 -- S-227's confusion in the OUTPUT.
+FIRST PASS WHOSE NEAREST HIT WAS NOT NEARER: weak evidence the axis is thin, NOT that the search is done.
+PR-011 at 1 of 24, GATE 0 passing, cold load 1851.5 s.
+```

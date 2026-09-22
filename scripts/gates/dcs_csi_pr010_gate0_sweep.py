@@ -94,7 +94,12 @@ def main():
         if cands:
             landed[arm] = arm_liveness(cands[0])
 
-    print("PR-CSI-010 GATE 0 SWEEP -- %s | landed %d of %d arms" % (a.split, len(landed), len(arms)))
+    # The header names the prereg it was GIVEN, not a hard-coded family. The old form printed
+    # "PR-CSI-010" while analysing PR-CSI-011 -- a label that would let a PR-011 sweep be filed as
+    # PR-010's, which is the S-227 arm-identity confusion reappearing in the output rather than the
+    # data.
+    print("%s GATE 0 SWEEP -- %s | landed %d of %d arms"
+          % (pr.get("id", "UNKNOWN-PREREG"), a.split, len(landed), len(arms)))
     print("%-11s %6s %5s %14s %12s %7s %5s  %s" %
           ("arm", "rows", "dom", "total_prefill", "median_pre", "decode", "viol", "verdict"))
     mk = landed.get("HD_KO", {}).get("median_prefill")

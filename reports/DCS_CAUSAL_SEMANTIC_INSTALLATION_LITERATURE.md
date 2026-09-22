@@ -944,3 +944,58 @@ Stated plainly, and it is narrower than anything written so far:
 
 **§12 remains undischarged**, and the reason is now the opposite of comfortable: **three passes have each
 found a closer neighbour than the last.** The rate has not fallen.
+
+---
+
+# ADDENDUM I — 2026-09-22: **the jailbreak + head-level space is ACTIVE, and our screen→validate→random-head-controls pipeline is STANDARD PRACTICE there.** The surviving distinction sharpens: **safety/refusal heads are not meaning-installation heads**
+
+## I1. PARTIALLY VERIFIED — arXiv:2606.28153, *Robust Harmful Features Under Jailbreak Attacks: Mechanistic Evidence from Attention Head Specialization in Large Language Models*
+
+Yanchen Yin, Dongqi Han, Linghui Li. v2, **~30 June 2026**. **⚠ PARTIAL: the PDF returned structure and
+images; the abstract was NOT extractable.** Title, authors, date and a **Llama-3-70B** scaling section were
+read; **the head-function attribution below is inferred from document structure and citations, not from a
+verbatim abstract, and must be re-checked before citation.**
+
+Provisional reading: the localised heads carry **safety/refusal enforcement** and **harmful-feature
+representations that persist under attack** — *not* a word's in-context installed meaning.
+
+## I2. VERIFIED BY SEARCH ONLY — the practice in this space matches ours
+
+The search summary describes, as established practice in this literature:
+
+* *"ablation-based methods explicitly quantify the degradation in safety performance induced by head
+  ablation"* — screen-then-ablate;
+* *"proxy screens for head discovery … with head-output norm delta producing the strongest **held-out
+  effect** among proxy screens"* — screens compared by **held-out** effect;
+* *"causal validation of head roles uses ablation experiments … **with random heads as controls**"* —
+  **random-head control families.**
+
+**That is our pipeline's shape: screen, validate causally, compare against random head sets.** It is
+**standard practice** in jailbreak head-localisation work. **This closes off any residual claim that the
+screen→gate→dose-matched-control design is methodologically novel** — it corroborates AtP∗ Gap 1/Gap 2
+(LIT §C) from a second direction. *(Search-only: no paper was fetched for these specific statements and
+they may not be cited.)*
+
+## I3. ⛔ Where the surviving distinction now sits, and it is sharper than before
+
+Also surfaced: `arXiv:2603.05772` *Depth Charge: Jailbreak LLMs from Deep Safety Attention Heads*,
+`arXiv:2605.00236` *Attention Is Where You Attack*, and `arXiv:2605.00123` *Minimal, Local, Causal
+Explanations for Jailbreak Success* — **the last is already one of A5-4's three anchor papers.** All
+unfetched; none may be cited.
+
+**Every one of these localises the SAFETY/REFUSAL machinery** — which heads enforce refusal, which heads
+carry harmful-feature representations, which heads an attack must defeat. **Doublespeak's mechanism is that
+refusal is never triggered, because the word's MEANING is changed.** So *"safety heads"* and
+*"meaning-installation heads"* are **different objects**, and localising one says nothing about the other.
+
+**The distinction is now narrow, specific and defensible in one sentence:** the jailbreak head literature
+asks *which heads enforce or fail to enforce refusal*; PR-CSI-010 asks *which heads carry the installed
+denotation that makes refusal inapplicable*. **That is what remains, and it is smaller than anything this
+sprint has claimed before.**
+
+## I4. §12
+
+Four passes, and the fourth found an **adjacent active subfield** rather than a closer neighbour on our
+axis. **That is the first pass whose closest hit was not closer than the last** — weak evidence the
+phenomenon+head-level axis is genuinely thin, and **not** evidence the search is done: `2606.28153`'s
+abstract is unread and three anchor-adjacent papers are unfetched.
