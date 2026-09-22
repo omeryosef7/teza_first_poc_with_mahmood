@@ -19555,3 +19555,112 @@ PR-013's rule is new. No GPU work was submitted. `score_behavior.py` was not ope
 **PR-013's preregistration is deliberately NOT written yet** — it cannot be, because `h*` is undetermined
 until the census lands, and writing it with a placeholder head is how an amendment-after-the-fact starts.
 **The rule is the part that had to precede the data, and it does.**
+
+---
+
+## S-249 — ⚠ **CORRECTION to S-147's rule, measured: FREE MEMORY IS NOT THE VARIABLE.** n-303 had the lowest free memory of any node this sprint and produced **the fastest arms**. And the census now has a GATE 0 sweep whose endpoint-blindness guard **scans the code it imports**, because a guard that stops at the module boundary has a hole exactly where the borrowed code is
+
+### 1. The measurement I committed to last tick
+
+```
+918631 RUNNING 52:22 on n-303 | landed 6 of 44
+
+HD_BASE  1479.1 s   HD_KO 228.9 s   HD_TOPK 348.1 s   HD_BOTK 348.8 s
+LOO_02    333.2 s   LOO_06 333.5 s                    all rows=230
+steady state: 318.5 s/arm over 5 arms
+```
+
+```
+                                                s/arm      HD_BASE
+PR-011  n-301, FreeMem HIGH, SHARED node       418-491     2122.0 s
+PR-012  n-303, FreeMem 13.1 GB, SOLE job        318.5      1479.1 s
+```
+
+**PR-012 is 24–35 % FASTER per arm and its model load is 30 % faster — on the node with the lowest free
+memory recorded in this sprint.**
+
+### 2. ⚠ **CORRECTION to S-147.** The rule it wrote is refuted by its own logic
+
+S-147 concluded: *"the rule R9 should have written is not 'do not co-locate your own jobs' but **CHECK THE
+NODE'S FREE MEMORY BEFORE TRUSTING A PER-ARM ESTIMATE**."*
+
+**Last tick I applied that rule and it gave the wrong answer.** I flagged `FreeMem=13141 MB` as
+unfavourable — "far below the 128 GB that accompanied a 6.2× slowdown" — and the arms then came in
+**faster than any previous family's.**
+
+**Why the rule was wrong: S-147's two candidate variables were CONFOUNDED in its own data.**
+
+```
+S-147   n-305   8 jobs resident   FreeMem  128 G   1469 s/arm
+S-147   n-301   1 job             FreeMem 1322 G    238 s/arm
+S-249   n-303   1 job             FreeMem  13.1 G   318 s/arm   <- BREAKS THE CONFOUND
+```
+
+Free memory and concurrent-job count moved together in S-147, so either could have carried the effect.
+**n-303 separates them: lowest free memory, one job, fast.** The variable is **the number of concurrent
+big-model processes on the node**, not free memory — which is consistent with S-147's own *mechanism*
+(page-cache pressure from **many processes mmap-ing large models at once**) while contradicting the
+*rule* it wrote. S-147 named the right cause and then wrote down the wrong proxy for it.
+
+**Replacement rule:** *count the big-model jobs on the node (`squeue -w <node>`); free memory is a
+symptom of that count, not an independent predictor, and a low reading on an otherwise-empty node is
+reclaimable page cache.*
+
+**And the honest note about last tick:** S-248 recorded the free-memory reading as *"a reading, not a
+measurement"* and explicitly declined to project from it. **That caution is the only reason this is a
+correction to a rule rather than a wrong projection on the record.**
+
+**Projection, now that a rate exists:** 38 arms × 319 s ≈ **3.36 h** → finish ≈ **20:56** against a wall
+of 04:41. **Margin ≈ 7.7 h.**
+
+### 3. The census GATE 0 sweep — and a guard extended where it had a hole
+
+The census reader refuses until all 44 arms exist (a census of 6 heads is not a census), so a liveness or
+**identity** defect would have surfaced only after ~4 GPU-hours. New:
+`scripts/gates/dcs_csi_pr012_gate0_sweep.py`.
+
+```
+PR-CSI-012 GATE 0 SWEEP -- validation | 44 arms declared
+arm            rows     median_pre         want  decode  viol  identity          verdict
+HD_BASE         230            0.0            0       0     0  not intervened    PASS
+HD_KO           230         2016.0         2016       0     0  ALL 32            PASS  <- dose NOT identity-diagnostic (S-246)
+HD_BOTK         230        16128.0        16128       0     0  matches prereg    PASS
+HD_TOPK         230        16128.0        16128       0     0  matches prereg    PASS
+LOO_02          230        14112.0        14112       0     0  matches prereg    PASS
+LOO_06          230        14112.0        14112       0     0  matches prereg    PASS
+GATE 0: every landed arm passes (6 of 44). Identity verified from each arm's own knockout_heads.
+No endpoint field was read.
+```
+
+**`LOO_*` records 14112 = 7 × 2016 exactly**, confirming S-246's arithmetic on real arms. It **reuses the
+census reader's `recorded_heads`** rather than re-deriving it, so there is one definition of *"which heads
+did this arm actually knock out."*
+
+**⛔ The guard extension, and why it is not decoration.** pr010's `assert_reads_no_endpoint` re-reads its
+**own** source — sound for a self-contained file, but **it says nothing about code the module imports and
+calls.** This sweep calls three borrowed functions (`recorded_heads`, `liveness`, `strict_run_dir`), so
+the guard now scans **`inspect.getsource` of each of them too**, and refuses if a source cannot be
+obtained rather than assuming it is clean. **A guard that stops at the module boundary has a hole exactly
+where the borrowed code is.**
+
+**The guard was then tested rather than trusted** — R20's rule that *any check whose PASS is consistent
+with reading nothing is not a check*:
+
+```
+(i)   fires on  r.get("semantic_logodds")   -> ['fake:1: x = r.get("semantic_logodds")']
+(ii)  fires on  row["logp_concept"]         -> ['fake:1: y = row["logp_concept"]']
+(iii) SILENT on a comment merely naming the field  (naming is not reading)
+(iv)  liveness' source obtained, 1097 chars, contains no endpoint field
+(v)   scanned callables: recorded_heads, liveness, strict_run_dir
+```
+
+### 4. State
+
+```
+918631   RUNNING, 6 of 44, GATE 0 clean on every landed arm, ETA ~20:56, margin ~7.7 h
+NOT DONE the frozen read (runargs/dcs_csi_pr012_read.txt) -- it needs 44 of 44 and is not begun
+frozen   runargs/dcs_csi_pr013_nomination_rule.txt UNTOUCHED since S-248
+```
+
+**No endpoint was read** — the sweep proves it about itself and about the code it calls.
+`score_behavior.py` was not opened.
