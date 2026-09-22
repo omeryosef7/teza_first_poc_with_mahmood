@@ -72,7 +72,8 @@ def all_arms(prereg):
     hs = prereg["head_sets"]
     arms = [("HD_BASE", None), ("HD_KO", None),
             ("HD_TOPK", hs["HD_TOPK"]), ("HD_BOTK", hs["HD_BOTK"])]
-    arms += [(k, hs[k]) for k in sorted(hs) if k.startswith("HD_RAND")]
+    cprefix = prereg.get("control_prefix", "HD_RAND")
+    arms += [(k, hs[k]) for k in sorted(hs) if k.startswith(cprefix)]
     return arms
 
 

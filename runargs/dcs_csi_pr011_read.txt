@@ -1,0 +1,70 @@
+# FROZEN READ for PR-CSI-011 (the ALL-32 control family for basket's head set).
+# Frozen 2026-09-22, BEFORE ANY ARM HAS RUN. Never re-freeze after seeing numbers.
+#
+# WHAT THIS EXPERIMENT ASKS, AND WHAT IT DOES NOT.
+#   PR-CSI-010 ranked HD_TOPK against 20 controls drawn from its 24-head COMPLEMENT, and R18/AM-26
+#   measured that this pool's expected sum S has the OPPOSITE SIGN to an all-32 draw (+150.6 vs
+#   -152.1). This family draws controls from ALL 32 HEADS, so a draw MAY contain candidate heads --
+#   mean 1.75 of them, and one draw holds FOUR. It therefore asks: is this 8-head set privileged
+#   among ARBITRARY 8-head sets?
+#   IT CANNOT REVISE D32. PR-CSI-010's verdict was adjudicated against its own frozen family and
+#   stands on that family's terms. THIS IS A SECOND EXPERIMENT WITH ITS OWN VERDICT.
+#
+# VALIDATION ONLY. TRAIN would re-contaminate a head set that was selected on TRAIN.
+#
+# Read in order. STOP AT THE FIRST FAILURE.
+#   GATE 0  liveness on every arm: scope_violations {}, frac_rows_scope_live 1.0,
+#           total_prefill_edits > 0 (HD_BASE: == 0), total_decode_edits == 0, and the realised-dose
+#           identity K x THIS SPLIT'S OWN HD_KO median (S-215: the identity is RELATIVE; validation's
+#           absolute was 16128.0 against train's 16416.0)
+#   GATE 1  E(HD_KO) < 0 with ci95 UPPER bound < 0, else CANNOT ANSWER and the candidate is NOT reported
+#   GATE 2  attribution trustworthiness already PASSED (916044, 0.7817 / 0.7852 over 40 domains)
+# ------------------------------------------------------------------------------------------------
+
+# --- PRIMARY (W4). VALIDATION adjudicates; there is no TRAIN stage in this experiment.
+python scripts/dcs_csi_head_analyze.py \
+  --prereg configs/dcs_csi_pr011_head_all32_controls_basket.json \
+  --tag-prefix csi4_all32_basket_validation --split validation --expect-n 230 \
+  --require-slurm-job <VALIDATION_JOB_IDS> \
+  --out reports/DCS_CSI_PR011_ALL32_validation.json
+
+# --- the INDEPENDENT re-derivation, sharing no code with W4. --direction necessity is REQUIRED:
+# --- these arms REMOVE heads from a clean forward, so the reference is --base and stronger = MORE
+# --- NEGATIVE. The default is sufficiency and would read the rank upside down.
+python scripts/dcs_csi_rederive_subspace.py \
+  --tag-prefix csi4_all32_basket_validation --split validation --expect-n 230 \
+  --direction necessity \
+  --base HD_BASE --ko HD_KO --full HD_KO --candidate HD_TOPK \
+  --controls HD_ALL32_00,HD_ALL32_01,HD_ALL32_02,HD_ALL32_03,HD_ALL32_04,HD_ALL32_05,HD_ALL32_06,HD_ALL32_07,HD_ALL32_08,HD_ALL32_09,HD_ALL32_10,HD_ALL32_11,HD_ALL32_12,HD_ALL32_13,HD_ALL32_14,HD_ALL32_15,HD_ALL32_16,HD_ALL32_17,HD_ALL32_18,HD_ALL32_19 \
+  --require-slurm-job <VALIDATION_JOB_IDS> \
+  --out reports/DCS_CSI_PR011_ALL32_validation_REDERIVE.json
+
+# --- GATE 0 may be swept incrementally at any time; it refuses to read an endpoint field (S-202)
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py \
+  --prereg configs/dcs_csi_pr011_head_all32_controls_basket.json \
+  --tag-prefix csi4_all32_basket_validation --split validation
+
+# ------------------------------------------------------------------------------------------------
+# THE FLOOR IS REPORTED WITH THE p, ALWAYS. 20 controls -> floor 1/21 = 0.047619...
+#   rank 1 of 21 => p = the floor, the ONLY certifying outcome at alpha = 0.05
+#   rank 2 of 21 => 0.095238 => DOES NOT PASS, for any effect size
+#
+# THE CONTROL PREFIX IS HD_ALL32_ AND NOT HD_RAND. PR-CSI-010's controls are named HD_RAND00..19 and
+# mean DIFFERENT HEAD SETS; distinct prefixes make a cross-prereg mix-up impossible to express
+# (S-227). --control-prefixes/--controls must name HD_ALL32_, and HD_BOTK must NOT match.
+#
+# VERDICTS (design section 6's table, applied to THIS family):
+#   WE FOUND (part of) THE WRITER : rank 1 of 21 AND F >= 0.50 with ci95 on F excluding 0
+#   PARTIALLY LOCALISED           : rank 1 of 21 AND 0 < F < 0.50
+#   IT IS DISTRIBUTED             : GATE 1 passes AND HD_TOPK inside the HD_ALL32_ distribution
+#                                   (p > 0.05) AND the controls themselves show a clear effect
+#   CANNOT ANSWER                 : GATE 1 fails; or GATE 0 fails on any arm; or candidate and
+#                                   controls are separated by less than single-arm reproducibility
+#
+# HONEST EXPECTATION ON RECORD BEFORE THE DATA. This is a STRICTLY HARDER test than PR-CSI-010: the
+# mean control now carries 1.75 candidate heads and one carries four, so controls should show REAL
+# effects rather than the -0.004 of the complement family. By the screen's own S[h] the candidate
+# still separates (P(an all-32 draw is more negative) = 0.00000 over 20000 draws), BUT AtP's estimate
+# is not the intervention -- that is why section 3.4 exists. I expect rank 1 to SURVIVE and F to FALL,
+# because F's denominator is unchanged while the controls it is judged against get stronger. A
+# failure to rank 1 here would NOT retract D32; it would bound it to the complement comparison.

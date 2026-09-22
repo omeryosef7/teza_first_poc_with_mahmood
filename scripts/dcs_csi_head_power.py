@@ -81,7 +81,10 @@ def main():
     a = ap.parse_args()
 
     pr = json.load(open(a.prereg))
-    controls = sorted(k for k in pr["head_sets"] if k.startswith("HD_RAND"))
+    cprefix = pr.get("control_prefix", "HD_RAND")
+    controls = sorted(k for k in pr["head_sets"] if k.startswith(cprefix))
+    if not controls:
+        sys.exit("REFUSING: control_prefix %r matches no head set" % cprefix)
     arms = ["HD_BASE", "HD_KO", "HD_TOPK"] + controls
     jobs = a.require_slurm_job.split(",") if a.require_slurm_job else None
 

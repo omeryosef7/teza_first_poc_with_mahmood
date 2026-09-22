@@ -76,7 +76,16 @@ def build(screen_path, k, n_controls, seed_base, screen_blob, gate_path,
         pool = sorted(range(n_heads))                          # draws MAY contain candidate heads
     else:
         raise SystemExit("unknown pool_mode %r" % pool_mode)
-    controls = {"HD_RAND%02d" % i: draw(pool, k, seed_base + i) for i in range(n_controls)}
+    # THE CONTROL PREFIX IS PART OF THE PREREGISTRATION, NOT A CONSTANT IN THE TOOLS.
+    # PR-CSI-010 and PR-CSI-011 both draw 20 controls, and under the old naming both called
+    # them HD_RAND00..19 while meaning DIFFERENT HEAD SETS (PR-010 HD_RAND00 = [1,3,7,8,9,
+    # 14,15,30], PR-011 = [10,11,15,16,18,20,22,26]). A read that loaded the wrong prereg
+    # would then validate the wrong heads under the right names -- the S-104 duplicate-tag
+    # hazard moved up a level, from run dirs to arm identities. Distinct prefixes make the
+    # confusion impossible to express.
+    prefix = "HD_RAND" if pool_mode == "complement" else "HD_ALL32_"
+    controls = {("%s%02d" % (prefix, i)): draw(pool, k, seed_base + i)
+                for i in range(n_controls)}
     gate = json.load(open(gate_path))
     return {
         "id": pr_id,
@@ -117,6 +126,7 @@ def build(screen_path, k, n_controls, seed_base, screen_blob, gate_path,
             "fallback_used": not gate["TRUSTWORTHY"],
         },
         "head_sets": {"HD_TOPK": topk, "HD_BOTK": botk, "control_pool": pool, **controls},
+        "control_prefix": prefix,
         "control_pool_mode": pool_mode,
         "control_pool_note": ("complement = the 32-K non-candidate heads (PR-CSI-010); all = every "
                               "head, so a draw MAY contain candidate heads. R18/AM-26: the two pools' "
@@ -129,7 +139,7 @@ def build(screen_path, k, n_controls, seed_base, screen_blob, gate_path,
             "HD_KO": "--knockout-heads omitted = all 32; positive control AND ceiling (--ko-arm/--full-arm)",
             "HD_TOPK": "the candidate (--candidate-arm)",
             "HD_BOTK": "matched opposite end; the COMPARATOR (--comparator-arm), NOT in the control family",
-            "HD_RAND00..%02d" % (n_controls - 1): "the dose-matched control family (--control-prefixes HD_RAND)",
+            "%s00..%02d" % (prefix, n_controls - 1): "the dose-matched control family (--control-prefixes %s)" % prefix,
         },
         "n_arms_per_split": 4 + n_controls,
         # THE FLOOR IS STORED EXACTLY, NOT ROUNDED. round(1/21, 4) = 0.0476 is BELOW the true

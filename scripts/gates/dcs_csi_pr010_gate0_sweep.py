@@ -67,7 +67,10 @@ def main():
     K = pr["K"]
     want_rows = pr["population"]["%s_expect_n" % a.split]
     want_doms = pr["population"]["%s_domains" % a.split]
-    arms = ["HD_BASE", "HD_KO", "HD_TOPK", "HD_BOTK"] + sorted(k for k in hs if k.startswith("HD_RAND"))
+    cprefix = pr.get("control_prefix", "HD_RAND")
+    arms = ["HD_BASE", "HD_KO", "HD_TOPK", "HD_BOTK"] + sorted(k for k in hs if k.startswith(cprefix))
+    if len(arms) <= 4:
+        sys.exit("REFUSING: control_prefix %r matches no head set" % cprefix)
 
     landed, fails = {}, []
     for arm in arms:

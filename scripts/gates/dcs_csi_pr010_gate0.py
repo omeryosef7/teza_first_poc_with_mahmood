@@ -60,7 +60,10 @@ def main():
 
     print()
     print("[B] the 20 control draws are reproducible from the stated seed rule")
-    rands = {k: v for k, v in hs.items() if k.startswith("HD_RAND")}
+    cprefix = pr.get("control_prefix", "HD_RAND")
+    rands = {k: v for k, v in hs.items() if k.startswith(cprefix)}
+    if not rands:
+        sys.exit("REFUSING: control_prefix %r matches no head set" % cprefix)
     chk(len(rands) == pr["n_controls"], "control family has n_controls arms",
         "%d of %d" % (len(rands), pr["n_controls"]))
     bad = [k for i, k in enumerate(sorted(rands))

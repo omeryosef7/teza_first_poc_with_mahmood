@@ -17524,3 +17524,82 @@ committed file untouched. A decided preregistration must not move when its tool 
 GATE 0's pool check would have VOIDED every PR-011 arm if left hard-coded; it now reads the declared mode.
 IT CANNOT REVISE D32 -- a second family is a second experiment, not a re-read of the first.
 ```
+
+---
+
+# S-227 — **the two preregistrations called different head sets by the same names.** `HD_RAND00` meant one thing in PR-CSI-010 and another in PR-CSI-011, and **four tools hard-coded that prefix**. Fixed, PR-011 re-frozen, its read frozen, still nothing launched
+
+Building PR-011's launcher surfaced this before any arm ran, which is the only cheap time to find it.
+
+## The hazard
+
+```
+PR-010 HD_RAND00 = [1, 3, 7, 8, 9, 14, 15, 30]
+PR-011 HD_RAND00 = [10, 11, 15, 16, 18, 20, 22, 26]     SAME NAME, DIFFERENT HEADS
+```
+
+S-225 specified the names `HD_ALL32_00..19`; the freezer emitted `HD_RAND00..19` because the prefix was
+a **constant in the tool** rather than a field in the preregistration. **A read that loaded the wrong
+prereg would then validate the wrong head sets under the right names** — the S-104 duplicate-tag hazard
+moved up a level, from run directories to arm identities, where no `--require-slurm-job` can catch it.
+
+**And four consumers hard-coded `startswith("HD_RAND")`**: W4, gate 0, the argv generator and the GATE 0
+sweep, plus the power script. Had PR-011 simply been renamed, every one of them would have found **zero
+controls** — the same failure shape S-215 caught when a dose check nearly got pinned to train's absolute
+value.
+
+## The fix, and it is the same lesson twice
+
+`control_prefix` is now **declared in the preregistration** and read by every consumer. PR-CSI-010
+predates the field, so absence defaults to `HD_RAND` — **and the default is verified to bind, never
+assumed**: each consumer refuses if the prefix matches no head set (S-168's rule applied to a default
+rather than to a missing datum).
+
+## Verified, in both directions
+
+```
+PR-010 through the changed freezer : new keys control_pool_mode/control_pool_note/control_prefix,
+                                     EXISTING keys changed: NONE, control names still HD_RAND00..
+PR-011 re-frozen                   : control_prefix HD_ALL32_ | HD_ALL32_00..19 | HD_RAND* remaining: NONE
+GATE 0            : PASSED on PR-010 (regression) and PASSED on PR-011
+argv --check      : 24 arms on both, every flag declared by score_behavior.py
+W4 self-test      : 11/11, cleanup residue 0
+GATE 0 sweep      : still passes on PR-010's 24 real validation arms
+power analysis    : MDE -0.034, 15.0% of ceiling, power 1.0000 -- S-220's numbers reproduce exactly
+```
+
+**Re-freezing PR-011 is legitimate because no arm has run and no number has been seen.** Doing it after
+would have been the forbidden thing; this is why the launcher gets built before the launch.
+
+## PR-011's read is frozen
+
+`runargs/dcs_csi_pr011_read.txt`, 70 lines, every flag AST-verified against its script. It carries the
+gate order, the relative K× dose identity (S-215), the floor `1/21` with the p, the four verdicts, and
+**the explicit statement that this cannot revise D32** — a second family is a second experiment.
+
+**Honest expectation, on record before the data:** this is a **strictly harder** test — the mean control
+now carries **1.75** candidate heads and one carries **four**, so controls should show real effects
+rather than the complement family's `−0.004`. By the screen's own `S[h]` the candidate still separates
+(`P(an all-32 draw is more negative) = 0.00000` over 20 000 draws), **but AtP's estimate is not the
+intervention.** I expect **rank 1 to survive and `F` to fall**, because `F`'s denominator is unchanged
+while the controls it is judged against get stronger. **A failure to rank 1 would not retract D32; it
+would bound it to the complement comparison.**
+
+## Commands
+
+```
+python scripts/gates/dcs_csi_pr010_freeze.py ... --pool-mode all --pr-id PR-CSI-011 --seed-base 20261001 \
+  --out configs/dcs_csi_pr011_head_all32_controls_basket.json
+python scripts/gates/dcs_csi_pr010_gate0.py --prereg configs/dcs_csi_pr011_... ; and the same on PR-010
+python scripts/gates/dcs_csi_pr010_argv.py --prereg configs/dcs_csi_pr011_... --split validation --check
+python scripts/gates/dcs_csi_head_analyze_selftest.py
+```
+
+```
+TWO PREREGS NAMED DIFFERENT HEAD SETS IDENTICALLY (HD_RAND00), and FOUR TOOLS HARD-CODED THE PREFIX --
+a rename alone would have made every one of them find ZERO controls.
+control_prefix is now a PREREGISTERED FIELD; the back-compat default is VERIFIED TO BIND, not assumed.
+PR-010 byte-identical through the change (regression + gate 0 + sweep + power + self-test all pass).
+PR-011 RE-FROZEN as HD_ALL32_00..19, GATE 0 PASSES, ITS READ IS FROZEN -- and NOTHING IS LAUNCHED.
+Expectation on record: rank 1 SURVIVES, F FALLS. A failure would BOUND D32, not retract it.
+```

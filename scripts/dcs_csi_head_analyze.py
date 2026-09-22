@@ -142,7 +142,12 @@ def main():
 
     pr = json.load(open(a.prereg))
     hs = pr["head_sets"]
-    controls = sorted(k for k in hs if k.startswith("HD_RAND"))
+    # The prefix comes from the preregistration; PR-CSI-010 predates the field, so absence
+    # defaults to HD_RAND -- and the default is VERIFIED to bind, never assumed (S-168).
+    cprefix = pr.get("control_prefix", "HD_RAND")
+    controls = sorted(k for k in hs if k.startswith(cprefix))
+    if not controls:
+        sys.exit("REFUSING: control_prefix %r matches no head set in the prereg" % cprefix)
     arms = ["HD_BASE", "HD_KO", "HD_TOPK", "HD_BOTK"] + controls
     jobs = a.require_slurm_job.split(",") if a.require_slurm_job else None
 

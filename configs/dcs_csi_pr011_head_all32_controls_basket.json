@@ -111,7 +111,7 @@
       30,
       31
     ],
-    "HD_RAND00": [
+    "HD_ALL32_00": [
       10,
       11,
       15,
@@ -121,7 +121,7 @@
       22,
       26
     ],
-    "HD_RAND01": [
+    "HD_ALL32_01": [
       4,
       10,
       11,
@@ -131,7 +131,7 @@
       22,
       27
     ],
-    "HD_RAND02": [
+    "HD_ALL32_02": [
       0,
       1,
       4,
@@ -141,7 +141,7 @@
       19,
       29
     ],
-    "HD_RAND03": [
+    "HD_ALL32_03": [
       1,
       6,
       8,
@@ -151,7 +151,7 @@
       16,
       24
     ],
-    "HD_RAND04": [
+    "HD_ALL32_04": [
       3,
       4,
       9,
@@ -161,7 +161,7 @@
       30,
       31
     ],
-    "HD_RAND05": [
+    "HD_ALL32_05": [
       2,
       6,
       9,
@@ -171,7 +171,7 @@
       28,
       31
     ],
-    "HD_RAND06": [
+    "HD_ALL32_06": [
       2,
       9,
       11,
@@ -181,7 +181,7 @@
       26,
       30
     ],
-    "HD_RAND07": [
+    "HD_ALL32_07": [
       1,
       2,
       4,
@@ -191,7 +191,7 @@
       18,
       22
     ],
-    "HD_RAND08": [
+    "HD_ALL32_08": [
       2,
       4,
       6,
@@ -201,7 +201,7 @@
       21,
       26
     ],
-    "HD_RAND09": [
+    "HD_ALL32_09": [
       1,
       7,
       8,
@@ -211,7 +211,7 @@
       23,
       25
     ],
-    "HD_RAND10": [
+    "HD_ALL32_10": [
       1,
       8,
       10,
@@ -221,7 +221,7 @@
       30,
       31
     ],
-    "HD_RAND11": [
+    "HD_ALL32_11": [
       0,
       1,
       17,
@@ -231,7 +231,7 @@
       28,
       30
     ],
-    "HD_RAND12": [
+    "HD_ALL32_12": [
       3,
       6,
       10,
@@ -241,7 +241,7 @@
       28,
       29
     ],
-    "HD_RAND13": [
+    "HD_ALL32_13": [
       4,
       11,
       15,
@@ -251,7 +251,7 @@
       24,
       25
     ],
-    "HD_RAND14": [
+    "HD_ALL32_14": [
       0,
       1,
       6,
@@ -261,7 +261,7 @@
       26,
       27
     ],
-    "HD_RAND15": [
+    "HD_ALL32_15": [
       8,
       13,
       16,
@@ -271,7 +271,7 @@
       27,
       29
     ],
-    "HD_RAND16": [
+    "HD_ALL32_16": [
       0,
       3,
       5,
@@ -281,7 +281,7 @@
       17,
       21
     ],
-    "HD_RAND17": [
+    "HD_ALL32_17": [
       2,
       10,
       12,
@@ -291,7 +291,7 @@
       24,
       27
     ],
-    "HD_RAND18": [
+    "HD_ALL32_18": [
       3,
       6,
       9,
@@ -301,7 +301,7 @@
       23,
       30
     ],
-    "HD_RAND19": [
+    "HD_ALL32_19": [
       1,
       6,
       10,
@@ -312,6 +312,7 @@
       29
     ]
   },
+  "control_prefix": "HD_ALL32_",
   "control_pool_mode": "all",
   "control_pool_note": "complement = the 32-K non-candidate heads (PR-CSI-010); all = every head, so a draw MAY contain candidate heads. R18/AM-26: the two pools' expected sum S have OPPOSITE SIGNS (+150.6 vs -152.1)",
   "control_draw_rule": "sorted(random.Random(seed_base + i).sample(sorted(control_pool), K)) for i in 0..19; seed_base = 20261001",
@@ -322,7 +323,7 @@
     "HD_KO": "--knockout-heads omitted = all 32; positive control AND ceiling (--ko-arm/--full-arm)",
     "HD_TOPK": "the candidate (--candidate-arm)",
     "HD_BOTK": "matched opposite end; the COMPARATOR (--comparator-arm), NOT in the control family",
-    "HD_RAND00..19": "the dose-matched control family (--control-prefixes HD_RAND)"
+    "HD_ALL32_00..19": "the dose-matched control family (--control-prefixes HD_ALL32_)"
   },
   "n_arms_per_split": 24,
   "attainable_floor": {
