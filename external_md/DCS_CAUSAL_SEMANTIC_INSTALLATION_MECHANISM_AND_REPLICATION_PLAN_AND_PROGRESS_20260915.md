@@ -17118,3 +17118,104 @@ ALSO RECORDED: TRAIN L18 was rank 36 of 47 with a NEGATIVE recovery, which is wh
 band and the "surprise" framing correct.
 CONTRAST: PR-CSI-010 reached power 1.0000 on 23 domains because its effect was 86% of ceiling, not 1.6%.
 ```
+
+---
+
+# S-222 — **§22's POWER item swept across ALL 21 committed rank-test cells.** Headline: **7 of 21 could never have certified at α = 0.05 — the family was too small before any data existed**; and the "direction NOT replicated" reading of the swap rests on **train cells at 12% and 43% power**
+
+`scripts/dcs_csi_rank_power_sweep.py`. Doing these one at a time invites picking the interesting ones;
+doing all 21 at once puts the dull answers on the record too.
+
+## ⛔ Finding 1 — seven cells were structurally incapable of significance
+
+The attainable floor is `1/(n_controls+1)`. The **certifying rank** is the largest `r` with
+`r/(n+1) ≤ α`. For `n = 46` that is 2; for `n = 20`, 1; **for `n = 10` it is ZERO**:
+
+```
+cells with certifying_rank = 0  (NO outcome could certify at alpha = 0.05)
+  basket_train_L20            n_ctrl 10   observed rank 1
+  basket_validation           n_ctrl 10   observed rank 1
+  button_train                n_ctrl  4   observed rank 2
+  button_train_L18            n_ctrl 10   observed rank 8
+  button_train_rank1          n_ctrl 10   observed rank 4
+  button_train_rank5          n_ctrl 10   observed rank 3
+  button_validation           n_ctrl 10   observed rank 4
+                                            7 of 21 cells
+```
+
+**Four of those seven are rank 1 or 2** — results that look like passes and could not have been, because
+`1/11 = 0.0909` already exceeds α. This is fixed **before data collection** and is a property of the
+family size, not of any effect. S-125 recorded this once for one cell (*"rank 1 of 11, floor 0.0909,
+INCONCLUSIVE by design"*); **it is true of seven.**
+
+## Finding 2 — the sprint's positive results are adequately powered; its negative ones are not
+
+```
+cell                                         n_ct  rank  cert_r   shift   P(cert)  MDE/obs
+basket_validation_n46                          46     1       2  +0.00366  1.0000    0.7x
+basket_validation_n30                          30     1       1  +0.00373  1.0000    0.8x
+basket_train (n22 / n34 / n46)              22-46     1     1-2  +0.0021+  0.68-0.77 1.1-1.2x
+button_validation_L18_n46                      46     6       2  +0.00132  0.3347    2.0x
+button_validation_L18_randonly                 22     3       1  +0.00146  0.4472    1.6x
+button_validation_L18_shufonly                 24     4       1  +0.00136  0.2995    1.9x
+button_train_L18_n46                           46    36       2  -0.00042  0.0021   -5.3x
+SWAP basket_train_from_button_n46              46    13       2  +0.00040  0.1155    6.3x
+SWAP button_train_from_basket_n46              46     4       2  +0.00122  0.4265    1.7x
+SWAP basket_validation_from_button_n46         46     2       2  +0.00189  0.6863    1.3x
+SWAP button_validation_from_basket_n46         46     1       2  +0.00252  0.8054    1.0x
+```
+
+**Basket's positive cells run at power 0.68–1.00.** **Every button-L18 and train-swap cell that
+produced a negative or non-certifying reading runs at 0.002–0.45.**
+
+## ⚠ The consequence for D30, which matters
+
+D30 concludes the direction is **NOT REPLICATED** because *"TRAIN rank 4 (= NOT helps) against
+VALIDATION rank 1 puts the two splits on opposite sides of the R47 ≤ 2 bar."* **The train cell that
+supplied "NOT helps" had 42.7% power**, and the other train swap cell (rank 13) had **11.6%**, with an
+MDE **6.3×** its observed shift. **At those powers, landing on the wrong side of the bar is the more
+likely outcome even under an effect identical to validation's.** D30 already hedges this correctly —
+*"a rank gap is not an effect gap"*, with the paired contrast at p = 0.17 — and the power numbers say
+the same thing quantitatively: **the split disagreement is consistent with train being underpowered
+rather than with the splits differing.** D30 is not withdrawn; this is the bound it lacked.
+
+## ⚠ Two defects in my own sweep, found before the numbers were recorded
+
+**1 — orientation defaulted instead of refusing (the FOURTH instance of this class).**
+`rank_orientation` is **absent (`None`)** in the older basket artifacts, and
+`"MOST POSITIVE" in str(None).upper()` is False, so those cells were silently scored
+lower-is-better: candidates that **actually ranked 1** came out with negative shifts and
+`P(certify) = 0.0000`. **Absence read as a value** — S-168's gate, S-182's vacuous witness, R16-2's
+missing denominator, and now this, in a script written minutes after I recorded the third. It was
+caught only because *rank 1 with zero power to rank 1* is self-contradictory on its face.
+**Fixed by deriving the orientation from the data**: recompute the rank both ways, keep the reading
+that reproduces the artifact's reported rank, and **refuse if both or neither match.**
+
+**2 — the tie convention was off by one.** The refusal then fired on `button_train_L18_n46`: reported
+rank **36**, strict `>` gives **35**. Cause: exactly **one** control is tied with the candidate at
+`-0.00014`, and the artifacts count ties **against** the candidate (`>=`). Matched now, in both the
+rank derivation and the simulation. **A tie rule off by one silently shifts every rank in a family by
+one place** — and here it would have moved a cell across the `R47 ≤ 2` bar.
+
+## Limits
+
+Same noise model as S-220/S-221: each cell's null spread is its own control values, conflating domain
+sampling noise with arm-to-arm heterogeneity, not decomposable from these artifacts. The candidate is
+modelled as a control draw plus a constant shift. **CANNOT ANSWER**: the power of any paired contrast,
+of the S2 exceedance intervals, or of the `F`-style ratio criteria.
+
+## Commands
+
+```
+python scripts/dcs_csi_rank_power_sweep.py --out reports/DCS_CSI_RANK_POWER_SWEEP.json
+```
+
+```
+21 CELLS SWEPT. 7 OF 21 COULD NEVER CERTIFY at alpha=0.05 -- floor 1/(n+1) exceeds it, fixed before
+any data; FOUR of those seven observed rank 1 or 2 and look like passes.
+BASKET'S POSITIVES 0.68-1.00 POWER; EVERY NON-CERTIFYING BUTTON-L18 / TRAIN-SWAP CELL 0.002-0.45.
+D30's "NOT REPLICATED" rests on train cells at 42.7% and 11.6% power -- consistent with train being
+underpowered rather than the splits differing. D30 not withdrawn; this is the bound it lacked.
+TWO DEFECTS IN MY OWN SWEEP, both fixed before recording: orientation DEFAULTED on an absent field
+(4th instance of absence-as-a-value) and the tie convention was off by one.
+```
