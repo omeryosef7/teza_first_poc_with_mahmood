@@ -20595,3 +20595,88 @@ frozen  pr013_read 911c3a20 | prereg 5ab06e3a | nomination rule fae4adc6 -- UNTO
 ```
 
 **No PR-013 number exists.** `score_behavior.py` was not opened. **REVIEW R22 due ~22:38.**
+
+---
+
+## S-258 — ⚠ **CORRECTION to S-257: the first arm is ~87 % MODEL LOAD, not scoring, so "~2× slow per arm" was the wrong model of where the time goes.** The load is a ONE-OFF for the whole family. **The per-arm rate is still UNMEASURED**, and S-257's "slow, not stuck" was right for weaker reasons than it gave
+
+### 1. ⛔ What S-257 got wrong
+
+S-257 compared **first-arm wall times** across nodes and projected a per-arm rate from them:
+
+> *"if n-307 runs ~2× n-303's 318.5 s/arm → ~640 s/arm → 22 arms = 3.9 h"*
+
+**That treats the first arm as a scoring measurement. It is mostly not one.** Measured from the logs of
+the two completed families:
+
+```
+PR-012 (n-303)  [w3] MODEL LOAD #1 (1311.6 s)   arm 1 total 1499.8 s  -> scoring ~188 s  (load = 87 %)
+PR-011 (n-301)  [w3] MODEL LOAD #1 (1851.5 s)   arm 1 total 2122.0 s  -> scoring ~271 s  (load = 87 %)
+PR-012 steady state: HD_KO 230.0 s | HD_TOPK 349.0 | HD_BOTK 349.7 | LOO_02 334.0 | LOO_06 334.5
+```
+
+**And the load is a ONE-OFF, confirmed in both families:**
+
+```
+[w3] arms ok 44/44 | MODEL LOADS 1 (one per distinct load key)     <- PR-012, 44 arms
+[w3] arms ok 24/24 | MODEL LOADS 1 (one per distinct load key)     <- PR-011, 24 arms
+```
+
+W3's memoisation of `dc.load_model` works exactly as S-247 claimed. **So the first arm's wall time is
+`load + one arm`, and extrapolating a per-arm rate from it inflates every later arm by the load.**
+
+### 2. Where PR-013 actually is
+
+```
+PR-013 log, all 19 lines. The last is:
+  19| [score] forward-only readout (semantic_one_word): ...
+PR-012's arm 1, for comparison:
+  17| [score] EXCLUDED ... (GIANT LINE)
+  18| [w3] MODEL LOAD #1 (1311.6 s)          <- PR-013 HAS NOT REACHED THIS LINE
+  19| [score] whole-answer variants ...      21| 100/230 rows      22| 200/230 rows
+  27| [w3]  1/44 HD_BASE ok rc=0 1499.8 s
+```
+
+**PR-013 is inside the one-off model load, and has been for ~78 min against 21.9 min (n-303) and
+30.9 min (n-301) — ≥3.6×.** The load reads a ~16 GB snapshot; **n-307 has 257 GB of RAM against n-303's
+774 GB**, so far less page cache for it, shared with another user's job.
+
+### 3. ⚠ The honest status of S-257's "SLOW, NOT STUCK"
+
+**The conclusion still looks right, but S-257's evidence for it was weak and I should not have stated it
+that firmly.** It rested on `sstat` showing the step "live" and `CPULoad 2.37` being *"consistent with
+GPU-bound work"* — **a hung process is also live, and a near-idle CPU load is equally consistent with
+doing nothing.** That is a conclusion reached by argument where a measurement was available, which is
+S-147's own named error.
+
+**The measurement that actually supports it** is §2's log-position comparison: PR-013 has reached exactly
+the line PR-012 reached immediately *before* its `MODEL LOAD` line, which is where a slow load would leave
+it and is not where a crash would.
+
+**I also checked and rejected a tempting false signal:** the log's mtime has not moved since 20:50:52, and
+the `100/230 rows` progress line is absent — **but both are explained by a 4 KB stdout buffer** holding
+~80 bytes of small lines after the 19,745-byte giant line flushed. **Neither is evidence of a stall**, and
+treating the missing line as evidence would have been absence-as-a-value for the ninth time.
+
+### 4. ⛔ The per-arm rate is UNMEASURED, and that is the number the decision needs
+
+```
+if scoring is GPU-BOUND (same RTX 3090 on all three nodes) -> arms ~230-350 s -> 23 arms ~= 2.2 h
+if scoring scales like the LOAD (3.6x, i.e. host-bound)    -> arms ~830-1260 s -> 23 arms ~= 7.9 h
+```
+
+**The first is likely — the load is I/O-bound on a ~16 GB read and the scoring is GPU-bound on an
+identical GPU — but that is a hypothesis, not a measurement, and the two projections differ by 5.7 h
+against a 10.5 h wall.** ⛔ **The first completed arm settles it, and no projection should be trusted
+before then.** S-257's threshold (cancel if projected finish > `EndTime − 1 h` ≈ 07:39) stands unchanged;
+**what changes is that it may not be evaluated until a real per-arm time exists.**
+
+### 5. State
+
+```
+date 22:06:28 | 918967 RUNNING 1:27:07 on n-307 | 0 of 23 arms | still in the one-off model load
+EndTime 2026-09-23T08:39:21  ->  10.5 h of wall remaining
+frozen  pr013_read 911c3a20 | prereg 5ab06e3a | nomination rule fae4adc6 -- UNTOUCHED
+```
+
+**No PR-013 number exists.** `score_behavior.py` was not opened. **REVIEW R22 due ~22:38.**
