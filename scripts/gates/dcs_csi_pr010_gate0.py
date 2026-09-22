@@ -60,6 +60,14 @@ def main():
 
     print()
     print("[B] the 20 control draws are reproducible from the stated seed rule")
+    # S-246. A CENSUS preregistration declares NO_RANK_TEST and carries no candidate, control family
+    # or floor. Without this guard the rank tooling dies on a bare KeyError or reports "control_prefix
+    # matches no head set" -- both fail-closed, but both name the SYMPTOM rather than the cause and
+    # would send a reader hunting for a missing field. Refuse by NAME instead.
+    if pr.get("NO_RANK_TEST"):
+        sys.exit("REFUSING: prereg %r declares NO_RANK_TEST -- it is a CENSUS (no candidate, no control "
+                 "family, no floor) and this tool is a RANK-TEST tool. Use the census reader. (S-246)"
+                 % pr["id"])
     cprefix = pr.get("control_prefix", "HD_RAND")
     rands = {k: v for k, v in hs.items() if k.startswith(cprefix)}
     if not rands:

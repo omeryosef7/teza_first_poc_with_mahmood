@@ -144,6 +144,14 @@ def main():
     hs = pr["head_sets"]
     # The prefix comes from the preregistration; PR-CSI-010 predates the field, so absence
     # defaults to HD_RAND -- and the default is VERIFIED to bind, never assumed (S-168).
+    # S-246. A CENSUS preregistration declares NO_RANK_TEST and carries no candidate, control family
+    # or floor. Without this guard the rank tooling dies on a bare KeyError or reports "control_prefix
+    # matches no head set" -- both fail-closed, but both name the SYMPTOM rather than the cause and
+    # would send a reader hunting for a missing field. Refuse by NAME instead.
+    if pr.get("NO_RANK_TEST"):
+        sys.exit("REFUSING: prereg %r declares NO_RANK_TEST -- it is a CENSUS (no candidate, no control "
+                 "family, no floor) and this tool is a RANK-TEST tool. Use the census reader. (S-246)"
+                 % pr["id"])
     cprefix = pr.get("control_prefix", "HD_RAND")
     controls = sorted(k for k in hs if k.startswith(cprefix))
     if not controls:

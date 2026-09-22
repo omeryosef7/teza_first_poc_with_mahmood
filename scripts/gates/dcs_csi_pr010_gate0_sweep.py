@@ -64,6 +64,14 @@ def main():
     assert_reads_no_endpoint()
     pr = json.load(open(a.prereg))
     hs = pr["head_sets"]
+    # S-246. A CENSUS preregistration declares NO_RANK_TEST and carries no candidate, control family
+    # or floor. Without this guard the rank tooling dies on a bare KeyError or reports "control_prefix
+    # matches no head set" -- both fail-closed, but both name the SYMPTOM rather than the cause and
+    # would send a reader hunting for a missing field. Refuse by NAME instead.
+    if pr.get("NO_RANK_TEST"):
+        sys.exit("REFUSING: prereg %r declares NO_RANK_TEST -- it is a CENSUS (no candidate, no control "
+                 "family, no floor) and this tool is a RANK-TEST tool. Use the census reader. (S-246)"
+                 % pr["id"])
     K = pr["K"]
     want_rows = pr["population"]["%s_expect_n" % a.split]
     want_doms = pr["population"]["%s_domains" % a.split]

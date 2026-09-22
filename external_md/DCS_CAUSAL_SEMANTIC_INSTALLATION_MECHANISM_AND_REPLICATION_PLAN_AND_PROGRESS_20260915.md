@@ -19239,3 +19239,117 @@ NOT DONE: PR-CSI-012 is DESIGNED here and NOT frozen. The prereg and its read ar
 
 **Nothing was re-read and nothing re-frozen.** `S[h]` and the PR-011 `E` block are both already-published
 artefacts; this section only correlates them.
+
+---
+
+## S-246 — **PR-CSI-012 is FROZEN.** ⚠ **CORRECTION to S-245's arm count: 44, not 42.** And the census exposed a hole the previous two families could not have: **the realised-dose identity is BLIND between a singleton and the all-head arm** — they record the same number. The rank tooling now refuses a census **by name**, and D32/D33 are proven bit-identical after the edit
+
+```
+squeue: EMPTY -- nothing in flight. Nothing was launched this tick, and section 5 says why.
+scripts/gates/dcs_csi_pr012_freeze.py  (new; reuses pr010's atomic_write_json, never re-implemented)
+configs/dcs_csi_pr012_head_census_basket.json  7393 bytes  md5 68e0b0ea4d8820ff0ee91c8874032d7e
+```
+
+### 1. ⚠ CORRECTION to S-245 — the census is **44** arms, not 42
+
+S-245 costed `HD_BASE + HD_KO + 32 singletons + 8 LOO = 42`. The frozen family carries **44**: it also
+re-runs **`HD_TOPK` and `HD_BOTK`**.
+
+**Not an oversight to absorb silently — the reason they are in is that leaving them out would cost more
+than 16 minutes of GPU.** Without `HD_TOPK` *in this job*, every comparison of a singleton to the 8-set
+would be a **cross-job** comparison resting on the determinism assumption; S-243 §5 showed that assumption
+holds, but an assumption verified once is not a substitute for the arm. `HD_BOTK` supplies the noise scale
+on the same rows. **This is the S-225 shape** (*"costed 22 arms; the launcher emits 24"*) and it is
+recorded the same way: the count in the design was wrong, the frozen file is right, and the frozen file is
+what runs.
+
+### 2. ⛔ The census has no rank test, and the preregistration is built so the tooling cannot pretend it does
+
+```
+has control_prefix : False      has n_controls : False      has K : False
+```
+
+All three are **absent on purpose.** S-245 established that a rank among the 8 `HD_TOPK` singletons has an
+attainable floor of **1/8 = 0.125** and cannot clear α = 0.05 for any effect size. So the deliverable is
+**32 effects with CIs — a map** — and `NO_RANK_TEST`, `CENSUS_DELIVERABLE` and
+`SELECTION_RE_ENTERS_WHEN` say so in three separate fields.
+
+**What the tooling did with that file BEFORE this tick's fix:**
+
+```
+gate0_sweep  ->  Traceback ... KeyError: 'K'
+W4           ->  REFUSING: control_prefix 'HD_RAND' matches no head set in the prereg
+```
+
+**Both are fail-closed — nothing ran and no family was invented — and both name the SYMPTOM, not the
+cause.** A `KeyError` sends a reader hunting for a missing field; the `control_prefix` message describes a
+prefix problem when the real answer is *"you are holding the wrong kind of tool."* R20's own quoted rule
+applies: *diagnostic quality is part of the fix.*
+
+**Fixed in four tools** (`head_analyze` = W4, `pr010_gate0`, `pr010_gate0_sweep`, `head_power`):
+
+```
+if pr.get("NO_RANK_TEST"):
+    sys.exit("REFUSING: prereg %r declares NO_RANK_TEST -- it is a CENSUS (no candidate, no control
+              family, no floor) and this tool is a RANK-TEST tool. Use the census reader. (S-246)")
+```
+
+```
+sweep  rc=1  REFUSING: prereg 'PR-CSI-012' declares NO_RANK_TEST ... Use the census reader. (S-246)
+W4     rc=1  REFUSING: prereg 'PR-CSI-012' declares NO_RANK_TEST ... Use the census reader. (S-246)
+gate0  rc=2  argparse (--screen/--gate) refuses EARLIER; guard is in place behind it
+power  rc=2  argparse (--tag-prefix/--split/--expect-n/--out) refuses EARLIER; guard in place behind it
+```
+
+### 3. ⛔⛔ **I edited W4 — the tool that produced D32 and D33. Proof it changed nothing**
+
+```
+W4 re-run on PR-011 (918169) -> full-object identical to reports/DCS_CSI_PR011_ALL32_validation.json : TRUE
+W4 re-run on PR-010 (916536) -> full-object identical to reports/DCS_CSI_PR010_HEAD_validation.json  : TRUE
+   rank 1 of 21 | p = 0.047619 | F = 0.8635109151176609 ci95 [0.7871019744870967, 0.9478434673658749]
+GATE 0 sweep on PR-011's 24 arms : still 24 of 24 PASS
+W4 self-test                     : SELFTEST PASSED, cleanup residue 0
+dead-flag AST gate on the freezer: every declared flag is read
+```
+
+**Comparison is on the whole JSON object with sorted keys, not on the printed summary lines** — the
+printed lines are a lossy view and would have hidden a change in any field they do not print.
+
+### 4. ⚠⚠ The finding the census exposed, which PR-010 and PR-011 **could not** have
+
+Measured from PR-011's own landed arms, not assumed:
+
+```
+HD_KO (ALL 32 band heads) median prefill edits = 2016.0
+8-head arm                                     = 16128.0      ratio 8.000000
+=> a K-head arm records K x 2016 (the all-head arm NEVER EXPANDS -- S-215)
+
+   K= 1 ->   2016.0   <-- IDENTICAL TO HD_KO
+   K= 7 ->  14112.0
+   K= 8 ->  16128.0
+```
+
+**A singleton arm records exactly what the all-32 arm records.** The realised-dose identity — the check
+that carried GATE 0 through 48 PR-010 arms and 24 PR-011 arms — **cannot distinguish `SINGLE_h` from
+`HD_KO`.** Every family so far used K = 8 or K = 32, where the identity separates cleanly; **K = 1 is the
+first case that collides, and it collides with the denominator arm.**
+
+**This is not hypothetical:** a mis-specified singleton that silently knocked out all 32 heads would pass
+the dose check and would then read as a single head carrying the entire effect — **the exact false
+positive this census exists to avoid.** Recorded as `DOSE_IDENTITY_IS_BLIND_HERE` in the prereg, with the
+expected counts enumerated, and as **VOID condition 3**: *any arm whose recorded `knockout_heads` differs
+from its `head_sets` entry voids the family.* That check is the argv gate's, and R20-1 verified it works
+on 20 real arms with 0 mismatches — so the guard exists; what was missing was knowing it is now the
+**only** one.
+
+### 5. Why nothing launched this tick, stated plainly
+
+**The frozen read does not exist yet, and no arm may run before it does.** The refusals in §2 point at a
+*"census reader"* that is **not written**: W4's rank machinery is exactly what a census must not use, and
+its `E`-block computation is what a census needs. Writing a new analyser at the end of a tick and
+launching against it in the same breath is how **S-196** happened — a frozen read that named a tool which
+structurally VOIDed every arm, found only after 9.3 GPU-hours were committed.
+
+**Next tick, in this order:** write `scripts/dcs_csi_head_census.py` → freeze
+`runargs/dcs_csi_pr012_read.txt` naming it → verify every flag statically against argparse (S-242's
+method) → `dcs_csi_pr010_argv.py --check` on all 44 arms → launch. **44 arms ≈ 490 s each ≈ 6.0 h.**
