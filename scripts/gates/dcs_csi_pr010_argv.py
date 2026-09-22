@@ -53,6 +53,11 @@ def cli_flags(path):
     return out
 
 
+def base_arms_of(prereg):
+    """The two arms that carry no frozen head list, named by the prereg. Default = PR-CSI-010's."""
+    return list(prereg.get("base_arms", ["HD_BASE", "HD_KO"]))
+
+
 def argv_for(arm, heads, split, prereg, seed, tag_prefix):
     cw = codeword_of(prereg)
     a = ["python", "src/boombness/score_behavior.py",
@@ -75,7 +80,14 @@ def argv_for(arm, heads, split, prereg, seed, tag_prefix):
          "--seed", str(seed)]
     # HD_BASE drops --intervene/--knockout-scope/--knockout-heads; HD_KO drops only the head list
     # (empty = ALL 32, score_behavior.py:3162); every other arm carries its frozen list.
-    if arm != "HD_BASE":
+    # ⛔⛔ S-260. THE CLEAN-REFERENCE ARM IS NAMED BY THE PREREG, NOT BY THE LITERAL "HD_BASE".
+    # This line read `arm != "HD_BASE"`, so PR-CSI-013's base arm BT_BASE was given --intervene with
+    # no --knockout-heads -- an ALL-32 KNOCKOUT standing in as the family's CLEAN REFERENCE. Every
+    # effect in that family would have been measured against a knocked-out baseline. 918967 ran 14 of
+    # 23 arms this way and is VOID.
+    # S-251 generalised all_arms() to take `base_arms` from the prereg and DID NOT generalise THIS
+    # FUNCTION, four lines below it: the ENUMERATION was fixed and the EMISSION was left hard-coded.
+    if arm != base_arms_of(prereg)[0]:
         a += ["--intervene", prereg["intervention"]["intervene"],
               "--knockout-scope", prereg["intervention"]["knockout_scope"]]
         if heads is not None:
@@ -177,6 +189,24 @@ def main():
             if got_bank != bank or got_excl != excl:
                 sys.exit("REFUSING: arm %s emits bank %r / exclusions %r, not the codeword %r's"
                          % (arm, got_bank, got_excl, cw))
+        # S-260: --check PASSED on the broken argv because it only verified that flags EXIST and that
+        # head lists match the prereg. It never asserted the ONE THING that makes a base arm a base
+        # arm. Assert it here.
+        b0 = base_arms_of(pr)[0]
+        av0 = argv_for(b0, None, a.split, pr, a.seed, a.tag_prefix)
+        if "--intervene" in av0 or "--knockout-scope" in av0 or "--knockout-heads" in av0:
+            sys.exit("REFUSING: the clean-reference arm %r carries an intervention flag -- it would be "
+                     "a knockout standing in as the baseline (S-260): %s"
+                     % (b0, [t for t in av0 if t.startswith("--knock") or t == "--intervene"]))
+        for arm, heads in arms:
+            if arm == b0:
+                continue
+            av = argv_for(arm, heads, a.split, pr, a.seed, a.tag_prefix)
+            if "--intervene" not in av:
+                sys.exit("REFUSING: arm %r carries NO --intervene but is not the clean reference %r"
+                         % (arm, b0))
+        print("BASE-ARM CHECK PASSED: %r carries no intervention flag; all %d other arms carry "
+              "--intervene" % (b0, len(arms) - 1))
         print("CODEWORD CHECK PASSED: %r -> bank %s, exclusions %s (both exist; every arm agrees)"
               % (cw, os.path.basename(bank), os.path.basename(excl)))
         n_with = sum(1 for _, h in arms if h is not None)

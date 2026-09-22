@@ -76,11 +76,25 @@ def main():
 
     assert_reads_no_endpoint()
     pr = json.load(open(a.prereg))
-    if not pr.get("NO_RANK_TEST"):
-        sys.exit("REFUSING: prereg %r is not a CENSUS -- use scripts/gates/dcs_csi_pr010_gate0_sweep.py"
-                 % pr.get("id"))
+    # ⛔ S-260. FAMILY-AGNOSTIC, and the previous shape was worse than a gap.
+    # This sweep used to refuse any prereg without NO_RANK_TEST and point the reader at
+    # dcs_csi_pr010_gate0_sweep.py -- which dies on `KeyError: 'K'` for PR-CSI-013, whose prereg has
+    # no K. The two sweeps therefore formed a LOOP that led nowhere, and the refusal message was
+    # ACTIVELY MISLEADING: it named a tool that crashes. Writing a THIRD sweep would be the
+    # fork-the-generator antipattern S-251 warned about, so this one is generalised instead: arms come
+    # from `base_arms` (default PR-CSI-010's names, verified to bind) plus every head_sets entry.
+    # `control_pool` is skipped explicitly -- it is a DRAW POOL, not an arm (pr010_freeze.py:128).
     hs = pr["head_sets"]
-    arms = ["HD_BASE", "HD_KO"] + sorted(hs)
+    base = list(pr.get("base_arms", ["HD_BASE", "HD_KO"]))
+    if len(base) != 2:
+        sys.exit("REFUSING: base_arms must name exactly 2 arms, got %r" % (base,))
+    for b in base:
+        if b in hs:
+            sys.exit("REFUSING: base arm %r also appears in head_sets -- it carries no head list" % b)
+    arms = base + [k for k in sorted(hs) if k != "control_pool"]
+    if "n_arms_per_split" in pr and len(arms) != pr["n_arms_per_split"]:
+        sys.exit("REFUSING: enumerated %d arms but the prereg declares n_arms_per_split=%d"
+                 % (len(arms), pr["n_arms_per_split"]))
     jobs = a.require_slurm_job.split(",") if a.require_slurm_job else None
     DOSE = census.DOSE_UNIT
 
@@ -98,12 +112,12 @@ def main():
             print("%-12s -- not landed --" % arm); continue
         landed += 1
         L = liveness(d)
-        k = 0 if arm == "HD_BASE" else (32 if arm == "HD_KO" else len(hs[arm]))
-        want = 0 if arm == "HD_BASE" else (DOSE if arm == "HD_KO" else DOSE * k)
-        got = None if arm == "HD_BASE" else recorded_heads(d)
-        if arm == "HD_BASE":
+        k = 0 if arm == base[0] else (32 if arm == base[1] else len(hs[arm]))
+        want = 0 if arm == base[0] else (DOSE if arm == base[1] else DOSE * k)
+        got = None if arm == base[0] else recorded_heads(d)
+        if arm == base[0]:
             ok_id, why = True, "not intervened"
-        elif arm == "HD_KO":
+        elif arm == base[1]:
             ok_id = (got == "ALL"); why = "ALL 32" if ok_id else "expected ALL, got %r" % (got,)
         elif got is None:
             ok_id, why = False, "NO knockout_heads recorded -- CANNOT VERIFY"
