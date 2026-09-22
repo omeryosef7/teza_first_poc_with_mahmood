@@ -17281,3 +17281,83 @@ WHAT IS GENUINELY NEW: the n=4 cell (floor 0.20, named nowhere), the POWER numbe
 floor, and the D30 bound (train swap at 42.7% and 11.6%).
 S-222's NUMBERS STAND; its FRAMING is withdrawn. The check that would have caught it was one grep.
 ```
+
+---
+
+# REVIEW R18 (self, ~4 h cadence) — attacked the **VALIDATION** result. **The rank p SURVIVES**, and so does the uniform-null refutation, but **"20 random 8-head draws do nothing" must not be read as a statement about arbitrary 8-head sets**: by the screen's own `S[h]` the control pool sits on the *opposite side of zero* from an all-32 draw
+
+Scope since R17: S-218's validation result, D32, the power work (S-220…S-223), W3's patch application,
+the sweep script. R17 attacked TRAIN; the headline claim is now VALIDATION, so that is the target.
+
+## R18-1 (MODERATE — an interpretation bound, not a defect) — the control pool is the candidate's complement
+
+The prereg draws controls **K-of-(32−K)**: 8 heads from the **24 non-candidate** heads. Measured
+against the screen's own `S[h]`:
+
+```
+candidate heads (8)   sum S -1060.3   mean -132.54 per head
+complement heads (24) sum S   +451.9  mean  +18.83 per head      <- POSITIVE on average
+all 32                sum S   -608.4
+
+expected sum S, 8-head draw from the COMPLEMENT : +150.6
+expected sum S, 8-head draw from ALL 32         : -152.1          <- OPPOSITE SIGN
+```
+
+**The complement is not merely depleted of the effect — by the train screen's estimate it points the
+other way.** So the sentence *"20 random 8-head draws give −0.004 ± 0.013, no effect at all"* (S-218,
+D32) is true of **draws from the complement**, which is what was run, and is **not** a measurement of
+arbitrary 8-head subsets of the model. A reader could take the latter, and the two differ by the sign
+of the expected effect.
+
+## ⚠ But the rank p is NOT invalidated, and saying so would be the mirror of S-222's error
+
+D27 established the shape of this objection for the swap — *"not exchangeable with the control family
+it is ranked against, so its rank p is DESCRIPTIVE"*. **It does not transfer here**, and the reason is
+specific: **under the null actually being tested — "no 8-head subset is privileged", i.e. all heads
+equivalent — the complement is not special either**, so a complement draw *is* exchangeable with the
+candidate. The asymmetry above exists only **under the alternative**. A test may be perfectly valid
+under its null while its control family is unrepresentative under the alternative; those are different
+statements and only the second applies.
+
+**So: `rank 1 of 21`, `p = 0.047619` stands as a p-value.** What needs the bound is the prose around
+the control distribution.
+
+## ✅ The uniform-null refutation SURVIVES, and this is worth checking rather than assuming
+
+§6 predicted `≈ −0.057` for any 8 heads if the effect were uniform across 32. **Under uniformity the
+complement is not special** — complement draws would also give −0.057. They gave **−0.004 ± 0.013**.
+The refutation therefore does **not** depend on the pool's composition, and S-218's use of it is sound.
+
+## What R18 did NOT find
+
+No arithmetic defect in S-218, D32, or the sweep. `F = 0.8635` reproduces by hand from
+`−0.195984 / −0.226961`; the independent path's `3.5e-06` agreement is unaffected by anything above;
+GATE 0 and the dose identity are untouched. **The power numbers of S-222 stand, with S-223's framing
+correction already applied.**
+
+## Recommended amendment, not taken unilaterally
+
+D32's limits column should gain one clause: *"the 20 controls are 8-head draws from the candidate's
+24-head COMPLEMENT, not from all 32; by the screen's own S[h] a complement draw's expected effect has
+the OPPOSITE SIGN to an all-32 draw, so the control distribution bounds 'this 8-head set vs other
+8-head sets drawn from the rest', not 'vs arbitrary 8-head sets'. The rank p is unaffected; the
+uniform-null refutation is unaffected."* **I am recording it here rather than editing D32 in this tick,
+because after S-223 the right order is to state the finding, let it be checked, and amend once.**
+
+## Commands
+
+```
+# candidate vs complement S[h] read from configs/dcs_csi_pr010_head_causal_basket.json head_sets
+# and outputs/boombness/dcs_csi/w1_screen_train_basket_916132.json S_signed_by_head
+```
+
+```
+R18: the VALIDATION result attacked. RANK p = 0.047619 SURVIVES -- under the null being tested the
+complement IS exchangeable with the candidate, so D27's objection does not transfer, and claiming
+otherwise would be S-222's error in mirror image.
+THE UNIFORM-NULL REFUTATION ALSO SURVIVES: under uniformity the complement is not special.
+BOUND REQUIRED ON THE PROSE: controls are 8-head draws from the candidate's COMPLEMENT, whose expected
+S[h] has the OPPOSITE SIGN to an all-32 draw (+150.6 vs -152.1). "20 random draws do nothing" is true
+of the complement, not of arbitrary 8-head sets.
+No arithmetic defect found. Amendment to D32 RECOMMENDED, not applied in this tick.
+```
