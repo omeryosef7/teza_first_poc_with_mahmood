@@ -19664,3 +19664,93 @@ frozen   runargs/dcs_csi_pr013_nomination_rule.txt UNTOUCHED since S-248
 
 **No endpoint was read** — the sweep proves it about itself and about the code it calls.
 `score_behavior.py` was not opened.
+
+---
+
+## S-250 — **S-248's rule is now CODE, written and tested while the census is at 11 of 44 and its report does not exist.** It computes `h*`, enforces the go/no-go, and **refuses to emit anything on a NO-GO**. ⚠ Two defects in my own frozen rule, found by implementing it: **an arm count that is wrong (24 → 23)** and **an under-specified draw**
+
+### 1. The arms
+
+```
+date 18:06 | 918631 RUNNING | GATE 0: every landed arm passes (11 of 44)
+```
+
+### 2. Why a rule in prose was not enough
+
+S-248 froze the rule that picks the head to replicate on `button`, *"so filling in the head later is
+mechanical rather than a judgement."* **But a rule in prose is still executed by a person.**
+`scripts/gates/dcs_csi_pr013_freeze.py` executes it instead: it reads the census, computes `h*` by
+Rule 1, applies Rule 2's go/no-go, draws the controls by Rule 3, and emits the preregistration — or
+**refuses to emit one at all**.
+
+**The timestamp is the point.** Written and tested while the census is at **11 of 44 arms** and
+`reports/DCS_CSI_PR012_CENSUS_validation.json` **does not exist** — the tool refuses on exactly that
+ground when run:
+
+```
+REFUSING: census 'reports/DCS_CSI_PR012_CENSUS_validation.json' does not exist. PR-CSI-013 is
+emitted FROM the census and cannot be written before it.
+```
+
+### 3. Both branches tested on synthetic censuses — **the NO-GO branch especially**
+
+`scripts/gates/dcs_csi_pr013_freeze_selftest.py`, 6 cases, scratch files only (**never `reports/`** —
+S-224: a dry run once overwrote a tracked report).
+
+```
+A  GO      SINGLE_14 strongest, |E| >> |HD_BOTK|, ci excludes 0  -> h* = 14, GATE: GO
+B  NO-GO   every singleton weaker than HD_BOTK                   -> STOPPED, "MUST NOT LAUNCH"
+C  NO-GO   large enough but ci95 straddles 0                     -> STOPPED
+D  tie     two heads at IDENTICAL E -> the more negative ci95 LOWER bound wins (14 over 3)
+E  emit    23 arms, 20 DISTINCT controls, h* EXCLUDED from them, floor 1/21 exact, BT_SINGLE = [14]
+F  determinism: the same census emits the same controls twice
+```
+
+**B and C are the cases that matter.** A freezer that only works when the answer is interesting is a
+freezer that will always find the answer interesting. **On a NO-GO it writes no preregistration at all**
+and says so in the preregistered language: *"nothing replicates and PR-CSI-013 MUST NOT LAUNCH. This is a
+preregistered outcome, NOT a failure of the pipeline."*
+
+### 4. ⚠ CORRECTION to the S-248 nomination rule — **the arm count is 23, not 24**
+
+```
+runargs/dcs_csi_pr013_nomination_rule.txt:48
+  arms = BT_BASE, BT_KO (all 32), BT_SINGLE (= h*), BT_CTRL_00..19  -> 24 arms
+```
+
+`1 + 1 + 1 + 20 = 23`. **The rank family is unaffected** — 1 candidate + 20 controls = 21, floor
+`1/21 = 0.047619` — and the emitting code produces 23, which the self-test asserts. The frozen file keeps
+its wrong total, per append-only discipline; **the code is the authority and this entry is the
+correction.**
+
+**⚠ And this is the THIRD arm-count error in prose in this sprint:** S-225 costed 22 where the launcher
+emitted 24; S-246 costed 42 where the freezer emitted 44; now 24 where the freezer emits 23. **Three for
+three, and every one was caught by the code rather than by re-reading the prose.** The standing lesson:
+**an arm count written in prose is a guess until a freezer emits it** — which is an argument for writing
+the freezer early, as here, and not for counting more carefully.
+
+### 5. ⚠ The second defect: Rule 3 was UNDER-SPECIFIED exactly where a choice could enter
+
+Rule 3 says the controls are drawn *"seeded 20261101 + i … **rejecting and re-seeding** any draw already
+drawn"* — **and does not say by how much to re-seed.** With 20 draws from a 31-head pool a collision is
+near-certain, so the unspecified part is reached on essentially every run.
+
+**Resolved to the simplest reading, declared in the tool's docstring and in the emitted prereg's
+`control_draw_rule_disambiguation` field:** a single seed counter from 20261101, **+1 per attempt**,
+accepting a draw iff its head is not already held, until 20 distinct heads.
+
+**The disambiguation cannot have been tuned to the outcome, and the reason is the timestamp, not my
+word:** the file was written and frozen while the census did not exist. **An under-specified rule is a
+place a choice can enter later; the only defence is to close it before the data, in public.**
+
+### 6. State
+
+```
+918631   RUNNING, 11 of 44, GATE 0 clean on every landed arm
+frozen   runargs/dcs_csi_pr013_nomination_rule.txt  UNTOUCHED (md5 4227a940...)
+new      scripts/gates/dcs_csi_pr013_freeze.py  + its self-test, 6 of 6, dead-flag gate OK
+NOT DONE PR-CSI-013 itself -- no prereg exists and none can until the census lands and Rule 2 passes
+```
+
+**No census number was read** — the sweep is endpoint-blind and the freezer refuses to run without a
+census. `score_behavior.py` was not opened.
