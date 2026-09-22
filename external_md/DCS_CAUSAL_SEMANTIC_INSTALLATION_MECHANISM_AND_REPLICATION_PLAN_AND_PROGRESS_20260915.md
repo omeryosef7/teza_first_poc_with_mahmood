@@ -17975,3 +17975,83 @@ AM-27: F is a ratio of two NET-OF-COMPENSATION effects, never "the fraction of t
 THE RANK TEST IS UNTOUCHED -- every arm masks 8 heads, so compensation opportunity is identical.
 Section 6's "F well under 0.50" was therefore the HARDER bar, and it still failed.
 ```
+
+---
+
+# REVIEW R19 (self, ~4 h cadence) — attacked the **literature reasoning** of S-229…S-232. **CORRECTION: S-230 said AtP∗'s estimator "is ours". The formula is; the CORRUPTION IS NOT** — and that weakens how much of AtP∗'s failure-mode evidence transfers to us, in an unknown direction
+
+Scope since R18: the LIT passes (S-229…S-232), AM-26, AM-27, and PR-011's freeze/launcher (S-226…S-228).
+The literature reasoning is the newest and least-reviewed material, so it is the target.
+
+## ⚠ R19-1 (MODERATE) — the estimator identity was over-stated
+
+S-230 wrote *"Its estimator is **ours**"* and set the two formulae side by side:
+
+```
+AtP*: Î(n) = (n(x_noise) − n(x_clean))ᵀ ∂L/∂n        W1: ⟨g_z, z_ko − z_clean⟩
+```
+
+**The functional form matches. The corruption does not.** AtP∗'s `x_noise` is **a different prompt**;
+W1's `z_ko` is **the same prompt under a mask hook**. The design says so in as many words —
+*"No token alignment. Clean and corrupt are the same `input_ids`"* (§1.5, and §284 deleting 49's
+`align_z`) — **and I quoted the formula without carrying that difference across.**
+
+**Why it matters, and it cuts against my own convenience.** S-230 discounted AtP∗'s
+attention-saturation false negatives on the grounds that *"our patch site is the o_proj input, not
+Q/K."* That is true but is **not the main reason the transfer is uncertain.** AtP∗'s saturation problem
+arises because swapping to a different prompt moves attention **patterns** far enough to reach saturated
+softmax regions. **Our corruption IS a mask edit — it forces attention away from blocked keys by
+construction, so the softmax displacement is the intervention itself, not a side effect of changing the
+input.** Whether that makes saturation better or worse for us **I cannot infer, and S-230 implied it was
+simply less of a problem.** It is a **different regime**, and the honest statement is *unknown direction*.
+
+**What survives unchanged:** both gaps. The **signed-vs-`|AtP|` divergence** (Gap 1) is about
+aggregation and is untouched by the corruption source. The **missing false-negative bound** (Gap 2)
+is untouched — 248 of 288 cells remain unpatched with no bound either way.
+
+## R19-2 — the compensation asymmetry re-derived, and it holds
+
+AM-27's argument was checked line by line rather than re-asserted:
+
+```
+E(HD_TOPK) removes 8 of 32 band heads -> 24 remain UNMASKED at the blocked key positions and can
+                                         attend more strongly (the backup-head dynamic)
+E(HD_KO)   removes all 32             -> no band head can take over; in-band compensation impossible
+F = E(TOPK)/E(KO): numerator shrinks under compensation, denominator's in-band part does not
+                   => F is biased DOWNWARD
+```
+
+**It holds.** And AM-27's exemption for the rank test also holds: `HD_TOPK`, `HD_BOTK` and all 20
+controls mask **exactly 8** heads, so compensation opportunity is identical across the ranked family;
+`HD_KO` masks 32 and **is not in that family.**
+
+## R19-3 — a claim I checked and did NOT find wrong
+
+S-230 asserted that §3.4's gate answers `2606.09899`'s error mode. Verified: that paper names *"the
+network's response to the intervention"* as the dominant error, and the gate patches `z_ko` into a clean
+forward and reads the **true `ΔM`** — which is that response, measured. **The design quantified the
+error (0.7817 / 0.7852) rather than correcting it**, which is a weaker but sufficient answer, and S-230
+said so accurately.
+
+## What R19 did not find
+
+No error in AM-26, AM-27's substance, the A5-4 empty result, the Doublespeak ACL status, the
+Ben-Tov/Geva/Sharif characterisation, PR-011's freeze, its gate 0, or the tag-namespace guard. The
+verified/unverified quarantine held throughout — **nothing unfetched was cited.**
+
+## Commands
+
+```
+grep -n 'same input_ids\|align_z' reports/DCS_CSI_PHASE3_HEAD_CIRCUIT_DESIGN.md
+# AtP* formula and W1's, compared term by term against the design's own corruption description
+```
+
+```
+R19: CORRECTION to S-230 -- AtP*'s estimator shares W1's FORM, not its CORRUPTION. AtP* swaps to a
+DIFFERENT PROMPT; W1 hooks the SAME prompt. The design states this; I quoted the formula without it.
+CONSEQUENCE: AtP*'s attention-saturation evidence transfers LESS DIRECTLY than S-230 implied, in an
+UNKNOWN direction -- our corruption IS a softmax displacement by construction. S-230's o_proj argument
+was true but was not the main reason.
+BOTH GAPS SURVIVE: signed-vs-|AtP| (aggregation, unaffected) and the missing false-negative bound.
+The compensation asymmetry re-derives correctly and the rank test's exemption holds.
+```
