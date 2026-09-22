@@ -21320,3 +21320,59 @@ fresh cold load — n-307 (6008.8 s), then n-302 (>2250 s). **S-261 established 
 cheaper. Pinning a relaunch to the node that already holds the snapshot would avoid this**, and §16 permits
 a single-node `--nodelist`. **Not done now** — cancelling a job that is minutes from finishing its load to
 save a load would be self-defeating — **but it is the right move for the NEXT relaunch, if there is one.**
+
+---
+
+## S-265 — **S-263's finding is now IN the claim table rather than only in the log: every certified claim carries its EVIDENCE RUNG, and the tagging is recorded BEFORE PR-CSI-013 returns a number**
+
+A finding that lives only in the chronological log is a finding a later reader will not meet. **AM-34 and
+AM-35 put it where the claims are.**
+
+### 1. AM-34 — the rung tagging
+
+```
+D32  8-head set, ablation necessity + rank vs 20 preregistered controls   RUNG 1
+D33  the same against an all-32 control family                            RUNG 1
+D34  per-head census, 32 singletons + 8 leave-one-out                     RUNG 1
+NOTHING IN THIS SPRINT HAS EVER REACHED RUNG 2, 3 OR 4.
+```
+
+**⚠ And PR-CSI-013 is tagged NOT RUNG 4 in advance.** Their rung 4 transfers an activation **state**
+between prompts requiring different operations; **PR-013 transfers nothing** — same knockout, different
+codeword, same rank question. **Replication of a rung-1 finding across stimuli, which has no number on
+their ladder.**
+
+**Why the timing matters:** a rung is the thing a later reader is most likely to inflate, and **the
+temptation is largest immediately after a positive result.** The tagging is on record **while the arms are
+still loading** — it cannot have been shaped by what they return.
+
+**This is a label made explicit, not a restriction newly imposed.** `REPORTABLE_AS` and
+`CENSUS_DELIVERABLE` already name their evidence exactly and have never been stated as decodability,
+repair or transfer.
+
+### 2. AM-35 — the gloss correction, carried into the claim table
+
+S-264's two corrections are recorded where a reader would otherwise meet only S-263's wrong version:
+*"anti-induction heads"* is **not** that paper's term, and *"a known phenomenon rather than noise"*
+over-reached. **Permitted: "negative heads" as a category label with the reference. Forbidden:
+copy-suppression or anti-induction as a mechanism claim about heads 18, 31, 27, 14, 7.**
+
+### 3. The arms
+
+```
+date 00:50:16 | 919296 RUNNING ~41 min on n-302 | "MODEL LOAD" lines: 0 | 0 of 23 arms
+```
+
+**Cold load now >2450 s, past every prior large-host figure** (n-303 1311.6 s, n-301 1851.5 s). ⛔ **No
+conclusion drawn and none will be until the arm finishes** — S-257 is the entry that exists for this
+exact temptation, and a monitor is armed so the number is read rather than estimated. **~11 h of wall
+remain; only wall-clock is at stake.**
+
+### 4. State
+
+```
+frozen  read 911c3a20 | prereg 5ab06e3a | nomination rule fae4adc6 -- UNTOUCHED
+        <VALIDATION_JOB_IDS> = 919296 ALONE at read time
+```
+
+**No PR-013 number exists.** `score_behavior.py` was not opened.
