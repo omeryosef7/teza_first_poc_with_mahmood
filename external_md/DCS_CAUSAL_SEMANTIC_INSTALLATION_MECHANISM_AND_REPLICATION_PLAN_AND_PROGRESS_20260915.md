@@ -21446,3 +21446,78 @@ frozen  read 911c3a20 | prereg 5ab06e3a | nomination rule fae4adc6 -- UNTOUCHED
 ```
 
 **No PR-013 number exists.** `score_behavior.py` was not opened.
+
+---
+
+## S-267 — ⚠ **`CSI_STAGE=1` has been INERT on every submission since PR-CSI-010.** My launcher does not read it; a different one does. **The measured fix for the cold-load tax has existed in this repo all along** — and I am naming the risk that stops me porting it mid-sprint rather than porting it now
+
+### 1. ⚠ The inert flag
+
+Every submit in this sprint has carried `CSI_STAGE=1`:
+
+```
+grep -c CSI_STAGE slurm_scripts/dcs_csi_pr010_arms.slurm   ->  0      <- MY launcher. It never reads it.
+grep -n CSI_STAGE slurm_scripts/dcs_csi_p1_arms.slurm      ->  3 hits <- a DIFFERENT launcher
+```
+
+**Confirmed from the arms themselves rather than inferred** — the recorded `--model` is the NFS snapshot
+path, not a `/tmp/dcs_snap_*` staged copy:
+
+```
+--model /home/sharifm/students/matanbentov/hub/models--meta-llama--.../snapshots/0e9e39f249a1...
+```
+
+**So `CSI_STAGE=1` did nothing on PR-010, PR-011, PR-012 and all three PR-013 generations.** It gave every
+submit line the appearance of a staging step that was never configured. **Nothing scientific depends on
+it** — no entry ever attributed a result to staging — but S-255's and S-247's submit commands are on
+record with a flag that did nothing, and that should not stand uncorrected.
+
+### 2. ⛔ And the measured fix has been in the repo the whole time
+
+`slurm_scripts/dcs_csi_p1_arms.slurm:45-78`, citing **DCS-CSI-092 / BLOCKER-S090**:
+
+> *"The n-30x rack's NFS path reads the shared snapshot at **2-7 MB/s** (S-090, measured per node). A
+> sequential copy at that rate is **~40 min** for the 15 GB of weights; the HF loader's **RANDOM mmap
+> access over the same path is 20+ HOURS.** Staging converts the pathological access pattern into one
+> sequential copy, then loads from node-local disk (**measured 7-12 GB/s**, 171 G free)."*
+
+And the part that answers S-264/S-266 exactly:
+
+> *"The staged copy is deliberately **NOT deleted** at job end: a second job landing on the same node
+> **skips the whole 34-minute copy.**"*
+
+**That is the systematic tax S-264 named and S-266 built a helper around — and the repo already contains a
+measured solution to it, in a launcher I was not using.**
+
+### 3. What this does and does not do to S-261
+
+**S-261's mechanism claim SURVIVES and is in fact strengthened.** It said the warm/cold difference is
+**page cache**. Because staging never ran, there was **no staged local copy** that could have provided the
+alternative explanation — so `n-307`'s 47.5 s really was the kernel's cache, and 6008.8 s really was a
+cold NFS read. **The one thing removed is a confound I did not know I had.**
+
+### 4. ⛔ Why I am NOT porting staging right now, named rather than glossed
+
+Staging changes the `--model` path the loader is given, and that path is **recorded in every arm's
+`RUNMETA` and compared against `PRIMARY_MODEL` by the sprint's provenance checks.** A staged run would
+record `/tmp/dcs_snap_<user>/<snapshot>` instead of the NFS path. **Whether every identity and provenance
+check tolerates that is unverified, and a family whose model path no longer matches the canonical one is
+exactly the kind of silent mismatch this sprint has spent three entries (S-251, S-252, S-260) finding.**
+
+**Precondition for porting, stated now so it is not decided under time pressure later:** verify that the
+provenance checks compare the snapshot **revision/identity**, not the literal path — or add an explicit
+mapping — **and prove it on a completed family before any new family uses it.** ~11 h of wall remain and
+919296 needs none of this; **porting it mid-run to save a cost the running job has already paid would be
+the churn S-266 declined an hour ago.**
+
+### 5. The arms
+
+```
+date 00:57:36 | 919296 RUNNING 48:21 on n-302 | "MODEL LOAD" lines: 0 | 0 of 23
+```
+
+⛔ **Still no conclusion on the load time. The monitor is armed.** And §2 now supplies the honest frame for
+it: **a cold load here is an NFS read measured at 2-7 MB/s on this rack**, so 22–100 min is the expected
+range and n-302's 48+ min sits inside it.
+
+**No PR-013 number exists.** `score_behavior.py` was not opened.
