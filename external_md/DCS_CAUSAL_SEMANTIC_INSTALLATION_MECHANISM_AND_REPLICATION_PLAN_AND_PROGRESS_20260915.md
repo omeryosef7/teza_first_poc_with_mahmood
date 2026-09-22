@@ -20680,3 +20680,110 @@ frozen  pr013_read 911c3a20 | prereg 5ab06e3a | nomination rule fae4adc6 -- UNTO
 ```
 
 **No PR-013 number exists.** `score_behavior.py` was not opened. **REVIEW R22 due ~22:38.**
+
+---
+
+# REVIEW R22 (self, ~4 h cadence) — ⚠⚠ **the SINGLE-HEAD READER CERTIFIES A SIGN-FLIPPED RESULT: `E = +0.016024`, rank 1 of 21, `VERDICT: REPLICATES`.** R21 fixed exactly this in the nomination rule; **I did not carry the lesson into the reader I wrote three ticks later.** Fixed while 2 of 23 arms had landed and no PR-013 report existed. Plus a **fourth** projection of the same family, and the first one derived from the right quantity
+
+## R22-1 ⚠⚠ The defect, in the tool that produces the verdict
+
+Built a family in which the candidate's effect is **positive** — knocking head 2 out **raises**
+installation — but **less positive than every control**, so it is still the most negative of 21:
+
+```
+[single] GATE 1 PASS | E(BT_KO) = -0.115375 ci95 [-0.136327, -0.092383]
+[single] E(BT_SINGLE) = +0.016024 ci95 [+0.013145, +0.019090]
+[single] rank 1 of 21 | p = 0.047619 | FLOOR = 0.047619
+[single] VERDICT: REPLICATES
+```
+
+**A sign-flipped result certified as a replication, with `REPORTABLE_AS` written out in full.** GATE 1 does
+not protect against it: `BT_KO` is a **different arm**, and its being negative says nothing about the
+candidate's sign.
+
+**This is R21's finding, in a new tool.** R21 added clause (c) to the *nomination rule* — `E(SINGLE_h*) < 0`
+— after measuring the same failure there. **I wrote this reader three ticks later and did not carry the
+clause across.** The rule and the reader were guarded by the same principle and only one of them knew it.
+
+**AMENDMENT 1 to the reader:** rank 1 certifies a replication **only with a negative candidate effect**.
+The phenomenon is that knocking the head out *lowers* installation; a non-negative effect means the
+phenomenon is absent for that head on that codeword, **which IS "does not replicate", whatever the rank.**
+**Narrowing only — it can turn `REPLICATES` into a non-replication and can never create one.** The rank, p
+and floor are still reported in full; **only the headline is gated.**
+
+**Legitimacy of amending after the read was frozen:** `ls reports/DCS_CSI_PR013_BUTTON_HEAD_validation.json`
+→ **no such file**, verified at the moment of the edit, with **2 of 23 arms** landed and no endpoint read.
+Same basis as R21's amendment.
+
+```
+self-test now 8 of 8, residue 0:
+  A REPLICATES (negative candidate at rank 1 -- the certifying path still works)
+  G rank 1 with E = +0.016024 -> "DOES NOT REPLICATE (rank 1 but E(BT_SINGLE) is NOT NEGATIVE ...)"
+  B rank 2 | C GATE 1 fails, no rank written | D S-246 collision | E1/E2 mirror refusals | F tie
+```
+
+## R22-2 The fourth projection of this family, and the first derived from the right quantity
+
+`BT_KO` landed — **the first steady-state arm**, like-for-like with PR-012's `HD_KO` (both are the all-32
+knockout):
+
+```
+PR-012 HD_KO n-303  230.0 s   |   PR-013 BT_KO n-307  275.5 s   ->  1.20x
+```
+
+**Only 20 % slower, not 2.59× and not 4.58×.** The four projections of this same family, in order:
+
+```
+S-257  from first-arm wall times        ~640 s/arm -> 3.9 h    WRONG MODEL: 87 % of arm 1 is the load
+S-258  bracket: GPU-bound vs host-bound  2.2 h or 7.9 h        honest, but 5.7 h wide
+R22-a  from the BASE arm's scoring residual ~824 s/arm -> 5.0 h  PROXY, not a steady-state arm
+R22-b  from a REAL steady-state arm      ~382 s/arm -> 2.23 h   <- the only one derived from the same
+                                                                   quantity being projected
+```
+
+**The load is 4.58× slower on n-307 and the scoring is 1.20× slower** — so S-258's hypothesis that the
+load is I/O-bound and the scoring GPU-bound **is essentially right**, and my own `R22-a` estimate, made
+an hour ago from the base arm's residual, **was wrong by 2.2×** because a base arm's residual is not a
+steady-state arm.
+
+**The standing lesson, earned four times on one family: derive a rate from the SAME quantity you are
+projecting, never from a proxy that happens to be available first.**
+
+**Finish ~00:50 against `EndTime` 08:39 — margin ~7.8 h. S-257's threshold (07:39): NO intervention
+warranted**, and it is now evaluable because a real per-arm time exists.
+
+## R22-3 ⚠ A bound on S-254's cross-node determinism result
+
+S-254 recorded PASS-STRONG on the anchor cross-check and said it *"establishes CROSS-NODE determinism
+(n-301 → n-303)"*. **That is true and it is narrower than it sounds.** S-257 then measured that
+**n-307 is a different class of host** (40 CPUs / 257 GB against 112–128 / 774–1547 GB). The determinism
+result covers **two large hosts**; nothing has tested bit-identity onto a small one.
+
+**Nothing currently depends on it** — PR-013's frozen read makes **no** cross-node comparison, and all 23
+arms share one allocation — **but the claim must not be quoted as "cross-node determinism holds" without
+its node classes**, which is exactly the shape of the `basket`-in-the-claim-text defect S-252 found.
+
+## R22-4 Checked and clean
+
+S-254's structural claim re-verified from the artefact: singleton top-4 `[2, 19, 17, 23]` and marginal
+top-4 `[2, 19, 17, 23]`, **same order**. The census reading criteria applied as frozen (bar
+`|E(HD_BOTK)| = 0.012567`; head 11 at −0.010438 correctly **excluded**). The reader's mirror refusals,
+the S-246 collision check on a control arm, and the tie convention all still fire.
+
+## R22-5 The pattern, and it is not the one R20 or R21 had
+
+**R20's defects were in probes; R21's was in a frozen rule; R22's is a LESSON THAT DID NOT PROPAGATE.**
+The sign clause was found, understood, written down and enforced in R21 — and then a new tool was written
+without it. **Nothing in the sprint's machinery carries a fix from one artefact to its siblings**; the
+nomination rule and the reader are guarded by the same principle and only one of them was told.
+
+**What that earns, concretely:** when an amendment is made to one artefact, the next tick must ask *which
+other artefact is guarded by the same principle?* — and the answer must be written into the amendment.
+R21's Amendment 1 named only the nomination rule. Had it named "and any tool that reports a verdict from
+these effects", R22's defect would not have existed.
+
+## R22-6 Not done
+
+**No PR-013 number was read** — the report does not exist; 2 of 23 arms have landed. `score_behavior.py`
+was not opened (the family is running). The frozen read is **unchanged** (`911c3a20`); the amendment is to
+the reader's verdict logic and is recorded here, not by re-freezing the read.

@@ -201,7 +201,29 @@ def main():
     print("[single] rank %d of %d | p = %.6f | FLOOR = %.6f"
           % (rank_with_ties, n_fam, p, floor))
 
-    verdict = ("REPLICATES" if rank_with_ties == 1 else "DOES NOT REPLICATE AT RANK 1")
+    # ⛔ AMENDMENT 1 (REVIEW R22). THE SIGN CLAUSE. Rank alone cannot certify a replication, because
+    # the rank is over "more negative is stronger" and a POSITIVE candidate can still be the most
+    # negative of 21 if every control is MORE positive. R22 built exactly that family and this tool
+    # reported "E(BT_SINGLE) = +0.016024 ... rank 1 of 21 ... VERDICT: REPLICATES" -- a SIGN-FLIPPED
+    # result certified as a replication, with GATE 1 passing because BT_KO is a different arm.
+    # This is the defect R21 fixed in the NOMINATION RULE (Amendment 1, clause (c)); I did not carry
+    # the lesson into the reader written three ticks later.
+    # The phenomenon is that knocking the head out LOWERS installation. A non-negative candidate
+    # effect means the phenomenon is absent for that head on that codeword -- which IS "does not
+    # replicate", whatever the rank.
+    # ⚠ NARROWING ONLY: this can turn REPLICATES into a non-replication and can NEVER create one.
+    # Added while 1 of 23 arms had completed and reports/DCS_CSI_PR013_BUTTON_HEAD_validation.json
+    # did not exist, so no number of this family shaped it. The rank, p and floor are still reported
+    # in full -- only the HEADLINE is gated.
+    cand_negative = (E[cand] < 0)
+    if rank_with_ties == 1 and cand_negative:
+        verdict = "REPLICATES"
+    elif rank_with_ties == 1:
+        verdict = ("DOES NOT REPLICATE (rank 1 but E(%s) = %+.6f is NOT NEGATIVE -- knocking this "
+                   "head out does not lower installation on this codeword)" % (cand, E[cand]))
+    else:
+        verdict = "DOES NOT REPLICATE AT RANK 1"
+    print("[single] candidate effect negative (R22 amendment 1): %s" % cand_negative)
     print("[single] VERDICT: %s" % verdict)
 
     out = {
@@ -215,6 +237,11 @@ def main():
         "RANK": {"candidate": cand, "head": h_star, "rank": rank_with_ties, "of": n_fam,
                  "p": p, "p_display": "%.6f" % p, "attainable_floor": floor,
                  "n_controls_strictly_better": better, "n_ties": ties,
+                 "candidate_E_is_negative": bool(cand_negative),
+                 "sign_clause": "R22 amendment 1: rank 1 certifies a replication ONLY with a NEGATIVE "
+                                "candidate effect. The rank orders 'more negative is stronger', so a "
+                                "POSITIVE candidate can rank 1 if every control is more positive -- a "
+                                "sign-flipped result. Narrowing only.",
                  "tie_convention": "ties count AGAINST the candidate (>=), so a tie cannot certify",
                  "floor_note": "rank 1 of %d gives p = the floor = %.6f and is the ONLY certifying "
                                "outcome at alpha = 0.05; rank 2 gives %.6f and does not clear it. "

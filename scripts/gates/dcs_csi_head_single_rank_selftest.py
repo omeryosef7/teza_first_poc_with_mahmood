@@ -148,6 +148,29 @@ def main():
         else:
             print("[selftest] E2 ok: a K-head subset prereg is refused (that is W4's family)")
 
+        # G -- R22 AMENDMENT 1: a POSITIVE candidate that still ranks 1 must NOT be a replication.
+        #      Before the amendment this printed "E(BT_SINGLE) = +0.016024 ... rank 1 of 21 ...
+        #      VERDICT: REPLICATES" -- a sign-flipped result certified, with GATE 1 passing because
+        #      BT_KO is a different arm.
+        lay(+0.30, {c: +0.60 + 0.01 * i for i, c in enumerate(ctrls)})
+        p = run(os.path.join(tmp, "g.json"))
+        if p.returncode != 0:
+            fails.append("G: refused: %s" % (p.stdout + p.stderr).strip().splitlines()[-1][:140])
+        else:
+            j = json.load(open(os.path.join(tmp, "g.json")))
+            if j["RANK"]["rank"] != 1:
+                fails.append("G: fixture wrong -- expected the candidate to rank 1, got %s"
+                             % j["RANK"]["rank"])
+            elif j["VERDICT"].startswith("REPLICATES"):
+                fails.append("G: ⛔ a POSITIVE candidate effect (%+.6f) at rank 1 was certified as "
+                             "REPLICATES -- the sign clause is not enforced"
+                             % j["E"]["BT_SINGLE"])
+            elif j["RANK"].get("candidate_E_is_negative") is not False:
+                fails.append("G: candidate_E_is_negative not reported as False")
+            else:
+                print("[selftest] G ok (R22 sign clause): rank 1 with E = %+.6f -> %s"
+                      % (j["E"]["BT_SINGLE"], j["VERDICT"][:60]))
+
         # F -- TIE: a control EXACTLY equal to the candidate must count AGAINST it -> rank 2
         lay(-1.2, {ctrls[7]: -1.2})
         p = run(os.path.join(tmp, "f.json"))
