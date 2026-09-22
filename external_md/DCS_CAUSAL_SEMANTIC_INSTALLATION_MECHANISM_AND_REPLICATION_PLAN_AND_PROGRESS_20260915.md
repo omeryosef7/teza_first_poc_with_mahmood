@@ -21955,3 +21955,57 @@ files, progress bars go to `stderr` by convention, and this sprint has a launche
 **And the narrower lesson, which is the one that actually bit:** I checked `.err` once, found it empty
 because the job was 32 s old, and never checked again. **A stream that is empty early is not a stream that
 is empty.**
+
+---
+
+## S-273 — **the pin S-272 chose is PENDING, and the decision to pin needs its own bound.** Derived from the same measured numbers rather than from patience: **25 minutes**
+
+### 1. The state the pin put us in
+
+```
+date 02:08:37 | 919526 PENDING (Priority) | START_TIME N/A
+sh scripts/gates/dcs_csi_warm_node.sh n-307 -> n-307: gpus 2/8 allocated, 6 free ... PIN n-307
+```
+
+**The helper's condition still holds — six GPUs free on n-307 — and the job is pending on `(Priority)`,
+not `(Resources)`.** So it is queue position, not capacity, and S-148's indefinite-pend case (*every GPU
+on every 3090 node allocated*) does **not** apply. **But S-148 also recorded a `--nodelist` pin costing
+25 min of PENDING before the job was resubmitted unpinned, so the failure mode is known and priced.**
+
+### 2. ⛔ The bound, derived rather than chosen
+
+**S-272's relaunch won on this arithmetic:**
+
+```
+the pin buys  up to ~2 h  (n-307 warm, ~1 min load)
+              or ~25 min  (n-307 cold at a MEASURED 20.00 s/it vs n-302's 40.75 s/it under contention)
+```
+
+**So PENDING time subtracts directly from the gain:** beyond ~25 min the **cold-branch advantage is
+entirely erased**, and beyond ~2 h even the warm branch is. **The tighter figure is the one to bound by,
+because I cannot know which branch I am in** — the same unmeasurable cache state S-266 declined to bet on.
+
+> **BOUND: if 919526 has not STARTED by 02:33, the pin has cost more than its cold-branch gain →
+> `scancel` and resubmit UNPINNED.**
+
+**This is S-270's discipline applied to the new decision rather than to the old one.** S-270 bounded a
+wait that had no bound; this bounds a *choice* whose benefit is quantified, so the threshold falls out of
+the arithmetic instead of being picked.
+
+### 3. And this time the monitoring reads both streams
+
+S-272's rule is in force from its first application: the monitor checks **`.err` for the progress bar** as
+well as the job state, so if 919526 starts and begins loading, the per-shard rate and ETA are read
+immediately rather than inferred over seven entries.
+
+### 4. State
+
+```
+919526  PENDING, pinned --nodelist=n-307 | BOUND 02:33 | EndTime not yet assigned
+quarantine  22 dirs (918967 VOID x15, 919240 ORPHANED x6, 919296 INCOMPLETE x1); 0 csi6 dirs live
+frozen  read 911c3a20 | prereg 5ab06e3a | nomination rule fae4adc6 | reading criteria 5b99971c
+        <VALIDATION_JOB_IDS> = 919526 ALONE at read time
+```
+
+**No PR-013 number has ever been read**, across four generations, every one stopped by a gate or a
+tooling finding rather than by an endpoint. `score_behavior.py` was not opened.
