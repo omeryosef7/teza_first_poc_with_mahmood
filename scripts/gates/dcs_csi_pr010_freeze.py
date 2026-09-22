@@ -58,17 +58,28 @@ def draw(pool, k, seed):
     return sorted(random.Random(seed).sample(sorted(pool), k))
 
 
-def build(screen_path, k, n_controls, seed_base, screen_blob, gate_path):
+def build(screen_path, k, n_controls, seed_base, screen_blob, gate_path,
+          pool_mode="complement", pr_id="PR-CSI-010"):
     scr = json.load(open(screen_path))
     S = {int(h): float(v) for h, v in scr["S_signed_by_head"].items()}
     n_heads = scr["n_heads"]
     topk = sorted(S, key=lambda h: S[h])[:k]                  # SIGNED, most negative (design 3.3)
     botk = sorted(S, key=lambda h: abs(S[h]))[:k]             # closest to zero
-    pool = sorted(set(range(n_heads)) - set(topk))            # K of (32-K), candidates excluded
+    # THE CONTROL POOL IS NOW EXPLICIT, and "complement" reproduces PR-CSI-010 exactly.
+    # R18/AM-26 measured why the choice matters: an 8-head draw from the complement has expected
+    # sum S = +150.6 where an all-32 draw has -152.1 -- OPPOSITE SIGNS. "complement" tests the
+    # candidate against other sets drawn from the rest; "all" tests it against ARBITRARY sets, which
+    # is the harder question and cannot be answered by re-reading PR-CSI-010's arms.
+    if pool_mode == "complement":
+        pool = sorted(set(range(n_heads)) - set(topk))        # K of (32-K), candidates excluded
+    elif pool_mode == "all":
+        pool = sorted(range(n_heads))                          # draws MAY contain candidate heads
+    else:
+        raise SystemExit("unknown pool_mode %r" % pool_mode)
     controls = {"HD_RAND%02d" % i: draw(pool, k, seed_base + i) for i in range(n_controls)}
     gate = json.load(open(gate_path))
     return {
-        "id": "PR-CSI-010",
+        "id": pr_id,
         "title": "Section 4 head-level causal experiment for basket: is an 8-head subset privileged?",
         "frozen_utc_date": "2026-09-21",
         "design_ref": "reports/DCS_CSI_PHASE3_HEAD_CIRCUIT_DESIGN.md sections 4, 5, 6",
@@ -106,6 +117,10 @@ def build(screen_path, k, n_controls, seed_base, screen_blob, gate_path):
             "fallback_used": not gate["TRUSTWORTHY"],
         },
         "head_sets": {"HD_TOPK": topk, "HD_BOTK": botk, "control_pool": pool, **controls},
+        "control_pool_mode": pool_mode,
+        "control_pool_note": ("complement = the 32-K non-candidate heads (PR-CSI-010); all = every "
+                              "head, so a draw MAY contain candidate heads. R18/AM-26: the two pools' "
+                              "expected sum S have OPPOSITE SIGNS (+150.6 vs -152.1)"),
         "control_draw_rule": ("sorted(random.Random(seed_base + i).sample(sorted(control_pool), K)) "
                              "for i in 0..%d; seed_base = %d" % (n_controls - 1, seed_base)),
         "seed_base": seed_base, "n_controls": n_controls,
@@ -183,9 +198,13 @@ def main():
     ap.add_argument("--K", type=int, default=8)
     ap.add_argument("--n-controls", type=int, default=20)
     ap.add_argument("--seed-base", type=int, default=20260921)
+    ap.add_argument("--pool-mode", choices=("complement", "all"), default="complement",
+                    help="complement reproduces PR-CSI-010; all draws from every head")
+    ap.add_argument("--pr-id", default="PR-CSI-010")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
-    pr = build(a.screen, a.K, a.n_controls, a.seed_base, a.screen_blob, a.gate)
+    pr = build(a.screen, a.K, a.n_controls, a.seed_base, a.screen_blob, a.gate,
+               pool_mode=a.pool_mode, pr_id=a.pr_id)
     if not pr["gate2_attribution_trustworthiness"]["TRUSTWORTHY"]:
         print("NOTE: gate 2 FAILED -- design 3.4's fallback selection applies and this prereg's "
               "selector clause does not hold. Refusing to freeze.", file=sys.stderr)

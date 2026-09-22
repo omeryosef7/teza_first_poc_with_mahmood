@@ -17439,3 +17439,88 @@ the mean all-32 draw carries TWO candidate heads where no complement draw can ca
 NOT RUN: it needs PR-CSI-011 with its own frozen seeds and verdicts, not an extension of a decided
 family (S-120(e), VOID 6). The existing claim is correctly bounded either way.
 ```
+
+---
+
+# S-226 — **PR-CSI-011 is FROZEN and its GATE 0 passes. Nothing is launched.** The candidate is not re-selected, the seeds are disjoint, and the freezer change is **proven inert** for the already-decided PR-CSI-010
+
+R18/AM-26 identified the gap; S-225 specified the fix and costed it at 2.0 GPU-h. This tick freezes it,
+which is the step that has to happen **before** any arm and cannot be done afterwards.
+
+## The freezer change is inert for PR-CSI-010, proven before use
+
+The pool is now a declared mode rather than a hard-coded shape. Re-freezing PR-CSI-010 through the
+changed code, to a temp path:
+
+```
+keys ADDED                : control_pool_mode, control_pool_note
+keys REMOVED              : none
+EXISTING keys that CHANGED: NONE -- the frozen content is byte-identical
+head_sets identical       : True
+configs/dcs_csi_pr010_head_causal_basket.json  md5 08e4ca1f... UNCHANGED on disk
+```
+
+**A decided preregistration must not move when the tool that wrote it changes.** That was checked, not
+assumed — and PR-010's committed file was never written to.
+
+## PR-CSI-011, frozen
+
+```
+id PR-CSI-011 | control_pool_mode all | pool 32 heads | 24 arms/split | floor 1/21 = 0.0476
+HD_TOPK [19, 17, 23, 6, 13, 2, 24, 28]   IDENTICAL to PR-CSI-010 -- the candidate is NOT re-selected
+seed_base 20261001 (PR-010: 20260921)    seed ranges DISJOINT
+control draws reused from PR-010: 0 of 20
+candidate heads per control draw: [0,1,1,2,1,4,2,1,2,1,0,3,2,1,2,3,1,3,3,2]  mean 1.75, only 2 with none
+```
+
+**One control draw contains FOUR of the eight candidate heads.** That is not a flaw — under
+`pool_mode=all` overlap is the design. A control that is half the candidate set should carry a real
+effect, and the candidate has to beat it anyway. **This is the harder test AM-26 said was missing.**
+
+## GATE 0 adapted, and regression-tested in both directions
+
+Gate 0's pool check was hard-coded to the complement. Left alone it would have **failed every PR-011
+arm and called the family VOID** — the same error shape S-215 caught when a dose check nearly got
+pinned to train's absolute value. It now checks the pool against **the mode the prereg declares**, and
+under `all` it replaces *"no control contains a candidate head"* (false by design) with
+**"no control IS the candidate set"** — which would otherwise compare the candidate to itself.
+
+```
+PR-CSI-010 : GATE 0 PASSED   (regression -- unchanged behaviour)
+PR-CSI-011 : GATE 0 PASSED   pool 'all' 32 heads | no control identical to the candidate | mean overlap 1.75
+```
+
+## ⛔ Nothing is launched, and what the result would and would not settle
+
+**22 arms, ~2.0 h compute, VALIDATION only** — TRAIN would re-contaminate a set selected on TRAIN.
+It would answer *"is this 8-head set privileged among **arbitrary** 8-head sets"*, which PR-CSI-010
+cannot: its controls exclude the candidates by construction.
+
+**It cannot revise D32.** D32's verdict was adjudicated against PR-CSI-010's own frozen family and
+stands on that family's terms; a second family is a **second experiment** with its own verdict, not a
+re-read of the first. If PR-011's candidate fails to rank 1, that is a fact about arbitrary-subset
+comparisons — **not a retraction of a result whose control definition was preregistered and is now
+explicitly bounded by AM-26.**
+
+**The launch is the user's call.** The preregistration costs nothing to hold, and holding it frozen is
+strictly better than writing it after seeing whether it would be needed.
+
+## Commands
+
+```
+python scripts/gates/dcs_csi_pr010_freeze.py --screen .../w1_screen_train_basket_916132.json \
+  --gate .../w2_patch_gate_train_basket_916044.json --screen-blob b56d5d16 \
+  --pool-mode all --pr-id PR-CSI-011 --seed-base 20261001 \
+  --out configs/dcs_csi_pr011_head_all32_controls_basket.json
+python scripts/gates/dcs_csi_pr010_gate0.py --prereg configs/dcs_csi_pr011_head_all32_controls_basket.json \
+  --screen ... --gate ...        # and the same on PR-010 as a regression
+```
+
+```
+PR-CSI-011 FROZEN, GATE 0 PASSES, NOTHING LAUNCHED. Candidate IDENTICAL to PR-010 (not re-selected),
+seed ranges disjoint, 0 of 20 draws reused, mean 1.75 candidate heads per control -- one draw holds FOUR.
+THE FREEZER CHANGE IS PROVEN INERT for the decided PR-010: two doc keys added, no existing key changed,
+committed file untouched. A decided preregistration must not move when its tool changes.
+GATE 0's pool check would have VOIDED every PR-011 arm if left hard-coded; it now reads the declared mode.
+IT CANNOT REVISE D32 -- a second family is a second experiment, not a re-read of the first.
+```

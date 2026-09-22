@@ -47,8 +47,16 @@ def main():
     chk(hs["HD_BOTK"] == sorted(S, key=lambda h: abs(S[h]))[:K], "HD_BOTK is the K |S[h]| closest to 0",
         "prereg %s" % hs["HD_BOTK"])
     chk(not (set(hs["HD_TOPK"]) & set(hs["HD_BOTK"])), "HD_TOPK and HD_BOTK are disjoint")
-    chk(hs["control_pool"] == sorted(set(range(n_heads)) - set(hs["HD_TOPK"])),
-        "control pool is exactly the 32-K non-candidate heads", "%d heads" % len(hs["control_pool"]))
+    # THE POOL IS CHECKED AGAINST THE MODE THE PREREG DECLARES, not against one hard-coded shape.
+    # PR-CSI-010 draws from the complement; PR-CSI-011 draws from all 32 (R18/AM-26). A gate that
+    # assumed "complement" would fail every PR-011 arm and call the family VOID -- the same mistake
+    # as hard-coding train's absolute dose, which S-215 caught before it could bite.
+    mode = pr.get("control_pool_mode", "complement")
+    want_pool = (sorted(set(range(n_heads)) - set(hs["HD_TOPK"])) if mode == "complement"
+                 else sorted(range(n_heads)))
+    chk(hs["control_pool"] == want_pool,
+        "control pool matches the declared mode %r" % mode,
+        "%d heads" % len(hs["control_pool"]))
 
     print()
     print("[B] the 20 control draws are reproducible from the stated seed rule")
@@ -60,7 +68,15 @@ def main():
     chk(not bad, "every draw reproduces from seed_base + index", "mismatched: %s" % (bad or "none"))
     chk(all(len(v) == K for v in rands.values()), "every control draw has exactly K heads")
     leak = [k for k, v in rands.items() if set(v) & set(hs["HD_TOPK"])]
-    chk(not leak, "NO control contains a candidate head", "leaking: %s" % (leak or "none"))
+    if mode == "complement":
+        chk(not leak, "NO control contains a candidate head", "leaking: %s" % (leak or "none"))
+    else:
+        # Under pool_mode "all" an overlap is EXPECTED and is the point of the design; what must
+        # hold is that no control IS the candidate set, which would make the test compare it to itself.
+        ident = [k for k, v in rands.items() if set(v) == set(hs["HD_TOPK"])]
+        chk(not ident, "no control IS the candidate set (overlap is expected under pool_mode=all)",
+            "identical: %s | mean overlap %.2f"
+            % (ident or "none", sum(len(set(v) & set(hs["HD_TOPK"])) for v in rands.values())/len(rands)))
     chk(len({tuple(v) for v in rands.values()}) == len(rands), "all draws are distinct")
     chk("HD_BOTK" not in rands and not any(v == hs["HD_BOTK"] for v in rands.values()),
         "HD_BOTK does NOT enter the control family (S-120(e) foot-gun)")
