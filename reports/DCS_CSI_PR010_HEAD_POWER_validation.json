@@ -1,0 +1,147 @@
+{
+  "schema": "dcs_csi_head_power/1",
+  "prereg": "configs/dcs_csi_pr010_head_causal_basket.json",
+  "prereg_id": "PR-CSI-010",
+  "split": "validation",
+  "n_domains": 23,
+  "n_controls": 20,
+  "B": 20000,
+  "seed": 20260922,
+  "attainable_floor": 0.047619047619047616,
+  "ONLY_RANK_1_CERTIFIES": "with 20 controls the floor is 0.047619, so rank 2 gives 0.095238 and cannot pass at alpha=0.05 for ANY effect size",
+  "control_E": {
+    "mean": -0.0040063791204479424,
+    "sd": 0.013204863895095191,
+    "values": [
+      -0.02457135,
+      -0.02233807,
+      -0.02231809,
+      -0.01866978,
+      -0.01763247,
+      -0.01357714,
+      -0.01107788,
+      -0.01068139,
+      -0.00664978,
+      -0.00501994,
+      -0.00129957,
+      0.00052604,
+      0.00371146,
+      0.00381644,
+      0.00440625,
+      0.00799047,
+      0.00925085,
+      0.01160677,
+      0.0127055,
+      0.01969408
+    ]
+  },
+  "observed": {
+    "E_HD_TOPK": -0.19598350189679406,
+    "E_HD_KO": -0.22696123287577621,
+    "candidate_shift_vs_control_mean": -0.19197712277634613,
+    "power_at_the_observed_effect": 1.0
+  },
+  "target_power": 0.8,
+  "MDE": -0.034,
+  "MDE_as_fraction_of_E_HD_KO": 0.1498,
+  "curve": [
+    {
+      "delta": 0.0,
+      "power": 0.0266
+    },
+    {
+      "delta": -0.002,
+      "power": 0.0938
+    },
+    {
+      "delta": -0.004,
+      "power": 0.1659
+    },
+    {
+      "delta": -0.006,
+      "power": 0.2162
+    },
+    {
+      "delta": -0.008,
+      "power": 0.2613
+    },
+    {
+      "delta": -0.01,
+      "power": 0.2685
+    },
+    {
+      "delta": -0.012,
+      "power": 0.3446
+    },
+    {
+      "delta": -0.014,
+      "power": 0.4027
+    },
+    {
+      "delta": -0.016,
+      "power": 0.4163
+    },
+    {
+      "delta": -0.018,
+      "power": 0.4757
+    },
+    {
+      "delta": -0.02,
+      "power": 0.5051
+    },
+    {
+      "delta": -0.022,
+      "power": 0.5222
+    },
+    {
+      "delta": -0.024,
+      "power": 0.5734
+    },
+    {
+      "delta": -0.026,
+      "power": 0.6085
+    },
+    {
+      "delta": -0.028,
+      "power": 0.6572
+    },
+    {
+      "delta": -0.03,
+      "power": 0.7521
+    },
+    {
+      "delta": -0.032,
+      "power": 0.7913
+    },
+    {
+      "delta": -0.034,
+      "power": 0.867
+    },
+    {
+      "delta": -0.036,
+      "power": 0.8842
+    },
+    {
+      "delta": -0.038,
+      "power": 0.9487
+    },
+    {
+      "delta": -0.04,
+      "power": 0.9532
+    },
+    {
+      "delta": -0.042,
+      "power": 0.9506
+    },
+    {
+      "delta": -0.044,
+      "power": 0.9683
+    },
+    {
+      "delta": -0.046,
+      "power": 1.0
+    }
+  ],
+  "NOISE_MODEL_CAVEAT": "the null spread is the 20 control arms' own E sd, which conflates domain sampling noise with genuine arm-to-arm heterogeneity between different random 8-head sets. Conservative for an MDE, but NOT a clean estimate of domain sampling error; separating them would need repeated draws of the SAME head set, which no arm provides",
+  "CANNOT_ANSWER": "this is the power of the RANK test as run. It says nothing about the power of the F criterion's ci95, nor about TRAIN, nor about any head set other than one behaving like a random draw plus a constant shift"
+}

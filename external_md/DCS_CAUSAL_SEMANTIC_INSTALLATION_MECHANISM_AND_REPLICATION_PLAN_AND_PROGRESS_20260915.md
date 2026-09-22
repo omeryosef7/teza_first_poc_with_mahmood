@@ -16964,3 +16964,76 @@ D32 ENTERED in the claim table with its limits in the row itself, not in a footn
 P4's HEADS stage is done for basket leg (i) | cross-codeword transfer to button is the NEXT design,
 unblocked but NOT started -- it needs its own preregistration
 ```
+
+---
+
+# S-220 — **§22's POWER item, done for the head endpoint: the validation split's MDE is 15.0% of the all-head ceiling**, so §6's *"the split is underpowered for head-sized effects"* branch is **refuted with a number** rather than left as a worry
+
+`scripts/dcs_csi_head_power.py`. The existing `dcs_csi_power.py` was **not** reusable — it analyses the
+native-refusal endpoint at D=90 domains with R=2 rows and a rate in `{0, 0.5, 1}`. PR-CSI-010's
+endpoint is `y_install` on 23 held-out domains at 10 rows, adjudicated by a **rank**. Different
+endpoint, different unit count, different test.
+
+## The test's ceiling comes before its power
+
+```
+attainable floor 1/21 = 0.047619  ->  ONLY rank 1 certifies at alpha = 0.05
+rank 2 = 0.095238 and CANNOT PASS for ANY effect size, however large
+```
+
+So "power" here means `P(candidate ranks strictly first of 21)`. **No effect buys a second chance** —
+which is why 20 controls and not fewer was a design decision (§5.5), and it is worth seeing that the
+ceiling is a property of the family size, not of the biology.
+
+## The answer
+
+```
+control E: mean -0.004006  sd 0.013205  (n = 20)
+
+delta      power
++0.000     0.0266
+-0.010     0.2685
+-0.020     0.5051
+-0.034     >= 0.80        <- MDE at 80% power = 15.0% of E(HD_KO) = -0.226961
+observed   -0.191977  ->  power 1.0000
+```
+
+**The split could have detected a candidate-versus-control difference of 0.034 — one seventh of the
+all-head ceiling — at 80% power. It observed 0.192.** The `CANNOT ANSWER` branch that worried about
+being underpowered for head-sized effects does not apply, and now says so with a measured MDE instead
+of an assurance.
+
+**A sharper consequence:** §6's uniform null predicted `≈ -0.057` for any 8 heads. **The MDE (-0.034)
+is smaller than that**, so an effect of uniform-null size was inside this design's reach. The
+experiment was powered to see the null it was testing against — which is the condition under which a
+negative result would have meant something, and it is only checkable after the fact.
+
+## ⛔ Where this analysis is weakest, stated plainly
+
+The null spread is the **20 control arms' own `E` sd**, which conflates **domain sampling noise** with
+genuine **arm-to-arm heterogeneity** between different random 8-head sets. Treating the combination as
+noise is conservative for an MDE — a wider null makes detection harder — but it is **not** a clean
+estimate of domain sampling error, and **this analysis cannot separate the two**: doing so needs
+repeated draws of the *same* head set, which no arm in the family provides. The controls are resampled
+from their own empirical values rather than assumed Gaussian, so the null keeps whatever shape it
+actually has.
+
+**CANNOT ANSWER**: the power of the `F` criterion's ci95, anything about TRAIN, and the behaviour of
+any head set that is not "a random draw plus a constant shift".
+
+## Commands
+
+```
+python scripts/dcs_csi_head_power.py --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+  --tag-prefix csi3_head_basket_validation --split validation --expect-n 230 \
+  --require-slurm-job 916536 --out reports/DCS_CSI_PR010_HEAD_POWER_validation.json
+```
+
+```
+SECTION 22 POWER item DONE for the head endpoint | MDE at 80% power = -0.034 = 15.0% of the ceiling
+power at the OBSERVED effect = 1.0000 | attainable floor 0.047619, ONLY rank 1 can certify
+section 6's "underpowered for head-sized effects" branch is REFUTED WITH A NUMBER
+the MDE is SMALLER than the uniform null's -0.057, so the design could see the null it tested against
+NOISE MODEL CAVEAT STATED: the control sd conflates domain noise with head-set heterogeneity and this
+analysis cannot separate them.
+```
