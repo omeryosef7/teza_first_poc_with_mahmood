@@ -17748,3 +17748,86 @@ unrun, and I add A5-7: AtP / path patching have ZERO coverage though AtP SELECTE
 D32 may report its measurement and its scope; it may NOT say novel, first, or unaddressed.
 No search run, no citation added -- the assessment uses only already-verified content.
 ```
+
+---
+
+# S-230 — **§A5-7 CLOSED by retrieval: the AtP literature read.** It **vindicates the §3.4 gate** and finds **two real gaps in our method** — a documented divergence from the canonical estimator, and a false-negative bound we never computed
+
+Two papers **fetched and read**; three search hits recorded unverified and uncitable.
+
+## ⚠ Gap 1 — our selector diverges from the canonical method, and I had not known it
+
+`arXiv:2403.00745` (**AtP∗**, Kramár/Lieberum/Shah/Nanda, DeepMind, 2024-03-01) uses **our estimator**:
+
+```
+AtP*: Î(n) = (n(x_noise) − n(x_clean))ᵀ ∂L/∂n        W1: ⟨g_z, z_ko − z_clean⟩
+```
+
+**but it aggregates by ABSOLUTE VALUE** — `ĉ(n) = E[|Î(n)|]` — while design §3.3 makes `S[h]` **signed**
+and calls `|AtP|` *"a DIAGNOSTIC and never the selector"*. Both are defensible for their own goals (AtP∗
+localises *what affects the behaviour*; we ask *what moves the readout toward the installed concept*),
+and S-181 already measured the orderings disagreeing materially — h6 4th signed, **18th** by `|AtP|`.
+**But a methods description must state the divergence and cite it rather than let a reviewer find it.**
+
+## ⚠ Gap 2 — the validation the method recommends, we did half of
+
+AtP∗ advises verifying the **top-K by true patching** *and* bounding **missed false negatives** over the
+remainder by subset sampling with Welch's t-test. **We did the first** (§3.4: Pearson 0.7817, Spearman
+0.7852 over 40 domains). **We never did the second — 248 of 288 cells were never patched and this sprint
+has no bound on what they contain.** Recorded as the new §A5-8 and it is cheap.
+
+AtP∗ also documents **severe false negatives for attention nodes from softmax saturation**, worst at
+query/key. Our patch site is the **o_proj input**, not Q/K, so the worst-hit node type is not ours —
+**but this supports D32's "(part of)" hedge and forbids any claim of completeness.**
+
+## ⭐ And it vindicates the gate, on the same model family
+
+`arXiv:2606.09899` (*When Attribution Patching Lies*, Zhang/CMU, Wang/UCSC, **2026-06-05** — three months
+after this review's original pass):
+
+```
+"the dominant error stems from the network's RESPONSE TO THE INTERVENTION, rather than from the
+ local nonlinearity at the patched component"
+network Hessian exceeds local curvature 22-66x, near-zero correlation r = 0.04
+HVP correction cuts top-5 relative error 72-90% ON ATTENTION HEADS
+on Llama-3.1-8B IOI: 82% error reduction vs vanilla AtP
+```
+
+**Same model family, same component type.** First-order AtP on Llama-3.1-8B attention heads carries
+large relative error by that paper's measurement — **and the error it names is precisely what §3.4's
+gate measures**, since the gate patches `z_ko` into a clean forward and reads the true `ΔM`, i.e. the
+network's response to the intervention. **The design never relied on AtP's accuracy; it measured it, and
+got 0.7817 / 0.7852 for its own cell.** A reviewer raising this paper against our screen is answered by a
+measurement, not an argument. It offers no treatment of signed-vs-absolute, so Gap 1 stays open in the
+literature.
+
+## What this does NOT touch
+
+**D32 stands.** It rests on the **intervention** — GATE 0 across 48 arms, GATE 1 on held-out data, rank
+1 of 21 at the attainable floor, `F = 0.8635` with ci95 excluding 0, two independent analysers agreeing
+to `3.5e-06`. **The screen only proposed the candidate.** Nothing retrieved here bears on how it was
+adjudicated; both gaps are about the screen and about how the method may be *described*.
+
+**§12's rule still stands.** §A5-2 (non-archival venues — *"the most likely place a close neighbour
+hides"*) and §A5-4 (the citation-graph crawl) remain **unrun**, so **no novelty claim is licensed.**
+
+## Commands
+
+```
+WebSearch "attribution patching AtP attention head localization transformer method limitations"
+WebFetch  https://arxiv.org/html/2403.00745      # AtP*, read
+WebFetch  https://arxiv.org/html/2606.09899v1    # When Attribution Patching Lies, read
+# 3 further hits recorded UNVERIFIED in LIT §C4 and must not be cited
+```
+
+```
+A5-7 CLOSED BY RETRIEVAL. Two papers FETCHED; three search-only hits quarantined as uncitable.
+GAP 1: AtP* aggregates by |AtP|; our design forbids that and selects on SIGNED S[h]. A real divergence
+from the canonical method, defensible but MUST BE STATED. S-181 already measured the orderings differ.
+GAP 2: AtP* recommends a false-negative bound over unverified nodes (subset sampling + Welch). WE NEVER
+DID IT -- 248 of 288 cells unpatched, no bound exists. New A5-8, cheap.
+THE GATE IS VINDICATED: 2606.09899 names "the network's response to the intervention" as AtP's dominant
+error -- exactly what section 3.4 measures -- and reports 72-90% top-5 error on attention heads and 82%
+on Llama-3.1-8B. We measured our own: 0.7817 / 0.7852.
+D32 UNAFFECTED (it rests on the intervention). NOVELTY STILL BLOCKED: A5-2 and A5-4 unrun.
+```

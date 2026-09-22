@@ -505,3 +505,105 @@ addendum; it is re-stated with one more topic on the list.**
    was *selected* by AtP and validated by a true-patch gate; the method's standing, known failure
    modes and accepted validation practice are unreviewed. **Highest-value next literature action
    alongside item 4.**
+
+---
+
+# ADDENDUM C — 2026-09-22: **§A5 item 7 CLOSED. The AtP method literature, retrieved and read.** Two works fetched and verified; three recorded unverified. It **strengthens** the decision to gate and **bounds** the screen
+
+§A5-7 (added hours earlier in Addendum B) said attribution patching had **zero** coverage here although
+AtP *selected* our head set. This pass retrieves it. **Two papers were fetched and read; anything not
+fetched is in §C4 and must not be cited.**
+
+## C1. VERIFIED — arXiv:2403.00745, *AtP∗: An efficient and scalable method for localizing LLM behaviour to components*
+
+Kramár, Lieberum, Shah, Nanda (Google DeepMind), 1 March 2024. **Fetched and read.**
+
+Its estimator is **ours**:
+
+```
+Î_AtP(n) = (n(x_noise) − n(x_clean))ᵀ · ∂L(M(x_clean))/∂n
+W1:        ⟨ g_z , z_ko − z_clean ⟩                          with x_noise = the A1 knockout
+```
+
+**Three findings that bear directly on PR-CSI-010:**
+
+**(a) ⚠ AtP∗ aggregates by ABSOLUTE VALUE; our design forbids exactly that.** The paper's contribution
+score is `ĉ_AtP(n) = E[|Î_AtP(n)|]`. Design §3.3 makes `S[h]` **signed** and calls `|AtP|` *"a
+DIAGNOSTIC and never the selector"*. **This is a documented divergence from the canonical method**, and
+it is not cosmetic: S-181 measured the two orderings disagreeing on which heads make the top ten (h6
+4th signed, 18th by `|AtP|`). Both are defensible for their own goals — AtP∗ localises *which
+components affect the behaviour*, we ask *which heads move the readout toward the installed concept* —
+but **the divergence must be stated in any methods description, not discovered by a reviewer.**
+
+**(b) Attention nodes suffer SEVERE FALSE NEGATIVES from softmax saturation** — *"when preactivations
+fall in saturated regions of softmax, gradients are a poor approximation"*, with attention worse than
+MLPs and query/key nodes worst. **This supports D32's "(part of)" hedge rather than threatening it**: a
+false negative means our screen may have **missed** contributing heads, not that the eight it found are
+wrong. Our patch site is the **o_proj input** (the value/output side), not Q/K, so the worst-affected
+node type is not ours — **but nothing here licenses claiming completeness.**
+
+**(c) The paper's recommended validation is HALF of what we did, and half of what we did not.** It
+advises verifying the **top-K by true patching** *and* using the unverified remainder for a
+**subset-sampling bound on missed false negatives** (Welch's t-test). **We did the first** — §3.4's gate
+patched the top-40 cells and measured Pearson 0.7817 / Spearman 0.7852 over 40 domains. **We did not do
+the second.** No bound on false negatives among the 248 unscreened cells exists anywhere in this sprint.
+
+## C2. VERIFIED — arXiv:2606.09899, *When Attribution Patching Lies: Diagnosis and a Second-Order Correction*
+
+Luyang Zhang (CMU), Jialu Wang (UC Santa Cruz), 5 June 2026. **Fetched and read.** Postdates this
+review's original pass by three months.
+
+```
+"the dominant error stems from the network's RESPONSE TO THE INTERVENTION, rather than from the
+ local nonlinearity at the patched component"
+network-level Hessian exceeds local curvature by 22-66x, near-zero correlation (r = 0.04)
+HVP correction reduces top-5 relative error by 72-90% ON ATTENTION HEADS
+on Llama-3.1-8B IOI, MS-HVP achieves 82% error reduction versus vanilla AtP
+```
+
+**It is the same model family we use, and the component type we screened.** First-order AtP on
+Llama-3.1-8B attention heads carries large relative error by this paper's measurement.
+
+**⭐ And it vindicates the gate.** The error it identifies is *the network's response to the
+intervention* — which is exactly what §3.4's true-patch gate measures, by patching `z_ko` into a clean
+forward and reading the true `ΔM`. **The design did not rely on AtP's accuracy; it measured it.** Our
+own cell's answer is 0.7817 / 0.7852, which is an empirical statement about our estimator on our
+population and needs no correction term to be interpretable. **A reviewer citing this paper against our
+screen is answered by the gate, not by argument.**
+
+It reports **no** treatment of signed-versus-absolute aggregation, so (a) above remains unaddressed in
+the literature found so far.
+
+## C3. What this changes, and what it does not
+
+**Changes:** §A5-7 is closed. Any methods description of W1 must now state the signed/absolute
+divergence from AtP∗ and cite it, and must not describe the head set as complete.
+**Does not change:** D32's result. D32 rests on the **intervention** — GATE 0 on 48 arms, GATE 1 on
+held-out data, rank 1 of 21 at the floor, `F = 0.8635`, two independent analysers at `3.5e-06`. **The
+screen only proposed the candidate; nothing in C1/C2 touches how it was adjudicated.**
+
+**New uncovered item, replacing A5-7:**
+8. **A false-negative bound over unscreened cells.** AtP∗'s subset-sampling / Welch's t-test procedure
+   was not run. 248 of 288 cells were never patched, and this sprint has **no** bound on what they
+   contain. Cheap, and it is the single remaining methodological gap between our pipeline and the
+   canonical one.
+
+## C4. UNVERIFIED — surfaced in this pass, NOT fetched, MUST NOT be cited
+
+Search results only; **no page was fetched** and titles are copied from result blocks.
+
+* arXiv:2404.15255 — *"How to use and interpret activation patching"*
+* arXiv:2508.21258 — *"RelP: Faithful and Efficient Circuit Discovery … via Relevance Patching"*
+* arXiv:2506.17052 — *"From Concepts to Components: Concept-Agnostic Attention Module Discovery"*
+* emergentmind.com and learnmechinterp.com topic pages on attribution patching
+
+## C5. Searches run in this pass
+
+```
+WebSearch "attribution patching AtP attention head localization transformer method limitations"  -> 9 results
+WebFetch  arxiv.org/html/2403.00745   -> read (C1)
+WebFetch  arxiv.org/html/2606.09899v1 -> read (C2)
+```
+
+**§A5-2 (non-archival venues) and §A5-4 (citation-graph crawl) remain UNRUN.** A novelty claim is still
+blocked by §12.
