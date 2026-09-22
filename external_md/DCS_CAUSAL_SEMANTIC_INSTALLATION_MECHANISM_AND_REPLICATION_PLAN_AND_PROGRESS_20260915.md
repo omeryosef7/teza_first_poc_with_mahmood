@@ -17361,3 +17361,81 @@ S[h] has the OPPOSITE SIGN to an all-32 draw (+150.6 vs -152.1). "20 random draw
 of the complement, not of arbitrary 8-head sets.
 No arithmetic defect found. Amendment to D32 RECOMMENDED, not applied in this tick.
 ```
+
+---
+
+# S-225 — **AM-26 applied**, and the follow-up that would close R18's gap is **specified and costed at 2.0 GPU-h — and NOT run**, because it needs its own preregistration
+
+## AM-26 is in the claim table
+
+`reports/DCS_CSI_CLAIM_TABLE.md` 809 → 817 lines, prefix md5 unchanged. It records that D32's control
+distribution describes **8-head draws from the candidate's 24-head complement**, whose expected `S[h]`
+has the **opposite sign** to an all-32 draw (**+150.6** vs **−152.1**), and states explicitly that
+**the rank p and the uniform-null refutation are NOT weakened** — under the tested null the complement
+is not special, so D27's *"rank p is DESCRIPTIVE"* finding does not transfer.
+
+Applied without waiting because **an amendment that only adds a bound moves a claim in the
+conservative direction**, and R18 had already established it by measurement. The thing S-223 warned
+against was publishing a headline before checking it — not recording a caveat after checking it twice.
+
+## The follow-up, specified
+
+**A second control family drawn from ALL 32 heads**, which tests the candidate against *arbitrary*
+8-head subsets rather than against the complement of a train-selected set.
+
+```
+arms:     HD_BASE (re-run in-allocation, per §4.4) + HD_TOPK (re-run) + HD_ALL32_00..19
+K:        8, unchanged
+pool:     all 32 heads -- draws MAY contain candidate heads, which is the point
+seeds:    must be NEW and disjoint from PR-CSI-010's 20; the existing seeds are spent
+split:    VALIDATION only (23 domains) -- TRAIN would be selection-contaminated again
+cost:     22 arms x 325 s (measured, S-215) = 1.99 h compute + one model load
+```
+
+**It is a genuinely harder test, and by how much is calculable in advance.** Over 20 000 simulated
+all-32 draws:
+
+```
+candidate heads per draw : mean 1.99   P(draw contains none) = 0.068
+draw sum S               : mean -150.5  median -130.3  p5 -556.0  p95 +196.5
+candidate sum S          : -1060.3
+P(an all-32 draw is more negative than the candidate), by AtP : 0.00000
+```
+
+So the average all-32 control would carry **two candidate heads** and a real effect — which is exactly
+what makes the comparison sharper than the complement family, where 0 of 20 draws could contain any.
+By the screen's own estimate the candidate still separates, but **AtP's estimate is not the
+intervention**, and that is the whole reason §3.4 exists.
+
+## ⛔ Why it is not launched
+
+**It needs a preregistration, not an extension.** New control seeds, a new pool definition and a new
+family size are new design decisions, and PR-CSI-010's verdicts were frozen against *its* family —
+bolting a second family onto a decided experiment is how a family silently widens (S-120(e), VOID 6).
+The honest form is **PR-CSI-011** with its own frozen head sets, seeds, floor and verdict table, written
+before any arm runs. **That plus 2 GPU-h is the user's call**, and after AM-26 the existing claim is
+correctly bounded either way — so nothing is broken by leaving it unrun.
+
+## §22 status
+
+**POWER** is now done for the head endpoint (S-220), the endpoint carrying a negative conclusion
+(S-221), and all 21 committed rank cells (S-222, framing corrected by S-223). **P4's heads stage** is
+complete and adjudicated for `basket` leg (i), with its limits in D32 and AM-26. **Unstarted and
+needing a design decision**: cross-codeword transfer to `button` (§10's *"next design"*), this all-32
+control family, and §22's LIT / P5 / P6.
+
+## Commands
+
+```
+# AM-26 appended to reports/DCS_CSI_CLAIM_TABLE.md (809 -> 817 lines, prefix md5 unchanged)
+# all-32 draw simulation: 20000 draws of K=8 from range(32), seed 20260922, S[h] from the 916132 screen
+```
+
+```
+AM-26 APPLIED: D32's control prose is now bounded -- complement draws, expected S[h] of OPPOSITE SIGN
+to an all-32 draw (+150.6 vs -152.1); rank p and uniform-null refutation explicitly NOT weakened.
+FOLLOW-UP SPECIFIED AND COSTED: an all-32 control family, 22 arms, 1.99 h compute. A sharper test --
+the mean all-32 draw carries TWO candidate heads where no complement draw can carry any.
+NOT RUN: it needs PR-CSI-011 with its own frozen seeds and verdicts, not an extension of a decided
+family (S-120(e), VOID 6). The existing claim is correctly bounded either way.
+```
