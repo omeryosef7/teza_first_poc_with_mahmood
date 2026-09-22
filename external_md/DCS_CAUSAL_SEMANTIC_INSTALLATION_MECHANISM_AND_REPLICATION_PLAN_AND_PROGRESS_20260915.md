@@ -22149,3 +22149,66 @@ that misled me for seven entries, and it is now annotated instead of generalised
 stands.**
 
 **No PR-013 number has ever been read.** `score_behavior.py` was not opened.
+
+---
+
+## S-276 — **the four-generation load table, from the file S-272 found. A WARM load is FOUR SECONDS.** ⚠ **WITHDRAWN: S-275's "favourable accident" — n-302's cache did NOT retain 919296's 94 shards, and 919531 is doing a cold load.** ⚠ **And S-261's "47.5 s warm" is refined: the shard reads were 4 s**
+
+### 1. Every generation's load, side by side
+
+```
+918967  n-307 COLD   shard1  322.64 s/it       ->  291/291 in 1:36:59  at 20.00 s/it
+919240  n-307 WARM   shard1    4.37 IT/S       ->  291/291 in 0:00:04  at 59.56 it/s   <- FOUR SECONDS
+919296  n-302 COLD   shard1 1279.57 s/it       ->   95/291 in 1:47:17  at 58.39 s/it  (cancelled)
+919531  n-302        shard1 none after ~7 min  ->    0/291
+```
+
+**The spread between a warm and a cold load is not 126× — it is roughly 1450×** (4 s against 1:36:59).
+`919240`'s entire weight load took **four seconds** because it started minutes after `918967` finished
+loading on the same node.
+
+### 2. ⚠ WITHDRAWN — S-275's favourable accident
+
+S-275 recorded, as *"a possibility, not a claim"*, that 919531 landing on n-302 might inherit ~a third of
+the snapshot from 919296's 94 shards. **Measured: it did not.** 919531 has produced **no completed shard
+after ~7 minutes**, which is the cold regime (919296's own shard 1 on this node took 21:19). **The page
+cache did not survive 15 minutes on a node carrying 6 jobs** — or the first shard read is not among the 94
+that were pulled. **Either way the benefit is absent, and it was flagged as unverified precisely so this
+could be settled rather than assumed.**
+
+**The operational fact that generalises:** the warm benefit needed the **same node** *and* **close temporal
+proximity** — `919240` started minutes after `918967`'s load, not 15 minutes after a cancellation.
+
+### 3. ⚠ Refinement to S-261
+
+S-261 recorded the warm load as **47.5 s** and used it for the 126× figure. **That was the `[w3] MODEL
+LOAD` line, which wraps more than the shard reads.** The shard reads themselves were **4 seconds**
+(`291/291 [00:04<00:00, 59.56it/s]`). **S-261's mechanism claim is unaffected** — page cache, and the
+direction and order of magnitude stand — **but the number it quoted was for a wider bracket than the one it
+was compared against.**
+
+### 4. Not a stall, and checked rather than assumed
+
+```
+.err bytes: 122 at 02:34:05, still 122 twenty seconds later
+```
+
+**`tqdm` redraws on iteration completion, so a static byte count during a long first shard is expected**
+and is not evidence of a hang — the same reasoning S-258 established for `.out` buffering, applied to the
+right file this time. **The bar will jump when shard 1 lands.**
+
+### 5. What this means for the schedule, and why nothing is being done about it
+
+```
+if 919531 tracks 919296's cold profile on n-302:  load ~3.5 h  ->  ends ~05:50
+then 23 arms at ~280-300 s                       ->  finishes ~07:45
+wall: started 02:20:24 + 12 h  ->  14:20          MARGIN ~6.5 h
+```
+
+**⛔ S-274's commitment holds: no further cancellations.** The load is slow and the margin is ample; a
+sixth submission would spend more fairshare to gamble on a cache state this very entry just measured as
+absent. **The one thing that would genuinely fix this class of cost is porting node-local staging
+(S-267/S-268), which is a one-line provenance change in a file not on PR-013's path — and that is a
+deliberate post-PR-013 action, not a mid-flight one.**
+
+**No PR-013 number has ever been read.** `score_behavior.py` was not opened.
