@@ -21720,3 +21720,68 @@ frozen  read 911c3a20 | prereg 5ab06e3a | nomination rule fae4adc6 | reading cri
 
 **No PR-013 number exists.** `score_behavior.py` was not opened. **REVIEW R23 is due ~02:38**, which falls
 just after the threshold above — so if the load misses it, R23 is where the diagnosis belongs.
+
+---
+
+## S-271 — ⚠ **I nearly reported a hang on a signal that does not exist.** `TotalCPU = 00:00:00` after 85 minutes looked decisive — **until I checked completed jobs and found it is `00:00:00` for every job this sprint has ever run, including two that finished 3.5 h of GPU work.** SLURM accounting here supplies NO cpu or memory telemetry, which makes S-270's wall-clock threshold not *a* method but the *only* one
+
+### 1. The signal that looked decisive
+
+Looking for evidence that 919296's load is progressing rather than hung:
+
+```
+sacct -j 919296 --format=JobID,State,MaxRSS,TotalCPU,Elapsed
+  919296        RUNNING              00:00:00   01:25:31
+  919296.batch  RUNNING              00:00:00   01:25:31
+```
+
+**Zero CPU time after 85 minutes.** A process deserialising 15 GB of safetensors consumes measurable CPU
+even when I/O-bound, so this reads as a process blocked forever — **and a cancellation would have followed.**
+
+### 2. ⛔ The check that killed it, before it became a finding
+
+```
+sacct -j 918631,918967,918169 --format=JobID,State,TotalCPU,Elapsed,MaxRSS
+  918169  COMPLETED   00:00:00   03:31:17          <- PR-011, 24 arms, finished normally
+  918631  COMPLETED   00:00:00   03:35:23          <- PR-012 census, 44 arms, finished normally
+  918967  CANCELLED+  00:00:00   02:56:32
+```
+
+**`TotalCPU` is `00:00:00` for jobs that demonstrably did hours of GPU work, and `MaxRSS` is empty
+everywhere.** The fields are **not populated by this cluster's accounting configuration at all.**
+
+**So the signal does not exist.** Had I reported it, the "measurement" would have been an artefact of a
+disabled accounting plugin, and the action it implied — cancel a healthy job at 85 minutes — would have
+cost a fourth relaunch and another cold load. **This is the third time in this sprint that a plausible
+diagnostic turned out to measure nothing** (`git_dirty: None` reading as clean, an empty `porcelain`
+reading as clean, and now this), and the standing rule from R20-6 caught it again: **any check whose
+result is consistent with the instrument being switched off is not a check until you have seen it
+switched on.**
+
+### 3. What this closes, and why it strengthens S-270
+
+I have now reached for `sstat`/`sacct` telemetry **twice** — in S-257 and again here — and both times it
+returned nothing usable (`AveCPU` came back as `213503982+`, an overflow sentinel). **Recorded once so it
+is not reached for a third time.** The progress signals that actually exist are:
+
+```
+1. the log's "[w3] MODEL LOAD" line   -- BUFFERED, so silence is not evidence (S-258, S-268)
+2. arm dirs / DONE.json               -- written at arm END, so absence is not evidence (S-257)
+3. wall time against the rack's MEASURED 2-7 MB/s range (36-125 min)   <- the only live signal
+```
+
+**S-270 bounded the wait by (3) because it was the honest yardstick. This entry shows it is the ONLY
+yardstick** — (1) and (2) are both silent-by-design, and the telemetry that would have supplied a fourth
+is switched off. **The threshold is therefore load-bearing rather than merely tidy.**
+
+### 4. State, and the threshold is not yet reached
+
+```
+date 01:34 | 919296 RUNNING 1:25:31 on n-302 | 0 of 23 arms | log still 19 lines
+BT_BASE dir created 00:12:38, RUNMETA start_ts 00:14:52, NO DONE.json
+  -> the dir predates the load and is NOT evidence the load finished (S-257's lesson, re-checked)
+load elapsed ~79 min of the measured 36-125 min range | THRESHOLD 02:20 | ~46 min remain
+```
+
+**No PR-013 number exists.** `score_behavior.py` was not opened. **R23 due ~02:38, just after the
+threshold.**
