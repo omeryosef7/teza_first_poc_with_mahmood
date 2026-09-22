@@ -1,0 +1,630 @@
+{
+  "schema": "dcs_csi_head_analyze/1",
+  "REPORTABLE_AS": "8 head INDICES, applied across blocks 6-14 on the query-codeword row, carry at least half of the A1 knockout's effect on installation for basket -- for leg (i) of the circuit ONLY. NOT a claim about any single (layer, head) cell.",
+  "CANNOT_DO": [
+    "cannot test leg (ii) (rel-11 -> rel-6): no scope exists for it",
+    "cannot resolve WHICH LAYER a head acts at -- --knockout-heads ties the index across 6-14",
+    "cannot test blocks 0-5 or 15-18 causally without first establishing an all-head ceiling there",
+    "does NOT do cross-codeword transfer to button; that is only meaningful after a POSITIVE basket head result, and is the NEXT design"
+  ],
+  "prereg": "configs/dcs_csi_pr011_head_all32_controls_basket.json",
+  "prereg_id": "PR-CSI-011",
+  "tag_prefix": "csi4_all32_basket_validation",
+  "split": "validation",
+  "n_domains": 23,
+  "expect_n": 230,
+  "ON_PROTOCOL": true,
+  "protocol_note": null,
+  "B": 10000,
+  "seed": 20260921,
+  "ci": 0.95,
+  "run_dirs": {
+    "HD_BASE": "csi4_all32_basket_validation_HD_BASE_20260922_112733_12073",
+    "HD_KO": "csi4_all32_basket_validation_HD_KO_20260922_120401_12073",
+    "HD_TOPK": "csi4_all32_basket_validation_HD_TOPK_20260922_120919_12073",
+    "HD_BOTK": "csi4_all32_basket_validation_HD_BOTK_20260922_121636_12073",
+    "HD_ALL32_00": "csi4_all32_basket_validation_HD_ALL32_00_20260922_122404_12073",
+    "HD_ALL32_01": "csi4_all32_basket_validation_HD_ALL32_01_20260922_123103_12073",
+    "HD_ALL32_02": "csi4_all32_basket_validation_HD_ALL32_02_20260922_123732_12073",
+    "HD_ALL32_03": "csi4_all32_basket_validation_HD_ALL32_03_20260922_124418_12073",
+    "HD_ALL32_04": "csi4_all32_basket_validation_HD_ALL32_04_20260922_125121_12073",
+    "HD_ALL32_05": "csi4_all32_basket_validation_HD_ALL32_05_20260922_125858_12073",
+    "HD_ALL32_06": "csi4_all32_basket_validation_HD_ALL32_06_20260922_130617_12073",
+    "HD_ALL32_07": "csi4_all32_basket_validation_HD_ALL32_07_20260922_131330_12073",
+    "HD_ALL32_08": "csi4_all32_basket_validation_HD_ALL32_08_20260922_132112_12073",
+    "HD_ALL32_09": "csi4_all32_basket_validation_HD_ALL32_09_20260922_132924_12073",
+    "HD_ALL32_10": "csi4_all32_basket_validation_HD_ALL32_10_20260922_133736_12073",
+    "HD_ALL32_11": "csi4_all32_basket_validation_HD_ALL32_11_20260922_134535_12073",
+    "HD_ALL32_12": "csi4_all32_basket_validation_HD_ALL32_12_20260922_135336_12073",
+    "HD_ALL32_13": "csi4_all32_basket_validation_HD_ALL32_13_20260922_140128_12073",
+    "HD_ALL32_14": "csi4_all32_basket_validation_HD_ALL32_14_20260922_140921_12073",
+    "HD_ALL32_15": "csi4_all32_basket_validation_HD_ALL32_15_20260922_141720_12073",
+    "HD_ALL32_16": "csi4_all32_basket_validation_HD_ALL32_16_20260922_142509_12073",
+    "HD_ALL32_17": "csi4_all32_basket_validation_HD_ALL32_17_20260922_143304_12073",
+    "HD_ALL32_18": "csi4_all32_basket_validation_HD_ALL32_18_20260922_144058_12073",
+    "HD_ALL32_19": "csi4_all32_basket_validation_HD_ALL32_19_20260922_144858_12073"
+  },
+  "GATE_0_liveness": {
+    "pass": true,
+    "per_arm": {
+      "HD_BASE": {
+        "pass": true,
+        "why": "the BASE arm must be UNINTERVENED",
+        "n_rows": 230,
+        "total_prefill_edits": 0,
+        "median_prefill_edits": 0.0,
+        "min_prefill_edits": 0,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 0.0
+      },
+      "HD_KO": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 466488,
+        "median_prefill_edits": 2016.0,
+        "min_prefill_edits": 1620,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_TOPK": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_BOTK": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_00": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_01": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_02": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_03": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_04": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_05": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_06": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_07": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_08": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_09": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_10": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_11": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_12": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_13": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_14": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_15": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_16": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_17": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_18": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      },
+      "HD_ALL32_19": {
+        "pass": true,
+        "why": "an intervened arm must edit in prefill, never in decode, with no violations",
+        "n_rows": 230,
+        "total_prefill_edits": 3731904,
+        "median_prefill_edits": 16128.0,
+        "min_prefill_edits": 12960,
+        "total_decode_edits": 0,
+        "violations": {},
+        "median_query_rows_edited": 36.0
+      }
+    }
+  },
+  "REALISED_DOSE": {
+    "pass": true,
+    "expected_ratio": 8,
+    "note": "K x the all-head arm (S-175); NEVER K/32",
+    "per_arm": {
+      "HD_TOPK": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_BOTK": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_00": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_01": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_02": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_03": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_04": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_05": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_06": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_07": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_08": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_09": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_10": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_11": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_12": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_13": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_14": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_15": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_16": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_17": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_18": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      },
+      "HD_ALL32_19": {
+        "median": 16128.0,
+        "ratio_to_all_head": 8.0,
+        "expected": 8,
+        "pass": true
+      }
+    }
+  },
+  "GATE_1_positive_control": {
+    "pass": true,
+    "E_HD_KO": -0.22696123287577621,
+    "ci95": [
+      -0.27586413557561107,
+      -0.17868012283446946
+    ]
+  },
+  "E": {
+    "HD_KO": -0.22696123,
+    "HD_TOPK": -0.1959835,
+    "HD_BOTK": -0.01256722,
+    "HD_ALL32_00": -0.00197917,
+    "HD_ALL32_01": -0.04740353,
+    "HD_ALL32_02": -0.07040617,
+    "HD_ALL32_03": -0.03575009,
+    "HD_ALL32_04": -0.02747686,
+    "HD_ALL32_05": -0.0809631,
+    "HD_ALL32_06": -0.13816412,
+    "HD_ALL32_07": -0.15245762,
+    "HD_ALL32_08": -0.12254118,
+    "HD_ALL32_09": -0.02959271,
+    "HD_ALL32_10": -0.04673759,
+    "HD_ALL32_11": -0.02899648,
+    "HD_ALL32_12": -0.01462344,
+    "HD_ALL32_13": -0.00882534,
+    "HD_ALL32_14": -0.0260368,
+    "HD_ALL32_15": -0.05790151,
+    "HD_ALL32_16": -0.02968824,
+    "HD_ALL32_17": -0.09895247,
+    "HD_ALL32_18": -0.05675883,
+    "HD_ALL32_19": -0.07874997
+  },
+  "ci95": {
+    "HD_KO": [
+      -0.27586414,
+      -0.17868012
+    ],
+    "HD_TOPK": [
+      -0.24306753,
+      -0.15349093
+    ],
+    "HD_BOTK": [
+      -0.02020293,
+      -0.00465766
+    ],
+    "HD_ALL32_00": [
+      -0.01046626,
+      0.00642902
+    ],
+    "HD_ALL32_01": [
+      -0.06522473,
+      -0.03203626
+    ],
+    "HD_ALL32_02": [
+      -0.09847914,
+      -0.04708165
+    ],
+    "HD_ALL32_03": [
+      -0.06140555,
+      -0.01416645
+    ],
+    "HD_ALL32_04": [
+      -0.04004165,
+      -0.01441124
+    ],
+    "HD_ALL32_05": [
+      -0.11385928,
+      -0.05380663
+    ],
+    "HD_ALL32_06": [
+      -0.17882485,
+      -0.10206339
+    ],
+    "HD_ALL32_07": [
+      -0.19551426,
+      -0.11229893
+    ],
+    "HD_ALL32_08": [
+      -0.16384801,
+      -0.08811391
+    ],
+    "HD_ALL32_09": [
+      -0.04511756,
+      -0.01485469
+    ],
+    "HD_ALL32_10": [
+      -0.06779571,
+      -0.02760141
+    ],
+    "HD_ALL32_11": [
+      -0.03989151,
+      -0.01968991
+    ],
+    "HD_ALL32_12": [
+      -0.02502081,
+      -0.00504592
+    ],
+    "HD_ALL32_13": [
+      -0.01380577,
+      -0.00388261
+    ],
+    "HD_ALL32_14": [
+      -0.03762438,
+      -0.01485023
+    ],
+    "HD_ALL32_15": [
+      -0.07350753,
+      -0.04257598
+    ],
+    "HD_ALL32_16": [
+      -0.03893906,
+      -0.02045069
+    ],
+    "HD_ALL32_17": [
+      -0.12990856,
+      -0.07214398
+    ],
+    "HD_ALL32_18": [
+      -0.07432532,
+      -0.04030497
+    ],
+    "HD_ALL32_19": [
+      -0.10533236,
+      -0.05475514
+    ]
+  },
+  "rank_test": {
+    "candidate": "HD_TOPK",
+    "rank": 1,
+    "of": 21,
+    "p": 0.047619047619047616,
+    "p_display": "0.047619",
+    "attainable_floor": 0.047619047619047616,
+    "floor_note": "the p is reported WITH its floor, always. rank 1 of 21 gives p = the floor = 0.047619; rank 2 gives 0.095238 and does NOT clear alpha = 0.05",
+    "order_most_negative_first": [
+      "HD_TOPK",
+      "HD_ALL32_07",
+      "HD_ALL32_06",
+      "HD_ALL32_08",
+      "HD_ALL32_17",
+      "HD_ALL32_05",
+      "HD_ALL32_19",
+      "HD_ALL32_02",
+      "HD_ALL32_15",
+      "HD_ALL32_18",
+      "HD_ALL32_01",
+      "HD_ALL32_10",
+      "HD_ALL32_03",
+      "HD_ALL32_16",
+      "HD_ALL32_09",
+      "HD_ALL32_11",
+      "HD_ALL32_04",
+      "HD_ALL32_14",
+      "HD_ALL32_12",
+      "HD_ALL32_13",
+      "HD_ALL32_00"
+    ]
+  },
+  "F": 0.86351092,
+  "F_ci95": [
+    0.78710197,
+    0.94784347
+  ],
+  "VERDICT": "WE FOUND (part of) THE WRITER",
+  "comparator_HD_BOTK": {
+    "E": -0.01256722,
+    "ci95": [
+      -0.020202934110706113,
+      -0.004657663440108941
+    ],
+    "note": "the COMPARATOR; it is NOT in the control family (VOID 6)"
+  },
+  "TRAIN_CAVEAT": null,
+  "INDEPENDENT_PATH": "dcs_csi_rederive_subspace.py --direction necessity shares no code with this file and must be run as the second opinion (S-196 measured that it RUNS on head arms)"
+}

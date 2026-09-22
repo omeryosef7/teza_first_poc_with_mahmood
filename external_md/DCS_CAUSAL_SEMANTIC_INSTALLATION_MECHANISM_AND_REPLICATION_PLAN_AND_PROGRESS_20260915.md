@@ -18890,3 +18890,167 @@ No endpoint was read; the frozen read is not begun; `score_behavior.py` was not 
 chain is pending and it is in the R15-0 lock). **No code was changed in this review** — R20-5's fix is to
 a throwaway probe, not to a repository tool. R20-2 and R20-4 are recorded as constraints on interpretation
 and as a documentation gap; neither licenses editing a frozen artefact.
+
+---
+
+## S-243 — **PR-CSI-011 IS IN. The candidate survives a 14× harder control family at rank 1 of 21, p = floor.** But the family's own arms **bound D32 harder than the rank certifies it**: the best control reaches **77.8 % of the candidate while sharing ONE head**, and ⚠ **CORRECTION — the read's pre-data prediction that `F` would FALL was wrong IN PRINCIPLE**
+
+### 1. The family completed; GATE 0 passes on all 24
+
+```
+sacct -j 918169   ->  csi_pr010arms  COMPLETED  03:31:17  2026-09-22T14:57:06
+
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py \
+  --prereg configs/dcs_csi_pr011_head_all32_controls_basket.json \
+  --tag-prefix csi4_all32_basket_validation --split validation
+PR-CSI-011 GATE 0 SWEEP -- validation | landed 24 of 24 arms
+  HD_BASE 230/23 prefill 0 | HD_KO median 2016.0 | all 22 eight-head arms median 16128.0
+  decode edits 0 and scope violations 0 on EVERY arm
+GATE 0: every landed arm passes. No endpoint field was read.
+```
+
+### 2. The frozen read, executed in its frozen order. `<VALIDATION_JOB_IDS>` := `918169`
+
+```
+python scripts/dcs_csi_head_analyze.py \
+  --prereg configs/dcs_csi_pr011_head_all32_controls_basket.json \
+  --tag-prefix csi4_all32_basket_validation --split validation --expect-n 230 \
+  --require-slurm-job 918169 \
+  --out reports/DCS_CSI_PR011_ALL32_validation.json
+
+[head] SIZE arms = 24 | domains common to ALL arms = 23 | expect-n = 230 | split = validation
+[head] population OK: 23 domains == preregistered 23 | no TEST domain present
+[head] GATE 0 PASS | dose PASS | GATE 1 PASS
+[head] E(HD_KO)   = -0.226961 ci95 [-0.275864, -0.178680]
+[head] E(HD_TOPK) = -0.195984 ci95 [-0.243068, -0.153491]
+[head] rank 1 of 21 | p = 0.047619 | FLOOR = 0.047619
+[head] F = 0.8635109151176609 ci95 [0.7871019744870967, 0.9478434673658749]
+[head] VERDICT: WE FOUND (part of) THE WRITER
+```
+
+**The independent re-derivation, sharing no code, `--direction necessity` as the read requires:**
+
+```
+python scripts/dcs_csi_rederive_subspace.py --tag-prefix csi4_all32_basket_validation \
+  --split validation --expect-n 230 --direction necessity \
+  --base HD_BASE --ko HD_KO --full HD_KO --candidate HD_TOPK \
+  --controls HD_ALL32_00,...,HD_ALL32_19 --require-slurm-job 918169 \
+  --out reports/DCS_CSI_PR011_ALL32_validation_REDERIVE.json
+
+positive_control_full_minus_base : -0.22696  23/23 negative  p = 4.99998e-06  AT ITS FLOOR
+candidate_minus_base             : -0.19598
+ranks.pooled                     : rank 1 of 21, floor 0.0476, certifiable_at_0.05 TRUE, "PASSES"
+```
+
+**Both paths agree. `p = 0.047619` is the attainable floor — the only certifying outcome with 20 controls.**
+
+### 3. ✅ The controls DID get much stronger — the read's central prediction, confirmed and quantified
+
+```
+                        PR-010 (24-head complement)   PR-011 (ALL 32)      ratio
+controls with E < 0        11 of 20                     20 of 20            --
+control mean E            -0.004006                    -0.057700           14.4x
+strongest control         -0.024571 (HD_RAND07)        -0.152458 (HD_ALL32_07)  6.2x
+controls beating HD_TOPK   0                            0
+```
+
+**This is the test the read said it was: strictly harder, and it was passed.** R18/AM-26's worry — that the
+complement pool's expected `S` sat on the *opposite side of zero* from an all-32 draw, so *"20 random
+8-head draws do nothing"* must not be read as a claim about arbitrary 8-head sets — is now answered by
+experiment rather than by argument. **Arbitrary 8-head draws do plenty. The candidate still wins.**
+
+### 4. ⚠ **CORRECTION to the frozen read's honest-expectation block.** It predicted `F` would FALL. **`F` is BIT-IDENTICAL, and the prediction was wrong IN PRINCIPLE, not merely in outcome**
+
+The read committed, before any arm: *"I expect rank 1 to SURVIVE and **F to FALL**, because `F`'s
+denominator is unchanged while the controls it is judged against get stronger."*
+
+```
+                 PR-010                       PR-011                       identical?
+E(HD_KO)         -0.22696123                  -0.22696123                  YES
+E(HD_TOPK)       -0.19598350                  -0.19598350                  YES
+F                 0.86351092                   0.86351092                  YES
+F_ci95           [0.78710197, 0.94784347]     [0.78710197, 0.94784347]     YES
+```
+
+**`F` could not have fallen.** `F = E(HD_TOPK) / E(HD_KO)` — **the controls appear nowhere in it.**
+The clause *"the controls it is judged against"* is simply false of `F`: `F` is judged against `HD_KO`,
+and `HD_KO` is the same arm in both families. **I recorded, as a pre-data risk, an outcome that was
+arithmetically impossible.** The error is the same species as §7.3's `K/32` mistake — reasoning about a
+ratio without writing down which quantities are in it.
+
+**What this costs:** nothing in the result, and something in the record. The expectation block was
+supposed to make PR-011 falsifiable in two ways; **it only ever had one**, and the rank is that one.
+
+### 5. ✅ An unplanned reproducibility result, free and worth keeping
+
+`E`, `F` and every CI are **bit-identical across two independent SLURM jobs** — `916536` (PR-010, tags
+`csi3_head_basket_validation`) and `918169` (PR-011, tags `csi4_all32_basket_validation`) — separate
+allocations, separate nodes' worth of scheduling, separate preregs, 14 hours apart. **The `HD_BASE`,
+`HD_KO` and `HD_TOPK` arms reproduce exactly.** Nobody designed this check; it falls out of PR-011
+re-running the three shared arms, and it is the strongest determinism evidence in the sprint.
+
+### 6. ⚠⚠ **And now the finding that matters: PR-011's own arms bound D32 harder than its rank certifies it**
+
+**The strongest control, `HD_ALL32_07`, shares exactly ONE head with the candidate:**
+
+```
+HD_TOPK      E=-0.195984  heads [2, 6, 13, 17, 19, 23, 24, 28]
+HD_ALL32_07  E=-0.152458  heads [1, 2, 4, 7, 8, 14, 18, 22]   ∩ HD_TOPK = {2}
+  -> 77.8 % of the candidate's effect, and 67.2 % of the ALL-32 knockout's,
+     from a set sharing ONE of eight heads. Margin to the candidate: 0.043526 (28.5 %).
+```
+
+**And the dose-response in candidate-head COUNT is weak:**
+
+```
+overlap  n   mean E            Pearson r(overlap, E) = -0.2638
+   0     2   -0.024358         Spearman rho          = -0.0932
+   1     7   -0.052264         <- NOT monotone: overlap 3 is WEAKER than overlap 2
+   2     6   -0.069311
+   3     4   -0.060652
+   4     1   -0.080963
+```
+
+**A post-hoc decomposition says why, and it points at ONE head.** Mean `E` of draws containing each
+candidate head, minus mean `E` of those without:
+
+```
+head   n draws   mean E with   mean E without   GAP
+   2      5      -0.118616     -0.037395      -0.081221   <- 4x the noise scale
+  19      2      -0.104285     -0.052524      -0.051761
+   6      7      -0.059346     -0.056814      -0.002532
+  13,17,23,24,28                               +0.007 .. +0.019   (WRONG SIGN / noise)
+HD_BOTK heads (the noise scale for this statistic):        +0.024 .. -0.015
+```
+
+**⛔ THIS IS POST-HOC AND DESCRIPTIVE AND CERTIFIES NOTHING.** 20 draws; 2–8 draws per head; the draws
+are not orthogonal, so a head's gap absorbs its co-occurrences; no preregistered test exists for it.
+**Gate C applies in full: this does not license inventing a circuit.**
+
+**What it does license, and what it forbids:**
+
+* **D32 stands exactly as written** — the 8-set is rank 1 of 21 against an all-32 family, `F = 0.8635`,
+  and `REPORTABLE_AS` already says *"8 head INDICES … carry at least half of the A1 knockout's effect …
+  NOT a claim about any single (layer, head) cell."*
+* ⛔ **It must NEVER be read as "these eight heads are uniquely the writer,"** and the evidence against
+  that reading is now **internal to our own preregistered family**: an 8-set sharing one head reaches
+  77.8 % of it. **Sufficiency of this set is certified; uniqueness and per-head necessity are not, and
+  the count-wise dose-response (ρ = −0.09) actively argues against additivity across the eight.**
+* **The hypothesis worth a NEW preregistration:** the load is concentrated in a small subset, plausibly
+  `{2, 19}`. The experiment is a **leave-one-out family (8 arms) plus a singleton family (8 arms)** on
+  validation, with its own floor and its own frozen read. **It is not this experiment and it may not be
+  read out of these arms.**
+
+### 7. State
+
+```
+918169   COMPLETED 03:31:17, 24/24, GATE 0 clean
+918175   csi_fnbound RUNNING 9:56 (the false-negative bound; started on afterany)
+written  reports/DCS_CSI_PR011_ALL32_validation.json          19249 bytes
+         reports/DCS_CSI_PR011_ALL32_validation_REDERIVE.json  4643 bytes
+frozen read runargs/dcs_csi_pr011_read.txt EXECUTED IN ORDER, NOT amended after seeing numbers
+```
+
+**PR-CSI-011 did NOT revise D32, as its own read said it could not** — a second family is a second
+experiment with its own verdict. Its verdict is the same, against a harder family. **The new information
+is in §6, and it is a bound, not a promotion.**
