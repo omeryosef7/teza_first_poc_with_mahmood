@@ -18514,3 +18514,128 @@ ours target_surface_row_only) -- the best-corroborated design choice in the spri
 SECTION 12 NOW PERMITS ONE NARROW SCOPE STATEMENT, quoted verbatim in the log. Still forbidden: novel,
 first, unaddressed, the idea, the phenomenon, methodological superiority.
 ```
+
+---
+
+## S-241 — **Addendum D's last lead is discharged, and it WITHDRAWS a sentence of ours: non-copy SEMANTIC head function is addressed and causally verified — in 2024, at 70M–3B, by OV-weight analysis plus mean-ablation.** PR-CSI-011 is 14 of 24 with GATE 0 clean and **no timeout exposure**
+
+### 1. The arms in flight — measured, including the check S-147 exists to force
+
+```
+squeue -u omeryosef -o "%.10i %.16j %.8T %.10M"
+    918169    csi_pr010arms  RUNNING    2:14:34    n-301
+    918175      csi_fnbound  PENDING    0:00       Dependency=afterany:918169(unfulfilled)
+
+scontrol show job 918169
+    StartTime=2026-09-22T11:25:49   TimeLimit=12:00:00   EndTime=2026-09-22T23:25:49
+```
+
+**Per-arm wall time from each arm's own `DONE.json`:**
+
+| arm | wall s | ended |
+|---|---|---|
+| HD_BASE | 2122.0 | 12:04:00 |
+| HD_KO | 316.6 | 12:09:18 |
+| HD_TOPK | 435.5 | 12:16:34 |
+| HD_BOTK | 445.7 | 12:24:02 |
+| HD_ALL32_00 | 418.2 | 12:31:02 |
+| HD_ALL32_04 | 454.6 | 12:58:56 |
+| HD_ALL32_08 | 491.4 | 13:29:23 |
+| HD_ALL32_09 | 490.1 | 13:37:35 |
+
+`HD_BASE`'s 2122 s carries the model load; the steady state is **418 → 491 s/arm, drifting up ~17 % over
+eight arms** (other users' jobs on n-301, not mine — S-147's variable). **10 arms remain at ~495 s ≈ 82 min
+→ projected finish ≈ 15:00, against a 23:25 wall.** **The timeout margin is 8.4 h.**
+
+**This check is recorded because S-147 is the entry that exists for skipping it.** There, four jobs were
+killed mid-family because a per-arm estimate was trusted without looking at the node's total occupancy and
+the remaining `--time`. The projection is now part of every tick, not an afterthought.
+
+### 2. GATE 0 — 14 of 24 landed, every one PASS
+
+```
+python scripts/gates/dcs_csi_pr010_gate0_sweep.py \
+  --prereg configs/dcs_csi_pr011_head_all32_controls_basket.json \
+  --tag-prefix csi4_all32_basket_validation --split validation
+```
+
+```
+PR-CSI-011 GATE 0 SWEEP -- validation | landed 14 of 24 arms
+arm           rows   dom  total_prefill   median_pre  decode  viol  verdict
+HD_BASE        230    23              0          0.0       0     0  PASS
+HD_KO          230    23         466488       2016.0       0     0  PASS
+HD_TOPK        230    23        3731904      16128.0       0     0  PASS
+HD_BOTK        230    23        3731904      16128.0       0     0  PASS
+HD_ALL32_00..09 (10 arms)  230  23  3731904   16128.0      0     0  PASS
+GATE 0: every landed arm passes. No endpoint field was read.
+```
+
+`16128.0 / 2016.0 = 8.000000` — **the realised-dose identity exact on validation's own denominator**, as
+S-215 requires (the identity is *relative*; validation's absolute 16128.0 is not train's 16416.0).
+230 rows / 23 domains on every arm, `HD_BASE` at exactly 0 prefill edits, 0 decode edits everywhere,
+0 scope violations. **No endpoint field was read** — the sweep asserts that itself (S-202).
+
+### 3. §A5 item 3 — ⚠ **WITHDRAWN AS STATED.** LIT Addendum L
+
+Addendum D flagged two non-archival leads; E1 discharged the backup-head one. **The second is now
+fetched:** *Antonym Heads Predict Semantic Opposites in Language Models*, LessWrong, **15 Nov 2024**.
+
+```
+models    13, 70M-3B (Pythia 70m/160m/1b/2.8b + GPT2) -- no 8B, no Llama, no instruct model
+screen    OV-MATRIX analysis in WEIGHT space; n_words x n_words logit matrix, scored on antonym hits
+causal    YES -- "I mean-ablate each head individually, and observing the effect of this operation on
+          the antonym-prediction task"; loss on "<bos> true false\n hot cold\n ..."
+controls  NO ranked family, NO p-value -- compared VISUALLY to "a random sample of all heads"
+layers    examples only (Pythia-1b L9H1, Pythia-2.8b L15H3); no systematic layer analysis
+```
+
+**What we said (§A5 item 3):** *"Every head-level paper found studies **copying or task-identification**.
+Whether a head carries an installed denotation that is not a copy is still not addressed."*
+
+**The first sentence is WITHDRAWN.** These heads do neither: they apply a **semantic transformation**
+(`hot → cold`), and it is **causally verified by ablation against a task loss**. Non-copy semantic head
+function has been addressed since 2024, in thirteen models.
+
+**The distinction that survives is about the CONTENT, not the apparatus:**
+
+```
+                   ANTONYM HEADS (2024)          D32
+map lives in       the head's OV WEIGHTS         the CONTEXT (demo block)
+lexical prior      EXPRESSES it                  CONTRADICTS it
+screen space       WEIGHT (OV eigenstructure)    ACTIVATION (AtP on a band)
+corruption         MEAN-ABLATION                 scoped MASK EDIT
+controls           visual vs random              20 preregistered draws, rank + exact floor
+scale              70M-3B                        8B instruction-tuned
+```
+
+**Two cautions, because R19's error was exactly this shape.** Its corruption is mean-ablation and ours a
+scoped mask edit — **its ablation result transfers to our numbers in neither direction**. Its screen is in
+**weight** space, so the OV-eigenvalue evidence has **no counterpart in AtP** and must not be called the
+same method. **The overlap is the question, not the apparatus.**
+
+### 4. What this does to the claim — nothing, and that is the point worth recording
+
+**§K3's permitted sentence already says *"an **in-context-installed** denotation"*, and
+`in-context-installed` is exactly the qualifier that survives the withdrawal.** A claim about *"non-copy
+semantic heads"* — which §A5 item 3's original wording would have licensed — **would now be false.**
+
+So the honest reading is not *"the claim held up"* but: **the claim was worded tightly enough that a
+finding which breaks a looser version leaves it untouched, and our own §A5 prose was the looser version.**
+The withdrawal lands on our summary sentence, not on D32.
+
+**Both of Addendum D's leads narrowed OUR wording rather than the field's — the fifth consecutive pass with
+that outcome.** §A5-2 remains open by construction: *"I found nothing"* over a finite search is not proof
+of absence.
+
+### 5. State
+
+```
+LIT report   1120 -> 1201 lines (+81), prefix md5 94f21a9a... UNCHANGED  <- write verified
+PR-CSI-011   14/24 arms, GATE 0 clean, ETA ~15:00, timeout margin 8.4 h
+918175       PENDING on afterany:918169 -- the false-negative bound
+NOT DONE     the frozen read runargs/dcs_csi_pr011_read.txt -- it runs ONLY on 24 of 24
+```
+
+**The read is not begun.** GATE 0 may be swept incrementally because it cannot see an endpoint; the W4
+primary and the necessity re-derivation may not, and they wait for the full family. **PR-CSI-011 cannot
+revise D32 in either direction** — it is a second experiment with its own verdict.

@@ -1118,3 +1118,84 @@ a scope statement rather than a priority claim:**
 > **methodological superiority** (standard practice — Addendum I).
 
 **That is the whole of what five retrieval passes license.**
+
+---
+
+# ADDENDUM L — 2026-09-22: **§A5 item 3 NARROWS. Non-copy SEMANTIC head function is addressed and causally verified — by a 2024 post that ablates heads for an antonym map.** The open question is not *"non-copy"*; it is ***installed in context***
+
+Addendum D item 2 flagged this, and Addendum E3 recorded it as the one remaining item that would change
+our own wording: *"§A5-3's wording still needs narrowing per Addendum D item 2 (**Antonym Heads** remains
+unfetched)."* **It has now been fetched.**
+
+## L1. VERIFIED — *Antonym Heads Predict Semantic Opposites in Language Models*
+
+LessWrong, **15 November 2024**. **Fetched and read.** Non-archival, single author, not peer reviewed.
+
+```
+models      13 models, 70M - 3B: Pythia 70m/160m/1b/2.8b + GPT2 family
+            -> NO model at 8B scale, NO Llama, NO instruction-tuned model
+screen      OV-MATRIX analysis in WEIGHT space: "Filtering out logits not corresponding to tokens in
+            the dataset yields an n_words * n_words matrix", scored by counting rows whose top logit
+            is the antonym; eigenvalue structure reported as characteristic
+causal      YES -- "I mean-ablate each head individually, and observing the effect of this operation
+            on the antonym-prediction task"; loss measured on sequences of the form
+            "<bos> true false\n hot cold\n ..."
+controls    NONE as a ranked family. Compared VISUALLY against "a random sample of all heads" via
+            eigenvalue distribution plots; NO p-value, NO formal statistical test
+layers      EXAMPLES ONLY -- "layer 9 head 1 in Pythia-1b", "layer 15, head 3 of Pythia-2.8b";
+            no systematic layer analysis
+prior vs
+in-context  NOT explicitly addressed; one footnote says models "need to use ICL to uncover the pattern"
+            (i.e. to infer the TASK from the examples -- not to acquire the hot->cold mapping itself)
+```
+
+## L2. ⚠ What this closes, and it closes a claim we were making
+
+**§A5 item 3 said:** *"Every head-level paper found (retrieval heads 2404.15574; induction heads; Atlas
+2505.15807) studies **copying or task-identification**. Whether a head carries an *installed denotation*
+that is not a copy is still not addressed by anything I found."*
+
+**The first sentence is now WITHDRAWN as stated.** This post's heads do neither copying nor
+task-identification: they apply a **semantic transformation** — `hot -> cold`, `true -> false`,
+`north -> south` — and the function is **causally verified by mean-ablation against a task loss**. So
+*non-copy semantic head function* is addressed, in thirteen models, two years before this sprint.
+
+**§A5 item 3's replacement wording:**
+
+> *Heads carrying a non-copy **semantic transformation** are documented and causally verified (Antonym
+> Heads, LessWrong 2024). What remains unaddressed at head level is a denotation **installed in context
+> against the token's lexical prior**, rather than a mapping resident in the head's own OV weights.*
+
+## L3. The distinction that survives, and it is about the CONTENT, not the method
+
+```
+                         ANTONYM HEADS (2024)              D32 (this sprint)
+where the map lives      the head's OV WEIGHTS             the CONTEXT (demo block)
+                         -- a pretrained lexical
+                         regularity, read out
+relation to the
+lexical prior            EXPRESSES it (cold IS hot's       CONTRADICTS it (the codeword's
+                         antonym in pretraining)           installed sense is not its
+                                                           lexical sense)
+screen space             WEIGHT space (OV eigenstructure)  ACTIVATION space (AtP on a band)
+corruption               MEAN-ABLATION                     MASK-EDIT knockout, scoped to one row
+control family           none ranked; VISUAL vs random     20 preregistered draws, rank + exact floor
+scale                    70M - 3B                          8B instruction-tuned
+```
+
+**Two cautions, stated because the R19 error was exactly this shape.** (1) Its corruption is
+**mean-ablation** and ours is a **scoped mask edit**; these are different interventions, so its ablation
+result does not transfer to our numbers in either direction. (2) Its screen is in **weight** space, so the
+OV-eigenvalue evidence has no counterpart in AtP and must not be described as the same method. **The
+overlap is the QUESTION ("does a head carry a semantic map?"), not the apparatus.**
+
+## L4. Consequence for the claim, and for §A5-2
+
+**The permitted sentence in §K3 does not change** — it already says only *"head-level causal account of an
+**in-context-installed** denotation"*, and `in-context-installed` is precisely the qualifier that survives
+L2. **This addendum does not weaken K3; it shows K3 was worded tightly enough to survive a finding that
+would have broken a looser version.** A claim about *"non-copy semantic heads"* — which §A5 item 3's
+original wording would have supported — would now be false.
+
+**Addendum D's two flagged leads are both discharged (E1, L1), and both narrowed our wording rather than
+the field's.** That is the fifth consecutive pass with that outcome. **§A5-2 remains open by construction.**
