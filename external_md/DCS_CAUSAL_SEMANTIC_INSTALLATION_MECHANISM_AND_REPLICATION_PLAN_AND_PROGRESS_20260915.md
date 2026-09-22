@@ -21598,3 +21598,76 @@ n-302 at 52 min and n-307 at 100 min BOTH SIT INSIDE THAT RANGE.
 around the host class being the cause; the measured rack figure covers every observation without it.
 
 **No PR-013 number exists.** `score_behavior.py` was not opened.
+
+---
+
+## S-269 — zero-GPU, from data already on disk: **the four load-bearing heads peak at FOUR DIFFERENT LAYERS (7, 10, 14, 14), each in a single dominant cell.** ⛔ **It is a surrogate's fine structure, and this sprint has one prior case where exactly that was checked against intervention and largely FAILED**
+
+D34 established which heads carry load. **It cannot say at what depth** — design §10 fixes that
+`--knockout-heads` ties a head index across all nine blocks, so every census arm knocks a head out at
+6, 7, … 14 simultaneously. `REPORTABLE_AS` says so explicitly: *"NOT a claim about any single (layer,
+head) cell."* **The only per-cell data in the sprint is the TRAIN AtP screen's 288 cells.**
+
+### 1. What the screen says about the four heads Reading A selected
+
+Signed AtP per layer, band 6–14 (`w1_screen_train_basket_916132.json`):
+
+```
+layer:         6      7      8      9     10     11     12     13     14      sum    census E
+head  2     -0.1    1.5   -5.1   23.9  -98.6    9.8  -14.1    1.9    2.4    -78.3  -0.049475
+head 19     -0.0    6.1    1.9   65.6  -36.8   -5.7    3.4    8.6 -398.9   -355.7  -0.040109
+head 17      0.3   -6.3    0.6  -34.3   41.9  -20.2   -6.2  -28.1 -172.7   -225.0  -0.029218
+head 23      6.8 -175.8    2.4   23.4    7.5   23.2   -3.0    2.0    9.9   -103.6  -0.016503
+```
+
+**Each of the four is dominated by ONE cell, and the layer differs for each:**
+
+```
+head  2 -> L10   head 19 -> L14   head 17 -> L14   head 23 -> L7
+share of |AtP| in layers 12-14:  head 19 78.0% | head 17 66.6% | head 2 11.7% | head 23 5.9%
+```
+
+**So the heads that individually carry load are not co-located at one depth** — two sit at the top of the
+band, one mid, one at the bottom. **If that were true of the intervention, the 8-head effect would be a
+band-spanning phenomenon rather than a single-layer one.**
+
+### 2. ⛔ Why this is a hypothesis and not a finding, with a precedent that is exactly on point
+
+```
+these numbers  TRAIN, AtP -- a GRADIENT SURROGATE          the census  VALIDATION, INTERVENTION
+```
+
+**S-245 measured the screen's per-HEAD ordering against the census at ρ = +0.77** — good, and that is the
+level at which the screen has been validated. **Its per-CELL ordering has never been validated against
+anything**, because **no intervention in this sprint has ever addressed a single (layer, head) cell.**
+
+**And the sprint has one prior case of exactly this shape:** S-243 §6 read fine structure out of a
+surrogate (the per-head *gap* statistic), and S-245 then measured it against the intervention at
+**ρ = +0.07** — **essentially uncorrelated, with its third-ranked head wrong-signed.** *"The gap statistic
+was the wrong one."* **A surrogate that is informative in aggregate was misleading in detail, in this
+family, on this endpoint.** That is the strongest available reason to hold these four layer assignments
+loosely.
+
+### 3. What is licensed, and what the deciding experiment would be
+
+> **Permitted:** *"The TRAIN attribution screen places each of the four load-bearing heads' attribution in
+> a single dominant cell, and those cells are at different layers (7, 10, 14, 14). This is a surrogate's
+> fine structure and no intervention has tested it."*
+>
+> **Forbidden:** any statement that head 19 *acts at* layer 14, that head 23 *acts at* layer 7, or that
+> the effect is or is not single-layer. **D32's `REPORTABLE_AS` already forbids the single-cell reading
+> and this does not weaken it.**
+
+**The deciding experiment is a CELL-level family** — knock out one `(layer, head)` cell at a time —
+**and §10 says the current flag cannot express it**: `--knockout-heads` ties the index across the band.
+**It would need a new scope in `score_behavior.py`, which is exactly the file the standing constraint
+forbids editing while arms run.** So it is a post-PR-013 design item, recorded now with its blocker named.
+
+### 4. The arms
+
+```
+date 01:0x | 919296 RUNNING ~56 min on n-302 | "MODEL LOAD" lines: 0 | 0 of 23
+```
+
+Inside S-268's measured 36–125 min range for a cold NFS load on this rack. **No PR-013 number exists.**
+`score_behavior.py` was not opened.
