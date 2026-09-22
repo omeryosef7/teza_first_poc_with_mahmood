@@ -1,0 +1,64 @@
+# PR-CSI-013 NOMINATION RULE -- FROZEN 2026-09-22, BEFORE ANY PR-CSI-012 CENSUS NUMBER EXISTS.
+#
+# WHY THIS FILE EXISTS AND WHY NOW. The census (918631) will produce 32 single-head effects. Picking
+# "the interesting head" AFTER seeing them and then testing it is selection, however honestly done --
+# and it is the exact error S-245 withdrew AM-30's design for. The fix is not to avoid choosing; it is
+# to FREEZE THE RULE THAT CHOOSES, so that filling in the head later is MECHANICAL rather than a
+# judgement. This file is frozen while 1 of 44 arms has started and NO result has been read.
+#
+# WHAT MAKES button A LEGITIMATE HELD-OUT AXIS, MEASURED 2026-09-22 (S-248):
+#   84 button VALIDATION runs at the semantic endpoint already exist, ALL at 230 rows -- the same
+#   population size as basket validation. 82 of them use EXACTLY this sprint's intervention,
+#   demo_all:attn_knockout:6-14:1.0 with target_surface_row_only. NONE has ever used
+#   --knockout-heads: every button knockout on record is the all-32 A1 knockout. So the endpoint, the
+#   band, the scope and the population are already established on button, and NO head-restricted
+#   button arm exists that could have informed any choice made here.
+#   The head under test comes from BASKET. Testing it on BUTTON is a different codeword, i.e. a
+#   genuine replication rather than a reused split.
+# ------------------------------------------------------------------------------------------------
+
+# --- RULE 1. THE NOMINATED HEAD h*.
+#   h* = argmin over ALL 32 heads of E(SINGLE_h) from reports/DCS_CSI_PR012_CENSUS_validation.json
+#        (most negative point estimate).
+#   Ties: the more negative ci95 LOWER bound; then the LOWER head index. (Stated so a tie cannot
+#   become a choice.)
+#   RANGE IS ALL 32 AND NOT THE EIGHT ON PURPOSE. If an unselected head wins -- S-245 measured that
+#   head 14 has the third-largest validation gap while the screen ranked it 30 of 32 -- that is a
+#   real finding and button is the right place to confirm it. Restricting to HD_TOPK would build the
+#   screen's own ordering into the confirmation.
+#   THE ESTIMATOR MATCHES THE TEST: PR-013 is a SINGLE-HEAD test, so the quantity that must replicate
+#   is the SINGLETON effect, not the leave-one-out marginal. The marginal is recorded as a secondary
+#   DESCRIPTIVE and never selects.
+
+# --- RULE 2. PR-CSI-013 DOES NOT RUN UNLESS BOTH HOLD.
+#   (a) PR-CSI-012 GATE 0 passes on all 44 arms (and every arm's recorded knockout_heads matches its
+#       head set -- S-246's identity check, the only one that works on that family).
+#   (b) |E(SINGLE_h*)| > |E(HD_BOTK)| in the SAME census, AND E(SINGLE_h*)'s ci95 excludes 0.
+#   WHY HD_BOTK AND NOT A CONSTANT: HD_BOTK is this family's own null-ish comparator, measured on the
+#   same rows in the same job, so the threshold needs no external number and cannot be tuned after
+#   the fact. A constant chosen today would be a constant chosen by me.
+#   IF (b) FAILS THERE IS NOTHING TO REPLICATE AND PR-013 MUST NOT LAUNCH. That outcome is already
+#   preregistered as coherent in runargs/dcs_csi_pr012_read.txt: the effect would be carried by the
+#   SET and not decomposable per head. Launching a single-head replication anyway would be fishing.
+
+# --- RULE 3. THE CONTROL FAMILY, if PR-013 runs.
+#   pool     = the 31 heads OTHER than h*. (A control equal to h* would BE the candidate.)
+#   draw     = sorted(random.Random(20261101 + i).sample(sorted(pool), 1)) for i in 0..19, REJECTING
+#              and re-seeding any draw already drawn, so the 20 controls are 20 DISTINCT single heads.
+#   arms     = BT_BASE, BT_KO (all 32), BT_SINGLE (= h*), BT_CTRL_00..19  -> 24 arms
+#   floor    = 1/21 = 0.047619...  rank 1 of 21 is the ONLY certifying outcome at alpha = 0.05;
+#              rank 2 gives 0.095238 and does not clear it. Reported WITH the p, always.
+#   tag      = csi6_btnhead_button  (a namespace no existing family matches; registered in the
+#              launcher's guard before submission, per S-227/S-246)
+
+# --- RULE 4. WHAT PR-013 CANNOT DO, written now so it cannot be softened later.
+#   It cannot revise D32, D33 or the census. It tests ONE head on ONE other codeword.
+#   A PASS licenses: "head h*, selected on basket by a preregistered rule, is rank 1 of 21 against 20
+#   arbitrary single heads on the button codeword." It does NOT license "head h* is the writer", and
+#   it says nothing about the other 31 heads on button.
+#   A FAILURE licenses: "h*'s single-head effect did not replicate on button at rank 1 of 21." It does
+#   NOT retract the census, which is a basket measurement, and it does NOT retract D32/D33, which are
+#   set-level results.
+#   The DOSE IDENTITY IS BLIND on BT_SINGLE and BT_CTRL_* exactly as it is on PR-012's singletons
+#   (S-246: a 1-head arm records the same 2016 as the all-32 arm), so the census reader's arm-identity
+#   check is mandatory on this family too.

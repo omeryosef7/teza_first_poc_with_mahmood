@@ -19466,3 +19466,92 @@ Submitted batch job 918631
 
 **44 arms ≈ 490 s each ≈ 6.5 h against a 12 h wall — margin ≈ 5.5 h** (the S-147 projection, run before
 it is needed). `score_behavior.py` was not opened.
+
+---
+
+## S-248 — **the `button` held-out axis is READY and cheaper than expected: 84 validation runs already exist at 230 rows with THIS SPRINT'S EXACT intervention, and NONE has ever been head-restricted.** So PR-CSI-013's **nomination rule is frozen now, while 1 of 44 census arms has started and no census number exists**
+
+### 1. The arms in flight, and an unfavourable node variable with no rate to test it against yet
+
+```
+date 17:07:00 | 918631 RUNNING 25:14 on n-303 | 1 arm dir (HD_BASE), still running
+
+scontrol show node n-303:
+  CPUAlloc=4 of 128 | AllocTRES gres/gpu=1 of 8 | jobs on node: 1, all mine
+  FreeMem=13141 MB          <- LOW. S-147's variable is UNFAVOURABLE.
+```
+
+**S-147's rule was "check the node's free memory before trusting a per-arm estimate," and 13.1 GB is far
+below the 128 GB that accompanied a 6.2× slowdown.** But the other half of that diagnosis does not hold
+here: **n-303 carries exactly one job — mine** — at 4 of 128 CPUs and 1 of 8 GPUs, so there are no
+concurrent readers mmap-ing models. The likely reading is reclaimable page cache from earlier jobs rather
+than consumed memory.
+
+**⛔ That is a reading, not a measurement, and S-147 exists because I once generalised exactly this way.**
+`HD_BASE` is 25 min in against PR-011's 35.4 min for the same arm, so it is not yet late. **No projection
+is recorded this tick because no arm has finished** — the per-arm rate is next tick's first measurement,
+and the 12 h wall gives 5.5 h of margin to absorb a bad answer.
+
+### 2. ✅ The `button` axis is ready, and the inventory is better than the design assumed
+
+The PR-012 read named `button` as the **preferred** held-out axis for any confirmatory per-head claim.
+Measured what actually exists:
+
+```
+button VALIDATION runs at the semantic endpoint          : 84,  ALL at 230 rows
+  -> the SAME population size as basket validation (230 rows / 23 domains)
+--intervene   demo_all:attn_knockout:6-14:1.0            : 82 of 84   <- THIS SPRINT'S EXACT arm
+--knockout-scope target_surface_row_only                 : 82 of 84
+--knockout-heads                                         : None, on ALL 84
+button train runs at the semantic endpoint               : 670 rows, matching basket train exactly
+```
+
+**Three things follow, and the third is the one that matters.** The endpoint, band, scope and population
+are **already established on button** — nothing needs to be re-derived. The populations are **parallel by
+construction** (230 / 670, identical to basket). And **no head-restricted button arm has ever existed**,
+so **nothing on button could have informed any choice made here.** A head chosen on basket and tested on
+button is a genuine replication across codewords, not a reused split.
+
+### 3. ⛔ The thing that had to be frozen NOW, and the timestamp that makes it credible
+
+The census will produce 32 single-head effects. **Picking "the interesting head" after seeing them is
+selection, however honestly done — the exact error S-245 withdrew AM-30's design for.** The fix is not to
+avoid choosing; it is to **freeze the rule that chooses**, so filling in the head later is *mechanical*.
+
+`runargs/dcs_csi_pr013_nomination_rule.txt`, 64 lines, md5 `4227a940f1b1705cda5b6c58c7f9ad26`. **Frozen
+while `ls` reports 1 census arm dir (`HD_BASE`, still running) and
+`reports/DCS_CSI_PR012_CENSUS_validation.json` does not exist.**
+
+```
+RULE 1  h* = argmin over ALL 32 heads of E(SINGLE_h). Ties: more negative ci95 lower bound, then
+        lower index -- stated so a tie cannot become a choice.
+        RANGE IS ALL 32 ON PURPOSE: S-245 measured head 14 with the third-largest validation gap while
+        the screen ranked it 30 of 32. Restricting to HD_TOPK would build the screen's ordering into
+        the confirmation. And the ESTIMATOR MATCHES THE TEST -- PR-013 is a single-head test, so the
+        singleton effect is what must replicate; the LOO marginal is descriptive and never selects.
+RULE 2  PR-013 DOES NOT RUN unless (a) census GATE 0 passes on all 44 arms, AND
+        (b) |E(SINGLE_h*)| > |E(HD_BOTK)| in the SAME census and its ci95 excludes 0.
+        HD_BOTK rather than a constant: it is this family's own comparator, measured on the same rows
+        in the same job, so the threshold needs no external number and CANNOT BE TUNED AFTERWARDS.
+        A constant chosen today would be a constant chosen by me.
+        IF (b) FAILS, NOTHING REPLICATES AND PR-013 MUST NOT LAUNCH -- already preregistered as a
+        coherent outcome in the PR-012 read.
+RULE 3  pool = the 31 heads other than h* (a control equal to h* would BE the candidate); 20 DISTINCT
+        single-head draws, seeded 20261101+i with re-draw on collision; arms BT_BASE, BT_KO,
+        BT_SINGLE, BT_CTRL_00..19 = 24; floor 1/21 = 0.047619, rank 1 the only certifying outcome;
+        tag namespace csi6_btnhead_button, to be registered in the launcher guard before submission.
+RULE 4  What PR-013 cannot do, written now so it cannot be softened later. A PASS licenses only
+        "head h*, selected on basket by a preregistered rule, is rank 1 of 21 against 20 arbitrary
+        single heads on button" -- NOT "head h* is the writer", and nothing about the other 31 heads.
+        A FAILURE does not retract the census (a basket measurement) or D32/D33 (set-level results).
+        And the DOSE IDENTITY IS BLIND on BT_SINGLE and every BT_CTRL_* exactly as on PR-012's
+        singletons (S-246), so the arm-identity check is mandatory there too.
+```
+
+### 4. What this tick did not do
+
+**No census number was read — none exists.** Nothing was re-frozen: PR-012's read is untouched and
+PR-013's rule is new. No GPU work was submitted. `score_behavior.py` was not opened (44 arms are running).
+**PR-013's preregistration is deliberately NOT written yet** — it cannot be, because `h*` is undetermined
+until the census lands, and writing it with a placeholder head is how an amendment-after-the-fact starts.
+**The rule is the part that had to precede the data, and it does.**
