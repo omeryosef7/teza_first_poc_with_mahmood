@@ -21671,3 +21671,52 @@ date 01:0x | 919296 RUNNING ~56 min on n-302 | "MODEL LOAD" lines: 0 | 0 of 23
 
 Inside S-268's measured 36–125 min range for a cold NFS load on this rack. **No PR-013 number exists.**
 `score_behavior.py` was not opened.
+
+---
+
+## S-270 — a quiet tick, recorded as one. **No measurement was produced because the only thing in flight is a load that has not finished** — and the one thing worth adding is a threshold for the LOAD ITSELF, which the sprint did not have
+
+### 1. State, and nothing else happened
+
+```
+date 01:07:33 | 919296 RUNNING 57:22 on n-302 | "MODEL LOAD" lines: 0 | 0 of 23 arms
+StartTime 00:09:15 | EndTime 2026-09-23T12:09:15 -> ~11 h of wall remain
+S-269 committed and verified: 6a76f3b7 -> 94aab78b, origin matches, dirty 0
+```
+
+**S-262 through S-269 were written while this one load ran.** They were real work — the inert
+`CSI_STAGE` flag, the sign-clause propagation, the layer structure — but they were paced by the tick
+cadence, not by the arrival of evidence. **This tick has no new evidence and says so rather than
+manufacturing an eighth analysis of the same waiting.**
+
+### 2. The one thing worth adding: a threshold on the LOAD, not on the job
+
+S-257's threshold governs the **whole job against its wall** (*cancel if the projected finish exceeds
+`EndTime − 1 h`*). **At ~11 h of remaining wall that threshold is nowhere near firing, so it cannot tell
+me whether the LOAD is behaving.** S-268 supplied the missing yardstick, and it was never turned into a
+decision point:
+
+```
+measured rack NFS rate (S-090, quoted in the staging block): 2-7 MB/s for the ~15 GB snapshot
+  15 GB at 7 MB/s = 2143 s =  36 min        15 GB at 2 MB/s = 7500 s = 125 min
+```
+
+**⛔ THRESHOLD, committed now: if `919296` has emitted no `[w3] MODEL LOAD` line by 02:20** — 125 min
+after the load began (~00:15) — **the load is OUTSIDE the range this rack has ever been measured at, and
+that is the point at which it stops being "slow" and becomes something to diagnose.** Until then it is
+inside a measured range and there is nothing to act on.
+
+**Why this needed stating:** across S-257, S-258, S-261, S-264 and S-266 I repeatedly wrote *"no
+conclusion — the arm has not finished"*, which was correct and gave me **no way to ever conclude
+anything.** *"Wait longer"* with no bound is not patience, it is an absent decision. **The bound is now
+on record and derived from a measurement rather than from how long the waiting feels.**
+
+### 3. What is untouched
+
+```
+frozen  read 911c3a20 | prereg 5ab06e3a | nomination rule fae4adc6 | reading criteria 5b99971c
+        <VALIDATION_JOB_IDS> = 919296 ALONE at read time
+```
+
+**No PR-013 number exists.** `score_behavior.py` was not opened. **REVIEW R23 is due ~02:38**, which falls
+just after the threshold above — so if the load misses it, R23 is where the diagnosis belongs.
