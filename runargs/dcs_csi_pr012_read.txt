@@ -1,0 +1,74 @@
+# FROZEN READ for PR-CSI-012 -- the PER-HEAD CENSUS for basket.
+# Frozen 2026-09-22, BEFORE ANY ARM HAS RUN. Never re-freeze after seeing numbers.
+#
+# WHAT THIS EXPERIMENT IS, AND WHAT IT IS NOT.
+#   It is a MAP: 32 single-head effects and 8 leave-one-out effects, each with a domain-clustered
+#   bootstrap ci95, plus HD_KO / HD_TOPK / HD_BOTK as anchors on the same rows.
+#   IT IS NOT A TEST. There is no candidate, no control family, no rank and NO p-VALUE. S-245
+#   measured that a rank among the 8 HD_TOPK singletons has an attainable floor of 1/8 = 0.125 and
+#   therefore cannot clear alpha = 0.05 FOR ANY EFFECT SIZE. The prereg declares NO_RANK_TEST and
+#   the four rank tools REFUSE it by name (S-246); the census reader refuses a rank prereg in
+#   return (S-247).
+#   IT CANNOT REVISE D32 OR D33. Those are rank results against preregistered families and stand on
+#   their own terms. This family measures per-head load; it adjudicates nothing retrospectively.
+#
+# VALIDATION ONLY, and the reason is NOT the usual one. A census SELECTS NOTHING -- every head is
+# measured -- so there is no multiplicity to correct and no winner chosen on this split. TRAIN would
+# merely restate the selection that produced HD_TOPK.
+#
+# SELECTION RE-ENTERS THE MOMENT ANY ONE HEAD IS SINGLED OUT FOR A CLAIM. Any CONFIRMATORY per-head
+# claim requires a HELD-OUT AXIS: the 3 untouched TEST domains, or -- preferred, because it is a
+# genuine replication rather than a reused split -- the `button` codeword, whose banks already exist.
+#
+# GATE 0 IS DIFFERENT ON THIS FAMILY AND THIS IS THE ONE THING TO READ BEFORE THE NUMBERS.
+#   S-246 measured: a K-head arm records K x 2016 prefill edits and the ALL-32 arm records 2016, so a
+#   SINGLETON RECORDS EXACTLY WHAT HD_KO RECORDS. The realised-dose identity that carried PR-010's 48
+#   arms and PR-011's 24 CANNOT distinguish SINGLE_h from HD_KO. Arm identity here is asserted from
+#   each run's OWN recorded `knockout_heads` against the preregistered head set. Expected doses:
+#     HD_BASE 0 | HD_KO 2016 | SINGLE_* 2016 | LOO_* 14112 | HD_TOPK, HD_BOTK 16128
+#   The reader reports `dose_is_diagnostic_of_identity: false` for every arm whose expected dose is
+#   2016, so a passing dose can never be mistaken for a verified arm.
+# ------------------------------------------------------------------------------------------------
+
+# --- THE ONLY READ. VALIDATION. No TRAIN stage exists in this experiment.
+python scripts/dcs_csi_head_census.py \
+  --prereg configs/dcs_csi_pr012_head_census_basket.json \
+  --tag-prefix csi5_census_basket_validation --split validation --expect-n 230 \
+  --require-slurm-job <VALIDATION_JOB_IDS> \
+  --out reports/DCS_CSI_PR012_CENSUS_validation.json
+
+# ------------------------------------------------------------------------------------------------
+# HOW THE OUTPUT MAY BE READ.
+#   E(SINGLE_h)          head h's effect ALONE. Negative = knocking out h alone lowers installation.
+#   E(LOO_h)             the 8-set minus head h.
+#   marginal(h)          E(HD_TOPK) - E(LOO_h) -- what h ADDS to the 8-set. A head can have a large
+#                        singleton effect and a small marginal (redundant inside the set) or the
+#                        reverse (only matters in company). BOTH are reported; neither is "the" answer.
+#   HD_BOTK              the noise scale on these rows.
+#
+# ⛔ FORBIDDEN READINGS, listed because each is a mistake this sprint has already made once.
+#   1. "head X is the writer" -- selection on the split that produced the ordering. Needs a held-out
+#      axis. (AM-30's original design was withdrawn for exactly this in S-245.)
+#   2. Summing singleton effects and comparing the total to E(HD_KO). Nothing here licenses
+#      additivity; PR-011 measured Spearman rho = -0.09 between candidate-head COUNT and effect,
+#      which argues against it.
+#   3. Treating a head's singleton ci95 excluding 0 as a certified finding about that head. With 40
+#      intervened arms read at once, an unadjusted per-arm interval is DESCRIPTIVE. The census
+#      deliberately reports intervals and no p-values so that this is not available to be claimed.
+#   4. Comparing these numbers to the AtP screen's S[h] and declaring either one vindicated. S-245
+#      measured rho = -0.11 between them; the census REPLACES both surrogates and adjudicates
+#      neither retrospectively.
+#
+# HONEST EXPECTATION ON RECORD BEFORE THE DATA.
+#   S-243/6's post-hoc decomposition put the load on heads 2 and 19, and S-245 measured that the
+#   screen's own ordering disagrees with it (rho = -0.11), so I hold BOTH loosely. What I expect:
+#   singleton effects much SMALLER than E(HD_TOPK)/8 for most heads, because 8 heads knocked out
+#   together removed 86 % of the all-32 effect and single heads read 5 positions downstream and 4+
+#   layers later. I expect at least one singleton to be clearly non-trivial and I do NOT predict
+#   which. I expect the LOO marginals to be SMALL and mostly overlapping zero -- i.e. the 8-set is
+#   redundant internally -- because PR-011 already showed an 8-set sharing ONE head with HD_TOPK
+#   reaching 77.8 % of it.
+#   ⚠ IF the singletons are all near zero AND the LOO marginals are all near zero, that is a
+#   COHERENT and INFORMATIVE outcome, not a failure: it would mean the effect is carried by the SET
+#   and is not decomposable into per-head contributions at this site. The census is designed so that
+#   this outcome is reportable rather than a null result to be explained away.

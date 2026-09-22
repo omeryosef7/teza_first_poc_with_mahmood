@@ -72,8 +72,18 @@ def all_arms(prereg):
     hs = prereg["head_sets"]
     arms = [("HD_BASE", None), ("HD_KO", None),
             ("HD_TOPK", hs["HD_TOPK"]), ("HD_BOTK", hs["HD_BOTK"])]
-    cprefix = prereg.get("control_prefix", "HD_RAND")
-    arms += [(k, hs[k]) for k in sorted(hs) if k.startswith(cprefix)]
+    # S-247. A CENSUS prereg (NO_RANK_TEST) has no control_prefix, so prefix-matching would build only
+    # the four arms above; the n_arms_per_split assertion below then refuses -- loudly, which is right,
+    # but the generator is still the ONE place an arm's argv is defined and duplicating it for a second
+    # family would duplicate the flag-verification logic with it. So enumerate EVERY remaining
+    # head_sets entry instead. `control_pool` is skipped explicitly: it is a DRAW POOL, not an arm, and
+    # it lives in head_sets for provenance (pr010_freeze.py:128).
+    if prereg.get("NO_RANK_TEST"):
+        arms += [(k, hs[k]) for k in sorted(hs)
+                 if k not in ("HD_TOPK", "HD_BOTK", "control_pool")]
+    else:
+        cprefix = prereg.get("control_prefix", "HD_RAND")
+        arms += [(k, hs[k]) for k in sorted(hs) if k.startswith(cprefix)]
     return arms
 
 
