@@ -19997,3 +19997,93 @@ frozen   pr013 nomination rule + amendment 1 (md5 fae4adc6), anchor cross-check,
 ```
 
 **No census number was read.** `score_behavior.py` was not opened.
+
+---
+
+## S-252 — the S-251 audit, carried through the rest of PR-013's path. **W4 hard-coded `"for basket"` INTO THE FIELD A CLAIM GETS QUOTED FROM** — and fixing that string exposed the larger truth: **W4 cannot read PR-CSI-013 at all**, so it now refuses by name instead of emitting a plausible wrong artefact
+
+S-251's rule was *"a parameter that has only ever had one value is a constant wearing a parameter's name."*
+Applied systematically to every tool PR-013 would touch. Census at **34 of 44**, GATE 0 clean.
+
+### 1. The audit
+
+```
+codeword literals per tool on PR-013's path:
+  dcs_csi_arm_runner.py            0   <- clean
+  dcs_csi_pr010_gate0_sweep.py     0   <- clean
+  dcs_csi_submit.sh                0   <- clean
+  dcs_csi_rederive_subspace.py     1   <- docstring only
+  dcs_csi_rederive_patch.py        3   <- comments only
+  dcs_csi_pr010_argv.py            6   <- FIXED in S-251
+  dcs_csi_head_analyze.py (W4)     3   <- TWO ARE LIVE STRINGS
+```
+
+**Three of the eight tools were clean, two carry only prose, and W4's are live.**
+
+### 2. ⚠ W4's were in the claim text, which is the worst place for them
+
+```python
+REPORTABLE_AS["WE FOUND (part of) THE WRITER"] =
+  "8 head INDICES ... carry at least half of the A1 knockout's effect on installation for basket ..."
+CANNOT_DO includes
+  "does NOT do cross-codeword transfer to button; that is only meaningful after a POSITIVE basket
+   head result, and is the NEXT design"
+```
+
+**Reading a button family with this tool would have emitted a button result whose own reporting language
+attributed it to basket, and whose `CANNOT_DO` denied doing the very transfer it was doing.** Not a
+numerical error — **a provenance error written into the artefact a claim is then quoted from**, which in
+this sprint is exactly how `REPORTABLE_AS` is meant to be used. Now derived: `cw = pr.get("codeword",
+"basket")` and the head count from `len(head_sets["HD_TOPK"])`, so the sentence says `8` and `basket`
+because the prereg says so, not because the string does.
+
+### 3. ⛔ And fixing the string exposed that the string was not the problem
+
+W4 names `HD_BASE`, `HD_KO`, `HD_TOPK` and `HD_BOTK` **throughout** — the candidate arm name is a
+constant, not a parameter. **PR-013's candidate is `BT_SINGLE`, a SINGLE head, with base arms
+`BT_BASE`/`BT_KO`.** So:
+
+* a differently-named family **cannot be read by W4 at all**, and
+* a `K = 1` family would be described by reporting language written for a **K-head subset** —
+  *"8 head INDICES … carry at least half"* is not a sentence about one head.
+
+**Parameterising the codeword was necessary and NOT sufficient, and stopping there would have been worse
+than not starting:** it would have left W4 looking button-ready while still being structurally unable to
+read the family. **So W4 now refuses by name** — the S-246 pattern, a named refusal instead of a wrong
+answer:
+
+```
+REFUSING: prereg 'PR-CSI-013' does not declare ['HD_TOPK', 'HD_BOTK'] in head_sets. W4 is hard-coded
+to the HD_BASE/HD_KO/HD_TOPK/HD_BOTK family shape and its reporting language describes a K-head
+SUBSET, so it cannot read a differently-shaped family (e.g. PR-CSI-013, whose candidate BT_SINGLE is
+ONE head). That family needs its own reader. (S-252)          rc = 1
+```
+
+There is a second refusal on `base_arms` for the same reason. **This is a decision recorded, not a
+deferral: PR-CSI-013 will need its own reader, and that is now stated in code rather than discovered at
+read time** — which is precisely what S-196 cost 9.3 GPU-hours to learn.
+
+### 4. ⛔ Regression — W4 produced D32 and D33
+
+```
+W4 re-run on PR-011 (918169) -> full-object identical to the committed report : TRUE
+W4 re-run on PR-010 (916536) -> full-object identical to the committed report : TRUE
+W4 self-test : SELFTEST PASSED, cleanup residue 0
+census GATE 0 sweep (imports W4's liveness) : 34 of 44, all PASS
+```
+
+**The `codeword` default is therefore verified to bind, not assumed (S-168):** if `pr.get("codeword",
+"basket")` had resolved to anything else, `REPORTABLE_AS` would have changed and the full-object
+comparison would have failed. **It is the regression that proves the default, not the docstring.**
+
+### 5. What this tick did NOT do
+
+**No census number was read** (34 of 44; the read needs 44). PR-CSI-013 still has no prereg and cannot
+until the census lands and Rule 2 passes. **No new reader was written** — S-252 establishes that one is
+needed and refuses loudly until it exists; writing it now would mean guessing the family's shape before
+the census decides whether the family happens at all. `score_behavior.py` was not opened.
+
+**The running tally of "constant wearing a parameter's name" in this sprint: `control_prefix` (S-227),
+tag namespace (S-227/S-246), arm enumeration (S-247), bank + exclusions (S-251), claim text + arm names
+(S-252). Five, all in the same pipeline, and every one found by preparing a SECOND value rather than by
+reviewing the first.**

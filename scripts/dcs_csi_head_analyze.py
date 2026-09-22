@@ -152,6 +152,23 @@ def main():
         sys.exit("REFUSING: prereg %r declares NO_RANK_TEST -- it is a CENSUS (no candidate, no control "
                  "family, no floor) and this tool is a RANK-TEST tool. Use the census reader. (S-246)"
                  % pr["id"])
+    # ⛔ S-252. W4 IS HARD-CODED TO THIS FAMILY SHAPE, and saying so is the fix rather than pretending
+    # otherwise. It names HD_BASE / HD_KO / HD_TOPK / HD_BOTK throughout, and its REPORTABLE_AS speaks
+    # of "K head INDICES ... carry at least half of the A1 knockout's effect" -- language about a
+    # K-head SUBSET. PR-CSI-013's candidate is BT_SINGLE, a SINGLE head, with base arms BT_BASE /
+    # BT_KO. Making the codeword a parameter (above) was necessary and is NOT sufficient: a family
+    # with different arm names cannot be read here at all, and one with K = 1 would be described by
+    # reporting language written for a subset. Refuse by NAME instead of emitting a wrong artefact.
+    _need = [k for k in ("HD_TOPK", "HD_BOTK") if k not in pr["head_sets"]]
+    if _need:
+        sys.exit("REFUSING: prereg %r does not declare %s in head_sets. W4 is hard-coded to the "
+                 "HD_BASE/HD_KO/HD_TOPK/HD_BOTK family shape and its reporting language describes a "
+                 "K-head SUBSET, so it cannot read a differently-shaped family (e.g. PR-CSI-013, "
+                 "whose candidate BT_SINGLE is ONE head). That family needs its own reader. (S-252)"
+                 % (pr["id"], _need))
+    if pr.get("base_arms") and list(pr["base_arms"]) != ["HD_BASE", "HD_KO"]:
+        sys.exit("REFUSING: prereg %r declares base_arms %r; W4 reads HD_BASE and HD_KO only. (S-252)"
+                 % (pr["id"], pr["base_arms"]))
     cprefix = pr.get("control_prefix", "HD_RAND")
     controls = sorted(k for k in hs if k.startswith(cprefix))
     if not controls:
@@ -326,16 +343,24 @@ def main():
     # not decoration: design 10 states that --knockout-heads TIES A HEAD INDEX ACROSS 6-14, so no arm
     # in this family can address a single (layer, head) cell -- even though the SCREEN ranks cells and
     # its top cell was L14 h19. The intervention is coarser than the attribution, by construction.
+    # S-252. THE CODEWORD IS READ FROM THE PREREG AND NOT HARD-CODED, because this is the field a
+    # CLAIM GETS QUOTED FROM. It said "for basket" unconditionally, so reading a BUTTON family with
+    # this tool would have emitted a button result whose own reporting language attributed it to
+    # basket -- not a numerical error, a PROVENANCE error written into the artefact that the claim is
+    # then taken from. Defaults to "basket" because PR-010/011 predate the field, and the default is
+    # verified to bind (S-168) by the byte-identity regression in S-252.
+    cw = pr.get("codeword", "basket")
+    n_cand = len(pr["head_sets"]["HD_TOPK"])
     REPORTABLE_AS = {
         "WE FOUND (part of) THE WRITER":
-            ("8 head INDICES, applied across blocks 6-14 on the query-codeword row, carry at least "
-             "half of the A1 knockout's effect on installation for basket -- for leg (i) of the "
-             "circuit ONLY. NOT a claim about any single (layer, head) cell."),
+            ("%d head INDICES, applied across blocks 6-14 on the query-codeword row, carry at least "
+             "half of the A1 knockout's effect on installation for %s -- for leg (i) of the "
+             "circuit ONLY. NOT a claim about any single (layer, head) cell." % (n_cand, cw)),
         "PARTIALLY LOCALISED":
-            ("those 8 head indices carry a real but MINORITY share of the A1 knockout's effect. "
-             "NOT 'the writer', and not a claim about any single (layer, head) cell."),
+            ("those %d head indices carry a real but MINORITY share of the A1 knockout's effect. "
+             "NOT 'the writer', and not a claim about any single (layer, head) cell." % n_cand),
         "IT IS DISTRIBUTED (candidate sits inside the control family)":
-            ("no 8-head subset is privileged: the demo->codeword-row write is spread across heads. "
+            ("no %d-head subset is privileged: the demo->codeword-row write is spread across heads. " % n_cand +
              "Plan section 19 Gate C then says KEEP THE REPRESENTATION RESULT AND DO NOT INVENT A "
              "CIRCUIT."),
     }
@@ -348,8 +373,10 @@ def main():
             "cannot test leg (ii) (rel-11 -> rel-6): no scope exists for it",
             "cannot resolve WHICH LAYER a head acts at -- --knockout-heads ties the index across 6-14",
             "cannot test blocks 0-5 or 15-18 causally without first establishing an all-head ceiling there",
-            "does NOT do cross-codeword transfer to button; that is only meaningful after a POSITIVE "
-            "basket head result, and is the NEXT design",
+            ("does NOT do cross-codeword transfer away from %s; a transfer test is a SEPARATE "
+             "preregistered family with its own verdict" % cw) if cw != "basket" else
+            ("does NOT do cross-codeword transfer to button; that is only meaningful after a POSITIVE "
+             "basket head result, and is the NEXT design"),
         ],
         "prereg": a.prereg, "prereg_id": pr["id"], "tag_prefix": a.tag_prefix, "split": a.split,
         "n_domains": len(doms), "expect_n": a.expect_n,
