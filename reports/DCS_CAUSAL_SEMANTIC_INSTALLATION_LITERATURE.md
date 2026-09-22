@@ -824,3 +824,51 @@ WebSearch "attention head causally carries in-context redefined word meaning pat
            override not copying"
 WebFetch  arxiv.org/abs/2606.28273   -> abstract read verbatim (F1)
 ```
+
+---
+
+# ADDENDUM G — 2026-09-22: **a SECOND verified instance of the claim shape, in a third domain.** Sparse heads carrying a semantic function, causally, across three model families — and again the meaning is **memorised, not installed**
+
+## G1. VERIFIED — arXiv:2602.04613, *Translation Heads: Disentangling meaning from language in LLM-based machine translation*
+
+Théo Lasnier, Armel Zebaze, Djamé Seddah, Rachel Bawden, Benoît Sagot. Submitted **4 Feb 2026**, revised
+**3 Jun 2026**. Abstract fetched verbatim.
+
+> *"We decompose MT into two subtasks: producing text in the target language … and **preserving the input
+> sentence's meaning** … Across **three families** of open-source models and 20 translation directions, we
+> find that **distinct, sparse sets of attention heads specialize in each subtask** … modifying just **1%**
+> of the relevant heads enables instruction-free MT … while **ablating these heads selectively disrupts
+> their corresponding translation functions**."*
+
+**The claim shape again**: sparse head sets, a **semantic** function (meaning preservation, explicitly
+separated from surface form), established **causally** by ablation plus steering, across **three model
+families**.
+
+## G2. Two verified neighbours now, and the same distinction survives both
+
+| | 2606.28273 (VLM) | 2602.04613 (MT) | D32 |
+|---|---|---|---|
+| semantic function localised | prior-knowledge grounding | **meaning preservation** | installed denotation |
+| origin of the meaning | **memorised** world knowledge | **intrinsic** translation capability | **created by the prompt at inference** |
+| causal method | patching + ablation | ablation + steering | AtP screen + true-patch gate + knockout arms |
+| model families | three | three | **one** |
+| held-out split | not stated in abstract | not stated in abstract | 23 held-out domains |
+| matched random control family | not stated in abstract | not stated in abstract | 20 dose-matched, seeds preregistered |
+
+**⚠ "Not stated in the abstract" is not "absent from the paper."** Neither full text was read. The
+methodological column is therefore a statement about what the abstracts claim, **not** a finding about what
+those papers did — and it must be written that way anywhere it is used.
+
+## G3. Where this leaves the novelty position
+
+**Twice now the claim shape has been found, in two unrelated domains, both multi-family.** *"Sparse
+attention heads causally carry a semantic function"* is **settled**, and D32 must be positioned inside that
+literature rather than against it.
+
+**The surviving distinction is unchanged and is getting sharper by repetition:** in both neighbours the
+meaning is **already in the model** — memorised knowledge, or a learned translation capability. D32's
+meaning is **installed by the prompt at inference time and contradicts the token's lexical meaning.** That
+is the axis on which nothing found so far overlaps, and it is now the **only** conceptual axis left.
+
+**§12 still not discharged.** Two fetched neighbours in two passes, on the third and then the first query,
+is a rate that says the space is still productive. §F4's remaining leads are unfetched.

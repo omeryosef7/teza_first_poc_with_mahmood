@@ -18131,3 +18131,80 @@ Their coverage is broader (3 families); our controls are stronger. Both stated, 
 SECTION 12 STILL NOT DISCHARGED -- the neighbour appeared on the THIRD QUERY, which shows the space is not
 exhausted; four leads remain unfetched, one potentially closer.
 ```
+
+---
+
+# S-235 / S-236 — **all three approved items actioned: PR-CSI-011 is RUNNING (918169), the false-negative bound is built and CHAINED (918175), and a SECOND verified neighbour narrows novelty to a single conceptual axis**
+
+## PR-CSI-011 launched
+
+```
+918169 RUNNING n-301 | BLOB 45321a2e PORCELAIN [clean]
+SPLIT=validation EXPECT_N=230 PREREG=...pr011... TAG_PREFIX=csi4_all32_basket FAMILY=pr011
+CHECK PASSED: 24 arms, every flag declared by score_behavior.py
+```
+
+The tag-namespace guard did its job: `PR_ID PR-CSI-011 -> csi4_all32_basket`, so nothing lands in
+PR-010's namespace. ~2.2 h, validation only.
+
+## §A5-8's tool, and the check that had to precede it
+
+`scripts/dcs_csi_head_fn_bound.py`, chained as **918175** on `afterany:918169`. It patches a **seeded
+sample of 48 unverified cells** for real on the **same 40 stratified rows the gate used**, and reports the
+largest `|true ΔM|` among them against the smallest among the verified top-40, Welch's t between the
+groups, and a one-sided upper bound on the unverified mean.
+
+**Verified before running, because the slurm points at screen 916132 while the gate consumed 915941:**
+
+```
+topk_cells_by_abs IDENTICAL including order | AtP_by_cell identical | S[h] identical | 288 cells, 40 topk
+```
+
+So the "verified" set the bound excludes is **exactly** the set the gate patched. Had they differed, the
+bound would have mislabelled which cells were already checked — and it would have looked fine.
+
+## ⭐ A second verified neighbour, and the novelty axis narrows to one
+
+`arXiv:2602.04613`, *Translation Heads* (Lasnier, Zebaze, Seddah, Bawden, Sagot; Feb 2026, rev. Jun 2026):
+
+> *"distinct, **sparse sets of attention heads** specialize in each subtask … modifying just **1%** of the
+> relevant heads … while **ablating these heads selectively disrupts** their corresponding translation
+> functions"* — across **three families**, one subtask being **meaning preservation**.
+
+**That is the claim shape for the second time, in a third domain.** With `2606.28273` (VLM prior-override)
+it is now settled that *"sparse attention heads causally carry a semantic function"*, and **D32 belongs
+inside that literature, not against it.**
+
+**But the same distinction survives both, and repetition is sharpening it:** in both neighbours the meaning
+is **already in the model** — memorised world knowledge, or a learned translation capability. **D32's
+meaning is installed by the prompt at inference time and contradicts the token's own lexical sense.** That
+is now the **only** conceptual axis on which nothing found overlaps.
+
+**⚠ And a limit on my own comparison table:** *"not stated in the abstract"* is **not** *"absent from the
+paper."* Neither full text was read. The methodological column (held-out split, matched control family) is
+a statement about what those abstracts claim — **not** a finding about what those papers did.
+
+**§12 still not discharged.** Two fetched neighbours in two passes, arriving on the third then the first
+query, is a rate that says the space is still productive rather than exhausted.
+
+## Commands
+
+```
+PREREG=configs/dcs_csi_pr011_head_all32_controls_basket.json TAG_PREFIX=csi4_all32_basket \
+FAMILY=pr011 SPLIT=validation ./scripts/gates/dcs_csi_submit.sh slurm_scripts/dcs_csi_pr010_arms.slurm
+sbatch --dependency=afterany:918169 --export=ALL,CSI_GIT_BLOB=...,CSI_GIT_PORCELAIN=clean \
+  slurm_scripts/dcs_csi_fn_bound.slurm
+WebFetch https://arxiv.org/abs/2602.04613
+```
+
+```
+PR-CSI-011 RUNNING (918169), FN BOUND CHAINED (918175) -- the tag guard confirmed csi4_all32_basket so
+PR-010's namespace is untouched.
+THE TWO SCREENS AGREE ON ALL 288 CELLS AND ALL 40 TOPK, ORDER INCLUDED -- checked before the bound ran,
+because a mismatch would have mislabelled the verified set and looked fine.
+SECOND VERIFIED NEIGHBOUR (Translation Heads, 3 families, 1% of heads, causal ablation): the claim shape is
+SETTLED. D32 sits INSIDE that literature.
+THE ONLY CONCEPTUAL AXIS LEFT: their meaning is MEMORISED or INTRINSIC; ours is INSTALLED BY THE PROMPT and
+contradicts the token's lexical sense.
+"Not stated in the abstract" is NOT "absent from the paper" -- neither full text was read.
+```
