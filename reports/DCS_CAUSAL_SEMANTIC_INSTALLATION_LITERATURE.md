@@ -1051,3 +1051,70 @@ the three to matter, because it is the paper that owns the phenomenon.
 
 **This is the first of five passes that cost nothing.** Four in a row narrowed the claim — the idea, the
 phenomenon, the methodology, the subfield. This one tested a named precondition and the claim held.
+
+---
+
+# ADDENDUM K — 2026-09-22: ⭐ **§89's THREE NAMED READINGS ARE ALL DISCHARGED.** The Doublespeak paper's appendices H and I are read — they are **its read-out tooling, not head analysis** — and none of the three anchors occupies our head-level claim
+
+## K1. VERIFIED — arXiv:2512.03771's appendices, §89 item (a)
+
+Fetched. **Appendix H is *"Failure of Logit-Lens on Llama3.1-8B-instruct"* and Appendix I is *"Distilling
+Patchscopes outputs"*** — both about their **read-out tooling**, not head-level analysis. Full appendix list:
+A examples on other models · B harmless hijacking · C multi-token hijacking · D robustness to token
+selection · E implementation · F LLM-as-a-Judge prompt · G failure modes · **H logit-lens failure** ·
+**I Patchscopes distillation**.
+
+```
+attention-head analysis or ablation   NO -- "No sentence discusses attention heads specifically"
+causal intervention                   NO beyond Patchscopes, which here is READ-OUT, not knockout
+positions / layers                    LAYERS only (harmful meaning emerges across 32; refusal direction
+                                      at layer 12). "No specific POSITION analysis across sequence length"
+mitigation / intervention             explicitly FUTURE WORK -- "a shift toward representation-aware safety"
+```
+
+**§82's characterisation is confirmed exactly**: *"The one paper that owns the phenomenon runs only logit
+lens and Patchscopes, both read-out tools, and explicitly leaves mitigation and intervention to future
+work."* That was written from the analysis section; the appendices do not change it.
+
+**⚠ And one detail cuts in our favour rather than against.** Appendix H is a documented **failure of
+logit-lens on Llama-3.1-8B-Instruct — our exact model.** Their read-out tool failed on the model we use,
+which makes a **causal** approach on that model more valuable, not less. That is a point for the methods
+section and it was found in an appendix nobody had read.
+
+## K2. §89's list is now complete
+
+| item | paper | status | does it occupy our claim? |
+|---|---|---|---|
+| (a) | `2512.03771` appendices H, I | **read this pass** | **No** — layers only, read-out tools, no heads, no positions |
+| (b) | `2605.00123` (LOCA) | read (Addendum J) | **No** — positions/layers/SAE directions, suffix attacks, no heads |
+| (c) | `2605.18830` (concept subspace) | **already read 2026-09-17** (§A2/§A3, abs+html) | **No** — subspace at **rank ≈73**, final/query position, layer 30 |
+
+**All three named preconditions are discharged, and none of them does head-level localisation of an
+in-context-installed denotation.**
+
+**✅ A third independent convergence on the query position.** `2605.18830`'s positive is *"at the
+**final/query position**, at layer 30"*; `2606.07555`'s three necessary positions include *"the later
+**query word**"*; our knockout is scoped `target_surface_row_only` — **the query-codeword row.** Three
+unrelated works, three different paradigms, all loading the query position. **This is now the
+best-corroborated design choice in the sprint**, and none of it was known when the choice was made.
+
+## K3. ⛔ What §12 permits now, and what it still forbids
+
+**§89's checklist is complete, so the named blocker is gone.** What remains is **§A5-2's unbounded sweep**,
+which by its nature can never be declared complete — *"I found nothing"* over any finite search is not
+proof of absence, and §A5-2 explicitly names non-archival venues as the likeliest hiding place.
+
+**So a claim is now permissible on the review's own terms, PROVIDED it is the narrow one and is worded as
+a scope statement rather than a priority claim:**
+
+> **Permitted:** *"We give a head-level causal account of an in-context-installed denotation. The three
+> works nearest this question — the attack paper itself (2512.03771), the local-causal-explanation line
+> (2605.00123) and the concept-subspace line (2605.18830) — localise to layers, positions or subspace
+> directions and do not analyse attention heads; the nearest same-phenomenon work (2606.07555) localises
+> positions and layers and reports no head-level analysis."*
+
+> **Still forbidden:** *novel*, *first*, *unaddressed*, and any claim about **the idea** of sparse semantic
+> heads (settled — Addenda F/G), **the phenomenon** in general (occupied — Addendum H), or
+> **methodological superiority** (standard practice — Addendum I).
+
+**That is the whole of what five retrieval passes license.**

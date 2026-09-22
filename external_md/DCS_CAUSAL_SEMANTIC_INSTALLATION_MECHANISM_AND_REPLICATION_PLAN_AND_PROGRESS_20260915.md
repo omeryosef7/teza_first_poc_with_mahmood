@@ -18430,3 +18430,87 @@ STILL BLOCKING SECTION 12: 2512.03771's appendices H and I -- the Doublespeak pa
 section, the likeliest place a head-level analysis of our phenomenon already exists.
 PR-011: 5 of 24, ALL PASS, dose identity 16128.0/2016.0 = 8.000000 on this split's own denominator.
 ```
+
+---
+
+# ⭐ S-240 — **§89's three named readings are ALL discharged.** The Doublespeak paper's appendices H and I are its **read-out tooling**, not head analysis; none of the three anchors occupies our claim; and **three independent works now converge on the query position**
+
+## §89 item (a), read — and it is not what its priority suggested
+
+`arXiv:2512.03771`'s **Appendix H is *"Failure of Logit-Lens on Llama3.1-8B-instruct"*** and **Appendix I is
+*"Distilling Patchscopes outputs"***. Both concern their **read-out tooling**. The paper performs **no
+attention-head analysis** (*"No sentence discusses attention heads specifically"*), **no causal intervention
+beyond Patchscopes** (read-out in this use), identifies **layers only** (*"no specific position analysis
+across sequence length"*), and frames mitigation as **future work**.
+
+**§82's characterisation of it is confirmed exactly.** It was written from the analysis section, and the
+appendices do not change it.
+
+**⚠ And one appendix cuts in our favour.** Appendix H documents a **failure of logit-lens on
+Llama-3.1-8B-Instruct — our exact model.** Their read-out tool failed on the model we use, which makes a
+**causal** approach on that model more valuable, not less. That belongs in a methods section and it was
+sitting in an appendix nobody had opened.
+
+## The checklist is complete
+
+```
+(a) 2512.03771 appendices H,I   read THIS pass    -> layers only, read-out, no heads, no positions
+(b) 2605.00123 (LOCA)           read (S-239)      -> positions/layers/SAE dirs, suffix attacks, no heads
+(c) 2605.18830 (concept subspace) ALREADY read 2026-09-17 (§A2/§A3, abs+html)
+                                                  -> subspace at rank ~73, final/query position, layer 30
+```
+
+**All three discharged. None does head-level localisation of an in-context-installed denotation.** Item (c)
+had been read on the sprint's own first literature pass — **checked before re-fetching, per S-223.**
+
+## ✅ Three independent convergences on the query position
+
+```
+2605.18830   positive at "the FINAL/QUERY POSITION, at layer 30"
+2606.07555   three necessary positions include "the later QUERY WORD"
+PR-CSI-010   knockout scoped target_surface_row_only -- THE QUERY-CODEWORD ROW
+```
+
+Three unrelated works, three paradigms, three model sets, all loading the **query position**. **This is now
+the best-corroborated design choice in the sprint**, and none of the corroboration existed in our reasoning
+when the choice was made — it came from `score_behavior`'s span resolution and §1.8's ladder.
+
+## ⛔ What §12 now permits, in exact words
+
+**The named blocker is gone; §A5-2's unbounded sweep remains and can never be "complete."** So:
+
+> **Permitted** — *"We give a head-level causal account of an in-context-installed denotation. The three
+> works nearest this question — the attack paper itself, the local-causal-explanation line, and the
+> concept-subspace line — localise to layers, positions or subspace directions and do not analyse attention
+> heads; the nearest same-phenomenon work localises positions and layers and reports no head-level
+> analysis."*
+
+> **Still forbidden** — *novel*, *first*, *unaddressed*; any claim on **the idea** of sparse semantic heads
+> (settled, F/G), **the phenomenon** generally (occupied, H), or **methodological superiority** (standard
+> practice, I).
+
+**That sentence is the whole of what five retrieval passes license**, and it is a scope statement rather
+than a priority claim.
+
+## PR-011
+
+9 of 24 landed at the last check, all passing GATE 0, dose identity `16128.0 / 2016.0 = 8.000000` against
+this split's own denominator. ~15 arms left.
+
+## Commands
+
+```
+WebFetch https://arxiv.org/html/2512.03771v1     # appendices enumerated; H and I read
+grep -n "2605.18830" reports/DCS_CAUSAL_SEMANTIC_INSTALLATION_LITERATURE.md   # already read 2026-09-17
+```
+
+```
+SECTION 89's THREE NAMED READINGS ARE ALL DISCHARGED. Appendices H and I are "Failure of Logit-Lens on
+Llama3.1-8B-instruct" and "Distilling Patchscopes outputs" -- read-out tooling, NOT head analysis.
+NONE of the three anchors does head-level localisation of an in-context-installed denotation.
+APPENDIX H CUTS OUR WAY: their logit-lens FAILED on Llama-3.1-8B-Instruct, our exact model.
+THREE INDEPENDENT CONVERGENCES ON THE QUERY POSITION (2605.18830 final/query, 2606.07555 later query word,
+ours target_surface_row_only) -- the best-corroborated design choice in the sprint, corroborated after the fact.
+SECTION 12 NOW PERMITS ONE NARROW SCOPE STATEMENT, quoted verbatim in the log. Still forbidden: novel,
+first, unaddressed, the idea, the phenomenon, methodological superiority.
+```
