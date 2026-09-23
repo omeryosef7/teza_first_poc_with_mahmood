@@ -508,3 +508,96 @@ def test_the_detectability_metadata_is_NOT_null_for_a_PER_HEAD_prereg(tmp_path):
     if cf.get("preregistered_bar") is None:
         assert "preregistered_bar_per_head" in cf["WEAKER_CRITERION_NOTE"], \
             "the note points at 'preregistered_bar', which is null on a multi-head family"
+
+
+# ================================================================ R27 / S-310
+# THE COLLISION ON THE DENOMINATOR. R27 filed this as "not exploitable today"; PR-CSI-016 is the
+# family that makes it exploitable, because the census reader REFUSES a prereg carrying both
+# head_sets and cell_sets, so PR-016's whole-head arms must be expressed as 9-CELL LISTS -- and a
+# 9-cell band arm records an EMPTY knockout_heads (which recorded_heads maps to "ALL") and the
+# IDENTICAL dose 9 x 224 = 2016. Identity field and dose both collide with CL_KO.
+
+def _farm(tmp_path, real_dirs, swap_arm, new_cells):
+    """A scratch SCORE_DIR: symlinks to the real arm dirs, with ONE arm's config.json replaced by a
+    copy whose knockout_cells names `new_cells`. Everything else is the real run, byte for byte."""
+    farm = tmp_path / "score"
+    farm.mkdir()
+    for d in real_dirs:
+        base = os.path.basename(d)
+        if swap_arm + "_2026" in base:
+            tgt = farm / base
+            tgt.mkdir()
+            for f in os.listdir(d):
+                if f == "config.json":
+                    cfg = json.load(open(os.path.join(d, f)))
+                    (cfg.get("args") or cfg)["knockout_cells"] = new_cells
+                    (tgt / f).write_text(json.dumps(cfg))
+                else:
+                    os.symlink(os.path.join(d, f), tgt / f)
+        else:
+            os.symlink(d, farm / base)
+    return str(farm)
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+def test_the_ALL32_denominator_cannot_be_impersonated_by_a_full_band_9cell_arm(tmp_path):
+    """PROPERTY: the all-32 knockout arm must be distinguishable from a one-head, full-band 9-cell
+    arm. They share the dose (2016) AND the head-level identity field (both record an empty
+    knockout_heads), so the ONLY discriminator is that a true all-32 arm carries NO cell list.
+
+    Before the fix the sweep printed "ALL 32   PASS" for a cell-scoped denominator and exited 0.
+    """
+    import glob as _glob
+    import importlib.util as _ilu
+    real = sorted(_glob.glob(os.path.join(
+        ROOT, "outputs/boombness/score_behavior/csi8_cell3_basket_validation_*")))
+    nine = ",".join("%d:17" % L for L in range(6, 15))
+    farm = _farm(tmp_path, real, "CL_KO", nine)
+
+    spec = _ilu.spec_from_file_location(
+        "sweep_under_test", os.path.join(ROOT, "scripts", "gates", "dcs_csi_pr012_gate0_sweep.py"))
+    mod = _ilu.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    mod.census.rederive.SCORE_DIR = farm          # both the sweep and strict_run_dir read this one
+
+    argv = ["dcs_csi_pr012_gate0_sweep.py", "--prereg", PR015,
+            "--tag-prefix", "csi8_cell3_basket_validation", "--split", "validation",
+            "--require-slurm-job", "922176"]
+    old = sys.argv[:]
+    sys.argv = argv
+    try:
+        with pytest.raises(SystemExit) as ei:
+            mod.main()
+    finally:
+        sys.argv = old
+    assert ei.value.code not in (0, None), (
+        "a CELL-SCOPED denominator was certified as the all-32 knockout -- the S-246 collision on "
+        "the KO arm, which is exactly the shape PR-CSI-016 contains")
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+def test_the_real_unmodified_denominator_still_PASSES(tmp_path):
+    """The companion the above needs: a guard that refuses everything is not a guard. The REAL
+    CL_KO -- empty knockout_heads, empty knockout_cells -- must still pass."""
+    import glob as _glob
+    import importlib.util as _ilu
+    real = sorted(_glob.glob(os.path.join(
+        ROOT, "outputs/boombness/score_behavior/csi8_cell3_basket_validation_*")))
+    farm = _farm(tmp_path, real, "CL_KO", "")     # swapped, but with the ORIGINAL empty value
+
+    spec = _ilu.spec_from_file_location(
+        "sweep_ok", os.path.join(ROOT, "scripts", "gates", "dcs_csi_pr012_gate0_sweep.py"))
+    mod = _ilu.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    mod.census.rederive.SCORE_DIR = farm
+    argv = ["x", "--prereg", PR015, "--tag-prefix", "csi8_cell3_basket_validation",
+            "--split", "validation", "--require-slurm-job", "922176"]
+    old = sys.argv[:]
+    sys.argv = argv
+    try:
+        rc = mod.main()
+    except SystemExit as e:
+        rc = e.code
+    finally:
+        sys.argv = old
+    assert rc in (0, None), "the genuine all-32 denominator was refused: rc=%r" % (rc,)

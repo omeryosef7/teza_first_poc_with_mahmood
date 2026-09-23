@@ -214,8 +214,19 @@ def main():
         if arm == base[0]:
             ok_id, why = True, "not intervened"
         elif arm == base[1]:
+            # ⚠ R27/S-310: the same collision, on the DENOMINATOR. A full-band 9-cell arm records an
+            # EMPTY knockout_heads (-> "ALL") and the identical dose 9 x 224 = 2016, so this check
+            # alone certifies a one-head-wide arm as the all-32 knockout. A true all-32 arm carries
+            # NO cell list; absence of the field is not a pass (R20-6). PR-CSI-016 is the first
+            # family that will actually contain such an arm.
             got = recorded_heads(d)
-            ok_id = (got == "ALL"); why = "ALL 32" if ok_id else "expected ALL, got %r" % (got,)
+            _kc = recorded_cells(d)
+            ok_id = (got == "ALL") and (_kc == "NOT_A_CELL_ARM")
+            why = ("ALL 32, no cell list" if ok_id
+                   else "expected ALL, got %r" % (got,) if got != "ALL"
+                   else "NO knockout_cells field -- cannot rule out a 9-cell arm sharing this dose"
+                   if _kc is None
+                   else "CELL-SCOPED DENOMINATOR: knockout_cells records %r (S-246 collision)" % (_kc,))
         elif IS_CELLS:
             # IDENTITY FROM `knockout_cells` ONLY. See the collision note above: this arm's
             # `knockout_heads` is empty and would read as "ALL".

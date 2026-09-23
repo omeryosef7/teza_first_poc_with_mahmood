@@ -26311,3 +26311,88 @@ S-290 / D35        REFRAMED, post-hoc and labelled: the nomination rule failed, 
                    phenomenon. D35 itself is NOT revised -- a post-hoc rank may not revise a frozen read.
 PR-CSI-016         CHOSEN. Not yet frozen, not yet launched. No arms running.
 ```
+
+---
+
+## S-310 — 🔴 **R27 filed the denominator collision as "not exploitable today". Designing PR-CSI-016 made it exploitable ONE ENTRY LATER** — the census reader refuses a prereg carrying both `head_sets` and `cell_sets`, so PR-016's whole-head arms *must* be 9-cell lists, and a 9-cell band arm is indistinguishable from `CL_KO` on **both** the identity field and the dose. Fixed, with a test that fails without it
+
+### 1. How the design walked into it
+
+PR-CSI-016 needs, in one allocation: `BT_BASE`, `BT_KO`, three **whole-head** arms (to supply each
+head's bar and to deliver the head-level cross-codeword replication of D34 that has never been run),
+and 27 cell arms. The obvious encoding is `head_sets` for the three and `cell_sets` for the 27.
+
+```
+scripts/dcs_csi_head_census.py:188
+  if _cs and pr.get("head_sets"):
+      sys.exit("REFUSING: prereg %r carries BOTH head_sets and cell_sets. An arm family is one or
+                the other ...")
+```
+
+**That refusal is correct and stays.** So a whole-head arm in a cell family must be written as its nine
+cells — `HD_17 = [[6,17],[7,17],…,[14,17]]`. Which is where R27's finding detonates:
+
+```
+CL_KO      knockout_heads = ""  -> recorded_heads() maps "" to "ALL"     dose 2016
+HD_17      knockout_heads = ""  -> recorded_heads() maps "" to "ALL"     dose 9 x 224 = 2016
+```
+
+**Identical on the identity field. Identical on the dose.** The old check was
+`ok_id = (recorded_heads(d) == "ALL")` — the entire discriminator. R27 demonstrated it on a 3-arm
+scratch family and filed it as *"not exploitable — no current family contains a full-band 9-cell
+arm."* **The next family does.**
+
+### 2. The fix, and the one field that still separates them
+
+A genuine all-32 arm carries **no cell list at all**; `recorded_cells` returns the sentinel
+`NOT_A_CELL_ARM` for an empty field (deliberately *not* `"ALL"` — S-291's asymmetry). So:
+
+```
+ok_id = (recorded_heads(d) == "ALL") and (recorded_cells(d) == "NOT_A_CELL_ARM")
+```
+
+applied at **both** sites — the reader and the sweep — in the same edit, because applying it at one
+is the class this sprint keeps re-learning. **Absence of the `knockout_cells` field is NOT a pass**
+(R20-6): a config that never recorded it cannot rule out a 9-cell arm, and now says so.
+
+### 3. Verification
+
+```
+the REAL family, both tools:   CL_KO ... "ALL 32, no cell list"   PASS    29 of 29   exit 0
+the numbers after the patch:   max |dE| vs the committed report = 0.000e+00
+```
+
+Two tests, on a scratch `SCORE_DIR` of **symlinks to the 29 real arm dirs** with only `CL_KO`'s
+`config.json` replaced — so every byte of the run except the one field under test is genuine:
+
+```
+knockout_cells = "6:17,7:17,...,14:17"  -> the sweep must REFUSE
+knockout_cells = ""  (the real value)   -> the sweep must PASS      <- the companion, because a
+                                                                      guard that refuses everything
+                                                                      is not a guard
+```
+
+⚠ **Both were run against the PRE-FIX code.** The refusal test **FAILS** there — the sweep printed
+`GATE 0: every landed arm passes (29 of 29)` and exited 0 **with a one-head-wide arm standing in for
+the all-32 denominator** — and the companion passes in both. The test is not vacuous.
+`tests/test_csi_cell_identity.py`: **37 passing.**
+
+### 4. 📌 What this says about R27's triage, and it is not a criticism of R27
+
+R27 graded this MAJOR-but-inert on the true observation that no existing family could trigger it.
+**The half-life of "not currently reachable" was one entry.** The rule worth keeping: *a collision
+that is inert only because no artefact has the shape yet is a dated liability, and the date is
+whenever the next design needs that shape.* It cost nothing to fix here and would have cost a
+32-arm allocation — ~1.8 GPU-hours — to discover from a silently-wrong denominator.
+
+### 5. Status
+
+```
+PR-CSI-016   NOT yet frozen, NOT launched. Blocker 1 of 2 cleared.
+             Remaining: the per-head bar must be freezable as a RULE computed from this family's own
+             HD_<hh> arm, because heads 17 and 23 have NO prior button arm and therefore no bar can
+             be frozen as a NUMBER. The reader currently REFUSES a prereg whose per_head block lacks
+             a numeric bar -- which is S-308's own fix, working exactly as intended, and now in the
+             way. It must learn a rule WITHOUT reopening the fail-open it just closed.
+queue        EMPTY. Idle GPU is the binding cost and is being paid while this is built correctly.
+```

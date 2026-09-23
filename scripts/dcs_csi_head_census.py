@@ -315,8 +315,31 @@ def main():
         if arm == base_arm:
             ok_id, why = (got in (None, "ALL", []) or True), "not intervened"
         elif arm == ko_arm:
-            ok_id = (got == "ALL")
-            why = "omitted flag == all 32" if ok_id else "expected ALL, recorded %r" % (got,)
+            # ⚠ R27/S-310 -- THE COLLISION ON THE DENOMINATOR. Cell arms are defended by
+            # `knockout_cells`; the all-32 arm was defended by `knockout_heads == "ALL"` ALONE. But a
+            # full-band NINE-CELL arm (all 9 layers of one head) also records an EMPTY
+            # `knockout_heads`, which recorded_heads() maps to "ALL", AND it carries the identical
+            # dose 9 x 224 = 2016. So on any family containing such an arm, CL_KO and that arm are
+            # INDISTINGUISHABLE on both the identity field and the dose -- R27 demonstrated it on a
+            # 3-arm scratch family, where the sweep printed "ALL 32  PASS" for an arm that was one
+            # head wide. PR-CSI-016 is exactly that family: the census reader refuses a prereg
+            # carrying both head_sets and cell_sets, so its whole-head arms MUST be expressed as
+            # 9-cell lists. The defect was "not exploitable today" when R27 filed it and would have
+            # been exploitable by the very next family.
+            # A true all-32 arm carries NO cell list. Absence of the field is NOT a pass (R20-6).
+            _kc = recorded_cells(dirs[arm])
+            ok_id = (got == "ALL") and (_kc == "NOT_A_CELL_ARM")
+            if got != "ALL":
+                why = "expected ALL, recorded %r" % (got,)
+            elif _kc is None:
+                why = ("config records NO knockout_cells field -- CANNOT distinguish the all-32 arm "
+                       "from a full-band 9-cell arm, which shares its dose (R20-6)")
+            elif _kc != "NOT_A_CELL_ARM":
+                why = ("THE DENOMINATOR IS CELL-SCOPED: knockout_heads is empty (reads as ALL) but "
+                       "knockout_cells records %r. This is the S-246 collision on the KO arm and the "
+                       "dose 2016 cannot tell them apart." % (_kc,))
+            else:
+                why = "omitted flag == all 32, and no cell list"
         elif got is None:
             ok_id, why = False, "config records NO knockout_heads field -- CANNOT VERIFY (absence is " \
                                 "not a value; R20-6)"
