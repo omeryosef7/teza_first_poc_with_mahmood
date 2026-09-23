@@ -22840,3 +22840,62 @@ COMPLETED, 23 `DONE.json`, 22 still quarantined) → **GATE 0 endpoint-blind on 
 `--require-slurm-job 919531` **alone** → independent re-derivation.
 
 **No PR-013 number has ever been read.** `score_behavior.py` was not opened.
+
+---
+
+## S-286 — **S-260's fix is confirmed on real data, on the one arm that voided a family: `BT_BASE` records 0 prefill edits and PASSES GATE 0.** The defect that killed 918967 is verified absent in the family that will actually be read
+
+### 1. The comparison, arm to arm
+
+```
+919531 BT_BASE argv:  --intervene FALSE | --knockout-scope FALSE | --knockout-heads FALSE
+918967 BT_BASE argv:  --intervene TRUE  | --knockout-scope TRUE  | --knockout-heads FALSE   (S-260)
+```
+
+**The 918967 combination — `--intervene` with no `--knockout-heads` — is read by `score_behavior.py` as ALL
+32 HEADS**, so that family's *clean reference* was a full A1 knockout and every effect would have been
+measured against a knocked-out baseline.
+
+### 2. GATE 0, endpoint-blind, on the landed arm
+
+```
+python scripts/gates/dcs_csi_pr012_gate0_sweep.py \
+  --prereg configs/dcs_csi_pr013_button_head_replication.json \
+  --tag-prefix csi6_btnhead_button_validation --split validation --require-slurm-job 919531
+
+arm            rows     median_pre         want  decode  viol  identity            verdict
+BT_BASE         230            0.0            0       0     0  not intervened      PASS
+GATE 0: every landed arm passes (1 of 23). No endpoint field was read.
+```
+
+```
+918967 BT_BASE:  median_pre 2016.0  want 0  ->  FAIL
+919531 BT_BASE:  median_pre    0.0  want 0  ->  PASS
+```
+
+### 3. Why this specific check is worth an entry of its own
+
+**Three independent things had to be true for this line to read PASS**, and each was a separate finding:
+
+1. **`argv_for` had to name the base arm from the prereg** rather than comparing to the literal `"HD_BASE"` —
+   the S-260 fix, which also required S-251's `base_arms` groundwork.
+2. **`--check` had to assert it** — S-260 added the BASE-ARM CHECK after observing that `--check` passed on
+   the broken argv, since it only verified that flags exist and head lists match.
+3. **A sweep had to be able to read this family at all** — S-260 generalised `pr012_gate0_sweep` because
+   pr010's died on `KeyError: 'K'` and pr012's refused non-census preregs *while pointing at the tool that
+   crashes*.
+
+**All three were found in a single tick, and this is the first time their combined effect is observable on
+real data rather than on a fixture.** The remaining 22 arms will be swept as they land; **`BT_BASE` was the
+one that mattered**, because it is the arm whose mis-specification is invisible in the numbers.
+
+### 4. State
+
+```
+date 07:51 | 919531 RUNNING | 1 of 23 arms (BT_BASE, 19588.8 s -- its wall carries the 5.36 h load)
+22 arms remain at ~290 s -> ~1.8 h -> family ends ~09:40, inside S-284's band 09:29-09:47
+wall 14:20 -> margin ~4.6 h
+```
+
+**No PR-013 number has ever been read** — GATE 0 is endpoint-blind and asserts so itself.
+`score_behavior.py` was not opened.
