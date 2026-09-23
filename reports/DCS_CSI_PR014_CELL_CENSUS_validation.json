@@ -1,0 +1,486 @@
+{
+  "schema": "dcs_csi_head_census/1",
+  "prereg": "configs/dcs_csi_pr014_cell_census_basket.json",
+  "prereg_id": "PR-CSI-014",
+  "split": "validation",
+  "tag_prefix": "csi7_cell_basket_validation",
+  "expect_n": 230,
+  "n_domains": 23,
+  "B": 10000,
+  "seed": 20260922,
+  "ci": 0.95,
+  "ON_PROTOCOL": true,
+  "E": {
+    "CL_KO": -0.22696123,
+    "CL_L06": -0.00069541,
+    "CL_L07": 0.00074788,
+    "CL_L08": 0.00047048,
+    "CL_L09": 0.00110007,
+    "CL_L10": -0.04754711,
+    "CL_L11": 0.00095238,
+    "CL_L12": -0.00041439,
+    "CL_L13": 0.00085733,
+    "CL_L14": 0.00057284
+  },
+  "ci95": {
+    "CL_KO": [
+      -0.27584751,
+      -0.17803182
+    ],
+    "CL_L06": [
+      -0.00222797,
+      0.00097106
+    ],
+    "CL_L07": [
+      -0.00056195,
+      0.00200969
+    ],
+    "CL_L08": [
+      -0.00138515,
+      0.00216188
+    ],
+    "CL_L09": [
+      -0.0007024,
+      0.00272356
+    ],
+    "CL_L10": [
+      -0.06696212,
+      -0.03189615
+    ],
+    "CL_L11": [
+      3.99e-05,
+      0.00190113
+    ],
+    "CL_L12": [
+      -0.00165787,
+      0.00081156
+    ],
+    "CL_L13": [
+      -0.00044584,
+      0.00205594
+    ],
+    "CL_L14": [
+      -0.00029505,
+      0.00144864
+    ]
+  },
+  "loo_marginal": {},
+  "GATE_0_and_identity": {
+    "per_arm": {
+      "CL_BASE": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 0.0,
+        "expected_median_prefill_edits": 0,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": true,
+        "n_arms_sharing_this_expected_dose": 1,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-215, S-246)"
+      },
+      "CL_KO": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": true,
+        "n_arms_sharing_this_expected_dose": 1,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-215, S-246)"
+      },
+      "CL_L06": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 9,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_L07": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 9,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_L08": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 9,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_L09": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 9,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_L10": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 9,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_L11": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 9,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_L12": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 9,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_L13": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 9,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_L14": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 9,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      }
+    },
+    "identity": {
+      "CL_BASE": {
+        "k": 0,
+        "recorded": null,
+        "expected": null,
+        "ok": true,
+        "why": "not intervened",
+        "identity_field": "knockout_heads"
+      },
+      "CL_KO": {
+        "k": 32,
+        "recorded": "ALL",
+        "expected": null,
+        "ok": true,
+        "why": "omitted flag == all 32",
+        "identity_field": "knockout_heads"
+      },
+      "CL_L06": {
+        "k": 1,
+        "recorded": [
+          [
+            6,
+            2
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            2
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_L07": {
+        "k": 1,
+        "recorded": [
+          [
+            7,
+            2
+          ]
+        ],
+        "expected": [
+          [
+            7,
+            2
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_L08": {
+        "k": 1,
+        "recorded": [
+          [
+            8,
+            2
+          ]
+        ],
+        "expected": [
+          [
+            8,
+            2
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_L09": {
+        "k": 1,
+        "recorded": [
+          [
+            9,
+            2
+          ]
+        ],
+        "expected": [
+          [
+            9,
+            2
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_L10": {
+        "k": 1,
+        "recorded": [
+          [
+            10,
+            2
+          ]
+        ],
+        "expected": [
+          [
+            10,
+            2
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_L11": {
+        "k": 1,
+        "recorded": [
+          [
+            11,
+            2
+          ]
+        ],
+        "expected": [
+          [
+            11,
+            2
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_L12": {
+        "k": 1,
+        "recorded": [
+          [
+            12,
+            2
+          ]
+        ],
+        "expected": [
+          [
+            12,
+            2
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_L13": {
+        "k": 1,
+        "recorded": [
+          [
+            13,
+            2
+          ]
+        ],
+        "expected": [
+          [
+            13,
+            2
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_L14": {
+        "k": 1,
+        "recorded": [
+          [
+            14,
+            2
+          ]
+        ],
+        "expected": [
+          [
+            14,
+            2
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      }
+    }
+  },
+  "NO_RANK_TEST": true,
+  "REPORTABLE_AS": "9 cell effects E(CL_L<NN>) = mean over domains of (y_install(cell) - y_install(CL_BASE)), each with a bootstrap ci95, plus the CL_KO denominator. A MAP of where head 2's load sits by depth. No head other than 2 is measured and no cell of any other head is touched.",
+  "CANNOT_DO": [
+    "certify that any cell is privileged -- there is no rank, no control family and no p",
+    "lift D32's caveat 'NOT a claim about any single (layer, head) cell' -- AM-37 records that this cannot be done with the axes this sprint has",
+    "revise D32, D33, D34 or D35 -- a finer map does not retract a coarser measurement",
+    "say anything about the other 31 heads, or about any cell of them",
+    "say anything about DOMAIN generality -- the validation domains are the same ones basket's other families used (S-256); the 3 TEST domains remain untouched",
+    "reach RUNG 2, 3 or 4 of AM-34's ladder. This is RUNG 1 (necessity) like everything else in this sprint"
+  ],
+  "SELECTION_RE_ENTERS_WHEN": "the moment any one cell is singled out for a claim. This census SELECTS NOTHING; naming a winner afterwards is selection on the data that produced it, and S-294 established there is no held-out axis on which a confirmatory test of that winner could be read.",
+  "DOSE_IDENTITY_IS_BLIND_HERE": "A one-cell arm passes --knockout-cells and NOT --knockout-heads, so its recorded knockout_heads is EMPTY, which recorded_heads() maps to 'ALL' -- for a HEAD family an omitted flag IS the all-32 arm. Read through the head-level check every 1-cell arm would be certified as the all-32 knockout: a 224-edit arm passing as the 2016-edit denominator. Identity here comes from knockout_cells ONLY (S-292), asserted per arm against cell_sets.",
+  "NO_VERDICT": "This file contains NO verdict, NO rank and NO p-value by design. Singling out any one head for a claim requires a HELD-OUT AXIS -- see SELECTION_RE_ENTERS_WHEN.",
+  "ARM_GRANULARITY": "cell",
+  "CANNOT_DO_FIELD": "WHAT_THIS_CANNOT_DO",
+  "CELL_FAMILY": {
+    "h_star": 2,
+    "layers": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "band": "6-14",
+    "per_cell_dose_predicted": 224,
+    "per_cell_dose_observed": [
+      224.0
+    ],
+    "per_cell_dose_verdict": "CONFIRMED",
+    "cells": {
+      "CL_L06": [
+        [
+          6,
+          2
+        ]
+      ],
+      "CL_L07": [
+        [
+          7,
+          2
+        ]
+      ],
+      "CL_L08": [
+        [
+          8,
+          2
+        ]
+      ],
+      "CL_L09": [
+        [
+          9,
+          2
+        ]
+      ],
+      "CL_L10": [
+        [
+          10,
+          2
+        ]
+      ],
+      "CL_L11": [
+        [
+          11,
+          2
+        ]
+      ],
+      "CL_L12": [
+        [
+          12,
+          2
+        ]
+      ],
+      "CL_L13": [
+        [
+          13,
+          2
+        ]
+      ],
+      "CL_L14": [
+        [
+          14,
+          2
+        ]
+      ]
+    },
+    "DETECTABILITY_PREREGISTERED": {
+      "per_domain_SD_of_the_9cell_arm": 0.046933,
+      "E_of_the_9cell_arm": -0.049475,
+      "n_domains": 23,
+      "min_abs_E_for_ci95_to_exclude_0": 0.019181,
+      "as_share_of_the_whole_head_effect": 0.3877,
+      "source": "S-294, measured via W4's own by_domain on job 918631's arms",
+      "COHERENT_OUTCOME_IF_NOTHING_CLEARS_IT": "If the load is spread evenly across the 9 cells (~11.1% each) NO CELL CLEARS THE BAR. That is an informative outcome and is preregistered as coherent HERE, before any arm runs: it is evidence that the effect is DISTRIBUTED ACROSS DEPTH rather than sited at one layer. It must NOT be reported as a failed experiment, and it must not be rescued by dropping to a weaker bar after the fact."
+    },
+    "n_cells_with_ci95_excluding_0": 2,
+    "NOTHING_CLEARED_THE_BAR_IS_A_PREREGISTERED_COHERENT_OUTCOME": "If the load is spread evenly across the 9 cells (~11.1% each) NO CELL CLEARS THE BAR. That is an informative outcome and is preregistered as coherent HERE, before any arm runs: it is evidence that the effect is DISTRIBUTED ACROSS DEPTH rather than sited at one layer. It must NOT be reported as a failed experiment, and it must not be rescued by dropping to a weaker bar after the fact."
+  }
+}

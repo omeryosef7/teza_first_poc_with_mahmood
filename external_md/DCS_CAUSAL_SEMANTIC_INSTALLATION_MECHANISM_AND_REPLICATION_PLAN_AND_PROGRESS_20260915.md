@@ -24768,3 +24768,141 @@ not make it representative.
 
 A monitor is armed on 11/11. `score_behavior.py` has not been opened and will not be while these arms run
 (PR-CSI-003 VOID condition, now active again).
+
+---
+
+## S-299 — 🔴 **PR-CSI-014 IS READ. THE LOAD IS CONCENTRATED, NOT DISTRIBUTED: cell (L10, head 2) carries 96.1% of head 2's ENTIRE nine-cell effect.** S-269's screen-derived L10 claim is corroborated on intervention for the first time — and **the outcome I had preregistered as most likely did NOT happen**
+
+### 1. Preconditions, then the frozen read in its own order
+
+```
+sacct -j 921664 -o State   -> COMPLETED (00:52:53)      DONE.json 11/11      arm dirs 11/11
+```
+
+No teardown lag this time (PR-013's was 7.5 min, S-290), but the read was still held for `sacct` rather
+than fired on the arm count.
+
+```
+STEP 1  python scripts/gates/dcs_csi_pr012_gate0_sweep.py --prereg configs/dcs_csi_pr014_... \
+          --tag-prefix csi7_cell_basket_validation --split validation --require-slurm-job 921664
+        -> GATE 0: every landed arm passes (11 of 11). Identity verified from each arm's own
+           knockout_cells. No endpoint field was read.
+
+STEP 2  python scripts/dcs_csi_head_census.py --prereg configs/dcs_csi_pr014_cell_census_basket.json \
+          --tag-prefix csi7_cell_basket_validation --split validation --expect-n 230 \
+          --require-slurm-job 921664 --out reports/DCS_CSI_PR014_CELL_CENSUS_validation.json
+        -> 13586 bytes, md5 8993b4d5
+```
+
+### 2. THE DEPTH MAP
+
+```
+cell              E              ci95            ci95 excl 0   |E| vs BAR   share of the 9-cell effect
+CL_L06    -0.000695  [-0.002228,+0.000971]       no            below              1.4%
+CL_L07    +0.000748  [-0.000562,+0.002010]       no            below             -1.5%
+CL_L08    +0.000470  [-0.001385,+0.002162]       no            below             -1.0%
+CL_L09    +0.001100  [-0.000702,+0.002724]       no            below             -2.2%
+CL_L10    -0.047547  [-0.066962,-0.031896]      YES           CLEARS             96.1%   <<<
+CL_L11    +0.000952  [+0.000040,+0.001901]      YES            below             -1.9%
+CL_L12    -0.000414  [-0.001658,+0.000812]       no            below              0.8%
+CL_L13    +0.000857  [-0.000446,+0.002056]       no            below             -1.7%
+CL_L14    +0.000573  [-0.000295,+0.001449]       no            below             -1.2%
+
+CL_KO (all 32 heads x all 9 layers) = -0.22696123
+SINGLE_02 (head 2, all 9 layers, from D34) = -0.04947467
+```
+
+**`CL_L10` alone is −0.04754711 against the nine-cell head effect of −0.04947467 — 96.1%.** The other eight
+cells **sum to +0.003591**, i.e. −7.3% of the head effect: nothing, and marginally the wrong sign.
+
+### 3. ⚠ THE OUTCOME I PREREGISTERED AS MOST LIKELY DID NOT HAPPEN, AND I SHOULD SAY SO PLAINLY
+
+S-294 computed the bar (`|E| > 0.019181`, 38.8% of the whole head effect) and then reasoned: *"If the load
+is spread evenly across nine cells (~11.1% each, ≈0.0055) NO CELL WILL CLEAR THE BAR … that is evidence
+the effect is DISTRIBUTED ACROSS DEPTH."* The frozen read recorded that branch as **coherent and
+expected**, and S-297 and S-298 both restated it as the likely result.
+
+**It is the opposite. One cell clears the bar at 2.5× it, and carries essentially the whole head effect.**
+
+✅ **The preregistration did its job exactly as intended.** Both branches were written down before any arm
+ran, with the prohibition on rescuing a null by weakening the bar. That prohibition turned out to protect
+nothing — but the value of writing it was never conditional on which branch occurred, and **had the even
+split happened I would now be reporting a preregistered null instead of improvising one.** What I got
+wrong was the *prior*, not the protocol.
+
+### 4. ⚠ A REPORTING DEFECT IN MY OWN READER — two criteria, and the headline used the looser one
+
+The depth map printed *"2 of 9 cells have a ci95 excluding 0"*, and the JSON carries
+`n_cells_with_ci95_excluding_0: 2`. **But the PREREGISTERED criterion is `|E| > 0.019181`, and by that
+criterion exactly ONE cell clears.**
+
+```
+by the preregistered bar |E| > 0.019181 : 1 of 9   -> CL_L10
+by ci95 excluding 0                     : 2 of 9   -> CL_L10, CL_L11
+```
+
+`CL_L11` is the difference and it is an artefact of the looser test:
+
+```
+CL_L11  E = +0.000952   ci95 [+0.000040, +0.001901]
+  |E| is 5.0% of the preregistered bar
+  its ci95 LOWER bound is +0.000040 -- 24x smaller than |E| itself, a hair from zero
+  and it is POSITIVE: knocking this cell out would RAISE installation
+```
+
+**So the headline count is reported here as 1 of 9, by the bar the prereg named.** The field name in the
+JSON is accurate about what it counts, but a reader skimming *"2 of 9"* beside a line that mentions the bar
+would take away the wrong number. Logged as a defect in the reader's reporting, not in its arithmetic;
+**not fixed now, because `score_behavior.py`'s sibling readers are the ones that just produced a result and
+editing a consumer minutes after it reports is how a number gets quietly re-derived.**
+
+### 5. ✅ S-269's SCREEN CLAIM IS CORROBORATED ON INTERVENTION — the first such test at CELL granularity
+
+S-269 read the TRAIN screen's 288 `AtP_by_cell` values and found head 2 **dominated by one cell at L10**.
+That has never been tested against an intervention; S-254 validated the screen only at HEAD level
+(ρ = +0.7713), and AM-32 recorded that the same screen ranked head 2 — **the single strongest head** —
+only **6th**.
+
+**The intervention agrees with the screen: L10.**
+
+⚠ **And the two facts together are a specific, useful bound rather than a general endorsement:** on this
+head the screen **localises WITHIN a head correctly while ranking heads poorly**. That is one head of 32,
+so it cannot settle the screen's per-cell validity — the frozen read says so in both directions — but it
+does mean a future cell nomination from `AtP_by_cell` has one intervention-verified precedent where a head
+nomination from `S[h]` has a measured failure.
+
+### 6. The bookkeeping, all of it confirming
+
+```
+PER-CELL DOSE VALIDATION: predicted 224, observed [224.0] on all nine cells -> CONFIRMED
+  -> 2016 = 9 x 224 is verified LAYER BY LAYER, not inferred from one arm (S-298 had n=1)
+CL_KO = -0.22696123, ci95 [-0.27584751, -0.17803182]
+  -> BIT-IDENTICAL to PR-012's HD_KO, ci95 included. A FOURTH job (921664, n-301) reproducing
+     918631's number exactly; S-243 section 5 never tested cross-node determinism and this is the
+     fourth independent confirmation of it.
+domains common to ALL arms = 23, expect-n 230, on-protocol
+```
+
+### 7. What this licenses, and what it does not
+
+**LICENSED:** *"On basket validation, of head 2's nine band cells, only (L10, 2) has a single-cell knockout
+effect that clears the preregistered detectability bar; it carries 96.1% of the nine-cell effect, and the
+other eight cells sum to −7.3% of it."*
+
+**NOT licensed, and NOT changed by this read:**
+- ⛔ *"cell (L10, 2) is the writer"* / *"the effect is single-layer"* — **there is no rank, no p and no
+  held-out axis.** AM-37 measured that a confirmatory cell test has no admissible axis, so this cannot be
+  confirmed anywhere; the frozen read forbids the phrasing outright.
+- ⛔ **D32's caveat is NOT lifted.** AM-37 stands: it cannot be lifted with the axes this sprint has, and a
+  census selects nothing.
+- ⛔ D32, D33, D34, D35 are unrevised. A finer map does not retract a coarser measurement.
+- ⛔ Nothing about the other 31 heads or any cell of them; nine arms of ONE head were run.
+- ⛔ Nothing about domain generality — the 23 domains are basket's usual set (S-256); the 3 TEST domains
+  remain untouched. **RUNG 1** only.
+
+⚠ **One contrast worth recording because it looks like a tension and is not.** AM-36 measured that on
+**button**, across **heads**, the joint knockout is **4.97×** the sum of the measured single heads —
+redundancy. Here, on **basket**, **within one head across depth**, the effect is **concentrated**: one cell
+≈ the whole head. **Different axes and different codewords, so no contradiction** — but the pair is
+informative: **redundancy ACROSS heads, concentration ACROSS depth.** Neither is licensed as a general
+claim from n = 1 head and n = 1 codeword each.
