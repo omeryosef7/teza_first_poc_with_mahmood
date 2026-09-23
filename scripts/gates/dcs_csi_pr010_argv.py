@@ -58,7 +58,7 @@ def base_arms_of(prereg):
     return list(prereg.get("base_arms", ["HD_BASE", "HD_KO"]))
 
 
-def argv_for(arm, heads, split, prereg, seed, tag_prefix):
+def argv_for(arm, heads, split, prereg, seed, tag_prefix, cells=None):
     cw = codeword_of(prereg)
     a = ["python", "src/boombness/score_behavior.py",
          "--bank", bank_for(cw),
@@ -90,14 +90,52 @@ def argv_for(arm, heads, split, prereg, seed, tag_prefix):
     if arm != base_arms_of(prereg)[0]:
         a += ["--intervene", prereg["intervention"]["intervene"],
               "--knockout-scope", prereg["intervention"]["knockout_scope"]]
+        # ⛔ HEADS AND CELLS ARE MUTUALLY EXCLUSIVE, and score_behavior.py refuses both together
+        # (S-291). Emitting both here would be caught there, but the generator is the ONE place an
+        # arm's argv is defined, so it refuses first and names the arm.
+        if heads is not None and cells is not None:
+            sys.exit("REFUSING: arm %r carries BOTH a head list and a cell list. --knockout-heads "
+                     "ties a head across the whole band, --knockout-cells names single cells; an arm "
+                     "that emits both has two definitions (S-291)." % arm)
         if heads is not None:
             a += ["--knockout-heads", ",".join(str(h) for h in heads)]
+        elif cells is not None:
+            # PR-CSI-014. LAYER:HEAD, comma separated, in the prereg's own sorted order.
+            a += ["--knockout-cells",
+                  ",".join("%d:%d" % (int(L), int(h)) for L, h in cells)]
     a += ["--arm", arm, "--tag", "%s_%s_%s" % (tag_prefix, split, arm)]
     return a
 
 
 def all_arms(prereg):
-    """(arm, heads) in a fixed order. heads=None means 'no --knockout-heads', i.e. all 32."""
+    """(arm, heads, cells) in a fixed order.
+
+    `heads=None, cells=None` means 'no head or cell list', i.e. all 32 heads across the whole band --
+    the KO denominator arm, and also the clean reference (which additionally drops --intervene).
+
+    PR-CSI-014. A prereg carrying `cell_sets` instead of `head_sets` names (layer, head) CELLS: those
+    arms come back as `(arm, None, cells)` and emit --knockout-cells. The two blocks are mutually
+    exclusive -- a file with both declares two families and no reader could know which arms it is being
+    asked to build (S-227 at the family level, and the same refusal the GATE 0 sweep carries)."""
+    cell_sets = prereg.get("cell_sets")
+    if cell_sets and prereg.get("head_sets"):
+        sys.exit("REFUSING: the prereg carries BOTH head_sets and cell_sets. An arm family is one or "
+                 "the other.")
+    if cell_sets:
+        base = list(prereg.get("base_arms", ["HD_BASE", "HD_KO"]))
+        if len(base) != 2:
+            sys.exit("REFUSING: base_arms must name exactly 2 arms, got %r" % (base,))
+        for b in base:
+            if b in cell_sets:
+                sys.exit("REFUSING: base arm %r also appears in cell_sets -- it carries no cell list"
+                         % b)
+        # The two base arms are HEAD-level on a cell family too: base[0] is the clean reference and
+        # base[1] is the all-32/all-band knockout that serves as the denominator. Only the remaining
+        # arms are cell-scoped.
+        arms = [(base[0], None, None), (base[1], None, None)]
+        arms += [(k, None, [tuple(int(x) for x in c) for c in cell_sets[k]])
+                 for k in sorted(cell_sets) if k != "control_pool"]
+        return arms
     hs = prereg["head_sets"]
     # S-251. The BASE arms are named by the prereg, defaulting to PR-CSI-010's names so the three
     # basket families emit byte-identically. Before this, both names were constants AND "HD_TOPK" /
@@ -110,9 +148,9 @@ def all_arms(prereg):
     for b in base:                      # the default is VERIFIED to bind, never assumed (S-168)
         if b in hs:
             sys.exit("REFUSING: base arm %r also appears in head_sets -- it carries no head list" % b)
-    arms = [(base[0], None), (base[1], None)]
+    arms = [(base[0], None, None), (base[1], None, None)]
     if "HD_TOPK" in hs and "HD_BOTK" in hs:
-        arms += [("HD_TOPK", hs["HD_TOPK"]), ("HD_BOTK", hs["HD_BOTK"])]
+        arms += [("HD_TOPK", hs["HD_TOPK"], None), ("HD_BOTK", hs["HD_BOTK"], None)]
     # S-247. A CENSUS prereg (NO_RANK_TEST) has no control_prefix, so prefix-matching would build only
     # the four arms above; the n_arms_per_split assertion below then refuses -- loudly, which is right,
     # but the generator is still the ONE place an arm's argv is defined and duplicating it for a second
@@ -120,19 +158,19 @@ def all_arms(prereg):
     # head_sets entry instead. `control_pool` is skipped explicitly: it is a DRAW POOL, not an arm, and
     # it lives in head_sets for provenance (pr010_freeze.py:128).
     if prereg.get("NO_RANK_TEST"):
-        arms += [(k, hs[k]) for k in sorted(hs)
+        arms += [(k, hs[k], None) for k in sorted(hs)
                  if k not in ("HD_TOPK", "HD_BOTK", "control_pool")]
     else:
         cprefix = prereg.get("control_prefix", "HD_RAND")
-        named = {a for a, _ in arms}
-        arms += [(k, hs[k]) for k in sorted(hs) if k.startswith(cprefix)]
+        named = {a for a, _, _ in arms}
+        arms += [(k, hs[k], None) for k in sorted(hs) if k.startswith(cprefix)]
         # S-251: a rank family whose CANDIDATE is not HD_TOPK (PR-CSI-013's is BT_SINGLE) still needs
         # its candidate emitted. Anything in head_sets that is neither already named nor a control
         # prefix match nor the draw pool is a candidate arm and is added, sorted, after the controls.
         rest = [k for k in sorted(hs)
                 if k not in named and not k.startswith(cprefix) and k != "control_pool"
-                and k not in {a for a, _ in arms}]
-        arms += [(k, hs[k]) for k in rest]
+                and k not in {a for a, _, _ in arms}]
+        arms += [(k, hs[k], None) for k in rest]
     return arms
 
 
@@ -154,8 +192,8 @@ def main():
     if a.check:
         declared = cli_flags(SB)
         bad = []
-        for arm, heads in arms:
-            for tok in argv_for(arm, heads, a.split, pr, a.seed, a.tag_prefix):
+        for arm, heads, cells in arms:
+            for tok in argv_for(arm, heads, a.split, pr, a.seed, a.tag_prefix, cells=cells):
                 if tok.startswith("--") and tok not in declared:
                     bad.append((arm, tok))
         if bad:
@@ -163,13 +201,30 @@ def main():
                 print("ABSENT FLAG  %s  in arm %s" % (tok, arm))
             sys.exit("REFUSING: %d flag(s) are not declared by score_behavior.py" % len(bad))
         # the head lists must still be the prereg's, token for token
-        for arm, heads in arms:
-            if heads is None:
+        for arm, heads, cells in arms:
+            if heads is None and cells is None:
                 continue
-            av = argv_for(arm, heads, a.split, pr, a.seed, a.tag_prefix)
-            got = [int(x) for x in av[av.index("--knockout-heads") + 1].split(",")]
-            if got != list(heads) or got != list(pr["head_sets"][arm]):
-                sys.exit("REFUSING: arm %s head list drifted from the prereg" % arm)
+            av = argv_for(arm, heads, a.split, pr, a.seed, a.tag_prefix, cells=cells)
+            if heads is not None:
+                got = [int(x) for x in av[av.index("--knockout-heads") + 1].split(",")]
+                if got != list(heads) or got != list(pr["head_sets"][arm]):
+                    sys.exit("REFUSING: arm %s head list drifted from the prereg" % arm)
+                if "--knockout-cells" in av:
+                    sys.exit("REFUSING: head arm %s also emits --knockout-cells" % arm)
+            else:
+                # PR-CSI-014. The CELL list must be the prereg's, parsed back from the emitted token
+                # rather than compared to the list we just passed in -- comparing `cells` to `cells`
+                # would assert nothing about what argv_for actually WROTE, which is the only thing the
+                # GPU will see. Same reason the head branch re-parses instead of trusting `heads`.
+                tok = av[av.index("--knockout-cells") + 1]
+                got = [tuple(int(x) for x in c.split(":")) for c in tok.split(",")]
+                want = [tuple(int(x) for x in c) for c in pr["cell_sets"][arm]]
+                if got != list(cells) or got != want:
+                    sys.exit("REFUSING: arm %s cell list drifted from the prereg: emitted %s, prereg "
+                             "says %s" % (arm, got, want))
+                if "--knockout-heads" in av:
+                    sys.exit("REFUSING: cell arm %s also emits --knockout-heads -- two selectors for "
+                             "one axis (S-291)" % arm)
         # S-251: the BANK and the EXCLUSIONS must carry the prereg's codeword, and the files must
         # EXIST. A generator that silently emits another codeword's rows is the one error in this
         # pipeline that would produce entirely plausible numbers.
@@ -182,8 +237,8 @@ def main():
             if not os.path.exists(os.path.join(REPO, path)):
                 sys.exit("REFUSING: the %s for codeword %r does not exist: %r -- absence is not a "
                          "pass (R20-6)" % (label, cw, path))
-        for arm, heads in arms:
-            av = argv_for(arm, heads, a.split, pr, a.seed, a.tag_prefix)
+        for arm, heads, cells in arms:
+            av = argv_for(arm, heads, a.split, pr, a.seed, a.tag_prefix, cells=cells)
             got_bank = av[av.index("--bank") + 1]
             got_excl = av[av.index("--exclude-prompt-ids") + 1]
             if got_bank != bank or got_excl != excl:
@@ -193,15 +248,16 @@ def main():
         # head lists match the prereg. It never asserted the ONE THING that makes a base arm a base
         # arm. Assert it here.
         b0 = base_arms_of(pr)[0]
-        av0 = argv_for(b0, None, a.split, pr, a.seed, a.tag_prefix)
-        if "--intervene" in av0 or "--knockout-scope" in av0 or "--knockout-heads" in av0:
+        av0 = argv_for(b0, None, a.split, pr, a.seed, a.tag_prefix, cells=None)
+        if ("--intervene" in av0 or "--knockout-scope" in av0 or "--knockout-heads" in av0
+                or "--knockout-cells" in av0):
             sys.exit("REFUSING: the clean-reference arm %r carries an intervention flag -- it would be "
                      "a knockout standing in as the baseline (S-260): %s"
                      % (b0, [t for t in av0 if t.startswith("--knock") or t == "--intervene"]))
-        for arm, heads in arms:
+        for arm, heads, cells in arms:
             if arm == b0:
                 continue
-            av = argv_for(arm, heads, a.split, pr, a.seed, a.tag_prefix)
+            av = argv_for(arm, heads, a.split, pr, a.seed, a.tag_prefix, cells=cells)
             if "--intervene" not in av:
                 sys.exit("REFUSING: arm %r carries NO --intervene but is not the clean reference %r"
                          % (arm, b0))
@@ -209,19 +265,19 @@ def main():
               "--intervene" % (b0, len(arms) - 1))
         print("CODEWORD CHECK PASSED: %r -> bank %s, exclusions %s (both exist; every arm agrees)"
               % (cw, os.path.basename(bank), os.path.basename(excl)))
-        n_with = sum(1 for _, h in arms if h is not None)
+        n_with = sum(1 for _, h, c in arms if h is not None or c is not None)
         # S-251: name the ACTUAL base arms. This line said "HD_BASE / HD_KO" unconditionally, which is
         # wrong text on any family that names them otherwise (PR-CSI-013's are BT_BASE / BT_KO).
         b0, b1 = arms[0][0], arms[1][0]
         print("CHECK PASSED: %d arms, every flag declared by score_behavior.py; %d arms carry a "
-              "frozen head list, 2 carry none (%s has no intervention, %s = all 32)."
-              % (len(arms), n_with, b0, b1))
+              "frozen %s list, 2 carry none (%s has no intervention, %s = all 32)."
+              % (len(arms), n_with, "cell" if pr.get("cell_sets") else "head", b0, b1))
         print("populations: %s expect-n %d, exclusions %s"
               % (a.split, EXPECT_N[a.split], exclude_for(codeword_of(pr), a.split)))
         return
 
-    for arm, heads in arms:
-        av = argv_for(arm, heads, a.split, pr, a.seed, a.tag_prefix)
+    for arm, heads, cells in arms:
+        av = argv_for(arm, heads, a.split, pr, a.seed, a.tag_prefix, cells=cells)
         if a.emit == "lines":
             print(" ".join(av))
         else:

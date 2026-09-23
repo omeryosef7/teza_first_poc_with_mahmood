@@ -23842,3 +23842,151 @@ rather than after.
 
 No arm was running (`squeue` empty, per S-291's rule that `sacct` is not a liveness oracle). No frozen
 artefact was touched. Writes verified by md5 and line count; quota 94% used, 1.4T free.
+
+---
+
+## S-293 — ⚠ **CORRECTION to S-292: it claimed "STEP 2 DONE" and step 2 was NOT done.** The design says *the argv gate's* identity assertion; I extended the GATE 0 sweep instead. Now actually done — and the argv generator turned out to have **NO TESTS AT ALL**, including none on the line that voided job 918967
+
+### 1. ⚠ THE CORRECTION
+
+Design §7 step 2 reads: *"extend **the argv gate's** identity assertion to cells, and the dose
+expectation to `DOSE_UNIT / 9`."*
+
+**"The argv gate" is `scripts/gates/dcs_csi_pr010_argv.py`** — the generator whose `--check` mode asserts
+each arm's emitted argv against the prereg (its head assertion is the `got != list(pr["head_sets"][arm])`
+line). **S-292 extended `dcs_csi_pr012_gate0_sweep.py`** — a different gate, which reads artefacts *after*
+a run — plus the census reader's primitives, and then titled itself **STEP 2 DONE**.
+
+Both extensions were needed and the S-292 work stands unchanged. But the half the design actually
+named was missing, and **step 3 could not have launched without it**: the generator had no way to emit
+`--knockout-cells`, so a cell family would have produced argv with no cell selector at all — every arm
+an all-32 knockout, which is S-260's VOID shape reached by a different route. **S-292's "DONE" is
+WITHDRAWN and replaced by this entry.** The lesson is narrow and mine: *the design names its artefacts
+precisely, and "a gate" is not "the gate".*
+
+### 2. What the argv gate now does
+
+`scripts/gates/dcs_csi_pr010_argv.py`, +84/−28 (233 → 289 lines), md5 `b1bcaf04` → `9b6f3453`.
+
+- `all_arms()` returns **`(arm, heads, cells)` triples** and reads `cell_sets` when present; a prereg
+  with **both** `head_sets` and `cell_sets` is refused, as is a base arm appearing inside `cell_sets`.
+- `argv_for(..., cells=None)` emits `--knockout-cells L:h,...` in the prereg's sorted order, and
+  **refuses an arm carrying both selectors** (`score_behavior.py` refuses this too since S-291; the
+  generator refuses first and names the arm).
+- `--check` asserts the emitted cell list per arm, and that a cell arm emits no `--knockout-heads` and
+  a head arm emits no `--knockout-cells`. The S-260 base-arm assertion now also covers
+  `--knockout-cells`.
+
+Verified on a synthetic 11-arm cell family (design (b)'s shape: `(L, 2)` for all nine L):
+
+```
+CL_BASE                                        <- no --intervene
+CL_KO    --intervene ...                        <- no selector = all 32 x all 9 = the denominator
+CL_L06   --intervene ... --knockout-cells 6:2
+...
+CL_L14   --intervene ... --knockout-cells 14:2
+
+CHECK PASSED: 11 arms, every flag declared by score_behavior.py; 9 arms carry a frozen cell list,
+2 carry none (CL_BASE has no intervention, CL_KO = all 32).
+```
+
+### 3. The head path is BYTE-IDENTICAL on all four families — and my FIRST attempt to show that was VACUOUS
+
+```
+all 4 preregs x {train, validation}, current tree vs a git worktree at HEAD:
+  pr010 24/24  pr011 24/24  pr012 44/44  pr013 23/23     rc 0/0 on every run
+  ALL FOUR FAMILIES BYTE-IDENTICAL: True
+```
+
+⚠ **The first run of that comparison printed `IDENTICAL` eight times and meant nothing.** My shell loop
+wrote `$T_$sp`, which bash reads as `${T_}${sp}` — an empty variable — so every family overwrote the
+same two files, and `--tag-prefix` was handed nothing:
+
+```
+dcs_csi_pr010_argv.py: error: argument --tag-prefix: expected one argument
+  -> rc 2 on BOTH sides, 4 lines of usage text on both, diff clean
+  -> "IDENTICAL" was two IDENTICAL FAILURES
+```
+
+**Identical failure is not identical success.** The tell was in the output I printed and did not read:
+`rc 2/2` and `4 lines` for a family that has 24 arms. The redone comparison asserts `returncode == 0`
+on both sides before comparing, which is what makes it a regression test rather than a coincidence.
+
+**This is the fifth instance today of the same class** — `sacct`'s 44-day phantom job (S-291),
+the sweep's "every landed arm passes (0 of 23)" (S-292 §3), `git archive`'s aborted suite reporting 0
+failures and `git worktree`'s 26 (S-292 §6), and now this. **In every one, a tool reported success or a
+clean comparison over a measurement that never happened, and in every one the tell was a number that
+should have been impossible.**
+
+### 4. 🔴 THE ARGV GENERATOR HAD NO TESTS. NONE.
+
+```
+grep -rln "pr010_argv\|all_arms\|argv_for" tests/     ->  (no matches)
+```
+
+**The single file that defines every arm's argv for every PR-CSI family, and which produced the defect
+that made job 918967 VOID, had zero unit tests.** Its only verification was its own `--check`, run
+inside the slurm script at submit time — i.e. after a GPU allocation had already been granted.
+
+`tests/test_csi_argv_generator.py`, **25 tests**, now covers:
+
+- **the S-260 regression on ALL FOUR families**: the clean reference carries none of `--intervene`,
+  `--knockout-scope`, `--knockout-heads`, `--knockout-cells`. *This test would have caught S-260 in
+  milliseconds instead of 14 wasted arms.*
+- every non-base arm IS intervened; the KO denominator carries no head list;
+- arm counts per family (24/24/44/23) and triple shape;
+- the cell path: emission, ordering, base arms staying head-level, and never emitting a head selector;
+- the three refusals (both blocks, base arm in `cell_sets`, both selectors on one arm);
+- `--check` **catching a corrupted EMISSION** (verified by monkeypatching `argv_for` to mangle one cell
+  and confirming the refusal names the arm).
+
+### 5. ⚠ A LIMITATION OF `--check`, MEASURED AND RECORDED AS A TEST
+
+I tried to prove the cell assertion works by tampering the **prereg**. It passed. So I checked whether
+the *head* assertion catches the same tamper:
+
+```
+BT_SINGLE edited 2 -> 31 in the prereg only, then --check
+  HEAD family  -> rc 0, NOT CAUGHT
+  CELL family  -> rc 0, NOT CAUGHT
+argv_for's OUTPUT corrupted instead (prereg untouched)
+  -> CAUGHT: "arm CL_L10 cell list drifted from the prereg: emitted [(10,19)], prereg says [(10,2)]"
+```
+
+**`all_arms` reads the list FROM the prereg and `--check` compares the emission BACK AGAINST the prereg,
+so both sides have one source.** Editing the prereg moves them together. The head path has always had
+this property; the cell path inherits it.
+
+⚠ **This is a scope limitation, not a hole in the wrong place, and the phrase "drifted from the prereg"
+overstates it.** What the check guarantees is **EMISSION INTEGRITY** — and that is the failure mode that
+actually occurred, since S-260 was an emission bug. **Prereg correctness is guaranteed by a different
+mechanism**: the prereg is emitted mechanically by a freeze script and its md5 is pinned by every
+artefact citing it (`EMITTED_MECHANICALLY_BY`, `nomination_rule_md5`). I recorded the limitation **as a
+test** whose docstring says that, so a future reader cannot mistake the check for prereg validation —
+and the test fails loudly if the check ever *gains* that capability, at which point the docstring is
+what should change.
+
+### 6. Status: step 3 is now UNBLOCKED but deliberately NOT launched this tick
+
+```
+1. --knockout-cells in score_behavior.py                        ✅ S-291
+2. the argv gate's identity assertion + dose expectation         ✅ THIS ENTRY (S-292 was half of it)
+   2b. the GATE 0 sweep + census primitives                      ✅ S-292
+3. design (b)'s 11-arm descriptive pass on basket validation     -- machinery READY, not launched
+4. freeze the nomination rule BEFORE reading it                  -- blocked on 3
+5. the confirmatory family on a held-out axis                    -- ⚠ AXIS STILL OPEN (S-291 §6)
+```
+
+**A launch still needs three things that are freeze discipline, not code**, and rushing them at the end
+of a tick is how a family gets voided:
+
+1. the prereg must be **emitted mechanically by a freeze script**, not hand-written, per S-248/S-250;
+2. `PR-CSI-014` must be **registered in the launcher's `PR_ID -> WANT_PREFIX` table**. It is not, and I
+   verified the guard bites: the launcher exits 6 on an unregistered id, so no cell family can reach a
+   GPU under a borrowed tag namespace. **The guard is doing its job and I am not going to route around
+   it at speed;**
+3. the descriptive pass needs a **reader** — the census reader is head-shaped (`head_sets`,
+   `recorded_heads`) and would need the cell treatment S-292 gave the sweep.
+
+No arms were running (`squeue`, not `sacct`). No frozen artefact touched. Writes verified by md5 and
+line count; quota 94% used, 1.4T free. Two throwaway git worktrees created for baselines were removed.
