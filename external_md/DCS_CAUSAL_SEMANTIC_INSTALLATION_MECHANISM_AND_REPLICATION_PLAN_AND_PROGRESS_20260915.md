@@ -28214,3 +28214,117 @@ No endpoint has been read. The frozen read (cbdf34a2) is untouched.
 
 ⚠ n-304 has no prior load measurement, so per S-324 **no prediction was made and none is being scored**
 — whatever it records is a first data point for that node.
+
+---
+
+## S-326 — ⚠ **PR-CSI-018 generation 1 STALLED on n-304 and was cancelled after 60 minutes with ZERO progress.** S-039's rule applied exactly as written, the partial arm dir QUARANTINED per S-261, and the family relaunched **PINNED to n-301** — where the load is confirmed advancing. 📌 **And the new load's rate sets up a falsifiable test of S-314's "node constant" claim, recorded before it lands**
+
+### 1. The stall, and the evidence that it was one
+
+```
+923833  n-304  60 min elapsed  |  0 of 62 arms  |  NO "MODEL LOAD" line
+  .err   0 bytes, unmodified since 00:41 -- THE WEIGHT-LOADING BAR NEVER APPEARED AT ALL
+  .out   20850 bytes, unmodified since 01:01 -- 36 minutes with no byte written
+  last .out line: "[score] population filter {...}"  -- the first arm's setup, BEFORE the load
+```
+
+**Two readings four minutes apart, byte-for-byte identical.** S-039's operational rule:
+
+> *"the weight-loading bar in `.err` after **two readings a few minutes apart** is the only reliable
+> liveness test, and a node that shows **0/291 twice is bad** — cancel immediately rather than waiting
+> out the walltime."*
+
+This is worse than 0/291 twice: **the bar never appeared**, so the process had not reached the point
+of reading a single shard. Cancelled.
+
+### 2. ⚠ THE COUNTER-PRECEDENT, because a relaunch decision has gone wrong here before
+
+**S-285 recorded a relaunch that LOST**: *"the measured number refutes S-272's relaunch decision —
+STAYING ON 919296 WOULD HAVE FINISHED ~2.8 h EARLIER."* So "it is taking a long time" is **not**
+sufficient grounds, and that entry exists to stop exactly this reflex.
+
+**The discriminator is ADVANCEMENT, not elapsed time**, and that is precisely what S-039's rule
+encodes:
+
+```
+n-302, S-285   COLD load, 19278.4 s (5.36 h)   -- but the shard counter was ADVANCING throughout
+n-304, here    60 min, no bar, no bytes         -- nothing to advance
+```
+
+A 5.36-hour advancing load is **slow**; a 60-minute load that has not read shard 1 is **stuck**. The
+two look identical on a wall clock and opposite in `.err`, which is why the rule is written about
+`.err` and not about minutes.
+
+### 3. The quarantine, which S-261 makes mandatory rather than tidy
+
+923833 left **one** arm directory:
+
+```
+outputs/boombness/score_behavior/csi10_cell6_button_validation_BF_BASE_20260924_005635_1893033
+  contents: config.json, RUNMETA.json, plots        NO DONE.json, NO results.jsonl
+```
+
+Its contents confirm the diagnosis independently — the arm printed its population filter and then
+never produced a row.
+
+⛔ **It could not simply be left there.** S-261 measured that the runner's **skip-if-complete RESUMES
+into an existing arm directory**, so a relaunch under the same tag would have inherited this corpse
+rather than re-running `BF_BASE` — and `--require-slurm-job` is a **READ-time** remedy for a
+**WRITE-time** problem. Moved to `outputs/boombness/QUARANTINE/` with a `QUARANTINE_REASON.md`
+recording the evidence, the rule applied, and where the family went. `csi10_*` under
+`score_behavior/` is now **0**.
+
+### 4. The relaunch, pinned rather than excluded
+
+```
+sh scripts/gates/dcs_csi_submit.sh slurm_scripts/dcs_csi_pr010_arms.slurm --nodelist=n-301
+provenance: BLOB 3c3c3d26  PORCELAIN clean
+Submitted batch job 923972   -> RUNNING on n-301
+```
+
+S-039: *"Keep a known-good list and pin to it. **Exclusion lists chase the problem; a positive pin
+ends it.**"* **n-301 is this sprint's known-good node** — three completed loads (1339.1 / 1273.2 /
+1265.8 s) and three completed families (PR-014, PR-015, PR-016).
+
+**Confirmed advancing, by the same two-reading test that condemned n-304:**
+
+```
+reading 1   Loading weights:  0%|  | 0/291 [00:00<?, ?it/s]     <- the bar EXISTS, which n-304 never managed
+reading 2   Loading weights:  3%|▎ | 9/291 [03:18<42:03, 8.95s/it]
+```
+
+📌 **n-304 is recorded as bad ON THIS OCCASION, not permanently.** S-039 listed n-302 and n-307 among
+the indefinitely-stalling nodes, and this sprint has since seen n-302 complete a 5.36 h load and n-307
+return a 47.5 s one. **A node's mount is a state, not a property**, so the known-good list is a
+heuristic for choosing, never evidence about a node that was not tried.
+
+### 5. 📌 A FALSIFIABLE PREDICTION, recorded before the load completes
+
+S-314 concluded that **on n-301** the load is *"effectively a NODE CONSTANT (~1270–1340 s), not a
+function of cache residency at all"*, from three measurements varying 5.5 % across gaps of 3 minutes
+to 2.5 hours. **This load is running at ~9 s/shard over 291 shards.**
+
+```
+S-314's node-constant reading predicts    ~1270-1340 s   (21-22 min)
+the observed rate projects                ~2600-3200 s   (43-53 min)
+```
+
+**These are incompatible.** If 923972's `MODEL LOAD` lands near 2600–3200 s, **S-314's "node constant"
+reading is REFUTED** — n-301's load would then be a function of cache state after all, and the gap
+since PR-016 finished (~2.5 h, the same order as the gaps S-314 examined) would no longer explain it.
+If it lands near 1300 s despite the current rate, the early shards are simply unrepresentative and the
+constant survives.
+
+⚠ Recorded now because **it costs nothing and a prediction written afterwards is not a prediction** —
+the same reason S-303 and S-313 wrote theirs, one of which was then refuted (S-304) and one confirmed
+(S-314). **I have no stake in which way this one goes.**
+
+### 6. Status
+
+```
+923833  CANCELLED (stall). Its single arm dir QUARANTINED. No endpoint was produced or read.
+923972  RUNNING on n-301, pinned, load ADVANCING. 62 arms. No endpoint read.
+frozen read cbdf34a2 and prereg 6790df3a are UNTOUCHED -- a relaunch changes neither.
+NOT ESTABLISHED  anything about transfer, and nothing about the attention-mass measurement (S-325),
+                 which still needs the GPU this family is now using.
+```
