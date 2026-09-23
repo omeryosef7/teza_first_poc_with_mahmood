@@ -22899,3 +22899,53 @@ wall 14:20 -> margin ~4.6 h
 
 **No PR-013 number has ever been read** — GATE 0 is endpoint-blind and asserts so itself.
 `score_behavior.py` was not opened.
+
+---
+
+## S-287 — **the S-246 dose collision, observed across THREE arms at once: the all-32 knockout and two single-head controls all record 2016.0, and nothing but `knockout_heads` tells them apart.** S-255 predicted this for PR-CSI-013; it is now on real data
+
+### 1. Three arms, one dose
+
+```
+GATE 0 (4 of 23), endpoint-blind:
+  BT_BASE      230    median_pre    0.0  want    0  not intervened   PASS
+  BT_KO        230    median_pre 2016.0  want 2016  ALL 32           PASS  <- dose NOT diagnostic
+  BT_CTRL_00   230    median_pre 2016.0  want 2016  matches prereg   PASS  <- dose NOT diagnostic
+  BT_CTRL_01   230    median_pre 2016.0  want 2016  matches prereg   PASS  <- dose NOT diagnostic
+```
+
+**What actually distinguishes them, read from each arm's own config:**
+
+```
+BT_KO       dose 2016.0 | knockout_heads = <empty = ALL 32>
+BT_CTRL_00  dose 2016.0 | knockout_heads = '24'      prereg BT_CTRL_00 = [24]
+BT_CTRL_01  dose 2016.0 | knockout_heads = '19'      prereg BT_CTRL_01 = [19]
+```
+
+**A 32-head knockout and two 1-head knockouts are indistinguishable by dose.** S-246 derived this
+arithmetically (`K × 2016`, and the all-head arm never expands, so `K = 1` collides with `K = 32`); S-255
+recorded that on PR-013 the collision would span **the entire rank family** rather than a subset. **Both are
+now observable in one table.**
+
+### 2. Why it matters that this is visible rather than merely true
+
+**The dose check is the guard that carried GATE 0 through PR-010's 48 arms and PR-011's 24**, where `K = 8`
+against `K = 32` separates cleanly at 16128 vs 2016. **On this family it separates nothing for 22 of 23
+arms**, and the only discriminating check is the comparison of each arm's recorded `knockout_heads` against
+the preregistration — which exists because S-246 went looking for a collision before the family ran, and
+which R20-1 had already verified on 20 real PR-011 arms.
+
+**Concretely: had `BT_CTRL_00` been launched with the wrong head — say `19` instead of `24` — the dose would
+still read 2016.0 and GATE 0 would still say the dose is correct.** Only the identity line catches it, and
+it is the line that reads `matches prereg`.
+
+### 3. Rate and projection, unchanged
+
+```
+intervened arm times: 225.7, 232.5, 331.2 s   mean 263.1
+19 arms remain x 263.1 s = 1.39 h  ->  family ends ~09:33
+S-284's band 09:29-09:47 holds | wall 14:20, margin ~4.8 h
+```
+
+**No PR-013 number has ever been read** — GATE 0 asserts its own endpoint-blindness, including over the
+source of every function it imports (S-249). `score_behavior.py` was not opened.
