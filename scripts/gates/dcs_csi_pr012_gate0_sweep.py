@@ -36,6 +36,7 @@ def _load(name, path):
 
 census = _load("census", os.path.join(REPO, "scripts", "dcs_csi_head_census.py"))
 recorded_heads = census.recorded_heads
+recorded_cells = census.recorded_cells
 liveness = census.w4.liveness
 strict_run_dir = census.rederive.strict_run_dir
 
@@ -54,7 +55,7 @@ def assert_reads_no_endpoint():
     """Self-source AND the source of every imported callable this sweep actually calls."""
     bad = []
     _scan(open(os.path.abspath(__file__), encoding="utf-8").read(), "self", bad)
-    for fn in (recorded_heads, liveness, strict_run_dir):
+    for fn in (recorded_heads, recorded_cells, liveness, strict_run_dir):
         try:
             _scan(inspect.getsource(fn), "%s.%s" % (fn.__module__, fn.__name__), bad)
         except (OSError, TypeError):
@@ -84,7 +85,29 @@ def main():
     # fork-the-generator antipattern S-251 warned about, so this one is generalised instead: arms come
     # from `base_arms` (default PR-CSI-010's names, verified to bind) plus every head_sets entry.
     # `control_pool` is skipped explicitly -- it is a DRAW POOL, not an arm (pr010_freeze.py:128).
-    hs = pr["head_sets"]
+    # ⛔ CELL FAMILIES (PR-CSI-014, S-292). A prereg carrying `cell_sets` names (layer, head) CELLS
+    # rather than band-wide heads. The two are mutually exclusive: an arm set is one or the other, and
+    # a prereg with both would be two families in one file (S-227 at the family level).
+    #
+    # ⚠ THE COLLISION THAT MAKES THIS DELICATE. A cell arm passes --knockout-cells and NOT
+    # --knockout-heads, so its recorded `knockout_heads` is the EMPTY STRING -- which
+    # `recorded_heads()` correctly reads as "ALL", because for a head family an omitted flag IS the
+    # all-32 arm. So on a cell family the head-level identity check would report every 1-cell arm as
+    # the all-32 knockout. This is S-246's dose collision reappearing on the LAYER axis, and the
+    # remedy is the same: identity comes from the field that actually names the intervention. On a
+    # cell family that is `knockout_cells`, and `recorded_heads` is not consulted at all.
+    cs = pr.get("cell_sets")
+    hs = pr.get("head_sets")
+    if cs and hs:
+        sys.exit("REFUSING: the prereg carries BOTH head_sets and cell_sets. An arm family is one "
+                 "or the other; a file with both declares two families and no reader can know "
+                 "which arms it is being asked to verify.")
+    if not cs and not hs:
+        sys.exit("REFUSING: the prereg carries neither head_sets nor cell_sets.")
+    IS_CELLS = bool(cs)
+    if IS_CELLS:
+        hs = {k: [tuple(int(x) for x in c) for c in v] for k, v in cs.items()}
+        PER_CELL, NLAYERS = census.per_cell_dose(pr)
     base = list(pr.get("base_arms", ["HD_BASE", "HD_KO"]))
     if len(base) != 2:
         sys.exit("REFUSING: base_arms must name exactly 2 arms, got %r" % (base,))
@@ -98,7 +121,20 @@ def main():
     jobs = a.require_slurm_job.split(",") if a.require_slurm_job else None
     DOSE = census.DOSE_UNIT
 
-    print("%s GATE 0 SWEEP -- %s | %d arms declared" % (pr["id"], a.split, len(arms)))
+    print("%s GATE 0 SWEEP -- %s | %d arms declared%s"
+          % (pr["id"], a.split, len(arms),
+             ("  | CELL family: per-cell dose %d = %d/%d layers  \u26a0 PREDICTED, NOT MEASURED"
+              % (PER_CELL, DOSE, NLAYERS)) if IS_CELLS else ""))
+    if IS_CELLS:
+        # The head-level 2016 was MEASURED (S-215/S-246). The per-cell figure divides it by the band
+        # width and so assumes the edits are UNIFORM across layers -- untestable from any artefact on
+        # disk, because the hook counters are summed across layers before being written. Saying so on
+        # every run is the difference between a gate that verifies an identity and one that enforces
+        # an assumption; the first cell arm ever run VALIDATES this arithmetic.
+        print("  \u26a0 the per-cell dose is a PREDICTION from DOSE_UNIT/%d under an untested "
+              "uniformity assumption." % NLAYERS)
+        print("    A cell arm's dose check is therefore UNVERIFIED, not confirmatory, until one "
+              "cell arm has landed and matched it.")
     print("%-12s %6s %14s %12s %7s %5s  %-26s %s"
           % ("arm", "rows", "median_pre", "want", "decode", "viol", "identity", "verdict"))
     landed = fails = 0
@@ -113,19 +149,39 @@ def main():
         landed += 1
         L = liveness(d)
         k = 0 if arm == base[0] else (32 if arm == base[1] else len(hs[arm]))
-        want = 0 if arm == base[0] else (DOSE if arm == base[1] else DOSE * k)
-        got = None if arm == base[0] else recorded_heads(d)
+        # The two BASE arms are head-level on every family: base[0] is the clean reference and
+        # base[1] is the all-32 band knockout that serves as the denominator. Only the non-base arms
+        # of a cell family are cell-scoped.
+        if arm in base or not IS_CELLS:
+            want = 0 if arm == base[0] else (DOSE if arm == base[1] else DOSE * k)
+        else:
+            want = PER_CELL * k
         if arm == base[0]:
             ok_id, why = True, "not intervened"
         elif arm == base[1]:
+            got = recorded_heads(d)
             ok_id = (got == "ALL"); why = "ALL 32" if ok_id else "expected ALL, got %r" % (got,)
-        elif got is None:
-            ok_id, why = False, "NO knockout_heads recorded -- CANNOT VERIFY"
-        elif got == "ALL":
-            ok_id, why = False, "records ALL 32, prereg says %s -- S-246 COLLISION" % (hs[arm],)
+        elif IS_CELLS:
+            # IDENTITY FROM `knockout_cells` ONLY. See the collision note above: this arm's
+            # `knockout_heads` is empty and would read as "ALL".
+            got = recorded_cells(d)
+            if got is None:
+                ok_id, why = False, "NO knockout_cells recorded -- CANNOT VERIFY"
+            elif got == "NOT_A_CELL_ARM":
+                ok_id, why = False, "knockout_cells EMPTY -- this arm is not cell-scoped"
+            else:
+                ok_id = (list(got) == sorted(hs[arm]))
+                why = ("matches prereg" if ok_id
+                       else "got %s != %s" % (got, sorted(hs[arm])))
         else:
-            ok_id = (list(got) == list(hs[arm]))
-            why = "matches prereg" if ok_id else "got %s != %s" % (got, hs[arm])
+            got = recorded_heads(d)
+            if got is None:
+                ok_id, why = False, "NO knockout_heads recorded -- CANNOT VERIFY"
+            elif got == "ALL":
+                ok_id, why = False, "records ALL 32, prereg says %s -- S-246 COLLISION" % (hs[arm],)
+            else:
+                ok_id = (list(got) == list(hs[arm]))
+                why = "matches prereg" if ok_id else "got %s != %s" % (got, hs[arm])
         ok = (L["violations"] == {} and L["total_decode_edits"] == 0
               and L["median_prefill_edits"] == want and ok_id)
         fails += (not ok)
@@ -136,8 +192,25 @@ def main():
     print()
     if fails:
         sys.exit("GATE 0: %d of %d landed arm(s) FAILED." % (fails, landed))
+    # ⛔ ZERO LANDED ARMS IS NOT A PASS (S-292). This printed "GATE 0: every landed arm passes
+    # (0 of 23)" and exited 0 whenever NOTHING matched -- a typo in --tag-prefix, the wrong split, a
+    # --require-slurm-job naming a job that produced nothing. That is exactly the rule this file's own
+    # docstring invokes against the dose check (R20-6: any check whose PASS is consistent with reading
+    # NOTHING is not a check), and the sweep was run repeatedly as a progress check through PR-013's
+    # night, where a mistyped prefix would have reported a pass over an empty set.
+    #
+    # It exits 3 rather than raising a generic failure because ZERO-LANDED is a legitimate state early
+    # in a live family -- the sweep is designed to run while arms are in flight -- so it must be
+    # distinguishable by a caller from a real GATE 0 failure (which exits 1 above).
+    if landed == 0:
+        print("GATE 0: NOTHING TO CHECK -- 0 of %d declared arms resolved. THIS IS NOT A PASS."
+              % len(arms))
+        print("  Either no arm has landed yet, or --tag-prefix/--split/--require-slurm-job name "
+              "something that does not exist.")
+        sys.exit(3)
     print("GATE 0: every landed arm passes (%d of %d). Identity verified from each arm's own "
-          "knockout_heads. No endpoint field was read." % (landed, len(arms)))
+          "%s. No endpoint field was read."
+          % (landed, len(arms), "knockout_cells" if IS_CELLS else "knockout_heads"))
 
 
 if __name__ == "__main__":

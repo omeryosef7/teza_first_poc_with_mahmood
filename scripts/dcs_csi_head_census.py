@@ -56,6 +56,87 @@ def recorded_heads(run_dir):
     return [int(x) for x in str(v).split(",")]
 
 
+def recorded_cells(run_dir):
+    """The arm's OWN record of which (layer, head) CELLS it knocked out (PR-CSI-014, S-291).
+
+    Returns a sorted list of (L, h) tuples; `None` if the field is ABSENT; and the string
+    "NOT_A_CELL_ARM" when the field exists but is empty.
+
+    ⚠ THE EMPTY VALUE IS *NOT* "ALL", WHICH IS THE OPPOSITE OF `recorded_heads`' CONVENTION.
+    There, an omitted `--knockout-heads` means "every head in the band" -- the widest possible
+    intervention -- because the flag's absence is how the all-32 arm is expressed. Here an omitted
+    `--knockout-cells` means the arm is not cell-scoped AT ALL; its scope is whatever
+    `knockout_heads` says. Returning "ALL" would make a plain head arm read as a 288-cell arm, i.e.
+    the widest possible reading of a field that was simply not in use.
+
+    Absence (`None`) is still distinct from emptiness: every artefact produced BEFORE S-291 lacks the
+    key entirely, and "this run predates the flag" must not be readable as "this run used no cells"
+    (R20-6: any check whose PASS is consistent with reading nothing is not a check)."""
+    cfg = json.load(open(os.path.join(run_dir, "config.json")))
+    a = cfg.get("args", cfg)
+    if "knockout_cells" not in a:
+        return None
+    v = a["knockout_cells"]
+    if v is None or v == "":
+        return "NOT_A_CELL_ARM"
+    if isinstance(v, (list, tuple)):
+        out = [(int(x[0]), int(x[1])) for x in v]
+    else:
+        out = []
+        for tok in str(v).split(","):
+            tok = tok.strip()
+            if not tok:
+                continue
+            L, h = tok.split(":")
+            out.append((int(L), int(h)))
+    return sorted(out)
+
+
+def band_width(prereg):
+    """How many LAYERS the preregistered band spans, read from the prereg's own `intervention`.
+
+    Taken from the prereg rather than hardcoded as 9, because the band is a preregistered quantity
+    and a constant here could silently disagree with the arm that ran."""
+    iv = prereg.get("intervention") or {}
+    band = iv.get("band")
+    if not band:
+        spec = iv.get("intervene") or ""
+        parts = spec.split(":")
+        band = parts[2] if len(parts) > 2 else ""
+    if not band:
+        raise SystemExit("REFUSING: the prereg carries no intervention band, so a per-cell dose "
+                         "cannot be derived. Cell arms need one.")
+    lo, hi = (int(x) for x in str(band).split("-"))
+    if hi < lo:
+        raise SystemExit("REFUSING: band %r is inverted" % (band,))
+    return hi - lo + 1
+
+
+def per_cell_dose(prereg, dose_unit=None):
+    """The prefill edits ONE cell is EXPECTED to record: DOSE_UNIT / (layers in the band).
+
+    ⚠ THIS IS A PREDICTION, NOT A MEASURED IDENTITY, AND THE DIFFERENCE IS LOAD-BEARING.
+    `DOSE_UNIT = 2016` was MEASURED (S-215, S-246): it is what a one-head arm actually recorded. The
+    per-cell figure divides it by the band width, which assumes the 2016 edits are spread UNIFORMLY
+    across the nine layers -- 224 each. That assumption has never been tested and CANNOT be tested
+    from any artefact on disk, because the hook counters are summed across layers before they are
+    written (pair_common seeds them once and every per-layer hook increments the same dict).
+
+    So the first cell arm ever run VALIDATES this arithmetic; it does not merely pass a gate built on
+    it. Consumers must report a cell arm's dose check as UNVERIFIED until that happens, which is why
+    this returns the expectation and the divisibility fact TOGETHER rather than a bare number."""
+    unit = DOSE_UNIT if dose_unit is None else int(dose_unit)
+    n = band_width(prereg)
+    if n <= 0:
+        raise SystemExit("REFUSING: band width %d" % n)
+    if unit % n != 0:
+        raise SystemExit(
+            "REFUSING: DOSE_UNIT %d is not divisible by the %d-layer band, so a per-cell dose is "
+            "not an integer and the uniformity assumption is already false. Measure the per-cell "
+            "dose before gating on it." % (unit, n))
+    return unit // n, n
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--prereg", required=True)

@@ -23641,3 +23641,204 @@ question replaces it.
 `score_behavior.py` edit permission verified from `squeue` + `ps`, not `sacct` (§1). No arms were running.
 No frozen artefact was touched. The repo write was verified by md5 and line count after the fact
 (quota 94% used, 1.4T free).
+
+---
+
+## S-292 — **PR-CSI-014 STEP 2 DONE: cell identity and the per-cell dose, with the collision it would have walked into.** And a PRE-EXISTING defect found in the GATE 0 sweep itself: **"every landed arm passes (0 of 23)" — a pass reported over an empty set, exit 0**
+
+### 1. What step 2 needed, and the one number in it that is NOT measured
+
+Design §7 step 2: *"extend the argv gate's identity assertion to cells, and the dose expectation to
+`DOSE_UNIT / 9`."* The dose arithmetic checks out exactly —
+
+```
+prereg intervention.band = "6-14"  ->  9 layers
+DOSE_UNIT = 2016  (MEASURED: S-215, S-246)
+2016 / 9 = 224    (exact; 2016 % 9 == 0)
+```
+
+⚠ **But 224 is a PREDICTION, not a measured identity, and the design's wording hides that.** 2016 is
+what a one-head arm *actually recorded*. Dividing by 9 assumes the edits are spread **uniformly across
+the nine layers**. That assumption **cannot be tested from any artefact on disk**: `pair_common` seeds
+the hook counters once and every per-layer hook increments the same dict, so the per-layer breakdown is
+summed away before it is written.
+
+So the code returns the expectation **and says what it is**. `per_cell_dose()` carries the distinction in
+its docstring, and the sweep prints it on every cell-family run:
+
+```
+PR-CSI-014-TEST GATE 0 SWEEP -- validation | 4 arms declared  | CELL family: per-cell dose 224 = 2016/9 layers  ⚠ PREDICTED, NOT MEASURED
+  ⚠ the per-cell dose is a PREDICTION from DOSE_UNIT/9 under an untested uniformity assumption.
+    A cell arm's dose check is therefore UNVERIFIED, not confirmatory, until one cell arm has landed and matched it.
+```
+
+**The first cell arm ever run VALIDATES this arithmetic rather than merely passing a gate built on it.**
+`per_cell_dose` also refuses a band width that does not divide 2016 — if it does not divide, the
+uniformity assumption is *already* false and gating on a rounded number would enforce an arithmetic that
+cannot hold.
+
+### 2. ⚠ THE COLLISION STEP 2 WOULD HAVE WALKED INTO — S-246 on the layer axis
+
+A cell arm passes `--knockout-cells` and **not** `--knockout-heads`. So its recorded `knockout_heads` is
+the **empty string** — and `recorded_heads()` maps empty to **"ALL"**, correctly, because for a HEAD
+family an omitted flag *is* the all-32 arm.
+
+```
+config.json args of a cell arm:  {"knockout_heads": "", "knockout_cells": "10:2"}
+recorded_heads(d) -> "ALL"      <-- a 224-edit arm reading as the 2016-edit denominator
+recorded_cells(d) -> [(10, 2)]
+```
+
+**Read through the head-level check, every 1-cell arm would have been certified as the all-32 knockout.**
+This is exactly S-246's dose collision reappearing on the layer axis, and the remedy is the same one:
+identity comes from the field that actually names the intervention. On a cell family that is
+`knockout_cells`, and `recorded_heads` **is not consulted at all** — pinned by a structural test that
+reads the `IS_CELLS` branch and asserts `recorded_heads` does not appear in it.
+
+**And `recorded_cells` deliberately does NOT copy `recorded_heads`' empty-value convention.** Empty
+returns `"NOT_A_CELL_ARM"`, never `"ALL"`: for heads, empty means the widest possible intervention; for
+cells, empty means the arm is not cell-scoped at all. Copying the convention would make every plain head
+arm read as a 288-cell arm. Absence still returns `None`, distinct from empty, because every artefact
+written before S-291 lacks the key and *"predates the flag"* must not be readable as *"used no cells"*
+(R20-6).
+
+### 3. 🔴 A PRE-EXISTING DEFECT IN THE SWEEP — a PASS over an empty set
+
+Found because a synthetic cell prereg in the new tests had no landed arms:
+
+```
+python scripts/gates/dcs_csi_pr012_gate0_sweep.py --prereg configs/dcs_csi_pr013_... \
+  --tag-prefix TYPO_THAT_MATCHES_NOTHING --split validation --require-slurm-job 919531
+-> GATE 0: every landed arm passes (0 of 23). Identity verified from each arm's own
+   knockout_heads. No endpoint field was read.
+-> exit code 0
+```
+
+Confirmed **pre-existing** by running it inside a throwaway `git archive HEAD` checkout: identical
+output, exit 0.
+
+⚠ **This is the rule the sweep's OWN DOCSTRING invokes, violated by the sweep.** That docstring cites
+R20-6 against the dose check — *any check whose PASS is consistent with reading nothing is not a check* —
+and then reports a pass over zero arms. **I ran this sweep roughly fifteen times through PR-013's night
+as my progress check.** A typo in `--tag-prefix`, a wrong `--split`, or a `--require-slurm-job` naming a
+job that produced nothing would each have printed a pass, and I would have had no way to tell from the
+output. It never bit, because the counts I saw were 14/23, 21/23, 23/23 — but nothing in the tool made
+that luck rather than design.
+
+**Fixed, and the fix distinguishes two states that are not the same:**
+
+```
+GATE 0: NOTHING TO CHECK -- 0 of 23 declared arms resolved. THIS IS NOT A PASS.
+  Either no arm has landed yet, or --tag-prefix/--split/--require-slurm-job name something that does not exist.
+-> exit code 3
+```
+
+**Exit 3, not exit 1.** Zero-landed is a *legitimate* state early in a live family — the sweep exists to
+run while arms are in flight — so a caller must be able to tell it apart from an arm that genuinely
+failed GATE 0 (exit 1). Both codes are pinned by tests.
+
+### 4. Regression discipline: the head path is BYTE-IDENTICAL
+
+This sweep produced D34 and D35, so the change had to be additive and provably inert on the head path:
+
+```
+PR-013 sweep, working tree vs a `git archive HEAD` checkout of the same command:
+  md5 6af5cba9d3dc4926f75972abb25f2dc7  (before)
+  md5 6af5cba9d3dc4926f75972abb25f2dc7  (after)      -> IDENTICAL
+PR-012 census sweep (44 arms):  GATE 0: every landed arm passes (44 of 44)
+```
+
+**And D34 itself reproduces FULL-OBJECT IDENTICAL.** `dcs_csi_head_census.py` is the reader that
+produced D34, so re-deriving the census from the frozen read was mandatory, not optional:
+
+```
+python scripts/dcs_csi_head_census.py --prereg configs/dcs_csi_pr012_head_census_basket.json \
+  --tag-prefix csi5_census_basket_validation --split validation --expect-n 230 \
+  --require-slurm-job 918631 --out <scratch>/census_repro.json
+
+[census] anchors:  HD_KO -0.226961   HD_TOPK -0.195984   HD_BOTK -0.012567
+committed  29750 bytes   re-derived 29750 bytes   FULL OBJECT IDENTICAL: True
+```
+
+The three anchors are bit-identical to the values R21 froze independently. **D34 is unchanged by this
+edit, verified rather than asserted.**
+
+The cell support is gated on the prereg carrying a `cell_sets` block; a prereg with `head_sets` takes
+exactly the path it did before. A prereg carrying **both** is refused — an arm family is one or the
+other, and a file with both declares two families no reader can disambiguate (S-227 at the family level).
+
+### 5. Tests: `tests/test_csi_cell_identity.py`, 20 tests
+
+They pin: absence vs emptiness on `recorded_cells`; the **asymmetry** with `recorded_heads` (empty is
+`NOT_A_CELL_ARM`, never `ALL`); sorted canonical ordering; the string and list encodings; **the collision
+itself asserted as a fact about the data** (`recorded_heads` on a cell arm *does* return `"ALL"`);
+`band_width` from the explicit field and from the `intervene` string, with refusals for missing and
+inverted bands; `per_cell_dose == (224, 9)` and `224 * 9 == DOSE_UNIT`; the non-divisible refusal; that
+the prediction is *documented* as a prediction; the both-sets and neither-set refusals; the UNVERIFIED
+banner; that `recorded_cells` joined the endpoint-blindness scan list; the structural no-`recorded_heads`
+guard on the cell branch; and the zero-landed behaviour with its distinct exit code.
+
+### 6. The full suite: **9 failures, ALL NINE PRE-EXISTING** — and TWO INVALID BASELINES before I got a valid one
+
+```
+tests/ + doublespeak_causality/tests/ WITH step 2 :  9 failed, 2194 passed, 23 skipped
+the same 9, with step 2 STASHED in the same repo  :  9 failed
+-> every failure is present without my changes. NONE is mine.
+```
+
+The nine sit in five files — `test_scoped_attnknockout` (the one S-291 already proved pre-existing),
+`test_common_provenance`, `test_donor_patch` (x2), `test_prompt_families_strict` (x4),
+`test_tsc_request_filter`. **None of the five references anything I changed**, checked by grep for
+`head_census|gate0_sweep|recorded_cells|per_cell_dose`. The only two test files that DO reference my
+modules — `test_csi_cell_identity.py` and `test_metric_names.py` — give **41 passed**.
+
+⚠ **I reached that conclusion only on the third attempt, and the first two baselines were confidently
+WRONG IN OPPOSITE DIRECTIONS.**
+
+```
+attempt 1  git archive HEAD | tar -x        -> "1 error during collection", 0 FAILED, exit 1
+           CAUSE: tests/test_estimand.py shells out to `git` AT COLLECTION TIME, and an archive
+           extraction is not a git repo. The whole suite aborted.
+           ⚠ READ CARELESSLY, "0 failures at HEAD" would have PROVED the 9 were mine.
+
+attempt 2  git worktree add --detach        -> collects 2206 tests, but 26 FAILED
+           CAUSE: a fresh checkout has no UNTRACKED artefacts, and ~17 of those tests scan the real
+           corpus (test_the_real_repo_passes, test_the_real_corpus_*, test_every_cited_run_id_resolves).
+           ⚠ READ CARELESSLY, "26 at HEAD vs 9 here" would have PROVED I FIXED seventeen tests.
+
+attempt 3  git stash push <the 2 files>     -> same repo, same corpus, only the code differs
+           -> 9 failed. VALID, because it changes exactly one variable.
+```
+
+**Both bad baselines produced a clean-looking number from a measurement that never happened** — the same
+shape as `sacct`'s 44-day phantom job (S-291 §1) and this sweep's own "every landed arm passes (0 of 23)"
+(§3 above). Three instances today, and in each one **the tell was a number that should have been
+impossible**: 44 days of runtime, 0 of 23 arms, 0 failures from an aborted run, 17 tests fixed by a change
+that touches neither. **A baseline must change exactly one variable, and a comparison across two
+environments is not a baseline.**
+
+The stash was popped and verified byte-exact (`2dd3b5e7…`, `4631baa9…` restored), and the 39 new tests
+re-run clean afterwards. One unrelated stash entry from **2026-08-22** remains in the stash list; it is
+not from this session and was left untouched.
+
+### 7. Status against the design's §7 order of work
+
+```
+1. add --knockout-cells to score_behavior.py                                      ✅ S-291
+2. extend the gate's identity assertion to cells + dose expectation 2016/9         ✅ THIS ENTRY
+3. run design (b)'s 11-arm descriptive pass on basket validation                   -- NEXT, and it now
+                                                                                     also VALIDATES the
+                                                                                     224 prediction
+4. freeze the nomination rule BEFORE reading it                                     -- blocked on 3
+5. freeze the read, launch the confirmatory family on a held-out axis               -- ⚠ AXIS STILL OPEN (S-291 §6)
+```
+
+⚠ **Step 3 has acquired a second purpose it did not have in the design.** It was specified as a
+descriptive pass to choose a candidate cell by intervention rather than by surrogate. It is now **also
+the measurement that turns 224 from a prediction into an identity** — and if the per-cell dose comes back
+as anything other than 224, the uniformity assumption is refuted and every cell arm's dose expectation
+must be re-derived before any rank test is read. That is worth knowing before the arms are launched
+rather than after.
+
+No arm was running (`squeue` empty, per S-291's rule that `sacct` is not a liveness oracle). No frozen
+artefact was touched. Writes verified by md5 and line count; quota 94% used, 1.4T free.
