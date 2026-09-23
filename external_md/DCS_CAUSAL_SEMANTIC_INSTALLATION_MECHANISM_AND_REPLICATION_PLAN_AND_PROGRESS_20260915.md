@@ -25471,3 +25471,245 @@ failure mode is also the same each time: **fixing an instance when the defect is
 A monitor is armed on 29/29. The frozen read (`4841486c`) is untouched, and its four per-head outcomes —
 including **outcome B, where the screen's prediction fails and AM-38 is the claim at risk** — remain open.
 No endpoint has been read.
+
+---
+
+## S-306 — 🔴 **PR-CSI-015 IS READ: OUTCOME A ON ALL THREE HEADS. Each head's entire band-wide load sits in ONE cell, and in every case it is the cell the TRAIN screen named — 17→L14, 19→L14, 23→L7.** With D36's head 2 that is **4 of 4 across splits**. ⚠ And the rival I most expected to bite — "L14 is just the band edge" — is **REFUTED by the screen's own marginal**: L14 is the argmax for only 6 of 32 heads
+
+### 0. Preconditions, then the frozen read in its own order
+
+```
+29/29 arms landed, job 922176, n-301, rc=0 on every arm, MODEL LOADS 1
+frozen read  runargs/dcs_csi_pr015_read.txt   md5 4841486c   UNCHANGED since S-302
+provenance   read committed fbf1fbf5 at 16:36:17 ; job 922176 started 16:38:27
+             -> the three screen predictions are on record 2 min 10 s BEFORE any arm ran
+```
+
+⚠ **I wrote down what I expected before running a single verifier**, and it is kept verbatim in
+`S306_pre_verification_reading.txt` so that a later refutation can be checked against what I actually
+believed. Its ranked list of "the three ways I expect this to be wrong" put the L14 band-edge rival
+first. §5 measures it.
+
+### 1. STEP 1 — GATE 0, endpoint-blind, **29 of 29 PASS**
+
+```
+CL_BASE     230 rows     0.0 edits     not intervened   PASS
+CL_KO       230       2016.0           ALL 32           PASS
+27 cell arms 230        224.0 each     matches prereg   PASS
+GATE 0: every landed arm passes (29 of 29). Identity verified from each arm's own knockout_cells.
+No endpoint field was read.
+```
+
+The per-cell dose is **224.0 on all 27 arms**, so VOID condition 7 is not triggered. S-305's fail-closed
+fix printed the correct banner for a prereg declaring `STATUS: MEASURED`, and the count is `(29 of 29)`
+rather than S-292's pass-over-an-empty-set.
+
+### 2. STEP 2 — the primary read. **3 of 27 cells clear, one per head**
+
+Each head against its **own** preregistered bar (S-301's refusal-on-missing-bar is what makes a null here
+trustworthy):
+
+```
+head   bar        clearing cell    E            ci95                    |E|/bar   screen said
+ 17    0.009082   L14             -0.023442    [-0.032917,-0.016358]    2.58x     L14   ✓
+ 19    0.010223   L14             -0.043975    [-0.054653,-0.033670]    4.30x     L14   ✓
+ 23    0.006615   L7              -0.018514    [-0.024030,-0.012907]    2.80x     L7    ✓
+```
+
+**Outcome A on all three heads.** Not B, not C, not D. Branch C — nothing clears, the distributed
+profile — did not fire on any head. ⚠ Precision, because I nearly overstated this: **PR-015's prereg
+preregisters C as *coherent*, not as *most likely*** (grep finds no such phrase in it); it was **S-299**
+that called C the most likely outcome for PR-014 and recorded its own surprise. So the correct statement
+is that the branch I expected on the one family where I wrote an expectation down did not fire, and that
+the same branch has now failed to fire twice.
+
+`10 of 27 have a ci95 excluding 0` is printed beside the verdict and **is not the criterion**. The
+headline count uses `|E| > bar` only; S-300 §2 fixed exactly this and the fix held on the path that ran.
+
+### 3. The four-head picture, on one scale
+
+D36's head 2 recomputed from `DCS_CSI_PR014_CELL_CENSUS_validation.json` so all four sit in one table:
+
+```
+head   whole-head arm (D34)   peak cell   E(peak)      share of head arm   |E|/own bar   screen
+  2       -0.049475            L10        -0.047547        96.1%              2.48x       L10 ✓
+ 17       -0.029218            L14        -0.023442        80.2%              2.58x       L14 ✓
+ 19       -0.040109            L14        -0.043975       109.6%              4.30x       L14 ✓
+ 23       -0.016503            L7         -0.018514       112.2%              2.80x       L7  ✓
+```
+
+**Exactly one cell clears in each of the four heads, and the four cells sit at three distinct layers
+(7, 10, 14, 14).** The prediction is therefore not a constant dressed as a prediction.
+
+⚠ **"Share of the head arm" is the wrong phrase for heads 19 and 23 and I am not going to use it.**
+109.6% and 112.2% are not shares. Knocking out the single cell (L7, h23) does **more** damage than
+knocking out all nine of that head's cells at once. See §4.
+
+### 4. The additivity check, which does NOT come out clean — and head 23 is the outlier twice
+
+The analogue of S-059's consistency check. Sum of a head's nine single-cell effects against its nine-cell
+joint arm from D34 (md5 `d2e146272399e0883811d9fe4d743cbe`, **verified equal** to the value the prereg
+froze; `SINGLE_17/19/23` reproduce the prereg's frozen numbers exactly):
+
+```
+head   sum of 9 singles   joint 9-cell arm   ratio    sum of the 8 NON-peak cells
+  2      -0.043956          -0.049475        0.888         +0.003591
+ 17      -0.027513          -0.029218        0.942         -0.004071
+ 19      -0.041068          -0.040109        1.024         +0.002907
+ 23      -0.011420          -0.016503      **0.692**       +0.007094
+```
+
+Heads 2, 17 and 19 are additive to within 12%. **Head 23 is not: its nine depths interact, and the joint
+knockout does 45% more than its parts sum to.** That is a real, unflattering number and it bounds the
+wording: *the load is concentrated in one cell* is supported for all four; *the head decomposes additively
+across depth* is supported for three and **refuted for head 23**.
+
+### 5. ⚠ THE RIVAL I EXPECTED TO BITE, AND IT DOES NOT: L14 is not generically the argmax
+
+Two of three heads landed on L14, the **last** layer of band 6–14. That is exactly the shape a boundary
+artifact takes, and "the screen said L14, the intervention said L14" would be near-vacuous if the screen
+said L14 about everybody. So it was measured, over all 288 cells of the screen rather than the 4 heads
+this family looked at:
+
+```
+screen argmax layer, across ALL 32 heads:
+  L6: 4   L7: 1   L8: 2   L9: 3   L10: 6   L11: 8   L12: 1   L13: 1   L14: 6
+```
+
+**L14 is the argmax for 6 of 32 heads (18.8%). The modal layer is L11, which none of the four is.**
+So the correct null, built from the screen's **own** marginal rather than from a uniform 1/9:
+
+```
+P(all four heads match) under the screen's own marginal  = 2.06e-04
+P(all four heads match) under a uniform 1/9              = 1.52e-04
+```
+
+The two are within 35% of each other. **The band-edge rival is refuted**, and the agreement may be quoted
+at roughly 2e-4 rather than hand-waved.
+
+### 6. 📌 EXPLORATORY, NOT PREREGISTERED — the cell-level screen↔intervention correlation
+
+S-269 recorded the open question in as many words: *"Its per-CELL ordering has never been validated
+against anything."* It can now be answered at zero GPU cost, and **this analysis was NOT preregistered**
+— it is descriptive and is labelled so wherever it is used.
+
+36 cells (4 heads × 9 layers) now have **both** a TRAIN AtP value (`w1_screen_train_basket_916132.json`,
+`split=train`, 67 domains) and a VALIDATION intervention effect. The two populations are disjoint.
+
+```
+Spearman  rho = +0.7562   p = 9.59e-08      <- the CELL-level analogue of S-254's head-level +0.7713
+Pearson   rho = +0.8454   p = 8.78e-11
+Kendall   tau = +0.5841   p = 5.37e-07
+```
+
+⚠ **n=36 cells is not 36 independent units and the p-values above are inflated.** Two robustness checks,
+both of which cut against a clean story:
+
+```
+drop the 4 dominant cells (n=32)   rho = +0.6554  p = 4.7e-05   <- NOT carried by the four peaks alone
+within-head rho, 9 cells each:  head 2 +0.900 | head 17 +0.717 | head 19 +0.750 | head 23 +0.283 (p=0.46)
+within-head rho, peak removed:  head 2 +0.857 | head 17 +0.595 | head 19 +0.643 | head 23 -0.024 (p=0.96)
+```
+
+**Head 23 again.** The screen gets head 23's *peak* exactly right and carries **no** ordering information
+about its other eight cells (ρ = −0.02). So the honest statement is: *the screen's argmax is right 4 of 4;
+its ordering below the argmax is informative in three heads of four and absent in the fourth* — and head
+23 is the same head whose depths interact in §4.
+
+This contrasts with the precedent S-269 itself raised: S-243's gap statistic was surrogate fine structure
+that S-245 measured against intervention at **ρ = +0.07**, essentially uncorrelated. That is the case
+where this kind of reading failed. This one does not fail, and the difference is worth keeping.
+
+Reproducible rather than scratchpad arithmetic, per §20: `scripts/dcs_csi_cell_screen_agreement.py` →
+`reports/DCS_CSI_CELL_SCREEN_AGREEMENT_basket.json`. It carries `STATUS: EXPLORATORY -- NOT
+PREREGISTERED` and its own `CANNOT_DO` block in the file, it **asserts** the screen's `split == train`
+and both reports' `split == validation` rather than trusting the filenames, and both refusals were
+verified to fail closed (a screen mislabelled `validation` → exit 1; a 100-cell truncation → exit 1).
+
+⚠ **And I put S-305's own lesson into this new script before committing it.** My first version decided
+the band-edge rival with a bare `32 * (2.0/9)` in an `if`, which is precisely the class S-305 named — a
+number in code that reads like a frozen criterion. The report now emits `verdict_rule` and
+`verdict_is_preregistered: false` beside the verdict, and the banner prints the rule. The point of
+naming a defect class last tick is to stop writing it this tick.
+
+### 7. What this licenses, and what it does not — quoting the frozen constraints
+
+The report's own `CANNOT_DO` is binding and is not being reinterpreted:
+
+> * whether any cell is PRIVILEGED — there is no rank, no control family and no p
+> * whether the screen's per-cell ordering is valid **IN GENERAL** — at most this makes the
+>   intervention-verified sample **4 heads of 32**
+> * anything revising D32–D36; anything about the other 28 heads; anything about DOMAIN generality
+
+**PERMITTED** — *"On basket validation, each of the four heads D34 found load-bearing has its band-wide
+effect concentrated in a single (layer, head) cell, and in all four the cell is the one the TRAIN
+attribution screen ranked first for that head. The four cells lie at three different layers, and the
+screen's argmax is not generically the band edge (L14 for 6 of 32 heads), so the agreement is not an
+artifact of a shared bias toward the top of the band."*
+
+**FORBIDDEN, and these are the sentences I would most like to write:**
+
+* "Cell (L14, 19) is the writer." — no rank, no p, no held-out axis. `SELECTION_RE_ENTERS_WHEN` fires the
+  moment any one cell is singled out.
+* "The AtP screen is a validated cell selector." — 4 heads of 32, all four chosen because they were
+  load-bearing. **The result is conditional on load-bearing heads and says nothing about the other 28.**
+* "The effect is single-layer." — D32's caveat stands; §4 refutes it outright for head 23.
+* Anything about the 3 TEST domains. They remain untouched.
+
+⚠ **And the selection of the four heads is not innocent.** They are D34's load-bearing four, chosen on
+*validation*. Heads with large effects have sharper screens *and* sharper interventions, so argmax
+agreement is easier for them than for a head drawn at random. **4 of 4 is a statement about load-bearing
+heads, not about heads.** §8 is the design that would fix this, and it is a real test rather than a wider
+map.
+
+### 8. What this unblocks — and it is the test S-294 declared UNREACHABLE
+
+AM-37/S-294 measured that no admissible held-out axis existed for a confirmatory cell test, and that
+finding **stands as written**: it was about a cell nominated *by intervention on validation*. It does not
+cover a cell nominated by the **TRAIN screen**, whose 67 domains are disjoint from validation's 23. That
+axis was never in the inventory because, until today, there was no reason to believe the screen could
+nominate a cell at all.
+
+Measured from artefacts on disk, at zero GPU cost:
+
+```
+heads whose D34 whole-head arm has a ci95 EXCLUDING 0      19 of 32
+  of those, already cell-mapped (2, 17, 19, 23)             4
+  FRESH, live, and never cell-mapped                       15   <- the population for a real test
+```
+
+A design sketch, **not frozen and not launched**: for each of K fresh live heads run the screen's argmax
+cell and one control cell of the same head drawn by a frozen rule, and sign-test
+`|E(nominated)| > |E(control)|` across heads. **The statistical unit is the HEAD**, which is what rule 3.1
+demands; the floor is exact at `2^-K` (K=12 → 2.4e-04), clearing α=0.05 without a rank; nomination is
+TRAIN and the read is VALIDATION. Cost ≈ 2K+2 arms × ~167 s + one model load ≈ **1.2 GPU-hours at K=12**.
+Power is the open question — these heads' whole-head arms run −0.0104 to −0.0013, an order of magnitude
+below head 2's, and the weakest of the 15 will contribute noise rather than signal. **That is priced in
+§S-308, not here, and nothing is launched on the strength of a sketch.**
+
+### 9. Operational, and the bookkeeping
+
+```
+28 intervened arms: mean 171.7 s, sd 9.9 s (CV 5.8%)  <- STATIONARY, unlike S-288/S-289's series on n-302
+CL_BASE 1464.2 s includes the 1273.2 s model load -> ~191 s of work; CL_KO 215.9 s
+sum(arm times) - load = 6272.5 s ;  sacct elapsed 01:45:06 = 6306 s  ->  33.5 s of job overhead
+  (⚠ my first version of this line quoted 1:44:14 from a `squeue` I had run while the LAST ARM WAS STILL
+   RUNNING, which made the arms appear to outlast the job. sacct, after completion, is the right source.)
+```
+
+**The KO anchor is identical across three separate jobs**: D34's `HD_KO`, PR-014's `CL_KO` and PR-015's
+`CL_KO` all read **−0.22696123**, from three different run directories on three different dates. Greedy
+decoding requires this, so it is a bookkeeping check rather than a discovery — but it is the check that
+would have caught a population or a model-revision drift between families, and it passes.
+
+⚠ **`git push` remains credential-blocked** (S-011): no credential helper, no `gh`, no token in the
+environment. `HEAD` and `origin/behavioral-causality-sprint` agreed at `64a2dad3` before this entry, so
+nothing is lost — but **every commit from here is local until Omer pushes**. Recorded, not escalated.
+
+### 10. Status
+
+```
+PR-CSI-015    READ. Outcome A x3. No arms running; the queue is EMPTY.
+REVIEW R27    running over the S-297..S-305 window (3 lenses) -- lands in S-307
+S-308         the next family, priced against the 15 fresh heads
+```

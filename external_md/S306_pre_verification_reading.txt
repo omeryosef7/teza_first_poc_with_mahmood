@@ -1,0 +1,41 @@
+PRE-VERIFICATION READING of PR-CSI-015, written 2026-09-23 ~18:35 IDT,
+AFTER the frozen read executed but BEFORE any independent verifier reported.
+Recorded so that if a verifier overturns it, the record shows what I believed first.
+
+WHAT I THINK THE RESULT IS:
+  Outcome A fires on all three heads. Exactly one cell clears each head's own bar, and in every
+  case it is the layer S-269's TRAIN screen named. With D36's head 2 that is 4 of 4.
+
+WHAT I THINK IS THE STRONGEST NEW CLAIM, and it is a METHODOLOGICAL one:
+  The AtP screen is a POOR head-level selector (AM-32: it ranked head 2 only 6th of 32) and an
+  apparently EXCELLENT within-head layer selector (4 of 4). Those two facts are in tension and the
+  tension is the interesting part. If it survives, it BOUNDS AtP use in the opposite direction from
+  the one I would have guessed.
+
+THE THREE WAYS I EXPECT THIS TO BE WRONG, ranked by how much I believe them:
+  1. L14 IS GENERICALLY THE ARGMAX. Two of three landed on L14, the last layer of band 6-14. If the
+     screen's argmax is L14 for most of the 32 heads, the agreement is near-vacuous and the correct
+     null is nowhere near (1/9)^4. THIS IS THE ONE I EXPECT TO BITE. I am not able to quote 1/729
+     until the marginal is measured.
+  2. NEAR-TIE ARGMAX. If a head's screen profile is flat, "the screen named L14" is a coin flip
+     dressed as a prediction. Sharpness must be reported per head, not assumed.
+  3. BAND-EDGE MECHANICS. L14 is the last layer at which the demo block can reach the query before
+     readout, so a peak there may be structural rather than head-specific.
+
+WHAT I ALREADY VERIFIED MYSELF (arithmetic on published JSON, before the agents reported):
+  D34 md5 d2e146272399e0883811d9fe4d743cbe == the value the prereg froze.
+  SINGLE_17/19/23 in D34 == the prereg's frozen whole-head values, exactly.
+  KO anchor -0.22696123 identical across PR-012 (HD_KO), PR-014 (CL_KO), PR-015 (CL_KO) -- three
+    separate jobs, three separate run dirs. Deterministic, as greedy decoding requires.
+  Additivity (sum of 9 single-cell E vs the 9-cell head arm):
+    head 2  0.888   head 17 0.942   head 19 1.024   head 23 0.692  <- 23 is the outlier
+  Peak cell as share of its head arm: h2 96.1% (reproduces D36), h17 80.2%, h19 109.6%, h23 112.2%
+  Peak |E| over its own bar: h2 2.48x  h17 2.58x  h19 4.30x  h23 2.80x
+  Provenance: frozen read committed fbf1fbf5 at 16:36:17; job 922176 started 16:38:27; md5 of the
+    read still 4841486c. The predictions are pre-data by 2 min 10 s.
+
+WHAT I THINK IS ALREADY A PROBLEM IN MY OWN ARITHMETIC:
+  For heads 19 and 23 the SINGLE cell exceeds the whole-head arm (109.6%, 112.2%). "Carries X% of
+  the effect" is therefore the wrong phrase -- over 100% is not a share. Head 23's nine singles sum
+  to only 69.2% of its joint arm, so its depths INTERACT. Any sentence implying clean additive
+  decomposition is unsupported for head 23 and must not be written.

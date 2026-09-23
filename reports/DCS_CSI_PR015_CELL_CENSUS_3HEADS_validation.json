@@ -1,0 +1,1230 @@
+{
+  "schema": "dcs_csi_head_census/1",
+  "prereg": "configs/dcs_csi_pr015_cell_census_3heads_basket.json",
+  "prereg_id": "PR-CSI-015",
+  "split": "validation",
+  "tag_prefix": "csi8_cell3_basket_validation",
+  "expect_n": 230,
+  "n_domains": 23,
+  "B": 10000,
+  "seed": 20260922,
+  "ci": 0.95,
+  "ON_PROTOCOL": true,
+  "E": {
+    "CL_KO": -0.22696123,
+    "CL_H17_L06": -0.00060101,
+    "CL_H17_L07": -0.00027936,
+    "CL_H17_L08": -0.00075514,
+    "CL_H17_L09": -0.00285346,
+    "CL_H17_L10": 0.00133199,
+    "CL_H17_L11": 3.476e-05,
+    "CL_H17_L12": 0.00034286,
+    "CL_H17_L13": -0.00129121,
+    "CL_H17_L14": -0.02344221,
+    "CL_H19_L06": -0.00052234,
+    "CL_H19_L07": -0.00106782,
+    "CL_H19_L08": 0.00113865,
+    "CL_H19_L09": 0.00449822,
+    "CL_H19_L10": -0.00205128,
+    "CL_H19_L11": -0.00024605,
+    "CL_H19_L12": 0.00039059,
+    "CL_H19_L13": 0.00076687,
+    "CL_H19_L14": -0.0439748,
+    "CL_H23_L06": 0.00202299,
+    "CL_H23_L07": -0.01851354,
+    "CL_H23_L08": 6.08e-05,
+    "CL_H23_L09": 0.00260008,
+    "CL_H23_L10": 0.00021287,
+    "CL_H23_L11": -0.0005046,
+    "CL_H23_L12": 0.0006629,
+    "CL_H23_L13": 0.00140588,
+    "CL_H23_L14": 0.00063285
+  },
+  "ci95": {
+    "CL_KO": [
+      -0.27584751,
+      -0.17803182
+    ],
+    "CL_H17_L06": [
+      -0.00254187,
+      0.00116891
+    ],
+    "CL_H17_L07": [
+      -0.00170005,
+      0.00102927
+    ],
+    "CL_H17_L08": [
+      -0.00189821,
+      0.00031853
+    ],
+    "CL_H17_L09": [
+      -0.00441738,
+      -0.00147418
+    ],
+    "CL_H17_L10": [
+      -0.00015708,
+      0.00289907
+    ],
+    "CL_H17_L11": [
+      -0.00097071,
+      0.00100933
+    ],
+    "CL_H17_L12": [
+      -0.0005662,
+      0.00128309
+    ],
+    "CL_H17_L13": [
+      -0.00223167,
+      -0.00039283
+    ],
+    "CL_H17_L14": [
+      -0.03291737,
+      -0.01635804
+    ],
+    "CL_H19_L06": [
+      -0.00177611,
+      0.00060016
+    ],
+    "CL_H19_L07": [
+      -0.00243681,
+      0.00015819
+    ],
+    "CL_H19_L08": [
+      -0.0001784,
+      0.00250994
+    ],
+    "CL_H19_L09": [
+      0.00242752,
+      0.00666428
+    ],
+    "CL_H19_L10": [
+      -0.00369497,
+      -0.00045897
+    ],
+    "CL_H19_L11": [
+      -0.00121479,
+      0.00056807
+    ],
+    "CL_H19_L12": [
+      -0.00045933,
+      0.00123755
+    ],
+    "CL_H19_L13": [
+      -0.00032691,
+      0.0018273
+    ],
+    "CL_H19_L14": [
+      -0.05465253,
+      -0.03366951
+    ],
+    "CL_H23_L06": [
+      0.00078237,
+      0.00334598
+    ],
+    "CL_H23_L07": [
+      -0.02403005,
+      -0.0129066
+    ],
+    "CL_H23_L08": [
+      -0.00122523,
+      0.00116252
+    ],
+    "CL_H23_L09": [
+      0.00123572,
+      0.00396261
+    ],
+    "CL_H23_L10": [
+      -0.00085031,
+      0.0012818
+    ],
+    "CL_H23_L11": [
+      -0.00211395,
+      0.0010645
+    ],
+    "CL_H23_L12": [
+      -0.00029188,
+      0.00156951
+    ],
+    "CL_H23_L13": [
+      0.00052049,
+      0.00236752
+    ],
+    "CL_H23_L14": [
+      -0.00072347,
+      0.00197967
+    ]
+  },
+  "loo_marginal": {},
+  "GATE_0_and_identity": {
+    "per_arm": {
+      "CL_BASE": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 0.0,
+        "expected_median_prefill_edits": 0,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": true,
+        "n_arms_sharing_this_expected_dose": 1,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-215, S-246)"
+      },
+      "CL_KO": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": true,
+        "n_arms_sharing_this_expected_dose": 1,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-215, S-246)"
+      },
+      "CL_H17_L06": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H17_L07": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H17_L08": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H17_L09": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H17_L10": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H17_L11": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H17_L12": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H17_L13": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H17_L14": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H19_L06": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H19_L07": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H19_L08": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H19_L09": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H19_L10": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H19_L11": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H19_L12": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H19_L13": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H19_L14": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H23_L06": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H23_L07": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H23_L08": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H23_L09": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H23_L10": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H23_L11": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H23_L12": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H23_L13": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      },
+      "CL_H23_L14": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 27,
+        "pass": true,
+        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+      }
+    },
+    "identity": {
+      "CL_BASE": {
+        "k": 0,
+        "recorded": null,
+        "expected": null,
+        "ok": true,
+        "why": "not intervened",
+        "identity_field": "knockout_heads"
+      },
+      "CL_KO": {
+        "k": 32,
+        "recorded": "ALL",
+        "expected": null,
+        "ok": true,
+        "why": "omitted flag == all 32",
+        "identity_field": "knockout_heads"
+      },
+      "CL_H17_L06": {
+        "k": 1,
+        "recorded": [
+          [
+            6,
+            17
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            17
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H17_L07": {
+        "k": 1,
+        "recorded": [
+          [
+            7,
+            17
+          ]
+        ],
+        "expected": [
+          [
+            7,
+            17
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H17_L08": {
+        "k": 1,
+        "recorded": [
+          [
+            8,
+            17
+          ]
+        ],
+        "expected": [
+          [
+            8,
+            17
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H17_L09": {
+        "k": 1,
+        "recorded": [
+          [
+            9,
+            17
+          ]
+        ],
+        "expected": [
+          [
+            9,
+            17
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H17_L10": {
+        "k": 1,
+        "recorded": [
+          [
+            10,
+            17
+          ]
+        ],
+        "expected": [
+          [
+            10,
+            17
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H17_L11": {
+        "k": 1,
+        "recorded": [
+          [
+            11,
+            17
+          ]
+        ],
+        "expected": [
+          [
+            11,
+            17
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H17_L12": {
+        "k": 1,
+        "recorded": [
+          [
+            12,
+            17
+          ]
+        ],
+        "expected": [
+          [
+            12,
+            17
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H17_L13": {
+        "k": 1,
+        "recorded": [
+          [
+            13,
+            17
+          ]
+        ],
+        "expected": [
+          [
+            13,
+            17
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H17_L14": {
+        "k": 1,
+        "recorded": [
+          [
+            14,
+            17
+          ]
+        ],
+        "expected": [
+          [
+            14,
+            17
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H19_L06": {
+        "k": 1,
+        "recorded": [
+          [
+            6,
+            19
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            19
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H19_L07": {
+        "k": 1,
+        "recorded": [
+          [
+            7,
+            19
+          ]
+        ],
+        "expected": [
+          [
+            7,
+            19
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H19_L08": {
+        "k": 1,
+        "recorded": [
+          [
+            8,
+            19
+          ]
+        ],
+        "expected": [
+          [
+            8,
+            19
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H19_L09": {
+        "k": 1,
+        "recorded": [
+          [
+            9,
+            19
+          ]
+        ],
+        "expected": [
+          [
+            9,
+            19
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H19_L10": {
+        "k": 1,
+        "recorded": [
+          [
+            10,
+            19
+          ]
+        ],
+        "expected": [
+          [
+            10,
+            19
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H19_L11": {
+        "k": 1,
+        "recorded": [
+          [
+            11,
+            19
+          ]
+        ],
+        "expected": [
+          [
+            11,
+            19
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H19_L12": {
+        "k": 1,
+        "recorded": [
+          [
+            12,
+            19
+          ]
+        ],
+        "expected": [
+          [
+            12,
+            19
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H19_L13": {
+        "k": 1,
+        "recorded": [
+          [
+            13,
+            19
+          ]
+        ],
+        "expected": [
+          [
+            13,
+            19
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H19_L14": {
+        "k": 1,
+        "recorded": [
+          [
+            14,
+            19
+          ]
+        ],
+        "expected": [
+          [
+            14,
+            19
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H23_L06": {
+        "k": 1,
+        "recorded": [
+          [
+            6,
+            23
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            23
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H23_L07": {
+        "k": 1,
+        "recorded": [
+          [
+            7,
+            23
+          ]
+        ],
+        "expected": [
+          [
+            7,
+            23
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H23_L08": {
+        "k": 1,
+        "recorded": [
+          [
+            8,
+            23
+          ]
+        ],
+        "expected": [
+          [
+            8,
+            23
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H23_L09": {
+        "k": 1,
+        "recorded": [
+          [
+            9,
+            23
+          ]
+        ],
+        "expected": [
+          [
+            9,
+            23
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H23_L10": {
+        "k": 1,
+        "recorded": [
+          [
+            10,
+            23
+          ]
+        ],
+        "expected": [
+          [
+            10,
+            23
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H23_L11": {
+        "k": 1,
+        "recorded": [
+          [
+            11,
+            23
+          ]
+        ],
+        "expected": [
+          [
+            11,
+            23
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H23_L12": {
+        "k": 1,
+        "recorded": [
+          [
+            12,
+            23
+          ]
+        ],
+        "expected": [
+          [
+            12,
+            23
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H23_L13": {
+        "k": 1,
+        "recorded": [
+          [
+            13,
+            23
+          ]
+        ],
+        "expected": [
+          [
+            13,
+            23
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "CL_H23_L14": {
+        "k": 1,
+        "recorded": [
+          [
+            14,
+            23
+          ]
+        ],
+        "expected": [
+          [
+            14,
+            23
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      }
+    }
+  },
+  "NO_RANK_TEST": true,
+  "REPORTABLE_AS": "27 cell effects E(CL_H<hh>_L<ll>) = mean over domains of (y_install(cell) - y_install(CL_BASE)), each with a bootstrap ci95, plus the CL_KO denominator. A DEPTH MAP for each of heads [19, 17, 23], read against that head's OWN preregistered bar. No head outside [19, 17, 23] is measured and no cell of any other head is touched.",
+  "CANNOT_DO": [
+    "whether any cell is PRIVILEGED -- there is no rank, no control family and no p",
+    "anything that would lift D32's caveat 'NOT a claim about any single (layer, head) cell' -- AM-37 measured that no admissible held-out axis exists for a confirmatory cell test",
+    "whether the screen's per-cell ordering is valid IN GENERAL -- at most this makes the intervention-verified sample 4 heads of 32",
+    "anything revising D32, D33, D34, D35 or D36 -- a wider map does not retract a narrower one",
+    "anything about the other 28 heads or any cell of them",
+    "anything about DOMAIN generality -- these 23 domains are basket's usual set (S-256); the 3 TEST domains remain untouched",
+    "any rung above 1 on AM-34's ladder. This is necessity, like everything else in this sprint"
+  ],
+  "SELECTION_RE_ENTERS_WHEN": "the moment any one cell is singled out for a claim. This census SELECTS NOTHING; naming a winner afterwards is selection on the data that produced it, and AM-37 established there is no held-out axis on which a confirmatory test of that winner could be read.",
+  "DOSE_IDENTITY_IS_BLIND_HERE": "Every one of the 27 cell arms expects 224 prefill edits, so the dose cannot tell any cell from any other -- S-246's collision on the layer AND head axes at once. Identity comes from each arm's own recorded knockout_cells ONLY (S-292/R26). Note also that a cell arm's knockout_heads is EMPTY, which recorded_heads() maps to 'ALL'.",
+  "NO_VERDICT": "This file contains NO verdict, NO rank and NO p-value by design. Singling out any one head for a claim requires a HELD-OUT AXIS -- see SELECTION_RE_ENTERS_WHEN.",
+  "ARM_GRANULARITY": "cell",
+  "CANNOT_DO_FIELD": "WHAT_THIS_CANNOT_ANSWER",
+  "CELL_FAMILY": {
+    "h_star": null,
+    "layers": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "band": "6-14",
+    "per_cell_dose_predicted": 224,
+    "per_cell_dose_observed": [
+      224.0
+    ],
+    "per_cell_dose_verdict": "CONFIRMED",
+    "cells": {
+      "CL_H17_L06": [
+        [
+          6,
+          17
+        ]
+      ],
+      "CL_H17_L07": [
+        [
+          7,
+          17
+        ]
+      ],
+      "CL_H17_L08": [
+        [
+          8,
+          17
+        ]
+      ],
+      "CL_H17_L09": [
+        [
+          9,
+          17
+        ]
+      ],
+      "CL_H17_L10": [
+        [
+          10,
+          17
+        ]
+      ],
+      "CL_H17_L11": [
+        [
+          11,
+          17
+        ]
+      ],
+      "CL_H17_L12": [
+        [
+          12,
+          17
+        ]
+      ],
+      "CL_H17_L13": [
+        [
+          13,
+          17
+        ]
+      ],
+      "CL_H17_L14": [
+        [
+          14,
+          17
+        ]
+      ],
+      "CL_H19_L06": [
+        [
+          6,
+          19
+        ]
+      ],
+      "CL_H19_L07": [
+        [
+          7,
+          19
+        ]
+      ],
+      "CL_H19_L08": [
+        [
+          8,
+          19
+        ]
+      ],
+      "CL_H19_L09": [
+        [
+          9,
+          19
+        ]
+      ],
+      "CL_H19_L10": [
+        [
+          10,
+          19
+        ]
+      ],
+      "CL_H19_L11": [
+        [
+          11,
+          19
+        ]
+      ],
+      "CL_H19_L12": [
+        [
+          12,
+          19
+        ]
+      ],
+      "CL_H19_L13": [
+        [
+          13,
+          19
+        ]
+      ],
+      "CL_H19_L14": [
+        [
+          14,
+          19
+        ]
+      ],
+      "CL_H23_L06": [
+        [
+          6,
+          23
+        ]
+      ],
+      "CL_H23_L07": [
+        [
+          7,
+          23
+        ]
+      ],
+      "CL_H23_L08": [
+        [
+          8,
+          23
+        ]
+      ],
+      "CL_H23_L09": [
+        [
+          9,
+          23
+        ]
+      ],
+      "CL_H23_L10": [
+        [
+          10,
+          23
+        ]
+      ],
+      "CL_H23_L11": [
+        [
+          11,
+          23
+        ]
+      ],
+      "CL_H23_L12": [
+        [
+          12,
+          23
+        ]
+      ],
+      "CL_H23_L13": [
+        [
+          13,
+          23
+        ]
+      ],
+      "CL_H23_L14": [
+        [
+          14,
+          23
+        ]
+      ]
+    },
+    "DETECTABILITY_PREREGISTERED": null,
+    "n_cells_CLEARING_THE_PREREGISTERED_BAR": 3,
+    "preregistered_bar": null,
+    "preregistered_bar_per_head": {
+      "17": 0.009082,
+      "19": 0.010223,
+      "23": 0.006615
+    },
+    "cells_clearing_the_preregistered_bar": [
+      "CL_H17_L14",
+      "CL_H19_L14",
+      "CL_H23_L07"
+    ],
+    "n_cells_with_ci95_excluding_0": 10,
+    "WEAKER_CRITERION_NOTE": "n_cells_with_ci95_excluding_0 is NOT the preregistered criterion. The prereg froze |E| > preregistered_bar. A cell can exclude 0 at a small fraction of the bar and with the wrong sign; on PR-CSI-014 CL_L11 did exactly that (S-299/S-300).",
+    "NOTHING_CLEARED_THE_BAR_IS_A_PREREGISTERED_COHERENT_OUTCOME": null
+  }
+}
