@@ -84,6 +84,24 @@ def main():
     ratio = float(pr["ADMISSION"]["ratio"])
     alpha = float(pr["PRIMARY"]["alpha"])
 
+    # ⚠⚠ R29/S-322 -- A BLOCKER, AND IT WAS MINE. Until now this reader built cell-arm names as
+    # "BC_H%s_L%02d" -- PR-CSI-016's prefix, HARDCODED. S-321 widened the id check to admit
+    # PR-CSI-018 and touched nothing else, so the reader refused PR-018 outright ("head 6's
+    # single-cell arms are absent from the census report") on a perfectly well-formed census. Caught
+    # by RUNNING the frozen STEP 2 on a real-shaped synthetic census, not by reading it -- the exact
+    # S-312 lesson, and the second time a family-specific literal has survived a widening.
+    # The prereg ALREADY maps arm name -> cells. Invert it, and no naming convention is assumed.
+    cs = pr.get("cell_sets") or {}
+    cell_arm = {}
+    for _arm, _cells in cs.items():
+        if len(_cells) != 1:
+            continue                      # a whole-head / bar-source arm, not a cell
+        _L, _h = int(_cells[0][0]), int(_cells[0][1])
+        if (_h, _L) in cell_arm:
+            sys.exit("REFUSING: prereg %r has TWO arms for cell (L%d, head %d): %r and %r. The "
+                     "argmax would be ambiguous. (R29/S-322)"
+                     % (pr["id"], _L, _h, cell_arm[(_h, _L)], _arm))
+        cell_arm[(_h, _L)] = _arm
     bars = (cf.get("bars_COMPUTED_FROM_A_FROZEN_RULE") or {})
     rows, admitted, dropped = [], [], []
     for h in [str(x) for x in pr["heads"]]:
@@ -103,9 +121,15 @@ def main():
                      "arm had no per-domain spread; it must not silently drop the head with a "
                      "published power of 0.0, which is the opposite of the truth. (R28/S-312)"
                      % (h, bar))
-        if "BC_H%s_L%02d" % (h, band[0]) not in E:
-            sys.exit("REFUSING: head %s's single-cell arms are absent from the census report. "
-                     "(R28/S-312)" % h)
+        _missing = [L for L in band if cell_arm.get((int(h), L)) not in E]
+        if _missing:
+            sys.exit("REFUSING: head %s has no census effect for band layer(s) %r. The prereg names "
+                     "arms %r for them. (R28/S-312, R29/S-322)"
+                     % (h, _missing, [cell_arm.get((int(h), L)) for L in _missing]))
+        if len([L for L in band if (int(h), L) in cell_arm]) != len(band):
+            sys.exit("REFUSING: prereg %r does not name a single-cell arm for every band layer of "
+                     "head %s, so its argmax would be taken over an incomplete set. (R29/S-322)"
+                     % (pr["id"], h))
         eh, ci = E[src], CI[src]
         excl0 = (ci[1] < 0) or (ci[0] > 0)
         power = abs(eh) / bar if bar else 0.0
@@ -114,7 +138,7 @@ def main():
         # cannot admit anything the criterion meant to exclude.
         ok = bool(excl0 and power >= ratio - 1e-12)
         # the argmax, over the NINE SINGLE CELLS of this head only -- never the whole-head arm
-        cells = {L: E["BC_H%s_L%02d" % (h, L)] for L in band}
+        cells = {L: E[cell_arm[(int(h), L)]] for L in band}
         top = sorted(band, key=lambda L: -abs(cells[L]))
         tie = abs(cells[top[0]]) == abs(cells[top[1]])
         row = {"head": int(h), "whole_head_arm": src, "E_whole_head": eh, "ci95_whole_head": ci,
@@ -139,6 +163,16 @@ def main():
     ties = [r for r in admitted if r["argmax_is_a_TIE"]]
     p0 = 1.0 / len(band)
     p = binom_tail(M, K, p0) if K else 1.0
+    # ⚠ R29/S-322: WHICH p GATES IS THE PREREG'S DECISION, NOT THIS FILE'S. PR-CSI-016 froze
+    # "binomial_only" (its co-primaries bound the wording, because at K_unique=0 gating on them would
+    # have failed it structurally); PR-CSI-018 froze "weakest_of_three", because it was BUILT so the
+    # permutation test is answerable. This reader applied PR-016's rule to both and printed PASS on a
+    # PR-018 census whose weakest p was 0.21, and again at 0.33. The default is PR-016's, so its
+    # published read is untouched; anything else must be declared.
+    _gating = (pr["PRIMARY"].get("GATING") or "binomial_only")
+    if _gating not in ("binomial_only", "weakest_of_three"):
+        sys.exit("REFUSING: prereg %r declares PRIMARY.GATING = %r, which this reader does not "
+                 "implement. (R29/S-322)" % (pr["id"], _gating))
     # ⚠ R28/S-312 ROBUSTNESS CO-PRIMARIES, frozen before the run.
     # (a) CONDITIONAL: only heads whose predicted layer is UNIQUE among the admitted heads are
     #     informative against a shared band-bias null; heads sharing a prediction match for free.
@@ -155,6 +189,12 @@ def main():
     perms = set(itertools.permutations(preds))
     hits = sum(1 for q in perms if sum(1 for a, b in zip(obs, q) if a == b) >= M)
     p_perm = (hits / len(perms)) if perms else 1.0
+    if _gating == "weakest_of_three":
+        _cands = {"binomial": p, "conditional": p_cond, "permutation": p_perm}
+        _gate_name = max(_cands, key=lambda k: _cands[k])
+        _gate_p = _cands[_gate_name]
+    else:
+        _gate_name, _gate_p = "binomial", p
     span = sorted({r["argmax_layer"] for r in matched})
     # ⚠ R28/S-312: the spanning rule is only MEANINGFUL where it was reached. It used to be emitted
     # as False on every FAIL and on K<2, where the prereg's own wording ("the matching heads must not
@@ -177,16 +217,20 @@ def main():
              "as this family's real risk" if K == 0 else
              "only 1 head ADMITTED; the floor at K=1 is 1/%d = %.4f and cannot clear alpha=%.2f"
              % (len(band), p0, alpha)))
-    elif p > alpha:
-        verdict, why = "FAIL", "p = %.6f > alpha = %.2f at K=%d, M=%d" % (p, alpha, K, M)
+    elif _gate_p > alpha:
+        verdict, why = "FAIL", (
+            "%s = %.6f > alpha = %.2f at K=%d, M=%d" % (_gate_name, _gate_p, alpha, K, M)
+            + ("" if _gating == "binomial_only" else
+               "  [binomial %.6f | conditional %.6f | permutation %.6f -- this prereg gates on the "
+               "WEAKEST]" % (p, p_cond, p_perm)))
     elif not spanning_ok:
         verdict, why = "CANNOT ANSWER", (
             "the SPANNING RULE is violated: all %d matching head(s) share band layer L%s, so a shared "
             "depth bias and a correct screen are indistinguishable here. p = %.6f is NOT quotable as "
             "a pass." % (M, span[0] if span else "?", p))
     else:
-        verdict, why = "PASS", ("p = %.6f <= alpha = %.2f at K=%d, M=%d; matches span layers %s"
-                                % (p, alpha, K, M, ["L%d" % L for L in span]))
+        verdict, why = "PASS", ("%s = %.6f <= alpha = %.2f at K=%d, M=%d; matches span layers %s"
+                                % (_gate_name, _gate_p, alpha, K, M, ["L%d" % L for L in span]))
 
     # ⚠ R28/S-312: MUST_NOT_BE_SAID used to be chosen by `verdict == "PASS"`, so a spanning-rule
     # CANNOT ANSWER -- which fires with p <= alpha, i.e. a POSITIVE-LOOKING number in hand -- was
@@ -206,6 +250,7 @@ def main():
         "K_admitted": K, "M_matches": M, "p_one_sided": p, "alpha": alpha,
         "null": pr["PRIMARY"]["null"], "VERDICT": verdict, "why": why,
         "null_p_per_head": p0, "n_band_layers": len(band),
+        "GATING": _gating, "gating_p_name": _gate_name, "gating_p": _gate_p,
         "ROBUSTNESS": {
             "shared_predicted_layers": sorted({L for L in _pred if _pred.count(L) > 1}),
             "K_unique": K_u, "M_unique": M_u, "p_conditional": (None if M is None else p_cond),

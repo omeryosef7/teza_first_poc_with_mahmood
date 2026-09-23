@@ -27755,3 +27755,126 @@ every artefact named by the frozen read exists
 
 **NOT ESTABLISHED by anything here:** whether the screen's cell prediction transfers across codewords.
 This entry builds the instrument and records why each candidate is admissible; it measures nothing.
+
+---
+
+## S-322 — 🔴 **TWO BLOCKERS IN PR-CSI-018's FROZEN READ, BOTH MINE, BOTH FOUND BY RUNNING IT.** S-321 "widened" the primary reader by changing its **id check and nothing else** — so it refused PR-018 outright, and when that was fixed it printed **PASS on a census whose weakest p-value was 0.21, and again at 0.33.** Fixed before a GPU, with four tests verified to fail without the fixes
+
+### 1. First, the check that PASSED — every number in the frozen read re-derives
+
+S-318 and S-319 both caught me **asserting a quantity I had not opened**, in prose, where no gate in
+this repo reaches. So before anything else I re-derived **every number** in
+`runargs/dcs_csi_pr018_read.txt` from the artefacts:
+
+```
+head | read says                    | re-derived                   | match
+  6  | L11  5.96x  -0.005090  2.42  | L11  5.96x  -0.005090  2.42  | OK
+ 11  | L8   1.51x  -0.016310  2.86  | L8   1.51x  -0.016310  2.86  | OK
+ 20  | L11  1.07x  -0.007248  2.85  | L11  1.07x  -0.007248  2.85  | OK
+ 24  | L10  4.70x  -0.002854  1.84  | L10  4.70x  -0.002854  1.84  | OK
+ 27  | L10  1.58x  +0.002666  1.54  | L10  1.58x  +0.002666  1.54  | OK
+ 29  | L6   1.26x  +0.009291  2.49  | L6   1.26x  +0.009291  2.49  | OK
+permutation assignments 180 (floor 0.00556), binomial floor at K=6 1.882e-06, 62 arms, ratio 1.5
+TOTAL MISMATCHES: 0
+```
+
+**The class that bit twice in three entries did not bite this time.** That is worth one line and no
+more — the interesting part is what running the artefacts found instead.
+
+### 2. 🔴 BLOCKER 1 — the reader had PR-CSI-016's ARM PREFIX hardcoded
+
+S-321 widened the reader to `("PR-CSI-016", "PR-CSI-018")` and added a prereg-field pre-check. **It
+changed the id check and nothing else.** Two lines still built cell-arm names by string:
+
+```
+scripts/dcs_csi_pr016_argmax_test.py:106   if "BC_H%s_L%02d" % (h, band[0]) not in E:
+scripts/dcs_csi_pr016_argmax_test.py:117   cells = {L: E["BC_H%s_L%02d" % (h, L)] for L in band}
+```
+
+`BC_` is PR-CSI-016's prefix. **PR-CSI-018 uses `BF_`.** Running the frozen STEP 2 on a well-formed
+PR-018 census:
+
+```
+REFUSING: head 6's single-cell arms are absent from the census report. (R28/S-312)
+```
+
+— on a census containing **all 54 of them**. The refusal was S-312's own guard, firing correctly on a
+question the reader was asking wrongly.
+
+**Fixed by deleting the convention, not by adding a second one:** the prereg already maps arm → cells,
+so the reader now **inverts `cell_sets`** to resolve each `(head, layer)` to its arm. A family may call
+its arms anything. It also refuses a prereg with two arms for one cell, and one missing a band layer.
+
+### 3. 🔴 BLOCKER 2 — the reader applied PR-016's SUCCESS RULE to PR-018, and it prints PASS at p = 0.33
+
+With BLOCKER 1 fixed the reader ran — and produced this:
+
+```
+case                  K  M  binomial    conditional  permutation  VERDICT
+3 of 6 match          6  3  2.117e-02   0.2099       0.0167       PASS   <- weakest 0.21
+all six match, K=3    3  3  1.372e-03   0.1111       0.3333       PASS   <- weakest 0.33
+```
+
+**PR-CSI-018's prereg says: `SUCCESS = the WEAKEST of the three p-values <= 0.05`.** The reader
+implements **PR-CSI-016's** rule, whose prereg says the opposite in as many words — *"these do NOT gate
+the preregistered PASS/FAIL … They BOUND THE WORDING"* — because at `K_unique = 0` gating on them
+would have failed that family **structurally** rather than empirically.
+
+⚠ **Both preregs are right about themselves. The reader was right about only one of them.** A criterion
+that lives in prose in one document and in code written for another is **two criteria** (S-302) — and
+the second case is the damning one: **three admitted heads give a permutation floor of 1/3, so a
+perfect M = K = 3 would have been announced as a PASS at p = 0.333.**
+
+**Fixed by making the gating rule the PREREG's declaration:** `PRIMARY.GATING`, with
+`binomial_only` as the **default** so PR-016's published read is untouched, `weakest_of_three` declared
+explicitly by PR-018, and **any other value REFUSED** rather than silently defaulted.
+
+```
+after the fix:  3 of 6 match  -> FAIL (conditional 0.2099)
+                K=3, M=3      -> FAIL (permutation 0.3333)
+                6 of 6, 5 of 6 -> PASS (weakest 0.0056)
+```
+
+📌 **Why PR-018 may gate on the permutation test when PR-016 could not**, recorded in the prereg rather
+than left implicit: PR-016's exemption was structural — it had no informative head left. **PR-018 was
+BUILT so that test is answerable**: six heads over four distinct layers, 180 assignments,
+`K_unique = 2`. The structural excuse does not apply, so the test a shared band-edge bias cannot fake
+is allowed to **gate**, not merely to annotate.
+
+### 4. Verification
+
+```
+4 new tests, each asserting the PROPERTY -> ALL FOUR FAIL on the committed pre-fix reader
+   (checked by `git stash` on that file alone, so the failure is behavioural and not an import error
+    -- S-315 recorded me nearly accepting a crash as a vacuity check)
+70 tests pass across test_csi_pr016_argmax.py and test_csi_cell_identity.py
+PR-CSI-016's published argmax report re-runs with EVERY VALUE IDENTICAL; three keys are ADDED
+   (GATING, gating_p_name, gating_p) and none changed. Same precedent as S-312's PR-015 re-read.
+prereg re-emitted: md5 c4483891 -> 18994cf6 (the GATING declaration); it re-emits byte-identically
+   and NO ARM HAS RUN, so this is a re-freeze before data, not after (VOID 10 untouched)
+```
+
+### 5. 📌 The pattern, named because it is now the second instance in two entries
+
+S-321 widened a reader by changing the one thing that **named** the old family, and left everything
+that **assumed** it. R28 found the same shape: a reader gating on a key its producer never wrote,
+behind nine green tests. The generalisation:
+
+> **Widening a single-family artefact means finding everything that ENCODES the family, not everything
+> that NAMES it.** The id check is what names it; the arm prefix and the success rule are what encode
+> it, and neither is grep-able from the id.
+
+And both were invisible to reading and obvious to running — which is why the S-312 rule
+(*run the frozen artefacts end to end before submitting*) is now the only reason this family is not
+about to waste 2.9 GPU-hours on a read that could not execute and then could not be believed.
+
+### 6. Status
+
+```
+PR-CSI-018   frozen; prereg 18994cf6, read 62a5c337 (UNCHANGED -- the read quotes no prereg md5),
+             tag csi10_cell6_button. NOT LAUNCHED.
+R29          three lenses still running at the time of writing. Its findings land in the next entry;
+             nothing is submitted until it reports.
+queue        EMPTY.
+NOT ESTABLISHED  anything about transfer. This entry fixed the instrument twice and measured nothing.
+```

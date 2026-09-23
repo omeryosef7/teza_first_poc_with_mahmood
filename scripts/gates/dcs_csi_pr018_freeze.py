@@ -209,6 +209,23 @@ def build(screen, screen_md5, ref):
                                                   "layer. PR-CSI-016 died precisely here.",
             },
             "SUCCESS": "the WEAKEST of the three p-values <= 0.05 AND the spanning rule satisfied",
+            "GATING": "weakest_of_three",
+            "⚠ GATING_DIFFERS_FROM_PR_CSI_016_AND_THAT_IS_DELIBERATE": {
+                "PR-CSI-016": "binomial_only -- its prereg says the co-primaries 'do NOT gate the "
+                              "preregistered PASS/FAIL ... They BOUND THE WORDING', because at "
+                              "K_unique=0 requiring them would have failed that family for a "
+                              "STRUCTURAL reason rather than an empirical one.",
+                "PR-CSI-018": "weakest_of_three. THIS FAMILY WAS BUILT SO THAT THE PERMUTATION TEST "
+                              "IS ANSWERABLE: six heads over four distinct layers, 180 assignments, "
+                              "K_unique = 2. The structural excuse does not apply, so the test that "
+                              "a shared band-edge bias cannot fake is allowed to GATE, not merely to "
+                              "annotate.",
+                "WHY_IT_IS_DECLARED_AS_A_FIELD": "R29 found the reader silently applying PR-016's "
+                                                 "rule to this prereg and printing PASS at a weakest "
+                                                 "p of 0.21 and 0.33. A criterion that lives in prose "
+                                                 "in one document and in code written for another is "
+                                                 "TWO criteria (S-302).",
+            },
             "FAILURE": "the weakest p > 0.05 with K >= 3",
             "SPANNING_RULE": "the MATCHING heads must not all share one band layer, or CANNOT ANSWER "
                              "whatever the p-values say",

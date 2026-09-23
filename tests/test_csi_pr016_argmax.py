@@ -234,3 +234,136 @@ def test_the_reader_refuses_a_missing_report_by_NAME_not_by_traceback(tmp_path):
                         "--out", str(tmp_path / "x.json")], capture_output=True, text=True)
     out = r.stdout + r.stderr
     assert r.returncode != 0 and "REFUSING" in out and "Traceback" not in out, out[-400:]
+
+
+# ================================================================ R29 / S-322
+# Two BLOCKERs found by RUNNING the frozen STEP 2 on a real-shaped PR-CSI-018 census, after S-321 had
+# "widened" the reader by changing only its id check. Both are the same shape: a property specific to
+# PR-CSI-016 left hardcoded where the widening did not look.
+
+PR018 = os.path.join(ROOT, "configs", "dcs_csi_pr018_cell_census_button_nonL14.json")
+
+
+def _census018(tmp_path, peaks, admit=None, bar=0.018, whole=-0.030):
+    """A PR-CSI-018 census in the shape dcs_csi_head_census.py actually emits."""
+    pr = json.load(open(PR018))
+    heads, band = pr["heads"], pr["layers"]
+    admit = admit or [True] * len(heads)
+    inv = {}
+    for arm, cells in pr["cell_sets"].items():
+        if len(cells) == 1:
+            inv[(int(cells[0][1]), int(cells[0][0]))] = arm
+    E, CI, per = {}, {}, {"BF_BASE": {"pass": True}, "BF_KO": {"pass": True}}
+    for i, h in enumerate(heads):
+        src = pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"][str(h)]["bar_source_arm"]
+        e = whole if admit[i] else -0.0004
+        E[src] = e
+        CI[src] = [e - 0.004, e + 0.004] if admit[i] else [-0.004, 0.004]
+        per[src] = {"pass": True}
+        for L in band:
+            E[inv[(h, L)]] = -0.0005
+            CI[inv[(h, L)]] = [-0.002, 0.001]
+            per[inv[(h, L)]] = {"pass": True}
+        E[inv[(h, peaks[h])]] = -0.025
+    E["BF_KO"] = -0.29
+    CI["BF_KO"] = [-0.34, -0.24]
+    rep = {"prereg_id": "PR-CSI-018", "split": "validation", "ON_PROTOCOL": True,
+           "GATE_0_and_identity": {"per_arm": per, "identity": {}}, "E": E, "ci95": CI,
+           "CELL_FAMILY": {"bars_COMPUTED_FROM_A_FROZEN_RULE": {
+               str(h): {"bar": bar, "source_arm":
+                        pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"][str(h)]["bar_source_arm"]}
+               for h in heads}}}
+    p = tmp_path / "c018.json"
+    p.write_text(json.dumps(rep))
+    return str(p), pr
+
+
+def _run018(tmp_path, census):
+    out = tmp_path / "v018.json"
+    r = subprocess.run([PY, READER, "--prereg", PR018, "--census", census, "--out", str(out)],
+                       capture_output=True, text=True)
+    assert r.returncode == 0, (r.stdout + r.stderr)[-700:]
+    return json.load(open(out))
+
+
+pytestmark018 = pytest.mark.skipif(not os.path.exists(PR018), reason="PR-CSI-018 prereg not emitted")
+
+
+@pytest.mark.skipif(not os.path.exists(PR018), reason="PR-CSI-018 prereg not emitted")
+def test_cell_arm_names_come_from_the_PREREG_not_a_hardcoded_prefix(tmp_path):
+    """R29 BLOCKER 1. The reader built cell-arm names as "BC_H%s_L%02d" -- PR-CSI-016's prefix,
+    hardcoded. PR-CSI-018 uses BF_, so the widened reader REFUSED a well-formed PR-018 census with
+    "head 6's single-cell arms are absent from the census report".
+    PROPERTY: the reader resolves each (head, layer) to an arm via the prereg's own cell_sets, so no
+    naming convention is assumed and a family may call its arms anything."""
+    pr = json.load(open(PR018))
+    sp = pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"]
+    peaks = {h: sp[str(h)]["screen_predicted_layer"] for h in pr["heads"]}
+    c, _ = _census018(tmp_path, peaks)
+    v = _run018(tmp_path, c)
+    assert v["K_admitted"] == len(pr["heads"]) and v["M_matches"] == len(pr["heads"])
+    assert not any(a.startswith("BC_") for a in pr["cell_sets"]), \
+        "this test is vacuous unless PR-018's arms use a different prefix from PR-016's"
+
+
+@pytest.mark.skipif(not os.path.exists(PR018), reason="PR-CSI-018 prereg not emitted")
+def test_GATING_is_the_PREREGS_decision_and_weakest_of_three_can_FAIL_a_passing_binomial(tmp_path):
+    """R29 BLOCKER 2, and the worse of the two. PR-CSI-016 froze GATING binomial_only (its
+    co-primaries bound the wording); PR-CSI-018 froze weakest_of_three, because it was BUILT so the
+    permutation test is answerable. The reader applied PR-016's rule to both and printed PASS on a
+    PR-018 census whose weakest p was 0.21, and again at 0.33.
+    PROPERTY: under weakest_of_three a large conditional or permutation p FAILS the family even when
+    the binomial passes comfortably."""
+    pr = json.load(open(PR018))
+    assert pr["PRIMARY"]["GATING"] == "weakest_of_three"
+    sp = pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"]
+    heads = pr["heads"]
+    peaks = {h: sp[str(h)]["screen_predicted_layer"] for h in heads}
+    # break three of the six matches: binomial stays < 0.05, the conditional does not
+    for h in heads[:3]:
+        peaks[h] = next(L for L in pr["layers"] if L != sp[str(h)]["screen_predicted_layer"])
+    v = _run018(tmp_path, _census018(tmp_path, peaks)[0])
+    assert v["M_matches"] == 3
+    assert v["p_one_sided"] <= 0.05, "the binomial must still pass, or this test proves nothing"
+    assert v["gating_p"] > 0.05 and v["VERDICT"] == "FAIL", (
+        "weakest-of-three did not gate: gating_p=%r verdict=%r" % (v.get("gating_p"), v["VERDICT"]))
+    assert v["GATING"] == "weakest_of_three"
+
+
+@pytest.mark.skipif(not os.path.exists(PR018), reason="PR-CSI-018 prereg not emitted")
+def test_a_small_K_cannot_PASS_on_the_binomial_when_the_permutation_floor_is_high(tmp_path):
+    """The damning case: with only 3 heads admitted the permutation floor is 1/3, so a perfect
+    M=K=3 must FAIL under weakest_of_three -- the reader used to call it PASS at p_perm = 0.333."""
+    pr = json.load(open(PR018))
+    sp = pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"]
+    heads = pr["heads"]
+    peaks = {h: sp[str(h)]["screen_predicted_layer"] for h in heads}
+    v = _run018(tmp_path, _census018(tmp_path, peaks, admit=[True, True, True, False, False, False])[0])
+    assert v["K_admitted"] == 3 and v["M_matches"] == 3
+    assert v["p_one_sided"] <= 0.05, "binomial must pass, or the test proves nothing"
+    assert v["VERDICT"] == "FAIL" and v["gating_p_name"] == "permutation"
+
+
+@pytest.mark.skipif(not os.path.exists(PR018), reason="PR-CSI-018 prereg not emitted")
+def test_an_unknown_GATING_value_is_REFUSED_rather_than_silently_defaulted(tmp_path):
+    pr = json.load(open(PR018))
+    pr["PRIMARY"]["GATING"] = "whatever_passes"
+    p = tmp_path / "bad.json"
+    p.write_text(json.dumps(pr))
+    sp = pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"]
+    peaks = {h: sp[str(h)]["screen_predicted_layer"] for h in pr["heads"]}
+    c, _ = _census018(tmp_path, peaks)
+    r = subprocess.run([PY, READER, "--prereg", str(p), "--census", c, "--out", str(tmp_path / "x.json")],
+                       capture_output=True, text=True)
+    assert r.returncode != 0 and "GATING" in (r.stdout + r.stderr)
+
+
+def test_PR016_still_gates_on_the_binomial_alone(tmp_path):
+    """The companion: S-322 must not retro-apply PR-018's rule to PR-016, whose prereg explicitly says
+    the co-primaries do NOT gate. Its published read had a weakest p of 1.0 and a binomial of 0.0123."""
+    v = json.load(open(os.path.join(ROOT, "reports",
+                                    "DCS_CSI_PR016_ARGMAX_TEST_button_validation.json")))
+    assert v["VERDICT"] == "CANNOT ANSWER"
+    assert v["ROBUSTNESS"]["p_conditional"] == 1.0 and v["ROBUSTNESS"]["p_permutation"] == 1.0
+    pr16 = json.load(open(PR016))
+    assert "GATING" not in pr16["PRIMARY"], "PR-016 must remain on the default binomial_only path"
