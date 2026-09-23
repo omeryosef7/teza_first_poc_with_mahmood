@@ -22274,3 +22274,62 @@ tracking 919296's cold profile on this node (its shard 1 took 21:19), exactly as
 ```
 
 **No PR-013 number has ever been read.** `score_behavior.py` was not opened.
+
+---
+
+## S-278 — **the load has a measurable rate at last: shard 1 took 1799 s, shards 2-4 took 32 s each.** ⚠ **And the progress bar's OWN ETA is wrong by 11× — S-272 found the right file and I must not now over-trust what it prints.** The RATE is the signal; the ETA is not
+
+### 1. The measurement
+
+```
+1/291 [29:59<144:55:26, 1799.06s/it]      <- shard 1: 1799 s (29:59)
+4/291 [31:34<29:10:53,   366.04s/it]      <- shards 2-4: 95 s TOTAL, i.e. ~31.7 s each
+```
+
+**The first shard is 57× slower than the next three.** Marginal rates across all three cold loads, first
+shard excluded:
+
+```
+918967  n-307  shard1  323 s   ->  MARGINAL 19.0 s/shard
+919296  n-302  shard1 1280 s   ->  MARGINAL 54.9 s/shard
+919531  n-302  shard1 1799 s   ->  MARGINAL 31.7 s/shard  (so far)
+```
+
+### 2. ⚠ The bar's ETA is wrong by an order of magnitude, and this needs saying
+
+```
+tqdm at 4/291 reports:  29:10:53 remaining
+marginal rate gives:    287 x 31.7 s = 9088 s = 2.52 h
+                        -> the printed ETA is ~11x TOO LONG
+```
+
+**Because `tqdm` averages the dominant first shard into its estimate.** The rate is non-stationary — a
+huge first-touch cost then a steady stream — and an average over a non-stationary series is not a
+prediction.
+
+**⛔ This is a correction to how I have been talking about S-272's find.** S-272 was right that the `.err`
+bar was the signal I had missed, and I described it as *"a per-shard rate and an ETA"* as though both were
+usable. **The RATE is usable; the ETA is not, and quoting it would have replaced a wall-clock guess with a
+29-hour number that is simply false.** Having spent seven entries reasoning without the file, the risk now
+inverts: **over-trusting what it prints.**
+
+### 3. Projection, from the marginal rate only
+
+```
+load:   287 remaining x 31.7 s = 2.52 h  ->  ends ~05:35
+arms:   23 x ~290 s                      ->  1.85 h
+finish: ~07:25      wall 14:20      MARGIN ~7 h
+```
+
+**S-274's commitment holds — no further cancellations.** The margin is ample and the rate is now measured
+rather than projected from a proxy.
+
+### 4. A note on what the first shard actually is
+
+**1799 s for one shard, then 32 s for the next three, is not an NFS throughput story** — throughput does
+not improve 57× at shard 2. It is consistent with a **first-touch cost** paid once (mmap setup, metadata,
+possibly the safetensors index) **plus** whatever contention the node had at that instant.
+**⛔ Recorded as a description, not a mechanism:** S-261 and S-257 both proposed mechanisms for load cost
+and both were corrected, so this entry states the shape of the curve and stops there.
+
+**No PR-013 number has ever been read.** `score_behavior.py` was not opened.
