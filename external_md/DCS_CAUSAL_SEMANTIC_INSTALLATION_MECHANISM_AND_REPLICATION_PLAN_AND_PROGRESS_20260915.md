@@ -23990,3 +23990,151 @@ of a tick is how a family gets voided:
 
 No arms were running (`squeue`, not `sacct`). No frozen artefact touched. Writes verified by md5 and
 line count; quota 94% used, 1.4T free. Two throwaway git worktrees created for baselines were removed.
+
+---
+
+## S-294 — 🔴 **PR-CSI-014's CONFIRMATORY STAGE IS NOT RUNNABLE: every candidate held-out axis is blocked, each for a DIFFERENT reason.** Measured from existing artefacts at zero GPU cost, BEFORE spending 2 GPU-hours on a descriptive pass whose only designed purpose was to feed it. This is §22's POWER item, arriving where it decides something
+
+### 1. Why this came before the freeze script
+
+Last tick ended intending to write PR-CSI-014's freeze script and register its tag prefix. **Step 3's
+designed purpose is to select `L*` for step 5's confirmatory rank test** (design §5(b)). S-291 §6 had
+already killed the button half of step 5's axis. So the prior question is whether step 5 can run **at
+all** — because if it cannot, step 3 is a different experiment with a different justification, and the
+freeze script would encode a plan that does not exist. **Asking it cost nothing and is answerable from
+data already on disk.**
+
+### 2. The per-domain spread, measured directly from the run dirs
+
+```
+w4.by_domain() on csi5_census_basket_validation_{HD_BASE,SINGLE_02,SINGLE_19,HD_KO}, job 918631
+23 domains common to all arms
+
+arm         E           per-domain SD   SE(n=23)   1.96*SE
+SINGLE_02   -0.049475   0.046933        0.009786   0.019181
+SINGLE_19   -0.040109   0.025015        0.005216   0.010223
+HD_KO       -0.226961   0.122277        0.025496   0.049973
+```
+
+### 3. ⚠ THE ASSUMPTION I ALMOST PUBLISHED ON, AND THE MEASUREMENT THAT SETTLED IT
+
+My first pass computed a cell's detectability threshold **assuming a cell's per-domain SD equals the
+9-cell head arm's SD.** That assumption is load-bearing and I had not checked it: if SD scaled DOWN in
+proportion to the effect, the ratio `SD/|E|` would be constant, the threshold would scale with it, and
+**n = 3 would be borderline rather than hopeless.** The whole conclusion turns on it.
+
+It is measurable from the census's own 32 singletons (SD back-computed from each bootstrap `ci95`):
+
+```
+|E| > 0.01   (5 arms):  mean |E| = 0.029148   mean SD = 0.024104
+|E| <= 0.01 (27 arms):  mean |E| = 0.003578   mean SD = 0.007906
+-> |E| ratio 8.15x   but   SD ratio only 3.05x
+```
+
+**SD scales SUB-PROPORTIONALLY with the effect, so `SD/|E|` gets WORSE as the intervention gets smaller:**
+
+```
+SINGLE_02  |E| 0.049475  SD 0.045367  SD/|E| 0.92     <- the strongest head
+SINGLE_19  |E| 0.040109  SD 0.024292  SD/|E| 0.61
+SINGLE_23  |E| 0.016503  SD 0.016067  SD/|E| 0.97
+SINGLE_11  |E| 0.010438  SD 0.012887  SD/|E| 1.23
+SINGLE_03  |E| 0.008732  SD 0.015151  SD/|E| 1.74
+SD across all 32: min 0.002748  median 0.008098  max 0.045367  (spread 16.5x)
+|E| across all 32: spread 355.9x
+```
+
+There is a **NOISE FLOOR** around 0.003–0.008 that does not shrink with the intervention. **A cell
+therefore has a WORSE signal-to-noise ratio than the head it belongs to, not an equal one.** The
+pessimistic reading was right, but it is now right for a measured reason rather than by luck.
+
+**The SD back-computation is validated against the direct calculation**, so §3 and §2 are the same
+quantity: `SINGLE_02` direct `0.046933` vs back-computed `0.045367` (**96.7%**); `SINGLE_19` direct
+`0.025015` vs `0.024292` (**97.1%**).
+
+### 4. The detectability threshold, and what n=3 actually buys
+
+The condition for a cell's `ci95` to exclude 0 is `|E| > 1.96·SD/√n`, i.e. `√n > 1.96·(SD/|E|)`:
+
+```
+SD/|E| = 0.92  (the most optimistic value observed, on the STRONGEST head) -> n > 3.3
+SD/|E| = 1.00                                                              -> n > 3.8
+SD/|E| = 1.30  (typical for small effects here)                            -> n > 6.5
+SD/|E| = 1.70                                                              -> n > 11.1
+```
+
+**The 3 TEST domains fail in EVERY case, including the most optimistic one.** And this is only the
+`ci95`-excludes-0 bar; the **rank** test is strictly harder — the candidate must beat 20 controls, so with
+per-arm noise of `0.0469/√3 = 0.027` against true cell effects of order 0.005, the ordering is dominated
+by noise and the test's power approaches its own floor of 1/21. **A test whose power equals α is a coin
+flip wearing a p-value.**
+
+### 5. 🔴 THE AXIS INVENTORY — every one blocked, each differently
+
+```
+axis                  n_dom  status
+basket validation     23     NOT HELD OUT -- it is where L* would be selected (design §5(b))
+basket train          67     CONTAMINATED -- head 2 entered HD_TOPK by a TRAIN selection
+button validation     23     HEAD 2 IS NULL THERE -- D35: E = -0.003522, ci95 crosses 0, rank 6 of 21
+the 3 TEST domains     3     UNDERPOWERED -- need n > 3.8 at best, n > 6.5-11 realistically
+a third codeword      --     DOES NOT EXIST -- only basket and button banks are built
+```
+
+```
+ls data/boombness_prompts/boombness_prompt_bank_ts116m_*_bomb.jsonl -> basket button
+ls runargs/dcs_cont/exclude_*_bomb_sow_validation.txt               -> basket button
+```
+
+⚠ **One axis deserves its refusal spelled out, because it looks available and is not.** Basket **train**
+has 67 domains, easily enough power. And `L*` would be selected on *validation*, so train is held out
+**with respect to the layer**. But head 2's *identity* comes from `HD_TOPK`, **which was selected on
+train** — so a candidate cell `(L*, 2)` judged against arbitrary cells `(L, h)` draws part of its
+advantage from a train selection, and testing that on train reuses it. **Held out on one coordinate and
+contaminated on the other is not held out.** The alternative — restricting controls to head 2's own nine
+cells — is the 1/9 = 0.111 floor the design's §2 already ruled out as unable to certify at α = 0.05 for
+any effect size.
+
+### 6. ⛔ CONSEQUENCE: design §7 steps 4 and 5 are UNREACHABLE, and step 3 needs a new justification
+
+**PR-CSI-014's confirmatory rank test cannot be preregistered, because a preregistration must name the
+axis it will be read on and there is no admissible one.** Writing the freeze script now would encode a
+plan that cannot execute — S-167c's error (a document naming something that does not exist) with the
+axis in place of the flag.
+
+**Step 3 is still worth running, but NOT for the reason the design gives it.** Its stated purpose —
+"choose a candidate by intervention rather than by surrogate, then confirm on a held-out axis" — is dead
+at the second clause. It retains **three purposes that stand on their own**, and all three are
+descriptive:
+
+1. **a depth map of head 2's load at cell granularity** — strictly finer than D34, which by construction
+   cannot say at what depth, since every census arm knocked its head out at all nine layers at once;
+2. **it turns the per-cell dose 224 from a PREDICTION into a MEASUREMENT** (S-292 §1). If the landed
+   arms record anything other than 224, the uniformity assumption behind `DOSE_UNIT/9` is refuted and
+   every cell dose expectation must be re-derived;
+3. **it tests S-269's screen-derived claim against an intervention.** S-269 read the TRAIN screen and
+   found head 2 dominated by one cell at L10. S-254 measured ρ = +0.7713 between that screen and the
+   census at HEAD level, but **the per-CELL ordering has never been checked against an intervention** —
+   and AM-32 recorded that the same screen ranked head 2, the single strongest head, only 6th.
+
+⚠ **And §4's threshold bounds what step 3 can show even descriptively:** on n=23 a cell must reach
+`|E| > 0.019` to clear zero, which is **38.8% of the whole 9-cell head effect**. If the load is spread
+evenly (≈11% per cell) **no cell will clear the bar**, and that outcome is informative — it is evidence
+for distribution across depth — but it must be **preregistered as a coherent outcome now**, before the
+arms run, exactly as `pr012_read.txt` preregistered non-decomposability and then AM-36 observed it.
+
+### 7. Status
+
+```
+1. --knockout-cells in score_behavior.py                      ✅ S-291
+2. the argv gate + the GATE 0 sweep + census primitives        ✅ S-292, S-293
+3. the 9-cell descriptive pass on basket validation            -- RUNNABLE; justification REWRITTEN (§6)
+4. freeze the nomination rule for the confirmatory test        ⛔ UNREACHABLE -- no admissible axis
+5. the 23-arm confirmatory family                              ⛔ UNREACHABLE -- no admissible axis
+```
+
+**Nothing was launched and no freeze script was written.** The next decision is not a coding step: it is
+whether a 9-cell descriptive census on basket validation, with a threshold that may well be above every
+cell's true effect, is worth ~2 GPU-hours for its three descriptive purposes. That is a judgement worth
+making explicitly rather than by momentum, and the numbers it needs are now on record.
+
+No arms running (`squeue`, not `sacct`). No frozen artefact touched. No endpoint was re-read: §2 recomputes
+per-domain values through W4's own `by_domain`, and §3 uses only the census report's published `E`/`ci95`.
