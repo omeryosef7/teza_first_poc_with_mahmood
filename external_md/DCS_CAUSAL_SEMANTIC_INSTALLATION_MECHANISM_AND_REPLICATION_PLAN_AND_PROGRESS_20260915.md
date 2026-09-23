@@ -26665,3 +26665,187 @@ nearly complete.** Expected cost ≈ 32 × 167 s ≈ 1.5 h of arms plus one mode
 end.** S-312 §7 ran GATE 0 → census → primary on re-badged real arms. Before R28 it did not, twice
 over — and that would have been discovered here, after the GPU time was spent, with VOID condition 9
 ("the read amended after any number is seen") forbidding the repair.
+
+---
+
+## S-314 — ⚠⚠ **WITHDRAWN: my own S-312 §5 reading. The "3 TEST domains" IS an error and the count IS 23 — but the conclusion I drew from it is FALSE. TEST IS NOT A LIVE HELD-OUT AXIS: it was read to completion on 2026-09-08 (job 869523, 6,900 rows), its exclusion files have existed since that day, and 23 further runs scored the POOLED 116-domain population.** 🔴 **And the sprint's own ledger is wrong in BOTH directions — this log asserts at line 1572 that "TEST is still unspent."**
+
+### 0. What happened, in order, because the order is the point
+
+S-312 §5 measured that `test_domains = 3` is false and the manifest says 23, and **deliberately stopped
+there**: *"NOTHING is done with this now... the decision taken in a later entry with its own design."*
+This tick I went to take that decision, and the first thing I did was **attack my own claim** with a
+lens whose entire brief was to kill it. It did.
+
+**Had S-312 acted on the finding instead of deferring it, this sprint would now be building on a false
+premise.** The deferral is the only reason it did not.
+
+### 1. ✅ WHAT SURVIVES — the arithmetic, and its root cause is now traced
+
+Three independent re-derivations (mine, and two lenses working from the raw manifest and both banks
+rather than from the exclusion files' headers) agree:
+
+```
+manifest dcs_ts116_domain_split.json   n_train 70   n_validation 23   n_test 23   sha16 be7d2c772d814ef3
+the 3 whole-population exclusions (restaurant_kitchen, school_campus, subway_station) are ALL TRAIN
+after exclusions:  train 670 rows / 67 dom | validation 230 / 23 | test 230 / 23
+```
+
+**METHOD VALIDATED BY HASH, not just by count:** the re-derivation reproduces the committed train and
+validation exclusion files' own `exclusion_sha16` (`b3ba3d5ea6c91d34`, `64f6bb1310332073`) bit-for-bit.
+Two of three splits reproduce exactly, so the third is trustworthy. TEST is **structurally identical to
+VALIDATION on every stratifier** — `family_slot`, `cell`, `strength`, `example_position`,
+`demo_valence`, `n_examples`, `codeword` — in both banks.
+
+⚠ **AND THE ROOT CAUSE IS A MISNAMED FIELD COLLAPSED TO ITS LENGTH.**
+
+```
+configs/dcs_csi_pr010_*.json  "test_domains": ["restaurant_kitchen","school_campus","subway_station"]
+                              ^ these are the THREE WHOLE-POPULATION EXCLUSIONS, and all three are TRAIN
+configs/dcs_csi_pr011_*.json  copied verbatim
+configs/dcs_csi_pr012_*.json  "test_domains": 3          <- the LIST collapsed to its LENGTH
+then pr013:146, pr014:114, pr015:225  verbatim
+then S-294 §5's axis inventory: "the 3 TEST domains  3  UNDERPOWERED -- need n > 3.8"
+```
+
+📌 **And the prose original carries a FABRICATED CITATION.** The number first appears as prose in
+**S-245** (log line 19201): *"And §22's 3 TEST domains cannot power a 21-arm rank test."* **§22 contains
+no TEST count at all** — it is the execution checklist. The figure was attributed to a section that
+does not contain it, and nothing earlier in either log says "3 test domains".
+
+Meanwhile **every governing text said 23 all along**: PART I §3.2 (*"~67 TRAIN / 23 VALIDATION / 23 TEST
+after exclusions"*), the predecessor log (*"TEST 23 ... Mandate §28 explicitly warns: 23 TEST domains
+may be insufficient"*), and every non-CSI prereg (`dcs_ts_pr046…pr060`, all `n_test_domains: 23`). **The
+error is CSI-local.**
+
+### 2. 🔴 WHAT IS REFUTED — my conclusion. TEST IS NOT VIRGIN.
+
+I verified each of these myself from metadata, without opening any endpoint value for any TEST row:
+
+```
+outputs/boombness/pr057_runner/h2_test/DONE.json
+   status ok | stage h2 | split TEST | n_arms_done 30 of 36 | rows 6900 | wall 3259.8 s
+   provenance {'slurm_job_id': '869523', 'written_at': '2026-09-08 17:44:24'}
+```
+
+**That is a completed, preregistered, gate-passed confirmatory read of the TEST split, under
+DCS-PR-057, fifteen days before I derived the claim.** It is not an accident that could be quarantined
+away; it is the designed confirmatory read, and it finished.
+
+```
+outputs/boombness/pr057_runner/h2_test/exclude_..._{basket,button}_bomb_test.txt   built 2026-09-08
+  header: "# keep=230 drop=930 domains_kept=23"
+```
+
+⚠ **The TEST exclusion file I was proposing to build ALREADY EXISTS, for both banks** — and its own
+header independently confirms 23 domains / 230 rows. My §1 arithmetic was re-deriving a number that had
+been sitting on disk, computed, for two weeks.
+
+```
+score_behavior runs passing a *_test.txt exclusion            31
+ts116m runs passing NO --exclude-prompt-ids at all            23   <- the POOLED 116-domain population
+  every one sampled holds 116 domains, ALL 23 TEST domains present, including:
+    ts116m_readout_{button,basket}_{bomb,gun,knife}_*          the READOUT-CHANNEL runs
+    ts116m_readout_button_bomb_n4cal_*                         the n_examples CALIBRATION
+    ts116m_readout_button_bomb_n8_*                            the n=8 calibration
+    ts116m_p10be_*                                             the OPTION-MASS runs
+```
+
+⛔ **This is the part that matters more than the spent shot.** The split manifest's own `discipline`
+field says TEST is *"never for layer/head/path/direction/threshold selection."* The readout channel,
+the `n_examples` choice and the option-mass gate were characterised on a population **containing all 23
+TEST domains**. So TEST is not merely *spent* — it is **selection-contaminated on the very knobs every
+CSI family inherits.**
+
+### 3. 🔴 THE LEDGER IS WRONG IN BOTH DIRECTIONS, AND THAT IS THE REAL FINDING
+
+```
+THIS log, line 1572:   "...the power analysis still says D ~ 145 for 80 % power, and TEST is still unspent."
+the predecessor log:   DCS-R-132, 2026-09-08 -- "job 869523 ... 30 arms, 6,900 rows, 54.3 min, DONE.json written"
+```
+
+**The current log has been asserting the opposite of the file system.** And the CSI preregs have been
+asserting a size that is 7.7× too small. A correction that only fixed the "3" would have swapped one
+false premise for another — *"TEST is tiny"* for *"TEST is virgin"* — and the second is far more
+dangerous, because it invites spending a shot that is already gone.
+
+### 4. What this does to S-294, and the answer is counter-intuitive
+
+**S-294's VERDICT SURVIVES. Its REASONING does not.**
+
+```
+S-294 said:  "the 3 TEST domains -- UNDERPOWERED -- need n > 3.8 at best"          FALSE
+the truth:   23 domains, 230 rows, and at n=23 the basket cells sit 2.8x-4.2x above
+             S-294's own detectability bar -- comfortably powered, not hopeless
+BUT:         the axis is SPENT and SELECTION-CONTAMINATED, which S-294 never considered
+```
+
+So *"no admissible held-out axis exists for a confirmatory cell test"* — the finding that demoted
+PR-CSI-014 and PR-CSI-015 to descriptive censuses and declared design steps 4 and 5 UNREACHABLE —
+**remains correct.** It was right for the wrong reason, and the right reason is worse: the axis is not
+too small, it is **used up**.
+
+⚠ **This is the most uncomfortable form a correction can take, and it is why it must be written down
+plainly: I found a real error in a load-bearing number, and fixing it changes nothing about the
+conclusion it supported.** An error that does not propagate to the verdict is still an error, and a
+sprint that only audits numbers whose correction would be convenient is not auditing.
+
+### 5. What is NOT established, and what is explicitly NOT being done
+
+* ⛔ **Nothing was run on TEST this tick, and nothing will be.** No exclusion file was built, no job
+  submitted, no endpoint value opened for any TEST row. Every number above is `config.json`,
+  `DONE.json`, run manifests, exclusion-file headers, bank metadata and `domain` identifier strings.
+* **NOT established:** whether a *second* confirmatory TEST read would be admissible under some
+  reading of §3.2. §3.2 says *"read **once**"*; PR-057's read has happened. **I am not going to
+  reinterpret the sprint's own one-shot rule in the entry that discovered the shot was spent** — that
+  is exactly the moment when motivated reasoning is cheapest. Escalated to Omer as a scope question,
+  and the sprint continues on every other branch.
+* **NOT established:** whether anyone ever *read* PR-057's H2 verdict. The lens deliberately did not
+  open `DCS_TS_PHASE9_VERDICT_REVIEW.md` or the h2_test `summary.json`, because opening them would
+  itself be a TEST read. **That restraint is correct and is recorded so nobody undoes it casually.**
+* **NOT changed:** PR-CSI-016's frozen prereg. It records `test_domains: 23` with its
+  `TEST_DOMAIN_COUNT_CORRECTED` note and makes **no claim that TEST is available**, so nothing about it
+  is voided. Its arms are running.
+
+### 6. The four preregs that still carry the false number
+
+`pr012:227`, `pr013:146`, `pr014:114`, `pr015:225` all record `"test_domains": 3`. **They are FROZEN and
+COMMITTED and are NOT being edited** — R26's chain-of-custody rule, and the same reasoning that left
+D34 unrewritten. The correction lives here and in PR-016's prereg, which is the first to carry 23.
+
+📌 Worth naming: the field is *misnamed*, not just miscounted. `test_domains` in PR-010/011 held the
+**whole-population exclusions**. Any future prereg should call that `whole_population_exclusions` and
+keep `test_domains` for the manifest's `n_test`. A field whose name lies is how a list became a count.
+
+### 7. Operational — and S-313's prediction is CONFIRMED
+
+```
+[w3] MODEL LOAD #1 (1265.8 s) on n-301
+```
+
+S-313 predicted, before the number existed, *"a value near 1300 s, not near 50 s"* under S-304's
+non-durable-cache rule, from a 2 h 33 min gap. **1265.8 s. Confirmed.**
+
+⚠ And the three n-301 loads now form a series that says something S-298's "continuum" framing did not:
+
+```
+n-301  1339.1 s   (S-298)   ~3 min after the previous job on that node
+n-301  1273.2 s   (S-304)   ~2 h after
+n-301  1265.8 s   (S-314)   ~2 h 33 min after
+```
+
+**Three gaps spanning 3 minutes to 2.5 hours, and the load time varies by 5.5 %.** On n-301 the load is
+effectively a **NODE CONSTANT (~1270-1340 s), not a function of cache residency at all** — while n-307
+gave 47.5 s and n-302 gave 19,278 s. The honest rule is now *per-node*, and the gap-dependence S-298
+inferred is **not visible on the only node with three measurements**. Recorded as a refinement, not a
+new rule: three points on one node cannot settle what the other nodes do.
+
+### 8. Status
+
+```
+PR-CSI-016   job 923233 RUNNING on n-301; model load 1265.8 s; arms now starting. NO endpoint read.
+S-312 §5     the ARITHMETIC stands (23, not 3). The CONCLUSION I drew from it is WITHDRAWN.
+S-294 §5/§6  its "3" is corrected; its VERDICT (no admissible held-out axis) STANDS, for a worse reason.
+line 1572    "TEST is still unspent" is FALSE and is corrected here.
+ESCALATED    whether any second TEST read is admissible under §3.2 is a scope question for Omer.
+```
