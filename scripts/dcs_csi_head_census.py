@@ -194,8 +194,13 @@ def main():
     if IS_CELLS:
         hs = {k: [tuple(int(x) for x in c) for c in v] for k, v in _cs.items()}
         PER_CELL, NLAYERS = per_cell_dose(pr)
-        print("[census] CELL family: per-cell dose %d = %d/%d layers -- PREDICTED, NOT MEASURED. "
-              "THIS FAMILY'S ARMS VALIDATE THAT ARITHMETIC." % (PER_CELL, DOSE_UNIT, NLAYERS))
+        # S-301: the STATUS comes from the PREREG, not from a hardcoded string. It was literally
+        # "PREDICTED, NOT MEASURED", which was true when S-292 wrote it and became FALSE the moment
+        # PR-CSI-014 measured 224.0 on nine cells (S-299). A banner that cannot stop saying "predicted"
+        # after the prediction has been confirmed is a banner that will eventually mislead.
+        _dose_status = (pr.get("DOSE_EXPECTATION") or {}).get("STATUS", "STATUS NOT DECLARED BY THE PREREG")
+        print("[census] CELL family: per-cell dose %d = %d/%d layers -- %s"
+              % (PER_CELL, DOSE_UNIT, NLAYERS, _dose_status))
     else:
         hs = pr["head_sets"]
     # S-261, discharging S-260's rule. The base arms are NAMED BY THE PREREG, defaulting to
@@ -387,14 +392,59 @@ def main():
         # sits along depth, and sorting by effect hides the shape that answers it. The detectability
         # threshold is printed BESIDE every row, and the preregistered coherent outcome is restated
         # here so a reader of the log sees it next to the numbers rather than only in the prereg.
-        _thr = (pr.get("DETECTABILITY_PREREGISTERED") or {}).get("min_abs_E_for_ci95_to_exclude_0")
-        _cells = sorted((k for k in hs), key=lambda x: sorted(hs[x])[0][0])
-        print("\n[census] DEPTH MAP -- head %s, one cell per layer, in LAYER order. NO RANK, NO p."
-              % pr.get("h_star"))
-        if _thr:
+        # ⛔⛔⛔ S-301. THE BAR IS RESOLVED PER CELL AND ITS ABSENCE IS A REFUSAL, NOT A ZERO.
+        # This read `DETECTABILITY_PREREGISTERED.min_abs_E_for_ci95_to_exclude_0` and nothing else. A
+        # prereg that names its bars ANYWHERE ELSE -- PR-CSI-015 puts them in
+        # `DETECTABILITY_PREREGISTERED_PER_HEAD` because its three heads have different spreads -- would
+        # leave `_thr = None`, every `clears` test would be False, and the headline would print
+        # "0 of 27 cells CLEAR THE PREREGISTERED BAR". **A FALSE NULL MANUFACTURED BY A MISSING FIELD**,
+        # and the most damaging possible form of it: the preregistered verdict would read as the
+        # preregistered-coherent "nothing concentrates" outcome. This is the R20-6 rule -- any check
+        # whose result is consistent with reading NOTHING is not a check -- on the one field the whole
+        # verdict turns on.
+        _per_head_bars = (pr.get("DETECTABILITY_PREREGISTERED_PER_HEAD") or {}).get("per_head") or {}
+        _single_bar = (pr.get("DETECTABILITY_PREREGISTERED") or {}).get(
+            "min_abs_E_for_ci95_to_exclude_0")
+
+        def _bar_for(arm):
+            """That arm's preregistered bar. REFUSES rather than returning None."""
+            h = sorted(hs[arm])[0][1]
+            if str(h) in _per_head_bars:
+                v = _per_head_bars[str(h)].get("min_abs_E_for_ci95_to_exclude_0")
+                if v is None:
+                    sys.exit("REFUSING: prereg %r gives head %d no "
+                             "min_abs_E_for_ci95_to_exclude_0. A missing bar would make every cell read "
+                             "as 'below the bar' and print a FALSE NULL. (S-301)" % (pr["id"], h))
+                return float(v)
+            if _single_bar is not None:
+                return float(_single_bar)
+            sys.exit("REFUSING: prereg %r carries no preregistered detectability bar for head %d -- "
+                     "neither DETECTABILITY_PREREGISTERED_PER_HEAD['per_head']['%d'] nor "
+                     "DETECTABILITY_PREREGISTERED. Without it every cell would test as 'below the bar' "
+                     "and the headline would report a null that was never measured. Absence is not a "
+                     "pass (R20-6). (S-301)" % (pr["id"], h, h))
+
+        _heads_here = sorted({sorted(hs[k])[0][1] for k in hs})
+        # LAYER order within HEAD order: the question is the shape along depth, and on a multi-head
+        # family interleaving the heads would hide each head's shape instead of showing three of them.
+        _cells = sorted(hs, key=lambda x: (sorted(hs[x])[0][1], sorted(hs[x])[0][0]))
+        print("\n[census] DEPTH MAP -- head(s) %s, one cell per (head, layer), in HEAD then LAYER "
+              "order. NO RANK, NO p."
+              % (pr.get("h_star") if pr.get("h_star") is not None
+                 else ", ".join(str(h) for h in _heads_here)))
+        _bars_used = {h: _bar_for(next(k for k in hs if sorted(hs[k])[0][1] == h))
+                      for h in _heads_here}
+        if len(_bars_used) == 1:
             print("         preregistered detectability bar: |E| > %.6f (S-294). The right-hand "
-                  "column is the PREREGISTERED verdict;" % _thr)
-            print("         'ci95 excl 0' is a separate, WEAKER fact shown beside it.")
+                  "column is the PREREGISTERED verdict;" % list(_bars_used.values())[0])
+        else:
+            print("         preregistered detectability bar, PER HEAD (S-294 method; these heads have "
+                  "different spreads):")
+            for h in _heads_here:
+                print("           head %-3d |E| > %.6f" % (h, _bars_used[h]))
+            print("         The right-hand column is the PREREGISTERED verdict;")
+        print("         'ci95 excl 0' is a separate, WEAKER fact shown beside it.")
+        _thr = list(_bars_used.values())[0] if len(_bars_used) == 1 else None
         # ⛔⛔ S-300, fixing the defect S-299 found in its own output. TWO CRITERIA LIVE HERE AND THEY
         # DISAGREE. The PREREGISTERED one is |E| > thr (S-294, frozen before any arm ran); "ci95 excludes
         # 0" is a DIFFERENT and much weaker test. On PR-CSI-014 they gave 1 and 2: CL_L11 excluded zero
@@ -407,7 +457,7 @@ def main():
         for k in _cells:
             L, h = sorted(hs[k])[0]
             excl0 = (CI[k][1] < 0) or (CI[k][0] > 0)
-            clears = (_thr is not None and abs(E[k]) > _thr)
+            clears = abs(E[k]) > _bar_for(k)
             if excl0:
                 _excl0.append((k, L, E[k]))
             if clears:
@@ -416,8 +466,16 @@ def main():
                   % (L, k, E[k], CI[k][0], CI[k][1],
                      "CLEARS THE BAR" if clears else "below the bar",
                      "ci95 excl 0" if excl0 else ""))
-        print("\n[census] %d of %d cells CLEAR THE PREREGISTERED BAR (|E| > %s)."
-              % (len(_cleared), len(_cells), ("%.6f" % _thr) if _thr else "n/a"))
+        print("\n[census] %d of %d cells CLEAR THE PREREGISTERED BAR (%s)."
+              % (len(_cleared), len(_cells),
+                 ("|E| > %.6f" % _thr) if _thr is not None else "each against its own head's bar"))
+        if len(_heads_here) > 1:
+            for h in _heads_here:
+                _hc = [c for c in _cleared if sorted(hs[c[0]])[0][1] == h]
+                _hn = [k for k in _cells if sorted(hs[k])[0][1] == h]
+                print("           head %-3d: %d of %d clear (bar %.6f)%s"
+                      % (h, len(_hc), len(_hn), _bars_used[h],
+                         "  -> " + ", ".join("L%d" % c[1] for c in _hc) if _hc else ""))
         print("         (%d of %d have a ci95 excluding 0 -- a WEAKER test, not the preregistered "
               "criterion; a cell can exclude 0 at a fraction of the bar, and on PR-CSI-014 one did.)"
               % (len(_excl0), len(_cells)))
@@ -485,10 +543,11 @@ def main():
             # S-300: the PREREGISTERED count first, the weaker one beside it, both named for exactly
             # what they measure so neither can be quoted as the other.
             "n_cells_CLEARING_THE_PREREGISTERED_BAR": sum(
-                1 for k in hs if _thr is not None and abs(E[k]) > _thr),
+                1 for k in hs if abs(E[k]) > _bar_for(k)),
             "preregistered_bar": _thr,
+            "preregistered_bar_per_head": {str(h): _bars_used[h] for h in _heads_here},
             "cells_clearing_the_preregistered_bar": sorted(
-                k for k in hs if _thr is not None and abs(E[k]) > _thr),
+                k for k in hs if abs(E[k]) > _bar_for(k)),
             "n_cells_with_ci95_excluding_0": sum(1 for k in hs if (CI[k][1] < 0 or CI[k][0] > 0)),
             "WEAKER_CRITERION_NOTE": (
                 "n_cells_with_ci95_excluding_0 is NOT the preregistered criterion. The prereg froze "

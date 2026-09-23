@@ -25009,3 +25009,132 @@ PR-013 REDERIVE            -- every original key/value preserved, one clarifier 
 
 D32, D33, D34, D35 and D36 stand unchanged as claims. No frozen artefact was touched. No arms were
 running. Writes verified by md5; quota 94% used, 1.4T free.
+
+---
+
+## S-301 — **PR-CSI-015 is frozen: the depth map extended to D34's other three heads (29 arms).** ⚠ And designing it exposed **a false null waiting in my own reader** — a missing bar field would have printed *"0 of 27 cells CLEAR THE PREREGISTERED BAR"*, the most damaging possible shape of R20-6
+
+### 1. Why this family, stated before it exists
+
+D36 found head 2's load **concentrated**: 96.1% in cell (L10, 2), and the screen had predicted L10. Two
+questions follow that one head cannot answer:
+
+1. **Is concentration general, or is head 2 special?** One head cannot separate *"the depth structure of
+   this mechanism is sparse"* from *"head 2 happens to be sparse"*.
+2. **Does the screen's per-cell ordering hold anywhere else?** AM-38 recorded the L10 corroboration as
+   **n = 1 head** and refused to generalise. S-269 also read the screen for the other three — **19 → L14,
+   17 → L14, 23 → L7** — three falsifiable predictions already on record, written for a different purpose.
+
+### 2. ⚠ EVERY HEAD NEEDS ITS OWN BAR, and using head 2's would have been wrong in both directions
+
+Computed here from the **published D34 arms** via W4's own `by_domain`, the S-294 method:
+
+```
+head   E(SINGLE)    per-domain SD   bar = 1.96*SD/sqrt(23)   bar as % of |E|
+  2    -0.049475       0.046933            0.019181               38.8%
+ 19    -0.040109       0.025015            0.010223               25.5%
+ 17    -0.029218       0.022223            0.009082               31.1%
+ 23    -0.016503       0.016186            0.006615               40.1%
+```
+
+**Head 23's bar is 0.006615 where head 2's is 0.019181.** Applying head 2's bar to head 23 would declare
+its cells undetectable when they are not — a 2.9× error in the wrong direction. The freeze script
+**re-derives head 2's bar as a drift check and refuses if it does not reproduce the 0.019181 the PR-CSI-014
+prereg froze**:
+
+```
+[pr015] head 2 bar cross-check: recomputed 0.019181 == frozen 0.019181  OK
+```
+
+✅ **And the design DISCRIMINATES for all three.** Under concentration like head 2's (~96% in one cell) the
+dominant cell clears its own bar by **2.4×–3.8×**; under an even nine-way split it clears for **no head**
+(0.28×–0.44×). Both outcomes are readable per head and both are written into the prereg before any arm runs.
+
+### 3. The prereg
+
+```
+python scripts/gates/dcs_csi_pr015_freeze.py
+  29 arms = CL_BASE + CL_KO + 27 cells (3 heads x 9 layers)
+  configs/dcs_csi_pr015_cell_census_3heads_basket.json  (10020 bytes, md5 f3854d23)
+  re-emitted to a second path: BYTE-IDENTICAL
+```
+
+`NO_RANK_TEST`; `control_prefix`/`n_controls` absent so the rank tooling refuses it (**verified: both rank
+readers refuse by name**); argv gate `--check` passes with *"29 arms … 27 arms carry a frozen cell list"*.
+The heads are **not selected by this file**: they are D34's load-bearing four minus head 2, D34 is a census
+with no rank and no p, and this family measures **all nine layers of each**, so it selects no cell either.
+The per-cell dose is recorded as **MEASURED** now rather than predicted, because S-299 observed 224.0 on
+nine cells across nine layers — so a deviation here is a code defect, and it is VOID condition 7.
+
+### 4. 🔴 THE DEFECT THIS DESIGN EXPOSED IN MY OWN READER — a false null from a missing field
+
+The census reader read the bar from exactly one path:
+
+```python
+_thr = (pr.get("DETECTABILITY_PREREGISTERED") or {}).get("min_abs_E_for_ci95_to_exclude_0")
+...
+clears = (_thr is not None and abs(E[k]) > _thr)
+```
+
+**PR-CSI-015 names its bars in `DETECTABILITY_PREREGISTERED_PER_HEAD` because its three heads have
+different spreads.** So `_thr` would have been `None`, every `clears` test would have been `False`, and the
+headline would have printed:
+
+```
+[census] 0 of 27 cells CLEAR THE PREREGISTERED BAR (|E| > n/a)
+```
+
+⚠ **A NULL MANUFACTURED BY A MISSING FIELD — and the most damaging possible form of it.** "Nothing
+concentrates" is *the preregistered coherent outcome* of this very family (§2), so the false null would
+have been **indistinguishable in the output from the real result it was impersonating**, and it would have
+read as *"the concentration D36 found at head 2 is not general"* — a substantive scientific conclusion
+produced by a typo in a field name. This is R20-6 — *any check whose result is consistent with reading
+nothing is not a check* — landing on the single field the entire verdict turns on.
+
+**Fixed so absence REFUSES rather than defaulting:**
+
+```
+_bar_for(arm) resolves that arm's own head's bar, from PER_HEAD if present, else the single bar,
+and sys.exit()s if neither exists.
+clears = abs(E[k]) > _bar_for(k)          # no nullable threshold anywhere
+
+verified empirically -- PR-014's prereg with DETECTABILITY_PREREGISTERED deleted:
+  rc=1  REFUSING: prereg 'PR-CSI-014' carries no preregistered detectability bar for head 2 ...
+  "CLEAR THE PREREGISTERED BAR" printed: NO
+```
+
+The depth map now also groups **by head then layer** (interleaving three heads by layer would hide each
+head's shape, which is the thing being measured) and prints a per-head bar table and per-head counts.
+
+### 5. A second hardcode in the same banner
+
+```
+- "per-cell dose %d = %d/%d layers -- PREDICTED, NOT MEASURED. THIS FAMILY'S ARMS VALIDATE THAT ARITHMETIC."
++ "per-cell dose %d = %d/%d layers -- %s" % (..., pr["DOSE_EXPECTATION"]["STATUS"])
+```
+
+That string was **true when S-292 wrote it and false the moment S-299 measured 224.0 on nine cells.** A
+banner that cannot stop saying "predicted" after the prediction is confirmed will eventually mislead —
+and PR-015's prereg declares the status MEASURED, which the reader would have contradicted on every run.
+
+### 6. Verification
+
+```
+96 tests pass (4 new in test_csi_cell_identity.py: the false-null refusal on real arms; every head in a
+  multi-head prereg having its own distinct bar; a structural guard that `clears` never comes from a
+  nullable threshold; and that the dose banner is read from the prereg)
+D36  numbers IDENTICAL; one key added (preregistered_bar_per_head); headline still "1 of 9"; E/ci95 equal
+D34  science identical; differs only in the two fields R26 documented
+PR-015 prereg deterministic; both rank readers refuse it; argv --check passes on 29 arms
+```
+
+### 7. Status
+
+```
+PR-CSI-015: prereg FROZEN (f3854d23), reader cell/multi-head aware, argv gate green
+  NEXT: register PR-CSI-015 -> csi8_cell3_basket in the launcher, freeze the read, then submit.
+        The launcher currently exits 6 on this prereg id, which is the guard working.
+```
+
+No arms were running. No pre-existing frozen artefact touched — `7b21f659` (PR-014 prereg), `cdf959f6`
+(PR-014 read) and D34's `d2e14627` pin all unchanged. Writes verified by md5; quota 94% used, 1.4T free.

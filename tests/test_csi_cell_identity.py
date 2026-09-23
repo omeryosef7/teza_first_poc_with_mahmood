@@ -232,3 +232,73 @@ def test_a_real_gate0_failure_and_zero_landed_have_DIFFERENT_exit_codes():
     assert "sys.exit(3)" in src
     i = src.index("landed arm(s) FAILED")
     assert "sys.exit(" in src[max(0, i - 120):i], "the real-failure path no longer exits non-zero"
+
+
+# ---------------------------------------------------------------- S-301: a missing bar must REFUSE
+
+CENSUS_READER = os.path.join(ROOT, "scripts", "dcs_csi_head_census.py")
+PR014 = os.path.join(ROOT, "configs", "dcs_csi_pr014_cell_census_basket.json")
+PR015 = os.path.join(ROOT, "configs", "dcs_csi_pr015_cell_census_3heads_basket.json")
+
+
+def _has_pr014_arms():
+    import glob
+    return len(glob.glob(os.path.join(
+        ROOT, "outputs/boombness/score_behavior/csi7_cell_basket_validation_*/DONE.json"))) >= 11
+
+
+@pytest.mark.skipif(not _has_pr014_arms(), reason="PR-CSI-014's landed arms are needed")
+def test_a_cell_prereg_with_NO_BAR_refuses_instead_of_printing_a_false_null(tmp_path):
+    """S-301. THE MOST DAMAGING SHAPE OF R20-6, on the one field the verdict turns on.
+
+    The bar used to be read from exactly one path. A prereg naming its bars anywhere else left the
+    threshold None, every cell tested 'below the bar', and the headline printed
+    "0 of N cells CLEAR THE PREREGISTERED BAR" -- a null MANUFACTURED BY A MISSING FIELD, and
+    indistinguishable in the output from the preregistered-coherent "nothing concentrates" result."""
+    pr = json.load(open(PR014))
+    pr.pop("DETECTABILITY_PREREGISTERED", None)
+    p = tmp_path / "nobar.json"
+    p.write_text(json.dumps(pr))
+    r = subprocess.run([PY, CENSUS_READER, "--prereg", str(p),
+                        "--tag-prefix", "csi7_cell_basket_validation", "--split", "validation",
+                        "--expect-n", "230", "--require-slurm-job", "921664", "--out", os.devnull],
+                       capture_output=True, text=True)
+    out = r.stdout + r.stderr
+    assert r.returncode != 0, "a bar-less cell prereg was READ instead of refused"
+    assert "REFUSING" in out and "no preregistered detectability bar" in out, out[-400:]
+    assert "CLEAR THE PREREGISTERED BAR" not in out, (
+        "a headline verdict was printed with no bar to judge against -- this is the false null S-301 "
+        "exists to prevent")
+
+
+@pytest.mark.skipif(not os.path.exists(PR015), reason="PR-CSI-015 prereg not emitted")
+def test_every_head_in_a_multihead_cell_prereg_has_its_OWN_bar():
+    """PR-CSI-015's three heads have different per-domain spreads, so one shared bar would be wrong in
+    both directions -- head 23's is 0.006615 where head 2's is 0.019181."""
+    pr = json.load(open(PR015))
+    heads = sorted({int(c[0][1]) for c in pr["cell_sets"].values()})
+    per = pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"]
+    for h in heads:
+        assert str(h) in per, f"head {h} has cells but no preregistered bar"
+        v = per[str(h)].get("min_abs_E_for_ci95_to_exclude_0")
+        assert isinstance(v, (int, float)) and v > 0, f"head {h}'s bar is {v!r}"
+    assert len({per[str(h)]["min_abs_E_for_ci95_to_exclude_0"] for h in heads}) == len(heads), \
+        "the three bars are not distinct, so they were not derived per head"
+
+
+def test_the_reader_never_derives_clears_from_a_nullable_threshold():
+    """Structural guard: `clears` must come from the per-arm resolver, which refuses on absence."""
+    src = open(CENSUS_READER).read()
+    assert "clears = abs(E[k]) > _bar_for(k)" in src, \
+        "the per-row verdict is not using the refusing per-arm bar resolver"
+    assert "_thr is not None and abs(E[k])" not in src, \
+        "a nullable-threshold test is back; a missing bar would read as 'below the bar'"
+
+
+def test_the_dose_status_banner_is_read_from_the_prereg_not_hardcoded():
+    """It said "PREDICTED, NOT MEASURED" literally -- true when S-292 wrote it, FALSE once PR-CSI-014
+    measured 224.0 on nine cells. A banner that cannot stop saying 'predicted' will mislead."""
+    src = open(CENSUS_READER).read()
+    assert '"STATUS", "STATUS NOT DECLARED BY THE PREREG"' in src
+    i = src.index("CELL family: per-cell dose")
+    assert "PREDICTED, NOT MEASURED" not in src[i:i + 200], "the status is still hardcoded at the banner"

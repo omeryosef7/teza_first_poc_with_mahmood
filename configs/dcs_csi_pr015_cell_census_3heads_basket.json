@@ -1,0 +1,294 @@
+{
+  "id": "PR-CSI-015",
+  "title": "Per-CELL census of D34's other three load-bearing heads (19, 17, 23) on basket validation: is the depth concentration D36 found at head 2 GENERAL? A MAP, no rank, no p.",
+  "frozen_utc_date": "2026-09-23",
+  "EMITTED_MECHANICALLY_BY": "scripts/gates/dcs_csi_pr015_freeze.py",
+  "design_ref": "S-299/D36 (head 2's depth map, the result this extends); AM-38 (the n=1 screen corroboration this makes n=4); S-269 (the screen's per-cell predictions); S-294 (the bar derivation); AM-37 (why no confirmatory test follows)",
+  "split": "validation",
+  "codeword": "basket",
+  "statistical_unit": "DOMAIN (never the row); basket is NEVER pooled with button",
+  "endpoint": "y_install; concept-free semantic_one_word; cell C; n_examples 4",
+  "heads": [
+    19,
+    17,
+    23
+  ],
+  "heads_provenance": {
+    "source": "D34 (PR-CSI-012 per-head census, validation) load-bearing four, MINUS head 2",
+    "why_minus_2": "PR-CSI-014 already mapped head 2's nine cells; D36 is that result",
+    "census_report": "reports/DCS_CSI_PR012_CENSUS_validation.json",
+    "census_md5": "d2e146272399e0883811d9fe4d743cbe",
+    "NOT_A_SELECTION": "D34 is a CENSUS -- no rank, no p -- so 'the heads whose singleton clears the family's own null anchor' is a DESCRIPTIVE set, not a tested winner. This family measures ALL nine cells of each head and therefore selects no cell of its own."
+  },
+  "band": "6-14",
+  "layers": [
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+  ],
+  "base_arms": [
+    "CL_BASE",
+    "CL_KO"
+  ],
+  "cell_sets": {
+    "CL_H19_L06": [
+      [
+        6,
+        19
+      ]
+    ],
+    "CL_H19_L07": [
+      [
+        7,
+        19
+      ]
+    ],
+    "CL_H19_L08": [
+      [
+        8,
+        19
+      ]
+    ],
+    "CL_H19_L09": [
+      [
+        9,
+        19
+      ]
+    ],
+    "CL_H19_L10": [
+      [
+        10,
+        19
+      ]
+    ],
+    "CL_H19_L11": [
+      [
+        11,
+        19
+      ]
+    ],
+    "CL_H19_L12": [
+      [
+        12,
+        19
+      ]
+    ],
+    "CL_H19_L13": [
+      [
+        13,
+        19
+      ]
+    ],
+    "CL_H19_L14": [
+      [
+        14,
+        19
+      ]
+    ],
+    "CL_H17_L06": [
+      [
+        6,
+        17
+      ]
+    ],
+    "CL_H17_L07": [
+      [
+        7,
+        17
+      ]
+    ],
+    "CL_H17_L08": [
+      [
+        8,
+        17
+      ]
+    ],
+    "CL_H17_L09": [
+      [
+        9,
+        17
+      ]
+    ],
+    "CL_H17_L10": [
+      [
+        10,
+        17
+      ]
+    ],
+    "CL_H17_L11": [
+      [
+        11,
+        17
+      ]
+    ],
+    "CL_H17_L12": [
+      [
+        12,
+        17
+      ]
+    ],
+    "CL_H17_L13": [
+      [
+        13,
+        17
+      ]
+    ],
+    "CL_H17_L14": [
+      [
+        14,
+        17
+      ]
+    ],
+    "CL_H23_L06": [
+      [
+        6,
+        23
+      ]
+    ],
+    "CL_H23_L07": [
+      [
+        7,
+        23
+      ]
+    ],
+    "CL_H23_L08": [
+      [
+        8,
+        23
+      ]
+    ],
+    "CL_H23_L09": [
+      [
+        9,
+        23
+      ]
+    ],
+    "CL_H23_L10": [
+      [
+        10,
+        23
+      ]
+    ],
+    "CL_H23_L11": [
+      [
+        11,
+        23
+      ]
+    ],
+    "CL_H23_L12": [
+      [
+        12,
+        23
+      ]
+    ],
+    "CL_H23_L13": [
+      [
+        13,
+        23
+      ]
+    ],
+    "CL_H23_L14": [
+      [
+        14,
+        23
+      ]
+    ]
+  },
+  "n_arms_per_split": 29,
+  "intervention": {
+    "intervene": "demo_all:attn_knockout:6-14:1.0",
+    "knockout_scope": "target_surface_row_only",
+    "band": "6-14"
+  },
+  "arms": {
+    "CL_BASE": "no --intervene; the clean reference",
+    "CL_KO": "--intervene with NO selector = all 32 heads x all 9 band layers; the denominator",
+    "CL_H<hh>_L<ll>": "--knockout-cells <ll>:<hh> -- ONE cell"
+  },
+  "NO_RANK_TEST": "There is NO candidate, NO control family, NO rank and NO p-value here. A rank among the 9 layers of one head has an attainable floor of 1/9 = 0.1111 and cannot clear alpha = 0.05 for ANY effect size. control_prefix and n_controls are DELIBERATELY ABSENT so the rank tooling refuses this prereg.",
+  "DOSE_EXPECTATION": {
+    "per_cell_prefill_edits": 224,
+    "derivation": "DOSE_UNIT 2016 / 9 band layers",
+    "STATUS": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)",
+    "why": "S-292 flagged this as a PREDICTION under an untested uniformity assumption and S-298/S-299 measured it: 224.0 on nine cells across nine distinct layers. It is an identity here, not a prediction, and a deviation is a CODE defect."
+  },
+  "DOSE_IDENTITY_IS_BLIND_HERE": "Every one of the 27 cell arms expects 224 prefill edits, so the dose cannot tell any cell from any other -- S-246's collision on the layer AND head axes at once. Identity comes from each arm's own recorded knockout_cells ONLY (S-292/R26). Note also that a cell arm's knockout_heads is EMPTY, which recorded_heads() maps to 'ALL'.",
+  "population": {
+    "validation_domains": 23,
+    "validation_expect_n": 230,
+    "test_domains": 3,
+    "test_note": "TEST is NEVER touched"
+  },
+  "DETECTABILITY_PREREGISTERED_PER_HEAD": {
+    "method": "S-294: bar = 1.96 * (per-domain SD of that head's nine-cell arm) / sqrt(n_dom), computed from the PUBLISHED D34 arms via W4's own by_domain",
+    "n_domains": 23,
+    "per_head": {
+      "19": {
+        "E_of_the_9cell_head_arm": -0.04010869,
+        "per_domain_SD": 0.02501491,
+        "n_domains": 23,
+        "min_abs_E_for_ci95_to_exclude_0": 0.010223,
+        "as_share_of_the_head_effect": 0.2549
+      },
+      "17": {
+        "E_of_the_9cell_head_arm": -0.02921839,
+        "per_domain_SD": 0.022223,
+        "n_domains": 23,
+        "min_abs_E_for_ci95_to_exclude_0": 0.009082,
+        "as_share_of_the_head_effect": 0.3108
+      },
+      "23": {
+        "E_of_the_9cell_head_arm": -0.01650303,
+        "per_domain_SD": 0.01618591,
+        "n_domains": 23,
+        "min_abs_E_for_ci95_to_exclude_0": 0.006615,
+        "as_share_of_the_head_effect": 0.4008
+      }
+    },
+    "head_2_cross_check": {
+      "recomputed": 0.019181,
+      "frozen_in_pr014": 0.019181,
+      "note": "the method reproduces the bar PR-CSI-014 froze, so it has not drifted"
+    },
+    "WHY_PER_HEAD": "These heads have smaller effects AND smaller per-domain spreads than head 2, so a single shared bar would be wrong in both directions. Head 23's bar is 0.006615 where head 2's is 0.019181 -- using head 2's bar would declare head 23 undetectable when it is not.",
+    "COHERENT_OUTCOME_IF_NOTHING_CLEARS": "Under an even nine-way split NO head's cell clears its own bar (0.28x-0.44x of it). That is a coherent, informative outcome preregistered HERE: it would mean the depth concentration D36 found at head 2 is NOT general, and that for these heads the load is distributed across depth. ⛔ It must NOT be reported as a failed experiment, and it must NOT be rescued by dropping to a weaker bar, a one-sided test, or an uncorrected 'trend'. NOTE that 'ci95 excludes 0' is a WEAKER test than this bar and is NOT the criterion (S-299/S-300: on PR-CSI-014 one cell excluded 0 at 5% of the bar with the wrong sign)."
+  },
+  "SCREEN_PREDICTIONS_ON_RECORD_BEFORE_THIS_FAMILY": {
+    "source": "S-269, reading outputs/boombness/dcs_csi/w1_screen_train_basket_916132.json",
+    "predictions": {
+      "19": "L14",
+      "17": "L14",
+      "23": "L7"
+    },
+    "already_tested": {
+      "2": "L10 -- CORROBORATED on intervention by D36/AM-38 (n=1 head)"
+    },
+    "status": "These were written down for a different purpose and are falsifiable as they stand. ⚠ The screen is TRAIN and this census is VALIDATION, so the comparison is across splits and not circular. ⚠ AM-32 measured that the SAME screen ranked head 2 -- the strongest head -- only 6th of 32 at HEAD level, so a corroboration here bounds the screen's WITHIN-head localisation only and says nothing about its head ranking."
+  },
+  "CENSUS_DELIVERABLE": "27 cell effects E(CL_H<hh>_L<ll>) = mean over domains of (y_install(cell) - y_install(CL_BASE)), each with a bootstrap ci95, plus the CL_KO denominator. A DEPTH MAP for each of heads [19, 17, 23], read against that head's OWN preregistered bar. No head outside [19, 17, 23] is measured and no cell of any other head is touched.",
+  "WHAT_THIS_CANNOT_ANSWER": [
+    "whether any cell is PRIVILEGED -- there is no rank, no control family and no p",
+    "anything that would lift D32's caveat 'NOT a claim about any single (layer, head) cell' -- AM-37 measured that no admissible held-out axis exists for a confirmatory cell test",
+    "whether the screen's per-cell ordering is valid IN GENERAL -- at most this makes the intervention-verified sample 4 heads of 32",
+    "anything revising D32, D33, D34, D35 or D36 -- a wider map does not retract a narrower one",
+    "anything about the other 28 heads or any cell of them",
+    "anything about DOMAIN generality -- these 23 domains are basket's usual set (S-256); the 3 TEST domains remain untouched",
+    "any rung above 1 on AM-34's ladder. This is necessity, like everything else in this sprint"
+  ],
+  "SELECTION_RE_ENTERS_WHEN": "the moment any one cell is singled out for a claim. This census SELECTS NOTHING; naming a winner afterwards is selection on the data that produced it, and AM-37 established there is no held-out axis on which a confirmatory test of that winner could be read.",
+  "VOID_CONDITIONS": [
+    "1. compared arms not all on one GPU architecture (PR-CSI-003 precedent)",
+    "2. attn_implementation not eager on any arm (a mask edit under SDPA is a silent no-op)",
+    "3. any arm's recorded knockout_cells disagreeing with cell_sets",
+    "4. CL_BASE carrying any intervention flag (S-260 voided job 918967 this way)",
+    "5. any cell whose layer lies outside the band -- it would install NO hook and score as a clean null (score_behavior.py refuses it at construction, S-291)",
+    "6. score_behavior.py edited while these arms are in flight",
+    "7. any cell arm recording a dose other than 224 -- now an IDENTITY, not a prediction (S-299)"
+  ]
+}
