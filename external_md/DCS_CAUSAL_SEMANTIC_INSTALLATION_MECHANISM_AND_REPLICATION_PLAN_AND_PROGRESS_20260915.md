@@ -25221,3 +25221,74 @@ expected cost                       : 27 cell arms x ~150 s + 2 base arms x ~205
                                       (n-301 measured 22.3 min; S-298 established the load is a
                                       CONTINUUM of cache residency, so this is not a prediction)
 ```
+
+---
+
+## S-303 — **PR-CSI-015 IS LAUNCHED: job 922176, 29 arms, n-301.** Second family in a row to clear every launcher guard on the first attempt — and it lands on the SAME NODE as PR-CSI-014, which makes S-298's cache-continuum claim **falsifiable tonight**
+
+### 1. The submission
+
+```
+SPLIT=validation PREREG=configs/dcs_csi_pr015_cell_census_3heads_basket.json \
+  TAG_PREFIX=csi8_cell3_basket FAMILY=pr015 \
+  sh scripts/gates/dcs_csi_submit.sh slurm_scripts/dcs_csi_pr010_arms.slurm
+
+provenance: BLOB fbf1fbf5  PORCELAIN clean
+Submitted batch job 922176   -> RUNNING on n-301 at 16:38:27
+```
+
+```
+HOST=n-301 JOB=922176 2026-09-23T16:38:27+03:00
+BLOB fbf1fbf5  PORCELAIN [clean]
+SPLIT=validation EXPECT_N=230 PREREG=configs/dcs_csi_pr015_cell_census_3heads_basket.json
+  TAG_PREFIX=csi8_cell3_basket FAMILY=pr015
+BASE-ARM CHECK PASSED: 'CL_BASE' carries no intervention flag; all 28 other arms carry --intervene
+CODEWORD CHECK PASSED: 'basket' -> bank + exclusions exist, every arm agrees
+CHECK PASSED: 29 arms, every flag declared by score_behavior.py; 27 arms carry a frozen cell list
+argv lines: 29
+```
+
+**Two families in a row with every guard green on the first attempt**, against PR-CSI-013's five
+submissions. The guards are doing the work: `BASE-ARM CHECK` from S-260, the tag refusal from S-227/S-246,
+the quarantine precheck from S-261, the on-host provenance from job 915945.
+
+### 2. ⚠ A FALSIFIABLE PREDICTION, on record before the number exists
+
+**922176 landed on n-301 — the same node PR-CSI-014 ran on ~2 hours ago.** S-298 refined S-261's
+page-cache rule from binary to a **continuum of cache residency**, on the evidence of three points:
+
+```
+n-302 COLD        19278.4 s  (321.3 min)   S-285
+n-301 PARTIAL      1339.1 s   (22.3 min)   S-298  <- 922176's own node, ~2 h ago
+n-307 WARM            47.5 s    (0.8 min)  S-261
+```
+
+**The continuum claim predicts that 922176's load will be SHORT — far below n-301's own 1339.1 s — because
+PR-CSI-014 just pulled the same ~16 GB snapshot into that node's page cache.** If instead it takes ~1339 s
+again, then load time is a property of the NODE rather than of cache residency, and **S-298's refinement is
+refuted along with S-261's mechanism** — the fifth iteration of this rule would have to become a sixth.
+
+This is worth recording precisely because it costs nothing: the number arrives whether or not anyone
+predicted it, and a prediction written afterwards is not a prediction.
+
+### 3. The dose is no longer a gate on a prediction — it is VOID condition 7
+
+PR-CSI-014 measured **224.0 on nine cells across nine distinct layers** (S-299), so `DOSE_UNIT/band_width`
+is an **identity** here, not a forecast. All 27 cell arms expect 224, which means:
+
+- the dose **cannot discriminate any cell from any other** — S-246's collision on the layer *and* head axes
+  at once — so identity comes from each arm's own `knockout_cells` (R26's derived-uniqueness flag will say
+  so, naming 27 arms sharing the dose);
+- a cell arm recording anything **other** than 224 is a **CODE defect**, trips VOID condition 7, fails
+  GATE 0, and makes no effect readable. A monitor is armed on `[w3] 3/29` to catch it at the first cell arm
+  rather than after 27.
+
+### 4. What is not yet known
+
+**Everything the family is for.** No endpoint has been read; the frozen read (`4841486c`) has not been
+executed; and its four pre-committed outcomes are all open per head — including **outcome B** (concentration
+generalises but the *screen* does not), which the read instructs be reported as loudly as A **because
+AM-38 is my own claim and is the one at risk**.
+
+Arm order is `CL_BASE, CL_KO, CL_H17_L06…L14, CL_H19_L06…L14, CL_H23_L06…L14`, so head 17 reads first and
+head 23 last.
