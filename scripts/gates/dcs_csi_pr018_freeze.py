@@ -114,7 +114,13 @@ def pr013_whole_head():
                      "cannot be derived and this file will not invent one." % h)
         lo, hi = rep["ci95"][arm]
         out[str(h)] = {"pr013_arm": arm, "E": rep["E"][arm], "ci95": [lo, hi],
-                       "ci95_excludes_0": not (lo < 0 < hi)}
+                       "ci95_excludes_0": not (lo < 0 < hi),
+                       # R29/S-323: the tolerance lives WITH the number the reader compares against,
+                       # so the criterion cannot drift away from the datum it judges.
+                       "void_tolerance": 1e-6,
+                       "ENFORCED_BY": "scripts/dcs_csi_head_census.py -- it REFUSES when |diff| "
+                                      "exceeds void_tolerance. Until S-323 this block was written by "
+                                      "the freeze script and read by NOTHING."}
     return out
 
 

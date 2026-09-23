@@ -700,7 +700,9 @@
             -0.00715812,
             -0.00307013
           ],
-          "ci95_excludes_0": true
+          "ci95_excludes_0": true,
+          "void_tolerance": 1e-06,
+          "ENFORCED_BY": "scripts/dcs_csi_head_census.py -- it REFUSES when |diff| exceeds void_tolerance. Until S-323 this block was written by the freeze script and read by NOTHING."
         }
       },
       "11": {
@@ -714,7 +716,9 @@
             -0.02215518,
             -0.0110909
           ],
-          "ci95_excludes_0": true
+          "ci95_excludes_0": true,
+          "void_tolerance": 1e-06,
+          "ENFORCED_BY": "scripts/dcs_csi_head_census.py -- it REFUSES when |diff| exceeds void_tolerance. Until S-323 this block was written by the freeze script and read by NOTHING."
         }
       },
       "20": {
@@ -728,7 +732,9 @@
             -0.00982239,
             -0.0048501
           ],
-          "ci95_excludes_0": true
+          "ci95_excludes_0": true,
+          "void_tolerance": 1e-06,
+          "ENFORCED_BY": "scripts/dcs_csi_head_census.py -- it REFUSES when |diff| exceeds void_tolerance. Until S-323 this block was written by the freeze script and read by NOTHING."
         }
       },
       "24": {
@@ -742,7 +748,9 @@
             -0.00442995,
             -0.00138735
           ],
-          "ci95_excludes_0": true
+          "ci95_excludes_0": true,
+          "void_tolerance": 1e-06,
+          "ENFORCED_BY": "scripts/dcs_csi_head_census.py -- it REFUSES when |diff| exceeds void_tolerance. Until S-323 this block was written by the freeze script and read by NOTHING."
         }
       },
       "27": {
@@ -756,7 +764,9 @@
             0.00096224,
             0.00434877
           ],
-          "ci95_excludes_0": true
+          "ci95_excludes_0": true,
+          "void_tolerance": 1e-06,
+          "ENFORCED_BY": "scripts/dcs_csi_head_census.py -- it REFUSES when |diff| exceeds void_tolerance. Until S-323 this block was written by the freeze script and read by NOTHING."
         }
       },
       "29": {
@@ -770,7 +780,9 @@
             0.00585494,
             0.01306684
           ],
-          "ci95_excludes_0": true
+          "ci95_excludes_0": true,
+          "void_tolerance": 1e-06,
+          "ENFORCED_BY": "scripts/dcs_csi_head_census.py -- it REFUSES when |diff| exceeds void_tolerance. Until S-323 this block was written by the freeze script and read by NOTHING."
         }
       }
     },

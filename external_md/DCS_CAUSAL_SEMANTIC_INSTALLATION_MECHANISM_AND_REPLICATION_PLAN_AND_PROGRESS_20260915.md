@@ -27878,3 +27878,131 @@ R29          three lenses still running at the time of writing. Its findings lan
 queue        EMPTY.
 NOT ESTABLISHED  anything about transfer. This entry fixed the instrument twice and measured nothing.
 ```
+
+---
+
+## REVIEW R29 / S-323 — **VERDICT: DO NOT LAUNCH (then), LAUNCHABLE (now).** R29 independently found **both** of the BLOCKERs S-322 had just fixed — and one I had not: 🔴 **VOID CONDITION 8 WAS PROSE. `VOID_CONDITIONS` is emitted by every freeze script and consumed by NO reader, gate or test, while PR-CSI-018's read asserted "VOID CONDITION 8 IS CHECKED HERE AND IT IS FREE."** Now code, with the drift demonstrated
+
+### 1. Convergent validation, which is the cheapest evidence a review can give
+
+R29's execution lens found **BLOCKER 1 (the hardcoded `BC_` prefix)** and **BLOCKER 2 (the reader
+gating on the binomial while PR-018's prereg gates on the weakest)** independently, from a different
+starting point, hours after S-322 fixed them. Its BLOCKER 2 exhibit is sharper than mine and is worth
+keeping, because it is the *designed* adversary rather than a synthetic one:
+
+```
+forced only two heads' argmax so that EVERY match lands on a SHARED predicted layer
+(L11 twice, L10 once) while both UNIQUE-prediction heads (11 -> L8, 29 -> L6) miss:
+
+  K = 6, M = 3, binomial 0.021167   conditional 1.000000   permutation 0.100000
+  matching layers ['L10','L11'] -> spanning rule SATISFIED
+  VERDICT: PASS
+```
+
+**A PASS on precisely the shared-band-bias adversary this family exists to defeat**, with the
+conditional at **1.0**, and the emitted JSON carrying as its first prohibition *"the binomial p alone
+— the claim is stated with the WEAKEST of the three"*. **The verdict was built on the one p the prereg
+forbids quoting.** Under the frozen prereg that run is a FAILURE.
+
+📌 R29 also named the contributing cause I had not: *"the committed `tests/test_csi_pr016_argmax.py`
+has 17 test functions and ZERO occurrences of `PR-CSI-018` or `BF_H` — the widening shipped with no
+test on the family it was widened for."*
+
+### 2. 🔴 THE NEW FINDING — VOID condition 8 had no enforcing code, and the read claimed it did
+
+```
+grep -rln VOID_CONDITIONS scripts/ tests/ src/   -> five FREEZE scripts. They WRITE it.
+                                                    No reader, no gate, no test CONSUMES it.
+grep -rln pr013_whole_head_REFERENCE ...         -> dcs_csi_pr018_freeze.py only. Written, never read.
+runargs/dcs_csi_pr018_read.txt:46                -> "VOID CONDITION 8 IS CHECKED HERE AND IT IS FREE
+                                                    ... Six independent provenance checks."
+```
+
+**That sentence was false when I wrote it.** This is R27's VOID-6 state — a condition nobody
+evaluates — with an aggravation: **PR-CSI-016's read worded the equivalent step honestly, as an
+instruction to a human** (*"a disagreement above 25 % … MUST be reported"*). **I escalated an
+unimplemented idea into a claim that code performs it.**
+
+⚠ **And the harm compounds rather than merely being absent.** A drifted `HD_<h>` silently moves that
+head's **bar** — the bar *is* 1.96·SD of that same arm — so the head is quietly **DROPPED by
+ADMISSION** and published as *"NOT_A_MISS … removed from K, not counted against the screen"*,
+shrinking **K** and the permutation space with no provenance warning anywhere. R29 demonstrated it:
+
+```
+repointed HD_6's rows at another head's arm:  |diff| = 1.97e-03  =  ~2000x the 1e-6 threshold
+  census: EXIT=0, "GATE 0 PASS on all 62 arms", no warning, head 6's bar moved 0.002100 -> 0.004797
+  primary: "head 6  HD_6  E=-0.003117 ... |E|/bar=0.65  DROPPED (not a miss)"
+```
+
+**Now implemented in `scripts/dcs_csi_head_census.py`**, generic by construction — it fires for *any*
+prereg whose `per_head` carries a reference block — printing a `PROVENANCE` line per head either way
+and **REFUSING** above the tolerance, which the freeze script now declares *beside the number it
+judges* rather than leaving to the reader:
+
+```
+[census] PROVENANCE head 17  HD_17  E=-0.02921839 vs reference -0.01000000  |diff|=1.92e-02  *** EXCEEDS 1e-06 ***
+REFUSING: VOID CONDITION -- ... the population, bank, exclusions or model revision has DRIFTED and
+          nothing in this family is readable. (R29/S-323)
+```
+
+The read's sentence is **corrected in place, with the false version quoted** so the record shows what
+it said.
+
+### 3. ⚠ A second fail-open, closed: GATING defaulted rather than refusing
+
+S-322 made gating prereg-driven with `binomial_only` as the default. R29 pointed out the consequence:
+**if PR-018's `GATING` field were ever lost — a bad merge, a reverted freeze, a hand-edit — the reader
+would silently apply the WRONG rule rather than refuse.** Now grandfathered to the one family whose
+frozen prereg predates the field, exactly as S-308 had to scope the `codeword` default:
+
+```
+REFUSING: prereg 'PR-CSI-018' declares no PRIMARY.GATING, and only PR-CSI-016 may fall back to the
+          legacy 'binomial_only' default. Guessing which p-value gates is guessing the success
+          criterion. (R29/S-323)
+```
+
+### 4. ⚠ AND MY OWN TESTS FOR §2 WERE VACUOUS ON FIRST WRITING
+
+The three VOID-8 tests asserted `"VOID CONDITION" in out` where `out` was **captured stdout only**.
+`sys.exit("message")` puts the refusal in `e.code`, **not on stdout** — so those assertions were
+looking for text that is *structurally never there*. They failed loudly, which is the good case; had
+I written them as `assert rc != 0` alone they would have passed while checking nothing.
+
+**Fixed by returning both channels as one searchable blob**, and recorded because it is the third
+distinct way I have written a weak test in this sprint — after the literal-matching test S-315
+rewrote, and the fabricated-input helper R28 caught.
+
+```
+3 VOID-8 tests pass with the check; 2 of them FAIL without it (git stash on the reader alone)
+  -- the third, "an absent source arm must refuse", passes either way because a DIFFERENT guard
+     already covered it. Recorded so it is not mistaken for evidence of the new code.
+73 tests pass across test_csi_cell_identity.py and test_csi_pr016_argmax.py
+PR-CSI-016 is UNAFFECTED: 0 PROVENANCE lines (it declares no reference block), max |dE| = 0.0
+```
+
+### 5. On R29's chain-of-custody flag
+
+R29 reported the frozen prereg *"modified in the working tree during this review, uncommitted"*. That
+is **a true observation of a stale moment**: the lens started before S-322's commit and read the tree
+mid-edit. It is committed now, and re-emitted again here (`18994cf6 -> 6790df3a`) for the
+`void_tolerance` / `ENFORCED_BY` fields.
+
+⚠ **But the underlying point survives the timing and is worth keeping: `runargs/dcs_csi_pr018_read.txt`
+pins no prereg md5**, so which criterion fires depends on which copy is on disk. PR-CSI-016's read did
+not pin one either. **The specific failure mode R29 feared is now closed by §3** — a prereg that lost
+its `GATING` refuses rather than silently switching rules — but the general one is not, and pinning a
+prereg hash in the read is recorded as an open improvement rather than done under time pressure at the
+end of a tick.
+
+### 6. Status
+
+```
+PR-CSI-018   prereg 6790df3a, read updated, tag csi10_cell6_button. STILL NOT LAUNCHED.
+R29          three lenses; both S-322 BLOCKERs independently reproduced, one NEW MAJOR (VOID 8),
+             one fail-open (GATING), one stale chain-of-custody flag, one open improvement.
+next         the S-312 end-to-end on re-badged real arms with the CURRENT artefacts, then submit.
+             R29's exec lens already ran a 62-arm re-badged GATE 0 -> census -> primary and reported
+             it clean apart from the blockers -- but that was against the PRE-FIX code, so it must
+             be repeated before the submit rather than inherited.
+NOT ESTABLISHED  anything about transfer. This entry fixed the instrument a third time.
+```

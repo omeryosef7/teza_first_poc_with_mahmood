@@ -596,6 +596,40 @@ def main():
         if not _judged:
             sys.exit("REFUSING: every arm of prereg %r is a bar source arm; there are no cells to "
                      "read. (S-311)" % pr["id"])
+        # ⚠⚠ R29/S-323 -- VOID CONDITION 8, NOW ACTUAL CODE. PR-CSI-018's frozen read asserted
+        # "VOID CONDITION 8 IS CHECKED HERE AND IT IS FREE ... Six independent provenance checks".
+        # NOTHING CHECKED IT. `VOID_CONDITIONS` is written by every freeze script and consumed by no
+        # reader, gate or test; `pr013_whole_head_REFERENCE` was written by one script and read by
+        # none. That is the R27/VOID-6 state, and worse, because the read CLAIMED code performed it.
+        # The compounding harm R29 demonstrated: a drifted HD_<h> silently moves that head's BAR
+        # (the bar is 1.96*SD of that same arm), so the head is quietly DROPPED by ADMISSION and
+        # published as "NOT_A_MISS ... removed from K", shrinking K and the permutation space with no
+        # mention of provenance. Repointing HD_6 at another head's rows gave a 1.97e-03 difference --
+        # ~2000x the 1e-6 threshold -- and the read exited 0 with "GATE 0 PASS on all 62 arms".
+        # Generic by construction: it fires for ANY prereg whose per_head carries a reference block.
+        for _hk, _hd in sorted(_per_head_bars.items()):
+            _ref = (_hd or {}).get("pr013_whole_head_REFERENCE") if isinstance(_hd, dict) else None
+            if not _ref or _ref.get("E") is None:
+                continue
+            _src = _hd.get("bar_source_arm")
+            if _src not in E:
+                sys.exit("REFUSING: head %s declares a whole-head reference but its source arm %r is "
+                         "absent, so the provenance condition cannot be evaluated. Absence is not a "
+                         "pass (R20-6). (R29/S-323)" % (_hk, _src))
+            _d = abs(E[_src] - float(_ref["E"]))
+            _tol = float(_ref.get("void_tolerance", 1e-6))
+            print("[census] PROVENANCE head %-3s %-8s E=%+.8f vs reference %+.8f  |diff|=%.2e  %s"
+                  % (_hk, _src, E[_src], float(_ref["E"]), _d,
+                     "OK" if _d <= _tol else "*** EXCEEDS %.0e ***" % _tol))
+            if _d > _tol:
+                sys.exit("REFUSING: VOID CONDITION -- head %s's arm %r records E=%.8f but the prereg "
+                         "freezes a prior measurement of the SAME head, codeword and split at "
+                         "%.8f (|diff| %.2e > %.0e). S-318 demonstrated bit-identical reproduction "
+                         "across two jobs and two NODES, so this means the population, bank, "
+                         "exclusions or model revision has DRIFTED and nothing in this family is "
+                         "readable. (R29/S-323)"
+                         % (_hk, _src, E[_src], float(_ref["E"]), _d, _tol))
+
         _heads_here = sorted({sorted(hs[k])[0][1] for k in _judged})
         # LAYER order within HEAD order: the question is the shape along depth, and on a multi-head
         # family interleaving the heads would hide each head's shape instead of showing three of them.

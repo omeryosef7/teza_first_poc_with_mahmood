@@ -169,7 +169,20 @@ def main():
     # permutation test is answerable. This reader applied PR-016's rule to both and printed PASS on a
     # PR-018 census whose weakest p was 0.21, and again at 0.33. The default is PR-016's, so its
     # published read is untouched; anything else must be declared.
-    _gating = (pr["PRIMARY"].get("GATING") or "binomial_only")
+    # ⚠ R29/S-323: FAIL CLOSED. Defaulting to binomial_only for ANY prereg meant that if PR-CSI-018's
+    # GATING field were ever lost -- a bad merge, a reverted freeze, a hand-edit -- the reader would
+    # silently apply the WRONG rule to it rather than refuse. Same shape as the codeword default
+    # S-308 had to scope. The default is grandfathered to the ONE family whose frozen prereg predates
+    # the field; everything else must say what it gates on.
+    _GATING_DEFAULT_GRANDFATHERED = ("PR-CSI-016",)
+    _gating = pr["PRIMARY"].get("GATING")
+    if not _gating:
+        if pr["id"] not in _GATING_DEFAULT_GRANDFATHERED:
+            sys.exit("REFUSING: prereg %r declares no PRIMARY.GATING, and only %s may fall back to "
+                     "the legacy 'binomial_only' default. Guessing which p-value gates is guessing "
+                     "the success criterion. (R29/S-323)"
+                     % (pr["id"], ", ".join(_GATING_DEFAULT_GRANDFATHERED)))
+        _gating = "binomial_only"
     if _gating not in ("binomial_only", "weakest_of_three"):
         sys.exit("REFUSING: prereg %r declares PRIMARY.GATING = %r, which this reader does not "
                  "implement. (R29/S-322)" % (pr["id"], _gating))

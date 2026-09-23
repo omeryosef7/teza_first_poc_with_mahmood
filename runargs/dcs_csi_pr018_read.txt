@@ -43,7 +43,17 @@ python scripts/dcs_csi_head_census.py \
   --require-slurm-job <VALIDATION_JOB_IDS> \
   --out reports/DCS_CSI_PR018_CELL_CENSUS_button_nonL14_validation.json
 
-# ⚠ VOID CONDITION 8 IS CHECKED HERE AND IT IS FREE. Each HD_<h> arm re-measures the whole-head
+# ⚠ VOID CONDITION 8 IS ENFORCED BY scripts/dcs_csi_head_census.py (S-323), which REFUSES when any
+#   HD_<h> arm differs from the prereg's frozen pr013_whole_head_REFERENCE by more than its declared
+#   void_tolerance of 1e-6, and prints a PROVENANCE line per head either way.
+#   ⚠ THIS SENTENCE PREVIOUSLY READ "VOID CONDITION 8 IS CHECKED HERE AND IT IS FREE ... Six
+#   independent provenance checks, at no extra cost." THAT WAS FALSE WHEN WRITTEN: R29 established
+#   that VOID_CONDITIONS is emitted by every freeze script and consumed by NO reader, gate or test,
+#   and that pr013_whole_head_REFERENCE was written by one script and read by none. Repointing HD_6
+#   at another head's rows produced a 1.97e-03 difference -- ~2000x the threshold -- and the read
+#   exited 0 with "GATE 0 PASS on all 62 arms" and silently DROPPED that head as "NOT_A_MISS",
+#   shrinking K and the permutation space with no provenance warning. The condition is now code.
+# --- Each HD_<h> arm re-measures the whole-head
 #   effect PR-CSI-013 already recorded on the SAME head, codeword and split. S-318 demonstrated that
 #   PR-016's HD_19 reproduced PR-013's BT_CTRL_01 BIT-IDENTICALLY across two jobs and two NODES, so
 #   a difference above 1e-6 means the population, bank, exclusions or model revision has DRIFTED and

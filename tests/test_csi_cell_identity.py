@@ -890,3 +890,125 @@ def test_S308_STILL_HOLDS_a_refused_arm_that_HAS_a_DONE_json_is_still_a_FAILURE(
     assert "IN FLIGHT" not in out, "a corrupt FINISHED arm was excused as in flight:\n%s" % out[-700:]
     assert rc not in (0, None), "a ledger mismatch was not a failure: rc=%r\n%s" % (rc, out[-700:])
     assert "GATE 0 FAIL" in out and "CL_H19_L14" in out, out[-700:]
+
+
+# ================================================================ R29 / S-323
+# VOID condition 8 was PROSE. R29 established that VOID_CONDITIONS is emitted by every freeze script
+# and consumed by NO reader, gate or test, and that pr013_whole_head_REFERENCE was written by one
+# script and read by none -- while PR-CSI-018's frozen read asserted "VOID CONDITION 8 IS CHECKED
+# HERE AND IT IS FREE". The compounding harm: a drifted whole-head arm silently moves that head's BAR
+# (the bar is 1.96*SD of that same arm), so the head is quietly DROPPED by ADMISSION and published as
+# "NOT_A_MISS", shrinking K and the permutation space with no provenance warning.
+
+def _pr015_with_reference(tmp_path, head, ref_E, tol=1e-6):
+    """PR-015's prereg with a whole-head reference bolted onto one head, using a REAL 9-cell source
+    arm so the S-311 rule path is the one under test."""
+    pr = json.load(open(PR015))
+    nine = [[L, head] for L in range(6, 15)]
+    pr["cell_sets"]["HD_%d" % head] = nine
+    pr["n_arms_per_split"] = len(pr["cell_sets"]) + len(pr["base_arms"])
+    ph = pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"][str(head)]
+    ph.pop("min_abs_E_for_ci95_to_exclude_0", None)
+    ph["bar_source_arm"] = "HD_%d" % head
+    ph["pr013_whole_head_REFERENCE"] = {"E": ref_E, "void_tolerance": tol}
+    pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["BAR_IS_A_RULE"] = {
+        "z": 1.96, "rule": "bar = z*SD(paired delta)/sqrt(n)"}
+    p = tmp_path / "ref.json"
+    p.write_text(json.dumps(pr))
+    return str(p)
+
+
+def _farm_with_hd17(tmp_path):
+    """PR-015's 29 real arms plus D34's SINGLE_17 re-badged as a 9-cell HD_17 (the S-311 fixture)."""
+    import glob as _g
+    src = _g.glob(os.path.join(
+        ROOT, "outputs/boombness/score_behavior/csi5_census_basket_validation_SINGLE_17_*"))[0]
+    farm = tmp_path / "score"
+    farm.mkdir()
+    for d in sorted(_g.glob(os.path.join(
+            ROOT, "outputs/boombness/score_behavior/csi8_cell3_basket_validation_*"))):
+        os.symlink(d, farm / os.path.basename(d))
+    hd = farm / "csi8_cell3_basket_validation_HD_17_20260922_191521_939328"
+    hd.mkdir()
+    for f in os.listdir(src):
+        if f == "config.json":
+            c = json.load(open(os.path.join(src, f)))
+            a = c.get("args") or c
+            a["knockout_heads"] = ""
+            a["knockout_cells"] = ",".join("%d:17" % L for L in range(6, 15))
+            a["arm"] = "HD_17"
+            (hd / f).write_text(json.dumps(c))
+        elif f == "RUNMETA.json":
+            r = json.load(open(os.path.join(src, f)))
+            r["slurm_job_id"] = "922176"
+            (hd / f).write_text(json.dumps(r))
+        else:
+            os.symlink(os.path.join(src, f), hd / f)
+    return str(farm)
+
+
+def _census_on(farm, prereg, tmp_path):
+    import importlib.util as _ilu
+    spec = _ilu.spec_from_file_location("census_void8", CENSUS_READER)
+    mod = _ilu.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    mod.rederive.SCORE_DIR = farm
+    old = sys.argv[:]
+    sys.argv = ["c", "--prereg", prereg, "--tag-prefix", "csi8_cell3_basket_validation",
+                "--split", "validation", "--expect-n", "230", "--require-slurm-job", "922176",
+                "--out", str(tmp_path / "o.json")]
+    import io as _io
+    import contextlib
+    buf = _io.StringIO()
+    try:
+        with contextlib.redirect_stdout(buf):
+            rc = mod.main()
+    except SystemExit as e:
+        rc = e.code
+    finally:
+        sys.argv = old
+    # sys.exit("message") puts the refusal in e.code, NOT on stdout. Searching only the captured
+    # stdout would have made every refusal assertion below vacuous -- it looked for text that is
+    # structurally never there. Both channels are returned as one searchable blob.
+    text = buf.getvalue() + ("" if rc in (0, None) else "\n%s" % (rc,))
+    return rc, text
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's arms are needed")
+def test_VOID_8_REFUSES_a_whole_head_arm_that_drifted_from_its_frozen_reference(tmp_path):
+    """PROPERTY: a prereg that freezes a prior measurement of the same head/codeword/split must have
+    that condition ENFORCED, not merely stated. S-318 showed bit-identical reproduction across two
+    jobs and two nodes, so any difference above the declared tolerance means the population, bank,
+    exclusions or model revision drifted and nothing in the family is readable."""
+    farm = _farm_with_hd17(tmp_path)
+    # the real HD_17 arm is D34's SINGLE_17, E = -0.02921839. Freeze a WRONG reference.
+    pr = _pr015_with_reference(tmp_path, 17, ref_E=-0.01000000)
+    rc, out = _census_on(farm, pr, tmp_path)
+    assert rc not in (0, None), "a drifted whole-head arm was READ:\n%s" % out[-800:]
+    assert "VOID CONDITION" in out and "DRIFTED" in out, out[-800:]
+    assert "CLEAR THE PREREGISTERED BAR" not in out, "a headline was printed despite the VOID"
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's arms are needed")
+def test_VOID_8_PASSES_and_PRINTS_when_the_arm_matches_its_reference(tmp_path):
+    """The companion: a guard that refuses everything is not a guard. With the true value frozen the
+    read proceeds AND emits a PROVENANCE line, so the check is visible rather than merely absent."""
+    farm = _farm_with_hd17(tmp_path)
+    pr = _pr015_with_reference(tmp_path, 17, ref_E=-0.02921839)
+    rc, out = _census_on(farm, pr, tmp_path)
+    assert rc in (0, None), "a MATCHING reference was refused:\n%s" % out[-800:]
+    assert "PROVENANCE head 17" in out and " OK" in out, out[-800:]
+    assert "3 of 27 cells CLEAR" in out or "CLEAR THE PREREGISTERED BAR" in out
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's arms are needed")
+def test_a_reference_whose_source_arm_is_ABSENT_refuses_rather_than_skipping(tmp_path):
+    """R20-6: absence is not a pass. If the arm the reference names did not land, the condition
+    cannot be evaluated and the read must stop -- not quietly continue unchecked."""
+    farm = _farm_with_hd17(tmp_path)
+    pr = json.load(open(_pr015_with_reference(tmp_path, 17, ref_E=-0.02921839)))
+    pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"]["17"]["bar_source_arm"] = "HD_NOSUCH"
+    p = tmp_path / "absent.json"
+    p.write_text(json.dumps(pr))
+    rc, out = _census_on(farm, str(p), tmp_path)
+    assert rc not in (0, None) and "REFUSING" in out, out[-600:]
