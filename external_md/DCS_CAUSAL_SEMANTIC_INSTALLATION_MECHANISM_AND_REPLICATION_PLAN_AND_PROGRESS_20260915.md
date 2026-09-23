@@ -25917,3 +25917,204 @@ S-306 §4          WEAKENED -- the additivity check is post-hoc and underpowered
 S-306 §5/§6       STAND, and strengthened by the Laplace-smoothed null and the L14 non-dominance on E
 REVIEW R27        still running (3 lenses) -- lands next
 ```
+
+---
+
+## REVIEW R27 — the heaviest review of the sprint by finding count: **6 MAJOR + 10 MINOR across three lenses, every one demonstrated by running the code.** 🔴 **Two of them had already written FALSE METADATA into the PUBLISHED PR-CSI-015 report**, and a third would have silently flipped its headline from 3-of-27 to 2-of-27. **The numbers survive untouched.** All fixed, with six tests that FAIL on the pre-fix code
+
+### 0. Scope, and why the count is so high
+
+Window: **S-297…S-305**, i.e. since R26. Three lenses in parallel — the census reader, the gates/freeze/argv path, and one lens tasked only with **the class rather than the instance**, which is the thing S-305 named and did not finish.
+
+⚠ **The reason R27 out-found R25 and R26 is that S-305 told it where to look.** S-305 wrote: *"The pattern is fixing the instance in front of me instead of grepping for the class."* R27 was pointed at exactly that, and **the fourth and fifth instances were both waiting.**
+
+### 1. 🔴 MAJOR — the FOURTH instance of the S-305 class, and the first to reach a PUBLISHED artefact
+
+S-301 replaced the hardcoded dose status **at the print banner** and left the identical hardcode **160 lines below**, where it is written into the JSON for every cell arm:
+
+```
+scripts/dcs_csi_head_census.py:358
+  g0[arm]["dose_expectation_status"] = "PREDICTED (DOSE_UNIT/band_width, untested uniformity
+                                        assumption -- S-292)"
+```
+
+```
+the PUBLISHED report:  27 x "PREDICTED ... untested uniformity assumption"
+its own prereg:        DOSE_EXPECTATION.STATUS = "MEASURED (PR-CSI-014 observed exactly 224.0 ...)"
+its own stdout:        "PER-CELL DOSE VALIDATION: predicted 224, observed [224.0] -> CONFIRMED"
+```
+
+**The artefact contradicted its own preregistration, its own banner and its own verdict, in the
+safe-sounding direction.** Fixed: the status is read from the prereg, whatever the prereg says.
+
+### 2. 🔴 MAJOR — S-301's lesson applied at ONE consumer of four, and the published report went out with its criterion NULL
+
+`_bar_for()` learned `DETECTABILITY_PREREGISTERED_PER_HEAD`. The **three other readers of the same
+block did not**, so on PR-CSI-015 they all resolved to `None`:
+
+```
+CELL_FAMILY.DETECTABILITY_PREREGISTERED                            = null
+CELL_FAMILY.NOTHING_CLEARED_THE_BAR_IS_A_PREREGISTERED_COHERENT_OUTCOME = null
+CELL_FAMILY.WEAKER_CRITERION_NOTE: "The prereg froze |E| > preregistered_bar"
+                                                     ^^^^ which is ALSO null on a multi-head family
+```
+
+**The report told a reader the criterion lived in a field the report had left empty.** The headline
+was computed correctly against the per-head bars sitting right there — but the published artefact
+could not be audited against its own criterion, which is the whole point of publishing it.
+
+Fixed by **one resolver** (`_detect()`) that every consumer goes through — because "fixed at the site
+in front of me" is the defect. It accepts both spellings (`..._CLEARS_IT` from PR-014,
+`..._CLEARS` from PR-015), and its absence default now **warns** instead of asserting that the prereg
+records something (R20-6).
+
+### 3. 🔴 MAJOR — the fail-open that would have flipped the headline
+
+`_bar_for` refused when **both** bar sources were absent. It fell through silently when a prereg
+carried a `PER_HEAD` block **but omitted one head** and also carried a legacy global bar.
+
+R27 demonstrated it **on the real 29 arms**:
+
+```
+delete per_head["23"], leave head 2's frozen global 0.019181
+  -> banner prints "head 23  |E| > 0.019181" as if preregistered
+  -> CL_H23_L07 (E = -0.018514) flips CLEARS -> below the bar
+  -> headline 3 of 27 -> 2 of 27
+  -> head 23 flips from preregistered outcome A to outcome C, THE DISTRIBUTED-PROFILE NULL
+  -> exit 0, no warning
+```
+
+**S-301 closed total absence and left partial absence wide open — one branch away from the refusal it
+had just written.** Fixed: a per-head declaration must be **total**, or the read refuses.
+
+### 4. 🔴 MAJOR — the FIFTH instance: S-305's own fix fails open on the negation of its own keyword
+
+```
+_dose_confirmed = ("MEASURED" in s.upper() and "PREDICTED" not in s.upper())
+```
+
+`"NOT MEASURED"` contains `"MEASURED"`. R27 ran the real sweep against the real 29 arms with
+`STATUS` set to `NOT MEASURED`, `NOT YET MEASURED` and `UNMEASURED` — **all three printed the identity
+branch**, announcing an explicitly-unmeasured dose as an identity *"so a deviation is a CODE defect"*.
+
+⚠ **S-305's comment above that line asserts the opposite of what the line does**: *"everything else,
+absence included, is UNVERIFIED (R20-6: absence is not a pass)."* Fixed: the status must **begin with**
+the word and every negative form is refused explicitly.
+
+### 5. 🔴 MAJOR — a guard swallowed by its own exception handler, on an arm that cleared the bar
+
+The sweep caught `SystemExit` **and** bare `Exception` from `strict_run_dir` and printed
+`-- not landed --`, incrementing **neither** `landed` nor `fails`. So every refusal reason collapsed
+into "hasn't started yet":
+
+```
+corrupt CL_H19_L14's DONE.json ledger (231 vs a 230-line results.jsonl)
+  -> "CL_H19_L14   -- not landed --"
+  -> "GATE 0: every landed arm passes (28 of 29)",  exit 0
+```
+
+**CL_H19_L14 is one of the three cells that cleared the bar.** A second complete run dir from the void
+job 918967 did the same — exactly the S-103/S-104 relaunch shape the frozen read warns about.
+
+Fixed: an arm with **no** directory is *not landed*; an arm whose directories **exist and were
+refused** is a **FAILURE**, named with its reason. Verified on three cases:
+
+```
+real arms, right job    -> "every landed arm passes (29 of 29)"                         exit 0
+real arms, wrong job    -> "29 FAILURE(S) ... 29 had directories that were REFUSED"      exit 1
+prefix matching nothing -> "NOTHING TO CHECK -- 0 of 29 declared arms resolved"          exit 3
+```
+
+### 6. The MINORs worth naming
+
+* `min_abs_E_for_ci95_to_exclude_0` **is falsified by this family's own data by ~7×.** It is 1.96·SE
+  of the **nine-cell head** arm, whose per-domain spread is far larger than a single cell's. **7 of the
+  24 non-clearing cells have a ci95 excluding 0**, the smallest at **14%** of the bar. So *"24 of 27
+  below the bar"* must **never** be read as *"24 cells show no effect"* — it means *not detectable at
+  the preregistered resolution*. The `WEAKER_CRITERION_NOTE` now says this in the artefact itself.
+* `head_2_cross_check` in the freeze script is **tautological** — `recomputed` and `frozen_in_pr014`
+  are both `round(HEAD_2_FROZEN_BAR, 6)`, the same module constant, so they **cannot** differ, while the
+  note claims a reproduction the published numbers do not witness. R26 §1's shape in a new artefact.
+  The genuine comparison exists at line 258 and is never published. **Recorded, not fixed** — the
+  prereg is frozen and committed, and R26's chain-of-custody rule forbids editing it after the fact.
+* `screen = {"19": "L14", "17": "L14", "23": "L7"}` is a **bare literal** in the freeze script and the
+  script never opens the screen artefact it cites. Two reviewers independently re-derived it from the
+  288-cell grid and **it is correct** — but it is the prediction side of the whole headline, unpinned.
+  Together with S-307 §5 (the screen is gitignored, zero git history) this is the sprint's weakest
+  provenance link, and it is now named twice.
+* The argv generator's `EXPECT_N` is a **constant standing where the prereg is the source**, and its
+  `codeword` default `"basket"` is never checked against the prereg — so S-251's defect (basket rows
+  under button tags, `--check` passing) is **still reachable**. Demonstrated: removing `codeword` from
+  PR-013's button prereg and running `--check` exits 0 announcing *"CODEWORD CHECK PASSED: 'basket'"*.
+  ⚠ **This one is load-bearing for the next family, which is on BUTTON.** Fixed before PR-CSI-016.
+* VOID condition 6 (*"`score_behavior.py` edited while these arms are in flight"*) **has no enforcing
+  check anywhere**, and PR-015 exhibited its precondition: the 29 arms recorded **four distinct git
+  HEADs**, with `CL_BASE` — the subtrahend of all 27 contrasts — at `fbf1fbf5` and every cell arm
+  later. **VOID 6 is clear on the facts** (`git diff fbf1fbf5 64a2dad3 -- src/ scripts/score_behavior.py`
+  is **empty**; the in-flight commits touched only `external_md`, the sweep and a test), but it was
+  clear by luck rather than by a check.
+
+### 7. ✅ What R27 VERIFIED CORRECT, which is also a finding
+
+```
+the 3-of-27 headline, re-derived from raw results.jsonl by 3 independent implementations   max |dE| 4.7e-09
+all four bars re-derived from D34's RAW rows: 0.009082 / 0.010223 / 0.006615 / 0.019181    all 6 digits
+  (and the ALTERNATIVE reading of "per-domain SD" gives 0.0598/0.0601/0.0654 and does NOT
+   reproduce -- so the prereg's phrase unambiguously means the PAIRED DELTA, and that is what ran)
+every arm: slurm_job_id 922176, node n-301 (single node -> VOID 1 cannot fire), attn eager (VOID 2),
+  CL_BASE carries no --intervene (VOID 4), dose 224.0 x27 / 2016.0 / 0, decode edits 0, violations {}
+both rank readers refuse PR-CSI-015 by name (S-302's claim, verified by running them)
+```
+
+📌 **And the verdict is robust to the bars entirely.** The three clearing cells sit at 2.58×, 4.30×
+and 2.80× their bars; the largest **non**-clearing cell is 0.44× of its own. **Every bar could be
+rescaled by any factor in [0.44×, 2.58×] — or the three heads' bars permuted among themselves — and
+the clearing set would be byte-identical.** That matters because S-307 §6 correctly flagged the bars
+as validation-derived and not held out: **they are not load-bearing.**
+
+### 8. The published report is REGENERATED, and here is exactly what moved
+
+R26 refused to rewrite D34 and the chain of custody was why. **This case is different and the
+difference is checkable**: the arms are on disk, the read is frozen and unchanged (md5 `4841486c`),
+and the reader is deterministic. So the frozen read was **re-executed** with the fixed reader:
+
+```
+md5 BEFORE  800f343da9ba7707178c05db49a1a46c
+md5 AFTER   293f9ce70518de09ca8ea8684277748f
+
+fields compared   575
+fields CHANGED     51
+  of which NUMERIC  0     <- every E, every ci95, the clearing set, n_domains, the anchors: IDENTICAL
+```
+
+All 51 are `null -> value` (the detectability block, its per-head entries, the coherent-outcome text,
+the method string) or the false dose status `-> ` the prereg's own. **No number moved, and the before
+md5 is recorded here so the regeneration is auditable rather than silent.**
+
+⚠ Independent corroboration that the reader is deterministic: an R27 reviewer re-ran the frozen read
+**without** `--require-slurm-job` and got `800f343d` — byte-identical to the original. *That is also a
+MINOR finding in its own right: the report records neither the run dirs it read nor the job filter, so
+nothing in the JSON distinguishes a job-bound read from an unbound one.*
+
+### 9. Verification
+
+```
+6 new tests, each written against the PROPERTY and not the wording
+  -> ALL SIX FAIL on the pre-fix code (checked by reverting both scripts to HEAD and re-running)
+  -> all pass on the fixed code.   35 tests in test_csi_cell_identity.py, 46 with test_knockout_cells
+```
+
+⚠ **And R27 broke a test in this very file** — `test_a_real_gate0_failure_and_zero_landed_have_
+DIFFERENT_exit_codes` did `src.index("landed arm(s) FAILED")`, a **literal**, and it failed the moment
+the summary line was reworded although the property it protects was untouched. **That is exactly the
+anti-pattern S-305 named**, sitting in the file where the lesson should have landed first. Rewritten to
+assert the property: the zero-landed path and the failure path must exit with **different non-zero**
+codes, found by structure rather than by wording.
+
+### 10. Verdict of R27
+
+**No BLOCKER. The science is untouched — three independent re-derivations put the headline at 4.7e-09.
+The artefact was not.** Two defects had already published false metadata, one was a single branch away
+from flipping a preregistered outcome, and two of the six MAJORs are the *fourth and fifth* instances
+of a class **named in the immediately preceding entry**. Naming a class is not fixing it; the grep has
+to be part of the fix, and now there are tests that fail without it.

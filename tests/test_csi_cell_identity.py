@@ -19,6 +19,7 @@ Run:  python -m pytest tests/test_csi_cell_identity.py -q
 import importlib.util
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -251,11 +252,26 @@ def test_zero_landed_arms_is_NOT_reported_as_a_pass(tmp_path):
 
 def test_a_real_gate0_failure_and_zero_landed_have_DIFFERENT_exit_codes():
     """Zero-landed is legitimate early in a live family, so a caller must be able to tell it apart
-    from an arm that actually failed."""
+    from an arm that actually failed.
+
+    ⚠ R27/S-308 REWROTE THIS TEST. It used to `src.index("landed arm(s) FAILED")` -- a LITERAL -- and
+    it broke the moment the summary line was reworded, even though the property it exists to protect
+    was untouched. That is precisely the failure mode S-305 named ("write the test for the PROPERTY
+    rather than the string"), and this file is where the lesson should have landed first. The
+    property is: the zero-landed path and the real-failure path must exit with DIFFERENT non-zero
+    codes, 3 and 1 respectively, and neither may be 0.
+    """
     src = open(SWEEP).read()
-    assert "sys.exit(3)" in src
-    i = src.index("landed arm(s) FAILED")
-    assert "sys.exit(" in src[max(0, i - 120):i], "the real-failure path no longer exits non-zero"
+    assert "sys.exit(3)" in src, "the zero-landed path must still exit 3"
+    # Find the failure summary by its STRUCTURE -- a sys.exit carrying a GATE 0 failure message --
+    # not by any particular wording of that message.
+    fail_exits = [m for m in re.finditer(r"sys\.exit\(\s*\n?\s*\"GATE 0: ", src)]
+    assert fail_exits, "no sys.exit() carrying a 'GATE 0:' failure message remains in the sweep"
+    # And it must not be the exit-3 path: exit 3 is a bare code, the failure path carries a string
+    # (which exits 1). Both must exist and be distinct.
+    assert "sys.exit(3)" not in "".join(
+        src[m.start():m.start() + 200] for m in fail_exits), \
+        "the real-failure path must not collapse into the zero-landed exit code"
 
 
 # ---------------------------------------------------------------- S-301: a missing bar must REFUSE
@@ -358,3 +374,137 @@ def test_each_prereg_declares_its_own_dose_status_and_they_DIFFER():
     b = json.load(open(PR015))["DOSE_EXPECTATION"]["STATUS"]
     assert "PREDICTED" in a.upper(), a
     assert "MEASURED" in b.upper() and "PREDICTED" not in b.upper(), b
+
+
+# ================================================================ R27 / S-308
+# Four properties closed after adversarial review R27. Each is written against the PROPERTY the fix
+# exists to guarantee, not against any wording -- S-305's lesson, applied here because R27 broke a
+# literal-matching test in this very file while the property behind it was untouched.
+
+SWEEP_PR015_ARGS = ["--tag-prefix", "csi8_cell3_basket_validation", "--split", "validation",
+                    "--require-slurm-job", "922176"]
+
+
+def _has_pr015_arms():
+    import glob
+    return len(glob.glob(os.path.join(
+        ROOT, "outputs/boombness/score_behavior/csi8_cell3_basket_validation_*/DONE.json"))) >= 29
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+def test_a_PARTIAL_per_head_bar_block_REFUSES_and_does_not_borrow_another_heads_bar(tmp_path):
+    """R27. S-301 closed TOTAL absence of a bar and left PARTIAL absence wide open.
+
+    A prereg that declares bars PER HEAD but omits one head, while also carrying a legacy global
+    bar, used to judge the missing head against ANOTHER HEAD'S criterion -- silently, exit 0. R27
+    demonstrated the consequence on the real 29 arms: deleting head 23 and leaving head 2's frozen
+    0.019181 flipped CL_H23_L07 from CLEARS to below-the-bar, the headline from 3-of-27 to 2-of-27,
+    and head 23 from preregistered outcome A to outcome C -- the distributed-profile NULL.
+
+    PROPERTY: if a prereg declares bars per head, that declaration must be TOTAL or the read refuses.
+    """
+    pr = json.load(open(PR015))
+    del pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"]["23"]
+    pr["DETECTABILITY_PREREGISTERED"] = {"min_abs_E_for_ci95_to_exclude_0": 0.019181}
+    p = tmp_path / "partial.json"
+    p.write_text(json.dumps(pr))
+    r = subprocess.run([PY, CENSUS_READER, "--prereg", str(p), "--expect-n", "230",
+                        "--out", os.devnull] + SWEEP_PR015_ARGS,
+                       capture_output=True, text=True)
+    out = r.stdout + r.stderr
+    assert r.returncode != 0, "a partial per-head bar block was READ instead of refused"
+    assert "REFUSING" in out, out[-400:]
+    assert "CLEAR THE PREREGISTERED BAR" not in out, (
+        "a headline was printed while one head was being judged against another head's bar")
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+@pytest.mark.parametrize("status,identity_expected", [
+    ("MEASURED (PR-CSI-014 observed exactly 224.0, S-299)", True),
+    ("PREDICTED, NOT MEASURED", False),
+    ("NOT MEASURED -- this is an untested assumption", False),
+    ("NOT YET MEASURED", False),
+    ("UNMEASURED -- no cell arm has landed", False),
+])
+def test_the_dose_identity_banner_fails_closed_on_every_NEGATED_form(tmp_path, status,
+                                                                     identity_expected):
+    """R27. S-305's fix inverted the polarity of this branch but kept a SUBSTRING test on prose, so
+    the NEGATION of its own keyword still matched: 'NOT MEASURED' contains 'MEASURED'. The sweep then
+    announced an explicitly-unmeasured dose as an IDENTITY whose violation is 'a CODE defect'.
+
+    PROPERTY: only an affirmative declaration may reach the identity branch. Every negative form, and
+    absence, must read as UNVERIFIED (R20-6).
+    """
+    pr = json.load(open(PR015))
+    pr["DOSE_EXPECTATION"]["STATUS"] = status
+    p = tmp_path / "dose.json"
+    p.write_text(json.dumps(pr))
+    r = subprocess.run([PY, os.path.join(ROOT, "scripts", "gates",
+                                         "dcs_csi_pr012_gate0_sweep.py"),
+                        "--prereg", str(p)] + SWEEP_PR015_ARGS,
+                       capture_output=True, text=True)
+    out = r.stdout + r.stderr
+    said_identity = "is an IDENTITY for this family" in out
+    said_unverified = "is a PREDICTION from DOSE_UNIT" in out
+    assert said_identity == identity_expected, (
+        "STATUS %r -> identity=%s, expected %s\n%s" % (status, said_identity, identity_expected,
+                                                       out[:600]))
+    assert said_identity != said_unverified, "the two branches must be mutually exclusive"
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+def test_the_published_dose_status_comes_from_the_PREREG_and_not_from_a_hardcode(tmp_path):
+    """R27 -- THE FOURTH INSTANCE OF THE S-305 CLASS, and the first to reach a PUBLISHED artefact.
+    S-301 replaced this hardcode at the print banner and left the identical one 160 lines below,
+    where it is written into the JSON for every cell arm. PR-CSI-015's published report therefore
+    declared all 27 cell arms 'PREDICTED ... untested uniformity assumption' while its own prereg
+    declared MEASURED and its own stdout said CONFIRMED.
+
+    PROPERTY: the status written into the report is the prereg's, whatever the prereg says.
+    """
+    pr = json.load(open(PR015))
+    pr["DOSE_EXPECTATION"]["STATUS"] = "SENTINEL-FROM-THE-PREREG-NOT-THE-CODE"
+    p = tmp_path / "sent.json"
+    p.write_text(json.dumps(pr))
+    out_json = tmp_path / "r.json"
+    r = subprocess.run([PY, CENSUS_READER, "--prereg", str(p), "--expect-n", "230",
+                        "--out", str(out_json)] + SWEEP_PR015_ARGS,
+                       capture_output=True, text=True)
+    assert r.returncode == 0, (r.stdout + r.stderr)[-600:]
+    rep = json.load(open(out_json))
+    cell_status = {v.get("dose_expectation_status")
+                   for k, v in rep["GATE_0_and_identity"]["per_arm"].items()
+                   if k not in ("CL_BASE", "CL_KO")}
+    assert cell_status == {"SENTINEL-FROM-THE-PREREG-NOT-THE-CODE"}, (
+        "the report's dose status is not the prereg's: %r" % (cell_status,))
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+def test_the_detectability_metadata_is_NOT_null_for_a_PER_HEAD_prereg(tmp_path):
+    """R27. S-301 taught `_bar_for` the PER_HEAD container and left the three OTHER consumers of the
+    same block reading the old name only. The published PR-CSI-015 report consequently carried
+    DETECTABILITY_PREREGISTERED and NOTHING_CLEARED_THE_BAR_IS_A_PREREGISTERED_COHERENT_OUTCOME as
+    null, while its own WEAKER_CRITERION_NOTE told the reader the criterion lived in a field that
+    was null. The numbers were right; the artefact could not be audited against its own criterion.
+
+    PROPERTY: whatever container a prereg uses, a report that HAS a criterion must RECORD it.
+    """
+    out_json = tmp_path / "r.json"
+    r = subprocess.run([PY, CENSUS_READER, "--prereg", PR015, "--expect-n", "230",
+                        "--out", str(out_json)] + SWEEP_PR015_ARGS,
+                       capture_output=True, text=True)
+    assert r.returncode == 0, (r.stdout + r.stderr)[-600:]
+    cf = json.load(open(out_json))["CELL_FAMILY"]
+    assert cf.get("DETECTABILITY_PREREGISTERED") is not None, \
+        "the detectability block is null although the prereg declares one"
+    assert cf.get("NOTHING_CLEARED_THE_BAR_IS_A_PREREGISTERED_COHERENT_OUTCOME") is not None, \
+        "the coherent-outcome text is null although the prereg declares one"
+    # and the per-head bars must be recorded and must match the prereg exactly
+    per = json.load(open(PR015))["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"]
+    for h, d in per.items():
+        assert abs(cf["preregistered_bar_per_head"][h]
+                   - d["min_abs_E_for_ci95_to_exclude_0"]) < 1e-12
+    # the note must not point the reader at a field that is null
+    if cf.get("preregistered_bar") is None:
+        assert "preregistered_bar_per_head" in cf["WEAKER_CRITERION_NOTE"], \
+            "the note points at 'preregistered_bar', which is null on a multi-head family"

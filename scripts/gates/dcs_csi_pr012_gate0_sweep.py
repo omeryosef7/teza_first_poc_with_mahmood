@@ -16,7 +16,7 @@ sound for a self-contained file but says nothing about code it imports and calls
 the SOURCE OF EVERY IMPORTED CALLABLE IT USES. A guard that stops at the module boundary is a guard
 with a hole exactly where the borrowed code is.
 """
-import argparse, inspect, json, os, sys
+import argparse, glob, inspect, json, os, re, sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(REPO, "scripts"))
@@ -158,8 +158,15 @@ def main():
         # announced an unverified dose AS AN IDENTITY. The test written to assert this test's own intent
         # caught it immediately. The identity branch now requires the prereg to say MEASURED explicitly;
         # everything else, absence included, is UNVERIFIED (R20-6: absence is not a pass).
-        _dose_confirmed = ("MEASURED" in _dose_status.upper()
-                           and "PREDICTED" not in _dose_status.upper())
+        # ⚠ R27/S-308 -- S-305's fix FAILED OPEN ON THE NEGATION OF ITS OWN KEYWORD. A substring
+        # test for "MEASURED" is True for "NOT MEASURED", "NOT YET MEASURED" and "UNMEASURED", all
+        # of which then printed the IDENTITY branch for a dose the prereg says was never measured.
+        # Demonstrated by R27 on the real 29 arms. The status is now required to BEGIN with the
+        # word, and every negative form is refused explicitly. Absence is still UNVERIFIED (R20-6).
+        _ds = str(_dose_status).strip().upper()
+        _dose_confirmed = (_ds.startswith("MEASURED")
+                           and not any(w in _ds for w in ("NOT MEASURED", "NOT YET MEASURED",
+                                                          "UNMEASURED", "PREDICTED")))
         if not _dose_confirmed:
             print("  \u26a0 the per-cell dose is a PREDICTION from DOSE_UNIT/%d under an untested "
                   "uniformity assumption." % NLAYERS)
@@ -171,15 +178,29 @@ def main():
             print("    and a VOID condition -- not a surprising fact about the model (S-299).")
     print("%-12s %6s %14s %12s %7s %5s  %-26s %s"
           % ("arm", "rows", "median_pre", "want", "decode", "viol", "identity", "verdict"))
-    landed = fails = 0
+    landed = fails = refused = 0
     for arm in arms:
+        # ⚠ R27/S-308. This block used to swallow EVERY refusal from strict_run_dir into
+        # "-- not landed --", incrementing neither `landed` nor `fails`. R27 demonstrated it on the
+        # real arms: corrupting CL_H19_L14's DONE.json ledger -- one of the THREE cells that cleared
+        # the bar -- printed "-- not landed --" and then "every landed arm passes (28 of 29)",
+        # exit 0. A second complete run dir from the void job 918967 did the same, which is exactly
+        # the S-103/S-104 relaunch shape the frozen read warns about. An arm that HAS directories
+        # and was refused is a FAILURE; only an arm with NO directory at all is "not landed".
+        _tag = "%s_%s" % (a.tag_prefix, arm)
+        _cands = [x for x in glob.glob(os.path.join(census.rederive.SCORE_DIR, _tag + "_*"))
+                  if re.match(r"^" + re.escape(_tag) + r"_\d{8}_\d{6}_\d+$", os.path.basename(x))]
         try:
-            d = strict_run_dir("%s_%s" % (a.tag_prefix, arm), a.expect_n,
+            d = strict_run_dir(_tag, a.expect_n,
                                row_file="results.jsonl", require_slurm_jobs=jobs)
-        except SystemExit:
-            print("%-12s -- not landed --" % arm); continue
-        except Exception:
-            print("%-12s -- not landed --" % arm); continue
+        except (SystemExit, Exception) as e:
+            if not _cands:
+                print("%-12s -- not landed --" % arm); continue
+            fails += 1
+            refused += 1
+            print("%-12s  \u26a0 GATE 0 FAIL -- %d run dir(s) EXIST but were REFUSED: %s"
+                  % (arm, len(_cands), str(e)[:160]))
+            continue
         landed += 1
         L = liveness(d)
         k = 0 if arm == base[0] else (32 if arm == base[1] else len(hs[arm]))
@@ -227,7 +248,10 @@ def main():
                  len(L["violations"]), why[:26], "PASS" if ok else "FAIL", diag if ok else ""))
     print()
     if fails:
-        sys.exit("GATE 0: %d of %d landed arm(s) FAILED." % (fails, landed))
+        sys.exit("GATE 0: %d FAILURE(S) over %d arm(s) that resolved to a run directory "
+                 "(%d passed GATE 0; %d had directories that were REFUSED by strict_run_dir and "
+                 "are counted as failures rather than as 'not landed' -- R27/S-308)."
+                 % (fails, landed + refused, landed - (fails - refused), refused))
     # ⛔ ZERO LANDED ARMS IS NOT A PASS (S-292). This printed "GATE 0: every landed arm passes
     # (0 of 23)" and exited 0 whenever NOTHING matched -- a typo in --tag-prefix, the wrong split, a
     # --require-slurm-job naming a job that produced nothing. That is exactly the rule this file's own
@@ -239,8 +263,9 @@ def main():
     # in a live family -- the sweep is designed to run while arms are in flight -- so it must be
     # distinguishable by a caller from a real GATE 0 failure (which exits 1 above).
     if landed == 0:
-        print("GATE 0: NOTHING TO CHECK -- 0 of %d declared arms resolved. THIS IS NOT A PASS."
-              % len(arms))
+        print("GATE 0: NOTHING TO CHECK -- 0 of %d declared arms resolved%s. THIS IS NOT A PASS."
+              % (len(arms),
+                 "" if not refused else " (and %d had run directories that were REFUSED)" % refused))
         print("  Either no arm has landed yet, or --tag-prefix/--split/--require-slurm-job name "
               "something that does not exist.")
         sys.exit(3)

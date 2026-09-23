@@ -356,8 +356,15 @@ def main():
                    "pass": bool(L["violations"] == {} and L["total_decode_edits"] == 0
                                 and L["median_prefill_edits"] == want_dose and ok_id)}
         if IS_CELLS:
+            # ⚠ R27/S-308 -- THE FOURTH INSTANCE OF THE S-305 CLASS, and the first to reach a
+            # PUBLISHED artefact. S-301 replaced this exact hardcode at the PRINT banner and left it
+            # here, 160 lines below, where it is written into the JSON for every cell arm. The
+            # published PR-CSI-015 report therefore declares all 27 of its cell arms "PREDICTED ...
+            # untested uniformity assumption" while its own prereg declares STATUS "MEASURED" and its
+            # own stdout says the dose is CONFIRMED. The prereg is the source; this file is not.
             g0[arm]["dose_expectation_status"] = (
-                "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+                str((pr.get("DOSE_EXPECTATION") or {}).get(
+                    "STATUS", "STATUS NOT DECLARED BY THE PREREG -- treat the dose as UNVERIFIED"))
                 if arm not in (base_arm, ko_arm) else "MEASURED (S-215, S-246)")
     failed = sorted(k for k, v in g0.items() if not v["pass"])
     if failed:
@@ -402,6 +409,23 @@ def main():
         # preregistered-coherent "nothing concentrates" outcome. This is the R20-6 rule -- any check
         # whose result is consistent with reading NOTHING is not a check -- on the one field the whole
         # verdict turns on.
+        # ⚠ R27/S-308: S-301 taught THIS function the PER_HEAD container and left the three other
+        # consumers of the same block reading the old name only -- so PR-CSI-015's published report
+        # carried DETECTABILITY_PREREGISTERED, preregistered_bar and
+        # NOTHING_CLEARED_THE_BAR_IS_A_PREREGISTERED_COHERENT_OUTCOME as **null** while its headline
+        # was computed against the per-head bars that were right there. The fix is ONE resolver that
+        # every consumer goes through, because the defect class is "fixed at the site in front of me".
+        _detect_block = (pr.get("DETECTABILITY_PREREGISTERED_PER_HEAD")
+                         or pr.get("DETECTABILITY_PREREGISTERED") or {})
+        _HAS_PER_HEAD = bool((pr.get("DETECTABILITY_PREREGISTERED_PER_HEAD") or {}).get("per_head"))
+
+        def _detect(*names, **kw):
+            """A field of the detectability block under ANY of its spellings. Absence is explicit."""
+            for nm in names:
+                if nm in _detect_block and _detect_block[nm] is not None:
+                    return _detect_block[nm]
+            return kw.get("default")
+
         _per_head_bars = (pr.get("DETECTABILITY_PREREGISTERED_PER_HEAD") or {}).get("per_head") or {}
         _single_bar = (pr.get("DETECTABILITY_PREREGISTERED") or {}).get(
             "min_abs_E_for_ci95_to_exclude_0")
@@ -416,6 +440,19 @@ def main():
                              "min_abs_E_for_ci95_to_exclude_0. A missing bar would make every cell read "
                              "as 'below the bar' and print a FALSE NULL. (S-301)" % (pr["id"], h))
                 return float(v)
+            # ⚠ R27/S-308: FAIL CLOSED ON PARTIAL ABSENCE. S-301 closed the case where the prereg
+            # has NO bar at all and left open the far more likely one: a prereg that carries a
+            # PER_HEAD block but omits ONE head, alongside a legacy global bar. That head was then
+            # silently judged against ANOTHER HEAD'S bar, with no warning and exit 0. Demonstrated by
+            # R27 on the real 29 arms: removing per_head['23'] and leaving head 2's global 0.019181
+            # flipped CL_H23_L07 from CLEARS to below-the-bar, the headline from 3-of-27 to 2-of-27,
+            # and head 23 from preregistered outcome A to outcome C -- the distributed-profile NULL.
+            # If a prereg declares bars PER HEAD, then EVERY head must be in it.
+            if _HAS_PER_HEAD:
+                sys.exit("REFUSING: prereg %r declares DETECTABILITY_PREREGISTERED_PER_HEAD but has "
+                         "no entry for head %d. Falling back to a shared bar would judge this head "
+                         "against ANOTHER head's criterion and can flip its preregistered outcome. "
+                         "A per-head prereg must be total. (R27/S-308)" % (pr["id"], h))
             if _single_bar is not None:
                 return float(_single_bar)
             sys.exit("REFUSING: prereg %r carries no preregistered detectability bar for head %d -- "
@@ -482,8 +519,13 @@ def main():
         if not _cleared:
             print("         NOTHING CLEARS THE BAR. This outcome was PREREGISTERED AS COHERENT "
                   "before any arm ran:")
-            print("         " + (pr.get("DETECTABILITY_PREREGISTERED") or {}).get(
-                "COHERENT_OUTCOME_IF_NOTHING_CLEARS_IT", "(the prereg records it)"))
+            # Both spellings: PR-CSI-014 wrote ..._IT, PR-CSI-015 wrote ..._CLEARS. And the old
+            # default ASSERTED that the prereg records something when it may not (R20-6).
+            print("         " + str(_detect("COHERENT_OUTCOME_IF_NOTHING_CLEARS_IT",
+                                            "COHERENT_OUTCOME_IF_NOTHING_CLEARS",
+                                            default="\u26a0 THE PREREG RECORDS NO COHERENT-OUTCOME "
+                                                    "TEXT FOR THIS BRANCH -- do not read this null as "
+                                                    "a preregistered null (R20-6).")))
         # The per-cell dose is the arithmetic this family exists to validate -- say what it measured.
         _doses = sorted({g0[k]["median_prefill_edits"] for k in _cells})
         print("\n[census] PER-CELL DOSE VALIDATION: predicted %d, observed median_prefill_edits %s "
@@ -539,7 +581,8 @@ def main():
                 else "REFUTED -- the uniformity assumption behind DOSE_UNIT/band_width is WRONG and "
                      "every cell dose expectation in the sprint must be re-derived (S-292)"),
             "cells": {k: sorted(hs[k]) for k in sorted(hs)},
-            "DETECTABILITY_PREREGISTERED": pr.get("DETECTABILITY_PREREGISTERED"),
+            "DETECTABILITY_PREREGISTERED": (pr.get("DETECTABILITY_PREREGISTERED_PER_HEAD")
+                                            or pr.get("DETECTABILITY_PREREGISTERED")),
             # S-300: the PREREGISTERED count first, the weaker one beside it, both named for exactly
             # what they measure so neither can be quoted as the other.
             "n_cells_CLEARING_THE_PREREGISTERED_BAR": sum(
@@ -549,13 +592,22 @@ def main():
             "cells_clearing_the_preregistered_bar": sorted(
                 k for k in hs if abs(E[k]) > _bar_for(k)),
             "n_cells_with_ci95_excluding_0": sum(1 for k in hs if (CI[k][1] < 0 or CI[k][0] > 0)),
+            # ⚠ R27/S-308: this note used to say "the prereg froze |E| > preregistered_bar" on a
+            # MULTI-HEAD family, where preregistered_bar is null by design and the real criterion
+            # lives in preregistered_bar_per_head. It pointed a reader at a null.
             "WEAKER_CRITERION_NOTE": (
                 "n_cells_with_ci95_excluding_0 is NOT the preregistered criterion. The prereg froze "
-                "|E| > preregistered_bar. A cell can exclude 0 at a small fraction of the bar and with "
-                "the wrong sign; on PR-CSI-014 CL_L11 did exactly that (S-299/S-300)."),
-            "NOTHING_CLEARED_THE_BAR_IS_A_PREREGISTERED_COHERENT_OUTCOME": (
-                (pr.get("DETECTABILITY_PREREGISTERED") or {}).get(
-                    "COHERENT_OUTCOME_IF_NOTHING_CLEARS_IT")),
+                "|E| > %s. A cell can exclude 0 at a small fraction of the bar and with the wrong "
+                "sign; on PR-CSI-014 CL_L11 did exactly that (S-299/S-300). ⚠ AND THE CONVERSE, "
+                "measured on THIS family (R27/S-308): the bar is 1.96*SE of the NINE-CELL HEAD arm, "
+                "whose per-domain spread is much larger than a single cell's, so cells exclude 0 far "
+                "below it -- 7 of PR-CSI-015's 24 non-clearing cells do, the smallest at 14%% of the "
+                "bar. 'Below the bar' therefore means NOT DETECTABLE AT THE PREREGISTERED "
+                "RESOLUTION, and must NOT be read as 'this cell shows no effect'."
+                % ("preregistered_bar" if _thr is not None
+                   else "that head's own preregistered_bar_per_head entry")),
+            "NOTHING_CLEARED_THE_BAR_IS_A_PREREGISTERED_COHERENT_OUTCOME": _detect(
+                "COHERENT_OUTCOME_IF_NOTHING_CLEARS_IT", "COHERENT_OUTCOME_IF_NOTHING_CLEARS"),
         }
     n = w4.atomic_write_json(a.out, out)
     print("\n[census] wrote+verified %s (%d bytes)" % (a.out, n))

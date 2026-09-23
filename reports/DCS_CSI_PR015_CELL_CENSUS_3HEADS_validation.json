@@ -191,7 +191,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H17_L07": {
         "n_rows": 230,
@@ -203,7 +203,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H17_L08": {
         "n_rows": 230,
@@ -215,7 +215,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H17_L09": {
         "n_rows": 230,
@@ -227,7 +227,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H17_L10": {
         "n_rows": 230,
@@ -239,7 +239,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H17_L11": {
         "n_rows": 230,
@@ -251,7 +251,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H17_L12": {
         "n_rows": 230,
@@ -263,7 +263,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H17_L13": {
         "n_rows": 230,
@@ -275,7 +275,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H17_L14": {
         "n_rows": 230,
@@ -287,7 +287,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H19_L06": {
         "n_rows": 230,
@@ -299,7 +299,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H19_L07": {
         "n_rows": 230,
@@ -311,7 +311,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H19_L08": {
         "n_rows": 230,
@@ -323,7 +323,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H19_L09": {
         "n_rows": 230,
@@ -335,7 +335,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H19_L10": {
         "n_rows": 230,
@@ -347,7 +347,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H19_L11": {
         "n_rows": 230,
@@ -359,7 +359,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H19_L12": {
         "n_rows": 230,
@@ -371,7 +371,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H19_L13": {
         "n_rows": 230,
@@ -383,7 +383,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H19_L14": {
         "n_rows": 230,
@@ -395,7 +395,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H23_L06": {
         "n_rows": 230,
@@ -407,7 +407,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H23_L07": {
         "n_rows": 230,
@@ -419,7 +419,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H23_L08": {
         "n_rows": 230,
@@ -431,7 +431,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H23_L09": {
         "n_rows": 230,
@@ -443,7 +443,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H23_L10": {
         "n_rows": 230,
@@ -455,7 +455,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H23_L11": {
         "n_rows": 230,
@@ -467,7 +467,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H23_L12": {
         "n_rows": 230,
@@ -479,7 +479,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H23_L13": {
         "n_rows": 230,
@@ -491,7 +491,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       },
       "CL_H23_L14": {
         "n_rows": 230,
@@ -503,7 +503,7 @@
         "dose_is_diagnostic_of_identity": false,
         "n_arms_sharing_this_expected_dose": 27,
         "pass": true,
-        "dose_expectation_status": "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+        "dose_expectation_status": "MEASURED (PR-CSI-014 observed exactly 224.0 on all nine of its cells, S-299)"
       }
     },
     "identity": {
@@ -1210,7 +1210,40 @@
         ]
       ]
     },
-    "DETECTABILITY_PREREGISTERED": null,
+    "DETECTABILITY_PREREGISTERED": {
+      "method": "S-294: bar = 1.96 * (per-domain SD of that head's nine-cell arm) / sqrt(n_dom), computed from the PUBLISHED D34 arms via W4's own by_domain",
+      "n_domains": 23,
+      "per_head": {
+        "19": {
+          "E_of_the_9cell_head_arm": -0.04010869,
+          "per_domain_SD": 0.02501491,
+          "n_domains": 23,
+          "min_abs_E_for_ci95_to_exclude_0": 0.010223,
+          "as_share_of_the_head_effect": 0.2549
+        },
+        "17": {
+          "E_of_the_9cell_head_arm": -0.02921839,
+          "per_domain_SD": 0.022223,
+          "n_domains": 23,
+          "min_abs_E_for_ci95_to_exclude_0": 0.009082,
+          "as_share_of_the_head_effect": 0.3108
+        },
+        "23": {
+          "E_of_the_9cell_head_arm": -0.01650303,
+          "per_domain_SD": 0.01618591,
+          "n_domains": 23,
+          "min_abs_E_for_ci95_to_exclude_0": 0.006615,
+          "as_share_of_the_head_effect": 0.4008
+        }
+      },
+      "head_2_cross_check": {
+        "recomputed": 0.019181,
+        "frozen_in_pr014": 0.019181,
+        "note": "the method reproduces the bar PR-CSI-014 froze, so it has not drifted"
+      },
+      "WHY_PER_HEAD": "These heads have smaller effects AND smaller per-domain spreads than head 2, so a single shared bar would be wrong in both directions. Head 23's bar is 0.006615 where head 2's is 0.019181 -- using head 2's bar would declare head 23 undetectable when it is not.",
+      "COHERENT_OUTCOME_IF_NOTHING_CLEARS": "Under an even nine-way split NO head's cell clears its own bar (0.28x-0.44x of it). That is a coherent, informative outcome preregistered HERE: it would mean the depth concentration D36 found at head 2 is NOT general, and that for these heads the load is distributed across depth. ⛔ It must NOT be reported as a failed experiment, and it must NOT be rescued by dropping to a weaker bar, a one-sided test, or an uncorrected 'trend'. NOTE that 'ci95 excludes 0' is a WEAKER test than this bar and is NOT the criterion (S-299/S-300: on PR-CSI-014 one cell excluded 0 at 5% of the bar with the wrong sign)."
+    },
     "n_cells_CLEARING_THE_PREREGISTERED_BAR": 3,
     "preregistered_bar": null,
     "preregistered_bar_per_head": {
@@ -1224,7 +1257,7 @@
       "CL_H23_L07"
     ],
     "n_cells_with_ci95_excluding_0": 10,
-    "WEAKER_CRITERION_NOTE": "n_cells_with_ci95_excluding_0 is NOT the preregistered criterion. The prereg froze |E| > preregistered_bar. A cell can exclude 0 at a small fraction of the bar and with the wrong sign; on PR-CSI-014 CL_L11 did exactly that (S-299/S-300).",
-    "NOTHING_CLEARED_THE_BAR_IS_A_PREREGISTERED_COHERENT_OUTCOME": null
+    "WEAKER_CRITERION_NOTE": "n_cells_with_ci95_excluding_0 is NOT the preregistered criterion. The prereg froze |E| > that head's own preregistered_bar_per_head entry. A cell can exclude 0 at a small fraction of the bar and with the wrong sign; on PR-CSI-014 CL_L11 did exactly that (S-299/S-300). ⚠ AND THE CONVERSE, measured on THIS family (R27/S-308): the bar is 1.96*SE of the NINE-CELL HEAD arm, whose per-domain spread is much larger than a single cell's, so cells exclude 0 far below it -- 7 of PR-CSI-015's 24 non-clearing cells do, the smallest at 14% of the bar. 'Below the bar' therefore means NOT DETECTABLE AT THE PREREGISTERED RESOLUTION, and must NOT be read as 'this cell shows no effect'.",
+    "NOTHING_CLEARED_THE_BAR_IS_A_PREREGISTERED_COHERENT_OUTCOME": "Under an even nine-way split NO head's cell clears its own bar (0.28x-0.44x of it). That is a coherent, informative outcome preregistered HERE: it would mean the depth concentration D36 found at head 2 is NOT general, and that for these heads the load is distributed across depth. ⛔ It must NOT be reported as a failed experiment, and it must NOT be rescued by dropping to a weaker bar, a one-sided test, or an uncorrected 'trend'. NOTE that 'ci95 excludes 0' is a WEAKER test than this bar and is NOT the criterion (S-299/S-300: on PR-CSI-014 one cell excluded 0 at 5% of the bar with the wrong sign)."
   }
 }

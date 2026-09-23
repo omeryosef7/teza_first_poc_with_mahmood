@@ -36,8 +36,29 @@ def exclude_for(codeword, split):
     return "runargs/dcs_cont/exclude_%s_bomb_sow_%s.txt" % (codeword, split)
 
 
+# ⚠ R27/S-308. The comment above says "AND THE DEFAULT IS VERIFIED TO BIND, never assumed (S-168)".
+# It was not. `--check` verified that the basket bank and exclusion files EXIST and that every arm
+# AGREES WITH EVERY OTHER ARM -- never that the prereg's own family is basket. R27 demonstrated the
+# gap on PR-CSI-013's BUTTON prereg: delete its `codeword` key, run --check, and it exits 0 announcing
+# "CODEWORD CHECK PASSED: 'basket' -> bank ...basket_bomb.jsonl", which is S-251's defect verbatim --
+# basket rows under button tags, with numbers that "would have looked entirely plausible".
+# The legacy default exists for PR-CSI-010/011/012, which predate the field. So it is now scoped to
+# EXACTLY those ids and refuses for anything else: a family that does not declare its codeword and is
+# not one of the three grandfathered ones is a REFUSAL, not a guess. Absence is not a pass (R20-6).
+_CODEWORD_DEFAULT_GRANDFATHERED = ("PR-CSI-010", "PR-CSI-011", "PR-CSI-012")
+
+
 def codeword_of(prereg):
-    return prereg.get("codeword", "basket")
+    cw = prereg.get("codeword")
+    if cw:
+        return cw
+    pid = prereg.get("id")
+    if pid in _CODEWORD_DEFAULT_GRANDFATHERED:
+        return "basket"
+    sys.exit("REFUSING: prereg %r declares no `codeword`, and only %s may fall back to the legacy "
+             "'basket' default. Guessing it is how S-251 would have shipped BASKET rows under BUTTON "
+             "tags with --check passing. (R27/S-308)"
+             % (pid, ", ".join(_CODEWORD_DEFAULT_GRANDFATHERED)))
 
 
 def cli_flags(path):
@@ -263,6 +284,16 @@ def main():
                          % (arm, b0))
         print("BASE-ARM CHECK PASSED: %r carries no intervention flag; all %d other arms carry "
               "--intervene" % (b0, len(arms) - 1))
+        # ⚠ R27/S-308: EXPECT_N is a CONSTANT standing where the prereg is the SOURCE, and --check
+        # printed "populations: validation expect-n 230" as though it had verified it. A prereg
+        # declaring a different population was never compared. Same class as the line that voided
+        # 918967.
+        _declared = (pr.get("population") or {}).get("%s_expect_n" % a.split)
+        if _declared is not None and int(_declared) != int(EXPECT_N[a.split]):
+            sys.exit("REFUSING: prereg %r declares population.%s_expect_n = %r but this generator "
+                     "emits --expect-n %r. A generator that silently overrides the preregistered "
+                     "population is the S-251 defect on the population axis. (R27/S-308)"
+                     % (pr.get("id"), a.split, _declared, EXPECT_N[a.split]))
         print("CODEWORD CHECK PASSED: %r -> bank %s, exclusions %s (both exist; every arm agrees)"
               % (cw, os.path.basename(bank), os.path.basename(excl)))
         n_with = sum(1 for _, h, c in arms if h is not None or c is not None)
