@@ -22949,3 +22949,63 @@ S-284's band 09:29-09:47 holds | wall 14:20, margin ~4.8 h
 
 **No PR-013 number has ever been read** — GATE 0 asserts its own endpoint-blindness, including over the
 source of every function it imports (S-249). `score_behavior.py` was not opened.
+
+---
+
+## S-288 — ⚠ **band BREACHED and revised to 09:55–10:06: the ARM times are 2.4× more variable than PR-012's, and my projection had been built on the three fastest arms.** Fourth revision, and the cause this time is my sampling, not the node
+
+### 1. The measured arm series
+
+```
+1/23  BT_BASE     19588.8 s   (carries the 5.36 h load; excluded from every rate below)
+2/23  BT_KO         225.7     5/23  BT_CTRL_02   549.8
+3/23  BT_CTRL_00    232.5     6/23  BT_CTRL_03   518.0
+4/23  BT_CTRL_01    331.2     7/23  BT_CTRL_04   438.6
+                              8/23  BT_CTRL_05   274.7
+
+mean 367.2 s | median 331.2 s | min 225.7 | max 549.8  ->  spread 2.4x
+```
+
+### 2. ⚠ Why the previous projection was wrong, and it was my fault rather than the node's
+
+```
+S-287 used a mean of 263.1 s, computed from arms 2-4: 225.7, 232.5, 331.2
+those are the FIRST THREE arms and they are the THREE FASTEST of the seven
+```
+
+**I projected from a prefix of the series and called it the rate.** Arms 5–7 then came in at 549.8, 518.0
+and 438.6 — **each one alone above the mean I was using.** This is the same error S-278 named when it
+refused tqdm's ETA and S-276 named when it used a base-arm residual as a proxy: **a statistic computed over
+the wrong sample, quoted as though the sample were the population.** Three entries have now recorded that
+lesson and this is its fourth instance tonight.
+
+**Revised band, quoting the spread rather than a point:**
+
+```
+median 331.2 s  ->  15 arms = 1.38 h  ->  family ends ~09:55
+mean   367.2 s  ->  15 arms = 1.53 h  ->  family ends ~10:06
+worst  549.8 s  ->  15 arms = 2.29 h  ->  family ends ~10:52   (all 15 at the worst observed rate)
+```
+
+**S-284's 09:29–09:47 is breached and retired.** New band **09:55–10:06**, with ~10:52 as the tail if every
+remaining arm ran at the worst rate seen. **Margin against the 14:20 wall: 3.5–4.4 h.**
+
+### 3. The variability itself is the finding, and it is node-specific
+
+```
+PR-013 on n-302 (6 jobs)  n=7  min 225.7  max 549.8  spread 2.4x  mean 367.2
+PR-012 on n-303           n=5  min 230.0  max 349.7  spread 1.5x  mean 319.4
+```
+
+**Same arm shapes, same 230 rows, 15 % slower on average and 60 % more variable.** S-287 recorded that
+n-302 was *"within 2 % on the arms"* — **that was true of `BT_KO` alone and false of the family**, because
+`BT_KO` happened to be the fastest arm of the seven. **The load/arm asymmetry S-287 drew from it is
+therefore weaker than stated: n-302 is slower on both phases, dramatically on the load and modestly on the
+arms.**
+
+### 4. No action
+
+**S-282's trigger governs cancellation and is nowhere near firing** — the concern there was the wall, and
+even the worst-case tail leaves 3.5 h. **15 arms remain; GATE 0 has passed on all 8 landed.**
+
+**No PR-013 number has ever been read.** `score_behavior.py` was not opened.
