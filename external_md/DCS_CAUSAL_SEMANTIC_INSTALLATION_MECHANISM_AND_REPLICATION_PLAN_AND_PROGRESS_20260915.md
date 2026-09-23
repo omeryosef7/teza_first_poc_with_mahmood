@@ -26591,3 +26591,77 @@ family unreadable after it was paid for. **The cost difference is the entire fam
 keeping is narrower than "review before launch": it is **run the frozen artefacts, in the frozen
 order, against the shape the producer actually emits** — every one of the four things R28 caught was
 invisible to reading and obvious to running.
+
+---
+
+## S-313 — **PR-CSI-016 IS LAUNCHED: job 923233, 32 arms, n-301, all 3090.** Third family in a row to clear every launcher guard on the first attempt. ⚠ And it lands on **n-301 for the third consecutive family**, which makes S-304's *non-durable* cache rule falsifiable again — in the direction S-304 predicts
+
+### 1. The submission
+
+```
+SPLIT=validation PREREG=configs/dcs_csi_pr016_cell_census_button.json \
+  TAG_PREFIX=csi9_cell3_button FAMILY=pr016 \
+  sh scripts/gates/dcs_csi_submit.sh slurm_scripts/dcs_csi_pr010_arms.slurm
+
+provenance: BLOB 2c5be4c2  PORCELAIN clean
+Submitted batch job 923233   -> RUNNING on n-301 at 20:56:54
+```
+
+```
+HOST=n-301 JOB=923233 2026-09-23T20:56:54+03:00
+8 x NVIDIA GeForce RTX 3090, 8.6                <- uniform architecture; VOID 1 clear at launch
+BLOB 2c5be4c2  PORCELAIN [clean]
+BASE-ARM CHECK PASSED: 'BC_BASE' carries no intervention flag; all 31 other arms carry --intervene
+CODEWORD CHECK PASSED: 'button' -> bank ...ts116m_button_bomb.jsonl, exclusions
+                       exclude_button_bomb_sow_validation.txt (both exist; every arm agrees)
+CHECK PASSED: 32 arms, every flag declared by score_behavior.py; 30 arms carry a frozen cell list,
+              2 carry none (BC_BASE has no intervention, BC_KO = all 32)
+argv lines: 32
+```
+
+⚠ **The `CODEWORD CHECK` line is doing real work this time.** Every previous CSI family but PR-013 was
+basket, so the check had never had to bind anything but its own default. R27 measured that the default
+was *not* verified to bind — a button prereg with its `codeword` key removed passed `--check`
+announcing *"'basket'"* — and S-308 scoped the default to the three grandfathered ids. **This is the
+first family to launch through the repaired gate, and it is a button family.**
+
+### 2. The falsifiable prediction, on record before the number exists
+
+**923233 is the THIRD consecutive family on n-301** (PR-014 at 14:11, PR-015 at 16:38, this at 20:56).
+S-303 predicted a warm load from a 2-hour gap and **S-304 refuted it**: the page cache is the right
+mechanism but it is **not durable**.
+
+```
+n-302 COLD        19278.4 s     S-285
+n-301 PARTIAL      1339.1 s     S-298   (~3 min after the previous job on that node)
+n-301 PARTIAL      1273.2 s     S-304   (~2 h after)     <- the refutation
+n-307 WARM            47.5 s    S-261
+```
+
+PR-CSI-015 finished at **18:23:22**; this job started at **20:56:54** — a gap of **2 h 33 min**, longer
+than the one that already failed to give a warm load. **S-304's rule predicts NO warm load: a value
+near 1300 s, not near 50 s.** A load under ~300 s would refute S-304 in its turn and make residency
+durable over hours after all. Recorded because it costs nothing and a prediction written afterwards
+is not a prediction.
+
+### 3. What is NOT yet known
+
+**Everything the family is for.** No endpoint has been read. The frozen read (`90ee8a12`) has not been
+executed, and every branch of its PRIMARY is open:
+
+* whether heads 17 and 23 are even **ADMITTED** — neither has ever had a button arm, and the prereg
+  prices a collapse to K=1 as this family's real risk;
+* whether the basket TRAIN screen predicts the **button** cell for any head;
+* whether the **spanning rule** is satisfied if it does;
+* and, if it is, what the two **robustness co-primaries** say — because with heads 17 and 19 both
+  predicted L14, the conditional floor is **0.1111** and the permutation floor is **1/3**, so
+  *"p = 0.001372"* is **forbidden as a standalone headline** whatever the arms return.
+
+Arm order puts the 27 single cells first and the three `HD_` whole-head arms last, so **ADMISSION —
+the gate that decides whether the primary is readable at all — is known only when the family is
+nearly complete.** Expected cost ≈ 32 × 167 s ≈ 1.5 h of arms plus one model load.
+
+📌 One thing IS already known, and it was known before the submit: **the frozen read executes end to
+end.** S-312 §7 ran GATE 0 → census → primary on re-badged real arms. Before R28 it did not, twice
+over — and that would have been discovered here, after the GPU time was spent, with VOID condition 9
+("the read amended after any number is seen") forbidding the repair.
