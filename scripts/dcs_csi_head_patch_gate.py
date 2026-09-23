@@ -19,7 +19,7 @@ is computed in this process, for that row.
 
 Lifted from 49_head_attribution.py:120-158 (the gate) with the arithmetic of W1.
 """
-import argparse, json, os, sys, importlib.util
+import argparse, json, os, re, sys, importlib.util
 from contextlib import contextmanager
 
 REPO = "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
@@ -136,11 +136,24 @@ def main():
     # survives staging is basename(model_id), which IS the snapshot hash (the staging block names the
     # local directory `$(basename "$SNAP")`).
     # The check is NOT weakened: two different snapshots have different hashes and still refuse.
-    if scr.get("model_id") and os.path.basename(str(scr["model_id"]).rstrip("/")) !=             os.path.basename(str(lm.model_id).rstrip("/")):
-        sys.exit("REFUSING: screen was produced on snapshot %r, this gate loaded %r (paths %r vs %r)"
-                 % (os.path.basename(str(scr["model_id"]).rstrip("/")),
-                    os.path.basename(str(lm.model_id).rstrip("/")),
-                    scr["model_id"], lm.model_id))
+    # R24: S-277 normalised to basename and proved FIVE SNAPSHOT-PATH CASES -- none of them the form
+    # ds_common's own default takes. PRIMARY_MODEL = "meta-llama/Llama-3.1-8B-Instruct", a REPO ID whose
+    # basename is "Llama-3.1-8B-Instruct", NOT a 40-hex snapshot hash. Comparing a repo-id basename
+    # against a snapshot-hash basename mixes two naming schemes, and `revision` is None everywhere
+    # (S-268) so nothing else would catch it.
+    # So normalise ONLY when a side IS a snapshot path (basename matches 40 hex); otherwise compare the
+    # full string, which is exactly what the pre-S-277 guard did.
+    _SNAP_HASH = re.compile(r"^[0-9a-f]{40}$")
+
+    def _model_key(v):
+        b = os.path.basename(str(v).rstrip("/"))
+        return b if _SNAP_HASH.match(b) else str(v).rstrip("/")
+
+    if scr.get("model_id") and _model_key(scr["model_id"]) != _model_key(lm.model_id):
+        sys.exit("REFUSING: screen model key %r != gate model key %r (raw %r vs %r). A staged snapshot "
+                 "path and its NFS original share a key; a repo id and a snapshot path do NOT, by "
+                 "design (R24)." % (_model_key(scr["model_id"]), _model_key(lm.model_id),
+                                    scr["model_id"], lm.model_id))
     n_heads, head_dim = pc._attn_head_dims(lm.model)
     c_l, w_l, id_meta = sg.readout_id_pair(lm.tokenizer, a.concept, a.codeword)
     dev = lm.model.device

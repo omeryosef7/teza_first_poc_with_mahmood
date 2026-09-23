@@ -22626,3 +22626,98 @@ on the tooling rather than on PR-013 results — which is the correct scope, sin
 been read.**
 
 `score_behavior.py` was not opened.
+
+---
+
+# REVIEW R24 (self, ~4 h cadence) — ⚠⚠ **S-277's proof was INCOMPLETE in the one way that mattered: it tested five snapshot-path cases and never the form `PRIMARY_MODEL` actually takes — a REPO ID.** The code happened to be right **by luck**. And R24 then broke its own fix to a checklist twice before getting it right
+
+R23 attacked the commit verifier. **R24 attacks what I changed since: the warm-node memory fix (S-274), the
+`patch_gate` staging tolerance (S-277), the PR-014 design (S-279) and the execution checklist (S-280).**
+
+## R24-1 ⚠⚠ The S-277 proof did not cover the default the code uses
+
+```
+doublespeak_causality/ds_common.py:70
+  PRIMARY_MODEL = "meta-llama/Llama-3.1-8B-Instruct"        <- a REPO ID, not a snapshot path
+```
+
+`dcs_csi_head_patch_gate.py` calls `dc.load_model(a.model or dc.PRIMARY_MODEL, …)`, so **without `--model`
+the gate's `lm.model_id` is a repo id whose basename is `Llama-3.1-8B-Instruct`** — not a 40-hex snapshot
+hash. **S-277 normalised the comparison to `basename` and proved it on five cases, every one of them a
+snapshot path.** The form the code defaults to was never tested.
+
+**⛔ And the honest part: S-277's code was NOT broken — it was right BY LUCK.**
+
+```
+NFS vs REPO ID  -> basename-only refuses=True, comparing '0e9e39f2…' against 'Llama-3.1-8B-Instruct'
+REPO vs STAGED  -> basename-only refuses=True, same coincidence
+```
+
+**A hash and a repo name never collide as strings, so the accident always favours refusal.** But S-277
+claimed *"the check is NOT weakened"* on the strength of five cases that could not have detected the
+problem. **An unproven correctness that holds by coincidence is not the same as a guarantee, and I
+presented it as one.**
+
+**Fixed so it holds by construction — normalise only when a side IS a snapshot path:**
+
+```python
+_SNAP_HASH = re.compile(r"^[0-9a-f]{40}$")
+def _model_key(v):
+    b = os.path.basename(str(v).rstrip("/"))
+    return b if _SNAP_HASH.match(b) else str(v).rstrip("/")
+```
+
+```
+OK  NFS vs NFS                    refuses=False      OK  NFS vs DIFFERENT snapshot  refuses=True
+OK  NFS vs STAGED (S-277's goal)  refuses=False      OK  NFS vs REPO ID   <- R24    refuses=True
+OK  NFS vs trailing slash         refuses=False      OK  REPO vs STAGED   <- R24    refuses=True
+OK  REPO ID vs REPO ID            refuses=False      ALL SEVEN CORRECT
+```
+
+## R24-2 ⚠ And then R24 got its own checklist fix wrong, twice
+
+The execution checklist's precondition said *"0 csi6 dirs outside score_behavior's 23"*. **Checked against
+reality: there is 1** — the in-progress `BT_BASE`. **The line reads as a count of zero and is false
+mid-run.**
+
+**First replacement:** one `find … -name 'csi6_*'` across both locations, asserting 45. **Also wrong** —
+S-261 renamed one quarantined dir to `919296_incomplete_csi6_…`, and that prefix does not match the glob.
+The check returned 22 where I predicted 23, which is how I caught it.
+
+**Second replacement, and the one that is right:** two separate counts, because **one glob cannot span two
+naming schemes.**
+
+```
+ls -d outputs/boombness/score_behavior/csi6_..._*/ | wc -l   == 23   (1 mid-run, as measured)
+ls outputs/boombness/QUARANTINE_.../ | wc -l                 == 22   (verified: 22)
+```
+
+**A checklist written to be followed mechanically must not need interpreting — and must not itself be
+clever.** I wrote a clever one-liner into the artefact whose entire purpose was to remove judgement from
+the moment of reading.
+
+## R24-3 Checked and clean
+
+`dcs_csi_warm_node.sh`'s memory check (S-274) still refuses n-307 and accepts n-301 on both criteria.
+PR-014's floor arithmetic (S-279) re-derived: 1/9 = 0.111 cannot certify, 1/21 = 0.0476 can. The commit
+verifier's R23 fix has been exercised on every commit since, reporting `VERIFIED` with HEAD movement and
+origin agreement each time.
+
+## R24-4 The pattern, five reviews in
+
+```
+R20  defects in my PROBES          R21  a defect in a FROZEN RULE
+R22  a LESSON THAT DID NOT PROPAGATE   R23  a defect in THE CHECKER ITSELF
+R24  a PROOF THAT DID NOT COVER THE DEFAULT -- and then two wrong fixes to a checklist
+```
+
+**Five reviews, five distinct locations, still none in the scientific pipeline.** D32, D33 and D34 remain
+unchanged. **R24's specific lesson: a proof's case list is itself a claim, and "five cases pass" says
+nothing about the case the code actually takes by default.** The right question after any normalisation is
+*what does this function receive when nobody passes anything?*
+
+## R24-5 Not done
+
+**No PR-013 number has ever been read.** 919531 at **167/291**, cumulative 53.0 s/shard, S-282's trigger
+not met. `score_behavior.py` was not opened — R24 touched a gate and a checklist, neither on the running
+family's path.

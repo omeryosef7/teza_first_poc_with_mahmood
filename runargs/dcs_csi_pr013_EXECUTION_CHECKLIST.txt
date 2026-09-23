@@ -12,7 +12,17 @@
 #    [ ] sacct -j 919531 shows COMPLETED (not CANCELLED, not TIMEOUT)
 #    [ ] ls -d outputs/boombness/score_behavior/csi6_btnhead_button_validation_*/DONE.json | wc -l  == 23
 #    [ ] ls outputs/boombness/QUARANTINE_pr013_918967_void_and_919240_orphaned | wc -l  == 22
-#        (the void/orphaned generations stay quarantined; 0 csi6 dirs outside score_behavior's 23)
+#    [ ] the two locations are counted SEPARATELY, because a single glob cannot cover both:
+#        ls -d outputs/boombness/score_behavior/csi6_btnhead_button_validation_*/ | wc -l          == 23
+#        ls outputs/boombness/QUARANTINE_pr013_918967_void_and_919240_orphaned/ | wc -l            == 22
+#        R24 found TWO defects in this precondition, in succession:
+#          (i)  the original wording, "0 csi6 dirs outside score_behavior's 23", reads as a count of
+#               zero and is FALSE mid-run -- during the load score_behavior holds 1 in-progress arm;
+#          (ii) the first replacement used one `find ... -name 'csi6_*'` over both locations and would
+#               have MISCOUNTED, because S-261 renamed one quarantined dir to
+#               `919296_incomplete_csi6_...` and that prefix does not match the glob.
+#        Two separate counts need no glob to span two naming schemes. A checklist written to be followed
+#        mechanically must not need interpreting, and must not itself be clever.
 #
 # 1. GATE 0, ENDPOINT-BLIND. Must pass on all 23 before anything reads an endpoint.
 #    python scripts/gates/dcs_csi_pr012_gate0_sweep.py \
