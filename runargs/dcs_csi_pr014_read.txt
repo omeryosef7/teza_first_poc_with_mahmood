@@ -1,0 +1,115 @@
+# FROZEN READ for PR-CSI-014 -- the per-CELL CENSUS of head 2's nine band cells, basket VALIDATION.
+# Frozen 2026-09-23, BEFORE ANY ARM HAS RUN. Never re-freeze after seeing numbers.
+#
+# WHAT THIS EXPERIMENT ASKS.
+#   D34 says WHICH heads carry load (2, 19, 17, 23). It cannot say AT WHAT DEPTH, because
+#   --knockout-heads ties a head index across the whole 6-14 band: every census arm knocked its head
+#   out at nine layers simultaneously. This family knocks out ONE (layer, head) CELL per arm and asks
+#   where along depth head 2's load sits.
+#
+# ⛔ WHAT IT IS NOT. IT IS A CENSUS: NO CANDIDATE, NO CONTROL FAMILY, NO RANK, NO p-VALUE.
+#   A rank among the nine layers of one head has an attainable floor of 1/9 = 0.1111 and cannot clear
+#   alpha = 0.05 for ANY effect size (design section 2). The prereg declares NO_RANK_TEST and omits
+#   control_prefix/n_controls so the rank tooling REFUSES it rather than inventing a family.
+#
+# ⛔ AND THE CONFIRMATORY FOLLOW-ON DOES NOT EXIST. The design (section 5(b)) planned this pass as a
+#   selector for a 23-arm confirmatory rank test on a held-out axis. S-294 measured that NO ADMISSIBLE
+#   AXIS EXISTS: basket validation is where L* would be selected; basket train is contaminated because
+#   h* entered HD_TOPK by a TRAIN selection; button is where D35 measured h* at E = -0.003522 with a
+#   ci95 crossing zero; the 3 TEST domains need n > 3.8 at the most optimistic observed SD/|E| and
+#   n > 6.5-11 at realistic ones; and no third codeword bank is built. AM-37 records the consequence:
+#   D32's caveat "NOT a claim about any single (layer, head) cell" CANNOT BE LIFTED. So NOTHING read
+#   here may be followed by "and therefore cell X is the writer". There is nowhere to confirm it.
+#
+# VALIDATION ONLY. TRAIN selected HD_TOPK, so h* entered by a TRAIN selection and a TRAIN census would
+#   restate it -- the same reason PR-CSI-012 gave for its split.
+#
+# Read in order. STOP AT THE FIRST FAILURE.
+#   GATE 0  liveness + ARM IDENTITY on all 11 arms. Identity comes from each arm's own recorded
+#           knockout_cells, NOT knockout_heads: a cell arm's knockout_heads is EMPTY, which
+#           recorded_heads() maps to "ALL", so the head-level check would certify every 1-cell arm as
+#           the all-32 knockout -- a 224-edit arm passing as the 2016-edit denominator (S-292).
+#   GATE 1  THERE IS NO GATE 1. A census has no positive-control gate to pass because it makes no
+#           comparative claim. CL_KO is reported as the denominator, not as a gate.
+# ------------------------------------------------------------------------------------------------
+
+# --- GATE 0 may be swept incrementally at any time; it refuses to read an endpoint field (S-202),
+# --- and it exits 3 (NOT 0) when nothing has landed, because a pass over an empty set is not a pass.
+python scripts/gates/dcs_csi_pr012_gate0_sweep.py \
+  --prereg configs/dcs_csi_pr014_cell_census_basket.json \
+  --tag-prefix csi7_cell_basket_validation --split validation \
+  --require-slurm-job <VALIDATION_JOB_IDS>
+
+# --- THE PRIMARY READ (the census reader, cell-aware since S-296).
+python scripts/dcs_csi_head_census.py \
+  --prereg configs/dcs_csi_pr014_cell_census_basket.json \
+  --tag-prefix csi7_cell_basket_validation --split validation --expect-n 230 \
+  --require-slurm-job <VALIDATION_JOB_IDS> \
+  --out reports/DCS_CSI_PR014_CELL_CENSUS_validation.json
+
+# ------------------------------------------------------------------------------------------------
+# THE THREE THINGS THIS READ DELIVERS, and all three are decided by the numbers rather than chosen
+# after them. They are listed in the order of how much they would change if they came out otherwise.
+#
+# 1. THE PER-CELL DOSE. Predicted 224 = DOSE_UNIT 2016 / 9 band layers. ⚠ THIS IS A PREDICTION, NOT A
+#    MEASURED IDENTITY: 2016 was measured (S-215, S-246) but dividing it assumes the edits are spread
+#    UNIFORMLY across layers, which cannot be tested from any artefact on disk because pair_common
+#    sums the hook counters across layers before writing them.
+#    * observed == 224 on every cell arm  -> CONFIRMED. The --knockout-cells semantics written in
+#      S-291 are what S-291 claimed they were, and DOSE_UNIT/band_width becomes an identity.
+#    * observed != 224                    -> ⛔ REFUTED, AND THIS IS THE MOST CONSEQUENTIAL OUTCOME
+#      AVAILABLE HERE. It would mean the per-layer hooks do not divide the edit budget the way S-291
+#      reasoned, i.e. MY IMPLEMENTATION'S SEMANTICS ARE WRONG. Every cell dose expectation in the
+#      sprint must then be re-derived BEFORE any cell effect is reported, and this census's own GATE 0
+#      would already have failed on the dose, so no number would be read at all. Recorded here so that
+#      a dose mismatch is read as a CODE defect and not as a surprising fact about the model.
+#
+# 2. THE DEPTH MAP. Nine effects E(CL_L<NN>) = mean over the 23 domains of
+#    (y_install(cell) - y_install(CL_BASE)), each with a bootstrap ci95, printed in LAYER ORDER --
+#    not sorted by effect, because the question is the SHAPE along depth and sorting hides it.
+#    ⚠ THE DETECTABILITY BAR IS PREREGISTERED: S-294 measured the per-domain SD of head 2's nine-cell
+#    arm at 0.046933 over 23 domains, so a cell needs |E| > 1.96*SD/sqrt(23) = 0.019181 to exclude
+#    zero -- 38.8% OF THE WHOLE NINE-CELL EFFECT (-0.049475).
+#    * one cell clears it     -> the load is concentrated at that depth. DESCRIPTIVE ONLY: naming that
+#      cell as "the" site is selection on the data that produced it, and S-294 established there is no
+#      held-out axis on which to confirm it. It may be reported as "cell (L, 2) is the only cell of
+#      head 2 whose single-cell knockout lowers installation detectably on basket validation".
+#    * NOTHING clears it     -> ✅ A COHERENT, INFORMATIVE OUTCOME, PREREGISTERED HERE AS SUCH. If the
+#      load is spread evenly across nine cells (~11.1% each, ~0.0055) no cell can clear a 0.0192 bar
+#      ARITHMETICALLY. That is evidence the effect is DISTRIBUTED ACROSS DEPTH rather than sited at one
+#      layer, and it is consistent with AM-36's measurement that on button the joint knockout is 4.97x
+#      the sum of the measured single heads. ⛔ IT MUST NOT be reported as a failed experiment, and it
+#      MUST NOT be rescued by dropping to a weaker bar, a one-sided test or an uncorrected "trend"
+#      after the fact.
+#    * several clear it       -> the load is spread over a few depths. Same descriptive-only limit.
+#
+# 3. S-269's SCREEN CLAIM, tested against an intervention for the first time. S-269 read the TRAIN
+#    screen's 288 cells and found head 2 dominated by ONE cell at L10. S-254 measured rho = +0.7713
+#    between that screen and the census at HEAD level, but the per-CELL ordering has never been checked
+#    against an intervention, and AM-32 recorded that the same screen ranked head 2 -- the single
+#    strongest head -- only 6th.
+#    * L10 is the strongest cell here -> the screen's fine structure is corroborated AT ONE HEAD. It is
+#      ONE head of 32 and is NOT a validation of the screen in general.
+#    * it is not             -> the screen's per-cell ordering does not survive intervention at this
+#      head, which bounds every future use of AtP_by_cell for cell selection. ⚠ Either way this is
+#      n = 1 head: it cannot settle the screen's per-cell validity, only bound a claim about it.
+#
+# ------------------------------------------------------------------------------------------------
+# WHAT MAY NEVER BE SAID FROM THIS FILE, whatever the numbers:
+#   * "head 2 is the writer" -- forbidden before PR-013 and unsupported after D35.
+#   * "cell (L, 2) is the writer" / "the effect is single-layer" -- no rank, no p, no held-out axis.
+#   * anything revising D32, D33, D34 or D35. A finer map does not retract a coarser measurement.
+#   * anything about the other 31 heads, or about any cell of them. Nine arms of ONE head were run.
+#   * anything about DOMAIN generality. These 23 domains are the ones basket's other families used
+#     (S-256); the 3 TEST domains remain untouched.
+#   * any rung above 1 on AM-34's ladder. This is necessity, like everything else in this sprint.
+#
+# VOID CONDITIONS are in the prereg (configs/dcs_csi_pr014_cell_census_basket.json). Two are new and
+# specific to cells: an arm whose recorded knockout_cells disagrees with cell_sets, and a cell whose
+# layer lies outside the band -- the latter would install NO hook and score as a perfectly clean null,
+# which is why score_behavior.py refuses it at construction (S-291).
+#
+# <VALIDATION_JOB_IDS> must name the ONE job that produced all 11 arms. If a relaunch happens, the
+# earlier generation's arm dirs must be QUARANTINED rather than filtered at read time: S-261 measured
+# that the runner's skip-if-complete resumes into them and reuses void arms, so --require-slurm-job is
+# a read-time remedy for a write-time problem.

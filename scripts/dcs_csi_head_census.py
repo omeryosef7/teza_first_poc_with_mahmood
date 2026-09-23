@@ -162,7 +162,42 @@ def main():
     if pr["split"] != a.split:
         sys.exit("REFUSING: prereg says split %r, invoked with %r" % (pr["split"], a.split))
 
-    hs = pr["head_sets"]
+    # ⛔⛔ S-296. EVERY PREREG FIELD THIS READER WILL NEED IS VALIDATED *HERE*, BEFORE ANY ARM IS
+    # LOADED. This file already carries S-261's note that a bare `E["HD_TOPK"]` would KeyError "after
+    # everything was computed and before anything was written, which is fail-closed but needlessly
+    # destructive of a completed run" -- and then did the same thing with `pr["WHAT_THIS_CANNOT_ANSWER"]`,
+    # which is read only while building `out`. PR-CSI-014 is a CENSUS that emitted the RANK family's
+    # field name (`WHAT_THIS_CANNOT_DO`), so this reader would have died at the last step, AFTER the GPU
+    # time was already spent. A field the reader needs is a PRECONDITION, not a late lookup.
+    _cannot = next((k for k in ("WHAT_THIS_CANNOT_ANSWER", "WHAT_THIS_CANNOT_DO") if k in pr), None)
+    if _cannot is None:
+        sys.exit("REFUSING: prereg %r carries neither WHAT_THIS_CANNOT_ANSWER nor "
+                 "WHAT_THIS_CANNOT_DO. The census report copies that block verbatim so a reader cannot "
+                 "see the numbers without the limits; absence is not a pass (R20-6). (S-296)"
+                 % pr.get("id"))
+    for _f in ("CENSUS_DELIVERABLE", "SELECTION_RE_ENTERS_WHEN", "DOSE_IDENTITY_IS_BLIND_HERE",
+               "population", "n_arms_per_split", "id"):
+        if _f not in pr:
+            sys.exit("REFUSING: prereg %r carries no %r, which this reader copies into the report. "
+                     "Checked BEFORE the arms are loaded so a missing field costs milliseconds and not "
+                     "a GPU allocation. (S-296)" % (pr.get("id"), _f))
+
+    # ⛔ CELL FAMILIES (PR-CSI-014). A prereg carrying `cell_sets` names (layer, head) CELLS; the two
+    # blocks are mutually exclusive, as in the GATE 0 sweep and the argv generator (S-292, S-293).
+    _cs = pr.get("cell_sets")
+    if _cs and pr.get("head_sets"):
+        sys.exit("REFUSING: prereg %r carries BOTH head_sets and cell_sets. An arm family is one or "
+                 "the other. (S-296)" % pr.get("id"))
+    if not _cs and "head_sets" not in pr:
+        sys.exit("REFUSING: prereg %r carries neither head_sets nor cell_sets. (S-296)" % pr.get("id"))
+    IS_CELLS = bool(_cs)
+    if IS_CELLS:
+        hs = {k: [tuple(int(x) for x in c) for c in v] for k, v in _cs.items()}
+        PER_CELL, NLAYERS = per_cell_dose(pr)
+        print("[census] CELL family: per-cell dose %d = %d/%d layers -- PREDICTED, NOT MEASURED. "
+              "THIS FAMILY'S ARMS VALIDATE THAT ARITHMETIC." % (PER_CELL, DOSE_UNIT, NLAYERS))
+    else:
+        hs = pr["head_sets"]
     # S-261, discharging S-260's rule. The base arms are NAMED BY THE PREREG, defaulting to
     # PR-CSI-010's names (verified to bind by the byte-identity regression in S-261). Before this they
     # were literals throughout this file. That was FAIL-CLOSED -- a family with other names would have
@@ -172,7 +207,8 @@ def main():
     base_arm, ko_arm = list(pr.get("base_arms", ["HD_BASE", "HD_KO"]))
     for b in (base_arm, ko_arm):
         if b in hs:
-            sys.exit("REFUSING: base arm %r also appears in head_sets -- it carries no head list" % b)
+            sys.exit("REFUSING: base arm %r also appears in %s -- it carries no arm list"
+                     % (b, "cell_sets" if IS_CELLS else "head_sets"))
     arms = [base_arm, ko_arm] + sorted(hs)
     if len(arms) != pr["n_arms_per_split"]:
         sys.exit("REFUSING: resolved %d arms, prereg declares n_arms_per_split=%d"
@@ -233,8 +269,22 @@ def main():
     for arm in arms:
         L = live[arm]
         k = 0 if arm == base_arm else (32 if arm == ko_arm else len(hs[arm]))
-        want_dose = 0 if arm == base_arm else (DOSE_UNIT if arm == ko_arm else DOSE_UNIT * k)
-        got = recorded_heads(dirs[arm]) if arm != base_arm else None
+        # On a CELL family the two base arms stay HEAD-level: base_arm is the clean reference and
+        # ko_arm the all-32/all-band denominator. Only the remaining arms are cell-scoped, and their
+        # expected dose is PER_CELL * (number of cells), not DOSE_UNIT * k.
+        if IS_CELLS and arm not in (base_arm, ko_arm):
+            want_dose = PER_CELL * k
+        else:
+            want_dose = 0 if arm == base_arm else (DOSE_UNIT if arm == ko_arm else DOSE_UNIT * k)
+        if arm == base_arm:
+            got = None
+        elif IS_CELLS and arm != ko_arm:
+            # IDENTITY FROM knockout_cells ONLY. This arm's knockout_heads is EMPTY, which
+            # recorded_heads() maps to "ALL" -- so the head-level check would certify every 1-cell arm
+            # as the all-32 knockout (S-292).
+            got = recorded_cells(dirs[arm])
+        else:
+            got = recorded_heads(dirs[arm])
         if arm == base_arm:
             ok_id, why = (got in (None, "ALL", []) or True), "not intervened"
         elif arm == ko_arm:
@@ -246,12 +296,26 @@ def main():
         elif got == "ALL":
             ok_id, why = False, "config records ALL 32 heads but the prereg says %s -- THIS IS THE " \
                                 "S-246 COLLISION: the dose check would have passed" % (hs[arm],)
+        elif IS_CELLS:
+            if got == "NOT_A_CELL_ARM":
+                ok_id, why = False, "config records an EMPTY knockout_cells -- this arm is not " \
+                                    "cell-scoped, so it is not the arm the prereg names"
+            else:
+                ok_id = (list(got) == sorted(hs[arm]))
+                why = "matches prereg" if ok_id else "recorded %s != prereg %s" % (got, sorted(hs[arm]))
         else:
             ok_id = (list(got) == list(hs[arm]))
             why = "matches prereg" if ok_id else "recorded %s != prereg %s" % (got, hs[arm])
         ident[arm] = {"k": k, "recorded": got, "expected": (None if arm in (base_arm, ko_arm)
                                                             else list(hs[arm])),
                       "ok": bool(ok_id), "why": why}
+        # ⛔ CELL-ONLY METADATA. Added ONLY on a cell family so a HEAD family's report stays
+        # BYTE-IDENTICAL. D34's full-object reproduction has been load-bearing evidence four times in
+        # this sprint (S-261, S-292, S-295, and the check below), and growing keys on an existing
+        # artefact would retire that property to say something a cell family can say for itself.
+        if IS_CELLS:
+            ident[arm]["identity_field"] = ("knockout_cells" if arm not in (base_arm, ko_arm)
+                                            else "knockout_heads")
         g0[arm] = {"n_rows": L["n_rows"], "violations": L["violations"],
                    "total_decode_edits": L["total_decode_edits"],
                    "median_prefill_edits": L["median_prefill_edits"],
@@ -263,6 +327,10 @@ def main():
                    "dose_is_diagnostic_of_identity": want_dose not in (DOSE_UNIT,),
                    "pass": bool(L["violations"] == {} and L["total_decode_edits"] == 0
                                 and L["median_prefill_edits"] == want_dose and ok_id)}
+        if IS_CELLS:
+            g0[arm]["dose_expectation_status"] = (
+                "PREDICTED (DOSE_UNIT/band_width, untested uniformity assumption -- S-292)"
+                if arm not in (base_arm, ko_arm) else "MEASURED (S-215, S-246)")
     failed = sorted(k for k, v in g0.items() if not v["pass"])
     if failed:
         for k in failed:
@@ -270,8 +338,9 @@ def main():
                   % (k, g0[k]["median_prefill_edits"], g0[k]["expected_median_prefill_edits"],
                      ident[k]["why"]))
         sys.exit("CANNOT ANSWER: GATE 0 failed on %d arm(s): %s" % (len(failed), failed))
-    print("[census] GATE 0 PASS on all %d arms | arm identity verified from each run's own "
-          "knockout_heads" % len(arms))
+    print("[census] GATE 0 PASS on all %d arms | arm identity verified from each run's own %s"
+          % (len(arms), "knockout_cells (cell arms) / knockout_heads (base arms)" if IS_CELLS
+             else "knockout_heads"))
 
     # ---- the census itself: E(arm) = mean over DOMAINS of (y(arm) - y(HD_BASE)) ----
     rng = random.Random(a.seed)
@@ -290,13 +359,47 @@ def main():
     # the LOO marginal: what head h contributes to the 8-set = E(HD_TOPK) - E(LOO_h)
     marg = {k: (E["HD_TOPK"] - E[k]) for k in loos} if "HD_TOPK" in E else {}
 
-    print("\n[census] SINGLE-HEAD EFFECTS, most negative first (E, ci95). NO RANK, NO p.")
-    for k in sorted(singles, key=lambda x: E[x]):
-        print("   %-11s E = %+.6f  ci95 [%+.6f, %+.6f]" % (k, E[k], CI[k][0], CI[k][1]))
-    print("\n[census] LEAVE-ONE-OUT of HD_TOPK, and head h's MARGINAL = E(HD_TOPK) - E(LOO_h)")
-    for k in sorted(loos, key=lambda x: -marg[x]):
-        print("   %-11s E = %+.6f  ci95 [%+.6f, %+.6f]   marginal %+.6f"
-              % (k, E[k], CI[k][0], CI[k][1], marg[k]))
+    if IS_CELLS:
+        # THE DEPTH MAP. Printed in LAYER order, not sorted by effect: the question is where the load
+        # sits along depth, and sorting by effect hides the shape that answers it. The detectability
+        # threshold is printed BESIDE every row, and the preregistered coherent outcome is restated
+        # here so a reader of the log sees it next to the numbers rather than only in the prereg.
+        _thr = (pr.get("DETECTABILITY_PREREGISTERED") or {}).get("min_abs_E_for_ci95_to_exclude_0")
+        _cells = sorted((k for k in hs), key=lambda x: sorted(hs[x])[0][0])
+        print("\n[census] DEPTH MAP -- head %s, one cell per layer, in LAYER order. NO RANK, NO p."
+              % pr.get("h_star"))
+        if _thr:
+            print("         preregistered detectability bar: |E| > %.6f (S-294). "
+                  "'-' = ci95 includes 0." % _thr)
+        _cleared = []
+        for k in _cells:
+            L, h = sorted(hs[k])[0]
+            excl0 = (CI[k][1] < 0) or (CI[k][0] > 0)
+            if excl0:
+                _cleared.append((k, L, E[k]))
+            print("   L%-3d %-9s E = %+.6f  ci95 [%+.6f, %+.6f]  %s"
+                  % (L, k, E[k], CI[k][0], CI[k][1], "CLEARS 0" if excl0 else "-"))
+        print("\n[census] %d of %d cells have a ci95 excluding 0." % (len(_cleared), len(_cells)))
+        if not _cleared:
+            print("         NOTHING CLEARS THE BAR. This outcome was PREREGISTERED AS COHERENT "
+                  "before any arm ran:")
+            print("         " + (pr.get("DETECTABILITY_PREREGISTERED") or {}).get(
+                "COHERENT_OUTCOME_IF_NOTHING_CLEARS_IT", "(the prereg records it)"))
+        # The per-cell dose is the arithmetic this family exists to validate -- say what it measured.
+        _doses = sorted({g0[k]["median_prefill_edits"] for k in _cells})
+        print("\n[census] PER-CELL DOSE VALIDATION: predicted %d, observed median_prefill_edits %s "
+              "-> %s" % (PER_CELL, _doses,
+                         "CONFIRMED" if _doses == [float(PER_CELL)] or _doses == [PER_CELL]
+                         else "REFUTED -- the uniformity assumption behind DOSE_UNIT/band_width is "
+                              "WRONG and every cell dose expectation must be re-derived (S-292)"))
+    else:
+        print("\n[census] SINGLE-HEAD EFFECTS, most negative first (E, ci95). NO RANK, NO p.")
+        for k in sorted(singles, key=lambda x: E[x]):
+            print("   %-11s E = %+.6f  ci95 [%+.6f, %+.6f]" % (k, E[k], CI[k][0], CI[k][1]))
+        print("\n[census] LEAVE-ONE-OUT of HD_TOPK, and head h's MARGINAL = E(HD_TOPK) - E(LOO_h)")
+        for k in sorted(loos, key=lambda x: -marg[x]):
+            print("   %-11s E = %+.6f  ci95 [%+.6f, %+.6f]   marginal %+.6f"
+                  % (k, E[k], CI[k][0], CI[k][1], marg[k]))
     # S-261: print only the anchors this family actually has. Bare E["HD_TOPK"] would KeyError on a
     # census whose prereg declares no K-head comparators -- after everything was computed and before
     # anything was written, which is fail-closed but needlessly destructive of a completed run.
@@ -314,13 +417,35 @@ def main():
         "GATE_0_and_identity": {"per_arm": g0, "identity": ident},
         "NO_RANK_TEST": True,
         "REPORTABLE_AS": pr["CENSUS_DELIVERABLE"],
-        "CANNOT_DO": pr["WHAT_THIS_CANNOT_ANSWER"],
+        "CANNOT_DO": pr[_cannot],
         "SELECTION_RE_ENTERS_WHEN": pr["SELECTION_RE_ENTERS_WHEN"],
         "DOSE_IDENTITY_IS_BLIND_HERE": pr["DOSE_IDENTITY_IS_BLIND_HERE"],
         "NO_VERDICT": "This file contains NO verdict, NO rank and NO p-value by design. Singling out "
                       "any one head for a claim requires a HELD-OUT AXIS -- see "
                       "SELECTION_RE_ENTERS_WHEN.",
     }
+    # ⛔ CELL-ONLY TOP-LEVEL KEYS, added AFTER the shared dict is built, for the same reason the
+    # per-arm extras are: a HEAD family's report must remain BYTE-IDENTICAL to what D34 was written
+    # from. A cell family says more because it HAS more to say; it does not change what a head family
+    # emits.
+    if IS_CELLS:
+        out["ARM_GRANULARITY"] = "cell"
+        out["CANNOT_DO_FIELD"] = _cannot
+        out["CELL_FAMILY"] = {
+            "h_star": pr.get("h_star"), "layers": pr.get("layers"), "band": pr.get("band"),
+            "per_cell_dose_predicted": PER_CELL,
+            "per_cell_dose_observed": sorted({g0[k]["median_prefill_edits"] for k in hs}),
+            "per_cell_dose_verdict": ("CONFIRMED" if sorted(
+                {g0[k]["median_prefill_edits"] for k in hs}) in ([PER_CELL], [float(PER_CELL)])
+                else "REFUTED -- the uniformity assumption behind DOSE_UNIT/band_width is WRONG and "
+                     "every cell dose expectation in the sprint must be re-derived (S-292)"),
+            "cells": {k: sorted(hs[k]) for k in sorted(hs)},
+            "DETECTABILITY_PREREGISTERED": pr.get("DETECTABILITY_PREREGISTERED"),
+            "n_cells_with_ci95_excluding_0": sum(1 for k in hs if (CI[k][1] < 0 or CI[k][0] > 0)),
+            "NOTHING_CLEARED_THE_BAR_IS_A_PREREGISTERED_COHERENT_OUTCOME": (
+                (pr.get("DETECTABILITY_PREREGISTERED") or {}).get(
+                    "COHERENT_OUTCOME_IF_NOTHING_CLEARS_IT")),
+        }
     n = w4.atomic_write_json(a.out, out)
     print("\n[census] wrote+verified %s (%d bytes)" % (a.out, n))
     return 0

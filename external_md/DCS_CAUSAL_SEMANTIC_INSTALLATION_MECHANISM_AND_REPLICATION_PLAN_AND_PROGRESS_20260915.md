@@ -24282,3 +24282,149 @@ No arms were running (`squeue`, not `sacct`). No existing frozen artefact was to
 `fae4adc6`, `911c3a20`, `7088590f` all unchanged; `25becb00` (the PR-014 design) deliberately left as
 written so the record of what was believed before S-294 is preserved. Writes verified by md5; quota 94%
 used, 1.4T free.
+
+---
+
+## S-296 — **the cell census READER exists and PR-CSI-014's read is FROZEN.** And the reader would have died on a missing prereg field **AFTER all 11 arms were loaded** — the exact failure its own S-261 comment warns about, on a different field, in the same function
+
+### 1. The catch that would have cost the GPU time
+
+The census reader builds its report object at the very end and copies `pr["WHAT_THIS_CANNOT_ANSWER"]`
+into it. **PR-CSI-014 emitted `WHAT_THIS_CANNOT_DO`** — because that is what the RANK family's prereg
+(PR-013) uses, and the two readers disagree:
+
+```
+configs/dcs_csi_pr012_head_census_basket.json   WHAT_THIS_CANNOT_ANSWER   census
+configs/dcs_csi_pr013_button_head_replication   WHAT_THIS_CANNOT_DO       rank
+configs/dcs_csi_pr014_cell_census_basket.json   WHAT_THIS_CANNOT_DO       census   <- MISMATCH
+
+census reader reads pr["WHAT_THIS_CANNOT_ANSWER"]   (dcs_csi_head_census.py)
+rank   reader reads pr["WHAT_THIS_CANNOT_DO"]       (dcs_csi_head_single_rank.py)
+```
+
+**That lookup happens while building `out`, i.e. after all 11 arms have been resolved, read and
+bootstrapped.** The read would have consumed the whole ~2 GPU-hour family and then died on a `KeyError`
+one line before writing anything.
+
+⚠ **This file already warns about exactly this, about a different field, in the same function.** S-261's
+note, still in the source:
+
+> *"Bare `E["HD_TOPK"]` would KeyError on a census whose prereg declares no K-head comparators — after
+> everything was computed and before anything was written, which is fail-closed but needlessly
+> destructive of a completed run."*
+
+The lesson was recorded and then not generalised: **one late lookup was fixed and the others were left
+late.** Together with S-295 (W4's anti-KeyError guard sitting below the KeyError) that is **two
+consecutive ticks in which a recorded lesson had been applied at exactly one site.**
+
+**Fixed structurally, not locally: every prereg field this reader copies is now validated UP FRONT,
+before a single arm is loaded** — `CENSUS_DELIVERABLE`, `SELECTION_RE_ENTERS_WHEN`,
+`DOSE_IDENTITY_IS_BLIND_HERE`, `population`, `n_arms_per_split`, `id`, and the CANNOT block under
+**either** name. A field the reader needs is a precondition, not a late lookup.
+
+```
+7 refusals, all firing by name in milliseconds:
+  missing WHAT_THIS_CANNOT_DO       rc=1  REFUSING: ... carries neither WHAT_THIS_CANNOT_ANSWER nor ...
+  missing CENSUS_DELIVERABLE        rc=1  REFUSING: ... carries no 'CENSUS_DELIVERABLE', which this
+                                          reader copies into the report. Checked BEFORE the arms are
+                                          loaded so a missing field costs milliseconds and not a GPU
+                                          allocation. (S-296)
+  missing SELECTION_RE_ENTERS_WHEN  rc=1  (same shape)
+  missing population                rc=1  (same shape)
+  BOTH cell_sets and head_sets      rc=1  REFUSING: ... An arm family is one or the other.
+  NEITHER block                     rc=1  REFUSING: ... carries neither head_sets nor cell_sets.
+  not NO_RANK_TEST                  rc=1  REFUSING: ... it is a RANK-TEST preregistration
+```
+
+**I left PR-014's field name as `WHAT_THIS_CANNOT_DO` rather than re-emitting the prereg.** The reader
+now accepts either and records which it used in `CANNOT_DO_FIELD`; re-emitting would change the md5
+S-295 just recorded, for cosmetics, and the inconsistency is pre-existing between PR-012 and PR-013.
+
+### 2. The reader is cell-aware, and the ordering fix is verified by where it now stops
+
+```
+python scripts/dcs_csi_head_census.py --prereg configs/dcs_csi_pr014_cell_census_basket.json \
+  --tag-prefix csi7_cell_basket_validation --split validation --expect-n 230 --out /dev/null
+
+[census] CELL family: per-cell dose 224 = 2016/9 layers -- PREDICTED, NOT MEASURED.
+         THIS FAMILY'S ARMS VALIDATE THAT ARITHMETIC.
+REFUSING for tag 'csi7_cell_basket_validation_CL_BASE': 0 complete run dirs (need exactly 1).
+```
+
+Field validation passes, **then** arm resolution fails on the arms that have not run. That ordering is
+the fix, and where the reader stops is the proof of it.
+
+What the cell path adds: identity from `recorded_cells` for cell arms (base arms stay head-level);
+`want_dose = PER_CELL * n_cells`; a **DEPTH MAP printed in LAYER order rather than sorted by effect**,
+because the question is the shape along depth and sorting hides it; the preregistered bar printed beside
+every row; and an explicit **PER-CELL DOSE VALIDATION** line that says CONFIRMED or REFUTED against 224.
+
+### 3. ⚠ D34's BYTE-IDENTITY was broken by my first version, and I put it back
+
+The first cut of these changes added three top-level keys and two per-arm keys unconditionally. The
+science was untouched — `E`, `ci95`, `loo_marginal`, `n_domains`, `ON_PROTOCOL`, `REPORTABLE_AS`,
+`CANNOT_DO`, `B`, `seed`, `ci` all identical, and every shared value inside `GATE_0_and_identity` equal —
+but the object grew:
+
+```
+committed 29750 bytes | re-derived 34514 bytes | FULL OBJECT IDENTICAL: False
+  new keys: ARM_GRANULARITY, CANNOT_DO_FIELD, CELL_FAMILY
+  new per-arm keys: dose_expectation_status, identity_field
+```
+
+**"The numbers are the same" would have been a bad defence.** D34's full-object reproduction has been
+load-bearing evidence four separate times in this sprint (S-261, S-292, S-295, and again here), and
+retiring a verification property to add metadata that only a cell family can use is a bad trade. **Every
+new key is now emitted ONLY when the family is a cell family**, the top-level ones added after the shared
+dict is built:
+
+```
+committed 29750 bytes | re-derived 29750 bytes | FULL OBJECT IDENTICAL: True
+```
+
+### 4. The frozen read
+
+`runargs/dcs_csi_pr014_read.txt`, md5 `cdf959f6`, frozen **before any arm has run**. Every script and
+config it names was checked to exist first — naming a tool that does not exist is S-167c, and the read is
+the last place that error is cheap:
+
+```
+scripts/gates/dcs_csi_pr012_gate0_sweep.py     exists=True
+scripts/dcs_csi_head_census.py                 exists=True
+configs/dcs_csi_pr014_cell_census_basket.json  exists=True
+ALL NAMED ARTEFACTS EXIST: True
+```
+
+It states the three deliverables **in order of how much they would change if they came out otherwise**,
+and pre-commits each branch:
+
+1. **THE PER-CELL DOSE.** `observed != 224` is recorded as **the most consequential outcome available**,
+   and explicitly as a **CODE defect rather than a surprising fact about the model**: it would mean the
+   per-layer hooks do not divide the edit budget the way S-291 reasoned. GATE 0 would already have
+   failed on the dose, so no effect would be read at all.
+2. **THE DEPTH MAP**, with S-294's bar (`|E| > 0.019181`, 38.8% of the whole nine-cell effect) and the
+   **nothing-clears-it** branch preregistered as coherent and informative — *"⛔ IT MUST NOT be reported
+   as a failed experiment, and it MUST NOT be rescued by dropping to a weaker bar, a one-sided test or
+   an uncorrected 'trend' after the fact."*
+3. **S-269's L10 claim**, tested against an intervention for the first time, with the n = 1 head limit
+   stated in both directions so neither outcome can be inflated into a verdict on the screen.
+
+And a closing list of what may never be said from the file whatever the numbers, including *"cell (L, 2)
+is the writer"* and *"the effect is single-layer"* — because S-294 established there is nowhere to
+confirm either.
+
+### 5. Status
+
+```
+1. --knockout-cells in score_behavior.py                        ✅ S-291
+2. the argv gate + GATE 0 sweep + census primitives              ✅ S-292, S-293
+3. prereg frozen (7b21f659), tag registered, READER cell-aware,
+   READ FROZEN (cdf959f6)                                        ✅ THIS ENTRY
+   3b. LAUNCH                                                    -- NEXT, and it is now a submit away
+4./5. the confirmatory family                                    ⛔ UNREACHABLE (S-294, AM-37)
+```
+
+No arms were running (`squeue`, not `sacct`). D34 reproduces full-object identical; D33 was verified
+identical last tick after the W4 change. No pre-existing frozen artefact touched. Writes verified by md5
+and line count; quota 94% used, 1.4T free. **REVIEW R26 is due (~13:45) and lands before the launch,
+which is the right order: the machinery reviewed before it runs, as R25 was for PR-013.**
