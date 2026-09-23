@@ -22779,3 +22779,64 @@ it.** So the drift changes the *projection* and not the *decision*, which is the
 between "is the rate degrading" and "does the wall hold".
 
 **No PR-013 number has ever been read.** `score_behavior.py` was not opened. 98 shards remain (66 % done).
+
+---
+
+## S-285 — **THE LOAD IS DONE: 19278.4 s measured (5.36 h).** The projection was 4 minutes out. ⚠⚠ **And the measured number refutes S-272's relaunch decision: STAYING ON 919296 WOULD HAVE FINISHED ~2.8 h EARLIER.** "Relaunch wins in both branches" lost in the branch that happened
+
+### 1. The measured total, replacing five hours of projection
+
+```
+[w3] MODEL LOAD #1 (19278.4 s)          = 5.36 h
+291/291 [5:19:21<00:00, 65.85s/it]      shard reads
+final marginal, shard 1 excluded        59.9 s/shard   (my last estimate used 60.3)
+last projection: load ends ~07:52       ACTUAL 07:47:46  ->  4 minutes early
+```
+
+**The marginal-rate method held to 0.4 s/shard and 4 minutes over a 5-hour extrapolation** — which is the
+one thing tonight's projection machinery got right, and only because S-278 separated the rate from tqdm's
+ETA (that ETA was 29 h at shard 4).
+
+### 2. ⚠⚠ The decision this number refutes
+
+S-272 cancelled 919296 mid-load and relaunched, on the arithmetic *"RELAUNCH WINS IN BOTH BRANCHES."*
+**919296's own rate was better than its replacement's:**
+
+```
+919296 marginal  54.9 s/shard  ->  full load 17191 s = 4.78 h
+  its load began ~00:15  ->  would have completed ~05:02
+  + 23 arms x 290 s        ->  FAMILY WOULD HAVE ENDED ~06:52
+
+919531 (the relaunch)      ->  load done 07:47:46  ->  family ends ~09:40
+
+STAYING WOULD HAVE FINISHED ~2.8 h EARLIER.
+```
+
+**Why the arithmetic failed, precisely:** S-272 priced the relaunch against **n-307**, where a warm load had
+measured 4 s. **The job was not pinned, landed on n-302, and paid a full cold load — and n-302's cold rate
+in the replacement run was *worse* than in the run I cancelled** (59.9 vs 54.9 s/shard). **Every input to
+that comparison was measured; the thing I did not model was which node the scheduler would pick.**
+
+**This is the third distinct defect found in that one decision:** S-274 found it omitted **fairshare**,
+S-276 found its *"favourable accident"* (n-302 retaining 919296's cache) was **false**, and S-285 now finds
+the **load-time arithmetic itself was wrong.** ⛔ **The honest summary: S-272 was a bad call supported by
+real measurements, because the measurements answered a question about n-307 and the decision was executed
+on n-302.**
+
+**What survives:** S-274's standing rule (count fairshare) and S-282's response rule (accept a timeout
+rather than cancel) were both written *after* this and both point away from what S-272 did. **The rules the
+night produced are the right ones; this entry is the cost of having learned them by doing it wrong.**
+
+### 3. What is now running, and the band holds
+
+```
+23 arms begin at ~290 s each -> ~1.9 h -> family ends ~09:40
+S-284's band 09:29-09:47 CONTAINS it; S-283's 09:00-09:35 did not, which is why S-284 revised it
+wall 14:20 -> margin ~4.6 h
+```
+
+**The next action is governed by the execution checklist, not by judgement:** precondition (`sacct`
+COMPLETED, 23 `DONE.json`, 22 still quarantined) → **GATE 0 endpoint-blind on all 23** → primary read with
+`--require-slurm-job 919531` **alone** → independent re-derivation.
+
+**No PR-013 number has ever been read.** `score_behavior.py` was not opened.
