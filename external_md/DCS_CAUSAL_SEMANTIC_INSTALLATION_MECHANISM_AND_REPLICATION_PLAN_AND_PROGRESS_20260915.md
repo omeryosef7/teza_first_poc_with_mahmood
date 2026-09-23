@@ -28328,3 +28328,70 @@ frozen read cbdf34a2 and prereg 6790df3a are UNTOUCHED -- a relaunch changes nei
 NOT ESTABLISHED  anything about transfer, and nothing about the attention-mass measurement (S-325),
                  which still needs the GPU this family is now using.
 ```
+
+---
+
+## S-327 — ⚠ **MY S-326 PREDICTION IS REFUTED and S-314's "node constant" SURVIVES, now on four measurements.** The load landed at **1264.0 s** against my projected 2619–3201 s — **a 2.07× overestimate, because I extrapolated a 291-shard load from its first NINE shards**
+
+### 1. The number, and the prediction it settles
+
+S-326 recorded, before the load completed, that the two readings were incompatible:
+
+```
+S-314's node-constant reading predicted     ~1270-1340 s
+my extrapolation from the first 9 shards    ~2619-3201 s   (9 s/it x 291)
+```
+
+```
+[w3] MODEL LOAD #1 (1264.0 s)
+Loading weights: 100%|##########| 291/291 [20:48<00:00, 4.29s/it]
+```
+
+**1264.0 s. My projection is REFUTED; S-314's reading survives.**
+
+### 2. The rule is now on four measurements, and it has tightened
+
+```
+n-301 MODEL LOAD       S-298  1339.1 s      S-304  1273.2 s
+                       S-314  1265.8 s      S-327  1264.0 s
+range 75.1 s over four loads  |  spread 5.8 %  |  sd 31.1 s
+THE LAST THREE LIE WITHIN 9.2 s OF EACH OTHER
+```
+
+The gaps behind these are **3 minutes, 2 hours, 2.5 hours and now ~2.9 hours** since the previous job
+on that node. S-314 called it *"effectively a NODE CONSTANT … not a function of cache residency at
+all"* and refused to generalise past n-301. **A fourth point at a fourth gap does not overturn that
+and does tighten it** — but it is still one node, and n-302 (19278 s cold) and n-307 (47.5 s warm)
+remain the evidence that the constant is a property of *this* node's mount, not of the model or the
+filesystem.
+
+### 3. 📌 WHY I WAS WRONG, and it is a methodological error rather than bad luck
+
+**The shard rate is NOT STATIONARY within a load.** The first nine shards ran at ~9–11 s/it; the whole
+291 averaged **4.29 s/it**. I extrapolated from **3 % of the work** and overestimated by **2.07×**.
+
+⚠ **This is the same error as S-288 and S-289, one object over.** S-288 built an arm-time band on
+"the three fastest arms" and had to revise it; S-289 then found S-288's own window had been dominated
+by the slow block it had just discovered, and revised again — *five revisions in total*, each caused
+by projecting a non-stationary series from an unrepresentative early window.
+
+**I knew that lesson and applied it to arm times, not to shard rates.** The generalisation worth
+keeping:
+
+> **A rate measured over the opening of a monotone-looking process is an upper bound on nothing.**
+> Load bars, arm series and domain sweeps in this sprint have all been non-stationary; the honest
+> projection uses either the whole prior distribution for that node, or no projection at all.
+
+📌 And the prediction was still worth writing. **It cost nothing, it was falsifiable, and being wrong
+sharpened a rule that a confirmation would have left vague** — S-314's constant now has a fourth point
+*and* an explicit statement of what would have broken it. S-304 made the same trade and lost the same
+way; S-313 made it and won.
+
+### 4. What this does NOT establish
+
+* **Nothing about n-304.** S-326 recorded it as bad *on that occasion*; this entry adds no evidence
+  either way, and the pin to n-301 was a choice about known-good nodes, not a claim about n-304.
+* **Nothing about the science.** No endpoint has been read. 923972 is past its load with 0 of 62 arms
+  landed at the time of writing; the frozen read (`cbdf34a2`) is untouched and every branch of its
+  PRIMARY is open.
+* **Nothing about the attention-mass measurement** (S-325), which needs the GPU this family holds.
