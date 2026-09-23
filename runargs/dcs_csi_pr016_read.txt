@@ -1,0 +1,140 @@
+# FROZEN READ for PR-CSI-016 -- the per-CELL census of heads 17, 19, 23 on BUTTON validation.
+# 32 arms. Frozen 2026-09-23, BEFORE ANY ARM HAS RUN. Never re-freeze after seeing numbers.
+#
+# WHAT THIS ASKS, AND IT IS THE FIRST CSI CELL FAMILY THAT CAN ANSWER WITH A p.
+#   PR-CSI-014/015 were CENSUSES -- no rank, no p -- because AM-37/S-294 measured that no admissible
+#   held-out axis existed. S-309 AMENDED that inventory: `button validation` was blocked for HEAD 2
+#   and ONLY head 2. PR-CSI-013's own RANDOM control draws (frozen seed counter from 20261101) had
+#   already measured 20 other heads there, and head 19 sits at E = -0.035568, |E|/bar = 5.69,
+#   agreeing with its basket value to 88.7%.
+#
+#   So the LAYER prediction is basket TRAIN (67 domains) and the READ is button VALIDATION (23
+#   domains): held out on SPLIT *and* CODEWORD. PR-CSI-015 held out one coordinate; this holds two.
+#
+# ⛔ THE HEAD SET IS STILL NOT HELD OUT. Heads {17,19,23} come from D34, a basket-VALIDATION census
+#   (S-307 §6). This family does not repair that and must not claim to. What is held out is the
+#   within-head LAYER, which is the quantity the primary tests.
+#
+# Read in order. STOP AT THE FIRST FAILURE.
+#   GATE 0  liveness + ARM IDENTITY on all 32 arms, from each arm's own knockout_cells.
+#           ⚠ THREE collisions make this mandatory here, one of them NEW:
+#             * a cell arm's knockout_heads is EMPTY, which recorded_heads() maps to "ALL" (S-292);
+#             * all 27 single-cell arms expect the SAME dose 224 (S-246);
+#             * ⚠ the three HD_ arms are NINE-cell arms with dose 9 x 224 = 2016 -- IDENTICAL to
+#               BC_KO on BOTH the dose AND knockout_heads. S-310 closed that collision by requiring
+#               BC_KO to record NO cell list; VOID condition 8 is it.
+#   GATE 1  THERE IS NO GATE 1 in the PR-015 sense. ADMISSION plays that role and is preregistered:
+#           it is computed from each whole-head HD_ arm ALONE, never from the cells.
+# ------------------------------------------------------------------------------------------------
+
+# --- GATE 0 may be swept incrementally at any time; it refuses to read an endpoint field (S-202),
+# --- exits 3 when nothing has landed (S-292), and since R27/S-308 an arm whose run directories
+# --- EXIST but are REFUSED is counted as a FAILURE rather than as "not landed".
+python scripts/gates/dcs_csi_pr012_gate0_sweep.py \
+  --prereg configs/dcs_csi_pr016_cell_census_button.json \
+  --tag-prefix csi9_cell3_button_validation --split validation \
+  --require-slurm-job <VALIDATION_JOB_IDS>
+
+# --- STEP 1. THE CENSUS (the depth map + the per-head bars). It computes every E; the primary
+# --- reader below computes NOTHING of its own, so the two cannot disagree about a number.
+python scripts/dcs_csi_head_census.py \
+  --prereg configs/dcs_csi_pr016_cell_census_button.json \
+  --tag-prefix csi9_cell3_button_validation --split validation --expect-n 230 \
+  --require-slurm-job <VALIDATION_JOB_IDS> \
+  --out reports/DCS_CSI_PR016_CELL_CENSUS_button_validation.json
+#
+# ⚠ THE BARS ARE A FROZEN RULE, NOT FROZEN NUMBERS (S-311), because heads 17 and 23 have NEVER had a
+#   button arm and no number for them can exist before the run. The rule --
+#     bar(h) = 1.96 * SD(per-domain paired delta of HD_<h> minus BC_BASE) / sqrt(n_dom)
+#   -- is frozen in the prereg; only its arithmetic waits for data. The reader REFUSES a source arm
+#   that is missing, absent from the family, or NARROWER THAN THE WHOLE HEAD (which would compute
+#   the bar from the very quantity it judges). The same rule, run against D34's SINGLE_17, reproduces
+#   the 0.009082 that PR-CSI-015 froze as a NUMBER -- that is the only evidence it may be trusted on
+#   a head where only the rule will exist, and it is asserted as a test.
+#
+# ⚠ head 19's bar is PREDICTED at 0.006256 from PR-CSI-013's BT_CTRL_01. That is a FALSIFIABLE
+#   PREDICTION, not the bar used. A disagreement above 25% with the rule's value is a finding about
+#   cross-job reproducibility and MUST be reported.
+
+# --- STEP 2. THE PREREGISTERED PRIMARY.
+python scripts/dcs_csi_pr016_argmax_test.py \
+  --prereg configs/dcs_csi_pr016_cell_census_button.json \
+  --census reports/DCS_CSI_PR016_CELL_CENSUS_button_validation.json \
+  --out reports/DCS_CSI_PR016_ARGMAX_TEST_button_validation.json
+
+# ------------------------------------------------------------------------------------------------
+# THE STATISTIC, PRE-COMMITTED.
+#   M = # of ADMITTED heads whose argmax band layer by |E| equals that head's frozen screen layer.
+#   H0: the screen's per-cell prediction is unrelated to the button depth profile, so each admitted
+#       head's argmax is uniform over the 9 band layers and independent across heads.
+#   p = P(Binom(K, 1/9) >= M), one-sided.
+#
+#     K=3: M=3 -> 0.001372    M=2 -> 0.034294    M=1 -> 0.297668    M=0 -> 1.0
+#     K=2: M=2 -> 0.012346    M=1 -> 0.209877
+#     K=1: floor 1/9 = 0.1111 -> CANNOT ANSWER for any M
+#
+#   The frozen screen predictions, on record since commit 94aab78b (2026-09-23 01:05):
+#     head 17 -> L14      head 19 -> L14      head 23 -> L7
+#
+# ⚠⚠ THE SPANNING RULE, AND IT IS THE REASON THIS READ IS TRUSTWORTHY AT ALL.
+#   The screen says L14 for TWO of the three heads. If the button intervention carries a shared bias
+#   toward the top of the band, M=2 arrives FOR FREE and p = 0.034 would read as a pass while
+#   measuring NOTHING about the screen. So SUCCESS additionally requires THE MATCHING HEADS NOT TO
+#   BE CONFINED TO ONE BAND LAYER. Basket's own shape (L14, L14, L7) spans two and would satisfy it;
+#   "both L14 heads matched, head 23 did not" does NOT, and is CANNOT ANSWER -- whatever p says.
+#   This is frozen here, before any number exists, and it is asserted by a test that drives exactly
+#   that outcome (tests/test_csi_pr016_argmax.py::test_the_SPANNING_RULE_blocks_the_shared_bias_pass).
+#
+# ⚠⚠ AND THE SPANNING RULE IS NOT SUFFICIENT. R28 DEMONSTRATED THE RESIDUAL BEFORE ANY ARM RAN.
+#   The spanning rule blocks M=2 and leaves M=3 WIDE OPEN. If the button intervention carries the
+#   very top-of-band bias this design hypothesises, heads 17 and 19 are pinned to L14 FOR FREE and
+#   the ONLY informative event is head 23 landing on L7 -- probability 1/9 = 0.1111, which cannot
+#   clear alpha at all. R28 built that world and ran the real reader on it: it printed
+#   "K = 3, M = 3, p = 0.001372 ... spanning rule SATISFIED ... VERDICT: PASS". The binomial p would
+#   understate the type-I error of the SCIENTIFIC claim by ~81x.
+#
+#   So TWO ROBUSTNESS CO-PRIMARIES are frozen here, before any number exists:
+#     p_conditional   P(Binom(K_unique, 1/9) >= M_unique) over ADMITTED heads whose predicted layer
+#                     is NOT shared with another admitted head. With 17 and 19 both on L14,
+#                     K_unique = 1 and its floor is 0.1111.
+#     p_permutation   the exact permutation p over assignments of the screen's prediction MULTISET
+#                     to the admitted heads. It asks whether the screen put the ODD prediction on the
+#                     RIGHT head -- which a shared band bias CANNOT fake, because a bias says nothing
+#                     about which head gets the minority layer. With {L14, L14, L7} its floor is 1/3.
+#
+#   ⛔ THESE DO NOT GATE THE PASS/FAIL, deliberately: requiring them would make this family unable to
+#      pass for a STRUCTURAL reason (K_unique = 1) rather than an empirical one. THEY BOUND THE
+#      WORDING. The headline MUST be stated with the WEAKEST of the three, each named, and quoting
+#      the binomial p alone is FORBIDDEN whenever two admitted heads share a predicted layer.
+#      S-307 established that as the honest use of a robustness number -- the difference here is that
+#      these are frozen BEFORE the run rather than computed after it.
+#
+# ADMISSION, computed from the whole-head arm ALONE and never from the cells:
+#   head h is ADMITTED iff HD_<h>'s ci95 excludes 0 AND |E(HD_<h>)| >= 1.5 x bar(h).
+#   ⛔ A DROPPED HEAD IS NOT A MISS. It leaves K, is reported with its measured power, and the floor
+#      rises. Head 19 is expected to be admitted (PR-013 measured |E|/bar = 5.69). Heads 17 and 23
+#      have NEVER had a button arm and may fail the gate -- that is this family's real risk and it
+#      is priced here, not hidden. If it collapses to K=1 the answer is CANNOT ANSWER, and the
+#      fallback value is a powered head-level cross-codeword replication of D34 plus a button
+#      depth map, which is worth the allocation on its own.
+#
+# ------------------------------------------------------------------------------------------------
+# WHAT MAY NEVER BE SAID FROM THIS FILE, whatever the numbers:
+#   * "cell (L, h) is the writer" -- this tests the SCREEN's prediction, not a cell's privilege among
+#     ARBITRARY cells. There is still no control family of arbitrary cells anywhere in this sprint.
+#   * that the screen is a validated cell selector IN GENERAL -- at most this adds 3 heads on a second
+#     codeword, and all three were selected as load-bearing on basket VALIDATION.
+#   * anything about the other 29 heads, about DOMAIN generality, or about the 3 TEST domains.
+#   * if NULL: that S-306/S-307 are withdrawn. A failure to transfer across codewords is a statement
+#     about TRANSFER; the basket result stands on its own data.
+#   * if NULL: "underpowered" without quoting K, the dropped heads and their MEASURED power.
+#   * the binomial p ALONE whenever two admitted heads share a predicted layer -- see the robustness
+#     co-primaries above. This is the most likely way this family gets over-claimed.
+#   * anything resting on "the 3 TEST domains". ⚠ THAT COUNT IS WRONG: the frozen manifest
+#     dcs_ts116_domain_split.json declares n_test = 23, and both banks carry 4416 rows over 23
+#     distinct TEST domains. PR-014's and PR-015's preregs both record 3, and S-294's axis inventory
+#     rests on it. See S-312. TEST is STILL NOT TOUCHED by this family.
+#   * any rung above 1 on AM-34's ladder. This is necessity, like everything else in this sprint.
+#
+# <VALIDATION_JOB_IDS> must name the ONE job that produced all 32 arms. If a relaunch happens, the
+# earlier generation's arm dirs must be QUARANTINED rather than filtered at read time (S-261).

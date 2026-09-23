@@ -26396,3 +26396,198 @@ PR-CSI-016   NOT yet frozen, NOT launched. Blocker 1 of 2 cleared.
              way. It must learn a rule WITHOUT reopening the fail-open it just closed.
 queue        EMPTY. Idle GPU is the binding cost and is being paid while this is built correctly.
 ```
+
+---
+
+## S-311/S-312 — **PR-CSI-016 IS BUILT AND FROZEN, and REVIEW R28 STOPPED IT REACHING A GPU TWICE.** 🔴 **Two BLOCKERS made the frozen read NON-EXECUTABLE END TO END — and one of them survived NINE GREEN TESTS OF MY OWN because my test helper fabricated a report shape the producer never emits.** Plus a sprint-wide correction: **`test_domains = 3` is FALSE; the manifest says 23**
+
+### 1. What was built (S-311), and the one thing that made it possible
+
+S-309 chose PR-CSI-016: the per-cell census of heads 17, 19, 23 on **button** validation. 32 arms.
+Held out on **two** coordinates — the layer prediction is basket TRAIN (67 domains), the read is
+button VALIDATION (23) — and the **first CSI cell family that can carry a p**.
+
+The blocker was structural: **heads 17 and 23 have never had a button arm**, so no bar for them can
+exist as a number before the run — while S-308 had just made a missing numeric bar a **REFUSAL**.
+
+**S-311's answer is to freeze the DERIVATION rather than the number.** The prereg names, per head, the
+full-band arm its bar is computed from; only the arithmetic waits for data. The reader refuses a
+source arm that is missing, not in the family, did not land, or **narrower than the whole head** —
+that last one because a bar computed from a single cell is computed from the quantity it judges.
+
+⚠ **And the rule is only trustworthy because it agrees with a number where both exist.** D34's
+`SINGLE_17` *is* head 17's full band, so the read-time rule must reproduce the `0.009082` PR-CSI-015
+froze. It does, to every printed digit, and that is asserted as a test rather than claimed.
+
+The whole-head arms have to be written as **nine-cell lists** (the reader refuses a prereg carrying
+both `head_sets` and `cell_sets`), which is exactly the collision S-310 closed one entry earlier.
+
+### 2. 🔴 R28 BLOCKER 1 — STEP 1 of the frozen read refused before loading a single arm
+
+```
+$ python scripts/dcs_csi_head_census.py --prereg configs/dcs_csi_pr016_cell_census_button.json ...
+REFUSING: prereg 'PR-CSI-016' does not declare NO_RANK_TEST -- it is a RANK-TEST preregistration
+         (candidate + control family + floor) and this is the CENSUS reader. (S-247)
+```
+
+The prereg was missing **five** fields the reader validates as preconditions: `NO_RANK_TEST`,
+`CENSUS_DELIVERABLE`, `SELECTION_RE_ENTERS_WHEN`, `DOSE_IDENTITY_IS_BLIND_HERE`, and
+`WHAT_THIS_CANNOT_ANSWER`. **And the refusal was actively misleading** — it told the operator this was
+a rank prereg and pointed at the wrong tool.
+
+⚠ **The bitter part is that this is S-296's check, whose own comment says it exists so that "a missing
+field costs milliseconds and not a GPU allocation."** It worked perfectly. **Nobody had pointed it at
+the frozen prereg.** Root cause, named by the reviewer: the S-311 tests exercise the new bar-rule path
+by *mutating PR-CSI-015's* prereg, which carries all five — **so the real PR-016 prereg was never once
+handed to the reader it was written for.**
+
+### 3. 🔴 R28 BLOCKER 2 — the preregistered PRIMARY could never read a real census. **And it was mine.**
+
+```
+scripts/dcs_csi_pr016_argmax_test.py:47   g0.get("all_pass", g0.get("pass", False))
+scripts/dcs_csi_head_census.py:638        writes {"per_arm": ..., "identity": ...}
+```
+
+`all_pass` **has never been written by anything.** Not in PR-012's, PR-014's or PR-015's committed
+reports; `grep -rn all_pass scripts/` finds it only in my own reader. So the primary refused **every
+possible healthy census report** — and would have done so **after 32 arms and ~1.9 GPU-hours**.
+
+⛔ **All nine of its tests passed**, because `tests/test_csi_pr016_argmax.py`'s helper hand-wrote
+`{"all_pass": True}`. **A test that invents its input validates the test, not the code.** That is
+R27's class exactly, committed by me one entry after I wrote R27 up.
+
+Both are now fixed, and the fix made the check **stronger than it was pretending to be**: it reads
+the per-arm record, so a report with a failing arm and a cheerful summary flag is refused too —
+demonstrated by R28 (`per_arm['BC_H17_L06']['pass'] = False` with `all_pass = True` used to publish
+`VERDICT PASS`). The test helper now emits the **real** shape, and a new test pins that shape against
+the published PR-015 report so the two cannot drift apart again.
+
+### 4. ⚠ R28 MAJOR — the SPANNING RULE does not close the hole it was built for
+
+The spanning rule blocks `M=2`. **It leaves `M=3` wide open.** If the button intervention carries the
+top-of-band bias the design itself hypothesises, heads 17 and 19 are pinned to L14 **for free** and the
+only informative event is head 23 landing on L7 — probability **1/9 = 0.1111**, which cannot clear
+α at all. R28 **built that world and ran the real reader on it**:
+
+```
+K = 3 admitted, M = 3 matches, p = 0.001372 ... spanning rule SATISFIED ... VERDICT: PASS
+```
+
+**The binomial p understates the type-I error of the scientific claim by ~81×.**
+
+Two **robustness co-primaries** are now frozen, before any number exists:
+
+```
+p_conditional   Binom(K_unique, 1/9) over ADMITTED heads whose predicted layer is NOT shared.
+                With 17 and 19 both on L14, K_unique = 1 and the floor is 0.1111.
+p_permutation   the exact permutation p over assignments of the prediction MULTISET to the admitted
+                heads -- it asks whether the screen put the ODD prediction on the RIGHT head, which a
+                shared band bias CANNOT fake. With {L14, L14, L7} its floor is 1/3.
+```
+
+⛔ **They deliberately do NOT gate the PASS/FAIL**, because requiring them would make this family
+unable to pass for a **structural** reason (`K_unique = 1`) rather than an empirical one. **They bound
+the wording**: the headline must be stated with the **weakest of the three, each named**, and quoting
+the binomial p alone is **forbidden** whenever two admitted heads share a predicted layer. S-307
+established that as the honest use of a robustness number; the difference is that these are frozen
+*before* the run rather than computed after it.
+
+### 5. 🔴 A SPRINT-WIDE CORRECTION: `test_domains = 3` IS FALSE. The manifest says **23**.
+
+R28 flagged it; I verified it from the manifest and both banks rather than taking it:
+
+```
+data/boombness_prompts/dcs_ts116_domain_split.json
+  n_train 70   n_validation 23   n_test 23        manifest_sha16 be7d2c772d814ef3
+bank basket  rows by split: {train 13440, validation 4416, test 4416}   distinct TEST domains: 23
+bank button  rows by split: {train 13440, validation 4416, test 4416}   distinct TEST domains: 23
+```
+
+**PART I §3.2 said 23 TEST all along.** PR-CSI-014's and PR-CSI-015's preregs both record
+`test_domains: 3`, and **S-294's axis inventory rests on it** — *"the 3 TEST domains — UNDERPOWERED —
+need n > 3.8 at best"* — which is one of the five rows that made a confirmatory cell test
+**UNREACHABLE** and demoted PR-014 and PR-015 to descriptive censuses.
+
+⚠ **The real blocker is different and far more tractable: TEST is not UNDERPOWERED, it is UNBUILT.**
+
+```
+runargs/dcs_cont/exclude_basket_bomb_sow_{train,validation}.txt   exist
+runargs/dcs_cont/exclude_button_bomb_sow_{train,validation}.txt   exist
+runargs/dcs_cont/exclude_*_bomb_sow_test.txt                      DOES NOT EXIST
+```
+
+TEST has never been run because **nobody built its exclusion list**, not because it is too small.
+
+⛔ **NOTHING is done with this now, and PR-CSI-016 does not touch TEST.** §3.2 says TEST is read
+**once**, only under a preregistration that freezes everything. This entry records the measurement and
+the corrected count; **the axis inventory is re-derived, and the decision taken, in a later entry with
+its own design.** Writing `test_domains: 23` into PR-016's prereg is the only change made here.
+
+### 6. The rest of R28, and what it verified correct
+
+```
+MAJOR  the exclusion was keyed on the STRING bar_source_arm, not on ARM GRANULARITY -- so a head
+       whose bar is a NUMBER leaked its 9-cell arm into the depth map, the clearing counts and the
+       per-CELL dose check, printing "REFUTED -- the uniformity assumption is WRONG" on a healthy run
+MAJOR  a head carrying BOTH a number and a source arm SILENTLY DELETED the named arm, with none of
+       the rule's guards ever running on it (demonstrated: an arm carrying head 23's own headline
+       cell vanished, "2 of 26 cells CLEAR", exit 0)
+MAJOR  `z` was neither required nor bounded: a rule without z used 1.96 and then RECORDED "z": 1.96
+       as though the prereg had frozen it; z = 0.0 gave a bar of 0 and "11 of 27 cells CLEAR"
+MAJOR  ⚠ S-310 OVER-REACHED AND BROKE A PUBLISHED FAMILY -- requiring the all-32 arm to record an
+       empty knockout_cells made D34 (PR-CSI-012) UNREADABLE, because its HD_KO predates the flag
+MINOR  `layers` read late; MUST_NOT_BE_SAID chosen by a binary PASS test, so a spanning CANNOT ANSWER
+       published "the screen is useless" while holding p = 0.034; a dropped head whose argmax DID
+       match was published as MATCHES_SCREEN=false; ties published a quotable M/p; no split check;
+       the 1/9 null was a hardcoded literal; the admission boundary failed at exactly 1.5 in IEEE
+```
+
+All fixed. `z` is now validated **once where the rule is read** rather than inside a per-head branch —
+a parameter checked inside a branch is only checked for the heads that reach it.
+
+✅ **VERIFIED CORRECT by R28, independently:** the statistic (all nine p-table entries recomputed with
+exact `Fraction`s); the null is 1/9 and one-sided in the right direction; **the argmax cannot leak the
+whole-head arm**; admission touches only the whole-head arm; a dropped head is never a miss and p uses
+the post-drop K; every verdict branch is reachable and its text true of the state that produced it;
+the screen literal re-derives from the artefact; the launcher path is clean on all 32 argv lines with
+no arm whose NAME disagrees with its FLAGS; the tag namespace composes as PR-015's did; no `csi9_*`
+directory exists to resume into; and the S-311 bar arithmetic is the **paired delta**, not the raw
+per-domain means — the reading that would have been 6× wrong and silently passed every gate.
+
+### 7. The end-to-end dry run, which is the check that was missing entirely
+
+Both blockers existed because **nobody had run the two readers in sequence on a report of the shape
+the producer emits**. So that now exists: PR-015's 27 real cell arms plus BC_BASE/BC_KO, plus three
+whole-head arms re-badged from D34's `SINGLE_17/19/23`, symlinked into PR-016's namespace — **every
+`results.jsonl` a real run; only names, configs and job ids rewritten.**
+
+```
+STEP 0 GATE 0 sweep   rc=0    32 of 32
+STEP 1 census         rc=0    bars from the RULE: 0.009082 / 0.010223 / 0.006615 (= D34's frozen
+                              values, because these ARE D34's arms), 3 of 27 clear, dose CONFIRMED
+STEP 2 primary        rc=0    K=3, M=3, p=0.001372, spanning SATISFIED, VERDICT PASS
+```
+
+⛔ **THAT VERDICT IS BASKET DATA WEARING BUTTON NAMES AND MUST NEVER BE QUOTED AS A RESULT.** It is a
+machinery check and nothing else. What it establishes is that the frozen read executes end to end —
+which, before R28, it demonstrably did not.
+
+### 8. Verification and state
+
+```
+82 tests pass across test_csi_cell_identity.py, test_csi_pr016_argmax.py, test_knockout_cells.py
+PR-CSI-015 re-reads NUMERICALLY IDENTICAL after every fix: max |dE| = 0.0, max |dci95| = 0.0
+D34 (PR-CSI-012) is READABLE again: "GATE 0 PASS on all 44 arms"
+prereg  configs/dcs_csi_pr016_cell_census_button.json   md5 183d72a7  (re-emits byte-identically)
+read    runargs/dcs_csi_pr016_read.txt                  md5 90ee8a12
+tag     PR-CSI-016 -> csi9_cell3_button registered in dcs_csi_pr010_arms.slurm
+argv    --check PASSES: 32 arms, 30 carrying a frozen cell list, button bank and exclusions bound
+queue   EMPTY. Nothing launched yet; the commit precedes the submit (S-302).
+```
+
+📌 **The lesson of this entry, and it is the same one as S-310's.** R27 ran *after* its window and
+found defects in published artefacts. R28 ran *before* the GPU and found two that would have made the
+family unreadable after it was paid for. **The cost difference is the entire family.** The habit worth
+keeping is narrower than "review before launch": it is **run the frozen artefacts, in the frozen
+order, against the shape the producer actually emits** — every one of the four things R28 caught was
+invisible to reading and obvious to running.

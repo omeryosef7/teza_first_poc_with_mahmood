@@ -21,7 +21,7 @@ positive this census exists to avoid. So arm identity here is asserted from the 
 `knockout_heads` against the preregistered head set, per arm, and the expected dose is derived from
 len(head_set) rather than from a single K constant.
 """
-import argparse, collections, importlib.util, json, os, random, statistics, sys
+import argparse, collections, importlib.util, json, math, os, random, statistics, sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(REPO, "scripts"))
@@ -328,12 +328,20 @@ def main():
             # been exploitable by the very next family.
             # A true all-32 arm carries NO cell list. Absence of the field is NOT a pass (R20-6).
             _kc = recorded_cells(dirs[arm])
-            ok_id = (got == "ALL") and (_kc == "NOT_A_CELL_ARM")
+            # ⚠ R28/S-312 -- S-310 OVER-REACHED AND BROKE A PUBLISHED FAMILY. The collision it closed
+            # exists only where an arm CAN be cell-scoped. D34 (PR-CSI-012) is a pure HEAD census whose
+            # HD_KO predates --knockout-cells, so the field is ABSENT, and requiring it made D34
+            # unreadable -- while this file's own comments call D34's reproduction load-bearing.
+            # In a head family no arm can impersonate the denominator, so the cell check is scoped to
+            # cell families, where every arm is post-S-291 and the field always exists.
+            ok_id = (got == "ALL") and (_kc == "NOT_A_CELL_ARM" or not IS_CELLS)
             if got != "ALL":
                 why = "expected ALL, recorded %r" % (got,)
-            elif _kc is None:
+            elif _kc is None and IS_CELLS:
                 why = ("config records NO knockout_cells field -- CANNOT distinguish the all-32 arm "
                        "from a full-band 9-cell arm, which shares its dose (R20-6)")
+            elif not IS_CELLS:
+                why = "omitted flag == all 32 (head family: no arm here can be cell-scoped)"
             elif _kc != "NOT_A_CELL_ARM":
                 why = ("THE DENOMINATOR IS CELL-SCOPED: knockout_heads is empty (reads as ALL) but "
                        "knockout_cells records %r. This is the S-246 collision on the KO arm and the "
@@ -453,12 +461,112 @@ def main():
         _single_bar = (pr.get("DETECTABILITY_PREREGISTERED") or {}).get(
             "min_abs_E_for_ci95_to_exclude_0")
 
+        # ⚠ S-311. THE BAR AS A *RULE* RATHER THAN A NUMBER, and why that is not a loophole.
+        # PR-CSI-016 reads BUTTON. Heads 17 and 23 have never had a button arm, so no bar for them
+        # can exist as a number before the family runs -- and S-308 (correctly) made a missing
+        # numeric bar a REFUSAL. The way out is NOT to weaken that refusal but to let a prereg freeze
+        # the DERIVATION instead, naming the arm it will be computed from. The rule is frozen before
+        # any arm runs; only its ARITHMETIC waits for the data.
+        #   * the source arm must be named PER HEAD and must be IN THIS FAMILY;
+        #   * it must be that head's FULL BAND -- every layer, exactly once. A source arm pointing at
+        #     a single cell would compute the bar from the very quantity it is used to judge, which
+        #     is the circularity this whole block exists to avoid, so it is a REFUSAL;
+        #   * it is EXCLUDED from the depth map and from every clearing count: it is a 9-cell arm,
+        #     not a cell, and counting it would put a 2016-dose arm in a per-cell census;
+        #   * absence of BOTH a number and a rule is still a refusal (R20-6, unchanged).
+        _bar_rule = (pr.get("DETECTABILITY_PREREGISTERED_PER_HEAD") or {}).get("BAR_IS_A_RULE") or {}
+        # ⚠ R28/S-312: the rule's ONLY numeric parameter must be DECLARED and sane, and it is a
+        # property of the RULE, so it is validated ONCE here rather than per head -- a parameter
+        # checked inside a per-head branch is only checked for the heads that reach that branch.
+        # A missing z used to default to 1.96 and then be written into the report as though the
+        # prereg had frozen it: false metadata in a published artefact, the R27/S-308 class. And
+        # z = 0.0 was accepted, giving a bar of 0.0 and "11 of 27 cells CLEAR THE PREREGISTERED BAR".
+        _RULE_Z = None
+        if _bar_rule:
+            if "z" not in _bar_rule:
+                sys.exit("REFUSING: prereg %r declares BAR_IS_A_RULE without `z`. The rule's only "
+                         "numeric parameter cannot be supplied by this file -- that would publish a "
+                         "default as though it were preregistered. (R28/S-312)" % pr["id"])
+            try:
+                _RULE_Z = float(_bar_rule["z"])
+            except (TypeError, ValueError):
+                sys.exit("REFUSING: BAR_IS_A_RULE.z = %r is not a number. (R28/S-312)"
+                         % (_bar_rule["z"],))
+            if not (0.5 <= _RULE_Z <= 5.0):
+                sys.exit("REFUSING: BAR_IS_A_RULE.z = %r is outside [0.5, 5.0]. z=0 makes every cell "
+                         "clear a bar of zero; an enormous z makes every cell fail. (R28/S-312)"
+                         % _RULE_Z)
+        # ⚠ R28/S-312: keyed on ARM GRANULARITY, not on the bar_source_arm string. Keying on the
+        # string meant that a head whose bar is a frozen NUMBER left its own 9-cell whole-head arm in
+        # the census -- leaking a 2016-dose arm into the depth map, into the clearing counts, and into
+        # the per-CELL dose check, which then printed "REFUTED -- the uniformity assumption is WRONG"
+        # on a perfectly healthy run. A per-CELL census judges CELLS; an arm covering more than one
+        # cell is a whole-head arm whatever the prereg calls it.
+        _NAMED_SOURCES = {d.get("bar_source_arm") for d in _per_head_bars.values()
+                          if isinstance(d, dict) and d.get("bar_source_arm")}
+        _BAR_SOURCE_ARMS = {k for k in hs if len(hs[k]) > 1} | (_NAMED_SOURCES & set(hs))
+        for _nm in sorted(_NAMED_SOURCES - set(hs)):
+            sys.exit("REFUSING: bar_source_arm %r is not an arm of prereg %r. (S-311)"
+                     % (_nm, pr["id"]))
+        _bar_computed = {}
+
+        def _bar_from_rule(h):
+            """bar(h) from THIS family's own whole-head arm, per a rule frozen before the run."""
+            src = (_per_head_bars.get(str(h)) or {}).get("bar_source_arm")
+            if not src:
+                return None
+            if not _bar_rule:
+                sys.exit("REFUSING: prereg %r names bar_source_arm %r for head %d but declares no "
+                         "DETECTABILITY_PREREGISTERED_PER_HEAD['BAR_IS_A_RULE'] block. An arm name "
+                         "without a frozen derivation is not a preregistered criterion. (S-311)"
+                         % (pr["id"], src, h))
+            if src not in hs:
+                sys.exit("REFUSING: head %d's bar_source_arm %r is not an arm of prereg %r. (S-311)"
+                         % (h, src, pr["id"]))
+            if src not in per:
+                sys.exit("REFUSING: head %d's bar_source_arm %r did not land, so its bar cannot be "
+                         "computed. A bar that silently defaults is the S-301 false null. (S-311)"
+                         % (h, src))
+            if "layers" not in pr:
+                sys.exit("REFUSING: prereg %r declares a bar RULE but no `layers`, so the full-band "
+                         "guard cannot run. S-296: a field the reader needs is a PRECONDITION, not a "
+                         "late lookup. (R28/S-312)" % pr["id"])
+            want = sorted([int(L), int(h)] for L in pr["layers"])
+            got = sorted([int(c[0]), int(c[1])] for c in hs[src])
+            if got != want:
+                sys.exit("REFUSING: head %d's bar_source_arm %r covers %r, not that head's FULL BAND "
+                         "%r. A bar derived from anything narrower than the whole head is computed "
+                         "from the quantity it judges. (S-311)" % (h, src, got, want))
+            d = [per[src][x] - per[base_arm][x] for x in doms]
+            z = _RULE_Z
+            bar = z * statistics.stdev(d) / math.sqrt(len(doms))
+            _bar_computed[str(h)] = {"bar": bar, "source_arm": src, "z": z, "n_domains": len(doms),
+                                     "per_domain_SD": statistics.stdev(d),
+                                     "E_of_the_source_arm": statistics.fmean(d),
+                                     "COMPUTED_AT_READ_TIME_FROM_A_RULE_FROZEN_BEFORE_THE_RUN": True}
+            return bar
+
         def _bar_for(arm):
             """That arm's preregistered bar. REFUSES rather than returning None."""
             h = sorted(hs[arm])[0][1]
             if str(h) in _per_head_bars:
-                v = _per_head_bars[str(h)].get("min_abs_E_for_ci95_to_exclude_0")
+                _e = _per_head_bars[str(h)]
+                if (_e.get("min_abs_E_for_ci95_to_exclude_0") is not None
+                        and _e.get("bar_source_arm")):
+                    # ⚠ R28/S-312: the number wins, so _bar_from_rule never runs and NONE of its
+                    # guards (in-family, full-band, landed) are applied -- yet the named arm has
+                    # already been removed from the census. An arm can vanish from a published depth
+                    # map with no check having looked at it. Two criteria for one head is not a
+                    # preregistration.
+                    sys.exit("REFUSING: prereg %r gives head %d BOTH a frozen bar "
+                             "(min_abs_E_for_ci95_to_exclude_0) AND a bar_source_arm %r. A head has "
+                             "ONE criterion. (R28/S-312)"
+                             % (pr["id"], h, _e.get("bar_source_arm")))
+                v = _e.get("min_abs_E_for_ci95_to_exclude_0")
                 if v is None:
+                    _r = _bar_from_rule(h)
+                    if _r is not None:
+                        return _r
                     sys.exit("REFUSING: prereg %r gives head %d no "
                              "min_abs_E_for_ci95_to_exclude_0. A missing bar would make every cell read "
                              "as 'below the bar' and print a FALSE NULL. (S-301)" % (pr["id"], h))
@@ -484,15 +592,19 @@ def main():
                      "and the headline would report a null that was never measured. Absence is not a "
                      "pass (R20-6). (S-301)" % (pr["id"], h, h))
 
-        _heads_here = sorted({sorted(hs[k])[0][1] for k in hs})
+        _judged = [k for k in hs if k not in _BAR_SOURCE_ARMS]
+        if not _judged:
+            sys.exit("REFUSING: every arm of prereg %r is a bar source arm; there are no cells to "
+                     "read. (S-311)" % pr["id"])
+        _heads_here = sorted({sorted(hs[k])[0][1] for k in _judged})
         # LAYER order within HEAD order: the question is the shape along depth, and on a multi-head
         # family interleaving the heads would hide each head's shape instead of showing three of them.
-        _cells = sorted(hs, key=lambda x: (sorted(hs[x])[0][1], sorted(hs[x])[0][0]))
+        _cells = sorted(_judged, key=lambda x: (sorted(hs[x])[0][1], sorted(hs[x])[0][0]))
         print("\n[census] DEPTH MAP -- head(s) %s, one cell per (head, layer), in HEAD then LAYER "
               "order. NO RANK, NO p."
               % (pr.get("h_star") if pr.get("h_star") is not None
                  else ", ".join(str(h) for h in _heads_here)))
-        _bars_used = {h: _bar_for(next(k for k in hs if sorted(hs[k])[0][1] == h))
+        _bars_used = {h: _bar_for(next(k for k in _judged if sorted(hs[k])[0][1] == h))
                       for h in _heads_here}
         if len(_bars_used) == 1:
             print("         preregistered detectability bar: |E| > %.6f (S-294). The right-hand "
@@ -598,9 +710,11 @@ def main():
         out["CELL_FAMILY"] = {
             "h_star": pr.get("h_star"), "layers": pr.get("layers"), "band": pr.get("band"),
             "per_cell_dose_predicted": PER_CELL,
-            "per_cell_dose_observed": sorted({g0[k]["median_prefill_edits"] for k in hs}),
+            # ⚠ S-311: the BAR SOURCE ARMS are 9-cell arms with dose 2016, not 224. Including them here
+            # would make the per-CELL dose check read two doses and print REFUTED on a healthy run.
+            "per_cell_dose_observed": sorted({g0[k]["median_prefill_edits"] for k in _cells}),
             "per_cell_dose_verdict": ("CONFIRMED" if sorted(
-                {g0[k]["median_prefill_edits"] for k in hs}) in ([PER_CELL], [float(PER_CELL)])
+                {g0[k]["median_prefill_edits"] for k in _cells}) in ([PER_CELL], [float(PER_CELL)])
                 else "REFUTED -- the uniformity assumption behind DOSE_UNIT/band_width is WRONG and "
                      "every cell dose expectation in the sprint must be re-derived (S-292)"),
             "cells": {k: sorted(hs[k]) for k in sorted(hs)},
@@ -609,12 +723,18 @@ def main():
             # S-300: the PREREGISTERED count first, the weaker one beside it, both named for exactly
             # what they measure so neither can be quoted as the other.
             "n_cells_CLEARING_THE_PREREGISTERED_BAR": sum(
-                1 for k in hs if abs(E[k]) > _bar_for(k)),
+                1 for k in _cells if abs(E[k]) > _bar_for(k)),
             "preregistered_bar": _thr,
             "preregistered_bar_per_head": {str(h): _bars_used[h] for h in _heads_here},
+            # S-311: when a bar came from a frozen RULE rather than a frozen NUMBER, the report
+            # records the computed value, the arm it came from and the rule's own parameters --
+            # S-308's lesson: a report that has a criterion must RECORD it.
+            "bars_COMPUTED_FROM_A_FROZEN_RULE": (_bar_computed or None),
+            "bar_source_arms_EXCLUDED_FROM_THE_DEPTH_MAP": sorted(_BAR_SOURCE_ARMS) or None,
+            "n_cells_judged": len(_cells),
             "cells_clearing_the_preregistered_bar": sorted(
-                k for k in hs if abs(E[k]) > _bar_for(k)),
-            "n_cells_with_ci95_excluding_0": sum(1 for k in hs if (CI[k][1] < 0 or CI[k][0] > 0)),
+                k for k in _cells if abs(E[k]) > _bar_for(k)),
+            "n_cells_with_ci95_excluding_0": sum(1 for k in _cells if (CI[k][1] < 0 or CI[k][0] > 0)),
             # ⚠ R27/S-308: this note used to say "the prereg froze |E| > preregistered_bar" on a
             # MULTI-HEAD family, where preregistered_bar is null by design and the real criterion
             # lives in preregistered_bar_per_head. It pointed a reader at a null.

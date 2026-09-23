@@ -601,3 +601,199 @@ def test_the_real_unmodified_denominator_still_PASSES(tmp_path):
     finally:
         sys.argv = old
     assert rc in (0, None), "the genuine all-32 denominator was refused: rc=%r" % (rc,)
+
+
+# ================================================================ S-311
+# THE BAR AS A FROZEN *RULE* RATHER THAN A FROZEN NUMBER.
+# PR-CSI-016 reads BUTTON, where heads 17 and 23 have never had an arm, so no bar for them can exist
+# as a number before the family runs -- while S-308 (correctly) made a missing numeric bar a REFUSAL.
+# The prereg may therefore freeze the DERIVATION instead, naming the whole-head arm it is computed
+# from. These tests pin the properties that keep that from being a loophole.
+
+PR012 = os.path.join(ROOT, "configs", "dcs_csi_pr012_head_census_basket.json")
+
+
+def _pr015_with_rule(tmp_path, head, source_arm, rule=True, source_cells=None):
+    pr = json.load(open(PR015))
+    ph = pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"][str(head)]
+    ph.pop("min_abs_E_for_ci95_to_exclude_0", None)
+    ph["bar_source_arm"] = source_arm
+    if rule:
+        pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["BAR_IS_A_RULE"] = {
+            "z": 1.96,
+            "rule": "bar(h) = z * SD(per-domain paired delta of <bar_source_arm> vs the base arm) "
+                    "/ sqrt(n_domains)",
+        }
+    if source_cells is not None:
+        pr["cell_sets"][source_arm] = source_cells
+        pr["n_arms_per_split"] = len(pr["cell_sets"]) + len(pr["base_arms"])
+    p = tmp_path / "rule.json"
+    p.write_text(json.dumps(pr))
+    return str(p)
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+@pytest.mark.parametrize("case,kw,needle", [
+    # ⚠ R28/S-312 added an EARLIER refusal for a source arm that is not in the family, so this case
+    # must name an arm that IS in the family or it refuses for the other (also correct) reason.
+    ("a source arm named with NO rule block", dict(source_arm="CL_H17_L14", rule=False),
+     "declares no DETECTABILITY_PREREGISTERED_PER_HEAD['BAR_IS_A_RULE']"),
+    ("a source arm that is not in the family", dict(source_arm="HD_NOSUCH", rule=True),
+     "is not an arm of prereg"),
+    ("a source arm that is a SINGLE CELL", dict(source_arm="CL_H17_L14", rule=True),
+     "not that head's FULL BAND"),
+])
+def test_a_bar_RULE_refuses_every_way_it_could_become_a_loophole(tmp_path, case, kw, needle):  # noqa: E501
+    """PROPERTY: a rule is only a criterion if it is frozen, total, and derived from an arm that is
+    NOT the quantity it judges. The single-cell case is the important one -- a bar computed from the
+    very cell it is used to test is the circularity the whole detectability block exists to avoid.
+    """
+    p = _pr015_with_rule(tmp_path, 17, **kw)
+    r = subprocess.run([PY, CENSUS_READER, "--prereg", p, "--expect-n", "230",
+                        "--out", os.devnull] + SWEEP_PR015_ARGS, capture_output=True, text=True)
+    out = r.stdout + r.stderr
+    assert r.returncode != 0, "%s was ACCEPTED\n%s" % (case, out[-500:])
+    assert needle in out, "%s refused for the wrong reason:\n%s" % (case, out[-500:])
+    assert "CLEAR THE PREREGISTERED BAR" not in out
+
+
+@pytest.mark.skipif(not (_has_pr015_arms() and os.path.exists(PR012)),
+                    reason="PR-CSI-015's arms and PR-CSI-012's prereg are needed")
+def test_the_bar_RULE_reproduces_the_NUMBER_that_PR015_froze(tmp_path):
+    """THE POSITIVE TEST, and it is exact rather than approximate.
+
+    D34's `SINGLE_17` arm IS head 17's full band -- all nine band layers of head 17 -- and PR-CSI-015's
+    frozen bar 0.009082 was derived from it by exactly the rule under test. So if the read-time rule
+    is correct it must recompute that number to every printed digit. A rule that agrees with the
+    frozen number on a case where both exist is the only evidence that the rule may be trusted on
+    heads 17 and 23 of PR-CSI-016, where only the rule will exist.
+    """
+    import glob as _glob
+    import importlib.util as _ilu
+
+    src = _glob.glob(os.path.join(
+        ROOT, "outputs/boombness/score_behavior/csi5_census_basket_validation_SINGLE_17_*"))[0]
+    real = sorted(_glob.glob(os.path.join(
+        ROOT, "outputs/boombness/score_behavior/csi8_cell3_basket_validation_*")))
+    farm = tmp_path / "score"
+    farm.mkdir()
+    for d in real:
+        os.symlink(d, farm / os.path.basename(d))
+    # D34's whole-head arm, re-badged into this family's namespace. It was run with --knockout-heads,
+    # so its config and job id are rewritten to what a PR-016-style HD_ arm would record; every other
+    # byte -- crucially results.jsonl, the per-domain data the bar is computed from -- is the real run.
+    hd = farm / "csi8_cell3_basket_validation_HD_17_20260922_191521_939328"
+    hd.mkdir()
+    for f in os.listdir(src):
+        if f == "config.json":
+            cfg = json.load(open(os.path.join(src, f)))
+            args = cfg.get("args") or cfg
+            args["knockout_heads"] = ""
+            args["knockout_cells"] = ",".join("%d:17" % L for L in range(6, 15))
+            args["arm"] = "HD_17"
+            (hd / f).write_text(json.dumps(cfg))
+        elif f == "RUNMETA.json":
+            rm = json.load(open(os.path.join(src, f)))
+            rm["slurm_job_id"] = "922176"
+            (hd / f).write_text(json.dumps(rm))
+        else:
+            os.symlink(os.path.join(src, f), hd / f)
+
+    nine = [[L, 17] for L in range(6, 15)]
+    prereg = _pr015_with_rule(tmp_path, 17, "HD_17", rule=True, source_cells=nine)
+    out_json = tmp_path / "r.json"
+
+    spec = _ilu.spec_from_file_location("census_rule", CENSUS_READER)
+    mod = _ilu.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    mod.rederive.SCORE_DIR = str(farm)
+    old = sys.argv[:]
+    sys.argv = ["census", "--prereg", prereg, "--tag-prefix", "csi8_cell3_basket_validation",
+                "--split", "validation", "--expect-n", "230", "--require-slurm-job", "922176",
+                "--out", str(out_json)]
+    try:
+        rc = mod.main()
+    except SystemExit as e:
+        rc = e.code
+    finally:
+        sys.argv = old
+    assert rc in (0, None), "the rule path refused a well-formed prereg: rc=%r" % (rc,)
+
+    cf = json.load(open(out_json))["CELL_FAMILY"]
+    computed = cf["bars_COMPUTED_FROM_A_FROZEN_RULE"]["17"]["bar"]
+    frozen = json.load(open(PR015))["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"]["17"][
+        "min_abs_E_for_ci95_to_exclude_0"]
+    assert abs(round(computed, 6) - frozen) < 1e-9, (
+        "the read-time RULE gives %.8f where PR-CSI-015 FROZE %.6f -- the derivation has drifted, so "
+        "it cannot be trusted on a head where only the rule exists" % (computed, frozen))
+    # and the source arm must not be counted as a cell
+    assert "HD_17" not in cf["cells_clearing_the_preregistered_bar"]
+    assert cf["n_cells_judged"] == 27, "the 9-cell source arm leaked into the depth map"
+    assert cf["bar_source_arms_EXCLUDED_FROM_THE_DEPTH_MAP"] == ["HD_17"]
+    assert cf["per_cell_dose_verdict"].startswith("CONFIRMED"), (
+        "the 2016-dose source arm leaked into the per-CELL dose check")
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+def test_a_head_with_BOTH_a_number_and_a_source_arm_REFUSES(tmp_path):
+    """R28/S-312. The number won, so _bar_from_rule never ran and NONE of its guards (in-family,
+    landed, full-band) were applied to the named arm -- yet the arm had ALREADY been removed from the
+    census by the exclusion. R28 demonstrated an arm silently vanishing from a published depth map
+    with no check having looked at it: head 17 keeping its frozen bar while naming head 23's own
+    headline cell as its source dropped CL_H23_L07 -- the cell carrying head 23's outcome A -- and
+    printed '2 of 26 cells CLEAR', exit 0."""
+    pr = json.load(open(PR015))
+    pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"]["17"]["bar_source_arm"] = "CL_H23_L07"
+    pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["BAR_IS_A_RULE"] = {"z": 1.96, "rule": "r"}
+    p = tmp_path / "both.json"
+    p.write_text(json.dumps(pr))
+    r = subprocess.run([PY, CENSUS_READER, "--prereg", str(p), "--expect-n", "230",
+                        "--out", os.devnull] + SWEEP_PR015_ARGS, capture_output=True, text=True)
+    out = r.stdout + r.stderr
+    assert r.returncode != 0, "a head with two criteria was READ\n%s" % out[-500:]
+    assert "BOTH a frozen bar" in out and "ONE criterion" in out, out[-400:]
+    assert "CLEAR THE PREREGISTERED BAR" not in out
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+@pytest.mark.parametrize("rule,needle", [
+    ({"rule": "r"}, "without `z`"),
+    ({"z": 0.0, "rule": "r"}, "outside [0.5, 5.0]"),
+    ({"z": 99.0, "rule": "r"}, "outside [0.5, 5.0]"),
+])
+def test_the_rules_only_numeric_parameter_must_be_DECLARED_and_SANE(tmp_path, rule, needle):
+    """R28/S-312. A missing z silently used 1.96 and then wrote "z": 1.96 into the report as though
+    the prereg had frozen it -- false metadata in a published artefact, the R27/S-308 class. And
+    z=0.0 gave a bar of 0.0 and '11 of 27 cells CLEAR THE PREREGISTERED BAR', exit 0."""
+    pr = json.load(open(PR015))
+    ph = pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"]["17"]
+    ph.pop("min_abs_E_for_ci95_to_exclude_0")
+    ph["bar_source_arm"] = "CL_H17_L14"          # refused later for not being a full band; z first
+    pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["BAR_IS_A_RULE"] = rule
+    p = tmp_path / "z.json"
+    p.write_text(json.dumps(pr))
+    r = subprocess.run([PY, CENSUS_READER, "--prereg", str(p), "--expect-n", "230",
+                        "--out", os.devnull] + SWEEP_PR015_ARGS, capture_output=True, text=True)
+    out = r.stdout + r.stderr
+    assert r.returncode != 0 and needle in out, out[-500:]
+
+
+def test_a_HEAD_family_whose_KO_predates_knockout_cells_is_still_READABLE():
+    """R28/S-312 -- S-310 OVER-REACHED. Requiring the all-32 arm to record an EMPTY knockout_cells
+    made D34 (PR-CSI-012) unreadable, because its HD_KO predates the flag entirely and the field is
+    ABSENT. A published family this sprint calls load-bearing stopped being reproducible.
+    PROPERTY: the cell-scoped denominator check applies to CELL families, where every arm is
+    post-S-291; a HEAD family has no arm that could impersonate the denominator."""
+    pr012 = os.path.join(ROOT, "configs", "dcs_csi_pr012_head_census_basket.json")
+    if not os.path.exists(pr012):
+        pytest.skip("PR-CSI-012 prereg absent")
+    import glob as _g
+    if len(_g.glob(os.path.join(
+            ROOT, "outputs/boombness/score_behavior/csi5_census_basket_validation_*/DONE.json"))) < 44:
+        pytest.skip("D34's arms are not on disk")
+    r = subprocess.run([PY, CENSUS_READER, "--prereg", pr012,
+                        "--tag-prefix", "csi5_census_basket_validation", "--split", "validation",
+                        "--expect-n", "230", "--out", os.devnull], capture_output=True, text=True)
+    out = r.stdout + r.stderr
+    assert "GATE 0 PASS on all 44 arms" in out, (
+        "D34 is no longer re-readable -- the S-310 denominator check over-reached:\n%s" % out[-700:])
