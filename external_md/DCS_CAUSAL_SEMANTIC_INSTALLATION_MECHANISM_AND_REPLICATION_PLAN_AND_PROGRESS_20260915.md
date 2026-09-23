@@ -22517,3 +22517,64 @@ proposed another and was refined.** Two mechanisms offered and both adjusted is 
 report the curve and stop. **The rate is measured; the reason is not.**
 
 **No PR-013 number has ever been read.** `score_behavior.py` was not opened.
+
+---
+
+## S-282 — ⚠ **S-274's "919531 waits as long as it waits" had an UNSTATED PRECONDITION: that the wall holds.** A sustained 161 s/shard breaches it, and two such shards have now landed. **The commitment is made conditional, in advance, with the trigger and the response both fixed**
+
+### 1. What the rates do to the wall
+
+```
+86/291: cumulative marginal 49.0 s/shard | last shard 161 s | tqdm smoothed 82.39 s/it
+two 161 s shards so far: 58->59 and 85->86
+
+ 49 s/shard sustained -> family ends ~08:45   OK
+ 62 s/shard sustained -> family ends ~09:30   OK
+ 82 s/shard sustained -> family ends ~10:38   OK  (3.5 h spare)
+161 s/shard sustained -> family ends ~15:08   *** BREACHES the 14:20 wall
+```
+
+### 2. ⚠ The precondition S-274 did not state
+
+S-274 wrote: *"NO FURTHER CANCELLATIONS for PR-CSI-013. 919531 waits as long as it waits."* **That was
+correct and it was conditional on something it did not say: that waiting produces a result.** If the wall
+is breached the job is killed mid-family, **produces nothing, and forces the relaunch anyway** — at which
+point "no cancellations" would have cost the 9 h of compute it was trying to protect.
+
+**So the commitment is restated with its condition explicit, and the trigger and response fixed now rather
+than improvised when it matters:**
+
+> **The no-cancellation commitment holds while the projected family end is before `EndTime − 2 h` (12:20).**
+>
+> **TRIGGER:** a **multi-shard window** — at least 20 shards — averaging **≥ 110 s/shard**. At that rate
+> the family ends ~12:00 and the margin is gone.
+>
+> **RESPONSE:** do **not** cancel. `scancel` + resubmit would pay a fresh 30-min first shard plus the whole
+> load again, and S-274 measured that it also spends fairshare. **The correct response is to let it run and
+> accept a TIMEOUT if it comes** — because a timed-out job's completed arms are **real and complete**, and
+> the runner's skip-if-complete (S-261) means a later job resumes from them rather than redoing them.
+> **A timeout is recoverable; a cancellation throws away the load.**
+
+### 3. ⛔ Why the trigger is 110 and not 80
+
+**My earlier figure of ~80 s/shard was chosen when the question was "is the rate degrading".** The question
+is now "does the wall hold", and those need different thresholds: **82 s/shard still finishes at ~10:38
+with 3.5 h spare.** Setting the trigger at 80 would have fired on a rate that is not actually a problem —
+**a threshold inherited from a different question, which is the error S-270 made when it used a job-level
+threshold to judge a load.**
+
+**110 s/shard is derived: it is the rate at which the projected end reaches 12:20**, i.e. `EndTime − 2 h`.
+
+### 4. Two 161 s shards are not yet a regime
+
+```
+58->59   161 s   (1 shard)
+59->85    62 s/shard over 26 shards
+85->86   161 s   (1 shard)
+```
+
+**The 26-shard window between them ran at 62 s, so the slow shards are periodic rather than a new floor.**
+**The trigger requires 20+ shards to avoid firing on exactly this pattern** — the discipline S-281 applied
+when it refused to act on the first 161 s shard, now written as a rule instead of a judgement.
+
+**No PR-013 number has ever been read.** `score_behavior.py` was not opened.
