@@ -23009,3 +23009,135 @@ arms.**
 even the worst-case tail leaves 3.5 h. **15 arms remain; GATE 0 has passed on all 8 landed.**
 
 **No PR-013 number has ever been read.** `score_behavior.py` was not opened.
+
+---
+
+## S-289 — ⚠ **band BREACHED on the EARLY side and revised to 09:42–09:50 — S-288's own 7-arm window was dominated by the slow block it had just discovered.** Fifth revision. Plus a real measurement: **this filesystem's mtimes are +246 s, stamped by the NFS server, not by the writing host**
+
+### 1. State at 09:10:44 — 15 of 23 landed, GATE 0 clean on all 15
+
+```
+python scripts/gates/dcs_csi_pr012_gate0_sweep.py \
+  --prereg configs/dcs_csi_pr013_button_head_replication.json \
+  --tag-prefix csi6_btnhead_button_validation --split validation --require-slurm-job 919531
+-> GATE 0: every landed arm passes (15 of 23). Identity verified from each arm's own
+   knockout_heads. No endpoint field was read.
+
+squeue -h -j 919531 -o "%A %T %M %N"   ->   919531 RUNNING 6:47:02 n-302
+```
+
+### 2. The full intervened series, all 14 arms — and it is NOT stationary
+
+```
+ 2/23 BT_KO       225.7     9/23 BT_CTRL_06  326.2
+ 3/23 BT_CTRL_00  232.5    10/23 BT_CTRL_07  338.2
+ 4/23 BT_CTRL_01  331.2    11/23 BT_CTRL_08  338.5
+ 5/23 BT_CTRL_02  549.8 <\  12/23 BT_CTRL_09  271.5 <\
+ 6/23 BT_CTRL_03  518.0 <-- contiguous  13/23 BT_CTRL_10  267.4 <-- last four within
+ 7/23 BT_CTRL_04  438.6 </  slow block  14/23 BT_CTRL_11  272.2 <   4.8 s of each other
+ 8/23 BT_CTRL_05  274.7                 15/23 BT_CTRL_12  271.7 </
+
+first 7 intervened: mean 367.2  median 331.2
+last  7 intervened: mean 298.0  median 272.2      -> settled by 69.3 s/arm (19%)
+last  4 intervened: mean 270.7,  spread 4.8 s     -> the node is now quiet
+```
+
+**The slow arms are a contiguous block (5–7), not scattered outliers.** S-284 had read the load's drift as
+"periodic outliers" and revised that to a monotonic shape; the arms show a third shape again — **one
+transient burst, then a tight floor.**
+
+### 3. ⚠ Why S-288's band was wrong, and it is the mirror image of the error S-288 itself corrected
+
+```
+S-287 used 263.1 s, the mean of arms 2-4  -> the THREE FASTEST     (S-288 corrected this)
+S-288 used 367.2 s, the mean of arms 2-8  -> a window in which the slow block 549.8/518.0/438.6
+                                             is THREE OF SEVEN POINTS
+```
+
+S-288 diagnosed "a statistic computed over the wrong sample, quoted as though the sample were the
+population" — and then **published a band from a 7-point window whose upper half was the very burst it had
+just found.** Widening the window from 3 to 7 did not make it representative; it only changed which
+direction the bias ran. **The lesson S-288 wrote down is the one S-288 broke.** Fifth revision; the previous
+four were late, this one is early.
+
+**Revised band, anchored on the settled floor and quoting the spread:**
+
+```
+last-4 mean  270.7 s x 8 remaining -> ~09:42    <-- most likely: the last four arms agree to 4.8 s
+last-7 mean  298.0 s x 8 remaining -> ~09:46
+all-14 mean  332.6 s x 8 remaining -> ~09:50    <-- upper edge; includes the spent burst
+worst        549.8 s x 8 remaining -> ~10:19    <-- tail if a second burst hits every remaining arm
+```
+
+**S-288's 09:55–10:06 is breached and retired.** New band **09:42–09:50**, tail ~10:19. Margin against the
+14:20 wall: **4.5–4.6 h.** I am recording the all-14 mean as the upper edge deliberately: it is the only one
+of these four numbers that still contains the burst, and a second burst is not excluded.
+
+### 4. **BT_SINGLE is arm 23 of 23 — the candidate lands LAST**
+
+```
+grep -c "^\[w3\]" ... ; argv order: BT_BASE, BT_KO, BT_CTRL_00..19, BT_SINGLE
+```
+
+The candidate arm is the final one in the family. **No early peek at the candidate is possible even in
+principle** — GATE 0 can sweep 22 arms and still not have the arm the verdict turns on. This is a property
+of the frozen argv order, and it is a good one: it makes "read the candidate early and then decide how to
+read the controls" unavailable as a mistake.
+
+### 5. A real measurement: repo mtimes are **+246 s**, and the stamp comes from the NFS server
+
+I tried to anchor this tick's projection on the newest `DONE.json` mtime and got **09:10:37 when the login
+node's clock said 09:08:00** — an mtime 157 s in the future. That is not possible from a local write, so I
+measured it instead of assuming:
+
+```
+date '+before %H:%M:%S'  -> 09:08:51
+touch outputs/boombness/.clockprobe ; stat -c '%y' outputs/boombness/.clockprobe
+                         -> 2026-09-23 09:12:57.194045225 +0300     <-- NFS, +246 s
+touch $SCRATCH/.clockprobe ; stat -c '%y' $SCRATCH/.clockprobe
+                         -> 2026-09-23 09:08:51.535288411 +0300     <-- local /tmp, correct
+srun --jobid=919531 date  -> n-302 09:08:21  vs  login 09:08:14     <-- hosts agree to ~7 s
+```
+
+**The two hosts' clocks agree to 7 s, but a file written by either gets an mtime 246 s (4.1 min) ahead.**
+So the stamp is applied by the **NFS server's** clock, not the writing client's. Consequences:
+
+- **Any projection anchored on a repo mtime is biased 4.1 min LATE.** Section 3's band is corrected for it
+  (`anchor = mtime − 246 s`, giving arm 15 done at **09:06:31**).
+- **Independent confirmation that the correction is right:** the job's own log says it started
+  `2026-09-23T02:21:01` and arm 1 took 19588.8 s, putting arm 1's end at **07:47:30**; the first
+  `DONE.json` mtime minus 246 s is **07:48:49**. Two unrelated anchors, 80 s apart — which is the pre-`[w3]`
+  import time. Uncorrected, they disagree by 5.4 min.
+
+### 6. Audit: does anything in the pipeline trust an mtime? **The CSI reading path does not**
+
+```
+grep -rn "getmtime\|st_mtime\|-newer" scripts src doublespeak_causality slurm_scripts
+scripts/dcs_verify_pr035.py:190                    stamp = (st.st_size, st.st_mtime_ns)
+src/boombness/run_completeness_check.py:1785       if _time.time() - os.path.getmtime(cfg_p) < 6*3600:
+doublespeak_causality/scripts/backfill_runmeta.py:504   mt = [os.path.getmtime(...) for f in files
+```
+
+Run resolution is **name-based, not time-based** (`scripts/dcs_csi_rederive_subspace.py:44`:
+`for d in sorted(glob.glob(os.path.join(SB, tag + "_*")))`), so `strict_run_dir`, the GATE 0 sweep, W4 and
+the re-derivation are all untouched by the skew. Of the three hits:
+
+- `dcs_verify_pr035.py:190` — mtime used only as a **change stamp** compared against another stamp. A
+  uniform offset cancels. Unaffected.
+- `backfill_runmeta.py:504` — **max of mtimes within one directory.** Uniform offset preserves the ordering;
+  only an absolute timestamp it emits would be +246 s. Not in the CSI path.
+- `run_completeness_check.py:1785` — **the one genuine defect: it compares a local `time.time()` against an
+  NFS mtime.** With the server ahead, the computed age is **understated by 246 s**, so a config 6 h old
+  reads as 5 h 55 m and the freshness window **fails permissive** (treats stale things as fresh). It is a
+  1.1% error on a 6-hour window, it is outside the CSI reading path, and `score_behavior.py`'s sibling
+  modules are frozen while necessity arms run — **so I am naming it, not fixing it.** Logged for the
+  post-family window.
+
+### 7. What this tick did and did not establish
+
+- **Did:** 15/23 landed and GATE 0-clean; the arm series characterised over all 14 intervened arms rather
+  than a prefix; the band corrected to 09:42–09:50; the +246 s NFS skew measured and its cause localised to
+  the server; the pipeline audited clean for mtime dependence; one real (minor, out-of-path) mtime defect
+  named.
+- **Did NOT:** read any endpoint field, touch any frozen artefact, or learn anything about the candidate —
+  **BT_SINGLE has not run.** No claim about D35 is available and none is made.
