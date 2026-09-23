@@ -307,7 +307,24 @@ def main() -> int:
         # NARROWING ONLY: it can turn PASSES into a non-pass and can never create one.
         cand_ok = (cand < 0) if NEC else (cand > 0)
         ranks[nm] = {"rank": r, "of": n, "floor": round(fl, 4),
+                     # ⛔ S-300, discharging the S-290 finding WITHOUT renaming the key.
+                     # The hazard is real: this reads `true` inside a DOES NOT PASS report, because it
+                     # describes THE DESIGN's attainable floor ("could this family certify at all?"),
+                     # not THIS RESULT. Quoting it verbatim from a failed replication says something
+                     # false using a real field.
+                     # ⚠ MY FIRST FIX WAS WORSE THAN THE PROBLEM. I renamed it -- and
+                     # `certifiable_at_0.05` is the established schema in 22 COMMITTED report artefacts
+                     # and is also emitted by dcs_csi_family_exchangeability.py. Renaming forks the
+                     # schema across the whole corpus to fix a wording concern, and my own "the old key
+                     # is kept so nothing breaks" comment was FALSE of the code I had just written.
+                     # So the KEY IS UNCHANGED and a sibling field states its meaning at the point of
+                     # reading, which is where the misquotation would happen.
                      "certifiable_at_0.05": fl <= 0.05,
+                     "certifiable_at_0.05__MEANING": (
+                         "A PROPERTY OF THE DESIGN, NOT OF THIS RESULT: the attainable floor "
+                         "1/(n_controls+1) is <= 0.05, so certification is possible IN PRINCIPLE for "
+                         "this family size. It is true in reports whose verdict is DOES NOT PASS. "
+                         "The outcome is `verdict`; read that. (S-290/S-300)"),
                      "candidate_sign_ok": bool(cand_ok),
                      "candidate_point": cand,
                      "sign_clause": "S-259: rank 1 passes ONLY if the candidate moves the endpoint in "

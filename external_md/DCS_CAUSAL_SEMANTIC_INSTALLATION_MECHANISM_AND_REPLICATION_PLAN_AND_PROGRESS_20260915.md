@@ -24906,3 +24906,106 @@ redundancy. Here, on **basket**, **within one head across depth**, the effect is
 ≈ the whole head. **Different axes and different codewords, so no contradiction** — but the pair is
 informative: **redundancy ACROSS heads, concentration ACROSS depth.** Neither is licensed as a general
 claim from n = 1 head and n = 1 codeword each.
+
+---
+
+## S-300 — **the deferred-fix backlog is discharged now that the queue is empty** — three reviews deferred fixes to "the post-family window" and this is it. ⚠ **One of my own fixes was WORSE than the defect and its comment was FALSE of the code I had just written**
+
+### 1. The window, and what was waiting in it
+
+```
+squeue -u omeryosef -> empty (921664 COMPLETED). score_behavior.py editable again.
+grep "not fixed now\|Named, not fixed\|post-family window" -> 3 deferred items + 2 declined
+```
+
+R25, S-290 and S-299 each named a defect and deferred it for a stated reason — *"nothing is gained by
+editing a consumer minutes after it produced the sprint's headline number"*. That reason expires when the
+family is done, and a deferral that is never discharged is just a defect with a citation.
+
+### 2. ✅ FIXED — the depth map's headline used the WEAKER of two criteria (S-299's finding, in my own reader)
+
+```
+BEFORE:  [census] 2 of 9 cells have a ci95 excluding 0.      <- printed under a line naming the BAR
+AFTER:   [census] 1 of 9 cells CLEAR THE PREREGISTERED BAR (|E| > 0.019181).
+                  (2 of 9 have a ci95 excluding 0 -- a WEAKER test, not the preregistered criterion;
+                   a cell can exclude 0 at a fraction of the bar, and on PR-CSI-014 one did.)
+
+per-row column is now the PREREGISTERED verdict, with the weaker fact beside it:
+   L10  CL_L10  E = -0.047547  [-0.066962,-0.031896]  CLEARS THE BAR  ci95 excl 0
+   L11  CL_L11  E = +0.000952  [+0.000040,+0.001901]  below the bar   ci95 excl 0
+```
+
+**`D36`'s report is re-derived accordingly** (md5 `8993b4d5` → `86255425`), and the JSON now carries
+`n_cells_CLEARING_THE_PREREGISTERED_BAR`, `preregistered_bar`,
+`cells_clearing_the_preregistered_bar` and a `WEAKER_CRITERION_NOTE`, alongside the original
+`n_cells_with_ci95_excluding_0`. **Every number is unchanged** — spot-checked on `CL_L06`, `CL_L10`,
+`CL_L11`, `CL_KO`. ⚠ **Re-deriving a committed report was admissible here and was NOT for D34:** R26
+refused to rewrite the census because PR-013's frozen prereg **pins `census_md5`**, and nothing pins
+D36's. The rule is the pin, not the age of the file.
+
+### 3. ✅ FIXED — R25's dead optimistic `rank`, and the removal proves it was dead
+
+```
+- rank = better + 1        # computed, bound, and never read anywhere in the file
++ (gone; every reported figure already used rank_with_ties)
+D35 re-derived: FULL OBJECT IDENTICAL (11386 bytes)
+```
+
+A dead variable holding the *wrong* number under the *obvious* name, beside the right one, is a
+misquotation waiting for an editor to add a print statement — and a tie reported as rank 1 would certify
+the replication the tie convention exists to refuse. **The byte-identical re-derivation is the proof that
+nothing read it.**
+
+### 4. ⚠ MY FIRST FIX FOR `certifiable_at_0.05` WAS WORSE THAN THE DEFECT, AND I CAUGHT IT BY CHECKING CONSUMERS
+
+The defect (S-290 §10) is real: the field reads `true` inside a `DOES NOT PASS` report because it describes
+**the design's** attainable floor, not **the result**. My fix renamed it to
+`design_floor_permits_certification_at_0.05` and added
+`certifiable_at_0.05__DEPRECATED_SEE_...` — with a comment claiming *"the old key is kept alongside for one
+release so no existing consumer breaks."*
+
+```
+grep -rn certifiable_at_0.05 --include=*.py   -> also EMITTED by dcs_csi_family_exchangeability.py:158
+grep -rln certifiable_at_0.05 reports/        -> 22 COMMITTED report artefacts
+verification of my own change: 'certifiable_at_0.05' in the new output -> False
+```
+
+**Two things were wrong at once.** The key is the **established schema across 22 committed artefacts** and a
+second emitter, so renaming forks the corpus to fix a wording concern. **And my comment was FALSE of the
+code I had just written** — I kept a *renamed* deprecated key, not the old key, which breaks exactly the
+consumers the comment promised to protect. A reader trusting the comment would have been misled by the
+same file that claimed to be careful.
+
+**Reverted to the minimal correct fix: the KEY IS UNCHANGED and a sibling `certifiable_at_0.05__MEANING`
+states, at the point of reading, that it is a property of the DESIGN and that `verdict` is the outcome.**
+Verified: every original key and value preserved, exactly one field added, verdict unchanged.
+
+**This is the second time today a fix of mine was worse than what it fixed** (S-296 §3 broke D34's
+byte-identity to add cell metadata, and reverted). Both were caught the same way — by checking what already
+depended on the thing being changed, before believing the change was an improvement.
+
+### 5. DECLINED, with reasons rather than silence
+
+- **`run_completeness_check.py:1785`** (S-289): compares a local `time.time()` to an NFS mtime, so the
+  computed age is understated by the measured **+246 s** server skew and its 6-hour freshness window
+  **fails permissive**. **Not fixed:** a 1.1% error on a 6-hour window, entirely **outside the CSI reading
+  path**, in a guard the whole repo's `check_all` depends on. Changing a repo-wide guard's behaviour to
+  correct 246 s is not a trade this sprint should make unilaterally.
+- **`test_legacy_mode_is_byte_identical_to_AllQueryAttentionKnockout`** (S-291): red since `6422a764`,
+  **proved not mine** in a clean checkout. **Not fixed:** resolving it means deciding whether four D-4
+  keys belong in both hook classes or the assertion should change — an **artefact-schema decision
+  affecting Phase 2-4 arms**, and `0 of 518` intervened CSI arms use `legacy_all_query`.
+
+### 6. Verification
+
+```
+92 tests pass (cell identity, knockout cells, the real-hook integration, argv generator, metric names)
+D33  produced by W4        -- untouched this tick (verified identical in S-295)
+D34  census, head family   -- science identical; differs only in the two fields R26 documented
+D35  single_rank           -- FULL OBJECT IDENTICAL, 11386 bytes
+D36  cell census           -- numbers identical; reporting corrected, md5 8993b4d5 -> 86255425
+PR-013 REDERIVE            -- every original key/value preserved, one clarifier added
+```
+
+D32, D33, D34, D35 and D36 stand unchanged as claims. No frozen artefact was touched. No arms were
+running. Writes verified by md5; quota 94% used, 1.4T free.

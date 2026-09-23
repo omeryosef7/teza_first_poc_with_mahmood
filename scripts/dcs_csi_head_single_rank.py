@@ -187,7 +187,12 @@ def main():
     vals = {k: E[k] for k in fam}
     better = sum(1 for k in controls if vals[k] < vals[cand])
     ties = sum(1 for k in controls if vals[k] == vals[cand])
-    rank = better + 1                      # ties count AGAINST the candidate is handled below
+    # S-300, discharging R25's finding. The OPTIMISTIC rank (better + 1, ignoring ties) used to be
+    # computed and bound to `rank` here, and then never read: every reported figure uses
+    # `rank_with_ties`. A dead variable holding the wrong number, under the obvious name, next to the
+    # right one is a misquotation waiting for an editor to add a print statement -- and a tie reported
+    # as rank 1 would certify a replication the tie convention exists to refuse. It is gone; the two
+    # components it was built from are reported instead, which is what a reader actually needs.
     rank_with_ties = better + ties + 1
     n_fam = len(fam)
     p = rank_with_ties / float(n_fam)

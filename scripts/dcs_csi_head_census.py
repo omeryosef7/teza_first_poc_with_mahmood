@@ -392,17 +392,35 @@ def main():
         print("\n[census] DEPTH MAP -- head %s, one cell per layer, in LAYER order. NO RANK, NO p."
               % pr.get("h_star"))
         if _thr:
-            print("         preregistered detectability bar: |E| > %.6f (S-294). "
-                  "'-' = ci95 includes 0." % _thr)
-        _cleared = []
+            print("         preregistered detectability bar: |E| > %.6f (S-294). The right-hand "
+                  "column is the PREREGISTERED verdict;" % _thr)
+            print("         'ci95 excl 0' is a separate, WEAKER fact shown beside it.")
+        # ⛔⛔ S-300, fixing the defect S-299 found in its own output. TWO CRITERIA LIVE HERE AND THEY
+        # DISAGREE. The PREREGISTERED one is |E| > thr (S-294, frozen before any arm ran); "ci95 excludes
+        # 0" is a DIFFERENT and much weaker test. On PR-CSI-014 they gave 1 and 2: CL_L11 excluded zero
+        # at E = +0.000952 -- 5.0% of the bar, ci95 lower bound +0.000040 (24x smaller than |E|), and the
+        # WRONG SIGN -- while the headline printed "2 of 9" directly under a line naming the bar.
+        # The bar the prereg named is now the HEADLINE, and the weaker count is reported beside it as
+        # what it is. A verdict must be read against the criterion that was frozen, not the one the
+        # reader found convenient.
+        _cleared, _excl0 = [], []
         for k in _cells:
             L, h = sorted(hs[k])[0]
             excl0 = (CI[k][1] < 0) or (CI[k][0] > 0)
+            clears = (_thr is not None and abs(E[k]) > _thr)
             if excl0:
+                _excl0.append((k, L, E[k]))
+            if clears:
                 _cleared.append((k, L, E[k]))
-            print("   L%-3d %-9s E = %+.6f  ci95 [%+.6f, %+.6f]  %s"
-                  % (L, k, E[k], CI[k][0], CI[k][1], "CLEARS 0" if excl0 else "-"))
-        print("\n[census] %d of %d cells have a ci95 excluding 0." % (len(_cleared), len(_cells)))
+            print("   L%-3d %-9s E = %+.6f  ci95 [%+.6f, %+.6f]  %-14s %s"
+                  % (L, k, E[k], CI[k][0], CI[k][1],
+                     "CLEARS THE BAR" if clears else "below the bar",
+                     "ci95 excl 0" if excl0 else ""))
+        print("\n[census] %d of %d cells CLEAR THE PREREGISTERED BAR (|E| > %s)."
+              % (len(_cleared), len(_cells), ("%.6f" % _thr) if _thr else "n/a"))
+        print("         (%d of %d have a ci95 excluding 0 -- a WEAKER test, not the preregistered "
+              "criterion; a cell can exclude 0 at a fraction of the bar, and on PR-CSI-014 one did.)"
+              % (len(_excl0), len(_cells)))
         if not _cleared:
             print("         NOTHING CLEARS THE BAR. This outcome was PREREGISTERED AS COHERENT "
                   "before any arm ran:")
@@ -464,7 +482,18 @@ def main():
                      "every cell dose expectation in the sprint must be re-derived (S-292)"),
             "cells": {k: sorted(hs[k]) for k in sorted(hs)},
             "DETECTABILITY_PREREGISTERED": pr.get("DETECTABILITY_PREREGISTERED"),
+            # S-300: the PREREGISTERED count first, the weaker one beside it, both named for exactly
+            # what they measure so neither can be quoted as the other.
+            "n_cells_CLEARING_THE_PREREGISTERED_BAR": sum(
+                1 for k in hs if _thr is not None and abs(E[k]) > _thr),
+            "preregistered_bar": _thr,
+            "cells_clearing_the_preregistered_bar": sorted(
+                k for k in hs if _thr is not None and abs(E[k]) > _thr),
             "n_cells_with_ci95_excluding_0": sum(1 for k in hs if (CI[k][1] < 0 or CI[k][0] > 0)),
+            "WEAKER_CRITERION_NOTE": (
+                "n_cells_with_ci95_excluding_0 is NOT the preregistered criterion. The prereg froze "
+                "|E| > preregistered_bar. A cell can exclude 0 at a small fraction of the bar and with "
+                "the wrong sign; on PR-CSI-014 CL_L11 did exactly that (S-299/S-300)."),
             "NOTHING_CLEARED_THE_BAR_IS_A_PREREGISTERED_COHERENT_OUTCOME": (
                 (pr.get("DETECTABILITY_PREREGISTERED") or {}).get(
                     "COHERENT_OUTCOME_IF_NOTHING_CLEARS_IT")),
