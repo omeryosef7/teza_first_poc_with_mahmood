@@ -23293,3 +23293,189 @@ number. D32, D33 and D34 stand unchanged. The read path is cleared to execute.
 
 **What R25 did NOT check:** it did not run the read, and it has no information about the candidate —
 **BT_SINGLE is arm 23 of 23 and has not run.** Nothing here licenses any claim about D35.
+
+---
+
+## S-290 — 🔴 **PR-CSI-013 IS READ. THE VERDICT IS "DOES NOT REPLICATE AT RANK 1": head 2 ranks 6 of 21 on button, p = 0.2857 against a floor of 0.0476, and its ci95 CROSSES ZERO.** The positive control fires at −0.29, so this is a REAL negative and not a dead instrument. The set-level effect replicates on button; its per-head decomposition does not
+
+### 1. Preconditions, all four, then the read in the checklist's order
+
+```
+sacct -j 919531 -o State            -> COMPLETED  (ExitCode 0:0, Elapsed 07:30:40)
+DONE.json count                     -> 23    (want 23)
+quarantine count                    -> 22    (want 22)
+arm dirs in score_behavior          -> 23    (want 23)
+==> ALL FOUR HOLD
+```
+
+The job reported `arms ok 23/23` at 09:43 but `sacct` did not say COMPLETED until **09:51:05** — the runner
+spent **~7.5 minutes** tearing down after the last arm. I held the read for those 7.5 minutes rather than
+proceeding on "the data is obviously on disk," which is the improvisation the checklist was written at 03:35
+to prevent. Recording it because the temptation was real and specific.
+
+### 2. STEP 1 — GATE 0, endpoint-blind, **23 of 23 PASS**
+
+```
+python scripts/gates/dcs_csi_pr012_gate0_sweep.py \
+  --prereg configs/dcs_csi_pr013_button_head_replication.json \
+  --tag-prefix csi6_btnhead_button_validation --split validation --require-slurm-job 919531
+
+BT_BASE     230 rows   0.0 prefill edits   not intervened        PASS
+BT_KO       230      2016.0                ALL 32                PASS
+BT_CTRL_00..19, BT_SINGLE  230   2016.0    matches prereg        PASS   (x21)
+-> GATE 0: every landed arm passes (23 of 23). No endpoint field was read.
+```
+
+**BT_BASE records 0 prefill edits on the full family** — S-260's VOID defect (a clean reference that was
+secretly an all-32 knockout) is confirmed absent on all 23 arms, not just the one checked in S-286.
+
+### 3. STEP 2 — the primary read, `--require-slurm-job 919531` ALONE
+
+```
+python scripts/dcs_csi_head_single_rank.py \
+  --prereg configs/dcs_csi_pr013_button_head_replication.json \
+  --tag-prefix csi6_btnhead_button_validation --split validation --expect-n 230 \
+  --require-slurm-job 919531 \
+  --out reports/DCS_CSI_PR013_BUTTON_HEAD_validation.json     (11386 bytes, md5 46825fdb)
+
+arms = 23 | domains common to ALL arms = 23 | codeword = button
+GATE 1 PASS | E(BT_KO) = -0.289907  ci95 [-0.342616, -0.245486]
+E(BT_SINGLE) = -0.003522  ci95 [-0.015452, +0.006019]
+rank 6 of 21 | p = 0.285714 | FLOOR = 0.047619
+candidate effect negative (R22 amendment 1): True
+VERDICT: DOES NOT REPLICATE AT RANK 1
+```
+
+918967 / 919240 / 919296 were **not** named. The family read is one job id.
+
+### 4. STEP 3 — the independent re-derivation AGREES
+
+```
+python scripts/dcs_csi_rederive_subspace.py --tag-prefix csi6_btnhead_button_validation \
+  --split validation --expect-n 230 --direction necessity \
+  --base BT_BASE --ko BT_KO --full BT_KO --candidate BT_SINGLE --controls BT_CTRL_00..19 \
+  --require-slurm-job 919531 --out ..._REDERIVE.json          (4963 bytes, md5 92fb1209)
+
+candidate_minus_base -0.00352 | rank 6 of 21 | floor 0.0476 | candidate_sign_ok true
+verdict "DOES NOT PASS"
+```
+
+**Two code paths that share no analysis code agree: rank 6 of 21, candidate −0.00352 vs −0.003522.** The
+verdict is not an artefact of one reader.
+
+### 5. The full effect table — and the positive control is what makes this negative informative
+
+```
+arm          head          E          ci95                    note
+BT_KO        ALL    -0.289907  [-0.342616,-0.245486]  positive control, all 32
+BT_CTRL_01    19    -0.035568  [-0.042265,-0.029752]  load-bearing on basket (D34)
+BT_CTRL_05    11    -0.016310  [-0.022155,-0.011091]
+BT_CTRL_19    20    -0.007248  [-0.009822,-0.004850]
+BT_CTRL_06     6    -0.005090  [-0.007158,-0.003070]
+BT_CTRL_16    16    -0.004787  [-0.007817,-0.001869]
+BT_SINGLE      2    -0.003522  [-0.015452,+0.006019]  <== CANDIDATE, ci95 CROSSES ZERO
+BT_CTRL_07    10    -0.003168  [-0.005369,-0.001106]
+...
+BT_CTRL_11    29    +0.009291  [+0.005855,+0.013067]  knocking it out HELPS installation
+```
+
+**GATE 1 passes at −0.29 with a ci95 nowhere near zero.** This is the single most important feature of the
+result: the instrument works on button. A null candidate under a dead positive control would be
+uninterpretable; a null candidate under a positive control this strong is a **real measurement that the
+candidate does nothing here.**
+
+### 6. ⚠ R25's pre-data flag was right about head 19 — and INCOMPLETE about everything else
+
+R25 recorded, with the endpoint unread, that `BT_CTRL_01` carries head 19 (load-bearing per D34) and that
+"rank 2 is a live outcome that would not refute the census." **Head 19 is indeed the strongest single head on
+button at −0.035568.** But the candidate did not land at rank 2:
+
+```
+controls STRICTLY BETTER than the candidate: 5
+  head 19 (-0.035568)   head 11 (-0.016310)   head 20 (-0.007248)
+  head  6 (-0.005090)   head 16 (-0.004787)
+ties: 0        rank 6 of 21        p = 0.285714
+```
+
+**Four of those five heads — 11, 20, 6, 16 — are NOT in D34's load-bearing set for basket.** So R25's framing
+("head 19 might beat head 2") anticipated the right mechanism and **understated the result by four heads.**
+The candidate is not narrowly second to a known writer; it is **mid-pack in a field where several
+basket-irrelevant heads outperform it.** I am marking R25 §8 as ANTICIPATED-BUT-UNDERSTATED rather than
+vindicated, because "rank 2" and "rank 6" support different readings and only one of them is true.
+
+### 7. The effect collapsed by 14x from the codeword it was selected on
+
+```
+basket (RULE_2_GATE, the selection measurement): E(head 2) = -0.04947467  ci95 excludes 0
+button (this read)                             : E(head 2) = -0.00352200  ci95 CROSSES 0
+ratio: 0.07  ->  button retains 7% of the basket effect
+```
+
+Head 2 was nominated by a rule frozen before the census existed, on a measurement where its effect was
+**4x HD_BOTK's** and its ci95 excluded zero. On a different codeword, with the same intervention, the same
+scope, the same 23 domains and the same endpoint, **that effect is gone.**
+
+### 8. The real finding: on button the set-level effect is **not decomposable** into single heads
+
+```
+21 single-head arms measured (20 controls + candidate):
+  ci95 wholly NEGATIVE (real necessity) :  7   heads 24,19,11,6,10,16,20
+  ci95 crosses zero                     : 11
+  ci95 wholly POSITIVE (knockout HELPS)  :  3   heads 27,28,29
+  net sum of all 21                      : -0.058286
+  the ALL-32 joint knockout              : -0.289907
+  sum / joint = 0.201     joint / sum = 4.97x
+  strongest single head (19) = 12.3% of joint ; the candidate (2) = 1.21% of joint
+```
+
+**The joint knockout is ~5x the sum of the 21 single-head effects measured.** ⚠ **BOUNDING THIS CLAIM
+HONESTLY: 21 of 32 heads were run singly, not all 32.** The remaining 11 were never measured on button, so
+−0.058286 is **the sum over a 21-head subset and not a complete decomposition** — the full 32-head sum is
+unknown and could be larger. What the numbers do support is that the measured 21 account for only 20.1% of
+the joint effect, and that **three heads move the endpoint the WRONG way** when removed.
+
+This is the outcome `runargs/dcs_csi_pr012_read.txt` preregistered as coherent: "the effect would be carried
+by the SET and not decomposable per head." It is also consistent with **literature Addendum M (Ablation-
+Reversible Heads Don't Transfer)** and with the self-repair/redundancy reading — removing one head of a
+redundant set lets the others compensate, so single-head necessity understates set-level necessity. I am
+citing that as *consistent with*, not as evidence for: this sprint is RUNG 1 and measures no compensation
+mechanism.
+
+### 9. What this does and does not license — quoting the frozen constraints, not re-deriving them
+
+**LICENSED:** "head 2's single-head effect, selected on basket by a preregistered rule, did NOT replicate on
+the button codeword at rank 1 of 21 (rank 6, p = 0.2857, floor 0.0476)."
+
+**NOT licensed, and NOT retracted by this result:**
+- **D32 / D33 stand.** They are set-level results on basket; PR-013 tested one head on one other codeword.
+- **D34 stands.** It is a basket census. This read is a button measurement and retracts nothing about basket.
+- **It is NOT a domain-transfer result.** The 23 validation domains are IDENTICAL to basket's (S-256), so
+  this says nothing about domain generality. The 3 TEST domains remain untouched.
+- **RUNG 1 only** on AM-34's ladder — the same knockout on a different codeword, transferring no activation
+  state. Not rung 4.
+- **FORBIDDEN regardless of outcome, and now also unsupported:** "head 2 is the writer."
+
+### 10. ⚠ FINDING — a field name in the re-derivation report that invites the wrong quotation
+
+```
+scripts/dcs_csi_rederive_subspace.py:310     "certifiable_at_0.05": fl <= 0.05,
+reports/..._REDERIVE.json                    "certifiable_at_0.05": true,  "verdict": "DOES NOT PASS"
+```
+
+`fl` is the **attainable floor** (0.0476), so the field means "this DESIGN could certify at α = 0.05 in
+principle." It is `true` in a report whose verdict is DOES NOT PASS. The computation is correct and the
+verdict is correct; the **name describes the design while reading like a description of the outcome**, and a
+future reader quoting `certifiable_at_0.05: true` from a failed replication would be quoting a real field to
+say something false. Same class as R25's dead `rank` variable: not a defect today, a misquotation hazard
+tomorrow. Logged with R25's two findings for the post-family window; **not fixed now**, because nothing is
+gained by editing a consumer minutes after it produced the sprint's headline number.
+
+### 11. Status
+
+PR-CSI-013 is **COMPLETE and READ**. First and only generation read: 919531. No number from 918967, 919240
+or 919296 has ever been read. `score_behavior.py` was not opened. Frozen artefacts unchanged:
+`911c3a20` (read), `fae4adc6` (nomination rule), `5ab06e3a` (prereg).
+
+The next unblocked item is **PR-CSI-014** (the cell-level family), which needs `--knockout-cells L:h` added
+to `score_behavior.py`. **That edit is now permissible for the first time in this sprint: no necessity arms
+are running** (squeue is empty of csi jobs, 919531 COMPLETED). The PR-CSI-003 VOID condition is not active.

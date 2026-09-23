@@ -1,0 +1,394 @@
+{
+  "schema": "dcs_csi_head_single_rank/1",
+  "prereg": "configs/dcs_csi_pr013_button_head_replication.json",
+  "prereg_id": "PR-CSI-013",
+  "codeword": "button",
+  "split": "validation",
+  "tag_prefix": "csi6_btnhead_button_validation",
+  "expect_n": 230,
+  "n_domains": 23,
+  "ON_PROTOCOL": true,
+  "B": 10000,
+  "seed": 20260922,
+  "ci": 0.95,
+  "h_star": 2,
+  "E": {
+    "BT_KO": -0.28990714,
+    "BT_SINGLE": -0.00352162,
+    "BT_CTRL_00": -0.00285392,
+    "BT_CTRL_01": -0.03556758,
+    "BT_CTRL_02": -0.00311687,
+    "BT_CTRL_03": 0.00087882,
+    "BT_CTRL_04": 0.00056624,
+    "BT_CTRL_05": -0.01631008,
+    "BT_CTRL_06": -0.00509022,
+    "BT_CTRL_07": -0.0031684,
+    "BT_CTRL_08": 0.00042369,
+    "BT_CTRL_09": 0.00129522,
+    "BT_CTRL_10": 0.00289418,
+    "BT_CTRL_11": 0.00929118,
+    "BT_CTRL_12": 0.00149299,
+    "BT_CTRL_13": 0.00274734,
+    "BT_CTRL_14": -0.00183036,
+    "BT_CTRL_15": 0.00266563,
+    "BT_CTRL_16": -0.00478743,
+    "BT_CTRL_17": 0.00287481,
+    "BT_CTRL_18": 7.783e-05,
+    "BT_CTRL_19": -0.00724789
+  },
+  "ci95": {
+    "BT_KO": [
+      -0.34261611,
+      -0.24548635
+    ],
+    "BT_SINGLE": [
+      -0.0154519,
+      0.0060195
+    ],
+    "BT_CTRL_00": [
+      -0.00442995,
+      -0.00138735
+    ],
+    "BT_CTRL_01": [
+      -0.04226481,
+      -0.02975243
+    ],
+    "BT_CTRL_02": [
+      -0.0078613,
+      0.00137501
+    ],
+    "BT_CTRL_03": [
+      -0.00063153,
+      0.00225585
+    ],
+    "BT_CTRL_04": [
+      -0.0013162,
+      0.00255249
+    ],
+    "BT_CTRL_05": [
+      -0.02215518,
+      -0.0110909
+    ],
+    "BT_CTRL_06": [
+      -0.00715812,
+      -0.00307013
+    ],
+    "BT_CTRL_07": [
+      -0.00536866,
+      -0.00110554
+    ],
+    "BT_CTRL_08": [
+      -0.00151163,
+      0.00246793
+    ],
+    "BT_CTRL_09": [
+      -0.00133228,
+      0.00395689
+    ],
+    "BT_CTRL_10": [
+      0.0006681,
+      0.00511701
+    ],
+    "BT_CTRL_11": [
+      0.00585494,
+      0.01306684
+    ],
+    "BT_CTRL_12": [
+      -2.168e-05,
+      0.00296271
+    ],
+    "BT_CTRL_13": [
+      -0.00012951,
+      0.005835
+    ],
+    "BT_CTRL_14": [
+      -0.00382393,
+      0.00033281
+    ],
+    "BT_CTRL_15": [
+      0.00096224,
+      0.00434877
+    ],
+    "BT_CTRL_16": [
+      -0.00781695,
+      -0.00186899
+    ],
+    "BT_CTRL_17": [
+      -0.00278307,
+      0.00859323
+    ],
+    "BT_CTRL_18": [
+      -0.00232673,
+      0.00259585
+    ],
+    "BT_CTRL_19": [
+      -0.00982239,
+      -0.0048501
+    ]
+  },
+  "GATE_0": {
+    "BT_BASE": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 0.0,
+      "expected_median_prefill_edits": 0,
+      "dose_is_diagnostic_of_identity": true,
+      "identity": "not intervened",
+      "pass": true
+    },
+    "BT_KO": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "ALL 32",
+      "pass": true
+    },
+    "BT_SINGLE": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_00": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_01": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_02": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_03": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_04": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_05": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_06": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_07": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_08": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_09": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_10": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_11": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_12": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_13": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_14": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_15": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_16": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_17": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_18": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    },
+    "BT_CTRL_19": {
+      "n_rows": 230,
+      "violations": {},
+      "total_decode_edits": 0,
+      "median_prefill_edits": 2016.0,
+      "expected_median_prefill_edits": 2016,
+      "dose_is_diagnostic_of_identity": false,
+      "identity": "matches prereg",
+      "pass": true
+    }
+  },
+  "GATE_1": {
+    "pass": true,
+    "E": -0.2899071449850837,
+    "ci95": [
+      -0.3426161083261995,
+      -0.2454863545490022
+    ]
+  },
+  "RANK": {
+    "candidate": "BT_SINGLE",
+    "head": 2,
+    "rank": 6,
+    "of": 21,
+    "p": 0.2857142857142857,
+    "p_display": "0.285714",
+    "attainable_floor": 0.047619047619047616,
+    "n_controls_strictly_better": 5,
+    "n_ties": 0,
+    "candidate_E_is_negative": true,
+    "sign_clause": "R22 amendment 1: rank 1 certifies a replication ONLY with a NEGATIVE candidate effect. The rank orders 'more negative is stronger', so a POSITIVE candidate can rank 1 if every control is more positive -- a sign-flipped result. Narrowing only.",
+    "tie_convention": "ties count AGAINST the candidate (>=), so a tie cannot certify",
+    "floor_note": "rank 1 of 21 gives p = the floor = 0.047619 and is the ONLY certifying outcome at alpha = 0.05; rank 2 gives 0.095238 and does not clear it. The p is reported WITH its floor, always."
+  },
+  "VERDICT": "DOES NOT REPLICATE AT RANK 1",
+  "REPORTABLE_AS": "head 2, selected on BASKET by a rule frozen before the PR-CSI-012 census existed, is rank 6 of 21 against 20 arbitrary single heads on the button codeword (p = 0.285714, floor 0.047619). This is a SINGLE-HEAD replication across CODEWORDS. It is NOT a claim that head 2 is 'the writer', and it says NOTHING about the other 31 heads on button.",
+  "CANNOT_DO": [
+    "revise D32, D33 or the PR-CSI-012 census -- it tests ONE head on ONE other codeword",
+    "license 'head 2 is the writer'. A PASS licenses only: head 2, selected on basket by a preregistered rule, is rank 1 of 21 against 20 arbitrary single heads on button",
+    "say anything about the other 31 heads on button",
+    "retract the census on a FAILURE -- the census is a basket measurement and D32/D33 are set-level results"
+  ],
+  "DOSE_IDENTITY_IS_BLIND_HERE": "BT_SINGLE and every BT_CTRL_* is a ONE-head arm and records 2016 prefill edits -- exactly what the all-32 BT_KO records (S-246). The dose check cannot distinguish them. Arm identity MUST be asserted from each run's own knockout_heads against head_sets.",
+  "INDEPENDENT_PATH": "scripts/dcs_csi_rederive_subspace.py --direction necessity shares no code with this file and already parameterises --candidate/--controls, so it reads this family unchanged (S-254)."
+}
