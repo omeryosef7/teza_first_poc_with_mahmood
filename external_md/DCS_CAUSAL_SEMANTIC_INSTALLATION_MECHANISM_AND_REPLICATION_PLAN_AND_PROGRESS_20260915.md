@@ -27528,3 +27528,97 @@ queue        EMPTY.
 NOT ESTABLISHED  the attention-mass measurement itself -- still unmade, still the blocker for the
              source-side family (S-316), and unchanged by anything here.
 ```
+
+---
+
+## S-320 — **the S-319 pre-launch step is DONE: exact S-311 bars re-derived from PR-013's raw rows, and the candidate set SURVIVES — 6 live non-L14 heads, all still clearing 1.5.** ⚠ **And doing it surfaced a design fault the memo missed: HEAD 19 MUST BE EXCLUDED from PR-CSI-018, because its button cell argmax is ALREADY KNOWN**
+
+### 1. The exact bars, and the gate holds
+
+S-319 recorded that the inventory's `|E|/bar` ratios used the **ci95-derived** bar — which S-318 showed
+is **half a bootstrap CI width**, not the S-311 rule — and required the exact bars before any freeze.
+Re-derived from PR-013's 23 surviving arm directories by my own standalone loader
+(`1.96·SD(paired delta, ddof=1)/√23`, the reading S-318 pinned):
+
+```
+head  pred   E            bar(S-311 exact)   |E|/bar EXACT   ci-derived   shift    gate >= 1.5
+ 19   L14   -0.035568      0.006525            5.45            5.69       -4.1%    PASS
+ 11   L8    -0.016310      0.005713            2.86            2.95       -3.2%    PASS
+ 20   L11   -0.007248      0.002540            2.85            2.92       -2.1%    PASS
+ 29   L6    +0.009291      0.003726            2.49            2.58       -3.2%    PASS
+  6   L11   -0.005090      0.002100            2.42            2.49       -2.7%    PASS
+ 24   L10   -0.002854      0.001554            1.84            1.88       -2.1%    PASS
+ 16   L14   -0.004787      0.003001            1.60            1.61       -0.9%    PASS
+ 27   L10   +0.002666      0.001728            1.54            1.57       -2.0%    PASS
+ 10   L12   -0.003168      0.002189            1.45            1.49       -2.6%    FAIL (was already below)
+ 28   L9    +0.002894      0.002313            1.25            1.30       -3.8%    FAIL
+```
+
+**The shift is −0.9 % to −4.1 %, and NO head crosses the gate.** Head 27 (1.57 → **1.54**) and head 16
+(1.61 → **1.60**) were the two I flagged as close, and both hold. **S-319's inventory stands on the
+exact bars: six live heads with non-L14 predictions over four distinct layers (L6, L8, L10, L11).**
+
+📌 Worth noting that the check was still worth making rather than assuming: the correction was
+*smaller* than the 4.3 % head-19 gap suggested, because the bootstrap-vs-normal discrepancy varies by
+head (−0.9 % to −4.1 %). **A single head's discrepancy does not license a family-wide adjustment**,
+which is what quoting "~4 % optimistic" across the table would have been.
+
+### 2. ⚠ THE DESIGN FAULT THE MEMO MISSED — head 19 is not an admissible candidate
+
+The design memo proposed head 19 among the candidates and noted it as *"(already mapped)"* without
+drawing the consequence. **PR-CSI-016 has ALREADY measured head 19's nine button cells and found its
+argmax at L14, matching the screen.** Including it in PR-CSI-018's `M` would be **counting a known
+success as if it were a fresh draw** — selection on data already read, and the cleanest possible way to
+manufacture a p.
+
+⛔ **Head 19 is EXCLUDED.** So are heads 17 and 23, for the same reason: PR-CSI-016 mapped all three.
+**PR-CSI-018's candidates must be drawn only from heads never cell-mapped on button.** The six that
+qualify are **11, 20, 29, 6, 24, 27** — all fresh, none touched by PR-016.
+
+### 3. The permutation floor, which is what the head set actually buys
+
+The permutation null asks whether the screen put its predictions on the **right heads**, so its floor
+is `1 / (distinct assignments of the prediction multiset)` — repeated layers shrink the space:
+
+```
+candidate set                              distinct assignments   floor
+6 fresh heads (11,20,29,6,24,27)                   180           0.00556   <- recommended
+  multiset {L8, L11, L6, L11, L10, L10}
+4 fresh, one per distinct layer                     24           0.04167   thin: M=3 and M=4 both give 1/24
+5 fresh (the four distinct + 16 at L14)            120           0.00833
+6 fresh + 16                                      1260           0.00079
+```
+
+**All six fresh heads is the right set**: it uses every admissible head, has the strongest floor of the
+fresh-only options at **0.00556**, and — unlike the 4-head variant — leaves room for a miss. At 4
+heads a single miss is fatal, because with four distinct layers *exactly three* fixed points is
+combinatorially impossible, so `M=3` and `M=4` both evaluate to `1/24` and the design has no
+graceful degradation at all.
+
+⚠ **Head 16 is a judgement call I am NOT making unilaterally in a design note.** Adding it takes the
+floor to 0.00079, but it predicts **L14** — the layer the whole spanning-rule apparatus exists to guard
+against — and PR-016's experience is that an L14 prediction can match for reasons unrelated to the
+screen. It is recorded as an option and will be decided **in the freeze script, with the reason
+written down**, not here.
+
+### 4. Cost, and what is still NOT done
+
+```
+6 fresh heads -> 2 base + 6 whole-head arms (nine-cell lists, per S-310) + 54 cell arms = 62 arms
+60 intervened x ~156 s + BC_KO ~208 s + BC_BASE ~190 s of work + one model load
+   = 9,760 s + load  ->  ~2.9-3.0 GPU-hours on n-301, ~2.75 h on a warm node
+```
+
+⛔ **NOT frozen, NOT launched, and nothing written to `configs/`.** Remaining before a GPU, in order:
+
+```
+1. R29 -- adversarial review. DUE, and the standing rule is "before any family reaches a GPU".
+   Its window is S-311's bar-rule code, the PR-016 readers, and the S-315 sweep change.
+2. freeze: prereg + freeze script + frozen read + tag registration, on the PR-016 pattern
+3. the S-312 lesson: run the frozen artefacts END TO END before submitting, not just read them
+4. commit, then submit
+```
+
+**NOT ESTABLISHED by anything in this entry:** whether the screen's cell prediction transfers across
+codewords. That is what PR-CSI-018 is *for*; S-320 only establishes that the instrument to ask it
+exists and which heads it may be asked with.
