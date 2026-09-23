@@ -68,9 +68,39 @@ def main() -> int:
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--seed", type=int, default=20260823)
     ap.add_argument("--tag", default="retr")
+    # ⚠ S-325. THIS FILE HAD NO WAY TO RESTRICT ITS POPULATION. Pointed at a ts116m bank it reads the
+    # POOLED 116 domains -- which per S-314 includes all 23 TEST domains, whose one confirmatory read
+    # is already spent AND which are selection-contaminated. It has never been pointed at one (every
+    # existing run used boombness_prompt_bank.jsonl, and zero run dirs mention ts116m), so the hazard
+    # is real and unrealised -- which is exactly when it is cheap to close.
+    ap.add_argument("--exclude-prompt-ids", default="",
+                    help="a file of prompt_ids to EXCLUDE, as score_behavior.py takes. REQUIRED for "
+                         "any split-managed bank.")
+    ap.add_argument("--confirm-test-read", action="store_true",
+                    help="deliberately read a split-managed bank with NO exclusion list, i.e. the "
+                         "pooled population INCLUDING every TEST domain. Mirrors the guard in "
+                         "scripts/dcs_ts_make_exclusions.py.")
     args = ap.parse_args()
 
+    # ⚠ S-325: a bank under a frozen domain split may not be read pooled by accident.
+    _SPLIT_MANAGED = ("ts116m",)
+    if any(t in os.path.basename(args.bank) for t in _SPLIT_MANAGED) \
+            and not args.exclude_prompt_ids and not args.confirm_test_read:
+        raise SystemExit(
+            "[retr] REFUSING: %r is under the frozen ts116m domain split, and no "
+            "--exclude-prompt-ids was given, so this run would read the POOLED population INCLUDING "
+            "all 23 TEST domains. S-314: TEST's one confirmatory read is already spent AND the split "
+            "is selection-contaminated; adding to that silently is the worst available outcome. Pass "
+            "the split's exclusion file, or --confirm-test-read to say you mean it. (S-325)"
+            % os.path.basename(args.bank))
     rows = [json.loads(l) for l in open(args.bank)]
+    if args.exclude_prompt_ids:
+        _drop = {ln.split()[0] for ln in open(args.exclude_prompt_ids)
+                 if ln.strip() and not ln.lstrip().startswith("#")}
+        _before = len(rows)
+        rows = [r for r in rows if r.get("prompt_id") not in _drop]
+        print("[retr] EXCLUDED %d declared prompt_ids: %d -> %d rows"
+              % (len(_drop), _before, len(rows)), flush=True)
     qk = set(args.query_kinds.split(","))
     cond = set(args.conditions.split(","))
     blocks = set(args.bank_blocks.split(","))
@@ -121,6 +151,20 @@ def main() -> int:
             ctrl = sb.knockout_key_set("nondemo_random", dk, seq_len, args.seed + i)
         except sb.InfeasibleControl:
             ctrl = None      # reference-only; never a reason to drop a row
+        # ⚠ S-325 -- THE MEASUREMENT S-316 BLOCKED THE SOURCE-SIDE FAMILY ON. The line above passes
+        # NO `protected=`, so the control it has always measured draws from the UNPROTECTED pool and
+        # its seed is `args.seed + i`, which corresponds to no arm any run would ever use. That is
+        # the draw C-CONT-019 refuted. The arms a source-side family would actually run are the
+        # STRICT, PROTECTED, seeded ones, and their mass has NEVER been measured.
+        _prot = sb.query_span_positions(lm.tokenizer, r, templated, dk)
+        _strict = {}
+        for _idx in (1, 2, 3):
+            _nm = "nondemo_matched_d%d" % _idx
+            try:
+                _strict[_nm] = sb.knockout_key_set(
+                    _nm, dk, seq_len, sb.nondemo_draw_seed(args.seed, _idx), protected=_prot)
+            except sb.InfeasibleControl:
+                _strict[_nm] = None
         o = lm.model(input_ids=ids.to(lm.model.device), output_attentions=True, use_cache=False)
         q = seq_len - 1                       # the position that emits the first generated token
         d_idx = torch.tensor(dk, device=o.attentions[0].device)
@@ -137,6 +181,10 @@ def main() -> int:
         # PER-HEAD, added after R-AK. Band-level mass ANTI-predicts causal importance on Qwen3
         # (band 0.0316 vs late 0.0416 while the band knockout is 2.7x stronger). A band average can
         # hide a small set of heads that do carry retrieval, so the head vectors are kept.
+        _strict_mass = {}
+        for _nm, _pos in _strict.items():
+            _strict_mass[_nm] = (None if _pos is None else
+                                 _mass(band, torch.tensor(_pos, device=o.attentions[0].device)))
         dmass, dhead = _mass(band, d_idx, per_head=True)
         lmass, lhead = _mass(late, d_idx, per_head=True)   # SAME positions, late band
         cmass = _mass(band, c_idx) if ctrl is not None else []
@@ -150,6 +198,18 @@ def main() -> int:
                     "retrieval_strength": dm - lm_,          # HEADLINE
                     "retrieval_ratio": (dm / lm_) if lm_ > 0 else None,
                     "ctrl_mass_band_REFERENCE_ONLY": cm,
+                    # ⚠ S-325: the STRICT, PROTECTED, correctly-seeded draws -- the arms a
+                    # source-side family would actually run. `ctrl_mass_band_REFERENCE_ONLY` above is
+                    # the UNPROTECTED count-matched draw C-CONT-019 refuted, kept only for continuity
+                    # with the 2026-08-24 artefacts. These are the numbers S-316 blocked on.
+                    "strict_protected_mass_band": {
+                        k: (None if v is None else float(sum(v) / len(v)))
+                        for k, v in _strict_mass.items()},
+                    "strict_protected_n_keys": {
+                        k: (None if v is None else len(v)) for k, v in _strict.items()},
+                    "strict_protected_infeasible": sorted(
+                        k for k, v in _strict.items() if v is None),
+                    "n_protected_positions": len(_prot),
                     "per_layer_demo_band": dict(zip(map(str, band), dmass)),
                     "per_layer_demo_late": dict(zip(map(str, late), lmass)),
                     "per_head_band": dhead, "per_head_late": lhead,

@@ -28107,3 +28107,110 @@ arm order puts the 54 cell arms first and the six HD_ arms LAST, so ADMISSION --
 decides whether the primary is readable at all -- is known only when the family is nearly complete.
 expected cost ~60 x 156 s + one model load.
 ```
+
+---
+
+## S-325 — **the attention-mass instrument is BUILT, and the criterion it will be read against is FROZEN BEFORE IT RUNS.** 🔴 **And building it found a live TEST hazard: `retrieval_strength.py` had NO way to restrict its population, so pointed at any `ts116m` bank it would have read the POOLED 116 domains — every TEST domain included.** Never realised, now impossible
+
+### 1. Why the criterion comes first
+
+S-316 blocked the source-side family on an unmade measurement, and S-319 corrected which *direction*
+the measurement licenses. **A measurement whose interpretation is settled afterwards is how post-hoc
+rationalisation gets in**, so the rule is written here, before the instrument has produced a number.
+
+The confound, stated exactly. `demo_all` removes the demo keys (mass `m_d`); a `nondemo_matched_d*`
+arm removes an equal **COUNT** of non-demo keys (mass `m_c`). What a null control means depends
+entirely on which is larger:
+
+```
+m_c > m_d, control NULL   -> MORE attention removed, LESS damage. Mass cannot explain it.
+                             CLEAN EVIDENCE FOR source-specificity.
+m_c < m_d, control NULL   -> less attention, less damage. CONFOUNDED -- could be either.
+m_c ~ m_d, control NULL   -> equal mass, less damage. CLEAN, and the ideal case.
+m_c > m_d, control EQUAL  -> ambiguous, leans non-specific (saturation cannot be ruled out).
+m_c < m_d, control EQUAL  -> LESS attention, SAME damage. CLEAN REFUTATION of source-specificity.
+```
+
+**FROZEN CRITERION, to be applied to the measurement before any source-side arm is designed:**
+
+```
+measure, per row, in band 6-14 at the readout position:
+   m_d = demo-block mass ; m_c = the STRICT, PROTECTED nondemo_matched_d1 draw's mass
+report   the median ratio rho = m_c / m_d, AND the per-row count of rows with m_d > m_c
+         (C-CONT-019's own statistic was a per-row count, not a mean, and it must stay one)
+
+rho >= 1.0 and m_d > m_c on < 50% of rows  ->  the family may run as a CONFIRMATORY source test
+rho <= 1.0 and m_d > m_c on > 50% of rows  ->  the family may run ONLY as a REFUTATION test
+mixed / straddling                          ->  CANNOT ANSWER: the direction is not established and
+                                                no source-side family is licensed either way
+```
+
+⛔ **The direction is fixed BEFORE the arms are designed, and whichever prereg follows must state
+which of the two readings it is licensed for.** A family that discovers its licensed direction after
+its own read is not preregistered.
+
+### 2. 🔴 THE HAZARD FOUND WHILE BUILDING IT
+
+`src/boombness/retrieval_strength.py` (184 lines) had **no `--exclude-prompt-ids` argument at all**.
+Its population is a bank path plus four content filters. So pointed at any `ts116m` bank it reads the
+**pooled 116 domains — all 23 TEST domains included.**
+
+Per **S-314**, TEST's one confirmatory read is **already spent** (job 869523, 2026-09-08) *and* the
+split is **selection-contaminated**. Adding to that silently would be the worst available outcome.
+
+✅ **It has never happened.** Every existing run used `boombness_prompt_bank.jsonl`, and
+`grep -rl ts116m outputs/boombness/retrieval_strength/` returns **0**. **The hazard was real and
+unrealised — which is exactly when it is cheap to close**, and it is the same lesson S-310 paid for:
+a collision inert only because no artefact has the shape yet is a dated liability.
+
+Closed by a refusal that fires **before anything loads**, mirroring the guard
+`scripts/dcs_ts_make_exclusions.py` already carries:
+
+```
+[retr] REFUSING: 'boombness_prompt_bank_ts116m_basket_bomb.jsonl' is under the frozen ts116m domain
+       split, and no --exclude-prompt-ids was given, so this run would read the POOLED population
+       INCLUDING all 23 TEST domains. ... Pass the split's exclusion file, or --confirm-test-read to
+       say you mean it. (S-325)
+```
+
+📌 And this is **part of the mechanism behind S-314's finding**. S-314 recorded 23 `ts116m` runs with
+no exclusion list at all, and observed the contamination without explaining how it kept happening.
+**An instrument with no way to express a population will be run without one.**
+
+### 3. What the instrument now measures
+
+```
+--exclude-prompt-ids     the missing argument. Verified: 930 excluded -> exactly n=230, the frozen
+                         validation population, on the basket bank.
+strict_protected_mass_band   the STRICT, PROTECTED, correctly-seeded nondemo_matched_d{1,2,3} draws
+strict_protected_n_keys / _infeasible / n_protected_positions
+```
+
+⚠ **The existing `ctrl_mass_band_REFERENCE_ONLY` is NOT this.** It calls
+`knockout_key_set("nondemo_random", dk, seq_len, args.seed + i)` — **no `protected=`**, so it draws
+from the UNPROTECTED pool, and its seed corresponds to **no arm any run would ever use**. That is the
+draw C-CONT-019 refuted. It is kept, unchanged, for continuity with the 2026-08-24 artefacts, and it
+is not the number the criterion is applied to.
+
+### 4. NOT established, and NOT run
+
+⛔ **The measurement has NOT been made.** The instrument is built and guarded; `923833` holds the GPU.
+Nothing about `m_c / m_d` is known, and **S-316's block therefore still stands** — the source-side
+family remains unrunnable until the criterion in §1 is applied to a real number.
+
+**And S-319's correction to the old figure stands unaltered:** the "~5.7×, demo > ctrl in 0 of 12
+rows" I quoted from the predecessor log does not reproduce from the artefact it cites (3.85× and 1 of
+60 on Llama; 4.77× and 0 of 46 on Qwen3). Those are the **unprotected** draw on a **different bank**,
+so they do not predict what §1 will measure either.
+
+### 5. PR-CSI-018 state
+
+```
+923833 RUNNING on n-304, 29 min elapsed, 0 of 62 arms landed -- still in the model load.
+all launcher guards passed on the first attempt: BASE-ARM, CODEWORD -> button, 62 arms with 60
+  carrying a frozen cell list, argv lines 62. Fourth family in a row with every guard green first try.
+No endpoint has been read. The frozen read (cbdf34a2) is untouched.
+```
+
+⚠ n-304 has no prior load measurement, so per S-324 **no prediction was made and none is being scored**
+— whatever it records is a first data point for that node.
