@@ -26958,3 +26958,139 @@ PR-CSI-016  job 923233 RUNNING on n-301. GATE 0 clean on every landed arm; the s
             arm times ~155 s (button), BC_BASE 1428.4 s incl. the 1265.8 s load, BC_KO 208.1 s.
 NO endpoint has been read. The frozen read (90ee8a12) is untouched and its PRIMARY is open.
 ```
+
+---
+
+## S-316 — ⚠ **S-309 §7's design premise is WITHDRAWN before it cost anything: `nondemo_matched_d*` is COUNT-matched, not MASS-matched, and this repository already refuted a count-matched control — twice — in a module whose artifact field is literally named `ctrl_mass_band_REFERENCE_ONLY`.** The source-localisation question is **BLOCKED PENDING A MEASUREMENT**, not runnable
+
+### 1. What I was about to design, and why it looked right
+
+S-309 §7 recorded the next family after PR-CSI-016 as the one *"most able to KILL a claim"*: the whole
+chain is named **demonstration → query retrieval**, PR-014/015 localised only the **destination**
+(which cell), and nothing has ever tested that the damage is specific to **demonstration** keys rather
+than to blocking a dose-matched set of arbitrary earlier keys at the same cell.
+
+`grep -c nondemo` over this 27k-line log returns **4**, all of them S-309 proposing this. The controls
+exist in code: `KNOCKOUT_ARMS = ("demo_all", "nondemo_random", "allpast") + NONDEMO_DRAW_ARMS`, with
+`nondemo_matched_d{1,2,3}` as three seeded strict draws. It looked like 14 arms and no new code.
+
+### 2. 🔴 THE FINDING — it is count-matched, and the repo says that is not a control
+
+`nondemo_control_draw`'s own docstring, verbatim:
+
+> *"ONE seeded draw of non-demo key positions, **count-matched** to the demo block on THIS row."*
+
+and its `match_ratio` is `n_drawn / n_demo_keys` — a **count** ratio. "Strict" guarantees only that it
+never under-matches the **count**; it refuses the row instead.
+
+**This repository already tried a count-matched control, refuted it, and renamed the artifact field to
+warn against it.** `src/boombness/retrieval_strength.py:9-25`, verbatim:
+
+> *"The 8-row smoke (job 777298) refuted it immediately: `demo_mass 0.0374` vs `ctrl_mass 0.2489`,
+> with demo > ctrl in **0 of 4** measurable rows … a count-matched draw matches SIZE but not POSITION,
+> and attention is dominated by the **BOS sink** and by **recency**: a random non-demo draw collects
+> sink mass, while the demonstration block sits in the middle distance.
+> **The control was measuring position, not retrieval.**"*
+
+```
+the field is named               ctrl_mass_band_REFERENCE_ONLY
+on the full Llama artifact       the count-matched draw carries ~5.7x the demo block's L6-14 mass,
+                                 demo > ctrl in 0 of 12 rows            (C-CONT-019, predecessor log)
+```
+
+⚠ **The control is the LARGER intervention, not the smaller one.** C-CONT-019's own conclusion: *"My
+'dose-matched control' is plausibly the larger intervention. The frozen expected sign could have been
+produced — or reversed — by the control rather than by the pathway."*
+
+### 3. And the repo's resolution history says the answer was never a source draw at all
+
+```
+original     nondemo_random          matched on COUNT      -> ~5.7x the attention mass   REFUTED (C-CONT-019)
+correction 1 position-matched        matched on POSITION   -> edited 33% more cells      REFUTED (C-CONT-024)
+correction 2 the LAYER-BAND control  same rows, keys, count AND position; differs only in
+                                     the band's FUNCTION (L6-14 vs the near-inert L20-31)  ACCEPTED
+```
+
+`retrieval_strength.py` states the reasoning: *"Positional priors are shared by both bands and largely
+cancel."* **The predecessor solved this problem and the solution was a BAND control, not a non-demo
+source draw.** A band control answers *"is it THIS band?"* — it does **not** answer *"is it the
+DEMONSTRATIONS?"*, which is why S-309 §7's question is still genuinely open. But the instrument
+S-309 §7 proposed to answer it with is the one already refuted.
+
+### 4. ⚠ THE NUANCE THAT STOPS THIS BEING A FLAT KILL, and I nearly wrote the flat version
+
+C-CONT-019 names **two** mechanisms: the **BOS sink** and **recency**. Today's pool excludes both:
+
+```
+pool = [i for i in range(1, max(0, n - 1)) if i not in demo_keys and i not in protected]
+        ^ index 0 (BOS) excluded          ^ `protected` = query_span_positions = the request and
+                                            everything after it, i.e. RECENCY
+```
+
+and the code comment records why: *"without that exclusion this control deletes the question"* —
+review finding **M1**, applied to `nondemo_random` and `nondemo_matched_d*` alike. **Both arms share
+this pool today.**
+
+⛔ **So I cannot say the refutation transfers, and I cannot say it does not.** The 8-row smoke that
+produced `ctrl_mass 0.2489` was *"Draft 1"*; **what its pool contained at that time is not established
+by anything I have read**, and the M1 protection may postdate it. The honest statement is:
+
+> **The attention mass of the CURRENT protected draw has never been measured.** The two mechanisms
+> that refuted the original draw are both excluded from today's pool, and whether that is enough is an
+> open, measurable question — not an assumption to build a 14-arm family on.
+
+### 5. What that makes the status, and what it would take to unblock
+
+**S-309 §7 is DOWNGRADED from "the next family" to BLOCKED PENDING A MEASUREMENT.** The measurement is
+the cheap part of the experiment and it must come first:
+
+```
+needed   the attention mass, per row, of (a) the demo block and (b) a nondemo_matched_d* draw,
+         in band 6-14, on the basket validation population
+blocker  score_behavior.py records NO attention-mass field -- grep for attn_mass/attention_mass/
+         mass_removed/masked_mass/prob_mass over src/ returns NOTHING. `n_prefill_edits` is a COUNT
+         of edits, which is exactly the quantity that already matched while the mass did not.
+blocker  retrieval_strength.py computes mass but exposes only `main()` -- it is a script, not a
+         reusable function, so it cannot be called on an arbitrary key set without work.
+```
+
+⚠ **And if the measurement comes back showing the protected draw still carries more mass, the family
+must NOT be run as a source test.** S-050 recorded what happens when a result turns out to be **dose
+rather than direction**: a random rank-5 subspace beat the installation subspace, and the analyser
+printed "PRIMARY PASSES" over it. A control that removes more attention than the arm it controls for
+is that failure waiting to happen, one axis over.
+
+📌 One asymmetry worth freezing now, because it survives the confound in one direction only:
+
+```
+nondemo ~ 0 while demo is large   -> CONFOUNDED. Could be source-specificity, could be mass.
+nondemo ~ demo despite LESS mass  -> CLEAN REFUTATION of source-specificity.
+```
+
+**The design can kill the demonstration→query claim cleanly and cannot confirm it cleanly.** That is a
+usable property for a falsification-oriented family, but it has to be preregistered as such rather
+than discovered in the read.
+
+### 6. What was measured this tick, and what was NOT established
+
+```
+MEASURED   PR-CSI-016 GATE 0, incrementally, at 17 of 32 landed arms: every landed arm PASSES.
+           BC_BASE 0 edits / BC_KO 2016 / every cell arm 224.0, decode edits 0, violations {}.
+           The sweep correctly labelled the in-flight arm and printed "THIS SWEEP IS PARTIAL"
+           (the S-315 fix, working on the family that exposed the defect).
+MEASURED   button arm time ~155-156 s, against basket's 167.2 s (S-306). BC_BASE 1428.4 s including
+           the 1265.8 s load; BC_KO 208.1 s.
+NOT ESTABLISHED  anything about PR-CSI-016's endpoint. No E, no argmax, no admission. The frozen
+           read (90ee8a12) is untouched and its PRIMARY is open on every branch.
+NOT ESTABLISHED  whether nondemo_matched_d* is mass-matched. §4. This is the whole point of the entry.
+NOT ESTABLISHED  that a band control answers the source question. It does not; it answers a
+           different one, and S-309 §7's question remains open with no admissible instrument yet.
+```
+
+📌 **Recorded about method, not results:** S-309 §7 was written from a design memo that quoted
+`score_behavior.py:1487ff` accurately — *"it inherits the band check, the scope, the head subset, the
+liveness gate and the pre-flight unchanged"* — and I took that to mean the family was free. **The
+comment is true and was written before `--knockout-cells` existed**, and it says nothing about whether
+the control is a valid control. *A quote that is accurate about mechanism can still be silent about
+validity*, and the check that mattered was four directories away in a module nobody had cited this
+sprint.
