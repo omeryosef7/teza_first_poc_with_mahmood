@@ -1,0 +1,117 @@
+# FROZEN READ for PR-CSI-015 -- the per-CELL census of D34's OTHER THREE load-bearing heads
+# (19, 17, 23), basket VALIDATION. 29 arms.
+# Frozen 2026-09-23, BEFORE ANY ARM HAS RUN. Never re-freeze after seeing numbers.
+#
+# WHAT THIS ASKS, AND IT IS TWO THINGS D36 COULD NOT ANSWER WITH ONE HEAD.
+#   1. IS THE DEPTH CONCENTRATION GENERAL? D36 found head 2's load 96.1% inside cell (L10, 2). One head
+#      cannot separate "this mechanism's depth structure is sparse" from "head 2 happens to be sparse".
+#   2. DOES THE SCREEN'S PER-CELL ORDERING HOLD ANYWHERE ELSE? AM-38 recorded the L10 corroboration as
+#      n = 1 HEAD and refused to generalise it. S-269 also read the TRAIN screen for these three:
+#        19 -> L14      17 -> L14      23 -> L7
+#      Those were written for a different purpose and are falsifiable as they stand. The screen is
+#      TRAIN and this census is VALIDATION, so the comparison is ACROSS SPLITS and not circular.
+#
+# ⛔ IT IS A CENSUS. NO CANDIDATE, NO CONTROL FAMILY, NO RANK, NO p. All nine layers of each head are
+#   run, so NO CELL IS SELECTED. `NO_RANK_TEST` is declared and control_prefix/n_controls are absent so
+#   the rank tooling refuses the prereg (verified: both rank readers refuse by name).
+#
+# ⛔ AND THERE IS STILL NO CONFIRMATORY FOLLOW-ON. AM-37 measured that no admissible held-out axis
+#   exists for a cell-level rank test: basket validation is where a winner would be selected, basket
+#   train is contaminated because these heads entered by a TRAIN selection, button is where D35 measured
+#   head 2 at -0.003522 with a ci95 crossing zero, the 3 TEST domains need n > 3.8 at best, and no third
+#   codeword bank is built. So NOTHING read here may be followed by "and therefore cell X is the writer".
+#
+# VALIDATION ONLY, for the reason PR-CSI-012 gave: TRAIN selected HD_TOPK, so these heads entered the
+#   sprint by a TRAIN selection and a TRAIN census would restate it.
+#
+# Read in order. STOP AT THE FIRST FAILURE.
+#   GATE 0  liveness + ARM IDENTITY on all 29 arms. Identity comes from each arm's own recorded
+#           knockout_cells, NOT knockout_heads. TWO collisions make this mandatory here:
+#             * a cell arm's knockout_heads is EMPTY, which recorded_heads() maps to "ALL" (S-292);
+#             * ALL 27 cell arms expect the SAME dose of 224, so the dose cannot tell any cell from any
+#               other -- S-246's collision on the layer AND head axes at once (R26).
+#   GATE 1  THERE IS NO GATE 1. A census makes no comparative claim, so it has no positive-control gate.
+#           CL_KO is the denominator, not a gate.
+# ------------------------------------------------------------------------------------------------
+
+# --- GATE 0 may be swept incrementally at any time; it refuses to read an endpoint field (S-202) and
+# --- exits 3 (NOT 0) when nothing has landed, because a pass over an empty set is not a pass (S-292).
+python scripts/gates/dcs_csi_pr012_gate0_sweep.py \
+  --prereg configs/dcs_csi_pr015_cell_census_3heads_basket.json \
+  --tag-prefix csi8_cell3_basket_validation --split validation \
+  --require-slurm-job <VALIDATION_JOB_IDS>
+
+# --- THE PRIMARY READ (the census reader; multi-head cell aware since S-301).
+python scripts/dcs_csi_head_census.py \
+  --prereg configs/dcs_csi_pr015_cell_census_3heads_basket.json \
+  --tag-prefix csi8_cell3_basket_validation --split validation --expect-n 230 \
+  --require-slurm-job <VALIDATION_JOB_IDS> \
+  --out reports/DCS_CSI_PR015_CELL_CENSUS_3HEADS_validation.json
+#
+# ⚠ EACH HEAD IS READ AGAINST ITS OWN PREREGISTERED BAR. The three heads have different per-domain
+#   spreads, so one shared bar would be wrong in both directions -- head 23's bar is 0.006615 where
+#   head 2's is 0.019181, and using head 2's would declare head 23's cells undetectable when they are
+#   not. The bars are frozen in the prereg's DETECTABILITY_PREREGISTERED_PER_HEAD:
+#
+#     head   E(SINGLE)   per-domain SD   bar = 1.96*SD/sqrt(23)   bar as % of |E|
+#      19    -0.040109      0.025015           0.010223                25.5%
+#      17    -0.029218      0.022223           0.009082                31.1%
+#      23    -0.016503      0.016186           0.006615                40.1%
+#
+#   S-301 made a MISSING bar a REFUSAL rather than a default, because a null threshold used to make
+#   every cell read "below the bar" and print "0 of 27 cells CLEAR THE PREREGISTERED BAR" -- a false
+#   null indistinguishable from this family's own preregistered-coherent outcome.
+#
+# ⚠ "ci95 EXCLUDES 0" IS NOT THE CRITERION AND MUST NOT BE QUOTED AS ONE. It is a WEAKER test the
+#   reader prints beside the verdict. On PR-CSI-014 one cell excluded zero at 5.0% of the bar with a
+#   ci95 lower bound 24x smaller than |E| and the WRONG SIGN (S-299/S-300). The preregistered criterion
+#   is |E| > that head's own bar.
+
+# ------------------------------------------------------------------------------------------------
+# THE OUTCOMES, PRE-COMMITTED PER HEAD. Each head is read independently; they may disagree, and a
+# mixture is a real result rather than an inconvenience.
+#
+# A. ONE CELL CLEARS that head's bar, and it is the layer S-269's screen named.
+#    -> The concentration D36 found is NOT specific to head 2, AND the screen's within-head localisation
+#       is corroborated on a second, third or fourth head. DESCRIPTIVE ONLY: naming the cell as "the"
+#       site is selection on the data that produced it, and there is nowhere to confirm it (AM-37).
+#       ⚠ Even 4 of 32 heads is not a validation of the screen in general.
+#
+# B. ONE CELL CLEARS, but it is NOT the screen's layer.
+#    -> Concentration generalises; the SCREEN's per-cell ordering does not. This would BOUND every
+#       future use of AtP_by_cell for cell nomination, and it would make D36's L10 agreement the
+#       coincidence rather than the rule. ⚠ This outcome must be reported as loudly as A: AM-38 is the
+#       claim at risk, and it is mine.
+#
+# C. NOTHING CLEARS for a head.
+#    -> ✅ A COHERENT, INFORMATIVE OUTCOME, PREREGISTERED HERE AS SUCH. Under an even nine-way split no
+#       head's cell reaches its own bar (0.28x-0.44x of it), so this is what a DISTRIBUTED depth profile
+#       looks like, and it would mean D36's concentration is head-2-specific. ⛔ It must NOT be reported
+#       as a failed experiment, and it MUST NOT be rescued by dropping to a weaker bar, a one-sided
+#       test, an uncorrected "trend", or by quoting the ci95-excludes-0 count instead.
+#
+# D. SEVERAL CELLS CLEAR for a head.
+#    -> The load is spread over a few depths rather than one. Same descriptive-only limit.
+#
+# ⚠ AND THE DOSE IS NO LONGER A PREDICTION. PR-CSI-014 measured 224.0 on nine cells across nine layers
+#   (S-299), so DOSE_UNIT/band_width is an IDENTITY here. A cell arm recording anything other than 224
+#   is VOID condition 7 and a CODE defect, not a fact about the model; GATE 0 fails on it and no effect
+#   is readable.
+#
+# ------------------------------------------------------------------------------------------------
+# WHAT MAY NEVER BE SAID FROM THIS FILE, whatever the numbers:
+#   * "cell (L, h) is the writer" / "the effect is single-layer" -- no rank, no p, no held-out axis.
+#   * anything that lifts D32's caveat about single (layer, head) cells -- AM-37 measured that it cannot
+#     be lifted with the axes this sprint has.
+#   * anything revising D32, D33, D34, D35 or D36. A wider map does not retract a narrower one.
+#   * anything about the other 28 heads, or any cell of them.
+#   * that the screen is a validated cell selector. At most this makes the intervention-verified sample
+#     4 heads of 32, and AM-32 measured the same screen ranking head 2 only 6th at HEAD level.
+#   * anything about DOMAIN generality -- these 23 domains are basket's usual set (S-256). The 3 TEST
+#     domains remain untouched.
+#   * any rung above 1 on AM-34's ladder.
+#
+# <VALIDATION_JOB_IDS> must name the ONE job that produced all 29 arms. If a relaunch happens, the
+# earlier generation's arm dirs must be QUARANTINED rather than filtered at read time: S-261 measured
+# that the runner's skip-if-complete resumes into them and reuses void arms, so --require-slurm-job is
+# a read-time remedy for a write-time problem.

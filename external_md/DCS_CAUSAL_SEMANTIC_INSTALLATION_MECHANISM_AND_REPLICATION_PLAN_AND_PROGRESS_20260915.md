@@ -25138,3 +25138,86 @@ PR-CSI-015: prereg FROZEN (f3854d23), reader cell/multi-head aware, argv gate gr
 
 No arms were running. No pre-existing frozen artefact touched — `7b21f659` (PR-014 prereg), `cdf959f6`
 (PR-014 read) and D34's `d2e14627` pin all unchanged. Writes verified by md5; quota 94% used, 1.4T free.
+
+---
+
+## S-302 — **PR-CSI-015's read is FROZEN (`4841486c`) and its tag prefix registered.** The tree is being committed *before* the submit, because the provenance witness must reference a commit — the helper refuses a dirty worktree by design
+
+### 1. Tag registration
+
+```
+PR-CSI-015) WANT_PREFIX=csi8_cell3_basket ;;
+```
+
+added to `slurm_scripts/dcs_csi_pr010_arms.slurm`'s `PR_ID -> WANT_PREFIX` table. Both guards verified
+still present: the `exit 6` for an unregistered id and the `exit 7` mismatch refusal that exists so **two
+families can never share a tag namespace** (S-104 at the family level, S-227 at the arm level).
+
+### 2. The frozen read, `runargs/dcs_csi_pr015_read.txt` (md5 `4841486c`)
+
+Frozen **before any arm has run**, and every artefact it names was checked to exist first — naming a tool
+that does not exist is S-167c and a frozen read is the last place that error is cheap:
+
+```
+script   scripts/dcs_csi_head_census.py                        exists=True
+script   scripts/gates/dcs_csi_pr012_gate0_sweep.py            exists=True
+prereg   configs/dcs_csi_pr015_cell_census_3heads_basket.json  exists=True
+bars quoted in the read match the prereg                       True
+the --out path does not already exist                          True
+```
+
+**The bars quoted in the prose are checked against the prereg's own `per_head` block**, because a read that
+quotes a threshold the prereg does not carry would be a second definition of the criterion — and S-301 just
+showed what a mismatch between a reader and a prereg's field costs.
+
+### 3. What the read pre-commits: FOUR outcomes, per head, and they may disagree
+
+The three heads are read **independently against their own bars**, so a mixture is a real result rather
+than an inconvenience:
+
+```
+A  one cell clears AND it is the screen's layer  -> concentration generalises AND the screen's
+                                                    within-head localisation corroborates (n -> up to 4/32)
+B  one cell clears but NOT the screen's layer    -> concentration generalises, the SCREEN does not.
+                                                    ⚠ "must be reported as loudly as A: AM-38 is the
+                                                    claim at risk, and it is mine"
+C  nothing clears for a head                     -> ✅ coherent and informative: a DISTRIBUTED depth
+                                                    profile, meaning D36's concentration is head-2-specific
+D  several cells clear                           -> load spread over a few depths
+```
+
+⚠ **Outcome B is written down with its own instruction because it is the one I have an interest in
+suppressing.** AM-38 is my claim; the screen agreeing with the intervention at head 2 is the most
+interesting thing in D36, and a read that quietly under-reported three disagreements would be exactly the
+failure the frozen-read discipline exists to prevent.
+
+⚠ **And C carries the S-300 prohibition explicitly:** it *"must NOT be rescued by dropping to a weaker
+bar, a one-sided test, an uncorrected 'trend', or by quoting the ci95-excludes-0 count instead."* That
+last clause is new and is there because S-299 found my own reader doing exactly that.
+
+### 4. Why the commit precedes the submit
+
+```
+git status --porcelain --untracked-files=no | wc -l   ->  1   (the launcher edit)
+scripts/gates/dcs_csi_submit.sh: "REFUSING TO SUBMIT: worktree is dirty -- the artifact could not be
+                                  reproduced from any commit."
+```
+
+The helper captures `CSI_GIT_BLOB` **on the submitting host** and refuses a dirty tree, because `git` does
+not exist on the compute nodes and a witness taken inside the job is always empty — *and an empty porcelain
+reads exactly like a clean one*. So the registration and the frozen read are committed first, and the job
+id lands in the next entry rather than being back-filled into this one.
+
+### 5. Pre-submit state
+
+```
+csi8 dirs already in score_behavior : 0     <- the S-261 check; skip-if-complete would RESUME into stale
+                                               arms, and --require-slurm-job is a READ-time remedy for a
+                                               WRITE-time problem
+prereg id -> registered prefix      : PR-CSI-015 -> csi8_cell3_basket (match)
+both rank readers                   : refuse PR-CSI-015 by name
+argv gate --check                   : 29 arms, 27 carrying a frozen cell list
+expected cost                       : 27 cell arms x ~150 s + 2 base arms x ~205 s + one model load
+                                      (n-301 measured 22.3 min; S-298 established the load is a
+                                      CONTINUUM of cache residency, so this is not a prediction)
+```
