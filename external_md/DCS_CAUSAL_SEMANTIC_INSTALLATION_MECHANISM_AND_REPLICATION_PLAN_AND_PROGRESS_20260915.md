@@ -28395,3 +28395,108 @@ way; S-313 made it and won.
   landed at the time of writing; the frozen read (`cbdf34a2`) is untouched and every branch of its
   PRIMARY is open.
 * **Nothing about the attention-mass measurement** (S-325), which needs the GPU this family holds.
+
+---
+
+## S-328 — **the §20 claim table is UPDATED and AUDITED.** 🔴 **The audit found an arithmetic error that CONTRADICTS ITSELF inside D36, two stale citations, and — the serious one — AM-37's blocking row was FALSE ON ITS OWN ARITHMETIC.** Five corrections applied, five rows added
+
+### 1. Why this was due
+
+`reports/DCS_CSI_CLAIM_TABLE.md` was last written **2026-09-23 14:45** — before S-306. Twelve entries
+had landed since, including **two families read and closed** (PR-CSI-015, PR-CSI-016) and **three
+withdrawals** (S-314, S-316/S-319, S-317 §5), with **no row for any of them**. PART I §20 lists the
+updated claim table as a sprint deliverable, so the gap was real.
+
+### 2. 🔴 D36 contained an arithmetic error that contradicts itself 60 words later
+
+D36 said the eight non-peak cells *"none reaches **2.3 % of the bar** individually"*, and then said
+`CL_L11` is *"**5.0 % of the bar**"*. **Both cannot be true.** Re-derived myself:
+
+```
+largest non-L10 cell  CL_L09 = +0.00110007
+   as a share of the BAR (0.019181)          5.74 %
+   as a share of the HEAD EFFECT (0.049475)  2.22 %   <- this is the 2.3% figure
+CL_L11 = +0.00095238  ->  5.0 % of the bar               <- correctly labelled
+```
+
+**"2.3 %" was a share of the HEAD EFFECT wearing a "bar" label.** Corrected in place, with both
+denominators now given. **Same class as AM-4**, and the reason it went unnoticed is that the two
+figures are 60 words apart and each is locally plausible.
+
+### 3. 🔴 AM-37's blocking row was FALSE ON ITS OWN ARITHMETIC
+
+AM-37 is the row that holds **D32's single-cell caveat** in place — it is load-bearing for what this
+sprint may claim about any cell. One of its five blocking reasons read:
+
+> *"the **3** TEST domains are underpowered — the condition `√n > 1.96·(SD/|E|)` needs `n > 3.8` at
+> the most optimistic ratio observed and `n > 6.5–11` at realistic ones."*
+
+**The count is 23 (S-312), and at n = 23 the condition CLEARS at every ratio the row itself quotes:**
+
+```
+√23 = 4.796   vs   1.96 × 0.917 = 1.797   (the strongest head)   CLEARS
+√23 = 4.796   vs   1.96 × 1.700 = 3.332   (a realistic ratio)    CLEARS
+```
+
+⚠ **AM-37's CONCLUSION survives — but only because S-314 supplies a different and stronger blocker**:
+TEST is **spent and selection-contaminated**, not underpowered. The stated reason is replaced rather
+than kept, because a row that blocks a claim for a reason that does not hold is a row that will be
+argued away by the next person who checks the arithmetic.
+
+📌 **This is the second time in two entries that fixing a number left a conclusion standing.** S-314
+recorded the same shape: *"an error that does not propagate to the verdict is still an error, and a
+sprint that only audits numbers whose correction would be convenient is not auditing."*
+
+### 4. The two stale citations
+
+```
+D36  reports/DCS_CSI_PR014_CELL_CENSUS_validation.json  cited md5 8993b4d5  ->  on disk 86255425
+     rewritten by commit 62409290 (S-300) at 15:10, 25 minutes AFTER this table's last write.
+     SIX metadata lines ADDED, ZERO numbers changed -- every D36 statistic still re-derives.
+D31  reports/DCS_CSI_PR009_HARDWARE_AB.json  cited 2 457 B  ->  on disk 3 999 B
+     rewritten by S-177's residual_interpretation correction. All D31 numbers still reproduce.
+```
+
+Neither moves a claim. Both are citation defects of the kind **AM-6** exists to name — *"an artifact's
+existence is not evidence it is complete"* — and a stale hash is worse than no hash, because it
+invites a reader to conclude the file was tampered with.
+
+### 5. Five rows added
+
+```
+D37    PR-CSI-015: the depth concentration generalises to 4 of 4 load-bearing heads, each at the
+       screen's cell -- WITH S-307's three corrections carried in the row, not as footnotes
+D38    PR-CSI-016: CANNOT ANSWER (spanning rule). p = 0.012346 marked NOT QUOTABLE. The head-level
+       cross-codeword transfer (98.3% / 88.7% / 18.4%) recorded as the delivered fallback
+AM-39  TEST WITHDRAWN as an axis -- spent AND contaminated; AM-37's verdict survives, its reason does not
+AM-40  the source-side family BLOCKED; the predecessor log's "~5.7x" does NOT reproduce (3.85x / 4.77x)
+AM-41  EXPLORATORY: the intervention's depth profile transfers across codewords, rho +0.795 / +0.715
+```
+
+**Every number in them was re-derived by me from the artefact**, not copied from the log — which is
+the discipline the audit existed to enforce and the one S-318 and S-319 caught me breaking.
+
+### 6. ⚠ NOT applied, and why
+
+The audit reported two further items I have **not** acted on, because **I did not re-derive them
+myself** and the standing rule is not to take a subagent's number on trust:
+
+* **AM-25's MDE.** The audit reports that *"the MDE at 80 % power is +0.00300"* does not reproduce
+  and should be ≈ +0.0026. Its `P(R47 ≤ 2) = 0.3382` *does* reproduce. **Flagged, unverified, and
+  left as written** until I run the simulation myself. If correct it overstates the bar by ~15 %, in
+  the **conservative** direction.
+* **D31's four prose-only quantities** (*"33 non-exempt arguments verified identical"*, a bank sha16,
+  a model revision, a corpus population) — reported to be in **neither** artefact D31 cites. That is
+  exactly the S-318/S-319 class and it deserves its own check rather than a hasty edit.
+
+**Also NOT done:** no row for PR-CSI-018. It is **running** (job `923972`), and a claim table row for
+an unread family would be the worst thing in this file.
+
+### 7. State
+
+```
+claim table  896 -> 912 lines. 5 corrections, 5 rows added, 2 findings flagged unverified.
+PR-CSI-018   923972 on n-301, load 1264.0 s, arms in flight. NO endpoint read.
+NOT ESTABLISHED  anything new about the science. This entry corrected the record and added rows for
+                 results already established elsewhere; it measured nothing.
+```
