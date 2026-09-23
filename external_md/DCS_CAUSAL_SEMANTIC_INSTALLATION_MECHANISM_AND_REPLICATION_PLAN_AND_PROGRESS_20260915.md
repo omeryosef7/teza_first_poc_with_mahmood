@@ -23141,3 +23141,155 @@ the re-derivation are all untouched by the skew. Of the three hits:
   named.
 - **Did NOT:** read any endpoint field, touch any frozen artefact, or learn anything about the candidate —
   **BT_SINGLE has not run.** No claim about D35 is available and none is made.
+
+---
+
+## REVIEW R25 — the review that had to happen BEFORE the read, not after: **the window since R24 contains almost no new code, so I reviewed the machinery that is about to execute instead.** Six verifications PASS, two findings, and one pre-data property of the frozen design recorded before any number is seen
+
+### 0. Scoping the window honestly, which changed what the review could usefully be
+
+```
+git log --since="2026-09-23 05:30" --name-only --format=""  | sort -u
+  external_md/DCS_CAUSAL_SEMANTIC_..._20260915.md      <- log appends (S-284..S-289)
+  runargs/dcs_csi_pr013_EXECUTION_CHECKLIST.txt        <- R24's OWN fix
+  scripts/dcs_csi_head_patch_gate.py                   <- R24's OWN fix
+```
+
+**Since R24 I have written seven log entries and no new code.** A review of "the code produced since the last
+review" would therefore have been a review of nothing. The four hours were spent observing a model load and
+an arm series — which is real work, but it is not code.
+
+So I retargeted R25 at **the code that will run within the next ten minutes**: PR-013's frozen read path. This
+is the last moment a review can still change the outcome; running it after the read would be theatre. Every
+check below is **endpoint-blind** — no arm's `y_install` was read, and 21 of 23 arms had already landed while
+I did this, so the temptation to peek was live and is recorded as refused.
+
+### 1. ✅ VERIFIED — the control family reproduces EXACTLY from the rule frozen before the census existed
+
+The strongest check available on a preregistered design: re-derive the draw from the frozen rule's own words
+and compare to what was recorded.
+
+```
+pool = sorted(h for h in range(32) if h != h_star)        # Rule 3: "the 31 heads OTHER than h*"
+seed = 20261101 ; +1 per attempt ; accept iff head not already drawn
+
+re-derived heads : [24,19,3,5,21,11,6,10,15,7,28,29,26,31,25,27,16,1,0,20]
+recorded  heads  : [24,19,3,5,21,11,6,10,15,7,28,29,26,31,25,27,16,1,0,20]   HEADS MATCH  True
+re-derived seeds : [20261101,...,20261134]  (20 accepted, 14 rejected)
+recorded  seeds  : [20261101,...,20261134]                                   SEEDS MATCH  True
+```
+
+**Both the heads and all twenty seeds reproduce, including which fourteen attempts were rejected.** The
+control family was not tuned. `nomination_rule_md5` in the prereg still equals
+`fae4adc66ddfa3dec4f6933fdb5d1444`, the value frozen on 2026-09-22.
+
+### 2. ✅ VERIFIED — the launch licence, and it cross-links two artefacts frozen at different times
+
+```
+RULE_2_GATE: head 2 | E -0.04947467 | ci95 [-0.06973814, -0.03265628]
+             E_HD_BOTK -0.01256722 | abs_exceeds_HD_BOTK True | ci95_excludes_0 True
+             E_is_negative True | GO True
+```
+
+Rule 2(b) required `|E(SINGLE_h*)| > |E(HD_BOTK)|` with ci95 excluding 0: **0.0495 > 0.0126, ci95 wholly
+negative.** PR-013 was licensed to launch. And `E_HD_BOTK = -0.01256722` **is the same number R21 froze
+independently** as the anchor cross-check expectation. Two artefacts written at different times for different
+purposes agree to all eight digits, which is a real consistency check and not a restatement.
+
+### 3. ✅ VERIFIED — no prefix leakage into the control family
+
+The reader builds controls by prefix, which is the classic place an arm sneaks in:
+
+```
+control_prefix = 'BT_CTRL_'
+'BT_SINGLE'.startswith('BT_CTRL_')  -> False
+base_arms matching the prefix       -> []           (BT_BASE, BT_KO both safe)
+21 heads, all distinct; candidate head 2 in no control arm
+```
+
+Had the prefix been the tempting `'BT_'`, BT_BASE/BT_KO/BT_SINGLE would all have matched. They do not, and
+three independent guards would have caught it anyway (`len(controls) != n_controls`, `cand in controls`, and
+`h_star in hs[c]` at line 83).
+
+### 4. ✅ VERIFIED — rank, ties, floor and the R22 sign clause
+
+```
+vals = {k: E[k] for k in [cand]+controls}
+better = #{controls with E < E(cand)} ; ties = #{controls with E == E(cand)}
+rank_with_ties = better + ties + 1 ; p = rank_with_ties/21 ; floor = 1/21 = 0.047619
+```
+
+Ties count **against** the candidate, so a tie cannot certify — correct, and matches rule 3.3. `p` is computed
+from `rank_with_ties`, never from the optimistic rank. The R22 Amendment 1 sign clause is present and points
+the right way for **necessity** (more negative = stronger), and it is **narrowing-only**: it can turn
+REPLICATES into a non-replication and can never manufacture one.
+
+### 5. ✅ VERIFIED — the arm-count guard
+
+`if len(arms) != pr["n_arms_per_split"]` with `n_arms_per_split = 23`, and `arms` resolves to
+`[BT_BASE, BT_KO, BT_SINGLE, BT_CTRL_00..19]` = 23. The generated argv is 23 lines and the runner reports
+`N/23`. Guard consistent with the executed family.
+
+### 6. ⚠ FINDING 1 (documentation, INERT, and it CANNOT be fixed) — the frozen rule says **24 arms** and enumerates **23**
+
+```
+runargs/dcs_csi_pr013_nomination_rule.txt, RULE 3:
+  arms = BT_BASE, BT_KO (all 32), BT_SINGLE (= h*), BT_CTRL_00..19  -> 24 arms
+                 1    +    1      +       1        +      20         =  23
+```
+
+Cross-checked three ways: `n_arms_per_split = 23`, `argv lines: 23`, and the runner's own `N/23`. **The
+number 24 appears nowhere that executes** — the argv is generated from the prereg JSON, not from this comment,
+so the slip is inert.
+
+**It cannot be corrected in place.** The file is frozen and the prereg pins its md5, so editing it would break
+`nomination_rule_md5` and void the chain of custody. The correction therefore lives here, in the log, which is
+what the append-only discipline is for. Recording it also matters because it is the **second** textual
+imprecision in this one frozen file: the first (Rule 3's "re-seeding" not saying by how much) was already
+caught and pinned by the prereg's `control_draw_rule_disambiguation`. **A file can be frozen and still be
+loosely worded; freezing protects it from tampering, not from having been imprecise when written.**
+
+### 7. ⚠ FINDING 2 (cosmetic) — a dead variable that invites the wrong report
+
+```
+scripts/dcs_csi_head_single_rank.py:190
+    rank = better + 1     # assigned, and then never read anywhere in the file
+```
+
+Every reported figure uses `rank_with_ties`. The bare `rank` is the **optimistic** rank — the one that ignores
+ties — sitting unused next to the one that must be reported. It is harmless today and a plausible future
+defect: an editor adding a print statement could pick the wrong name and silently certify a tie. Not fixed
+now, because `score_behavior.py`'s pipeline is mid-flight and this file is a live consumer; logged for the
+post-family window with FINDING 1.
+
+### 8. 📌 PRE-DATA, recorded before any number is seen — **one control carries a load-bearing head**
+
+```
+BT_SINGLE  = head  2   <- load-bearing per D34
+BT_CTRL_01 = head 19   <- ALSO load-bearing per D34
+D34's four: 2, 19, 17, 23   ->   17 and 23 were NOT drawn into the control family
+```
+
+Rule 3 draws controls from "the 31 heads OTHER than h*", so a control **can** be a genuine writer, and exactly
+one is. With a 21-member family the floor is 1/21 and **a single control beating the candidate is fatal at
+α = 0.05.** Therefore:
+
+- **Rank 2 is a live outcome and it would NOT refute D34.** If head 19's effect on button is at least as
+  negative as head 2's, the candidate lands at rank 2, p = 0.095238, and the verdict is DOES NOT REPLICATE AT
+  RANK 1 — while both heads remain load-bearing. The rank test asks "is head 2 **the** writer", not "is head 2
+  **a** writer"; §A18's D34 is a set-level and per-head census result and is not on trial here.
+- This is the same structural situation PR-011 preregistered for the all-32 draw ("controls should show REAL
+  effects rather than the -0.004 of the complement family"), arriving here through a different door.
+
+I am writing this down now, with 21 of 23 arms landed and the endpoint unread, precisely so that a rank-2
+outcome cannot later be narrated as a surprise or as a refutation of the census. **If the candidate ranks 2
+behind head 19, that is the design working, not the phenomenon failing.**
+
+### 9. Verdict of R25
+
+**No defect found in the scientific pipeline — the sixth consecutive review with that outcome (R20–R25).**
+The two findings are a miswritten count in a frozen comment and an unused variable; neither can change a
+number. D32, D33 and D34 stand unchanged. The read path is cleared to execute.
+
+**What R25 did NOT check:** it did not run the read, and it has no information about the candidate —
+**BT_SINGLE is arm 23 of 23 and has not run.** Nothing here licenses any claim about D35.
