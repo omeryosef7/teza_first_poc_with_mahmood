@@ -1668,7 +1668,8 @@ def _bridge_if_disabled(pc, ctxs, name, mode, disable_hooks, hook_stats):
 def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                       control_seed: int = 20260816,
                       demo_keys=None, seq_len=None, knock_stats=None, protected=None,
-                      knock_heads=None, knock_scope=DEFAULT_KNOCKOUT_SCOPE, draw_log=None,
+                      knock_heads=None, knock_cells=None,
+                      knock_scope=DEFAULT_KNOCKOUT_SCOPE, draw_log=None,
                       surface_span=None,
                       edit_positions=None, edit_positions_rel_end=None,
                       edit_positions_seq_len=None, disable_hooks: bool = False,
@@ -1737,7 +1738,37 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
     # independent draws and is not what "double random" means.
     if "composed" in spec:
         out = []
+        # PER-CELL KNOCKOUT UNDER COMPOSITION (DCS-CSI-014). A composed arm gives each leg its OWN
+        # band, but `knock_cells` is one dict for the whole arm. So containment is checked ONCE here,
+        # against the UNION of every leg's layers, and each leg then receives only the cells that
+        # fall in its own band.
+        #
+        # ⛔ WHY NOT SIMPLY RELAX THE PER-LEG CHECK. The obvious alternative -- let each leg ignore
+        # cells outside its band -- would make a TYPO UNDETECTABLE in exactly the arms where it is
+        # hardest to notice: `--knockout-cells 31:2` on a composed arm banded 6-14 would install no
+        # hook anywhere, every leg would silently skip it, and the arm would score as a clean null
+        # under a name claiming an edit. Checking the union keeps the refusal while allowing a leg to
+        # legitimately carry none of the cells.
+        _cells_union = None
+        if knock_cells:
+            _union = sorted({int(L) for _s in spec["composed"] for L in (_s.get("layers") or [])})
+            _outside = sorted(L for L in knock_cells if L not in _union)
+            if _outside:
+                raise SystemExit(
+                    f"[score] REFUSING: --knockout-cells names layer(s) {_outside} outside the "
+                    f"UNION of the composed legs' bands {_union}. No leg would install a hook for "
+                    f"them, so the arm would edit less than its name claims and a no-op knockout "
+                    f"scores as a clean null.")
+            _cells_union = _union
         for i, sub in enumerate(spec["composed"]):
+            # Each leg sees only ITS OWN cells. The union check above has already refused any cell
+            # that belongs to no leg, so a leg receiving an empty dict is a legitimate leg with no
+            # cell, never a swallowed typo. `None` (not `{}`) when a leg has none, so the leg takes
+            # the ordinary head path rather than the cell path's "produced NO hook" refusal.
+            _sub_cells = knock_cells
+            if knock_cells:
+                _sub_band = {int(L) for L in (sub.get("layers") or [])}
+                _sub_cells = {L: hs for L, hs in knock_cells.items() if L in _sub_band} or None
             # EVERY threaded argument must be forwarded here. `control_seed` was dropped on this
             # exact line twice (see the block above), each time producing a "control band" that was
             # secretly n=1. `demo_keys`/`seq_len`/`knock_stats` are threaded for the same reason and
@@ -1750,7 +1781,8 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                                          control_seed=int(control_seed) + i * COMPOSED_SEED_STRIDE,
                                          demo_keys=demo_keys, seq_len=seq_len,
                                          knock_stats=knock_stats, protected=protected,
-                                         knock_heads=knock_heads, knock_scope=knock_scope,
+                                         knock_heads=knock_heads, knock_cells=_sub_cells,
+                                         knock_scope=knock_scope,
                                          draw_log=draw_log, surface_span=surface_span,
                                          # NEW PASSENGERS (2026-09-07). Dropping any of these
                                          # here reproduces the exact failure recorded above, in
@@ -1821,6 +1853,55 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
         # read as the bridge being broken rather than as the bridge never having been installed.
         # Every return from this branch now goes through `_bridge_if_disabled`, which is the
         # IDENTITY when `disable_hooks` is False, so no existing arm changes.
+        # PER-CELL KNOCKOUT (DCS-CSI-014). A cell selector is expressed as ONE HOOK PER LAYER, each
+        # built for a single-layer band with that layer's own head list. Nothing in pair_common.py
+        # changes: both knockout classes already take (layer_idxs, heads) and make_intervention
+        # already returns a LIST of hooks, so N single-layer hooks compose exactly as the N layers
+        # of one wide hook did.
+        #
+        # WHY THE COUNTERS STILL ADD UP. Every hook is handed the SAME `knock_stats` dict, whose
+        # counters are seeded with `setdefault(key, 0)` and incremented in `_pre`, so they ACCUMULATE
+        # across instances rather than being overwritten; the descriptive fields the classes set with
+        # `=` (mode, n_blocked_keys, the span records, the liveness tables) are identical for every
+        # layer of one arm, so a later constructor rewrites them with the same values. The realised
+        # dose therefore falls to 1/len(band) of the corresponding all-band head arm -- on the
+        # 6-14 band that is 1/9, which is the figure PR-CSI-014's identity check must expect.
+        #
+        # ⛔ THE BAND CONTAINMENT CHECK LIVES HERE AND NOWHERE ELSE. `band` is the list this call is
+        # actually building hooks for. A cell naming a layer outside it would produce NO hook for
+        # that cell, and a knockout that edits nothing scores as a perfectly healthy null -- the
+        # failure mode every refusal in this branch exists to prevent. Checking it against a band
+        # re-parsed at CLI level could pass while this call saw a different one.
+        if knock_cells:
+            _band = sorted(set(band))
+            _outside = sorted(L for L in knock_cells if L not in _band)
+            if _outside:
+                raise SystemExit(
+                    f"[score] REFUSING: --knockout-cells names layer(s) {_outside} outside the "
+                    f"--intervene band {_band}. Those cells would install no hook, the arm would "
+                    f"edit nothing and score as a clean null. Either widen the band or drop the "
+                    f"cells.")
+            _cell_hooks = []
+            for _L in _band:
+                _hs = knock_cells.get(_L)
+                if not _hs:
+                    continue          # a band layer with no named cell is simply left alone
+                if knock_scope == DEFAULT_KNOCKOUT_SCOPE:
+                    _cell_hooks.append(
+                        pc.AllQueryAttentionKnockout(lm.model, [_L], blocked_keys=keys,
+                                                     heads=list(_hs), stats=knock_stats))
+                else:
+                    _cell_hooks.append(
+                        pc.ScopedAttentionKnockout(lm.model, [_L], blocked_keys=keys,
+                                                   mode=knock_scope,
+                                                   query_span=protected, demo_span=demo_keys,
+                                                   heads=list(_hs), stats=knock_stats,
+                                                   surface_span=surface_span))
+            if not _cell_hooks:
+                raise SystemExit(
+                    f"[score] REFUSING: --knockout-cells produced NO hook for band {_band}. A "
+                    f"knockout that installs nothing scores as a clean null.")
+            return _bridge_if_disabled(pc, _cell_hooks, name, mode, disable_hooks, hook_stats)
         if knock_scope == DEFAULT_KNOCKOUT_SCOPE:
             return _bridge_if_disabled(
                 pc, [pc.AllQueryAttentionKnockout(lm.model, sorted(set(band)), blocked_keys=keys,
@@ -2540,6 +2621,26 @@ def main() -> int:
     ap.add_argument("--knockout-heads", default="",
                     help="comma list of head indices for attn_knockout arms; empty = ALL heads, "
                          "which is the Phase 2-4 behaviour. Added for the R-AL follow-up.")
+    # PER-CELL KNOCKOUT (DCS-CSI-014). --knockout-heads ties a head index across the WHOLE band:
+    # `--knockout-heads 2` on band 6-14 knocks head 2 out at layers 6,7,...,14 simultaneously, so
+    # every PR-CSI-012 census arm measured a head at nine depths at once and D34 cannot say at what
+    # depth the load sits. This flag addresses a single (layer, head) CELL.
+    #
+    # WHY A SEPARATE FLAG AND NOT A RICHER --knockout-heads GRAMMAR. `--knockout-heads 2` and
+    # `--knockout-cells 10:2` are DIFFERENT INTERVENTIONS of different size (9 cells vs 1), and the
+    # readers assert arm identity from the recorded field. Overloading one field so that "2" and
+    # "10:2" both live in `knockout_heads` would make a 1-cell arm and a 9-cell arm
+    # indistinguishable to `recorded_heads()` unless every consumer learned the new grammar at the
+    # same time -- which is S-227's collision (two preregs, one field, different meanings) with the
+    # layer axis added. A new field is ABSENT on every existing artifact, so an old reader sees
+    # "absent" rather than a value it would misparse.
+    ap.add_argument("--knockout-cells", default="",
+                    help="comma list of LAYER:HEAD cells for attn_knockout arms, e.g. "
+                         "'10:2' or '7:23,14:19'. MUTUALLY EXCLUSIVE with --knockout-heads: that "
+                         "flag ties a head across the whole band, this one names single cells. "
+                         "Every layer named must lie INSIDE the --intervene band, or the cell "
+                         "would resolve to no hook and the arm would score as a clean null. "
+                         "Empty = not a cell arm (the flag is inert). Added for PR-CSI-014.")
     # WHICH QUERY ROWS the knockout edits. The all-query knockout answers "does the model need the
     # demonstration keys AT ALL?" and cannot say WHERE the dependence lives; these modes split that
     # one edit into its addressable pieces (pair_common.SCOPED_KNOCKOUT_MODES). The value is NOT
@@ -3082,10 +3183,28 @@ def main() -> int:
     spec = None
     payload = None
     _knock_heads = None
+    _knock_cells = None
     if args.knockout_heads.strip() and not args.intervene:
         raise SystemExit("[score] REFUSING: --knockout-heads given with no --intervene. The flag "
                          "only reaches attn_knockout arms, so it would silently do nothing and the "
                          "run would be filed under a head-restricted name while blocking nothing.")
+    # DCS-CSI-014. The same refusal for the cell flag, for the same reason.
+    if args.knockout_cells.strip() and not args.intervene:
+        raise SystemExit("[score] REFUSING: --knockout-cells given with no --intervene. The flag "
+                         "only reaches attn_knockout arms, so it would silently do nothing and the "
+                         "run would be filed under a cell-restricted name while blocking nothing.")
+    # TWO SELECTORS FOR ONE AXIS IS TWO DEFINITIONS OF THE ARM. Exactly the refusal
+    # --knockout-last-k and --knockout-rel-end-rows already carry for the ROW axis: if both are
+    # given, the arm's identity depends on which one the hook builder happens to consult, and the
+    # recorded fields would name two different interventions. There is no merge semantics worth
+    # inventing here -- a cell list can already express anything a head list can.
+    if args.knockout_cells.strip() and args.knockout_heads.strip():
+        raise SystemExit(
+            f"[score] REFUSING: --knockout-heads={args.knockout_heads!r} together with "
+            f"--knockout-cells={args.knockout_cells!r}. Two selectors for the head axis is two "
+            f"definitions of one arm: --knockout-heads ties a head across the WHOLE band, "
+            f"--knockout-cells names single (layer, head) cells, and an arm that records both "
+            f"cannot be identified from its own artifact. Pass exactly one.")
     # PR-057 flags that only reach the hook builder. Each would SILENTLY do nothing without
     # --intervene, and the run would then be filed under a PR-057 arm name having intervened on
     # nothing at all -- the same shape as the two guards below.
@@ -3170,6 +3289,55 @@ def main() -> int:
                 raise SystemExit(f"[score] REFUSING: duplicate heads in {_knock_heads}")
             print(f"[score] knockout restricted to {len(_knock_heads)} of {_nh} heads: "
                   f"{sorted(_knock_heads)}", flush=True)
+        # PER-CELL KNOCKOUT (DCS-CSI-014). Parsed and validated here, next to the head block, so the
+        # two selectors are read in one place. The band containment check is deliberately NOT here:
+        # the authoritative band is the one make_intervention resolves from the spec, and a check
+        # written against a band re-parsed at this level could pass while the hook builder saw a
+        # different one. This block validates what it can see (syntax, ranges, duplicates) and
+        # make_intervention refuses a cell outside the band it actually builds for.
+        _knock_cells = None
+        if args.knockout_cells.strip():
+            if not any(sp["mode"] == "attn_knockout" for sp in specs):
+                raise SystemExit("[score] REFUSING: --knockout-cells given but no attn_knockout "
+                                 "spec; it would silently do nothing.")
+            _nh = int(getattr(lm.model.config, "num_attention_heads", 0))
+            _nl = int(lm.num_layers)
+            _knock_cells = {}
+            _seen_cells = []
+            for _tok in args.knockout_cells.split(","):
+                _tok = _tok.strip()
+                if _tok == "":
+                    continue
+                if _tok.count(":") != 1:
+                    raise SystemExit(
+                        f"[score] REFUSING: --knockout-cells entry {_tok!r} is not LAYER:HEAD. "
+                        f"Expected exactly one ':' per cell, e.g. '10:2'.")
+                _ls, _hs_ = (p.strip() for p in _tok.split(":"))
+                try:
+                    _L, _h = int(_ls), int(_hs_)
+                except ValueError:
+                    raise SystemExit(
+                        f"[score] REFUSING: --knockout-cells entry {_tok!r} has a non-integer "
+                        f"layer or head.")
+                if not (0 <= _L < _nl):
+                    raise SystemExit(f"[score] REFUSING: layer {_L} outside 0-{_nl-1} for "
+                                     f"{model_id} (from --knockout-cells {_tok!r})")
+                if not (0 <= _h < _nh):
+                    raise SystemExit(f"[score] REFUSING: head {_h} outside 0-{_nh-1} for "
+                                     f"{model_id} (from --knockout-cells {_tok!r})")
+                if (_L, _h) in _seen_cells:
+                    raise SystemExit(f"[score] REFUSING: duplicate cell {_L}:{_h} in "
+                                     f"--knockout-cells {args.knockout_cells!r}")
+                _seen_cells.append((_L, _h))
+                _knock_cells.setdefault(_L, []).append(_h)
+            if not _knock_cells:
+                raise SystemExit(
+                    "[score] REFUSING: --knockout-cells parsed to ZERO cells. A no-op knockout "
+                    "scores as a clean null, so an empty selector must fail loudly.")
+            _knock_cells = {_L: sorted(_hsl) for _L, _hsl in sorted(_knock_cells.items())}
+            print(f"[score] knockout restricted to {len(_seen_cells)} CELL(S) of "
+                  f"{_nl}x{_nh}: "
+                  + ", ".join(f"L{_L}h{_h}" for _L, _h in sorted(_seen_cells)), flush=True)
         # A pure attention knockout needs no fitted direction: it edits the attention mask, not
         # the residual stream. Requiring --fit-dir for it would force a spurious dependency on a
         # direction the arm never uses, and would make the arm's provenance claim a lie.
@@ -4002,7 +4170,8 @@ def main() -> int:
                                      control_seed=args.seed,
                                      demo_keys=dk, seq_len=len(ids_r),
                                      knock_stats=knock_stats, protected=prot,
-                                     knock_heads=_knock_heads, knock_scope=_knock_scope,
+                                     knock_heads=_knock_heads, knock_cells=_knock_cells,
+                                     knock_scope=_knock_scope,
                                      draw_log=knock_draw, surface_span=surf,
                                      edit_positions=_pr057_pos,
                                      edit_positions_rel_end=_pr057_rel,

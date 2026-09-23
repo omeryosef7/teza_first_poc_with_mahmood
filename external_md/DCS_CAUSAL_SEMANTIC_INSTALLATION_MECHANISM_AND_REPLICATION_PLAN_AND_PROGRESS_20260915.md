@@ -23479,3 +23479,165 @@ or 919296 has ever been read. `score_behavior.py` was not opened. Frozen artefac
 The next unblocked item is **PR-CSI-014** (the cell-level family), which needs `--knockout-cells L:h` added
 to `score_behavior.py`. **That edit is now permissible for the first time in this sprint: no necessity arms
 are running** (squeue is empty of csi jobs, 919531 COMPLETED). The PR-CSI-003 VOID condition is not active.
+
+---
+
+## S-291 — **PR-CSI-014 STEP 1 IS DONE: `--knockout-cells L:h` exists, with 19 tests.** The first edit to `score_behavior.py` this sprint, unblocked because no arms are running. Plus a REFUTED design assumption, a stale-`sacct` trap, and a pre-existing red test I did NOT cause
+
+### 1. ⚠ The edit permission, and the trap that nearly denied it
+
+The standing constraint is *never edit `score_behavior.py` while necessity arms are running*. Checking it
+produced a contradiction:
+
+```
+squeue -u omeryosef -o "%.10i %.8T"          -> header only; NO jobs
+sacct -S today ...                           -> 741054 gcg_v3_arm RUNNING 44-09:59:48
+```
+
+`sacct` claims a job has been running for **44 days**; `squeue` says I have no jobs at all. Resolved by
+asking the queue about that id directly:
+
+```
+squeue -j 741054,741057                      -> header only; neither job is queued
+sacct -j 741054 -o Start,End,Elapsed,NodeList
+     Start 2026-08-10T00:04:21   End Unknown   Elapsed 44-10:00:20   n-304
+ps -u omeryosef | grep python                 -> nothing
+```
+
+**`End=Unknown` is the tell: the job never got an end record, so `sacct` computes `Elapsed = now − Start`
+and reports RUNNING forever.** 741054/741057 are orphaned accounting rows from 2026-08-10, and they are
+`gcg_v3_arm` — a different experiment — not CSI necessity arms.
+
+**⚠ THE RULE THIS ESTABLISHES: `sacct`'s State is not a liveness oracle; `squeue` is.** Read naively, a
+stale RUNNING row would have blocked the `score_behavior.py` edit **permanently**, since that row will
+never change. This is the same species as S-271 (nearly reported a hang on `TotalCPU = 0`, which is 0 for
+every job on this cluster): **a field that looks like a measurement and is an artefact of how the
+accounting system handles missing data.** Permission to edit therefore rests on `squeue` + `ps`, both empty.
+
+### 2. What was added
+
+`src/boombness/score_behavior.py`, +172/−3 (4785 → 4954 lines), md5 `891cd1ab` → `0585cde9`.
+
+```
+--knockout-cells LAYER:HEAD[,LAYER:HEAD...]     e.g. '10:2'  or  '7:23,14:19'
+```
+
+**The design choice: a cell selector becomes ONE HOOK PER LAYER**, each built for a single-layer band with
+that layer's own head list. **`pair_common.py` is not touched at all** — both knockout classes already take
+`(layer_idxs, heads)` and `make_intervention` already returns a *list* of hooks, so N single-layer hooks
+compose exactly as the N layers of one wide hook did.
+
+**Why the counters still add up** (verified by reading the class, not assumed): `ScopedAttentionKnockout`
+seeds its counters with `self.stats.setdefault(key, 0)` and increments them in `_pre`, so **they accumulate
+across instances sharing one dict**; the descriptive fields it sets with `=` (`mode`, `n_blocked_keys`, the
+span records, the liveness tables) are identical for every layer of one arm, so a later constructor
+rewrites them with the same values. **The realised dose therefore falls to `1/len(band)` of the
+corresponding all-band head arm — on band 6–14 that is `2016/9 = 224`**, which is the figure PR-CSI-014's
+identity check must expect (design §7 step 2).
+
+**The identity field comes for free and correctly.** `config.json` dumps the whole argparse namespace
+(verified: 57 keys, `knockout_heads` among them), so `knockout_cells` lands beside it with no plumbing.
+Verified on the arms just read: `BT_KO` records `''` (= ALL 32), `BT_SINGLE` `'2'`, `BT_CTRL_01` `'19'` —
+exactly what `recorded_heads()` parses. **A NEW field is ABSENT on every existing artefact**, so an old
+reader sees "absent" rather than a value it would misparse — which is why this is a new flag and not a
+richer `--knockout-heads` grammar. Overloading one field so `"2"` and `"10:2"` both live in
+`knockout_heads` would make a 1-cell arm and a 9-cell arm indistinguishable to every existing consumer:
+**S-227's collision with the layer axis added.**
+
+### 3. The refusals, and the one the tests forced me to redesign
+
+```
+--knockout-cells with no --intervene            -> REFUSE (reaches nothing; filed under a cell name)
+--knockout-cells WITH --knockout-heads          -> REFUSE (two selectors = two definitions of one arm)
+entry not LAYER:HEAD / non-integer              -> REFUSE at argument time
+layer or head out of range (from lm.num_layers
+  and model.config.num_attention_heads)         -> REFUSE
+duplicate cell                                  -> REFUSE
+parses to ZERO cells                             -> REFUSE (a no-op knockout scores as a clean null)
+cell layer outside the --intervene band          -> REFUSE, in make_intervention
+```
+
+⚠ **The band check had to be redesigned, and a test I wrote for a different reason is what caught it.**
+The first version refused any cell outside *this call's* band. That is correct for a simple arm and **wrong
+for a COMPOSED arm**, where each leg carries its own band while `knock_cells` is one dict for the whole
+arm: leg 1 (band `[10]`) refused the cell belonging to leg 2 (band `[14]`).
+
+The tempting fix — let each leg silently ignore cells outside its band — **is the worse bug**:
+`--knockout-cells 31:2` on a composed arm banded 6–14 would then install no hook anywhere, every leg would
+skip it, and the arm would score as a clean null under a name claiming an edit. **So containment is now
+checked ONCE against the UNION of every leg's layers, and each leg receives only the cells in its own
+band** (`None`, not `{}`, when it has none, so a cell-free leg takes the ordinary head path instead of
+hitting the "produced NO hook" refusal). Both behaviours are now pinned by tests.
+
+### 4. Tests: `tests/test_knockout_cells.py`, 19 tests, all passing
+
+```
+python -m pytest tests/test_knockout_cells.py -q      ->  19 passed
+```
+
+They pin: one cell → exactly one hook on exactly that layer; cells grouping by layer; two cells on one
+layer sharing a hook; **all hooks sharing ONE stats object** (`h.stats is shared` — the dose-summing
+property §2 rests on); the band refusal; a band layer with no cell getting no hook; **the scoped path**
+(`target_surface_row_only`, which is what PR-013/014 actually run) carrying both cells and scope; the
+composed recursion forwarding cells; the composed UNION refusal; a cell-free composed leg falling back
+correctly; **and that the default is unchanged** (`heads is None`, one wide hook over the whole band) so
+every Phase 2–4 and PR-CSI-010/011/012/013 arm is untouched.
+
+### 5. ⚠ A PRE-EXISTING RED TEST — proved NOT mine
+
+The full knockout suite is **265 passed, 1 failed**:
+
+```
+FAILED doublespeak_causality/tests/test_scoped_attnknockout.py::
+       test_legacy_mode_is_byte_identical_to_AllQueryAttentionKnockout
+  extra keys: hook_fired_count, n_forward_with_destinations,
+              n_cells_edited_expected, n_cells_edited_realised
+```
+
+**Proved pre-existing rather than assumed:** the test was run alone inside a throwaway `git archive HEAD`
+checkout containing none of my changes and **fails identically there**; and it imports only
+`pair_common`, never `score_behavior`. `git log -S n_cells_edited_realised` dates the cause to
+**`6422a764` (DCS-C-134)**, which added four D-4 keys to `ScopedAttentionKnockout` while the test asserts
+its key set is identical to `AllQueryAttentionKnockout`'s.
+
+**Why nobody noticed:** the pre-commit hook runs a curated `$GUARD_TESTS` list, not the suite — and the
+hook's own comment already names this exact failure mode (*"failed 4 tests under `pytest tests/` while this
+hook reported 257 passed"*). **Blast radius on the science: zero.** Of **518 intervened CSI arms on disk,
+0 use `legacy_all_query`** — `AllQueryAttentionKnockout` has never been on the CSI path; every CSI arm runs
+`target_surface_row_only`. **Named, not fixed:** resolving it means deciding whether those four keys belong
+in both classes or the assertion should change, and that is an **artefact-schema decision affecting Phase
+2–4 arms** — not PR-CSI-014's business, and not something to change quietly while a schema is shared.
+
+### 6. 🔴 A DESIGN ASSUMPTION REFUTED BY TODAY'S OWN RESULT
+
+`external_md/DCS_CSI_PR014_CELL_LEVEL_DESIGN.md` §5(b) — written 2026-09-23 while PR-013's arms loaded —
+recommends: *"preregister the confirmatory cell test on a **held-out axis** (the `button` codeword, or the
+3 TEST domains)."*
+
+**S-290 refutes the button half of that, hours after it was written.** D35 measured head 2's WHOLE-head
+effect on button at `−0.003522`, ci95 `[−0.015452, +0.006019]` — **crossing zero**, rank 6 of 21, **1.21% of
+the joint effect**. A single CELL of head 2 is a fraction of a nine-cell effect that is already
+indistinguishable from zero. **The button axis cannot support a cell-level test of head 2 — not because the
+test would fail, but because it could not detect anything either way, which makes it uninterpretable
+rather than negative.**
+
+**⚠ Consequence, recorded before any prereg exists:** of §5(b)'s two named held-out axes, **one is gone.**
+What remains is the **3 TEST domains**, which are untouched and are the sprint's last clean axis — spending
+them on a cell-level rank test with a floor of 1/21 is a decision that needs its own justification, not a
+default inherited from a document written before D35. **PR-CSI-014 is therefore NOT ready to preregister,
+and the blocker is now scientific rather than technical.** Step 1's code blocker is cleared; the axis
+question replaces it.
+
+### 7. Status against the design's §7 order of work
+
+```
+1. add --knockout-cells to score_behavior.py, with an identity field the gate can assert   ✅ DONE (this entry)
+2. extend the argv gate's identity assertion to cells, and the dose expectation to 2016/9  -- NEXT
+3. run design (b)'s 11-arm descriptive pass on basket validation                           -- blocked on 2
+4. freeze the nomination rule BEFORE reading it                                             -- blocked on 3
+5. freeze the read, launch the 23-arm confirmatory family on a held-out axis                -- ⚠ AXIS NOW OPEN (§6)
+```
+
+`score_behavior.py` edit permission verified from `squeue` + `ps`, not `sacct` (§1). No arms were running.
+No frozen artefact was touched. The repo write was verified by md5 and line count after the fact
+(quota 94% used, 1.4T free).
