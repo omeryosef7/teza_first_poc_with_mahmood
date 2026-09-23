@@ -25713,3 +25713,207 @@ PR-CSI-015    READ. Outcome A x3. No arms running; the queue is EMPTY.
 REVIEW R27    running over the S-297..S-305 window (3 lenses) -- lands in S-307
 S-308         the next family, priced against the 15 fresh heads
 ```
+
+---
+
+## S-307 — ⚠ **CORRECTION to S-306, from four independent verifiers run in parallel.** The headline SURVIVES exactly (all 28 effects reproduced from raw rows to 4.7e-09 by a standalone implementation), but **three of my sentences do not**: head 23 is NOT demonstrably super-additive, head 17 is significantly SUB-additive, and the two L14 cells are **correlated at r = +0.719**, so "4 of 4" is not four independent agreements. 🔴 **And one verifier's own headline number was wrong — it labelled a three-peak sum as four — which I caught by arithmetic rather than by trust**
+
+### 0. What was run, and what it could not touch
+
+Four verifiers, in parallel, each read-only and each forbidden to call the producer's summariser:
+an independent re-derivation from raw `results.jsonl`; an independent re-derivation of the screen's
+predictions; an adversarial attempt to **refute** the result; and the additivity arithmetic.
+
+```
+28 of 28 effects reproduced from raw rows, max |diff| = 4.68e-09  (8-decimal rounding only)
+clearing set identical: (17,L14) (19,L14) (23,L7).  ci95-excludes-0 count identical: 10.  n_dom 23.
+arm identity re-verified from each RUNMETA argv, 27/27, independently of the (blind) 224 dose
+the CLI parse at src/boombness/score_behavior.py:3316 is LAYER:HEAD, not reversed
+```
+
+⚠ **The limit all four share, and it is not small.** Every one re-derived the *estimator*, not the
+*endpoint*. They re-coded `y_install` from `load_installation`'s definition and took `logp_concept` /
+`logp_codeword` from `results.jsonl` at face value. **A defect upstream of scoring — a mis-built option
+pair, or a hook that edits the wrong positions while still recording 224 edits — is invisible to all
+four by construction.** The dose and liveness fields are the run's own self-report; they were checked
+for internal consistency, not for truth.
+
+### 1. 🔴 THE VERIFIER NUMBER THAT WAS WRONG, AND HOW IT WAS CAUGHT
+
+The refutation verifier reported, as a headline caveat:
+
+> *"THE FOUR PEAK CELLS ACCOUNT FOR ONLY 37.9% OF THE ALL-HEAD KNOCKOUT. Summed per domain, the three
+> PR-015 peaks **plus head 2's L10** give mean −0.085931 against CL_KO −0.226961 (ratio 0.379)."*
+
+It does not survive arithmetic. `E` is a mean of per-domain differences, so by linearity a per-domain
+route **cannot** disagree with summing the published `E`:
+
+```
+h17 L14 -0.023442 + h19 L14 -0.043975 + h23 L7 -0.018514 + h2 L10 -0.047547 = -0.133478
+-0.133478 / -0.226961 = 0.5881
+
+and  -0.085931  =  the THREE PR-015 peaks alone, EXACTLY.  Head 2 was never added.
+```
+
+**The number is the three-peak sum wearing a four-peak label.** The corrected figure is **58.8%, not
+37.9%** — so the caveat it was raised for is real but 1.7× overstated, not 2.6×.
+
+This is the second time in two ticks that a confident-sounding number had to be checked rather than
+quoted (S-305's fail-open branch was the first). **A verifier is an instrument, not an authority**, and
+the only reason this one was caught is that I re-did the sum instead of pasting it.
+
+### 2. ⚠ CORRECTION (a) — head 23 is NOT super-additive. S-306 §3 said it was
+
+S-306 §3 wrote: *"Knocking out the single cell (L7, h23) does **more** damage than knocking out all nine
+of that head's cells at once."* The point estimate says so; **the interval does not**. Paired bootstrap
+of (cell − whole-head arm) over the same 23 domains:
+
+```
+head   cell/whole   ratio ci95            cell-minus-whole ci95           resolved?
+ 17      80.23%     [ 70.43%,  90.62%]    [+0.00284645, +0.00902043]      YES -- SUB-additive
+ 19     109.59%     [105.11%, 115.02%]    [-0.00579055, -0.00209693]      YES -- super-additive
+ 23     112.18%     [ 92.94%, 140.38%]    [-0.00496667, +0.00140771]      NO  -- crosses 1.0
+```
+
+**Head 19's super-additivity is real. Head 23's is not resolvable** and must be reported as *"consistent
+with the cell carrying the whole head effect"*. S-306 §3's sentence is **WITHDRAWN** and replaced by:
+
+> One cell (L14, h19) does significantly more damage than all nine of its head's cells together. Head 23
+> points the same way and the interval does not resolve it.
+
+### 3. ⚠ CORRECTION (b) — head 17 is significantly SUB-additive, which S-306 reported as a bare 80.2%
+
+Head 17's clearing cell carries **80.23%, ci95 [70.43%, 90.62%] — excluding 100%**. About a fifth of
+head 17's nine-layer effect, E ≈ −0.0058, lives **outside** L14 and is statistically resolved to do so.
+
+So D36's 96.1% for head 2 **does not generalise as a magnitude**. The four shares are 96.1%, 80.2%,
+109.6%, 112.2% and they are not one number. **What generalises is WHICH cell, not HOW MUCH** — and that
+distinction is the correct form of the S-306 headline.
+
+⚠ And the additivity check is a **weak instrument**, which I should have said in S-306: the residual
+ci95 half-widths (±0.0063 to ±0.0070) are the same order as the departures being tested (0.0010–0.0055).
+Head 23's 69.2% sum-of-nine — the number S-306 §4 leaned on — has residual ci95 [−0.01144, +0.00110] and
+**is not resolved either**. *"The per-cell effects add"* is unsupported for head 23 **in either
+direction**, which is weaker than what S-306 §4 claimed. Nothing like S-059's exact ladder check
+(slope × 28 = 0.07049 vs 0.07060, ratio 0.998) is available here.
+
+📌 **And PR-012's own prereg already listed "whether per-head effects ADD" under
+`WHAT_THIS_CANNOT_ANSWER`.** Neither PR-014 nor PR-015 lifted it and neither preregistered an additivity
+criterion, so **this whole check is POST-HOC on all four heads. It bounds wording; it licenses no
+verdict.**
+
+### 4. ⚠ CORRECTION (c) — "4 of 4" is not four independent agreements
+
+Per-domain delta correlation between the two L14 peaks:
+
+```
+r(CL_H17_L14, CL_H19_L14) = +0.719
+floor from all 276 non-peak PR-015 cell pairs (they share CL_BASE, so r > 0 is structural):
+   median +0.413   mean +0.381   p90 +0.627   p95 +0.670   max +0.773   1.8% already reach +0.719
+h23 L7 vs the two L14s:  r = -0.103 and +0.075     h2 L10 vs the others: +0.255 / +0.474 / +0.017
+```
+
++0.719 sits near the 98th percentile of the shared-baseline floor — **modestly above it, not
+dramatically**. The verifier's own conclusion is the right one and I am adopting its hedge rather than
+its headline: *this can neither establish that the two L14 peaks are one shared mechanism nor that they
+are independent.* **It is a flag for follow-up, not a measured non-independence.** But it is enough that
+"4 of 4" must be written as **at most ~3 effectively independent agreements**, and the two clean ones
+(h23 at L7, h2 at L10) are precisely the two that are *not* at the band edge.
+
+### 5. The provenance gap I asserted and cannot actually close
+
+S-306 §0 leaned on commit timestamps. For the *read* that is exact. For the **screen** it is not:
+
+```
+.gitignore:11  'outputs/'   ->  outputs/boombness/dcs_csi/w1_screen_train_basket_916132.json
+git log -- <that path>       ->  PRINTS NOTHING. Zero git history. No committed md5 anywhere.
+md5 (live, today) 81fc4dcade79d65ff3683f32d46c64d4   mtime 2026-09-21 16:02:19 +0300
+```
+
+**Nothing cryptographic prevents that file from having been altered after 2026-09-21.** The strongest
+available witness is textual: commit `94aab78b` (S-269, 2026-09-23 01:05) quotes all 36 values and the
+four signed sums, and they match the live file; `fbf1fbf5` quotes the four layer assignments. **That is
+a strong witness and it is not a hash**, and I should not have implied otherwise. *Recorded as a
+standing weakness of every screen-derived claim in this sprint, not just this one.*
+
+### 6. Two things that are NOT held out, and the frozen read is silent on both
+
+```
+THE HEAD SET   {19,17,23} come from D34 = PR-CSI-012, a census on VALIDATION -- the same 23 domains
+               PR-015 then censused. The LAYER-within-head prediction is purely TRAIN-side and the
+               cross-split depth claim is clean. The choice of WHICH HEADS to map is not.
+THE BARS       0.009082 / 0.010223 / 0.006615 = 1.96*SD/sqrt(23) from D34's VALIDATION nine-cell arms.
+               NOT circular in the strong sense (an SD-based detectability floor, not a function of
+               PR-015's point estimates) -- but NOT held out, and must not be described as such.
+```
+
+⚠ The frozen read says *"The screen is TRAIN and this census is VALIDATION, so the comparison is ACROSS
+SPLITS and not circular."* **That sentence is correct about the layer and silent about the head set.**
+S-306 §7 flagged the head-selection problem in prose; this is the precise form of it.
+
+### 7. What the refutation attempt could NOT explain away — the result stands
+
+All four rivals fail, and two of the measurements are stronger than what S-306 quoted:
+
+```
+RIVAL 1 (screen says L14 about everybody)  FAILS. Modal argmax is L11 (8/32); L14 is 6/32.
+   Correct null 2.06e-04 (1 in 4,855) vs uniform 1.52e-04 (1 in 6,561) -- a 1.35x shift.
+   EXCLUDING the four selected heads, L7 has ZERO support among the other 28; Laplace-smoothed the
+   null becomes 8.00e-05 (1 in 12,494) -- i.e. MORE surprising, not less.
+   An all-L14 guesser scores 2 of 4. The screen scored 4 of 4 INCLUDING BOTH DEVIATIONS (h2->L10,
+   h23->L7), which is the part a boundary artifact cannot produce.
+RIVAL 2 (L14 bites hardest on intervention) FAILS. With each head's peak removed, L14 has the
+   THIRD-LOWEST mean |E| of the nine layers.
+RIVAL 3 (band-edge mechanics)                FAILS on a code read: make_intervention's attn_knockout
+   branch gives layer 14 no special treatment, and the band ends 17 blocks before the readout.
+RIVAL 4 (sign)                               FAILS. No positive cell clears any bar.
+```
+
+⚠ **One residue of rival 3 that the code read cannot remove: there is no L15 arm.** For heads 17 and 19
+the census cannot separate *"the load sits at L14"* from *"the last layer of the band is where a
+knockout bites"*. **Head 23 (L7, interior) and head 2 (L10, interior) are the two heads free of that
+confound** — the same two that are uncorrelated in §4.
+
+📌 **And the sharpness is two tiers, not one.** S-269's *"each dominated by ONE cell"* overstates it for
+head 17: margin over runner-up 4.13×, 55.6% of the head's band |AtP|, **and its runner-up (L10, +41.9)
+is of OPPOSITE sign**. Tiers: {19: 6.1×, 76%} {23: 7.5×, 69%} vs {2: 4.1×, 63%} {17: 4.1×, 56%}.
+
+### 8. The frozen read asked whether the ORDERING transfers. It does not — only the ARGMAX does
+
+```
+Spearman(|screen|,|E|) within head:  h17 +0.667   h19 +0.717   h23 +0.433
+signed Spearman:                     h17 +0.717   h19 +0.750   h23 +0.283
+head 17 sign agreement 5 of 9 -- barely above chance
+head 23 has the SHARPEST screen peak (7.5x) and the WORST sub-argmax agreement
+```
+
+This corroborates S-306 §6 from an independent implementation and sharpens the permitted sentence:
+**"the screen's top cell transfers, 4 for 4" — NOT "the screen's per-cell ordering transfers."**
+
+⚠ **And the off-peak cells are not null**, which *"a single dominant cell"* understates. Seven of the 27
+survive BH at q < 0.05 by a sign-flip test, **four of them POSITIVE**: `H19_L09` +0.004498 (q=0.0019),
+`H23_L09` +0.002600 (q=0.0072), `H23_L06` +0.002023 (q=0.0199), `H23_L13` +0.001406 (q=0.0265). These
+are reliably non-zero at 20–40% of their heads' bars. The prereg's refusal to use ci95-excludes-0 as the
+criterion is **vindicated** — and the off-peak structure is real and currently unexplained.
+
+### 9. The corrected statement of the result
+
+> On basket validation, each of the four heads D34 found load-bearing has its band-wide effect
+> **concentrated in a single (layer, head) cell**, and in all four that cell is the one the TRAIN
+> attribution screen ranked first for that head. The four cells lie at three different layers, the
+> screen's argmax is not generically the band edge (L14 for 6 of 32 heads), and an all-L14 guesser
+> would score 2 of 4. **How much** each cell carries does not generalise (80%–112%, and head 17's
+> shortfall is statistically resolved); **which** cell does. The two L14 agreements are correlated at
+> r = +0.719, so this is at most ~3 effectively independent agreements; the head set and the bars are
+> validation-derived; and the four peaks together account for **58.8%** of the all-head knockout, so
+> most of the band-wide effect still lives outside them.
+
+### 10. Status
+
+```
+S-306's headline  STANDS, reproduced to 4.7e-09 by a standalone implementation
+S-306 §3          one sentence WITHDRAWN (head 23 super-additivity), replaced in §2 above
+S-306 §4          WEAKENED -- the additivity check is post-hoc and underpowered; head 23 unresolved
+S-306 §5/§6       STAND, and strengthened by the Laplace-smoothed null and the L14 non-dominance on E
+REVIEW R27        still running (3 lenses) -- lands next
+```
