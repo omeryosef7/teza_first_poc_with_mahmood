@@ -22462,3 +22462,58 @@ remaining 233 x 39.1 s = 2.53 h  ->  load ~06:07  ->  arms 1.85 h  ->  ~08:00   
 produced**, and it is what makes the ~08:00 projection worth stating at all.
 
 **No PR-013 number has ever been read.** `score_behavior.py` was not opened.
+
+---
+
+## S-281 — **the load rate is degrading, and it is now a TREND over 84 shards rather than one outlier.** 39.1 → 47.7 s/shard cumulative, 62.0 over the last 26. **The ~08:00 projection is withdrawn and replaced by a BAND of 08:38–09:28.** No action: the bound still holds with 4.9 h to spare
+
+### 1. The trend, shard by shard
+
+```
+shard   elapsed   cumulative marginal (shard 1's 1799 s excluded)   window rate
+    4      1894                    31.7 s/shard
+    9      2114                    39.4 s/shard      44.0 over the last 5
+   19      2490                    38.4 s/shard      37.6 over the last 10
+   58      4029                    39.1 s/shard      39.5 over the last 39
+   59      4190                    41.2 s/shard     161.0 over the last 1     <- the outlier
+   85      5803                    47.7 s/shard      62.0 over the last 26    <- SUSTAINED
+```
+
+**Last tick I declined to act on the 161 s shard because "one slow shard is not a regime."** That was
+right, and it is now superseded by a different fact: **the following 26 shards averaged 62.0 s**, so the
+elevated rate is sustained, not a spike. **The cumulative marginal has moved 39.1 → 47.7 over the same
+window** — the first genuine trend in this load, after three earlier measurements that agreed to within
+1 s/shard.
+
+### 2. ⚠ The ~08:00 projection is WITHDRAWN and replaced by a band
+
+```
+at 47.7 s/shard (cumulative)  206 remaining -> +2.73 h -> load ~06:47 -> arms -> ~08:38
+at 62.0 s/shard (recent 26)   206 remaining -> +3.55 h -> load ~07:37 -> arms -> ~09:28
+```
+
+**S-280 stated ~08:00 from a stable 39.1 s/shard. That number no longer describes the load.** The honest
+statement is a **band of 08:38–09:28**, bracketed by the cumulative and recent rates, **and I am quoting
+both rather than picking the flattering one** — which is the error S-278 caught in tqdm's own ETA and
+S-276 caught in my use of a proxy.
+
+### 3. No action, and the bound is why
+
+```
+wall 14:20  ->  margin at the PESSIMISTIC end of the band: 4.9 h
+n-302 now carries 5 jobs (was 6)
+```
+
+**S-274's commitment holds: no further cancellations.** A 4.9 h margin at the pessimistic end means the
+degradation would have to worsen by roughly another 2.4× *and* sustain to threaten the wall. **The
+threshold I set last tick — act if the marginal crosses ~80 s/shard sustained — is not met at 47.7
+cumulative or 62.0 recent**, and it remains the trigger.
+
+### 4. What is NOT claimed about the cause
+
+**Nothing.** n-302 carries other users' jobs and the count has moved 1 → 6 → 5 over the run, so
+contention is the obvious candidate — **and S-257 proposed a cause for load cost and was corrected, S-261
+proposed another and was refined.** Two mechanisms offered and both adjusted is sufficient reason to
+report the curve and stop. **The rate is measured; the reason is not.**
+
+**No PR-013 number has ever been read.** `score_behavior.py` was not opened.
