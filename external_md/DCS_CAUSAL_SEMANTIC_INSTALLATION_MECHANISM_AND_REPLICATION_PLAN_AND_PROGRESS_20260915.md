@@ -22578,3 +22578,51 @@ threshold to judge a load.**
 when it refused to act on the first 161 s shard, now written as a rule instead of a judgement.
 
 **No PR-013 number has ever been read.** `score_behavior.py` was not opened.
+
+---
+
+## S-283 — **S-282's trigger gets its first qualifying evaluation: a 22-shard window at 63.5 s/shard. NOT MET.** Band updated to **09:00–09:35**; the ~08:45 on the record is now stale and this entry exists to retire it
+
+### 1. The first trigger-eligible window
+
+```
+112/291 [2:06:16<2:53:12, 58.06s/it]
+window  90 -> 112 : 22 shards in 1398 s = 63.5 s/shard   <- first 20+ shard window since S-282
+cumulative 2-112  : 52.0 s/shard
+S-282 trigger (>= 110 s/shard over 20+ shards): NOT MET at 63.5
+```
+
+**S-282 required 20+ shards precisely so the rule could not fire on a periodic outlier.** This is the first
+window that satisfies that condition, and it comes in at **58 % of the trigger.** The rule's first real
+evaluation is a clean pass.
+
+### 2. The band, and why this entry exists at all
+
+```
+at 52.0 s/shard (cumulative) : 179 remaining -> +2.59 h -> family ends ~09:00
+at 63.5 s/shard (recent 22)  : 179 remaining -> +3.16 h -> family ends ~09:34
+wall 14:20  ->  margin ~4.8 h
+```
+
+**The last figure I published was ~08:45 (S-282's tick). It is now stale** — the cumulative rate has drifted
+39.1 → 47.7 → 49.2 → 52.0 s/shard across the run, and a projection that is quietly wrong on the record is
+worse than one that is openly revised. **That is the whole content of this entry:** the trigger did not
+fire, and the number I had published moved.
+
+**I am again quoting both ends rather than the flattering one**, per S-281.
+
+### 3. What has NOT changed
+
+```
+S-282's conditional commitment stands: no cancellation while the projected end is before 12:20
+its RESPONSE if the trigger ever fires also stands: accept a TIMEOUT, do not cancel -- a timed-out
+  job's completed arms are real and resumable via the runner's skip-if-complete (S-261)
+frozen: read 911c3a20 | prereg 5ab06e3a | nomination rule fae4adc6 | reading criteria 5b99971c
+        execution checklist in place | <VALIDATION_JOB_IDS> = 919531 ALONE
+```
+
+**REVIEW R24 is due ~05:40**, roughly an hour out and well before the load completes, so the review will run
+on the tooling rather than on PR-013 results — which is the correct scope, since **no PR-013 number has ever
+been read.**
+
+`score_behavior.py` was not opened.
