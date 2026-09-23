@@ -25292,3 +25292,88 @@ AM-38 is my own claim and is the one at risk**.
 
 Arm order is `CL_BASE, CL_KO, CL_H17_L06…L14, CL_H19_L06…L14, CL_H23_L06…L14`, so head 17 reads first and
 head 23 last.
+
+---
+
+## S-304 — ⚠ **MY S-303 PREDICTION IS REFUTED, and the refutation is more informative than a confirmation would have been.** The page cache is the right mechanism but it is **NOT DURABLE**: a 3-minute gap gave a warm load, a 2-hour gap on the same node gave none
+
+### 1. The prediction and the measurement
+
+S-303, written before the number existed:
+
+> *"The continuum claim predicts that 922176's load will be SHORT — far below n-301's own 1339.1 s —
+> because PR-CSI-014 just pulled the same ~16 GB snapshot into that node's page cache."*
+
+```
+921664 on n-301  load 1339.1 s (22.3 min)   started 13:44:45
+922176 on n-301  load 1273.2 s (21.2 min)   started 16:38:27
+
+measured: 1273.2 s -- only 4.9% below. THE PREDICTION IS REFUTED.
+```
+
+**I predicted a short load and got essentially the same load.** Same node, same snapshot, same job script,
+two hours apart.
+
+### 2. What the refutation actually shows — and "refuted" alone would be too coarse
+
+`sacct` gives the variable that separates the two cases, and it is not the node:
+
+```
+pair                        gap between the runs      load        verdict
+n-307  918967 -> 919240     3 min 07 s                  47.5 s    WARM   (S-261's evidence)
+n-301  921664 -> 922176     2 h 01 min                1273.2 s    NOT warm
+```
+
+**A 3-minute gap gave a warm cache. A 2-hour gap on the same node gave none.** So the page cache IS the
+mechanism S-261 identified — n-307's 126× speedup is real and this does not touch it — but **residency is
+not a property of the node, it is a property of the moment**, and somewhere between 3 minutes and 2 hours
+these shared nodes evict 16 GB.
+
+**What was wrong was my treating residency as DURABLE**, which is what turned a correct mechanism into a
+false prediction. S-303's phrasing — *"that node's page cache"* — already contained the error: a cache is
+not something a node has, it is something a node had.
+
+### 3. The sixth iteration, and this one SUBSUMES its predecessors rather than refuting them
+
+```
+S-147  free memory                  -> refuted by S-249
+S-249  job count                    -> incomplete per S-257
+S-257  host class                   -> "refuted" by S-261 (same host, 126x spread)
+S-261  page-cache warmth (binary)   -> refined by S-298
+S-298  cache residency (continuum)  -> my S-303 prediction from it FAILED
+S-304  load = f(the node's cold-read bandwidth, residency AT THAT INSTANT), and residency DECAYS
+```
+
+⚠ **And S-257 deserves partial rehabilitation.** The node term is real and large:
+
+```
+not-warm loads:   n-301  ~1273-1339 s      n-302  19278.4 s      -> a 15x NODE difference
+```
+
+n-301's two loads agree to 4.9%, which looks like that node's characteristic non-resident read time, while
+n-302's cold read was **15× worse**. So S-257's "host class" was not wrong, only **incomplete** — it
+described one of two terms and S-261 then showed the other term existed by holding the host fixed. Both are
+needed, and neither alone predicts.
+
+### 4. Why recording the prediction was worth it even though it failed
+
+The number arrives whether or not anyone predicts it. What the prediction bought is **the gap measurement**:
+without a stated expectation there was no reason to go and compare `sacct` start/end times across two
+same-node pairs, and the 3-minutes-versus-2-hours contrast is the whole finding. **A confirmation would have
+left the decay timescale unmeasured.**
+
+⛔ **No projection in this sprint may now assume a warm load from node identity alone.** The practical rule
+is: a load is warm only if the previous load on that node finished **minutes**, not hours, earlier — and
+even then it is an observation, not an entitlement.
+
+### 5. The family is running and nothing about depth is known
+
+```
+922176 RUNNING on n-301, 26 min elapsed
+[w3] 1/29 CL_BASE ok rc=0  1464.2 s   (includes the 1273.2 s load; ~191 s of scoring)
+DONE.json 1 of 29
+```
+
+The monitor is armed on `[w3] 3/29` for the first cell arm, where the dose must read **224** — an identity
+since S-299, and VOID condition 7 if it does not. The frozen read (`4841486c`) is untouched and its four
+per-head outcomes remain open.
