@@ -28006,3 +28006,104 @@ next         the S-312 end-to-end on re-badged real arms with the CURRENT artefa
              be repeated before the submit rather than inherited.
 NOT ESTABLISHED  anything about transfer. This entry fixed the instrument a third time.
 ```
+
+---
+
+## S-324 — **PR-CSI-018 IS LAUNCHED: job 923833, 62 arms, n-304.** The end-to-end passed on the CURRENT artefacts first — **62/62 GATE 0, six PROVENANCE checks OK against PR-CSI-013's real arms, and admission reproducing S-320's offline derivation to the digit.** ⚠ And n-304 is a node this sprint has never measured, so the load-time rule has **no predictive content** here — stated rather than dressed up as a prediction
+
+### 1. The end-to-end, repeated with the post-R29 code rather than inherited
+
+R29's exec lens ran a 62-arm re-badged check, but **against the PRE-FIX code**, so S-323 recorded that
+it must be repeated rather than inherited. It was:
+
+```
+farm: 62 arm dirs from REAL runs -- only names, configs and job ids rewritten
+  BF_BASE  <- PR-013 BT_BASE          BF_KO <- PR-016 BC_KO
+  HD_<h>   <- PR-013's REAL whole-head button arms for exactly these six heads
+  54 cells <- PR-016's 27 real cell arms, reused twice
+
+STEP 0  GATE 0: every landed arm passes (62 of 62)                                   rc 0
+STEP 1  census:
+        PROVENANCE head  6  HD_6   E=-0.00509022 vs reference -0.00509022  |diff|=4.16e-09  OK
+        PROVENANCE head 11  HD_11  E=-0.01631008 vs reference -0.01631008  |diff|=3.95e-09  OK
+        PROVENANCE head 20  HD_20  E=-0.00724789 vs reference -0.00724789  |diff|=8.52e-10  OK
+        PROVENANCE head 24  HD_24  E=-0.00285392 vs reference -0.00285392  |diff|=3.87e-09  OK
+        PROVENANCE head 27  HD_27  E=+0.00266563 vs reference +0.00266563  |diff|=3.02e-09  OK
+        PROVENANCE head 29  HD_29  E=+0.00929118 vs reference +0.00929118  |diff|=6.45e-10  OK
+        dose CONFIRMED [224.0]                                                        rc 0
+STEP 2  primary: ran to a verdict, gated on the WEAKEST (conditional 1.0) -> FAIL     rc 0
+```
+
+📌 **The provenance check is exercised against real data here, not a mutant.** Because `HD_<h>` was
+re-badged from PR-CSI-013's *actual* arms for those heads, VOID condition 8 had to **pass** — and it
+does, at `|diff|` of 4e-09 to 9e-10 against a 1e-6 tolerance. S-323 had only ever seen it *refuse*.
+
+📌 **And ADMISSION reproduced S-320's offline derivation exactly**: 2.42 / 2.86 / 2.85 / 1.84 / 1.54 /
+2.49, all six ADMITTED. The S-311 rule computed in-family agrees to the digit with the bars I derived
+from PR-013's raw rows two entries ago.
+
+⛔ **THE FAIL VERDICT IS MEANINGLESS AND MUST NEVER BE QUOTED.** The 54 cell arms are PR-CSI-016's 27
+arms reused twice, so every argmax is an artefact of the re-badging. What the run establishes is that
+**the frozen read executes end to end and that weakest-of-three gating and the spanning rule both
+fire** — the two things that were broken twelve hours ago.
+
+### 2. The submission
+
+```
+SPLIT=validation PREREG=configs/dcs_csi_pr018_cell_census_button_nonL14.json \
+  TAG_PREFIX=csi10_cell6_button FAMILY=pr018 \
+  sh scripts/gates/dcs_csi_submit.sh slurm_scripts/dcs_csi_pr010_arms.slurm
+
+provenance: BLOB 6f06ebdb  PORCELAIN clean
+Submitted batch job 923833   -> RUNNING on n-304
+prereg 6790df3a | read cbdf34a2 | tag csi10_cell6_button | no csi10_* dir existed (S-261 precheck)
+```
+
+⚠ **n-304 is a node this sprint has never run on.** Checked before letting it proceed, because S-037
+prohibited V100 hardware and a new node is exactly where that would reappear:
+
+```
+scontrol show node n-304 -> AvailableFeatures=geforce_rtx_3090   Gres=gpu:geforce_rtx_3090:8
+```
+
+Same architecture as n-301/n-302 and every prior CSI family. **VOID condition 1 is clear at launch.**
+
+### 3. ⚠ NO LOAD-TIME PREDICTION IS AVAILABLE, and that is a fact about the rule
+
+S-303 and S-313 both made falsifiable load-time predictions and recorded them before the number
+existed; S-304 refuted one and S-314 confirmed the other. **I am not making one here**, and the reason
+is worth stating because it bounds what S-314 actually established:
+
+```
+n-302  COLD       19278.4 s        n-301  1339.1 / 1273.2 / 1265.8 s (gaps of 3 min, 2 h, 2.5 h)
+n-307  WARM          47.5 s        n-304  NEVER MEASURED
+```
+
+S-314 concluded that **on n-301** the load is effectively a node constant, varying 5.5 % across gaps
+from 3 minutes to 2.5 hours — and explicitly refused to generalise from three points on one node.
+**That rule is per-node and therefore has no predictive content for a node with zero measurements.**
+Whatever 923833 records is a *first* data point for n-304, not a test of anything. **Saying so is the
+honest move; inventing a range wide enough to be unfalsifiable would not be a prediction.**
+
+### 4. What is NOT known
+
+**Everything the family is for.** No endpoint has been read. The frozen read (`cbdf34a2`) has not been
+executed and every branch of its PRIMARY is open:
+
+* whether any of the six heads is ADMITTED on *fresh* arms — all six are *expected* to be, since
+  PR-013 measured them at 1.54–2.86, and **a head that fails when PR-013 says it should not is itself
+  a finding** the read requires be reported rather than quietly dropped;
+* whether the screen's cell prediction transfers — the question PR-CSI-016 could not answer;
+* whether the **spanning rule** fires again, and what the **conditional** and **permutation** p's say.
+  With `K_unique = 2` at K=6 and a permutation space of 180, this family *can* answer where PR-016
+  could not — but **the weakest of the three gates**, so a binomial pass is not a pass.
+
+⛔ And the standing prohibition, which is the one I will most want to break: **quoting the binomial p
+alone is forbidden whenever two admitted heads share a predicted layer** — and four of the six share
+one (L11 twice, L10 twice).
+
+```
+arm order puts the 54 cell arms first and the six HD_ arms LAST, so ADMISSION -- the gate that
+decides whether the primary is readable at all -- is known only when the family is nearly complete.
+expected cost ~60 x 156 s + one model load.
+```
