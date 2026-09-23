@@ -38,9 +38,19 @@ def main():
             sys.exit("REFUSING: the %s %r does not exist. This reader computes nothing of its own; "
                      "without the census report there is no endpoint to read." % (lbl, path))
     pr = json.load(open(a.prereg))
-    if pr.get("id") != "PR-CSI-016":
-        sys.exit("REFUSING: this reader implements PR-CSI-016's frozen primary only; got %r. "
-                 "A test reader that accepts any prereg is not a preregistered test." % pr.get("id"))
+    # ⚠ S-321: WIDENED from PR-CSI-016 to the named families that share this frozen primary. The
+    # filename is now a misnomer and is KEPT anyway: runargs/dcs_csi_pr016_read.txt names this path,
+    # and a frozen read must go on resolving to the file it was frozen against (R26 chain of custody).
+    # The id list is EXPLICIT rather than open: a test reader that accepts any prereg is not a
+    # preregistered test, which is the property the original single-id check was protecting.
+    IMPLEMENTS = ("PR-CSI-016", "PR-CSI-018")
+    if pr.get("id") not in IMPLEMENTS:
+        sys.exit("REFUSING: this reader implements the frozen primary of %s only; got %r."
+                 % (" / ".join(IMPLEMENTS), pr.get("id")))
+    for _f in ("PRIMARY", "ADMISSION", "DETECTABILITY_PREREGISTERED_PER_HEAD", "heads", "layers"):
+        if _f not in pr:
+            sys.exit("REFUSING: prereg %r carries no %r, which this reader requires. Checked before "
+                     "the census is opened (S-296)." % (pr.get("id"), _f))
     rep = json.load(open(a.census))
     if rep.get("prereg_id") != pr["id"]:
         sys.exit("REFUSING: census report is for %r, not %r." % (rep.get("prereg_id"), pr["id"]))

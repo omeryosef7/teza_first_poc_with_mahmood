@@ -1,0 +1,110 @@
+# FROZEN READ for PR-CSI-018 -- the per-CELL census of SIX FRESH BUTTON HEADS whose basket-TRAIN
+# screen prediction is NOT L14. 62 arms. Frozen 2026-09-23, BEFORE ANY ARM HAS RUN.
+# Never re-freeze after seeing numbers.
+#
+# WHY THIS FAMILY EXISTS, AND WHAT PR-CSI-016 COULD NOT DO.
+#   PR-CSI-016 asked whether the basket TRAIN screen's per-cell prediction transfers to BUTTON.
+#   It returned CANNOT ANSWER: both its admitted heads predicted L14, so a shared top-of-band bias
+#   and a correct screen were INDISTINGUISHABLE (S-317). S-317 called that structural; S-319
+#   WITHDREW that -- joining the screen (an argmax for all 32 heads) with PR-CSI-013's RANDOM
+#   control draws (21 heads measured on button validation) yields SIX live heads whose prediction
+#   is NOT L14, over four distinct layers. S-320 re-derived their EXACT S-311 bars; all six survive.
+#
+#   head  screen   margin over runner-up   PR-013 button E    |E|/bar (EXACT S-311)
+#     6 -> L11          5.96x                 -0.005090            2.42
+#    11 -> L8           1.51x                 -0.016310            2.86
+#    20 -> L11          1.07x                 -0.007248            2.85
+#    24 -> L10          4.70x                 -0.002854            1.84
+#    27 -> L10          1.58x                 +0.002666            1.54
+#    29 -> L6           1.26x                 +0.009291            2.49
+#
+# ⛔ HEADS 17, 19 AND 23 ARE EXCLUDED: PR-CSI-016 already measured their button cells, so their
+#   argmaxes are KNOWN. Counting a known success as a fresh draw is selection on data already read
+#   and the cleanest way to manufacture a p (S-320). HEAD 16 is excluded too -- live and fresh, but
+#   it predicts L14, the layer the spanning rule exists to guard against.
+#
+# Read in order. STOP AT THE FIRST FAILURE.
+#   GATE 0  liveness + ARM IDENTITY on all 62 arms, from each arm's own knockout_cells.
+#           ⚠ SEVEN arms share the dose 2016 -- the six HD_ nine-cell arms AND BF_KO. S-310 closed
+#             that collision by requiring BF_KO to record NO cell list; VOID condition 9 is it.
+#             All 54 single-cell arms share 224. The dose is identity-blind on both axes.
+# ------------------------------------------------------------------------------------------------
+
+python scripts/gates/dcs_csi_pr012_gate0_sweep.py \
+  --prereg configs/dcs_csi_pr018_cell_census_button_nonL14.json \
+  --tag-prefix csi10_cell6_button_validation --split validation \
+  --require-slurm-job <VALIDATION_JOB_IDS>
+
+# --- STEP 1. THE CENSUS (the depth map + the per-head bars, computed by the S-311 RULE from this
+# --- family's own HD_<h> arms). It computes every E; STEP 2 computes NOTHING of its own.
+python scripts/dcs_csi_head_census.py \
+  --prereg configs/dcs_csi_pr018_cell_census_button_nonL14.json \
+  --tag-prefix csi10_cell6_button_validation --split validation --expect-n 230 \
+  --require-slurm-job <VALIDATION_JOB_IDS> \
+  --out reports/DCS_CSI_PR018_CELL_CENSUS_button_nonL14_validation.json
+
+# ⚠ VOID CONDITION 8 IS CHECKED HERE AND IT IS FREE. Each HD_<h> arm re-measures the whole-head
+#   effect PR-CSI-013 already recorded on the SAME head, codeword and split. S-318 demonstrated that
+#   PR-016's HD_19 reproduced PR-013's BT_CTRL_01 BIT-IDENTICALLY across two jobs and two NODES, so
+#   a difference above 1e-6 means the population, bank, exclusions or model revision has DRIFTED and
+#   nothing in this family is readable. Six independent provenance checks, at no extra cost.
+
+# --- STEP 2. THE PREREGISTERED PRIMARY.
+python scripts/dcs_csi_pr016_argmax_test.py \
+  --prereg configs/dcs_csi_pr018_cell_census_button_nonL14.json \
+  --census reports/DCS_CSI_PR018_CELL_CENSUS_button_nonL14_validation.json \
+  --out reports/DCS_CSI_PR018_ARGMAX_TEST_button_nonL14_validation.json
+#   (the reader's filename is a misnomer since S-321 widened it to this family; the name is kept
+#    because PR-CSI-016's own frozen read names that path -- R26 chain of custody.)
+
+# ------------------------------------------------------------------------------------------------
+# THE STATISTIC, PRE-COMMITTED. THREE p-VALUES, AND THE CLAIM IS STATED WITH THE WEAKEST.
+#   M = # of ADMITTED heads whose intervention argmax cell equals that head's frozen screen layer.
+#     binomial     P(Binom(K, 1/9) >= M)                    floor at K=6: 1.88e-06
+#     conditional  the same over admitted heads whose predicted layer is UNIQUE among the admitted
+#                  (at K=6 those are head 11 -> L8 and head 29 -> L6, so K_unique = 2)
+#     permutation  over DISTINCT assignments of the prediction multiset {L6, L8, L10, L10, L11, L11}
+#                  -- 180 of them, floor 0.00556
+#
+# ⚠⚠ THE PERMUTATION p IS THE LOAD-BEARING ONE AND IS THE REASON THIS FAMILY EXISTS. A shared
+#   band-edge bias CANNOT fake it: a bias says nothing about WHICH head gets WHICH layer. PR-CSI-016
+#   died exactly here, with K_unique = 0 and a permutation space of size 1.
+#
+# SUCCESS = the WEAKEST of the three <= 0.05 AND the spanning rule satisfied.
+# FAILURE = the weakest > 0.05 with K >= 3.
+# SPANNING RULE: the MATCHING heads must not all share one band layer, or CANNOT ANSWER whatever
+#   the p-values say.
+#
+# ADMISSION, computed from the whole-head arm ALONE and never from the cells:
+#   head h is ADMITTED iff HD_<h>'s ci95 excludes 0 AND |E(HD_<h>)| >= 1.5 x bar(h).
+#   All six are EXPECTED to be admitted -- S-320 measured their exact |E|/bar at 2.86 / 2.85 / 2.49 /
+#   2.42 / 1.84 / 1.54 on PR-013's arms. A head that fails here when PR-013 says it should not is
+#   ITSELF A FINDING and must be reported as one, not quietly dropped.
+#
+# ⛔⛔ NO POST-HOC SHARPNESS SUBSETTING. The six screen margins run 5.96x down to 1.07x, and head 20's
+#   is effectively a coin flip. NO sharpness gate is applied, because every candidate gate changes
+#   whether this family can certify at all (>=1.25 leaves 5 heads and floor 0.0167; >=1.5 leaves 4
+#   and floor 0.0833, which CANNOT clear alpha; >=2.0 leaves 2 and 0.5) -- choosing among those by
+#   looking at the floor is the selection this sprint forbids. It is SOUND rather than merely
+#   convenient because a flat screen prediction is a near-random one, which is exactly what the
+#   PERMUTATION null models: flat predictions cost POWER, not VALIDITY.
+#   REPORTING ANY MARGIN-RESTRICTED SUBSET AFTER THE READ -- as the result, as a rescue of a null, or
+#   as a qualification of a positive -- IS FORBIDDEN. The margins are frozen in the prereg per head
+#   precisely so that a post-hoc subset can be recognised as one.
+#
+# ------------------------------------------------------------------------------------------------
+# WHAT MAY NEVER BE SAID FROM THIS FILE, whatever the numbers:
+#   * the binomial p alone. The claim is the WEAKEST of the three, each named.
+#   * "cell (L, h) is the writer" -- there is still no control family of ARBITRARY cells anywhere.
+#   * that the screen is a validated cell selector IN GENERAL -- at most this adds six heads on a
+#     second codeword, every one chosen BECAUSE it was live there.
+#   * anything about heads that are NULL on button: this family excludes them by construction, so it
+#     says nothing at all about whether the screen predicts for them.
+#   * anything about the SOURCE of the effect (S-316 blocked that), the other 26 heads, DOMAIN
+#     generality, or TEST (S-314: spent AND selection-contaminated).
+#   * if NULL: that S-306/S-307 are withdrawn. Those stand on their own data; this is about TRANSFER.
+#   * if NULL: that PR-CSI-016 is explained. It returned CANNOT ANSWER and still does.
+#   * any rung above 1 on AM-34's ladder. This is necessity, like everything else in this sprint.
+#
+# <VALIDATION_JOB_IDS> must name the ONE job that produced all 62 arms. If a relaunch happens, the
+# earlier generation's arm dirs must be QUARANTINED rather than filtered at read time (S-261).

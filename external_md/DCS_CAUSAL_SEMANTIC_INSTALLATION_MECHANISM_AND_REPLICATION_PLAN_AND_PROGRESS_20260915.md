@@ -27622,3 +27622,136 @@ written down**, not here.
 **NOT ESTABLISHED by anything in this entry:** whether the screen's cell prediction transfers across
 codewords. That is what PR-CSI-018 is *for*; S-320 only establishes that the instrument to ask it
 exists and which heads it may be asked with.
+
+---
+
+## S-321 — **PR-CSI-018 IS FROZEN: 62 arms, six FRESH button heads, none predicting L14, permutation floor 0.00556.** The design PR-CSI-016 could not be. ⚠ **And freezing it forced the judgement S-320 deferred, plus an anti-gaming clause I wrote only because I caught myself about to shop a threshold**
+
+### 1. A deliberate reordering, with its reason
+
+S-320 recorded the order as **R29 → freeze → launch**. **I have done freeze → R29 instead**, because
+R28's two BLOCKERs were both *inside* the frozen artefacts — a prereg missing the census reader's
+precondition fields, and a primary reader gating on a key its producer never writes. **A review that
+runs before the artefacts exist cannot find that class.** R29 now has the whole family to review, which
+is strictly more than it would have had. Nothing reaches a GPU before it runs.
+
+### 2. What is frozen
+
+```
+prereg  configs/dcs_csi_pr018_cell_census_button_nonL14.json   md5 c4483891   (re-emits byte-identically)
+read    runargs/dcs_csi_pr018_read.txt                         md5 62a5c337
+tag     PR-CSI-018 -> csi10_cell6_button   registered in dcs_csi_pr010_arms.slurm
+arms    62 = BF_BASE + BF_KO + 6 HD_ (nine-cell lists, per S-310) + 54 single cells
+cost    ~60 x 156 s + one model load  ->  ~2.9-3.0 GPU-hours, one allocation
+```
+
+```
+head  screen   margin   PR-013 button E   |E|/bar (EXACT S-311)
+  6 -> L11      5.96x      -0.005090            2.42
+ 11 -> L8       1.51x      -0.016310            2.86
+ 20 -> L11      1.07x      -0.007248            2.85
+ 24 -> L10      4.70x      -0.002854            1.84
+ 27 -> L10      1.58x      +0.002666            1.54
+ 29 -> L6       1.26x      +0.009291            2.49
+```
+
+**Every candidate's prediction is re-derived from the 288-cell screen by the freeze script, and a
+drift to L14 on any head is a REFUSAL.** The nomination uses the TRAIN screen (layer) and PR-013's
+button magnitude (eligibility) — **never any button CELL data**.
+
+### 3. The three p-values, and why the permutation one is the point
+
+```
+binomial     P(Binom(K, 1/9) >= M)                                    floor at K=6  1.88e-06
+conditional  over admitted heads with a UNIQUE predicted layer         K_unique = 2 at K=6
+permutation  over distinct assignments of {L6, L8, L10, L10, L11, L11}  180 -> floor 0.00556
+```
+
+**PR-CSI-016 died with `K_unique = 0` and a permutation space of size 1.** Here the multiset has four
+distinct layers and 180 assignments, so **a shared band-edge bias cannot fake the answer** — a bias
+says nothing about *which head gets which layer*. That, and only that, is what the extra 30 arms buy.
+
+### 4. The judgement S-320 deferred, now made: **head 16 is EXCLUDED**
+
+Head 16 is live (1.60) and fresh, and including it would move the floor from 0.00556 to **0.00079**.
+**It is excluded anyway**, because it predicts **L14 — the layer the whole spanning-rule apparatus
+exists to guard against**, and PR-CSI-016 measured that an L14 prediction can match for reasons
+unrelated to the screen. **Both floors clear α by two orders of magnitude, so the floor is not the
+binding constraint**; keeping every candidate's prediction out of the adversary's favoured layer is
+worth more than a factor of 7 on a number that already passes.
+
+Heads **17, 19, 23** are excluded for the S-320 reason: PR-016 already measured their button cells, so
+their argmaxes are **known**, and a known success counted as a fresh draw is manufactured.
+
+### 5. ⛔ THE ANTI-GAMING CLAUSE, written because I caught myself about to shop a threshold
+
+The six screen margins run **5.96× down to 1.07×**, and **head 20's is effectively a coin flip**
+between L11 and its runner-up. S-307 recorded that a near-tie which happens to land right is far
+weaker corroboration than a decisive peak, so a sharpness gate looked obviously right. Then I computed
+what each gate does to the floor:
+
+```
+no gate          6 heads   180 assignments   floor 0.0056   clears alpha
+margin >= 1.25   5 heads    60               floor 0.0167   clears alpha
+margin >= 1.50   4 heads    12               floor 0.0833   CANNOT CLEAR
+margin >= 2.00   2 heads     2               floor 0.5000   CANNOT CLEAR
+```
+
+⚠ **Every candidate threshold changes whether the family can certify at all.** Choosing among them —
+and 1.25 is *right there*, keeping five heads and a floor that still passes — would be **tuning a free
+parameter by its effect on the result**. So **no sharpness gate is applied**.
+
+📌 **And that is sound rather than merely convenient, which matters because "I declined to gate" is
+exactly what someone would say who had gated and lost:** a flat screen prediction is a **near-random**
+one, which is **precisely what the permutation null models**. Flat predictions therefore cost
+**POWER**, not **VALIDITY** — they make a true effect harder to find and cannot manufacture a false
+one. The failure mode runs one way only.
+
+The prereg and the read both now carry: **reporting any margin-restricted subset after the read — as
+the result, as a rescue of a null, or as a qualification of a positive — is FORBIDDEN.** The six
+margins are frozen per head *precisely so a post-hoc subset can be recognised as one*.
+
+### 6. VOID condition 8 — six free provenance checks
+
+Each `HD_<h>` arm re-measures the whole-head effect **PR-CSI-013 already recorded** on the same head,
+codeword and split. S-318 demonstrated that PR-016's `HD_19` reproduced PR-013's `BT_CTRL_01`
+**bit-identically across two jobs and two NODES**. So the prereg makes a difference above **1e-6** a
+VOID: it would mean the population, bank, exclusions or model revision has drifted, and nothing in the
+family would be readable. **Six independent provenance checks at zero extra cost**, because the arms
+had to be run anyway to supply the bars.
+
+### 7. Code: widened, not duplicated — and the regression checked
+
+`scripts/dcs_csi_pr016_argmax_test.py` hard-coded `id == "PR-CSI-016"`. It is **widened to an EXPLICIT
+list** `("PR-CSI-016", "PR-CSI-018")` — explicit rather than open, because *a test reader that accepts
+any prereg is not a preregistered test*, which is the property the single-id check was protecting. It
+also now validates the five prereg fields it needs **before** opening the census (S-296).
+
+⚠ **The filename is now a misnomer and is kept anyway**: `runargs/dcs_csi_pr016_read.txt` names that
+path, and a frozen read must go on resolving to the file it was frozen against (R26 chain of custody).
+
+```
+PR-CSI-016's published argmax report re-runs BIT-IDENTICALLY after the widening   identical: True
+  VERDICT CANNOT ANSWER, K=2, M=2, p=0.012345679012345678 -- unchanged
+17 tests pass in tests/test_csi_pr016_argmax.py
+```
+
+### 8. Pre-submit state, and what has NOT happened
+
+```
+census reader   accepts the prereg, reaches arm resolution, stops on "0 complete run dirs"  (correct)
+argv --check    62 arms, 60 carrying a frozen cell list, button bank and exclusions bound
+quarantine      no csi10_* directory exists
+every artefact named by the frozen read exists
+```
+
+⛔ **NOT LAUNCHED. NOT REVIEWED.** Remaining, in order:
+
+```
+1. R29 -- DUE. Window: S-311's bar rule, the PR-016 readers, S-315's sweep change, and ALL of this.
+2. the S-312 lesson: run the frozen artefacts END TO END on re-badged real arms before submitting
+3. commit, then submit
+```
+
+**NOT ESTABLISHED by anything here:** whether the screen's cell prediction transfers across codewords.
+This entry builds the instrument and records why each candidate is admissible; it measures nothing.
