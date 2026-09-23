@@ -24581,3 +24581,92 @@ PASS-STRONG; the census→PR-013 chain of custody is intact and was the deciding
 
 **What R26 did NOT do:** it did not run any arm, and it has no information about any cell of head 2 —
 PR-CSI-014 has not been submitted. Nothing here licenses any claim about depth.
+
+---
+
+## S-297 — **PR-CSI-014 IS LAUNCHED: job 921664, 11 arms, n-301.** Every launcher guard fired on the first attempt — the first CSI family this sprint to reach a GPU without a single void generation
+
+### 1. The submission
+
+```
+SPLIT=validation PREREG=configs/dcs_csi_pr014_cell_census_basket.json \
+  TAG_PREFIX=csi7_cell_basket FAMILY=pr014 \
+  sh scripts/gates/dcs_csi_submit.sh slurm_scripts/dcs_csi_pr010_arms.slurm
+
+provenance: BLOB 1ebac376  PORCELAIN clean
+Submitted batch job 921664      -> RUNNING on n-301 at 13:44:45
+```
+
+Provenance is captured **on the submitting host**, because `git` does not exist on the compute nodes and a
+witness taken inside the job is always empty — *and an empty porcelain reads exactly like a clean
+worktree*. The helper also refuses a caller-supplied `--export`, which once silently stripped
+`CSI_GIT_BLOB` and killed job 915945.
+
+### 2. Pre-submit checks, including the one S-261 paid for
+
+```
+csi7 dirs already in score_behavior        0     <- S-261: the runner's skip-if-complete would RESUME
+                                                    into stale arms; --require-slurm-job is a READ-time
+                                                    remedy for a WRITE-time problem
+prereg id -> launcher's registered prefix  PR-CSI-014 -> csi7_cell_basket   (match)
+dirty tracked files                        0
+killable partition                         20 nodes mix, GPUs available
+```
+
+### 3. Every guard passed on the first attempt
+
+```
+HOST=n-301 JOB=921664 2026-09-23T13:44:45+03:00
+NVIDIA GeForce RTX 3090, 8.6   (x8 on the node; one requested -- VOID 1 wants ONE architecture, sm_86)
+BLOB 1ebac376  PORCELAIN [clean]
+SPLIT=validation EXPECT_N=230 PREREG=configs/dcs_csi_pr014_cell_census_basket.json
+  TAG_PREFIX=csi7_cell_basket FAMILY=pr014
+BASE-ARM CHECK PASSED: 'CL_BASE' carries no intervention flag; all 10 other arms carry --intervene
+CODEWORD CHECK PASSED: 'basket' -> bank ..._basket_bomb.jsonl, exclusions exclude_basket_bomb_sow_validation.txt
+CHECK PASSED: 11 arms, every flag declared by score_behavior.py; 9 arms carry a frozen cell list,
+  2 carry none (CL_BASE has no intervention, CL_KO = all 32).
+argv lines: 11
+```
+
+⚠ **This is worth naming: PR-CSI-013 took FIVE submissions** — 918967 (VOID: its base arm was an all-32
+knockout, S-260), 919240 (orphaned by skip-if-complete), 919296 (cancelled mid-load), 919526
+(unschedulable pin), 919531 (the family that was read). **PR-CSI-014 reached a GPU on the first attempt
+with every guard green.** The difference is not luck: `BASE-ARM CHECK` exists *because* of S-260, the tag
+registration refusal *because* of S-227/S-246, the quarantine precheck *because* of S-261, and the
+provenance capture *because* of 915945. Four separate failures, each now a gate that ran in milliseconds
+before the allocation was used.
+
+### 4. The dose gate is armed, and what it decides
+
+R26 priced a separate one-arm smoke test and rejected it: a smoke job costs a full model load, which
+S-285 measured at up to **19278.4 s (5.36 h)** cold — as much as the family. So **the family's own arm 3 is
+the smoke test.** Argv order is `CL_BASE, CL_KO, CL_L06…CL_L14`, so `CL_L06` is the first arm that
+exercises `--knockout-cells` against the real model at all.
+
+A monitor is armed on `[w3] 3/11`, and the decision rule is fixed **now**, before the number exists:
+
+```
+median_prefill_edits == 224  -> the S-291 semantics are what S-291 claimed. DOSE_UNIT/band_width
+                                becomes a measured identity and the family runs to completion.
+                             != 224  -> ⛔ CANCEL IMMEDIATELY. It is a CODE defect, not a fact about the
+                                model (the frozen read says so explicitly), GATE 0 has already failed on
+                                the dose so no effect would be readable, and eight further arms would add
+                                nothing about the cause.
+```
+
+**The cell path's hook-side arithmetic was tested at toy scale in R26** (a one-layer band edits; N hooks
+sharing one `stats` dict accumulate exactly N×; one cell of a B-layer band is 1/B of the whole band with
+heads held fixed). What arm 3 adds is the only part that is about Llama rather than about the code:
+whether the measured 2016 actually decomposes as 9 × 224 on these rows.
+
+### 5. What is NOT yet known
+
+Nothing about depth. No arm has produced an endpoint, the frozen read (`cdf959f6`) has not been executed,
+and the three outcomes it pre-commits — the dose verdict, the depth map against the 0.019181 bar, and
+S-269's L10 claim — are all open. **The nothing-clears-the-bar branch remains preregistered as coherent**
+and, on S-294's arithmetic, is the *expected* outcome if the load is spread evenly across nine cells.
+
+Model load time on n-301 is unknown: S-261 established it is a per-node **page-cache** property rather
+than a property of the host class, so it may be ~50 s warm or hours cold. The band from here will be
+projected from the arms themselves once two have landed — and per S-289, from the settled series rather
+than a prefix of it.
