@@ -1,0 +1,55 @@
+# PR-CSI-013 READ EXECUTION CHECKLIST -- written 2026-09-23 03:35, while 919531 is at 58/291 and NO
+# PR-013 NUMBER EXISTS. This is not a new read and it amends nothing: runargs/dcs_csi_pr013_read.txt
+# (md5 911c3a2099281f37280900056a3c426d) is the frozen read and its order is authoritative.
+#
+# WHY THIS FILE. The read will run once, hours from now, after a night in which five generations were
+# launched and four cancelled. The failure mode to avoid is improvising at that moment: substituting the
+# wrong job id, running the steps out of order, or reading an endpoint before GATE 0. Writing the sequence
+# down while no number exists costs nothing and removes the chance of deciding it under time pressure.
+# ------------------------------------------------------------------------------------------------
+#
+# 0. PRECONDITION -- do not start until ALL of these hold.
+#    [ ] sacct -j 919531 shows COMPLETED (not CANCELLED, not TIMEOUT)
+#    [ ] ls -d outputs/boombness/score_behavior/csi6_btnhead_button_validation_*/DONE.json | wc -l  == 23
+#    [ ] ls outputs/boombness/QUARANTINE_pr013_918967_void_and_919240_orphaned | wc -l  == 22
+#        (the void/orphaned generations stay quarantined; 0 csi6 dirs outside score_behavior's 23)
+#
+# 1. GATE 0, ENDPOINT-BLIND. Must pass on all 23 before anything reads an endpoint.
+#    python scripts/gates/dcs_csi_pr012_gate0_sweep.py \
+#      --prereg configs/dcs_csi_pr013_button_head_replication.json \
+#      --tag-prefix csi6_btnhead_button_validation --split validation --require-slurm-job 919531
+#    EXPECT: "GATE 0: every landed arm passes (23 of 23)". Identity comes from each arm's own
+#    knockout_heads -- the dose is NOT diagnostic on any 1-head arm (S-246), and every BT_CTRL_* and
+#    BT_SINGLE is a 1-head arm, so identity is the ONLY check that discriminates here (S-255).
+#    ON ANY FAILURE: STOP. Record CANNOT ANSWER. Do not run step 2.
+#
+# 2. THE PRIMARY READ -- verbatim from the frozen read, with <VALIDATION_JOB_IDS> := 919531 ALONE.
+#    python scripts/dcs_csi_head_single_rank.py \
+#      --prereg configs/dcs_csi_pr013_button_head_replication.json \
+#      --tag-prefix csi6_btnhead_button_validation --split validation --expect-n 230 \
+#      --require-slurm-job 919531 \
+#      --out reports/DCS_CSI_PR013_BUTTON_HEAD_validation.json
+#    ⛔ 919531 ALONE. NOT 918967 (VOID: its BT_BASE was an all-32 knockout, S-260). NOT 919240
+#      (orphaned). NOT 919296 (cancelled mid-load). Naming any of those would analyse a void family.
+#    GATE 1 is inside this tool: if E(BT_KO) is not clearly negative it writes CANNOT ANSWER and NO RANK.
+#    The verdict is gated on the candidate's SIGN (R22 amendment 1): rank 1 certifies only with
+#    E(BT_SINGLE) < 0.
+#
+# 3. THE INDEPENDENT RE-DERIVATION -- verbatim, --direction necessity REQUIRED.
+#    python scripts/dcs_csi_rederive_subspace.py \
+#      --tag-prefix csi6_btnhead_button_validation --split validation --expect-n 230 \
+#      --direction necessity --base BT_BASE --ko BT_KO --full BT_KO --candidate BT_SINGLE \
+#      --controls BT_CTRL_00,...,BT_CTRL_19 --require-slurm-job 919531 \
+#      --out reports/DCS_CSI_PR013_BUTTON_HEAD_validation_REDERIVE.json
+#    It carries the S-259 sign clause, so the two paths cannot disagree for want of one being fixed.
+#
+# 4. REPORTING CONSTRAINTS, already frozen and restated so they are not re-derived at 08:00.
+#    * the p is reported WITH its floor, ALWAYS: 20 controls -> floor 1/21 = 0.047619. Rank 1 is the
+#      ONLY certifying outcome; rank 2 gives 0.095238 and does not clear alpha = 0.05. Ties count
+#      AGAINST the candidate.
+#    * PR-013 is RUNG 1 on AM-34's ladder and is NOT rung 4: it re-runs the same knockout on a different
+#      codeword and transfers no activation state.
+#    * it tests CODEWORD-generality, NOT DOMAIN-generality: the 23 validation domains are IDENTICAL to
+#      basket's (S-256), so a PASS says nothing about domain transfer. The 3 TEST domains remain untouched.
+#    * a FAILURE is a real outcome, not a pipeline fault, and retracts neither D32/D33 nor D34.
+#    * forbidden regardless of outcome: "head 2 is the writer".

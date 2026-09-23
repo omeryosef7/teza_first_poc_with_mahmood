@@ -22407,3 +22407,58 @@ nothing preregistered, nothing frozen, nothing launched
 ```
 
 **No PR-013 number has ever been read.**
+
+---
+
+## S-280 — **the read's execution sequence is written down while no PR-013 number exists.** The risk being removed is improvising at 08:00 after a night of five generations — and the specific thing that would go wrong is naming a VOID job id
+
+`runargs/dcs_csi_pr013_EXECUTION_CHECKLIST.txt`, 55 lines. **It is not a read and it amends nothing:**
+`runargs/dcs_csi_pr013_read.txt` is still md5 `911c3a2099281f37280900056a3c426d`, and its order remains
+authoritative.
+
+### 1. The risk this addresses, named concretely
+
+**Four job ids now exist for the same tag namespace**, and exactly one is valid:
+
+```
+918967  VOID       -- its BT_BASE ran WITH --intervene and no --knockout-heads (S-260)
+919240  ORPHANED   -- good arms, wrong generation (S-261)
+919296  CANCELLED  -- mid-load, incomplete
+919531  THE FAMILY -- <VALIDATION_JOB_IDS> = 919531 ALONE
+```
+
+**`--require-slurm-job 918967` would analyse a family whose clean reference was an all-32 knockout, and
+every number would look plausible.** That is the one error in this pipeline that produces no visible
+symptom (S-251's finding, applied to the read side). **Writing the id down now, with the three wrong ones
+named and their reasons attached, is cheaper than recalling it after a night of five launches.**
+
+### 2. What the checklist fixes in place
+
+```
+0  PRECONDITION  sacct COMPLETED | 23 of 23 DONE.json | 22 dirs still quarantined
+1  GATE 0        endpoint-blind sweep, 23 of 23, identity from each arm's own knockout_heads
+                 (the dose is NOT diagnostic on ANY arm here -- every BT_CTRL_* and BT_SINGLE is 1-head)
+2  PRIMARY       the single-head reader, 919531 ALONE; GATE 1 inside it writes NO RANK on failure;
+                 the verdict is sign-gated (R22 amendment 1)
+3  INDEPENDENT   the re-derivation, --direction necessity REQUIRED, carrying S-259's sign clause
+4  REPORTING     the floor with the p, always; RUNG 1 and NOT rung 4; CODEWORD- not DOMAIN-generality;
+                 a failure is a real outcome; "head 2 is the writer" forbidden regardless
+```
+
+**Every line of §4 is already frozen elsewhere** — in the read, in AM-34, in S-256. **Restating them in
+execution order is the point: at the moment of reading, the constraints have to be in front of me, not
+distributed across nine entries.**
+
+### 3. The arms, and the rate is now stable
+
+```
+58/291 [1:07:09<3:07:45, 48.35s/it]
+marginal shards 2-58: 39.1 s/shard   (vs 38.4 at shard 19, 39.4 at shard 9 -- STABLE)
+tqdm smoothed: 48.35 s/it, above the 39.1 average -> mild degradation, not a regime change
+remaining 233 x 39.1 s = 2.53 h  ->  load ~06:07  ->  arms 1.85 h  ->  ~08:00   wall 14:20
+```
+
+**Three consecutive measurements agreeing to within 1 s/shard is the first stable number this load has
+produced**, and it is what makes the ~08:00 projection worth stating at all.
+
+**No PR-013 number has ever been read.** `score_behavior.py` was not opened.
