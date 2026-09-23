@@ -24428,3 +24428,156 @@ No arms were running (`squeue`, not `sacct`). D34 reproduces full-object identic
 identical last tick after the W4 change. No pre-existing frozen artefact touched. Writes verified by md5
 and line count; quota 94% used, 1.4T free. **REVIEW R26 is due (~13:45) and lands before the launch,
 which is the right order: the machinery reviewed before it runs, as R25 was for PR-013.**
+
+---
+
+## REVIEW R26 — the heaviest code window of the sprint (S-290…S-296), reviewed **before** it reaches a GPU. 🔴 **A metadata field has been FALSE-POSITIVE on 10 of D34's 44 published arms**, and ✅ **the cell path had never once run against the real hook class** — now it has
+
+### 0. Scope, and why the timing is the same as R25's
+
+```
+git log --since 09:40 -> S-290 (PR-013 read) .. S-296 (cell reader + read freeze), 7 commits
+16 files, including score_behavior.py, the argv gate, the GATE 0 sweep, the census reader, W4,
+the launcher, a new freeze script, a new prereg and a new frozen read.
+```
+
+PR-CSI-014 is **one submit away**. R25 established that a review of machinery must land before the
+machinery runs, not after; this is the same situation with more new code. Everything below is
+endpoint-blind — no arm of any family was re-read for an effect.
+
+### 1. 🔴 FINDING — `dose_is_diagnostic_of_identity` is FALSE on 10 of D34's 44 arms, in the published report
+
+The field exists so that, in the code's own words, *"a reader never mistakes a passing dose for a verified
+arm."* Its rule was:
+
+```python
+"dose_is_diagnostic_of_identity": want_dose not in (DOSE_UNIT,)
+```
+
+That hardcodes **one** collision — the S-246 one at 2016 — and misses every other. Measured against the
+published D34:
+
+```
+dose 0       x1    unique=True   field says diagnostic=True
+dose 2016    x33   unique=False  field says diagnostic=False
+dose 14112   x8    unique=False  field says diagnostic=True    *** WRONG ***
+dose 16128   x2    unique=False  field says diagnostic=True    *** WRONG ***
+
+false-positive on 10 of 44 arms:
+  HD_TOPK, HD_BOTK, LOO_02, LOO_06, LOO_13, LOO_17, LOO_19, LOO_23, LOO_24, LOO_28
+```
+
+**The sharpest case is `HD_TOPK` and `HD_BOTK`: both expect 16128, so the dose cannot distinguish the
+candidate 8-set from the null 8-set — the single contrast D32 and D33 rest on — while the field claimed it
+could.** All eight `LOO_*` arms likewise share 14112.
+
+⚠ **AND THE NEW CELL CODE INHERITED THE SAME FLAW IN THE SAME DIRECTION.** Every 1-cell arm expects 224,
+which is `!= 2016`, so the field would have reported the dose as identity-diagnostic for all nine cells of
+PR-CSI-014 — unable to tell `CL_L06` from `CL_L10`. **I found the pre-existing bug by attacking my own new
+code and following it upstream.**
+
+**✅ NO SCIENTIFIC CLAIM MOVES.** Identity was always asserted from each arm's own recorded
+`knockout_heads`/`knockout_cells` — the check that actually discriminates — and it passed on 44/44. What
+was wrong is a field reporting what the *dose* contributed, and it overstated it.
+
+**Fixed by DERIVING the property instead of asserting it:** a dose identifies an arm iff no other arm in
+the family expects the same number. That is the general statement of S-246's collision and subsumes the old
+rule. Applied to both the census reader and the GATE 0 sweep, which carried the same hardcode:
+
+```
+HD_KO     ... <- dose NOT identity-diagnostic: 33 arms expect 2016.0 (S-246/R26)
+HD_TOPK   ... <- dose NOT identity-diagnostic: 2 arms expect 16128
+LOO_02    ... <- dose NOT identity-diagnostic: 8 arms expect 14112
+HD_BASE   ... (no flag: 0 is unique)
+```
+
+### 2. ⛔ D34 IS **NOT** REWRITTEN, AND THE CHAIN OF CUSTODY IS WHY
+
+The tempting fix was to re-derive the census report so the published file carries the corrected field. **It
+would have broken the provenance chain.**
+
+```
+configs/dcs_csi_pr013_button_head_replication.json:  "census_md5": "d2e146272399e0883811d9fe4d743cbe"
+md5 of reports/DCS_CSI_PR012_CENSUS_validation.json: d2e146272399e0883811d9fe4d743cbe
+CHAIN OF CUSTODY INTACT -- and overwriting D34 would BREAK it
+```
+
+**That pin is the evidence that `h* = 2` was selected from THAT census and no other.** PR-013's whole
+nomination rests on it, and S-295 read h* from that prereg rather than re-deriving it precisely so the
+chain would be inspectable. Rewriting the census to correct a metadata field would void the link and buy
+nothing: the numbers in the file are already right.
+
+**So: the committed D34 keeps the incorrect field on those 10 arms, and this entry is the correction.** The
+anchor cross-check still returns **PASS-STRONG** with all three anchors bit-identical against the untouched
+file.
+
+⚠ **CONSEQUENCE, stated so it is not discovered by surprise later: D34's FULL-OBJECT byte-identity check is
+now RETIRED and replaced by a SCOPED one.** A re-derivation now differs in exactly two fields, and that is
+expected rather than drift:
+
+```
+science fields identical       : True   (E, ci95, loo_marginal, n_domains, ON_PROTOCOL, REPORTABLE_AS, ...)
+identity block identical       : True
+every GATE 0 substantive field : True   (n_rows, violations, decode edits, medians, dose_ok, pass)
+differs ONLY in                : ['dose_is_diagnostic_of_identity', 'n_arms_sharing_this_expected_dose']
+```
+
+S-292, S-295 and S-296 each used the full-object check as evidence; from here that check is the scoped one
+above, and the two differing fields are the documented reason.
+
+### 3. ✅ FINDING — the cell path had **never executed against the real hook class**
+
+`tests/test_knockout_cells.py` (19 tests) and `tests/test_csi_cell_identity.py` (20) both substitute a
+**fake `pc`** and inspect what got constructed. That is the right test for wiring and says nothing about
+whether `pc.ScopedAttentionKnockout` *works* with a one-layer band, or whether N hooks sharing one `stats`
+dict actually accumulate. **Those two properties are exactly what the 224 prediction rests on, and they had
+only ever been read off the source.**
+
+`tests/test_knockout_cells_integration.py` — **7 tests, the real class, a real 4-D additive mask, a real
+forward pass, zero GPU cost**, by reusing `test_allquery_attnknockout.py`'s `ToyModel` harness:
+
+```
+a one-layer band really edits the mask                              PASS  (n_prefill_edits > 0)
+3 cell hooks sharing ONE stats dict -> exactly 3x a single hook      PASS  <- the additivity S-291 assumed
+one cell of a B-layer band = 1/B of the whole band, heads fixed      PASS  <- the 224 arithmetic itself
+hooks do not leak onto layers they were not given                    PASS  (h.layers is m.model.layers[4])
+liveness tables agree across hooks sharing a dict                    PASS
+heads=None works on a single layer (the KO arm's shape)              PASS
+```
+
+**The 224 prediction's hook-side component is now tested.** What remains untested is only the part that is
+about Llama rather than about the code — whether 2016 itself decomposes as 9 × 224 on the real rows — and
+that is what the family's first cell arm measures.
+
+### 4. ⚠ My own test expectation was wrong, and the toy corrected it against a fact already in the log
+
+I asserted that an all-heads/whole-band arm would record `n_heads × band_width` times a single cell.
+Measured: **12 vs 3, a factor of 4 = the band width alone.**
+
+The cause was already in the log. S-246: *"a K-head arm records K × 2016 prefill edits; the ALL-32 arm
+records 2016 (**never expands**)."* `_pre` expands the head axis only when `heads is not None`; with
+`heads=None` the mask keeps head-dim 1 and the edits are counted once. **So the toy independently
+reproduces S-246's asymmetry** — which is the useful result, because that asymmetry is what makes the dose
+blind between `HD_KO` and a singleton on the real family. The test now asserts the measured relation and
+says what a future change to it would mean.
+
+### 5. A launch-plan decision, priced rather than assumed
+
+A separate one-arm smoke test before the 11-arm family looked attractive. **It is not cheap: it costs a
+full model load, which S-285 measured at up to 19278.4 s (5.36 h) cold.** A smoke job would cost as much
+as the family.
+
+**So the family's own arm 3 is the smoke test.** The argv order is `CL_BASE, CL_KO, CL_L06…CL_L14`, so the
+first CELL arm lands roughly two arms (~10 min) after the load. **The launch plan is therefore: submit,
+wait for `[w3] 3/11 CL_L06`, sweep GATE 0, and CANCEL on a dose that is not 224 rather than let eight more
+arms run** — because a dose mismatch is a code defect (the frozen read says so explicitly) and nine more
+arms would not add information about it.
+
+### 6. Verdict
+
+**Two findings, one of them in a published artefact, and neither changes a number.** 92 tests pass across
+the five affected files. D32, D33, D34 and D35 stand unchanged; the anchor cross-check is still
+PASS-STRONG; the census→PR-013 chain of custody is intact and was the deciding consideration in §2.
+
+**What R26 did NOT do:** it did not run any arm, and it has no information about any cell of head 2 —
+PR-CSI-014 has not been submitted. Nothing here licenses any claim about depth.

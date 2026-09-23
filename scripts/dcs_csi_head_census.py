@@ -21,7 +21,7 @@ positive this census exists to avoid. So arm identity here is asserted from the 
 `knockout_heads` against the preregistered head set, per arm, and the expected dose is derived from
 len(head_set) rather than from a single K constant.
 """
-import argparse, importlib.util, json, os, random, statistics, sys
+import argparse, collections, importlib.util, json, os, random, statistics, sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(REPO, "scripts"))
@@ -265,6 +265,28 @@ def main():
         sys.exit("REFUSING: TEST domain(s) present: %s (VOID 5)" % leaked)
 
     # ---- GATE 0 + ARM IDENTITY. The identity check is the only one that works here (S-246). ----
+    # ⛔⛔ R26. `dose_is_diagnostic_of_identity` USED TO BE `want_dose not in (DOSE_UNIT,)`, i.e. "the
+    # dose identifies this arm unless it equals the all-head arm's dose". That hardcodes ONE collision
+    # and misses every other one, and it was WRONG ON 10 OF D34's 44 ARMS: the eight LOO_* arms all
+    # expect 14112, and HD_TOPK and HD_BOTK BOTH expect 16128 -- so the dose cannot distinguish the
+    # candidate 8-set from the null 8-set, which is the contrast D32/D33 rest on, while the field
+    # claimed it could. On a CELL family it is wrong again and in the same direction: every 1-cell arm
+    # expects 224, so the dose cannot tell CL_L06 from CL_L10.
+    #
+    # The property is DERIVED now: a dose identifies an arm iff no OTHER arm in this family expects the
+    # same dose. That is the general statement of S-246's collision, and it subsumes the old rule.
+    # ⚠ No scientific claim moves. Identity was always asserted from each arm's own recorded head/cell
+    # list, which is the check that actually discriminates; this field only reports what the DOSE
+    # contributed, and it was overstating it.
+    _dose_of = {}
+    for arm in arms:
+        _k = 0 if arm == base_arm else (32 if arm == ko_arm else len(hs[arm]))
+        if IS_CELLS and arm not in (base_arm, ko_arm):
+            _dose_of[arm] = PER_CELL * _k
+        else:
+            _dose_of[arm] = 0 if arm == base_arm else (DOSE_UNIT if arm == ko_arm else DOSE_UNIT * _k)
+    _dose_counts = collections.Counter(_dose_of.values())
+
     g0, ident = {}, {}
     for arm in arms:
         L = live[arm]
@@ -324,7 +346,8 @@ def main():
                    # S-246: the dose value 2016 is shared by HD_KO and EVERY SINGLETON, so for
                    # those arms the dose is a liveness check and NOT an identity check. Said out loud
                    # per arm so a reader never mistakes a passing dose for a verified arm.
-                   "dose_is_diagnostic_of_identity": want_dose not in (DOSE_UNIT,),
+                   "dose_is_diagnostic_of_identity": (_dose_counts[want_dose] == 1),
+                   "n_arms_sharing_this_expected_dose": _dose_counts[want_dose],
                    "pass": bool(L["violations"] == {} and L["total_decode_edits"] == 0
                                 and L["median_prefill_edits"] == want_dose and ok_id)}
         if IS_CELLS:

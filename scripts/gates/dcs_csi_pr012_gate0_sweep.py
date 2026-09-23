@@ -120,6 +120,19 @@ def main():
                  % (len(arms), pr["n_arms_per_split"]))
     jobs = a.require_slurm_job.split(",") if a.require_slurm_job else None
     DOSE = census.DOSE_UNIT
+    # R26. The expected dose per arm, precomputed so "is the dose identity-diagnostic" can be DERIVED
+    # from whether any OTHER arm expects the same number, instead of hardcoding the single collision at
+    # DOSE_UNIT. The old rule was wrong on 10 of D34's 44 arms (all eight LOO_*, and HD_TOPK/HD_BOTK
+    # which BOTH expect 16128) and wrong on every cell arm (all expect 224).
+    import collections as _c
+    _dose_of = {}
+    for _arm in arms:
+        _k = 0 if _arm == base[0] else (32 if _arm == base[1] else len(hs[_arm]))
+        if IS_CELLS and _arm not in base:
+            _dose_of[_arm] = PER_CELL * _k
+        else:
+            _dose_of[_arm] = 0 if _arm == base[0] else (DOSE if _arm == base[1] else DOSE * _k)
+    _shared = _c.Counter(_dose_of.values())
 
     print("%s GATE 0 SWEEP -- %s | %d arms declared%s"
           % (pr["id"], a.split, len(arms),
@@ -185,7 +198,9 @@ def main():
         ok = (L["violations"] == {} and L["total_decode_edits"] == 0
               and L["median_prefill_edits"] == want and ok_id)
         fails += (not ok)
-        diag = "" if want != DOSE else "  <- dose NOT identity-diagnostic (S-246)"
+        diag = ("" if _shared[want] == 1
+                else "  <- dose NOT identity-diagnostic: %d arms expect %s (S-246/R26)"
+                     % (_shared[want], want))
         print("%-12s %6d %14s %12d %7d %5d  %-26s %s%s"
               % (arm, L["n_rows"], L["median_prefill_edits"], want, L["total_decode_edits"],
                  len(L["violations"]), why[:26], "PASS" if ok else "FAIL", diag if ok else ""))
