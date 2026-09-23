@@ -27250,3 +27250,128 @@ NOT ESTABLISHED  whether the screen's cell prediction transfers across codewords
              was built to answer it cannot, and §5 says no button family can until a live button
              head with a non-L14 prediction exists.
 ```
+
+---
+
+## S-318 — ✅ **PR-CSI-016 INDEPENDENTLY RE-DERIVED: all 31 effects to 4.99e-09, all three bars EXACTLY, and every verdict limb confirmed.** ⚠ **But TWO of S-317's own sentences are WRONG and are corrected here: the "4.3 % bar agreement" compared two DIFFERENT ESTIMATORS, and "four days apart" was 14 h 42 m — same day, and on DIFFERENT NODES, which makes that check STRONGER than I claimed**
+
+### 1. The re-derivation — a standalone implementation, nothing of the producer's
+
+```
+all 31 non-base effects reproduced          max |diff| = 4.9851e-09   (8-decimal rounding)
+2 of 27 cells clear their head's bar        CONFIRMED  (BC_H17_L14, BC_H19_L14)
+13 of 27 have a ci95 excluding 0            CONFIRMED
+ADMISSION: 17 ADMITTED 3.8705 | 19 ADMITTED 5.4506 | 23 DROPPED 0.6235 (ci95 crosses 0)  CONFIRMED
+K=2, M=2, p = 0.012345679012                CONFIRMED
+K_unique = 0, p_conditional = 1.0, p_permutation = 1.0 over 1 assignment  CONFIRMED
+matching layers {L14} -> SPANNING RULE VIOLATED -> CANNOT ANSWER          CONFIRMED
+head 23 argmax = L11 (-0.00294503), the screen's L7 second (-0.00278640)  CONFIRMED
+```
+
+Provenance re-checked from each run's own files: 230 rows on all 32 arms, `slurm_job_id` 923233 and
+node **n-301 on all 32**, eager attention on all 32 (VOID 2 clear), uniform 3090s (VOID 1 clear),
+`BC_BASE` carrying no intervention flag (VOID 4 clear), and **the 23 domains' intersection with the 23
+TEST domains is EMPTY**.
+
+### 2. ✅ THE BAR TRAP, MEASURED ON THIS FAMILY — and it is worse here than where it was named
+
+I re-derived the bars myself before reading any verifier, and both readings were computed:
+
+```
+head   PAIRED-delta SD, ddof=1 -> bar      RAW per-domain means -> bar      factor
+ 17    0.007423719  == published            0.069069810                      9.30x
+ 19    0.006525442  == published            0.070561930                     10.81x
+ 23    0.004872546  == published            0.072675430                     14.92x
+                     (ddof=0 on the paired deltas gives 0.007260/0.006382/0.004765 -- also wrong,
+                      so the ddof is pinned too)
+```
+
+⚠ **Under the wrong reading NOT ONE CELL would clear ANY bar** — the largest |E| in the family is
+0.039228 against a smallest wrong-bar of 0.069070. **The family would have read "0 of 27 clear": a
+complete, clean-looking false null.** S-307/S-308 recorded this trap at ~6×; on button it is **9–15×**,
+because the raw per-domain `y_install` spread is large relative to the knockout deltas. The producer
+used the frozen S-311 rule correctly.
+
+### 3. ⚠ CORRECTION (a) — S-317 §2's "4.3 % agreement" compares TWO DIFFERENT ESTIMATORS
+
+S-317 §2 wrote: *"PR-CSI-013's `BT_CTRL_01` implied head 19's button bar at 0.006256; the rule computed
+0.006525 — a 4.3 % disagreement against a preregistered 'more than 25 % is a finding' threshold. The
+S-311 rule and the PR-013-derived number agree."*
+
+**That is not what was compared.** My own freeze script computes the "prediction" as
+
+```
+sd  = (hi - lo) / 2.0 / 1.96 * sqrt(23)        # dcs_csi_pr016_freeze.py
+bar = 1.96 * sd / sqrt(23)
+```
+
+and the `1.96` and `sqrt(23)` **cancel algebraically**. Verified numerically:
+
+```
+freeze script's predicted_bar = 0.00625619
+(hi - lo) / 2                 = 0.00625619     identical to 1e-15
+```
+
+**The "prediction" is exactly half of PR-013's BOOTSTRAP ci95 width.** The round trip through `sd` is
+vacuous decoration. So 0.006256 was never an S-311-rule quantity, and 4.3 % is **not** a
+reproducibility measurement — it is the ordinary gap between a percentile-bootstrap half-width and a
+normal-approximation SD estimate on the same 23 numbers.
+
+⛔ **And the true cross-job number is better than the one I reported.** PR-013's `BT_CTRL_01` and
+PR-016's `HD_19` are bit-identical (§4), so the S-311 rule applied to either gives **the same
+0.006525 — a 0.0 % disagreement.** I reported a 4.3 % agreement between the wrong pair of things when
+an exact agreement between the right pair was available.
+
+📌 The prereg's *"more than 25 % is a finding"* clause therefore **never had the meaning I gave it**.
+It compares a bootstrap half-width to a normal-approximation bar; those can differ by more than 25 %
+on a skewed bootstrap **with nothing wrong at all**. The clause is retained as recorded — it is frozen
+— but it is hereby annotated: **it is not a cross-job reproducibility check and must not be cited as
+one.**
+
+### 4. ⚠ CORRECTION (b) — "four days apart" is FALSE, and the truth is a STRONGER result
+
+```
+PR-013 BT_CTRL_01   finished 2026-09-23T08:01:17   job 919531   node n-302
+PR-016 HD_19        finished 2026-09-23T22:43:02   job 923233   node n-301
+```
+
+**Same calendar day, 14 h 42 m apart — not four days.** I asserted a duration without opening a
+timestamp.
+
+⚠ **But the correction cuts the other way on the substance, and I under-sold my own check twice.**
+
+* The two runs were on **DIFFERENT NODES** — n-302 and n-301 — which S-317 never said.
+* S-317 dismissed the agreement as *"Greedy decoding requires this, so it is bookkeeping rather than
+  discovery."* **Greedy decoding requires it only on the SAME hardware.** Across two nodes this is a
+  **cross-node determinism** result, which is precisely the thing **S-014 got wrong and S-019 had to
+  correct** (*"the sha mismatch was NOT cross-node float noise; cross-node builds are bit-identical"*).
+  This is a further independent confirmation of S-019 on a different family, four entries later.
+* The agreement is not merely at the level of `E`: **all 230 per-row `y_install` values are identical**,
+  and `BC_BASE` vs PR-013's `BT_BASE` are likewise 230/230 identical.
+
+**The corrected sentence:** *two jobs, two families, two tag namespaces, two NODES, 14 h 42 m apart,
+agreeing on 230 of 230 rows exactly — a cross-node determinism check that confirms S-019.*
+
+### 5. What this does and does not change
+
+```
+S-317's VERDICT            UNCHANGED. CANNOT ANSWER, spanning rule violated.
+S-317's numbers            UNCHANGED. Every one reproduced from raw rows by an independent implementation.
+S-317 §2's bar paragraph   CORRECTED -- wrong estimators compared; the true disagreement is 0.0%.
+S-317 §4's "four days"     CORRECTED to 14 h 42 m, and STRENGTHENED: different nodes, 230/230 rows.
+the head-level transfer    UNCHANGED (98.3% / 88.7% / 18.4%).
+```
+
+📌 **Both errors are of the same kind and it is worth naming: I asserted a QUANTITY I had not opened.**
+The "four days" came from a memory of the dates rather than from `metadata.json`; the "4.3 %
+agreement" came from comparing two numbers that were printed next to each other without checking they
+were the same kind of number. **Neither would have been caught by any gate in this repo**, because
+both live in prose rather than in an artefact — which is exactly where R27 §6 put the un-pinned screen
+literal, and exactly where this sprint's guards do not reach.
+
+### 6. NOT established this tick
+
+* Nothing about the attention-mass instrument (S-316's blocker) or the next family. Both analyses are
+  in hand and **deliberately not summarised here**: writing up an agent's conclusions I have not
+  re-derived is the failure this entry is about. They are the next tick's work.
+* The GPU queue is **EMPTY** and nothing was launched. No family is frozen.
