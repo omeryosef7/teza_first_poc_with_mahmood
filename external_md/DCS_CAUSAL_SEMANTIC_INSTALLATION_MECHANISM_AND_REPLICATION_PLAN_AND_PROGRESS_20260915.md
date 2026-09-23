@@ -27094,3 +27094,159 @@ comment is true and was written before `--knockout-cells` existed**, and it says
 the control is a valid control. *A quote that is accurate about mechanism can still be silent about
 validity*, and the check that mattered was four directories away in a module nobody had cited this
 sprint.
+
+---
+
+# S-317 — 🔴 **PR-CSI-016 IS READ. VERDICT: CANNOT ANSWER — the SPANNING RULE FIRED ON REAL DATA.** The binomial says p = 0.012346 and **it is not quotable**, because head 23 — the one admitted-eligible head whose screen prediction was *not* L14 — is **null on button** and was dropped, leaving **K_unique = 0**. ⚠ **Without R28 this entry would have read "p = 0.012, the screen transfers across codewords," and that would have been wrong**
+
+## 0. Preconditions, then the frozen read in its own order
+
+```
+32/32 arms landed, job 923233, n-301, rc=0 on every arm, MODEL LOADS 1
+frozen read  runargs/dcs_csi_pr016_read.txt   md5 90ee8a12   UNCHANGED since the commit that preceded the submit
+prereg       configs/dcs_csi_pr016_cell_census_button.json   md5 183d72a7
+```
+
+## 1. STEP 0 — GATE 0, endpoint-blind, **32 of 32 PASS**
+
+```
+BC_BASE  230   0.0 edits   not intervened        PASS
+BC_KO    230   2016.0      ALL 32, no cell list  PASS   <- the S-310 discriminator, on the family that needed it
+27 cells 230   224.0 each  matches prereg        PASS
+HD_17/19/23  2016.0 each   matches prereg        PASS   <- 9 x 224, exactly as predicted
+```
+
+## 2. STEP 1 — the depth map, and the S-311 bar RULE doing its job
+
+The bars did not exist before this family ran. They were computed at read time from each head's own
+whole-head arm, by a rule frozen before launch:
+
+```
+head 17  bar 0.007424      head 19  bar 0.006525      head 23  bar 0.004873
+```
+
+📌 **The one bar that was predictable was predicted, and the prediction holds.** PR-CSI-013's
+`BT_CTRL_01` implied head 19's button bar at **0.006256**; the rule computed **0.006525** — a **4.3 %**
+disagreement against a preregistered *"more than 25 % is a finding"* threshold. **The S-311 rule and
+the PR-013-derived number agree.**
+
+```
+head 17 : 1 of 9 clear -> L14   E = -0.024047  ci95 [-0.032878, -0.017851]
+head 19 : 1 of 9 clear -> L14   E = -0.039228  ci95 [-0.045230, -0.033703]
+head 23 : 0 of 9 clear
+2 of 27 cells clear.  (13 of 27 have a ci95 excluding 0 -- the WEAKER fact, not the criterion.)
+```
+
+## 3. STEP 2 — the preregistered PRIMARY, and why it CANNOT ANSWER
+
+```
+ADMISSION (from the whole-head arm ALONE, ratio >= 1.5):
+  head 17  HD_17  E=-0.028734  ci95 [-0.036964,-0.022843]  |E|/bar=3.87  ADMITTED
+  head 19  HD_19  E=-0.035568  ci95 [-0.042524,-0.029630]  |E|/bar=5.45  ADMITTED
+  head 23  HD_23  E=-0.003038  ci95 [-0.007974,+0.001620]  |E|/bar=0.62  DROPPED (not a miss)
+
+ARGMAX vs the frozen basket-TRAIN screen prediction:
+  head 17  argmax L14   screen said L14  -> MATCH
+  head 19  argmax L14   screen said L14  -> MATCH
+
+K = 2 admitted, M = 2 matches, p = 0.012346  (Binom(K, 1/9), one-sided)
+conditional  K_unique=0  M_unique=0  p = 1.000000
+permutation  over 1 assignment of the prediction multiset  p = 1.000000
+matching layers ['L14'] -> SPANNING RULE VIOLATED
+
+VERDICT: CANNOT ANSWER -- all 2 matching heads share band layer L14, so a shared depth bias and a
+correct screen are INDISTINGUISHABLE here. p = 0.012346 is NOT quotable as a pass.
+```
+
+⚠⚠ **THIS IS THE OUTCOME R28 FORCED INTO THE DESIGN HOURS BEFORE LAUNCH, AND IT IS THE ONE THAT
+HAPPENED.** R28 built a synthetic world in which a shared top-of-band bias pins heads 17 and 19 to L14
+and showed the reader printing `p = 0.001372 ... VERDICT: PASS` over it. **The real data landed in
+almost exactly that world.** Without the spanning rule and the two robustness co-primaries — added on
+2026-09-23 between the freeze and the submit — this entry would now be claiming the screen transfers
+across codewords at p = 0.012.
+
+**The mechanism of the failure is structural, and the prereg priced it:** the design's power to separate
+"the screen is right" from "the band edge is where knockouts bite" rested entirely on head 23, the only
+admitted-eligible head whose prediction was **not** L14. **Head 23 has no button effect at all.**
+
+## 4. ✅ WHAT DID REPLICATE — the head-level cross-codeword test, which had never been run
+
+This is PR-CSI-016's preregistered fallback value, and it delivered:
+
+```
+head   basket (D34)   button (PR-016)   button/basket   button ci95 excludes 0
+ 17     -0.029218       -0.028734           98.3%             YES
+ 19     -0.040109       -0.035568           88.7%             YES
+ 23     -0.016503       -0.003038           18.4%             NO (crosses 0)
+```
+
+**Two of D34's three heads carry essentially the same load on a different codeword. Head 23 does not
+transfer at all.** That is a genuine Gate-B result at HEAD level, on 23 held-out-by-codeword domains,
+and it is the first cross-codeword head measurement for heads 17 and 23 in the sprint.
+
+📌 **And a provenance check that could not have been arranged:** `HD_19` here and PR-CSI-013's
+`BT_CTRL_01` are the same head, the same codeword, the same split — run in **different jobs, different
+families, different tag namespaces, four days apart**.
+
+```
+PR-016 HD_19      = -0.03556758   (job 923233)
+PR-013 BT_CTRL_01 = -0.03556758   (job 919531)
+difference        = +0.00e+00      BIT-IDENTICAL
+```
+
+Greedy decoding requires this, so it is bookkeeping rather than discovery — but it is the check that
+would have caught a population, bank, exclusion-list or model-revision drift between two families
+built five entries apart, and it passes exactly.
+
+## 5. ⚠ The uncomfortable structural fact, stated because it bounds everything above
+
+On **button**, of the four heads with a basket screen prediction:
+
+```
+head 19  predicted L14  -> LIVE on button   (|E|/bar 5.45)
+head 17  predicted L14  -> LIVE on button   (|E|/bar 3.87)
+head 23  predicted L7   -> NULL on button   (|E|/bar 0.62, ci95 crosses 0)
+head  2  predicted L10  -> NULL on button   (D35: E = -0.003522, ci95 crosses 0)
+```
+
+**Both heads whose predicted layer is NOT L14 are null on button, and both heads whose predicted layer
+IS L14 are live.** With n = 4 that is not a finding — but it is the exact configuration that makes this
+design unable to answer its question, and it will make **any** future button family unable to answer
+it too, by the same argument. ⛔ **A second attempt at this test on button is not merely underpowered;
+it is structurally blocked until a live button head with a non-L14 prediction exists.**
+
+## 6. What may and may not be said
+
+The report carries the CANNOT-ANSWER list, which is neither the IF_POSITIVE nor the IF_NULL set:
+
+> *"CANNOT ANSWER is NOT a null and NOT a positive. Neither list applies, because no verdict was
+> reached."*
+
+**PERMITTED** — *"On button validation, the two heads of D34's three that retain an effect (17 and 19,
+at 98.3 % and 88.7 % of their basket values) both concentrate that effect in a single cell at L14, the
+layer the basket TRAIN screen named. Head 23 does not transfer to button at all. The agreement cannot
+be separated from a shared top-of-band bias by this design, because the only head whose prediction
+would have distinguished them is the one with no button effect."*
+
+**FORBIDDEN, and the first is the sentence I would most like to write:**
+
+* *"p = 0.012346"* / *"the screen's cell prediction transfers across codewords."* **The primary is
+  CANNOT ANSWER.** Quoting the binomial alone is forbidden by the prereg whenever two admitted heads
+  share a predicted layer, and here `K_unique = 0`.
+* *"head 23's mechanism is refuted."* It is **null on button**; a null on a codeword where the head has
+  no effect is **CANNOT ANSWER at the head level**, exactly as rule §3.3 says of a floor-limited endpoint.
+* *"the basket result is weakened."* S-306/S-307 stand on their own data. **This is a statement about
+  TRANSFER**, and the transfer question is unresolved, not negative.
+* anything about the other 29 heads, about DOMAIN generality, or about TEST (S-314: spent and
+  selection-contaminated).
+
+## 7. Status
+
+```
+PR-CSI-016   READ and CLOSED. PRIMARY = CANNOT ANSWER (spanning rule). Fallback value DELIVERED:
+             head-level cross-codeword replication, 2 of 3 heads, plus a full button depth map.
+queue        EMPTY.
+NOT ESTABLISHED  whether the screen's cell prediction transfers across codewords. The design that
+             was built to answer it cannot, and §5 says no button family can until a live button
+             head with a non-L14 prediction exists.
+```
