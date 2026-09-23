@@ -22721,3 +22721,61 @@ nothing about the case the code actually takes by default.** The right question 
 **No PR-013 number has ever been read.** 919531 at **167/291**, cumulative 53.0 s/shard, S-282's trigger
 not met. `score_behavior.py` was not opened — R24 touched a gate and a checklist, neither on the running
 family's path.
+
+---
+
+## S-284 — **band revised to 09:29–09:47; S-283's 09:00–09:35 no longer contains it.** And the cumulative rate has drifted **MONOTONICALLY** across the whole load — 39.1 → 58.0 s/shard — which is a different shape from the "periodic outliers" reading and is worth naming
+
+### 1. The qualifying window, and the trigger still not met
+
+```
+193/291 [3:35:40<1:34:45, 58.01s/it]
+window 173 -> 193 : 20 shards = 68.9 s/shard   (QUALIFYING, >= 20)
+S-282 trigger (>= 110 over 20+): NOT MET at 68.9  (63 % of threshold)
+```
+
+### 2. ⚠ The cumulative rate is drifting monotonically, not oscillating
+
+```
+shard  58  ->  39.1 s/shard
+shard  85  ->  47.7
+shard 112  ->  52.0
+shard 139  ->  54.7
+shard 173  ->  56.8
+shard 193  ->  58.0
+```
+
+**Six successive measurements, every one higher than the last.** S-281 called the elevated rate a trend and
+S-282 characterised the 161 s shards as *periodic*. **Both readings were locally right and together they
+understated the shape: the slow shards are periodic, AND the underlying rate is climbing steadily.** The
+per-window numbers oscillate (62 → 53 → 62 → 46 → 69) which is what made "periodic" the natural reading —
+**but the cumulative, which cannot oscillate away a real drift, has risen at every single checkpoint.**
+
+**⛔ No mechanism is proposed.** S-257 offered one and was corrected, S-261 offered another and was refined,
+and S-281 already recorded that two adjusted mechanisms is reason enough to report the curve and stop. **The
+drift is measured; its cause is not.**
+
+### 3. The revised band
+
+```
+at 58.0 s/shard (cumulative) : 98 remaining -> +1.58 h -> family ends ~09:29
+at 68.9 s/shard (recent 20)  : 98 remaining -> +1.88 h -> family ends ~09:47
+```
+
+**S-283 published 09:00–09:35. The new band is 09:29–09:47 — the upper end has moved outside it**, so the
+published figure is retired here rather than left to be quietly wrong. **This is the third revision
+(≈08:00 → 09:00–09:35 → 09:29–09:47), and each one moved later**, which is exactly what a monotone drift
+produces.
+
+**Margin against the 14:20 wall: 4.6 h at the pessimistic end.** S-282's conditional commitment is
+comfortably satisfied.
+
+### 4. What the drift implies for the trigger, checked rather than assumed
+
+**If the cumulative rate keeps climbing at its recent pace (~1.2 s/shard per 20-shard checkpoint), it
+reaches ~64 s/shard by the end of the load — nowhere near 110.** The trigger was derived from the wall, not
+from the trend, and **the trend would have to accelerate sharply rather than merely continue to threaten
+it.** So the drift changes the *projection* and not the *decision*, which is the distinction S-282 drew
+between "is the rate degrading" and "does the wall hold".
+
+**No PR-013 number has ever been read.** `score_behavior.py` was not opened. 98 shards remain (66 % done).
