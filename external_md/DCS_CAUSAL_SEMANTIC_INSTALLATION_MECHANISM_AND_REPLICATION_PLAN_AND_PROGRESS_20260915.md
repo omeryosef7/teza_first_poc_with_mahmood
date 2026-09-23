@@ -22333,3 +22333,77 @@ possibly the safetensors index) **plus** whatever contention the node had at tha
 and both were corrected, so this entry states the shape of the curve and stops there.
 
 **No PR-013 number has ever been read.** `score_behavior.py` was not opened.
+
+---
+
+## S-279 — **S-269's deferred design is written: PR-CSI-014, the cell-level family.** ⛔ **And the FLOOR reshapes the question before anything else — "which layer of head h" can NEVER certify (floor 1/9 = 0.111), so the experiment must ask whether ONE CELL is privileged among ARBITRARY cells.** Design only; `score_behavior.py` not opened
+
+The load has ~3 h left and no scientific work depends on it, so this is the item S-269 deferred *"with its
+blocker named."* `external_md/DCS_CSI_PR014_CELL_LEVEL_DESIGN.md`, 107 lines, md5 `25becb00d98e…`.
+
+### 1. ⛔ The floor decides the design, and it kills the obvious version
+
+```
+288 cells (32 heads x 9 blocks) | a full cell census = 288 arms x ~290 s = 23.2 h  -> INFEASIBLE
+rank among  9 (the nine layers of one head)   -> floor 1/9  = 0.1111  CANNOT certify at 0.05
+rank among 21 (1 candidate + 20 controls)     -> floor 1/21 = 0.0476  CAN certify
+```
+
+**"Which layer of head h carries the load" can never be certified** — a rank among nine has a floor of
+0.111 **for any effect size.** That is the same arithmetic that killed AM-30's original design in S-245 and
+that S-250's Rule 2 encodes. **The question has to be reshaped, not scaled down:** *is cell `(L,h)`
+privileged among **arbitrary** cells?* — 1 candidate against 20 preregistered random cells, floor 1/21.
+
+**And that shape is identical to PR-CSI-013's**, so `dcs_csi_head_single_rank.py` reads it unchanged beyond
+an arm-name prefix, with R22's sign clause and S-246's identity check applying as-is. **23 arms, ~1.9 h.**
+
+### 2. The blocker, stated precisely rather than as "needs new code"
+
+`--knockout-heads` **cannot express a single cell** (§10 ties a head index across the band). A cell family
+needs a new scope — `--knockout-cells L:h` — in the one file the standing constraint forbids touching while
+arms run. **Three consequences follow in order:**
+
+1. **Nothing may be preregistered yet.** A prereg naming a flag that does not exist is **S-167c**
+   (`--multipos`, invented by a plan document, cost a submitted job to discover).
+2. **A 1-cell arm records 1/9 of a 1-head arm's dose** — a *new* collision surface on top of S-246's, so
+   the argv gate needs a `knockout_cells` identity assertion before any such family runs.
+3. **W1 already emits `AtP_by_cell` for all 288 cells**, so a candidate can be nominated by a frozen rule
+   exactly as S-248/S-250 did for the head.
+
+### 3. ⚠ The design choice that matters, and the recommendation
+
+**Two admissible routes for choosing the candidate cell, and they are not equivalent:**
+
+```
+(a) take L* from the SCREEN          -> imports the screen's UNVALIDATED per-cell ordering into the
+                                        candidate, i.e. into the thing under test
+(b) run a 9-arm DESCRIPTIVE pass     -> (L,2) for all nine L as a CENSUS (no rank, no p -- the PR-012
+    first, then confirm on a           pattern), then preregister the confirmatory cell test on a HELD-OUT
+    HELD-OUT axis                      axis (button, or the 3 TEST domains). Costs one 11-arm job, ~0.9 h.
+```
+
+**The document recommends (b)**, for the reason S-245 reshaped AM-30: **choosing on a surrogate and testing
+on the same axis is how a rung-1 finding gets dressed as more.** (a) is cheaper and would leave the result
+bounded to *that cell* rather than *that layer* — which the prereg would then have to say, and which is
+weaker than what the extra 0.9 h buys.
+
+### 4. What it could and could not claim, fixed now
+
+```
+COULD     "cell (L*,h*) is rank 1 of 21 against 20 arbitrary cells" -- a RUNG 1 result (AM-34) at CELL
+          granularity, strictly finer than D32/D33/D34
+COULD     lift D32's caveat "NOT a claim about any single (layer, head) cell" -- FOR ONE CELL ONLY
+COULD NOT say the effect is single-layer: that needs the other 8 cells measured, which is (b)'s
+          DESCRIPTIVE pass and is not a rank test
+COULD NOT revise D32/D33/D34 -- a finer localisation does not retract a coarser one
+```
+
+### 5. Discipline observed
+
+```
+score_behavior.py modifications: 0     <- the constraint that makes this a DESIGN document
+nothing preregistered, nothing frozen, nothing launched
+919531 RUNNING, 13/291 at 37:20 (57.50 s/it displayed) -- untouched by any of this
+```
+
+**No PR-013 number has ever been read.**
