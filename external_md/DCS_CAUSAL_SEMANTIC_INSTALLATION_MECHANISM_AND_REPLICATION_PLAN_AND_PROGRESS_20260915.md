@@ -26118,3 +26118,196 @@ The artefact was not.** Two defects had already published false metadata, one wa
 from flipping a preregistered outcome, and two of the six MAJORs are the *fourth and fifth* instances
 of a class **named in the immediately preceding entry**. Naming a class is not fixing it; the grep has
 to be part of the fix, and now there are tests that fail without it.
+
+---
+
+## S-309 — 🔴 **AMENDMENT to S-294's blocked-axis inventory: `button validation` is NOT blocked. It was blocked for HEAD 2, and only for head 2 — PR-CSI-013's own RANDOM control draws already measured 20 other heads there, and head 19 sits at |E|/bar = 5.69.** ⚠ And a **POST-HOC** recomputation that reframes S-290: with head 19 as candidate, PR-CSI-013 would have ranked **1 of 21, p = 0.047619 — the attainable floor exactly**
+
+### 1. Why this entry exists before any new arm is designed
+
+S-294 measured that **every** candidate held-out axis for a cell-level confirmatory test was blocked,
+each for a different reason, and §6 concluded that design steps 4 and 5 were **UNREACHABLE**. That
+finding has governed every design decision since, including PR-014's and PR-015's demotion to
+descriptive censuses. **It is the single most consequential constraint in the sprint**, so before
+spending 2 GPU-hours it was re-tested against what is actually on disk today.
+
+**Four of its five rows stand. One does not.**
+
+### 2. 🔴 The row that falls: `button validation`
+
+S-294 wrote: *"button validation — **HEAD 2 IS NULL THERE** — D35: E = −0.003522, ci95 crosses 0,
+rank 6 of 21."* Every word is true **of head 2**. PR-CSI-013 also ran **20 further single-head arms on
+button validation** as its control family (job 919531, one allocation, one architecture), and nobody
+had read them as measurements in their own right. Re-derived from
+`reports/DCS_CSI_PR013_BUTTON_HEAD_validation.json`, with `bar = 1.96·SD/√23` back-derived from each
+arm's own published ci95 (the S-294/PR-015 method):
+
+```
+head  arm           E           ci95                      excl0    bar        |E|/bar
+  19  BT_CTRL_01  -0.035568  [-0.042265, -0.029752]  YES    0.006256    5.69   <- LIVE, and large
+  11  BT_CTRL_05  -0.016310  [-0.022155, -0.011091]  YES    0.005532    2.95
+  20  BT_CTRL_19  -0.007248  [-0.009822, -0.004850]  YES    0.002486    2.92
+   6  BT_CTRL_06  -0.005090  [-0.007158, -0.003070]  YES    0.002044    2.49
+  29  BT_CTRL_11  +0.009291  [+0.005855, +0.013067]  YES    0.003606    2.58
+  24  BT_CTRL_00  -0.002854  [-0.004430, -0.001387]  YES    0.001521    1.88
+   2  BT_SINGLE   -0.003522  [-0.015452, +0.006019]  no     0.010736    0.33   <- the blocked one
+```
+
+⚠ **Head 2 is not merely small on button — it is the NOISIEST arm in the family.** Its SD is
+0.0263 against head 19's 0.0153 and head 24's 0.0037. S-294 derived its pessimism from head 2's
+`SD/|E| = 0.92`; head 19 on button is `SD/|E| = 0.43`. **The axis was judged by its worst member.**
+
+**Head 19 agrees across codewords to 88.7 %** (button −0.035568 vs basket −0.040109). And it entered
+PR-013 **by a random draw, not a selection**: the frozen `control_draw_rule` is *"single seed counter
+from 20261101, +1 per attempt, accept iff the head is not already drawn"*, and head 19 came in at seed
+**20261102** — the second draw. **Its button liveness is as clean an observation as this sprint owns.**
+
+**S-294 §5's table is AMENDED, not withdrawn.** The correct row reads:
+
+> `button validation` — **blocked for head 2**; **LIVE for heads 19, 11, 20, 6, 29, 24, 16, 10**,
+> whose effects were measured there by PR-CSI-013's own random control draws.
+
+### 3. The other four rows stand, and today's result does NOT fix them
+
+```
+basket validation   still NOT held out -- it is where the head set was selected            UNCHANGED
+basket train        still CONTAMINATED on the head coordinate (HD_TOPK was a TRAIN pick)   UNCHANGED
+the 3 TEST domains  still need n > 3.8 at the most optimistic SD/|E| ever observed         UNCHANGED, UNTOUCHED
+a third codeword    still does not exist                                                   UNBUILT
+```
+
+⚠ **PR-015 does not repair `basket train`.** Its head set `{17,19,23}` comes from D34, a *validation*
+census — S-307 §6 states this precisely and nothing today changes it.
+
+📌 One refinement worth recording: *"a third codeword"* is **unbuilt, not unbuildable**. The bank
+metadata records `torch = None, cuda_available = None, hostname = c-003` — **the banks are built on
+CPU** — and PR-CSI-008 already screened 40 candidates to 25 survivors. Separately,
+`ts116m_{button,basket}_{gun,knife}` banks **already exist on disk**; those are a *concept* axis, which
+rule §3.4 blocks until installability is measured, and that measurement costs **2 clean arms (~334 s)**.
+
+### 4. ⚠ POST-HOC, AND IT MUST CARRY THAT LABEL EVERY TIME IT IS WRITTEN
+
+The basket TRAIN screen's `ranking_most_negative_first` opens `[19, 17, 23, 6, 13, 2, …]`. **PR-CSI-013
+nominated head 2 — the screen's SIXTH** — because its rule (frozen S-248) took the strongest head from
+the *validation census*. Recomputing PR-013's own rank statistic with head 19 as the candidate and the
+remaining 20 arms as controls, on arms that already exist:
+
+```
+E(head 19) = -0.03556758
+controls strictly better: 0     ties: 0
+rank = 1 of 21     p = 0.047619  =  the attainable floor 1/21, exactly
+```
+
+⛔ **THIS IS NOT A REPLICATION AND MUST NEVER BE QUOTED AS ONE.** Three reasons, all disqualifying on
+their own:
+
+1. **The control pool was drawn for h\* = 2.** Had the frozen rule nominated head 19, it would have
+   drawn 20 controls from the 31 heads other than 19 — a **different pool**, with head 2 eligible.
+   This recomputation reuses a pool built for a different candidate.
+2. **It is read after the fact**, on numbers already published. Selection re-enters the moment a
+   candidate is chosen knowing its value.
+3. **It lands exactly on the floor.** `p = 1/21` is what rank 1 always gives here; it is the *best
+   attainable* number, not evidence of a large effect.
+
+**What it does license, and this is worth a great deal:** it reframes S-290's
+`DOES NOT REPLICATE AT RANK 1` verdict. **What failed on button was the NOMINATION RULE, not
+necessarily the phenomenon.** The TRAIN surrogate this sprint has been treating as the junior
+instrument picked the head that is large and clean on button; the intervention-based validation census
+picked the one that is null and noisiest there. That belongs beside D35 whatever gets launched next —
+and it is a second, independent line of evidence for the same thing PR-015 found: **the screen is a
+better selector than its standing in this sprint implies.**
+
+⚠ **And it is a warning about my own result.** If the screen is the better nominator at HEAD level
+too, then AM-32's *"the screen ranked head 2 only 6th"* was evidence against the **census**, not
+against the **screen** — and I have been reading it the other way round all sprint.
+
+### 5. What is chosen, and what is declined
+
+**PR-CSI-016 — the cell census on `button` validation, heads 17/19/23.** Because:
+
+* it is the first design in this sprint that is **held out on TWO coordinates** — the layer prediction
+  is basket TRAIN (67 domains), the read is button VALIDATION (23 domains). PR-015 held out one.
+* **it can carry a p.** The per-head argmax has an exact floor of 1/9 under *"no depth structure
+  transfers"*; across K heads the all-match floor is `9^-K`: **K=3 gives 1.37e-03, and 2-of-3 gives
+  3.43e-02** — both clear α = 0.05. PR-014 and PR-015 had to be rewritten as descriptive precisely
+  because no such floor existed (S-294 §6). **This is a real test with a preregistrable PASS and FAIL.**
+* it is a direct **Gate B** test (does it transfer?) at cell granularity — the only gate today's result
+  can attack.
+* the 23 domains are **identical** to basket's (S-256), so it controls the **codeword**, not the
+  domain sample. The prereg must say so.
+
+⚠ **Its real risk, priced rather than hidden.** Heads 17 and 23 have **never had a button arm**. If a
+head's whole-head button arm comes in at `|E|/bar < 1.5` its argmax is noise and it must be **dropped
+with its power stated**, not counted as a miss — which could collapse the test to K=1 (floor 0.111, no
+certification). Head 19 is guaranteed in at 5.69. **The fallback value is a powered head-level
+cross-codeword replication of D34 for three heads plus a full button depth map**, which is worth the
+allocation on its own.
+
+**DECLINED — S-306 §8's fresh-head family on basket validation.** S-306 counted 15 fresh live heads
+from D34's ci95 alone. An argmax test needs **two** things per head: a detectable head effect **and a
+sharp screen prediction**. Joining D34 to the screen:
+
+```
+fresh head   |E|/bar   screen argmax margin over runner-up
+     6        2.58            5.96      usable
+     4        1.96            4.42      usable
+    21        2.12            2.17      usable
+    11        1.98            1.51      flat screen
+    13        1.90            1.08      screen is flat -- no prediction exists
+     3        1.41            3.80      underpowered
+```
+
+**About 3 of the 15 clear both filters.** That is K = 3 — the *same* floor as PR-CSI-016 — for 29 arms,
+while being held out on **one** coordinate instead of two and repeating exactly the head-selection flaw
+S-307 §6 flagged. **PR-CSI-016 dominates it.** S-306 §8's "15 fresh heads" is therefore **corrected to
+~3 usable**, and the sketch is withdrawn in favour of the button family.
+
+📌 Also recorded as **closed**, so nobody re-derives it: nominating the heads from the TRAIN screen too
+(`S[h]` top-K = 19, 17, 23, 6, 13, 2, 24, 28) would make head *and* layer TRAIN-derived — the cleanest
+design in principle. Of the fresh ones only head 6 has both a live basket effect and a sharp peak
+(13 has margin 1.08, 24 has |E|/bar 1.30, 28 is null). **K = 1, floor 0.111. NOT RUNNABLE.**
+
+### 6. Gates A–E, honestly
+
+```
+Gate A  NOT TOUCHED. PR-015 is a knockout localisation; Gate A needs candidate-specific RESCUE, and
+        Phase 1 closed NEGATIVE there (rank 4 of 11 on both splits, S-054/S-058).
+Gate B  NOT TOUCHED by today's result -- PR-015 is basket-only. PR-CSI-016 attacks it directly.
+Gate C  DIRECTLY TOUCHED, and this is PR-015's gate: the strongest Gate C evidence the sprint owns.
+        ⛔ But NOT PASSED. Gate C says "causal head/path intervention". We have head + layer; no PATH
+        (§8.7 untouched), no SOURCE POSITIONS (§8.3 untouched), and NO RANK AND NO p -- PR-015's own
+        NO_RANK_TEST and CANNOT_DO bind. Gate C is ADVANCED, not CLEARED.
+Gate D  NOT TOUCHED, and priced as CANNOT ANSWER BEFORE RUNNING: the four peak cells together are
+        58.8% of the all-head knockout (S-307 §1) and a single peak ~12-19%, while every POWER
+        analysis on record (S-004, S-220, S-221, S-222) says the refusal endpoints cannot resolve
+        effects of that size at n = 23.
+Gate E  NOT TOUCHED and correctly so -- it is gated on A-D.
+```
+
+### 7. 📌 The next design after PR-CSI-016, recorded now so it is not lost
+
+**Does the winning cell actually read the DEMONSTRATIONS?** PR-015 localised the *destination*
+— which (layer, head) at the query-codeword row. **Nothing has localised the SOURCE.** The whole chain
+is named *"demonstration → query retrieval"*, and `grep -c nondemo` over this 26,000-line log returns
+**0**.
+
+The controls already exist in the code — `KNOCKOUT_ARMS` includes `nondemo_matched_d{1,2,3}`, and
+`score_behavior.py:1487ff` states such an arm *"inherits the band check, the scope, the head subset, the
+liveness gate and the pre-flight unchanged"*, i.e. **it composes with `--knockout-cells` with no new
+code**. The predecessor log refuted the *count*-matched `nondemo_random` control (C-CONT-019: same
+count, ~5.7× the attention mass); **the strict-pool `nondemo_matched_d*` arms have never been run at any
+granularity in this sprint.** 14 arms, and it can share PR-CSI-016's allocation.
+
+⚠ **It is the design most able to KILL a claim**: if a dose-matched non-demonstration draw at
+(L14, h19) does the same damage, the cell is not a demonstration-retrieval site and *"blocking a
+demonstration→query retrieval pathway"* loses its best single piece of causal evidence.
+
+### 8. Status
+
+```
+S-294's inventory  AMENDED (one row), not withdrawn
+S-306 §8           CORRECTED -- "15 fresh heads" is ~3 usable; the sketch is withdrawn
+S-290 / D35        REFRAMED, post-hoc and labelled: the nomination rule failed, not necessarily the
+                   phenomenon. D35 itself is NOT revised -- a post-hoc rank may not revise a frozen read.
+PR-CSI-016         CHOSEN. Not yet frozen, not yet launched. No arms running.
+```
