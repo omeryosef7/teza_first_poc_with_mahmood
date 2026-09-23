@@ -134,20 +134,41 @@ def main():
             _dose_of[_arm] = 0 if _arm == base[0] else (DOSE if _arm == base[1] else DOSE * _k)
     _shared = _c.Counter(_dose_of.values())
 
+    # ⛔⛔ S-305. THE STATUS COMES FROM THE PREREG, NOT FROM A HARDCODED STRING.
+    # This printed "⚠ PREDICTED, NOT MEASURED ... UNVERIFIED" unconditionally. That was true when S-292
+    # wrote it and became FALSE the moment PR-CSI-014 measured 224.0 on nine cells across nine layers
+    # (S-299) -- so on PR-CSI-015, whose prereg declares STATUS "MEASURED", the sweep asserted the
+    # OPPOSITE OF THE PREREG on every single run.
+    # ⚠ S-301 fixed exactly this hardcode IN THE CENSUS READER and not here. That is the third time in
+    # this sprint a lesson was applied at ONE site (S-295: W4's guard; S-296: one late lookup of
+    # several; now this) -- the pattern is fixing the instance that was in front of me instead of
+    # grepping for the class. The grep is `PREDICTED, NOT MEASURED`, and it is now empty.
+    _dose_status = (pr.get("DOSE_EXPECTATION") or {}).get(
+        "STATUS", "STATUS NOT DECLARED BY THE PREREG -- treat the dose as UNVERIFIED")
     print("%s GATE 0 SWEEP -- %s | %d arms declared%s"
           % (pr["id"], a.split, len(arms),
-             ("  | CELL family: per-cell dose %d = %d/%d layers  \u26a0 PREDICTED, NOT MEASURED"
-              % (PER_CELL, DOSE, NLAYERS)) if IS_CELLS else ""))
+             ("  | CELL family: per-cell dose %d = %d/%d layers  -- %s"
+              % (PER_CELL, DOSE, NLAYERS, _dose_status)) if IS_CELLS else ""))
     if IS_CELLS:
         # The head-level 2016 was MEASURED (S-215/S-246). The per-cell figure divides it by the band
-        # width and so assumes the edits are UNIFORM across layers -- untestable from any artefact on
-        # disk, because the hook counters are summed across layers before being written. Saying so on
-        # every run is the difference between a gate that verifies an identity and one that enforces
-        # an assumption; the first cell arm ever run VALIDATES this arithmetic.
-        print("  \u26a0 the per-cell dose is a PREDICTION from DOSE_UNIT/%d under an untested "
-              "uniformity assumption." % NLAYERS)
-        print("    A cell arm's dose check is therefore UNVERIFIED, not confirmatory, until one "
-              "cell arm has landed and matched it.")
+        # width, which assumed the edits are UNIFORM across layers; PR-CSI-014 then measured it. Which
+        # of those a given family is in is the PREREG's statement, printed above, not this file's.
+        # ⚠ FAIL CLOSED. My first version branched on "PREDICTED" in the status, so an UNDECLARED
+        # status -- whose default text contains neither word -- fell through to the identity branch and
+        # announced an unverified dose AS AN IDENTITY. The test written to assert this test's own intent
+        # caught it immediately. The identity branch now requires the prereg to say MEASURED explicitly;
+        # everything else, absence included, is UNVERIFIED (R20-6: absence is not a pass).
+        _dose_confirmed = ("MEASURED" in _dose_status.upper()
+                           and "PREDICTED" not in _dose_status.upper())
+        if not _dose_confirmed:
+            print("  \u26a0 the per-cell dose is a PREDICTION from DOSE_UNIT/%d under an untested "
+                  "uniformity assumption." % NLAYERS)
+            print("    A cell arm's dose check is therefore UNVERIFIED, not confirmatory, until one "
+                  "cell arm has landed and matched it.")
+        else:
+            print("  the per-cell dose %d = DOSE_UNIT/%d is an IDENTITY for this family per its prereg, "
+                  "so a deviation is a CODE defect" % (PER_CELL, NLAYERS))
+            print("    and a VOID condition -- not a surprising fact about the model (S-299).")
     print("%-12s %6s %14s %12s %7s %5s  %-26s %s"
           % ("arm", "rows", "median_pre", "want", "decode", "viol", "identity", "verdict"))
     landed = fails = 0

@@ -167,8 +167,14 @@ def test_sweep_refuses_a_prereg_with_NEITHER(tmp_path):
     assert "neither head_sets nor cell_sets" in (r.stdout + r.stderr)
 
 
-def test_sweep_announces_a_cell_family_as_UNVERIFIED(tmp_path):
-    """A cell family's dose check must never print as though it confirmed a measured identity."""
+def test_sweep_never_announces_an_UNDECLARED_dose_as_confirmed(tmp_path):
+    """A cell family's dose check must never print as though it confirmed a measured identity.
+
+    ⚠ UPDATED BY S-305, AND THE INTENT IS UNCHANGED. This used to assert the literal string
+    "PREDICTED, NOT MEASURED", which the sweep printed unconditionally. It now reads the status from the
+    prereg (because asserting it was wrong on PR-CSI-015, whose prereg declares MEASURED), and this
+    prereg declares no status at all -- so the assertion is on the PROPERTY the test was always for:
+    an undeclared dose must fall back to UNVERIFIED and must never read as an identity."""
     p = tmp_path / "cells.json"
     p.write_text(json.dumps({
         "id": "PR-CSI-014-TEST", "intervention": {"band": "6-14"},
@@ -177,8 +183,26 @@ def test_sweep_announces_a_cell_family_as_UNVERIFIED(tmp_path):
     r = _sweep(str(p))
     out = r.stdout + r.stderr
     assert "CELL family: per-cell dose 224 = 2016/9 layers" in out, out
-    assert "PREDICTED, NOT MEASURED" in out, out
     assert "UNVERIFIED" in out, out
+    assert "STATUS NOT DECLARED BY THE PREREG" in out, out
+    assert "is an IDENTITY" not in out, (
+        "a prereg that declares NO dose status had its dose announced as an identity")
+
+
+def test_sweep_reports_a_MEASURED_dose_as_an_identity_when_the_prereg_says_so(tmp_path):
+    """The other half of S-305: a family whose prereg declares the dose MEASURED must not be warned
+    about as unverified, or the gate contradicts the preregistration on every run."""
+    p = tmp_path / "cells_measured.json"
+    p.write_text(json.dumps({
+        "id": "PR-CSI-0XX-TEST", "intervention": {"band": "6-14"},
+        "base_arms": ["CELL_BASE", "CELL_KO"],
+        "DOSE_EXPECTATION": {"STATUS": "MEASURED (a prior family observed it)"},
+        "cell_sets": {"CELL_A": [[10, 2]], "CELL_B": [[7, 23]]}}))
+    out = _sweep(str(p)).stdout + _sweep(str(p)).stderr
+    assert "MEASURED" in out, out
+    assert "is an IDENTITY" in out, out
+    assert "is a PREDICTION from DOSE_UNIT" not in out, (
+        "the gate warned that a MEASURED dose is a prediction, contradicting the prereg")
 
 
 def test_sweep_still_reads_no_endpoint_after_the_cell_reader_was_added():
@@ -302,3 +326,35 @@ def test_the_dose_status_banner_is_read_from_the_prereg_not_hardcoded():
     assert '"STATUS", "STATUS NOT DECLARED BY THE PREREG"' in src
     i = src.index("CELL family: per-cell dose")
     assert "PREDICTED, NOT MEASURED" not in src[i:i + 200], "the status is still hardcoded at the banner"
+
+
+# ---------------------------------------------------------------- S-305: no tool hardcodes the status
+
+SWEEP_SRC = open(SWEEP).read()
+CENSUS_SRC = open(CENSUS_READER).read()
+
+
+def test_no_reader_or_gate_hardcodes_the_dose_STATUS():
+    """S-305. The string "PREDICTED, NOT MEASURED" was true when S-292 wrote it and FALSE once S-299
+    measured 224.0 on nine cells. S-301 fixed it in the census reader and NOT in the sweep, so the sweep
+    then asserted the OPPOSITE OF THE PREREG on every PR-CSI-015 run.
+
+    This is the class test, not the instance test: a family's dose status is the PREREG's statement, and
+    no tool may assert it. The only legitimate live occurrence of the literal is a freeze script
+    declaring its own family's status."""
+    for name, src in (("gate0 sweep", SWEEP_SRC), ("census reader", CENSUS_SRC)):
+        code = "\n".join(l for l in src.splitlines() if not l.lstrip().startswith("#"))
+        assert "PREDICTED, NOT MEASURED" not in code, (
+            f"{name} hardcodes a dose status; it must read DOSE_EXPECTATION.STATUS from the prereg")
+        assert 'DOSE_EXPECTATION") or {}).get(' in src or '"STATUS"' in src, \
+            f"{name} does not read the status from the prereg at all"
+
+
+@pytest.mark.skipif(not os.path.exists(PR015), reason="PR-CSI-015 prereg not emitted")
+def test_each_prereg_declares_its_own_dose_status_and_they_DIFFER():
+    """PR-014 froze the dose as a PREDICTION (it was); PR-015 declares it MEASURED (S-299 measured it).
+    If these ever agree, one of them is stating something it did not establish."""
+    a = json.load(open(PR014))["DOSE_EXPECTATION"]["STATUS"]
+    b = json.load(open(PR015))["DOSE_EXPECTATION"]["STATUS"]
+    assert "PREDICTED" in a.upper(), a
+    assert "MEASURED" in b.upper() and "PREDICTED" not in b.upper(), b

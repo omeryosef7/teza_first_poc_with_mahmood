@@ -25377,3 +25377,97 @@ DONE.json 1 of 29
 The monitor is armed on `[w3] 3/29` for the first cell arm, where the dose must read **224** — an identity
 since S-299, and VOID condition 7 if it does not. The frozen read (`4841486c`) is untouched and its four
 per-head outcomes remain open.
+
+---
+
+## S-305 — ✅ **the dose identity holds on PR-CSI-015's first cell arm (224.0).** ⚠ And the GATE 0 sweep was **asserting the opposite of the prereg on every run** — S-301 fixed that hardcode in the reader and not here, the **third** time this sprint a lesson was applied at one site. Then **the test I wrote to assert my own fix's intent caught the fix failing OPEN**
+
+### 1. The dose identity, which is now a VOID condition rather than a hope
+
+```
+[w3] 1/29 CL_BASE     ok rc=0  1464.2 s      2/29 CL_KO  ok rc=0  215.9 s
+[w3] 3/29 CL_H17_L06  ok rc=0   165.6 s
+
+CL_BASE      230 rows     0.0 edits      0  not intervened   PASS
+CL_KO        230       2016.0         2016  ALL 32           PASS
+CL_H17_L06   230        224.0          224  matches prereg   PASS
+                                            <- dose NOT identity-diagnostic: 27 arms expect 224 (S-246/R26)
+```
+
+**224.0 on the first cell arm of a different head.** VOID condition 7 not triggered, and R26's derived
+flag correctly names **27 arms sharing the dose** — the collision on the layer *and* head axes at once,
+which is why identity comes from `knockout_cells` alone.
+
+### 2. ⚠ THE SWEEP WAS CONTRADICTING THE PREREGISTRATION ON EVERY RUN
+
+The sweep printed, unconditionally:
+
+```
+⚠ PREDICTED, NOT MEASURED
+  ⚠ the per-cell dose is a PREDICTION from DOSE_UNIT/9 under an untested uniformity assumption.
+    A cell arm's dose check is therefore UNVERIFIED, not confirmatory ...
+```
+
+**PR-CSI-015's prereg declares `STATUS: MEASURED`**, because S-299 measured 224.0 on nine cells across nine
+layers. So the gate asserted the opposite of the preregistration every time it ran on this family — and
+worse, it asserted it in the *safe-sounding* direction, which is the direction least likely to be
+questioned.
+
+⚠ **S-301 fixed exactly this hardcode IN THE CENSUS READER and not in the sweep.** That is the **third**
+instance of the same pattern:
+
+```
+S-295  W4's NO_RANK_TEST guard      -- correct, and unreachable because one line sat above it
+S-296  a late prereg lookup         -- one was fixed in S-261; the others were left late
+S-305  the hardcoded dose status    -- fixed in the reader by S-301, left in the sweep
+```
+
+**The pattern is fixing the instance in front of me instead of grepping for the class.** So this time the
+grep is part of the fix and is recorded: `grep -rn "PREDICTED, NOT MEASURED" scripts/ src/` now returns
+only comments plus **`pr014_freeze.py:132`, which is that prereg declaring its own status** — correct, and
+the only legitimate live occurrence.
+
+### 3. 🔴 AND MY FIX FAILED OPEN, CAUGHT BY THE TEST I WROTE FOR IT
+
+The fix branched on `if "PREDICTED" in _dose_status.upper()`. The fallback for a prereg with **no declared
+status** is *"STATUS NOT DECLARED BY THE PREREG -- treat the dose as UNVERIFIED"* — which contains neither
+"PREDICTED" nor "MEASURED", so it fell through to the `else` branch and printed:
+
+```
+the per-cell dose 224 = DOSE_UNIT/9 is an IDENTITY for this family per its prereg
+```
+
+**An UNDECLARED dose announced as an IDENTITY.** Fail-open, on exactly the field VOID condition 7 turns on.
+
+**The test caught it within a minute of being written**, because I wrote it to assert the *property* the
+old test was for ("must never print as though it confirmed a measured identity") rather than the literal
+string the old test happened to check. Inverted to fail closed: the identity branch now requires the prereg
+to say **MEASURED** explicitly, and absence is UNVERIFIED (R20-6).
+
+**All three cases verified:**
+
+```
+PR-015 (prereg: MEASURED)   -> "... is an IDENTITY for this family per its prereg ... a CODE defect"
+PR-014 (prereg: PREDICTED)  -> the original UNVERIFIED warning, unchanged
+no status declared          -> "STATUS NOT DECLARED BY THE PREREG", UNVERIFIED, and NOT an identity
+```
+
+### 4. What this says about how I am working
+
+Three fixes today were worse than or incomplete relative to the defect they addressed (S-296's byte-identity
+break, S-300's key rename, and this one's fail-open), and **all three were caught by checking my own change
+rather than by a later review.** The habit that caught them is the same each time: *verify the fix against
+the thing that already depended on it, and write the test for the property rather than the string.* The
+failure mode is also the same each time: **fixing an instance when the defect is a class.**
+
+### 5. Verification and state
+
+```
+99 tests pass across the five affected files (2 new: the undeclared-status fail-closed case, and the
+  MEASURED case that must NOT be warned about; 1 updated to assert intent instead of a literal)
+922176 RUNNING on n-301, 35 min elapsed, 4 of 29 arms landed, GATE 0 clean on all landed
+```
+
+A monitor is armed on 29/29. The frozen read (`4841486c`) is untouched, and its four per-head outcomes —
+including **outcome B, where the screen's prediction fails and AM-38 is the claim at risk** — remain open.
+No endpoint has been read.
