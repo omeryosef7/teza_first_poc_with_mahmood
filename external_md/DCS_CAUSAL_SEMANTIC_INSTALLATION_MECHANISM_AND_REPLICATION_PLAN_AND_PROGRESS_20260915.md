@@ -24670,3 +24670,101 @@ Model load time on n-301 is unknown: S-261 established it is a per-node **page-c
 than a property of the host class, so it may be ~50 s warm or hours cold. The band from here will be
 projected from the arms themselves once two have landed — and per S-289, from the settled series rather
 than a prefix of it.
+
+---
+
+## S-298 — ✅ **THE PER-CELL DOSE IS MEASURED AND IT IS 224.** `DOSE_UNIT / band_width` stops being a prediction: the `--knockout-cells` semantics written in S-291 are what S-291 claimed. Plus a THIRD model-load data point that refines S-261's page-cache rule from binary to a continuum
+
+### 1. The dose gate, which was the reason this family was worth GPU time at all
+
+R26 fixed the decision rule before the number existed: `224` → run to completion; anything else → cancel,
+because it would be a **code defect** rather than a fact about the model.
+
+```
+python scripts/gates/dcs_csi_pr012_gate0_sweep.py \
+  --prereg configs/dcs_csi_pr014_cell_census_basket.json \
+  --tag-prefix csi7_cell_basket_validation --split validation --require-slurm-job 921664
+
+arm       rows  median_pre   want  decode viol  identity          verdict
+CL_BASE    230         0.0      0       0    0  not intervened    PASS
+CL_KO      230      2016.0   2016       0    0  ALL 32            PASS
+CL_L06     230       224.0    224       0    0  matches prereg    PASS  <- dose NOT identity-diagnostic:
+                                                                          9 arms expect 224 (S-246/R26)
+```
+
+**`CL_L06` records exactly 224.0.** So:
+
+- **`DOSE_UNIT / band_width` is now a MEASURED IDENTITY, not a prediction.** S-292 flagged it as
+  `PREDICTED, NOT MEASURED` resting on an untested uniformity assumption, and said the first cell arm
+  would validate the arithmetic. It has: **2016 does decompose as 9 × 224 on these rows.**
+- **The `--knockout-cells` implementation is correct in the way that mattered.** S-291 reasoned that one
+  hook per layer, all sharing one `stats` dict, divides the edit budget by the band width. R26 tested that
+  at toy scale; this tests it on Llama-3.1-8B at the real row count. **The one thing GPU time could settle
+  about my own code, it settled in the affirmative.**
+- **`CL_KO` records 2016.0**, independently reproducing the all-32 figure S-246/S-215 measured on a
+  different family and a different node.
+
+⚠ **And R26's correction is visible doing its job in that output.** The flag reads *"dose NOT
+identity-diagnostic: 9 arms expect 224"* — which is the truth, and which the pre-R26 rule
+(`want_dose not in (DOSE_UNIT,)`) would have reported as diagnostic because 224 ≠ 2016. Identity came from
+`knockout_cells` (*"matches prereg"*), exactly as the frozen read requires.
+
+### 2. The model load: a THIRD data point, and it is in neither camp
+
+```
+[w3] MODEL LOAD #1 (1339.1 s)     = 22.3 min on n-301
+projected from the .err tqdm bar at 221/291 shards: ~1365 s  -> 1.9% out
+```
+
+```
+n-302  COLD (S-285)   19278.4 s   321.3 min
+n-301  THIS RUN        1339.1 s    22.3 min     <- NEITHER extreme
+n-307  WARM (S-261)       47.5 s     0.8 min
+```
+
+⚠ **S-261's rule reads as BINARY and this run is between the poles by more than an order of magnitude on
+each side.** S-261 concluded the variable is *"whether the snapshot is WARM in that node's page cache -- a
+ONE-OFF per node, not a property of the node"*, after S-147 (free memory), S-249 (job count) and S-257
+(host class) each failed. **The refinement: cache residency is a CONTINUUM, not two states.** 22.3 minutes
+is what a partially-resident snapshot costs — 14× faster than a cold read of the same ~16 GB and 28×
+slower than a warm one.
+
+**This is the fifth iteration of one rule** (S-147 → S-249 → S-257 → S-261 → here), and unlike the first
+three it does not refute its predecessor: the mechanism S-261 named is right, and only its implied
+two-valuedness was wrong. Recording it because "warm or cold" is the shape a future projection would
+assume, and a 22-minute middle would then be read as an anomaly rather than as the ordinary case.
+
+### 3. Arm times, and why no band is published from them yet
+
+```
+1/11  CL_BASE   1536.9 s   (includes the 1339.1 s load; 197.8 s of actual scoring)
+2/11  CL_KO      205.4 s
+3/11  CL_L06     151.1 s   <- a 1-cell arm is FASTER than the all-32/9-layer arm, as it should be:
+                              224 mask edits per row instead of 2016
+```
+
+**A projection from one cell arm is a projection from a prefix, which S-288 and S-289 each breached.** So a
+band is quoted rather than a point, and its provenance is stated as n = 1:
+
+```
+8 remaining x 151.1 s (the one cell arm)     -> ~14:38
+8 remaining x 205.4 s (CL_KO, a heavier arm) -> ~14:45
+```
+
+The remaining eight are all 1-cell arms of identical shape to `CL_L06`, so the low end is the more likely;
+but that is a structural argument, not a measurement, and S-289's lesson was that widening a window does
+not make it representative.
+
+### 4. What is still unknown, and it is the whole scientific question
+
+**The dose is bookkeeping. Nothing about DEPTH is known.** No endpoint has been read, the frozen read
+(`cdf959f6`) has not been executed, and its other two pre-committed outcomes are open:
+
+- **the depth map** against S-294's bar of `|E| > 0.019181` (38.8% of the whole nine-cell effect), with
+  **nothing-clearing-it preregistered as coherent and, on S-294's arithmetic, the EXPECTED outcome if the
+  load is spread evenly across nine cells (~11.1% each ≈ 0.0055, well under the bar);**
+- **S-269's L10 claim**, tested against an intervention for the first time, with its n = 1 head limit
+  stated in both directions.
+
+A monitor is armed on 11/11. `score_behavior.py` has not been opened and will not be while these arms run
+(PR-CSI-003 VOID condition, now active again).
