@@ -797,3 +797,96 @@ def test_a_HEAD_family_whose_KO_predates_knockout_cells_is_still_READABLE():
     out = r.stdout + r.stderr
     assert "GATE 0 PASS on all 44 arms" in out, (
         "D34 is no longer re-readable -- the S-310 denominator check over-reached:\n%s" % out[-700:])
+
+
+# ================================================================ S-315
+# R27/S-308 taught the sweep that "run dirs exist but were REFUSED" is a FAILURE rather than "not
+# landed". That is right for a ledger mismatch, a bad DONE.status or two complete dirs -- and WRONG
+# for an arm being written right now, whose DONE.json simply does not exist yet. The frozen reads say
+# GATE 0 "may be swept incrementally at any time", so under S-308 alone every mid-family sweep cried
+# wolf. These two tests pin BOTH halves, because fixing one by breaking the other is the failure mode.
+
+SWEEP_SCRIPT = os.path.join(ROOT, "scripts", "gates", "dcs_csi_pr012_gate0_sweep.py")
+
+
+def _sweep_farm(tmp_path, mutate):
+    """Scratch SCORE_DIR of symlinks to PR-015's 29 real arm dirs. `mutate(dst, name)` is called for
+    each arm dir and may choose to materialise it instead of symlinking."""
+    import glob as _g
+    farm = tmp_path / "score"
+    farm.mkdir()
+    for d in sorted(_g.glob(os.path.join(
+            ROOT, "outputs/boombness/score_behavior/csi8_cell3_basket_validation_*"))):
+        base = os.path.basename(d)
+        if not mutate(farm, d, base):
+            os.symlink(d, farm / base)
+    return str(farm)
+
+
+def _run_sweep(farm):
+    import importlib.util as _ilu
+    spec = _ilu.spec_from_file_location("sweep_s315", SWEEP_SCRIPT)
+    mod = _ilu.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    mod.census.rederive.SCORE_DIR = farm
+    old = sys.argv[:]
+    sys.argv = ["s", "--prereg", PR015, "--tag-prefix", "csi8_cell3_basket_validation",
+                "--split", "validation", "--require-slurm-job", "922176"]
+    import io as _io
+    import contextlib
+    buf = _io.StringIO()
+    try:
+        with contextlib.redirect_stdout(buf):
+            rc = mod.main()
+    except SystemExit as e:
+        rc = e.code
+    finally:
+        sys.argv = old
+    return rc, buf.getvalue()
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+def test_an_IN_FLIGHT_arm_is_not_reported_as_a_GATE_0_FAILURE(tmp_path):
+    """S-315. An arm still being written has a run dir and no DONE.json. It must be reported as IN
+    FLIGHT -- neither passed nor failed -- and the sweep must NOT exit non-zero, or every incremental
+    sweep during a live family is a false alarm."""
+    def mutate(farm, src, base):
+        if "_CL_H23_L14_" not in base:
+            return False
+        dst = farm / base
+        dst.mkdir()
+        for f in os.listdir(src):
+            if f == "DONE.json":
+                continue                       # <- the arm has not finished writing
+            os.symlink(os.path.join(src, f), dst / f)
+        return True
+    rc, out = _run_sweep(_sweep_farm(tmp_path, mutate))
+    assert "IN FLIGHT" in out, out[-700:]
+    assert rc in (0, None), "an in-flight arm was treated as a failure: rc=%r\n%s" % (rc, out[-700:])
+    assert "THIS SWEEP IS PARTIAL" in out, "a partial sweep did not say so"
+    assert "every landed arm passes (28 of 29)" in out, out[-400:]
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+def test_S308_STILL_HOLDS_a_refused_arm_that_HAS_a_DONE_json_is_still_a_FAILURE(tmp_path):
+    """The companion, and the one that matters: S-315 must not undo S-308. An arm whose DONE.json
+    ledger disagrees with its results.jsonl has FINISHED writing and is corrupt, not in flight.
+    R27 demonstrated that this used to print 'every landed arm passes (28 of 29)' and exit 0 -- on
+    CL_H19_L14, one of the three cells that cleared the bar."""
+    def mutate(farm, src, base):
+        if "_CL_H19_L14_" not in base:
+            return False
+        dst = farm / base
+        dst.mkdir()
+        for f in os.listdir(src):
+            if f == "DONE.json":
+                done = json.load(open(os.path.join(src, f)))
+                done["rows_written"] = int(done.get("rows_written", 230)) + 1   # ledger lies
+                (dst / f).write_text(json.dumps(done))
+            else:
+                os.symlink(os.path.join(src, f), dst / f)
+        return True
+    rc, out = _run_sweep(_sweep_farm(tmp_path, mutate))
+    assert "IN FLIGHT" not in out, "a corrupt FINISHED arm was excused as in flight:\n%s" % out[-700:]
+    assert rc not in (0, None), "a ledger mismatch was not a failure: rc=%r\n%s" % (rc, out[-700:])
+    assert "GATE 0 FAIL" in out and "CL_H19_L14" in out, out[-700:]

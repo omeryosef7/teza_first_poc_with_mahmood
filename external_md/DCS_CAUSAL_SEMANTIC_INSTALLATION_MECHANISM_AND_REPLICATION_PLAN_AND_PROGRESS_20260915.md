@@ -26849,3 +26849,112 @@ S-294 §5/§6  its "3" is corrected; its VERDICT (no admissible held-out axis) S
 line 1572    "TEST is still unspent" is FALSE and is corrected here.
 ESCALATED    whether any second TEST read is admissible under §3.2 is a scope question for Omer.
 ```
+
+---
+
+## S-315 — ⚠ **MY OWN R27/S-308 FIX MISFIRED THE FIRST TIME IT MET A LIVE FAMILY: it reported an IN-FLIGHT arm as a GATE 0 FAILURE and exited 1.** The frozen reads say GATE 0 may be swept at any time, so under S-308 every mid-family sweep was a false alarm. Fixed by a filesystem fact rather than a text parse, with both halves pinned
+
+### 1. How it surfaced, which is the good part
+
+PR-CSI-016 is running. The frozen read permits an incremental GATE 0 sweep at any time — it is
+endpoint-blind and exits 3 rather than 0 when nothing has landed — so I ran one at 5 of 32 arms:
+
+```
+BC_BASE     230      0.0      0   0  0  not intervened        PASS
+BC_KO       230   2016.0   2016   0  0  ALL 32, no cell list  PASS
+BC_H17_L06  230    224.0    224   0  0  matches prereg        PASS
+BC_H17_L07  230    224.0    224   0  0  matches prereg        PASS
+BC_H17_L08  230    224.0    224   0  0  matches prereg        PASS
+BC_H17_L09  ⚠ GATE 0 FAIL -- 1 run dir(s) EXIST but were REFUSED: 0 complete run dirs (need exactly 1)
+
+GATE 0: 1 FAILURE(S) over 6 arm(s) ...    EXIT=1
+```
+
+**`BC_H17_L09` was being written at that instant.** Nothing is wrong with it.
+
+### 2. The defect, stated exactly
+
+R27 found the sweep swallowing every `strict_run_dir` refusal into `-- not landed --`, counting toward
+neither `landed` nor `fails` — so a corrupted ledger on `CL_H19_L14`, *one of the three cells that
+cleared PR-015's bar*, printed *"every landed arm passes (28 of 29)"* and exited 0. S-308's fix was:
+
+> *"An arm that HAS directories and was refused is a FAILURE; only an arm with NO directory at all is
+> 'not landed'."*
+
+**That is right for a ledger mismatch, a bad `DONE.status`, or two complete dirs. It is wrong for an
+arm that has not finished writing**, which also has a directory and is also refused — because its
+`DONE.json` does not exist yet. S-308 conflated *in flight* with *broken*.
+
+⚠ **And the consequence is worse than the defect it replaced.** A sweep that reports a spurious FAIL on
+every incremental run is a sweep whose **real** failures get waved through as "oh, that's just the
+running arm." S-308 made the guard louder and therefore easier to ignore.
+
+### 3. The fix, and why it is a filesystem fact rather than a parse
+
+The discriminator could have been read out of `strict_run_dir`'s refusal text — *"0 complete run dirs"*
+versus a ledger message. **That would have been a substring test on prose, which is the exact class
+S-305 and R28 have now caught twice** (`"MEASURED" in s` matching `"NOT MEASURED"`). So instead:
+
+```
+_done = [x for x in _cands if os.path.exists(os.path.join(x, "DONE.json"))]
+if not _done:   -> IN FLIGHT: neither passed nor failed, no exit code change
+else:           -> GATE 0 FAIL, exactly as S-308 requires
+```
+
+An arm none of whose candidate directories carries a `DONE.json` has not finished writing. That is a
+fact about the disk, not about the wording of an error.
+
+📌 **A DIED arm is indistinguishable from an in-flight one at this instant, and is reported the same
+way — INCOMPLETE, neither passed nor failed.** Only the final sweep, once the job is gone, can tell
+them apart, and the arm-count guard is what catches a family that never completed. Recorded so the
+`IN FLIGHT` label is not later mistaken for a liveness claim.
+
+And a partial sweep now says so in its own banner, because the failure mode of a mid-family sweep is
+being mistaken for the family's verdict:
+
+```
+GATE 0: every landed arm passes (5 of 32). ... No endpoint field was read.
+  .. 1 arm(s) IN FLIGHT (run dir present, no DONE.json). THIS SWEEP IS PARTIAL and is NOT the
+     family's GATE 0 verdict.
+```
+
+### 4. Verification — BOTH halves, because fixing one by breaking the other is the failure mode
+
+Two tests on a scratch `SCORE_DIR` of symlinks to PR-015's 29 real arm dirs, one dir materialised:
+
+```
+DONE.json REMOVED from CL_H23_L14        -> must be IN FLIGHT, rc 0, "THIS SWEEP IS PARTIAL",
+                                            "every landed arm passes (28 of 29)"
+DONE.json ledger CORRUPTED on CL_H19_L14 -> must be GATE 0 FAIL, rc != 0, NOT excused as in flight
+```
+
+⚠ **My first attempt at the vacuity check was invalid and I nearly recorded it as a pass.** I hand-cut
+the new branch out of the file, which left a `NameError`, so both tests failed — *for a crash, not for
+the behaviour*. **A test that fails because the code does not import proves nothing.** Redone properly
+by reverting the file to its committed S-308 state with `git stash`:
+
+```
+against committed S-308:  IN-FLIGHT test  FAILS -- "IN FLIGHT" absent; the arm was refused and
+                                                  counted as a failure        <- the right reason
+                          S-308 test      PASSES                              <- already correct there
+against S-315:            both PASS
+```
+
+**That is the pattern a fix should show: the new property fails without it, and the old property holds
+either way.** 65 tests pass across `test_csi_cell_identity.py` and `test_csi_pr016_argmax.py`.
+
+### 5. 📌 A smaller one, recorded because it cost me a wrong belief for several minutes
+
+My own progress grep was `^\[w3\] [0-9]+/32`. The runner right-aligns the counter — `[w3]  5/32` —
+so the pattern matched **nothing** and I read "0 arms landed" at 36 minutes into a healthy job and
+began looking for a stall that did not exist. **A scratch grep is not a tool and is not committed, but
+a monitoring pattern that silently matches nothing reports "no progress" and "no failures" in exactly
+the same voice.** The corrected pattern is `^\[w3\] +[0-9]+/32`.
+
+### 6. State
+
+```
+PR-CSI-016  job 923233 RUNNING on n-301. GATE 0 clean on every landed arm; the sweep is PARTIAL.
+            arm times ~155 s (button), BC_BASE 1428.4 s incl. the 1265.8 s load, BC_KO 208.1 s.
+NO endpoint has been read. The frozen read (90ee8a12) is untouched and its PRIMARY is open.
+```

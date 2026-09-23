@@ -178,7 +178,7 @@ def main():
             print("    and a VOID condition -- not a surprising fact about the model (S-299).")
     print("%-12s %6s %14s %12s %7s %5s  %-26s %s"
           % ("arm", "rows", "median_pre", "want", "decode", "viol", "identity", "verdict"))
-    landed = fails = refused = 0
+    landed = fails = refused = incomplete = 0
     for arm in arms:
         # ⚠ R27/S-308. This block used to swallow EVERY refusal from strict_run_dir into
         # "-- not landed --", incrementing neither `landed` nor `fails`. R27 demonstrated it on the
@@ -196,10 +196,30 @@ def main():
         except (SystemExit, Exception) as e:
             if not _cands:
                 print("%-12s -- not landed --" % arm); continue
+            # ⚠ S-315 -- MY OWN R27/S-308 FIX MISFIRED ON A LIVE FAMILY, and it misfired the FIRST
+            # time it met one. That fix said "an arm that HAS directories and was refused is a
+            # FAILURE", which is right for a ledger mismatch, a bad DONE.status or two complete dirs
+            # -- and WRONG for an arm that is being written RIGHT NOW. An in-flight arm also has a
+            # directory that exists and is refused, because its DONE.json does not exist yet. The
+            # frozen read says GATE 0 "may be swept incrementally at any time", so under S-308 every
+            # mid-family sweep would report a spurious FAIL and exit 1 -- which is worse than the
+            # defect it replaced, because a sweep that always cries wolf is a sweep whose real
+            # failures get waved through.
+            # The discriminator is a FILESYSTEM FACT, not a parse of the refusal text: an arm none of
+            # whose candidate directories carries a DONE.json has not finished writing. (A DIED arm
+            # looks the same at this instant and is reported the same way -- INCOMPLETE, not passed
+            # and not failed. Only the final sweep, when the job is gone, can tell them apart, and
+            # the arm-count guard is what catches a family that never completed.)
+            _done = [x for x in _cands if os.path.exists(os.path.join(x, "DONE.json"))]
+            if not _done:
+                incomplete += 1
+                print("%-12s  .. IN FLIGHT -- %d run dir(s), no DONE.json yet (neither passed nor "
+                      "failed)" % (arm, len(_cands)))
+                continue
             fails += 1
             refused += 1
-            print("%-12s  \u26a0 GATE 0 FAIL -- %d run dir(s) EXIST but were REFUSED: %s"
-                  % (arm, len(_cands), str(e)[:160]))
+            print("%-12s  \u26a0 GATE 0 FAIL -- %d run dir(s) EXIST and %d carry a DONE.json, but "
+                  "were REFUSED: %s" % (arm, len(_cands), len(_done), str(e)[:150]))
             continue
         landed += 1
         L = liveness(d)
@@ -283,6 +303,11 @@ def main():
     print("GATE 0: every landed arm passes (%d of %d). Identity verified from each arm's own "
           "%s. No endpoint field was read."
           % (landed, len(arms), "knockout_cells" if IS_CELLS else "knockout_heads"))
+    if incomplete:
+        # S-315: a partial sweep must never read as a finished one. The count above already
+        # discloses landed-vs-declared; this names WHY the rest are missing.
+        print("  .. %d arm(s) IN FLIGHT (run dir present, no DONE.json). THIS SWEEP IS PARTIAL and "
+              "is NOT the family's GATE 0 verdict." % incomplete)
 
 
 if __name__ == "__main__":
