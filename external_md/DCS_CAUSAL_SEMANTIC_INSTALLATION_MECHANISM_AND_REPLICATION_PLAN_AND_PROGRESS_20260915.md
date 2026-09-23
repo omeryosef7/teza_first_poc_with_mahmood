@@ -24138,3 +24138,147 @@ making explicitly rather than by momentum, and the numbers it needs are now on r
 
 No arms running (`squeue`, not `sacct`). No frozen artefact touched. No endpoint was re-read: §2 recomputes
 per-domain values through W4's own `by_domain`, and §3 uses only the census report's published `E`/`ci95`.
+
+---
+
+## S-295 — **PR-CSI-014 IS FROZEN** as a per-CELL CENSUS (11 arms, no rank, no p), emitted mechanically and reproducibly. **And W4's anti-KeyError guard was itself preceded by the KeyError it was written to prevent** — latent for exactly as long as every census happened to carry `head_sets`
+
+### 1. The decision S-294 left open, and the reason it went the way it did
+
+S-294 ended with a judgement to make explicitly: is a 9-cell descriptive census worth ~2 GPU-hours once
+steps 4–5 are unreachable? **Decided: yes** — and the deciding reason is not the depth map.
+
+**The per-cell dose 224 is a property of the `--knockout-cells` code I wrote in S-291.** It is currently a
+PREDICTION resting on an untested uniformity assumption (S-292 §1). If a landed cell arm records anything
+other than 224, **my implementation's semantics are wrong** — the per-layer hooks are not dividing the
+edit budget the way I reasoned they do. That is a correctness check on new code, not a nice-to-have, and
+it cannot be obtained any other way: the counters are summed across layers before they are written.
+
+The other two purposes (a depth map strictly finer than D34; the first intervention test of the screen's
+per-CELL ordering, which AM-32 showed ranked h* only 6th at head level) stand on their own but would not
+alone have justified the GPU time.
+
+### 2. The freeze, and h* is READ rather than re-derived
+
+```
+scripts/gates/dcs_csi_pr014_freeze.py          (NEW, md5 e8be3268)
+python scripts/gates/dcs_csi_pr014_freeze.py
+  [pr014] h* = 2  READ FROM configs/dcs_csi_pr013_button_head_replication.json (md5 5ab06e3a)
+  [pr014] band 6-14 -> 9 layers -> 11 arms (CL_BASE, CL_KO, CL_L06..CL_L14)
+  [pr014] per-cell dose 224 (DOSE_UNIT 2016 / 9 band layers) -- PREDICTED, NOT MEASURED
+  [pr014] a cell must reach |E| > 0.019181 to exclude 0 on 23 domains = 38.8% of the whole head effect
+  [pr014] if the load is even (~11.1%/cell) NOTHING clears the bar -- preregistered as COHERENT
+  [pr014] wrote configs/dcs_csi_pr014_cell_census_basket.json (6666 bytes)
+  [pr014] md5 = 7b21f6596890696d05a143037d36ddd5
+```
+
+**The emission is DETERMINISTIC** — re-run to a second path, byte-identical md5 `7b21f659`. "Mechanically
+emitted" is only a claim worth making if it reproduces, so it was checked rather than asserted.
+
+**h\* is not re-derived here.** It is read from PR-CSI-013's prereg, itself emitted under the rule frozen
+2026-09-22 (`fae4adc6`) before any census number existed, and the source md5 is recorded in the new
+prereg's `h_star_provenance`. A second derivation of one selection is the defect S-246 fixed in four
+tools at once.
+
+### 3. What the prereg forecloses, written down before any arm runs
+
+- **`NO_RANK_TEST`**, and `control_prefix`/`n_controls` **deliberately absent**, so the rank tooling
+  refuses rather than inventing a family — PR-CSI-012's construction.
+- **`DETECTABILITY_PREREGISTERED`** carries S-294's threshold (`|E| > 0.019181`, 38.8% of the whole head
+  effect) **and the coherent outcome where nothing clears it**: *"If the load is spread evenly (~11.1%
+  each) NO CELL CLEARS THE BAR … it must NOT be reported as a failed experiment, and it must not be
+  rescued by dropping to a weaker bar after the fact."*
+- **`DOSE_EXPECTATION`** states 224 with `STATUS: PREDICTED, NOT MEASURED` and says the first arm
+  validates the arithmetic.
+- **`DOSE_IDENTITY_IS_BLIND_HERE`** records the new collision: a cell arm's `knockout_heads` is empty,
+  which `recorded_heads()` maps to `"ALL"`, so identity comes from `knockout_cells` only.
+- **`VOID_CONDITIONS`** adds two that are specific to cells: an arm whose recorded `knockout_cells`
+  disagrees with `cell_sets`, and a cell whose layer lies outside the band (it would install no hook and
+  score as a clean null).
+
+### 4. Every gate accepts it, and every rank tool refuses it
+
+```
+argv gate  --check  -> BASE-ARM CHECK PASSED: 'CL_BASE' carries no intervention flag; all 10 others
+                       carry --intervene
+                       CODEWORD CHECK PASSED: basket -> bank + exclusions exist, every arm agrees
+                       CHECK PASSED: 11 arms; 9 carry a frozen cell list, 2 carry none
+GATE 0 sweep        -> PR-CSI-014 GATE 0 SWEEP | CELL family: per-cell dose 224 = 2016/9 layers
+                       ⚠ PREDICTED, NOT MEASURED ... UNVERIFIED  (exit 3: nothing landed, NOT a pass)
+head_single_rank.py -> REFUSING: prereg 'PR-CSI-014' declares NO_RANK_TEST -- it is a CENSUS
+launcher            -> PR-CSI-014) WANT_PREFIX=csi7_cell_basket   (registered; the exit-6 refusal for
+                       unregistered ids and the mismatch refusal both still present)
+```
+
+### 5. 🔴 THE FINDING — W4's guard against a bare KeyError sat one line BELOW the KeyError
+
+W4 printed no refusal at all on the new prereg. It died:
+
+```
+File "scripts/dcs_csi_head_analyze.py", line 144, in main
+    hs = pr["head_sets"]
+KeyError: 'head_sets'
+```
+
+**W4 already had the correct guard, at line 151**, and its own comment says why it exists:
+
+> *"S-246. A CENSUS preregistration declares NO_RANK_TEST … Without this guard the rank tooling dies on a
+> bare KeyError or reports 'control_prefix matches no head set' — both fail-closed, but both name the
+> SYMPTOM rather than the cause and would send a reader hunting for a missing field. Refuse by NAME
+> instead."*
+
+**`hs = pr["head_sets"]` was line 144. The guard was line 151. For any prereg lacking that field the
+guard was UNREACHABLE — the exact KeyError it was written to prevent fired seven lines earlier.**
+
+⚠ **Why it stayed latent, and why that is the interesting part:** it was never wrong for any prereg that
+existed. PR-CSI-012's census carries **both** `NO_RANK_TEST` **and** `head_sets`, so line 144 succeeded
+and line 151 fired exactly as designed. **The guard worked for every census ever written, and was
+unreachable for the first census that did not happen to carry a field it does not use.** A guard placed
+after a field access is a guard conditional on that field — and nothing recorded that dependency, because
+until today no case distinguished them.
+
+**Fixed by ordering, not by adding a check:** the `NO_RANK_TEST` guard now runs **before** any field
+access, followed by two named refusals — one for a `cell_sets` family (naming that its dose expectation
+is `DOSE_UNIT/band_width`, not `DOSE_UNIT*K`) and one for a prereg with no head family at all, because
+absence is not a pass (R20-6).
+
+```
+W4 on the cell prereg, after the fix:
+  REFUSING: prereg 'PR-CSI-014' declares NO_RANK_TEST -- it is a CENSUS ... Use the census reader. (S-246)
+```
+
+**This is the fourth time this sprint has fixed "fail-closed but naming the symptom"** — S-246 in four
+rank tools, S-251 in `all_arms` (`KeyError: 'HD_TOPK'`), S-260 in a sweep whose refusal named a tool that
+crashes, and now W4's own guard defeated by line order.
+
+**And W4 produced D32, D33 and PR-013's numbers, so the change was verified inert rather than assumed:**
+
+```
+python scripts/dcs_csi_head_analyze.py --prereg configs/dcs_csi_pr011_head_all32_controls_basket.json \
+  --tag-prefix csi4_all32_basket_validation --split validation --expect-n 230 \
+  --require-slurm-job 918169 --out <scratch>/d33_repro.json
+
+[head] F = 0.8635109151176609 ci95 [0.7871019744870967, 0.9478434673658749]
+[head] VERDICT: WE FOUND (part of) THE WRITER
+D33 committed 19249 bytes | re-derived 19249 bytes | FULL OBJECT IDENTICAL: True
+```
+
+F reproduces to all sixteen digits, matching AM-31's bit-identity record. **D33 is unchanged.**
+
+### 6. Status
+
+```
+1. --knockout-cells in score_behavior.py                       ✅ S-291
+2. the argv gate + GATE 0 sweep + census primitives             ✅ S-292, S-293
+3. the 9-cell descriptive census: PREREG FROZEN, TAG REGISTERED ✅ THIS ENTRY -- not yet launched
+   3a. the cell census READER                                   -- NEXT, and it must exist BEFORE the
+                                                                   read is frozen (naming a tool that
+                                                                   does not exist is S-167c)
+   3b. freeze the read, then launch
+4./5. the confirmatory family                                   ⛔ UNREACHABLE (S-294, AM-37)
+```
+
+No arms were running (`squeue`, not `sacct`). No existing frozen artefact was touched — `5ab06e3a`,
+`fae4adc6`, `911c3a20`, `7088590f` all unchanged; `25becb00` (the PR-014 design) deliberately left as
+written so the record of what was believed before S-294 is preserved. Writes verified by md5; quota 94%
+used, 1.4T free.

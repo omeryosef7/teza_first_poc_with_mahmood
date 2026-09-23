@@ -141,17 +141,31 @@ def main():
     a = ap.parse_args()
 
     pr = json.load(open(a.prereg))
-    hs = pr["head_sets"]
     # The prefix comes from the preregistration; PR-CSI-010 predates the field, so absence
     # defaults to HD_RAND -- and the default is VERIFIED to bind, never assumed (S-168).
     # S-246. A CENSUS preregistration declares NO_RANK_TEST and carries no candidate, control family
     # or floor. Without this guard the rank tooling dies on a bare KeyError or reports "control_prefix
     # matches no head set" -- both fail-closed, but both name the SYMPTOM rather than the cause and
     # would send a reader hunting for a missing field. Refuse by NAME instead.
+    #
+    # ⛔⛔ S-295. THIS GUARD USED TO SIT *BELOW* `hs = pr["head_sets"]`, SO FOR ANY PREREG WITHOUT THAT
+    # FIELD IT WAS UNREACHABLE: the bare KeyError it was written to prevent fired one line earlier.
+    # It stayed latent for exactly as long as every census happened to carry `head_sets` -- PR-CSI-012's
+    # does, which is why NO_RANK_TEST appeared to work. PR-CSI-014 is a CELL census with `cell_sets`
+    # and no `head_sets`, and W4 died on `KeyError: 'head_sets'` -- the symptom, not the cause, which
+    # is the defect S-246/S-251/S-260 each fixed elsewhere. The guards now run BEFORE any field access.
     if pr.get("NO_RANK_TEST"):
         sys.exit("REFUSING: prereg %r declares NO_RANK_TEST -- it is a CENSUS (no candidate, no control "
                  "family, no floor) and this tool is a RANK-TEST tool. Use the census reader. (S-246)"
-                 % pr["id"])
+                 % pr.get("id"))
+    if "cell_sets" in pr and "head_sets" not in pr:
+        sys.exit("REFUSING: prereg %r carries cell_sets and no head_sets -- it is a per-CELL family "
+                 "(layer, head) and W4 reads HEAD sets. Its arms are not head-scoped and its dose "
+                 "expectation is DOSE_UNIT/band_width, not DOSE_UNIT*K. (S-295)" % pr.get("id"))
+    if "head_sets" not in pr:
+        sys.exit("REFUSING: prereg %r carries no head_sets, so there is no head family to read. "
+                 "Absence is not a pass (R20-6). (S-295)" % pr.get("id"))
+    hs = pr["head_sets"]
     # ⛔ S-252. W4 IS HARD-CODED TO THIS FAMILY SHAPE, and saying so is the fix rather than pretending
     # otherwise. It names HD_BASE / HD_KO / HD_TOPK / HD_BOTK throughout, and its REPORTABLE_AS speaks
     # of "K head INDICES ... carry at least half of the A1 knockout's effect" -- language about a
