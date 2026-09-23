@@ -27375,3 +27375,156 @@ literal, and exactly where this sprint's guards do not reach.
   in hand and **deliberately not summarised here**: writing up an agent's conclusions I have not
   re-derived is the failure this entry is about. They are the next tick's work.
 * The GPU queue is **EMPTY** and nothing was launched. No family is frozen.
+
+---
+
+## S-319 — 🔴 **S-317 §5's "STRUCTURAL BLOCK" IS WITHDRAWN. It was false when I wrote it: SIX live button heads with NON-L14 screen predictions, spanning FOUR distinct layers, had been measured on 2026-09-22 — the day before.** Plus a correction to S-316's own numbers, and a new exploratory result: **the intervention's depth profile TRANSFERS across codewords at ρ = +0.79**
+
+### 1. ⚠ THE WITHDRAWAL, and how I got it wrong
+
+S-317 §5 wrote:
+
+> *"Both heads whose predicted layer is NOT L14 are null on button, and both whose prediction IS L14
+> are live. … **A second attempt at this test on button is not merely underpowered; it is structurally
+> blocked** until a live button head with a non-L14 prediction exists."*
+
+**The observation was right about the four heads I looked at. The generalisation to "the population"
+was false, and the data refuting it was already on disk.** The basket TRAIN screen carries an argmax
+for **all 32 heads**, and PR-CSI-013's *random control draws* already measured **21 heads** on button
+validation (job 919531, 2026-09-22). I joined the two files myself:
+
+```
+head  screen argmax  margin   button E      |E|/bar  ci95 excl 0
+   6      L11         5.96x   -0.005090      2.49      YES      <- LIVE, NON-L14
+  11      L8          1.51x   -0.016310      2.95      YES      <- LIVE, NON-L14
+  20      L11         1.07x   -0.007248      2.92      YES      <- LIVE, NON-L14
+  24      L10         4.70x   -0.002854      1.88      YES      <- LIVE, NON-L14
+  27      L10         1.58x   +0.002666      1.57      YES      <- LIVE, NON-L14
+  29      L6          1.26x   +0.009291      2.58      YES      <- LIVE, NON-L14
+  16      L14         1.47x   -0.004787      1.61      YES
+  19      L14         6.08x   -0.035568      5.69      YES      (already mapped)
+   2      L10         4.12x   -0.003522      0.33      no       <- the head I generalised from
+```
+
+**SIX live heads with a non-L14 prediction, spanning FOUR distinct layers (L6, L8, L10, L11).**
+
+⛔ **S-317 §5 is WITHDRAWN.** Heads 2 and 23 are indeed null on button — that part stands — but
+*"no button family can separate the screen from a band-edge bias"* is refuted by six counterexamples
+that existed before the sentence was written.
+
+📌 **The error has a shape worth naming: I reasoned about "the population" from the four heads that
+happened to have been CELL-mapped**, when the relevant population was the 21 heads that had been
+HEAD-measured. The cell census was the salient artefact, not the informative one. **A structural claim
+needs the whole inventory, and the inventory was one join away** — two files, no GPU, both committed
+the previous day.
+
+### 2. ⚠ CORRECTIONS TO S-316's OWN NUMBERS, found by re-deriving them from the artefacts
+
+**(a) The "~5.7×, demo > ctrl in 0 of 12 rows" does NOT reproduce.** I quoted it from the predecessor
+log (C-CONT-019, line 4685: *"On the full Llama artifact…"*) and committed it. Recomputed from the
+artefact it names:
+
+```
+rsLlamaH / rsLlama (full 96)   demo 0.0630  ctrl 0.2421   3.85x   demo > ctrl in  1 of 60
+rsQwen3H / rsQwen3 (full 96)   demo 0.0316  ctrl 0.1510   4.77x   demo > ctrl in  0 of 46
+the 8-row smoke                demo 0.0542  ctrl 0.2489   4.59x   demo > ctrl in  0 of  4
+```
+
+The **8-row smoke's "0 of 4"** matches `retrieval_strength.py`'s docstring exactly. **The "5.7× / 0 of
+12" matches nothing on disk.** The direction and order of magnitude stand — the count-matched control
+carries **3.85×–4.77×** the demonstration block's band mass — so **S-316's conclusion is unaffected**,
+but its figure was a predecessor-log number I propagated without opening the artefact. *Twice in two
+entries now (S-318's "four days"), the defect is asserting a quantity I had not opened.*
+
+**(b) S-316 §4's history is wrong, and in the direction that weakens its own hedge.** I wrote that
+today's pool excludes *both* mechanisms C-CONT-019 named, and that the M1 protection *"may postdate"*
+the measurement. Checked:
+
+```
+BOS was ALREADY excluded at the time of measurement:  pool = [i for i in range(1, max(0, n-1)) ...]
+`protected` landed 32c76d78, 2026-08-23 19:19:40   |  retrieval_strength commits are 2026-08-24
+retrieval_strength.py:121:  sb.knockout_key_set("nondemo_random", dk, seq_len, args.seed + i)
+                            ^ FOUR positional args. It never passes `protected=` at all.
+```
+
+**Only the recency half is new, and the protection did NOT postdate the measurement — that call site
+simply does not use it.** So the expected improvement from M1 is **half** what S-316 implied, and the
+reason the measured control was unprotected is a call site, not a chronology.
+
+**(c) S-316 §5's "if the draw still carries more mass, the family must NOT be run as a source test" is
+too strong, and the asymmetry FLIPS.** More mass kills the **refutation** reading, not the family: a
+control that removes **more** attention and produces **no** effect is a clean **confirmation** of
+source-specificity, by the same dose logic S-050 records. S-316 froze the asymmetry one way; the
+correct statement is that the measurement decides **which direction the family can speak in**, not
+whether it may run.
+
+### 3. 📌 NEW, EXPLORATORY, NOT PREREGISTERED — the intervention's depth profile transfers across codewords
+
+PR-015 (basket) and PR-016 (button) measured the **same 27 cells** on the **same 23 domains**. Nobody
+had paired them. Re-derived by me from the two published reports:
+
+```
+all 27 cells            Spearman +0.7949  (p = 7.33e-07)    Pearson +0.9508
+basket peaks removed    Spearman +0.7148  (p = 8.69e-05)    n = 24
+per head, 9 cells:      h17 +0.717   h19 +0.933   h23 +0.817
+per head, peak removed: h17 +0.595   h19 +0.905   h23 +0.762
+```
+
+⚠ **The striking one is head 23**, which PR-016 reported as *"does not transfer to button at all"*: its
+whole-head button effect is null (|E|/bar 0.62) and **its nine-cell SHAPE still tracks basket at
+ρ = +0.82, +0.76 with its peak removed.** So *"head 23 does not transfer"* is true of the **amplitude**
+and false of the **shape** — a real refinement of S-317 §4.
+
+⛔ **Caveats that must travel with this number every time it is used:** 27 cells are **not** 27
+independent units; **both censuses read the SAME 23 domains**, so domain idiosyncrasy is shared and
+inflates ρ; and **this analysis was not preregistered**. It is a **premise check**, not a result to
+quote — and the premise it checks is exactly the one the next family needs: depth structure survives a
+codeword change.
+
+📌 It also sits against **S-307 §8**, which found the **screen's sub-argmax ordering does NOT transfer**
+from TRAIN attribution to intervention. These are different objects — surrogate→intervention versus
+intervention→intervention — and the contrast is informative: **the intervention agrees with itself
+across codewords far better than the surrogate agrees with the intervention.**
+
+### 4. What this unblocks: PR-CSI-018, designed but NOT frozen and NOT launched
+
+The question PR-016 could not answer is answerable, on button, today — because the spanning rule
+cannot fire at nomination if the nominated heads predict **distinct** layers.
+
+```
+candidate heads (nominated on TRAIN screen + button MAGNITUDE only, never on button cell data):
+   6 -> L11,  11 -> L8,  24 -> L10,  29 -> L6,  and one of {20 -> L11, 27 -> L10, 16 -> L14}
+arms        2 base + 5 whole-head (as nine-cell lists, per S-310) + 45 cells = 52
+cost        50 intervened x ~156 s + BC_KO ~208 s + BC_BASE ~190 s + one model load
+            = 2.3-2.6 GPU-hours in one allocation
+unit        the DOMAIN for every E; the HEAD for the test (rule 3.1)
+floors      K=5 all-distinct: binomial 1.7e-05 | permutation 1/120 = 0.0083  -> the WEAKEST passes
+            K=4:              binomial 1.5e-04 | permutation 1/24  = 0.0417  -> the WEAKEST passes
+            K=3:              permutation 1/6 = 0.167              -> CANNOT ANSWER, declared in advance
+```
+
+⚠ **A REQUIRED PRE-LAUNCH STEP, recorded so it is not skipped:** the `|E|/bar` ratios above use the
+**ci95-derived** bar, which S-318 established is **half a bootstrap CI width** and not the S-311 rule's
+`1.96·SD(paired delta)/√n`. On head 19 the two differ by 4.3 %, so **every ratio here is ~4 %
+optimistic** and heads 27 (1.57) and 16 (1.61) sit close enough to the 1.5 gate for that to matter.
+**The exact S-311 bars must be re-derived from PR-013's 23 surviving arm directories
+(`csi6_btnhead_button_validation_*`) before anything is frozen.** That is a correctness step, not a
+nicety, and it costs no GPU.
+
+⛔ **Nothing is frozen and nothing is launched this tick.** R29 is due **before any family reaches a
+GPU**, and the last four ticks each closed or corrected a branch by checking *before* spending. The
+order is: re-derive the bars → R29 → freeze → launch.
+
+### 5. Status
+
+```
+S-317 §5     WITHDRAWN. Six live non-L14 button heads exist, over four distinct layers.
+S-316        three corrections: the 5.7x/0-of-12 figure does not reproduce (3.85x-4.77x does);
+             BOS was always excluded and `protected` predated the measurement; and the
+             "must NOT be run" clause is too strong -- mass decides the DIRECTION, not the go/no-go.
+S-317 §4     REFINED: head 23's amplitude does not transfer, its SHAPE does (rho +0.82).
+PR-CSI-018   DESIGNED, not frozen, not launched. Pre-launch: exact S-311 bars, then R29.
+queue        EMPTY.
+NOT ESTABLISHED  the attention-mass measurement itself -- still unmade, still the blocker for the
+             source-side family (S-316), and unchanged by anything here.
+```
