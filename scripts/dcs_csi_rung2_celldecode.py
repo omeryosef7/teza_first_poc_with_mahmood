@@ -60,6 +60,7 @@ import json
 import os
 import statistics
 import sys
+import time
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(REPO, "src"))
@@ -77,6 +78,21 @@ def _ids(s: str, what: str):
                          "a default here is how a button constant ends up in a basket family "
                          "(S-380)." % what)
     return v
+
+
+def lm_tok_decode(_a, tid):
+    """Decode one id for the witness line. Kept trivial and local: the point is that a wrong-family
+    run becomes VISIBLE in the log, not that this is a general utility."""
+    try:
+        from transformers import AutoTokenizer
+        global _TOK
+        try:
+            _TOK
+        except NameError:
+            _TOK = AutoTokenizer.from_pretrained(_a.model)
+        return _TOK.decode([tid])
+    except Exception as e:                      # a witness must never break the run
+        return "<undecodable: %s>" % str(e)[:40]
 
 
 def build_direction(norm_w, rows, concept_ids, codeword_ids):
@@ -234,7 +250,7 @@ def main() -> int:
         rows.append(r)
     n_sel, n_dom = len(rows), len({r["domain"] for r in rows})
     print("[rung2] population: %d rows over %d domains (block=%s condition=%s, %d ids excluded)"
-          % (n_sel, n_dom, a.bank_block, a.condition, len(excl)))
+          % (n_sel, n_dom, a.bank_block, a.condition, len(excl)), flush=True)
     if (n_sel, n_dom) != (a.expect_n, a.expect_domains):
         raise SystemExit(
             "REFUSING: the selection yields %d rows over %d domains, but --expect-n %d and "
@@ -246,17 +262,22 @@ def main() -> int:
     if a.limit:
         rows = rows[:a.limit]
         print("[rung2] ⚠ --limit %d: this is a SMOKE sample, NOT the declared population, and the "
-              "artefact records it as such." % a.limit)
+              "artefact records it as such." % a.limit, flush=True)
     if not rows:
         raise SystemExit("REFUSING: no rows survived. Absence is not a measurement (R20-6).")
 
     norm_w, urows, snap = load_unembed(a.snapshot_glob, list(cids) + list(kids))
     u = build_direction(norm_w, urows, cids, kids)
     print("[rung2] direction built from %d concept + %d codeword rows; |u| = %.6f"
-          % (len(cids), len(kids), float(u.norm())))
+          % (len(cids), len(kids), float(u.norm())), flush=True)
+    print("[rung2] ids decode to: concept %r  codeword %r"
+          % ([lm_tok_decode(a, t) for t in cids], [lm_tok_decode(a, t) for t in kids]), flush=True)
 
     _dt = {"bfloat16": torch.bfloat16, "float32": torch.float32}[a.dtype]
+    _tload = time.time()
     lm = dc.load_model(a.model, dtype=_dt, attn_implementation="eager")
+    print("[rung2] model loaded in %.1fs" % (time.time() - _tload), flush=True)
+    _t0 = time.time()
     et = False
     per_dom = {}          # domain -> {(L,h): [values]}
     n_done, skipped, recon = 0, {}, None
@@ -341,6 +362,11 @@ def main() -> int:
                 # /_rms converts <Y,u_hat> into the logit-difference contribution.
                 d.setdefault((L, h), []).append(float(Dd[h, dk].sum()) / _rms)
         n_done += 1
+        _el = time.time() - _t0
+        if n_done == 1 or n_done % 5 == 0:
+            print("[rung2] %d/%d prompts  elapsed %.1fs  %.2fs/prompt  (proj. %.1f min for %d)"
+                  % (n_done, len(rows), _el, _el / n_done,
+                     (_el / n_done) * n_sel / 60.0, n_sel), flush=True)
 
     if not per_dom:
         raise SystemExit("REFUSING: every row was skipped (%s). Absence is not a measurement."
@@ -383,6 +409,11 @@ def main() -> int:
                         "mean": statistics.fmean(rms_seen)} if rms_seen else None),
         "statistical_unit": "domain", "n_domains": len(domains), "domains": domains,
         "n_prompts_used": n_done, "skipped": skipped,
+        "timing": {"model_load_s": round(_t0 - _tload, 1),
+                   "measure_s": round(time.time() - _t0, 1),
+                   "per_prompt_s": (round((time.time() - _t0) / n_done, 3) if n_done else None),
+                   "projected_full_population_min":
+                       (round((time.time() - _t0) / n_done * n_sel / 60.0, 1) if n_done else None)},
         "answer_prefix": a.answer_prefix,
         "readout_position": "len(tokenize(templated + answer_prefix)) - 1 -- the position the "
                             "ENDPOINT reads (score_behavior.py:87). NOT the end of the bare "

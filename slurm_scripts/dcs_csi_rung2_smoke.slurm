@@ -34,7 +34,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=64G
-#SBATCH --time=01:00:00
+#SBATCH --time=04:00:00
 #SBATCH --partition=killable
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
@@ -48,7 +48,14 @@ nvidia-smi --query-gpu=name,memory.total --format=csv,noheader || true
 echo "BLOB ${CSI_GIT_BLOB:-unset}  PORCELAIN [${CSI_GIT_PORCELAIN:-unset}]"
 
 MODEL=/home/sharifm/students/matanbentov/hub/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659
-LIMIT="${LIMIT:-20}"
+LIMIT="${LIMIT:-3}"
+# ⚠ S-391: THE FIRST ATTEMPT (926941) BUDGETED ONE HOUR FOR A ~23-MINUTE MODEL LOAD PLUS AN
+#   UNKNOWN PER-PROMPT COST, AND LEARNED NOTHING. It hit TIMEOUT at 01:00:15 with no artefact and
+#   -- because stdout was unflushed and SIGKILL discards the buffer -- no record of how far it got.
+#   This run exists to MEASURE the per-prompt cost, so it asks for 3 prompts and 4 hours: the load
+#   dominates either way, and the script now prints a flushed heartbeat with s/prompt and writes
+#   `timing.projected_full_population_min` into the artefact. Three prompts is enough to price the
+#   design; twenty was enough to hide it.
 
 # ⚠ --limit takes a CONTIGUOUS block of rows, and the bank is domain-clustered in file order, so
 #   LIMIT=20 is 2 WHOLE DOMAINS, not 20 domains thinly (R35-C F7). That is fine for a smoke and

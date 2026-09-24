@@ -335,3 +335,27 @@ def test_dtype_is_REQUIRED_and_not_silently_float32():
     assert '"--dtype", required=True' in code, "dtype has a default again"
     assert "dtype=torch.float32" not in code, "float32 is hardcoded at the load again"
     assert '"dtype": a.dtype' in code, "the dtype is not recorded in the artefact"
+
+
+def test_progress_is_FLUSHED_and_timed():
+    """🔴 S-390/S-391. The first smoke ran 60 minutes, hit its TIME LIMIT, and left NOTHING behind:
+    stdout was buffered and SIGKILL discards an unflushed buffer, so a working run and a wedged one
+    produced byte-identical logs, and the timeout destroyed even the evidence of how far it got.
+    R35 reviewed this file across three agents and 13 tests and none of us flagged it, because
+    every test exercises a refusal path and none exercises a long run."""
+    code = _code()
+    assert code.count("flush=True") >= 4, "progress lines are buffered again"
+    assert "s/prompt" in code, "no per-prompt cost is reported during the run"
+    assert '"timing"' in code, "per-prompt timing is not recorded in the artefact"
+    assert "projected_full_population_min" in code, (
+        "the run does not project its own cost to the full population -- which is the number that "
+        "decides whether the design is affordable at all")
+
+
+def test_the_token_ids_have_a_decoded_WITNESS():
+    """R35-B: the bare-cased ids are DIFFERENT tokens from the leading-space ones ('bomb' 79444 vs
+    ' bomb' 13054), so four plausible wrong ids exist for the same four words and nothing in the
+    script would have noticed. The guard was 'required argument, no default'; that stops a silent
+    DEFAULT, not a silent TYPO."""
+    code = _code()
+    assert "ids decode to" in code, "no id->string witness is printed"

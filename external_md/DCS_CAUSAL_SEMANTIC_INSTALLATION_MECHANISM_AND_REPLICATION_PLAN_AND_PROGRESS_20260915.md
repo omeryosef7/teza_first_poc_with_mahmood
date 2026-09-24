@@ -34995,3 +34995,89 @@ NEXT     read the outcome: a result, or a timeout that reprices the whole design
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-391 — 🔴 **THE SMOKE HIT ITS TIME LIMIT AND LEFT NOTHING BEHIND — not even a record of how far it got.** S-390 predicted this one tick earlier and the prediction was exact. Observability fixed, launcher repriced, resubmitting (2026-09-25)
+
+### 1. The outcome
+
+```
+926941   TIMEOUT   01:00:15   ExitCode 0:0    (926941.batch CANCELLED 0:15)
+slurmstepd: error: *** JOB 926941 ON n-302 CANCELLED AT 01:59:43 DUE TO TIME LIMIT ***
+stdout: the banner and the provenance line. NOTHING else.  stderr: the cancellation notice only.
+artefact: NOT WRITTEN.
+```
+
+📌 **The buffer was lost.** SIGKILL discards an unflushed stdout buffer, so the run destroyed even
+the evidence of how far it had got — whether it cleared the population gate, whether it loaded the
+model, whether it measured one prompt or nineteen. **S-390 described this failure mode one tick
+before it happened, in those terms, and I shipped the job anyway because the fix would have meant
+editing a script whose provenance a live job was naming.** That ordering was right; the cost of it
+is that the first execution taught nothing except that it is slow.
+
+### 2. What the timeout does and does not establish
+
+```
+ESTABLISHED  a 20-prompt TRAIN smoke does not fit in 1 hour on a 3090, model load included.
+NOT ESTABLISHED  the per-prompt cost. The model load alone was ~23 min for the PR-CSI-020 arms on
+             this filesystem, leaving ~37 min unaccounted -- but whether that bought 19 prompts or
+             2 is unknown, and the arithmetic "20 prompts in 37 min" would be a fabrication.
+NOT ESTABLISHED  that anything is WRONG with the instrument. A timeout is a budget failure, not a
+             defect. No exception was raised at any point.
+```
+
+### 3. Fixed, now that nothing is in flight
+
+```
+flush=True on every progress line          -- 6 sites. An unflushed buffer is not a log.
+a HEARTBEAT at prompt 1 and every 5th      -- elapsed, s/prompt, and the PROJECTION to the full
+                                              population, which is the number that decides whether
+                                              the design is affordable at all
+`timing` in the artefact                   -- model_load_s, measure_s, per_prompt_s,
+                                              projected_full_population_min
+an id -> STRING WITNESS printed             -- R35-B: the bare-cased ids are DIFFERENT tokens from
+                                              the leading-space ones ('bomb' 79444 vs ' bomb'
+                                              13054), so four plausible wrong ids exist for the
+                                              same four words. "Required argument, no default"
+                                              stops a silent DEFAULT; it does not stop a TYPO.
+```
+
+Two tests added, both of which fail without the fix. 22 tests pass.
+
+### 4. The launcher is repriced, and the reasoning is the point
+
+```
+--time  01:00:00 -> 04:00:00        LIMIT  20 -> 3
+```
+
+**Three prompts is enough to price the design; twenty was enough to hide it.** The first attempt
+budgeted an hour for a ~23-minute load plus an unknown per-prompt cost — a design that could only
+succeed or teach nothing, with no middle outcome. This one is built to return a NUMBER
+(`s/prompt`, and the projection to 230 rows) even if it is cut short, because the heartbeat is
+flushed as it goes.
+
+### 5. What was NOT established
+
+```
+- STILL NO MEASUREMENT of the model. Two attempts, zero numbers about the network.
+- NOT established: that the design is affordable. That is exactly what the next run returns, and
+  if the projection to 230 validation rows exceeds a 12 h walltime, the S-390 cost work
+  (dominance.py building 2.12 GB/prompt of a D_attn tensor this instrument never reads) stops
+  being a recorded note and becomes a prerequisite.
+- NOT touched: dominance.py. It is SHARED with other families and a hasty edit there would put
+  every one of them at risk to save a run that has not yet been priced.
+```
+
+### 6. State
+
+```
+QUEUE    EMPTY. Resubmitting after this commit -- the submit helper refuses a dirty worktree.
+CHANGED  scripts/dcs_csi_rung2_celldecode.py (flush/heartbeat/timing/witness),
+         slurm_scripts/dcs_csi_rung2_smoke.slurm (4h, LIMIT 3), tests/... (22),
+         external_md/...20260915.md
+NEXT     submit; read the per-prompt cost; then either a prereg or the cost work, decided by
+         that number rather than by preference.
+```
+
+`git push` remains credential-blocked. Committed locally.
