@@ -34203,3 +34203,115 @@ NEXT     build the instrument: parameterise the codeword rows, compose dominance
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-383 — the RUNG 2 instrument EXISTS. 📌 **All three of S-382's blockers turned out to be solved already in committed code — including the readout index S-381 could not verify, which is `seq_len - 1` in `retrieval_strength.py` with a comment saying so.** 248 lines, 10 tests, no verdict, not yet run (2026-09-24)
+
+### 1. The three blockers, and how many needed new code
+
+S-382 listed what stood between the design and a freeze. Checking each against the repo first, per
+S-367's rule, rather than building:
+
+```
+(a) COMPOSE dominance_at WITH THE DIRECTION      -> the only genuinely new code
+(b) PARAMETERISE THE CODEWORD ROWS (S-380)       -> load_unembed's shape reused, ids made ARGUMENTS
+(c) ASSERT THE READOUT INDEX (S-381)             -> ALREADY SOLVED, and not by me
+```
+
+📌 **(c) was the one I expected to cost the most, and it was already decided in committed code.**
+`src/boombness/retrieval_strength.py:178`:
+
+```python
+q = seq_len - 1                       # the position that emits the first generated token
+```
+
+S-381 warned against matching the intervention's `target_surface_row_only` scope by reflex and left
+the index unverified. The answer was in a file this sprint has already fixed twice (S-339, S-341).
+`sb.demo_key_positions(tokenizer, row, templated)` likewise supplies the demonstration-block source
+indices, and `dc.apply_template` the templated prompt. **Three of the four moving parts were reuse.**
+
+### 2. What was built
+
+`scripts/dcs_csi_rung2_celldecode.py`, 248 lines. For each cell-C `semantic_one_word` prompt:
+
+```
+contrib(L, h) = sum over DEMO KEYS s of   A[L,h,dst,s] * <W_O[L,h] v[L,h,s], u_hat>
+                dst = seq_len - 1 (ASSERTED in code, not assumed)
+                s   = sb.demo_key_positions(...)  -- what demo_all actually knocks out
+```
+
+aggregated **per DOMAIN first** (PART I), emitting only domain means and their average.
+
+The direction is S-382's, frozen before any measurement:
+`u = g_final * (mean(W[' bomb'], W[' Bomb']) − mean(W[' basket'], W[' Basket']))`.
+
+⛔ **The token ids are REQUIRED ARGUMENTS WITH NO DEFAULTS.** That is deliberate and it is the whole
+lesson of S-380: `dcs_cont_logitlens_control.py` hardcodes `' button'`, the CSI line is BASKET, and
+run unchanged it produces a well-formed number for a question nobody asked. A default here would
+reintroduce this sprint's most persistent defect class (R29/S-322, S-308, S-357) in the very file
+written to avoid it.
+
+### 3. What the instrument refuses to do
+
+```
+NO VERDICT, NO p, NO alpha.       It is an INSTRUMENT; a preregistered reader decides meaning.
+--split has NO `test` CHOICE.     TEST is not an option the operator can pass (PART I).
+--exclude-prompt-ids is REQUIRED. S-381 measured that this FILE, not the prereg, is what keeps
+                                  TEST out; the prereg's own check is vacuous (S-375).
+Overlapping id sets REFUSED.      A degenerate direction is caught, not normalised away.
+Empty id list REFUSED.            "Absence is not a measurement" applied to its own arguments.
+```
+
+The artefact carries `⚠ NOT_THE_ENDPOINT` and `⚠ UNITS` fields in the JSON itself, because both
+distinctions are invisible in the numbers: `y_install` aggregates casings with logsumexp while this
+is linear, and `dominance_at` unit-normalizes the direction so the magnitudes are contributions
+along the UNIT direction, not logit contributions. *(The same `u` is passed at every band layer, so
+the normalisation constant is identical across layers and the cross-layer argmax is unaffected —
+verified by reading `dominance.py:168-169`, not assumed.)*
+
+### 4. Tests — 10, and one of them was testing the wrong thing
+
+`tests/test_csi_rung2_celldecode.py`. They cover the frozen direction formula, its LINEARITY (the
+property the whole decomposition rests on), mean-of-casings rather than one casing, and every
+refusal above.
+
+⚠ **`test_the_script_refuses_to_emit_a_verdict` FAILED on first run — correctly.** It grepped the
+source for the word `VERDICT`, which appears in the docstring line *"THIS FILE COMPUTES NO VERDICT
+AND NO p"*. The test flagged the disclaimer as a violation of itself. Rewritten to look for
+verdict-EMITTING code — a JSON key, a comparison against alpha — rather than a word. **Recorded
+because it is the fourth wrong-check of this session, but note the difference: this one failed
+LOUDLY.** S-368's two and S-377's one passed silently. A check that is wrong and fails is a nuisance;
+a check that is wrong and passes is the thing this sprint keeps finding.
+
+The file is under the commit gate: `GUARD_TESTS` 22 -> 23 in the installer AND the deployed hook,
+with S-377's two-direction agreement tests passing.
+
+### 5. What was NOT established
+
+```
+- IT HAS NOT BEEN RUN. Not on GPU, not on CPU, not on one prompt. Everything above is structure
+  and unit tests; NO measurement exists and nothing about the model is claimed.
+- NOT frozen: any prereg. The instrument now exists, so S-167c no longer blocks one -- but a
+  prereg still needs the statistic, the admission rule and the power table written down, and
+  R35 (the adversarial review) is DUE BEFORE THIS REACHES A GPU, by the standing rule.
+- NOT verified: that `demo_key_positions` returns what this design wants on a cell-C
+  semantic_one_word row. retrieval_strength.py uses it on the same bank, which is evidence, not
+  proof, and the skip-reason counters exist so a silent zero cannot pass as a measurement.
+- NOT measured: the casing split (S-382 section 1). Still optional, still unmeasured.
+- NOT decided: whether to run this at all. The power caveat stands -- S-379 established that a
+  null from this design would be weak, and that the power CANNOT be estimated without assuming
+  the rungs coincide, which is what the experiment tests.
+```
+
+### 6. State
+
+```
+QUEUE    EMPTY. No admissible cell-census question remains (S-374).
+CHANGED  scripts/dcs_csi_rung2_celldecode.py (NEW, 248 lines), tests/... (NEW, 10 tests),
+         scripts/install_commit_guard.sh, .git/hooks/pre-commit, external_md/...20260915.md
+NEXT     R35 adversarial review of the instrument -- due BEFORE it reaches a GPU -- then a
+         CPU smoke on a handful of TRAIN rows, then a prereg.
+```
+
+`git push` remains credential-blocked. Committed locally.
