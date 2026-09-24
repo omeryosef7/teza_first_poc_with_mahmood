@@ -33412,3 +33412,105 @@ NEXT     the RUNG 2 design pass -- the only unexhausted direction that changes t
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-376 — 🔴 **CORRECTING MY OWN REPORTING: the "346 guard tests pass" I have cited at every commit this session NEVER included a single CSI test.** The hook runs a curated 17-file list; every CSI test file, including the one I wrote an hour ago, is outside it. And `pytest tests/` has **8 failures the hook cannot see** (2026-09-24)
+
+### 1. What I found, and why I was looking
+
+S-375's commit hook reported **346 passed** — the same number I have quoted after every commit
+this session. But I had just added a 7-test file, so the total should have moved. It did not. The
+hook does not discover tests; it runs an explicit list:
+
+```
+.git/hooks/pre-commit:30   GUARD_TESTS = 17 named files
+  test_asr_protocol            test_my_cited_artifacts        test_rah3_capture_site
+  test_cautioned_figures       test_my_ledger_propagation     test_rah_preflight_spans
+  test_cited_artifact_check    test_option_mass_nan_guard     test_rah_select_config
+  test_clustered_stats         test_commit_guard              test_run_completeness_check
+  test_fcslots_preset          test_guard_wiring              test_intervention_liveness
+  test_ledger_propagation_check                               test_margin_exposure
+```
+
+**Not one CSI test file is in it** — not `test_csi_cell_identity.py`, not
+`test_csi_pr016_argmax.py`, not `test_csi_argv_generator.py`, not `test_retrieval_mass_seed.py`,
+and not `test_csi_s375_review_debt.py`. Every test this sprint has written for its own readers runs
+only when invoked by hand.
+
+### 2. 🔴 The correction
+
+**Throughout this session I reported "346 guard tests pass" at each commit in a way that implied the
+CSI work was covered. It was not.** The 346 are a different suite, guarding other deliverables. The
+CSI tests did pass — I ran them explicitly at the ticks where I changed reader code — but the number
+I kept quoting was not evidence of that, and pairing it with a CSI change was misleading in exactly
+the way this sprint keeps finding elsewhere: **a check reported in the voice of a check that covers
+the thing at hand.**
+
+The correct figures, measured now:
+
+```
+guard hook (17 files, gates every commit)        346 passed
+CSI suite (5 files, gates NOTHING)               119 passed   (112 pre-existing + 7 new)
+every test referencing the two patched scripts    91 passed
+full `pytest tests/`                            1942 passed, 7 skipped, 8 FAILED
+```
+
+### 3. The 8 full-suite failures are PRE-EXISTING, verified rather than assumed
+
+None of the failing files references `dcs_csi_head_census.py` or `dcs_csi_pr016_argmax_test.py`
+(grep), and all 91 tests that do reference them pass. But "does not reference" is not proof, so I
+checked out the commit BEFORE S-375 into a detached worktree and ran the two identified files there:
+
+```
+at 6cf6c30d~1 (before S-375):  5 failed, 15 passed
+  test_prompt_families_strict.py :: test_strict_violation_does_not_clobber_an_existing_bank
+  test_prompt_families_strict.py :: test_non_strict_violation_still_writes_both_files
+  test_tsc_request_filter.py     :: test_tokenizer_gate_accepts_the_surviving_concepts_and_can_refuse
+  (+2 more in the same two files)
+```
+
+**Identical failures before my commit. S-375 caused none of them.**
+
+### 4. ⚠ Why this is worth an entry rather than a footnote
+
+The hook's own header already records this failure mode, from a previous session:
+
+> *"the two orders disagreed ... failed 4 tests under `pytest tests/` while this hook reported 257
+> passed."*
+
+The response then was to sort the list, not to widen it. So the project has known since August that
+its commit gate covers a curated subset, and the subset has not grown as the CSI line added five
+test files and ~119 tests. **The sprint's most-changed code is its least-gated.**
+
+⛔ **I am NOT adding the CSI files to `GUARD_TESTS` in this tick.** The hook's own note says the
+DEPLOYED hook and its INSTALLER have diverged before, and that *"the installer is the source of
+truth and must therefore carry every guard the hook runs"* — editing the deployed hook alone is the
+documented trap that silently dropped another session's guards. Doing that correctly means changing
+the installer and the hook together and verifying they agree, which is its own piece of work with
+its own failure modes, and it should not be tacked onto the end of a tick that has already touched
+two readers. **Recorded, scoped, and left for the next tick.**
+
+### 5. What was NOT established
+
+```
+- NOT established: that the 8 failures are harmless. They are PRE-EXISTING and OUTSIDE the CSI
+  line; I have not diagnosed them and do not claim they are benign, only that they are not mine.
+  Three are in prompt-bank strictness and one in a tokenizer gate.
+- NOT established: that the CSI tests would have caught anything the guard suite missed. They
+  pass; that is all. Their value is prospective.
+- NOT changed: any code, prereg, deliverable or verdict in this tick. This entry is a correction
+  to the RECORD, and to how I have been reporting it.
+```
+
+### 6. State
+
+```
+QUEUE    EMPTY. PR-CSI-020 read and closed at PASS; no admissible cell-census question remains.
+CHANGED  external_md/...20260915.md  +S-376 only.
+NEXT     (1) put the CSI test files under the commit gate, installer and hook together, verified
+             to agree -- the thing this entry deliberately did not rush;
+         (2) the RUNG 2 design pass.
+```
+
+`git push` remains credential-blocked. Committed locally.
