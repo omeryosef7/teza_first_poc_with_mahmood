@@ -29209,3 +29209,149 @@ NEXT         62/62 -> GATE 0 (FULL; must exit 0) -> census -> primary, in the fr
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-335 — ✅ **PR-CSI-018 IS READ AND IT PASSES. The basket-TRAIN screen's per-CELL prediction TRANSFERS TO BUTTON: 5 of 6 fresh heads put their intervention argmax exactly where the screen said, across FOUR distinct layers.** The claim is stated with the **WEAKEST of three, `p = 0.012346`** — and the outcome is one of the five patterns S-332 identified as certifying **before the read**
+
+### 1. The read, executed in the frozen order, stopping at nothing
+
+Job `923972` COMPLETED, 03:25:02 on n-301, 62/62 arms, every one `rc=0`. Chain of custody verified
+**before** the read: frozen read md5 `cbdf34a2…` and prereg md5 `6790df3a…`, both unchanged since
+the freeze on 2026-09-23, *before any arm ran*.
+
+```
+STEP 0  GATE 0    every landed arm passes (62 of 62). EXIT 0. Zero FAIL / not-landed / in-flight.
+STEP 1  CENSUS    62 arms, 23 domains common to ALL arms, 54 cell arms JUDGED, 6 HD_ EXCLUDED.
+STEP 2  PRIMARY   K = 6 admitted, M = 5 matches.
+```
+
+### 2. 🔴 VOID CONDITION 8 — six independent provenance checks, and all six PASS at ~1e-9
+
+This is the check R29 found was prose and S-323 made code. Every `HD_<h>` arm re-measures a
+whole-head effect PR-CSI-013 recorded on the **same head, codeword and split**, in a different job,
+on a different node, in a different family:
+
+```
+head 11  HD_11  E=-0.01631008 vs reference -0.01631008   |diff| 3.95e-09
+head 20  HD_20  E=-0.00724789 vs reference -0.00724789   |diff| 8.52e-10
+head 24  HD_24  E=-0.00285392 vs reference -0.00285392   |diff| 3.87e-09
+head 27  HD_27  E=+0.00266563 vs reference +0.00266563   |diff| 3.02e-09
+head 29  HD_29  E=+0.00929118 vs reference +0.00929118   |diff| 6.45e-10
+head  6  HD_6   E=-0.00509022 vs reference -0.00509022   |diff| 4.16e-09
+VOID CONDITION 8: 6 of 6 head(s) CHECKED, 0 NOT EVALUATED.
+```
+
+**These are the six values I re-derived by hand in S-332** from PR-013's own landed arms, when a
+reviewer reported them unwitnessed. A fresh measurement now reproduces all six to a thousandth of
+the tolerance. S-318 demonstrated this on one head; it now holds on six at once.
+
+### 3. THE RESULT
+
+```
+ADMISSION (from the whole-head arm ALONE, ratio >= 1.5) -- ALL SIX ADMITTED
+  head  6  |E|/bar 2.4241     head 11  2.8551     head 20  2.8537
+  head 24  1.8365             head 27  1.5426     head 29  2.4937
+
+ARGMAX vs the frozen basket-TRAIN screen prediction
+  head  6  argmax L11  screen L11  MATCH        head 24  argmax L10  screen L10  MATCH
+  head 11  argmax L8   screen L8   MATCH        head 27  argmax L10  screen L10  MATCH
+  head 20  argmax L14  screen L11  miss         head 29  argmax L6   screen L6   MATCH
+
+  K = 6,  M = 5,  matching layers L6 / L8 / L10 / L11  -- FOUR distinct, spanning rule SATISFIED
+
+  binomial     0.000092202145
+  conditional  0.012345679012   <- K_unique = 2, M_unique = 2. THE WEAKEST. THE CLAIM.
+  permutation  0.005555555556   over 180 assignments
+
+  VERDICT: PASS -- conditional = 0.012346 <= alpha = 0.05
+```
+
+⚠ **The claim is `p = 0.012346`, the WEAKEST, named.** Quoting the binomial `0.000092` alone is
+forbidden by the prereg and by `MUST_NOT_BE_SAID_IF_POSITIVE[0]`. The reader's own wording field —
+the S-332 BLOCKER — now says so unconditionally.
+
+### 4. Every figure re-derived by me, from the artefacts, calling none of the reader's code
+
+The reader is **my own code** and it returned a PASS, which is precisely the situation the standing
+rule exists for.
+
+```
+K = 6               mine 6                    published 6                    MATCH
+M = 5               mine 5                    published 5                    MATCH
+argmax, all 6 heads recomputed over each head's own nine cells by |E|        MATCH (ties: 1 each)
+binomial            mine 0.000092202145       published 0.000092202145       MATCH
+conditional         mine 0.012345679012       published 0.012345679012       MATCH
+permutation         mine 0.005555555556       published 0.005555555556       MATCH
+K_unique / M_unique mine 2 / 2                published 2 / 2                MATCH
+n_permutations      mine 180                  published 180                  MATCH
+weakest             mine conditional          published conditional          MATCH
+spanning            mine 4 distinct layers    published SATISFIED            MATCH
+VERDICT             mine PASS                 published PASS                 MATCH
+```
+
+### 5. 📌 S-332's PRE-READ DESIGN MAP CALLED THIS EXACTLY
+
+S-332 recorded, with no number from this family in hand, that **only 5 of 64 outcome patterns can
+certify, and every one of them requires BOTH unique-layer heads (11 and 29) to match** — because the
+conditional p runs over those two alone and can take only the values 0.012346, 0.209877 and 1.0. It
+also recorded that `M=5` with either unique head missing is a **FAILURE at p = 0.21**.
+
+```
+observed: M = 5, unique heads [11, 29], BOTH MATCHED -> certifies at 0.012346
+the single miss is head 20, whose predicted L11 is a TIE layer in the multiset -- the survivable kind
+```
+
+**The one head that missed was one of the four whose loss the design could absorb.** That is not
+luck being reported as insight: it is a prediction made before the data, and it is also the reason
+the entry can say what it says — had head 11 or 29 missed, this would be a FAILURE entry, and S-332
+fixed that in writing so it could not be argued about afterwards.
+
+⛔ **THE SCREEN MARGINS ARE NOT AVAILABLE HERE.** Head 20's frozen screen margin is 1.07x, the
+weakest of the six. The prereg forbids reporting any margin-restricted subset after the read *"as
+the result, as a rescue of a null, or as a qualification of a positive"*. Noting that the miss
+happened to be the flattest prediction would be exactly that qualification, so **it is recorded as a
+frozen fact and is NOT part of the claim**. The result is 5 of 6, unqualified.
+
+### 6. What this does NOT establish — the prereg's own list, none of it weakened by a PASS
+
+```
+⛔ NOT "the binomial p alone". The claim is the WEAKEST of three, each named.
+⛔ NOT "cell (L, h) is the writer". There is STILL no control family of ARBITRARY cells anywhere in
+   this sprint. This is NECESSITY, rung 1 of AM-34's ladder, exactly as every prior CSI family.
+⛔ NOT "the screen is a validated cell selector IN GENERAL". Six heads on a second codeword, every
+   one chosen BECAUSE it was live there.
+⛔ NOTHING about heads that are NULL on button -- excluded by construction, so this says nothing
+   whatever about them.
+⛔ NOTHING about the SOURCE of the effect. S-316 blocks it; AM-40 stands; the mass instrument
+   S-325 froze HAS STILL NOT RUN.
+⛔ NOTHING about the other 26 heads, DOMAIN generality, or TEST (S-314: spent AND contaminated).
+⛔ PR-CSI-016 is NOT explained. It returned CANNOT ANSWER and still does (D38 stands).
+⛔ D37 is not strengthened by this and was not at risk from it: that is basket, this is TRANSFER.
+```
+
+⚠ **Head 20's miss is a MISS, not a finding.** Its argmax landed on **L14** — the band-edge rival
+the spanning rule exists to guard against, and the layer that killed PR-CSI-016. One head is one
+head; nothing here licenses a claim about L14 attraction, and the spanning rule passed on the other
+four layers regardless.
+
+### 7. What is still NOT established, sprint-wide
+
+```
+The attention-mass measurement STILL HAS NOT RUN -- and the GPU is now FREE for the first time in
+  3h25m. S-325's criterion is frozen and UNAPPLIED; the source-side family remains BLOCKED by
+  S-316, neither licensed nor refused. THIS IS NOW THE BINDING BRANCH.
+R30-D CONCERN 3 remains recorded and not fixed (per-arm git_commit names code that did not run).
+```
+
+### 8. State
+
+```
+PR-CSI-018   READ, PASSED, CLOSED. Claim row D39 added to reports/DCS_CSI_CLAIM_TABLE.md.
+             census  reports/DCS_CSI_PR018_CELL_CENSUS_button_nonL14_validation.json  md5 512f42a1
+             primary reports/DCS_CSI_PR018_ARGMAX_TEST_button_nonL14_validation.json  md5 db5e82c7
+NEXT         the queue is EMPTY. Launch the attention-mass measurement via
+             slurm_scripts/dcs_csi_retrieval_mass.slurm (S-331) and apply S-325's FROZEN criterion.
+```
+
+`git push` remains credential-blocked. Committed locally.
