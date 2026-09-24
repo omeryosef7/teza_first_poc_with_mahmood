@@ -33166,3 +33166,131 @@ NEXT     the queue is EMPTY again. Choose the next family -- and the open scope 
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-374 — 📌 **THE "MORE HEADS" DIRECTION IS CLOSED ON BOTH CODEWORDS, and the arithmetic says so exactly.** Every basket head that clears the preregistered admission gate has already been cell-mapped; on button, PR-CSI-020's heads are mapped, below the gate, DEAD, or never measured. The next family must be a different KIND of experiment (2026-09-24)
+
+### 1. Why this was the tick
+
+The queue is empty and idle GPU is the binding cost, so the tick is to choose the next family.
+Per S-367's rule I read the record first, and the record already settles one candidate: the
+**arbitrary-cell control family** that would lift *"cell (L,h) is the writer"* was analysed in S-279
+and found **unpreregisterable** — head identity comes from a TRAIN selection (`HD_TOPK`), so judging
+a candidate cell against arbitrary cells on train reuses that selection, and restricting controls to
+one head's own nine cells hits the 1/9 = 0.111 floor that cannot certify at α = 0.05. *"Held out on
+one coordinate and contaminated on the other is not held out."* **I am not re-litigating that
+without new information.** So the live question was the obvious extension: more heads.
+
+### 2. ⛔ BUTTON is closed for PR-CSI-020's head set
+
+PR-CSI-018's own frozen `CANDIDATE_PROVENANCE` records the gate and the exclusions. Cross-referenced
+against PR-020's eight heads, using **PR-CSI-013's published button whole-head arms** (already read,
+so no contamination):
+
+```
+head  6, 11, 27   ALREADY CELL-MAPPED ON BUTTON by PR-CSI-018. Re-running counts a known
+                  outcome as a fresh draw -- selection on data already read (S-320).
+head 10           MEASURED, ci95 excludes 0, but |E|/bar = 1.45 -- BELOW the 1.5 gate
+                  (PR-018 recorded this exclusion by name).
+head 21           E = +0.00056624, ci95 [-0.00131620, +0.00255249] -- CROSSES ZERO.
+                  NOT LIVE on button. Fails the ci95 leg of admission outright.
+head  4, 13, 18   NO BUTTON WHOLE-HEAD MEASUREMENT EXISTS. PR-013 measured 21 heads and
+                  none of these three is among them.
+```
+
+Head 18 additionally predicts **L14**, the band-edge layer PR-CSI-018 deliberately excluded as
+*"the adversary's layer"*. So the best conceivable button extension is heads **4 and 13** — and each
+would first need its own button `HD_` arm run, with admission unknown until it lands.
+
+**That ceiling is K = 2. My own pre-read floor table (S-366) says 0 of 28 admitted sets at K = 2 can
+certify at ANY data** (floor 0.5), and 0 of 56 at K = 3. A button extension could not produce a
+verdict whatever the model did.
+
+### 3. ⛔ BASKET is closed too — and this one is exact, not estimated
+
+Of 32 heads, **19 have a ci95 excluding 0** on basket validation. Twelve of those are already
+cell-mapped: head 2 (PR-CSI-014), heads 17/19/23 (PR-CSI-015), and PR-020's eight. That leaves
+**seven fresh candidates: 3, 7, 14, 15, 20, 24, 31.**
+
+I first estimated their `|E|/bar` from the published ci95 half-width, then **calibrated the proxy
+against the eight heads where both the true S-311 bar and the ci95 are known** (bar/hw ∈ [1.0102,
+1.0297], mean 1.0213 — the proxy understates the bar by ~2%). Because the answer now steers the
+sprint, I then computed the bars **exactly** from PR-012's raw arms with the S-311 formula, against
+a control:
+
+```
+CONTROL -- my bars vs the ones PR-020's census computed independently:
+   head  4   mine 0.00332742   census 0.003327   |diff| 4.24e-07
+   head 13   mine 0.00450819   census 0.004508   |diff| 1.93e-07
+   head 27   mine 0.00228707   census 0.002287   |diff| 6.65e-08
+   (the census rounds to 6 dp, so these agree exactly)
+
+EXACT |E|/bar, the seven FRESH basket heads, n = 23 domains:
+   head  3   E=-0.00873165  bar=0.00623705   1.400   BELOW 1.5
+   head 20   E=-0.00414804  bar=0.00312729   1.326   BELOW 1.5
+   head 24   E=-0.00275031  bar=0.00220626   1.247   BELOW 1.5
+   head  7   E=+0.00373227  bar=0.00314403   1.187   BELOW 1.5
+   head 14   E=+0.00407016  bar=0.00361040   1.127   BELOW 1.5
+   head 31   E=+0.00493364  bar=0.00435936   1.132   BELOW 1.5
+   head 15   E=-0.00134051  bar=0.00136492   0.982   BELOW 1.5
+
+   CLEARING THE GATE: 0 of 7.   Best fresh head: 3, at 1.400.
+```
+
+### 4. ⛔ The near-misses are a trap, and naming it is the point
+
+Head 3 sits at **1.400** and button's head 10 at **1.45**, against a gate of **1.5**. Lowering the
+ratio — or "just including head 3, it is basically there" — would admit heads chosen **after** their
+distance from the gate was known. That is the post-hoc selection this sprint exists to forbid, and
+it would be worse here than usual: `ratio` is frozen in every prereg this family line has used
+(`ADMISSION.ratio = 1.5`), so changing it retroactively reinterprets **PR-CSI-016, 018 and 020** as
+well. **The gate stays. The heads below it stay out.**
+
+### 5. 📌 What this means for the sprint
+
+```
+CLOSED   more heads on BASKET  -- 0 of 7 fresh candidates clear the gate
+CLOSED   more heads on BUTTON  -- mapped / below gate / dead / unmeasured, ceiling K=2
+CLOSED   the arbitrary-cell rank test -- no admissible held-out axis (S-279 §6), not reopened
+OPEN     RUNG 2 (decodability). NOTHING in this sprint has ever left RUNG 1. This needs a new
+         instrument -- a readout probe, not an ablation -- so it is the one direction that is
+         both unexhausted and expensive. It is also the only one that changes the KIND of claim.
+OPEN     the SOURCE question, at REFUTATION strength only (S-337/S-343's licence).
+OPEN     code debt: the four R34 concerns deferred in S-369/S-370 (VOID 8 pins the mean only;
+         ESTIMATOR_AND_RESAMPLER enforced nowhere; the vacuous TEST-leak check; pr016:134's
+         unguarded alias). No GPU needed and VOID 11 has lifted.
+```
+
+**The binding constraint has changed.** For twenty ticks idle GPU was the cost; it is now the
+absence of an admissible question. Launching another cell census would burn 4 h to measure heads
+that cannot be admitted, which is worse than an idle GPU.
+
+### 6. What was NOT established
+
+```
+- NOT established: that heads below the gate carry no effect. |E|/bar = 1.40 is not zero; the
+  gate is a DETECTABILITY threshold frozen to keep admission from being a judgement call, and a
+  head below it is UNDERPOWERED HERE, not shown inert. Saying otherwise inverts the gate.
+- NOT established: that heads 4, 13 or 18 would fail on button. They have never been measured
+  there. "No measurement exists" is not "no effect" -- the R20-6 rule, applied to my own
+  argument.
+- NOT established: any new fact about the model. This tick measured the SPRINT's remaining
+  design space, not the network. The only new numbers are seven bars re-derived from arms
+  published long ago.
+- NOT decided: what runs next. The options in section 5 are recorded, not chosen. The RUNG 2
+  direction needs a design pass before anything is frozen, and S-167c forbids a prereg naming
+  something that does not exist.
+- NOT touched: TEST. The escalated scope question (a second TEST read under section 3.2) is
+  still with the user and nothing here depends on it.
+```
+
+### 7. State
+
+```
+QUEUE    EMPTY. 925438 COMPLETED; PR-CSI-020 read and closed at PASS (S-373).
+CHANGED  external_md/...20260915.md  +S-374 only.
+NEXT     a design pass on RUNG 2, and/or the four deferred R34 code defects, which need no GPU.
+```
+
+`git push` remains credential-blocked. Committed locally.
