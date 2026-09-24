@@ -30597,3 +30597,112 @@ NEXT  design it properly against S-340's and R31's lessons -- floors are not pow
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-348 — **the basket family's POWER, by EXACT ENUMERATION rather than a generator.** Type I at the null is **0.0004**, power at PR-CSI-018's observed match rate is **0.856**, and — unlike PR-CSI-018 — **losing its thinnest heads makes it STRONGER, not fatal**
+
+### 1. Why this one can be computed honestly, and PR-CSI-019's could not
+
+S-347 reported floors and said in its own NOT-established block that floors are not power. S-340 is
+why that distinction is load-bearing: PR-CSI-019's feasibility was computed with a generator whose
+assumed cross-arm correlation (0.83) **exceeded every one of 60 measured arms**, and the honest
+number was three times worse.
+
+**That failure cannot recur here, because this statistic is COMBINATORIAL.** The outcome is *which
+heads match* — 2^8 = 256 patterns — so `P(certify)` is an exact sum over enumerated patterns. There
+is no effect size, no variance, no correlation to assume and no generator to get wrong.
+
+⚠ **One assumption remains and it is named:** heads are taken to match INDEPENDENTLY with
+probability q. If matches are positively correlated across heads — plausible, since a screen that
+is right about depth may be right in a correlated way — the spread is wider and these numbers are
+**optimistic**. That is a real limitation and it is not disguised by the exactness of the enumeration.
+
+### 2. The power curve
+
+```
+PRIMARY K=8  heads 4,6,10,11,13,18,21,27   6 distinct layers, 10080 assignments
+   q        P(certify)   reading
+   0.1111     0.0004     THE NULL -- type I is 0.0004 against alpha 0.05
+   0.3300     0.0481
+   0.5000     0.2305
+   0.6700     0.5532
+   0.8300     0.8563     PR-CSI-018's OBSERVED rate (5 of 6)
+   1.0000     1.0000     D37's observed rate (4 of 4, descriptive)
+
+SECONDARY K=5 (never-tested heads only)     5 distinct layers, 120 assignments
+   0.1111     0.0007      0.8300     0.7973      1.0000     1.0000
+```
+
+**Type I is 0.0004 — the test does not come close to exhausting alpha.** That is the price of
+gating on the WEAKEST of three, and it is a price worth naming: the family is conservative by
+construction, so a null result from it is weak evidence against the screen, not strong.
+
+⚠ **It is powered for a STRONG screen only.** At q = 0.33 — a screen three times better than chance
+— power is **0.048**, i.e. nothing. This family can confirm a screen that works; it cannot
+distinguish a mediocre screen from a useless one.
+
+### 3. Exactly which outcomes certify, recorded BEFORE the read
+
+```
+matches m   subsets   certify   fraction
+    5         56        28        0.50
+    6         28        22        0.79
+    7          8         8        1.00
+    8          1         1        1.00
+                                     (m <= 4 : NONE certify)
+```
+
+**The six-match patterns that FAIL all miss TWO of the four unique-layer heads** — 10 (L12),
+11 (L8), 18 (L14), 21 (L6). So the structural rule, stated now:
+
+> **At m = 6, the family certifies iff at most ONE of the four unique-layer heads is missed.**
+
+That is the direct analogue of PR-CSI-018's "both unique heads must match" (S-332), and recording
+it before the read is what stops a 6-of-8 result being argued about afterwards.
+
+### 4. ✅ Admission robustness — and it runs the OPPOSITE way to PR-CSI-018
+
+S-347 flagged heads 27 (|E|/bar 1.80) and 13 (1.84) as the thin ones, likeliest to fail admission.
+
+```
+admitted                 K  K_uniq  n_assign   P(certify | q = 0.83)
+all                      8      4      10080          0.8563
+minus 27                 7      5       2520          0.9578   <-- HIGHER
+minus 13                 7      5       2520          0.9578   <-- HIGHER
+minus 27 and 13          6      4        360          0.8522
+minus 27, 13 and 18      5      3         60          0.7973
+```
+
+**Losing a thin head makes the family STRONGER**, because 13 and 27 are the two heads that collide
+on L10 — dropping either breaks the tie and raises K_unique from 4 to 5. Power never falls below
+0.797 in any scenario tested. PR-CSI-018 had the opposite exposure: losing either of its two
+unique-layer heads was fatal (S-332). **This design's fragile heads are its redundant ones.**
+
+### 5. NOT established
+
+```
+NOTHING IS DESIGNED, FROZEN OR LAUNCHED. No prereg file, no tag, no arm exists. S-167c binds.
+THE INDEPENDENCE ASSUMPTION IS THE WEAK POINT and is not removable by enumeration. Correlated
+  matches would widen the true spread; every number in 2 is optimistic under positive correlation.
+q = 0.83 IS ESTIMATED FROM SIX HEADS (PR-CSI-018's 5 of 6). A rate estimated from n = 6 has a very
+  wide interval, and the power curve is reported ACROSS q precisely so the answer does not rest on
+  one estimate of it.
+THE ADMISSION RATIOS ARE EXPECTATIONS from PR-CSI-012's arms, not this family's. The real family
+  recomputes admission from its OWN HD_<h> arms; heads may be admitted or dropped differently.
+TYPE I IS NOT A MEASUREMENT OF VALIDITY. 0.0004 is the rate under the stated independence model,
+  not a guarantee; the reader's own refusals and GATE 0 are what protect the read.
+NO CLAIM ABOUT THE SCREEN IS MADE OR STRENGTHENED HERE. This entry is arithmetic on a proposed
+  decision rule and touches no data beyond the frozen predictions and PR-CSI-012's published arms.
+R32 IS DUE BEFORE ANY GPU, and R31-C listed THIRTEEN degrees of freedom that a prereg must close.
+```
+
+### 6. State
+
+```
+queue EMPTY. The basket family now has floors (S-347) AND power (here), both computed before a
+  prereg exists -- the order S-340 and R31-A said it should have been in all along.
+NEXT  write the design against R31-C's thirteen-item list, then R32, then freeze, then launch.
+```
+
+`git push` remains credential-blocked. Committed locally.
