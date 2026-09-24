@@ -81,17 +81,31 @@ def test_mean_of_casings_not_one_casing():
     assert float(u[0]) == 3.0, "not the mean of the two concept rows: %r" % u
 
 
+REQUIRED = {
+    # ⚠ S-388: EVERY required argument lives here and nowhere else. Adding one broke the
+    # subprocess tests three times running (--bank-block/--expect-*, --answer-prefix, --dtype),
+    # each time because a hardcoded arg list omitted it and argparse then refused for an
+    # UNRELATED reason -- which is R35-C's F14 shape. Loud failures, but the same fix three
+    # times means the list was in the wrong place.
+    "--bank": "/nonexistent", "--split": "train", "--exclude-prompt-ids": "/nonexistent",
+    "--model": "/m", "--snapshot-glob": "/s/*", "--heads": "4", "--out": "/tmp/x.json",
+    "--bank-block": "cds_n4_sow", "--condition": "natural_doublespeak",
+    "--expect-n": "230", "--expect-domains": "23", "--answer-prefix": "Answer:",
+    "--dtype": "bfloat16",
+}
+
+
+def _argv(**over):
+    d = dict(REQUIRED)
+    d.update({("--" + k.replace("_", "-")): v for k, v in over.items()})
+    out = [PY, SCRIPT]
+    for k, v in d.items():
+        out += [k, v]
+    return out
+
+
 def _run(extra):
-    base = [PY, SCRIPT, "--bank", "/nonexistent", "--split", "train",
-            "--exclude-prompt-ids", "/nonexistent", "--model", "/m",
-            "--snapshot-glob", "/s/*", "--heads", "4,6", "--out", "/tmp/x.json",
-            # ⚠ every REQUIRED arg must be present, or argparse refuses for an UNRELATED reason
-            # and the test below passes without exercising the check it names. R35-C was sent
-            # hunting exactly this shape; adding --bank-block etc. broke two of these tests, which
-            # is how it was found (S-384).
-            "--bank-block", "cds_n4_sow", "--condition", "natural_doublespeak",
-            "--expect-n", "230", "--expect-domains", "23", "--answer-prefix", "Answer:"]
-    return subprocess.run(base + extra, capture_output=True, text=True)
+    return subprocess.run(_argv() + extra, capture_output=True, text=True)
 
 
 def test_token_ids_have_NO_DEFAULTS():
@@ -207,12 +221,9 @@ def test_a_population_that_does_not_match_the_declaration_is_REFUSED():
         exf = os.path.join(td, "ex.txt")
         open(exf, "w").write("# header\n")
         r = subprocess.run(
-            [PY, SCRIPT, "--bank", bank, "--split", "validation", "--exclude-prompt-ids", exf,
-             "--model", "/m", "--snapshot-glob", "/s/*", "--heads", "4",
-             "--concept-ids", "1", "--codeword-ids", "2", "--out", os.path.join(td, "o.json"),
-             "--answer-prefix", "Answer:", "--bank-block", "cds_n4_sow",
-             "--condition", "natural_doublespeak",
-             "--expect-n", "999", "--expect-domains", "999"],   # deliberately wrong
+            _argv(bank=bank, split="validation", exclude_prompt_ids=exf, heads="4",
+                  concept_ids="1", codeword_ids="2", out=os.path.join(td, "o.json"),
+                  expect_n="999", expect_domains="999"),      # deliberately wrong
             capture_output=True, text=True)
         both = r.stdout + r.stderr
         assert r.returncode != 0, "a population that does not match the declaration was ACCEPTED"
@@ -314,3 +325,13 @@ def test_the_rms_normalisation_is_actually_applied_in_CODE():
     assert "register_forward_pre_hook" in code, "the final-norm rms is never captured"
     assert "/ _rms)" in code, "the captured rms is never divided out"
     assert "rms_at_dst" in code, "the rms range is not recorded in the artefact"
+
+
+def test_dtype_is_REQUIRED_and_not_silently_float32():
+    """S-388. The first draft hardcoded float32: ~32 GB for an 8B model against the partition's
+    24 GB 3090s, AND not what the arms ran -- every PR-CSI-020 arm records dtype bfloat16.
+    A more precise forward than the family it sits beside is a different computation, silently."""
+    code = _code()
+    assert '"--dtype", required=True' in code, "dtype has a default again"
+    assert "dtype=torch.float32" not in code, "float32 is hardcoded at the load again"
+    assert '"dtype": a.dtype' in code, "the dtype is not recorded in the artefact"

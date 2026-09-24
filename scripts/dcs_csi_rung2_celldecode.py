@@ -162,6 +162,15 @@ def main() -> int:
                          'MEASURED to hold a median 5.6e-06 of next-token mass and abandoned on '
                          '2026-08-18. Pass the SAME value the arms used, or "" to reproduce that '
                          'abandoned tail deliberately.')
+    ap.add_argument("--dtype", required=True, choices=["bfloat16", "float32"],
+                    help='⚠ REQUIRED, NO DEFAULT (S-388). The first draft hardcoded float32, which '
+                         '(a) is ~32 GB for an 8B model and does not fit the partition\'s 24 GB '
+                         '3090s, and (b) is NOT what the arms ran -- every PR-CSI-020 arm records '
+                         'dtype bfloat16. Measuring a MORE precise forward than the family this '
+                         'sits beside is a different computation, silently. Pass what the arms '
+                         'passed unless you mean otherwise. NOTE dominance_at adapts its '
+                         'reconstruction tolerance by weight dtype (1e-3 fp32, 3e-2 bf16) and the '
+                         'decomposition itself is computed in float32 on CPU either way.')
     ap.add_argument("--limit", type=int, default=0, help="0 = all rows; >0 for a smoke run")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
@@ -246,7 +255,8 @@ def main() -> int:
     print("[rung2] direction built from %d concept + %d codeword rows; |u| = %.6f"
           % (len(cids), len(kids), float(u.norm())))
 
-    lm = dc.load_model(a.model, dtype=torch.float32, attn_implementation="eager")
+    _dt = {"bfloat16": torch.bfloat16, "float32": torch.float32}[a.dtype]
+    lm = dc.load_model(a.model, dtype=_dt, attn_implementation="eager")
     et = False
     per_dom = {}          # domain -> {(L,h): [values]}
     n_done, skipped, recon = 0, {}, None
@@ -367,6 +377,7 @@ def main() -> int:
                    "by every cell at every layer and cannot reorder anything. ⚠ Before S-387 the "
                    "raw <Y,u_hat> was averaged, which is an RMS-WEIGHTED mean and can flip an "
                    "argmax across prompts (R35-A).",
+        "dtype": a.dtype,
         "u_norm": float(u.norm()),
         "rms_at_dst": ({"n": len(rms_seen), "min": min(rms_seen), "max": max(rms_seen),
                         "mean": statistics.fmean(rms_seen)} if rms_seen else None),

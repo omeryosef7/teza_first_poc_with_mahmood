@@ -34722,3 +34722,85 @@ NEXT     a CPU smoke on a handful of TRAIN rows -- the first execution this inst
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-388 — the smoke is READY TO SUBMIT, and preparing it found a fifth thing the instrument had wrong: it forced **float32**, which is ~32 GB against the partition's 24 GB cards **and is not the forward the arms ran** (2026-09-25)
+
+### 1. Preconditions checked before writing a launcher, not after
+
+```
+TRAIN POPULATION under the full split-enforced filter:  670 rows, 67 domains
+   (70 train domains minus the 3 preregistered whole-population exclusions = 67)
+   -- matches R35-B's independent figure exactly. S-384 recorded this as NOT established for
+   train and warned against assuming it transferred from validation; it does, and now it is
+   measured rather than assumed.
+```
+
+### 2. 🔴 The fifth defect: the dtype was hardcoded, and wrong twice over
+
+```
+the script forced   dtype=torch.float32
+every PR-CSI-020 arm records   dtype: bfloat16
+the partition's cards are      geforce_rtx_3090, 24 GB
+an 8B model in fp32 is         ~32 GB
+```
+
+So the smoke would have **OOM'd before measuring anything** — and had it fit, it would have run a
+**more precise forward than the family it is meant to sit beside**, silently. `--dtype` is now a
+REQUIRED choice with no default, on the same logic as the token ids: a default here selects a
+different computation and nothing downstream would say so. It is recorded in the artefact.
+
+⚠ `dominance_at` adapts its reconstruction tolerance by weight dtype (1e-3 fp32, 3e-2 bf16) and
+computes the decomposition itself in float32 on CPU either way, so this changes the forward, not
+the arithmetic of the decomposition.
+
+### 3. ⚠ The same required-argument breakage, three times — so the list was in the wrong place
+
+Adding `--dtype` broke three subprocess tests, exactly as `--bank-block/--expect-*` and
+`--answer-prefix` had before. Each time, argparse refused for an UNRELATED reason and the test
+asserting a SPECIFIC refusal went red. **Loud, which is why they were caught — but the same fix
+three times means the arg list belonged in one place, not three.** There is now a single `REQUIRED`
+dict and an `_argv(**over)` helper; adding a required argument is one edit. 20 tests pass.
+
+### 4. The launcher, and what is explicit in it rather than defaulted
+
+`slurm_scripts/dcs_csi_rung2_smoke.slurm`. **TRAIN, not validation** — validation is what a future
+prereg would read, and burning it on a smoke would make the first real read the second look. The
+manifest's own discipline line says train is the discovery split.
+
+Every hazard R35 found is closed in the invocation rather than trusted: `--dtype bfloat16`,
+`--answer-prefix "Answer:"`, explicit basket token ids, `--expect-n 670 --expect-domains 67`
+gating the population, and the split enforced per row from the manifest.
+
+📌 **And the launcher I copied the pattern from already documented my own mistake.**
+`dcs_csi_retrieval_mass.slurm`'s header says: *"THE EXCLUSION LIST IS MANDATORY. Without it, a
+ts116m bank is read POOLED, which includes all 23 TEST domains."* That is S-384's blocker, written
+down before I rediscovered it by nearly shipping it. Reading the record first keeps being the
+cheapest review available, and keeps being the one I skip.
+
+### 5. What was NOT established
+
+```
+- NOT RUN YET. This entry ships a launcher; it does not report a measurement. The next entry
+  either reports one or reports why there is none.
+- NOT established: that the instrument produces sensible numbers. The smoke's purpose is to find
+  out whether it RUNS. Any number it emits is EXPLORATORY, on TRAIN, from a CONTIGUOUS 2-domain
+  sample (--limit takes rows in file order and the bank is domain-clustered), and is marked
+  IS_SMOKE in the artefact.
+- NOT established: that `lm.model.model.norm` is the right layout for the rms hook. That is what
+  a first execution tests, and the run REFUSES if the hook never fires (S-387).
+- STILL OPEN: the direct-path surrogacy, and the aggregate-then-argmax vs argmax-then-vote
+  statistic choice. Neither blocks a smoke; both block a prereg.
+```
+
+### 6. State
+
+```
+QUEUE    EMPTY. Submitting after this commit -- the submit helper refuses a dirty worktree.
+CHANGED  scripts/dcs_csi_rung2_celldecode.py (--dtype required), tests/... (20, args centralised),
+         slurm_scripts/dcs_csi_rung2_smoke.slurm (NEW), external_md/...20260915.md
+NEXT     submit; read the smoke; then the statistic decision; then a prereg.
+```
+
+`git push` remains credential-blocked. Committed locally.
