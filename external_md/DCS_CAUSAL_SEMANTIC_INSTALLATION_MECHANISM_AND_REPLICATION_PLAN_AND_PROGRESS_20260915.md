@@ -30380,3 +30380,106 @@ much smaller question than the one I set out to answer this morning, and it must
 these numbers rather than against S-344's withdrawn framing.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-346 — 🔴 **S-345's REPLACEMENT CLAIMS ARE WITHDRAWN TOO, and one of them VIOLATED A FROZEN PROHIBITION that was already in the claim table.** Three exploratory entries in a row have now asserted things the published record already settled or forbade — the root cause is identified here
+
+### 1. What I should have done first, and did not
+
+Before computing anything from PR-CSI-012's arms I should have read what the claim table already
+says **about those same arms**. Doing it now:
+
+```
+D33   ALREADY PUBLISHES  E(HD_TOPK) = -0.195984 ci95 [-0.243068, -0.153491], E(HD_KO) = -0.226961
+      -- so S-345's "86.4%" is a RESTATEMENT of a published number, not a discovery.
+AM-27 "F = 0.8635 is a ratio of two NET-OF-COMPENSATION causal effects, and MUST NOT BE READ as
+      'the fraction of the mechanism these eight heads implement'."
+AM-30 HD_ALL32_07 = [1,2,4,7,8,14,18,22] shares EXACTLY ONE head with HD_TOPK and reaches 77.8%
+      of it and 67.2% of the all-32 knockout. The dose-response in candidate-head COUNT is weak
+      and NON-MONOTONE (Spearman rho = -0.0932), which ARGUES AGAINST ADDITIVITY across the eight.
+AM-33 "NO SINGLETON MAY BE SUMMED AGAINST E(HD_KO)" -- frozen, and frozen FIRST precisely because
+      head 2 alone is 21.8% of HD_KO.
+```
+
+**Re-derived by me, not taken from the row:** `HD_ALL32_07` E = **-0.152458 = 77.8% of `HD_TOPK`,
+67.2% of `HD_KO`**, sharing only head 2. AM-30 reproduces exactly.
+
+### 2. 🔴 The withdrawals
+
+**(a) "Eight screen-selected heads deliver 86.4% of the full knockout" — WITHDRAWN as framed.**
+It is AM-27's forbidden reading of `F = 0.8635` in different words. The number is real and
+published (D33); the *interpretation* — that the eight implement 86.4% of the mechanism — is the one
+AM-27 rules out, because both terms are net of backup-head compensation.
+
+**(b) "The screen picks the RIGHT eight heads: 86.4% vs 5.5%, a factor of 15.7" — WITHDRAWN.**
+`HD_BOTK` is the screen's **bottom** eight, i.e. the worst available 8-set, not a neutral
+comparison. Against a set sharing **one** head with the candidate, the margin is 86.4% vs **67.2%**.
+An essentially disjoint 8-set does most of the work. The honest statement is D32/D33's — the 8-set
+is **sufficient and ranks 1 of 21** — with AM-30's bound attached, not a 15.7x contrast.
+
+**(c) "Roughly ADDITIVE — 73.5% of the joint effect is recovered by summing singles" — WITHDRAWN,
+and it VIOLATED AM-33's explicit prohibition.** AM-33 froze *"no singleton may be summed against
+E(HD_KO)"*. S-345 summed thirty-two of them against exactly that. And the conclusion is
+independently contradicted: AM-30 measured the dose-response in candidate-head count as weak and
+**non-monotone**, which argues against additivity — while AM-33 measured that **4 of HD_TOPK's 8
+heads carry no individually detectable load and 2 have marginals of the wrong sign.**
+
+**What SURVIVES from S-345:** its withdrawal of S-344 (correct, and it stands — the button budget
+was incomplete and biased), the head-by-head tables themselves, and "predictable from TRAIN", which
+is D32/D33's published result and was never mine to claim.
+
+### 3. 🔴 THE PROCESS FAILURE, which is the real content of this entry
+
+```
+S-338  flagged the correlation assumption in its own text, then published the conclusion it forbids
+S-344  listed "11 of 32 heads unmeasured" in its own NOT-established block, then built the
+       headline on the total
+S-345  computed from PR-012's arms without reading the four claim-table rows about those arms,
+       and violated one of them
+```
+
+Three entries, one mechanism. **I have been treating the raw arms as the source of truth and the
+claim table as an output.** It is both — and where a family has already been read, the table is the
+*prior* constraint on any new reading of it. Recomputing `E(HD_TOPK)` from `results.jsonl` felt like
+independent verification; it was independent of the only thing that would have caught me.
+
+> **A number re-derived from raw data is not thereby a claim that is safe to make.** The
+> verification the standing rule demands — *never take a subagent's number on trust, re-derive it
+> yourself* — protects against wrong ARITHMETIC. It does nothing against a wrong READING, and all
+> three of these were readings. S-329 said this once already, from the other direction, and I did
+> not carry it across.
+
+**The fix, stated as a rule I will follow:** before any exploratory analysis of an already-read
+family, grep the claim table for that family's arms and read every row that names them — FIRST,
+before computing. If a row forbids a reading, that prohibition binds the new entry too. This costs
+one grep and would have prevented all three.
+
+### 4. NOT established
+
+```
+NOTHING WAS MEASURED ON A GPU. The queue is EMPTY and has been all tick.
+THIS ENTRY ESTABLISHES NO NEW SCIENCE. It is a retraction plus a process correction.
+The corrected picture of head structure is the one ALREADY IN THE TABLE: D32/D33 (the 8-set is
+  sufficient, rank 1 of 21), AM-27 (net of compensation, not "the fraction implemented"), AM-30
+  (uniqueness and per-head necessity NOT certified; a one-head-overlap set reaches 67.2%), AM-33
+  (per-head necessity refuted for half the set; singletons may not be summed). S-345 added nothing
+  to it and subtracted accuracy.
+S-344's withdrawal STANDS. Its button budget was genuinely incomplete and biased.
+PR-CSI-018's result (S-335, D39) is UNTOUCHED by any of this -- it is a preregistered read with
+  its own frozen statistic, not an exploratory recomputation.
+PR-CSI-019 remains WITHDRAWN. No family is designed or frozen. The proposed random-subset dose
+  ladder would now have to be justified against AM-30's non-monotone dose-response, which already
+  says what a count-based ladder would likely find.
+```
+
+### 5. State
+
+```
+queue EMPTY. Three consecutive exploratory entries retracted in whole or in part.
+NEXT  the highest-value branch is NOT another exploratory pass over old arms. It is either a
+      preregistered family that measures something no existing arm does, or nothing -- and
+      "nothing" is a legitimate answer on a tick whose honest output is a retraction.
+```
+
+`git push` remains credential-blocked. Committed locally.
