@@ -34907,3 +34907,91 @@ NEXT     read the smoke; apply S-385's recorded-but-unfixed list including flush
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-390 — the smoke has run 48 minutes with ZERO observable progress, and the instrument is UNOBSERVABLE BY CONSTRUCTION. 📌 **I nearly recorded a hang on the strength of a metric that was a sentinel value, not a measurement** (2026-09-25)
+
+### 1. State, and what it is and is not evidence of
+
+```
+926941  RUNNING 48:02 on n-302, 1:00:00 limit, ~12 min remaining.
+stdout  2 lines: the host banner and the provenance line. NOTHING since.
+stderr  0 BYTES.
+artefact not written.
+```
+
+**Python's stderr is unbuffered, so 0 bytes is real evidence: no exception has been raised.** The
+stdout silence is not evidence of anything — my `print`s lack `flush=True` and SLURM redirects to a
+file, so every progress line is sitting in a buffer that only flushes at exit.
+
+### 2. 📌 THE NEAR-MISS, recorded because it is the session's recurring shape and this time it was aimed at my own job
+
+I ran `sstat` twice 40 seconds apart to see whether CPU time was advancing, and got:
+
+```
+AveCPU = 213503982+     MaxRSS = 0        ...unchanged across both samples
+```
+
+and my check printed **"UNCHANGED in 40s: suspicious"**. That conclusion was worthless.
+`213503982+` is sstat's overflow/unavailable **sentinel**, and `MaxRSS = 0` for a job that has
+loaded an 8B model is impossible. **The metric was not reporting, and "unchanged" was a property of
+the sentinel, not of the job.** One step further and I would have recorded a hang, killed the job,
+and gone looking for a bug that was not there.
+
+⚠ **An uninformative metric read as a negative measurement is the same failure as a check that
+passes without exercising anything** — the fifth instance this session, and the first pointed at
+operational state rather than at code. The tell was available: a sentinel that does not change is
+not the same as a quantity that does not change, and `MaxRSS = 0` was flatly impossible.
+
+### 3. The root cause is mine, and it is a design defect not a nuisance
+
+The instrument emits **no periodic progress, no per-prompt timing, and no flushed output**. So a run
+that is working and a run that is wedged produce byte-identical logs for an hour. R35 reviewed this
+file across three agents and 13 tests and none of us flagged it, because every test exercises
+refusal paths and none exercises a long run.
+
+**Queued for the post-run fix list, ahead of the rest of S-385 §8:** `flush=True` on every progress
+line, a per-N-prompts heartbeat carrying elapsed time, and per-prompt wall time in the artefact.
+
+### 4. ⚠ A real cost the instrument inherits and never uses — measured, not guessed
+
+`dominance.py` builds `Yv` and `Y`, each `[n_q_head, T, d_model]`, **before** the
+`if check_invariants:` gate at `:183` — so they are constructed unconditionally, for the `D_attn`
+output this instrument never reads:
+
+```
+per LAYER per PROMPT   Yv and Y are each [32, 225, 4096] fp32 = 118.0 MB  -> 235.9 MB churn
+over the 9 band layers                                              -> 2.12 GB per prompt
+the einsum hdk,thk->htd                       7.5 GFLOP per layer, 67.9 GFLOP per prompt
+```
+
+⛔ **NOT CLAIMED: that this is the bottleneck.** The forward itself runs `output_attentions=True`
+over **all 32 layers** while only 9 are consumed, and neither cost was measured — which is exactly
+what the missing timing instrumentation would have told me. Fixing it means touching
+`dominance.py`, which is SHARED with other families, so it is recorded rather than done in haste.
+
+### 5. What was NOT established
+
+```
+- NOT established: whether the job is progressing. I cannot tell, and section 2 is why I will
+  not say otherwise. The only hard fact is that no exception has been raised.
+- NOT established: any measurement. The artefact does not exist.
+- NOT established: that the run will complete within its limit. If it is killed at 60 minutes,
+  THAT is the finding -- a 20-prompt TRAIN smoke exceeding an hour would make the validation
+  population (230 rows) infeasible at this per-prompt cost and would force the cost work in
+  section 4 before any prereg.
+- NOT DONE, deliberately: no edit to the script or to dominance.py while a job whose provenance
+  names BLOB 6c878f0d is in flight.
+```
+
+### 6. State
+
+```
+QUEUE    926941 RUNNING 48:02 of 1:00:00.
+CHANGED  external_md/...20260915.md  +S-390 only. No code -- a job is in flight.
+NEXT     read the outcome: a result, or a timeout that reprices the whole design. Then the
+         observability fix, then the cost question, then a prereg.
+```
+
+`git push` remains credential-blocked. Committed locally.
