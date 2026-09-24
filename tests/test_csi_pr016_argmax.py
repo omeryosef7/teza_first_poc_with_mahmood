@@ -367,3 +367,102 @@ def test_PR016_still_gates_on_the_binomial_alone(tmp_path):
     assert v["ROBUSTNESS"]["p_conditional"] == 1.0 and v["ROBUSTNESS"]["p_permutation"] == 1.0
     pr16 = json.load(open(PR016))
     assert "GATING" not in pr16["PRIMARY"], "PR-016 must remain on the default binomial_only path"
+
+
+# ================================================================ R30-B / S-332
+# Three defects R30-B demonstrated on synthetic censuses built in the census's own output shape,
+# each of which would have fired on the real PR-CSI-018 read.
+
+
+@pytest.mark.skipif(not os.path.exists(PR018), reason="PR-CSI-018 prereg not emitted")
+def test_the_claim_wording_follows_GATING_not_whether_heads_share_a_layer(tmp_path):
+    """R30-B F1, a BLOCKER. `THE_CLAIM_MUST_BE_STATED_WITH` was gated on "do two ADMITTED heads
+    share a predicted layer" -- PR-CSI-016's criterion -- rather than on the prereg's declared
+    PRIMARY.GATING. S-323 moved the GATE onto the prereg and left the WORDING one field behind.
+
+    Drop heads 20 (L11) and 27 (L10) at admission and the four survivors predict L11/L8/L10/L6 --
+    all distinct -- so the old guard went False and the field read "the binomial p alone", inside a
+    JSON whose own MUST_NOT_BE_SAID_IF_POSITIVE[0] forbids exactly that. R30-B produced a PASS
+    gated on permutation = 0.041667 whose published instruction named a binomial 273x smaller.
+
+    PROPERTY: under GATING = weakest_of_three the wording names the weakest of three, whatever the
+    admitted heads' predicted layers happen to be."""
+    pr = json.load(open(PR018))
+    sp = pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"]
+    heads = pr["heads"]                                   # [6, 11, 20, 24, 27, 29]
+    peaks = {h: sp[str(h)]["screen_predicted_layer"] for h in heads}
+    admit = [h not in (20, 27) for h in heads]
+    v = _run018(tmp_path, _census018(tmp_path, peaks, admit=admit)[0])
+
+    assert v["K_admitted"] == 4, v["why"]
+    # `shared_predicted_layers` IS the old guard's condition, published. Empty = the branch that
+    # used to emit "the binomial p alone".
+    assert v["ROBUSTNESS"]["shared_predicted_layers"] == [], (
+        "fixture invalid: no two ADMITTED heads may share a predicted layer, or this test does not "
+        "exercise the defect: %r" % (v["ROBUSTNESS"]["shared_predicted_layers"],))
+    assert v["GATING"] == "weakest_of_three"
+    said = v["ROBUSTNESS"]["THE_CLAIM_MUST_BE_STATED_WITH"]
+    assert "binomial p alone" not in said, (
+        "the reader instructed the write-up to quote the binomial ALONE under weakest_of_three, "
+        "contradicting MUST_NOT_BE_SAID_IF_POSITIVE in the same file: %r" % said)
+    assert "WEAKEST" in said, said
+
+
+@pytest.mark.skipif(not os.path.exists(PR018), reason="PR-CSI-018 prereg not emitted")
+def test_K_below_3_is_CANNOT_ANSWER_because_the_prereg_defines_FAILURE_only_at_K_ge_3(tmp_path):
+    """R30-B F3. The prereg says "FAILURE = the weakest p > 0.05 WITH K >= 3"; the code's only K
+    guard was `K < 2`, so K=2 published FAIL -- 60 of R30-B's 729 reachable configurations did.
+    At K=2 the permutation space holds 2 assignments, floor 0.5, so weakest > alpha is FORCED
+    whatever the data: a structural non-answer exactly like K=1, and NOT a licensed FAILURE.
+
+    Admit only heads 11 and 29 -- the two unique-layer heads -- and let both match perfectly."""
+    pr = json.load(open(PR018))
+    sp = pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"]
+    heads = pr["heads"]
+    peaks = {h: sp[str(h)]["screen_predicted_layer"] for h in heads}
+    admit = [h in (11, 29) for h in heads]
+    v = _run018(tmp_path, _census018(tmp_path, peaks, admit=admit)[0])
+
+    assert v["K_admitted"] == 2 and v["M_matches"] == 2, v["why"]
+    assert v["VERDICT"] == "CANNOT ANSWER", (
+        "a PERFECT 2-of-2 was published as %r, below the K >= 3 the prereg requires for FAILURE: %s"
+        % (v["VERDICT"], v["why"]))
+    assert "K >= 3" in v["why"], v["why"]
+    # and the floor must be reported whether or not it changed the verdict
+    assert v["ROBUSTNESS"]["GATING_FLOOR"]["p"] > 0.05
+
+
+@pytest.mark.skipif(not os.path.exists(PR018), reason="PR-CSI-018 prereg not emitted")
+def test_a_TRUNCATED_gate0_record_is_refused_rather_than_self_reporting_its_own_total(tmp_path):
+    """R30-B F4. The GATE 0 check iterated the record's OWN keys and used len(per_arm) as its
+    denominator, so a truncated record self-reported a truncated total and ABSENCE WAS A PASS --
+    the very thing the refusal two lines above it says it is not. R30-B cut per_arm to a single
+    arm, left all 61 other E's in place, and the read published VERDICT PASS at K=6 M=6.
+
+    The frozen read's claim is "GATE 0 PASS on all 62 arms"; nothing could substantiate "all 62"
+    because n_arms_per_split was never read."""
+    pr = json.load(open(PR018))
+    sp = pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"]
+    heads = pr["heads"]
+    peaks = {h: sp[str(h)]["screen_predicted_layer"] for h in heads}
+    path, _ = _census018(tmp_path, peaks)
+
+    rep = json.load(open(path))
+    full = dict(rep["GATE_0_and_identity"]["per_arm"])
+    dropped = ["BF_H6_L11", "HD_29"]
+    for k in dropped:
+        assert k in full, "fixture invalid: %s absent" % k
+        del full[k]
+    rep["GATE_0_and_identity"]["per_arm"] = full          # every E left intact
+    p2 = tmp_path / "truncated.json"
+    p2.write_text(json.dumps(rep))
+
+    out = tmp_path / "v.json"
+    r = subprocess.run([PY, READER, "--prereg", PR018, "--census", str(p2), "--out", str(out)],
+                       capture_output=True, text=True)
+    blob = r.stdout + r.stderr
+    assert r.returncode != 0, (
+        "a census whose GATE 0 record is missing %s was READ:\n%s" % (dropped, blob[-700:]))
+    assert "ABSENT" in blob or "n_arms_per_split" in blob, blob[-700:]
+    for k in dropped:
+        assert k in blob, "the refusal did not name the missing arm %s:\n%s" % (k, blob[-700:])

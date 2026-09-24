@@ -28781,3 +28781,227 @@ a running family for the same 3090, so it waits. **Next tick: 923972 to 62/62, t
 read in order — GATE 0 (full), census, primary — and only then a claim-table row.**
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-332 — **REVIEW R30, four reviewers, run BEFORE the read rather than after it. 🔴 One BLOCKER and five real defects in the PR-CSI-018 read path, all fixed with tests that fail without them.** And 🔴 **TWO OF MY OWN FIXES OVER-REACHED and were caught by the existing suite** — one of them by silently overriding a preregistered verdict I did not like
+
+### 1. Why R30 ran now
+
+The standing rule is a review "every ~4h or before any family reaches a GPU". PR-CSI-018 is already
+on a GPU, so the letter of that rule was spent — but the moment that actually matters for this
+family is not the launch, it is **the read**, which is one-shot and preregistered. A defect found
+after the read is a defect found too late. Four reviewers, blind to each other, each barred from
+touching a live arm or running either reader against the real family:
+
+```
+R30-A  scripts/dcs_csi_head_census.py        -- the bar rule, VOID 8, silent head-dropping
+R30-B  scripts/dcs_csi_pr016_argmax_test.py  -- the three p's, admission, gating, spanning
+R30-C  prereg vs frozen read consistency     -- does the config encode what the prose claims
+R30-D  arm provenance and quarantine         -- is this one clean generation from job 923972
+```
+
+### 2. R30-C's CONCERN, REVERSED by my own re-derivation — the S-329 pattern, exactly
+
+R30-C reported that the frozen read's per-head `|E|/bar` table is **not witnessed**: the prereg
+stores no bar and no ratio per head, PR-013's report contains no `"bar"` string, and it **could not
+recompute** the numbers. It rested, R30-C said, on log entry S-320 alone.
+
+**I recomputed them.** PR-013 is already read and published, so re-deriving from it spends nothing.
+Reusing `w4.by_domain` (the sole endpoint definition) and the S-311 rule verbatim, over the 23
+domains common to PR-013's base arm and the six arms **the prereg itself names per head**:
+
+```
+head  pr013 arm      n_dom     E (derived)    E (prereg ref)    |diff|      bar     |E|/bar   read says
+  6   BT_CTRL_06        23     -0.00509022     -0.00509022     4.16e-09   0.002100   2.4241     2.42
+ 11   BT_CTRL_05        23     -0.01631008     -0.01631008     3.95e-09   0.005713   2.8551     2.86
+ 20   BT_CTRL_19        23     -0.00724789     -0.00724789     8.52e-10   0.002540   2.8537     2.85
+ 24   BT_CTRL_00        23     -0.00285392     -0.00285392     3.87e-09   0.001554   1.8365     1.84
+ 27   BT_CTRL_15        23     +0.00266563     +0.00266563     3.02e-09   0.001728   1.5426     1.54
+ 29   BT_CTRL_11        23     +0.00929118     +0.00929118     6.45e-10   0.003726   2.4937     2.49
+                                                         ALL SIX MATCH TO TWO DECIMALS
+```
+
+**The witness chain is not a stored field — it is `prereg -> named pr013_arm -> landed rows -> frozen
+rule`.** A reviewer looking for a stored NUMBER concluded "unwitnessed"; the witness was a
+derivation from an artefact the prereg names per head. This is S-329 repeating almost word for word,
+and the lesson generalises past that entry's version of it:
+
+> S-329 said a checking discipline that only re-derives NUMBERS would have passed a bad inference
+> through. R30-C is the mirror image: **a discipline that only looks for STORED numbers reports
+> "unwitnessed" when the witness is a derivation.** Both failures share one root — treating the
+> artefact's *surface* as the unit of evidence rather than the *chain*.
+
+The reference E's also agree to ~4e-09, roughly a thousandth of the 1e-6 void tolerance, which
+independently confirms VOID condition 8's frozen references are themselves correct.
+
+R30-C's other checks are clean, and its three headline numbers — 180 distinct assignments, 1/180,
+(1/9)^6 — match values **I had derived by brute-force enumeration before its report arrived**.
+
+### 3. THE DEFECTS. Six real, one BLOCKER. All fixed.
+
+**R30-B F1 — BLOCKER. The reader instructed the write-up to quote the forbidden number.**
+`THE_CLAIM_MUST_BE_STATED_WITH` was gated on *"do two ADMITTED heads share a predicted layer"* —
+PR-CSI-016's criterion — not on the prereg's declared `PRIMARY.GATING`. S-323 moved the **gate** onto
+the prereg and left the **wording** one field behind. Any admission leaving the survivors' predicted
+layers distinct flipped that field to *"the binomial p alone"* — inside a JSON whose own
+`MUST_NOT_BE_SAID_IF_POSITIVE[0]` says quoting the binomial alone is FORBIDDEN. R30-B produced it:
+a PASS gated on permutation = 0.041667 whose published instruction named a binomial **273x smaller**,
+with the conditional and permutation p's never printed at all. Both now follow `GATING`.
+
+**R30-B F4 — the reader could not substantiate its own frozen read's claim.** The GATE 0 check
+iterated the census record's own keys and used `len(per_arm)` as the denominator, so a truncated
+record self-reported a truncated total: **absence was a pass**, two lines below a refusal saying
+absence is not a pass. `n_arms_per_split` was never read. Cutting `per_arm` to one arm while leaving
+all 61 other E's intact published `VERDICT PASS, K=6, M=6`. Now refuses on any declared arm missing.
+
+**R30-A F2 — a check that printed `OK` beside a 3860x violation.** `void_tolerance` fell back to a
+`1e-6` **supplied by the reader** and was accepted at any magnitude — while ten lines away
+`BAR_IS_A_RULE.z` must be declared *("the rule's only numeric parameter cannot be supplied by this
+file — that would publish a default as though it were preregistered")* and range-checked. With
+`void_tolerance: 1e9` the reader printed `|diff|=3.86e-03  OK`. Now: must be declared, must lie in
+`(0, 1e-3]`.
+
+**R30-A F1 — VOID 8 skipped silently, and the artefact could not tell.** A missing or null reference
+hit a bare `continue`: no count, no print, no record, and **the report carried no provenance key at
+all**, so "checked and free" was indistinguishable from "never checked" — which *was the substance of
+R29's finding*. Closing the drift case while leaving the absence case silent reinstated it one branch
+over. Now every skipped head is named on stdout and a `VOID_8_PROVENANCE` block records each check,
+its diff, and the tolerance actually used.
+
+**R30-A F5 — a check that was literally `X or True`.** The base arm's identity verdict read
+`ok_id, why = (got in (None, "ALL", []) or True), "not intervened"` — unconditionally `True`, with
+`got` hardcoded to `None` two lines above, so the base arm's recorded flags were **never read** and
+the report wrote `"recorded": null`, actively concealing a flag rather than merely missing it. VOID
+condition 4 was in exactly the state R29 found VOID 8 in: prose consumed by no reader. Now a real test.
+
+**R30-D CONCERN 1 — CONFIRMED, and it bit at the worst possible moment.** GATE 0's terminal verdict
+was indistinguishable from its partial one: `61 of 62` with one crashed arm exited **0**, the same
+code as a complete pass. R30-D's fixture — `DONE.json` deleted, `results.jsonl` truncated to 117 of
+230 rows — printed `.. IN FLIGHT` and `every landed arm passes (31 of 62)`, exit 0. Worse, the file's
+own comment promised *"the arm-count guard is what catches a family that never completed"* and **no
+such guard existed anywhere in it**. The R29 VOID-8 shape again: a comment asserting a protection
+nothing performs. Now `landed != len(arms)` exits 3 — `1 = failure`, `3 = ran but NOT the verdict`,
+`0 = all arms passed`.
+
+### 4. 🔴 TWO OF MY OWN FIXES OVER-REACHED, AND THE EXISTING SUITE CAUGHT BOTH
+
+**(a) I silently overrode a preregistered verdict.** R30-B's F2 is that at `K_unique = 0` the
+conditional is the placeholder `1.0` — not a p-value — and `max()` promotes that placeholder to the
+gate, publishing a perfect 4-of-4 as a FAIL carrying the IF_NULL prohibitions: verbatim the S-317
+death this family was built to escape. I fixed it with a general guard: *if the gating statistic's
+own floor cannot clear alpha, the read was unwinnable, so CANNOT ANSWER.*
+
+It converted `K=3, M=3` — permutation floor 1/3 — from FAIL to CANNOT ANSWER. **An existing test
+failed.** And the test was right: the prereg says in terms *"FAILURE = the weakest p > 0.05 **with
+K >= 3**"*. K=3 qualifies. I had decided, after the fact, that a preregistered FAILURE was really a
+non-answer because its floor was unflattering — **the exact post-hoc move this sprint exists to
+forbid**, dressed as a bug fix.
+
+> A guard that converts an adverse preregistered verdict into "no verdict" is not a fix. It is the
+> thing preregistration is for, running backwards. That the reasoning was sound in the K<3 case is
+> what made it dangerous in the K>=3 case: **a correct principle applied one step past its licence.**
+
+Corrected: the floor now changes the verdict **only at K < 3**, where the prereg licenses no FAILURE
+at all. At K >= 3 the prereg's FAILURE stands — with the structural fact attached to `why`, so an
+unwinnable FAIL can never be cited as evidence against the screen.
+
+**(b) I made a legitimate prereg shape illegal.** I turned a *partial* reference declaration into a
+refusal, reasoning by analogy with S-308's "if a prereg declares bars PER HEAD, every head must be in
+it". The analogy is false, and the VOID-8 tests caught it. A bar is something every head must have; a
+**prior measurement** is something a head either has or does not — PR-CSI-016's heads 17 and 23 had
+never had a button arm, *which is the entire reason S-311's bar-as-a-RULE exists*. Corrected to
+disclosure rather than refusal.
+
+**Both over-reaches shared one shape: I generalised a rule from the case that motivated it to a case
+that merely resembled it.** Neither was caught by reading the diff; both were caught by tests written
+for a different purpose months of entries ago.
+
+### 5. What was verified rather than trusted
+
+```
+the three p-value floors        re-derived by BRUTE-FORCE ENUMERATION before R30-C reported them
+                                180 assignments (= 6!/(2!2!)), 1/180, (1/9)^6 = 1.8816764232e-06
+the six |E|/bar ratios          re-derived from PR-013's own landed arms (section 2)
+the quarantine                  checked on the FILESYSTEM: the n-304 generation's single partial
+                                arm dir is in outputs/boombness/QUARANTINE/, a SIBLING of
+                                score_behavior/, so outside the reader's single-level glob
+src/ drift during the run       git diff 3c3c3d26..1e57d383 -- src/ is EMPTY; run-start commit is
+                                an ancestor of HEAD. R30-D's CONCERN 3 is real but harmless HERE
+every claimed defect            reproduced against the actual source before being fixed
+```
+
+**R30-D CONCERN 3 is worth keeping.** Per-arm `RUNMETA.json` re-runs `git rev-parse` at each arm's
+start, so 33 of 34 arms record a commit that is **not** the code that produced them — the family is
+one long-lived process under one model load, and the commits drifting beneath it are S-326..S-331,
+my own sprint-log work. Harmless this time only because `src/` did not move. The family's commit of
+record is the launcher's `BLOB` line, not any arm's `git_commit`.
+
+### 6. NOT established
+
+```
+NOTHING WAS MEASURED, AGAIN. Four entries in a row have now corrected the record and measured
+  nothing. PR-CSI-018 has NO endpoint read; the frozen read cbdf34a2 is untouched; no census,
+  no primary, no claim-table row.
+R30-A's F3/F4/F6/F7 are NOT FIXED -- a stray per_head entry naming a 1-cell arm can still delete
+  cells from the census silently; a >1-cell arm is still excluded with no loud line; _detect()
+  is still `or` rather than a merge. ALL FOUR ARE LATENT ON THE CURRENT PREREG (verified: PR-018's
+  per_head is exactly heads 6/11/20/24/27/29, each naming its own HD_<h> full band, no stray key),
+  so the read is executable -- but "latent" is a property of today's config, not of the code.
+The attention-mass measurement STILL HAS NOT RUN. S-325's criterion remains frozen and UNAPPLIED
+  and the source-side family is still BLOCKED by S-316, neither licensed nor refused.
+The design map in section 7 is ARITHMETIC ON THE PREREG, not power. It assumes no noise model and
+  computes no effect size.
+```
+
+### 7. The design map, computed before the read so it cannot be argued about after it
+
+`scripts/dcs_csi_pr018_design_map.py` (new; nothing existing computes an argmax-agreement statistic
+— `dcs_csi_head_power.py` gives the same "nothing was reusable" reason for its own existence).
+
+```
+outcome patterns that CERTIFY : 5 of 64      minimum M among them : 5
+ALL of them require BOTH unique-layer heads (11 and 29) to match : TRUE
+```
+
+The conditional p runs over the two unique-layer heads **alone**, so it can take only three values —
+`0.012346`, `0.209877`, `1.0`. Therefore **`M=5` certifies if heads 11 and 29 are among the matches
+and FAILS at p = 0.21 if either is not**, and `M=4` fails whatever happens (permutation 0.0778).
+
+Admission moves this, because the prereg defines uniqueness *among the admitted*:
+
+```
+admitted        K_uniq  n_perm   cond floor   perm floor   perfect-result verdict
+all six              2     180     0.012346     0.005556    CERTIFIES  (weakest 0.012346)
+drop a TIE head      3      60     0.001372     0.016667    CERTIFIES  (weakest 0.016667)
+drop h11 or h29      1      30     0.111111     0.033333    CANNOT CERTIFY, however perfect
+K = 3 admitted       -       -            -            -    0 of 20 subsets can certify
+```
+
+And the admission slack, from the bars re-derived in section 2:
+
+```
+head 27  ratio 1.5426  slack over the preregistered 1.5 = +2.8%   <-- the one at risk
+head 24  ratio 1.8365  +22.4%
+head  6  ratio 2.4241  +61.6%        head 29  ratio 2.4937  +66.2%
+head 20  ratio 2.8537  +90.2%        head 11  ratio 2.8551  +90.3%
+```
+
+**The design is robust exactly where it must be.** The head most likely to fail admission (27, at
+2.8% slack) predicts L10 — a tie — so losing it *raises* K_unique to 3 and the family survives. The
+two heads whose loss would kill it (11 and 29) have the largest slack of all six. That is a property
+of the frozen design, recorded now, with no number from this family in hand. ⚠ These are PR-013's
+bars; PR-018 recomputes admission from its **own** HD_<h> arms, so they are an EXPECTATION and not
+the verdict.
+
+### 8. State
+
+```
+PR-CSI-018   923972 on n-301, 37 of 62 arms, all rc=0, one clean generation (R30-D, filesystem
+             -verified). GATE 0 PARTIAL and clean on every landed arm; it now exits 3, not 0.
+             ~25 arms x 171 s median = ~70 min.
+NEXT         923972 to 62/62 -> GATE 0 (FULL, must exit 0) -> census -> primary, in the frozen
+             order -> then and only then a claim-table row.
+```
+
+`git push` remains credential-blocked. Committed locally.

@@ -73,6 +73,26 @@ def main():
     if _bad:
         sys.exit("REFUSING: GATE 0 did not pass on %d of %d arms (%s). No endpoint may be read. "
                  "(S-202)" % (len(_bad), len(per_arm), ", ".join(_bad[:6])))
+    # ⚠ R30-B/S-332: THE CHECK ABOVE ITERATES THE RECORD'S OWN KEYS, so its denominator is whatever
+    # the record happens to contain and ABSENCE IS A PASS -- the very thing the refusal two lines up
+    # says it is not. R30-B truncated a census's per_arm to a SINGLE arm, left all 61 other E's in
+    # place, and the read published VERDICT PASS at K=6 M=6 with no warning; deleting just
+    # BF_H6_L11 and HD_29 did the same. The frozen read's claim is "GATE 0 PASS on all 62 arms",
+    # and nothing here could substantiate the "all 62": `n_arms_per_split` was never read.
+    # This is the S-301/R20-6 shape one level up -- not a missing value, a missing ROW.
+    _declared = set(pr.get("base_arms") or [])
+    _declared |= set(pr.get("cell_sets") or pr.get("head_sets") or {})
+    _missing = sorted(_declared - set(per_arm))
+    if _missing:
+        sys.exit("REFUSING: the census's GATE_0_and_identity['per_arm'] record covers %d arms but "
+                 "prereg %r declares %d. %d are ABSENT (%s). Absence is not a pass (R20-6): a "
+                 "truncated record would otherwise self-report its own truncated total. "
+                 "(R30-B/S-332)"
+                 % (len(per_arm), pr["id"], len(_declared), len(_missing), ", ".join(_missing[:6])))
+    _want_arms = pr.get("n_arms_per_split")
+    if _want_arms is not None and len(per_arm) != int(_want_arms):
+        sys.exit("REFUSING: GATE 0 record holds %d arms; prereg %r freezes n_arms_per_split=%d. "
+                 "(R30-B/S-332)" % (len(per_arm), pr["id"], int(_want_arms)))
     if rep.get("split") != pr.get("split"):
         sys.exit("REFUSING: the census report is split %r but the prereg froze %r. This family is a "
                  "VALIDATION read. (R28/S-312)" % (rep.get("split"), pr.get("split")))
@@ -208,6 +228,32 @@ def main():
         _gate_p = _cands[_gate_name]
     else:
         _gate_name, _gate_p = "binomial", p
+    # ⚠ R30-B/S-332: THE GATING STATISTIC'S OWN FLOOR, i.e. the p it would report on a PERFECT
+    # result at the REALISED K and multiset. The reader already had this idea and applied it to
+    # exactly one case -- "the floor at K=1 is 1/9 and cannot clear alpha" -- while three other
+    # ways of reaching an unwinnable read published a FAIL instead.
+    #
+    # R30-B demonstrated both on synthetic censuses built in the census's own output shape:
+    #   * K_unique = 0. `p_cond` is then the PLACEHOLDER 1.0 on the line above -- not a p-value, a
+    #     stand-in for a statistic that does not exist. Under weakest_of_three max() promotes that
+    #     placeholder to the gate and the verdict is FAIL. A 4-of-4 agreement with a prediction
+    #     frozen on another split AND another codeword was published as a null, carrying the
+    #     IF_NULL prohibitions. That is verbatim the S-317 death THIS FAMILY WAS BUILT TO ESCAPE.
+    #   * K = 2. The permutation space holds 2 assignments, floor 0.5, so weakest > alpha is FORCED
+    #     whatever the data -- and the prereg defines FAILURE only "with K >= 3". 60 of the 729
+    #     reachable configurations published FAIL below that threshold.
+    #
+    # A read whose BEST attainable p cannot clear alpha did not fail to find the effect; it could
+    # not have found it. That is CANNOT ANSWER (structural), and conflating the two is how a
+    # family that was never able to certify gets cited as evidence against the hypothesis.
+    _floor_parts = {"binomial": binom_tail(K, K, p0),
+                    "conditional": (binom_tail(K_u, K_u, p0) if K_u else 1.0),
+                    "permutation": ((1.0 / len(perms)) if perms else 1.0)}
+    if _gating == "weakest_of_three":
+        _floor_name = max(_floor_parts, key=lambda k: _floor_parts[k])
+    else:
+        _floor_name = "binomial"
+    _floor_p = _floor_parts[_floor_name]
     span = sorted({r["argmax_layer"] for r in matched})
     # ⚠ R28/S-312: the spanning rule is only MEANINGFUL where it was reached. It used to be emitted
     # as False on every FAIL and on K<2, where the prereg's own wording ("the matching heads must not
@@ -230,9 +276,43 @@ def main():
              "as this family's real risk" if K == 0 else
              "only 1 head ADMITTED; the floor at K=1 is 1/%d = %.4f and cannot clear alpha=%.2f"
              % (len(band), p0, alpha)))
+    elif _gate_p > alpha and K < 3:
+        # ⚠ R30-B/S-332, AND A CORRECTION OF MY OWN FIRST FIX. The prereg defines FAILURE as "the
+        # weakest p > 0.05 WITH K >= 3". Below that it defines no adverse verdict at all, and the
+        # code's only guard was `K < 2`, so K=2 published FAIL -- 60 of R30-B's 729 reachable
+        # configurations did. At K=2 the permutation space holds 2 assignments, floor 0.5, so
+        # weakest > alpha is FORCED whatever the data: a structural non-answer, exactly like K=1.
+        #
+        # ⚠ MY FIRST ATTEMPT AT THIS GUARD KEYED ON THE FLOOR ALONE (_floor_p > alpha -> CANNOT
+        # ANSWER) AND WAS WRONG. It converted K=3/M=3 -- where the permutation floor is 1/3 and the
+        # prereg says in terms that K >= 3 with weakest > alpha IS a FAILURE -- into CANNOT ANSWER.
+        # An existing test caught it. Deciding after the fact that a preregistered FAILURE is
+        # really a non-answer, because its floor is unflattering, is the post-hoc move this sprint
+        # exists to forbid. The floor is now REPORTED everywhere and CHANGES THE VERDICT NOWHERE
+        # the prereg has spoken.
+        verdict, why = "CANNOT ANSWER", (
+            "STRUCTURAL: K=%d and the prereg defines FAILURE only with K >= 3. The gating "
+            "statistic's floor at this K and admitted multiset is %s = %.6f > alpha = %.2f, so no "
+            "outcome could have certified and the observed M=%d is NOT evidence against the screen. "
+            "(binomial floor %.6f | conditional floor %.6f | permutation floor %.6f over %d "
+            "assignments)"
+            % (K, _floor_name, _floor_p, alpha, M, _floor_parts["binomial"],
+               _floor_parts["conditional"], _floor_parts["permutation"], len(perms)))
     elif _gate_p > alpha:
         verdict, why = "FAIL", (
             "%s = %.6f > alpha = %.2f at K=%d, M=%d" % (_gate_name, _gate_p, alpha, K, M)
+            # ⚠ R30-B/S-332: the prereg's FAILURE stands, but a FAILURE whose BEST attainable p
+            # could not have cleared alpha must never be cited as evidence AGAINST the screen. The
+            # sharpest case is K_unique=0, where `p_cond` is the placeholder 1.0 rather than a
+            # p-value and max() promotes it to the gate -- S-317's death, which this family was
+            # built to escape. The verdict is the prereg's; this sentence is what stops it being
+            # misread as a refutation.
+            + ("" if _floor_p <= alpha else
+               "  ⛔ STRUCTURALLY UNWINNABLE: the floor at this K and admitted multiset is %s = "
+               "%.6f > alpha, so NO outcome could have certified. This is NOT evidence against the "
+               "screen.%s" % (_floor_name, _floor_p,
+                              "  K_unique=0: the conditional is UNDEFINED and carried as the "
+                              "placeholder 1.0." if not K_u else ""))
             + ("" if _gating == "binomial_only" else
                "  [binomial %.6f | conditional %.6f | permutation %.6f -- this prereg gates on the "
                "WEAKEST]" % (p, p_cond, p_perm)))
@@ -269,12 +349,28 @@ def main():
             "K_unique": K_u, "M_unique": M_u, "p_conditional": (None if M is None else p_cond),
             "p_permutation": (None if M is None else p_perm),
             "n_permutations": len(perms),
+            # ⚠ R30-B/S-332: THIS FIELD USED TO BE GATED ON WHETHER TWO ADMITTED HEADS SHARE A
+            # PREDICTED LAYER -- PR-CSI-016's criterion -- RATHER THAN ON THE PREREG'S DECLARED
+            # GATING. S-323 moved the GATE onto `PRIMARY.GATING` and left the WORDING behind on the
+            # old rule, one field over. Under weakest_of_three, any admission that leaves the
+            # admitted predictions all distinct made this field read "the binomial p alone" while
+            # MUST_NOT_BE_SAID_IF_POSITIVE[0] in the SAME JSON says quoting the binomial alone is
+            # FORBIDDEN. R30-B produced it: a PASS gated on permutation = 0.041667 whose published
+            # instruction named a binomial 273x smaller. The wording follows the GATING or it is
+            # not the prereg's wording.
             "THE_CLAIM_MUST_BE_STATED_WITH": (
-                "the binomial p alone (no admitted heads share a predicted layer)"
-                if not any(_pred.count(L) > 1 for L in _pred) else
-                "the WEAKEST of the binomial, conditional and permutation p's, each named -- two "
-                "admitted heads share a predicted layer, so a shared band bias would deliver those "
-                "matches for free (R28/S-312)"),
+                "the binomial p alone (this prereg declares PRIMARY.GATING = 'binomial_only')"
+                if _gating == "binomial_only" else
+                "the WEAKEST of the binomial, conditional and permutation p's, EACH NAMED -- this "
+                "prereg declares PRIMARY.GATING = %r. Quoting the binomial alone is FORBIDDEN "
+                "whatever the admitted heads' predicted layers happen to be (R30-B/S-332)."
+                % (_gating,)),
+            "GATING_FLOOR": {
+                "name": _floor_name, "p": _floor_p, "parts": _floor_parts,
+                "WHAT_THIS_IS": "the p the gating statistic would report on a PERFECT result at "
+                                "the realised K and admitted multiset. If it exceeds alpha the "
+                                "read was unwinnable before the data and the verdict is CANNOT "
+                                "ANSWER (structural), never FAIL. (R30-B/S-332)"},
         },
         "matching_layers": (["L%d" % L for L in span] if span is not None else None),
         "spanning_rule_satisfied": (spanning_ok if (span is not None and verdict in
@@ -313,15 +409,27 @@ def main():
     else:
         print("\n[pr016] K = %d admitted, M = %d matches, p = %.6f (Binom(K, 1/%d), one-sided)"
               % (K, M, p, len(band)))
-        if any(_pred.count(L) > 1 for L in _pred):
-            print("[pr016] ⚠ ROBUSTNESS -- heads sharing a predicted layer match FOR FREE under a "
-                  "shared band bias:")
+        # ⚠ R30-B/S-332: this block was gated on "do two admitted heads share a predicted layer",
+        # so under an admission that left the predictions distinct the conditional and permutation
+        # p's WERE NEVER PRINTED -- the only number on the transcript beside the verdict line was
+        # the binomial, on a read gated by something else entirely. A p the verdict does not use,
+        # printed alone, is the one number that must never stand alone here. It follows the GATING.
+        if _gating != "binomial_only":
+            print("[pr016] ⚠ ROBUSTNESS -- this prereg gates on the WEAKEST of three; all three are "
+                  "reported whatever the admitted heads' predicted layers are:")
+            print("          binomial     K=%d M=%d  p = %.6f" % (K, M, p))
             print("          conditional  K_unique=%d M_unique=%d  p = %.6f   (the informative heads "
-                  "only)" % (K_u, M_u, p_cond))
+                  "only%s)" % (K_u, M_u, p_cond,
+                               "; K_unique=0 -> UNDEFINED, carried as the placeholder 1.0"
+                               if not K_u else ""))
             print("          permutation  over %d assignments of the prediction multiset  p = %.6f"
                   % (len(perms), p_perm))
             print("          -> the claim must be stated with the WEAKEST of %.6f / %.6f / %.6f"
                   % (p, p_cond, p_perm))
+            print("          FLOOR (best attainable at this K/multiset): %s = %.6f%s"
+                  % (_floor_name, _floor_p,
+                     "  ⛔ EXCEEDS alpha -- this read was UNWINNABLE before the data"
+                     if _floor_p > alpha else ""))
         print("[pr016] matching layers %s -> spanning rule %s"
               % (["L%d" % L for L in span],
                  "SATISFIED" if spanning_ok else "VIOLATED" if M else "not reached (no matches)"))

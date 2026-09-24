@@ -848,8 +848,17 @@ def _run_sweep(farm):
 @pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
 def test_an_IN_FLIGHT_arm_is_not_reported_as_a_GATE_0_FAILURE(tmp_path):
     """S-315. An arm still being written has a run dir and no DONE.json. It must be reported as IN
-    FLIGHT -- neither passed nor failed -- and the sweep must NOT exit non-zero, or every incremental
-    sweep during a live family is a false alarm."""
+    FLIGHT -- neither passed nor failed -- and the sweep must NOT report a GATE 0 FAILURE, or every
+    incremental sweep during a live family is a false alarm.
+
+    ⚠ R30-D/S-332 SHARPENED THIS. The test used to assert rc in (0, None), which conflated two
+    different things: "this is not a failure" (S-315's point) and "this is a passing GATE 0" (which
+    it is NOT -- 28 of 29 arms were checked). R30-D demonstrated the cost on a fixture: an arm with
+    DONE.json deleted and results.jsonl truncated to 117 of 230 rows printed ".. IN FLIGHT" and
+    "every landed arm passes", exit 0 -- indistinguishable from a complete pass, forever, because
+    the sweep never learns the job is gone. The exit codes now separate all three states:
+        1 = a real GATE 0 failure        3 = ran, but NOT the family's verdict        0 = all arms
+    S-315's intent is preserved exactly -- an in-flight arm still never yields exit 1."""
     def mutate(farm, src, base):
         if "_CL_H23_L14_" not in base:
             return False
@@ -862,9 +871,23 @@ def test_an_IN_FLIGHT_arm_is_not_reported_as_a_GATE_0_FAILURE(tmp_path):
         return True
     rc, out = _run_sweep(_sweep_farm(tmp_path, mutate))
     assert "IN FLIGHT" in out, out[-700:]
-    assert rc in (0, None), "an in-flight arm was treated as a failure: rc=%r\n%s" % (rc, out[-700:])
+    assert rc != 1, "an in-flight arm was treated as a GATE 0 FAILURE: rc=%r\n%s" % (rc, out[-700:])
     assert "THIS SWEEP IS PARTIAL" in out, "a partial sweep did not say so"
     assert "every landed arm passes (28 of 29)" in out, out[-400:]
+    # R30-D/S-332: and it must NOT read as a complete pass either.
+    assert rc == 3, "a PARTIAL sweep exited %r -- exit 0 is a complete GATE 0 pass" % (rc,)
+    assert "GATE 0 IS NOT COMPLETE" in out, out[-500:]
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+def test_a_COMPLETE_sweep_still_exits_0(tmp_path):
+    """R30-D/S-332's companion: a guard that refuses everything is not a guard. With all 29 arms
+    landed and passing, the sweep must still exit 0 -- otherwise the new arm-count check has simply
+    made every sweep unusable rather than making exit 0 mean something."""
+    rc, out = _run_sweep(_sweep_farm(tmp_path, lambda farm, src, base: False))
+    assert "every landed arm passes (29 of 29)" in out, out[-500:]
+    assert "GATE 0 IS NOT COMPLETE" not in out, out[-500:]
+    assert rc in (0, None), "a COMPLETE sweep was refused: rc=%r\n%s" % (rc, out[-700:])
 
 
 @pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")

@@ -304,7 +304,14 @@ def main():
         else:
             want_dose = 0 if arm == base_arm else (DOSE_UNIT if arm == ko_arm else DOSE_UNIT * k)
         if arm == base_arm:
-            got = None
+            # ⚠ R30-A/S-332: `got` was hardcoded to None here and the verdict below then read
+            # `(got in (None, "ALL", []) or True)` -- an expression that is unconditionally True.
+            # The base arm's own recorded flags were never read, and the published report wrote
+            # "recorded": null, which ACTIVELY CONCEALS a flag rather than merely missing it.
+            # VOID condition 4 ("BF_BASE carrying any intervention flag") was, like VOID 8 before
+            # R29, prose consumed by no reader. The dose check catches a base arm whose hook really
+            # fired; it cannot catch a config/run mismatch, which is what this reads.
+            got = recorded_cells(dirs[arm]) if IS_CELLS else recorded_heads(dirs[arm])
         elif IS_CELLS and arm != ko_arm:
             # IDENTITY FROM knockout_cells ONLY. This arm's knockout_heads is EMPTY, which
             # recorded_heads() maps to "ALL" -- so the head-level check would certify every 1-cell arm
@@ -313,7 +320,13 @@ def main():
         else:
             got = recorded_heads(dirs[arm])
         if arm == base_arm:
-            ok_id, why = (got in (None, "ALL", []) or True), "not intervened"
+            # R30-A/S-332: a genuine test. The base arm must record NO cell list and NO head list.
+            # recorded_heads() maps an empty knockout_heads to "ALL" (S-292), so "ALL" is the
+            # base arm's EMPTY, not a knockout of everything -- the dose check (want 0) is what
+            # separates those two, and it runs alongside this.
+            _bad_base = got not in (None, "ALL", [], "", "NOT_A_CELL_ARM")
+            ok_id = not _bad_base
+            why = "not intervened" if ok_id else "CARRIES AN INTERVENTION FLAG: %r" % (got,)
         elif arm == ko_arm:
             # ⚠ R27/S-310 -- THE COLLISION ON THE DENOMINATOR. Cell arms are defended by
             # `knockout_cells`; the all-32 arm was defended by `knockout_heads == "ALL"` ALONE. But a
@@ -607,17 +620,59 @@ def main():
         # mention of provenance. Repointing HD_6 at another head's rows gave a 1.97e-03 difference --
         # ~2000x the 1e-6 threshold -- and the read exited 0 with "GATE 0 PASS on all 62 arms".
         # Generic by construction: it fires for ANY prereg whose per_head carries a reference block.
+        # ⚠ R30-A/S-332: THIS LOOP USED TO `continue` OVER A MISSING OR NULL REFERENCE -- no count,
+        # no print, no record -- which is the R20-6 rule this file preaches ("any check whose PASS is
+        # consistent with reading NOTHING is not a check") violated on the one condition R29 was
+        # filed for. The report carried no provenance key at all, so the artefact could not
+        # distinguish "checked and free" from "never checked". That indistinguishability WAS the
+        # substance of R29's finding; closing the drift case while leaving the absence case silent
+        # reinstated it one branch over.
+        # ⚠ AND A CORRECTION OF MY OWN FIRST FIX HERE. I first made a PARTIAL declaration -- some
+        # heads carrying a reference, some not -- a REFUSAL, by analogy with S-308's "if a prereg
+        # declares bars PER HEAD then EVERY head must be in it". That analogy is FALSE and the
+        # existing VOID-8 tests caught it. A bar is something every head must have; a PRIOR
+        # MEASUREMENT is something a head either has or does not. PR-CSI-016's heads 17 and 23 had
+        # never had a button arm at all -- that absence is the entire reason S-311's bar-as-a-RULE
+        # exists -- so a family where only some heads carry a reference is LEGITIMATE and expected.
+        # The fix is disclosure, not refusal: every unevaluated head is named on stdout and in the
+        # artefact, so "checked and free" can never again be confused with "never checked".
+        _prov = {"checked": [], "skipped": [], "tolerances": {}}
         for _hk, _hd in sorted(_per_head_bars.items()):
             _ref = (_hd or {}).get("pr013_whole_head_REFERENCE") if isinstance(_hd, dict) else None
             if not _ref or _ref.get("E") is None:
+                _prov["skipped"].append(_hk)
+                print("[census] PROVENANCE head %-3s -- NO REFERENCE DECLARED; VOID condition 8 was "
+                      "NOT EVALUATED for this head (R30-A/S-332)" % _hk)
                 continue
+            # ⚠ R30-A/S-332: `void_tolerance` used to fall back to a 1e-6 SUPPLIED BY THIS FILE and
+            # was accepted at any magnitude. Ten lines up, BAR_IS_A_RULE.z must be DECLARED ("the
+            # rule's only numeric parameter cannot be supplied by this file -- that would publish a
+            # default as though it were preregistered") and must lie in [0.5, 5.0] because a z of 0
+            # makes every cell clear a bar of zero. The identical argument applies to a tolerance
+            # and neither half had been applied: with void_tolerance 1e9 the reader printed
+            # "|diff|=3.86e-03  OK" beside a 3860x violation. A check that states the opposite of
+            # the truth is worse than one that stays silent.
+            if _ref.get("void_tolerance") is None:
+                sys.exit("REFUSING: head %s's pr013_whole_head_REFERENCE declares no "
+                         "void_tolerance. A tolerance supplied by the READER is a default published "
+                         "as though it were preregistered. (R30-A/S-332)" % _hk)
+            _tol_decl = float(_ref["void_tolerance"])
+            if not (0.0 < _tol_decl <= 1e-3):
+                sys.exit("REFUSING: head %s's void_tolerance is %r, outside (0, 1e-3]. S-318 "
+                         "demonstrated BIT-IDENTICAL reproduction of a whole-head arm across two "
+                         "jobs and two nodes, so any tolerance approaching an effect size makes the "
+                         "condition vacuous while still printing OK. (R30-A/S-332)" % (_hk, _tol_decl))
+            _prov["tolerances"][_hk] = _tol_decl
             _src = _hd.get("bar_source_arm")
             if _src not in E:
                 sys.exit("REFUSING: head %s declares a whole-head reference but its source arm %r is "
                          "absent, so the provenance condition cannot be evaluated. Absence is not a "
                          "pass (R20-6). (R29/S-323)" % (_hk, _src))
             _d = abs(E[_src] - float(_ref["E"]))
-            _tol = float(_ref.get("void_tolerance", 1e-6))
+            _tol = _tol_decl
+            _prov["checked"].append({"head": _hk, "source_arm": _src, "E": E[_src],
+                                     "reference_E": float(_ref["E"]), "abs_diff": _d,
+                                     "void_tolerance": _tol, "within": bool(_d <= _tol)})
             print("[census] PROVENANCE head %-3s %-8s E=%+.8f vs reference %+.8f  |diff|=%.2e  %s"
                   % (_hk, _src, E[_src], float(_ref["E"]), _d,
                      "OK" if _d <= _tol else "*** EXCEEDS %.0e ***" % _tol))
@@ -629,6 +684,10 @@ def main():
                          "exclusions or model revision has DRIFTED and nothing in this family is "
                          "readable. (R29/S-323)"
                          % (_hk, _src, E[_src], float(_ref["E"]), _d, _tol))
+        print("[census] VOID CONDITION 8: %d of %d head(s) CHECKED against a frozen prior "
+              "measurement, %d NOT EVALUATED%s."
+              % (len(_prov["checked"]), len(_per_head_bars), len(_prov["skipped"]),
+                 "" if not _prov["skipped"] else " (heads %s)" % ", ".join(_prov["skipped"])))
 
         _heads_here = sorted({sorted(hs[k])[0][1] for k in _judged})
         # LAYER order within HEAD order: the question is the shape along depth, and on a multi-head
@@ -741,6 +800,21 @@ def main():
     if IS_CELLS:
         out["ARM_GRANULARITY"] = "cell"
         out["CANNOT_DO_FIELD"] = _cannot
+        # ⚠ R30-A/S-332: the report used to carry NO provenance key, so a reader could not tell
+        # "VOID condition 8 was checked and is free" from "it was never evaluated" -- which is
+        # verbatim the false claim R29 caught in PR-CSI-018's own frozen read. The condition is now
+        # code AND the artefact witnesses it: every head checked, with its diff and the tolerance
+        # actually used, and every head skipped, named.
+        out["VOID_8_PROVENANCE"] = {
+            "n_heads_declared": len(_per_head_bars),
+            "n_checked": len(_prov["checked"]), "n_not_evaluated": len(_prov["skipped"]),
+            "heads_not_evaluated": _prov["skipped"],
+            "tolerance_used_per_head": _prov["tolerances"],
+            "checks": _prov["checked"],
+            "WHAT_THIS_IS": "each head's whole-head arm E compared to the prereg's frozen prior "
+                            "measurement of the SAME head, codeword and split. A diff above the "
+                            "head's DECLARED void_tolerance is a refusal, not a warning. The "
+                            "tolerance may not be defaulted by this reader. (R29/S-323, R30-A/S-332)"}
         out["CELL_FAMILY"] = {
             "h_star": pr.get("h_star"), "layers": pr.get("layers"), "band": pr.get("band"),
             "per_cell_dose_predicted": PER_CELL,

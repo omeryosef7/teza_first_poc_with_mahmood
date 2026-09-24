@@ -308,6 +308,33 @@ def main():
         # discloses landed-vs-declared; this names WHY the rest are missing.
         print("  .. %d arm(s) IN FLIGHT (run dir present, no DONE.json). THIS SWEEP IS PARTIAL and "
               "is NOT the family's GATE 0 verdict." % incomplete)
+    # ⛔ R30-D/S-332. A PARTIAL SWEEP EXITED 0 -- THE SAME CODE AS A COMPLETE PASS.
+    # S-292 established that a sweep resolving NOTHING is not a pass and made it exit 3. The same
+    # argument applies one step along and was never carried there: "61 of 62, one IN FLIGHT" also
+    # exited 0, with text a reader skims as healthy progress. The comment at the in-flight branch
+    # says "only the final sweep, when the job is gone, can tell [a DIED arm] apart, and the
+    # ARM-COUNT GUARD is what catches a family that never completed" -- and R30-D established that
+    # NO SUCH GUARD EXISTS IN THIS FILE. `landed == len(arms)` is asserted nowhere; `incomplete`
+    # never reaches the exit code. A comment promising a protection nothing performs is the R29
+    # VOID-8 shape exactly.
+    #
+    # Demonstrated on a fixture: an arm with DONE.json deleted and results.jsonl truncated to 117 of
+    # 230 rows printed ".. IN FLIGHT" and "every landed arm passes (31 of 62)", exit 0. A half
+    # written arm missing 113 rows read as healthy progress, and the frozen read's STEP 0 -- whose
+    # own wording is "GATE 0 liveness + ARM IDENTITY on ALL 62 ARMS" -- would have been recorded as
+    # passed.
+    #
+    # Exit 3, not 1: an incomplete sweep is a LEGITIMATE state while the family is on the GPU (the
+    # sweep is designed to be run mid-flight), so it must stay distinguishable by a caller from a
+    # real GATE 0 failure. 3 already means "ran, but this is NOT the family's verdict".
+    if landed != len(arms):
+        print("GATE 0 IS NOT COMPLETE: %d of %d declared arms passed, %d in flight, %d never "
+              "landed. THIS IS NOT THE FAMILY'S GATE 0 VERDICT and must not be recorded as one. "
+              "Re-run when the job is gone; an arm still lacking DONE.json then has DIED, and the "
+              "in-flight branch cannot tell those apart by itself. (R30-D/S-332)"
+              % (landed, len(arms), incomplete, len(arms) - landed - incomplete))
+        sys.exit(3)
+    return 0
 
 
 if __name__ == "__main__":
