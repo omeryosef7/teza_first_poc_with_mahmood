@@ -33863,3 +33863,119 @@ NEXT     part 3: verify dcs_cont_logitlens_control.py's token ids and that it ru
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-380 — RUNG 2 design pass, part 3: 🔴 **the existing logit-lens instrument is HARDCODED TO THE WRONG CODEWORD** — `CODEWORD_IDS = ' button', ' Button'`, and the whole CSI cell line is BASKET. ✅ And the RMSNorm wrinkle is RESOLVED exactly, at the cost of forcing a LINEAR readout (2026-09-24)
+
+### 1. 🔴 The instrument would have silently answered a different question
+
+S-379 chose the concept-minus-codeword unembedding direction because
+`scripts/dcs_cont_logitlens_control.py` already builds it with token ids *"frozen in this file and
+not chosen by looking at which ones correlated with anything"*. Verified against the arms' own
+tokenizer (Llama-3.1-8B-Instruct, the snapshot every arm's RUNMETA names):
+
+```
+CONCEPT_IDS  (13054, 33909) -> [' bomb', ' Bomb']      comment MATCHES   ✓ codeword-independent
+CODEWORD_IDS (3215,  6739)  -> [' button', ' Button']  comment MATCHES   🔴 BUT THE WRONG CODEWORD
+' basket' -> [14351]   ' Basket' -> [34217]            both SINGLE tokens ✓
+```
+
+**The ids are exactly what the comments claim. The file is simply BUTTON-only**, written for the
+continuation line, while PR-CSI-012/014/020 and every basket cell result are BASKET. Running it
+unchanged over basket cells would compute a **bomb-vs-BUTTON** contrast at basket sites — a number
+that is well-formed, plausible, and answers a question nobody asked.
+
+📌 **This is the sprint's most persistent defect class, for the fourth time**: a family-specific
+literal surviving a widening. R29/S-322 was `"BC_H%s_L%02d"` hardcoded in the reader; S-308 was the
+codeword default; S-357 was `PREREG`/`TAG_PREFIX`/`FAMILY` defaulting to PR-CSI-010's. **Caught here
+BEFORE any design was written, by checking the constants against the tokenizer instead of reading
+the comment.** The fix is to parameterise the codeword rows — not to widen a default.
+
+### 2. ✅ The RMSNorm wrinkle: RESOLVED, and the resolution is exact
+
+S-379 flagged that the lens applies the final RMSNorm while `dominance_at`'s `D_dir` projects in the
+residual basis, calling the projection a first-order approximation. **It need not be an
+approximation at all.** RMSNorm is `h/rms(h) ⊙ g`, so for a LINEAR readout row `W`:
+
+```
+<norm(h), W>  =  (1/rms(h)) * <h, g ⊙ W>
+```
+
+Fold the norm GAIN into the direction — pass `u = g ⊙ (W_concept − W_codeword)` to `dominance_at`
+— and the only thing left outside the projection is the scalar `1/rms(h)`. Verified numerically in
+double precision, not asserted:
+
+```
+CLAIM 1  lens == <h, g*(Wc-Wk)>/rms                         |diff| = 0.000e+00    EXACT
+CLAIM 2  per-cell contributions are additive in <Y, u_g>    |diff| = 5.68e-14     EXACT
+CLAIM 3  1/rms is ONE POSITIVE scalar per destination       argmax unchanged by it
+```
+
+📌 **So for an argmax-across-cells comparison at a fixed destination, the RMSNorm is irrelevant** —
+it is one common positive rescale and cannot reorder anything. The within-head design S-378 chose is
+exactly the comparison that is invariant to it.
+
+### 3. ⚠ But it FORCES a linear readout, and that is a real constraint
+
+The existing lens uses `logsumexp` over the two casing rows. **Logsumexp is nonlinear, so no exact
+additive per-cell decomposition of it exists.** Demonstrated:
+
+```
+LINEAR readout (one row per class)   f(Y1+Y2) vs f(Y1)+f(Y2)   |diff| = 7.58e-15   ADDITIVE
+LOGSUMEXP over casings               f(Y1+Y2) vs f(Y1)+f(Y2)   |diff| = 6.89e-01   NOT ADDITIVE
+```
+
+So a rung-2 design must freeze a **linear** readout — one casing, or a fixed linear combination such
+as the mean of the two rows — and say so. It cannot inherit the lens's logsumexp and still claim an
+exact decomposition.
+
+⚠ **My FIRST version of this test was DEGENERATE and reported "additive: True" for logsumexp.** When
+one casing dominates, `logsumexp -> max`, which IS positively homogeneous, so the test looked clean
+and demonstrated nothing. It was rebuilt with two casing rows of comparable magnitude. **Third
+instance this session of a check that passes without exercising anything** (S-368's `attn_impl`
+spelling and its piped exit code; S-377's no-op mutation). I am recording the pattern rather than
+each instance, because the frequency is the finding: **when I write a quick verification, my default
+failure mode is a test that cannot fail.**
+
+### 4. Destination scope — PRINCIPLE decided, INDEX not verified
+
+```
+DESTINATION  the position where the endpoint is READ. y_install comes from the concept-free
+             semantic_one_word readout, so the cell's contribution to THAT row is the quantity
+             whose concept content is at issue.
+SOURCE       the demonstration block -- what `demo_all` knocks out, and what the retrieval
+             account says supplies the concept.
+```
+
+⚠ **NOT verified: the readout row's actual index in the prompt.** I did not trace it, and the
+intervention's `target_surface_row_only` scope is a DIFFERENT object — S-379 warned that matching the
+intervention's scope by reflex is how an instrument ends up measuring the intervention rather than
+the representation. **The principle is decided; the index must be read out of the bank and checked
+before anything is frozen.**
+
+### 5. What was NOT established
+
+```
+- NOTHING IS FROZEN. Still no prereg, no read, no tag prefix. The composed instrument does not
+  exist as a runnable script and now provably needs a change (section 1) before it could.
+- NOT established: anything about the model. No activation was computed this tick. The numeric
+  work verified ALGEBRA on random tensors, not a measurement.
+- NOT verified: that dcs_cont_logitlens_control.py runs end to end, or that the basket bank's
+  concept/codeword surface forms are exactly ' bomb'/' basket' with those casings. The ids
+  tokenize as single tokens; whether the bank uses those surfaces is a separate check.
+- NOT resolved: the readout row index (section 4).
+- NOT changed: any code. This tick verified constants and algebra and wrote nothing but the log.
+```
+
+### 6. State
+
+```
+QUEUE    EMPTY. No admissible cell-census question remains (S-374).
+CHANGED  external_md/...20260915.md  +S-380 only.
+NEXT     part 4: read the readout row index out of the basket bank; confirm the bank's concept
+         and codeword surface forms; then a design can finally be written, with a LINEAR readout
+         and a codeword-parameterised direction, both frozen.
+```
+
+`git push` remains credential-blocked. Committed locally.
