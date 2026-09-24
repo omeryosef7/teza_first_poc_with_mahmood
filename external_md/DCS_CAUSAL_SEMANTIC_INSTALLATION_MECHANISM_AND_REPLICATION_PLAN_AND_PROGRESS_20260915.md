@@ -32725,3 +32725,173 @@ NEXT     (1) R34-B; (2) when 925438 is gone: apply both patches, run the 346 gua
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-370 — R34-B closes the review: no blocker in the census, but **VOID CONDITION 8 pins only the MEAN**, and the frozen read draws a stronger conclusion from it than the code supports. Two reviewers independently found the preregistered bootstrap is enforced nowhere, and the TEST-leak refusal is vacuous on this prereg (2026-09-24)
+
+### 1. 📌 The finding that matters — VOID 8 closes one channel of three
+
+`scripts/dcs_csi_head_census.py:765`. The entire comparison is:
+
+```python
+_d = abs(E[_src] - float(_ref["E"]))
+```
+
+`E[_src]` is a **mean**. Admission turns on three quantities derived from that same arm —
+`E`, `bar(h) = 1.96·SD(per-domain delta)/√23`, and the bootstrap `ci95`. **VOID 8 constrains only
+the first.** Verified by grep: the only fields any script reads out of `whole_head_REFERENCE` are
+`E` and `void_tolerance`. **Every one of the eight reference blocks already carries a frozen
+`ci95` that no reader ever opens**, and `pr016` never touches `whole_head_REFERENCE` at all. Two
+per-domain delta vectors with the same mean and different spread are indistinguishable to VOID 8.
+
+**The frozen read overstates what this buys.** `runargs/dcs_csi_pr020_read.txt:162-163`:
+
+> *"⚠ Given VOID 8 pins each HD_<h> to PR-012's value within 1e-6, admission is expected to be
+> effectively DETERMINISTIC."*
+
+VOID 8 pins `E`. It does not pin `bar(h)` and does not pin `ci95`, and admission is a conjunction
+over all three. The sensitivity, computed from the prereg's own `ADMISSION.EXPECTED` figures
+against `ratio = 1.5`:
+
+```
+head 13  |E|/bar 1.84  ->  bar may grow +22.7% with E UNMOVED before admission fails
+head 27  |E|/bar 1.80  ->  bar may grow +20.0%
+head  4  1.92 -> +28.0%   head 11  1.92 -> +28.0%   head 21  2.07 -> +38.0%
+head 10  2.13 -> +42.0%   head 18  2.33 -> +55.3%   head  6  2.49 -> +66.0%
+```
+
+### 2. ⚠ But the direction of the exposure is the OPPOSITE of the harm VOID 8 was written against
+
+The census's own comment says VOID 8 exists because *"a drifted HD_<h> silently moves that head's
+BAR … the head is quietly DROPPED by ADMISSION … shrinking K and the permutation space."* For
+**these two specific heads that is backwards**, and the prereg already records why, under
+`ADMISSION.✅ LOSING_A_THIN_HEAD_MAKES_THIS_FAMILY_STRONGER`:
+
+> *"heads 13 and 27 are the two that COLLIDE on L10. Dropping either breaks the tie and raises
+> K_unique from 4 to 5, raising P(certify | q=0.83) from 0.8624 to ~0.9612."*
+
+The two thinnest heads are exactly the two whose loss *raises* certification power. So the unpinned
+SD channel, on the heads where it is widest, does not shrink the permutation space — it enlarges the
+unique-layer set. **This does not make the gap acceptable**: a head dropped for a spurious reason
+while its `E` is pinned to 1e-6 is a provenance failure whatever it does to power. But it is not the
+compounding harm, and saying so required reading the prereg rather than accepting the framing.
+
+**And the operational protection is already frozen.** The same read-file paragraph continues:
+*"A head that fails it when PR-CSI-012 says it should not is ITSELF A FINDING and must be reported
+as one, not quietly dropped."* The read file's INFERENCE is overstated; its INSTRUCTION covers the
+case. Nothing needs amending — VOID 12 would permit it and I am again declining.
+
+### 3. Confirmed by two independent reviewers — the preregistered bootstrap is enforced NOWHERE
+
+R34-B (finding 4) and R34-C (note 8) found this separately. Verified by grep across `scripts/` and
+`src/`: **`ESTIMATOR_AND_RESAMPLER` is WRITTEN by `dcs_csi_pr020_freeze.py:484` and READ by nothing.**
+No script compares `--B / --seed / --ci` against the prereg's frozen `{B: 10000, seed: 20260922,
+ci: 0.95}`. `ci` is load-bearing: it feeds `ci95_excludes_0`, hence ADMISSION, hence K.
+
+The read file at `:84-86` presents this as a tightening — *"FROZEN HERE rather than left to the CLI
+defaults it used to be"* — but the census's argparse defaults are ALREADY `10000 / 20260922 / 0.95`,
+so writing them on the command line changes nothing that runs. **The freeze is real only in the
+prereg, and no code reads it there.** R29/R32-B's "prose that reads as automatic" shape, on a
+load-bearing field, found only because two reviewers were pointed at the same file from different
+angles. ⚠ The near-miss is one keystroke: the sibling reader `dcs_csi_head_analyze.py:138` defaults
+to seed `20260921`.
+
+### 4. A check whose PASS is consistent with reading nothing
+
+`dcs_csi_head_census.py:267-270` refuses when a TEST domain appears, reading
+`pr["population"].get("test_domain_ids")`. **This prereg's `population` holds
+`validation_domains`, `validation_expect_n`, `test_domains`, `test_note` — and no
+`test_domain_ids`** (verified). So `test_dom` is empty, `leaked` is always `[]`, and the refusal
+cannot fire. That is the file's own R20-6 rule — *"any check whose PASS is consistent with reading
+NOTHING is not a check"* — violated at a site the file never revisited. The message also cites
+"VOID 5", which in this prereg is the screen artefact's md5, so an operator hitting it is sent to
+the wrong condition.
+
+⛔ **TEST is not endangered by this.** The split guard (`pr["split"] != a.split` → exit) forces
+`validation`, and the read passes `--split validation`. The check is vacuous, not the protection.
+
+### 5. What R34-B verified CORRECT, by execution on a synthetic 82-arm family
+
+```
+THE BAR IS THE S-311 RULE EXACTLY. statistics.stdev IS ddof=1 -- four bars reproduced against a
+  hand ddof=1 computation to <= 7.4e-18, and a ddof=0 implementation would differ by ~2.2% of the
+  bar, which is live at |E|/bar = 1.80. DOMAIN is the unit (by_domain returns per-domain means;
+  rows never enter), len(doms) = 23 matches the prereg's "/ sqrt(23)". Pairing is by domain key
+  against BK_BASE and is protected: all 82 arms must bind the SAME per-domain slot sets or the
+  census refuses. z = 1.96 is read from the prereg, must be declared, range-checked [0.5, 5.0].
+ADMISSION uses the WHOLE-HEAD ARM ALONE; cells enter only through the argmax. Both legs bite,
+  tested independently: |E|/bar = 1.23 with ci95 excluding 0 -> DROPPED; E = 0 with ci95
+  straddling 0 -> DROPPED. ratio read from the prereg, never hardcoded. Dropped heads appear
+  under `dropped_heads`, NOT as misses.
+BOOTSTRAP DETERMINISM. Two runs at the frozen seed gave byte-identical E and ci95 on all 81
+  non-base arms; a different seed moved ci95 and left E untouched.
+--allow-short 0 / --expect-n 230. A 229-row arm with an HONEST ledger is refused; even forced
+  past strict_run_dir it is caught by the slot-set check. Defence in depth.
+VOID 8 MECHANICS. Both spellings present -> refusal (S-349). A 2e-6 drift -> refusal. A missing
+  reference is never a pass: it lands in `skipped` and is disclosed. The geometry guard pins each
+  bar_source_arm to its head's full band BEFORE any exclusion.
+END TO END. A clean synthetic family produced GATE 0 PASS on 82, eight PROVENANCE lines,
+  "VOID CONDITION 8: 8 of 8 CHECKED", dose CONFIRMED at 224, the HD_ arms excluded from the depth
+  map WITH the exclusion printed, and STEP 2 exit 0. The frozen STEP 1 command line is correct as
+  written and the STEP 1 -> STEP 2 handoff binds (--out and --census strings byte-identical).
+```
+
+### 6. Smaller, recorded not fixed
+
+```
+- "N of N CHECKED" uses len(_per_head_bars) as the denominator, so deleting a head's whole
+  per_head entry prints a clean "7 of 7 ... 0 NOT EVALUATED". The run still cannot complete --
+  _bar_for's totality guard kills it ~60 lines later, and shrinking the family instead trips the
+  arm-count guard -- so the property holds, but via a check in a different block.
+- A missing reference gives exit 0 with a written report, and NOTHING downstream reads
+  VOID_8_PROVENANCE. Disclosure without enforcement: the only thing between an unchecked head and
+  a published p is an operator reading "7 of 8" off stdout. Latent here -- the md5-verified prereg
+  declares all eight, so this run will print 8 of 8.
+- pr["heads"] is cross-checked against nothing. A head in cell_sets/per_head but absent from
+  `heads` would be measured and censused, then silently excluded from K and M. Verified they
+  agree in the frozen file.
+- --ci is unvalidated: --ci 95 dies with a bare IndexError naming the wrong cause; --ci 0.90
+  would run silently and publish.
+```
+
+### 7. What was NOT established
+
+```
+- NOT established: that any of this will bite. Every item is conditional on a state this run may
+  not reach. The md5-verified prereg declares all eight references, `heads` agrees with per_head,
+  and the CLI defaults equal the frozen resampler values.
+- NOT established: that real drift could preserve a mean to 1e-6 while moving SD 20%. I think it
+  implausible and did not attempt to bound it. The gap is in the CHECK, not a claim about physics.
+- NOT fixed: nothing in scripts/ or src/ was touched. VOID 11 still binds -- 66 of 82.
+- NOT amended: the frozen read, though VOID 12 would permit it. Its ADMISSION inference is
+  overstated and its ADMISSION instruction is correct; the overstatement is recorded here.
+- NOT added to the blocker list: none of section 1-4 is a blocker. The two blockers remain the
+  two in S-369.
+```
+
+### 8. R34 closed — the four-way tally
+
+```
+R34-A GATE 0          1 BLOCKER (S-334 unenforced on the success path) + 3 concerns + notes
+R34-B census/VOID 8   0 blockers, 4 concerns (VOID 8 pins the mean; disclosure-without-
+                      enforcement; bootstrap unenforced; vacuous TEST-leak check)
+R34-C primary reader  1 BLOCKER (gating_p published on a tie) + 3 concerns + notes
+R34-D prereg contract 0 blockers, 1 concern (pr016:134 unguarded alias)
+```
+
+Every load-bearing claim in all four reports was re-derived from the source by me before being
+recorded. **The two blockers are the two in S-369**, both patched-in-specification before any
+number from this family exists.
+
+### 9. State
+
+```
+925438   RUNNING on n-301, 66 of 82, all status=ok, no duplicate arm tags. No HD_ arm yet.
+CHANGED  external_md/...20260915.md  +S-370 only.
+NO EDITS TO scripts/ OR src/ (VOID 11).
+NEXT     when 925438 is gone: apply the two S-369 patches, run the 346 guard tests, commit;
+         then STEP -1 in order; GATE 0 must exit 0; census; primary. Stop at the first failure.
+```
+
+`git push` remains credential-blocked. Committed locally.
