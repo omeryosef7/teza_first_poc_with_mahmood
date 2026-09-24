@@ -135,12 +135,46 @@ def main() -> int:
     ap.add_argument("--heads", required=True, help="comma list, e.g. 4,6,10,11,13,18,21,27")
     ap.add_argument("--concept-ids", required=True, help="e.g. 13054,33909 for ' bomb',' Bomb'")
     ap.add_argument("--codeword-ids", required=True, help="e.g. 14351,34217 for ' basket',' Basket'")
+    # ⚠⚠ R35/S-384 -- THESE THREE EXIST BECAUSE THEIR ABSENCE WAS A TEST-TOUCHING BLOCKER.
+    # The first draft filtered only on query_kind, cell and the exclusion file. That selects 926
+    # rows over 116 DOMAINS -- the exclusion file only removes the non-validation part of ONE
+    # bank_block/condition slice, so every OTHER slice survives untouched, and the 116 domains
+    # include the TRAIN and TEST domains. The arms' real population is
+    # cell C + semantic_one_word + bank_block cds_n4_sow + condition natural_doublespeak + NOT
+    # excluded = 230 rows over 23 domains, which reproduces the arms exactly. Without these the
+    # instrument would have read TEST and emitted a well-formed number while doing it.
+    ap.add_argument("--bank-block", required=True,
+                    help="e.g. cds_n4_sow. REQUIRED: without it the exclusion file leaves every "
+                         "other block in, including TEST domains.")
+    ap.add_argument("--condition", required=True,
+                    help="e.g. natural_doublespeak. REQUIRED, same reason.")
+    ap.add_argument("--expect-n", type=int, required=True,
+                    help="rows the selection MUST yield. A population that does not match what "
+                         "was declared is not the population (R20-6).")
+    ap.add_argument("--expect-domains", type=int, required=True,
+                    help="domains the selection MUST yield.")
+    ap.add_argument("--answer-prefix", required=True,
+                    help='⚠⚠ R35-B/S-385. REQUIRED, NO DEFAULT. The endpoint does NOT read at the '
+                         'end of the templated prompt: score_behavior appends --answer-prefix '
+                         '(default "Answer:") and reads the position AFTER it. The first draft '
+                         'used seq_len-1 on the bare prompt -- 2 tokens upstream, across the '
+                         '"Answer" ":" boundary -- which is the position score_behavior:3173 '
+                         'MEASURED to hold a median 5.6e-06 of next-token mass and abandoned on '
+                         '2026-08-18. Pass the SAME value the arms used, or "" to reproduce that '
+                         'abandoned tail deliberately.')
     ap.add_argument("--limit", type=int, default=0, help="0 = all rows; >0 for a smoke run")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
     import torch
-    import common as dc
+    # ⚠ R35-B/C/S-385: THIS SAID `import common as dc` AND THE FILE COULD NOT RUN. `common` is
+    # src/boombness/common.py, which defines NEITHER load_model NOR apply_template -- it exposes
+    # ds() and inserts the ds path as a side effect. Every sibling CSI script imports ds_common.
+    # The failure was an AttributeError AFTER load_unembed had read the safetensors shards, i.e.
+    # minutes into a GPU job. It is loud, so it is not in the silent hazard class -- but it proves
+    # the file had NEVER been executed end to end when S-383 described what it "computes".
+    import common as _common          # side effect: puts doublespeak_causality on sys.path
+    import ds_common as dc
     import score_behavior as sb
     from dominance import dominance_at
 
@@ -152,20 +186,60 @@ def main() -> int:
         raise SystemExit("REFUSING: the concept and codeword id sets overlap (%s). The direction "
                          "would be degenerate." % sorted(set(cids) & set(kids)))
 
-    excl = {l.strip() for l in open(a.exclude_prompt_ids) if l.strip()}
+    # ⚠ the exclusion files carry a `#` COMMENT HEADER naming the selection they were derived
+    # from. Reading them without stripping comments silently adds two non-ids to the set -- inert
+    # here, but it inflates any count taken from it, so it is dropped explicitly.
+    # ⚠⚠ R35-B/C/S-385: `--split` WAS DECORATIVE -- recorded in the artefact, never compared to a
+    # row. S-384's population gate compares COUNTS against numbers the OPERATOR TYPED, so a
+    # test-bearing block with honestly-typed expectations passed it cleanly (measured:
+    # --bank-block cds_n8_sow --expect-n 464 --expect-domains 116 -> all 23 TEST domains, gate
+    # PASSES). The gate's PASS was fully consistent with having read TEST, which is the rule this
+    # sprint states as "absence is not a check". The split manifest is now read and ENFORCED, so
+    # TEST is unreachable regardless of what is declared.
+    _sp = json.load(open(os.path.join(REPO, "data", "boombness_prompts",
+                                      "dcs_ts116_domain_split.json")))
+    _assign = _sp.get("assign") or _sp.get("assignments") or {}
+    if not _assign:
+        raise SystemExit("REFUSING: the domain split manifest carries no assignment map, so the "
+                         "split cannot be enforced. Absence is not a guard (R20-6).")
+    # the three preregistered whole-population domains, excluded by the endpoint at
+    # dcs_cont_layerpos_map.py:49. S-385: they are absent from validation only BY ACCIDENT of the
+    # split (all three are train), so relying on that would readmit them on any train run.
+    EXCLUDED_DOMAINS = ("restaurant_kitchen", "school_campus", "subway_station")
+    keep_dom = {d for d, sp in _assign.items() if sp == a.split} - set(EXCLUDED_DOMAINS)
+    if not keep_dom:
+        raise SystemExit("REFUSING: no domains are assigned to split %r." % a.split)
+    excl = {l.strip() for l in open(a.exclude_prompt_ids)
+            if l.strip() and not l.lstrip().startswith("#")}
     rows = []
     for line in open(a.bank):
         r = json.loads(line)
         if r.get("query_kind") != "semantic_one_word" or r.get("cell") != "C":
             continue
+        if r.get("bank_block") != a.bank_block or r.get("condition") != a.condition:
+            continue
         if r.get("prompt_id") in excl:
             continue
+        if r.get("domain") not in keep_dom:      # ⚠ R35/S-385: TEST is structurally unreachable
+            continue
         rows.append(r)
+    n_sel, n_dom = len(rows), len({r["domain"] for r in rows})
+    print("[rung2] population: %d rows over %d domains (block=%s condition=%s, %d ids excluded)"
+          % (n_sel, n_dom, a.bank_block, a.condition, len(excl)))
+    if (n_sel, n_dom) != (a.expect_n, a.expect_domains):
+        raise SystemExit(
+            "REFUSING: the selection yields %d rows over %d domains, but --expect-n %d and "
+            "--expect-domains %d were declared. The first draft of this file omitted the "
+            "bank_block and condition filters and selected 926 rows over 116 DOMAINS -- which "
+            "includes the TEST domains, because the exclusion file only removes the non-validation "
+            "part of ONE slice. A population that does not match what was declared is not the "
+            "population. (R35/S-384)" % (n_sel, n_dom, a.expect_n, a.expect_domains))
     if a.limit:
         rows = rows[:a.limit]
+        print("[rung2] ⚠ --limit %d: this is a SMOKE sample, NOT the declared population, and the "
+              "artefact records it as such." % a.limit)
     if not rows:
-        raise SystemExit("REFUSING: no cell-C semantic_one_word rows survived the exclusion file. "
-                         "Absence is not a measurement (R20-6).")
+        raise SystemExit("REFUSING: no rows survived. Absence is not a measurement (R20-6).")
 
     norm_w, urows, snap = load_unembed(a.snapshot_glob, list(cids) + list(kids))
     u = build_direction(norm_w, urows, cids, kids)
@@ -175,25 +249,47 @@ def main() -> int:
     lm = dc.load_model(a.model, dtype=torch.float32, attn_implementation="eager")
     et = False
     per_dom = {}          # domain -> {(L,h): [values]}
-    n_done, skipped = 0, {}
+    n_done, skipped, recon = 0, {}, None
     for i, r in enumerate(rows):
         templated = dc.apply_template(lm.tokenizer, r["full_prompt"], enable_thinking=et)
         dk, why = sb.demo_key_positions(lm.tokenizer, r, templated)
         if why:
             skipped[why] = skipped.get(why, 0) + 1
             continue
-        ids = lm.tokenizer(templated, add_special_tokens=False)["input_ids"]
+        # ⚠⚠ R35-B/S-385 -- THE FIRST DRAFT READ THE WRONG POSITION, and S-383's commit message
+        # claimed the opposite. It took `dst = len(tokenize(templated)) - 1` from
+        # retrieval_strength.py:178, which computes a DESCRIPTIVE ATTENTION-MASS SCALAR and has no
+        # answer prefix and no readout ids. The endpoint reads `templated + answer_prefix`
+        # (score_behavior.py:87 and :3914). Borrowing a "readout index" from a file that does not
+        # do the readout is precisely the hazard this review existed to catch.
+        ids_ctx = lm.tokenizer(templated + a.answer_prefix,
+                               add_special_tokens=False)["input_ids"]
+        ids = ids_ctx
         seq_len = len(ids)
-        dst = seq_len - 1                 # the position that emits the first generated token
-        # ⚠ S-381 left this index UNVERIFIED and warned against matching the intervention's
-        # `target_surface_row_only` scope by reflex. It is asserted here rather than assumed:
-        # the readout is the NEXT token after the prompt, so its state is the LAST prompt position.
-        assert dst == len(ids) - 1 and dst >= 0, "readout index is not the final prompt position"
-        if not dk:
-            skipped["no_demo_keys"] = skipped.get("no_demo_keys", 0) + 1
-            continue
+        dst = seq_len - 1
+        # A REAL check, not the tautology the first draft shipped (`assert dst == len(ids)-1`
+        # restated the line above it and could not fail): the context must actually END with the
+        # answer prefix, which is what makes `dst` the endpoint's position.
+        if a.answer_prefix:
+            _tail = lm.tokenizer.decode(ids[-4:])
+            if a.answer_prefix.strip() and a.answer_prefix.strip() not in _tail:
+                raise SystemExit(
+                    "REFUSING: the tokenized context does not end with --answer-prefix %r (tail "
+                    "decodes to %r). The readout position would not be the endpoint's. (R35-B/S-385)"
+                    % (a.answer_prefix, _tail))
+        # ⚠ R35-B/C/S-385: a `if not dk` branch stood here and was UNREACHABLE --
+        # demo_key_positions returns ([], reason) on every failure path, so `why` already caught
+        # it. Its skip counter could never appear, and a reader could have taken that absence as
+        # evidence. Removed rather than left as a comforting no-op.
+        # ⚠ R35-B/C/S-385: this was `check_invariants=(i == 0)`, and `i` enumerates rows INCLUDING
+        # skipped ones. If row 0 skipped, the reconstruction check -- the ONLY thing standing
+        # between this and a wrong GQA head map or o_proj slicing -- never ran for the whole run,
+        # and nothing on disk said so. It is now keyed on the first row that actually REACHES the
+        # call, and the error it returns is RECORDED rather than discarded.
         res = dominance_at(lm, ids, dst=dst, layers=band,
-                           direction={L: u for L in band}, check_invariants=(i == 0))
+                           direction={L: u for L in band}, check_invariants=(n_done == 0))
+        if n_done == 0:
+            recon = {("L%d" % L): float(v) for L, v in (res.get("recon_rel_err") or {}).items()}
         d = per_dom.setdefault(r["domain"], {})
         for L in band:
             Dd = res["D_dir"][L]                      # [n_head, T]
@@ -218,6 +314,11 @@ def main() -> int:
         "⛔ STATUS": "EXPLORATORY MEASUREMENT. No verdict, no p, no preregistration. "
                     "Nothing here may be quoted as a result.",
         "bank": a.bank, "split": a.split, "model_snapshot": snap,
+        "bank_block": a.bank_block, "condition": a.condition,
+        "declared_expect_n": a.expect_n, "declared_expect_domains": a.expect_domains,
+        "selection_n_rows": n_sel, "selection_n_domains": n_dom,
+        "limit_applied": a.limit or None,
+        "⚠ IS_SMOKE": bool(a.limit),
         "exclude_prompt_ids": a.exclude_prompt_ids, "n_excluded_ids": len(excl),
         "band": band, "heads": heads,
         "concept_ids": list(cids), "codeword_ids": list(kids),
@@ -230,7 +331,13 @@ def main() -> int:
                    "band layer, so cross-layer comparison is unaffected.",
         "statistical_unit": "domain", "n_domains": len(domains), "domains": domains,
         "n_prompts_used": n_done, "skipped": skipped,
-        "readout_position": "seq_len - 1 (the position that emits the first generated token)",
+        "answer_prefix": a.answer_prefix,
+        "readout_position": "len(tokenize(templated + answer_prefix)) - 1 -- the position the "
+                            "ENDPOINT reads (score_behavior.py:87). NOT the end of the bare "
+                            "prompt, which score_behavior measured at ~5.6e-06 option mass and "
+                            "abandoned 2026-08-18. (R35-B/S-385)",
+        "recon_rel_err_first_row": recon,
+        "split_enforced_from": "data/boombness_prompts/dcs_ts116_domain_split.json",
         "cell_mean_over_domains": cell_mean,
         "per_domain": {dm: {"L%d_h%d" % k: statistics.fmean(v) for k, v in per_dom[dm].items()}
                        for dm in domains},

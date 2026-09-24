@@ -20,6 +20,21 @@ PY = sys.executable
 SCRIPT = os.path.join(ROOT, "scripts", "dcs_csi_rung2_celldecode.py")
 
 
+def _code(path=None):
+    """Source with comment lines stripped.
+
+    ⚠ R35-C/S-385: five tests in this session broke or passed wrongly because a grep matched the
+    COMMENT that documents a fix rather than the code that performs it. A file that explains its
+    own history will always contain the string naming the defect it removed, so `"<old code>" not
+    in src` is not a test of anything once the fix is documented. These greps run on code only."""
+    src = open(path or SCRIPT, encoding="utf-8").read()
+    out = []
+    for line in src.splitlines():
+        t = line.split("#")[0] if not line.lstrip().startswith("#") else ""
+        out.append(t)
+    return "\n".join(out)
+
+
 def _mod():
     spec = importlib.util.spec_from_file_location("rung2", SCRIPT)
     m = importlib.util.module_from_spec(spec)
@@ -69,7 +84,13 @@ def test_mean_of_casings_not_one_casing():
 def _run(extra):
     base = [PY, SCRIPT, "--bank", "/nonexistent", "--split", "train",
             "--exclude-prompt-ids", "/nonexistent", "--model", "/m",
-            "--snapshot-glob", "/s/*", "--heads", "4,6", "--out", "/tmp/x.json"]
+            "--snapshot-glob", "/s/*", "--heads", "4,6", "--out", "/tmp/x.json",
+            # ⚠ every REQUIRED arg must be present, or argparse refuses for an UNRELATED reason
+            # and the test below passes without exercising the check it names. R35-C was sent
+            # hunting exactly this shape; adding --bank-block etc. broke two of these tests, which
+            # is how it was found (S-384).
+            "--bank-block", "cds_n4_sow", "--condition", "natural_doublespeak",
+            "--expect-n", "230", "--expect-domains", "23", "--answer-prefix", "Answer:"]
     return subprocess.run(base + extra, capture_output=True, text=True)
 
 
@@ -126,6 +147,125 @@ def test_the_script_refuses_to_emit_a_verdict():
 def test_it_records_that_this_is_NOT_the_endpoint():
     """y_install aggregates casings with logsumexp; this direction is linear. The artefact must
     carry that, because the distinction is invisible in the numbers (S-381/S-382)."""
+    # ⚠ R35-C/S-385 PROVED THE FIRST VERSION OF THIS TEST COULD NOT FAIL. It asserted
+    # `"does NOT decompose y_install" in src or "decomposes y_install" in src` -- and the second
+    # disjunct is satisfied by the DOCSTRING SENTENCE THAT FORBIDS THE CLAIM ("It MAY NOT be said
+    # that this decomposes y_install"). A mutant that published
+    # "NOT_THE_ENDPOINT": "this fully decomposes y_install into per-cell shares" passed. The key's
+    # existence was checked; its VALUE, which is the entire point, was not.
     src = open(SCRIPT, encoding="utf-8").read()
-    assert "NOT_THE_ENDPOINT" in src
-    assert "does NOT decompose y_install" in src or "decomposes y_install" in src
+    i = src.find('"⚠ NOT_THE_ENDPOINT":')
+    assert i > 0, "the artefact no longer carries the NOT_THE_ENDPOINT key"
+    val = src[i:i + 500]
+    assert "LOGSUMEXP" in val and "LINEAR" in val, (
+        "the emitted VALUE no longer states the logsumexp-vs-linear distinction: %r" % val[:200])
+    assert "does NOT decompose y_install" in val or "NOT decompose y_install" in val, (
+        "the emitted VALUE no longer forbids the y_install claim: %r" % val[:200])
+
+
+def test_population_filters_are_REQUIRED_because_their_absence_touched_TEST():
+    """🔴 R35/S-384. The first draft filtered only query_kind + cell + the exclusion file. That
+    selects 926 rows over 116 DOMAINS, because the exclusion file removes only the non-validation
+    part of ONE bank_block/condition slice -- every other slice survives, and the 116 domains
+    include TRAIN and TEST. The arms' real population is 230 rows over 23 domains. Without these
+    filters the instrument would have read TEST and emitted a well-formed number while doing it."""
+    src = open(SCRIPT, encoding="utf-8").read()
+    for flag in ('"--bank-block", required=True', '"--condition", required=True',
+                 '"--expect-n", type=int, required=True',
+                 '"--expect-domains", type=int, required=True'):
+        assert flag in src, "missing required population flag: %s" % flag
+    assert 'r.get("bank_block") != a.bank_block' in src
+    assert 'r.get("condition") != a.condition' in src
+
+
+def test_a_population_that_does_not_match_the_declaration_is_REFUSED():
+    """The declared (expect_n, expect_domains) must GATE, not merely be recorded."""
+    # ⚠ R35-C/S-385 PROVED THE FIRST VERSION COULD NOT FAIL EITHER. It grepped for "REFUSING"
+    # within 400 chars of the comparison -- so changing `raise SystemExit(` to `print(` left the
+    # word in place and the test passed while the 926-row, 116-domain, TEST-bearing selection ran
+    # to completion. This version RUNS the script against a synthetic bank and asserts the exit
+    # code, which no source mutation can satisfy without actually refusing.
+    src = open(SCRIPT, encoding="utf-8").read()
+    assert "if (n_sel, n_dom) != (a.expect_n, a.expect_domains):" in src, \
+        "the declared population is not compared at all"
+
+    import tempfile
+    sp = json.load(open(os.path.join(ROOT, "data", "boombness_prompts",
+                                     "dcs_ts116_domain_split.json")))
+    assign = sp.get("assign") or sp.get("assignments") or {}
+    vdoms = sorted(d for d, v in assign.items() if v == "validation")[:2]
+    assert vdoms, "premise changed: no validation domains in the split manifest"
+    with tempfile.TemporaryDirectory() as td:
+        bank = os.path.join(td, "bank.jsonl")
+        with open(bank, "w") as fh:
+            for j, dom in enumerate(vdoms):
+                fh.write(json.dumps({
+                    "prompt_id": "id%d" % j, "domain": dom, "cell": "C",
+                    "query_kind": "semantic_one_word", "bank_block": "cds_n4_sow",
+                    "condition": "natural_doublespeak", "full_prompt": "x",
+                    "demo_block": "x"}) + "\n")
+        exf = os.path.join(td, "ex.txt")
+        open(exf, "w").write("# header\n")
+        r = subprocess.run(
+            [PY, SCRIPT, "--bank", bank, "--split", "validation", "--exclude-prompt-ids", exf,
+             "--model", "/m", "--snapshot-glob", "/s/*", "--heads", "4",
+             "--concept-ids", "1", "--codeword-ids", "2", "--out", os.path.join(td, "o.json"),
+             "--answer-prefix", "Answer:", "--bank-block", "cds_n4_sow",
+             "--condition", "natural_doublespeak",
+             "--expect-n", "999", "--expect-domains", "999"],   # deliberately wrong
+            capture_output=True, text=True)
+        both = r.stdout + r.stderr
+        assert r.returncode != 0, "a population that does not match the declaration was ACCEPTED"
+        assert "REFUSING" in both and "expect-n" in both, both[:400]
+
+
+def test_exclusion_file_comments_are_stripped():
+    """The real exclusion files carry a `#` header naming the selection they came from; reading
+    them raw silently adds non-ids to the set and inflates any count taken from it."""
+    src = open(SCRIPT, encoding="utf-8").read()
+    assert 'startswith("#")' in src
+    f = os.path.join(ROOT, "runargs", "dcs_cont", "exclude_basket_bomb_sow_validation.txt")
+    if os.path.exists(f):
+        head = open(f, encoding="utf-8").readline()
+        assert head.startswith("#"), "premise changed: the exclusion file no longer has a header"
+
+
+def test_the_readout_is_the_ENDPOINTS_position_not_the_bare_prompt_end():
+    """🔴 R35-B/S-385. The first draft used len(tokenize(templated))-1, taken from
+    retrieval_strength.py -- which computes an attention-mass scalar and has NO answer prefix.
+    The endpoint reads `templated + answer_prefix` (score_behavior.py:87, :3914), two tokens
+    later across the 'Answer' ':' boundary. score_behavior.py:3173 MEASURED the bare-prompt
+    position at ~5.6e-06 option mass and abandoned it on 2026-08-18."""
+    code = _code()
+    assert '"--answer-prefix", required=True' in code, "the answer prefix has a default again"
+    assert "templated + a.answer_prefix" in code, "the context no longer includes the prefix"
+    assert "assert dst == len(ids) - 1" not in code, (
+        "the tautological assert is back: `dst` was just set to len(ids)-1, so it cannot fail")
+
+
+def test_TEST_is_structurally_unreachable_not_merely_undeclared():
+    """🔴 R35-B/C/S-385. --split was recorded and never compared to a row, and the population gate
+    checks counts the OPERATOR typed -- so a test-bearing block with honest expectations passed
+    it. The split manifest must be read and enforced."""
+    code = _code()
+    assert "dcs_ts116_domain_split.json" in code, "the split manifest is not read"
+    assert 'r.get("domain") not in keep_dom' in code, "the split is read but not enforced per row"
+    assert "EXCLUDED_DOMAINS" in code, "the 3 preregistered whole-population domains are not excluded"
+
+
+def test_it_imports_the_module_that_actually_has_load_model():
+    """🔴 R35-B/C/S-385. `import common as dc` then `dc.load_model(...)` -- common.py has neither
+    load_model nor apply_template. The script could not run past model load, which is why the
+    wrong-readout bug survived: nothing had ever executed it."""
+    code = _code()
+    assert "import ds_common as dc" in code
+    assert "import common as dc" not in code, "the wrong module is still imported in CODE"
+
+
+def test_the_reconstruction_check_cannot_be_consumed_by_a_skipped_row():
+    """R35-B/C/S-385. It was `check_invariants=(i == 0)` over the PRE-SKIP enumeration, so a
+    skipped row 0 disabled the only structural guard for the whole run, silently."""
+    code = _code()
+    assert "check_invariants=(n_done == 0)" in code
+    assert "check_invariants=(i == 0)" not in code, "the pre-skip enumeration is back in CODE"
+    assert "recon_rel_err_first_row" in code, "the reconstruction error is still discarded"

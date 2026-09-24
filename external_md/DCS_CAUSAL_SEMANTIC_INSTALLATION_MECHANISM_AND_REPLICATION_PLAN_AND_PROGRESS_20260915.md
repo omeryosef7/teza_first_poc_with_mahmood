@@ -34315,3 +34315,254 @@ NEXT     R35 adversarial review of the instrument -- due BEFORE it reaches a GPU
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-384 — R35 part 1: 🔴 **MY OWN INSTRUMENT WOULD HAVE READ TEST.** The population filter was missing two fields, and the exclusion file does NOT do what its name suggests — it removes only the non-validation part of ONE slice, leaving 116 domains where the arms use 23. Found by my own check, before any GPU (2026-09-24)
+
+### 1. What I checked, and why it was not on the review list
+
+R35 was fanned out to three subagents (direction/algebra, composition/indexing, data path). While they
+ran I checked something none of them had been given: **would a smoke run even have rows, and are the
+exclusion files the shape the script assumes?** That question found the blocker.
+
+### 2. 🔴 THE BLOCKER
+
+```
+the script's first-draft selection:  query_kind == semantic_one_word
+                                     cell == C
+                                     prompt_id NOT IN exclusion file
+                 ->  926 rows over 116 DOMAINS
+
+the arms' ACTUAL population:         + bank_block   == cds_n4_sow
+                                     + condition    == natural_doublespeak
+                 ->  230 rows over  23 DOMAINS
+```
+
+**Validation is 23 of those 116 domains. The other 93 are the TRAIN and TEST domains.** So the
+instrument as written would have read TEST — the one rule PART I states without qualification — and
+would have emitted a well-formed, plausible artefact while doing it.
+
+📌 **The exclusion file does not mean what its name suggests, and that is the root cause.** Its own
+header says it:
+
+```
+# selection: query_kind=semantic_one_word bank_block=cds_n4_sow condition=natural_doublespeak split=validation
+930 ids, ALL of them cell C, one_word, cds_n4_sow, natural_doublespeak
+```
+
+It removes the non-validation part of **ONE bank_block/condition slice**. Every OTHER slice is
+untouched by it. So "pass the exclusion file" is **not** a TEST guard on its own — it is a TEST guard
+*only in combination with* the block and condition filters that select that same slice. S-381
+concluded "what actually keeps TEST out is a FILE"; **that was half the answer, and the missing half
+is what I nearly shipped.**
+
+### 3. The fix, and the strongest verification available
+
+`--bank-block` and `--condition` are now REQUIRED, and the declared population GATES rather than
+being merely recorded: `--expect-n` and `--expect-domains` are required and the script REFUSES on
+mismatch, naming this failure in the refusal text.
+
+Verified not by counts but by IDENTITY:
+
+```
+patched selection      : 230 rows, 23 domains
+arm BK_BASE prompt_ids : 230
+IDENTICAL SETS         : True      (0 in script not arm, 0 in arm not script)
+```
+
+**The instrument now reads exactly the prompts the causal family read — the same 230 ids, not merely
+the same number of them.**
+
+⚠ Also fixed: the exclusion files carry a `#` COMMENT HEADER, which the first draft ingested as two
+prompt ids. Inert (no id equals a comment line) but it inflated any count taken from the set, and a
+count taken from a set with junk in it is the kind of number that later gets quoted.
+
+### 4. ⚠ Two of my own tests were passing for the wrong reason, and the fix exposed them
+
+Adding the required flags broke `test_overlapping_concept_and_codeword_ids_are_refused` and
+`test_empty_id_list_is_refused_not_defaulted`. **They had been asserting a refusal that now fired for
+an UNRELATED reason — missing required arguments — before reaching the check they name.** This is
+precisely the shape R35-C was sent hunting ("an argparse refusal that would fire for an unrelated
+reason"), and it was in my own tests, found because the fix changed the argument list.
+
+They failed LOUDLY rather than silently, because they assert on specific message text rather than on
+a bare non-zero exit. **That is the difference between the four wrong-checks this session that
+failed usefully and the ones that did not:** asserting on the SPECIFIC evidence, not on the outcome.
+
+Three tests added: the population filters must exist and be applied, the declared population must
+GATE, and the comment stripping with a premise check that the real file still has a header.
+13 tests, all passing.
+
+### 5. What was NOT established
+
+```
+- STILL NOT RUN. No GPU, no CPU, not one prompt. No measurement exists.
+- NOT reported: R35-A (direction/algebra), R35-B (composition/GQA head indexing), R35-C (data
+  path/tests) are still running. Their findings are a separate entry and every load-bearing
+  number will be re-derived before it is recorded.
+- NOT established: that the remaining population is correct for a TRAIN smoke. The identity check
+  above is for VALIDATION. The train exclusion file has 498 lines and its own header; the same
+  block/condition filters must be re-verified against it before a train run, NOT assumed to
+  transfer.
+- NOT established: that no OTHER silent-population defect remains. One was found by asking a
+  question that was not on the review list, which is evidence about the review list.
+```
+
+### 6. State
+
+```
+QUEUE    EMPTY.
+CHANGED  scripts/dcs_csi_rung2_celldecode.py (population gate), tests/... (+3, now 13),
+         external_md/...20260915.md
+NEXT     R35-A/B/C findings; re-verify the population for TRAIN; then a CPU smoke; then a prereg.
+```
+
+`git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-385 — R35 CLOSES: 🔴 **the instrument read the WRONG POSITION, could never have run at all, left TEST reachable, and two of its tests provably could not fail.** Three reviewers, four blockers, none of which the 13 tests caught. And S-383's commit message claimed the opposite of the truth (2026-09-25)
+
+*(S-384's content never committed — its hook was interrupted — so this entry carries both. The
+population fix described in S-384 is included here.)*
+
+### 1. 🔴 BLOCKER — the readout position was two tokens short, at a position this repo MEASURED as unusable and abandoned
+
+Found independently by **R35-A and R35-B**. The endpoint does not read at the end of the templated
+prompt: `score_behavior.py` appends `--answer-prefix` (default `"Answer:"`) and reads after it —
+`next_token_readout:87` is `tokenizer(templated + answer_prefix, ...)`, and `:3914` does the same
+for the string readout. Measured on the real tokenizer and the real `apply_template`:
+
+```
+len(tok(templated))           = 223   -> the script's dst = 222, token '\n\n' (id 271)
+len(tok(templated+"Answer:")) = 225   -> the ENDPOINT's position = 224, token ':' (id 25)
+OFFSET = 2, pure append ('Answer' 16533, ':' 25), no retokenisation shift
+```
+
+`score_behavior.py`'s own help says passing `""` reproduces *"the pre-2026-08-18 behaviour, which
+scored a ~1e-5 tail"*, and `:3173` records the measurement: **median 5.6e-06 of next-token mass**
+at that position. **The instrument would have decomposed the residual at the one position this
+sprint already measured to be uninformative for this readout — and called it "the readout".**
+
+📌 **And S-383's commit message asserted the opposite**, claiming the index "was already solved in
+committed code … `q = seq_len - 1`". That value came from `retrieval_strength.py`, which computes a
+descriptive **attention-mass scalar** and has no answer prefix and no readout ids. **Borrowing a
+"readout index" from a file that does not do the readout is exactly the hazard class R35 existed to
+catch, and I wrote it into a commit subject line as a success.**
+
+### 2. 🔴 BLOCKER — the script could never have run, so nothing about it had ever been executed
+
+`import common as dc` → `src/boombness/common.py`, which defines neither `load_model` nor
+`apply_template`. Every sibling CSI script imports `ds_common`. It dies *after* `load_unembed` has
+read the safetensors shards — minutes into a GPU job, with a healthy-looking log tail.
+
+**This is why blocker 1 survived:** S-383 described what the instrument "computes" without a single
+execution behind the description. The 13 tests did not catch it because none of them reaches line
+161 — three launch the script and all three are designed to die in argparse first.
+
+### 3. 🔴 BLOCKER — TEST was still reachable, and the gate's PASS was consistent with having read it
+
+S-384 added `--bank-block`/`--condition` and a population gate. **That was not enough.** `--split`
+was recorded and never compared to a row, and the gate checks counts **the operator typed**, so a
+test-bearing block with honestly-typed expectations passed cleanly. Measured by R35-C:
+
+```
+--bank-block cds_n8_sow --expect-n 464 --expect-domains 116   -> all 23 TEST domains, GATE PASSES
+--bank-block cds_n0     --expect-n 232 --expect-domains 116   -> all 23 TEST domains, GATE PASSES
+```
+
+The split manifest is now read and enforced per row, plus the three preregistered whole-population
+domains the endpoint excludes — which were absent from validation only **by accident of the split**
+(all three are train) and would have returned on any train run.
+
+### 4. 🔴 BLOCKER — two of my tests could not fail, proven by mutation under real pytest
+
+```
+MUTANT A  artefact publishes "NOT_THE_ENDPOINT": "this fully decomposes y_install into per-cell
+          shares" -- the literal forbidden claim -- and the test PASSES. Its assertion was
+          `"does NOT decompose y_install" in src or "decomposes y_install" in src`, and the
+          SECOND disjunct is satisfied by the docstring sentence that FORBIDS the claim.
+MUTANT B  the population gate downgraded from `raise SystemExit(` to `print(` -- so the 926-row,
+          116-domain, TEST-bearing selection runs to completion -- and the test named for exactly
+          that failure mode PASSES, because "REFUSING" is still within 400 chars of the comparison.
+          Confirmed under a real 29-minute pytest run, not only by reading the assertions.
+```
+
+Both now run the script and assert on the **exit code** and on the **emitted value**, which no
+source mutation satisfies without actually refusing.
+
+### 5. 📌 The pattern behind five of this session's wrong checks, now named exactly
+
+Fixing these broke two MORE of my tests — because they grepped for `import common as dc` and
+`check_invariants=(i == 0)`, strings that now appear **in the comments documenting the fixes**.
+
+> **A file that explains its own history always contains the string naming the defect it removed.
+> So `"<old code>" not in src` stops being a test the moment the fix is documented.**
+
+All source greps now run through a `_code()` helper that strips comments. This is the same shape as
+S-368's two, S-377's one, and S-383's one — and R35-C's F5 named it independently: six of thirteen
+tests were source greps, not behaviour.
+
+### 6. ✅ What R35 verified as CORRECT — the algebra holds, against the real weights
+
+```
+RMSNorm fold   <norm(h),W> = (1/rms)<h, g*W> holds to fp32 round-off (rel.diff 8.7e-08 .. 4.8e-06)
+               against the REAL model.norm.weight and the REAL four unembedding rows. The eps sits
+               inside a SCALAR and cannot break an elementwise identity -- verified at eps=0 too.
+               (S-380's "|diff| = 0.000e+00" was a print-format artefact, not a real zero.)
+unit-norm      the SAME tensor object is bound at every band layer, ||u|| = 3.097322, so it is one
+               global constant. Cross-layer argmax genuinely unaffected.
+linearity      real and MATERIAL: over 2000 random h, linear vs logsumexp differ in SIGN on
+               78/2000 = 3.9% of draws. The disclaimer is necessary, not decorative.
+sign           positive contribution = toward ' bomb' = toward higher y_install. Correct.
+GQA            head 21 in the knockout IS head 21 in D_dir -- both index the QUERY-head axis
+               (0..31); GQA is handled only on the value side. No mismatch.
+band layers    0-indexed blocks, identical to what the arms' knockout hooks.
+demo keys      same tokenisation, same templated string -> indices valid for D_dir's T axis.
+aggregation    mean-of-domain-means, not mean-of-prompts. PART I honoured.
+```
+
+### 7. ⚠ TWO REAL PROBLEMS I HAVE **NOT** FIXED, recorded rather than quietly carried
+
+```
+(a) THE PER-PROMPT 1/rms IS NOT COMMON ACROSS THE AGGREGATION -- and it can FLIP AN ARGMAX.
+    The docstring defends the argmax because the folded-out 1/rms(h) is shared by every cell "at
+    that destination". True WITHIN a prompt. But cell_mean_over_domains averages ~230 prompts, each
+    with its own rms, and the emitted value is (rms_p/||u||) x the true logit contribution -- so the
+    reported mean is an RMS-WEIGHTED mean. Re-derived myself: D_dir = <Y,u_hat> = <Y,u>/||u||, and
+    the true logit contribution is <Y,u>/rms_p, so emitted = true x rms_p/||u||. The ⚠ UNITS note
+    names only ||u||, which IS global, and is silent about rms_p, which is not.
+    ⛔ This is a DESIGN question, not a patch: aggregate-then-argmax is rms-weighted; argmax-per-
+    prompt-then-vote is not. It must be settled in the prereg, not in the instrument.
+(b) IT IS A DIRECT-PATH ATTRIBUTION. D_dir projects a layer-L head's output onto a direction
+    defined at the FINAL residual, ignoring what layers L+1..31 do to it -- 17 to 25 blocks for
+    band cells. The RUNG 1 knockout measures the TOTAL effect including those paths. A cell can be
+    causally necessary with near-zero direct projection, which would read here as "not decodable".
+    The file names the logsumexp surrogacy and is silent about this one, which is at least as large.
+```
+
+### 8. What was NOT established
+
+```
+- STILL NOT RUN. The import is fixed, so it COULD now run; it has not.
+- NOT fixed: section 7's two issues. Both are recorded as open, and (a) blocks a prereg.
+- NOT fixed, recorded: --model is never cross-checked against --snapshot-glob (a direction from
+  one revision against W_O from another would be well-formed); no id-to-string witness is printed
+  (bare-cased ' bomb' vs 'bomb' are DIFFERENT ids -- 13054 vs 79444 -- so four plausible wrong ids
+  exist for the same four words); the artefact write is not atomic; `et=False` is hardcoded and
+  unrecorded (inert on Llama, not on Qwen3); heads/band are unvalidated against the config.
+- NOT established: that no further defect remains. FOUR blockers survived 13 tests and my own
+  reading. The tests were the problem as much as the code.
+```
+
+### 9. State
+
+```
+QUEUE    EMPTY.
+CHANGED  scripts/dcs_csi_rung2_celldecode.py (4 blockers fixed), tests/... (17 tests, mutants
+         closed, greps now comment-blind), external_md/...20260915.md
+NEXT     settle section 7(a) -- it is a prereg question; then a CPU smoke; then a prereg.
+```
+
+`git push` remains credential-blocked. Committed locally.
