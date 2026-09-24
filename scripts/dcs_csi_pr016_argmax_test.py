@@ -43,7 +43,13 @@ def main():
     # and a frozen read must go on resolving to the file it was frozen against (R26 chain of custody).
     # The id list is EXPLICIT rather than open: a test reader that accepts any prereg is not a
     # preregistered test, which is the property the original single-id check was protecting.
-    IMPLEMENTS = ("PR-CSI-016", "PR-CSI-018")
+    # ⚠ S-350: PR-CSI-020 added. S-321 widened this allowlist AND NOTHING ELSE, and the reader
+    # still refused because `BC_H%s_L%02d` encoded PR-016's arm naming -- S-322's lesson. The
+    # family-encoding sites have since been removed (S-322 inverts cell_sets for arm names, S-323
+    # reads GATING from the prereg, S-332 checks n_arms_per_split), so widening the id is now
+    # sufficient -- but "sufficient" was VERIFIED by running this reader end to end against a
+    # synthetic PR-020 census, not assumed from the diff.
+    IMPLEMENTS = ("PR-CSI-016", "PR-CSI-018", "PR-CSI-020")
     if pr.get("id") not in IMPLEMENTS:
         sys.exit("REFUSING: this reader implements the frozen primary of %s only; got %r."
                  % (" / ".join(IMPLEMENTS), pr.get("id")))

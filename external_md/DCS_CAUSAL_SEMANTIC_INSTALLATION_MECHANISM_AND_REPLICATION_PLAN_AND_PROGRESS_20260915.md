@@ -30795,3 +30795,96 @@ NEXT  the freeze script on the dcs_csi_pr018_freeze.py pattern -- 8 heads, baske
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-350 — **PR-CSI-020 IS FROZEN.** The 82-arm basket cell census, prereg md5 `9fce4bda`, byte-identical on re-emission. 📌 **And the primary reader's end-to-end behaviour CONFIRMS S-348's enumeration by a completely independent path** — all four predicted outcomes reproduce
+
+### 1. What was frozen
+
+`scripts/gates/dcs_csi_pr020_freeze.py` → `configs/dcs_csi_pr020_cell_census_basket_8heads.json`
+(27 987 bytes, md5 **9fce4bda**), **byte-identical when re-emitted**.
+
+```
+82 arms   BK_BASE, BK_KO, HD_<h> x 8, BK_H<h>_L<ll> x 72
+8 heads   4, 6, 10, 11, 13, 18, 21, 27    basket, validation, 23 domains, 230 rows
+predictions  L11 L11 L12 L8 L10 L14 L6 L10   -> SIX distinct layers, 10080 assignments
+floors    permutation 0.00009921 | conditional 1.524e-04 (K_unique 4) | binomial 2.323e-08
+power     0.8563 at q = 0.83 (K=8), 0.7973 (K=5 secondary)
+```
+
+Every quantity is **re-derived by the script**, not transcribed: the screen predictions from
+`AtP_by_cell`, the VOID-8 references from PR-CSI-012's published report, the permutation space by
+enumeration, the power by exact enumeration over 2^K patterns.
+
+### 2. 📌 The reader's behaviour independently confirms S-348
+
+S-348's power analysis was my own enumeration script. The **real primary reader**, driven against
+synthetic censuses in the census's own output shape, reproduces every prediction it made:
+
+```
+CASE                                          predicted by S-348      reader returned
+all 8 match                                   certifies               PASS, conditional 0.00015242
+m=6 missing TWO unique-layer heads (10, 21)   must NOT certify        FAIL, conditional 0.063557
+m=6 missing two NON-unique heads (4, 6)       certifies               PASS, permutation 0.000298
+head 27 fails admission                       K_unique RISES 4 -> 5   K=7, K_unique=5, 2520 perms
+```
+
+**Two independent implementations of the same decision rule agree on all four**, including the two
+that matter most — the six-match pattern that must fail, and the admission drop that must make the
+family *stronger*. The conditional p in case 1 (0.00015242) equals S-347's conditional floor
+(1.524e-04) exactly.
+
+### 3. The plumbing, checked by running rather than by reading
+
+```
+argv generator   CHECK PASSED: 82 arms, every flag declared, 80 carry a frozen cell list,
+                 BK_BASE carries no intervention, codeword basket -> the right bank and exclusions
+GATE 0 sweep     resolves all 82 declared arms and correctly reports NOTHING TO CHECK (none landed)
+primary reader   REFUSED until PR-CSI-020 was added to its id allowlist
+```
+
+⚠ **The id allowlist is the S-321 site.** That entry widened this same allowlist *and nothing else*,
+and the reader still refused every real census because `BC_H%s_L%02d` encoded PR-016's arm naming.
+The family-encoding sites have since been removed — S-322 inverts `cell_sets` for arm names, S-323
+reads `GATING` from the prereg, S-332 checks `n_arms_per_split` — so widening the id **is** now
+sufficient. **But that was VERIFIED by running the reader end to end, not inferred from the diff**,
+which is the whole difference between S-321 and this entry.
+
+### 4. What the prereg says that D39's cannot
+
+⚠ **`NOT_HELD_OUT` is frozen into the prereg in its own words:** the screen is basket TRAIN and this
+census is basket VALIDATION, so the layer is held out on **SPLIT ONLY — not on codeword**.
+PR-CSI-018 was held out on both. **D39's framing is stronger than anything this family can claim**,
+and the prereg says so rather than letting the association carry.
+
+Also frozen, before any cell is measured: heads **6, 11 and 27** had these same predictions tested
+on button by PR-CSI-018 and **all three matched** — a replication, not an independent draw — with a
+preregistered SECONDARY over the five never-tested heads marked **⛔ NOT_A_FALLBACK** ("if the
+PRIMARY fails and the SECONDARY passes, the family has FAILED"). And head **18 predicts L14**, the
+band-edge rival, included under a rule frozen before the composition could be seen.
+
+### 5. NOT established
+
+```
+NOT LAUNCHED. No tag is registered in slurm_scripts/dcs_csi_pr010_arms.slurm, no frozen READ file
+  exists, no arm has run. The prereg alone is not a runnable family.
+R32 IS DUE AND HAS NOT RUN. S-320's precedent is freeze -> review -> launch, and it defended that
+  order because a review before the artefacts exist cannot find the defects that matter. R32 gets
+  a frozen prereg to attack, exactly as R29 got PR-CSI-018's.
+THE SYNTHETIC CENSUSES PROVE THE DECISION RULE, NOT THE MEASUREMENT. They are fabricated E values
+  in the right shape; they say nothing about whether the arms will run, whether GATE 0 will pass,
+  or what the answer is.
+POWER RESTS ON AN INDEPENDENCE ASSUMPTION (S-348) that enumeration does not remove.
+NOTHING WAS MEASURED ON A GPU. The queue is EMPTY.
+```
+
+### 6. State
+
+```
+PR-CSI-020   FROZEN. prereg md5 9fce4bda, 82 arms, reproducible.
+NEXT         R32 on the frozen family -> freeze the READ (runargs/) -> register the tag prefix
+             csi11_cell8_basket -> commit -> submit.
+```
+
+`git push` remains credential-blocked. Committed locally.
