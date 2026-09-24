@@ -34566,3 +34566,71 @@ NEXT     settle section 7(a) -- it is a prereg question; then a CPU smoke; then 
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-386 — CORRECTION to S-385's own provenance: S-384 DID commit, and one commit is carrying two entries under one entry's message. 📌 **Root cause: I backgrounded a `git commit` and kept staging while it was pending — that is a race, and it silently rewrote what the commit contained** (2026-09-25)
+
+### 1. The false statement
+
+S-385 opens with *"(S-384's content never committed — its hook was interrupted — so this entry
+carries both.)"* and its commit message repeats it. **That is wrong.** S-384 committed as
+`b15cf112`. The log is append-only, so the sentence stands where it is and this entry corrects it.
+
+### 2. What actually happened, and it is worth more than the correction
+
+```
+1. S-384 ran `git add -A ... && git commit`. The hook (477 tests, ~6 min on a loaded box) ran long
+   and the command was backgrounded.
+2. I checked `git log`, saw HEAD unchanged, and concluded the commit had not landed.
+3. On that belief I applied the R35 fixes and ran `git add -A ...` again.
+4. S-384's STILL-PENDING `git commit` then read the index -- which my step-3 `git add` had just
+   rewritten -- and committed BOTH sets of changes under S-384's message.
+5. S-385's own commit then found "nothing added to commit" and exited 1.
+```
+
+Verified after the fact: `b15cf112` carries **517 insertions across 3 files**, contains **both** the
+S-384 and S-385 entries, and contains every R35 fix (`import ds_common as dc`, `templated +
+a.answer_prefix`, the `keep_dom` split enforcement). Its 484-test hook passed, so the content is
+sound and complete.
+
+📌 **THE LESSON: a backgrounded `git commit` has not read the index yet. Staging while one is
+pending is a race, and it resolves silently — no error, no warning, and a commit whose message
+describes half of what it contains.** "HEAD is unchanged, therefore the commit did not happen" is
+false while the hook is still running; the only safe reading is that the commit has not *finished*.
+
+### 3. What is and is not wrong
+
+```
+CONTENT   COMPLETE AND CORRECT. All four R35 blockers are fixed in the tree, 484 tests pass, and
+          both log entries are present.
+PROVENANCE  DEFECTIVE. b15cf112's subject describes S-384 only, while carrying S-385 as well.
+            A reader bisecting for the answer-prefix fix will find it under a commit about the
+            population filter.
+NOT REWRITTEN.  I am not amending or rebasing b15cf112. Rewriting a landed commit to tidy its
+            message is worth less than the record of what happened, and this sprint's whole
+            discipline is that the log says what occurred.
+```
+
+### 4. What was NOT established
+
+```
+- NOT changed: any code, test, prereg or deliverable. This entry is a correction to the record.
+- NOT re-verified: the R35 fixes themselves. They were verified in S-385 (17 tests) and the
+  commit hook re-ran the full 484. This entry does not re-open them.
+- NOT established: that no earlier commit in this session has the same defect. Several commits
+  were backgrounded on this loaded machine. I checked only this one, because only this one
+  reported "nothing added to commit" -- which is the symptom, and a commit that raced WITHOUT a
+  following empty commit would leave no symptom at all.
+```
+
+### 5. State
+
+```
+QUEUE    EMPTY.
+CHANGED  external_md/...20260915.md  +S-386 only.
+NEXT     settle S-385 section 7(a) -- the per-prompt 1/rms weighting -- which is a prereg
+         question and blocks a freeze; then a CPU smoke; then a prereg.
+```
+
+`git push` remains credential-blocked. Committed locally.
