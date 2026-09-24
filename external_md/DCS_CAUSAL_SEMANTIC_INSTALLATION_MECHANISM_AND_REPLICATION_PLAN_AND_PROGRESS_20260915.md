@@ -32555,3 +32555,173 @@ NEXT     R34-A..D findings; then at 82/82 run STEP -1 in order and the frozen re
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-369 — 🔴 **R34 FOUND TWO BLOCKERS IN THE READ PATH, BOTH CONFIRMED BY MY OWN READING OF THE SOURCE.** GATE 0 does not enforce the S-334 duplicate rule the frozen read promises BY NAME, and the primary reader publishes the gating p-value on the one branch whose stated contract is "M and p are NOT computed". The fixes are specified here, BEFORE any number from this family exists, and applied only when VOID 11 lifts (2026-09-24)
+
+### 1. How this review was run
+
+Four subagents (R34-A GATE 0, R34-B census/VOID 8, R34-C primary reader, R34-D prereg↔reader
+contract), each barred from opening any `rows.jsonl`, effect, bar or argmax of the live family —
+the read must stay blind. **Every load-bearing claim below was re-derived by me from the source
+before being accepted**, per the standing rule. R34-B has not yet reported.
+
+⚠ **Timing is the whole point of this entry.** Both blockers are in code that runs AFTER the GPU.
+They are recorded now, with their patches written out, while `925438` is still producing arms and
+**no number from this family has been seen by anyone**. A reader patched after the data is in hand
+is indefensible; a reader patched to a specification frozen before the data exists is what review
+is for. Neither fix touches the statistic, the gating rule, or any threshold.
+
+### 2. 🔴 BLOCKER 1 — GATE 0 passes an arm with TWO run dirs, and exits 0
+
+`scripts/gates/dcs_csi_pr012_gate0_sweep.py`. `_cands` is built from the NAME GLOB at `:191-192`.
+The duplicate check `if len(_cands) > 1` sits at `:227`, nested inside `if not _done:` (`:213`),
+which is itself inside `except` (`:196`). **On the success path — `strict_run_dir` RETURNS — control
+goes straight to `landed += 1` at `:244` and `_cands` is never looked at again.**
+
+`strict_run_dir` refuses only when the number of dirs that are complete AND survive its filters is
+not exactly 1. So a second generation rejected for ANY reason — no DONE.json, wrong row count, bad
+`DONE.status`, or a `slurm_job_id` outside `--require-slurm-job` — leaves exactly one survivor and
+is silently dropped. **`--require-slurm-job` actively HIDES the duplicate it is supposed to coexist
+with.**
+
+This contradicts the frozen read in terms, `runargs/dcs_csi_pr020_read.txt:192-194`:
+
+> *"If a relaunch happens, the earlier generation's arm dirs must be QUARANTINED rather than
+> filtered at read time (S-261), and GATE 0 will FAIL on two run dirs for one arm (S-334)."*
+
+It will not. And this is the R30-D/S-334 defect **one branch over** — the same fix, applied to the
+failure path only, left the success path untouched. That is the recurring shape of this sprint:
+*proving something in one regime and freezing it everywhere.*
+
+⚠ **Reachability is not hypothetical.** The partition is `killable` with a 12 h wall, and
+`scripts/dcs_csi_arm_runner.py:87-92` re-runs any arm that is not already exactly-one-complete —
+a re-run writes a NEW timestamped dir. A preemption mid-arm produces this state directly.
+
+```
+PATCH, SPECIFIED BEFORE ANY NUMBER EXISTS:
+  hoist the duplicate check out of the `except`. Immediately after `_cands` is built at :192,
+  and BEFORE the `try`, fail whenever len(_cands) > 1 -- regardless of DONE.json and regardless
+  of what strict_run_dir returns. The existing in-except branch then becomes unreachable for
+  len>1 and its message is kept for the no-DONE case.
+```
+
+### 3. 🔴 BLOCKER 2 — on a TIE, the reader publishes the gating p-value
+
+`scripts/dcs_csi_pr016_argmax_test.py`. `_gate_name` / `_gate_p` are computed at `:231-236`,
+BEFORE the tie branch nulls the endpoint at `:278` (`M, p, span, spanning_ok = None, None, None,
+None`). The output dict at `:352` then emits them unconditionally:
+
+```
+"GATING": _gating, "gating_p_name": _gate_name, "gating_p": _gate_p,
+```
+
+`p_conditional` and `p_permutation` at `:355` ARE correctly gated on `M is None`. `gating_p` is not.
+So on the branch whose own text (`:274-277`) reads *"M and p are NOT computed: a tied head is
+undetermined, not a miss"*, **the JSON publishes the single most quotable number in the file — the p
+the claim must be stated with — computed under a tie-as-miss scoring rule the prereg never froze.**
+`ROBUSTNESS.M_unique` leaks on the same path and is a scoring count, not an observation.
+
+```
+PATCH, SPECIFIED BEFORE ANY NUMBER EXISTS:
+  null `gating_p`, `gating_p_name` and `ROBUSTNESS.M_unique` when `M is None`, exactly as
+  `p_conditional` and `p_permutation` already are. Three keys, no statistic touched.
+```
+
+### 4. Confirmed but NOT blockers — recorded, deliberately not fixed under VOID 11
+
+```
+(a) TIE BREAK IS UNFROZEN AND PRINTS "miss".  pr016:168-169,180-182. `sorted` is stable, so on an
+    exact tie argmax_layer is whichever tied layer comes FIRST in pr["layers"] = [6..14], and the
+    head prints as a miss rather than UNDETERMINED. ARGMAX_EQUALS_SCREEN was split out by
+    R28/S-312 precisely to be the observation free of a scoring decision; on the tie path it is a
+    coin-flip on band order. Fix with BLOCKER 2, same edit.
+(b) spanning_rule_satisfied = false ON BRANCHES THAT NEVER REACHED THE RULE. pr016:382-384. The
+    guard admits the two STRUCTURAL CANNOT ANSWER branches, so a K=1 read prints "spanning rule
+    VIOLATED" -- a second adverse fact on top of a structural non-answer. This is verbatim the
+    hazard the comment at :264-267 says it closed.
+(c) GATING_FLOOR.WHAT_THIS_IS CONTRADICTS ITS OWN VERDICT. pr016:374-379 asserts the verdict is
+    "CANNOT ANSWER (structural), never FAIL" -- but at K >= 3 the code correctly publishes FAIL
+    per the prereg. Same JSON, opposite statements. The prose is wrong, not the verdict.
+(d) THE ARM RUNNER'S DUPLICATE REFUSAL IS DEAD CODE. arm_runner:109 tests for "more than one" or
+    "resolved to"; the message rederive_patch.py:234 actually raises is
+    "REFUSING for tag %r: %d complete run dirs (need exactly 1)." -- VERIFIED to contain NEITHER
+    substring, so the branch never fires and the arm is RE-RUN, writing a THIRD dir. With
+    BLOCKER 1 this compounds: a preempt-and-resubmit cycle can leave several generations that
+    GATE 0 still passes. Matters only if 925438 is resubmitted.
+(e) --require-slurm-job accepts a COMMA LIST and nothing asserts len == 1, while the read file
+    says "must name the ONE job" and VOID 9 requires one job. Omitting the flag skips the filter
+    entirely and the exit-0 line is byte-identical either way.
+(f) --expect-n guards the FILE LENGTH, not the rows GATE 0 reads. n_rows is printed and never
+    asserted. BK_BASE, whose expected dose is 0, can pass on zero live rows.
+(g) THE FROZEN BOOTSTRAP IS ENFORCED NOWHERE. The prereg's ESTIMATOR_AND_RESAMPLER {B 10000,
+    seed 20260922, ci 0.95} is read by no script; the read file passes them on the CLI and the
+    argparse defaults happen to equal them. `ci` feeds ci95_excludes_0 and therefore ADMISSION
+    and K. This is the "prose that reads as automatic" shape (R29/R32-B) on a load-bearing field
+    the read file describes as "now preregistered instead of inherited".
+```
+
+### 5. What R34 CONFIRMED CLEAN, by execution rather than assertion
+
+```
+THE PERMUTATION  scored against the OBSERVED ARGMAX VECTOR (pr016:226-230), tail >= M, and
+                 set() collapses the multiset -- 10080 distinct assignments and a perfect-result
+                 p of 9.9206e-05, reproducing the prereg's frozen floor to the digit. The S-352
+                 defect is ABSENT.
+GATING           weakest = max of three; deleting PRIMARY.GATING -> refusal; PR-020 cannot reach
+                 the grandfathered binomial_only default without editing the md5-pinned prereg.
+PLACEHOLDER      a K_unique=0 FAIL can never escape the STRUCTURALLY UNWINNABLE annotation:
+                 the conditional floor is the placeholder 1.0 and max() necessarily selects it.
+COMPLETENESS     all five evasions refused -- drop an arm, drop-and-pad to keep the count at 82,
+                 add an 83rd, one arm with pass=False, truncate per_arm to one.
+PROHIBITIONS     PASS -> IF_POSITIVE, FAIL -> IF_NULL, every CANNOT ANSWER -> the header plus
+                 BOTH lists. The spanning CANNOT ANSWER cannot carry the IF_NULL list.
+ARM IDENTITY     dose-identical impostors are caught: a BK_KO secretly carrying a 9-cell list
+                 (dose 2016, identical) FAILS; a BK_H10_L06 that knocked out (7,10) instead of
+                 (6,10) (dose 224, identical) FAILS. Identity comes from knockout_cells, never
+                 the dose. Expected doses {224: 72, 2016: 9, 0: 1} match the read file exactly.
+EXIT CODES       exit 0 is reachable only with fails==0 AND landed==82 AND landed!=0. An empty
+                 glob, mistyped prefix, wrong split, in-flight or never-landed arm all route to
+                 3 or 1 -- none to 0.
+PREREG CONTRACT  every hard-subscripted key that RESOLVES for this family is PRESENT. The single
+                 MISSING key (head_sets) is provably dead: cell_sets holds 80 entries so
+                 IS_CELLS is True and head_census:205 is unreachable. All four computed-key sites
+                 and all eight helper-alias sites resolved by hand and PRESENT.
+VOID 8 REFERENCES  all 8 frozen whole_head_REFERENCE values match PR-CSI-012's published report
+                 EXACTLY (|diff| = 0.000e+00, ci95 bounds included). One of VOID 8's two failure
+                 modes -- a mistyped reference -- is eliminated. The other, whether THIS run's
+                 HD_<h> arms reproduce them within 1e-6, needs the final eight arms.
+```
+
+### 6. What was NOT established
+
+```
+- NOT established: that the blockers would have fired. Both are conditional on states this run
+  may never reach (a tie; a duplicate dir). They are fixed because a read that CAN publish a
+  headline p on a non-answer is not a read, not because either is likely.
+- NOT fixed yet: nothing in scripts/ or src/ was touched. VOID 11 binds while arms are in
+  flight. The patches above are specifications, applied only after the job is gone.
+- NOT amended: the frozen read file. R34-C observes that its line 48-50 claim -- "the spanning
+  rule and the permutation p both bite" -- is FALSE of the spanning rule, which under this
+  prediction multiset cannot change a verdict at any data (a span-1 match set forces
+  M_unique <= 1, hence p_cond >= 0.111). VOID 12 would permit a prose amendment since no number
+  has been seen. I AM NOT AMENDING IT. Amending a frozen read for a prose nicety is the drift
+  the freeze exists to prevent; the overstatement is recorded here instead.
+- NOT reported: R34-B (census / VOID 8 / bar-as-a-rule / admission) is still running.
+- NOT read: any endpoint, effect, bar or argmax of this family, by me or by any subagent.
+```
+
+### 7. State
+
+```
+925438   RUNNING on n-301, 63 of 82 when this was written, all status=ok, no duplicate arm tags.
+         No HD_ arm has landed yet; all eight run last.
+CHANGED  external_md/...20260915.md  +S-369 only.
+NO EDITS TO scripts/ OR src/ (VOID 11). Two patches SPECIFIED above, to apply when the job ends.
+NEXT     (1) R34-B; (2) when 925438 is gone: apply both patches, run the 346 guard tests, commit;
+         (3) STEP -1 in order; (4) GATE 0 must exit 0; (5) census; (6) primary. Stop at the
+         first failure.
+```
+
+`git push` remains credential-blocked. Committed locally.
