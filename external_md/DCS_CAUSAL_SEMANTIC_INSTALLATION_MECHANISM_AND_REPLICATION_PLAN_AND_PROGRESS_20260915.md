@@ -29513,3 +29513,134 @@ NEXT              the queue is EMPTY. The highest-value branch is a source-side 
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-338 — **PR-CSI-019 is DESIGNED (not frozen): the source-side REFUTATION family S-337 licensed.** 📌 **Two reuse findings decide its shape — NO existing arm is admissible, and NO new measurement code is needed.** And a feasibility check says the design can actually answer
+
+### 1. Reuse, checked before anything was designed
+
+**(a) 29 `nondemo_matched` arm dirs already exist. NONE is admissible.** Every one differs from the
+CSI population on at least one coordinate that changes what is being measured:
+
+```
+dcsbeh_* / dcss904_*   query_kinds=BEHAVIORAL (not semantic_one_word), scope=query_prefill_only,
+                       380 rows, NO exclusion file -> pooled population
+ts116m_sowk_*          query_kinds=semantic_one_word OK, but scope=query_last_k_rows,
+                       670 rows, exclusion from runargs/dcs_succ, seed 20260909
+THE CSI ARM            scope=target_surface_row_only, 230 rows,
+                       exclude_button_bomb_sow_validation.txt, seed 20260913
+```
+
+The knockout **scope** is the decisive mismatch: `query_prefill_only` and `query_last_k_rows` edit
+different positions than `target_surface_row_only`, so those arms answer a different question. A
+new family is required.
+
+**(b) 🔴 But NO NEW MEASUREMENT CODE IS NEEDED — the runner already supports the arm.** The CSI
+intervention is specified as a string whose FIRST FIELD names the key set:
+
+```
+BF_KO   intervene = 'demo_all:attn_knockout:6-14:1.0'   scope = target_surface_row_only
+```
+
+and `score_behavior.py:1286` declares
+`KNOCKOUT_ARMS = ("demo_all", "nondemo_random", "allpast") + NONDEMO_DRAW_ARMS`, where
+`NONDEMO_DRAW_ARMS` is exactly `nondemo_matched_d{1,2,3}` and `nondemo_capped_d{1,2,3}`. Line 1830
+passes `protected=protected`, so the draw is the **STRICT, PROTECTED** one — the draw S-325 built the
+criterion around and S-337 measured. So the whole family is
+`intervene = 'nondemo_matched_d1:attn_knockout:6-14:1.0'` and two siblings: **a prereg, a tag
+registration and a frozen read, and not one line of new measurement code.**
+
+### 2. THE DESIGN — PR-CSI-019, licensed for the REFUTATION reading ONLY
+
+```
+population   BUTTON validation, 230 rows, 23 DOMAINS (the unit), n_examples 4, cell C,
+             readout semantic_one_word, exclude_button_bomb_sow_validation.txt, seed 20260913
+arms (5)     SR_BASE   no intervention
+             SR_KO     demo_all:attn_knockout:6-14:1.0
+             SR_D1/2/3 nondemo_matched_d{1,2,3}:attn_knockout:6-14:1.0
+             all at scope target_surface_row_only
+endpoint     y_install, concept-free
+per domain   d_X(dom) = y_X(dom) - y_BASE(dom)          <- what the census already computes as E
+statistic    r = mean_dom(d_C) / mean_dom(d_KO), where d_C is the MEAN OF THE THREE DRAWS per
+             domain; ci95 by bootstrap over DOMAINS, paired. Each draw ALSO reported separately.
+```
+
+**THE THREE PREREGISTERED BRANCHES, and only one of them is a claim:**
+
+```
+ci95(r) lower bound >= 0.75  ->  REFUTATION of source-specificity. The count-matched control does
+                                 essentially the damage the demonstrations do.
+ci95(r) upper bound <= 0.25  ->  CANNOT ANSWER. The control does far less damage -- which is
+                                 EXACTLY what S-337 measured less removed mass predicts
+                                 (rho = 0.595 on button). ⛔ THIS IS NOT SUPPORT FOR
+                                 SOURCE-SPECIFICITY and must never be reported as any.
+otherwise                    ->  CANNOT ANSWER.
+```
+
+⛔ **The asymmetry is the point and it is inherited, not chosen.** S-325's criterion, frozen before
+the instrument ran, licenses the refutation reading ONLY; S-337 applied it and got
+`REFUTATION TEST ONLY` on both codewords. A family that could "confirm" the demonstrations are the
+source is **not available** and none is being designed. The 0.25 branch exists solely so that the
+confounded outcome has a preregistered home and cannot be quietly written up as a positive.
+
+⚠ **Why 0.75.** The control removes ρ ≈ 0.595 of the demo block's band mass (S-337, button). A
+control delivering ≥ 75% of the damage from ~60% of the mass is doing *more* damage per unit of
+removed attention than the demonstrations, which is hard to reconcile with the demonstrations being
+a privileged source. **This is a stated rationale, not a model**: no linearity of damage in mass is
+asserted anywhere, and the threshold is frozen before the data precisely so it cannot be tuned to
+whatever r turns out to be.
+
+**VOID CONDITION (the S-323/VOID-8 pattern).** `SR_KO` is the SAME intervention, population, scope
+and seed as PR-CSI-018's `BF_KO`. It must reproduce `E = -0.28990714` within `1e-6`, or the
+population/bank/revision has drifted and nothing in the family is readable. S-318 and S-335 both
+demonstrated bit-identical reproduction across jobs and nodes, so this is a real check, not a hope.
+
+### 3. Feasibility — asked BEFORE freezing, because a family that cannot answer must not be frozen
+
+From PR-CSI-018's own landed arms (already read and published), bootstrapping over the 23 domains:
+
+```
+per-domain d_KO   mean -0.289907   SD 0.120497   SE 0.025125
+                  ^^^ reproduces the census's E[BF_KO] = -0.28990714 by a path that reads RAW ROWS
+
+true r     ci95 lo    ci95 hi    width     branch reached
+  0.00     -0.1584    -0.0010    0.157     CONFOUNDED branch fires  (hi <= 0.25)
+  0.50      0.4197     0.5697    0.150     CANNOT ANSWER
+  0.75      0.7226     0.9174    0.195     CANNOT ANSWER (borderline, as a threshold should be)
+  1.00      0.8728     1.0463    0.173     REFUTATION fires (lo >= 0.75)
+```
+
+**Both branches are reachable.** The KO effect is large (−0.29) and precisely estimated (SE 0.025,
+8.7% relative), so a ratio is well determined at n = 23.
+
+⚠ **The simulation's assumption, stated because it is the weak point:** the control's per-domain
+delta was generated as `r · d_KO + noise` at half the KO per-domain SD, i.e. **correlated with
+d_KO across domains**. That pairing is realistic — the same domains are hard or easy under both
+arms — and it narrows the CI. If the control's effect were independent of the KO's, the interval
+would be wider and the thresholds harder to reach. **This is a feasibility argument, not a power
+guarantee, and the real MDE must be computed from the family's own arms at read time.**
+
+### 4. NOT established
+
+```
+NOTHING IS MEASURED. PR-CSI-019 is DESIGNED, NOT FROZEN, NOT LAUNCHED. No prereg file exists,
+  no tag is registered, no arm has run. S-167c: nothing may be frozen that names what does not exist.
+THIS ENTRY IS NOT A RESULT and the design is not yet reviewed. R31 is DUE -- the standing rule is
+  a review before any family reaches a GPU, and R28 stopped PR-CSI-016 reaching one TWICE.
+  The correct order, per the S-320 precedent I got wrong once already: DESIGN -> R31 -> FREEZE ->
+  LAUNCH, with the review seeing the design BEFORE the freeze script encodes it.
+The 0.75 and 0.25 thresholds are a DESIGN PROPOSAL until the freeze. They are recorded now, with
+  their rationale, so that if R31 changes them the change is visible and dated.
+Nothing here touches TEST, PR-CSI-018, or any claim in the table.
+```
+
+### 5. State
+
+```
+queue EMPTY. PR-CSI-018 read and closed (S-335). Mass criterion applied (S-337).
+NEXT  R31 on this design -> freeze script on the dcs_csi_pr018_freeze.py pattern -> register the
+      tag prefix in slurm_scripts/dcs_csi_pr010_arms.slurm -> commit -> submit.
+```
+
+`git push` remains credential-blocked. Committed locally.
