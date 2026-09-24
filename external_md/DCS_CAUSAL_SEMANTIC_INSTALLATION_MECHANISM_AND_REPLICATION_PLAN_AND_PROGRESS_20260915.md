@@ -28500,3 +28500,87 @@ PR-CSI-018   923972 on n-301, load 1264.0 s, arms in flight. NO endpoint read.
 NOT ESTABLISHED  anything new about the science. This entry corrected the record and added rows for
                  results already established elsewhere; it measured nothing.
 ```
+
+---
+
+## S-329 — **both S-328 deferrals DISCHARGED by my own re-derivation, and one of them REVERSES the audit's reading.** AM-25's MDE is **+0.00250, not +0.00300** — but D31's "prose-only" quantities are **all four witnessed**, in an artefact the row itself names
+
+### 1. Why this tick and not later
+
+S-328 flagged two audit findings and **declined to act on either**, because I had not re-derived
+them and the standing rule is not to take a subagent's number on trust. S-300's rule is the other
+half of that: *"a deferral never discharged is just a defect with a citation."* Both are discharged
+here, and **they came out differently from each other.**
+
+### 2. ✅ AM-25's MDE is WRONG, and I now have my own number for it
+
+Re-derived from the row's own recipe — 46 empirical control recoveries from
+`DCS_CSI_SUBSPACE_button_validation_L18_n46.json`, candidate = a control draw plus a constant shift,
+B = 20 000, rank 1 = most positive:
+
+```
+observed shift above the control mean   +0.00132261     AM-25 quotes +0.00132     ✅ reproduces
+P(R47 <= 2) at the observed shift        0.3357         AM-25 quotes  0.3382      ✅ Monte-Carlo agreement
+
+power curve:  +0.0020 -> 0.6137 | +0.0024 -> 0.7621 | +0.0025 -> 0.8010
+              +0.0026 -> 0.8156 | +0.0028 -> 0.8725 | +0.0030 -> 0.9240
+80%-power MDE, bisected                 +0.00250       AM-25 states +0.00300      🔴 20% overstated
+as a multiple of the observed effect      1.89x        AM-25 states 2.3x
+```
+
+⚠ **The row's LOAD-BEARING statistic is unaffected.** `P(R47 ≤ 2) = 0.3382` is what carries AM-25's
+argument — *"this cell would have failed to certify about two times in three"* — and it reproduces.
+**The error is in the MDE illustration only**, and it runs in the **conservative** direction: it made
+the detectability bar look 20 % higher than it is.
+
+📌 The audit reported ≈ +0.0026 and ≈ 2.0×; I get **+0.00250 and 1.89×**. Both agree the stated
+number is too high, and **the table now carries mine**, because it is the one I can defend.
+
+### 3. 🔴 THE AUDIT'S OTHER FINDING IS REVERSED — D31's quantities ARE witnessed
+
+The audit reported four D31 quantities as *"prose-only … They may well be true; nothing in the cited
+artefacts witnesses them"*, and put them in the S-318/S-319 class of assertions nobody opened. **Its
+literal claim is correct and its conclusion is wrong.** Checked myself:
+
+```
+bank sha16 79511d9e254571e6          metadata.json  bank_file_sha16                    ✅
+model revision 0e9e39f249a1          metadata.json  model_revision_resolved_commit     ✅
+corpus population 3720 -> 3714       metadata.json  n_bank_rows_used / n_result_rows   ✅
+"33 non-exempt arguments"            metadata.json  argv has 36 entries, 3 exempt      ✅ derivable
+```
+
+**All four live in `cont1re_behavioral_basket_bomb_20260921_081723_897277/metadata.json` — the
+extraction corpus D31 ALREADY NAMES in its evidence column.** They are simply absent from the two
+JSONs listed in its *source* column.
+
+⚠ **So this is a CITATION-COMPLETENESS defect, not an unwitnessed assertion, and the difference
+matters**: on the audit's reading I would have weakened a supported claim. The row is annotated
+rather than qualified.
+
+📌 **This is why the rule is not to take a subagent's number on trust — and the failure mode here was
+not a wrong number.** Every fact the audit stated was true. What was wrong was the **inference** from
+"absent where I looked" to "unwitnessed", and a number-checking discipline that only re-derives
+*numbers* would have passed this through. **The check that caught it was asking where the quantity
+would live if it were true**, which is a different question from whether the cited file contains it.
+
+### 4. What is NOT established, and what is still owed
+
+* **Nothing new about the science.** This entry corrected the record twice and measured nothing about
+  installation, transfer or mechanism.
+* **AM-25's `P(R47 ≤ 2)`** reproduces at 0.3357 against 0.3382 — close enough to call Monte-Carlo
+  agreement, but I did **not** reproduce the exact RNG stream, so the two are not bit-identical and
+  I am not claiming they are.
+* **The `33` in D31 is derived, not read**: `argv` has 36 entries and the row says 33 *non-exempt*.
+  The exempt three are consistent with the A/B's single-flag change, but **no artefact states "33"**,
+  and the annotation says so rather than implying a direct witness.
+* **Still owed, and now the only open audit item:** the audit listed fourteen rows that cite a log
+  entry and no artefact, of which it located artefacts for three (D2/D13, D3, D5/E1). **Those three
+  citations have not been added.** Recorded here so the deferral is visible rather than lost.
+
+### 5. State
+
+```
+claim table  912 -> 912 lines (two annotations in place). 7 corrections total across S-328/S-329.
+PR-CSI-018   923972 on n-301, 17 of 62 arms, all rc=0, GATE 0 clean on every landed arm.
+             NO endpoint read; frozen read cbdf34a2 untouched.
+```
