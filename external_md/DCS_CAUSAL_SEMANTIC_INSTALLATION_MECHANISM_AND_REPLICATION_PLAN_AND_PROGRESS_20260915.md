@@ -29644,3 +29644,156 @@ NEXT  R31 on this design -> freeze script on the dcs_csi_pr018_freeze.py pattern
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-339 — 🔴 **REVIEW R31 KILLS PR-CSI-019 BEFORE IT REACHED A GPU. The comparison it proposed HAS ALREADY BEEN RUN — on TRAIN, with byte-identical `--intervene` strings — and it returns r ≈ 0.00 on 8 of 8 conditions.** The family is WITHDRAWN. 🔴 **Plus a real bug in MY OWN instrument (double-strided control seed) and two arithmetic/logic errors in MY OWN rationale**
+
+### 1. The finding that decides it, RE-DERIVED BY ME
+
+R31-C observed that S-338 §1(a) asked *"is any existing `nondemo_matched` arm admissible as the CSI
+measurement?"*, answered **no** correctly, **and stopped there** — never asking the other question:
+*what do those arms say about the PRIOR?* PART I §3.2 makes TRAIN exactly the split for that.
+
+The `ts116m_sowk_*` families carry **byte-identical intervene strings** to the ones PR-CSI-019
+proposed — `demo_all:attn_knockout:6-14:1.0` and `nondemo_matched_d{1,2,3}:attn_knockout:6-14:1.0`
+— on the same banks and band, differing only in scope (`query_last_k_rows`), split (TRAIN, 67
+domains) and seed. **I re-derived the whole table myself** with `w4.by_domain`, at the domain unit:
+
+```
+codeword K     n_dom       d_KO    d_C(d1)    d_C(d2)    d_C(d3)  r = mean(d_C)/d_KO
+button   K08      67    -0.2643     0.0033    -0.0024    -0.0004    -0.0006
+button   K09      67    -0.2860     0.0035    -0.0015    -0.0002    -0.0021
+button   K10      67    -0.6428     0.0099     0.0037     0.0037    -0.0089
+button   K11      67    -0.6438     0.0097     0.0034     0.0039    -0.0088
+basket   K08      67    -0.3350     0.0078     0.0027     0.0019    -0.0124
+basket   K09      67    -0.3453     0.0092     0.0043     0.0024    -0.0153
+basket   K10      67    -0.4585     0.0123     0.0059     0.0029    -0.0154
+basket   K11      67    -0.4585     0.0116     0.0062     0.0016    -0.0140
+
+r over 8 conditions: -0.0154 .. -0.0006     max |d_C| over 24 draws: 0.0123
+                                            min |d_KO|:              0.2643   (a factor of 21)
+```
+
+**It reproduces R31-C's table to the digit.** And the scope objection does not rescue it: TRAIN
+button K08's `d_KO = -0.2643` is **0.912 of** PR-CSI-018's `target_surface_row_only`
+`E[BF_KO] = -0.28990714`, so the two scopes deliver essentially the same demo-knockout, and there
+is no reason to expect the control to behave differently under the CSI scope.
+
+**PR-CSI-019's only claim-bearing branch was `ci95(r) lower >= 0.75`.** Against 24 draws clustered
+at r ≈ 0, that branch has a prior indistinguishable from zero. The family would have bought
+**~34 GPU-minutes of preregistered silence.** ⛔ **WITHDRAWN.**
+
+> S-338's §1(a) reuse check was *correct and insufficient in the same breath*. "No existing arm is
+> admissible as my measurement" and "no existing arm bears on my prior" are different questions, and
+> I answered the first while writing an entry that read as though I had answered both. **The
+> admissibility of old data and its evidential value are independent, and I conflated them.**
+
+### 2. 🔴 A REAL BUG IN MY OWN INSTRUMENT — the control seed was strided TWICE (fixed, `c14a46eb`)
+
+R31-B found it; I confirmed it from both call sites before accepting it. `retrieval_strength.py:164`
+passed `nondemo_draw_seed(args.seed, _idx)` as `control_seed`, and `knockout_key_set` strides it
+again (`score_behavior.py:1518`). Computed, not argued:
+
+```
+draw   a real arm draws with   the instrument used
+ d1         28180690               36100467   <- which is a real arm's D2 seed
+ d2         36100467               51940021   <- no arm uses this
+ d3         44020244               67779575   <- no arm uses this
+```
+
+So the instrument sampled draws at strides **2, 4, 6** while arms use **1, 2, 3**: one of the three
+was a genuine arm draw **wearing the wrong label**, and two belong to no arm at all.
+
+⚠ **What this does and does not touch.** The draws are exchangeable, so S-337's ρ remains a valid
+estimate of the **distribution's** removed mass, and the `REFUTATION TEST ONLY` verdict is not
+disturbed. But **S-331 said in terms that passing `--seed 20260913` made the instrument measure
+"the draws the real arms make", and called that "the load-bearing detail". That sentence was
+false.** Fixed, with a static guard (no `knockout_key_set` call may pass a `nondemo_draw_seed`
+result as `control_seed`) verified to FAIL on the pre-fix file, plus a test asserting the mis-seeded
+d1 coincides with the arm's d2 — so the guard is protecting something real. **Both codewords are
+re-running now as `924666` / `924667` to replace the numbers with the arms' actual draws.**
+
+### 3. 🔴 TWO ERRORS IN MY OWN 0.75 RATIONALE, both verified by me
+
+**(a) The rationale's premise is refuted by this sprint's own artefacts.** I wrote that ≥75% of the
+damage from ~60% of the mass is "more damage per unit of removed attention", while claiming no
+linearity was asserted. R31-C is right that the disclaimer cannot be true of that argument: it needs
+**removed band mass to be a sufficient statistic for damage**. It is not, and the counter-example is
+in the file S-337 read:
+
+```
+demo_mass_band (L6-14)  0.04523        demo_mass_late (L20-31)  0.08146   ->  late/band = 1.80x
+```
+
+The late band carries **1.8x the demo mass** and its control is **the ACCEPTED INERT one** (S-316
+§3). Mass is not function — **S-337 §5 says exactly that, and S-338 then built a threshold on a
+per-unit-mass sentence.** I contradicted myself one entry apart.
+
+**(b) The rationale quotes the wrong ρ.** The frozen criterion names `d1` (ρ = 0.5951). My primary
+statistic averaged d1/d2/d3, whose ρ are 0.5951 / 0.8094 / 0.6774 — **mean 0.6939**. So the sentence
+should have read "75% of the damage from 69% of the mass", a ratio of 1.08, not 1.26. **The
+rationale nearly evaporates on its own arithmetic, and the tested quantity was not the licensed one.**
+
+### 4. R31-B's two BLOCKERs, which would have bitten even had the design been worth running
+
+**F4 — the argv generator has no per-arm `intervene` axis, and the obvious workaround runs the
+TREATMENT five times wearing control names.** `dcs_csi_pr010_argv.py:112` emits
+`prereg["intervention"]["intervene"]` for *every* non-base arm; the only per-arm axis is
+`--knockout-heads/--knockout-cells`. Declaring `head_sets` to make the arm count come out at 5
+passes every existing check and emits **three identical `demo_all` arms tagged `SR_D1/2/3`**.
+`r` would come out ≈ 1.0 and **the REFUTATION branch would fire on an artefact in which no control
+was ever drawn.** The S-251/S-260 shape, on a new axis.
+
+**F5 — GATE 0 and the census both REFUSE a family with neither `head_sets` nor `cell_sets`**
+(`pr012_gate0_sweep.py:104`, `head_census.py:191`), the dose is **identical by construction** across
+`SR_KO` and all three controls (count-matched per row), both identity fields are blank on every arm,
+and the per-row `control_draw` provenance **is never written on this readout path** because the CSI
+configuration runs with `n_generations = 0` and `_readout_knock_fields` does not emit it. So the one
+field that could tell a control arm from the treatment after the fact would not exist.
+
+⚠ **Taken together F4 and F5 are worse than either alone: the family's only positive branch is
+exactly the outcome its identity checks could not rule out as an artefact.**
+
+### 5. Bookkeeping — an entry cited 19 times that cannot be found by its number
+
+`S-308` is cited 19 times as the authority for a specific gate fix, and **no header in this log
+carries that number**: the entry is `## REVIEW R27` at line 25923. `R29` got this right
+(`## REVIEW R29 / S-323`); `R27` did not. Recorded here rather than retro-edited, because the log is
+append-only. Same class, cosmetic: `S-317` and `S-104` use `#` where every neighbour uses `##`.
+
+### 6. NOT established
+
+```
+NOTHING WAS MEASURED THIS TICK. PR-CSI-019 is WITHDRAWN, not merely unfrozen -- no prereg file
+  was ever written, no tag registered, no arm run. The withdrawal costs nothing but the design.
+THE TRAIN TABLE IN 1 IS NOT A RESULT AND MUST NEVER BE WRITTEN UP AS ONE. It is TRAIN, at a
+  different scope and seed, read for a PRIOR under PART I 3.2. It does NOT establish that the
+  count-matched control is inert, and it does NOT establish source-specificity -- S-325's criterion
+  forbids that reading whatever r is, and a near-zero r is CONFOUNDED exactly as S-338's own
+  0.25 branch said.
+S-337's REFUTATION-ONLY verdict STANDS. The seed bug changes which draws were sampled, not the
+  distribution they came from, and d2/d3 agreed in direction anyway. The re-run 924666/924667
+  will replace the numbers; if it moves the verdict, that is a correction I will have to make.
+AM-43 must be CORRECTED for the seed provenance once the re-run lands -- its text says the draws
+  are "the draws the real arms make". NOT YET DONE.
+R31-A (the statistic's soundness) HAS NOT REPORTED. Its verdict on the ratio estimator and on my
+  feasibility simulation is still outstanding and may add findings.
+NO REPLACEMENT FAMILY IS DESIGNED. R31-C proposes a head-subset DOSE LADDER using --knockout-heads
+  (existing code) which would MEASURE the curvature my threshold merely assumed. Its premise
+  checks out on my own re-derivation -- the six PR-018 heads carry 16.5% of the demo band mass and
+  deliver 6.7% of the damage, strongly sub-proportional (⚠ R31-C reported 18.8% mass; I get 16.5%
+  and use mine). That is a PROPOSAL, not a design, and it is not frozen.
+```
+
+### 7. State
+
+```
+924666 / 924667   mass re-run with the CORRECT draws, PENDING.
+PR-CSI-019        WITHDRAWN (this entry). Three reviews have now stopped a family before a GPU:
+                  R28 (PR-CSI-016, twice), R29 (PR-CSI-018), R31 (PR-CSI-019, terminally).
+NEXT              R31-A's report; then correct AM-43 from the re-run; then design the dose ladder
+                  properly, with its dose axis computed offline BEFORE any freeze.
+```
+
+`git push` remains credential-blocked. Committed locally.
