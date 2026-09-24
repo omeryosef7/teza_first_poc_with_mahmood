@@ -29355,3 +29355,39 @@ NEXT         the queue is EMPTY. Launch the attention-mass measurement via
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-336 — **the attention-mass instrument is LAUNCHED on both codewords, six entries after S-325 froze its criterion.** Jobs `924485` (basket) and `924486` (button). ⛔ **Nothing is measured yet and the criterion is NOT yet applied**
+
+PR-CSI-018 released the GPU at 03:25:02 after 3h25m, and S-335 named the mass measurement the
+binding branch. It is now submitted through `scripts/gates/dcs_csi_submit.sh`, which captures the
+provenance **on the submitting host** — `git` does not exist on the compute nodes, so a witness taken
+inside a job is always empty, and an empty porcelain reads exactly like a clean worktree (S-302).
+
+```
+924485  CW=basket   BLOB d0e4444c  PORCELAIN clean
+924486  CW=button   BLOB d0e4444c  PORCELAIN clean
+```
+
+Both use `slurm_scripts/dcs_csi_retrieval_mass.slurm`, the committed launcher S-331 built after
+finding that this instrument — the one AM-40/S-316 blocks the entire source-side family on — **had
+been run under slurm before but had no committed script that launched it**. Forward-only, exclusion
+list mandatory, `--seed 20260913` so the strict PROTECTED draws are *the draws the real arms make*.
+
+⚠ **Two codewords, deliberately, and they are NOT pooled.** §3.3 makes codewords transfer tests. The
+criterion will be applied to each separately; an agreement between them is a second observation, not
+a doubling of n.
+
+### NOT established
+
+```
+NOTHING IS MEASURED. Both jobs are PENDING. No attention mass exists, S-325's criterion is still
+  frozen and UNAPPLIED, and the source-side family is still BLOCKED by S-316 -- neither licensed,
+  nor refused, nor "about to be" either.
+⛔ The criterion was frozen in S-325 BEFORE any number existed and is NOT to be revisited now that
+  the measurement is running. Its three branches -- CONFIRMATORY / REFUTATION-only / CANNOT ANSWER
+  -- were written precisely so that this moment could not reopen them.
+```
+
+`git push` remains credential-blocked. Committed locally.
