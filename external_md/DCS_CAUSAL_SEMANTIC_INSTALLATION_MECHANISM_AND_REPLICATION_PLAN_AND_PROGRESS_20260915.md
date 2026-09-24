@@ -31517,3 +31517,85 @@ NEXT         R33 on the diff -> submit.
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-357 — **the SUBMIT PATH is verified, which no reviewer was checking.** 📌 And a real hazard found in it: **`PREREG`, `TAG_PREFIX` and `FAMILY` all DEFAULT to PR-CSI-010's** — omit one and the launcher silently runs a different family. R33 is attacking the re-freeze; **NOT LAUNCHED**
+
+### 1. Why this check, and why now
+
+R32 reviewed the prereg. R33 is reviewing the re-freeze diff. **Neither looks at the submit path** —
+the helper's preconditions, the launcher's argument resolution, the landing zone. A family that
+passes every reader and then fails at `sbatch` wastes a tick; one that passes `sbatch` *wrongly*
+wastes four hours.
+
+```
+1. submit helper's dirty-tree guard   git status --porcelain --untracked-files=no is EMPTY
+                                      -> scripts/gates/dcs_csi_submit.sh will not refuse
+2. launcher's PR_ID -> WANT_PREFIX    PR_ID resolves from the prereg to PR-CSI-020
+                                      registry gives csi11_cell8_basket, matches what I will pass
+                                      -> the launcher's guard passes (it exits 7 on a mismatch)
+3. walltime                           --time=12:00:00 against 82 x ~178 s + ~1265 s load = 264 min
+                                      -> 2.7x headroom
+4. landing zone                       NO csi11_* arm dirs exist; BOTH output artefacts are free
+```
+
+### 2. 🔴 The hazard
+
+```
+slurm_scripts/dcs_csi_pr010_arms.slurm
+  :29  : "${SPLIT:?REFUSING: SPLIT must be train or validation}"     <- fails CLOSED
+  :36  PREREG="${PREREG:-configs/dcs_csi_pr010_head_causal_basket.json}"
+  :37  TAG_PREFIX="${TAG_PREFIX:-csi3_head_basket}"
+  :38  FAMILY="${FAMILY:-pr010}"
+```
+
+**Only `SPLIT` fails closed.** The other three default to **PR-CSI-010's** values. Forget `PREREG`
+and the job runs a different family's arms under a different prefix — and because the
+`TAG_PREFIX`/`WANT_PREFIX` guard compares two values that would *both* default to PR-010's, the
+guard agrees with itself and passes. R32-B noted the `FAMILY` default as minor; the `PREREG`
+default is not minor, because it is the one that decides which arms run.
+
+**The submit command is therefore recorded here in full, before it is used:**
+
+```
+SPLIT=validation \
+PREREG=configs/dcs_csi_pr020_cell_census_basket_8heads.json \
+TAG_PREFIX=csi11_cell8_basket \
+FAMILY=pr020 \
+  sh scripts/gates/dcs_csi_submit.sh slurm_scripts/dcs_csi_pr010_arms.slurm
+```
+
+⚠ **All four are required.** This is not a convenience note — it is the difference between running
+PR-CSI-020 and silently re-running PR-CSI-010.
+
+### 3. A naming-space collision that is NOT one
+
+`find` for `*PR020*` returns `outputs/boombness/dcs_analysis/dcs_pr020_repeat.json`. That is the
+**DCS** sprint's PR-020 (a judge-repeat artefact: keys `C023_STATUS`, `judge_models`, `pass1`,
+`pass2`), not this sprint's **PR-CSI-020**. Verified: it contains no CSI reference and no script,
+config or runarg in the CSI tree touches it. ⚠ Recorded because the two numbering spaces collide
+under a careless grep, and this log now contains the disambiguation.
+
+### 4. NOT established
+
+```
+⛔ NOT LAUNCHED. R33 is running against the re-freeze diff (prereg 9fce4bda -> d68eae71, the new
+   read, the self-test, the launcher line). Two consecutive freezes of this family carried
+   BLOCKERs, so the re-freeze does not go to a GPU unreviewed.
+⛔ THIS ENTRY VERIFIES THE PLUMBING, NOT THE SCIENCE. It says the job would start and land where
+   intended. It says nothing about whether the prereg is correct -- that is R33's question and
+   S-352/S-353's answer for the previous freeze was "no".
+⛔ THE WALLTIME ESTIMATE IS AN ESTIMATE. 178 s/arm comes from PR-CSI-018's 62-arm job; an 82-arm
+   basket family has not been timed. The 2.7x headroom is what makes that acceptable.
+NOTHING WAS MEASURED ON A GPU. The queue is EMPTY.
+```
+
+### 5. State
+
+```
+PR-CSI-020   prereg d68eae71, read 9fdbecea, tag registered, self-test wired, submit path verified.
+             The ONLY thing between it and a GPU is R33.
+```
+
+`git push` remains credential-blocked. Committed locally.
