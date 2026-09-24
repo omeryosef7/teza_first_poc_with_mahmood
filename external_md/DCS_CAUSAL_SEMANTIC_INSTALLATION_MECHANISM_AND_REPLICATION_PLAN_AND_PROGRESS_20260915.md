@@ -30175,3 +30175,98 @@ NEXT              the queue is EMPTY. No family is designed. The open branches a
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-344 — 📌 **EXPLORATORY, and the most interesting thing on disk: THE WHOLE IS FIVE TIMES THE SUM OF ITS PARTS.** Twenty-one single-head knockouts on button validation sum to **20.1%** of what knocking out all heads does; the largest single head is **12.3%**; PR-CSI-018's six live heads are **6.7%**. ✅ And `BT_KO` reproduces `BF_KO` **BIT-IDENTICALLY** across two families
+
+### 1. The question S-342 forced
+
+S-342 measured that PR-CSI-018's six live heads carry 16.5% of the demo band mass and deliver 6.7%
+of `BF_KO`'s damage, and asked where the other ~93% is. PR-CSI-013 ran whole-head arms on **21 of
+the 32 button heads**, so a large part of the answer is already on disk.
+
+### 2. The head budget, on button validation, 23 domains
+
+```
+head  19   -0.035568     head  25   -0.001830     head  26   +0.001493
+head  11   -0.016310     head   0   +0.000078     head  27   +0.002666
+head  20   -0.007248     head  15   +0.000424     head  31   +0.002747
+head   6   -0.005090     head  21   +0.000566     head   1   +0.002875
+head  16   -0.004787     head   5   +0.000879     head  28   +0.002894
+head   2   -0.003522     head   7   +0.001295     head  29   +0.009291
+head  10   -0.003168
+head   3   -0.003117
+head  24   -0.002854
+-------------------------------------------------------------------------
+SUM of all 21 single-head effects   -0.058286   =  20.1% of the full knockout
+SUM of the 10 DAMAGING ones only    -0.083494   =  28.8%
+LARGEST single head (19)            -0.035568   =  12.3%
+PR-CSI-018's six live heads         -0.019545   =   6.7%
+FULL KNOCKOUT (all demo keys)       -0.289907   = 100%
+```
+
+**No head carries the mechanism.** The largest is an eighth of it. Twenty-one of them together are a
+fifth. Even counting only the ten that damage at all — discarding the eleven whose sign is positive
+— the total is under 30%.
+
+### 3. What that shape means, stated carefully
+
+`|whole| >> |sum of parts|` is **super-additivity of the joint knockout**, and the standard reading
+is **redundancy**: removing any one head barely hurts because the others still carry the signal;
+removing all of them destroys it. That is the signature of a **distributed** mechanism, not a
+localised one.
+
+📌 **And it reframes PR-CSI-018 rather than threatening it.** S-335's result is that the basket-TRAIN
+screen predicts, per head, **WHICH DEPTH** that head's contribution peaks at — 5 of 6, p = 0.012346,
+across four layers. This entry says **no head is individually necessary**. Both can be true at once,
+and together they are more interesting than either: **the depth structure is real, transferable and
+predictable, while the head-level mechanism is redundant.** The screen locates *where in depth* a
+head does its work; it does not identify a head that the model cannot do without.
+
+### 4. ✅ A fifth independent reproduction, and the strongest form yet
+
+```
+PR-CSI-013  BT_KO  E = -0.2899071450   job 919531   (family: 21-head census)
+PR-CSI-018  BF_KO  E = -0.2899071450   job 923972   (family: 6-head cell census)
+|difference| = 0.000e+00   -- BIT-IDENTICAL, two jobs, two families, two weeks apart
+```
+
+S-318 demonstrated this on one arm across two nodes; S-335 on six heads at ~1e-9; this is exact
+equality on the full knockout between two families that share nothing but the population.
+
+### 5. NOT established
+
+```
+⛔ EXPLORATORY. NOT PREREGISTERED. A budget assembled from published arms, not a designed test.
+⛔ ELEVEN OF THE 32 HEADS HAVE NO ARM in this family: 4, 8, 9, 12, 13, 14, 17, 18, 22, 23, 30.
+   TWO of them (17 and 23) DO have button whole-head arms in PR-CSI-016, not folded in here.
+   So "21 heads sum to 20.1%" is a statement about the 21, and the missing 11 could in principle
+   carry the remainder -- though they would have to average ~4x the measured heads to do it.
+⛔ SUMMING SINGLE-HEAD EFFECTS PRESUPPOSES A DECOMPOSITION THE DATA ITSELF QUESTIONS. The 20.1%
+   figure is exactly the evidence that effects do NOT add; quoting it as "the heads explain 20%"
+   would use an additive frame the number refutes.
+⛔ ELEVEN OF THE 21 HEADS HAVE POSITIVE E, i.e. knockout RAISES installation. Most are small and
+   consistent with zero; this entry does NOT claim any of them is a real opposing effect, and the
+   "sum of damaging ones" line is offered as a bound, not as a subset result (no post-hoc
+   sign-selected subset may be reported as a finding).
+⛔ "REDUNDANCY" IS THE STANDARD READING OF THIS SHAPE, NOT A MEASUREMENT. Super-additivity is also
+   consistent with a threshold/saturation response in which partial removal is simply insufficient.
+   DISTINGUISHING THOSE REQUIRES A DOSE LADDER, which is exactly the gap S-342 identified between
+   5% and 100% mass share -- and it is NOT run.
+⛔ Nothing here licenses any source-side claim. S-316/S-325 stand; PR-CSI-019 stays WITHDRAWN.
+NOTHING WAS MEASURED ON A GPU THIS TICK. The queue is EMPTY.
+```
+
+### 6. State
+
+```
+queue EMPTY. Mass criterion applied and corrected (S-343). PR-CSI-018 read and closed (S-335).
+OPEN, and now sharply motivated: a random-head-subset DOSE LADDER would separate REDUNDANCY from
+  SATURATION and fill the 5%-to-100% gap. S-342 constrains it (multiple random subsets per size);
+  R31-B's F4/F5 blockers do NOT apply to it, because --knockout-heads IS a supported per-arm axis
+  and GATE 0 handles head families -- unlike the key-set family that killed PR-CSI-019.
+  It is NOT designed and NOT frozen.
+```
+
+`git push` remains credential-blocked. Committed locally.
