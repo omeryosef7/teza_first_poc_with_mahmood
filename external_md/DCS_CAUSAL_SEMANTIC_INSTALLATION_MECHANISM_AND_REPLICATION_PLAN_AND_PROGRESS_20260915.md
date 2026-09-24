@@ -32294,3 +32294,129 @@ NEXT     monitor to 82/82, then STEP -1 operator checks and the frozen read in o
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-367 — 🔴 **S-366 CORRECTED. I committed, one tick later, the exact failure S-365 diagnosed: two of its three "findings" were already written down — one of them in the frozen read file itself — and a third overstated a hazard the reader deliberately handles. What survives is real, and smaller than I said** (2026-09-24)
+
+### 1. What S-365 said, and what I then did
+
+S-365's own words, committed four hours ago:
+
+> *"S-344 did not merely state a wrong number: it **rediscovered a claim the table already held and
+> stated it WORSE** ... a sprint that re-derives what it already knows will eventually re-derive it
+> badly."*
+
+S-366 then presented as new findings two things this sprint had already established and frozen.
+I did not read S-353 or the read file's own statistics block before computing. **This is the same
+failure, by the same cause, in the entry immediately after the one diagnosing it.**
+
+### 2. 🔴 CORRECTION 1 — the "knife edge" was already recorded, twice
+
+S-366 §4 presented `P(Binom(8,1/9) >= 3) = 0.04999816`, 1.8e-06 below alpha, as a hazard found by
+the new map. It is in **S-353 §1**, in a code block, with the annotation `<- the knife edge: clears
+alpha by 1.8e-6`. It is also in **`runargs/dcs_csi_pr020_read.txt` line 142**, inside the frozen
+read itself:
+
+```
+# ⚠ P(Binom(8,1/9) >= 3) = 0.04999816 clears alpha by 1.8e-6 -- a knife edge, recorded as one.
+```
+
+**WITHDRAWN as a finding of S-366.** It was already known, already frozen, and already flagged in
+the very file the read will execute. What S-366 adds is the exact rational `717419/14348907` in
+place of the decimal — a presentational refinement, not a discovery, and not worth an entry.
+
+### 3. 🔴 CORRECTION 2 — the necessary conditions were already frozen
+
+S-366 §6 presented `M >= 3 AND M_unique >= 3 of {10,11,18,21}` as "the necessary conditions, as
+arithmetic rather than search". Both numbers that force them — `P(Binom(8,1/9)>=2) = 0.22051131`
+and `P(Binom(4,1/9)>=2) = 0.06355738` — appear in **S-353 §1** and in **read file lines 131-133**,
+where they have been frozen since S-359. **WITHDRAWN as a finding of S-366.**
+
+Worse, S-366 stated them without the qualifier the read file carries in capitals two lines below:
+**⛔⛔ AT K = 8 WITH K_unique = 4 ONLY**. S-366 §6 says "Every certifying outcome at K=8 requires…",
+which is correct as written — but R33's F1 was *precisely* the defect of freezing these conditions
+unqualified, and I restated them in an entry that never mentioned R33 had already caught that.
+Restating a rule without the qualifier that a review added to it is how the qualifier gets lost.
+
+### 4. 🔴 CORRECTION 3 — HAZARD 1 overstated a case the reader handles on purpose
+
+S-366 §3 said the unwinnable-admitted-set band is *"the S-317 shape this family was built to escape,
+surviving in a narrow band the S-332 fix does not cover."* **That is wrong.** The fix covers it.
+`scripts/dcs_csi_pr016_argmax_test.py:307-321` appends to EVERY FAIL whose floor exceeds alpha:
+
+```
+⛔ STRUCTURALLY UNWINNABLE: the floor at this K and admitted multiset is <name> = <p> > alpha,
+   so NO outcome could have certified. This is NOT evidence against the screen.
+```
+
+and the reader's own comment states the design decision in terms: *"The verdict is the prereg's;
+this sentence is what stops it being misread as a refutation."* The verdict string stays FAIL
+because the prereg says FAILURE at K >= 3, and changing it would be the reader overriding a frozen
+prereg — which is the move S-332's own corrected guard exists to forbid. **There is no uncovered
+band and no defect. I mischaracterised a deliberate, documented design as a gap.**
+
+### 5. ✅ What actually survives from S-366
+
+Three things, and they are worth keeping:
+
+```
+(a) THE EXACT CLASSIFICATION AT K=8, replacing a SAMPLE with an ENUMERATION.
+    S-353 sampled 25 random landings per pattern -- 6400 (pattern, landing) pairs -- and
+    reported 34 rule-satisfying outcomes that do not certify. S-366 enumerates ALL landings:
+       59 of 256 patterns ALWAYS certify | 21 SOMETIMES | 176 NEVER (all 176 landing-free).
+    This is a strictly stronger object than the sample it replaces.
+
+(b) THE REASON THE ENUMERATION IS AFFORDABLE AT ALL -- and S-353 explicitly could not afford it:
+    "two attempts timed out at 560 s ... the permutation tail must be evaluated per distinct
+    observation signature (3021 of them)". The match distribution depends on the observed
+    vector ONLY through its per-layer counts, because positions demanding the same value are
+    exchangeable. Memoising on that key collapses the work to 3663 distinct evaluations and
+    the whole map computes in seconds. Checked, not assumed: 12 random vectors against
+    re-shuffles of themselves, 0 of 12 histograms differed.
+    THIS is the actual contribution of S-366, and S-366 buried it in a validity footnote.
+
+(c) THE FLOOR BY ADMITTED-SET SIZE, as a QUANTIFICATION -- not as a newly-found hazard:
+       K=1  0 of 8 sets can certify      K=5  52 of 56
+       K=2  0 of 28                      K=6  28 of 28
+       K=3  0 of 56                      K=7   8 of 8
+       K=4 41 of 70                      K=8   1 of 1
+    The read file already says these conditions must be RECOMPUTED at the realised K
+    (lines 134-141) and gives the K=7 worked case. What was NOT previously written down is
+    WHICH admitted sets are unwinnable and how many. That part stands.
+```
+
+### 6. What was NOT established, restated honestly
+
+```
+- NOT a new finding: the M=3 knife edge (S-353 §1; read file line 142).
+- NOT a new finding: M >= 3 and M_unique >= 3 (S-353 §1/§4; read file lines 131-133).
+- NOT a defect: the FAIL-with-annotation path at unwinnable K. It is deliberate and documented.
+- NOT established, and S-366 was right to say so: any probability of landing in any of these
+  cells. Admission is the power gate's call on data that does not exist yet.
+- NOT changed by any of this: the prereg, the frozen read, or the verdict. Nothing here is a
+  reason to amend a frozen file, and VOID 12 forbids amending the read file regardless.
+```
+
+### 7. The lesson, stated so it can actually bind
+
+S-365 named the cause as "not reading the claim table first". That was too narrow, which is why
+naming it did not prevent the repeat one tick later. The accurate rule:
+
+> **Before computing anything about a frozen family, read that family's own frozen read file and
+> the log entries that produced it.** The read file is not only an instruction sheet for the
+> operator — it is a record of everything already established about the design. S-366 computed a
+> design map for a family whose read file contains a section headed THE STATISTIC, PRE-COMMITTED
+> holding half the map's conclusions, and I had that file open earlier in the same session.
+
+### 8. State
+
+```
+925438   RUNNING on n-301, 49 of 82 when this was written, all status=ok, no duplicate arm tags.
+CHANGED  external_md/...20260915.md  +S-367 only. S-366 stands as written (append-only);
+         this entry withdraws two of its three claims and rescopes the third.
+NO EDITS TO scripts/ OR src/ (VOID 11).
+NEXT     monitor to 82/82, then STEP -1 operator checks and the frozen read in order.
+```
+
+`git push` remains credential-blocked. Committed locally.
