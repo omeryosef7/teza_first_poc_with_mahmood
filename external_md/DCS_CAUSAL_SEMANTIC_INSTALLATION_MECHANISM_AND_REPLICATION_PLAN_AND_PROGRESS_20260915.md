@@ -30270,3 +30270,113 @@ OPEN, and now sharply motivated: a random-head-subset DOSE LADDER would separate
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-345 — 🔴 **S-344's HEADLINE IS WITHDRAWN. "The whole is five times the sum of its parts" rested on an INCOMPLETE AND BIASED head budget** — and PR-CSI-012 already contains a real joint-knockout ladder, never read as one, which says effects are **roughly ADDITIVE and CONCENTRATED**: eight screen-selected heads deliver **86.4%** of the full knockout, the bottom eight **5.5%**
+
+### 1. The ladder that was already on disk
+
+Checking the plumbing for a proposed dose-ladder family turned up something better: **PR-CSI-012 ran
+ten MULTI-HEAD joint knockouts** on basket validation — `HD_TOPK` and `HD_BOTK` (8 heads each) and
+eight `LOO_<h>` arms (top-8 minus one) — plus 32 single-head arms and `HD_KO`. That is a joint dose
+ladder, and this sprint has never read it as one.
+
+```
+BASKET validation, 23 domains, HD_KO (all 32 heads) E = -0.226961
+
+arm          heads            E    % of KO
+HD_TOPK          8    -0.195984      86.4%     <- top 8 by the basket TRAIN screen
+LOO_* mean       7    -0.170323      75.0%     <- top-8 minus one, mean of 8 arms
+HD_BOTK          8    -0.012567       5.5%     <- bottom 8 by the same screen
+SINGLE_* mean    1    -0.005211       2.3%     <- mean over all 32 single-head arms
+HD_KO           32    -0.226961     100.0%
+
+SUM of all 32 single-head effects  -0.166745  =  73.5% of KO
+```
+
+✅ **The selection is HELD OUT, so the concentration result is not circular.** `HD_TOPK`/`HD_BOTK`
+were chosen from `w1_screen_train_basket_916132.json` — the basket **TRAIN** screen, 67 domains —
+and measured on **validation**. The two sets are disjoint. **The screen picks the right eight heads:
+86.4% versus 5.5%, a factor of 15.7.**
+
+### 2. 🔴 And it REFUTES the reading I published in S-344
+
+S-344 reported that 21 single-head knockouts on button sum to 20.1% of the full knockout, called
+that "the whole is five times the sum of its parts", and read it as **super-additivity → redundancy
+→ a distributed mechanism**. Measured directly here, super-additivity is **mild**:
+
+```
+HD_TOPK   sum of the 8 individual effects  -0.154386  = 68.0% of KO
+          JOINT knockout of those heads    -0.195984  = 86.4% of KO
+          super-additivity factor                        1.27x
+
+HD_BOTK   sum of the 8 individual effects  -0.014523  =  6.4% of KO
+          JOINT knockout of those heads    -0.012567  =  5.5% of KO
+          super-additivity factor                        0.87x   <- SUB-additive
+```
+
+**1.27x, not 5x — and the bottom-8 are sub-additive.** On basket, where **all 32 heads have arms**,
+the single-head effects sum to **73.5%** of the joint knockout. That is roughly additive, with mild
+super-additivity concentrated in the heads that matter.
+
+🔴 **Why S-344 got it wrong, and it is not a subtle reason.** Its budget covered **21 of 32** button
+heads. The eleven with no arm are `4, 8, 9, 12, 13, 14, 17, 18, 22, 23, 30` — and **three of them
+(13, 17, 23) are in basket's TOP EIGHT.** So the button budget systematically omitted heads already
+known to be large on the other codeword, and then I read the shortfall as a property of the
+mechanism rather than of the sample.
+
+> S-344 listed "eleven of 32 heads have no arm" in its own NOT-established block and still built the
+> headline on the total. **Naming a gap in the caveats does not stop the headline from depending on
+> it** — the same failure as S-338, where I flagged the correlation assumption and published the
+> conclusion it forbids. Twice now, in four entries, a caveat I wrote myself was the thing that
+> killed the claim it was attached to.
+
+⛔ **WITHDRAWN from S-344:** "the whole is five times the sum of its parts", "no head carries the
+mechanism" as a general statement, and the redundancy/distributed reading. **What SURVIVES from
+S-344:** the head-by-head button table itself (each `E` re-derived and correct), and the bit-identical
+`BT_KO` = `BF_KO` reproduction at `|difference| = 0.000e+00`.
+
+### 3. What the corrected picture is
+
+```
+CONCENTRATED, not distributed  -- 8 of 32 heads carry 86.4% of the effect; the other 24 carry
+                                  the rest, and the screen-identified bottom 8 carry 5.5%.
+ROUGHLY ADDITIVE               -- 73.5% of the joint effect is recovered by summing singles;
+                                  super-additivity is 1.27x on the top-8 and absent below.
+PREDICTABLE FROM TRAIN         -- the ranking that separates 86.4% from 5.5% was frozen on a
+                                  different split before these arms ran.
+```
+
+📌 **And it sits well with S-335.** PR-CSI-018 showed the screen predicts, per head, *which depth*
+that head's contribution peaks at (5 of 6, p = 0.012346). This shows the same family of screens
+predicts *which heads* carry the effect at all. Different questions, same instrument, both held out.
+
+### 4. NOT established
+
+```
+⛔ EXPLORATORY. NOT PREREGISTERED. A ladder assembled from a published family's arms, read for a
+   purpose that family was not designed to serve. PR-CSI-012's own frozen read makes no claim
+   about additivity and this entry does not put one in it.
+⛔ THE k=7 AND k=8 SETS ARE SELECTED, NOT RANDOM. "8 heads give 86.4%" is about the TOP 8. The
+   curve between k=1 and k=7 is UNCONSTRAINED -- there is no random-subset arm at any size, so
+   the SHAPE of the dose-response is still unmeasured, only its endpoints.
+⛔ BASKET ONLY. S-344's button budget cannot be repaired from PR-013 alone. Heads 17 and 23 DO have
+   button whole-head arms in PR-CSI-016 and folding them in would improve it; the other nine have
+   no button arm anywhere. A button ladder is NOT established by this entry.
+⛔ ADDITIVITY IS MEASURED HERE AT ONE CODEWORD AND ONE SPLIT. 73.5% is not 100%, and the residual
+   26.5% is not explained -- it could be interaction, saturation, or the estimator.
+⛔ Nothing here licenses a source-side claim, touches TEST, or revives PR-CSI-019.
+NOTHING WAS MEASURED ON A GPU THIS TICK. The queue is EMPTY.
+```
+
+### 5. What this does to the proposed dose ladder
+
+Its value **drops sharply**. The selected ladder exists; the concentration contrast
+(`HD_TOPK` vs `HD_BOTK`) is measured and held out; additivity is measured. What a new family would
+add is the **random-subset** comparison at k = 2, 4, 16 — i.e. the curve's SHAPE rather than its
+endpoints, and whether "any 8" behaves like the bottom 8 or somewhere between. That is a real but
+much smaller question than the one I set out to answer this morning, and it must be designed against
+these numbers rather than against S-344's withdrawn framing.
+
+`git push` remains credential-blocked. Committed locally.
