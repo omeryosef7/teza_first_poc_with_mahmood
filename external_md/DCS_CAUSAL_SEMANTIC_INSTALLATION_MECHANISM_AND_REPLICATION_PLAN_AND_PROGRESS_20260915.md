@@ -31716,3 +31716,78 @@ NEXT         submit.
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-360 — ✅ **PR-CSI-020 IS SUBMITTED. Job `925438`, provenance `BLOB 88a5a219 PORCELAIN clean`.** Three freezes, two reviews, eight blockers — and the first arm has not yet run
+
+### 1. The six pre-flight checks, all passed
+
+```
+1  worktree clean                  the submit helper refuses a dirty tree, and did not
+2  queue                           EMPTY before submitting -- no contention, no second generation
+3  artefact md5s                   prereg 8eedff85, read 78d45fdd -- matching what S-359 recorded
+4  VOID 5 (screen artefact md5)    81fc4dcade79d65ff3683f32d46c64d4 = what the read requires.
+                                   ⚠ ENFORCED BY NOTHING. It is an operator step precisely because
+                                   R32-B found no reader, gate or test reads it -- the R29 shape.
+5  the read cites the CURRENT      line 4 quotes 8eedff85, not the superseded d68eae71. S-359
+   prereg                          caught that citation stale after re-emission.
+6  landing zone                    0 csi11_* dirs -- no earlier generation to be resumed into
+```
+
+**Submitted with all four environment variables**, per the S-357 hazard:
+
+```
+SPLIT=validation PREREG=configs/dcs_csi_pr020_cell_census_basket_8heads.json \
+TAG_PREFIX=csi11_cell8_basket FAMILY=pr020 \
+  sh scripts/gates/dcs_csi_submit.sh slurm_scripts/dcs_csi_pr010_arms.slurm
+```
+
+Only `SPLIT` fails closed; the other three default to PR-CSI-010's, and the launcher's
+`TAG_PREFIX`/`WANT_PREFIX` guard would have agreed with itself had I omitted two of them.
+
+### 2. What this family cost, and what that bought
+
+```
+THREE FREEZES   9fce4bda -> d68eae71 -> 8eedff85.  NEITHER earlier one ever ran.
+TWO REVIEWS     R32 (four BLOCKERs) and R33 (one BLOCKER, three CONCERNs).
+EIGHT defects caught BEFORE a GPU, of which the two worst were:
+   * a permutation statistic that was not the reader's -- a 4-of-8 outcome would have been
+     published PASS against a prereg recording it could not certify;
+   * necessary conditions frozen UNQUALIFIED that are false at K < 8, on a branch the prereg's
+     own ADMISSION block advertises -- the reader returns PASS at M_unique = 2 against them.
+FIVE of the eight were introduced BY ME, and TWO of those INSIDE a fix for an earlier one.
+```
+
+📌 **The pattern worth keeping.** R33's blocker was S-353's own lesson, applied at K=8 and frozen
+unqualified. R32's was a statistic I wrote twice and never diffed against the reader. **Both were
+cases where I proved something in one regime and froze it in all of them.** That is a sharper
+description than "be careful", and it is what the next freeze should be checked against.
+
+### 3. NOT established
+
+```
+NOTHING IS MEASURED. Job 925438 is PENDING. No arm has run, no endpoint has been read, the frozen
+  read 78d45fdd has never been executed, and there is no claim-table row for this family.
+THE FAMILY MAY STILL FAIL, and two reviews do not make it right -- they make it not-wrong in the
+  ways two reviews looked. R33's F5 stands UNFIXED: the self-test is top-level only and passes on
+  four one-key mutations that crash a reader, two of them in STEP 2, after the GPU.
+I DECLINED R34 (S-359) and that judgement is live, not retired. If this family fails on something
+  a third review would have caught, that decision is the cause and it is recorded as mine.
+POWER IS UNDER A NAMED MODEL whose uniform-miss half S-351 measured to be wrong in detail. Type I
+  ~0.0041 is far below alpha, so A NULL FROM THIS FAMILY IS WEAK EVIDENCE against the screen.
+THE WALLTIME ESTIMATE (~264 min against a 12 h limit) uses 178 s/arm from PR-CSI-018's 62-arm
+  BUTTON job. An 82-arm BASKET family has never been timed.
+```
+
+### 4. State
+
+```
+925438       PENDING. 82 arms, basket validation, tag csi11_cell8_basket.
+NEXT         verify from the job's own log that PREREG/TAG_PREFIX/FAMILY are PR-020's and not the
+             launcher's defaults -- the S-357 hazard, checked AFTER the fact as well as before --
+             then monitor to 82/82 and execute the frozen read in order, stopping at the first
+             failure.
+```
+
+`git push` remains credential-blocked. Committed locally.
