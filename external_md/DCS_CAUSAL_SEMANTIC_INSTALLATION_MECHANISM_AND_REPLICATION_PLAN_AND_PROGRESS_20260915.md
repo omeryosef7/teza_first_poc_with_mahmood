@@ -34804,3 +34804,106 @@ NEXT     submit; read the smoke; then the statistic decision; then a prereg.
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-389 — the statistic question S-385/S-387 left open is SETTLED, and settled by COMPARABILITY rather than by taste: the rung-2 statistic mirrors PR-CSI-020's exactly. Decided and written down BEFORE any number exists (2026-09-25)
+
+### 1. The open question
+
+S-385 §7(a) and S-387 §4 both left the same thing unresolved: **aggregate-then-argmax, or
+argmax-per-prompt-then-vote?** S-387's rms fix removed the confound that made the choice urgent —
+before it, aggregating raw values was an rms-weighted mean that could flip an argmax — so both
+options are now defensible on units. That makes it a design question, and it blocks a prereg.
+
+### 2. ✅ SETTLED: mirror PR-CSI-020 exactly, because the comparison is the whole point
+
+Read out of the rung-1 reader rather than chosen by preference —
+`scripts/dcs_csi_pr016_argmax_test.py:176-179`:
+
+```python
+# the argmax, over the NINE SINGLE CELLS of this head only -- never the whole-head arm
+cells = {L: E[cell_arm[(int(h), L)]] for L in band}
+top = sorted(band, key=lambda L: -abs(cells[L]))
+tie = abs(cells[top[0]]) == abs(cells[top[1]])
+```
+
+`E` is already the per-domain-aggregated effect. So PR-CSI-020 is **aggregate-then-argmax, on the
+ABSOLUTE value, over the nine band layers of one head**, with ties detected on |·|.
+
+**The rung-2 statistic takes the same shape**: aggregate contributions over domains first (mean of
+per-domain means, PART I), then argmax over the nine band layers of `|contrib|`, per head.
+
+📌 **The reason is not symmetry for its own sake.** AM-34's ladder claims the rungs are SEPARABLE —
+*"information may be readable at a site without being used there."* Testing that claim requires the
+**same statistic applied to a different quantity**. If rung 2 used a different aggregation or a
+different argmax rule, a disagreement between the rungs could be an artefact of the statistic rather
+than evidence about separability, and there would be no way to tell which.
+
+### 3. ⚠ Why ABSOLUTE value, which is a real choice and not a copy
+
+`|contrib|` is not automatic: the direction is signed, and a large NEGATIVE projection means the
+cell pushes toward ' basket' rather than ' bomb'.
+
+```
+|contrib|  asks: does this cell carry information about the concept-vs-codeword CONTRAST?
+                 That is what DECODABILITY means -- a discriminative site is informative in
+                 either direction. And it matches rung 1's |E|.
+signed     asks: does this cell push TOWARD the concept? That is a DIRECTIONAL claim, closer to
+                 rung 1's causal story, and it would prejudge the very coincidence the rungs are
+                 supposed to be tested for independently.
+```
+
+**Absolute value chosen**, and the signed quantity will be RECORDED alongside so the directional
+question stays askable without a second run. ⚠ The tie rule comes with it: ties on |·| are
+CANNOT ANSWER, exactly as in PR-CSI-020 — and S-385 fixed the tie path so `gating_p` is no longer
+published on it.
+
+### 4. What this inherits for free, and what it does not
+
+```
+INHERITED  the 1/9 floor, the three p-values, the weakest-of-three gating, the spanning rule, and
+           S-366's whole design map -- because the prediction multiset is the SAME eight heads.
+           Re-derived in S-379: conditional floor 1.5242e-04 at K=8, M >= 3 and M_unique >= 3.
+NOT INHERITED  the POWER. S-379 established that borrowing PR-CSI-020's causal q would assume the
+           coincidence the experiment tests. Power stays a function of q with no assumed q, and a
+           null stays weak.
+STILL OPEN the DIRECT-PATH surrogacy (R35-A finding 6): this projects a layer-L head's output onto
+           a direction defined at the FINAL residual, ignoring 17-25 blocks of downstream
+           processing. A cell can be causally necessary with near-zero direct projection, and that
+           would read here as "not decodable". ⛔ This must be stated in any prereg as a named
+           limitation of the instrument, not discovered in the discussion of a null.
+```
+
+### 5. Smoke status
+
+`926941` RUNNING on n-302, 21:52 elapsed, no output yet — the script's progress `print`s lack
+`flush=True` and SLURM redirects to a file, so nothing appears until exit. The arms' own model load
+took ~23 minutes on this filesystem, so this is consistent with still loading and is not evidence of
+a hang. ⚠ **Not editing the script while the job is in flight** — the artefact's provenance names
+`BLOB 6c878f0d`, and changing the file underneath it would make that witness ambiguous. The
+`flush=True` fix goes in after the run, with the rest of S-385's recorded-but-unfixed list.
+
+### 6. What was NOT established
+
+```
+- NOTHING MEASURED. This entry decides a statistic. No number exists: the smoke has not
+  produced output and validation has not been touched.
+- NOT frozen: a prereg. The statistic is now settled, but the direct-path limitation must be
+  written into it, the instrument must have RUN at least once, and S-167c still applies.
+- NOT established: that |contrib| is the better choice. It is the COMPARABLE one, and the signed
+  quantity is recorded so the alternative remains askable. If a future family wants the
+  directional claim, it needs its own prereg and its own floor.
+- NOT re-opened: PR-CSI-020. Nothing here touches D40 or any published number.
+```
+
+### 7. State
+
+```
+QUEUE    926941 RUNNING (rung-2 smoke, TRAIN, exploratory).
+CHANGED  external_md/...20260915.md  +S-389 only. No code -- a job is in flight.
+NEXT     read the smoke; apply S-385's recorded-but-unfixed list including flush=True; then a
+         prereg carrying the direct-path limitation by name.
+```
+
+`git push` remains credential-blocked. Committed locally.
