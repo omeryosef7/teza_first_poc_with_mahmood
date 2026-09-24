@@ -32420,3 +32420,138 @@ NEXT     monitor to 82/82, then STEP -1 operator checks and the frozen read in o
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-368 — STEP -1 run EARLY, while it can still change something: four of the five VOID conditions verify clean, the arm inventory is proved complete against the prereg, and VOID 10 nearly reported itself unverifiable because I searched for the read file's PROSE SPELLING instead of the artefact's key (2026-09-24)
+
+### 1. Why run the operator checks before 82/82
+
+`runargs/dcs_csi_pr020_read.txt` STEP -1 is a list of PROSE VOID conditions — no reader, gate or test
+enforces them, which the prereg says explicitly rather than letting them read as automatic (R29's
+lesson, R32-B's finding). Running them at 82/82 means discovering any failure after the compute is
+spent. Four of the five are checkable NOW, on a running family, without reading a single measurement.
+So they were.
+
+⚠ **This is a PRE-CHECK, not STEP -1.** STEP -1 must still be executed in order at 82/82; a
+condition that holds at 62 arms can fail at 82. Nothing here may be recorded as the family's
+operator-check verdict.
+
+### 2. What verified clean
+
+```
+VOID 5   screen artefact md5
+         81fc4dcade79d65ff3683f32d46c64d4  outputs/boombness/dcs_csi/w1_screen_train_basket_916132.json
+         EXACT MATCH to the value frozen in the read file.                                  CLEAN
+
+VOID 9   one slurm job, one GPU architecture
+         sacct: 925438, partition killable, NodeList n-301, gres/gpu:geforce_rtx_3090=1.
+         ONE job, ONE node, ONE architecture. Load-bearing because VOID 8's tolerance is 1e-6
+         and PR-CSI-012's reference arms ran on 3090s.                                      CLEAN
+
+VOID 10  attn_implementation == eager on every arm
+         62 of 62 landed arms carry args.attn_impl = 'eager'. Uniform, no exceptions.       CLEAN
+
+VOID 11  scripts/ and src/ unchanged while the arms are in flight
+         Exactly ONE commit since the first arm's git_commit 03d04b49 touches either tree:
+         d172e254 (S-362), the violation ALREADY DISCLOSED in S-362 and recorded there.
+         No further violation. Re-derived rather than trusted -- see section 4.     CLEAN SINCE S-362
+
+VOID 12  the read file is not amended after any number is seen
+         git log 03d04b49..HEAD -- runargs/dcs_csi_pr020_read.txt  ->  EMPTY.
+         The prereg itself is likewise untouched.                                           CLEAN
+```
+
+### 3. ⚠ VOID 10 nearly reported itself UNVERIFIABLE, for the third time in this sprint's favourite way
+
+My first pass searched every arm's `RUNMETA.json` recursively for `attn_implementation` — the
+spelling the read file uses in prose — and got `None` on all 62 arms. **That output is
+indistinguishable from "the field is not recorded", which would have made VOID 10 unverifiable from
+the artefacts and would itself have been a finding.** It is recorded. The key is `args.attn_impl`.
+
+This is the S-333-era lesson recurring: *a verification pattern that silently misses its target
+reports "nothing found" in exactly the same voice as "nothing wrong"*. The line-anchored flag regex
+did it, and in this same tick a third instance appeared — see section 5. The defence that worked
+here was refusing to accept a negative result without first confirming the field's absence
+independently (`grep -ril attn` on one arm dir, which found it immediately).
+
+### 4. The arm inventory, proved complete against the prereg rather than assumed
+
+A GATE 0 failure caused by an arm the launcher never produces, or one it produces that the prereg
+never declared, is discovered at 82/82 under the current plan. Checked now instead:
+
+```
+declared            82 = 2 base_arms + 80 cell_sets (8 HD_ + 72 BK_H<h>_L<ll>)
+n_arms_per_split    82                                                          CONSISTENT
+duplicate names     none
+every HD_<h>        is EXACTLY the nine band cells [[6,h]..[14,h]] of its head   0 exceptions
+every BK_H<h>_L<ll> holds exactly [[ll,h]] and its NAME MATCHES ITS CELL         0 exceptions
+landed-but-NOT-declared                                                          NONE
+```
+
+**The eight `HD_` arms are scheduled LAST.** The 20 still to run are 12 leftover cells plus all
+eight `HD_` arms. This matters operationally: **VOID CONDITION 8 — each `HD_<h>` reproducing
+PR-CSI-012's `SINGLE_<h>` within 1e-6 — cannot be checked until the final ~50 minutes of a 3.8 h
+job.** It is the family's last-mile risk and there is nothing to be done about it now except know it.
+
+### 5. GATE 0 at 62 arms: the contract holds, and the check nearly lied about itself
+
+```
+GATE 0: every landed arm passes (62 of 82). Identity verified from each arm's own knockout_cells.
+        No endpoint field was read.
+GATE 0 IS NOT COMPLETE: 62 of 82 ... THIS IS NOT THE FAMILY'S GATE 0 VERDICT.
+REAL EXIT = 3
+```
+
+Exit 3 is the S-332 contract: a partial sweep RAN but is NOT the verdict. Confirmed. And the sweep
+states in its own output that **no endpoint field was read**, so running it does not contaminate the
+unread family.
+
+⚠ **The third instance of section 3's failure shape, in this same tick.** My first invocation piped
+the sweep into `tail`, so `$?` reported **`EXIT=0`** — `tail`'s status, not the sweep's. `0` is the
+sweep's code for *all 82 arms passed*, i.e. the check reported the strongest possible pass while the
+sweep had actually returned 3. Re-run without the pipe: exit 3. **A verification harness that
+silently substitutes another command's success for the one being tested is worse than no harness.**
+
+### 6. S-362's VOID-11 claim, re-derived instead of trusted
+
+S-362 asserted its edit did not change the execution path. Re-derived from the artefacts:
+
+```
+d172e254 touches ONE file:  scripts/gates/dcs_csi_prereg_selftest.py  (+87 -14)
+invoked by:                 scripts/gates/dcs_csi_pr020_freeze.py:606 ONLY -- the freeze, which
+                            ran BEFORE submission
+referenced by the frozen read: NO  (grep 'selftest' runargs/dcs_csi_pr020_read.txt -> no match)
+imported by src/ or any arm:   NO
+```
+
+The arms run `src/boombness/score_behavior.py`. The edited file is reachable from neither the arm
+path nor the read path. **S-362's characterisation holds: a violation by the letter, not the intent.**
+
+### 7. What was NOT established
+
+```
+- NOT established: VOID CONDITION 8. It is unverifiable until the eight HD_ arms land, which is
+  the LAST thing this job does. Nothing in this entry speaks to it.
+- NOT established: the family's GATE 0 verdict. Exit 3 means PARTIAL, and S-332 makes that
+  explicit precisely so a partial cannot be recorded as a pass. It must be re-run at 82/82.
+- NOT established: STEP -1 itself. This is a pre-check. The operator checks must be executed in
+  order at 82/82; a condition true at 62 arms can fail at 82.
+- NOT read, and deliberately so: any endpoint, effect size, bar or argmax from this family. GATE 0
+  reports that it read no endpoint field, and no other command in this tick opened a rows file.
+- NOT established: anything about the four subagent code reviews (R34-A..D) still running. Their
+  findings are a separate entry and their numbers will be re-derived before any is acted on.
+```
+
+### 8. State
+
+```
+925438   RUNNING on n-301, 62 of 82, all status=ok, no duplicate arm tags, GATE 0 exit 3 (partial).
+         20 arms left (~50 min): 12 cells + all eight HD_ arms.
+CHANGED  external_md/...20260915.md  +S-368 only.
+NO EDITS TO scripts/ OR src/ (VOID 11).
+NEXT     R34-A..D findings; then at 82/82 run STEP -1 in order and the frozen read, stopping at
+         the first failure.
+```
+
+`git push` remains credential-blocked. Committed locally.
