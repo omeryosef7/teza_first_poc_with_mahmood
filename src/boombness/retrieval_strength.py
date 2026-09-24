@@ -218,6 +218,19 @@ def main() -> int:
                         k: (None if v is None else len(v)) for k, v in _strict.items()},
                     "strict_protected_infeasible": sorted(
                         k for k, v in _strict.items() if v is None),
+                    # ⚠ S-341: RECORD THE DRAW SEED PER ROW. S-339's double-stride bug was
+                    # INVISIBLE IN THE ARTEFACT -- the masses looked entirely reasonable, and the
+                    # only way to find it was to read two call sites and notice the stride was
+                    # applied twice. An artefact that records which seed produced its numbers can
+                    # be checked against `nondemo_draw_seed(run_seed, idx)` by anyone, without
+                    # reading the producer at all. This is the same lesson as R29/VOID-8: a
+                    # property nothing witnesses is a property nobody can check.
+                    # The index is parsed from the ARM NAME, not from enumeration order: a seed
+                    # keyed by position would be right only while the dict happens to be sorted,
+                    # which is exactly the kind of incidental correctness S-339 was made of.
+                    "strict_protected_draw_seed": {
+                        _k: sb.nondemo_draw_seed(args.seed, sb.parse_nondemo_draw_arm(_k)[1])
+                        for _k in sorted(_strict) if sb.parse_nondemo_draw_arm(_k)},
                     "n_protected_positions": len(_prot),
                     "per_layer_demo_band": dict(zip(map(str, band), dmass)),
                     "per_layer_demo_late": dict(zip(map(str, late), lmass)),

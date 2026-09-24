@@ -29924,3 +29924,57 @@ NEXT              correct AM-43 from the re-run; then design a replacement whose
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-341 — **the criterion application gets a COMMITTED script, and the artefact now RECORDS the draw seed that produced it.** 📌 S-339's bug was invisible in the artefact; that is the part worth fixing, not just the bug
+
+### 1. Two provenance gaps of the same class, closed
+
+**(a) S-337 applied the frozen criterion from a scratch file.** That criterion decides whether an
+entire family may be preregistered — S-316 blocked one on it and S-337's verdict licensed a reading
+— and a decision of that weight was reproducible only from a temporary path. Same class as S-302
+(a witness taken inside a job) and S-331 (an instrument with no committed launcher).
+
+`scripts/dcs_csi_apply_mass_criterion.py` is now that script. It quotes S-325 verbatim rather than
+paraphrasing, applies the branches to **`d1` only** — the draw the criterion names — and prints d2/d3
+under a heading that says they are **not the quantity**. It refuses outright if any row is infeasible
+or if the d1 key count differs from the demo count, because a ratio of masses between sets of
+different size is not what S-325 froze.
+
+**Validated against the OLD artefacts, where the answer is already published:** it reproduces S-337
+exactly — ρ = 0.595093, 223 of 230 rows (97.0%), `REFUTATION test ONLY`, d2 0.809371, d3 0.677382,
+domain-median 0.582595, and the `ctrl_mass_band_REFERENCE_ONLY` contrast at 3.6767.
+
+**(b) 🔴 The S-339 bug was INVISIBLE IN THE ARTEFACT.** The masses it produced looked entirely
+reasonable; the only way to find the double stride was to read two call sites and notice the stride
+was applied twice. Nothing in `retrieval.jsonl` said which seed produced its numbers. So
+`retrieval_strength.py` now records `strict_protected_draw_seed` per row, and the criterion script
+checks it against `nondemo_draw_seed(run_seed, idx)` and marks a mismatch.
+
+> **This is R29/VOID-8 in a new place: a property nothing witnesses is a property nobody can check.**
+> R29 found a VOID condition that existed only as prose; S-339 found a seed convention that existed
+> only in code. Both were correct-looking from outside and both were wrong. The fix in each case was
+> not to be more careful — it was to make the artefact carry the fact.
+
+The index is parsed from the arm NAME, not from enumeration order: a seed keyed by position would be
+right only while the dict happened to be sorted, which is the kind of incidental correctness S-339
+was made of. Verified standalone: d1/d2/d3 → 28180690 / 36100467 / 44020244, matching the arms.
+
+### 2. NOT established
+
+```
+NOTHING WAS MEASURED. The re-run 924666/924667 is STILL RUNNING (~14 min of ~21).
+⚠ THE IN-FLIGHT RE-RUN PREDATES THE SEED RECORDING. Those two runs use the FIXED seed -- that
+  rests on the code and on the committed test in tests/test_retrieval_mass_seed.py, which fails
+  on the pre-fix file -- but their artefacts will NOT carry `strict_protected_draw_seed`, so the
+  criterion script will print "provenance CANNOT be verified here" for them, exactly as it does
+  for the old ones. The first SELF-WITNESSING run is the next one. I am not re-queueing a third
+  run for this: the fix is established by test, and the recording is for the future.
+AM-43 IS STILL UNCORRECTED. Its text says the draws are "the draws the real arms make" and that
+  is still false on the published artefacts; the correction waits on the re-run's numbers.
+S-337's REFUTATION-ONLY verdict STANDS, unrevised, until the re-run lands.
+NO REPLACEMENT FAMILY IS DESIGNED. PR-CSI-019 remains WITHDRAWN (S-339/S-340).
+```
+
+`git push` remains credential-blocked. Committed locally.
