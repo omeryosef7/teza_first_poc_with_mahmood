@@ -131,6 +131,16 @@ def main():
     bars = (cf.get("bars_COMPUTED_FROM_A_FROZEN_RULE") or {})
     rows, admitted, dropped = [], [], []
     for h in [str(x) for x in pr["heads"]]:
+        # ⚠ R34-D/S-375: THIS SUBSCRIPT WAS UNGUARDED while the identical guard sat four lines
+        # below (`if h not in bars`). A head named in pr["heads"] but absent from `per_head` was a
+        # bare KeyError in STEP 2 -- i.e. AFTER the GPU -- instead of a named refusal. R33 used
+        # exactly this mutation and the prereg self-test still cannot see it, because `per_head` is
+        # a LOCAL ALIAS of a prereg sub-dict and the static scan only follows `pr[...]` chains.
+        if h not in per_head:
+            sys.exit("REFUSING: prereg %r names head %s in `heads` but declares no "
+                     "DETECTABILITY_PREREGISTERED_PER_HEAD.per_head entry for it, so neither its "
+                     "bar source nor its screen prediction exists. Absence is not admission "
+                     "(R20-6). (R34-D/S-375)" % (pr["id"], h))
         src = per_head[h]["bar_source_arm"]
         if src not in E:
             sys.exit("REFUSING: head %s's whole-head arm %r is absent from the census report, so "

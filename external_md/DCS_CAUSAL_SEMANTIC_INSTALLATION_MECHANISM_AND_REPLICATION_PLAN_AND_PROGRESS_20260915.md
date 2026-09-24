@@ -33294,3 +33294,121 @@ NEXT     a design pass on RUNG 2, and/or the four deferred R34 code defects, whi
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-375 — the R34 code debt is cleared, with tests that fail without each fix. 🔴 **And one of my four "fixes" was WRONG and had to be REVERTED: pinning the reference `ci95` at `void_tolerance` REFUSED ALL EIGHT HEADS of the PUBLISHED PR-CSI-020 read.** A determinism tolerance applied to a bootstrap quantity (2026-09-24)
+
+### 1. Why this tick
+
+The queue is empty and S-374 established there is no admissible cell-census question left on
+either codeword, so GPU idleness is no longer the binding cost. The four R34 concerns that S-369
+and S-370 recorded and deferred need no GPU, and VOID 11 has lifted. They are cleared here.
+
+### 2. 🔴 THE ONE THAT WAS WRONG, and how it was caught
+
+R34-B's finding was real: **VOID CONDITION 8 pinned the MEAN and nothing else**, while ADMISSION is
+a conjunction over `E`, `bar(h)` and `ci95`. Every reference block already carried a frozen `ci95`
+that no reader opened. So I wrote the obvious fix — compare the reference `ci95` endpoints at the
+same `void_tolerance` — and then ran it against the **already-published, already-PASSED** PR-CSI-020
+read before committing:
+
+```
+head   |E diff|      |ci95 worst-endpoint diff|    tol 1e-6     verdict under my "fix"
+ 4     0.00e+00      5.151e-05                                  *** WOULD REFUSE ***
+ 6     0.00e+00      9.251e-05                                  *** WOULD REFUSE ***
+10     0.00e+00      5.339e-05                                  *** WOULD REFUSE ***
+11     0.00e+00      2.056e-05                                  *** WOULD REFUSE ***
+13     0.00e+00      1.603e-04                                  *** WOULD REFUSE ***
+18     0.00e+00      1.474e-04                                  *** WOULD REFUSE ***
+21     0.00e+00      1.997e-05                                  *** WOULD REFUSE ***
+27     0.00e+00      2.032e-05                                  *** WOULD REFUSE ***
+                                                   8 of 8 REFUSED
+```
+
+**The mean reproduces BIT-IDENTICALLY — `|diff| = 0.00e+00` on all eight — because `E` is
+DETERMINISTIC given the arms. The `ci95` differs by 2.06e-05 to 1.60e-04 because it is a BOOTSTRAP
+quantity and the two families resampled with different seeds.** `void_tolerance` is 1e-6,
+calibrated by S-318 on bit-identical reproduction of a deterministic value. **Applying a determinism
+tolerance to a resampled statistic is a category error**, and shipping it would have made every
+published family in this sprint unreadable — in the name of tightening a check.
+
+REVERTED. The `ci95` diff is now RECORDED in the provenance record (`ci95_abs_diff`,
+`ci95_checked`) because the disclosure is useful, and **it gates nothing**. A test locks the
+decision in so it cannot be re-added by someone reading R34-B and not this entry.
+
+⚠ **The real SD channel is still open, and the correct close is NOT this.** It is to freeze a
+DETERMINISTIC reference — the per-domain SD, or the bar itself, both computed by formula rather than
+by resampling. **No prereg declares one today**, so S-167c forbids enforcing it now. That is future
+prereg work, not a patch, and it is recorded as such rather than half-done.
+
+### 3. The three that were right
+
+```
+(b) THE PREREGISTERED RESAMPLER IS NOW ENFORCED.  Found INDEPENDENTLY by R34-B and R34-C.
+    ESTIMATOR_AND_RESAMPLER was WRITTEN by the freeze script and READ BY NOTHING. The frozen read
+    presents B/seed/ci as "preregistered instead of inherited", but the census's argparse defaults
+    already equalled them, so the CLI changed nothing that runs and the freeze was real only in the
+    prereg. `ci` feeds ci95_excludes_0, hence ADMISSION, hence K. The near-miss is one keystroke:
+    the sibling reader dcs_csi_head_analyze.py defaults to seed 20260921.
+    Gated on the field's PRESENCE, so a prereg without it reads exactly as before.
+
+(d) THE ONE UNGUARDED ALIAS IN THE READ PATH IS GUARDED.  R34-D. pr016 subscripted `per_head[h]`
+    bare while the identical guard sat four lines below (`if h not in bars`). A head named in
+    `heads` but absent from `per_head` was a KeyError in STEP 2 -- AFTER the GPU -- instead of a
+    named refusal. R33 used exactly this mutation, and the prereg self-test STILL cannot see it,
+    because `per_head` is a LOCAL ALIAS and the static scan only follows `pr[...]` chains.
+
+(c) THE VACUOUS TEST-LEAK CHECK IS DISCLOSED.  R34-B. It reads
+    population["test_domain_ids"], which NO prereg this sprint has frozen declares, so `leaked`
+    could never be non-empty -- the file's own R20-6 rule violated at a site it never revisited.
+    NOT promoted to a refusal: that would make every published family unreadable. The NON-CHECK
+    is printed instead, and the message's wrong "VOID 5" citation (the SCREEN md5) is corrected.
+    ⛔ TEST was never at risk from this: the split guard is what keeps the read off TEST.
+```
+
+### 4. The regression that matters most
+
+The four fixes must not move a published result. PR-CSI-020's census and primary were re-run under
+the patched code and compared to the committed deliverables:
+
+```
+VERDICT / K / M / p_one_sided / gating_p_name / gating_p / K_unique / M_unique
+  / p_conditional / p_permutation                          ALL SAME
+ENTIRE VERDICT JSON IDENTICAL                              True
+census E identical                                          True
+census ci95 identical                                       True
+```
+
+### 5. Tests
+
+`tests/test_csi_s375_review_debt.py`, 7 tests. Verified by restoring the pre-fix sources from git
+and re-running: **4 of the 7 FAIL without the fixes**; the other three are the backward-compatibility
+guard, the accepts-the-frozen-values guard, and the published-verdict guard, which correctly pass
+either way. Full suite now **353 passed**.
+
+### 6. What was NOT established
+
+```
+- NOT closed: the SD channel of VOID 8. Recorded, with the correct mechanism named (a frozen
+  DETERMINISTIC reference -- per-domain SD or the bar), and deliberately not half-implemented.
+- NOT changed: any published number, verdict or prereg. Verified, not assumed -- section 4.
+- NOT fixed: the "N of N CHECKED" denominator using len(_per_head_bars) (S-370 §6), and the fact
+  that nothing downstream reads VOID_8_PROVENANCE. Both are disclosure-quality issues whose
+  failure mode is an operator not reading stdout; neither can silently change a verdict, and
+  neither is worth touching the same files twice in one tick.
+- NOT established: that any of these would have fired on a real family. None did. They are fixed
+  because a reader that dies with a bare KeyError after the GPU, or silently resamples with a
+  seed the prereg did not freeze, is a defect whether or not it has bitten yet.
+```
+
+### 7. State
+
+```
+QUEUE    EMPTY. No admissible cell-census question remains (S-374).
+CHANGED  scripts/dcs_csi_head_census.py, scripts/dcs_csi_pr016_argmax_test.py,
+         tests/test_csi_s375_review_debt.py (NEW), external_md/...20260915.md
+NEXT     the RUNG 2 design pass -- the only unexhausted direction that changes the KIND of claim.
+```
+
+`git push` remains credential-blocked. Committed locally.

@@ -152,6 +152,20 @@ def main():
     a = ap.parse_args()
 
     pr = json.load(open(a.prereg))
+    # ⚠ R34-B/R34-C/S-375, found INDEPENDENTLY BY TWO REVIEWERS. `ESTIMATOR_AND_RESAMPLER` was
+    # WRITTEN by the freeze script and READ BY NOTHING. The frozen read presents B/seed/ci as
+    # "preregistered instead of inherited", but this file's argparse defaults already equal them,
+    # so passing them on the command line changed nothing that runs and the freeze was real only
+    # in the prereg. `ci` is load-bearing: it feeds ci95_excludes_0, hence ADMISSION, hence K.
+    # The near-miss is one keystroke -- the sibling reader dcs_csi_head_analyze.py defaults to
+    # seed 20260921. Enforced only when the prereg declares it, so no published family's read
+    # changes.
+    _boot = (pr.get("ESTIMATOR_AND_RESAMPLER") or {}).get("bootstrap") or {}
+    for _k, _got in (("B", a.B), ("seed", a.seed), ("ci", a.ci)):
+        if _k in _boot and _boot[_k] != _got:
+            sys.exit("REFUSING: prereg %r freezes bootstrap %s=%r but this run was given %r. The "
+                     "resampler is preregistered; a read that silently used another one is not the "
+                     "frozen read. (R34-B/R34-C/S-375)" % (pr.get("id"), _k, _boot[_k], _got))
 
     # THE MIRROR OF S-246's GUARD. This tool must refuse a RANK prereg as firmly as the rank tools
     # refuse a census, or the two families could be read by the wrong estimator in either direction.
@@ -264,10 +278,26 @@ def main():
         print("[census] OFF-PROTOCOL: --expect-n %d != the preregistered %d for %s, so the domain "
               "count (%d, prereg says %d) is NOT binding and NOTHING HERE IS A RESULT."
               % (a.expect_n, want_n, a.split, len(doms), want_dom))
+    # ⚠ R34-B/S-375: THIS CHECK IS VACUOUS ON EVERY PREREG THIS SPRINT HAS FROZEN. None declares
+    # `population.test_domain_ids`, so `test_dom` is empty and `leaked` can never be non-empty --
+    # the file's own R20-6 rule ("any check whose PASS is consistent with reading NOTHING is not a
+    # check") violated at a site it never revisited. It also cited "VOID 5", which in these preregs
+    # is the SCREEN ARTEFACT md5, sending an operator to the wrong condition.
+    # It is NOT promoted to a refusal: no existing prereg carries the field, so refusing would make
+    # every published family unreadable. Instead the non-check is DISCLOSED, which is the difference
+    # between a check that passed and a check that never ran.
     test_dom = set(pr["population"].get("test_domain_ids") or [])
     leaked = sorted(set(doms) & test_dom)
     if leaked:
-        sys.exit("REFUSING: TEST domain(s) present: %s (VOID 5)" % leaked)
+        sys.exit("REFUSING: TEST domain(s) present in this read: %s. (TEST is never touched -- "
+                 "PART I; and per S-314 the split is spent AND selection-contaminated.)" % leaked)
+    _test_leak_checked = bool(test_dom)
+    if not _test_leak_checked:
+        print("[census] ⚠ TEST-LEAK CHECK NOT RUN: prereg %r declares no "
+              "population.test_domain_ids, so the domain-level leak check had nothing to compare "
+              "against. This is a NON-CHECK, not a pass (R20-6/S-375). The split guard "
+              "(pr['split'] == --split) is what actually keeps this read off TEST."
+              % pr.get("id"))
 
     # ---- GATE 0 + ARM IDENTITY. The identity check is the only one that works here (S-246). ----
     # ⛔⛔ R26. `dose_is_diagnostic_of_identity` USED TO BE `want_dose not in (DOSE_UNIT,)`, i.e. "the
@@ -764,12 +794,38 @@ def main():
                          "pass (R20-6). (R29/S-323)" % (_hk, _src))
             _d = abs(E[_src] - float(_ref["E"]))
             _tol = _tol_decl
+            # ⚠ R34-B/S-375: VOID 8 USED TO PIN THE MEAN AND NOTHING ELSE. ADMISSION is a
+            # conjunction over E, bar(h) and ci95, and only E was constrained -- two per-domain
+            # delta vectors with the same mean and different spread were indistinguishable to it.
+            # Measured sensitivity on PR-CSI-020: with E unmoved, head 13 falls out of admission on
+            # a +22.7% bar and head 27 on +20.0%. Every reference block ALREADY CARRIED a frozen
+            # ci95 that no reader opened. Checking it costs nothing and freezes no new number.
+            # Gated on presence, so a reference without ci95 behaves exactly as before.
+            _ref_ci = _ref.get("ci95")
+            _ci_d = None
+            if _ref_ci is not None and _src in CI:
+                _ci_d = max(abs(float(CI[_src][0]) - float(_ref_ci[0])),
+                            abs(float(CI[_src][1]) - float(_ref_ci[1])))
             _prov["checked"].append({"head": _hk, "source_arm": _src, "E": E[_src],
                                      "reference_E": float(_ref["E"]), "abs_diff": _d,
-                                     "void_tolerance": _tol, "within": bool(_d <= _tol)})
+                                     "void_tolerance": _tol, "within": bool(_d <= _tol),
+                                     "ci95_abs_diff": _ci_d,
+                                     "ci95_checked": bool(_ci_d is not None)})
             print("[census] PROVENANCE head %-3s %-8s E=%+.8f vs reference %+.8f  |diff|=%.2e  %s"
                   % (_hk, _src, E[_src], float(_ref["E"]), _d,
                      "OK" if _d <= _tol else "*** EXCEEDS %.0e ***" % _tol))
+            # ⚠⚠ S-375: I WROTE A REFUSAL HERE AND IT WAS WRONG. Comparing the reference ci95 to
+            # this family's ci95 at `void_tolerance` REFUSED ALL EIGHT HEADS of PR-CSI-020 -- a read
+            # that had already PASSED and been published. The mean reproduces at |diff| = 0.00e+00,
+            # bit-identically, because E is DETERMINISTIC given the arms. The ci95 differs by
+            # 2.06e-05 .. 1.60e-04 because it is a BOOTSTRAP quantity and the two families resampled
+            # with different seeds. `void_tolerance` is 1e-6, calibrated for a deterministic
+            # reproduction; applying it to a resampled statistic is a CATEGORY ERROR, and shipping it
+            # would have made every published family unreadable in the name of tightening a check.
+            # The diff is RECORDED above (`ci95_abs_diff`) because the disclosure is useful; it does
+            # NOT gate. The real SD channel closes by freezing a DETERMINISTIC reference -- the
+            # per-domain SD or the bar itself, both computed by formula -- and NO prereg declares one
+            # today, so S-167c forbids enforcing it here. That is future prereg work, not a patch.
             if _d > _tol:
                 sys.exit("REFUSING: VOID CONDITION -- head %s's arm %r records E=%.8f but the prereg "
                          "freezes a prior measurement of the SAME head, codeword and split at "
