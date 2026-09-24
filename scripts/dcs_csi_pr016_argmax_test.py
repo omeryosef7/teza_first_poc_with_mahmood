@@ -349,10 +349,23 @@ def main():
         "K_admitted": K, "M_matches": M, "p_one_sided": p, "alpha": alpha,
         "null": pr["PRIMARY"]["null"], "VERDICT": verdict, "why": why,
         "null_p_per_head": p0, "n_band_layers": len(band),
-        "GATING": _gating, "gating_p_name": _gate_name, "gating_p": _gate_p,
+        "GATING": _gating,
+        # ⚠ R34-C/S-369: THESE TWO WERE EMITTED UNCONDITIONALLY while `p_conditional` and
+        # `p_permutation` just below were correctly nulled on `M is None`. `_gate_name`/`_gate_p` are
+        # computed ABOVE the verdict branches, so on the TIE branch -- whose own text reads "M and p
+        # are NOT computed: a tied head is undetermined, not a miss" -- the JSON published
+        # `gating_p`: the single number this prereg says the claim must be stated with, computed
+        # under a tie-as-miss scoring rule the prereg NEVER FROZE. A downstream reader keying on
+        # `gating_p` took a headline-grade pass off a CANNOT ANSWER.
+        "gating_p_name": (None if M is None else _gate_name),
+        "gating_p": (None if M is None else _gate_p),
         "ROBUSTNESS": {
             "shared_predicted_layers": sorted({L for L in _pred if _pred.count(L) > 1}),
-            "K_unique": K_u, "M_unique": M_u, "p_conditional": (None if M is None else p_cond),
+            # ⚠ R34-C/S-369: M_unique is a SCORING COUNT, not an observation -- on a tie it
+            # carries the tie-as-miss rule directly, which is the same leak as `gating_p` above.
+            # K_unique IS an observation (it depends only on which heads were admitted) and stays.
+            "K_unique": K_u, "M_unique": (None if M is None else M_u),
+            "p_conditional": (None if M is None else p_cond),
             "p_permutation": (None if M is None else p_perm),
             "n_permutations": len(perms),
             # ⚠ R30-B/S-332: THIS FIELD USED TO BE GATED ON WHETHER TWO ADMITTED HEADS SHARE A

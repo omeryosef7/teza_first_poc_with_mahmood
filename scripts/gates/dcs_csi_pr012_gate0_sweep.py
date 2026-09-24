@@ -190,6 +190,30 @@ def main():
         _tag = "%s_%s" % (a.tag_prefix, arm)
         _cands = [x for x in glob.glob(os.path.join(census.rederive.SCORE_DIR, _tag + "_*"))
                   if re.match(r"^" + re.escape(_tag) + r"_\d{8}_\d{6}_\d+$", os.path.basename(x))]
+        # ⚠ R34-A/S-369: THE S-334 CHECK LIVED ONLY ON THE FAILURE PATH. It sat inside the `except`
+        # below, nested under `if not _done:`, so it fired ONLY when strict_run_dir had REFUSED and
+        # no candidate carried a DONE.json. On the path where strict_run_dir RETURNS, `_cands` was
+        # never looked at again: a second generation rejected for ANY reason -- no DONE.json, wrong
+        # row count, bad DONE.status, or a slurm_job_id outside --require-slurm-job -- left exactly
+        # ONE survivor and was SILENTLY DROPPED, and the sweep exited 0. `--require-slurm-job`
+        # actively HID the duplicate it is supposed to coexist with.
+        #
+        # The frozen read promises this check BY NAME (runargs/dcs_csi_pr020_read.txt:192-194):
+        # "GATE 0 will FAIL on two run dirs for one arm (S-334)". It did not. This is the
+        # R30-D/S-334 fix applied to one branch and not the other -- the recurring shape of this
+        # sprint: proving something in one regime and freezing it everywhere.
+        #
+        # `_cands` is built from the NAME GLOB ALONE, which is exactly the point: two generations of
+        # one arm sitting where the reader globs is the S-103/S-104 relaunch shape, and S-261's rule
+        # is that the earlier one must be QUARANTINED, not filtered at read time, because the
+        # runner's skip-if-complete RESUMES into an existing arm dir.
+        if len(_cands) > 1:
+            fails += 1
+            print("%-12s  \u26a0 GATE 0 FAIL -- %d run dir(s) for ONE arm. Two generations of an "
+                  "arm cannot coexist where the reader globs; the earlier one must be QUARANTINED, "
+                  "not filtered at read time (S-261/S-334). Dirs: %s"
+                  % (arm, len(_cands), ", ".join(os.path.basename(x) for x in sorted(_cands))))
+            continue
         try:
             d = strict_run_dir(_tag, a.expect_n,
                                row_file="results.jsonl", require_slurm_jobs=jobs)
