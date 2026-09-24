@@ -31599,3 +31599,120 @@ PR-CSI-020   prereg d68eae71, read 9fdbecea, tag registered, self-test wired, su
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-358/S-359 — 🔴 **REVIEW R33: the re-freeze had introduced a defect OF THE SAME SHAPE AS THE ONE IT FIXED, one branch over.** The frozen necessary conditions were FALSE at K < 8 and **the reader returns PASS against them**. Third freeze, md5 `8eedff85`. Plus the design map is de-hardcoded (S-358)
+
+### 1. 🔴 F1, BLOCKER — and it is exactly my own S-353 lesson, unlearned
+
+S-353 established that no rule in `(M, M_unique)` characterises certification. I then froze
+`M >= 3 AND M_unique >= 3` **unqualified**, having proved it only at K = 8 / K_unique = 4.
+Re-derived by me:
+
+```
+K_unique=4 : P(Binom(4,1/9) >= 2) = 0.06355738  >  alpha  -> forces M_unique >= 3   YES
+K_unique=3 : P(Binom(3,1/9) >= 2) = 0.03429355  <= alpha  -> forces M_unique >= 3   NO
+K_unique=2 : P(Binom(2,1/9) >= 2) = 0.01234568  <= alpha                            NO
+```
+
+**The concrete witness, my own run of the reader's rule:** drop head 18 (K=7, K_unique=3), match
+heads 11, 10, 4, 6 →
+
+```
+M=4  M_unique=2   binomial 0.004040 | conditional 0.034294 | permutation 0.002381
+weakest 0.034294 <= alpha, span 3   ->  READER: CERTIFIES
+FROZEN RULE: M_unique >= 3 is NECESSARY.  Here M_unique = 2.  THE RULE IS FALSE.
+```
+
+⛔ **And the prereg's own `ADMISSION` block ADVERTISES that branch** — `✅
+LOSING_A_THIN_HEAD_MAKES_THIS_FAMILY_STRONGER` is about exactly the K=7 case where the frozen rule
+breaks. **I froze a rule that the same document markets an outcome against.** Now scoped: the
+conditions hold at K=8 only, with the recompute procedure frozen beside them.
+
+### 2. 🔴 F2 — a defect I introduced INSIDE the fix, and it produced the published power table
+
+My new `perm_tail` cache keyed on counts taken positionally over `sorted(set(predictions) | set(obs))`
+— **a list that MOVES with `obs`**, so the key lost layer identity. Verified myself:
+
+```
+obs A = [14,7,12,8,10,14,6,7]   true tail at M=5 = 0.00059524
+obs B = [14,8,12,8,10,14,6,9]   true tail at M=5 = 0.00119048
+same signature under the shipped key; WARM CACHE returned A's tail for B -- 2x wrong
+R33 measured 12.7% of draws wrong and 2 flipped verdicts in 4000
+```
+
+**The frozen power table was computed with it.** With the key layer-identified, the emitted power
+now reproduces **S-354's independent implementation to the digit on all five q values**:
+
+```
+            emitted (corrected)   S-354 (independent)
+type I           0.00410               0.00410
+q=0.33           0.10151               0.10151
+q=0.50           0.30545               0.30545
+q=0.67           0.59687               0.59687
+q=0.83           0.86237               0.86237
+```
+
+⚠ **S-355 §2 said "agreement to Monte-Carlo error".** It was not Monte-Carlo error — it was this
+bug, and the phrase concealed it. Two implementations now agree **exactly**, which is what that
+sentence should have required before being written.
+
+### 3. F3 — two WITHDRAWN S-348 numbers survived, and the reader PUBLISHES one
+
+```
+MUST_NOT_BE_SAID_IF_NULL[0]  "power at a MEDIOCRE screen (q=0.33) is ~0.05"   <- S-348, WITHDRAWN
+                             the same file said ~0.10 seventy lines earlier.
+                             ⛔ dcs_csi_pr016_argmax_test.py copies this list VERBATIM into the
+                             published verdict on a FAIL -- a null would have SHIPPED a withdrawn
+                             number into reports/.
+ADMISSION                    "from 0.8563 to 0.9578 (S-348)"  -> now 0.8624 to ~0.9612
+design_ref                   still cited "S-348 (power)"      -> now S-354
+```
+
+**This is the S-329 / R30-C class found in my own artefact:** prose quoting quantities the config
+does not witness — and its own power block said 0.8623 eighty lines away.
+
+### 4. S-358 — the design map, de-hardcoded
+
+`scripts/dcs_csi_pr018_design_map.py` printed, on PR-CSI-020: *"distinct assignments: 10080
+(closed form 6!/(2!2!) = 180)"* — **contradicting itself on one line** — plus "binomial floor (K=6)"
+when K is 8 and "perfect 6/6" when it is 8/8. All now derived from the prereg, with a **REFUSAL if
+the closed form and the enumeration disagree**. Its `perm_p` carries the S-352 warning, its outcome
+map is labelled **UPPER BOUND ONLY**, and its docstring no longer repeats S-332's withdrawn
+"5 of 64". Regression-checked on PR-018: 180 assignments, weakest 0.012346 — D39's actual gating p.
+
+### 5. NOT established
+
+```
+⛔ STILL NOT LAUNCHED. Third freeze: prereg 8eedff85, read 78d45fdd. R33 reviewed d68eae71.
+   ⚠ I am NOT commissioning R34. R33's four findings are closed, each verified by me before
+   acceptance and each re-verified after the fix; the changes are text plus a one-line cache key,
+   and the numbers now agree exactly with an implementation written before any of them. A fourth
+   review of a third freeze would be ritual, not diligence -- but the judgement is recorded here
+   as a judgement, and it is the thing to point at if this family fails.
+⛔ THE READ'S OWN md5 CITATION WAS STALE and I nearly shipped it. After re-emitting, the read
+   still quoted the PREVIOUS prereg md5 at line 4. Caught and fixed; the read now cites 8eedff85.
+   A read that misquotes its own prereg's hash is a chain-of-custody break.
+⛔ R33's F5 stands UNFIXED: the self-test is TOP-LEVEL ONLY. It passes at exit 0 on four one-key
+   mutations that crash a reader (`PRIMARY.alpha`, `…PER_HEAD.per_head`,
+   `population.validation_expect_n`, `per_head[h].bar_source_arm`) -- two of them KeyErrors in
+   STEP 2, after the GPU. It is not hiding a missing field in PR-020 (R33 resolved every nested
+   chain by hand and I accept that, having seen the pipeline run end to end), but S-356 overstated
+   what it covers.
+⛔ S-356's CALIBRATION TABLE WAS WRONG: PR-014 has 7 absent keys and PR-015 five, not "2" each.
+   The load-bearing rows (016/018/020, one each) are right.
+⛔ THE FULL SUITE IS NOT CLEAN: 8 failures, all HuggingFace gated-repo auth errors in files that
+   reference nothing in this diff. The CSI suite is green (112 here, 109 over the three files R33
+   ran). Anyone re-running should expect those 8 and not read them as regressions.
+NOTHING WAS MEASURED ON A GPU. The queue is EMPTY.
+```
+
+### 6. State
+
+```
+PR-CSI-020   prereg 8eedff85, read 78d45fdd, tag registered, self-test wired, submit path verified.
+NEXT         submit.
+```
+
+`git push` remains credential-blocked. Committed locally.

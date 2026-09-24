@@ -3,7 +3,7 @@
   "title": "Per-CELL census of EIGHT live BASKET heads never previously censused: does the basket-TRAIN screen's per-cell prediction hold on basket VALIDATION?",
   "frozen_utc_date": "2026-09-24",
   "EMITTED_MECHANICALLY_BY": "scripts/gates/dcs_csi_pr020_freeze.py",
-  "design_ref": "S-347 (viability), S-348 (power), S-349 (the reference key)",
+  "design_ref": "S-347 (viability), S-354 (power, under the reader's statistic -- S-348's power is WITHDRAWN), S-349 (the reference key), S-352/S-353 (why the permutation statistic and the outcome table had to change), S-359 (R33)",
   "split": "validation",
   "codeword": "basket",
   "concept": "bomb",
@@ -904,7 +904,7 @@
     "A_DROPPED_HEAD_IS_NOT_A_MISS": "it leaves K and is reported with its measured power",
     "EXPECTED": "all eight are expected to be admitted -- S-347 measured their |E|/bar on PR-CSI-012's arms at 2.49 / 2.33 / 2.13 / 2.07 / 1.92 / 1.92 / 1.84 / 1.80 (heads 6, 18, 10, 21, 4, 11, 13, 27). Heads 27 and 13 are the THIN ones.",
     "⚠ THESE_ARE_EXPECTATIONS_NOT_THE_VERDICT": "they come from PR-CSI-012's arms; this family recomputes admission from its OWN HD_<h> arms by the S-311 rule.",
-    "✅ LOSING_A_THIN_HEAD_MAKES_THIS_FAMILY_STRONGER": "heads 13 and 27 are the two that COLLIDE on L10. Dropping either breaks the tie and raises K_unique from 4 to 5, raising P(certify | q=0.83) from 0.8563 to 0.9578 (S-348). PR-CSI-018 had the OPPOSITE exposure: losing either of its two unique-layer heads was fatal."
+    "✅ LOSING_A_THIN_HEAD_MAKES_THIS_FAMILY_STRONGER": "heads 13 and 27 are the two that COLLIDE on L10. Dropping either breaks the tie and raises K_unique from 4 to 5, raising P(certify | q=0.83) from 0.8624 to ~0.9612 under the READER's statistic. PR-CSI-018 had the OPPOSITE exposure: losing either of its two unique-layer heads was fatal. ⚠ R33/S-359: this read '0.8563 to 0.9578 (S-348)' until now -- both S-348 figures, WITHDRAWN in S-352 as computed under the wrong statistic, and quantities this config did not witness (its own power block says 0.8623)."
   },
   "DETECTABILITY_PREREGISTERED_PER_HEAD": {
     "method": "the S-311 RULE, computed at read time from this family's own HD_<h> arms",
@@ -1061,11 +1061,11 @@
     "N": 200000,
     "seed": 20260924,
     "P_certify_by_q": {
-      "0.1111111111111111": 0.004035,
-      "0.33": 0.101175,
-      "0.5": 0.305265,
-      "0.67": 0.596805,
-      "0.83": 0.86233,
+      "0.1111111111111111": 0.0041,
+      "0.33": 0.10151,
+      "0.5": 0.30545,
+      "0.67": 0.59687,
+      "0.83": 0.862365,
       "1.0": 1.0
     },
     "⚠ BOTH_HALVES_OF_THE_MODEL_ARE_ASSUMPTIONS": {
@@ -1075,8 +1075,10 @@
     "TYPE_I": "P(certify | q = 1/9) is recorded above. It is far below alpha = 0.05, which is the price of gating on the WEAKEST of three. A NULL from this family is therefore WEAK evidence against the screen, not strong. ⚠ The first freeze put this at 0.0004; under the reader's statistic it is ~0.0041 (S-354), an order of magnitude higher and still conservative.",
     "⚠ POWERED_FOR_A_STRONG_SCREEN": "at q = 0.33 power is ~0.10 (the first freeze said ~0.05, which OVERSTATED the limitation). This family can confirm a screen that works; it cannot distinguish a mediocre screen from a useless one.",
     "NECESSARY_CONDITIONS_FOR_CERTIFICATION": {
-      "rule": "M >= 3 AND M_unique >= 3",
+      "⚠ SCOPE": "AT K = 8 WITH K_unique = 4 ONLY -- i.e. when ADMISSION drops nobody. If admission drops any head these MUST BE RECOMPUTED at the realised (K, K_unique) and are NOT these. R33/S-359 measured the failure: drop head 18 and K_unique falls to 3, where P(Binom(3,1/9) >= 2) = 0.03429355 <= alpha, so the conditional NO LONGER forces M_unique >= 3 -- and the reader duly published PASS at K=7, M=4, M_unique=2 (weakest = conditional 0.034294). The first re-freeze froze the rule UNQUALIFIED, which made it FALSE on an outcome this very prereg markets in its ADMISSION block.",
+      "rule_at_K8": "M >= 3 AND M_unique >= 3",
       "why": "P(Binom(8,1/9) >= 2) = 0.22051131 > alpha forces M >= 3; P(Binom(4,1/9) >= 2) = 0.06355738 > alpha forces M_unique >= 3. ⚠ P(Binom(8,1/9) >= 3) = 0.04999816 clears alpha by 1.8e-6 -- a knife edge, recorded because it is one.",
+      "how_to_recompute_if_K_drops": "M_min = the smallest m with P(Binom(K,1/9) >= m) <= alpha; M_unique_min likewise with K_unique. Both are necessary; neither is sufficient.",
       "⛔ NECESSARY_BUT_NOT_SUFFICIENT": "S-353 exhibited 34 outcomes satisfying this rule that do NOT certify (e.g. M=3, M_unique=3, weakest 0.091071), because p_perm depends on where the misses land. NO rule in (M, M_unique) alone characterises certification, and this prereg does not pretend one does."
     }
   },
@@ -1155,7 +1157,7 @@
     "that D37 is superseded -- D37 is descriptive and stands; this ADDS a preregistered p"
   ],
   "MUST_NOT_BE_SAID_IF_NULL": [
-    "that the screen is useless -- type I here is far below alpha and power at a MEDIOCRE screen (q = 0.33) is ~0.05, so a null is WEAK evidence against it",
+    "that the screen is useless -- type I here is far below alpha and power at a MEDIOCRE screen (q = 0.33) is ~0.10, so a null is WEAK evidence against it. ⚠ R33/S-359: this sentence said ~0.05 until now, which is S-348's WITHDRAWN figure computed under the wrong permutation statistic. The reader COPIES this list verbatim into the published verdict on a FAIL, so a null would have shipped a withdrawn number into the artefact",
     "that D39 is withdrawn -- D39 stands on its own preregistered read of button",
     "that D37 is withdrawn -- D37 is descriptive and rests on its own arms",
     "that the basket depth structure is absent -- D36/D37 measured it directly"

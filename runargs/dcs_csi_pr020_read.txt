@@ -1,13 +1,20 @@
 # FROZEN READ for PR-CSI-020 -- the per-CELL census of EIGHT live BASKET heads never previously
 # censused. 82 arms. Frozen 2026-09-24, BEFORE ANY ARM HAS RUN. Never re-freeze after seeing numbers.
 #
-# PREREG  configs/dcs_csi_pr020_cell_census_basket_8heads.json   md5 d68eae710944bede0278a51425ffa2ca
+# PREREG  configs/dcs_csi_pr020_cell_census_basket_8heads.json   md5 8eedff8577ef93ec5d7088ea2261aa16
 #
-# ⚠⚠ THIS IS THE SECOND FREEZE OF THIS FAMILY. The first (md5 9fce4bda) NEVER RAN. Review R32
-#   found four BLOCKERs in it: the census would have REFUSED it before loading any arm (two keys
-#   missing, and with them the estimator definition); the launcher had no tag for it; its
-#   permutation statistic was NOT the one the reader computes; and five VOID conditions PR-CSI-018
-#   carried had been dropped. S-355 re-froze it. Nothing was ever measured under the first freeze.
+# WARNING -- THIS IS THE THIRD FREEZE OF THIS FAMILY. NEITHER EARLIER ONE EVER RAN.
+#   FIRST  (md5 9fce4bda) -- review R32 found FOUR BLOCKERs: the census would have REFUSED it
+#     before loading any arm (two keys missing, and with them the estimator definition); the
+#     launcher had no tag for it; its permutation statistic was NOT the one the reader computes;
+#     and five VOID conditions PR-CSI-018 carried had been dropped. S-355 re-froze it.
+#   SECOND (md5 d68eae71) -- review R33 found the fix had introduced a defect of the SAME SHAPE
+#     one branch over: the necessary conditions were frozen UNQUALIFIED when they hold only at
+#     K = 8, and the reader returns PASS at K=7 / M_unique=2 against them. Plus a
+#     layer-identity-blind cache in the new permutation code, which produced the frozen power
+#     table, and two WITHDRAWN S-348 numbers -- one of which the reader publishes verbatim on a
+#     null. S-359 re-froze it.
+#   Nothing was ever measured under either.
 #
 # WHY THIS FAMILY EXISTS. D37 is the basket cell-census result and the claim table records it as
 #   "VALIDATION, DESCRIPTIVE. RUNG 1. No rank, no p, no control family." D39 (PR-CSI-018) carries
@@ -121,8 +128,17 @@ python scripts/dcs_csi_pr016_argmax_test.py \
 # SPANNING RULE: the MATCHING heads must not all share one band layer, or CANNOT ANSWER whatever
 #   the p-values say.
 #
-# NECESSARY CONDITIONS FOR CERTIFICATION, frozen:  M >= 3 AND M_unique >= 3
+# NECESSARY CONDITIONS FOR CERTIFICATION -- ⚠ AT K = 8 WITH K_unique = 4 ONLY:
+#      M >= 3 AND M_unique >= 3
 #   because P(Binom(8,1/9) >= 2) = 0.22051131 > alpha and P(Binom(4,1/9) >= 2) = 0.06355738 > alpha.
+#   ⛔⛔ IF ADMISSION DROPS ANY HEAD THESE DO NOT HOLD AND MUST BE RECOMPUTED at the realised
+#     (K, K_unique). S-359: drop head 18 and K_unique falls to 3, where
+#     P(Binom(3,1/9) >= 2) = 0.03429355 <= alpha, so the conditional no longer forces
+#     M_unique >= 3 -- and the reader duly returns PASS at K=7, M=4, M_unique=2 (weakest =
+#     conditional 0.034294). The first re-freeze froze this rule UNQUALIFIED, which made it FALSE
+#     on an outcome this family's own ADMISSION block advertises.
+#     RECOMPUTE AS: M_min = smallest m with P(Binom(K,1/9) >= m) <= alpha; M_unique_min likewise
+#     with K_unique. Both necessary; neither sufficient.
 #   ⚠ P(Binom(8,1/9) >= 3) = 0.04999816 clears alpha by 1.8e-6 -- a knife edge, recorded as one.
 #   ⛔ NECESSARY BUT NOT SUFFICIENT. S-353 exhibited 34 outcomes satisfying this that do NOT
 #     certify, because p_perm depends on WHERE the misses land. NO rule in (M, M_unique) alone
@@ -130,7 +146,11 @@ python scripts/dcs_csi_pr016_argmax_test.py \
 #
 # POWER, by seeded Monte Carlo (N 200000, seed 20260924), under the NAMED model "each head matches
 #   with probability q independently, a miss lands uniformly on one of the other 8 layers":
-#     type I 0.0040 | q=0.33 0.1012 | q=0.83 0.8623 (PR-018's observed 5-of-6 rate)
+#     type I 0.0041 | q=0.33 0.1015 | q=0.83 0.8624 (PR-018's observed 5-of-6 rate)
+#   ⚠ S-359: these read 0.0040 / 0.1012 / 0.8623 until now. The freeze script's permutation
+#     CACHE was layer-identity-blind and returned a wrong tail for 12.7% of observations, and
+#     the power table was computed with it. Fixed; the corrected figures now reproduce S-354's
+#     INDEPENDENT implementation to the digit on all five q values.
 #   ⚠ The uniform-miss half is KNOWN WRONG IN DETAIL: S-351 measured that over the 10 heads this
 #     sprint has cell-censused, L10 and L14 take 60% of the argmaxes.
 #   ⚠ TYPE I IS FAR BELOW ALPHA, so A NULL FROM THIS FAMILY IS WEAK EVIDENCE AGAINST THE SCREEN,

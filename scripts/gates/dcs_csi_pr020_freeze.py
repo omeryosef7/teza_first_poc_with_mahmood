@@ -25,8 +25,9 @@ HOW THE EIGHT WERE CHOSEN, and every step used NO basket CELL data:
 TWO COMPOSITION FACTS THAT ARE FROZEN HERE RATHER THAN DISCOVERED LATER:
   * HEADS 6, 11 AND 27 had these SAME predictions tested on BUTTON by PR-CSI-018, and ALL THREE
     MATCHED. Testing them on basket validation is a REPLICATION on a different population, not an
-    independent draw. The family certifies WITHOUT them (the five never-tested heads give 120
-    assignments, floor 0.008333), so a SECONDARY over those five is preregistered alongside.
+    independent draw. ⚠ The first freeze preregistered a SECONDARY over the five never-tested
+    heads; R32-A showed nothing in the repository could compute it and its anti-fallback guard did
+    not bind, so it is DELETED. These three heads sit in the primary and are disclosed by name.
   * HEAD 18 PREDICTS L14, the band-edge rival. PR-CSI-018 excluded head 16 for exactly this, and
     that was right THERE, where a small set could not be told from top-of-band bias. Here the eight
     predictions span SIX distinct layers, so the spanning rule and the permutation p both bite.
@@ -156,14 +157,22 @@ def _perm_matrix(pred, adm):
 def perm_tail(pred, adm, obs):
     """P(matches >= m) for every m, matching the READER: permutations of the prediction multiset
     scored against the OBSERVED argmax vector."""
-    band_sorted = sorted(set(pred[h] for h in adm) | set(obs))
-    sig = (tuple(pred[h] for h in adm), tuple(obs.count(L) for L in band_sorted))
+    # ⚠ R33/S-359: THE FIRST VERSION OF THIS CACHE KEY WAS LAYER-IDENTITY-BLIND. It counted
+    # occurrences positionally over `sorted(set(predictions) | set(obs))`, a list that MOVES with
+    # obs, so two different observations could share a signature and the second would be served
+    # the first's tail. Measured: obs [14,7,12,8,10,14,6,7] and [14,8,12,8,10,14,6,9] collided,
+    # true tails 0.00059524 and 0.00119048, and the warm cache returned the first for both -- 2x
+    # wrong, on 12.7% of draws, and THE FROZEN POWER TABLE WAS COMPUTED WITH IT.
+    # A defect introduced INSIDE the fix for R32's permutation blocker: the R28 class.
+    sig = (tuple(pred[h] for h in adm),
+           tuple(sorted(collections.Counter(obs).items())))
     hit = _PERM_CACHE.get(sig)
     if hit is not None:
         return hit
+    # the representative is built from the SIGNATURE, so it is layer-identified by construction
     rep = []
-    for L in band_sorted:
-        rep += [L] * obs.count(L)
+    for L, c in sig[1]:
+        rep += [L] * c
     P = _perm_matrix(pred, adm)
     matches = (P == np.array(rep, dtype=np.int8)).sum(axis=1)
     counts = np.bincount(matches, minlength=len(adm) + 1)
@@ -227,7 +236,9 @@ def build():
                  "basket-TRAIN screen's per-cell prediction hold on basket VALIDATION?",
         "frozen_utc_date": "2026-09-24",
         "EMITTED_MECHANICALLY_BY": "scripts/gates/dcs_csi_pr020_freeze.py",
-        "design_ref": "S-347 (viability), S-348 (power), S-349 (the reference key)",
+        "design_ref": "S-347 (viability), S-354 (power, under the reader's statistic -- S-348's "
+                      "power is WITHDRAWN), S-349 (the reference key), S-352/S-353 (why the "
+                      "permutation statistic and the outcome table had to change), S-359 (R33)",
         "split": "validation", "codeword": "basket", "concept": "bomb",
         "statistical_unit": "DOMAIN (PART I 3.1). Rows never inflate n.",
         "endpoint": "y_install via the concept-free semantic_one_word readout, cell C, n_examples 4",
@@ -353,8 +364,11 @@ def build():
                                                         "HD_<h> arms by the S-311 rule.",
             "✅ LOSING_A_THIN_HEAD_MAKES_THIS_FAMILY_STRONGER": "heads 13 and 27 are the two that "
                 "COLLIDE on L10. Dropping either breaks the tie and raises K_unique from 4 to 5, "
-                "raising P(certify | q=0.83) from 0.8563 to 0.9578 (S-348). PR-CSI-018 had the "
-                "OPPOSITE exposure: losing either of its two unique-layer heads was fatal."},
+                "raising P(certify | q=0.83) from 0.8624 to ~0.9612 under the READER's statistic. "
+                "PR-CSI-018 had the OPPOSITE exposure: losing either of its two unique-layer heads "
+                "was fatal. ⚠ R33/S-359: this read '0.8563 to 0.9578 (S-348)' until now -- both "
+                "S-348 figures, WITHDRAWN in S-352 as computed under the wrong statistic, and "
+                "quantities this config did not witness (its own power block says 0.8623)."},
         "DETECTABILITY_PREREGISTERED_PER_HEAD": {
             "method": "the S-311 RULE, computed at read time from this family's own HD_<h> arms",
             "BAR_IS_A_RULE": {
@@ -417,11 +431,22 @@ def build():
                 "~0.05, which OVERSTATED the limitation). This family can confirm a screen that "
                 "works; it cannot distinguish a mediocre screen from a useless one.",
             "NECESSARY_CONDITIONS_FOR_CERTIFICATION": {
-                "rule": "M >= 3 AND M_unique >= 3",
+                "⚠ SCOPE": "AT K = 8 WITH K_unique = 4 ONLY -- i.e. when ADMISSION drops nobody. "
+                    "If admission drops any head these MUST BE RECOMPUTED at the realised "
+                    "(K, K_unique) and are NOT these. R33/S-359 measured the failure: drop head 18 "
+                    "and K_unique falls to 3, where P(Binom(3,1/9) >= 2) = 0.03429355 <= alpha, so "
+                    "the conditional NO LONGER forces M_unique >= 3 -- and the reader duly "
+                    "published PASS at K=7, M=4, M_unique=2 (weakest = conditional 0.034294). The "
+                    "first re-freeze froze the rule UNQUALIFIED, which made it FALSE on an outcome "
+                    "this very prereg markets in its ADMISSION block.",
+                "rule_at_K8": "M >= 3 AND M_unique >= 3",
                 "why": "P(Binom(8,1/9) >= 2) = 0.22051131 > alpha forces M >= 3; "
                        "P(Binom(4,1/9) >= 2) = 0.06355738 > alpha forces M_unique >= 3. "
                        "⚠ P(Binom(8,1/9) >= 3) = 0.04999816 clears alpha by 1.8e-6 -- a knife edge, "
                        "recorded because it is one.",
+                "how_to_recompute_if_K_drops": "M_min = the smallest m with P(Binom(K,1/9) >= m) "
+                    "<= alpha; M_unique_min likewise with K_unique. Both are necessary; neither is "
+                    "sufficient.",
                 "⛔ NECESSARY_BUT_NOT_SUFFICIENT": "S-353 exhibited 34 outcomes satisfying this rule "
                     "that do NOT certify (e.g. M=3, M_unique=3, weakest 0.091071), because p_perm "
                     "depends on where the misses land. NO rule in (M, M_unique) alone "
@@ -539,7 +564,10 @@ def build():
             "that D37 is superseded -- D37 is descriptive and stands; this ADDS a preregistered p"],
         "MUST_NOT_BE_SAID_IF_NULL": [
             "that the screen is useless -- type I here is far below alpha and power at a MEDIOCRE "
-            "screen (q = 0.33) is ~0.05, so a null is WEAK evidence against it",
+            "screen (q = 0.33) is ~0.10, so a null is WEAK evidence against it. ⚠ R33/S-359: this "
+            "sentence said ~0.05 until now, which is S-348's WITHDRAWN figure computed under the "
+            "wrong permutation statistic. The reader COPIES this list verbatim into the published "
+            "verdict on a FAIL, so a null would have shipped a withdrawn number into the artefact",
             "that D39 is withdrawn -- D39 stands on its own preregistered read of button",
             "that D37 is withdrawn -- D37 is descriptive and rests on its own arms",
             "that the basket depth structure is absent -- D36/D37 measured it directly"],

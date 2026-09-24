@@ -1,38 +1,38 @@
 #!/usr/bin/env python
-"""§22 DESIGN MAP for PR-CSI-018 -- what outcomes this family CAN and CANNOT certify.
+"""§22 DESIGN MAP for a CSI CELL-CENSUS family -- the floors, and what they do and do not fix.
 
-WHY THIS AND NOT `dcs_csi_head_power.py` OR `dcs_csi_rank_power_sweep.py`. Those analyse RANK tests
-(a candidate's rank among n controls, floor 1/(n+1)) on the behavioural endpoint. PR-CSI-018's
-primary is nothing of the kind: it is an ARGMAX-AGREEMENT count adjudicated by the WEAKEST of THREE
-p-values -- a binomial, a conditional binomial over the unique-layer heads, and a permutation over
-distinct assignments of the prediction multiset. No existing script computes any of them. This is
-the same reason `dcs_csi_head_power.py` gives for its own existence: different test, nothing
-reusable.
+TAKES --prereg. Despite the filename it is not PR-CSI-018-specific; the filename is kept because
+S-332 and S-347/S-348 cite this path (R26 chain of custody).
 
-WHAT IT ANSWERS, ALL OF IT BEFORE THE READ AND FROM THE FROZEN PREREG ALONE.
-  * the three p-value FLOORS, by brute-force enumeration rather than a closed form taken on trust;
-  * WHICH outcome patterns certify -- the answer is 5 of 64, and every one of them requires BOTH
-    unique-layer heads (11 and 29) to match, because the conditional p runs over those two alone
-    and can therefore take only the values 0.012346, 0.209877 and 1.0;
-  * how ADMISSION moves the statistic. The prereg defines the conditional over heads unique AMONG
-    THE ADMITTED, so dropping a head CHANGES which layers are unique. Dropping a TIE head (6, 20,
-    24 or 27) RAISES K_unique from 2 to 3 and strengthens the conditional floor to 0.001372;
-    dropping a UNIQUE head (11 or 29) drops it to 1 and the family cannot certify at all.
-  * the admission FLOOR: at K<=3 admitted, NO outcome certifies, however perfect.
+⚠⚠ READ THIS BEFORE TRUSTING ANY NUMBER BELOW THE FLOORS BLOCK.
+This file originally scored permutations against the PREDICTION vector. The reader
+(scripts/dcs_csi_pr016_argmax_test.py) scores them against the OBSERVED ARGMAX vector, and the two
+coincide ONLY at M = K. S-352 established that, and S-353 established the consequence: because
+p_perm depends on WHERE the misses land, NO map over match counts is exact, and 34 outcomes with
+identical M and identical M_unique were exhibited that differ in verdict.
 
-⛔ WHAT THIS IS NOT. It is not power. It computes no effect size and assumes no noise model; it maps
-   the preregistered DECISION RULE over its own outcome space. It is arithmetic on the prereg, which
-   is why it can be run -- and is being run -- while the family is still on the GPU. It reads no arm
-   and no endpoint.
+So this file's OUTCOME MAP and ADMISSION MAP are UPPER BOUNDS, not the reader's verdicts, and they
+are labelled as such at the point of printing. Its FLOORS block IS exact -- floors are evaluated at
+M = K, where the two statistics agree.
 
-⛔ IT CHANGES NOTHING. The rule stands exactly as frozen. The point of computing this BEFORE the
-   read is that "5 of 6 matched but the family FAILED" is a foreseeable outcome, and recording that
-   it is a FAILURE under the frozen rule -- now, with no numbers in hand -- is what stops it being
-   argued about afterwards.
+WHAT IT PRODUCED THAT WAS WITHDRAWN. S-332 used this file to claim that for PR-CSI-018 "only 5 of
+64 outcome patterns certify, and every one requires both unique-layer heads". S-352 WITHDREW that:
+it was computed under the wrong statistic. PR-CSI-018's own READ is unaffected -- its permutation p
+is identical under both statistics for its observed outcome, and it gated on the conditional.
 
---with-bars additionally RE-DERIVES PR-CSI-013's six per-head bars from that family's own landed
-arms, reusing w4.by_domain (the sole endpoint definition) and the S-311 rule verbatim, to witness
-the |E|/bar table the frozen read prints. PR-013 is already read and published; this spends nothing.
+WHAT IS EXACT AND USABLE:
+  * the three p-value FLOORS, by brute-force enumeration cross-checked against the closed form
+    (the script REFUSES if they disagree);
+  * how ADMISSION moves K_unique and the permutation space -- that is combinatorics on the
+    prediction multiset and does not involve the observation at all.
+
+⛔ WHAT THIS IS NOT. It is not power. Power under the reader's statistic requires a Monte Carlo over
+   (match pattern x miss landing) and lives in the prereg's POWER_BY_SEEDED_MONTE_CARLO block
+   (S-354). It reads no arm and no endpoint.
+
+--with-bars additionally RE-DERIVES a family's per-head bars from the landed arms of the family its
+prereg names as the reference, reusing w4.by_domain (the sole endpoint definition) and the S-311
+rule verbatim. Those families are already read and published; this spends nothing.
 """
 import argparse, importlib.util, json, math, os, statistics, sys
 from itertools import combinations, permutations, product
@@ -56,13 +56,21 @@ def assignments(layers):
     return sorted(set(permutations(sorted(layers))))
 
 
-def perm_p(pred, adm, M):
-    truth = tuple(pred[h] for h in adm)
+def perm_p(pred, adm, M, obs=None):
+    """⚠ S-358. THIS USED TO SCORE PERMUTATIONS AGAINST THE PREDICTION VECTOR. The reader
+    (scripts/dcs_csi_pr016_argmax_test.py) scores them against the OBSERVED ARGMAX VECTOR, and the
+    two coincide ONLY at M = K (S-352). Every number this file printed below M = K was therefore a
+    different statistic from the one that decides a read -- which is how S-332's "only 5 of 64
+    outcome patterns certify" came to be published and then withdrawn in S-352.
+
+    `obs` is now REQUIRED for any honest answer. With obs=None this returns the OLD quantity and
+    says so, because callers that cannot supply an observation cannot have the real one."""
     ass = assignments([pred[h] for h in adm])
     if not ass:
         return 1.0
-    hits = lambda a: sum(1 for i in range(len(truth)) if a[i] == truth[i])
-    return sum(1 for a in ass if hits(a) >= M) / float(len(ass))
+    target = tuple(obs) if obs is not None else tuple(pred[h] for h in adm)
+    return sum(1 for a in ass
+               if sum(1 for i in range(len(target)) if a[i] == target[i]) >= M) / float(len(ass))
 
 
 def k_unique(pred, adm):
@@ -111,7 +119,7 @@ def main():
     uq = k_unique(pred, heads)
 
     print("=" * 96)
-    print("PR-CSI-018 DESIGN MAP   prereg=%s" % pr["id"])
+    print("CSI CELL-CENSUS DESIGN MAP   prereg=%s   K=%d heads" % (pr["id"], len(heads)))
     print("=" * 96)
     print("heads              : %s" % heads)
     print("predicted layers   : %s" % {h: "L%d" % pred[h] for h in heads})
@@ -121,17 +129,31 @@ def main():
 
     ass = assignments(ms)
     print("\nFLOORS, by enumeration")
-    print("   distinct assignments   : %d   (closed form 6!/(2!2!) = %d)"
-          % (len(ass), math.factorial(6) // 4))
+    import collections as _c
+    _mult = _c.Counter(ms)
+    _closed = math.factorial(len(ms))
+    for _v in _mult.values():
+        _closed //= math.factorial(_v)
+    print("   distinct assignments   : %d   (closed form %d!/%s = %d)"
+          % (len(ass), len(ms),
+             "*".join("%d!" % v for v in sorted(_mult.values(), reverse=True)), _closed))
+    if _closed != len(ass):
+        sys.exit("REFUSING: closed form %d != enumeration %d" % (_closed, len(ass)))
     print("   permutation floor      : %.12f" % (1.0 / len(ass)))
-    print("   binomial   floor (K=6) : %.12e" % binom_ge(6, 6))
+    print("   binomial   floor (K=%d) : %.12e" % (len(heads), binom_ge(len(heads), len(heads))))
     print("   conditional floor      : %.12f  (over the %d unique-layer heads)"
           % (binom_ge(len(uq), len(uq)), len(uq)))
     w, lab, _ = verdict(pred, heads, heads)
-    print("   WEAKEST on a perfect 6/6 : %.12f -> %s" % (w, lab))
+    print("   WEAKEST on a perfect %d/%d : %.12f -> %s" % (len(heads), len(heads), w, lab))
 
     print("\n" + "=" * 96)
-    print("OUTCOME MAP -- every match pattern at full admission (M >= 4 shown)")
+    print("⚠ OUTCOME MAP -- UPPER BOUND ONLY, NOT THE READER'S VERDICT (S-353).")
+    print("   Under the reader's statistic p_perm depends on WHERE the misses land, so NO map over")
+    print("   match counts is exact: S-353 exhibited 34 outcomes with identical M and M_unique that")
+    print("   differ in verdict. The rows below use obs = the predictions for matched heads and the")
+    print("   PREDICTION vector elsewhere, i.e. the OLD statistic, and are therefore a BOUND.")
+    print("   The exact necessary conditions are M >= 3 AND M_unique >= 3 (necessary, NOT")
+    print("   sufficient); power is in the prereg's POWER_BY_SEEDED_MONTE_CARLO block.")
     print("=" * 96)
     print("%-26s %2s %2s  %-11s %-11s %-11s %-11s %s"
           % ("matching heads", "M", "Mu", "binomial", "conditional", "permutation",
