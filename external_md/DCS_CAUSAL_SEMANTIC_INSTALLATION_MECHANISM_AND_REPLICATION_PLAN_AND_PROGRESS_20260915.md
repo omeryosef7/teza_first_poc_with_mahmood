@@ -28584,3 +28584,85 @@ claim table  912 -> 912 lines (two annotations in place). 7 corrections total ac
 PR-CSI-018   923972 on n-301, 17 of 62 arms, all rc=0, GATE 0 clean on every landed arm.
              NO endpoint read; frozen read cbdf34a2 untouched.
 ```
+
+---
+
+## S-330 — **the last open audit item is DISCHARGED: three rows that cited only a log entry now cite their artefacts, every number re-derived first.** 📌 And doing it surfaced a stale *"TEST unspent"* belief sitting inside a published artefact's own `population` field
+
+### 1. The deferral, closed
+
+S-329 recorded one item still owed: the S-328 audit had located artefacts for three rows that cited
+only a log entry, and *"those three citations have not been added."* They are added. **Every value was
+re-derived from the artefact before the citation was written** — the discipline S-329 had just shown
+matters, since on the audit's framing I would have weakened a supported claim.
+
+```
+D2/D13  reports/DCS_CONT_QPROBE.json        train_best  rel-6 / L20  rho_loo 0.5935  670 slots / 67 dom
+                                            validation_best      rho 0.645          230 / 23
+        reports/DCS_CONT_QPROBE_basket.json train_best  L18  0.6525 ; validation_best 0.6525
+D3      reports/DCS_CSI_QPROBE_VALIDATION_AUDIT.md:81-82
+                        TRAIN rho_loo 0.6524545477487157 | VALID 0.6525210881770593
+                        identical bits? False | |diff| 6.654042834364216e-05
+                        key intersection TRAIN&VALID = 0 ; prompt_id intersection = 0
+D5/E1   reports/DCS_CONT_PATCH_ENDPOINT_button.json
+                        n_common 180 / n_domains 90 ; ctrl 0.1111, ko 0.0444, rescue_clean 0.0722
+                        ko_derefusal 0.0667 [0.0333, 0.1000] ; recovery 0.0278 [0.0056, 0.0556]
+                        recovery_fraction 0.417 [0.133, 0.714] ; dropped 0 on every one
+```
+
+**All three reproduce exactly.** No claim moves.
+
+📌 **And the grid carries something the rows only asserted.** D2's *"plateau"* is not a gloss — it is
+visible in the raw grid: button `rel-6` **L18 0.5931 vs L20 0.5935**, basket **L18 0.6525 vs L20
+0.6512**. **The two codewords select OPPOSITE layers, on margins of 0.0004 and 0.0013.** That is a
+stronger statement of D2's own caveat than D2 makes, and it is now in the citation.
+
+Likewise D3: the audit row records `identical bits? False` and a `|diff|` of **6.65e-05** together
+with **zero key and zero prompt_id intersection** — which is precisely what makes the 0.6525/0.6525
+coincidence a coincidence rather than an alias, and it had never been quoted in the table.
+
+### 2. 📌 A stale belief found INSIDE an artefact
+
+`reports/DCS_CONT_PATCH_ENDPOINT_button.json` carries its own provenance field:
+
+```
+"population": "train+val (TEST unspent)"
+```
+
+⚠ **S-314 refuted that**: TEST had already been read to completion on 2026-09-08. The artefact is
+from the predecessor phase and its field records a **belief held at write time**, not a fact — and it
+is exactly the kind of string that gets re-imported into a methods section by someone reading the
+JSON rather than the log.
+
+⛔ **The artefact is NOT edited** — R26's chain-of-custody rule, and a published JSON's provenance
+field is the last thing that should be rewritten after the fact. **The citation flags it instead**, so
+the next reader meets the correction at the same moment as the number.
+
+📌 This is the third place the stale "TEST unspent" belief has now been found: the sprint log at line
+1572 (S-314), the four CSI preregs recording `test_domains: 3` (S-312), and now a published report's
+own population field. **A belief that was wrong once is wrong everywhere it was written down**, and
+grepping for it is cheaper than waiting to meet it again.
+
+### 3. Status of the S-328 audit, complete
+
+```
+D36's self-contradicting denominator        FIXED        (S-328)
+D36's stale md5, D31's stale byte count     FIXED        (S-328)
+AM-37's false blocking arithmetic           FIXED        (S-328)
+the "3 TEST domains" clause, 3 sites        FIXED        (S-328)
+five missing rows D37/D38/AM-39/40/41       ADDED        (S-328)
+AM-25's MDE  +0.00300 -> +0.00250           FIXED        (S-329, my own re-derivation)
+D31's four "prose-only" quantities          REVERSED     (S-329 -- all four witnessed)
+three log-only citations                    ADDED        (S-330)
+                                            -- NOTHING OUTSTANDING --
+```
+
+### 4. NOT established
+
+Nothing new about the science. **Three entries in a row have now corrected the record and measured
+nothing**, which is the right use of a GPU-bound wait but is not progress on the central question.
+
+```
+PR-CSI-018  923972 on n-301, 26 of 62 arms, all rc=0. NO endpoint read; frozen read cbdf34a2 untouched.
+            ~36 arms remain, ~1.7 h.
+```
