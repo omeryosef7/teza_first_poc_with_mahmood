@@ -31939,3 +31939,56 @@ NEXT     monitor to 82/82 -- and make no further edits to scripts/ or src/ until
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-363 — **the first arms land and GATE 0 is clean on all three, with every dose matching the prereg.** The sweep correctly exits **3**, refusing to call a partial result a verdict. 3 of 82
+
+### 1. What landed
+
+```
+arm            rows   median_pre   want  decode  viol  identity              verdict
+BK_BASE         230          0.0      0       0     0  not intervened        PASS
+BK_KO           230       2016.0   2016       0     0  ALL 32, no cell list  PASS
+BK_H10_L06      230        224.0    224       0     0  matches prereg        PASS
+
+GATE 0: every landed arm passes (3 of 82) ... No endpoint field was read.
+  .. 1 arm(s) IN FLIGHT. THIS SWEEP IS PARTIAL and is NOT the family's GATE 0 verdict.
+GATE 0 IS NOT COMPLETE: 3 of 82 passed, 1 in flight, 78 never landed.        EXIT = 3
+```
+
+Three mechanisms this sprint built are visibly working on live arms:
+
+```
+the DOSE EXPECTATIONS      0 / 2016 / 224 -- exactly what the prereg froze, on the first
+                           base arm, the first KO arm and the first cell arm respectively
+the S-310 KO GUARD         BK_KO reads "ALL 32, no cell list" -- the discriminator that stops a
+                           9-cell band arm impersonating the all-32 denominator
+S-332's EXIT CODE          a PARTIAL sweep exits 3, not 0. Before S-332 this printed the same
+                           cheerful banner and exited 0, so "61 of 62 with a dead arm" was
+                           indistinguishable from a complete pass
+```
+
+### 2. NOT established
+
+```
+NOTHING IS MEASURED. 3 of 82 arms. NO endpoint has been read -- the sweep says so itself, and
+  that is the point of running it while the family is live.
+THIS IS NOT THE FAMILY'S GATE 0 VERDICT and must not be recorded as one. 78 arms have never
+  landed; an arm still lacking DONE.json when the job is GONE has DIED, and the in-flight branch
+  cannot tell those apart by itself (R30-D/S-332).
+THREE ARMS IS NOT A RATE. S-327 records that I once overestimated a load by 2.07x by
+  extrapolating from its first nine shards, so no ETA is derived here. The model load was
+  1376.5 s and the 12 h walltime is the margin that matters.
+NO FURTHER EDITS TO scripts/ OR src/ until this family lands (S-362's VOID 11 disclosure).
+  This entry touches external_md only.
+```
+
+### 3. State
+
+```
+925438   RUNNING on n-301, 3 of 82 arms, all rc=0, partial GATE 0 clean.
+NEXT     monitor to 82/82, then STEP -1's operator checks and the frozen read in order.
+```
+
+`git push` remains credential-blocked. Committed locally.
