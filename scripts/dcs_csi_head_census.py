@@ -715,7 +715,24 @@ def main():
         # artefact, so "checked and free" can never again be confused with "never checked".
         _prov = {"checked": [], "skipped": [], "tolerances": {}}
         for _hk, _hd in sorted(_per_head_bars.items()):
-            _ref = (_hd or {}).get("pr013_whole_head_REFERENCE") if isinstance(_hd, dict) else None
+            # ⚠ S-349: THE REFERENCE KEY ENCODED A FAMILY. This read only
+            # `pr013_whole_head_REFERENCE`, so VOID condition 8 was reachable ONLY by families whose
+            # prior measurement happens to be PR-CSI-013's. A BASKET family takes its references
+            # from PR-CSI-012, would have had to misname the key to be checked at all, and would
+            # otherwise have been skipped -- loudly since S-341, but skipped.
+            # This is S-322 exactly: "widening a single-family artefact means finding everything
+            # that ENCODES the family, not everything that NAMES it." The family-neutral key is
+            # `whole_head_REFERENCE`; the PR-013 spelling stays readable so published preregs keep
+            # working, and declaring BOTH is a refusal because a head has ONE criterion (S-312).
+            _ref = None
+            if isinstance(_hd, dict):
+                _new = _hd.get("whole_head_REFERENCE")
+                _old = _hd.get("pr013_whole_head_REFERENCE")
+                if _new is not None and _old is not None:
+                    sys.exit("REFUSING: head %s declares BOTH whole_head_REFERENCE and the legacy "
+                             "pr013_whole_head_REFERENCE. A head has ONE provenance reference. "
+                             "(S-349)" % _hk)
+                _ref = _new if _new is not None else _old
             if not _ref or _ref.get("E") is None:
                 _prov["skipped"].append(_hk)
                 print("[census] PROVENANCE head %-3s -- NO REFERENCE DECLARED; VOID condition 8 was "
@@ -730,7 +747,7 @@ def main():
             # "|diff|=3.86e-03  OK" beside a 3860x violation. A check that states the opposite of
             # the truth is worse than one that stays silent.
             if _ref.get("void_tolerance") is None:
-                sys.exit("REFUSING: head %s's pr013_whole_head_REFERENCE declares no "
+                sys.exit("REFUSING: head %s's whole_head_REFERENCE declares no "
                          "void_tolerance. A tolerance supplied by the READER is a default published "
                          "as though it were preregistered. (R30-A/S-332)" % _hk)
             _tol_decl = float(_ref["void_tolerance"])

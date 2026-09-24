@@ -30706,3 +30706,92 @@ NEXT  write the design against R31-C's thirteen-item list, then R32, then freeze
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-349 — 🔴 **VOID condition 8 was reachable ONLY by families whose prior measurement is PR-CSI-013's — the reference key ENCODED a family.** A basket census would have had to MISNAME its references to be checked at all. Fixed before the prereg was written, with tests
+
+### 1. Found by trying to build the thing, not by reading the code
+
+S-347/S-348 established that a basket counterpart to PR-CSI-018 is viable and powered. Building its
+prereg means giving each head a frozen prior measurement for VOID condition 8. PR-CSI-018's come
+from PR-CSI-013 (button whole-head arms); a basket family's must come from **PR-CSI-012**.
+
+They exist, and I verified every one of them:
+
+```
+head  PR-012 arm        E (report)            ci95            excl0
+  4   SINGLE_04     -0.00640128   [-0.009762, -0.003232]   True
+  6   SINGLE_06     -0.00847502   [-0.012028, -0.005450]   True
+ 10   SINGLE_10     -0.00542110   [-0.008023, -0.002997]   True
+ 11   SINGLE_11     -0.01043769   [-0.016025, -0.005492]   True
+ 13   SINGLE_13     -0.00827564   [-0.013050, -0.004351]   True
+ 18   SINGLE_18     +0.00967428   [+0.005635, +0.013754]   True
+ 21   SINGLE_21     -0.00373771   [-0.005540, -0.002010]   True
+ 27   SINGLE_27     +0.00411325   [+0.001879, +0.006382]   True
+```
+
+All eight derivable, all eight with a ci95 excluding 0, and head 11 cross-checked against **my own
+re-derivation from the raw arms at |diff| = 1.09e-09.**
+
+### 2. 🔴 But the census could not have read them
+
+```python
+_ref = (_hd or {}).get("pr013_whole_head_REFERENCE")     # scripts/dcs_csi_head_census.py
+```
+
+**The key name encodes the family.** A basket family declaring `pr012_whole_head_REFERENCE` would
+have been **skipped** — loudly since S-341, which is the only reason this was survivable at all —
+and the only way to be checked would have been to **misname PR-012's numbers as PR-013's**, putting
+a false provenance claim inside the artefact that exists to establish provenance.
+
+> **This is S-322 exactly, in a new place.** That entry's lesson was *"widening a single-family
+> artefact means finding everything that ENCODES the family, not everything that NAMES it"* — the
+> hardcoded `BC_H%s_L%02d` arm prefix. Here the family is encoded in a JSON key rather than a format
+> string, and I found it only because I went to build the next family rather than to read the code.
+> **The two previous times this pattern appeared (S-321/S-322, and here) it was invisible until
+> something new had to use the path.**
+
+### 3. The fix
+
+`whole_head_REFERENCE` is now the family-neutral key. The PR-013 spelling is still honoured, because
+a widening that breaks the artefacts it was widened from is not a widening — PR-CSI-018's published
+prereg carries the old name and must keep working. **Declaring BOTH is a REFUSAL**: a head has one
+provenance reference, and silent precedence between two spellings carrying two numbers is S-312's
+both-criteria defect in a new costume.
+
+```
+112 tests pass (was 106). Three new, and TWO of them FAIL on the pre-fix census via `git stash`:
+   VOID 8 is reachable under the FAMILY-NEUTRAL key        FAILS without the fix
+   declaring BOTH reference keys REFUSES                    FAILS without the fix
+   the LEGACY pr013 key still works                         passes either way, BY DESIGN --
+        it pins backward compatibility, which existed before and must survive
+```
+
+### 4. NOT established
+
+```
+NOTHING IS DESIGNED, FROZEN OR LAUNCHED. No PR-CSI-020 prereg file, no tag, no arm. S-167c binds.
+THIS FIX CHANGES NO PUBLISHED NUMBER. PR-CSI-018's read used the legacy key and its VOID-8 check
+  ran exactly as S-335 recorded (6 of 6 heads checked at <= 4.2e-09). Nothing is re-read.
+THE PR-012 REFERENCES ARE NOT YET FROZEN INTO ANYTHING. They are verified as DERIVABLE; the
+  freeze script that would write them does not exist yet.
+⚠ THE BASKET FAMILY IS HELD OUT ON SPLIT ONLY. PR-CSI-018 was held out on split AND codeword --
+  a basket-TRAIN screen predicting BUTTON cells. A basket-TRAIN screen predicting BASKET
+  validation cells is a WEAKER held-out claim in that dimension, and the prereg must say so in
+  its own text rather than letting D39's stronger framing carry over by association.
+R32 IS STILL DUE before any GPU, and R31-C's thirteen degrees of freedom are still open.
+NOTHING WAS MEASURED ON A GPU THIS TICK. The queue is EMPTY.
+```
+
+### 5. State
+
+```
+queue EMPTY. The basket family now has: floors (S-347), power (S-348), verified references and a
+  reader that can actually check them (here). What it does NOT have is a prereg.
+NEXT  the freeze script on the dcs_csi_pr018_freeze.py pattern -- 8 heads, basket, PR-012
+      references, the split-only held-out caveat stated, R31-C's thirteen items closed -- then
+      R32, then launch.
+```
+
+`git push` remains credential-blocked. Committed locally.

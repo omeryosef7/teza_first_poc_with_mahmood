@@ -923,7 +923,8 @@ def test_S308_STILL_HOLDS_a_refused_arm_that_HAS_a_DONE_json_is_still_a_FAILURE(
 # (the bar is 1.96*SD of that same arm), so the head is quietly DROPPED by ADMISSION and published as
 # "NOT_A_MISS", shrinking K and the permutation space with no provenance warning.
 
-def _pr015_with_reference(tmp_path, head, ref_E, tol=1e-6):
+def _pr015_with_reference(tmp_path, head, ref_E, tol=1e-6, key="pr013_whole_head_REFERENCE",
+                          also_key=None):
     """PR-015's prereg with a whole-head reference bolted onto one head, using a REAL 9-cell source
     arm so the S-311 rule path is the one under test."""
     pr = json.load(open(PR015))
@@ -933,7 +934,9 @@ def _pr015_with_reference(tmp_path, head, ref_E, tol=1e-6):
     ph = pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"][str(head)]
     ph.pop("min_abs_E_for_ci95_to_exclude_0", None)
     ph["bar_source_arm"] = "HD_%d" % head
-    ph["pr013_whole_head_REFERENCE"] = {"E": ref_E, "void_tolerance": tol}
+    ph[key] = {"E": ref_E, "void_tolerance": tol}
+    if also_key:
+        ph[also_key] = {"E": ref_E, "void_tolerance": tol}
     pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["BAR_IS_A_RULE"] = {
         "z": 1.96, "rule": "bar = z*SD(paired delta)/sqrt(n)"}
     p = tmp_path / "ref.json"
@@ -1170,3 +1173,46 @@ def test_TWO_run_dirs_for_ONE_arm_is_a_FAILURE_not_benign_IN_FLIGHT(tmp_path):
     assert "GATE 0 FAIL" in out, out[-900:]
     assert rc not in (0, None), "two incomplete generations of one arm exited %r" % (rc,)
     assert "S-261" in out, "the refusal did not name the quarantine rule:\n%s" % out[-600:]
+
+
+# ================================================================ S-349
+# The VOID-8 reference key encoded a FAMILY, so the condition was reachable only by families whose
+# prior measurement is PR-CSI-013's. S-322 in a new place.
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+def test_VOID_8_is_reachable_under_the_FAMILY_NEUTRAL_reference_key(tmp_path):
+    """S-349. `whole_head_REFERENCE` must be honoured exactly as the legacy PR-013 spelling is.
+    A BASKET family takes its references from PR-CSI-012; under the old hardcoded key it would
+    have had to MISNAME them to be checked at all, or be skipped."""
+    farm = _farm_with_hd17(tmp_path)
+    pr = _pr015_with_reference(tmp_path, 17, ref_E=-0.01000000, key="whole_head_REFERENCE")
+    rc, out = _census_on(farm, pr, tmp_path)
+    assert rc not in (0, None), (
+        "a drifted arm was READ under the family-neutral key -- VOID 8 was unreachable:\n%s"
+        % out[-800:])
+    assert "VOID CONDITION" in out and "DRIFTED" in out, out[-800:]
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+def test_the_LEGACY_pr013_reference_key_still_works(tmp_path):
+    """The companion: published preregs (PR-CSI-018) carry the old spelling and must keep working.
+    A widening that breaks the artefacts it was widened from is not a widening."""
+    farm = _farm_with_hd17(tmp_path)
+    pr = _pr015_with_reference(tmp_path, 17, ref_E=-0.01000000,
+                               key="pr013_whole_head_REFERENCE")
+    rc, out = _census_on(farm, pr, tmp_path)
+    assert rc not in (0, None), "the legacy key stopped being honoured:\n%s" % out[-800:]
+    assert "VOID CONDITION" in out, out[-800:]
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+def test_declaring_BOTH_reference_keys_REFUSES(tmp_path):
+    """S-312's rule, transposed: a head has ONE provenance reference. Two spellings carrying two
+    numbers is the both-criteria defect in a new costume, and silent precedence would hide it."""
+    farm = _farm_with_hd17(tmp_path)
+    pr = _pr015_with_reference(tmp_path, 17, ref_E=-0.02921839, key="whole_head_REFERENCE",
+                               also_key="pr013_whole_head_REFERENCE")
+    rc, out = _census_on(farm, pr, tmp_path)
+    assert rc not in (0, None), "a head with TWO reference keys was READ:\n%s" % out[-800:]
+    assert "ONE provenance reference" in out, out[-800:]
