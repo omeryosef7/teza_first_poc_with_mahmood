@@ -34634,3 +34634,91 @@ NEXT     settle S-385 section 7(a) -- the per-prompt 1/rms weighting -- which is
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-387 — R35-A's remaining blocker is CLOSED EXACTLY, not documented: the per-prompt `1/rms` is now divided out, so the emitted values ARE logit-difference contributions. 📌 **It was the one defect whose symptom was a WRONG ARGMAX rather than a crash** (2026-09-25)
+
+### 1. The defect, re-derived rather than accepted
+
+`dominance_at` returns `<Y, û>` where `û = u/||u||`. The true logit-difference contribution of a
+cell is `<Y, u>/rms_p`. So the emitted value is:
+
+```
+emitted  =  true_contribution  x  rms_p / ||u||
+```
+
+`||u||` is ONE global constant — shared by every cell at every layer, so it cannot reorder
+anything. **`rms_p` is per prompt.** Averaging the raw values over ~230 prompts therefore produces
+an **RMS-WEIGHTED mean** of logit contributions, and R35-A exhibited a two-cell, two-prompt case
+where that weighting **flips the argmax**: true means 0.060 vs 0.035 (A wins), emitted means 0.90
+vs 1.10 (B wins).
+
+📌 **This was the only R35 finding whose symptom is a wrong ANSWER rather than a crash or a
+refusal.** The import error stops the run; the wrong readout position is at least a consistent
+position; this one silently reweights the statistic the design is built on. The docstring defended
+the argmax because `1/rms` is shared *"at that destination"* — true within a prompt, false across
+the aggregation the file actually emits, and I wrote that defence myself.
+
+### 2. Fixed exactly
+
+A forward **pre-hook on the model's own final norm**, registered around the `dominance_at` call so
+it fires inside the SAME forward at the SAME `dst`, captures the residual; `rms_p` is recomputed
+with the model's own `rms_norm_eps`; every accumulated value is divided by it. The hook is removed
+in a `finally`, and **the run REFUSES if the hook never fired** — an uncaptured rms would silently
+return the rms-weighted behaviour, and absence is not a normalisation.
+
+The artefact now records `u_norm` and the `rms_at_dst` range (n/min/max/mean), so the constant and
+the spread are both on disk rather than argued about.
+
+### 3. Verified numerically, end to end
+
+The new test asserts the whole corrected chain in float64, not a string:
+
+```
+sum_i ( <Y_i, u_hat> / rms )  ==  <norm(h), Wc - Wk> / ||u||        atol 1e-12   PASSES
+```
+
+and, in the same test, that the **uncorrected** value does NOT satisfy it — so the test would fail
+if someone removed the `/rms` *or* if the premise were wrong and there had been nothing to correct.
+19 tests pass.
+
+### 4. What this does and does not settle
+
+```
+SETTLED    the UNITS. The emitted numbers are logit-difference contributions up to one global
+           constant. The aggregation is now a plain mean of domain means, as PART I requires.
+NOT SETTLED, and still a PREREG question: aggregate-then-argmax vs argmax-per-prompt-then-vote.
+           Dividing by rms removes the confound that made the choice URGENT -- both are now
+           defensible -- but they are different statistics and the prereg must name one.
+STILL OPEN the DIRECT-PATH surrogacy (R35-A finding 6): this projects a layer-L head's output onto
+           a direction defined at the FINAL residual, ignoring 17-25 blocks of downstream
+           processing. A cell can be causally necessary with near-zero direct projection. The
+           artefact names the logsumexp surrogacy and is still silent about this one.
+```
+
+### 5. What was NOT established
+
+```
+- STILL NOT RUN. The hook path has never executed against a real model -- it is verified by
+  algebra and by unit tests, and `lm.model.model.norm` is an assumed layout that only a real
+  run confirms. The REFUSAL if the hook does not fire exists precisely because that layout
+  assumption could be wrong, and a silent zero would look like a measurement.
+- NOT fixed: the direct-path surrogacy, the --model / --snapshot-glob cross-check, the missing
+  id-to-string witness, the non-atomic artefact write, the hardcoded `et`, unvalidated
+  heads/band. All recorded in S-385 section 8 and none of them changes a number silently.
+- NOT established: that R35 found everything. Four blockers survived 13 tests; a fifth was found
+  by re-deriving the algebra of a claim I had written myself.
+```
+
+### 6. State
+
+```
+QUEUE    EMPTY.
+CHANGED  scripts/dcs_csi_rung2_celldecode.py (rms normalisation + refusal), tests/... (19),
+         external_md/...20260915.md
+NEXT     a CPU smoke on a handful of TRAIN rows -- the first execution this instrument will ever
+         have had -- then the statistic decision, then a prereg.
+```
+
+`git push` remains credential-blocked. Committed locally.

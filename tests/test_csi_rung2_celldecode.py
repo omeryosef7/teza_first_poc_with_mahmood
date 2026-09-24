@@ -269,3 +269,48 @@ def test_the_reconstruction_check_cannot_be_consumed_by_a_skipped_row():
     assert "check_invariants=(n_done == 0)" in code
     assert "check_invariants=(i == 0)" not in code, "the pre-skip enumeration is back in CODE"
     assert "recon_rel_err_first_row" in code, "the reconstruction error is still discarded"
+
+
+def test_dividing_by_rms_recovers_the_logit_difference_up_to_ONE_global_constant():
+    """🔴 R35-A/S-387. `D_dir` gives <Y, u_hat> = <Y,u>/||u||, but the true logit-difference
+    contribution is <Y,u>/rms_p. So the raw emitted value is `true x rms_p/||u||`, and averaging
+    it over prompts with different rms is an RMS-WEIGHTED mean -- which R35-A showed can FLIP an
+    argmax. This test verifies the corrected chain numerically:
+
+        sum_i ( <Y_i, u_hat> / rms )  ==  <norm(h), Wc - Wk> / ||u||
+
+    i.e. after dividing by rms the per-cell values are logit-difference contributions up to the
+    single global constant ||u||, which is shared by every cell and cannot reorder anything."""
+    torch = pytest.importorskip("torch")
+    m = _mod()
+    D, EPS = 256, 1e-5
+    torch.manual_seed(387)
+    g = (torch.rand(D, dtype=torch.float64) + 0.5)
+    Wc, Wk = torch.randn(D, dtype=torch.float64), torch.randn(D, dtype=torch.float64)
+    u = m.build_direction(g, {0: Wc, 1: Wk}, (0,), (1,))          # g * (Wc - Wk)
+    u_hat = u / u.norm()
+
+    Y = torch.randn(7, D, dtype=torch.float64)                    # 7 cell contributions
+    h = Y.sum(0)
+    rms = torch.sqrt((h * h).mean() + EPS)
+
+    lens = (Wc @ (h / rms * g)) - (Wk @ (h / rms * g))            # the true logit difference
+    emitted_sum = sum((Y[i] @ u_hat) / rms for i in range(7))     # what the script now accumulates
+
+    assert torch.allclose(emitted_sum, lens / u.norm(), atol=1e-12), (
+        "corrected values do not sum to the logit difference / ||u||: %r vs %r"
+        % (float(emitted_sum), float(lens / u.norm())))
+
+    # and the DEFECT is real: without the /rms the relation depends on rms, so two prompts with
+    # different rms contribute on different scales.
+    raw_sum = sum((Y[i] @ u_hat) for i in range(7))
+    assert not torch.allclose(raw_sum, lens / u.norm(), atol=1e-6), (
+        "premise broken: the raw value already equalled the logit difference, so there was "
+        "nothing to correct")
+
+
+def test_the_rms_normalisation_is_actually_applied_in_CODE():
+    code = _code()
+    assert "register_forward_pre_hook" in code, "the final-norm rms is never captured"
+    assert "/ _rms)" in code, "the captured rms is never divided out"
+    assert "rms_at_dst" in code, "the rms range is not recorded in the artefact"

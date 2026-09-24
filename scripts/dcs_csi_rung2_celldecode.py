@@ -250,6 +250,8 @@ def main() -> int:
     et = False
     per_dom = {}          # domain -> {(L,h): [values]}
     n_done, skipped, recon = 0, {}, None
+    rms_seen = []
+    RMS_EPS = float(getattr(lm.model.config, "rms_norm_eps", 1e-5))
     for i, r in enumerate(rows):
         templated = dc.apply_template(lm.tokenizer, r["full_prompt"], enable_thinking=et)
         dk, why = sb.demo_key_positions(lm.tokenizer, r, templated)
@@ -286,15 +288,48 @@ def main() -> int:
         # between this and a wrong GQA head map or o_proj slicing -- never ran for the whole run,
         # and nothing on disk said so. It is now keyed on the first row that actually REACHES the
         # call, and the error it returns is RECORDED rather than discarded.
-        res = dominance_at(lm, ids, dst=dst, layers=band,
-                           direction={L: u for L in band}, check_invariants=(n_done == 0))
+        # ⚠⚠ R35-A/S-387 -- THE PER-PROMPT 1/rms IS **NOT** COMMON ACROSS THE AGGREGATION.
+        # `D_dir` returns <Y, u_hat> = <Y,u>/||u||, while the TRUE logit-difference contribution is
+        # <Y,u>/rms_p. So the emitted value is `true x rms_p/||u||`. ||u|| is one global constant
+        # and is harmless; rms_p varies PER PROMPT, so averaging the raw values over ~230 prompts
+        # gives an RMS-WEIGHTED mean of logit contributions, not a mean -- and R35-A exhibited a
+        # two-cell, two-prompt case where that WEIGHTING FLIPS THE ARGMAX.
+        # The docstring's units note defended the argmax on the grounds that 1/rms is shared "at
+        # that destination", which is true WITHIN a prompt and false across the aggregation it
+        # actually emits.
+        # Fixed exactly rather than documented: capture rms_p from the model's own final norm --
+        # a pre-hook on the module, firing inside dominance_at's forward, so it is the SAME
+        # forward and the SAME dst -- and divide. The emitted numbers are then logit-difference
+        # contributions and the aggregation is a plain mean.
+        _cap = {}
+
+        def _grab(_m, _inp):
+            _cap["h"] = _inp[0].detach()[0, dst, :].float().cpu()
+
+        _h = lm.model.model.norm.register_forward_pre_hook(_grab)
+        try:
+            res = dominance_at(lm, ids, dst=dst, layers=band,
+                               direction={L: u for L in band},
+                               check_invariants=(n_done == 0))
+        finally:
+            _h.remove()
+        if "h" not in _cap:
+            raise SystemExit(
+                "REFUSING: the final-norm pre-hook never fired, so rms could not be captured and "
+                "the emitted values would be RMS-WEIGHTED rather than logit contributions. "
+                "Absence is not a normalisation (R20-6). (R35-A/S-387)")
+        _rms = float((_cap["h"].pow(2).mean() + RMS_EPS).sqrt())
+        if not (_rms > 0):
+            raise SystemExit("REFUSING: captured rms = %r at dst; cannot normalise." % _rms)
+        rms_seen.append(_rms)
         if n_done == 0:
             recon = {("L%d" % L): float(v) for L, v in (res.get("recon_rel_err") or {}).items()}
         d = per_dom.setdefault(r["domain"], {})
         for L in band:
             Dd = res["D_dir"][L]                      # [n_head, T]
             for h in heads:
-                d.setdefault((L, h), []).append(float(Dd[h, dk].sum()))
+                # /_rms converts <Y,u_hat> into the logit-difference contribution.
+                d.setdefault((L, h), []).append(float(Dd[h, dk].sum()) / _rms)
         n_done += 1
 
     if not per_dom:
@@ -326,9 +361,15 @@ def main() -> int:
         "⚠ NOT_THE_ENDPOINT": "y_install aggregates the casings with LOGSUMEXP; this direction is "
                               "LINEAR. This does NOT decompose y_install and no cell's share here "
                               "is its share of the installation effect (S-381/S-382).",
-        "⚠ UNITS": "dominance_at unit-normalizes the direction, so these are contributions along "
-                   "the UNIT direction, not logit contributions. The same u is passed at every "
-                   "band layer, so cross-layer comparison is unaffected.",
+        "⚠ UNITS": "values are DIVIDED BY the per-prompt rms captured from the model's own final "
+                   "norm, so they ARE logit-difference contributions up to the single global "
+                   "constant ||u|| (dominance_at unit-normalizes the direction). ||u|| is shared "
+                   "by every cell at every layer and cannot reorder anything. ⚠ Before S-387 the "
+                   "raw <Y,u_hat> was averaged, which is an RMS-WEIGHTED mean and can flip an "
+                   "argmax across prompts (R35-A).",
+        "u_norm": float(u.norm()),
+        "rms_at_dst": ({"n": len(rms_seen), "min": min(rms_seen), "max": max(rms_seen),
+                        "mean": statistics.fmean(rms_seen)} if rms_seen else None),
         "statistical_unit": "domain", "n_domains": len(domains), "domains": domains,
         "n_prompts_used": n_done, "skipped": skipped,
         "answer_prefix": a.answer_prefix,
