@@ -31853,3 +31853,89 @@ NEXT     monitor to 82/82, then STEP -1's operator checks and the frozen read in
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-362 — **R33's F5 is closed as far as a static scan can close it: the self-test now walks NESTED chains and catches 2 of the 4 mutations it used to miss.** 🔴 **And I violated VOID CONDITION 11 of my own running family — by the letter, not the intent — and am recording it rather than quietly not mentioning it**
+
+### 1. The self-test now sees nested subscripts
+
+It looked only at depth 1, so `pr["PRIMARY"]["alpha"]` was invisible. Chains are now walked to the
+root and resolved dotted. Measured against R33's four mutations plus the original defect:
+
+```
+delete PRIMARY.alpha                     CAUGHT   (was: exit 0)
+delete ...PER_HEAD.per_head              CAUGHT   (was: exit 0)
+delete population.validation_expect_n    missed   -- COMPUTED key
+delete per_head["21"].bar_source_arm     missed   -- HELPER ALIAS
+the FIRST FREEZE's two missing keys      CAUGHT   (the original case, still caught)
+the CURRENT prereg                       PASSES
+```
+
+**The two it still misses are now VISIBLE rather than silent.** A computed key used to make the
+whole chain vanish; the scan now reports the resolved prefix with a marker:
+
+```
+⚠ 4 COMPUTED-KEY site(s) -- a static scan CANNOT resolve these and they are NOT counted above.
+  Check them by hand:
+     <computed>   cell_sets.<computed>   head_sets.<computed>   population.<computed>
+```
+
+`population.<computed>` is exactly R33's blind spot, now on the screen. **A blind spot nobody can
+see is the R29 shape; one that announces itself is a caveat.** The measured 2-of-4 table is in the
+file's own docstring, because "it is a tripwire, not a proof" is worth less than the tripwire's
+actual reach. The freeze script re-emits **byte-identically** — md5 `8eedff85` unchanged.
+
+### 2. 🔴 VOID CONDITION 11, violated by the letter
+
+PR-CSI-020's VOID 11 reads *"scripts/ or src/ edited while arms are in flight"*. **Job 925438 has
+been running throughout this tick and I edited `scripts/`.**
+
+I checked what that actually touched, rather than assuming:
+
+```
+files the RUNNING JOB uses, vs the submit commit 88a5a219:
+   UNCHANGED  src/boombness/score_behavior.py
+   UNCHANGED  scripts/dcs_csi_arm_runner.py
+   UNCHANGED  scripts/gates/dcs_csi_pr010_argv.py
+   UNCHANGED  slurm_scripts/dcs_csi_pr010_arms.slurm
+   UNCHANGED  configs/dcs_csi_pr020_cell_census_basket_8heads.json
+changed since 88a5a219:  the log, and scripts/gates/dcs_csi_prereg_selftest.py
+                         -- a FREEZE-TIME tool the running job never loads
+```
+
+**The intent of VOID 11 is satisfied and its letter is not.** The condition exists because R30-D
+measured that per-arm `RUNMETA.git_commit` names the code that ran only for the first arm, so a
+mid-run edit to the *execution path* would be unprovable afterwards. A freeze-time linter is not
+the execution path.
+
+⛔ **I am NOT amending the frozen prereg to fix the wording.** The family is running; amending a
+frozen prereg mid-flight is a far worse act than the one it would paper over, and VOID 12 exists to
+forbid exactly that reflex. **The condition stands as written, the violation stands as recorded, and
+the evidence that the run path is untouched stands beside it.** Any future prereg should scope
+VOID 11 to the execution path by name instead of to `scripts/` wholesale.
+
+> **And the better answer was simply not to edit.** Nothing in this tick was urgent; the family
+> lands in ~4 h and the self-test could have waited. I reached for available work without checking
+> it against a condition I had written into the running family three entries earlier.
+
+### 3. NOT established
+
+```
+NOTHING IS MEASURED. 1 of 82 arms complete. Model load took 1376.5 s -- 8.9% longer than
+  PR-CSI-018's 1264.0 s, so the ~4.4 h estimate is, if anything, light.
+THE SELF-TEST IS NOT A PROOF and two of its four measured blind spots remain: computed keys
+  (reported but unresolvable) and helper-alias subscripts (not detected at all). R33's F5 is
+  narrowed, not eliminated.
+THIS TICK ADDED NO SCIENCE. It hardened a guard and disclosed a process violation.
+I DECLINED R34 (S-359) and that judgement remains live.
+```
+
+### 4. State
+
+```
+925438   RUNNING on n-301, 1 of 82 arms, all rc=0. Run path verified unchanged since submit.
+NEXT     monitor to 82/82 -- and make no further edits to scripts/ or src/ until it lands.
+```
+
+`git push` remains credential-blocked. Committed locally.
