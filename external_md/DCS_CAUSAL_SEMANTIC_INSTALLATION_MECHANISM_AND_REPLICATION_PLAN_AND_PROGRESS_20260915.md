@@ -29119,3 +29119,93 @@ NEXT         62/62 -> GATE 0 (FULL; must now exit 0, not merely print a banner) 
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-334 — **the last open R30 finding is closed: two generations of one arm are now a GATE 0 FAILURE, not a benign "IN FLIGHT".** And the frozen read was put through an **argv gate before the read** rather than discovered to be wrong during it
+
+### 1. R30-D CONCERN 2 — the relaunch shape the frozen read warns about, folded into a friendly message
+
+The sweep's in-flight branch printed `.. IN FLIGHT -- 2 run dir(s), no DONE.json yet (neither passed
+nor failed)` and continued, exit 0. **Two directories for one arm can never be legitimate.**
+
+The reason it matters here specifically: `_cands` is built from the **name glob alone** —
+`--require-slurm-job` filters inside `strict_run_dir`, *not* at this point — so two candidates means
+two **generations** of the same arm sitting exactly where the reader looks. That is the S-103/S-104
+relaunch shape the frozen read names in terms, and S-261's rule exists because the runner's
+skip-if-complete **RESUMES** into an existing arm dir rather than re-running it. R30-D put the real
+n-304 dir back beside a DONE-stripped live one and got the benign message and exit 0. The `>1` case
+was escalated only when at least one candidate carried a `DONE.json` — i.e. only in the half where
+`strict_run_dir` would have caught it anyway.
+
+Now a FAILURE, naming both dirs and citing S-261. **This is the last open finding from R30.**
+
+```
+R30-A  F1 F2 F5 fixed S-332 | F3 F4 F6 F7 fixed S-333
+R30-B  F1 F3 F4 fixed S-332 | F2 addressed as the FLOOR report, verdict unchanged (S-332 §4a)
+R30-C  clean; its one CONCERN REVERSED by my own re-derivation (S-332 §2)
+R30-D  CONCERN 1 fixed S-332 | CONCERN 2 fixed HERE | CONCERN 3 recorded, NOT fixed
+```
+
+### 2. The frozen read, put through an argv gate BEFORE it is executed
+
+S-293's lesson was that a launcher's flags must be checked against the script's own `argparse`
+rather than assumed. The same argument applies with more force to a **frozen read**, because a read
+happens once and cannot be retried. I parsed all three commands out of `runargs/dcs_csi_pr018_read.txt`
+and checked, **without executing any of them**, that each script exists, each flag is declared, and
+each path resolves:
+
+```
+[1] scripts/gates/dcs_csi_pr012_gate0_sweep.py   4 flags, all declared, prereg path OK
+[2] scripts/dcs_csi_head_census.py               6 flags, all declared, prereg OK, --out parent OK
+[3] scripts/dcs_csi_pr016_argmax_test.py         3 flags, all declared
+```
+
+**The frozen read is executable.** The only unresolved tokens are the documented
+`<VALIDATION_JOB_IDS>` placeholders.
+
+⚠ My checker flagged one "missing path" — STEP 2's `--census`, which names **STEP 1's output**. That
+is a false positive in the checker, not a defect in the read: a chained output does not exist before
+the step that writes it. Recorded because the next person to run this gate will meet the same flag,
+and because a checker that cannot tell an input from a downstream output would, run in anger, block
+a correct read.
+
+### 3. Verification
+
+```
+106 tests pass (was 105). One new, verified to FAIL on the pre-fix sweep by `git stash` on the
+  single file and PASS after:
+     TWO run dirs for ONE arm is a FAILURE, not a benign IN FLIGHT
+346 guard tests and 9 deliverable guards pass at commit.
+```
+
+### 4. NOT established
+
+```
+NOTHING WAS MEASURED. A SIXTH consecutive entry. No endpoint read; frozen read cbdf34a2 untouched;
+  no census, no primary, no claim-table row for PR-CSI-018.
+This fix changes NOTHING about the current family: PR-018 has exactly one run dir per arm, which
+  R30-D verified on the filesystem and I verified independently in S-331. It is insurance against
+  a relaunch that has not happened.
+The argv gate proves the read is SYNTACTICALLY executable. It proves NOTHING about whether the
+  numbers it will produce are right -- that is what GATE 0, VOID 8 and the primary's own refusals
+  are for.
+R30-D CONCERN 3 remains RECORDED AND NOT FIXED: per-arm RUNMETA.json re-runs `git rev-parse` at
+  each arm's start, so 33 of 34 arms name a commit that is not the code that produced them. Harmless
+  this run only because `src/` did not move (verified, S-332 §5). The family's commit of record is
+  the launcher's BLOB line, not any arm's git_commit.
+The attention-mass measurement STILL HAS NOT RUN. S-325's criterion frozen and UNAPPLIED; the
+  source-side family still BLOCKED by S-316, neither licensed nor refused.
+```
+
+### 5. State
+
+```
+PR-CSI-018   923972 on n-301, 53 of 62 arms, all rc=0, one generation. ~9 arms x 171 s = ~26 min.
+             Remaining: BF_H6_L12..L14 then the six HD_<h> whole-head arms -- which are the arms
+             VOID condition 8 and the ADMISSION rule both depend on, so the family is unreadable
+             until the very last one lands.
+NEXT         62/62 -> GATE 0 (FULL; must exit 0) -> census -> primary, in the frozen order.
+```
+
+`git push` remains credential-blocked. Committed locally.

@@ -1130,3 +1130,43 @@ def test_the_detectability_resolver_searches_BOTH_blocks_not_just_the_first(tmp_
     assert got == needle, (
         "the legacy detectability block was unreachable because a per-head block exists; the report "
         "published %r for a field the prereg DOES record" % (got,))
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+def test_TWO_run_dirs_for_ONE_arm_is_a_FAILURE_not_benign_IN_FLIGHT(tmp_path):
+    """R30-D CONCERN 2. `_cands` is built from the NAME GLOB ALONE -- --require-slurm-job filters
+    inside strict_run_dir, not here -- so two candidates means two GENERATIONS of one arm sitting
+    exactly where the reader globs. That is the S-103/S-104 relaunch shape the frozen read warns
+    about, and S-261's rule is that an earlier generation must be QUARANTINED rather than filtered
+    at read time, because the runner's skip-if-complete RESUMES into an existing arm dir.
+
+    The sweep printed the count inside a benign message -- ".. IN FLIGHT -- 2 run dir(s)" -- and
+    exited 0. The >1 case was escalated only when at least one candidate carried a DONE.json.
+
+    PROPERTY: two incomplete generations of one arm is a GATE 0 FAILURE."""
+    victim = "_CL_H23_L14_"
+
+    def mutate(farm, src, base):
+        if victim not in base:
+            return False
+        # generation A: the real dir, DONE.json withheld (still being written)
+        for stamp in (None, "_20260101_000000_999999"):
+            if stamp is None:
+                dst = farm / base
+            else:
+                # generation B: the SAME arm under an earlier timestamp -- a relaunch leftover
+                head = base.rsplit("_2026", 1)[0]
+                dst = farm / (head + stamp)
+            dst.mkdir()
+            for f in os.listdir(src):
+                if f == "DONE.json":
+                    continue
+                os.symlink(os.path.join(src, f), dst / f)
+        return True
+
+    rc, out = _run_sweep(_sweep_farm(tmp_path, mutate))
+    assert "2 run dir(s) for ONE arm" in out, (
+        "two generations of one arm were folded into a benign IN FLIGHT message:\n%s" % out[-900:])
+    assert "GATE 0 FAIL" in out, out[-900:]
+    assert rc not in (0, None), "two incomplete generations of one arm exited %r" % (rc,)
+    assert "S-261" in out, "the refusal did not name the quarantine rule:\n%s" % out[-600:]

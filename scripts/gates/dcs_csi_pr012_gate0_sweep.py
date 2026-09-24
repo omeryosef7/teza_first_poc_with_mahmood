@@ -212,6 +212,26 @@ def main():
             # the arm-count guard is what catches a family that never completed.)
             _done = [x for x in _cands if os.path.exists(os.path.join(x, "DONE.json"))]
             if not _done:
+                # ⚠ R30-D/S-334: MORE THAN ONE RUN DIR FOR ONE ARM IS NEVER LEGITIMATE, and this
+                # branch used to print the count inside a benign message and move on. `_cands` is
+                # built from the NAME GLOB ALONE -- `--require-slurm-job` filters inside
+                # strict_run_dir, not here -- so two candidates means two GENERATIONS of the same
+                # arm sitting where the reader looks. That is the S-103/S-104 relaunch shape the
+                # frozen read warns about in terms, and S-261's rule is that an earlier generation
+                # must be QUARANTINED rather than filtered at read time, because the runner's
+                # skip-if-complete RESUMES into an existing arm dir.
+                #
+                # R30-D put the real n-304 dir back beside a DONE-stripped live one and the sweep
+                # printed ".. IN FLIGHT -- 2 run dir(s)" and "every landed arm passes", exit 0. The
+                # >1 case was escalated only when at least one candidate carried a DONE.json.
+                if len(_cands) > 1:
+                    fails += 1
+                    print("%-12s  ⚠ GATE 0 FAIL -- %d run dir(s) for ONE arm, none complete. "
+                          "Two generations of an arm cannot coexist where the reader globs; the "
+                          "earlier one must be QUARANTINED, not filtered at read time (S-261). "
+                          "Dirs: %s" % (arm, len(_cands),
+                                        ", ".join(os.path.basename(x) for x in sorted(_cands))))
+                    continue
                 incomplete += 1
                 print("%-12s  .. IN FLIGHT -- %d run dir(s), no DONE.json yet (neither passed nor "
                       "failed)" % (arm, len(_cands)))
