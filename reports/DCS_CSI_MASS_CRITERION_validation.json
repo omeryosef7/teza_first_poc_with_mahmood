@@ -1,0 +1,20 @@
+{
+  "schema": "dcs_csi_mass_criterion/1",
+  "criterion": "S-325, applied to nondemo_matched_d1",
+  "runs": [
+    {
+      "run": "retrmass_button_validation_20260924_070942_105877",
+      "rho": 0.7106431498110122,
+      "frac_md_gt_mc": 0.8173913043478261,
+      "n_rows": 230,
+      "verdict": "REFUTATION test ONLY"
+    },
+    {
+      "run": "retrmass_basket_validation_20260924_070942_105876",
+      "rho": 0.7655363523790951,
+      "frac_md_gt_mc": 0.7913043478260869,
+      "n_rows": 230,
+      "verdict": "REFUTATION test ONLY"
+    }
+  ]
+}

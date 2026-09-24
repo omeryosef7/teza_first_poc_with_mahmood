@@ -30081,3 +30081,97 @@ NEXT              apply the committed criterion script (S-341) to the new runs; 
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-343 — **the corrected mass measurement lands. ✅ The VERDICT IS UNCHANGED — `REFUTATION TEST ONLY` on both codewords — but every MAGNITUDE S-337 published was d2's, not d1's.** 🔴 And the S-339 diagnosis is confirmed **bit-identically, per row, on 460 rows**: the new d2 IS the old d1
+
+### 1. The confirmation, which is stronger than I expected
+
+S-339 predicted a specific coincidence: the old run's `d1` was seeded
+`nondemo_draw_seed(nondemo_draw_seed(seed,1),1) = seed + 2·stride`, which is exactly the seed a real
+arm uses for **d2**. If that diagnosis was right, the corrected run's d2 must reproduce the old run's
+d1 exactly. It does:
+
+```
+                        NEW run (fixed)          OLD run (double-strided)
+button  d1              rho 0.710643 (188/230)   rho 0.595093 (223/230)
+        d2              rho 0.595093 (223/230)   rho 0.809371 (203/230)
+        d3              rho 0.854922 (191/230)   rho 0.677382 (226/230)
+basket  d1              rho 0.765536 (182/230)   rho 0.627889 (219/230)
+        d2              rho 0.627889 (219/230)   rho 0.843498 (185/230)
+        d3              rho 0.879005 (173/230)   rho 0.703548 (218/230)
+
+NEW d2 == OLD d1 :  BIT-EQUAL, and PER-ROW IDENTICAL ON ALL 230 ROWS -- on BOTH codewords.
+```
+
+The old d2 and d3 (strides 4 and 6) have **no counterpart** in the corrected run, exactly as
+predicted — no arm uses those seeds. A diagnosis that predicts a bit-exact coincidence on 460 rows
+and gets it is as close to proof as this sprint gets.
+
+### 2. ✅ THE VERDICT IS UNCHANGED
+
+```
+codeword   rho = median(m_c/m_d)   rows with m_d > m_c   branch A   branch B
+button          0.710643            188 of 230 (81.7%)    False      TRUE
+basket          0.765536            182 of 230 (79.1%)    False      TRUE
+
+>>> FROZEN VERDICT, BOTH CODEWORDS INDEPENDENTLY:  REFUTATION TEST ONLY
+```
+
+Not straddling: branch A fails and branch B holds on both, as before. **S-337's licence stands, and
+every downstream consequence of it stands** — S-316 remains partially lifted in one direction only,
+and no confirmatory source family is licensed.
+
+### 3. 🔴 But the MAGNITUDES are corrected, and so is a claim I made about domains
+
+```
+                        S-337 PUBLISHED      CORRECTED (d1, the criterion's own quantity)
+button rho                  0.595093              0.710643
+button rows m_d > m_c    223 of 230 (97.0%)    188 of 230 (81.7%)
+basket rho                  0.627889              0.765536
+basket rows m_d > m_c    219 of 230 (95.2%)    182 of 230 (79.1%)
+domains with rho < 1     "23 of 23, BOTH"      22 of 23 (button), 21 of 23 (basket)
+```
+
+⚠ **"23 of 23 domains on both codewords" was wrong** — it is 22 and 21. I called that result
+"unanimous" in S-337; it is not, and the corrected figure is the one that goes in the table.
+
+⚠ **And S-338's 0.75 rationale degrades once more.** It quoted ρ = 0.595; the criterion's actual d1
+is **0.711** (button). "75% of the damage from 71% of the mass" is a ratio of **1.05** — against the
+1.26 I originally claimed and the 1.08 S-339 corrected it to. Moot, since PR-CSI-019 is withdrawn,
+but it is the third time that number moved in the same direction, and each move came from checking
+something I had asserted rather than measured.
+
+### 4. NOT established
+
+```
+THE CORRECTED RUNS STILL DO NOT SELF-WITNESS THEIR SEEDS. They predate S-341's
+  `strict_protected_draw_seed` field, so the criterion script prints "provenance CANNOT be verified
+  here" for them too. Their correctness rests on: the committed test that FAILS on the pre-fix
+  file, the code read at both call sites, and the bit-exact d2==old-d1 coincidence above. That is
+  three independent lines, none of them the artefact itself. The first self-witnessing run is the
+  next one.
+THE MEASUREMENT STILL SAYS NOTHING ABOUT y_install, any head or cell, or PR-CSI-018. It is
+  attention geometry -- forward-only, no intervention, no endpoint read. Mass is not function, and
+  S-342 measured how badly: 8.7x spread in damage-per-mass across six heads at fixed scale.
+NO SOURCE-SIDE FAMILY IS DESIGNED, PREREGISTERED OR RUN. PR-CSI-019 remains WITHDRAWN (S-339/340).
+AM-40's correction (S-337 §3) is UNAFFECTED: it concerned the UNPROTECTED
+  `ctrl_mass_band_REFERENCE_ONLY` field at ~3.7x, which this re-run reproduces and which remains
+  the wrong quantity for the claim it was doing duty in.
+```
+
+### 5. State
+
+```
+924666 / 924667   COMPLETED 0:0 in 21:54 / 21:56 on n-301.
+                  retrmass_button_validation_20260924_070942_105877
+                  retrmass_basket_validation_20260924_070942_105876
+                  reports/DCS_CSI_MASS_CRITERION_validation.json  (the committed script's output)
+CLAIM TABLE       AM-43 CORRECTED this entry.
+NEXT              the queue is EMPTY. No family is designed. The open branches are a replacement
+                  source-side design (constrained by S-342: random head subsets, multiple per size)
+                  or an entirely different question.
+```
+
+`git push` remains credential-blocked. Committed locally.
