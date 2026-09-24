@@ -31992,3 +31992,60 @@ NEXT     monitor to 82/82, then STEP -1's operator checks and the frozen read in
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-364 — **12 of 82, GATE 0 clean on every one, and the arm rate measured properly: 149 s on BASKET against PR-CSI-018's 173 s on BUTTON.** Projected 3.78 h against a 12 h walltime
+
+### 1. The rate, with the non-repeating event excluded
+
+S-327 is the entry where I overestimated a load by 2.07x by extrapolating from its first nine
+shards, and its lesson was not "distrust extrapolation" but **identify the non-repeating events and
+exclude them before you extrapolate**. Applied here:
+
+```
+13 arm dirs, 12 inter-arm gaps
+   ONE gap of 1577 s, before BK_KO -- the model load. EXCLUDED, by name, not by trimming.
+   the other 11: median 149.0 s, tightly clustered
+
+remaining 69 arms x 149 s = 2.86 h
+projected TOTAL from job start = 3.78 h   (load 1376.5 s + 82 x 149 s)
+against a 12 h walltime -> 3.2x headroom
+```
+
+📌 **Basket arms run ~14% FASTER than button's**: 149 s against the 173 s PR-CSI-018 measured. My
+pre-launch estimate used 178 s/arm borrowed from that button job (S-357), so it was conservative in
+the right direction — the family lands sooner than the number I recorded, not later.
+
+### 2. GATE 0, still clean
+
+```
+12 arms PASS, 1 in flight, 69 never landed.   EXIT = 3
+```
+
+Exit 3, correctly: S-332's change means a partial sweep can no longer be mistaken for a complete
+pass. Every landed arm's dose matches the prereg — 0 for `BK_BASE`, 2016 for `BK_KO`, 224 for each
+cell arm — and identity is verified from each arm's own `knockout_cells`.
+
+### 3. NOT established
+
+```
+NOTHING IS MEASURED. 12 of 82 arms; NO endpoint has been read. The sweep prints "No endpoint
+  field was read" and that is the whole reason it is safe to run mid-flight.
+THIS IS NOT THE FAMILY'S GATE 0 VERDICT. 69 arms have never landed. An arm still lacking
+  DONE.json once the job is GONE has DIED, and the in-flight branch cannot tell those apart.
+THE RATE IS A PROJECTION, not a promise -- 11 gaps, one node, one bank. The 3.2x walltime
+  headroom is what makes it safe to be wrong about, which is the same reasoning S-357 used and
+  the same reasoning that would have saved S-327.
+NO EDITS TO scripts/ OR src/ THIS TICK (S-362's VOID 11 disclosure). The rate script lives in
+  the session scratchpad; this entry touches external_md only.
+```
+
+### 4. State
+
+```
+925438   RUNNING on n-301, 12 of 82, all rc=0, partial GATE 0 clean, ~2.9 h remaining.
+NEXT     monitor to 82/82, then STEP -1's operator checks and the frozen read in order.
+```
+
+`git push` remains credential-blocked. Committed locally.
