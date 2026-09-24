@@ -29391,3 +29391,125 @@ NOTHING IS MEASURED. Both jobs are PENDING. No attention mass exists, S-325's cr
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-337 — 🔴 **S-325's FROZEN CRITERION IS APPLIED AND IT RESOLVES: the source-side family is licensed as a REFUTATION TEST ONLY, on both codewords independently.** ⚠ **And it REVERSES the direction AM-40 recorded** — the protected control removes **LESS** band mass than the demonstrations (ρ ≈ 0.60–0.63), not the ~3.85× MORE that row quotes
+
+### 1. The measurement
+
+Jobs `924485` (basket) and `924486` (button), both COMPLETED `0:0` in 20:58 on n-301, provenance
+`BLOB d0e4444c PORCELAIN clean`. 230 rows each — the exclusion list dropped 930 of 21 342, leaving
+exactly the validation population the CSI arms use. **Zero infeasible strict draws; zero rows where
+the d1 key count differs from the demo count** (56 vs 56 on the hand-checked row) — the count-match
+that the whole comparison presupposes is verified, not assumed.
+
+### 2. The criterion, quoted and applied — NOT paraphrased
+
+```
+m_d = demo-block mass ; m_c = the STRICT, PROTECTED nondemo_matched_d1 draw's mass
+report the median ratio rho = m_c/m_d AND the per-row count of rows with m_d > m_c
+  rho >= 1.0 and m_d > m_c on < 50%  ->  CONFIRMATORY source test
+  rho <= 1.0 and m_d > m_c on > 50%  ->  REFUTATION test ONLY
+  mixed / straddling                  ->  CANNOT ANSWER, nothing licensed
+```
+
+```
+codeword   rho = median(m_c/m_d)    rows with m_d > m_c     branch A   branch B
+basket           0.627889            219 of 230  (95.2%)      False      TRUE
+button           0.595093            223 of 230  (97.0%)      False      TRUE
+
+>>> FROZEN VERDICT, BOTH CODEWORDS INDEPENDENTLY:  REFUTATION TEST ONLY
+```
+
+Not straddling: both halves of branch B hold on both codewords, and branch A fails on both.
+
+**Re-derived by me twice, by two methods.** Median by `statistics.median` and again by sorting the
+230 ratios and taking the midpoint — identical to six decimals. Counts reconcile exactly
+(219 + 11 = 230, 223 + 7 = 230). One row hand-checked end to end.
+
+⚠ The criterion names **`d1` specifically**, so d1 is what it is applied to. d2 and d3 are reported
+as robustness and **are not the quantity**: `d2` ρ = 0.843/0.809, `d3` ρ = 0.704/0.677, all four
+below 1.0 with m_d > m_c on 80.4–98.3% of rows. Same direction, no branch change.
+
+⚠ **Codewords are NOT pooled** (§3.3). Two independent measurements that agree; not an n of 460.
+
+📌 **Supplementary, at the sprint's own statistical unit.** The criterion is frozen as a per-row
+statistic (C-CONT-019's was a per-row count and §1 of S-325 says it must stay one), so per-row is
+how it was applied. At the DOMAIN unit the answer is unanimous anyway: **23 of 23 domains have
+ρ < 1 on both codewords**, domain-median-of-medians 0.656 (basket) and 0.583 (button).
+
+### 3. 🔴 THE CORRECTION: AM-40's direction is REVERSED by the protection
+
+AM-40 records *"demo **0.0630** vs ctrl **0.2421** = **3.85×**"* — the control removing nearly four
+times MORE band mass than the demonstrations. That number comes from the field the producer itself
+names **`ctrl_mass_band_REFERENCE_ONLY`**, and this run reproduces its family exactly:
+
+```
+ctrl_mass_band_REFERENCE_ONLY  median ratio vs m_d = 3.7426 (basket) / 3.6767 (button)
+STRICT, PROTECTED d1 draw      median ratio vs m_d = 0.6279 (basket) / 0.5951 (button)
+                                                      ^^^ a factor of ~6, and the OPPOSITE SIDE OF 1
+```
+
+**The unprotected pool draws from the query/generation span**, which carries most of the attention
+at the readout position. Excluding it — which is what `query_span_positions` protection does, and
+what every real arm does — does not shrink the control's mass a little. **It moves it from four
+times the demo block to three fifths of it.** AM-40's *conclusion* (the source question is open, the
+count-matched control is not mass-matched) survives intact; **its number pointed the wrong way**, and
+a source-side family designed against 3.85× would have been designed against the wrong confound.
+
+> A field named `_REFERENCE_ONLY` by its own author was doing load-bearing work in a claim-table
+> row. The name was the warning and it was not heeded — including by me, in S-319, when I
+> re-derived that very number and reported only that the predecessor's *magnitude* did not
+> reproduce. **I checked the arithmetic of the wrong quantity.**
+
+### 4. What is now LICENSED, and what is still not
+
+From S-325's own table, with `m_c < m_d` established:
+
+```
+m_c < m_d, control NULL   ->  less attention removed, less damage.  CONFOUNDED -- says nothing.
+m_c < m_d, control EQUAL  ->  LESS attention removed, SAME damage.  CLEAN REFUTATION of
+                              source-specificity.
+```
+
+So: **a source-side family may be preregistered, and its prereg MUST state that it is licensed for
+the REFUTATION reading only.** If the count-matched control comes out EQUAL to `demo_all`, that is a
+clean refutation of source-specificity. If it comes out NULL, that outcome is **confounded and must
+be reported as CANNOT ANSWER, not as support** — the null is exactly what less-mass-less-damage
+predicts anyway.
+
+⛔ **S-316's block is now PARTIALLY lifted — in one direction only.** It is not lifted for a
+confirmatory source claim, and no such family may be designed.
+
+### 5. NOT established
+
+```
+NO SOURCE-SIDE FAMILY HAS BEEN RUN, designed or preregistered. This entry licenses a DIRECTION;
+  it measures nothing about whether the demonstrations are the source.
+The mass measurement says NOTHING about y_install, about any head or cell, or about PR-CSI-018.
+  It is a property of the ATTENTION GEOMETRY of the prompt, measured forward-only with no
+  intervention and no endpoint read.
+It does NOT establish that the demo block is "where the retrieval happens" -- mass is not
+  function, and a low-mass set can carry a large causal effect. That asymmetry is the whole
+  reason the criterion licenses only the REFUTATION reading.
+⚠ The 3.85x -> 0.63x correction is a correction to AM-40's NUMBER and its DIRECTION. AM-40's
+  verdict (source question open, count-matched control inadmissible as a mass control) STANDS.
+The run carries a PROVENANCE WARNING -- `seed_never_applied`, because `seed_everything` was never
+  called. VERIFIED NOT TO MATTER HERE: the draws use `random.Random(int(control_seed))`
+  explicitly (score_behavior.py:1508), so they are deterministic from --seed 20260913 and are the
+  draws the real arms make. The warning is a correct general guard, checked rather than waved.
+```
+
+### 6. State
+
+```
+924485 / 924486   COMPLETED, criterion APPLIED, verdict REFUTATION-ONLY on both codewords.
+                  retrmass_basket_validation_20260924_053138_98119
+                  retrmass_button_validation_20260924_053138_98118
+PR-CSI-018        READ, PASSED, CLOSED (S-335). D39/AM-42 in the claim table.
+NEXT              the queue is EMPTY. The highest-value branch is a source-side family
+                  preregistered FOR THE REFUTATION READING, stating that licence in its own text.
+```
+
+`git push` remains credential-blocked. Committed locally.
