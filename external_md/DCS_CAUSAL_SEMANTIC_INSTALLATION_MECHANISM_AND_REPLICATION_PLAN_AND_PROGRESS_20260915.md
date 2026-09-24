@@ -33734,3 +33734,132 @@ NEXT     part 2 of the design pass: decide projection-vs-probe, check whether do
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-379 — RUNG 2 design pass, part 2: projection-vs-probe is **DECIDED** (projection, and the code already exists), the direction is **fit on nothing**, the floor **re-derives as admissible** — and 📌 **the POWER cannot be estimated without assuming the very thing the ladder says is separable.** Still nothing frozen (2026-09-24)
+
+### 1. ✅ DECIDED — projection, not a trained probe, and it needs no new instrument
+
+`dominance_at()` already takes `direction: Dict[layer -> d_model vector]` and returns
+`D_dir: {layer: [n_head, T]}` — **the per-HEAD, per-SOURCE-POSITION contribution along that
+direction**. That is exactly the granularity S-378 said rung 2 needs and the QPROBE lacks.
+
+```
+PROJECTION   dominance_at(..., direction=u) -> scalars per (head, source). EXISTS.
+PROBE        needs the CONTRIBUTION VECTORS, which the API does not return (it returns
+             scalars along u) -- so it needs new capture, new training, and it re-opens the
+             "stupid-probe problem" probes.py documents.
+```
+
+The sprint's rule is *"write new code only where nothing fits."* Projection fits. **Decided.**
+
+### 2. ✅ The direction is given by the model and fit on NOTHING
+
+The endpoint itself settles it. `load_installation` defines `y_install` from `logp_concept` vs
+`logp_codeword` — a binary probability between the **concept token and the codeword token** at the
+concept-free one-word readout. So the natural direction is the unembedding difference between
+exactly those two tokens.
+
+📌 **And it is already implemented.** `scripts/dcs_cont_logitlens_control.py` computes
+
+```
+ll(h) = logsumexp_j <norm(h), W[concept_j]> - logsumexp_k <norm(h), W[codeword_k]>
+```
+
+using *"the unembedding rows for the concept and codeword tokens only -- four rows of `lm_head`"*,
+with **token ids FROZEN in the file and, in its own words, "not chosen by looking at which ones
+correlated with anything."**
+
+**This sidesteps the S-279 two-coordinate bind for the DIRECTION entirely.** Every saved axis in
+`configs/` was FIT — and fit at L18/L20, outside the band, where a layer-specific direction does not
+transfer anyway. The unembedding difference is fit on no split, so it cannot be contaminated by one.
+⚠ It does **not** sidestep the bind for HEAD IDENTITY, which remains validation-selected; S-378's
+within-head comparison is still the reason the design is admissible at all.
+
+⚠ **One honest methodological wrinkle, recorded now rather than discovered later.** The logit lens
+applies the model's FINAL RMSNorm before dotting with `W`; `dominance_at`'s `D_dir` projects the
+head's contribution onto `u` in the RESIDUAL basis, with no norm. RMSNorm is a nonlinear rescaling,
+so **the per-cell projection is a first-order approximation of that cell's logit-lens contribution,
+not an identity.** Any claim must say so. Deciding whether that approximation is acceptable — or
+whether the norm can be folded in — is part 3, not something to wave through here.
+
+### 3. ✅ The FLOOR re-derives as admissible
+
+Re-derived from the prereg rather than cited from S-366, because it is load-bearing. The design
+reuses PR-CSI-020's eight heads and the SAME frozen prediction multiset, so the floor structure is
+identical:
+
+```
+binomial     2.323057312542e-08     conditional  1.524157902759e-04
+permutation  9.920634920635e-05     WEAKEST = conditional 1.5242e-04  <= alpha 0.05   ADMISSIBLE
+K_unique = 4 [10, 11, 18, 21]       10080 distinct assignments
+minimum to certify at K=8:  M >= 3  (0.04999816)   AND   M_unique >= 3  (0.00502972)
+```
+
+So unlike the arbitrary-cell test (1/9 floor, could never certify) and unlike a button extension
+(K=2 ceiling, 0 of 28 sets can certify), **this design CAN produce a verdict.**
+
+### 4. 📌 THE POWER CANNOT BE ESTIMATED, and the reason is the whole point of the ladder
+
+The floor says what is *possible*; power says what is *likely*, and it turns on `q` — the
+probability that a head's DECODABILITY argmax lands on its screen-predicted layer.
+
+**The tempting move is to borrow PR-CSI-020's causal rate: 6 of 8, and reuse S-354's power table
+at q ≈ 0.75-0.83. That move is FORBIDDEN, and not by a rule of thumb.** AM-34's ladder says in
+terms: *"Information may be readable at a site without being used there"* and *"the four forms of
+evidence are separable."* **Assuming the decodability argmax behaves like the causal argmax assumes
+precisely the coincidence the rung-2 experiment exists to test.** Using it to power the experiment
+would make the design circular before a single arm ran — the S-346 shape (summing a quantity against
+a frozen prohibition that forbids exactly that) one level up.
+
+So the honest position, and it must go in any prereg verbatim:
+
+```
+FLOOR        known, admissible, re-derived above
+POWER        a FUNCTION of q, tabulated with NO assumed q, exactly as PR-CSI-020's was
+A NULL       WEAK. Same asymmetry as PR-CSI-020: this design can confirm a strong effect and
+             cannot distinguish a mediocre one from none -- preregistered, not discovered
+```
+
+### 5. ⛔ Fences that must be frozen with it
+
+```
+- NO post-hoc subsetting by CAUSAL match. D40 recorded which heads matched causally (4, 6, 11,
+  13, 18, 21) and which missed (10, 27). Reporting decodability restricted to the causal
+  matchers -- in either direction -- would be exactly the post-hoc subsetting the prereg line
+  already forbids, and it would be worse here because the subset is defined by a PUBLISHED result.
+- NO reinforcement of D40. A rung-2 result stands BESIDE the necessity claims, never as a
+  stronger version of them. Letting decodability corroborate a necessity headline is R19's error.
+- NOT held out on codeword. Same limitation as PR-CSI-020: split only.
+- The projection is an APPROXIMATION of the logit-lens contribution (section 2's wrinkle).
+```
+
+### 6. What was NOT established, and what is STILL not frozen
+
+```
+- NOTHING IS FROZEN. No prereg, no read, no tag prefix. The composed instrument -- dominance_at
+  driven with the logit-lens concept-minus-codeword direction, evaluated at BAND layers over
+  demonstration-block source positions -- DOES NOT EXIST as a runnable script. S-167c applies.
+- NOT established: anything about the model. No number was measured this tick. This entry
+  decides a design question and rules two options out.
+- NOT established: that the RMSNorm approximation is acceptable. Named, not resolved.
+- NOT verified: that dcs_cont_logitlens_control.py still runs, or that its frozen token ids are
+  the ones this codeword pair uses. It has NEVER produced a report under reports/ -- so it is
+  either unrun or its output went elsewhere, and I did not chase which.
+- NOT decided: whether the destination position should be the readout row alone or the whole
+  target surface row. The intervention's scope is `target_surface_row_only`; the decodability
+  question may not want the same scope, and matching them by reflex is how an instrument ends
+  up measuring the intervention rather than the representation.
+```
+
+### 7. State
+
+```
+QUEUE    EMPTY. No admissible cell-census question remains (S-374).
+CHANGED  external_md/...20260915.md  +S-379 only. No code, no prereg, no deliverable.
+NEXT     part 3: verify dcs_cont_logitlens_control.py's token ids and that it runs; resolve the
+         RMSNorm approximation; decide the destination scope; and only then write a design.
+```
+
+`git push` remains credential-blocked. Committed locally.
