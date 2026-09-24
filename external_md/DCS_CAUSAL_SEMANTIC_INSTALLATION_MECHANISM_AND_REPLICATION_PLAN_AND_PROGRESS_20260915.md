@@ -32895,3 +32895,125 @@ NEXT     when 925438 is gone: apply the two S-369 patches, run the 346 guard tes
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-371 — both S-369 patches BUILT AND VERIFIED END TO END on isolated copies, while the family is still in flight. The tie leak is reproduced on the REAL reader and closed; GATE 0 now fails the duplicate it used to pass. The repo is still untouched (2026-09-24)
+
+### 1. What this tick did and why it is not a VOID 11 violation
+
+`925438` is still running (74 of 82), so `scripts/` and `src/` remain frozen. The patches specified
+in S-369 were therefore built and tested **entirely outside the repo**: a mirror tree at
+`scratchpad/mirror/` holding a COPY of `scripts/`, with its own empty
+`outputs/boombness/score_behavior/`. Every reader derives `REPO` from `os.path.abspath(__file__)`,
+so the mirror's sweep resolves `SCORE_DIR` to the mirror's own fixture directory. **The live
+family's output tree was never written to, and never globbed by the tests.**
+`git status --porcelain scripts/ src/` is EMPTY.
+
+The patcher is `scratchpad/apply_s369_patches.py`. It is anchor-matched and **refuses unless each
+anchor matches EXACTLY once**, so if either file has moved under it the patch will not apply
+silently — it will stop and say the file changed. It is idempotent (re-running prints ALREADY
+APPLIED). Neither patch touches the statistic, the gating rule, or any threshold.
+
+### 2. 🔴 BLOCKER 2 reproduced on the REAL, UNPATCHED reader — not on a model of it
+
+A synthetic census in the census's own output shape, with head 13 tied between L10 (its screen
+layer) and L6, run through the repo's own `scripts/dcs_csi_pr016_argmax_test.py`:
+
+```
+VERDICT       CANNOT ANSWER
+M_matches     None      p_one_sided  None
+p_conditional None      p_permutation None        <- correctly nulled
+gating_p_name permutation
+gating_p      0.0001984126984126984               <- THE LEAK: 2/10080
+ROBUSTNESS.M_unique  4                            <- a SCORING count on an undetermined read
+```
+
+**1.98e-04 is two orders of magnitude inside alpha**, published on the branch whose own text says
+*"M and p are NOT computed: a tied head is undetermined, not a miss."* Every other quotable field
+is `None`; the one the prereg says the claim must be stated with is not. This is no longer a
+reviewer's claim — it is the shipped reader's output.
+
+After the patch, same fixture, same command:
+
+```
+VERDICT       CANNOT ANSWER
+gating_p_name None
+gating_p      None
+ROBUSTNESS.K_unique 4      <- an OBSERVATION (which heads were admitted): retained
+ROBUSTNESS.M_unique None   <- a SCORING count: nulled
+```
+
+### 3. ✅ The regression test that matters more than the fix
+
+A patch to a reader minutes before the reader runs is only safe if it changes nothing else. On a
+**non-tie** census the two readers were run head to head:
+
+```
+VERDICT       PASS   / PASS
+M_matches     8      / 8
+p_one_sided   2.3230573125418763e-08 / 2.3230573125418763e-08
+gating_p_name conditional / conditional
+gating_p      0.00015241579027587256 / 0.00015241579027587256
+FULL OUTPUT DICT IDENTICAL:  True
+```
+
+Byte-identical. And note the perfect-result gate reads **1.5242e-04**, reproducing the prereg's
+frozen `ALL_THREE_FLOORS_AT_K8.WEAKEST` exactly — an independent confirmation, from the reader
+rather than from arithmetic, that a perfect outcome lands on the floor the freeze declared.
+
+### 4. 🔴 BLOCKER 1 reproduced and closed
+
+Fixture: three arms, of which `BK_A` has TWO run dirs — an older INCOMPLETE generation (no
+DONE.json) beside the complete one. `strict_run_dir` returns the survivor, so the duplicate was
+never re-examined.
+
+```
+BEFORE  BK_A   5   224   224   0   0   matches prereg   PASS
+AFTER   BK_A   ⚠ GATE 0 FAIL -- 2 run dir(s) for ONE arm. Two generations of an arm cannot
+               coexist where the reader globs; the earlier one must be QUARANTINED, not
+               filtered at read time (S-261/S-334).
+               Dirs: fx334_BK_A_20260924_090000_1, fx334_BK_A_20260924_120200_1
+```
+
+The frozen read promises exactly this by name (`read.txt:192-194`). It now happens, and the message
+NAMES BOTH DIRECTORIES so the operator can quarantine the right one.
+
+⚠ **An honest limit of this fixture.** One arm in it (`BK_KO`) fails identity for a reason of my
+own making — I could not get its `knockout_cells`/`knockout_heads` pair into the shape the sweep
+requires for the all-32 denominator. That failure is CONSTANT across the before and after runs and
+is irrelevant to the comparison, which is the `BK_A` line. I am recording it rather than presenting
+a clean fixture I did not build.
+
+### 5. What was NOT established
+
+```
+- NOT established: that either blocker would have fired on THIS family. Both are conditional on
+  states 925438 may never reach. They are fixed because a read that CAN publish a headline p on
+  a non-answer is not a read.
+- NOT tested: the 346 guard tests against the patched files. They cannot run against the repo
+  until VOID 11 lifts. They run at the commit that applies the patch, and that commit is the
+  gate -- if any guard test regresses, the patch does not land.
+- NOT applied: nothing in scripts/ or src/ has changed. Verified by git status at the time of
+  this entry.
+- NOT fixed: the four R34-B/C concerns that are not blockers (VOID 8 pinning only the mean, the
+  unenforced bootstrap, the vacuous TEST-leak check, pr016:134's unguarded alias). They are
+  recorded in S-369/S-370 and are NOT part of this patch. Widening a patch written minutes
+  before a read is how a safe change becomes an unsafe one.
+- NOT read: any endpoint, effect, bar or argmax of PR-CSI-020. The tie and non-tie censuses are
+  SYNTHETIC and carry a "SYNTHETIC ... NOT a measurement" marker in the artefact itself.
+```
+
+### 6. State
+
+```
+925438   RUNNING on n-301, 74 of 82, all status=ok, no duplicate arm tags. The 8 remaining are
+         the eight HD_ arms -- VOID 8's evidence, and the last thing this job produces.
+CHANGED  external_md/...20260915.md  +S-371 only.  scripts/ and src/ UNTOUCHED (VOID 11).
+READY    scratchpad/apply_s369_patches.py -- anchor-checked, idempotent, both effects verified.
+NEXT     when 925438 is gone: (1) apply the patcher to the repo, (2) run the 346 guard tests,
+         (3) commit, (4) STEP -1 in order, (5) GATE 0 must exit 0, (6) census, (7) primary.
+         Stop at the first failure.
+```
+
+`git push` remains credential-blocked. Committed locally.
