@@ -33610,3 +33610,127 @@ NEXT     the RUNG 2 design pass -- the only unexhausted direction that changes t
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-378 — RUNG 2 design pass, part 1: 📌 **the sprint ALREADY has a published probe result, and AM-34's "nothing has ever reached RUNG 2" survives — on four grounds, the sharpest being that the probe's layer grid and the causal band are FULLY DISJOINT.** Design only; nothing frozen (2026-09-24)
+
+### 1. The question this tick had to settle first
+
+S-374 left RUNG 2 as the only unexhausted direction. Before designing one I applied S-367's rule and
+looked for what already exists — and found that the sprint has **both** probe machinery and a
+**published probe result**:
+
+```
+src/boombness/probes.py        963 lines. A trained linear probe with FOUR train/test regimes,
+                               including d3_hard_negative (train on the easy diagonal, test on the
+                               OFF-DIAGONAL cells) and d4_heldout_ds (train with cell C REMOVED,
+                               then score C). It documents the "stupid-probe problem" in terms.
+src/boombness/dominance.py     per-CELL contributions Y[l,h,dst,src,:] = A[l,h,dst,src] *
+                               (W_O[l,h] @ v[l,h,src]) -- head output at (layer, head, source).
+D2 / D3 (claim table)          the QPROBE: a query-side state PREDICTS INSTALLATION.
+                               TRAIN LOO rho = 0.5935, VALIDATION transfer +0.645 button /
+                               +0.653 basket, perm p = 0.004975.
+```
+
+AM-34 states flatly: **"NOTHING IN THIS SPRINT HAS EVER REACHED RUNG 2, 3 OR 4."** D2 is a decoding
+result with a held-out transfer and a permutation p. **If AM-34 is wrong, the ladder tag on every
+claim in the paper is wrong.** So this had to be checked, not assumed.
+
+### 2. ✅ AM-34 SURVIVES. Four independent grounds, one of them exact
+
+```
+(1) LAYERS ARE FULLY DISJOINT -- the decisive one, and it is arithmetic, not judgement:
+      QPROBE layer grid   [16, 18, 20, 22, 24, 26, 28, 30, 31]
+      CSI causal band     [6, 7, 8, 9, 10, 11, 12, 13, 14]
+      INTERSECTION        EMPTY
+    The probe has never been evaluated at a single layer this sprint's causal claims are about.
+
+(2) POSITION. QPROBE reads a QUERY-SIDE state (winner rel-6). The intervention is
+    `demo_all:attn_knockout:6-14:1.0` with scope `target_surface_row_only` -- the DEMONSTRATION
+    block and the target surface row. Different positions in the prompt.
+
+(3) TARGET. QPROBE decodes the INSTALLATION OUTCOME (continuous, Spearman rho). RUNG 2 asks
+    whether the CONCEPT is readable at the site claimed to carry it. Decoding the outcome from
+    an upstream state is a different claim from decoding the concept at the causal site.
+
+(4) GRANULARITY. QPROBE reads a (position, LAYER) residual state with NO head resolution. Every
+    causal claim from D34 onward is at (layer, HEAD) CELL granularity -- 8 heads in PR-CSI-020.
+```
+
+📌 **So D2 is decodability of an OUTCOME, at a query-side position, in layers the causal band never
+touches, without head resolution.** It is a real result and it is not rung 2 for this sprint's
+claims. **This is worth writing down precisely because "we have a probe, therefore decodability" is
+exactly the inflation AM-34 exists to prevent**, and the next reader of the claim table will see D2's
+ρ and AM-34's "nothing has reached rung 2" on the same page.
+
+### 3. What a real RUNG 2 family would have to be
+
+```
+DECODE      the CONCEPT (bomb-ness), not y_install
+FROM        the cell contribution Y[L, h, dst, src] that dominance.py already computes
+AT          (L, h) in the band L6..L14 -- the cells PR-CSI-020's screen names
+OVER        the demonstration-block source positions the knockout actually removes
+WITH        probes.py's d3_hard_negative and d4_heldout_ds regimes, because a probe that
+            separates `bomb` from `carrot` hits ~100% at layer 0 off lexical identity and that
+            number says only that the tokenizer works -- probes.py documents this as the
+            "stupid-probe problem" and the sprint must not rediscover it
+```
+
+⚠ **And it would NOT strengthen D40.** The ladder's own claim is that the rungs are SEPARABLE:
+*"Information may be readable at a site without being used there"*, and *"passing 1-3 does not imply
+passing 4."* A rung-2 result is a **different** claim standing beside the necessity results, never a
+stronger version of them. Any write-up that lets decodability reinforce a necessity headline has
+made R19's error — form matched, operation not.
+
+### 4. ⛔ The two-coordinate bind RECURS, and it constrains the design
+
+S-279 blocked the arbitrary-cell rank test because *"held out on one coordinate and contaminated on
+the other is not held out."* The same bind applies here, and it must be faced before anything is
+frozen:
+
+```
+the LAYER predictions come from the basket TRAIN screen   -> validation is held out for LAYER
+the HEAD SET was chosen by basket liveness measured on PR-CSI-012 VALIDATION
+                                                          -> train is held out for HEAD IDENTITY
+=> NEITHER split is clean on BOTH coordinates, exactly as in S-279.
+```
+
+📌 **But there is a way through that PR-CSI-020 already demonstrated**, and it is why this direction
+is not simply blocked like the arbitrary-cell test: the comparison can be made **WITHIN a head,
+across its nine band layers** — the same shape as PR-020's argmax test, with the same 1/9 floor.
+Every cell in that comparison is measured on one split with one head set, so the head-identity
+selection is **constant across the comparison and cannot create the contrast**. What it buys is
+narrower than a cross-cell claim, and that narrowness is the price of admissibility.
+
+### 5. What was NOT established, and what is NOT frozen
+
+```
+- NOTHING IS FROZEN. No prereg, no read, no tag prefix. S-167c forbids a prereg naming something
+  that does not exist, and the instrument in section 3 does not exist yet: dominance.py computes
+  the cell contribution along a CHOSEN DIRECTION u, not the full vector a trained probe needs.
+  Whether to project onto a concept direction (cheap, no training, no generalisation test) or to
+  capture vectors and train (expensive, and re-opens the stupid-probe problem) is UNDECIDED.
+- NOT established: that the concept IS decodable at those cells. Nothing was measured this tick.
+  This entry surveys and rules out; it reports no new number about the model.
+- NOT established: that a rung-2 result is reachable at all on an admissible axis. Section 4
+  names a candidate shape; it has not been powered, and the 1/9 floor that shaped PR-CSI-014's
+  design applies here too.
+- NOT retracted: D2 and D3 stand exactly as written. This entry does not touch their numbers or
+  their status -- it settles only that they are not rung 2 FOR THIS SPRINT'S CAUSAL CLAIMS.
+- NOT checked: whether probes.py still runs. It reads a cache (`cache/final_occurrence_reps.pt`)
+  whose existence I did not verify, and it is per-LAYER, so it would need cell-resolved input
+  either way.
+```
+
+### 6. State
+
+```
+QUEUE    EMPTY. PR-CSI-020 read and closed at PASS; no admissible cell-census question remains.
+CHANGED  external_md/...20260915.md  +S-378 only. No code, no prereg, no deliverable.
+NEXT     part 2 of the design pass: decide projection-vs-probe, check whether dominance.py's
+         direction API can carry a concept direction, and POWER the within-head comparison
+         against the 1/9 floor BEFORE anything is written down as a design.
+```
+
+`git push` remains credential-blocked. Committed locally.
