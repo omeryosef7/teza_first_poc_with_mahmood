@@ -34087,3 +34087,119 @@ NEXT     measure the surrogate gap (one forward pass over a handful of cell-C pr
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-382 — RUNG 2 design pass, part 5: S-381's `option_mass` hypothesis is DEAD (verified, not assumed), and the "surrogate" blocker DISSOLVES — but only because the claim never needed to decompose the endpoint. 📌 **With the motivated-reasoning check written out, because this is exactly the shape a convenient rescoping takes** (2026-09-24)
+
+### 1. ✅ S-381's escape route is closed, negatively
+
+S-381 wondered whether `option_mass` vs `option_mass_core_pair` bounded the casing mass. It does
+not. `option_mass_core_pair` exists for `--semantic-extra-words`, which ADDS candidate words and
+raises `option_mass`; the core-pair figure is what feeds the `--min-option-mass` gate so the gate
+keeps measuring what it always measured. It is about extra WORDS, not casings.
+
+```
+PR-CSI-020 args:  semantic_extra_words = ''   semantic_options = 'bank_pair'
+230 cell-C rows:  max |option_mass - option_mass_core_pair| = 7.157e-08   -- two float paths
+                  over the SAME quantity. It says nothing about ' bomb' vs ' Bomb'.
+```
+
+**The casing split is unmeasured and cannot be recovered from anything on disk.** Confirmed by
+reading the flag's own documentation rather than inferring from the two numbers being close.
+
+### 2. 📌 THE BLOCKER DISSOLVES — and here is the check that it is not motivated reasoning
+
+S-381 framed the linear readout as a **surrogate for `y_install`**, making the unmeasured casing gap
+a blocker. But that framing imported a requirement the claim never had.
+
+```
+S-378, written BEFORE the logsumexp was noticed, stated the rung-2 target as:
+      "DECODE  the CONCEPT (bomb-ness), NOT y_install"
+```
+
+**The design never proposed to decompose the endpoint.** Rung 2 asks whether the concept is
+READABLE at the site claimed to carry it — the ladder's own words are *"information may be readable
+at a site without being used there"*, which presupposes decodability is a DIFFERENT quantity from
+the causal outcome. A direction built from the model's own unembedding rows for the two surfaces the
+bank declares is a concept direction whether or not it reproduces the endpoint's aggregation.
+
+⚠ **The test I applied to myself, because "the obstacle dissolves once you restate the question" is
+exactly what motivated reasoning sounds like:** *would I have chosen this scope before meeting the
+obstacle?* The answer is on the record — S-378 §3 fixed it two ticks before S-381 noticed the
+logsumexp. **This is a RETURN to the original scope, not a retreat from a new obstacle.** I am
+stating the check rather than the conclusion so a reader can audit the reasoning instead of taking
+my word for it.
+
+### 3. The direction, specified now so it cannot be tuned later
+
+```
+u(L) = g_final ⊙ [ mean(W[' bomb'], W[' Bomb']) − mean(W[' basket'], W[' Basket']) ]
+```
+
+```
+WHY MEAN-OF-CASINGS and not lowercase-only. Both are LINEAR, so both give the exact additive
+  decomposition S-380 verified. Lowercase-only would introduce a free choice ("why that casing?")
+  that a later reader could not distinguish from tuning. The mean uses EXACTLY the four
+  unembedding rows the bank's own readout declares, with no additional selection.
+WHY g_final IS FOLDED IN. S-380 verified |diff| = 0.000e+00 that <norm(h), W> =
+  (1/rms(h))·<h, g⊙W>, so folding the RMSNorm gain makes the projection exact up to one positive
+  scalar per destination, which cannot reorder an argmax.
+TOKEN IDS, frozen: ' bomb' 13054, ' Bomb' 33909, ' basket' 14351, ' Basket' 34217 -- all single
+  tokens, verified against the arms' own tokenizer snapshot (S-380).
+CELL SCOPE: cell C only, matching load_installation.
+```
+
+### 4. ⚠ The limitation this carries, which is NOT dissolved
+
+**The decomposed quantity and the endpoint are related but not identical, and the difference is
+unmeasured.** The endpoint aggregates casings with `logsumexp`; this direction aggregates them
+linearly. They are built from the same four rows and the same two surfaces, and nothing more than
+that may be claimed. Specifically:
+
+```
+⛔ MAY NOT BE SAID: that this decomposes y_install, or that the per-cell contributions sum to the
+   endpoint, or that a cell's share of this quantity is its share of the installation effect.
+✅ MAY BE SAID:     that this is the model's own concept-minus-codeword readout direction, that the
+   per-cell decomposition of IT is exact, and that its argmax across a head's nine band layers is
+   a decodability statistic in the ladder's sense.
+```
+
+Measuring the casing split would let a future family SAY MORE — it is a strengthening, not a
+prerequisite, and it is recorded as available rather than needed.
+
+### 5. What is still missing before ANY prereg can be frozen
+
+```
+(a) THE INSTRUMENT DOES NOT EXIST. dominance_at() supplies per-(head, source) contributions along
+    a direction, but nothing composes it with the direction above over band layers and demo-block
+    sources. S-167c forbids a prereg naming it until it does.
+(b) THE CODEWORD PARAMETERISATION (S-380). dcs_cont_logitlens_control.py is hardcoded to
+    ' button'/' Button'. Fixing it is the smaller half of (a).
+(c) THE READOUT INDEX (S-381) must be ASSERTED IN CODE, not assumed from a docstring.
+```
+
+### 6. What was NOT established
+
+```
+- NOTHING IS FROZEN. No prereg, no read, no tag prefix, no code written this tick.
+- NOT measured: the casing split. Section 1 closes the last route to getting it for free; it
+  needs a forward pass and is now optional rather than blocking.
+- NOT established: anything about the model. This tick read flag documentation and two float
+  columns, and resolved a scoping question.
+- NOT established: that the design is sound. It is SPECIFIED, on paper, with its direction
+  frozen in this entry so that a later choice cannot masquerade as the original one. Whether it
+  is worth running is a separate judgement, and the power caveat from S-379 stands: a null from
+  this design would be weak, for reasons preregistered rather than discovered.
+```
+
+### 7. State
+
+```
+QUEUE    EMPTY. No admissible cell-census question remains (S-374).
+CHANGED  external_md/...20260915.md  +S-382 only.
+NEXT     build the instrument: parameterise the codeword rows, compose dominance_at with the
+         direction in section 3, assert the readout index, and test it -- THEN a prereg.
+```
+
+`git push` remains credential-blocked. Committed locally.
