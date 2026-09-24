@@ -35081,3 +35081,102 @@ NEXT     submit; read the per-prompt cost; then either a prereg or the cost work
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-392 — 🔴 **`sacct -j <id>` RETURNED ANOTHER USER'S 2025 JOB FOR MY 2026 JOB ID, and I read "COMPLETED" off a job that was RUNNING.** SLURM reuses job IDs. Every published job ID in this sprint audited against it — all clean (2026-09-25)
+
+### 1. What happened
+
+Checking the smoke, `sacct -j 927135 ... | head -1` returned:
+
+```
+COMPLETED   00:00:55   0:0
+```
+
+while `squeue` said the same job was **RUNNING**. The full listing explains it — `sacct -j 927135`
+returns **69 array-task rows plus mine**:
+
+```
+  927135_0   abdullahg  2025-08-05T11:37:01  mh2_CCnews_2025_01  COMPLETED
+  927135_68  abdullahg  2025-08-05T11:37:01  mh2_CCnews_2025_01  COMPLETED
+  927135     omeryosef  2026-09-25T02:05:50  csi_rung2_smoke     RUNNING
+```
+
+**The job-ID counter wrapped.** `927135_0..68` are another user's array job from **thirteen months
+ago**, still in the accounting database under IDs that now collide with mine. `head -1` took theirs.
+
+📌 **I was one line from recording "COMPLETED 00:00:55" for a job that was four minutes into a model
+load** — and 00:00:55 is plausible enough for a small job that nothing would have looked wrong. This
+is the SECOND job-state query this session to return a confident wrong answer: S-390's `sstat`
+returned the sentinel `213503982+` and `MaxRSS = 0`, which I nearly read as a hang.
+
+### 2. ✅ THE PUBLISHED RECORD AUDITED — all clean, verified not assumed
+
+A reused ID would corrupt provenance in the claim table, so every job ID this sprint has published
+was re-queried WITH user and submit time rather than by elapsed/state alone:
+
+```
+925438  omeryosef  2026-09-24T14:33:29  csi_pr010arms  COMPLETED  03:59:26  n-301   UNAMBIGUOUS
+        -> exactly what S-373 recorded for PR-CSI-020 / D40. No foreign rows.
+924666  omeryosef  2026-09-24T06:48:22  csi_retrmass   COMPLETED                    UNAMBIGUOUS
+924667  omeryosef  2026-09-24T06:48:22  csi_retrmass   COMPLETED                    UNAMBIGUOUS
+        -> the two S-343 cited for the corrected mass criterion (AM-43 / A26).
+```
+
+**D40's provenance stands exactly as published.** The collision is specific to 927135, whose ID
+happened to land on a 2025 array job.
+
+### 3. The rule this changes, going forward
+
+```
+⛔ `sacct -j <id>` IS NOT A QUERY FOR ONE JOB. It is a query for every accounting row whose id
+   matches, including ARRAY TASKS of a long-dead job from another user under a recycled id.
+✅ Always project User and Submit, and match the row exactly -- `grep -E "^ *<id> "` -- or read
+   the live state from `squeue`, which cannot return history at all.
+⚠ `| head -1` on an sacct listing is now a known defect pattern. Array rows sort BEFORE the plain
+   row, so the stale answer is the one you get by default.
+```
+
+### 4. Why this keeps happening, stated plainly
+
+Three times now this session a diagnostic has returned something that reads as an answer and is
+not: a sentinel value (S-390), an uninformative silence (S-391's lost buffer), and now another
+user's history (here). **The common shape is that the query SUCCEEDS.** Nothing errors, nothing is
+empty, and the output has the right type and a plausible magnitude. The only defence that has
+actually worked is asking what OBJECT the number is about — not whether it looks right.
+
+### 5. Smoke status
+
+`927135` RUNNING 4:05 on n-302, in the model load (the PR-CSI-020 arms took ~23 min on this
+filesystem). The flushed progress from S-391 is working and has already produced two independent
+confirmations:
+
+```
+population: 670 rows over 67 domains   -- exactly the figure computed offline in S-388, now
+                                          reproduced by the instrument's own split-enforced gate
+|u| = 3.097322                          -- matching R35-A's independently measured value to 7
+                                          digits, from a separate code path
+```
+
+### 6. What was NOT established
+
+```
+- STILL NO MEASUREMENT. The per-prompt cost -- the number this run exists to produce -- has not
+  been reported yet.
+- NOT established: that no OTHER sprint figure was read off a recycled id. I audited the job ids
+  that appear in PUBLISHED claims (925438, 924666, 924667). Older entries citing job ids were not
+  re-queried, and a collision there would be invisible until someone looked.
+- NOT changed: any code, prereg or deliverable. A job is in flight.
+```
+
+### 7. State
+
+```
+QUEUE    927135 RUNNING 4:05 of 4:00:00 (rung-2 costing smoke, TRAIN, exploratory).
+CHANGED  external_md/...20260915.md  +S-392 only.
+NEXT     read the per-prompt cost and the projection to 230 rows; then either a prereg or the
+         dominance.py cost work, decided by that number.
+```
+
+`git push` remains credential-blocked. Committed locally.
