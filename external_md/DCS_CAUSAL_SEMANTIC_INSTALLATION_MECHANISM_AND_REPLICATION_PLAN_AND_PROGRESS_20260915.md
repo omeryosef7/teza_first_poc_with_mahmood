@@ -31427,3 +31427,93 @@ NEXT         the frozen READ, the freeze self-test, then submit.
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-356 — **the freeze SELF-TEST exists and runs at freeze time, and the READ is frozen.** 📌 The self-test is generic, calibrates clean on every prereg that has already been read, and **REFUSES a reconstruction of the first PR-CSI-020 freeze**
+
+### 1. A prereg is a contract with its readers. Nothing was checking it was satisfiable
+
+`scripts/gates/dcs_csi_prereg_selftest.py` AST-parses each reader for every `pr["KEY"]` **hard**
+subscript — `.get()` is an author declaring a field optional and this file does not second-guess it
+— and reports which of those keys a prereg lacks.
+
+**Calibration, which is the part that makes it trustworthy:**
+
+```
+PR-CSI-016   1 absent: head_sets            <- read successfully
+PR-CSI-018   1 absent: head_sets            <- read successfully
+PR-CSI-020   1 absent: head_sets            <- same profile as the two that worked
+PR-CSI-014   2 absent: head_sets, heads     <- single-head cell census
+PR-CSI-015   2 absent: head_sets, PRIMARY   <- descriptive, no primary. Correct.
+```
+
+`head_sets` is the expected cell-family branch exemption. **PR-CSI-020 now has exactly the profile
+of the two families that read successfully.**
+
+**And the decisive test — the reconstructed first freeze**, with the two keys removed:
+
+```
+   CENSUS_DELIVERABLE            scripts/dcs_csi_head_census.py:882   <-- --require
+   DOSE_IDENTITY_IS_BLIND_HERE   scripts/dcs_csi_head_census.py:885   <-- --require
+REFUSING: 2 REQUIRED key(s) absent
+   exit 1 on the defective prereg,  exit 0 on the current one
+```
+
+**It runs INSIDE the freeze script now**, not as a thing someone remembers. Re-emitting with it
+wired in produces a byte-identical artefact — md5 still `d68eae71`.
+
+⚠ **What it cannot do, stated in the file itself:** a static scan cannot tell which subscripts sit
+behind a branch a family never takes, so absences are *reported* and must be judged; `--require`
+promotes a named key to a hard failure. **It is a tripwire, not a proof.**
+
+### 2. The READ is frozen
+
+`runargs/dcs_csi_pr020_read.txt`, md5 `9fdbecea`. Validated by the S-334 argv gate: three commands,
+**every flag declared by its script's own argparse, every input path resolving**. The single flagged
+path is STEP 2's `--census` naming STEP 1's output, the documented false positive.
+
+It carries things earlier reads did not:
+
+```
+STEP -1  THE OPERATOR CHECKS. VOID conditions 5, 9, 10, 11, 12 are PROSE -- no reader, gate or
+         test enforces them -- and the read now says so and lists them as a step, rather than
+         letting them read as automatic. R29's lesson; R32-B found 5 open in exactly that state.
+STEP 1   the BOOTSTRAP is written out: --B 10000 --seed 20260922 --ci 0.95 --allow-short 0.
+         These were CLI DEFAULTS every published census inherited; PR-CSI-020 is where they
+         become preregistered (R32-A CONCERN 2).
+         the WEAKEST FLOOR is named as the CONDITIONAL at 1.5242e-04 -- the one that actually
+         gates a perfect result, which the first freeze did not record.
+         the permutation p is stated to be scored against the OBSERVED ARGMAX VECTOR.
+         the NECESSARY conditions are frozen WITH an explicit "necessary but not sufficient".
+```
+
+### 3. NOT established
+
+```
+⛔ STILL NOT LAUNCHED, AND I AM NOT LAUNCHING IT THIS TICK. R32 reviewed md5 9fce4bda; the
+   family now stands at d68eae71 after a substantial re-freeze. Two consecutive freezes of this
+   family carried BLOCKERs, and the re-freeze is exactly the kind of change R28 once caught a
+   defect INSIDE. A short R33 targeted at the DIFF comes before a GPU.
+   The queue has been idle for many ticks and one more review cycle is proportionate to a family
+   that has already needed two.
+⛔ THE SELF-TEST WOULD NOT HAVE CAUGHT THE OTHER THREE BLOCKERS. It checks field PRESENCE. It
+   cannot see that a permutation statistic is the wrong one, that a launcher lacks a tag, or that
+   a VOID condition is enforced by nothing. It closes ONE failure class.
+⛔ NOTHING IS MEASURED. No arm of this family has run. The frozen read has never been executed.
+⛔ R32's remaining CONCERNS are still open: the design map's hardcoded six heads (S-322 class),
+   and ADMISSION being near-deterministic given VOID 8 -- so the prereg's
+   "losing a thin head makes this stronger" is arithmetic about a scenario a readable run cannot
+   reach. Both are recorded, neither is fixed.
+NOTHING WAS MEASURED ON A GPU. The queue is EMPTY.
+```
+
+### 4. State
+
+```
+PR-CSI-020   prereg d68eae71, read 9fdbecea, tag csi11_cell8_basket registered, self-test wired in.
+             READY to submit, pending R33.
+NEXT         R33 on the diff -> submit.
+```
+
+`git push` remains credential-blocked. Committed locally.

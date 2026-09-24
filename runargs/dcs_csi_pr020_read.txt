@@ -1,0 +1,174 @@
+# FROZEN READ for PR-CSI-020 -- the per-CELL census of EIGHT live BASKET heads never previously
+# censused. 82 arms. Frozen 2026-09-24, BEFORE ANY ARM HAS RUN. Never re-freeze after seeing numbers.
+#
+# PREREG  configs/dcs_csi_pr020_cell_census_basket_8heads.json   md5 d68eae710944bede0278a51425ffa2ca
+#
+# ⚠⚠ THIS IS THE SECOND FREEZE OF THIS FAMILY. The first (md5 9fce4bda) NEVER RAN. Review R32
+#   found four BLOCKERs in it: the census would have REFUSED it before loading any arm (two keys
+#   missing, and with them the estimator definition); the launcher had no tag for it; its
+#   permutation statistic was NOT the one the reader computes; and five VOID conditions PR-CSI-018
+#   carried had been dropped. S-355 re-froze it. Nothing was ever measured under the first freeze.
+#
+# WHY THIS FAMILY EXISTS. D37 is the basket cell-census result and the claim table records it as
+#   "VALIDATION, DESCRIPTIVE. RUNG 1. No rank, no p, no control family." D39 (PR-CSI-018) carries
+#   this sprint's ONLY preregistered p, and it is on BUTTON. This gives the ORIGINAL codeword what
+#   button already has.
+#
+# ⚠ AND IT IS A WEAKER HELD-OUT CLAIM THAN D39's, IN ONE DIMENSION. PR-CSI-018 took a basket-TRAIN
+#   screen and predicted BUTTON cells -- held out on split AND codeword. This takes the same screen
+#   and predicts BASKET validation cells: HELD OUT ON SPLIT ONLY. D39's framing is stronger than
+#   anything this family can claim and must not be carried over to it.
+#
+#   head  screen   margin over runner-up   PR-012 basket E    |E|/bar (expected)
+#     4 -> L11          4.42x                 -0.00640128         1.92
+#     6 -> L11          5.96x                 -0.00847502         2.49
+#    10 -> L12          1.32x                 -0.00542110         2.13
+#    11 -> L8           1.51x                 -0.01043769         1.92
+#    13 -> L10          1.08x                 -0.00827564         1.84
+#    18 -> L14          1.31x                 +0.00967428         2.33
+#    21 -> L6           2.17x                 -0.00373771         2.07
+#    27 -> L10          1.58x                 +0.00411325         1.80
+#   ⚠ the |E|/bar column is an EXPECTATION from PR-CSI-012's arms. This family recomputes
+#     admission from its OWN HD_<h> arms by the S-311 rule.
+#
+# ⛔ HEADS 2, 17, 19 AND 23 ARE EXCLUDED: PR-CSI-014 and PR-CSI-015 already measured their basket
+#   cells, so their argmaxes are KNOWN. Counting a known outcome as a fresh draw is selection on
+#   data already read.
+# ⚠ HEADS 6, 11 AND 27 had these SAME predictions tested on BUTTON by PR-CSI-018 and ALL THREE
+#   MATCHED. For them this is a REPLICATION on a different population, not an independent draw.
+#   It is disclosed in the prereg by name. There is NO secondary analysis to fall back on -- the
+#   first freeze had one and R32-A showed nothing could compute it.
+# ⚠ HEAD 18 PREDICTS L14, the band-edge rival. Included under a rule frozen before the composition
+#   could be seen; the eight predictions span SIX distinct layers, so the spanning rule and the
+#   permutation p both bite.
+#
+# ------------------------------------------------------------------------------------------------
+# STEP -1. THE OPERATOR CHECKS, BEFORE RUNNING ANYTHING. These VOID conditions are PROSE -- no
+#   reader, gate or test enforces them, and the prereg says so rather than letting them read as
+#   automatic (R29's lesson, R32-B's finding).
+#
+#   VOID 5   the screen artefact's md5 must still be 81fc4dcade79d65ff3683f32d46c64d4
+#            md5sum outputs/boombness/dcs_csi/w1_screen_train_basket_916132.json
+#   VOID 9   every arm on ONE slurm job and ONE GPU architecture (PR-012's reference arms ran on
+#            3090s and VOID 8's tolerance is 1e-6, so architecture is load-bearing)
+#   VOID 10  attn_implementation == eager on every arm
+#   VOID 11  scripts/ and src/ unchanged while the arms were in flight -- the launcher's
+#            "BLOB <sha> PORCELAIN clean" line is the family's commit of record, NOT any arm's
+#            RUNMETA git_commit (R30-D measured that those name the code that ran for the FIRST
+#            arm only)
+#   VOID 12  this file is not amended after any number from this family is seen
+#
+# Read in order. STOP AT THE FIRST FAILURE.
+# ------------------------------------------------------------------------------------------------
+# STEP 0. GATE 0 -- liveness + ARM IDENTITY on all 82 arms, from each arm's own knockout_cells.
+#   ⚠ 72 cell arms share the dose 224 and NINE arms share 2016 (eight HD_ plus BK_KO), so the dose
+#     is identity-blind within both groups. Identity comes from knockout_cells ONLY, and for BK_KO
+#     from its recording NO cell list (S-292/S-310).
+#   ⚠ It must exit 0. Since S-332 a PARTIAL sweep exits 3 and a real failure exits 1; only 82 of 82
+#     landed and passing gives 0.
+
+python scripts/gates/dcs_csi_pr012_gate0_sweep.py \
+  --prereg configs/dcs_csi_pr020_cell_census_basket_8heads.json \
+  --tag-prefix csi11_cell8_basket_validation --split validation \
+  --expect-n 230 --require-slurm-job <VALIDATION_JOB_IDS>
+
+# ------------------------------------------------------------------------------------------------
+# STEP 1. THE CENSUS. It computes every E and every bar; STEP 2 computes NOTHING of its own.
+#   The bootstrap is FROZEN HERE rather than left to the CLI defaults it used to be (R32-A
+#   CONCERN 2): B 10000, seed 20260922, ci 0.95 -- the values every published census in this
+#   sprint used, now preregistered instead of inherited.
+#   ⚠ VOID CONDITION 8 IS ENFORCED BY THIS SCRIPT (S-323), under the FAMILY-NEUTRAL key
+#     `whole_head_REFERENCE` (S-349). Each HD_<h> arm must reproduce PR-CSI-012's SINGLE_<h> to
+#     within 1e-6, and it REFUSES otherwise. Expect eight PROVENANCE lines and
+#     "VOID CONDITION 8: 8 of 8 head(s) CHECKED".
+
+python scripts/dcs_csi_head_census.py \
+  --prereg configs/dcs_csi_pr020_cell_census_basket_8heads.json \
+  --tag-prefix csi11_cell8_basket_validation --split validation --expect-n 230 \
+  --B 10000 --seed 20260922 --ci 0.95 --allow-short 0 \
+  --require-slurm-job <VALIDATION_JOB_IDS> \
+  --out reports/DCS_CSI_PR020_CELL_CENSUS_basket_8heads_validation.json
+
+# ------------------------------------------------------------------------------------------------
+# STEP 2. THE PREREGISTERED PRIMARY.
+#   (the reader's filename is a misnomer -- it was written for PR-CSI-016 and widened to 018 and
+#    020. The name is kept because PR-CSI-016's own frozen read names that path: R26 chain of
+#    custody.)
+
+python scripts/dcs_csi_pr016_argmax_test.py \
+  --prereg configs/dcs_csi_pr020_cell_census_basket_8heads.json \
+  --census reports/DCS_CSI_PR020_CELL_CENSUS_basket_8heads_validation.json \
+  --out reports/DCS_CSI_PR020_ARGMAX_TEST_basket_8heads_validation.json
+
+# ------------------------------------------------------------------------------------------------
+# THE STATISTIC, PRE-COMMITTED. THREE p-VALUES, AND THE CLAIM IS STATED WITH THE WEAKEST.
+#   M = # of ADMITTED heads whose intervention argmax cell equals that head's frozen screen layer.
+#     binomial     P(Binom(K, 1/9) >= M)                          floor at K=8: 2.3231e-08
+#     conditional  the same over admitted heads whose predicted layer is UNIQUE among the admitted
+#                  (at K=8 those are 10->L12, 11->L8, 18->L14, 21->L6, so K_unique = 4)
+#                                                                 floor at K=8: 1.5242e-04
+#     permutation  over DISTINCT assignments of the prediction multiset -- 10080 of them
+#                                                                 floor at K=8: 9.9206e-05
+#     WEAKEST FLOOR = the CONDITIONAL at 1.5242e-04. That is what gates a perfect result.
+#
+# ⚠⚠ THE PERMUTATION p IS SCORED AGAINST THE OBSERVED ARGMAX VECTOR, NOT THE PREDICTION VECTOR.
+#   They coincide only at M = K. The first freeze of this family got this wrong, and under the
+#   wrong version a 4-of-8 outcome would have been published PASS against a prereg recording that
+#   it could not certify (S-352).
+#
+# SUCCESS = the WEAKEST of the three <= 0.05 AND the spanning rule satisfied.
+# FAILURE = the weakest > 0.05 with K >= 3.
+# SPANNING RULE: the MATCHING heads must not all share one band layer, or CANNOT ANSWER whatever
+#   the p-values say.
+#
+# NECESSARY CONDITIONS FOR CERTIFICATION, frozen:  M >= 3 AND M_unique >= 3
+#   because P(Binom(8,1/9) >= 2) = 0.22051131 > alpha and P(Binom(4,1/9) >= 2) = 0.06355738 > alpha.
+#   ⚠ P(Binom(8,1/9) >= 3) = 0.04999816 clears alpha by 1.8e-6 -- a knife edge, recorded as one.
+#   ⛔ NECESSARY BUT NOT SUFFICIENT. S-353 exhibited 34 outcomes satisfying this that do NOT
+#     certify, because p_perm depends on WHERE the misses land. NO rule in (M, M_unique) alone
+#     characterises certification and this read does not pretend one does.
+#
+# POWER, by seeded Monte Carlo (N 200000, seed 20260924), under the NAMED model "each head matches
+#   with probability q independently, a miss lands uniformly on one of the other 8 layers":
+#     type I 0.0040 | q=0.33 0.1012 | q=0.83 0.8623 (PR-018's observed 5-of-6 rate)
+#   ⚠ The uniform-miss half is KNOWN WRONG IN DETAIL: S-351 measured that over the 10 heads this
+#     sprint has cell-censused, L10 and L14 take 60% of the argmaxes.
+#   ⚠ TYPE I IS FAR BELOW ALPHA, so A NULL FROM THIS FAMILY IS WEAK EVIDENCE AGAINST THE SCREEN,
+#     not strong. At q = 0.33 power is ~0.10: this family can confirm a screen that works, it
+#     cannot distinguish a mediocre screen from a useless one.
+#
+# ADMISSION, computed from the whole-head arm ALONE and never from the cells:
+#   head h is ADMITTED iff HD_<h>'s ci95 excludes 0 AND |E(HD_<h>)| >= 1.5 x bar(h).
+#   ⚠ Given VOID 8 pins each HD_<h> to PR-012's value within 1e-6, admission is expected to be
+#     effectively DETERMINISTIC. A head that fails it when PR-CSI-012 says it should not is ITSELF
+#     A FINDING and must be reported as one, not quietly dropped.
+#
+# ⛔⛔ NO POST-HOC SHARPNESS SUBSETTING. The eight screen margins run 5.96x down to 1.08x. NO
+#   margin gate is applied. REPORTING ANY MARGIN-RESTRICTED SUBSET AFTER THE READ -- as the result,
+#   as a rescue of a null, or as a qualification of a positive -- IS FORBIDDEN. The margins are
+#   frozen per head in the prereg precisely so a post-hoc subset can be recognised as one.
+#
+# ------------------------------------------------------------------------------------------------
+# WHAT MAY NEVER BE SAID FROM THIS FILE, whatever the numbers:
+#   * the binomial p alone. ⚠ This now has a MEASURED reason: S-351 measured that for THIS
+#     prediction multiset a random screen would match at ~0.1625 against the binomial's assumed
+#     1/9, so quoting it alone is misleading by ~46%, not merely incomplete.
+#   * that this is held out on CODEWORD. IT IS NOT. Split only. D39 is the cross-codeword result.
+#   * "cell (L, h) is the writer" -- there is STILL no control family of ARBITRARY cells anywhere
+#     in this sprint. This is NECESSITY, rung 1 of AM-34's ladder.
+#   * that the screen is a validated cell selector IN GENERAL -- eight heads, every one chosen
+#     BECAUSE it was live on basket.
+#   * anything about heads that are NULL on basket: excluded by construction.
+#   * anything about the SOURCE of the effect (S-316/AM-40 stand; the mass criterion licenses a
+#     REFUTATION reading only, S-337/S-343), the other 24 heads, or TEST (S-314: spent AND
+#     selection-contaminated).
+#   * that D37 is superseded -- D37 is descriptive and stands; this ADDS a preregistered p.
+#   * if NULL: that the screen is useless. Type I here is ~0.004 and power at a mediocre screen is
+#     ~0.10, so a null is WEAK evidence against it.
+#   * if NULL: that D39 or D37 is withdrawn. Each stands on its own arms.
+#   * any five-head analysis. The first freeze preregistered one; it is DELETED and may not be
+#     reported from this family at all.
+#
+# <VALIDATION_JOB_IDS> must name the ONE job that produced all 82 arms. If a relaunch happens, the
+# earlier generation's arm dirs must be QUARANTINED rather than filtered at read time (S-261), and
+# GATE 0 will FAIL on two run dirs for one arm (S-334).

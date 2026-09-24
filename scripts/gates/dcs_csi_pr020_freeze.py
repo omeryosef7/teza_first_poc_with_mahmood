@@ -569,6 +569,22 @@ def main():
           % (pr["PRIMARY"]["permutation"]["n_distinct_assignments_at_K8"],
              pr["PRIMARY"]["permutation"]["floor_at_K8"]))
     p = pr["POWER_BY_SEEDED_MONTE_CARLO"]["P_certify_by_q"]
+    # ⚠ S-356: THE SELF-TEST RUNS AT FREEZE TIME, not as a thing someone remembers to do. The
+    # first freeze of this family omitted two keys the census hard-subscripts, and nothing caught
+    # it until a review did -- by which point a real run would have spent ~3.9 GPU-hours and then
+    # refused to read. A prereg is a contract with its readers; this checks it is satisfiable.
+    import subprocess
+    _st = subprocess.run(
+        [sys.executable, os.path.join(REPO, "scripts", "gates", "dcs_csi_prereg_selftest.py"),
+         "--prereg", a.out,
+         "--require", "CENSUS_DELIVERABLE", "--require", "DOSE_IDENTITY_IS_BLIND_HERE",
+         "--require", "PRIMARY", "--require", "ADMISSION", "--require", "cell_sets",
+         "--require", "base_arms", "--require", "n_arms_per_split", "--require", "population"],
+        capture_output=True, text=True)
+    print(_st.stdout.rstrip())
+    if _st.returncode != 0:
+        sys.exit("REFUSING: the emitted prereg does not satisfy its readers' hard subscripts.\n%s"
+                 % _st.stderr.strip())
     print("power: type I %.5f | q=0.33 %.5f | q=0.83 %.5f   (MC N=%d seed=%d)"
           % (p[str(P0)], p["0.33"], p["0.83"],
              pr["POWER_BY_SEEDED_MONTE_CARLO"]["N"], pr["POWER_BY_SEEDED_MONTE_CARLO"]["seed"]))
