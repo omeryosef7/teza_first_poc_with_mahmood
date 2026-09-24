@@ -35180,3 +35180,78 @@ NEXT     read the per-prompt cost and the projection to 230 rows; then either a 
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-393 — the id WITNESS fired and closed the S-380 defect class visibly; and the first real diagnostic shows the model load is **3.8× slower than the arms saw on the same filesystem** — contention, not the instrument (2026-09-25)
+
+### 1. ✅ The witness earned its line
+
+```
+[rung2] ids decode to: concept [' bomb', ' Bomb']  codeword [' basket', ' Basket']
+```
+
+S-380 found the existing logit-lens control hardcoded `' button'` while the whole CSI cell line is
+BASKET, and the guard chosen was "required argument, no default". R35-B pointed out that stops a
+silent DEFAULT but not a silent TYPO — the bare-cased ids are DIFFERENT tokens (`'bomb'` 79444 vs
+`' bomb'` 13054), so four plausible wrong ids exist for the same four words. **The witness turns
+that from an argument into a line of output.** It is the correct family, and now visibly so.
+
+### 2. 📌 The first genuine runtime diagnostic, and it is not about my code
+
+`tqdm` writes to stderr, which is unbuffered — so the weight loader is visible even though my own
+prints were not, before S-391:
+
+```
+Loading weights:  22/291 shards at 27:30 elapsed
+  shard 1: 423 s      shard 2: 429 s      then falling to ~15-30 s/shard
+  tqdm ETA: 66.5 min more -> ~86.6 min total load
+```
+
+```
+THIS RUN         ~86.6 min projected model load   n-302
+PR-CSI-020 ARMS   ~23 min actual model load        n-301   (S-364)
+                  -> a 3.8x SPREAD on the same filesystem, same model, same dtype
+```
+
+**This is NFS contention, not a property of the instrument.** Two shards took seven minutes EACH and
+the rest are running at 15-30 s. Nothing in `dcs_csi_rung2_celldecode.py` is involved — the load is
+`ds_common.load_model`, the same call every arm makes.
+
+⚠ **And it retroactively explains S-391's timeout.** I budgeted one hour on the assumption of a
+~23-minute load, because that is what the arms measured. **The arms' figure was one sample from a
+3.8× distribution, and I treated it as a constant.** The 4-hour walltime here was chosen for
+headroom rather than from a model of the cost, and that choice is the only reason this run is still
+alive.
+
+### 3. Where that leaves the schedule
+
+```
+job start    02:06:34        walltime 4 h -> hard stop 06:06:34
+load ends    ~03:40 projected
+leaves       ~2.4 h for 3 prompts, which is the number this run exists to measure
+```
+
+### 4. What was NOT established
+
+```
+- STILL NO PER-PROMPT COST. The measurement loop has not begun. Everything above is load-phase.
+- NOT established: that the load spread is contention rather than a node difference. n-302 vs
+  n-301 is confounded with time-of-day and with whatever else is on the filesystem; I have two
+  samples and no controlled comparison, and I am not going to run one to find out.
+- NOT established: that the run will finish. The tqdm ETA is tqdm's, not mine -- it was 34 HOURS
+  after the first shard and 66 min after the twenty-second. It is a moving estimate from a
+  non-stationary process and I am recording it as such.
+- NOT changed: any code. A job is in flight.
+```
+
+### 5. State
+
+```
+QUEUE    927135 RUNNING 27:30 of 4:00:00, in the weight load at 22/291.
+CHANGED  external_md/...20260915.md  +S-393 only.
+NEXT     the per-prompt cost, and the projection to 230 validation rows that decides whether this
+         design gets a prereg or gets the dominance.py cost work first.
+```
+
+`git push` remains credential-blocked. Committed locally.
