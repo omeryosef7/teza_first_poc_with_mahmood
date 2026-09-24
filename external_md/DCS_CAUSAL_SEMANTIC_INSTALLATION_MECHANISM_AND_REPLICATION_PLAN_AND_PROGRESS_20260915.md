@@ -29978,3 +29978,106 @@ NO REPLACEMENT FAMILY IS DESIGNED. PR-CSI-019 remains WITHDRAWN (S-339/S-340).
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-342 — 📌 **EXPLORATORY: the damage-vs-removed-mass curve is ALREADY MEASURABLE from arms on disk, and it kills the premise of my withdrawn threshold in a sharper way than R31 did.** Across scales damage is near-proportional to mass (log-log slope **0.96**) — but at FIXED scale, two heads with non-overlapping CIs invert it: **HD_20 removes 2.82× the mass of HD_11 and does 0.444× the damage**
+
+### 1. Applying S-339's lesson prospectively, for once
+
+R31-C proposed a new head-subset dose ladder to **measure** the curvature my withdrawn 0.75
+threshold merely assumed. S-339's lesson — *ask what existing data says about the question before
+designing anything to answer it* — says to check first. It is checkable, with no GPU at all:
+
+```
+PR-CSI-018 landed, on BUTTON validation:
+   BF_KO         all demo keys, 32 heads, band 6-14   -> the FULL dose
+   HD_<h> x 6    all 9 band layers of ONE head        -> a MID dose
+   BF_H<h>_L<l>  x 54, ONE (layer, head) cell         -> a SMALL dose
+and the published retrieval artefact records demo band mass per (layer, head), so the REMOVED MASS
+of every one of those arms is computable offline.
+```
+
+### 2. What the existing arms say
+
+```
+total demo band mass, 32 heads x 9 band layers = 13.02604   (what BF_KO removes)
+
+arm        mass share          |E|   |E| / mass share
+HD_11           1.77%     0.016310         0.9213
+HD_29           1.72%     0.009291         0.5392
+HD_6            2.93%     0.005090         0.1736
+HD_27           2.40%     0.002666         0.1109
+HD_24           2.69%     0.002854         0.1061
+HD_20           5.00%     0.007248         0.1450
+BF_KO         100.00%     0.289907         0.2899
+
+log-log fit |E| = k * (mass share)^p over the 7 resolvable arms:  p = 0.9626,  R^2 = 0.7345
+```
+
+**Across two orders of magnitude, damage is close to proportional to removed mass** (p ≈ 0.96).
+A mass-proportional null would predict r = 0.595 for a control removing ρ = 0.595 of the mass; this
+fit predicts 0.607. So at the aggregate level, my withdrawn threshold's premise was **not absurd** —
+which is a more useful thing to know than "it was wrong".
+
+### 3. 🔴 But at FIXED scale the premise fails outright, and the counterexample is clean
+
+`|E| / mass share` ranges **0.1061 to 0.9213 across the six heads — a factor of 8.7** — at mass
+shares that all sit between 1.7% and 5.0%. The sharpest pair:
+
+```
+HD_11   removes 1.77% of the demo band mass   |E| = 0.016310   ci95 [-0.022308, -0.011096]
+HD_20   removes 5.00%                          |E| = 0.007248   ci95 [-0.009809, -0.004899]
+                                               CIs DO NOT OVERLAP
+
+HD_20 removes 2.82x MORE mass and does 0.444x the damage.
+```
+
+**Removed band mass is not a sufficient statistic for damage.** S-337 §5 asserted "mass is not
+function" as a caution; this measures it, with non-overlapping intervals, on this sprint's own arms.
+R31-C reached the same conclusion from the L20–31 band (1.80× the mass, inert); this is the
+within-band, same-population version, and it is sharper because both arms are live and the
+inversion is between them.
+
+⚠ **What this implies for the count-matched control, and it is not comfort.** The control removes
+~60% of the demo band mass **from entirely different positions** — the prompt prefix, since the
+query span is protected. If position matters this much *among heads at fixed mass*, then the
+control's damage is not predictable from its mass **at all**, in either direction. That is
+consistent with TRAIN's r ≈ 0 (S-339) and it means the aggregate proportionality in §2 gives no
+licence to predict a single control draw's effect. **The two findings do not conflict; they apply
+at different scales, and my threshold used the aggregate one to license a claim about a single draw.**
+
+### 4. NOT established — and this section is longer than the finding
+
+```
+⛔ EXPLORATORY. NOT PREREGISTERED. This is a premise check on a WITHDRAWN design, not a result,
+   and it may not be cited as one.
+⛔ THE SIX HEADS ARE SELECTED, NOT A SAMPLE. They are exactly PR-CSI-018's six live non-L14 button
+   heads, chosen BECAUSE they were live. Their |E| values are selection-biased upward and their
+   spread is not the spread of 32 heads. The 8.7x figure is a statement about these six.
+⛔ THE SLOPE IS POORLY DETERMINED. Seven points, R^2 = 0.7345, and a gap between 5% and 100% mass
+   share with NOTHING in it. The fit is essentially the line from a scattered head cluster to a
+   single full-dose point. p = 0.96 must not be quoted as "damage is proportional to mass"; the
+   honest statement is "these seven points are consistent with near-proportionality ACROSS scales
+   and inconsistent with mass-sufficiency WITHIN a scale".
+⛔ THE 54 CELL ARMS ARE NOT USABLE FOR THE CURVE. Their mean |E| is 0.001360 and most sit below
+   the preregistered detectability bar, so their mean is noise, not a dose point. They are excluded
+   from the fit and are reported here only to say why.
+⛔ NOTHING HERE LICENSES A SOURCE-SIDE CLAIM. S-316's block and S-325's REFUTATION-ONLY licence
+   are untouched. PR-CSI-019 stays WITHDRAWN.
+⛔ NO REPLACEMENT FAMILY IS DESIGNED OR FROZEN. What this does is constrain one: a dose ladder must
+   average over MULTIPLE RANDOM head subsets per size, because head identity moves |E|/mass by 8.7x
+   at fixed mass -- a single subset per size would measure head identity and call it dose.
+NOTHING WAS MEASURED ON A GPU THIS TICK. The re-run 924666/924667 is still running (18:33 of ~21).
+AM-43 remains UNCORRECTED pending it; S-337's verdict stands unrevised.
+```
+
+### 5. State
+
+```
+924666 / 924667   mass re-run, RUNNING, ~2 min out.
+NEXT              apply the committed criterion script (S-341) to the new runs; correct AM-43's
+                  seed-provenance sentence; only then consider a replacement family.
+```
+
+`git push` remains credential-blocked. Committed locally.
