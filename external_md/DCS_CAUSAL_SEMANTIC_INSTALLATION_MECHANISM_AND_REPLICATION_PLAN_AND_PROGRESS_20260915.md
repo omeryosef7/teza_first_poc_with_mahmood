@@ -31791,3 +31791,65 @@ NEXT         verify from the job's own log that PREREG/TAG_PREFIX/FAMILY are PR-
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-361 — ✅ **the S-357 hazard did NOT bite: the job's own log confirms all four variables are PR-CSI-020's, not the launcher's defaults.** `925438` is loading the model on n-301. Still nothing measured
+
+### 1. The after-the-fact check, which is the one that counts
+
+S-357 found that `PREREG`, `TAG_PREFIX` and `FAMILY` all default to PR-CSI-010's, and that the
+launcher's `TAG_PREFIX`/`WANT_PREFIX` guard would **agree with itself** if two of them were omitted
+— so a wrong-family run would pass its own guard. Checking beforehand that I typed them is not the
+same as checking that the job received them. From `outputs/boombness/logs/csi_pr010arms_925438.out`:
+
+```
+HOST=n-301 JOB=925438 2026-09-24T14:37:03+03:00
+BLOB 88a5a219  PORCELAIN [clean]
+SPLIT=validation EXPECT_N=230 PREREG=configs/dcs_csi_pr020_cell_census_basket_8heads.json
+  TAG_PREFIX=csi11_cell8_basket FAMILY=pr020
+```
+
+**All four are PR-CSI-020's.** `BLOB 88a5a219` is the commit I submitted from. And the launcher's
+own three checks passed inside the job:
+
+```
+BASE-ARM CHECK PASSED: 'BK_BASE' carries no intervention flag; all 81 other arms carry --intervene
+CODEWORD CHECK PASSED: 'basket' -> bank boombness_prompt_bank_ts116m_basket_bomb.jsonl,
+                       exclusions exclude_basket_bomb_sow_validation.txt (both exist; every arm agrees)
+CHECK PASSED: 82 arms, every flag declared by score_behavior.py; 80 arms carry a frozen cell list,
+                       2 carry none (BK_BASE has no intervention, BK_KO = all 32)
+```
+
+⚠ **And nothing wrong was created.** Zero `csi11_*` dirs so far and the newest directories in
+`score_behavior/` are still PR-CSI-018's from this morning — so the job has created **no arm
+directory under any other prefix**, which is the failure mode the hazard would have produced.
+
+### 2. Where the job is
+
+Model load. PR-CSI-018 measured that at **1264.0 s** (S-327), so ~21 minutes before the first arm
+appears. At the estimated 178 s/arm the family lands in roughly 4.4 h against a 12 h walltime.
+
+### 3. NOT established
+
+```
+NOTHING IS MEASURED. Zero of 82 arms have completed. No endpoint has been read, the frozen read
+  78d45fdd has never been executed, and there is no claim-table row for PR-CSI-020.
+THIS ENTRY VERIFIES THE JOB IS RUNNING THE RIGHT FAMILY. It says nothing about whether the family
+  will land cleanly, whether GATE 0 will pass on 82 of 82, or what the answer is.
+THE 178 s/arm FIGURE IS BORROWED from PR-CSI-018's 62-arm BUTTON job. An 82-arm BASKET family has
+  never been timed, and S-327 is the entry recording that I once overestimated a load by 2.07x by
+  extrapolating from its first nine shards. The 12 h walltime is what makes the estimate safe to
+  be wrong about.
+R33's F5 REMAINS UNFIXED and I declined R34 (S-359). Both are live.
+```
+
+### 4. State
+
+```
+925438   RUNNING on n-301, model load, 0 of 82 arms. Verified to be PR-CSI-020.
+NEXT     monitor to 82/82, then STEP -1's operator checks and the frozen read in order,
+         stopping at the first failure.
+```
+
+`git push` remains credential-blocked. Committed locally.
