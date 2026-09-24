@@ -161,8 +161,17 @@ def main() -> int:
         for _idx in (1, 2, 3):
             _nm = "nondemo_matched_d%d" % _idx
             try:
+                # ⚠ R31-B/S-339: THIS PASSED `nondemo_draw_seed(args.seed, _idx)` AS `control_seed`
+                # AND knockout_key_set STRIDES IT AGAIN (score_behavior.py:1518), so every draw was
+                # seeded twice. Measured: for d1 a real arm draws with 28180690 and this measured
+                # 36100467 -- which is a real arm's *d2* seed. So the instrument sampled draws at
+                # strides 2, 4 and 6 while the arms use 1, 2 and 3: one of the three coincided with
+                # a real arm's draw under the wrong label, and two correspond to NO arm at all.
+                # `control_seed` is the RUN's seed; the per-draw stride belongs to the callee, which
+                # is how score_behavior.py:3490 calls it. Passing a pre-strided value silently
+                # measures a different draw than the one the arms make.
                 _strict[_nm] = sb.knockout_key_set(
-                    _nm, dk, seq_len, sb.nondemo_draw_seed(args.seed, _idx), protected=_prot)
+                    _nm, dk, seq_len, args.seed, protected=_prot)
             except sb.InfeasibleControl:
                 _strict[_nm] = None
         o = lm.model(input_ids=ids.to(lm.model.device), output_attentions=True, use_cache=False)
