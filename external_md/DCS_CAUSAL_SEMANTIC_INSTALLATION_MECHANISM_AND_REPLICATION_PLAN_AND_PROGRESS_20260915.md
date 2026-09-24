@@ -31229,3 +31229,95 @@ NEXT         the re-freeze, with: the permutation definition written verbatim fr
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-354 — **the power under the CORRECT statistic, computed by me.** R32-A's figures reproduce to Monte-Carlo error. 🔴 **S-348's type I was wrong by 11x (0.0004 → 0.0041) and its low-q power by 2x** — but the headline power at the plausible rate is essentially unchanged
+
+### 1. The computation, and why it is now cheap
+
+S-352 withdrew S-348's power because it used the freeze script's statistic. R32-A supplied its own
+figures; the standing rule forbids taking them on trust, so this reproduces them independently.
+
+The honest computation had timed out twice at 560 s. Two facts make it cheap:
+
+```
+(1) positions sharing an observed layer are INTERCHANGEABLE, so the match-count distribution
+    depends only on the SIGNATURE (a_6..a_14) -- how many positions carry each layer, not which;
+(2) for one signature the whole distribution is a single vectorised comparison of the
+    10080 x 8 permutation matrix against one row.
+```
+
+So the permutation tail caches on the signature and the Monte Carlo becomes dictionary lookups.
+**11 995 distinct signatures** appeared across the six runs — which is exactly why the uncached
+version could not finish.
+
+### 2. The numbers
+
+```
+Monte Carlo N = 200 000, seed 20260924; a miss lands UNIFORMLY on one of the other 8 layers
+
+q            MINE      R32-A      S-348 (WITHDRAWN, wrong statistic)
+1/9       0.00410    0.00400     0.00037      <- type I: S-348 wrong by 11x
+0.33      0.10151    0.1012      0.0481       <- low-q power: S-348 wrong by 2.1x
+0.50      0.30545    0.3076      0.2305
+0.67      0.59687    0.5976      0.5532
+0.83      0.86237    0.8631      0.8563       <- PR-018's observed 5-of-6 rate
+1.00      1.00000    --          1.0000
+```
+
+**Mine and R32-A's agree to within Monte-Carlo error at N = 200 000 (~0.002).** Independent
+implementations, independent seeds, same answer — which is what S-350 claimed and did not have.
+
+### 3. 🔴 What this corrects, and what it does not
+
+```
+TYPE I  0.0004 -> 0.0041.   Wrong by an order of magnitude. STILL far below alpha = 0.05, so
+        S-348's qualitative reading holds -- the test is conservative and a NULL from it is weak
+        evidence against the screen -- but the figure it quoted was not the test's.
+LOW-q   at q = 0.33, power 0.048 -> 0.102.  S-348 warned "POWERED FOR A STRONG SCREEN ONLY: at
+        q = 0.33 power is ~0.05". The true figure is twice that. The warning is still right in
+        direction (0.10 is not usable power) but it OVERSTATED the limitation.
+HEADLINE at q = 0.83, 0.8563 -> 0.86237. Essentially unchanged. The design's power at the only
+        rate this sprint has ever observed is what S-348 said it was.
+```
+
+📌 **The errors ran in both directions.** The wrong statistic made the test look *more* conservative
+than it is (type I) and *less* capable than it is (low-q power). That is worth stating because a
+single-direction bias would have been easier to spot: I had no reason from the numbers alone to
+suspect them.
+
+### 4. NOT established
+
+```
+⛔ PR-CSI-020 STILL MUST NOT LAUNCH. This closes ONE of the four BLOCKERs' consequences -- the
+   power block can now be written -- but fixes NONE of them. The prereg at md5 9fce4bda is
+   unchanged and still defective: the census refuses it, the launcher has no tag for it, its
+   permutation definition is still the wrong one, and VOID 5 is still enforced by nothing.
+⛔ THIS IS POWER UNDER A NAMED MODEL, not a guarantee. The model is: each head matches with
+   probability q INDEPENDENTLY, and a miss lands UNIFORMLY on one of the other eight layers.
+   Both halves are assumptions. S-351 measured that the empirical argmax marginal is NOT uniform
+   (L10 and L14 take 60% of ten heads), so the uniform-miss half is known to be wrong in detail;
+   R32-A computed the type I under the empirical marginal at 0.00306, BELOW the uniform figure,
+   so the direction is conservative -- but I have NOT reproduced that number and do not assert it.
+⛔ THE q VALUES ARE NOT PREDICTIONS. 0.83 is PR-CSI-018's observed 5-of-6 on a DIFFERENT codeword;
+   it is a reference point, not an expectation for basket.
+⛔ S-353's finding stands: NO rule in (M, M_unique) alone characterises certification, so the
+   prereg cannot carry the kind of outcome table S-348 wrote. Necessary conditions only.
+NOTHING WAS MEASURED ON A GPU. The queue is EMPTY.
+```
+
+### 5. State
+
+```
+PR-CSI-020   FROZEN at 9fce4bda, DEFECTIVE, four BLOCKERs open.
+IN HAND for the re-freeze: the correct permutation definition (from the reader, verbatim), the
+  power table above with N and seed, the necessary conditions M>=3 AND M_unique>=3, S-351's
+  argmax marginal, and R32's list of missing fields.
+NEXT  the single re-freeze: CENSUS_DELIVERABLE with the estimator, the bootstrap block, the
+  SECONDARY deleted, the firewall reworded to the argument that actually works, the dropped VOID
+  conditions restored, a freeze SELF-TEST that instantiates every field the readers subscript,
+  then the tag registration and the frozen READ.
+```
+
+`git push` remains credential-blocked. Committed locally.
