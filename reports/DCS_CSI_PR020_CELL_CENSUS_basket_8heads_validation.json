@@ -1,0 +1,4503 @@
+{
+  "schema": "dcs_csi_head_census/1",
+  "prereg": "configs/dcs_csi_pr020_cell_census_basket_8heads.json",
+  "prereg_id": "PR-CSI-020",
+  "split": "validation",
+  "tag_prefix": "csi11_cell8_basket_validation",
+  "expect_n": 230,
+  "n_domains": 23,
+  "B": 10000,
+  "seed": 20260922,
+  "ci": 0.95,
+  "ON_PROTOCOL": true,
+  "E": {
+    "BK_KO": -0.22696123,
+    "BK_H10_L06": -0.00032032,
+    "BK_H10_L07": -0.00362106,
+    "BK_H10_L08": 0.00173721,
+    "BK_H10_L09": -0.00073468,
+    "BK_H10_L10": 0.00058144,
+    "BK_H10_L11": 0.00078763,
+    "BK_H10_L12": -0.00341337,
+    "BK_H10_L13": 0.00076778,
+    "BK_H10_L14": -0.00069578,
+    "BK_H11_L06": 0.00069993,
+    "BK_H11_L07": 3.106e-05,
+    "BK_H11_L08": -0.01105975,
+    "BK_H11_L09": 0.00035527,
+    "BK_H11_L10": 0.00060575,
+    "BK_H11_L11": -7.63e-05,
+    "BK_H11_L12": 0.00075035,
+    "BK_H11_L13": 0.00076799,
+    "BK_H11_L14": 0.00046637,
+    "BK_H13_L06": -0.00032866,
+    "BK_H13_L07": 4.744e-05,
+    "BK_H13_L08": 0.00106222,
+    "BK_H13_L09": -0.00101389,
+    "BK_H13_L10": -0.00367133,
+    "BK_H13_L11": -0.00233625,
+    "BK_H13_L12": 0.00043108,
+    "BK_H13_L13": -0.0004705,
+    "BK_H13_L14": -7.215e-05,
+    "BK_H18_L06": 0.00093255,
+    "BK_H18_L07": -0.00048599,
+    "BK_H18_L08": -0.00024018,
+    "BK_H18_L09": 0.00083156,
+    "BK_H18_L10": 0.00221248,
+    "BK_H18_L11": 0.00012969,
+    "BK_H18_L12": -9.636e-05,
+    "BK_H18_L13": 0.0016358,
+    "BK_H18_L14": 0.00691159,
+    "BK_H21_L06": -0.00345389,
+    "BK_H21_L07": -0.00011889,
+    "BK_H21_L08": 0.00049659,
+    "BK_H21_L09": -0.00045105,
+    "BK_H21_L10": -0.00105291,
+    "BK_H21_L11": 0.00071185,
+    "BK_H21_L12": 0.00043692,
+    "BK_H21_L13": 0.00023913,
+    "BK_H21_L14": 0.00167369,
+    "BK_H27_L06": -0.00020668,
+    "BK_H27_L07": 0.00070929,
+    "BK_H27_L08": 0.00066795,
+    "BK_H27_L09": 0.00270011,
+    "BK_H27_L10": 0.00150427,
+    "BK_H27_L11": 0.00048623,
+    "BK_H27_L12": 0.00044317,
+    "BK_H27_L13": 0.00013191,
+    "BK_H27_L14": 0.00039214,
+    "BK_H4_L06": -0.00106051,
+    "BK_H4_L07": -0.00039777,
+    "BK_H4_L08": 0.00018018,
+    "BK_H4_L09": 0.00054498,
+    "BK_H4_L10": 0.00208991,
+    "BK_H4_L11": -0.00471757,
+    "BK_H4_L12": -0.00062771,
+    "BK_H4_L13": -0.00014053,
+    "BK_H4_L14": -4.255e-05,
+    "BK_H6_L06": -0.00073484,
+    "BK_H6_L07": -0.00087609,
+    "BK_H6_L08": 0.00033816,
+    "BK_H6_L09": 0.00148083,
+    "BK_H6_L10": 0.00030785,
+    "BK_H6_L11": -0.00666202,
+    "BK_H6_L12": -0.00015568,
+    "BK_H6_L13": 0.00069557,
+    "BK_H6_L14": 0.0003868,
+    "HD_10": -0.0054211,
+    "HD_11": -0.01043769,
+    "HD_13": -0.00827564,
+    "HD_18": 0.00967428,
+    "HD_21": -0.00373771,
+    "HD_27": 0.00411325,
+    "HD_4": -0.00640128,
+    "HD_6": -0.00847502
+  },
+  "ci95": {
+    "BK_KO": [
+      -0.27584751,
+      -0.17803182
+    ],
+    "BK_H10_L06": [
+      -0.00132602,
+      0.00065145
+    ],
+    "BK_H10_L07": [
+      -0.00640953,
+      -0.00111906
+    ],
+    "BK_H10_L08": [
+      0.00012875,
+      0.00331387
+    ],
+    "BK_H10_L09": [
+      -0.00181681,
+      0.00033026
+    ],
+    "BK_H10_L10": [
+      -0.00031189,
+      0.00152854
+    ],
+    "BK_H10_L11": [
+      -0.0004862,
+      0.00215701
+    ],
+    "BK_H10_L12": [
+      -0.00495034,
+      -0.0019373
+    ],
+    "BK_H10_L13": [
+      -0.00049902,
+      0.00210801
+    ],
+    "BK_H10_L14": [
+      -0.00168717,
+      0.00019614
+    ],
+    "BK_H11_L06": [
+      -0.00083673,
+      0.00224906
+    ],
+    "BK_H11_L07": [
+      -0.00157149,
+      0.00153032
+    ],
+    "BK_H11_L08": [
+      -0.0161186,
+      -0.00650936
+    ],
+    "BK_H11_L09": [
+      -0.0007718,
+      0.00141976
+    ],
+    "BK_H11_L10": [
+      -0.00035443,
+      0.00158346
+    ],
+    "BK_H11_L11": [
+      -0.00094984,
+      0.00075979
+    ],
+    "BK_H11_L12": [
+      -0.00024555,
+      0.00173864
+    ],
+    "BK_H11_L13": [
+      -0.00161142,
+      0.00281868
+    ],
+    "BK_H11_L14": [
+      -0.00039204,
+      0.00138677
+    ],
+    "BK_H13_L06": [
+      -0.00146178,
+      0.00073358
+    ],
+    "BK_H13_L07": [
+      -0.00100287,
+      0.00106166
+    ],
+    "BK_H13_L08": [
+      -0.00076791,
+      0.00267649
+    ],
+    "BK_H13_L09": [
+      -0.00271111,
+      0.00095333
+    ],
+    "BK_H13_L10": [
+      -0.00561546,
+      -0.00170676
+    ],
+    "BK_H13_L11": [
+      -0.00352473,
+      -0.00116807
+    ],
+    "BK_H13_L12": [
+      -0.00146135,
+      0.00210198
+    ],
+    "BK_H13_L13": [
+      -0.00189989,
+      0.00102516
+    ],
+    "BK_H13_L14": [
+      -0.00142825,
+      0.00126937
+    ],
+    "BK_H18_L06": [
+      -0.00042156,
+      0.00222742
+    ],
+    "BK_H18_L07": [
+      -0.00170277,
+      0.00072695
+    ],
+    "BK_H18_L08": [
+      -0.00126237,
+      0.00078404
+    ],
+    "BK_H18_L09": [
+      -0.00029891,
+      0.00191805
+    ],
+    "BK_H18_L10": [
+      0.00020761,
+      0.00428307
+    ],
+    "BK_H18_L11": [
+      -0.000651,
+      0.00092471
+    ],
+    "BK_H18_L12": [
+      -0.00119157,
+      0.00092582
+    ],
+    "BK_H18_L13": [
+      -0.00123674,
+      0.0043722
+    ],
+    "BK_H18_L14": [
+      0.00493296,
+      0.00910591
+    ],
+    "BK_H21_L06": [
+      -0.00501911,
+      -0.00197548
+    ],
+    "BK_H21_L07": [
+      -0.00121478,
+      0.00099279
+    ],
+    "BK_H21_L08": [
+      -0.00034826,
+      0.00139485
+    ],
+    "BK_H21_L09": [
+      -0.00190427,
+      0.00105107
+    ],
+    "BK_H21_L10": [
+      -0.00212393,
+      8.995e-05
+    ],
+    "BK_H21_L11": [
+      -0.00077704,
+      0.0023038
+    ],
+    "BK_H21_L12": [
+      -0.00063705,
+      0.00155622
+    ],
+    "BK_H21_L13": [
+      -0.00056528,
+      0.00110199
+    ],
+    "BK_H21_L14": [
+      0.00061276,
+      0.00272176
+    ],
+    "BK_H27_L06": [
+      -0.00111723,
+      0.00067281
+    ],
+    "BK_H27_L07": [
+      -0.000509,
+      0.00188073
+    ],
+    "BK_H27_L08": [
+      -0.000671,
+      0.00186085
+    ],
+    "BK_H27_L09": [
+      0.00092131,
+      0.0047263
+    ],
+    "BK_H27_L10": [
+      -9.057e-05,
+      0.00314009
+    ],
+    "BK_H27_L11": [
+      -0.00079194,
+      0.00174716
+    ],
+    "BK_H27_L12": [
+      -0.00048998,
+      0.00140291
+    ],
+    "BK_H27_L13": [
+      -0.00099838,
+      0.00120494
+    ],
+    "BK_H27_L14": [
+      -0.00049402,
+      0.00130048
+    ],
+    "BK_H4_L06": [
+      -0.00281395,
+      0.00048962
+    ],
+    "BK_H4_L07": [
+      -0.00179766,
+      0.00112457
+    ],
+    "BK_H4_L08": [
+      -0.00085625,
+      0.00121711
+    ],
+    "BK_H4_L09": [
+      -0.00048806,
+      0.00163741
+    ],
+    "BK_H4_L10": [
+      0.00107136,
+      0.00316966
+    ],
+    "BK_H4_L11": [
+      -0.00706178,
+      -0.00254118
+    ],
+    "BK_H4_L12": [
+      -0.00186714,
+      0.00043228
+    ],
+    "BK_H4_L13": [
+      -0.00190794,
+      0.00130985
+    ],
+    "BK_H4_L14": [
+      -0.00082223,
+      0.00080126
+    ],
+    "BK_H6_L06": [
+      -0.00285107,
+      0.00115882
+    ],
+    "BK_H6_L07": [
+      -0.00215542,
+      0.00036806
+    ],
+    "BK_H6_L08": [
+      -0.00044785,
+      0.00118925
+    ],
+    "BK_H6_L09": [
+      0.00031058,
+      0.00261486
+    ],
+    "BK_H6_L10": [
+      -0.00084455,
+      0.00159289
+    ],
+    "BK_H6_L11": [
+      -0.01000133,
+      -0.00360478
+    ],
+    "BK_H6_L12": [
+      -0.00106246,
+      0.00076864
+    ],
+    "BK_H6_L13": [
+      -0.00051835,
+      0.00179948
+    ],
+    "BK_H6_L14": [
+      -0.00032939,
+      0.00109476
+    ],
+    "HD_10": [
+      -0.00796995,
+      -0.00296467
+    ],
+    "HD_11": [
+      -0.01604598,
+      -0.0055028
+    ],
+    "HD_13": [
+      -0.01310946,
+      -0.00419111
+    ],
+    "HD_18": [
+      0.00568911,
+      0.01390113
+    ],
+    "HD_21": [
+      -0.00554667,
+      -0.00203024
+    ],
+    "HD_27": [
+      0.001899,
+      0.00637742
+    ],
+    "HD_4": [
+      -0.00975335,
+      -0.0032834
+    ],
+    "HD_6": [
+      -0.01212085,
+      -0.00549124
+    ]
+  },
+  "loo_marginal": {},
+  "GATE_0_and_identity": {
+    "per_arm": {
+      "BK_BASE": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 0.0,
+        "expected_median_prefill_edits": 0,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": true,
+        "n_arms_sharing_this_expected_dose": 1,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-215, S-246)"
+      },
+      "BK_KO": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 9,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-215, S-246)"
+      },
+      "BK_H10_L06": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H10_L07": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H10_L08": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H10_L09": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H10_L10": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H10_L11": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H10_L12": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H10_L13": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H10_L14": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H11_L06": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H11_L07": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H11_L08": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H11_L09": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H11_L10": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H11_L11": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H11_L12": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H11_L13": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H11_L14": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H13_L06": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H13_L07": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H13_L08": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H13_L09": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H13_L10": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H13_L11": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H13_L12": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H13_L13": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H13_L14": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H18_L06": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H18_L07": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H18_L08": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H18_L09": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H18_L10": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H18_L11": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H18_L12": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H18_L13": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H18_L14": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H21_L06": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H21_L07": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H21_L08": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H21_L09": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H21_L10": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H21_L11": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H21_L12": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H21_L13": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H21_L14": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H27_L06": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H27_L07": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H27_L08": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H27_L09": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H27_L10": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H27_L11": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H27_L12": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H27_L13": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H27_L14": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H4_L06": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H4_L07": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H4_L08": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H4_L09": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H4_L10": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H4_L11": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H4_L12": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H4_L13": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H4_L14": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H6_L06": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H6_L07": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H6_L08": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H6_L09": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H6_L10": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H6_L11": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H6_L12": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H6_L13": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "BK_H6_L14": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 224.0,
+        "expected_median_prefill_edits": 224,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 72,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "HD_10": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 9,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "HD_11": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 9,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "HD_13": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 9,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "HD_18": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 9,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "HD_21": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 9,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "HD_27": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 9,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "HD_4": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 9,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      },
+      "HD_6": {
+        "n_rows": 230,
+        "violations": {},
+        "total_decode_edits": 0,
+        "median_prefill_edits": 2016.0,
+        "expected_median_prefill_edits": 2016,
+        "dose_ok": true,
+        "dose_is_diagnostic_of_identity": false,
+        "n_arms_sharing_this_expected_dose": 9,
+        "pass": true,
+        "dose_expectation_status": "MEASURED (S-299, S-306, S-317, and S-335 on 62 arms)"
+      }
+    },
+    "identity": {
+      "BK_BASE": {
+        "k": 0,
+        "recorded": "NOT_A_CELL_ARM",
+        "expected": null,
+        "ok": true,
+        "why": "not intervened",
+        "identity_field": "knockout_heads"
+      },
+      "BK_KO": {
+        "k": 32,
+        "recorded": "ALL",
+        "expected": null,
+        "ok": true,
+        "why": "omitted flag == all 32, and no cell list",
+        "identity_field": "knockout_heads"
+      },
+      "BK_H10_L06": {
+        "k": 1,
+        "recorded": [
+          [
+            6,
+            10
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            10
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H10_L07": {
+        "k": 1,
+        "recorded": [
+          [
+            7,
+            10
+          ]
+        ],
+        "expected": [
+          [
+            7,
+            10
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H10_L08": {
+        "k": 1,
+        "recorded": [
+          [
+            8,
+            10
+          ]
+        ],
+        "expected": [
+          [
+            8,
+            10
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H10_L09": {
+        "k": 1,
+        "recorded": [
+          [
+            9,
+            10
+          ]
+        ],
+        "expected": [
+          [
+            9,
+            10
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H10_L10": {
+        "k": 1,
+        "recorded": [
+          [
+            10,
+            10
+          ]
+        ],
+        "expected": [
+          [
+            10,
+            10
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H10_L11": {
+        "k": 1,
+        "recorded": [
+          [
+            11,
+            10
+          ]
+        ],
+        "expected": [
+          [
+            11,
+            10
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H10_L12": {
+        "k": 1,
+        "recorded": [
+          [
+            12,
+            10
+          ]
+        ],
+        "expected": [
+          [
+            12,
+            10
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H10_L13": {
+        "k": 1,
+        "recorded": [
+          [
+            13,
+            10
+          ]
+        ],
+        "expected": [
+          [
+            13,
+            10
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H10_L14": {
+        "k": 1,
+        "recorded": [
+          [
+            14,
+            10
+          ]
+        ],
+        "expected": [
+          [
+            14,
+            10
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H11_L06": {
+        "k": 1,
+        "recorded": [
+          [
+            6,
+            11
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            11
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H11_L07": {
+        "k": 1,
+        "recorded": [
+          [
+            7,
+            11
+          ]
+        ],
+        "expected": [
+          [
+            7,
+            11
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H11_L08": {
+        "k": 1,
+        "recorded": [
+          [
+            8,
+            11
+          ]
+        ],
+        "expected": [
+          [
+            8,
+            11
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H11_L09": {
+        "k": 1,
+        "recorded": [
+          [
+            9,
+            11
+          ]
+        ],
+        "expected": [
+          [
+            9,
+            11
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H11_L10": {
+        "k": 1,
+        "recorded": [
+          [
+            10,
+            11
+          ]
+        ],
+        "expected": [
+          [
+            10,
+            11
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H11_L11": {
+        "k": 1,
+        "recorded": [
+          [
+            11,
+            11
+          ]
+        ],
+        "expected": [
+          [
+            11,
+            11
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H11_L12": {
+        "k": 1,
+        "recorded": [
+          [
+            12,
+            11
+          ]
+        ],
+        "expected": [
+          [
+            12,
+            11
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H11_L13": {
+        "k": 1,
+        "recorded": [
+          [
+            13,
+            11
+          ]
+        ],
+        "expected": [
+          [
+            13,
+            11
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H11_L14": {
+        "k": 1,
+        "recorded": [
+          [
+            14,
+            11
+          ]
+        ],
+        "expected": [
+          [
+            14,
+            11
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H13_L06": {
+        "k": 1,
+        "recorded": [
+          [
+            6,
+            13
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            13
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H13_L07": {
+        "k": 1,
+        "recorded": [
+          [
+            7,
+            13
+          ]
+        ],
+        "expected": [
+          [
+            7,
+            13
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H13_L08": {
+        "k": 1,
+        "recorded": [
+          [
+            8,
+            13
+          ]
+        ],
+        "expected": [
+          [
+            8,
+            13
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H13_L09": {
+        "k": 1,
+        "recorded": [
+          [
+            9,
+            13
+          ]
+        ],
+        "expected": [
+          [
+            9,
+            13
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H13_L10": {
+        "k": 1,
+        "recorded": [
+          [
+            10,
+            13
+          ]
+        ],
+        "expected": [
+          [
+            10,
+            13
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H13_L11": {
+        "k": 1,
+        "recorded": [
+          [
+            11,
+            13
+          ]
+        ],
+        "expected": [
+          [
+            11,
+            13
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H13_L12": {
+        "k": 1,
+        "recorded": [
+          [
+            12,
+            13
+          ]
+        ],
+        "expected": [
+          [
+            12,
+            13
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H13_L13": {
+        "k": 1,
+        "recorded": [
+          [
+            13,
+            13
+          ]
+        ],
+        "expected": [
+          [
+            13,
+            13
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H13_L14": {
+        "k": 1,
+        "recorded": [
+          [
+            14,
+            13
+          ]
+        ],
+        "expected": [
+          [
+            14,
+            13
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H18_L06": {
+        "k": 1,
+        "recorded": [
+          [
+            6,
+            18
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            18
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H18_L07": {
+        "k": 1,
+        "recorded": [
+          [
+            7,
+            18
+          ]
+        ],
+        "expected": [
+          [
+            7,
+            18
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H18_L08": {
+        "k": 1,
+        "recorded": [
+          [
+            8,
+            18
+          ]
+        ],
+        "expected": [
+          [
+            8,
+            18
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H18_L09": {
+        "k": 1,
+        "recorded": [
+          [
+            9,
+            18
+          ]
+        ],
+        "expected": [
+          [
+            9,
+            18
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H18_L10": {
+        "k": 1,
+        "recorded": [
+          [
+            10,
+            18
+          ]
+        ],
+        "expected": [
+          [
+            10,
+            18
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H18_L11": {
+        "k": 1,
+        "recorded": [
+          [
+            11,
+            18
+          ]
+        ],
+        "expected": [
+          [
+            11,
+            18
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H18_L12": {
+        "k": 1,
+        "recorded": [
+          [
+            12,
+            18
+          ]
+        ],
+        "expected": [
+          [
+            12,
+            18
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H18_L13": {
+        "k": 1,
+        "recorded": [
+          [
+            13,
+            18
+          ]
+        ],
+        "expected": [
+          [
+            13,
+            18
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H18_L14": {
+        "k": 1,
+        "recorded": [
+          [
+            14,
+            18
+          ]
+        ],
+        "expected": [
+          [
+            14,
+            18
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H21_L06": {
+        "k": 1,
+        "recorded": [
+          [
+            6,
+            21
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            21
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H21_L07": {
+        "k": 1,
+        "recorded": [
+          [
+            7,
+            21
+          ]
+        ],
+        "expected": [
+          [
+            7,
+            21
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H21_L08": {
+        "k": 1,
+        "recorded": [
+          [
+            8,
+            21
+          ]
+        ],
+        "expected": [
+          [
+            8,
+            21
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H21_L09": {
+        "k": 1,
+        "recorded": [
+          [
+            9,
+            21
+          ]
+        ],
+        "expected": [
+          [
+            9,
+            21
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H21_L10": {
+        "k": 1,
+        "recorded": [
+          [
+            10,
+            21
+          ]
+        ],
+        "expected": [
+          [
+            10,
+            21
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H21_L11": {
+        "k": 1,
+        "recorded": [
+          [
+            11,
+            21
+          ]
+        ],
+        "expected": [
+          [
+            11,
+            21
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H21_L12": {
+        "k": 1,
+        "recorded": [
+          [
+            12,
+            21
+          ]
+        ],
+        "expected": [
+          [
+            12,
+            21
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H21_L13": {
+        "k": 1,
+        "recorded": [
+          [
+            13,
+            21
+          ]
+        ],
+        "expected": [
+          [
+            13,
+            21
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H21_L14": {
+        "k": 1,
+        "recorded": [
+          [
+            14,
+            21
+          ]
+        ],
+        "expected": [
+          [
+            14,
+            21
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H27_L06": {
+        "k": 1,
+        "recorded": [
+          [
+            6,
+            27
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            27
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H27_L07": {
+        "k": 1,
+        "recorded": [
+          [
+            7,
+            27
+          ]
+        ],
+        "expected": [
+          [
+            7,
+            27
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H27_L08": {
+        "k": 1,
+        "recorded": [
+          [
+            8,
+            27
+          ]
+        ],
+        "expected": [
+          [
+            8,
+            27
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H27_L09": {
+        "k": 1,
+        "recorded": [
+          [
+            9,
+            27
+          ]
+        ],
+        "expected": [
+          [
+            9,
+            27
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H27_L10": {
+        "k": 1,
+        "recorded": [
+          [
+            10,
+            27
+          ]
+        ],
+        "expected": [
+          [
+            10,
+            27
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H27_L11": {
+        "k": 1,
+        "recorded": [
+          [
+            11,
+            27
+          ]
+        ],
+        "expected": [
+          [
+            11,
+            27
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H27_L12": {
+        "k": 1,
+        "recorded": [
+          [
+            12,
+            27
+          ]
+        ],
+        "expected": [
+          [
+            12,
+            27
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H27_L13": {
+        "k": 1,
+        "recorded": [
+          [
+            13,
+            27
+          ]
+        ],
+        "expected": [
+          [
+            13,
+            27
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H27_L14": {
+        "k": 1,
+        "recorded": [
+          [
+            14,
+            27
+          ]
+        ],
+        "expected": [
+          [
+            14,
+            27
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H4_L06": {
+        "k": 1,
+        "recorded": [
+          [
+            6,
+            4
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            4
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H4_L07": {
+        "k": 1,
+        "recorded": [
+          [
+            7,
+            4
+          ]
+        ],
+        "expected": [
+          [
+            7,
+            4
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H4_L08": {
+        "k": 1,
+        "recorded": [
+          [
+            8,
+            4
+          ]
+        ],
+        "expected": [
+          [
+            8,
+            4
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H4_L09": {
+        "k": 1,
+        "recorded": [
+          [
+            9,
+            4
+          ]
+        ],
+        "expected": [
+          [
+            9,
+            4
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H4_L10": {
+        "k": 1,
+        "recorded": [
+          [
+            10,
+            4
+          ]
+        ],
+        "expected": [
+          [
+            10,
+            4
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H4_L11": {
+        "k": 1,
+        "recorded": [
+          [
+            11,
+            4
+          ]
+        ],
+        "expected": [
+          [
+            11,
+            4
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H4_L12": {
+        "k": 1,
+        "recorded": [
+          [
+            12,
+            4
+          ]
+        ],
+        "expected": [
+          [
+            12,
+            4
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H4_L13": {
+        "k": 1,
+        "recorded": [
+          [
+            13,
+            4
+          ]
+        ],
+        "expected": [
+          [
+            13,
+            4
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H4_L14": {
+        "k": 1,
+        "recorded": [
+          [
+            14,
+            4
+          ]
+        ],
+        "expected": [
+          [
+            14,
+            4
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H6_L06": {
+        "k": 1,
+        "recorded": [
+          [
+            6,
+            6
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            6
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H6_L07": {
+        "k": 1,
+        "recorded": [
+          [
+            7,
+            6
+          ]
+        ],
+        "expected": [
+          [
+            7,
+            6
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H6_L08": {
+        "k": 1,
+        "recorded": [
+          [
+            8,
+            6
+          ]
+        ],
+        "expected": [
+          [
+            8,
+            6
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H6_L09": {
+        "k": 1,
+        "recorded": [
+          [
+            9,
+            6
+          ]
+        ],
+        "expected": [
+          [
+            9,
+            6
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H6_L10": {
+        "k": 1,
+        "recorded": [
+          [
+            10,
+            6
+          ]
+        ],
+        "expected": [
+          [
+            10,
+            6
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H6_L11": {
+        "k": 1,
+        "recorded": [
+          [
+            11,
+            6
+          ]
+        ],
+        "expected": [
+          [
+            11,
+            6
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H6_L12": {
+        "k": 1,
+        "recorded": [
+          [
+            12,
+            6
+          ]
+        ],
+        "expected": [
+          [
+            12,
+            6
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H6_L13": {
+        "k": 1,
+        "recorded": [
+          [
+            13,
+            6
+          ]
+        ],
+        "expected": [
+          [
+            13,
+            6
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "BK_H6_L14": {
+        "k": 1,
+        "recorded": [
+          [
+            14,
+            6
+          ]
+        ],
+        "expected": [
+          [
+            14,
+            6
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "HD_10": {
+        "k": 9,
+        "recorded": [
+          [
+            6,
+            10
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            8,
+            10
+          ],
+          [
+            9,
+            10
+          ],
+          [
+            10,
+            10
+          ],
+          [
+            11,
+            10
+          ],
+          [
+            12,
+            10
+          ],
+          [
+            13,
+            10
+          ],
+          [
+            14,
+            10
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            10
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            8,
+            10
+          ],
+          [
+            9,
+            10
+          ],
+          [
+            10,
+            10
+          ],
+          [
+            11,
+            10
+          ],
+          [
+            12,
+            10
+          ],
+          [
+            13,
+            10
+          ],
+          [
+            14,
+            10
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "HD_11": {
+        "k": 9,
+        "recorded": [
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            11
+          ],
+          [
+            8,
+            11
+          ],
+          [
+            9,
+            11
+          ],
+          [
+            10,
+            11
+          ],
+          [
+            11,
+            11
+          ],
+          [
+            12,
+            11
+          ],
+          [
+            13,
+            11
+          ],
+          [
+            14,
+            11
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            11
+          ],
+          [
+            7,
+            11
+          ],
+          [
+            8,
+            11
+          ],
+          [
+            9,
+            11
+          ],
+          [
+            10,
+            11
+          ],
+          [
+            11,
+            11
+          ],
+          [
+            12,
+            11
+          ],
+          [
+            13,
+            11
+          ],
+          [
+            14,
+            11
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "HD_13": {
+        "k": 9,
+        "recorded": [
+          [
+            6,
+            13
+          ],
+          [
+            7,
+            13
+          ],
+          [
+            8,
+            13
+          ],
+          [
+            9,
+            13
+          ],
+          [
+            10,
+            13
+          ],
+          [
+            11,
+            13
+          ],
+          [
+            12,
+            13
+          ],
+          [
+            13,
+            13
+          ],
+          [
+            14,
+            13
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            13
+          ],
+          [
+            7,
+            13
+          ],
+          [
+            8,
+            13
+          ],
+          [
+            9,
+            13
+          ],
+          [
+            10,
+            13
+          ],
+          [
+            11,
+            13
+          ],
+          [
+            12,
+            13
+          ],
+          [
+            13,
+            13
+          ],
+          [
+            14,
+            13
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "HD_18": {
+        "k": 9,
+        "recorded": [
+          [
+            6,
+            18
+          ],
+          [
+            7,
+            18
+          ],
+          [
+            8,
+            18
+          ],
+          [
+            9,
+            18
+          ],
+          [
+            10,
+            18
+          ],
+          [
+            11,
+            18
+          ],
+          [
+            12,
+            18
+          ],
+          [
+            13,
+            18
+          ],
+          [
+            14,
+            18
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            18
+          ],
+          [
+            7,
+            18
+          ],
+          [
+            8,
+            18
+          ],
+          [
+            9,
+            18
+          ],
+          [
+            10,
+            18
+          ],
+          [
+            11,
+            18
+          ],
+          [
+            12,
+            18
+          ],
+          [
+            13,
+            18
+          ],
+          [
+            14,
+            18
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "HD_21": {
+        "k": 9,
+        "recorded": [
+          [
+            6,
+            21
+          ],
+          [
+            7,
+            21
+          ],
+          [
+            8,
+            21
+          ],
+          [
+            9,
+            21
+          ],
+          [
+            10,
+            21
+          ],
+          [
+            11,
+            21
+          ],
+          [
+            12,
+            21
+          ],
+          [
+            13,
+            21
+          ],
+          [
+            14,
+            21
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            21
+          ],
+          [
+            7,
+            21
+          ],
+          [
+            8,
+            21
+          ],
+          [
+            9,
+            21
+          ],
+          [
+            10,
+            21
+          ],
+          [
+            11,
+            21
+          ],
+          [
+            12,
+            21
+          ],
+          [
+            13,
+            21
+          ],
+          [
+            14,
+            21
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "HD_27": {
+        "k": 9,
+        "recorded": [
+          [
+            6,
+            27
+          ],
+          [
+            7,
+            27
+          ],
+          [
+            8,
+            27
+          ],
+          [
+            9,
+            27
+          ],
+          [
+            10,
+            27
+          ],
+          [
+            11,
+            27
+          ],
+          [
+            12,
+            27
+          ],
+          [
+            13,
+            27
+          ],
+          [
+            14,
+            27
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            27
+          ],
+          [
+            7,
+            27
+          ],
+          [
+            8,
+            27
+          ],
+          [
+            9,
+            27
+          ],
+          [
+            10,
+            27
+          ],
+          [
+            11,
+            27
+          ],
+          [
+            12,
+            27
+          ],
+          [
+            13,
+            27
+          ],
+          [
+            14,
+            27
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "HD_4": {
+        "k": 9,
+        "recorded": [
+          [
+            6,
+            4
+          ],
+          [
+            7,
+            4
+          ],
+          [
+            8,
+            4
+          ],
+          [
+            9,
+            4
+          ],
+          [
+            10,
+            4
+          ],
+          [
+            11,
+            4
+          ],
+          [
+            12,
+            4
+          ],
+          [
+            13,
+            4
+          ],
+          [
+            14,
+            4
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            4
+          ],
+          [
+            7,
+            4
+          ],
+          [
+            8,
+            4
+          ],
+          [
+            9,
+            4
+          ],
+          [
+            10,
+            4
+          ],
+          [
+            11,
+            4
+          ],
+          [
+            12,
+            4
+          ],
+          [
+            13,
+            4
+          ],
+          [
+            14,
+            4
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      },
+      "HD_6": {
+        "k": 9,
+        "recorded": [
+          [
+            6,
+            6
+          ],
+          [
+            7,
+            6
+          ],
+          [
+            8,
+            6
+          ],
+          [
+            9,
+            6
+          ],
+          [
+            10,
+            6
+          ],
+          [
+            11,
+            6
+          ],
+          [
+            12,
+            6
+          ],
+          [
+            13,
+            6
+          ],
+          [
+            14,
+            6
+          ]
+        ],
+        "expected": [
+          [
+            6,
+            6
+          ],
+          [
+            7,
+            6
+          ],
+          [
+            8,
+            6
+          ],
+          [
+            9,
+            6
+          ],
+          [
+            10,
+            6
+          ],
+          [
+            11,
+            6
+          ],
+          [
+            12,
+            6
+          ],
+          [
+            13,
+            6
+          ],
+          [
+            14,
+            6
+          ]
+        ],
+        "ok": true,
+        "why": "matches prereg",
+        "identity_field": "knockout_cells"
+      }
+    }
+  },
+  "NO_RANK_TEST": true,
+  "REPORTABLE_AS": "72 single-cell effects E(BK_H<h>_L<ll>) = the MEAN OVER THE 23 DOMAINS of (y_install(cell) - y_install(BK_BASE)), each with a percentile bootstrap ci95 over DOMAIN resamples; the eight whole-head HD_<h> arms supplying the S-311 bars and the ADMISSION decision, EXCLUDED from every per-cell count; and the BK_KO all-32 denominator. ⚠ The first freeze omitted this key entirely, so the census REFUSED the prereg before loading any arm -- after ~3.9 GPU-hours would have been spent (R32-A/R32-B). It is also where the ESTIMATOR is defined, so without it the family had no estimator definition anywhere, a PART I 3.5 violation.",
+  "CANNOT_DO": [
+    "whether the screen predicts for heads that are NULL on basket -- this family admits only live ones, by construction",
+    "anything about the OTHER 24 heads, or about cells outside band 6-14",
+    "anything about the SOURCE of the effect (S-316/AM-40 stand; the mass instrument's criterion licenses a REFUTATION reading only, S-337/S-343)",
+    "anything about TEST",
+    "whether the screen's sub-argmax ORDERING transfers -- S-307 measured that it does not"
+  ],
+  "SELECTION_RE_ENTERS_WHEN": "any head is added, re-ordered, or dropped OTHER THAN BY THE FROZEN ADMISSION RULE, after an arm has run. ⚠ The first freeze said 'added, dropped or re-ordered' without that exception, which contradicted ADMISSION -- whose whole job is to drop heads after the arms have run (R32-A CONCERN 5).",
+  "DOSE_IDENTITY_IS_BLIND_HERE": "72 cell arms share a prefill dose of 224 and NINE arms share 2016 (the eight HD_<h> plus BK_KO). The dose therefore carries NO identity information within either group. Arm identity MUST be asserted from each run's own knockout_cells, and for BK_KO from its recording NO cell list (S-292/S-310).",
+  "NO_VERDICT": "This file contains NO verdict, NO rank and NO p-value by design. Singling out any one head for a claim requires a HELD-OUT AXIS -- see SELECTION_RE_ENTERS_WHEN.",
+  "ARM_GRANULARITY": "cell",
+  "CANNOT_DO_FIELD": "WHAT_THIS_CANNOT_ANSWER",
+  "VOID_8_PROVENANCE": {
+    "n_heads_declared": 8,
+    "n_checked": 8,
+    "n_not_evaluated": 0,
+    "heads_not_evaluated": [],
+    "tolerance_used_per_head": {
+      "10": 1e-06,
+      "11": 1e-06,
+      "13": 1e-06,
+      "18": 1e-06,
+      "21": 1e-06,
+      "27": 1e-06,
+      "4": 1e-06,
+      "6": 1e-06
+    },
+    "checks": [
+      {
+        "head": "10",
+        "source_arm": "HD_10",
+        "E": -0.0054211033833185054,
+        "reference_E": -0.0054211,
+        "abs_diff": 3.3833185055648363e-09,
+        "void_tolerance": 1e-06,
+        "within": true
+      },
+      {
+        "head": "11",
+        "source_arm": "HD_11",
+        "E": -0.0104376889058726,
+        "reference_E": -0.01043769,
+        "abs_diff": 1.0941273997921996e-09,
+        "void_tolerance": 1e-06,
+        "within": true
+      },
+      {
+        "head": "13",
+        "source_arm": "HD_13",
+        "E": -0.00827563749076063,
+        "reference_E": -0.00827564,
+        "abs_diff": 2.509239370104832e-09,
+        "void_tolerance": 1e-06,
+        "within": true
+      },
+      {
+        "head": "18",
+        "source_arm": "HD_18",
+        "E": 0.009674284258871924,
+        "reference_E": 0.00967428,
+        "abs_diff": 4.258871923526475e-09,
+        "void_tolerance": 1e-06,
+        "within": true
+      },
+      {
+        "head": "21",
+        "source_arm": "HD_21",
+        "E": -0.003737710150619021,
+        "reference_E": -0.00373771,
+        "abs_diff": 1.5061902116156323e-10,
+        "void_tolerance": 1e-06,
+        "within": true
+      },
+      {
+        "head": "27",
+        "source_arm": "HD_27",
+        "E": 0.004113246727745596,
+        "reference_E": 0.00411325,
+        "abs_diff": 3.2722544040728052e-09,
+        "void_tolerance": 1e-06,
+        "within": true
+      },
+      {
+        "head": "4",
+        "source_arm": "HD_4",
+        "E": -0.006401282731552108,
+        "reference_E": -0.00640128,
+        "abs_diff": 2.73155210863546e-09,
+        "void_tolerance": 1e-06,
+        "within": true
+      },
+      {
+        "head": "6",
+        "source_arm": "HD_6",
+        "E": -0.008475024355830368,
+        "reference_E": -0.00847502,
+        "abs_diff": 4.355830368271696e-09,
+        "void_tolerance": 1e-06,
+        "within": true
+      }
+    ],
+    "WHAT_THIS_IS": "each head's whole-head arm E compared to the prereg's frozen prior measurement of the SAME head, codeword and split. A diff above the head's DECLARED void_tolerance is a refusal, not a warning. The tolerance may not be defaulted by this reader. (R29/S-323, R30-A/S-332)"
+  },
+  "CELL_FAMILY": {
+    "h_star": null,
+    "layers": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "band": "6-14",
+    "per_cell_dose_predicted": 224,
+    "per_cell_dose_observed": [
+      224.0
+    ],
+    "per_cell_dose_verdict": "CONFIRMED",
+    "cells": {
+      "BK_H10_L06": [
+        [
+          6,
+          10
+        ]
+      ],
+      "BK_H10_L07": [
+        [
+          7,
+          10
+        ]
+      ],
+      "BK_H10_L08": [
+        [
+          8,
+          10
+        ]
+      ],
+      "BK_H10_L09": [
+        [
+          9,
+          10
+        ]
+      ],
+      "BK_H10_L10": [
+        [
+          10,
+          10
+        ]
+      ],
+      "BK_H10_L11": [
+        [
+          11,
+          10
+        ]
+      ],
+      "BK_H10_L12": [
+        [
+          12,
+          10
+        ]
+      ],
+      "BK_H10_L13": [
+        [
+          13,
+          10
+        ]
+      ],
+      "BK_H10_L14": [
+        [
+          14,
+          10
+        ]
+      ],
+      "BK_H11_L06": [
+        [
+          6,
+          11
+        ]
+      ],
+      "BK_H11_L07": [
+        [
+          7,
+          11
+        ]
+      ],
+      "BK_H11_L08": [
+        [
+          8,
+          11
+        ]
+      ],
+      "BK_H11_L09": [
+        [
+          9,
+          11
+        ]
+      ],
+      "BK_H11_L10": [
+        [
+          10,
+          11
+        ]
+      ],
+      "BK_H11_L11": [
+        [
+          11,
+          11
+        ]
+      ],
+      "BK_H11_L12": [
+        [
+          12,
+          11
+        ]
+      ],
+      "BK_H11_L13": [
+        [
+          13,
+          11
+        ]
+      ],
+      "BK_H11_L14": [
+        [
+          14,
+          11
+        ]
+      ],
+      "BK_H13_L06": [
+        [
+          6,
+          13
+        ]
+      ],
+      "BK_H13_L07": [
+        [
+          7,
+          13
+        ]
+      ],
+      "BK_H13_L08": [
+        [
+          8,
+          13
+        ]
+      ],
+      "BK_H13_L09": [
+        [
+          9,
+          13
+        ]
+      ],
+      "BK_H13_L10": [
+        [
+          10,
+          13
+        ]
+      ],
+      "BK_H13_L11": [
+        [
+          11,
+          13
+        ]
+      ],
+      "BK_H13_L12": [
+        [
+          12,
+          13
+        ]
+      ],
+      "BK_H13_L13": [
+        [
+          13,
+          13
+        ]
+      ],
+      "BK_H13_L14": [
+        [
+          14,
+          13
+        ]
+      ],
+      "BK_H18_L06": [
+        [
+          6,
+          18
+        ]
+      ],
+      "BK_H18_L07": [
+        [
+          7,
+          18
+        ]
+      ],
+      "BK_H18_L08": [
+        [
+          8,
+          18
+        ]
+      ],
+      "BK_H18_L09": [
+        [
+          9,
+          18
+        ]
+      ],
+      "BK_H18_L10": [
+        [
+          10,
+          18
+        ]
+      ],
+      "BK_H18_L11": [
+        [
+          11,
+          18
+        ]
+      ],
+      "BK_H18_L12": [
+        [
+          12,
+          18
+        ]
+      ],
+      "BK_H18_L13": [
+        [
+          13,
+          18
+        ]
+      ],
+      "BK_H18_L14": [
+        [
+          14,
+          18
+        ]
+      ],
+      "BK_H21_L06": [
+        [
+          6,
+          21
+        ]
+      ],
+      "BK_H21_L07": [
+        [
+          7,
+          21
+        ]
+      ],
+      "BK_H21_L08": [
+        [
+          8,
+          21
+        ]
+      ],
+      "BK_H21_L09": [
+        [
+          9,
+          21
+        ]
+      ],
+      "BK_H21_L10": [
+        [
+          10,
+          21
+        ]
+      ],
+      "BK_H21_L11": [
+        [
+          11,
+          21
+        ]
+      ],
+      "BK_H21_L12": [
+        [
+          12,
+          21
+        ]
+      ],
+      "BK_H21_L13": [
+        [
+          13,
+          21
+        ]
+      ],
+      "BK_H21_L14": [
+        [
+          14,
+          21
+        ]
+      ],
+      "BK_H27_L06": [
+        [
+          6,
+          27
+        ]
+      ],
+      "BK_H27_L07": [
+        [
+          7,
+          27
+        ]
+      ],
+      "BK_H27_L08": [
+        [
+          8,
+          27
+        ]
+      ],
+      "BK_H27_L09": [
+        [
+          9,
+          27
+        ]
+      ],
+      "BK_H27_L10": [
+        [
+          10,
+          27
+        ]
+      ],
+      "BK_H27_L11": [
+        [
+          11,
+          27
+        ]
+      ],
+      "BK_H27_L12": [
+        [
+          12,
+          27
+        ]
+      ],
+      "BK_H27_L13": [
+        [
+          13,
+          27
+        ]
+      ],
+      "BK_H27_L14": [
+        [
+          14,
+          27
+        ]
+      ],
+      "BK_H4_L06": [
+        [
+          6,
+          4
+        ]
+      ],
+      "BK_H4_L07": [
+        [
+          7,
+          4
+        ]
+      ],
+      "BK_H4_L08": [
+        [
+          8,
+          4
+        ]
+      ],
+      "BK_H4_L09": [
+        [
+          9,
+          4
+        ]
+      ],
+      "BK_H4_L10": [
+        [
+          10,
+          4
+        ]
+      ],
+      "BK_H4_L11": [
+        [
+          11,
+          4
+        ]
+      ],
+      "BK_H4_L12": [
+        [
+          12,
+          4
+        ]
+      ],
+      "BK_H4_L13": [
+        [
+          13,
+          4
+        ]
+      ],
+      "BK_H4_L14": [
+        [
+          14,
+          4
+        ]
+      ],
+      "BK_H6_L06": [
+        [
+          6,
+          6
+        ]
+      ],
+      "BK_H6_L07": [
+        [
+          7,
+          6
+        ]
+      ],
+      "BK_H6_L08": [
+        [
+          8,
+          6
+        ]
+      ],
+      "BK_H6_L09": [
+        [
+          9,
+          6
+        ]
+      ],
+      "BK_H6_L10": [
+        [
+          10,
+          6
+        ]
+      ],
+      "BK_H6_L11": [
+        [
+          11,
+          6
+        ]
+      ],
+      "BK_H6_L12": [
+        [
+          12,
+          6
+        ]
+      ],
+      "BK_H6_L13": [
+        [
+          13,
+          6
+        ]
+      ],
+      "BK_H6_L14": [
+        [
+          14,
+          6
+        ]
+      ],
+      "HD_10": [
+        [
+          6,
+          10
+        ],
+        [
+          7,
+          10
+        ],
+        [
+          8,
+          10
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          11,
+          10
+        ],
+        [
+          12,
+          10
+        ],
+        [
+          13,
+          10
+        ],
+        [
+          14,
+          10
+        ]
+      ],
+      "HD_11": [
+        [
+          6,
+          11
+        ],
+        [
+          7,
+          11
+        ],
+        [
+          8,
+          11
+        ],
+        [
+          9,
+          11
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          11,
+          11
+        ],
+        [
+          12,
+          11
+        ],
+        [
+          13,
+          11
+        ],
+        [
+          14,
+          11
+        ]
+      ],
+      "HD_13": [
+        [
+          6,
+          13
+        ],
+        [
+          7,
+          13
+        ],
+        [
+          8,
+          13
+        ],
+        [
+          9,
+          13
+        ],
+        [
+          10,
+          13
+        ],
+        [
+          11,
+          13
+        ],
+        [
+          12,
+          13
+        ],
+        [
+          13,
+          13
+        ],
+        [
+          14,
+          13
+        ]
+      ],
+      "HD_18": [
+        [
+          6,
+          18
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          10,
+          18
+        ],
+        [
+          11,
+          18
+        ],
+        [
+          12,
+          18
+        ],
+        [
+          13,
+          18
+        ],
+        [
+          14,
+          18
+        ]
+      ],
+      "HD_21": [
+        [
+          6,
+          21
+        ],
+        [
+          7,
+          21
+        ],
+        [
+          8,
+          21
+        ],
+        [
+          9,
+          21
+        ],
+        [
+          10,
+          21
+        ],
+        [
+          11,
+          21
+        ],
+        [
+          12,
+          21
+        ],
+        [
+          13,
+          21
+        ],
+        [
+          14,
+          21
+        ]
+      ],
+      "HD_27": [
+        [
+          6,
+          27
+        ],
+        [
+          7,
+          27
+        ],
+        [
+          8,
+          27
+        ],
+        [
+          9,
+          27
+        ],
+        [
+          10,
+          27
+        ],
+        [
+          11,
+          27
+        ],
+        [
+          12,
+          27
+        ],
+        [
+          13,
+          27
+        ],
+        [
+          14,
+          27
+        ]
+      ],
+      "HD_4": [
+        [
+          6,
+          4
+        ],
+        [
+          7,
+          4
+        ],
+        [
+          8,
+          4
+        ],
+        [
+          9,
+          4
+        ],
+        [
+          10,
+          4
+        ],
+        [
+          11,
+          4
+        ],
+        [
+          12,
+          4
+        ],
+        [
+          13,
+          4
+        ],
+        [
+          14,
+          4
+        ]
+      ],
+      "HD_6": [
+        [
+          6,
+          6
+        ],
+        [
+          7,
+          6
+        ],
+        [
+          8,
+          6
+        ],
+        [
+          9,
+          6
+        ],
+        [
+          10,
+          6
+        ],
+        [
+          11,
+          6
+        ],
+        [
+          12,
+          6
+        ],
+        [
+          13,
+          6
+        ],
+        [
+          14,
+          6
+        ]
+      ]
+    },
+    "DETECTABILITY_PREREGISTERED": {
+      "method": "the S-311 RULE, computed at read time from this family's own HD_<h> arms",
+      "BAR_IS_A_RULE": {
+        "z": 1.96,
+        "rule": "bar(h) = z * SD(per-domain paired delta of HD_<h> minus the base arm, ddof=1) / sqrt(n_domains)",
+        "DDOF_IS_PINNED": "S-318 verified ddof=1 reproduces published bars exactly",
+        "WHY_NOT_A_NUMBER": "a bar must come from the family it judges"
+      },
+      "per_head": {
+        "4": {
+          "bar_source_arm": "HD_4",
+          "screen_predicted_layer": 11,
+          "screen_margin_over_runner_up": 4.418964596604889,
+          "whole_head_REFERENCE": {
+            "source_family": "PR-CSI-012",
+            "source_arm": "SINGLE_04",
+            "E": -0.00640128,
+            "ci95": [
+              -0.00976198,
+              -0.00323189
+            ],
+            "ci95_excludes_0": true,
+            "void_tolerance": 1e-06,
+            "ENFORCED_BY": "scripts/dcs_csi_head_census.py -- it REFUSES when |diff| exceeds void_tolerance. ⚠ S-349: the key is the FAMILY-NEUTRAL `whole_head_REFERENCE`; until S-349 the reader looked ONLY for `pr013_whole_head_REFERENCE`, so a BASKET family would have had to MISNAME PR-012's numbers as PR-013's to be checked at all."
+          }
+        },
+        "6": {
+          "bar_source_arm": "HD_6",
+          "screen_predicted_layer": 11,
+          "screen_margin_over_runner_up": 5.963096680804526,
+          "whole_head_REFERENCE": {
+            "source_family": "PR-CSI-012",
+            "source_arm": "SINGLE_06",
+            "E": -0.00847502,
+            "ci95": [
+              -0.01202834,
+              -0.00545038
+            ],
+            "ci95_excludes_0": true,
+            "void_tolerance": 1e-06,
+            "ENFORCED_BY": "scripts/dcs_csi_head_census.py -- it REFUSES when |diff| exceeds void_tolerance. ⚠ S-349: the key is the FAMILY-NEUTRAL `whole_head_REFERENCE`; until S-349 the reader looked ONLY for `pr013_whole_head_REFERENCE`, so a BASKET family would have had to MISNAME PR-012's numbers as PR-013's to be checked at all."
+          }
+        },
+        "10": {
+          "bar_source_arm": "HD_10",
+          "screen_predicted_layer": 12,
+          "screen_margin_over_runner_up": 1.3156363667090754,
+          "whole_head_REFERENCE": {
+            "source_family": "PR-CSI-012",
+            "source_arm": "SINGLE_10",
+            "E": -0.0054211,
+            "ci95": [
+              -0.00802334,
+              -0.00299681
+            ],
+            "ci95_excludes_0": true,
+            "void_tolerance": 1e-06,
+            "ENFORCED_BY": "scripts/dcs_csi_head_census.py -- it REFUSES when |diff| exceeds void_tolerance. ⚠ S-349: the key is the FAMILY-NEUTRAL `whole_head_REFERENCE`; until S-349 the reader looked ONLY for `pr013_whole_head_REFERENCE`, so a BASKET family would have had to MISNAME PR-012's numbers as PR-013's to be checked at all."
+          }
+        },
+        "11": {
+          "bar_source_arm": "HD_11",
+          "screen_predicted_layer": 8,
+          "screen_margin_over_runner_up": 1.5082653194320406,
+          "whole_head_REFERENCE": {
+            "source_family": "PR-CSI-012",
+            "source_arm": "SINGLE_11",
+            "E": -0.01043769,
+            "ci95": [
+              -0.01602542,
+              -0.00549196
+            ],
+            "ci95_excludes_0": true,
+            "void_tolerance": 1e-06,
+            "ENFORCED_BY": "scripts/dcs_csi_head_census.py -- it REFUSES when |diff| exceeds void_tolerance. ⚠ S-349: the key is the FAMILY-NEUTRAL `whole_head_REFERENCE`; until S-349 the reader looked ONLY for `pr013_whole_head_REFERENCE`, so a BASKET family would have had to MISNAME PR-012's numbers as PR-013's to be checked at all."
+          }
+        },
+        "13": {
+          "bar_source_arm": "HD_13",
+          "screen_predicted_layer": 10,
+          "screen_margin_over_runner_up": 1.081065100978474,
+          "whole_head_REFERENCE": {
+            "source_family": "PR-CSI-012",
+            "source_arm": "SINGLE_13",
+            "E": -0.00827564,
+            "ci95": [
+              -0.01304965,
+              -0.00435142
+            ],
+            "ci95_excludes_0": true,
+            "void_tolerance": 1e-06,
+            "ENFORCED_BY": "scripts/dcs_csi_head_census.py -- it REFUSES when |diff| exceeds void_tolerance. ⚠ S-349: the key is the FAMILY-NEUTRAL `whole_head_REFERENCE`; until S-349 the reader looked ONLY for `pr013_whole_head_REFERENCE`, so a BASKET family would have had to MISNAME PR-012's numbers as PR-013's to be checked at all."
+          }
+        },
+        "18": {
+          "bar_source_arm": "HD_18",
+          "screen_predicted_layer": 14,
+          "screen_margin_over_runner_up": 1.3099151284908748,
+          "whole_head_REFERENCE": {
+            "source_family": "PR-CSI-012",
+            "source_arm": "SINGLE_18",
+            "E": 0.00967428,
+            "ci95": [
+              0.00563461,
+              0.01375371
+            ],
+            "ci95_excludes_0": true,
+            "void_tolerance": 1e-06,
+            "ENFORCED_BY": "scripts/dcs_csi_head_census.py -- it REFUSES when |diff| exceeds void_tolerance. ⚠ S-349: the key is the FAMILY-NEUTRAL `whole_head_REFERENCE`; until S-349 the reader looked ONLY for `pr013_whole_head_REFERENCE`, so a BASKET family would have had to MISNAME PR-012's numbers as PR-013's to be checked at all."
+          }
+        },
+        "21": {
+          "bar_source_arm": "HD_21",
+          "screen_predicted_layer": 6,
+          "screen_margin_over_runner_up": 2.170221949204769,
+          "whole_head_REFERENCE": {
+            "source_family": "PR-CSI-012",
+            "source_arm": "SINGLE_21",
+            "E": -0.00373771,
+            "ci95": [
+              -0.00554042,
+              -0.00201027
+            ],
+            "ci95_excludes_0": true,
+            "void_tolerance": 1e-06,
+            "ENFORCED_BY": "scripts/dcs_csi_head_census.py -- it REFUSES when |diff| exceeds void_tolerance. ⚠ S-349: the key is the FAMILY-NEUTRAL `whole_head_REFERENCE`; until S-349 the reader looked ONLY for `pr013_whole_head_REFERENCE`, so a BASKET family would have had to MISNAME PR-012's numbers as PR-013's to be checked at all."
+          }
+        },
+        "27": {
+          "bar_source_arm": "HD_27",
+          "screen_predicted_layer": 10,
+          "screen_margin_over_runner_up": 1.5764980786480365,
+          "whole_head_REFERENCE": {
+            "source_family": "PR-CSI-012",
+            "source_arm": "SINGLE_27",
+            "E": 0.00411325,
+            "ci95": [
+              0.00187868,
+              0.00638222
+            ],
+            "ci95_excludes_0": true,
+            "void_tolerance": 1e-06,
+            "ENFORCED_BY": "scripts/dcs_csi_head_census.py -- it REFUSES when |diff| exceeds void_tolerance. ⚠ S-349: the key is the FAMILY-NEUTRAL `whole_head_REFERENCE`; until S-349 the reader looked ONLY for `pr013_whole_head_REFERENCE`, so a BASKET family would have had to MISNAME PR-012's numbers as PR-013's to be checked at all."
+          }
+        }
+      },
+      "⚠ NOT_HELD_OUT": "THE SCREEN IS basket TRAIN AND THIS CENSUS IS basket VALIDATION, so the LAYER is held out on SPLIT ONLY -- **NOT on codeword**. PR-CSI-018 was held out on BOTH (a basket screen predicting BUTTON cells), so D39's framing is STRONGER than anything this family can claim and must not be carried over to it. The HEAD SET is chosen using PR-CSI-012's basket validation magnitudes, i.e. the SAME split this family reads. ⚠ THE FIRST FREEZE DEFENDED THIS WITH THE WRONG ARGUMENT -- that liveness is a whole-head property while the test is which CELL within a head. R32-A showed that defends the wrong thing: selecting heads on whole-head validation magnitude CAN tilt the marginal distribution of argmax layers, and BOTH the binomial and the conditional rest on a uniform-over-9 null that S-351 measured to be empirically wrong. WHAT ACTUALLY PROTECTS THE FAMILY is the PERMUTATION component: it conditions on the observed argmaxes, so a shared band bias cannot fake it, and because GATING is weakest_of_three the gate is valid whenever ANY ONE component is. PR-CSI-018's frozen read said this in terms; the first freeze of this family replaced it and lost the argument that works.",
+      "NOT_THE_PRIMARY": "the bar governs the depth map's CLEARS/does-not-clear; the PRIMARY is argmax agreement and does not use the bar"
+    },
+    "n_cells_CLEARING_THE_PREREGISTERED_BAR": 8,
+    "preregistered_bar": null,
+    "preregistered_bar_per_head": {
+      "4": 0.003327424369030779,
+      "6": 0.0034017045516773962,
+      "10": 0.002550101135728286,
+      "11": 0.0054279111487295405,
+      "13": 0.004508193223764533,
+      "18": 0.004148176343066687,
+      "21": 0.0018018117319962936,
+      "27": 0.0022870665365516667
+    },
+    "bars_COMPUTED_FROM_A_FROZEN_RULE": {
+      "4": {
+        "bar": 0.003327424369030779,
+        "source_arm": "HD_4",
+        "z": 1.96,
+        "n_domains": 23,
+        "per_domain_SD": 0.00814171769410038,
+        "E_of_the_source_arm": -0.006401282731552108,
+        "COMPUTED_AT_READ_TIME_FROM_A_RULE_FROZEN_BEFORE_THE_RUN": true
+      },
+      "6": {
+        "bar": 0.0034017045516773962,
+        "source_arm": "HD_6",
+        "z": 1.96,
+        "n_domains": 23,
+        "per_domain_SD": 0.00832347036833205,
+        "E_of_the_source_arm": -0.008475024355830368,
+        "COMPUTED_AT_READ_TIME_FROM_A_RULE_FROZEN_BEFORE_THE_RUN": true
+      },
+      "10": {
+        "bar": 0.002550101135728286,
+        "source_arm": "HD_10",
+        "z": 1.96,
+        "n_domains": 23,
+        "per_domain_SD": 0.006239722150184328,
+        "E_of_the_source_arm": -0.0054211033833185054,
+        "COMPUTED_AT_READ_TIME_FROM_A_RULE_FROZEN_BEFORE_THE_RUN": true
+      },
+      "11": {
+        "bar": 0.0054279111487295405,
+        "source_arm": "HD_11",
+        "z": 1.96,
+        "n_domains": 23,
+        "per_domain_SD": 0.013281299690213105,
+        "E_of_the_source_arm": -0.0104376889058726,
+        "COMPUTED_AT_READ_TIME_FROM_A_RULE_FROZEN_BEFORE_THE_RUN": true
+      },
+      "13": {
+        "bar": 0.004508193223764533,
+        "source_arm": "HD_13",
+        "z": 1.96,
+        "n_domains": 23,
+        "per_domain_SD": 0.01103088529373201,
+        "E_of_the_source_arm": -0.00827563749076063,
+        "COMPUTED_AT_READ_TIME_FROM_A_RULE_FROZEN_BEFORE_THE_RUN": true
+      },
+      "18": {
+        "bar": 0.004148176343066687,
+        "source_arm": "HD_18",
+        "z": 1.96,
+        "n_domains": 23,
+        "per_domain_SD": 0.010149976974662906,
+        "E_of_the_source_arm": 0.009674284258871924,
+        "COMPUTED_AT_READ_TIME_FROM_A_RULE_FROZEN_BEFORE_THE_RUN": true
+      },
+      "21": {
+        "bar": 0.0018018117319962936,
+        "source_arm": "HD_21",
+        "z": 1.96,
+        "n_domains": 23,
+        "per_domain_SD": 0.00440876811397067,
+        "E_of_the_source_arm": -0.003737710150619021,
+        "COMPUTED_AT_READ_TIME_FROM_A_RULE_FROZEN_BEFORE_THE_RUN": true
+      },
+      "27": {
+        "bar": 0.0022870665365516667,
+        "source_arm": "HD_27",
+        "z": 1.96,
+        "n_domains": 23,
+        "per_domain_SD": 0.005596115199953125,
+        "E_of_the_source_arm": 0.004113246727745596,
+        "COMPUTED_AT_READ_TIME_FROM_A_RULE_FROZEN_BEFORE_THE_RUN": true
+      }
+    },
+    "bar_source_arms_EXCLUDED_FROM_THE_DEPTH_MAP": [
+      "HD_10",
+      "HD_11",
+      "HD_13",
+      "HD_18",
+      "HD_21",
+      "HD_27",
+      "HD_4",
+      "HD_6"
+    ],
+    "n_cells_judged": 72,
+    "cells_clearing_the_preregistered_bar": [
+      "BK_H10_L07",
+      "BK_H10_L12",
+      "BK_H11_L08",
+      "BK_H18_L14",
+      "BK_H21_L06",
+      "BK_H27_L09",
+      "BK_H4_L11",
+      "BK_H6_L11"
+    ],
+    "n_cells_with_ci95_excluding_0": 15,
+    "WEAKER_CRITERION_NOTE": "n_cells_with_ci95_excluding_0 is NOT the preregistered criterion. The prereg froze |E| > that head's own preregistered_bar_per_head entry. A cell can exclude 0 at a small fraction of the bar and with the wrong sign; on PR-CSI-014 CL_L11 did exactly that (S-299/S-300). ⚠ AND THE CONVERSE, measured on THIS family (R27/S-308): the bar is 1.96*SE of the NINE-CELL HEAD arm, whose per-domain spread is much larger than a single cell's, so cells exclude 0 far below it -- 7 of PR-CSI-015's 24 non-clearing cells do, the smallest at 14% of the bar. 'Below the bar' therefore means NOT DETECTABLE AT THE PREREGISTERED RESOLUTION, and must NOT be read as 'this cell shows no effect'.",
+    "NOTHING_CLEARED_THE_BAR_IS_A_PREREGISTERED_COHERENT_OUTCOME": null
+  }
+}

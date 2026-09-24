@@ -1,0 +1,334 @@
+{
+ "schema": "dcs_csi_pr016_argmax_test/1",
+ "prereg_id": "PR-CSI-020",
+ "prereg": "configs/dcs_csi_pr020_cell_census_basket_8heads.json",
+ "census_report": "reports/DCS_CSI_PR020_CELL_CENSUS_basket_8heads_validation.json",
+ "K_admitted": 8,
+ "M_matches": 6,
+ "p_one_sided": 4.313917429390264e-05,
+ "alpha": 0.05,
+ "null": "the screen's per-cell prediction is unrelated to the basket depth profile",
+ "VERDICT": "PASS",
+ "why": "conditional = 0.005030 <= alpha = 0.05 at K=8, M=6; matches span layers ['L6', 'L8', 'L10', 'L11', 'L14']",
+ "null_p_per_head": 0.1111111111111111,
+ "n_band_layers": 9,
+ "GATING": "weakest_of_three",
+ "gating_p_name": "conditional",
+ "gating_p": 0.005029721079103794,
+ "ROBUSTNESS": {
+  "shared_predicted_layers": [
+   10,
+   11
+  ],
+  "K_unique": 4,
+  "M_unique": 3,
+  "p_conditional": 0.005029721079103794,
+  "p_permutation": 0.0001984126984126984,
+  "n_permutations": 10080,
+  "THE_CLAIM_MUST_BE_STATED_WITH": "the WEAKEST of the binomial, conditional and permutation p's, EACH NAMED -- this prereg declares PRIMARY.GATING = 'weakest_of_three'. Quoting the binomial alone is FORBIDDEN whatever the admitted heads' predicted layers happen to be (R30-B/S-332).",
+  "GATING_FLOOR": {
+   "name": "conditional",
+   "p": 0.00015241579027587256,
+   "parts": {
+    "binomial": 2.3230573125418763e-08,
+    "conditional": 0.00015241579027587256,
+    "permutation": 9.92063492063492e-05
+   },
+   "WHAT_THIS_IS": "the p the gating statistic would report on a PERFECT result at the realised K and admitted multiset. If it exceeds alpha the read was unwinnable before the data and the verdict is CANNOT ANSWER (structural), never FAIL. (R30-B/S-332)"
+  }
+ },
+ "matching_layers": [
+  "L6",
+  "L8",
+  "L10",
+  "L11",
+  "L14"
+ ],
+ "spanning_rule_satisfied": true,
+ "intervention_argmax_marginal": {
+  "L6": 1,
+  "L7": 1,
+  "L8": 1,
+  "L9": 1,
+  "L10": 1,
+  "L11": 2,
+  "L12": 0,
+  "L13": 0,
+  "L14": 1
+ },
+ "per_head": [
+  {
+   "head": 4,
+   "whole_head_arm": "HD_4",
+   "E_whole_head": -0.00640128,
+   "ci95_whole_head": [
+    -0.00975335,
+    -0.0032834
+   ],
+   "bar": 0.003327424369030779,
+   "power_ratio": 1.9237942895346956,
+   "ci95_excludes_0": true,
+   "ADMITTED": true,
+   "argmax_layer": 11,
+   "argmax_E": -0.00471757,
+   "runner_up_layer": 10,
+   "runner_up_E": 0.00208991,
+   "argmax_is_a_TIE": false,
+   "screen_predicted_layer": 11,
+   "per_cell_E": {
+    "6": -0.00106051,
+    "7": -0.00039777,
+    "8": 0.00018018,
+    "9": 0.00054498,
+    "10": 0.00208991,
+    "11": -0.00471757,
+    "12": -0.00062771,
+    "13": -0.00014053,
+    "14": -4.255e-05
+   },
+   "ARGMAX_EQUALS_SCREEN": true,
+   "COUNTED_IN_M": true,
+   "MATCHES_SCREEN": true
+  },
+  {
+   "head": 6,
+   "whole_head_arm": "HD_6",
+   "E_whole_head": -0.00847502,
+   "ci95_whole_head": [
+    -0.01212085,
+    -0.00549124
+   ],
+   "bar": 0.0034017045516773962,
+   "power_ratio": 2.4914039039107405,
+   "ci95_excludes_0": true,
+   "ADMITTED": true,
+   "argmax_layer": 11,
+   "argmax_E": -0.00666202,
+   "runner_up_layer": 9,
+   "runner_up_E": 0.00148083,
+   "argmax_is_a_TIE": false,
+   "screen_predicted_layer": 11,
+   "per_cell_E": {
+    "6": -0.00073484,
+    "7": -0.00087609,
+    "8": 0.00033816,
+    "9": 0.00148083,
+    "10": 0.00030785,
+    "11": -0.00666202,
+    "12": -0.00015568,
+    "13": 0.00069557,
+    "14": 0.0003868
+   },
+   "ARGMAX_EQUALS_SCREEN": true,
+   "COUNTED_IN_M": true,
+   "MATCHES_SCREEN": true
+  },
+  {
+   "head": 10,
+   "whole_head_arm": "HD_10",
+   "E_whole_head": -0.0054211,
+   "ci95_whole_head": [
+    -0.00796995,
+    -0.00296467
+   ],
+   "bar": 0.002550101135728286,
+   "power_ratio": 2.1258372556474243,
+   "ci95_excludes_0": true,
+   "ADMITTED": true,
+   "argmax_layer": 7,
+   "argmax_E": -0.00362106,
+   "runner_up_layer": 12,
+   "runner_up_E": -0.00341337,
+   "argmax_is_a_TIE": false,
+   "screen_predicted_layer": 12,
+   "per_cell_E": {
+    "6": -0.00032032,
+    "7": -0.00362106,
+    "8": 0.00173721,
+    "9": -0.00073468,
+    "10": 0.00058144,
+    "11": 0.00078763,
+    "12": -0.00341337,
+    "13": 0.00076778,
+    "14": -0.00069578
+   },
+   "ARGMAX_EQUALS_SCREEN": false,
+   "COUNTED_IN_M": false,
+   "MATCHES_SCREEN": false
+  },
+  {
+   "head": 11,
+   "whole_head_arm": "HD_11",
+   "E_whole_head": -0.01043769,
+   "ci95_whole_head": [
+    -0.01604598,
+    -0.0055028
+   ],
+   "bar": 0.0054279111487295405,
+   "power_ratio": 1.922966259763307,
+   "ci95_excludes_0": true,
+   "ADMITTED": true,
+   "argmax_layer": 8,
+   "argmax_E": -0.01105975,
+   "runner_up_layer": 13,
+   "runner_up_E": 0.00076799,
+   "argmax_is_a_TIE": false,
+   "screen_predicted_layer": 8,
+   "per_cell_E": {
+    "6": 0.00069993,
+    "7": 3.106e-05,
+    "8": -0.01105975,
+    "9": 0.00035527,
+    "10": 0.00060575,
+    "11": -7.63e-05,
+    "12": 0.00075035,
+    "13": 0.00076799,
+    "14": 0.00046637
+   },
+   "ARGMAX_EQUALS_SCREEN": true,
+   "COUNTED_IN_M": true,
+   "MATCHES_SCREEN": true
+  },
+  {
+   "head": 13,
+   "whole_head_arm": "HD_13",
+   "E_whole_head": -0.00827564,
+   "ci95_whole_head": [
+    -0.01310946,
+    -0.00419111
+   ],
+   "bar": 0.004508193223764533,
+   "power_ratio": 1.8356888423450248,
+   "ci95_excludes_0": true,
+   "ADMITTED": true,
+   "argmax_layer": 10,
+   "argmax_E": -0.00367133,
+   "runner_up_layer": 11,
+   "runner_up_E": -0.00233625,
+   "argmax_is_a_TIE": false,
+   "screen_predicted_layer": 10,
+   "per_cell_E": {
+    "6": -0.00032866,
+    "7": 4.744e-05,
+    "8": 0.00106222,
+    "9": -0.00101389,
+    "10": -0.00367133,
+    "11": -0.00233625,
+    "12": 0.00043108,
+    "13": -0.0004705,
+    "14": -7.215e-05
+   },
+   "ARGMAX_EQUALS_SCREEN": true,
+   "COUNTED_IN_M": true,
+   "MATCHES_SCREEN": true
+  },
+  {
+   "head": 18,
+   "whole_head_arm": "HD_18",
+   "E_whole_head": 0.00967428,
+   "ci95_whole_head": [
+    0.00568911,
+    0.01390113
+   ],
+   "bar": 0.004148176343066687,
+   "power_ratio": 2.3321766482202984,
+   "ci95_excludes_0": true,
+   "ADMITTED": true,
+   "argmax_layer": 14,
+   "argmax_E": 0.00691159,
+   "runner_up_layer": 10,
+   "runner_up_E": 0.00221248,
+   "argmax_is_a_TIE": false,
+   "screen_predicted_layer": 14,
+   "per_cell_E": {
+    "6": 0.00093255,
+    "7": -0.00048599,
+    "8": -0.00024018,
+    "9": 0.00083156,
+    "10": 0.00221248,
+    "11": 0.00012969,
+    "12": -9.636e-05,
+    "13": 0.0016358,
+    "14": 0.00691159
+   },
+   "ARGMAX_EQUALS_SCREEN": true,
+   "COUNTED_IN_M": true,
+   "MATCHES_SCREEN": true
+  },
+  {
+   "head": 21,
+   "whole_head_arm": "HD_21",
+   "E_whole_head": -0.00373771,
+   "ci95_whole_head": [
+    -0.00554667,
+    -0.00203024
+   ],
+   "bar": 0.0018018117319962936,
+   "power_ratio": 2.0744176173494293,
+   "ci95_excludes_0": true,
+   "ADMITTED": true,
+   "argmax_layer": 6,
+   "argmax_E": -0.00345389,
+   "runner_up_layer": 14,
+   "runner_up_E": 0.00167369,
+   "argmax_is_a_TIE": false,
+   "screen_predicted_layer": 6,
+   "per_cell_E": {
+    "6": -0.00345389,
+    "7": -0.00011889,
+    "8": 0.00049659,
+    "9": -0.00045105,
+    "10": -0.00105291,
+    "11": 0.00071185,
+    "12": 0.00043692,
+    "13": 0.00023913,
+    "14": 0.00167369
+   },
+   "ARGMAX_EQUALS_SCREEN": true,
+   "COUNTED_IN_M": true,
+   "MATCHES_SCREEN": true
+  },
+  {
+   "head": 27,
+   "whole_head_arm": "HD_27",
+   "E_whole_head": 0.00411325,
+   "ci95_whole_head": [
+    0.001899,
+    0.00637742
+   ],
+   "bar": 0.0022870665365516667,
+   "power_ratio": 1.7984828750114843,
+   "ci95_excludes_0": true,
+   "ADMITTED": true,
+   "argmax_layer": 9,
+   "argmax_E": 0.00270011,
+   "runner_up_layer": 10,
+   "runner_up_E": 0.00150427,
+   "argmax_is_a_TIE": false,
+   "screen_predicted_layer": 10,
+   "per_cell_E": {
+    "6": -0.00020668,
+    "7": 0.00070929,
+    "8": 0.00066795,
+    "9": 0.00270011,
+    "10": 0.00150427,
+    "11": 0.00048623,
+    "12": 0.00044317,
+    "13": 0.00013191,
+    "14": 0.00039214
+   },
+   "ARGMAX_EQUALS_SCREEN": false,
+   "COUNTED_IN_M": false,
+   "MATCHES_SCREEN": false
+  }
+ ],
+ "dropped_heads": [],
+ "MUST_NOT_BE_SAID": [
+  "the binomial p alone -- the claim is the WEAKEST of the three, each named. \u26a0 This now has a MEASURED reason and not only a methodological one: S-351 measured that for THIS prediction multiset a random screen would match at ~0.1625 against the binomial's assumed 1/9, so quoting it alone would be quantitatively misleading by ~46%, not merely incomplete",
+  "that this is held out on codeword -- IT IS NOT. Split only. D39 is the cross-codeword result; this is not, and conflating them would overstate both",
+  "'cell (L, h) is the writer' -- there is STILL no control family of ARBITRARY cells anywhere in this sprint. This is NECESSITY, rung 1 of AM-34's ladder",
+  "that the screen is a validated cell selector IN GENERAL -- eight heads, every one chosen BECAUSE it was live on basket",
+  "any margin-restricted subset of the eight",
+  "that D37 is superseded -- D37 is descriptive and stands; this ADDS a preregistered p"
+ ]
+}

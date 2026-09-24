@@ -33017,3 +33017,152 @@ NEXT     when 925438 is gone: (1) apply the patcher to the repo, (2) run the 346
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-373 — 🟢 **PR-CSI-020 IS READ AND IT PASSES.** K=8, M=6, weakest p = **conditional 0.005030**, spanning satisfied across five layers. The ORIGINAL codeword now carries a preregistered p, which until today only BUTTON had. The pre-read design map called the outcome (2026-09-24)
+
+### 1. The run
+
+```
+925438  COMPLETED  ExitCode 0:0  03:59:26  n-301  (projected 3.78 h, actual 3.99 h)
+82 of 82 arms, every one status=ok / n_rows_failed=0, no duplicate arm tags, nothing undeclared.
+```
+
+### 2. The read, executed in order, stopping at nothing
+
+```
+STEP -1  VOID 5  screen md5 81fc4dcade79d65ff3683f32d46c64d4          EXACT MATCH
+         VOID 9  jobs {925438: 82}  gpus {RTX 3090: 82}  nodes {n-301: 82}   SATISFIED
+         VOID 10 attn_impl {eager: 82}                                        SATISFIED
+         VOID 11 only d172e254 (S-362) touched scripts/ in flight -- already disclosed,
+                 and re-derived in S-368 to be outside both the arm and the read paths
+         VOID 12 git log on the read file since the first arm: EMPTY. Never amended.
+         prereg md5 8eedff85 matches read.txt line 4; read md5 78d45fdd matches S-364.
+
+STEP 0   GATE 0  REAL EXIT = 0. 82 of 82 pass. Zero FAIL lines. Identity from each arm's own
+                 knockout_cells. "No endpoint field was read."
+
+STEP 1   CENSUS  exit 0 in 9.2 s. VOID CONDITION 8: 8 of 8 head(s) CHECKED, 0 NOT EVALUATED.
+
+STEP 2   PRIMARY exit 0. VERDICT: PASS.
+```
+
+### 3. The result, every figure RE-DERIVED BY HAND from the reader's own per-head output
+
+```
+ADMITTED  8 of 8    dropped_heads: []      |E|/bar 1.80 .. 2.49, all >= the frozen ratio 1.5
+
+head  4  argmax L11  screen L11  MATCH        head 13  argmax L10  screen L10  MATCH
+head  6  argmax L11  screen L11  MATCH        head 18  argmax L14  screen L14  MATCH
+head 10  argmax L7   screen L12  miss         head 21  argmax L6   screen L6   MATCH
+head 11  argmax L8   screen L8   MATCH        head 27  argmax L9   screen L10  miss
+
+M = 6 of K = 8
+  binomial     P(Binom(8,1/9) >= 6) = 0.000043    exact 619/14348907          RE-DERIVED ✓
+  conditional  P(Binom(4,1/9) >= 3) = 0.005030    K_unique 4, M_unique 3      RE-DERIVED ✓
+  permutation  2 of 10080 assignments = 0.000198                              RE-DERIVED ✓
+  WEAKEST = conditional 0.005030 <= alpha 0.05                                 PASS
+  FLOOR at this K/multiset = conditional 0.000152 -- the read was winnable
+  spanning: matching layers L6, L8, L10, L11, L14 -- FIVE distinct            SATISFIED
+```
+
+### 4. 📌 The pre-read map called it — and this is the AM-42 exercise done right
+
+S-366 froze the K=8 design map BEFORE any arm was read: **59 of 256 patterns ALWAYS certify, 21
+SOMETIMES, 176 NEVER.** The observed pattern `{4,6,11,13,18,21}` is in the **ALWAYS** class —
+re-derived after the read, it certifies under **all 64** landings of its two misses, and the
+observed landing (10→L7, 27→L9) is one of them. **The verdict never depended on where the misses
+fell**, so no post-hoc argument about head 10 or 27 is available to either side.
+
+The frozen necessary conditions are both met: **M ≥ 3** (M=6) and **M_unique ≥ 3 of {10,11,18,21}**
+(M_unique=3). ⚠ **M_unique is EXACTLY at its minimum.** Had head 11, 18 or 21 missed instead of
+10, M_unique would be 2, the conditional would be `0.063557 > alpha`, and **no outcome could have
+certified whatever the other four heads did**. The margin is one head.
+
+Contrast AM-42, which S-352 had to withdraw and S-365 had to correct because it was computed under
+the freeze script's statistic rather than the reader's. This time the map was computed from the
+reader, frozen before the read, and compared afterwards.
+
+### 5. 🔬 VOID 8: PR-CSI-012 reproduced to ~1e-9, four families later
+
+```
+worst |diff| = 4.36e-09   against a declared tolerance of 1e-6   -- three orders of margin
+per head: 1.51e-10 .. 4.36e-09, 8 of 8 CHECKED, 0 NOT EVALUATED
+```
+
+The same intervention on the same model and architecture returns the same number across jobs weeks
+apart. ⚠ And S-370's limit stands: **VOID 8 pins the MEAN only**; `bar(h)` and `ci95` are unpinned
+and admission is a conjunction over all three. It did not bite — all eight admitted — but the check
+remains narrower than the read file's line 162 implies.
+
+### 6. The two blockers, and why the timing was the substance
+
+Both S-369 blockers were fixed in `70f6b706` **after** the job left the queue and **before** STEP 0,
+to a specification written in S-369 while the arms were still running and verified in S-371 against
+isolated copies. Neither touched the statistic, the gating rule or any threshold, and on a non-tie
+census the reader's full output dict is byte-identical to before.
+
+**Neither fired on this read** — there was no tie and no duplicate run dir. That is the honest
+outcome: they were fixed because a read that CAN publish a headline p on a non-answer is not a read,
+not because either was likely. Had I waited to see whether they mattered, I could not have fixed
+them without deciding the question after seeing the data.
+
+### 7. ⚠ What this result is NOT
+
+```
+- NOT held out on CODEWORD. SPLIT ONLY. D39 (PR-CSI-018) is the cross-codeword result; this is
+  a basket-TRAIN screen predicting BASKET validation cells. D39's framing is STRONGER than
+  anything this family can claim and must not be carried over to it.
+- NOT a licence to quote the binomial 0.000043. The claim is the WEAKEST of three, each named.
+  S-351 MEASURED that for this prediction multiset a random screen matches at ~0.1625 against
+  the binomial's assumed 1/9, so quoting it alone is misleading by ~46%, not merely incomplete.
+- NOT "cell (L,h) is the writer". RUNG 1, NECESSITY. There is STILL no control family of
+  ARBITRARY cells anywhere in this sprint.
+- NOT a validated cell selector in general: eight heads, every one chosen BECAUSE it was live
+  on basket. Nothing here speaks to the other 24 heads, or to heads that are null on basket.
+- NOT a supersession of D37, which is descriptive and stands. This ADDS a preregistered p.
+- NOT a source claim. S-316/AM-40 stand; the mass criterion licenses a REFUTATION reading only.
+- NOT anything about TEST, which was never touched and is spent and selection-contaminated.
+- NOT licensed for any margin-restricted subset. The eight margins run 5.96x to 1.08x and the
+  prereg forbids reporting any subset of them, in either direction.
+```
+
+⚠ **One composition fact, recorded because concealing it would be worse, and fenced because
+reporting it as a result would be a violation.** The prereg disclosed BY NAME, before the read,
+that heads 6, 11 and 27 had these same predictions already tested on BUTTON by PR-CSI-018 and all
+three matched there. On basket: **6 and 11 MATCH, 27 MISSES.** Among the five heads never tested on
+either codeword (4, 10, 13, 18, 21), **four of five MATCH.** ⛔ **NO p ATTACHES TO EITHER SUBSET
+AND NONE WAS COMPUTED.** The prereg froze ONE primary over all eight admitted heads. Reporting a
+4-of-5 or a 2-of-3 rate as the result would be exactly the post-hoc subsetting this sprint exists
+to forbid — and it would be a violation whichever direction it pointed.
+
+### 8. What was NOT established
+
+```
+- NOT established: that the screen works on heads it was not built from. Every one of the eight
+  was selected because it was live on basket.
+- NOT established: any mechanism. This is agreement between a screen's prediction and an
+  intervention's argmax, at 23 domains as the statistical unit.
+- NOT established: that a null would have been informative. Type I here is ~0.004 and power at
+  a mediocre screen (q=0.33) is ~0.10. This family can confirm a screen that works; it CANNOT
+  distinguish a mediocre screen from a useless one. The PASS is the branch this design could
+  actually deliver, and that asymmetry is preregistered, not discovered.
+- NOT established: whether the two misses mean anything. 10 and 27 missed; the design map says
+  the verdict is identical under all 64 landings of those two misses, so nothing follows from
+  WHERE they landed either.
+```
+
+### 9. State
+
+```
+925438   COMPLETED. PR-CSI-020 READ AND CLOSED. VERDICT PASS, weakest p = conditional 0.005030.
+CHANGED  reports/DCS_CSI_CLAIM_TABLE.md  +A28 (D40, D40-a, D40-b, D40-c)
+         external_md/...20260915.md      +S-373
+         reports/DCS_CSI_PR020_CELL_CENSUS_...json   md5 e7f09f67   (new deliverable)
+         reports/DCS_CSI_PR020_ARGMAX_TEST_...json   md5 76608072   (new deliverable)
+NEXT     the queue is EMPTY again. Choose the next family -- and the open scope question
+         (whether any second TEST read is admissible under §3.2) is still with the user.
+```
+
+`git push` remains credential-blocked. Committed locally.
