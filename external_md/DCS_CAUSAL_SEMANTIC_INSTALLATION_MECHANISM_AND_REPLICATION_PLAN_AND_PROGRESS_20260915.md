@@ -33979,3 +33979,111 @@ NEXT     part 4: read the readout row index out of the basket bank; confirm the 
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-381 — RUNG 2 design pass, part 4: the bank's surfaces confirm S-380's ids, 🔴 **the ENDPOINT ITSELF is a logsumexp — so a linear readout is a SURROGATE, not a reformulation** — and the word "split" means TWO DIFFERENT THINGS in this codebase (2026-09-24)
+
+### 1. ✅ The bank's surface forms confirm S-380
+
+```
+data/.../boombness_prompt_bank_ts116m_basket_bomb.jsonl -- 22272 rows
+   concept  = 'bomb'    on ALL 22272
+   codeword = 'basket'  on ALL 22272
+```
+
+So S-380's token ids are the right surfaces, and the button hardcoding it found is confirmed as a
+real defect rather than a naming quirk.
+
+⚠ One scoping detail from `score_behavior.py`'s own commentary: on cells **B and E** the "codeword"
+slot holds the benign pool's `natural_word` — the remap target — **not** the bank codeword. It does
+not touch this design, because `load_installation` filters to **cell C only**, where the bank
+codeword applies. But a rung-2 direction must be cell-C-scoped and say so.
+
+### 2. 🔴 The endpoint is a LOGSUMEXP, which sharpens S-380's constraint into a real cost
+
+Read off a closed family's own rows (PR-CSI-020, read and closed in S-373):
+
+```
+n_variants_concept  = 2      n_variants_codeword = 2      target_surface = 'basket'
+logp_concept / logp_codeword are therefore LOGSUMEXPS over the two casings.
+```
+
+S-380 established that logsumexp admits no exact additive per-cell decomposition and concluded
+"freeze a linear readout". **That was understated.** The endpoint `y_install` is *itself* the
+logsumexp form. So a linear readout is not an equivalent reformulation of the endpoint — **it is a
+SURROGATE for it**, and any rung-2 claim must say that the quantity decomposed is a linearised stand-in
+for the quantity the causal families measure.
+
+⚠ **And the gap CANNOT be measured from anything on disk.** The per-variant log-probabilities are
+not recorded — only the two logsumexp totals — so how close the dominant casing is to the pair is
+unknown and needs a forward pass. `option_mass` and `option_mass_core_pair` agree to ~8e-10 on the
+row inspected, but that compares the option set to the core PAIR, not one casing to its sibling; it
+does not answer this.
+
+### 3. 🔴 "SPLIT" MEANS TWO DIFFERENT THINGS, and conflating them halves a family in silence
+
+I checked whether any TEST row had entered the 82 arms and got an alarming first answer — 9430 rows
+labelled `heldout` across the family. It is **not** a leak, and the reason is the finding:
+
+```
+ONE arm, 230 endpoint rows (semantic_one_word, cell C):
+   split=dev      115        split=heldout  115
+   dev domains 23   heldout domains 23   INTERSECTION 23  -- the SAME 23 domains
+```
+
+**The bank's row-level `split` field is a WITHIN-DOMAIN SLOT label** (230 = 23 domains x 10 slots,
+5 dev + 5 heldout each). The sprint's `train`/`validation`/`test` is a **DOMAIN-LEVEL** partition.
+They are orthogonal axes that share a word.
+
+📌 **A future family that filtered rows on the bank's `split` field, believing it was selecting the
+sprint's validation split, would silently drop half its slots and still see 23 domains** — the
+domain count, the guard everyone checks, would look perfect. The census is safe today only because
+it never reads the row-level field: it compares `pr["split"]` to `--split` and counts DOMAINS.
+
+### 4. ✅ What actually keeps TEST out — it is a FILE, not the prereg
+
+```
+RUNMETA args:  exclude_prompt_ids = runargs/dcs_cont/exclude_basket_bomb_sow_validation.txt
+               938 prompt ids
+```
+
+That command-line file is the mechanism. **The prereg contributes nothing here** — S-375 measured
+that its `population.test_domain_ids` leak check is vacuous on every prereg this sprint has frozen.
+So "TEST is never touched" rests on the LAUNCHER passing the right exclusion file, and the evidence
+that it did is the arms' own RUNMETA. That is a real guarantee and a narrow one, and it should be
+stated that way rather than attributed to the preregistration.
+
+### 5. Readout position
+
+`semantic_one_word` scores the NEXT token after the prompt, so the hidden state at issue is the
+**last prompt position** — which is also what `dominance.py`'s own self-test uses (`dst=len(ids)-1`).
+⚠ **I did not trace this through `score_behavior.py`'s scoring call.** The principle is settled by
+the construction of next-token scoring; the exact index must be ASSERTED IN CODE when the instrument
+is written, not assumed from a docstring.
+
+### 6. What was NOT established
+
+```
+- NOTHING IS FROZEN. Still no prereg, no read, no tag prefix.
+- NOT measured: the linear-vs-logsumexp surrogate gap (section 2). It needs a forward pass and
+  is the last thing standing between this design and a freeze.
+- NOT verified in code: the readout index (section 5).
+- NOT established: that TEST domains are absent BY ID. The arms carry 23 domains, matching
+  `population.validation_domains`, and an exclusion file with 938 ids was passed -- but no prereg
+  declares the TEST ids, so the check is by COUNT and by PROVENANCE, not by identity. S-375's
+  vacuous-check finding is what that costs, shown concretely.
+- NOT changed: any code, prereg or deliverable. This tick read artefacts and the bank.
+```
+
+### 7. State
+
+```
+QUEUE    EMPTY. No admissible cell-census question remains (S-374).
+CHANGED  external_md/...20260915.md  +S-381 only.
+NEXT     measure the surrogate gap (one forward pass over a handful of cell-C prompts, per-variant
+         logps for ' bomb'/' Bomb' and ' basket'/' Basket'); assert the readout index in code;
+         then the design can be written and frozen.
+```
+
+`git push` remains credential-blocked. Committed locally.
