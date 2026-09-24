@@ -108,6 +108,43 @@ def test_every_listed_guard_test_actually_exists():
     assert missing == [], f"the hook lists files that do not exist: {missing}"
 
 
+def test_the_INSTALLER_carries_every_file_the_DEPLOYED_hook_RUNS():
+    """⛔ THE OTHER DIRECTION, AND IT IS THE ONE THAT ACTUALLY BIT (S-377).
+
+    Its sibling below checks installer ⊆ hook. Nothing checked hook ⊆ installer -- yet the
+    installer's own note records that exact failure: three guards were added to the DEPLOYED hook
+    directly by another session while the installer had only eight, so *re-running the installer
+    would have silently dropped them* and restored a state in which that session's deliverables
+    were unguarded at commit time. The note says "the installer is the source of truth and must
+    therefore carry every guard the hook runs" -- and then nothing enforced it.
+
+    A hook-only guard is invisible twice over: it does not survive a re-install, and its loss is
+    silent, because pytest still exits 0 on the files that remain."""
+    hook = os.path.join(ROOT, ".git", "hooks", "pre-commit")
+    if not os.path.isfile(hook):
+        pytest.skip("no pre-commit hook installed in this checkout")
+    deployed = _guard_tests_from(open(hook, encoding="utf-8").read())
+    listed = set(_guard_tests_from(_installer_text()))
+    orphaned = [f for f in deployed if f not in listed]
+    assert orphaned == [], (
+        f"the DEPLOYED hook runs {orphaned}, which the installer does not list. Re-running "
+        "scripts/install_commit_guard.sh would silently DROP these guards. The installer is the "
+        "source of truth -- add them there.")
+
+
+def test_the_CSI_readers_are_under_the_commit_gate():
+    """S-376 found that the guard list had never contained a single CSI test: the sprint's
+    most-changed code was its least-gated, and 'N guard tests pass' was being quoted beside CSI
+    changes it did not cover. These are the tests for the frozen readers -- the census, the
+    preregistered primary, the argv emitter and the reader-contract fixes."""
+    listed = set(_guard_tests_from(_installer_text()))
+    required = {"tests/test_csi_cell_identity.py", "tests/test_csi_pr016_argmax.py",
+                "tests/test_csi_argv_generator.py", "tests/test_csi_s375_review_debt.py"}
+    assert required <= listed, (
+        f"the commit gate no longer covers {sorted(required - listed)} -- the readers that decide "
+        "this sprint's preregistered verdicts. (S-376/S-377)")
+
+
 def test_the_DEPLOYED_hook_carries_every_file_the_installer_lists():
     """The installer is the source of truth, and the file says so -- but nothing checked it. Both
     sessions have edited the deployed hook directly, and a re-install would drop those edits."""

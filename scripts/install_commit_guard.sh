@@ -51,6 +51,10 @@ GUARD_TESTS="tests/test_asr_protocol.py
              tests/test_cited_artifact_check.py
              tests/test_clustered_stats.py
              tests/test_commit_guard.py
+             tests/test_csi_argv_generator.py
+             tests/test_csi_cell_identity.py
+             tests/test_csi_pr016_argmax.py
+             tests/test_csi_s375_review_debt.py
              tests/test_fcslots_preset.py
              tests/test_guard_wiring.py
              tests/test_intervention_liveness.py
@@ -62,6 +66,7 @@ GUARD_TESTS="tests/test_asr_protocol.py
              tests/test_rah3_capture_site.py
              tests/test_rah_preflight_spans.py
              tests/test_rah_select_config.py
+             tests/test_retrieval_mass_seed.py
              tests/test_run_completeness_check.py"
 # NOTE: this list spans BOTH concurrent sessions deliberately. The three tests above were
 # added to the DEPLOYED hook directly by the other session; the installer had only the first

@@ -33514,3 +33514,99 @@ NEXT     (1) put the CSI test files under the commit gate, installer and hook to
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-377 — the CSI readers are under the commit gate at last, installer and hook together. 📌 **And the agreement was only ever enforced in ONE direction — the one that did NOT bite.** The August failure, a guard living in the deployed hook and not the installer, had no test (2026-09-24)
+
+### 1. What S-376 left, and what it turned out to hide
+
+S-376 found the commit gate had never contained a single CSI test and deliberately did not rush the
+fix, because the installer and the deployed hook have silently diverged before. Doing it properly
+first meant checking the current state:
+
+```
+scripts/install_commit_guard.sh   17 files
+.git/hooks/pre-commit             17 files      AGREE: True
+```
+
+They agree today — the August divergence was repaired. But `tests/test_commit_guard.py` guards that
+agreement in **one direction only**:
+
+```
+test_the_DEPLOYED_hook_carries_every_file_the_installer_lists   installer ⊆ hook   TESTED
+                        (the reverse)                            hook ⊆ installer   NOT TESTED
+```
+
+📌 **The untested direction is the one that actually happened.** The installer's own note records
+it: three guards were added to the DEPLOYED hook directly by another session while the installer
+carried only eight, so *"re-running it would have silently dropped them and restored the state in
+which that session's deliverables were unguarded at commit time."* The note then states the rule —
+*"the installer is the source of truth and must therefore carry every guard the hook runs"* — **and
+nothing enforced it.** A hook-only guard is invisible twice: it does not survive a re-install, and
+its loss is silent, because pytest still exits 0 on the files that remain.
+
+### 2. What changed
+
+```
+GUARD_TESTS  17 -> 22, in BOTH the installer and the deployed hook, sorted, all files exist:
+   + tests/test_csi_argv_generator.py       the argv emitter
+   + tests/test_csi_cell_identity.py        arm identity / dose / cell families
+   + tests/test_csi_pr016_argmax.py         the PREREGISTERED PRIMARY reader
+   + tests/test_csi_s375_review_debt.py     the S-375 reader-contract fixes
+   + tests/test_retrieval_mass_seed.py      the S-339/S-341 protected-draw seed
+
+tests/test_commit_guard.py  +2 tests:
+   test_the_INSTALLER_carries_every_file_the_DEPLOYED_hook_RUNS   -- the untested direction
+   test_the_CSI_readers_are_under_the_commit_gate                 -- pins S-376's finding so the
+                                                                     coverage cannot quietly lapse
+```
+
+### 3. Both new tests verified BY MUTATION, not by passing
+
+A test that passes proves nothing about what it would catch. Each was driven to fail:
+
+```
+MUTATION 1  add tests/test_aggregate_gate3.py to the HOOK ONLY (the August shape, 22 -> 23)
+            -> test_the_INSTALLER_carries_every_file_the_DEPLOYED_hook_RUNS  FAILED   ✓
+MUTATION 2  drop tests/test_csi_pr016_argmax.py from the INSTALLER
+            -> test_the_INSTALLER_carries_every_file_the_DEPLOYED_hook_RUNS  FAILED   ✓
+            -> test_the_CSI_readers_are_under_the_commit_gate                FAILED   ✓
+RESTORED    11 passed; installer and hook agree again.
+```
+
+⚠ **My first attempt at MUTATION 1 was a NO-OP and I nearly recorded it as a pass.** The script
+added a file that was *already* listed, so the list did not change, the suite reported 11 passed,
+and that output is indistinguishable from "the mutation was caught". It was caught only because the
+expected "hook now lists a file the installer does not" line never printed. **The same shape as
+S-368's two near-misses in one tick each: a verification that does nothing reports success in the
+voice of a verification that worked.** The redone mutation picks a file programmatically and prints
+what it changed.
+
+### 4. What was NOT established
+
+```
+- NOT established: that the CSI tests would have caught any past defect. They pass, and they now
+  gate. Their value is prospective. S-375's four fixes were found by REVIEW, not by these tests.
+- NOT fixed: the 8 pre-existing full-suite failures S-376 measured. They are outside the CSI line
+  (test_prompt_families_strict.py, test_tsc_request_filter.py and others), verified pre-existing
+  in a detached worktree, and remain undiagnosed. Widening the gate does NOT cover them, and I am
+  not claiming it does.
+- NOT changed: any reader, prereg, deliverable or verdict. This tick touched the commit gate and
+  its own tests only.
+- ⚠ NOT tracked by git: .git/hooks/pre-commit lives outside the worktree, so this commit carries
+  the INSTALLER change and the new tests, and the deployed hook was edited in place. That
+  asymmetry is precisely the divergence risk -- which is now, finally, tested in both directions.
+```
+
+### 5. State
+
+```
+QUEUE    EMPTY. PR-CSI-020 read and closed at PASS; no admissible cell-census question remains.
+GATE     22 guard files, installer and hook agreeing, both directions enforced.
+CHANGED  scripts/install_commit_guard.sh, tests/test_commit_guard.py, external_md/...20260915.md
+         (.git/hooks/pre-commit updated in place -- untracked by design)
+NEXT     the RUNG 2 design pass -- the only unexhausted direction that changes the KIND of claim.
+```
+
+`git push` remains credential-blocked. Committed locally.
