@@ -29797,3 +29797,130 @@ NEXT              R31-A's report; then correct AM-43 from the re-run; then desig
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-340 — **R31-A completes REVIEW R31 and independently confirms the withdrawal.** 🔴 **My S-338 feasibility simulation assumed a cross-arm correlation of 0.83 — HIGHER THAN ANY OF THE 60 REAL ARMS ON THIS POPULATION.** "Both branches are reachable" was false: the only claim-bearing branch had an honest MDE of r ≈ 1.07
+
+### 1. What R31-A confirms as SOUND, which matters for whatever replaces PR-CSI-019
+
+Two design choices survive the review and should carry forward:
+
+```
+RATIO OF MEANS       the denominator never approaches zero. 200 000 domain-bootstrap resamples of
+                     mean_dom(d_KO): ci95 [-0.342, -0.246]; closest approach to zero -0.2075
+                     (71.6% of the point estimate); ZERO resamples with |mean| < 0.10; ZERO sign
+                     flips. No Fieller pathology. Delta-method and percentile CIs agree to ~3 dp.
+MEAN OF RATIOS       would be 100-6000x noisier with unbounded tails -- at true r = 0.50 its SD is
+                     420.78 against ratio-of-means' 0.0675. Not hypothetical: in the real
+                     ts116m_sowk_basket K10/K11 arms one domain's d_KO is +0.0003 and the
+                     per-domain ratio there reaches 5.93.
+```
+
+R31-A also independently reproduced `mean_dom(d_KO) = -0.2899071449850837` — **matching the published
+`E[BF_KO] = -0.28990714` to ten digits** by the same loader path the census uses. That is now the
+third independent reproduction of that number (S-335, S-338 §3, here).
+
+### 2. 🔴 THE BLOCKER, AND IT IS A CORRECTION TO A SENTENCE I PUBLISHED
+
+S-338 §3 generated the control arm as `d_C = r·d_KO + N(0, 0.5·SD_KO)` and I flagged, in that
+entry, that this "correlates d_C with d_KO across domains … and narrows the CI". **I named the
+direction and published the conclusion anyway.** R31-A quantified it; I then verified the
+quantification myself against PR-CSI-018's own 60 non-base arms:
+
+```
+cross-arm corr(d_arm, d_KO) across the 23 domains, 60 real arms:
+    min -0.347    q1 0.063    MEDIAN 0.169    q3 0.301    max 0.800
+    arms reaching 0.83:  0 of 60
+
+what my generator implied:   corr = 0.832 at true r = 0.75
+                             corr = 0.894 at true r = 1.00
+```
+
+**My simulation assumed a correlation higher than the maximum ever observed on this population.**
+Removing it widens the CI roughly threefold and moves the 80%-power MDE:
+
+```
+                          S-338's assumption   corr = 0.17 (measured)   independent
+CI width at r = 1.00            0.166                 0.454                0.494
+80%-power MDE (REFUTATION)      r ~ 0.87              r ~ 1.05             r ~ 1.07
+P(REFUTATION | true r = 1.00)   1.000                 0.678                0.578
+```
+
+So a control doing **exactly** the demonstrations' damage — S-325's own textbook
+`control EQUAL -> CLEAN REFUTATION` case — would have fired the branch only **58-68%** of the time.
+
+> ⚠ **S-338's "Both branches are reachable" was FALSE, and it was false in the half that mattered.**
+> The CONFOUNDED branch is robustly reachable (P = 0.998 at r = 0) precisely *because at r = 0 the
+> generator's correlation is zero anyway* — that branch never depended on the assumption. The
+> REFUTATION branch depended on it entirely. I checked reachability with a generator whose defect
+> was invisible in exactly the branch I used to argue the design was viable.
+>
+> **Stating an assumption is not bounding it.** S-338 named the correlation caveat in its own text
+> and still drew the conclusion the caveat forbids. A flagged assumption that is never given a
+> number is a disclaimer, not a control — and this one was not merely optimistic, it was outside
+> the observed range.
+
+### 3. 🔴 The second BLOCKER: averaging three draws tested a quantity the criterion never licensed
+
+S-337 recorded in terms: *"The criterion names `d1` specifically, so d1 is what it is applied to.
+d2 and d3 are reported as robustness and are not the quantity."* S-338's primary was
+`mean(d1,d2,d3)`. R31-A shows the three draws are a **systematic arm-level effect, not row noise** —
+`nondemo_draw_seed(control_seed, idx)` is one integer for the whole arm, and on the real ts116m
+quartets the paired per-domain difference between draws is significantly non-zero in **8 of 8** cases
+for d1−d2 and 8 of 8 for d1−d3.
+
+**And for d2 the 0.75 rationale REVERSES.** Their mass ratios are ρ = 0.595 / 0.809 / 0.677. "75% of
+the damage from 80.9% of the mass" is *less* damage per unit mass — which does not refute
+source-specificity at all. A REFUTATION fired at r ≈ 0.78 on the mean-of-three could have had one
+of its three components pointing the opposite way from the rationale justifying the threshold.
+(S-339 §3(b) already recorded that the mean ρ is 0.6939, not the 0.595 I quoted; this is the same
+error seen from the licence side rather than the arithmetic side.)
+
+### 4. Two smaller ones, both mine
+
+**My §1(a) contradicted my own §2.** I wrote *"29 `nondemo_matched` arm dirs already exist. NONE is
+admissible"* — true of the **control** arms — while §2's VOID condition required `SR_KO` to be the
+same intervention, population, scope and seed as PR-018's `BF_KO`. **Two of the five arms were exact
+re-runs of arms that already exist and ARE admissible.** Defensible as a drift check (S-318/S-335
+precedent); the framing was simply wrong. One good consequence: because `SR_KO` was pinned to
+reproduce `BF_KO` to 1e-6, the denominator was a fixed 23-number vector, so R31-A's simulations are
+exact for the family rather than approximate.
+
+**Percentile-bootstrap coverage is off on the side that mattered.** One-sided P(lower bound > true r)
+is **0.033–0.040** against a nominal 0.025 at n = 23 — inflated on the **lower** bound, which is the
+exact side the only claim branch (`lo >= 0.75`) reads. Free fix for any successor: BCa or a
+studentised bootstrap, or state the level as approximate.
+
+### 5. NOT established
+
+```
+NOTHING WAS MEASURED THIS TICK. PR-CSI-019 was already WITHDRAWN in S-339; R31-A does not reopen
+  it and nothing here revives it. These findings are recorded because they are CORRECTIONS to
+  published sentences of mine and because they constrain whatever replaces the family.
+S-339's withdrawal rested on the TRAIN prior (r ~ 0 on 8 of 8 conditions), which I re-derived
+  myself. R31-A reaches the same conclusion by a DIFFERENT route -- power, not prior -- and its
+  route would have killed the design even if the prior had been favourable. Two independent
+  sufficient reasons, not one reason counted twice.
+THE MASS RE-RUN 924666/924667 IS STILL RUNNING. AM-43's seed-provenance correction is NOT YET
+  MADE, and S-337's numbers stand unrevised until it lands.
+NO REPLACEMENT FAMILY IS DESIGNED OR FROZEN. What carries forward is only: ratio-of-means over a
+  paired domain bootstrap, the 23-domain unit, the VOID reproduction check -- and the requirement
+  that any feasibility claim be computed at the MEASURED cross-arm correlation (median 0.169),
+  never at a generator's convenient one.
+```
+
+### 6. State
+
+```
+924666 / 924667   mass re-run with the CORRECT draws, RUNNING (~7 min in of ~21).
+REVIEW R31        COMPLETE. 3 reviewers, 4 BLOCKERs, all confirmed by my own re-derivation.
+                  R31-B: argv generator would run the treatment as the control; GATE 0 and the
+                         census refuse a key-set family outright.
+                  R31-C: the comparison already exists on TRAIN, r ~ 0 on 8 of 8.
+                  R31-A: the feasibility claim assumed a correlation no real arm exhibits.
+NEXT              correct AM-43 from the re-run; then design a replacement whose feasibility is
+                  computed at the measured correlation and whose dose axis is known before freezing.
+```
+
+`git push` remains credential-blocked. Committed locally.
