@@ -32164,3 +32164,133 @@ NEXT     monitor to 82/82, then STEP -1's operator checks and the frozen read in
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-366 — the PR-CSI-020 design map, FROZEN BEFORE THE READ. Two structural hazards found: the family CANNOT certify at K ≤ 3 whatever the data, and the binomial at M=3 clears alpha by 1.8 PARTS IN A MILLION (2026-09-24)
+
+### 1. Why now, and why this is the expiring branch
+
+`925438` is still on a GPU (39 of 82 when this was written), so under VOID 11 nothing in `scripts/`
+or `src/` may be touched. But a *pre-read* design map is the one piece of work that becomes
+worthless the moment the read happens — its whole value is that it was written down first. S-365
+recorded that this map did not exist and must not be assumed to resemble PR-CSI-018's. It exists now.
+
+Computed from `scripts/dcs_csi_pr016_argmax_test.py:307-331` — the reader's PASS branch, which needs
+`gate <= alpha` **and** `spanning_ok` — **not** from the freeze script. That exact confusion is what
+S-352 had to withdraw and what S-365 had to correct in AM-42. The enumerator is
+`pr020_design_map.py`, md5 `ad0fafa0`, in the session scratchpad (it may not enter `scripts/` while
+the family is in flight).
+
+### 2. The prereg's own frozen floors, re-derived rather than trusted
+
+```
+binomial     prereg 2.323057312542e-08   mine 2.323057312542e-08   MATCH   (1/9)^8
+conditional  prereg 1.524157902759e-04   mine 1.524157902759e-04   MATCH   (1/9)^4
+permutation  prereg 9.920634920635e-05   mine 9.920634920635e-05   MATCH   1/10080
+distinct assignments at K=8: 10080 = 8!/(2!2!)              unique-layer heads: [10, 11, 18, 21]
+```
+
+Predictions: `4→L11, 6→L11, 10→L12, 11→L8, 13→L10, 18→L14, 21→L6, 27→L10`. Two shared pairs
+(4&6 on L11, 13&27 on L10), four singletons.
+
+The memo this calculation rests on — that the match distribution depends on the observed vector only
+through its per-layer counts, because positions demanding the same value are exchangeable — was
+**checked, not assumed**: 12 random observed vectors against re-shuffles of themselves, 0 of 12
+histograms differed.
+
+### 3. HAZARD 1 — at K ≤ 3 the family cannot certify, and at K = 3,4,5 it can publish an uninformative FAIL
+
+```
+ K  #sets  best floor   worst floor   admitted sets that CAN certify
+ 1      8  1.00000000   1.00000000     0 of 8
+ 2     28  0.50000000   1.00000000     0 of 28
+ 3     56  0.16666667   0.33333333     0 of 56     <- NONE
+ 4     70  0.04166667   1.00000000    41 of 70     <- 29 cannot
+ 5     56  0.00833333   0.11111111    52 of 56     <- 4 cannot
+ 6     28  0.00138889   0.01234568    28 of 28
+ 7      8  0.00039683   0.00137174     8 of 8
+ 8      1  0.00015242   0.00015242     1 of 1
+```
+
+**No admitted set of size ≤ 3 can certify at any data.** The reader's S-332 guard converts `K < 3`
+into CANNOT ANSWER — but the prereg defines FAILURE at `K >= 3`, so an admitted set of **exactly 3**,
+or one of the **29 of 70** unwinnable 4-sets, or **4 of 56** unwinnable 5-sets, would publish
+**FAIL** — with the reader's ⛔ STRUCTURALLY UNWINNABLE annotation attached, but FAIL nonetheless.
+That is the S-317 shape this family was built to escape, surviving in a narrow band the S-332 fix
+does not cover. It is not a reader bug — the reader is obeying the prereg — but **the prereg's
+`FAILURE` threshold and the design's floor do not meet at the same K**, and that is knowable now.
+
+⚠ The probability of landing there is NOT estimable in advance: admission is the power gate's
+decision on data that does not exist yet. What is established is the structure, not its likelihood.
+
+### 4. HAZARD 2 — the M=3 binomial clears alpha by 1.8 parts in a million
+
+```
+binomial  M=3, K=8  =  717419/14348907  =  0.04999816362319444
+alpha - p                                =  0.00000183637680556
+```
+
+Exact as a rational, not a float artefact: `1 - (8^8 + 8*8^7 + 28*8^6)/9^8`. **The design's weakest
+admissible outcome sits 1.8e-06 below alpha.** Nothing is wrong — 0.049998 ≤ 0.05 and the prereg is
+frozen — but any of the following would flip M=3 from certifying to blocking: a band of 10 layers
+instead of 9, K=9 instead of 8, or alpha stated as 0.0499. This is recorded so that if the read
+lands on M=3 nobody discovers the margin afterwards and nobody is tempted to renegotiate the band.
+
+### 5. The map at K=8
+
+```
+ALWAYS certifies (every landing of its misses) :  59 of 256
+SOMETIMES (the landing decides)               :  21 of 256
+NEVER                                         : 176 of 256
+  -- all 176 die to the binomial/conditional/spanning ALONE; the landing is irrelevant to them.
+```
+
+**21 of 256 patterns do not determine their own verdict** — the same set of matching heads certifies
+under some landings of the misses and not others, because `p_perm` is scored against the observed
+argmax vector. This is S-365's lesson applied prospectively rather than discovered afterwards: the
+question "how many PATTERNS certify" has no single answer, and the map is reported as a
+three-way classification instead of a count.
+
+### 6. The necessary conditions, as arithmetic rather than search
+
+Both gating statistics that do **not** depend on where misses land:
+
+```
+binomial  M=0 1.000000  M=1 0.610256  M=2 0.220511  BLOCK    M>=3 0.049998  ok
+cond     Mu=0 1.000000 Mu=1 0.375705 Mu=2 0.063557  BLOCK   Mu>=3 0.005030  ok
+```
+
+**Every certifying outcome at K=8 requires M ≥ 3 of 8 AND M_unique ≥ 3 of the four unique-layer
+heads [10, 11, 18, 21].** Hand-verified independently of the enumerator:
+`P(Binom(4,1/9) >= 2) = 1 - (8/9)^4 - 4(1/9)(8/9)^3 = 0.063557 > alpha`, so two unique heads are not
+enough whatever the other six do. The screen must get **three of {10, 11, 18, 21}** right or the
+conditional alone ends it.
+
+### 7. What was NOT established
+
+```
+- NOT established: any probability. This map says what CAN happen, never what is LIKELY to.
+  The power table (S-354) is a separate object and is not combined with this one.
+- NOT established: the map for K != 8. Section 3 gives the FLOOR for every admitted set, which
+  settles "can it certify at all"; the full ALWAYS/SOMETIMES/NEVER classification was computed
+  at K=8 only.
+- NOT established: that the family will reach K=8. Admission is the power gate's call on data
+  that does not exist yet.
+- NOT a defect in the reader. Section 3's hazard is the PREREG's FAILURE threshold sitting below
+  the design's floor. The reader obeys the prereg and annotates the outcome correctly.
+- NOT fixable this tick: VOID 11. Nothing in scripts/ or src/ was touched, and nothing should be
+  -- the prereg is FROZEN and a frozen prereg is not amended because its map is unflattering.
+```
+
+### 8. State
+
+```
+925438   RUNNING on n-301, 39 of 82, all status=ok / n_rows_failed=0, no duplicate arm tags.
+CHANGED  external_md/...20260915.md  +S-366 only.
+NO EDITS TO scripts/ OR src/ (VOID 11). Enumerator md5 ad0fafa0, session scratchpad.
+NEXT     monitor to 82/82, then STEP -1 operator checks and the frozen read in order
+         (runargs/dcs_csi_pr020_read.txt, md5 78d45fdd), stopping at the first failure.
+```
+
+`git push` remains credential-blocked. Committed locally.
