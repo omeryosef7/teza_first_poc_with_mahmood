@@ -32049,3 +32049,118 @@ NEXT     monitor to 82/82, then STEP -1's operator checks and the frozen read in
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-365 — the claim-table audit finds ONE live defect, and the withdrawn number turns out to be the smaller half of the problem (2026-09-24)
+
+### 1. Why this tick was read-only
+
+`925438` is on a GPU. S-362's VOID 11 disclosure says I do not edit `scripts/` or `src/` while a
+family is in flight, so this tick did the one high-value thing that needs neither: audit the claim
+table for numbers THIS SPRINT WITHDREW but never went back and corrected. The claim table is the
+paper's backbone; a withdrawn number sitting in it is a defect whether or not anyone is reading.
+
+### 2. What the audit checked, and what it found
+
+Three withdrawn/suspect figures were grepped and each occurrence read in full.
+
+```
+"5 of 64"   1 occurrence, line 924, AM-42          -> LIVE DEFECT. Corrected below.
+"23 of 23"  3 occurrences: line 27 (D12, unrelated), 935 (AM-43 original, A25),
+                           947 (AM-43 corrected, A26)  -> LEGITIMATE. A26 explicitly
+                           supersedes A25; that is append-only practice working as designed.
+"20.1%"     1 occurrence, line 879, AM-36          -> NOT A DEFECT. See below.
+```
+
+**AM-36 needed no correction, and finding that out mattered more than it sounds.** AM-36 already
+carries, verbatim, the caveat S-345 had to invent to withdraw S-344 — *"⚠ THIS IS A 21-OF-32
+SUBSET, NOT A COMPLETE DECOMPOSITION ... the full 32-head sum is unknown and could be larger"* —
+**and** the prohibition S-346 caught me violating: *"No singleton may be summed against `E(BT_KO)`
+to attribute a share."* AM-36 predates S-344. So S-344 did not merely state a wrong number: it
+**rediscovered a claim the table already held and stated it WORSE**, stripping a caveat that was
+already written down. S-346 diagnosed the cause as not reading the claim table first. This is that
+diagnosis confirmed against the artefact, and it is the more expensive failure of the two — a
+sprint that re-derives what it already knows will eventually re-derive it badly.
+
+### 3. AM-42 re-derived: the count is wrong, and the QUESTION was ill-posed
+
+S-352 withdrew S-332's *"only 5 of 64 outcome patterns could certify, and every one requires BOTH
+unique-layer heads"* because it was computed under the freeze script's permutation statistic rather
+than the reader's, and left it PENDING RE-DERIVATION. Nobody re-derived it. AM-42 has been asserting
+it since. Closed now, by exact enumeration — K=6, so all 2⁶ patterns and all 8^m miss-landings fit,
+with no Monte Carlo:
+
+```
+patterns where SOME landing certifies : 15 of 64
+patterns where EVERY landing certifies:  7 of 64
+S-332's withdrawn figure               :  5 of 64   <- neither
+```
+
+**The count being wrong is the smaller finding. "N of 64 outcome PATTERNS certify" is not a
+well-posed question under the reader's statistic.** In **8 of 64** cases the same match pattern
+certifies under some landings of its misses and not others, because the reader's permutation p is
+scored against the OBSERVED ARGMAX VECTOR — it depends on *where* the misses went, not only on how
+many hit. A map indexed by pattern alone cannot have a single right answer. S-332 asked a question
+whose form already assumed the freeze script's statistic, which is why fixing the statistic does
+not produce a corrected number so much as dissolve the original one.
+
+**The structural half survives, and is now a proof rather than an enumeration.** Every certifying
+outcome requires BOTH unique-layer heads (11 and 29): if either is unmatched then `M_unique ≤ 1`,
+so `p_cond = 1 − (8/9)² = 17/81 = 0.209877 > alpha` and the conditional alone kills it, whatever
+the other four heads do. That holds by arithmetic, not by search.
+
+### 4. What this does to D39 — nothing, except strengthen it
+
+D39's PASS and every number in it stand; S-352 already scoped the withdrawal to the accompanying
+pre-read map, and this tick confirms that scope was right. The enumerator, written from the
+reader's source and not from D39, independently reproduces D39's PASS on the real outcome.
+
+**New result:** PR-CSI-018's observed pattern (M=5, matched {6,11,24,27,29}, head 20 the only miss)
+certifies under **all 8** landings that miss could have taken. The PASS did not depend on head 20
+happening to land on L14 — so no post-hoc argument about where the miss went is available to
+either side.
+
+### 5. Re-derived, not trusted
+
+Per the standing rule, the load-bearing figures were checked by hand, independently of the script:
+
+```
+M=6  binomial (1/9)^6 = 1.88e-6 | conditional (1/9)^2 = 0.012346
+     permutation 1/180 = 0.005556 over 6!/(2!2!) = 180 distinct assignments
+     weakest = 0.012346 <= 0.05  -> certifies                                    CONFIRMED
+M=3 matched {6,11,29}  binomial 0.021167, conditional 0.012346 -- BOTH clear alpha,
+     so the verdict rests entirely on the permutation and is landing-dependent    CONFIRMED
+```
+
+A defect in my own enumerator was found and fixed mid-tick: it skipped the spanning check at M=0.
+It changed no count (at M=0 the binomial is 1.0 and refuses anyway), but it was a branch of the
+reader I had not actually reproduced, and "it happens not to matter" is not the same as "it is
+right". Fixed, re-run, counts identical.
+
+### 6. What was NOT established
+
+```
+- NOT established: any design map for PR-CSI-020. These numbers are specific to PR-CSI-018's
+  multiset [L11,L8,L11,L10,L10,L6]. PR-CSI-020 has 82 arms and a larger head set, and its map
+  has NOT been computed. It MUST NOT be assumed to resemble this one.
+- NOT established: that no OTHER claim-table row carries a withdrawn number. Three figures were
+  audited, not all of them. The audit is a sample, and I am recording it as one.
+- NOT re-derived: whether S-332's "5" is reproducible under the freeze statistic. I did not
+  rebuild the wrong statistic to confirm it produces 5 -- the number is withdrawn either way,
+  and rebuilding a retired statistic to check a retired number is not worth a tick.
+- UNCHANGED: D39's verdict, and every figure in AM-43/A26 and AM-36.
+```
+
+### 7. State
+
+```
+925438   RUNNING on n-301, 26 of 82 arms, all status=ok with n_rows_failed=0.
+CHANGED  reports/DCS_CSI_CLAIM_TABLE.md  +A27 (AM-42 corrected)
+         external_md/...20260915.md      +S-365
+NO EDITS TO scripts/ OR src/ THIS TICK (VOID 11). The enumerator lives in the session scratchpad.
+NEXT     monitor to 82/82, then STEP -1's operator checks and the frozen read in order
+         (runargs/dcs_csi_pr020_read.txt, md5 78d45fdd), stopping at the first failure.
+```
+
+`git push` remains credential-blocked. Committed locally.
