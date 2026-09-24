@@ -28666,3 +28666,118 @@ nothing**, which is the right use of a GPU-bound wait but is not progress on the
 PR-CSI-018  923972 on n-301, 26 of 62 arms, all rc=0. NO endpoint read; frozen read cbdf34a2 untouched.
             ~36 arms remain, ~1.7 h.
 ```
+
+---
+
+## S-331 — **the attention-mass instrument gets a COMMITTED launcher, and GATE 0 caught ME.** The sweep refused my own mistyped invocation with "THIS IS NOT A PASS" instead of a silent zero — the S-308/S-315 hardening firing on its author. 🔴 **Nothing was measured.**
+
+### 1. What was done
+
+`src/boombness/retrieval_strength.py` — the instrument S-316 blocked the whole source-side
+family on, and whose criterion S-325 froze — **has been run under slurm before (job 777320, n-801)
+but NO COMMITTED SLURM SCRIPT LAUNCHES IT.** The invocation lived somewhere uncommitted. That is
+the same provenance gap class as S-302: a measurement that decides whether an entire family may
+run must be reproducible from the repo, not reconstructed from memory at the moment the GPU frees.
+
+`slurm_scripts/dcs_csi_retrieval_mass.slurm` is now that launcher. It is deliberately boring:
+
+```
+CW=basket|button          the codeword, mandatory -- no default, so it cannot be run "on whatever"
+--exclude-prompt-ids      MANDATORY. Without it a ts116m bank is read POOLED, which includes all
+                          23 TEST domains. S-325 added the flag AND a refusal guard that fires
+                          before the model loads. This script never relies on the guard alone.
+forward-only              output_attentions=True, use_cache=False, no generation. Reads no
+                          endpoint, writes no arm, cannot touch any family's GATE 0.
+S-325's criterion         reproduced verbatim in the header as a comment, so the decision rule
+                          travels with the invocation instead of living only in the log.
+```
+
+### 2. The verification, and the hole I found in my own verification
+
+Every path it names resolves (script, both banks, both exclusion lists, the model snapshot).
+Then I checked that every flag it passes is actually declared by the CLI — the S-293 lesson.
+
+**My first check had the exact defect I recorded two ticks ago.** The regex was line-anchored,
+`^\s+(--[a-z0-9-]+)`, so on a line reading `--band-lo 6 --band-hi 14` it matched **only the
+first flag**. It reported "13 flags, none missing" and I nearly took that as the all-clear.
+`--band-hi` and `--late-hi` had never been looked at. Re-run unanchored over everything after the
+invocation: **15 flags, all 15 declared.** So the conclusion survives — but it survived by luck,
+not by the check.
+
+> A verification pattern that silently skips half its inputs reports "all clear" in exactly the
+> same voice as one that checked them. This is the SECOND time this sprint that a
+> silently-under-matching pattern has produced a false all-clear (the first was `^\[w3\] [0-9]+/32`
+> against a right-aligned counter). Both times the text looked right. **Anchoring is an assumption
+> about formatting, and formatting is not a contract.**
+
+`--partition`, `--account=gpu-research` and `--gpus=geforce_rtx_3090:1` were confirmed against
+`dcs_csi_pr010_arms.slurm`, a launcher known to work, rather than against my recollection.
+
+**The seed is the load-bearing detail.** `--seed 20260913`, read out of a landed PR-018 arm's own
+`config.json` (`seed = 20260913`, `seed_source = 'args.seed'`) rather than assumed. The strict
+PROTECTED control draws are `nondemo_draw_seed(seed, idx)`, so this makes the instrument measure
+**the same draws the real arms make**. A different seed would have measured a different random
+control set and answered a question nobody asked.
+
+### 3. GATE 0 on PR-CSI-018 — and the gate refusing its author
+
+I first invoked the sweep with `--tag-prefix csi10_cell6_button`. The frozen read
+(`runargs/dcs_csi_pr018_read.txt`, md5 cbdf34a2) specifies `csi10_cell6_button_validation`. The
+arm dirs carry the split in the tag, so the glob matched nothing and **all 62 arms reported
+"-- not landed --"** while 29 of them sat on disk with `DONE.json`.
+
+It did not print a pass. It printed:
+
+```
+GATE 0: NOTHING TO CHECK -- 0 of 62 declared arms resolved. THIS IS NOT A PASS.
+  Either no arm has landed yet, or --tag-prefix/--split/--require-slurm-job name something
+  that does not exist.
+```
+
+That is R27/S-308 and S-315 working **on the person who wrote them**. The failure mode those
+entries were about — an arm that is present but unreadable being silently scored as absent, and
+the family then certified on a shrunken denominator — is precisely what would have happened here
+had the gate trusted its own zero. It cost me one re-run and zero false confidence.
+
+Re-run as frozen:
+
+```
+GATE 0: every landed arm passes (29 of 62). Identity verified from each arm's own
+        knockout_cells. No endpoint field was read.
+  .. 1 arm(s) IN FLIGHT (run dir present, no DONE.json). THIS SWEEP IS PARTIAL and is
+     NOT the family's GATE 0 verdict.
+                                   29 passing + 1 in flight + 32 not landed = 62  ✓
+```
+
+### 4. The ETA, and why I am not quoting the range my own script produced
+
+Median inter-arm gap over the 29 completed gaps is **171.0 s**; min 167.0; max **1442.0**.
+Naively propagating the range gives "1.5 h to 12.8 h", which is worthless. The 1442 s gap is
+`BF_BASE -> BF_KO` — one-time model load plus the base arm — and **does not recur**. Every
+cell-arm gap sits in a 167–175 s band. So:
+
+```
+32 arms x 171 s = 5472 s = ~1.5 h remaining.   Job 923972, n-301, 1:44:52 elapsed of a 12 h
+                                               walltime. Walltime is not the binding constraint.
+```
+
+S-327 is the reason this paragraph exists: I overestimated a load by 2.07x by extrapolating from
+its first nine shards. The discipline that fixes it is not "distrust extrapolation" — it is
+**identify the non-repeating events and exclude them before you extrapolate.**
+
+### 5. NOT established
+
+```
+NOTHING WAS MEASURED. No attention mass exists yet. S-325's criterion is frozen and UNAPPLIED,
+  and the source-side family remains BLOCKED by S-316 -- not licensed, not refused.
+PR-CSI-018 has NO endpoint read. 29 of 62 arms pass a PARTIAL GATE 0. The frozen read
+  cbdf34a2 is untouched. No census, no primary, no claim-table row.
+The launcher has never been RUN. It validates statically -- paths, flags, seed, SBATCH
+  directives -- and that is all that is established about it.
+```
+
+The mass measurement needs the GPU that PR-CSI-018 is holding. Queueing it now would contend with
+a running family for the same 3090, so it waits. **Next tick: 923972 to 62/62, then the frozen
+read in order — GATE 0 (full), census, primary — and only then a claim-table row.**
+
+`git push` remains credential-blocked. Committed locally.
