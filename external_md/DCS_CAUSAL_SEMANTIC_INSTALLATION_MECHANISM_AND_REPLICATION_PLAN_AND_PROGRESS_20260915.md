@@ -31321,3 +31321,109 @@ NEXT  the single re-freeze: CENSUS_DELIVERABLE with the estimator, the bootstrap
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-355 — **PR-CSI-020 IS RE-FROZEN at md5 `d68eae71`, with every R32 BLOCKER closed.** The census now accepts it, the launcher has its tag, the permutation statistic is the reader's verbatim, and the power is the one I computed myself
+
+### 1. The four BLOCKERs, closed
+
+```
+(a) CENSUS REFUSED THE PREREG before loading any arm -- CENSUS_DELIVERABLE and
+    DOSE_IDENTITY_IS_BLIND_HERE missing. Both added, and CENSUS_DELIVERABLE now carries the
+    ESTIMATOR definition it holds in PR-CSI-018, closing the PART I 3.5 gap R32-A found (the
+    family previously had no estimator definition anywhere).
+    VERIFIED: the census now refuses only with "0 complete run dirs" -- the correct refusal for a
+    family whose arms have not run. The field validation passes.
+(b) THE PERMUTATION STATISTIC was not the reader's. `perm_p` now scores permutations against the
+    OBSERVED ARGMAX VECTOR, copied from dcs_csi_pr016_argmax_test.py:226-230, and the prereg
+    carries DEFINITION_VERBATIM plus an explicit ⚠ WHAT_IT_IS_COMPARED_AGAINST.
+(c) THE LAUNCHER had no tag: `PR-CSI-020) WANT_PREFIX=csi11_cell8_basket ;;` registered.
+    csi11 verified free in code and on disk before claiming it.
+(d) VOID CONDITION 5 is enforced by nothing. NOT silently fixed -- the VOID block now states
+    WHICH conditions are code and which are prose, with 5 named among the prose. R29's lesson is
+    that a condition nothing checks must not read as automatic.
+```
+
+### 2. The power is now mine, and it is in the prereg
+
+```
+emitted:  type I 0.00404 | q=0.33 0.10118 | q=0.83 0.86233   (MC N=200000, seed 20260924)
+S-354 independently:   0.00410 |         0.10151 |         0.86237
+```
+
+Agreement to Monte-Carlo error, by two implementations written hours apart. **N and seed are frozen
+into the prereg**, so the numbers are reproducible rather than asserted.
+
+⚠ **`POWER_BY_EXACT_ENUMERATION` is gone**, replaced by `POWER_BY_SEEDED_MONTE_CARLO` carrying the
+reason: exact enumeration over match patterns is valid only if p depends on M alone, which is true
+of the statistic the first freeze used and **false of the reader's**.
+
+### 3. What the prereg now refuses to claim
+
+**The SECONDARY is DELETED.** R32-A showed nothing in the repository could compute it — the reader
+produces one verdict over `pr["heads"]`, so a five-head analysis would have been done **by hand
+after the read** — and its `⛔ NOT_A_FALLBACK` guard did not bind, because it keyed on the PRIMARY
+*failing* while the likeliest rescue route is CANNOT ANSWER. The three replication heads stay in the
+primary, disclosed by name, and no five-head analysis may be reported from this family at all.
+
+**No complete outcome table.** S-353 established that no rule in `(M, M_unique)` alone characterises
+certification. The prereg now freezes only the **necessary** conditions — `M >= 3 AND M_unique >= 3`,
+with the knife edge `P(Binom(8,1/9) >= 3) = 0.04999816` recorded as one — under an explicit
+`⛔ NECESSARY_BUT_NOT_SUFFICIENT` citing the 34 exhibited counterexamples.
+
+**The firewall argument is replaced with the one that works.** The first freeze defended head
+selection by saying liveness is a whole-head property; R32-A showed that defends the wrong thing,
+since selection can tilt the argmax marginal and both the binomial and conditional rest on a
+uniform-over-9 null that S-351 measured to be wrong. What protects the family is the **permutation**
+component conditioning on the observed argmaxes, plus `weakest_of_three` making the gate valid
+whenever any one component is. PR-CSI-018's read said this in terms; the first freeze of this family
+lost it.
+
+**Four VOID conditions restored** (GPU architecture, `eager`, source edited in flight, the read
+amended after seeing a number) — all present in PR-CSI-018 and dropped by the first freeze.
+
+**S-351's measured argmax marginal is frozen in**, with the binomial-alone prohibition now carrying
+a measured reason: for this multiset a random screen matches at ~0.1625 against the assumed 1/9.
+
+### 4. Verification
+
+```
+byte-identical on re-emission           YES
+census accepts the prereg               YES (refuses only "0 complete run dirs")
+argv generator                          CHECK PASSED, 82 arms, basket bank and exclusions
+primary reader, 4 synthetic cases       all four behave as S-348/S-353 predict, including
+                                        case 2 gating on conditional 0.063557 = the exact
+                                        P(Binom(4,1/9)>=2) tail from S-353
+112 tests pass
+prereg md5   9fce4bda -> d68eae71   (27 987 -> 35 692 bytes)
+```
+
+### 5. NOT established
+
+```
+⛔ STILL NOT LAUNCHED, and two items remain before it may be:
+     runargs/dcs_csi_pr020_read.txt DOES NOT EXIST. No frozen read, no pinned job id, no
+       --expect-n/--B/--seed/--ci written out, no STOP-AT-FIRST-FAILURE order.
+     NO FREEZE SELF-TEST. R32-A's cosmetic 5: one assertion instantiating every prereg field the
+       readers subscript would have caught BLOCKER (a) at freeze time instead of after 3.9 GPU-hours.
+⛔ THE POWER MODEL'S UNIFORM-MISS HALF IS KNOWN WRONG IN DETAIL (S-351), and the prereg says so.
+   R32-A puts the type I under the empirical marginal at 0.00306 -- the conservative direction --
+   but I have NOT reproduced that number and the prereg does not assert it.
+⛔ NOTHING IS MEASURED. No arm of this family has run. Every number in the prereg is either
+   re-derived from published artefacts or computed from the frozen predictions.
+⛔ R32's remaining CONCERNS are recorded, not all fixed: the design map's hardcoded six heads
+   (S-322 class, wrong numbers in a pre-read artefact), and ADMISSION being near-deterministic
+   given VOID 8 -- so the "losing a thin head makes this stronger" branch is arithmetic about a
+   scenario that a readable run cannot reach.
+NOTHING WAS MEASURED ON A GPU. The queue is EMPTY.
+```
+
+### 6. State
+
+```
+PR-CSI-020   RE-FROZEN, md5 d68eae71, 82 arms, tag csi11_cell8_basket registered.
+NEXT         the frozen READ, the freeze self-test, then submit.
+```
+
+`git push` remains credential-blocked. Committed locally.

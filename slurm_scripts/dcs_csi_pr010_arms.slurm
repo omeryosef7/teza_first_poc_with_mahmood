@@ -53,6 +53,7 @@ case "$PR_ID" in
   PR-CSI-015) WANT_PREFIX=csi8_cell3_basket ;;
   PR-CSI-016) WANT_PREFIX=csi9_cell3_button ;;
   PR-CSI-018) WANT_PREFIX=csi10_cell6_button ;;
+  PR-CSI-020) WANT_PREFIX=csi11_cell8_basket ;;
   *) echo "REFUSING: no tag prefix is registered for prereg id $PR_ID" >&2; exit 6 ;;
 esac
 if [ "$TAG_PREFIX" != "$WANT_PREFIX" ]; then

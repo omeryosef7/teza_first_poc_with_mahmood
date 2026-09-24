@@ -33,13 +33,22 @@ TWO COMPOSITION FACTS THAT ARE FROZEN HERE RATHER THAN DISCOVERED LATER:
     Head 18 is INCLUDED, and the rule that includes it is frozen before the cells are measured;
     dropping it after seeing the composition would be post-hoc selection.
 
-POWER, computed by EXACT ENUMERATION (S-348) rather than a generator -- the statistic is
-combinatorial, so there is no effect size, no variance and no correlation to assume. This is the
-distinction S-340 was written about.
+POWER, by a SEEDED MONTE CARLO under a named model (S-354). The first freeze used exact
+enumeration over match patterns, which is valid only if p depends on M alone -- true of the
+statistic that freeze used, FALSE of the reader's. S-353 showed no rule in M and M_unique alone
+characterises certification, so only NECESSARY conditions are frozen, never a complete table.
+
+WARNING -- THIS IS THE SECOND FREEZE. The first, md5 9fce4bda, was DEFECTIVE and never ran:
+review R32 found the census would refuse it outright, two required keys missing and with them the
+estimator definition; the launcher had no tag for it; its permutation statistic was not the
+reader's; and five VOID conditions PR-CSI-018 carried had been dropped. Nothing was measured
+under it.
 """
 import argparse, hashlib, json, os, sys
 import collections, itertools
 from math import comb, factorial
+
+import numpy as np
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DOSE_UNIT = 2016
@@ -52,6 +61,8 @@ PR012_PREREG = "configs/dcs_csi_pr012_head_census_basket.json"
 PR012_REPORT = "reports/DCS_CSI_PR012_CENSUS_validation.json"
 ALPHA = 0.05
 ADMIT_RATIO = 1.5
+MC_N = 200000              # S-354: the power Monte Carlo, N and seed FROZEN into the prereg
+MC_SEED = 20260924
 Z = 1.96
 P0 = 1.0 / len(BAND)
 
@@ -118,34 +129,76 @@ def binom_ge(K, M):
                                   for m in range(M, K + 1))
 
 
-def perm_p(pred, adm, M):
-    truth = tuple(pred[h] for h in adm)
-    ass = sorted(set(itertools.permutations(sorted(truth))))
-    return sum(1 for a in ass
-               if sum(1 for i in range(len(truth)) if a[i] == truth[i]) >= M) / float(len(ass))
+# ⚠⚠ S-352/S-354. THE PERMUTATION STATISTIC IS THE READER'S, COPIED FROM IT.
+# The first version of this file compared permutations against the PREDICTION vector; the reader
+# (dcs_csi_pr016_argmax_test.py:226-230) compares them against the OBSERVED ARGMAX vector. The two
+# coincide only at M = K. R32-A found it; measured on one case, reader 0.000099..0.000595 against
+# this file's 0.002679. The reader's is correct -- a permutation test conditions on the observed
+# outcome -- and the consequence was that the prereg's decision table described a test the reader
+# does not implement: a 4-of-8 outcome would have been published PASS against a prereg recording
+# that it could not certify.
+#
+# SPEED (S-354): positions sharing an observed layer are INTERCHANGEABLE, so the match-count
+# distribution depends only on the signature (a_6..a_14). It caches, and 11 995 signatures appeared
+# in the power run -- which is why the uncached form could not finish.
+_PERM_CACHE = {}
 
 
-def certifies(pred, adm, matched):
-    K, M = len(adm), len(matched)
+def _perm_matrix(pred, adm):
+    key = tuple(pred[h] for h in adm)
+    m = _PERM_CACHE.get(("M", key))
+    if m is None:
+        m = np.array(sorted(set(itertools.permutations(key))), dtype=np.int8)
+        _PERM_CACHE[("M", key)] = m
+    return m
+
+
+def perm_tail(pred, adm, obs):
+    """P(matches >= m) for every m, matching the READER: permutations of the prediction multiset
+    scored against the OBSERVED argmax vector."""
+    band_sorted = sorted(set(pred[h] for h in adm) | set(obs))
+    sig = (tuple(pred[h] for h in adm), tuple(obs.count(L) for L in band_sorted))
+    hit = _PERM_CACHE.get(sig)
+    if hit is not None:
+        return hit
+    rep = []
+    for L in band_sorted:
+        rep += [L] * obs.count(L)
+    P = _perm_matrix(pred, adm)
+    matches = (P == np.array(rep, dtype=np.int8)).sum(axis=1)
+    counts = np.bincount(matches, minlength=len(adm) + 1)
+    tail = np.cumsum(counts[::-1])[::-1] / float(len(P))
+    _PERM_CACHE[sig] = tail
+    return tail
+
+
+def certifies(pred, adm, obs):
+    """The READER's rule, applied to an observed argmax vector."""
+    matched = [adm[i] for i in range(len(adm)) if obs[i] == pred[adm[i]]]
+    M = len(matched)
     lay = [pred[h] for h in adm]
     uq = [h for h in adm if lay.count(pred[h]) == 1]
     Mu = sum(1 for h in matched if h in uq)
-    w = max(binom_ge(K, M), binom_ge(len(uq), Mu) if uq else 1.0, perm_p(pred, adm, M))
     if M > 0 and len({pred[h] for h in matched}) < 2:
         return False
+    w = max(binom_ge(len(adm), M), binom_ge(len(uq), Mu) if uq else 1.0,
+            perm_tail(pred, adm, obs)[M])
     return w <= ALPHA
 
 
-def power(pred, adm, q):
-    tot, K = 0.0, len(adm)
-    for mask in itertools.product([1, 0], repeat=K):
-        matched = [adm[i] for i in range(K) if mask[i]]
-        pr = 1.0
-        for i in range(K):
-            pr *= q if mask[i] else (1 - q)
-        if certifies(pred, adm, matched):
-            tot += pr
-    return tot
+def power_mc(pred, adm, q, n, seed):
+    """P(certify) under the NAMED model: each head matches with probability q independently, and a
+    miss lands UNIFORMLY on one of the other 8 band layers. Both halves are assumptions and the
+    prereg says so -- S-351 measured that the empirical argmax marginal is NOT uniform."""
+    rng = np.random.default_rng(seed)
+    alt = [np.array([L for L in BAND if L != pred[h]]) for h in adm]
+    hit = 0
+    for _ in range(n):
+        u = rng.random(len(adm))
+        obs = [pred[adm[i]] if u[i] < q else int(rng.choice(alt[i])) for i in range(len(adm))]
+        if certifies(pred, adm, obs):
+            hit += 1
+    return hit / float(n)
 
 
 def build():
@@ -211,7 +264,10 @@ def build():
                                   "independent draw. It is legitimate -- the prior is 'the screen "
                                   "is right', which is the hypothesis -- but it is a prior and it "
                                   "is named here rather than discovered afterwards.",
-                "AND_THE_FAMILY_CERTIFIES_WITHOUT_THEM": "see PRIMARY.SECONDARY_PREREGISTERED"},
+                "⚠ AND_THERE_IS_NO_SECONDARY_TO_FALL_BACK_ON": "the first freeze carried a "
+                    "five-head SECONDARY; R32-A showed nothing could compute it and its "
+                    "anti-fallback guard did not bind. It is DELETED. These three heads are in "
+                    "the primary and nowhere else."},
             "⚠ HEAD_18_PREDICTS_L14": "the band-edge rival. PR-CSI-018 excluded head 16 for this, "
                                       "correctly, where a small set could not be told from "
                                       "top-of-band bias. Here the eight predictions span SIX "
@@ -235,10 +291,27 @@ def build():
             "conditional": "the same over ADMITTED heads whose predicted layer is unique among the "
                            "admitted set",
             "permutation": {
-                "space": "distinct assignments of the prediction MULTISET to the admitted heads",
+                "DEFINITION_VERBATIM": "p_perm = the fraction of the DISTINCT assignments q of the "
+                                       "prediction multiset to the admitted heads for which "
+                                       "#{i : q_i == the OBSERVED argmax layer of head i} >= M",
+                "⚠ WHAT_IT_IS_COMPARED_AGAINST": "the OBSERVED ARGMAX VECTOR, not the prediction "
+                    "vector. S-352: the first freeze of this family compared against the "
+                    "predictions, which is a DIFFERENT statistic -- they coincide only at M = K, "
+                    "and on one measured case the two gave 0.000099..0.000595 against 0.002679. "
+                    "The reader (scripts/dcs_csi_pr016_argmax_test.py) has always used the "
+                    "observed vector; this text now matches it, and THAT is the statistic.",
                 "multiset_at_K8": ["L%d" % x for x in sorted(lay_all)],
                 "n_distinct_assignments_at_K8": n_assign(lay_all),
                 "floor_at_K8": 1.0 / n_assign(lay_all)},
+            "ALL_THREE_FLOORS_AT_K8": {
+                "permutation": 1.0 / n_assign(lay_all),
+                "conditional": binom_ge(len(uq_all), len(uq_all)),
+                "binomial": binom_ge(len(HEADS), len(HEADS)),
+                "WEAKEST": max(1.0 / n_assign(lay_all), binom_ge(len(uq_all), len(uq_all)),
+                               binom_ge(len(HEADS), len(HEADS))),
+                "why_all_three": "the WEAKEST gates, so recording only the permutation floor (as "
+                                 "the first freeze did) omits the one that actually decides a "
+                                 "perfect result"},
             "SUCCESS": "the WEAKEST of the three p-values <= 0.05 AND the spanning rule satisfied",
             "GATING": "weakest_of_three",
             "FAILURE": "the weakest p > 0.05 with K >= 3",
@@ -246,16 +319,20 @@ def build():
                              "ANSWER whatever the p-values say",
             "HOW_THE_CLAIM_MUST_BE_STATED": "with the WEAKEST of the three, each named. Quoting the "
                                             "binomial alone is FORBIDDEN.",
-            "SECONDARY_PREREGISTERED": {
-                "heads": fresh,
-                "why": "the five heads whose predictions have NEVER been tested at cell level on "
-                       "any codeword. Reported ALONGSIDE the primary, never INSTEAD of it.",
-                "multiset": ["L%d" % x for x in sorted(lay_fresh)],
-                "n_distinct_assignments": n_assign(lay_fresh),
-                "floor": 1.0 / n_assign(lay_fresh),
-                "⛔ NOT_A_FALLBACK": "if the PRIMARY fails and the SECONDARY passes, the family has "
-                                    "FAILED. The secondary exists to show the result does not REST "
-                                    "on the three replication heads, not to rescue it."},
+            "⛔ THERE_IS_NO_SECONDARY_ANALYSIS": {
+                "what_was_removed": "the first freeze preregistered a SECONDARY over the five "
+                                    "never-tested heads (%s), with a floor of %.6f."
+                                    % (fresh, 1.0 / n_assign(lay_fresh)),
+                "why_it_is_gone": "R32-A: NOTHING IN THE REPOSITORY COULD COMPUTE IT. The reader "
+                    "produces one verdict over pr['heads']; a secondary would have been computed "
+                    "BY HAND AFTER THE READ. And its ⛔ NOT_A_FALLBACK guard did not bind: it was "
+                    "keyed on the PRIMARY 'failing', while the likeliest route to a rescue is "
+                    "CANNOT ANSWER (a tie under VOID 6, a spanning violation, K < 3) -- in which "
+                    "the primary has not failed and nothing forbade reporting a passing secondary.",
+                "consequence": "the three replication heads (%s) stay IN the primary and are "
+                               "disclosed by name. No five-head analysis may be reported from this "
+                               "family at all; it would be a separate preregistration."
+                               % PREDICTION_TESTED_ON_BUTTON},
             "⛔ NO_POST_HOC_SHARPNESS_SUBSETTING": {
                 "margins": {str(h): screen[str(h)]["margin"] for h in HEADS},
                 "rule": "the margins are frozen per head HERE precisely so that a margin-restricted "
@@ -296,34 +373,59 @@ def build():
                               "cells), so D39's framing is STRONGER than anything this family can "
                               "claim and must not be carried over to it. The HEAD SET is chosen "
                               "using PR-CSI-012's basket validation magnitudes, i.e. the SAME "
-                              "split this family reads -- the firewall is that liveness is a "
-                              "WHOLE-HEAD property while the test is WHICH CELL within a head, and "
-                              "admission is computed from the HD_<h> arm alone, never the cells.",
+                              "split this family reads. ⚠ THE FIRST FREEZE DEFENDED THIS WITH "
+                              "THE WRONG ARGUMENT -- that liveness is a whole-head property while "
+                              "the test is which CELL within a head. R32-A showed that defends the "
+                              "wrong thing: selecting heads on whole-head validation magnitude CAN "
+                              "tilt the marginal distribution of argmax layers, and BOTH the "
+                              "binomial and the conditional rest on a uniform-over-9 null that "
+                              "S-351 measured to be empirically wrong. WHAT ACTUALLY PROTECTS THE "
+                              "FAMILY is the PERMUTATION component: it conditions on the observed "
+                              "argmaxes, so a shared band bias cannot fake it, and because GATING "
+                              "is weakest_of_three the gate is valid whenever ANY ONE component "
+                              "is. PR-CSI-018's frozen read said this in terms; the first freeze "
+                              "of this family replaced it and lost the argument that works.",
             "NOT_THE_PRIMARY": "the bar governs the depth map's CLEARS/does-not-clear; the PRIMARY "
                                "is argmax agreement and does not use the bar"},
-        "POWER_BY_EXACT_ENUMERATION": {
-            "why_exact": "the statistic is COMBINATORIAL -- the outcome is which heads match, 2^K "
-                         "patterns -- so P(certify) is an exact sum. No effect size, no variance, "
-                         "no correlation to assume. S-340 is why this matters: PR-CSI-019's "
-                         "feasibility was computed at an assumed correlation exceeding all 60 "
-                         "measured arms, and the honest number was 3x worse.",
-            "⚠ THE_ONE_ASSUMPTION": "heads match INDEPENDENTLY with probability q. Positive "
-                                    "correlation across heads would widen the true spread and make "
-                                    "every number below OPTIMISTIC.",
-            "P_certify_by_q_at_K8": {str(q): power(pred, HEADS, q)
-                                     for q in (P0, 0.33, 0.5, 0.67, 0.83, 1.0)},
-            "P_certify_by_q_at_K5_secondary": {str(q): power(pred, fresh, q)
-                                               for q in (P0, 0.83, 1.0)},
-            "TYPE_I_IS_CONSERVATIVE": "P(certify | q = 1/9) is far below alpha, the price of gating "
-                                      "on the weakest of three. A NULL from this family is "
-                                      "therefore WEAK evidence against the screen, not strong.",
-            "⚠ POWERED_FOR_A_STRONG_SCREEN_ONLY": "at q = 0.33 power is ~0.05. This family can "
-                                                  "confirm a screen that works; it CANNOT "
-                                                  "distinguish a mediocre screen from a useless one.",
-            "STRUCTURAL_RULE_RECORDED_BEFORE_THE_READ": "m <= 4 never certifies; m = 5 in 28 of 56 "
-                "subsets; m = 6 in 22 of 28; m >= 7 always. The failing 6-patterns all miss TWO of "
-                "the four unique-layer heads (10:L12, 11:L8, 18:L14, 21:L6), so AT m = 6 THE FAMILY "
-                "CERTIFIES IFF AT MOST ONE UNIQUE-LAYER HEAD IS MISSED."},
+        "POWER_BY_SEEDED_MONTE_CARLO": {
+            "⚠ WHY_NOT_EXACT_ENUMERATION": "the first freeze computed power as an exact sum over "
+                "the 2^K match patterns. That is only possible if p depends on M ALONE -- which is "
+                "true of the statistic that freeze used and FALSE of the reader's, where p is "
+                "scored against the OBSERVED ARGMAX VECTOR and therefore depends on WHERE the "
+                "misses land. S-353: two outcomes with identical M and identical M_unique can get "
+                "different verdicts, so no exact table over match counts exists.",
+            "model": "each admitted head matches its prediction with probability q INDEPENDENTLY; "
+                     "a miss lands UNIFORMLY on one of the other 8 band layers",
+            "N": MC_N, "seed": MC_SEED,
+            "P_certify_by_q": {str(q): power_mc(pred, HEADS, q, MC_N, MC_SEED)
+                               for q in (P0, 0.33, 0.5, 0.67, 0.83, 1.0)},
+            "⚠ BOTH_HALVES_OF_THE_MODEL_ARE_ASSUMPTIONS": {
+                "independence": "positive correlation across heads would widen the true spread and "
+                                "make these OPTIMISTIC",
+                "uniform_misses": "S-351 MEASURED that the empirical argmax marginal is NOT uniform "
+                                  "-- over the 10 heads this sprint has cell-censused, L10 and L14 "
+                                  "take 60%. So this half is known to be wrong IN DETAIL. R32-A "
+                                  "computed the type I under the empirical marginal at 0.00306, "
+                                  "BELOW the uniform figure, i.e. the error is in the conservative "
+                                  "direction -- but that number is R32-A's and is NOT asserted here."},
+            "TYPE_I": "P(certify | q = 1/9) is recorded above. It is far below alpha = 0.05, which "
+                      "is the price of gating on the WEAKEST of three. A NULL from this family is "
+                      "therefore WEAK evidence against the screen, not strong. ⚠ The first freeze "
+                      "put this at 0.0004; under the reader's statistic it is ~0.0041 (S-354), an "
+                      "order of magnitude higher and still conservative.",
+            "⚠ POWERED_FOR_A_STRONG_SCREEN": "at q = 0.33 power is ~0.10 (the first freeze said "
+                "~0.05, which OVERSTATED the limitation). This family can confirm a screen that "
+                "works; it cannot distinguish a mediocre screen from a useless one.",
+            "NECESSARY_CONDITIONS_FOR_CERTIFICATION": {
+                "rule": "M >= 3 AND M_unique >= 3",
+                "why": "P(Binom(8,1/9) >= 2) = 0.22051131 > alpha forces M >= 3; "
+                       "P(Binom(4,1/9) >= 2) = 0.06355738 > alpha forces M_unique >= 3. "
+                       "⚠ P(Binom(8,1/9) >= 3) = 0.04999816 clears alpha by 1.8e-6 -- a knife edge, "
+                       "recorded because it is one.",
+                "⛔ NECESSARY_BUT_NOT_SUFFICIENT": "S-353 exhibited 34 outcomes satisfying this rule "
+                    "that do NOT certify (e.g. M=3, M_unique=3, weakest 0.091071), because p_perm "
+                    "depends on where the misses land. NO rule in (M, M_unique) alone "
+                    "characterises certification, and this prereg does not pretend one does."}},
         "DOSE_EXPECTATION": {
             "per_cell_prefill_edits": DOSE_UNIT // len(BAND),
             "whole_head_arm_prefill_edits": DOSE_UNIT,
@@ -338,6 +440,51 @@ def build():
                        "test_domains": 23,
                        "test_note": "TEST is NEVER touched. S-314: it is ALSO already spent and "
                                     "selection-contaminated, so it is not an axis even in principle."},
+        "CENSUS_DELIVERABLE": "72 single-cell effects E(BK_H<h>_L<ll>) = the MEAN OVER THE 23 "
+                              "DOMAINS of (y_install(cell) - y_install(BK_BASE)), each with a "
+                              "percentile bootstrap ci95 over DOMAIN resamples; the eight "
+                              "whole-head HD_<h> arms supplying the S-311 bars and the ADMISSION "
+                              "decision, EXCLUDED from every per-cell count; and the BK_KO "
+                              "all-32 denominator. ⚠ The first freeze omitted this key entirely, "
+                              "so the census REFUSED the prereg before loading any arm -- after "
+                              "~3.9 GPU-hours would have been spent (R32-A/R32-B). It is also "
+                              "where the ESTIMATOR is defined, so without it the family had no "
+                              "estimator definition anywhere, a PART I 3.5 violation.",
+        "DOSE_IDENTITY_IS_BLIND_HERE": "72 cell arms share a prefill dose of 224 and NINE arms "
+                                       "share 2016 (the eight HD_<h> plus BK_KO). The dose "
+                                       "therefore carries NO identity information within either "
+                                       "group. Arm identity MUST be asserted from each run's own "
+                                       "knockout_cells, and for BK_KO from its recording NO cell "
+                                       "list (S-292/S-310).",
+        "ESTIMATOR_AND_RESAMPLER": {
+            "estimator": "per arm, E = mean over DOMAINS of the per-domain paired delta "
+                         "(arm minus BK_BASE). DOMAIN is the unit (PART I 3.1); rows never "
+                         "inflate n.",
+            "bootstrap": {"method": "percentile, resampling DOMAINS", "B": 10000,
+                          "seed": 20260922, "ci": 0.95,
+                          "⚠ WHY_FROZEN_HERE": "these were COMMAND-LINE DEFAULTS of "
+                              "scripts/dcs_csi_head_census.py, not preregistered quantities. Every "
+                              "published census used them, so this is a sprint-wide gap rather "
+                              "than a new one -- PR-CSI-020 is where it closes (R32-A CONCERN 2)."},
+            "bar_rule": "bar(h) = 1.96 * SD(per-domain paired delta of HD_<h> minus BK_BASE, "
+                        "ddof=1) / sqrt(23)"},
+        "MEASURED_ARGMAX_MARGINAL_BEFORE_THIS_FAMILY": {
+            "what": "the marginal distribution of the INTERVENTION argmax layer over the 10 heads "
+                    "this sprint had cell-censused before PR-CSI-020 (PR-014, PR-015, PR-018)",
+            "counts": {"L6": 1, "L7": 1, "L8": 1, "L9": 0, "L10": 3,
+                       "L11": 1, "L12": 0, "L13": 0, "L14": 3},
+            "⚠ IT_IS_NOT_UNIFORM": "L10 and L14 take 60% of ten heads against a uniform 11.1% each, "
+                "and this family predicts L10 twice and L14 once. A random screen predicting THIS "
+                "multiset would match at ~0.1625, not 1/9 = 0.1111 (S-351), so THE BINOMIAL p IS "
+                "ANTI-CONSERVATIVE FOR THIS MULTISET.",
+            "why_the_family_is_still_valid": "the PERMUTATION p conditions on the observed argmaxes "
+                "and the CONDITIONAL runs over unique-layer heads, so a favourable marginal cancels "
+                "in both; and under weakest_of_three the binomial is always the smallest of the "
+                "three and never gates. This is exactly why S-317/S-319 moved the gating off the "
+                "binomial.",
+            "⛔ NOT_A_CORRECTED_NULL": "0.1625 is a DIAGNOSTIC and must not be substituted into "
+                "anything. Building a 'corrected binomial' after seeing this marginal would be the "
+                "post-hoc statistic-selection this sprint forbids."},
         "NO_RANK_TEST": "this family carries no control pool and no rank; the rank tooling must "
                         "refuse it",
         "VOID_CONDITIONS": {
@@ -350,7 +497,24 @@ def build():
             "7": "more than one run directory for any arm (S-261/S-334)",
             "8": "any HD_<h> arm differs from its whole_head_REFERENCE by more than void_tolerance. "
                  "ENFORCED by scripts/dcs_csi_head_census.py (S-323), under the FAMILY-NEUTRAL key "
-                 "(S-349)"},
+                 "(S-349)",
+            "9": "arms split across GPU ARCHITECTURES (S-037/S-119). The frozen READ pins a single "
+                 "slurm job id; PR-CSI-012's reference arms ran on 3090s and VOID 8's tolerance is "
+                 "1e-6, so architecture is load-bearing here. ⚠ RESTORED: PR-CSI-018 carried this "
+                 "and the first freeze of PR-CSI-020 dropped it (R32-A CONCERN 6)",
+            "10": "attn_implementation != eager on any arm. ⚠ RESTORED; enforced by NO code -- it "
+                  "is checked by reading each arm's config at read time",
+            "11": "scripts/ or src/ edited while arms are in flight. ⚠ RESTORED; enforced by NO "
+                  "code. The launcher records the commit at submit (CSI_GIT_BLOB), and R30-D "
+                  "measured that per-arm RUNMETA git_commit names the code that ran for only the "
+                  "FIRST arm, so the launcher's BLOB line is the family's commit of record",
+            "12": "the frozen READ amended after any number from this family is seen. ⚠ RESTORED",
+            "⚠ WHICH OF THESE ARE ACTUALLY ENFORCED BY CODE": "1, 3, 4, 6, 7 and 8 are. 2 is "
+                "enforced by the census's base-arm identity check (S-332). 5, 9, 10, 11 and 12 are "
+                "PROSE, checked by the operator at read time. R32-B found that condition 5 in "
+                "particular -- the screen md5 -- is read by no reader, gate or test, which is the "
+                "R29/VOID-8 shape one condition over. It is recorded as prose HERE rather than "
+                "silently implied to be automatic."},
         "WHAT_THIS_CANNOT_ANSWER": [
             "whether the screen predicts for heads that are NULL on basket -- this family admits "
             "only live ones, by construction",
@@ -360,7 +524,11 @@ def build():
             "anything about TEST",
             "whether the screen's sub-argmax ORDERING transfers -- S-307 measured that it does not"],
         "MUST_NOT_BE_SAID_IF_POSITIVE": [
-            "the binomial p alone -- the claim is the WEAKEST of the three, each named",
+            "the binomial p alone -- the claim is the WEAKEST of the three, each named. ⚠ This "
+            "now has a MEASURED reason and not only a methodological one: S-351 measured that for "
+            "THIS prediction multiset a random screen would match at ~0.1625 against the "
+            "binomial's assumed 1/9, so quoting it alone would be quantitatively misleading by "
+            "~46%, not merely incomplete",
             "that this is held out on codeword -- IT IS NOT. Split only. D39 is the cross-codeword "
             "result; this is not, and conflating them would overstate both",
             "'cell (L, h) is the writer' -- there is STILL no control family of ARBITRARY cells "
@@ -375,8 +543,11 @@ def build():
             "that D39 is withdrawn -- D39 stands on its own preregistered read of button",
             "that D37 is withdrawn -- D37 is descriptive and rests on its own arms",
             "that the basket depth structure is absent -- D36/D37 measured it directly"],
-        "SELECTION_RE_ENTERS_WHEN": "any head is added, dropped or re-ordered after an arm has run, "
-                                    "or if the SECONDARY is reported instead of the PRIMARY",
+        "SELECTION_RE_ENTERS_WHEN": "any head is added, re-ordered, or dropped OTHER THAN BY THE "
+                                    "FROZEN ADMISSION RULE, after an arm has run. ⚠ The first "
+                                    "freeze said 'added, dropped or re-ordered' without that "
+                                    "exception, which contradicted ADMISSION -- whose whole job is "
+                                    "to drop heads after the arms have run (R32-A CONCERN 5).",
     }
     return pr
 
@@ -397,9 +568,10 @@ def main():
     print("permutation: %d assignments, floor %.8f"
           % (pr["PRIMARY"]["permutation"]["n_distinct_assignments_at_K8"],
              pr["PRIMARY"]["permutation"]["floor_at_K8"]))
-    print("power at q=0.83: %.4f (K=8), %.4f (K=5 secondary)"
-          % (pr["POWER_BY_EXACT_ENUMERATION"]["P_certify_by_q_at_K8"]["0.83"],
-             pr["POWER_BY_EXACT_ENUMERATION"]["P_certify_by_q_at_K5_secondary"]["0.83"]))
+    p = pr["POWER_BY_SEEDED_MONTE_CARLO"]["P_certify_by_q"]
+    print("power: type I %.5f | q=0.33 %.5f | q=0.83 %.5f   (MC N=%d seed=%d)"
+          % (p[str(P0)], p["0.33"], p["0.83"],
+             pr["POWER_BY_SEEDED_MONTE_CARLO"]["N"], pr["POWER_BY_SEEDED_MONTE_CARLO"]["seed"]))
     return 0
 
 
