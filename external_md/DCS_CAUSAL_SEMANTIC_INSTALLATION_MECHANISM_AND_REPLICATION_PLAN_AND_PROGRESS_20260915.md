@@ -30992,3 +30992,240 @@ NEXT         collect R32 -> ONE re-freeze folding in its findings and 4 -> freez
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-352 — 🔴 **REVIEW R32: DO NOT LAUNCH. Four BLOCKERs, all confirmed by my own re-derivation.** The worst: **the freeze script and the reader compute DIFFERENT permutation statistics**, so the frozen prereg's power, type I and structural rule describe a test the reader does not implement — and **S-350's "two independent implementations agree" was wrong**
+
+### 1. 🔴 BLOCKER — two statistics under one name (R32-A)
+
+```
+READER   scripts/dcs_csi_pr016_argmax_test.py:226-230
+         obs = [r["argmax_layer"] for r in admitted]        <- the OBSERVED argmaxes
+         p = |{q in perms(preds) : #(obs[i]==q[i]) >= M}| / |perms|
+
+FREEZE   scripts/gates/dcs_csi_pr020_freeze.py  perm_p
+         truth = the PREDICTION vector                       <- the predictions themselves
+         p = |{a : #(a[i]==truth[i]) >= M}| / |distinct|
+```
+
+Re-derived by me on R32-A's own case — m = 6, heads 4 and 6 missing:
+
+```
+reader perm_p, over every landing of the two misses : 0.00009921 .. 0.00059524
+freeze perm_p at M=6                                : 0.00267857      <- 4.5x to 27x larger
+they agree EXACTLY at M = K                         : 0.0000992063 both
+denominators are IDENTICAL (10080 each) -- the divergence is the COMPARISON TARGET, not the space
+```
+
+**The reader's is the correct one.** A permutation test must condition on the observed outcome; the
+freeze version asks a different question and is systematically anti-conservative for the design
+(it *over*-states p, so it *under*-states power and *under*-states what certifies).
+
+**The consequence is not cosmetic.** The frozen prereg records
+`STRUCTURAL_RULE_RECORDED_BEFORE_THE_READ: "m <= 4 never certifies"`. Under the reader:
+
+```
+matched = the four unique-layer heads {10, 11, 18, 21}, the other four land on L9
+M=4  M_unique=4   binomial 0.00736988 | conditional 0.00015242 | permutation 0.00059524
+weakest 0.00736988 <= 0.05, matched layers span 4   ->  READER VERDICT: PASS
+```
+
+**A 4-of-8 outcome would be published PASS by the reader while the frozen prereg says that outcome
+cannot certify.** That is exactly the property S-348 claimed to buy — *"recording it before the read
+is what stops a 6-of-8 result being argued about afterwards"* — and it is not there.
+
+### 2. 🔴 What this says about S-350, in my own words
+
+S-350 claimed: *"Two independent implementations of the same decision rule agree on all four."*
+**That was wrong.** They are not the same rule. They agree exactly at M = K, which is case 1, and
+in the other three cases they agreed on the **verdict** while differing on the **statistic** — S-350
+even printed the reader's `permutation 0.000298` for a case my enumeration scored at 0.002679 and I
+did not notice, because I was checking verdicts.
+
+> **Agreement on verdicts is not agreement on statistics.** I built a cross-check that could only
+> detect a disagreement large enough to flip a branch, then reported it as confirmation of the rule.
+> This is the S-338/S-344 shape a third time: the check I ran was weaker than the claim I made from it.
+
+### 3. ✅ D39 IS UNAFFECTED — verified, not assumed
+
+PR-CSI-018's read is gated on the **conditional**, and its permutation p is identical under both
+statistics:
+
+```
+PR-018 predictions L11 L8 L11 L10 L10 L6 ; observed L11 L8 L14 L10 L10 L6 ; M=5
+   reader perm_p recomputed by me : 0.0055555556
+   PUBLISHED in the report        : 0.0055555556
+   freeze-style perm_p            : 0.0055555556      <- coincide for this case
+   gating was CONDITIONAL at 0.01234568, not the permutation
+```
+
+⚠ **But S-332's design map for PR-CSI-018 used the freeze-style statistic**, so its
+*"only 5 of 64 outcome patterns certify"* is computed under the wrong test and must be re-derived.
+S-335 §5 cited that map as having "called this exactly". **D39's verdict and every number in it
+stand; the pre-read map that accompanied it does not, until recomputed.**
+
+### 4. 🔴 The other three BLOCKERs, all confirmed by me
+
+**(a) The census reader REFUSES PR-CSI-020 outright** (R32-B, R32-A). `CENSUS_DELIVERABLE` and
+`DOSE_IDENTITY_IS_BLIND_HERE` are validated before any arm loads, and my freeze script omits both:
+
+```
+REFUSING: prereg 'PR-CSI-020' carries no 'CENSUS_DELIVERABLE' ... (S-296)   EXIT=1
+   pr014 / pr015 / pr016 / pr018  MISSING: []
+   pr020                          MISSING: ['CENSUS_DELIVERABLE', 'DOSE_IDENTITY_IS_BLIND_HERE']
+```
+
+It is the **only** census prereg in the sprint missing them. R32-A adds the sharper point: PR-018
+*defines its estimator* inside `CENSUS_DELIVERABLE`, so PR-020 currently has **no estimator
+definition anywhere** — `grep` finds zero occurrences of "mean over domains" and zero of
+"bootstrap" in the frozen file. That is a PART I §3.5 violation on its face.
+
+**(b) The launcher refuses the family.** `slurm_scripts/dcs_csi_pr010_arms.slurm` — the tag registry
+ends at `PR-CSI-018` and PR-CSI-020 hits the catch-all `exit 6`. Verified by reading lines 47-57.
+
+**(c) VOID condition 5 is checked by nothing** (R32-B). `artifact_md5_at_freeze` is written by every
+freeze script and read by no reader, gate or test — **the R29 VOID-8 shape exactly, still open one
+condition over.** Impact is lower than R29's (the predictions are copied into the prereg, so drift
+corrupts the provenance claim rather than the read), but it is the same defect class.
+
+### 5. What R32 confirmed as CORRECT, which is most of it
+
+R32-A re-derived independently and all of it reproduces: byte-identical re-emission; the screen md5;
+all eight predictions and margins to the last digit; all eight VOID-8 references against PR-012's
+report; 10080 assignments, K_unique = 4 = {10,11,18,21}; the SECONDARY's 120; **and the head-set
+rule is TOTAL** — recomputing `|E|/bar` for all 32 basket heads gives exactly the eight, with the
+next head down at 1.400. **The eight are not a hand-picked subset.** R32-B verified the argv
+generator, GATE 0's dose histogram `{0:1, 2016:9, 224:72}`, the census on an 82-arm synthetic farm
+(VOID 8 checking 8 of 8, refusing on a 2e-6 drift), and the primary reader end to end.
+
+📌 **And R32-A independently reached S-351's finding by a different route** — the argmax marginal is
+non-uniform (L14 5 of 13 in its tally) — and went further: it *quantified* the tilt and showed the
+reader's type I under the empirical layer distribution is **0.00306**, BELOW the uniform-null
+0.00400, because L12 and L6/L8 are under-represented and offset L10/L14. **Validity holds; S-351's
+stated reason was right and its worry was, if anything, conservative.**
+
+### 6. NOT established
+
+```
+⛔ PR-CSI-020 MUST NOT LAUNCH. It is frozen at md5 9fce4bda and that artefact is DEFECTIVE: the
+   census would refuse it before reading, and its power/type-I/structural-rule block describes a
+   statistic the reader does not compute.
+NO RE-FREEZE WAS ATTEMPTED THIS TICK. Two BLOCKERs and six CONCERNs need folding into ONE
+   re-emission -- with the permutation definition written into PRIMARY verbatim, the power and
+   m-table RE-DERIVED under the reader's statistic, the estimator and bootstrap frozen, the
+   SECONDARY either implemented or deleted, and the VOID conditions PR-018 had that PR-020 dropped
+   restored. Doing that hastily is how the first freeze acquired these defects.
+S-348's POWER NUMBERS ARE WITHDRAWN pending re-derivation. Type I, the power curve and the m-table
+   were all computed under the freeze statistic.
+S-332's "5 of 64" MAP FOR PR-CSI-018 IS WITHDRAWN pending re-derivation. D39 itself STANDS.
+NOTHING WAS MEASURED ON A GPU. The queue is EMPTY and has been all tick.
+```
+
+### 7. State
+
+```
+R32 is the FOURTH review to stop a family before a GPU: R28 (PR-016, twice), R29 (PR-018),
+R31 (PR-019, terminally), R32 (PR-020, pending re-freeze).
+NEXT  one re-freeze folding in every R32 finding, a freeze SELF-TEST that instantiates every
+      prereg field the readers subscript (R32-A's cosmetic 5 -- it would have caught blocker (a)
+      with one assertion), then the READ, the tag registration, and only then submit.
+```
+
+`git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-353 — 🔴 **R32-A's proposed replacement rule is NECESSARY BUT NOT SUFFICIENT — and the reason matters more than the rule: under the READER's statistic NO rule in (M, M_unique) alone can be exact.** S-348's "structural rule recorded before the read" is not merely wrong, it is **unavailable**
+
+### 1. R32-A's arithmetic is right
+
+```
+P(Binom(4,1/9) >= 2) = 0.06355738   >  alpha  -> forces M_unique >= 3
+P(Binom(4,1/9) >= 3) = 0.00502972   <= alpha
+P(Binom(8,1/9) >= 2) = 0.22051131   >  alpha  -> forces M >= 3
+P(Binom(8,1/9) >= 3) = 0.04999816   <= alpha  <- the knife edge: clears alpha by 1.8e-6
+unique-layer heads {10, 11, 18, 21}, K_unique = 4
+```
+
+### 2. 🔴 But the rule it proposes is not the rule
+
+Sampling every match pattern against 25 random landings of its misses — 6400 (pattern, landing)
+combinations, 3021 distinct observation signatures:
+
+```
+CERTIFIES but the rule says no :  0   -> the rule is NECESSARY
+rule says yes but does NOT cert : 34  -> the rule is NOT SUFFICIENT
+                                         e.g. M=3, M_unique=3, weakest = 0.091071
+```
+
+**"M >= 3 AND M_unique >= 3" is a necessary condition, not a characterisation.** R32-A offered it as
+*"the rule that is actually exact under the reader"*; it is not, and I would have frozen it into the
+prereg had I taken the report on trust.
+
+### 3. 📌 THE REASON, which is the real content of this entry
+
+Under the reader's statistic the permutation p is computed against the **observed argmax vector**,
+so it depends on **where the misses land** — not only on how many there are. Two outcomes with
+identical `M` and identical `M_unique` can have different permutation p's, and therefore different
+verdicts. The `M=3, M_unique=3` example above certifies for some landings and not others.
+
+> **So no rule expressed in (M, M_unique) alone can be exact — not R32-A's, not any.** Under the
+> *freeze* script's statistic such a rule existed, because there p depended only on M. **S-348's
+> "structural rule recorded before the read" was not an insight about the design; it was an artefact
+> of computing the wrong statistic.** Fixing the statistic does not repair that table, it *removes
+> the kind of table it was*.
+
+That is a strictly worse position for the sprint's own discipline: S-348 claimed the table was what
+"stops a 6-of-8 result being argued about afterwards", and the honest replacement cannot offer the
+same guarantee in the same form.
+
+### 4. What the re-freeze must say instead
+
+```
+NECESSARY CONDITIONS, exact and frozen:   M >= 3 AND M_unique >= 3
+                                          (verified: 0 certifications violate them)
+SUFFICIENCY:                              additionally depends on the observed argmax vector
+                                          through the permutation p; it CANNOT be reduced to a
+                                          count, and the prereg must say so rather than imply a
+                                          completeness it does not have
+POWER:                                    by Monte Carlo under a NAMED model (each head matches
+                                          with probability q, else lands uniformly on one of the
+                                          other 8 layers), with N and seed FROZEN
+```
+
+⚠ **The power table is NOT re-derived yet.** The computation is expensive in the honest form — the
+permutation tail must be evaluated per distinct observation signature (3021 of them appeared in a
+6400-sample sweep, each costing a 10080-permutation pass), and two attempts timed out at 560 s.
+S-348's numbers remain **WITHDRAWN**, not replaced.
+
+### 5. NOT established
+
+```
+⛔ PR-CSI-020 STILL MUST NOT LAUNCH. Nothing from S-352's four BLOCKERs is fixed. The prereg at
+   md5 9fce4bda remains defective and no re-freeze has been attempted.
+⛔ THE POWER AND TYPE I ARE UNKNOWN under the correct statistic. S-348's 0.8563 / 0.0004 are
+   withdrawn; R32-A's Monte Carlo figures (0.8631 / 0.00400) are ITS numbers, not mine, and the
+   standing rule forbids taking them on trust -- I have not reproduced them.
+⛔ THE NECESSARY CONDITION IS VERIFIED ON A SAMPLE, not proved. 6400 combinations with 25 landings
+   per pattern is not exhaustive over landings (8^m per pattern). It is strong evidence of
+   necessity and a DEMONSTRATION of non-sufficiency -- the 34 counterexamples are exhibited, and
+   one counterexample is enough to refute sufficiency, which is the load-bearing direction.
+⛔ D39 REMAINS UNAFFECTED (S-352 verified this: PR-018's permutation p is identical under both
+   statistics and it gated on the conditional).
+NOTHING WAS MEASURED ON A GPU. The queue is EMPTY.
+```
+
+### 6. State
+
+```
+PR-CSI-020   FROZEN at 9fce4bda and DEFECTIVE. Four BLOCKERs open, six CONCERNs open.
+NEXT         the re-freeze, with: the permutation definition written verbatim from the reader;
+             the necessary conditions frozen and sufficiency explicitly NOT claimed as a count
+             rule; power by a seeded Monte Carlo I have run myself; CENSUS_DELIVERABLE with the
+             estimator; the bootstrap block; the SECONDARY deleted or implemented; the dropped
+             VOID conditions restored; and a freeze SELF-TEST that instantiates every prereg field
+             the readers subscript.
+```
+
+`git push` remains credential-blocked. Committed locally.
