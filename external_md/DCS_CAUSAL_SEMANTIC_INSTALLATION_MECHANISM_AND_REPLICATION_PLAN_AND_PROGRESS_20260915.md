@@ -30888,3 +30888,107 @@ NEXT         R32 on the frozen family -> freeze the READ (runargs/) -> register 
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-351 — 🔴 **the INTERVENTION argmax marginal is NOT uniform, and PR-CSI-020 predicts the two modal layers for three of its eight heads.** A random screen predicting this multiset would match at **0.1625, not 1/9 = 0.1111** — so **the binomial p is ANTI-CONSERVATIVE here**, and the weakest-of-three gating is what saves it
+
+### 1. The exposure, asked before the read rather than after
+
+PR-CSI-020's permutation null is *"the prediction multiset is randomly assigned to heads"* — the
+right null for *does the screen put the right layer on the right HEAD*. It says nothing about the
+**marginal**. If some band layers are far likelier to be the intervention argmax for reasons
+unrelated to the screen, a screen predicting those layers collects matches for free.
+
+D37 computed this for the **SCREEN's** marginal (L14 is the screen argmax for only 6 of 32 heads,
+modal L11 at 8/32) and used it to refute a band-edge rival. **The marginal of the INTERVENTION
+argmax — the thing heads are actually scored on — has never been computed.** Every cell census this
+sprint has published, 10 heads across both codewords:
+
+```
+L6   1  10.0%  #          L11  1  10.0%  #
+L7   1  10.0%  #          L12  0   0.0%
+L8   1  10.0%  #          L13  0   0.0%
+L9   0   0.0%             L14  3  30.0%  ###
+L10  3  30.0%  ###
+                  6 of 9 band layers ever observed as an argmax; modal L10 at 30%
+```
+
+**L10 and L14 together take 60% of ten heads.** Uniform would be 11.1% each.
+
+### 2. What that does to PR-CSI-020's multiset
+
+```
+head  4 -> L11   10.0%      head 13 -> L10   30.0%   <-- modal
+head  6 -> L11   10.0%      head 18 -> L14   30.0%   <-- modal
+head 10 -> L12    0.0%      head 21 -> L6    10.0%
+head 11 -> L8    10.0%      head 27 -> L10   30.0%   <-- modal
+
+mean match probability for a RANDOM screen predicting THESE layers: 0.1625
+the binomial null assumes:                                          0.1111
+                                                            -> 46% higher
+```
+
+**Three of the eight predictions land on the two modal layers.** So `P(Binom(K, 1/9) >= M)`
+understates the null match rate for this particular multiset, and the binomial p is
+**anti-conservative** here.
+
+### 3. ✅ Why the family is nevertheless sound — and it is not luck
+
+```
+THE PERMUTATION p IS IMMUNE. It CONDITIONS on the multiset and asks only whether the right layer
+  went to the right HEAD. A marginal that favours L10 and L14 helps every assignment equally, so
+  it cancels. Same for the CONDITIONAL p, which runs over unique-layer heads.
+THE GATING IS weakest_of_three, AND THE BINOMIAL IS ALWAYS THE SMALLEST. Its floor is 2.323e-08
+  against the permutation's 9.921e-05 and the conditional's 1.524e-04. max() never selects it --
+  verified on four synthetic reads in S-350, where the gate was `conditional` or `permutation`
+  every time and never `binomial`.
+```
+
+**This is precisely why S-317/S-319 moved the gating off the binomial.** That change was made
+because a shared band-edge bias could fake the binomial on PR-CSI-016's two-head set; the same
+mechanism at a different scale is measured here, and the same guard handles it.
+
+### 4. What this changes
+
+The prereg's `MUST_NOT_BE_SAID_IF_POSITIVE` already forbids *"the binomial p alone"* on
+methodological grounds. **It now has a MEASURED reason**: for this multiset the binomial's own null
+is wrong by 46%, so quoting it would not merely be incomplete, it would be quantitatively
+misleading. That prohibition is strengthened, never weakened, and no decision rule moves.
+
+⚠ **The prereg is FROZEN at md5 `9fce4bda` and I have NOT amended it in this entry.** R32-A and
+R32-B are reviewing that exact file right now; changing it under them would make their findings
+reference a document that no longer exists. The amendment — recording this marginal and the
+strengthened prohibition — will be folded into ONE re-freeze together with whatever R32 returns,
+before any arm runs. **Nothing has been measured, so a pre-launch strengthening is not post-hoc;
+PR-CSI-018's prereg was re-frozen twice on the same basis (c4483891 → 18994cf6 → 6790df3a).**
+
+### 5. NOT established
+
+```
+⛔ EXPLORATORY, n = 10 HEADS. The marginal rests on ten censused heads across two codewords and
+   three families. It is not a distribution, it is a tally, and L12 showing 0% does NOT mean L12
+   cannot be an argmax -- head 10 is predicted there and may well land there.
+⛔ IT DOES NOT MEAN THE SCREEN IS PICKING EASY LAYERS. The screen is frozen on TRAIN and its
+   predictions were fixed before any of these censuses existed. That three of eight land on modal
+   layers may be because the screen is RIGHT about where effects live -- which is the hypothesis --
+   and this entry cannot distinguish those.
+⛔ THE 0.1625 FIGURE IS NOT A CORRECTED NULL and must not be substituted into anything. It is a
+   diagnostic showing the binomial's assumed 1/9 is not the empirical rate for this multiset.
+   Constructing a "corrected binomial" after seeing the marginal would be exactly the post-hoc
+   statistic-selection this sprint forbids.
+⛔ NOTHING HERE LICENSES A CLAIM ABOUT D39. PR-CSI-018's read was gated on `conditional` at
+   0.012346, not the binomial, so its verdict is untouched by this.
+PR-CSI-020 IS NOT LAUNCHED. No tag, no frozen read, no arm. R32 has NOT reported.
+NOTHING WAS MEASURED ON A GPU. The queue is EMPTY.
+```
+
+### 6. State
+
+```
+PR-CSI-020   FROZEN at 9fce4bda, NOT launched. R32-A/R32-B running against that exact md5.
+NEXT         collect R32 -> ONE re-freeze folding in its findings and 4 -> freeze the READ ->
+             register the tag -> submit.
+```
+
+`git push` remains credential-blocked. Committed locally.
