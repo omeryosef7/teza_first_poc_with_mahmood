@@ -1035,3 +1035,98 @@ def test_a_reference_whose_source_arm_is_ABSENT_refuses_rather_than_skipping(tmp
     p.write_text(json.dumps(pr))
     rc, out = _census_on(farm, str(p), tmp_path)
     assert rc not in (0, None) and "REFUSING" in out, out[-600:]
+
+
+# ================================================================ R30-A / S-333
+# Everything named as a bar_source_arm is REMOVED FROM THE CENSUS BEFORE ANY CHECK LOOKS AT IT.
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+def test_a_STRAY_per_head_entry_cannot_silently_delete_arms_from_the_census(tmp_path):
+    """R30-A F3. `_BAR_SOURCE_ARMS` unions the granularity set with EVERY arm any per_head entry
+    names, and `_judged` then drops all of them. `_bar_from_rule`'s in-family / full-band guards
+    only run for heads that reach `_bar_for` -- heads that still have judged cells -- so a per_head
+    key for a head with NO single-cell arms (a typo, a template leftover, a retired head) deleted
+    arms from the depth map with ZERO validation.
+
+    R30-A showed one stray entry cutting n_cells_judged 8 -> 7, and four of them deleting a whole
+    head: gone from the depth map, from the per-head bars, from every clearing count, the headline
+    moving "6 of 8 cells CLEAR" -> "3 of 4", exit 0, and no stdout line mentioning it.
+
+    PROPERTY: a per_head key that is not a head of this family is a REFUSAL, not a silent deletion."""
+    # PR-015's own heads keep their frozen NUMBER bars (so they name no arm and are untouched);
+    # the ONLY thing added is a rule block and one stray per_head key for a head that does not exist.
+    pr = json.load(open(PR015))
+    pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["BAR_IS_A_RULE"] = {
+        "z": 1.96,
+        "rule": "bar(h) = z * SD(per-domain paired delta of <bar_source_arm> vs the base arm) "
+                "/ sqrt(n_domains)",
+    }
+    ph = pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"]
+    victim = "CL_H19_L07"
+    assert victim in pr["cell_sets"], "fixture invalid: %s is not an arm of PR-015" % victim
+    ph["99"] = {"bar_source_arm": victim}      # head 99 does not exist in this family
+    p2 = tmp_path / "stray.json"
+    p2.write_text(json.dumps(pr))
+
+    r = subprocess.run([PY, CENSUS_READER, "--prereg", str(p2), "--expect-n", "230",
+                        "--out", os.devnull] + SWEEP_PR015_ARGS, capture_output=True, text=True)
+    out = r.stdout + r.stderr
+    assert r.returncode != 0, (
+        "a stray per_head entry silently removed %s from the census:\n%s" % (victim, out[-700:]))
+    assert "not a head of prereg" in out, out[-700:]
+    assert victim in out, "the refusal did not name the arm it would have deleted:\n%s" % out[-700:]
+    assert "CLEAR THE PREREGISTERED BAR" not in out, "a depth map was published anyway"
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+def test_the_EXCLUDED_arms_are_named_on_stdout_not_only_in_the_JSON(tmp_path):
+    """R30-A F4. The exclusion set was written to the report as
+    `bar_source_arms_EXCLUDED_FROM_THE_DEPTH_MAP` and printed NOWHERE. These families are read from
+    the log, so a depth map and a clearing count appeared with no indication that arms had been
+    removed to produce them. An exclusion that changes the headline belongs on the transcript."""
+    out_json = tmp_path / "census.json"
+    r = subprocess.run([PY, CENSUS_READER, "--prereg", PR015, "--expect-n", "230",
+                        "--out", str(out_json)] + SWEEP_PR015_ARGS, capture_output=True, text=True)
+    out = r.stdout + r.stderr
+    assert r.returncode == 0, "the unmodified PR-015 census was refused:\n%s" % out[-800:]
+    assert "EXCLUDED FROM THE DEPTH MAP" in out, (
+        "the census published a depth map without naming the arms it excluded:\n%s" % out[-800:])
+    rep = json.load(open(out_json))
+    named = rep["CELL_FAMILY"]["bar_source_arms_EXCLUDED_FROM_THE_DEPTH_MAP"] or []
+    for arm in named:
+        assert arm in out, "arm %s is excluded in the JSON but never printed:\n%s" % (arm, out[-800:])
+
+
+@pytest.mark.skipif(not _has_pr015_arms(), reason="PR-CSI-015's 29 landed arms are needed")
+def test_the_detectability_resolver_searches_BOTH_blocks_not_just_the_first(tmp_path):
+    """R30-A F6. `_detect_block` was `PER_HEAD or DETECTABILITY_PREREGISTERED or {}` -- an `or`, not
+    a search -- so once a prereg carried a per-head block the legacy block was unreachable for EVERY
+    field. A prereg that DOES record COHERENT_OUTCOME_IF_NOTHING_CLEARS_IT in the legacy block
+    published `null` for it, and stdout would have said "THE PREREG RECORDS NO COHERENT-OUTCOME
+    TEXT" against a prereg that records exactly that text. This is S-308's "a null in a published
+    artefact" transposed from the bars onto the outcome text.
+
+    PROPERTY: a field the per-head block does not define is still found in the legacy block."""
+    pr = json.load(open(PR015))
+    assert pr["DETECTABILITY_PREREGISTERED_PER_HEAD"]["per_head"], "fixture invalid: no per_head"
+    needle = "R30-A/S-333 sentinel: nothing clearing the bar is a preregistered coherent outcome"
+    pr.setdefault("DETECTABILITY_PREREGISTERED", {})
+    pr["DETECTABILITY_PREREGISTERED"]["COHERENT_OUTCOME_IF_NOTHING_CLEARS_IT"] = needle
+    # BOTH spellings the resolver accepts -- PR-015 uses the one without the trailing _IT, so
+    # popping only the other leaves the per-head block winning on precedence (correctly) and the
+    # test proves nothing.
+    for _sp in ("COHERENT_OUTCOME_IF_NOTHING_CLEARS_IT", "COHERENT_OUTCOME_IF_NOTHING_CLEARS"):
+        pr["DETECTABILITY_PREREGISTERED_PER_HEAD"].pop(_sp, None)
+    p = tmp_path / "twoblocks.json"
+    p.write_text(json.dumps(pr))
+
+    out_json = tmp_path / "census.json"
+    r = subprocess.run([PY, CENSUS_READER, "--prereg", str(p), "--expect-n", "230",
+                        "--out", str(out_json)] + SWEEP_PR015_ARGS, capture_output=True, text=True)
+    assert r.returncode == 0, (r.stdout + r.stderr)[-800:]
+    rep = json.load(open(out_json))
+    got = rep["CELL_FAMILY"].get("NOTHING_CLEARED_THE_BAR_IS_A_PREREGISTERED_COHERENT_OUTCOME")
+    assert got == needle, (
+        "the legacy detectability block was unreachable because a per-head block exists; the report "
+        "published %r for a field the prereg DOES record" % (got,))

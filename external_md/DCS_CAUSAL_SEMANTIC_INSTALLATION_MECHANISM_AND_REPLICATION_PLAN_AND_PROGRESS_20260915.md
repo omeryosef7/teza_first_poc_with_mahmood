@@ -29005,3 +29005,117 @@ NEXT         923972 to 62/62 -> GATE 0 (FULL, must exit 0) -> census -> primary,
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-333 — **R30-A's four remaining findings are CLOSED, so nothing from R30 is left open before the read.** 🔴 The worst of them: **a stray `per_head` key could DELETE A WHOLE HEAD from a published depth map, moving the headline from "6 of 8 cells CLEAR" to "3 of 4", exit 0, with no line of stdout mentioning it**
+
+### 1. Why these and why now
+
+S-332 fixed everything in R30 that fires on the PR-CSI-018 read as written and left R30-A's F3, F4,
+F6 and F7 open, recording that all four are **latent on the current prereg**. The family is ~50
+minutes from its read and the queue is otherwise idle, so the cheapest moment to close a latent
+defect is now — before the config that makes it latent is the only thing standing between the read
+and a silent wrong answer.
+
+> "Latent" is a property of today's config, not of the code. The four fixes below cost one tick;
+> discovering any of them *from a published depth map* would cost the family.
+
+### 2. F3 — **arms were deleted from the census on the strength of a name nothing checked**
+
+`_BAR_SOURCE_ARMS` unions the granularity set with **every arm any `per_head` entry names**, and
+`_judged` then drops all of them. `_bar_from_rule`'s in-family and full-band guards only ever run for
+heads that reach `_bar_for` — heads that *still have judged cells* — so a `per_head` key for a head
+with no single-cell arms was never validated at all.
+
+R30-A demonstrated both magnitudes. One stray entry `per_head["99"] = {"bar_source_arm":
+"BF_H11_L07"}` cut `n_cells_judged` from 8 to 7. **Four stray entries naming head 6's four cells
+deleted head 6 entirely** — gone from the depth map, from the per-head bars, from every clearing
+count, the per-head summary collapsing to the single-bar form, the headline moving from *"6 of 8
+cells CLEAR THE PREREGISTERED BAR"* to *"3 of 4"* — exit 0, and **not one line of stdout mentioning
+the exclusion**. The only trace was a JSON key a reader of the log never sees.
+
+The file's own comment already names this shape — *"the named arm has already been removed from the
+census … An arm can vanish from a published depth map with no check having looked at it"* — and had
+closed only the both-criteria sub-case. The geometry guard is now **hoisted to run for every named
+source before any exclusion**: the key must be a head of this family, and the arm must be that head's
+full band.
+
+### 3. F4 — the exclusion set existed only in the JSON
+
+`bar_source_arms_EXCLUDED_FROM_THE_DEPTH_MAP` was written to the report and **printed nowhere**.
+These families are read from the log. A depth map and a clearing count appeared with no indication
+that arms had been removed to produce them. Now printed next to the GATE 0 banner, with the judged
+count beside it.
+
+### 4. F6 — `or` is not a search
+
+`_detect_block = (PER_HEAD or DETECTABILITY_PREREGISTERED or {})`. The moment a prereg carried a
+per-head block the **legacy block became unreachable for every field**. That is exactly the S-308
+defect the single resolver was written to end — *"a null in a published artefact"* — transposed off
+the bars and onto the coherent-outcome text: a prereg that **does** record
+`COHERENT_OUTCOME_IF_NOTHING_CLEARS` in the legacy block published `null`, and had nothing cleared
+the bar, stdout would have printed *"⚠ THE PREREG RECORDS NO COHERENT-OUTCOME TEXT … do not read this
+null as a preregistered null"* against a prereg that records precisely that text. Now both blocks are
+searched in precedence order: the per-head block still wins every field it defines, but a field it
+does **not** define is no longer invisible.
+
+### 5. F7 — closed as a consequence, and a self-inflicted repeat of it
+
+F7 was that the VOID-8 provenance loop ran *before* the geometry guard, so a prereg-authoring error
+("this source arm is one cell") was reported as a data-drift VOID ("the population, bank, exclusions
+or model revision has DRIFTED"). Both refuse; the operator is sent to the wrong line. Hoisting F3's
+guard puts the geometry check ahead of the provenance loop, so the diagnosis is now the specific one.
+
+🔴 **And hoisting it immediately reproduced F7 one level up.** My new loop fired ahead of two
+*narrower* prereg-authoring checks that had lived downstream, so *"you gave this head two criteria"*
+came back as *"this arm is not a full band"*. Two existing tests failed on the message, not the
+behaviour. Precedence is now centralised in the one loop — most specific diagnosis first — rather
+than left to whichever check happens to run earliest.
+
+> That is three times in two entries that moving a check **earlier** has been correct for safety and
+> wrong for diagnosis. The guard and the *explanation* are separate things, and hoisting only the
+> guard degrades the explanation every time.
+
+### 6. Verification
+
+```
+105 tests pass (was 102). Five new, each verified to FAIL on the pre-fix code by `git stash`
+  on the single source file and PASS after:
+    a STRAY per_head entry cannot silently delete arms from the census      (F3)
+    the EXCLUDED arms are named on stdout, not only in the JSON             (F4)
+    the detectability resolver searches BOTH blocks, not just the first     (F6)
+    + S-332's two gate-0 exit-code tests
+346 guard tests and 9 deliverable guards pass at commit.
+```
+
+⚠ **One of the new tests was vacuous on its first run and I nearly kept it.** PR-015 spells the field
+`COHERENT_OUTCOME_IF_NOTHING_CLEARS`; I popped only `COHERENT_OUTCOME_IF_NOTHING_CLEARS_IT`, so the
+per-head block still held it and the resolver found it there **correctly, on precedence**. The test
+failed with *and* without the fix — which is the honest signature of a bad test, and the only reason
+I caught it is that I run the stash check in both directions rather than just confirming a pass.
+A test that fails both ways proves exactly as little as one that passes both ways.
+
+### 7. NOT established
+
+```
+NOTHING WAS MEASURED. A FIFTH consecutive entry. No endpoint read; frozen read cbdf34a2 untouched;
+  no census, no primary, no claim-table row for PR-CSI-018.
+These fixes changed NO verdict on the current prereg. Every one of F3/F4/F6/F7 was latent, verified
+  latent before and after. The read's numbers will be what they would have been; what changed is
+  that a depth map can no longer be published with arms silently missing from it.
+The attention-mass measurement STILL HAS NOT RUN. S-325's criterion is frozen and UNAPPLIED; the
+  source-side family remains BLOCKED by S-316, neither licensed nor refused.
+R30-D's CONCERN 2 (two run dirs for one arm printed but not escalated) and CONCERN 3 (per-arm
+  git_commit naming code that did not run) are RECORDED AND NOT FIXED.
+```
+
+### 8. State
+
+```
+PR-CSI-018   923972 on n-301, 44 of 62 arms, all rc=0. ~18 arms x 171 s = ~50 min.
+NEXT         62/62 -> GATE 0 (FULL; must now exit 0, not merely print a banner) -> census ->
+             primary, in the frozen order -> then a claim-table row.
+```
+
+`git push` remains credential-blocked. Committed locally.

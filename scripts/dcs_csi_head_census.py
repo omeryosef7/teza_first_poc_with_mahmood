@@ -459,15 +459,28 @@ def main():
         # NOTHING_CLEARED_THE_BAR_IS_A_PREREGISTERED_COHERENT_OUTCOME as **null** while its headline
         # was computed against the per-head bars that were right there. The fix is ONE resolver that
         # every consumer goes through, because the defect class is "fixed at the site in front of me".
-        _detect_block = (pr.get("DETECTABILITY_PREREGISTERED_PER_HEAD")
-                         or pr.get("DETECTABILITY_PREREGISTERED") or {})
+        # ⚠ R30-A/S-333: this was `PER_HEAD or DETECTABILITY_PREREGISTERED or {}` -- an `or`, not a
+        # search -- so the moment a prereg carried a per-head block the LEGACY block became
+        # unreachable for every field. That is precisely the S-308 defect the single resolver was
+        # written to end ("a null in a published artefact"), transposed off the bars and onto the
+        # coherent-outcome text: a prereg that DOES record
+        # COHERENT_OUTCOME_IF_NOTHING_CLEARS_IT in the legacy block published `null`, and had
+        # nothing cleared the bar, stdout would have printed "⚠ THE PREREG RECORDS NO
+        # COHERENT-OUTCOME TEXT ... do not read this null as a preregistered null" against a prereg
+        # that records exactly that text. Precedence is preserved -- the per-head block still wins
+        # every field it defines -- but a field it does not define is no longer invisible.
+        _detect_blocks = [b for b in (pr.get("DETECTABILITY_PREREGISTERED_PER_HEAD"),
+                                      pr.get("DETECTABILITY_PREREGISTERED"))
+                          if isinstance(b, dict)]
         _HAS_PER_HEAD = bool((pr.get("DETECTABILITY_PREREGISTERED_PER_HEAD") or {}).get("per_head"))
 
         def _detect(*names, **kw):
-            """A field of the detectability block under ANY of its spellings. Absence is explicit."""
-            for nm in names:
-                if nm in _detect_block and _detect_block[nm] is not None:
-                    return _detect_block[nm]
+            """A field of the detectability block under ANY of its spellings, searched across BOTH
+            blocks in precedence order. Absence is explicit."""
+            for _blk in _detect_blocks:
+                for nm in names:
+                    if nm in _blk and _blk[nm] is not None:
+                        return _blk[nm]
             return kw.get("default")
 
         _per_head_bars = (pr.get("DETECTABILITY_PREREGISTERED_PER_HEAD") or {}).get("per_head") or {}
@@ -521,6 +534,62 @@ def main():
         for _nm in sorted(_NAMED_SOURCES - set(hs)):
             sys.exit("REFUSING: bar_source_arm %r is not an arm of prereg %r. (S-311)"
                      % (_nm, pr["id"]))
+        # ⚠ R30-A/S-333. EVERYTHING NAMED HERE IS REMOVED FROM THE CENSUS BEFORE ANY CHECK LOOKS AT
+        # IT. `_bar_from_rule`'s in-family / full-band guards only ever run for heads that reach
+        # `_bar_for`, i.e. heads that still have judged cells -- so a per_head key for a head with no
+        # 1-cell arms (a typo, a template leftover, a head retired from the family) deleted arms from
+        # the depth map with ZERO validation. The comment at the _bar_for branch already names this
+        # shape -- "the named arm has already been removed from the census ... An arm can vanish from
+        # a published depth map with no check having looked at it" -- and closed only the
+        # both-criteria sub-case.
+        #
+        # R30-A demonstrated both halves. One stray entry `per_head["99"] = {"bar_source_arm":
+        # "BF_H11_L07"}` silently cut n_cells_judged from 8 to 7. Four stray entries naming head 6's
+        # four cells deleted HEAD 6 ENTIRELY: gone from the depth map, from the per-head bars and
+        # from every clearing count, the headline moving from "6 of 8 cells CLEAR" to "3 of 4", exit
+        # 0, and not one line of stdout mentioning it. That is a head dropped by an admission-like
+        # mechanism with no mention -- the R29 class recurring at a new site.
+        #
+        # The geometry guard is therefore hoisted to run for EVERY named source, before exclusion.
+        _FAMILY_HEADS = {int(c[1]) for _k in hs for c in hs[_k]}
+        for _hk, _hd in sorted(_per_head_bars.items()):
+            _src = (_hd or {}).get("bar_source_arm") if isinstance(_hd, dict) else None
+            if not _src:
+                continue                       # a head whose bar is a frozen NUMBER names no arm
+            # ⚠ R30-A/S-333 F7: MOST SPECIFIC DIAGNOSIS FIRST. Hoisting the geometry guard made it
+            # fire ahead of two narrower prereg-authoring checks that had lived downstream in
+            # `_bar_for`/`_bar_from_rule`, so "you gave this head two criteria" was reported as
+            # "this arm is not a full band" -- both refuse, but the operator is sent to the wrong
+            # line. R30-A filed exactly this ordering complaint against the VOID-8 loop. Centralise
+            # the precedence here rather than leave it to whichever check happens to run first.
+            if _hd.get("min_abs_E_for_ci95_to_exclude_0") is not None:
+                sys.exit("REFUSING: prereg %r gives head %s BOTH a frozen bar "
+                         "(min_abs_E_for_ci95_to_exclude_0) AND a bar_source_arm %r. A head has "
+                         "ONE criterion. (R28/S-312)" % (pr["id"], _hk, _src))
+            if not _bar_rule:
+                sys.exit("REFUSING: prereg %r names bar_source_arm %r for head %s but declares no "
+                         "DETECTABILITY_PREREGISTERED_PER_HEAD['BAR_IS_A_RULE'] block. An arm name "
+                         "without a frozen derivation is not a preregistered criterion. (S-311)"
+                         % (pr["id"], _src, _hk))
+            try:
+                _h = int(_hk)
+            except (TypeError, ValueError):
+                sys.exit("REFUSING: DETECTABILITY_PREREGISTERED_PER_HEAD key %r is not a head "
+                         "number, yet it names bar_source_arm %r -- which would be removed from the "
+                         "census on its say-so. (R30-A/S-333)" % (_hk, _src))
+            if _h not in _FAMILY_HEADS:
+                sys.exit("REFUSING: head %d is not a head of prereg %r (its heads are %s), yet its "
+                         "per_head entry names bar_source_arm %r. A stray entry silently DELETES "
+                         "that arm from the depth map and shrinks the census. (R30-A/S-333)"
+                         % (_h, pr["id"], sorted(_FAMILY_HEADS), _src))
+            if "layers" in pr:
+                _want = sorted([int(L), _h] for L in pr["layers"])
+                _got = sorted([int(c[0]), int(c[1])] for c in hs[_src])
+                if _got != _want:
+                    sys.exit("REFUSING: head %d's bar_source_arm %r covers %r, not that head's FULL "
+                             "BAND %r. An arm narrower than the whole head is excluded from the "
+                             "census on the strength of a name nothing checked. (R30-A/S-333)"
+                             % (_h, _src, _got, _want))
         _bar_computed = {}
 
         def _bar_from_rule(h):
@@ -606,6 +675,14 @@ def main():
                      "pass (R20-6). (S-301)" % (pr["id"], h, h))
 
         _judged = [k for k in hs if k not in _BAR_SOURCE_ARMS]
+        # ⚠ R30-A/S-333: the exclusion set was written to the JSON as
+        # `bar_source_arms_EXCLUDED_FROM_THE_DEPTH_MAP` and printed NOWHERE, so a reader of the log
+        # -- which is how these families are actually read at 4am -- saw a depth map and a clearing
+        # count with no indication that arms had been removed to produce them. An exclusion that
+        # changes the headline belongs on the transcript, next to the GATE 0 banner.
+        print("[census] EXCLUDED FROM THE DEPTH MAP (%d arm(s), whole-head or named bar sources): "
+              "%s\n[census] JUDGED: %d cell arm(s)."
+              % (len(_BAR_SOURCE_ARMS), ", ".join(sorted(_BAR_SOURCE_ARMS)) or "none", len(_judged)))
         if not _judged:
             sys.exit("REFUSING: every arm of prereg %r is a bar source arm; there are no cells to "
                      "read. (S-311)" % pr["id"])
