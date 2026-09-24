@@ -30483,3 +30483,117 @@ NEXT  the highest-value branch is NOT another exploratory pass over old arms. It
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-347 — **a BASKET counterpart to PR-CSI-018 is VIABLE, and finding out took no GPU.** 🔴 **The obvious candidate set CANNOT CERTIFY EVER — permutation floor 0.0833** — but widening the pool beyond the screen's top-8 gives **eight live, never-censused heads at a weakest floor of 0.000152**. NOT designed, NOT frozen
+
+### 1. The new rule, applied first this time
+
+S-346's fix was: *before any analysis of an already-read family, read the claim-table rows naming
+its arms, BEFORE computing.* Doing that here identifies the gap rather than tripping over it:
+
+```
+D37  "VALIDATION, DESCRIPTIVE. RUNG 1. No rank, no p, no control family."
+```
+
+**D37 is the basket cell-census result and it carries NO preregistered statistic.** D39 (PR-CSI-018)
+carries this sprint's only one, and it is on BUTTON. So a preregistered basket cell census would
+give the ORIGINAL codeword what button already has — and unlike three previous ticks, this is a
+gap the table states rather than one I inferred.
+
+### 2. 🔴 The obvious candidate set is DEAD ON ARRIVAL, and the check cost nothing
+
+Four of the screen's top-8 basket heads have never had a cell census: **6, 13, 24, 28**. Their frozen
+TRAIN-screen predictions:
+
+```
+head  6 -> L11 (5.96x)    head 13 -> L10 (1.08x)
+head 24 -> L10 (4.70x)    head 28 -> L9  (1.40x)
+
+multiset {L9, L10, L10, L11} -> THREE distinct layers -> 12 distinct assignments
+permutation floor = 1/12 = 0.083333 > alpha = 0.05
+                          -> NO OUTCOME CERTIFIES, not even a perfect 4 of 4.
+```
+
+Heads 13 and 24 collide on L10 and that alone kills it. **This is PR-CSI-019's failure mode exactly
+— a family structurally unable to produce a claim — caught by the feasibility check R31-A taught me
+to run, before a prereg existed rather than after.**
+
+⛔ And it is not rescuable by dropping a head: K=3 with distinct layers gives 6 assignments, floor
+0.167 — worse. Nor by reverting the gating to `binomial_only`: PR-CSI-018 moved to
+`weakest_of_three` because S-317/S-319 established the permutation p as the load-bearing guard
+against a shared-band-bias null, and **choosing the statistic that lets a family pass is the
+selection this sprint exists to forbid.**
+
+### 3. ✅ But the block is NOT structural — S-319's move, repeated
+
+Over all 32 basket heads, applying the S-311 bar rule to PR-CSI-012's published single-head arms
+(|E| >= 1.5·bar AND ci95 excluding 0), and excluding the four already cell-censused (2, 17, 19, 23 —
+counting a known outcome as a fresh draw is the selection PR-CSI-018 excluded heads 17/19/23 for):
+
+```
+head       E        bar   |E|/bar   screen   margin
+  6   -0.008475  0.003402   2.49      L11     5.96x
+ 18   +0.009674  0.004148   2.33      L14     1.31x
+ 10   -0.005421  0.002550   2.13      L12     1.32x
+ 21   -0.003738  0.001802   2.07      L6      2.17x
+  4   -0.006401  0.003327   1.92      L11     4.42x
+ 11   -0.010438  0.005428   1.92      L8      1.51x
+ 13   -0.008276  0.004508   1.84      L10     1.08x
+ 27   +0.004113  0.002287   1.80      L10     1.58x
+
+multiset {L6, L8, L10, L10, L11, L11, L12, L14} -> SIX distinct layers
+distinct assignments 10080   permutation floor 0.000099
+binomial floor 2.323e-08   conditional floor 1.524e-04 (K_unique = 4)
+WEAKEST FLOOR = 0.000152   -- 81x below PR-CSI-018's 0.012346
+```
+
+### 4. Two composition facts that must be preregistered, not discovered later
+
+**(a) Three of the eight had their predictions tested on BUTTON by PR-CSI-018 — and all three
+MATCHED.** Heads 6 (L11), 11 (L8) and 27 (L10). The screen is the same frozen basket-TRAIN artefact
+in both families, so testing them on basket validation is a **replication on a different
+population**, not an independent draw. It is legitimate — the prior is "the screen is right", which
+is the hypothesis — but it is a prior and it goes in the prereg by name.
+
+**The family certifies WITHOUT them.** The five never-tested heads (4, 10, 13, 18, 21) predict
+{L6, L10, L11, L12, L14} — all distinct, 120 assignments, permutation floor **0.008333**, weakest
+floor 0.008333. So a preregistered PRIMARY on all eight and a preregistered SECONDARY on the five
+fresh ones are BOTH able to certify, and the result would not rest on the replication heads.
+
+**(b) Head 18 predicts L14 — the band-edge rival.** PR-CSI-018 excluded head 16 for exactly this.
+That exclusion was right *there*, where a small set could be indistinguishable from top-of-band
+bias; here the predictions span six distinct layers, so the spanning rule and the permutation p
+both bite. ⛔ Excluding head 18 **after** seeing the composition would be post-hoc selection, so the
+prereg must either include it or state a rule that excluded it before the composition was known.
+
+### 5. NOT established
+
+```
+NOTHING IS DESIGNED, FROZEN OR LAUNCHED. No prereg file, no tag, no arm. S-167c binds.
+THE HEAD SET IS SELECTED ON VALIDATION LIVENESS, exactly as PR-CSI-018's was, and carries the
+  same limitation: it says NOTHING about heads that are null on basket. The firewall is that
+  liveness is a WHOLE-HEAD property and the test is about WHICH CELL within a head -- admission is
+  computed from the HD_<h> arm alone, never from the cells -- so selecting on head liveness does
+  not bias which cell is the argmax. That firewall must be written into the prereg, not assumed.
+THE |E|/bar FIGURES ARE EXPECTATIONS, NOT THE VERDICT. They come from PR-CSI-012's arms; the
+  family would recompute admission from its OWN HD_<h> arms by the S-311 rule, as PR-CSI-018 did
+  (and as S-320/S-332 recorded). Head 27 at 1.80 and head 13 at 1.84 are the thin ones.
+THE FLOORS ARE FLOORS, NOT POWER. They say what a PERFECT result would yield. The MDE at the
+  measured cross-arm correlation (median 0.169, S-340) has NOT been computed, and S-340's lesson
+  is that a feasibility claim computed at a convenient correlation is worthless.
+R32 IS DUE BEFORE ANY OF THIS REACHES A GPU. Three reviews have now stopped a family there.
+COST: 82 arms (8x9 cells + 8 HD + BASE + KO) ~= 3.9 h. Larger than PR-CSI-018's 62 arms / 3h25m.
+```
+
+### 6. State
+
+```
+queue EMPTY. This tick produced a viable CANDIDATE and one dead one, at zero GPU cost.
+NEXT  design it properly against S-340's and R31's lessons -- floors are not power, the feasibility
+      must be computed at the measured correlation, every degree of freedom frozen (R31-C listed
+      thirteen) -- then R32, then freeze, then launch.
+```
+
+`git push` remains credential-blocked. Committed locally.
