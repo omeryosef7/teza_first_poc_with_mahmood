@@ -23,7 +23,7 @@ second and belongs first. ⚠ **A THIRD part — the axis, necessity and dissoci
 (PR-CSI-001–009, 20 claim-table rows) — is NOT in this file at all**; see the correction below. The
 four rows below are what §H covers:
 
-| omitted | what it is | why its absence matters |
+| row | what §H reports | where |
 |---|---|---|
 | **D32** | eight head indices carry most of the knockout's effect on basket, **replicating on the held-out split** at the preregistered bar | it is the result the cell-level work *subdivides*; §1–§3 localise within heads D32 selected |
 | **D33** | that 8-head set is **rank 1 of 21** against a control family drawn from all 32 band heads | the only rank-based certification in the head direction |
@@ -264,7 +264,7 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | any rung-2/3/4 **CLAIM** for a result here | every certified claim is rung 1 — but naming rung 2 as *unreached* is required, not forbidden, so the ban is on the claim and not the vocabulary | AM-34 |
 | "correcting" either 1.52e-04 | `(1/9)^4 = (1/3)^8 = 1/6561` — two real quantities, one value | [†] §4 |
 | ‼ "floor above α ⇒ CANNOT ANSWER, never FAIL" | true only at K < 3; at K ≥ 3 it is a FAIL with an unwinnability warning — and the sentence is **still live in both published artefacts**, so it can be re-imported from a source an editor will read | AM-45 (S-428), §M.6 |
-| ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | this draft is the CELL-level half only; **D32/D33/D34 and the empirical negative D35 are omitted** — see SCOPE | D32-D35, SCOPE |
+| ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | §1–§4 are the CELL-level part and §H the HEAD-level part; **the axis / necessity / dissociation families (D12–D31) are in NEITHER** — see SCOPE | D12–D31, SCOPE |
 | "deduplicating" the two 0.012346s | D39's certified conditional (§2) and D38's forbidden binomial (§4) are **both exactly 1/81** — one is a result, one is banned | D39, D38, §4 |
 | ‼ "TEST is unspent / untouched / available" | read to completion 2026-09-08 and selection-contaminated | AM-39, D5 |
 | "the screen is a validated cell selector in general" | forbidden for **both** D39 and D40, not just D39 | D39, D40 |
@@ -669,14 +669,15 @@ weaker.** ⚠ Relatedly, the **bootstrap parameters were command-line defaults f
 # H. The head-level half
 
 **Added S-436**, closing the omission the SCOPE block declares. **Every figure below was read by me
-from the artefacts** — `DCS_CSI_PR010_HEAD_validation.json`, `DCS_CSI_PR012_CENSUS_validation.json`,
-`DCS_CSI_PR013_BUTTON_HEAD_validation.json` — **not copied from the claim table**, which is the rule
+from the artefacts** — `DCS_CSI_PR010_HEAD_validation.json`, **`DCS_CSI_PR011_ALL32_validation.json`**,
+`DCS_CSI_PR012_CENSUS_validation.json`, `DCS_CSI_PR013_BUTTON_HEAD_validation.json` and
+`..._REDERIVE.json` — **not copied from the claim table**, which is the rule
 §M was written under after a methods section inherited an artefact's error.
 
 The cell-level half (§1–§4) subdivides heads that *this* half selected. It is written second and
 belongs first.
 
-## H.1 Eight heads carry most of the knockout, and the set beats its controls (D32, D33)
+## H.1 Eight heads carry most of the knockout (D32)
 
 On basket VALIDATION, knocking out eight head indices across band layers 6–14 on the query-codeword
 row reproduces most of the all-32 knockout:
@@ -695,11 +696,36 @@ Against **20 random 8-head control sets**: mean −0.004006, sd 0.013205, range 
 `1/21` — the artefact reports the two together for this reason. **There is no margin: this family
 could not have produced a smaller p at any data.**
 
-⛔ **The controls are drawn K-of-(32−K) from the candidate's COMPLEMENT**, so this is **not** a
-statement about arbitrary 8-head subsets. ⛔ **`F` is a ratio of two net-of-compensation causal
-effects and is biased downward** — it is not "the fraction of the mechanism these heads are". ⛔
+⛔ **D32's controls are drawn K-of-(32−K) from the candidate's COMPLEMENT**, so *this family* makes
+no statement about arbitrary 8-head subsets. **That gap is what H.1b closes — the prohibition
+applies to D32 and NOT to D33.** ⛔ **`F` is a ratio of two net-of-compensation causal effects; the
+direction of the bias is ARGUED to be downward and its size is UNMEASURED** — no compensation
+magnitude has been measured for this cell. It is not "the fraction of the mechanism these heads
+are", and it does **not** license *"the other 24 heads contribute 14 %"*. ⛔ **Leg (i) ONLY** — leg
+(ii) (`rel-11 → rel-6`) has no scope and is untested, and blocks 0–5 and 15–18 are untouched. ⛔
 RUNG 1, necessity. ⛔ D32's caveat that this says nothing about any single `(layer, head)` **cannot
 be lifted** with the axes this sprint has.
+
+## H.1b The same set beats controls drawn from ALL 32 heads (D33) — a SEPARATE experiment
+
+D33 is **not** a restatement of D32: a different prereg, a different job, and a different control
+pool. Its 20 controls are drawn from **all 32 band heads**, not from the candidate's complement:
+
+```
+controls: 20, mean -0.057700, ALL TWENTY NEGATIVE, strongest -0.15245762
+candidate HD_TOPK -0.1959835 (bit-identical to D32's)   rank 1 of 21, p = 0.047619 = the floor
+```
+
+**This is the arbitrary-8-head-subset comparison D32 could not make**, and it is a harder test:
+D32's controls average −0.004006, D33's −0.057700.
+
+🔴 **And it carries the sharpest bound on the whole head-level story. Sufficiency is certified;
+UNIQUENESS IS NOT.** The strongest control shares **exactly ONE head** with the candidate (head 2)
+and still reaches **77.8 %** of the candidate's effect and **67.2 %** of the all-32 knockout's. The
+dose-response in candidate-head *count* is weak and non-monotone (Spearman ρ = −0.0932), which
+argues against additivity across the eight. **Nothing here says this is *the* 8-set.** ⚠ Two
+rank-1-of-21 certifications, both sitting exactly at their floor — separate evidence, not one result
+counted twice.
 
 ## H.2 Exactly four heads clear the family's own null anchor (D34)
 
@@ -717,9 +743,13 @@ head 23   -0.01650303   ci95 [-0.02320141, -0.01006879]
 **All four are inside `HD_TOPK` = [19, 17, 23, 6, 13, 2, 24, 28], and no head outside it clears** —
 verified by me over all 32. These four are where §1's heads come from.
 
-⛔ **Descriptive. No rank, no p per head, no control family.** ⛔ **No singleton may be summed
+⛔ **Descriptive, RUNG 1. No rank, no p per head, no control family** — and **32 unadjusted
+intervals are read at once, with no multiplicity correction**, which is exactly the inference "no
+head outside clears" rests on. It identifies heads worth a **preregistered** test and nothing more;
+it licenses a map, never *"head X is the writer"*. ⛔ **No singleton may be summed
 against `E(HD_KO)`** to attribute a share: head 2 alone is 25.2 % of `HD_TOPK` and 21.8 % of
-`HD_KO`, and the set-level effect does not decompose. ⚠ **Four of `HD_TOPK`'s eight carry no
+`HD_KO`. ⚠ **No interaction model over the 8-set was run, so additivity on basket is neither
+established nor refuted** — non-decomposition is *measured* only on button (H.3). ⚠ **Four of `HD_TOPK`'s eight carry no
 individually detectable load at this bar**, and two of those have marginals of the wrong sign — so
 the set is certified while per-head necessity is refuted for half of it.
 
@@ -749,11 +779,31 @@ activation state was transferred.
 
 ⚠ **And the set-level effect does not decompose on button either**: 21 single-head arms sum to
 −0.058286 against a joint all-32 knockout of −0.289907 — the joint is **4.97×** the sum, and the
-measured singles account for **20.1 %** of it.
+measured singles account for **20.1 %** of it. ⚠ **This is 21 of 32 heads, NOT a decomposition** —
+the other 11 were never run singly on button, so −0.058286 is a **subset sum** and the true total is
+unknown and could be larger. ⚠ **And D34's basket set does not predict button's ranking:** of the
+five controls beating the candidate, **only head 19 is in D34's four** — heads 11, 20, 6 and 16 are
+basket-irrelevant yet outperform the basket-selected candidate.
 
 ## H.4 What the two halves are together
 
-**H.1–H.2 select heads; §1–§4 localise within them.** The dependency runs one way, and it means the
-cell-level results inherit every selection caveat above. ⚠ **Read in the other order they flatter**:
-four cell-level sections, three of them positive, resting on a head set whose own certification sits
-*exactly* at its attainable floor and whose strongest member **fails to replicate across codewords.**
+🔴 **The dependency is NARROWER than it looks, and I had it wrong.** Checked against the frozen
+preregs with `HD_TOPK = {2,6,13,17,19,23,24,28}` and `HD_BOTK = {0,9,10,11,15,16,29,30}`:
+
+| section | heads | in `HD_TOPK` | in `HD_BOTK` |
+|---|---|---|---|
+| §1 (D37) | 17, 19, 23 | **3 of 3** | 0 |
+| §4 (D38) | 17, 19, 23 | **3 of 3** | 0 |
+| §2 (D39) | 6, 11, 20, 24, 27, 29 | 2 of 6 | **2 of 6** |
+| §3 (D40) | 4, 6, 10, 11, 13, 18, 21, 27 | 2 of 8 | **2 of 8** |
+
+**§1 and §4 localise within D34's four heads. §2 and §3 — the sprint's ONLY two certified p's — do
+not.** Their heads were admitted from H.2's and H.3's *whole-head* arms by the 1.5 gate, not
+selected from `HD_TOPK`; **four of them sit in `HD_BOTK`, the set H.1 uses as its null anchor.**
+PR-CSI-020's prereg rejects the narrower pool by name: the screen's top-8 *"COULD NOT CERTIFY ON ANY
+OUTCOME … the pool was widened before any cell of any head here was measured."*
+
+**So the head-level half supplies §2's and §3's ADMISSION ELIGIBILITY, not their selection** — and
+the deflationary reading I first wrote here (that the certified cell results rest on a head set
+whose strongest member fails to replicate) **is false for exactly the two results that carry a
+p-value.** It holds for §1 and §4, which carry none.

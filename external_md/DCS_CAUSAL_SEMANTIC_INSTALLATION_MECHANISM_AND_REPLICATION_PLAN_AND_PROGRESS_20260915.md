@@ -38899,3 +38899,86 @@ untouched.**
 is already written — which is a real trade-off and should be recorded as one rather than defaulted.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-438 — the §H review: I reported two experiments as one, and my own deflationary punchline was FALSE for the only two results that carry a p
+
+**2026-09-25. Queue empty, no GPU.** §H was one tick old and unreviewed. The review returned 13
+findings. **Not one figure in §H disagreed with its artefact** — the reviewer recomputed them —
+**and every defect was a dropped or misapplied prohibition**, which is exactly the risk S-436 named
+for a results section written by the author of its own results. I verified the two serious ones
+myself before acting.
+
+### 1. 🔴 I reported D32 and D33 as one experiment, and applied to D33 a prohibition that is FALSE of it
+
+§H.1 was headed *"(D32, D33)"* and printed **only D32's** control distribution, then attached
+*"the controls are drawn K-of-(32−K) from the candidate's COMPLEMENT"*. **D33 is a different prereg,
+a different job, and a different control pool** — and I never opened its artefact:
+
+```
+reports/DCS_CSI_PR011_ALL32_validation.json   (exists; I had not read it)
+  20 controls drawn from ALL 32 band heads: mean -0.057700, ALL TWENTY NEGATIVE,
+  strongest -0.15245762 ; candidate HD_TOPK -0.1959835 ; rank 1 of 21, p = 0.047619 = floor
+  versus D32's complement-drawn controls: mean -0.004006
+```
+
+**D33 exists precisely to make the arbitrary-8-head-subset statement D32 could not**, so the caveat
+I imported is not merely misplaced — it denies the thing the second experiment was run to establish.
+Two independent rank-1-of-21 certifications were collapsed into one. **Split into H.1 and H.1b.**
+
+🔴 **And the omission cost the sharpest bound in the head-level story.** The strongest all-32 control
+**shares exactly ONE head with the candidate** and still reaches **77.8 %** of its effect and
+**67.2 %** of the all-32 knockout's — I re-derived both ratios. With a non-monotone dose-response in
+candidate-head count (ρ = −0.0932), **sufficiency is certified and uniqueness is not.** That now
+appears where the result does.
+
+### 2. 🔴 §H.4's dependency claim — the line I was most pleased with — is false where it matters
+
+I wrote *"H.1–H.2 select heads; §1–§4 localise within them"* and drew a deflationary conclusion from
+it. Checked against the frozen preregs:
+
+```
+§1 (D37) 17,19,23                  3 of 3 in HD_TOPK      0 in HD_BOTK
+§4 (D38) 17,19,23                  3 of 3 in HD_TOPK      0 in HD_BOTK
+§2 (D39) 6,11,20,24,27,29          2 of 6                 2 of 6   <-- certified p
+§3 (D40) 4,6,10,11,13,18,21,27     2 of 8                 2 of 8   <-- certified p
+```
+
+**It holds for §1 and §4, which carry no p, and fails for §2 and §3, which are the sprint's only two
+certified results.** Their heads were admitted from the *whole-head* arms by the 1.5 gate, not
+selected from `HD_TOPK` — and **four of them sit in `HD_BOTK`, the set H.1 uses as its null
+anchor.** PR-CSI-020's own prereg rejects the narrower pool by name. ⚠ **A deflationary error is
+still an error**, and this one flattered nothing — it simply asserted a structure the preregs
+contradict. Rewritten with the table above and the correct relation: the head-level half supplies
+**admission eligibility**, not selection.
+
+### 3. Also applied
+
+AM-36's *"21 of 32, NOT a decomposition — the other 11 were never run singly, so the true total
+could be larger"*, plus its second half, which **strengthens** the negative (of the five controls
+beating the candidate, only head 19 is in D34's four). AM-27's bias restored to **argued, not
+measured**. D32's **leg (i) only** restriction — the string "leg (i)" had appeared **zero times** in
+the draft. D34's **32 unadjusted intervals, no multiplicity correction**, which is what "no head
+outside clears" rests on, plus its RUNG 1 tag. Basket non-decomposition marked as **inferred**;
+it is measured only on button. The provenance sentence now names the two artefacts it omitted. And
+the ‼ checklist row still said D32–D35 were omitted — **false since §H existed** — now pointing at
+D12–D31 instead.
+
+### 4. What was NOT established
+
+⛔ **That §H is now sound.** It has had one review; §1–§6 needed two and the second found what the
+first missed.
+⛔ **That the remaining findings are closed.** F11 (§M defines none of §H's arm kinds, the `HD_BOTK`
+null anchor or the rank test) and F12 (§L.4's *"no family draws heads at random"* reads against
+H.1's random control sets; §L.7's domain identity is now sprint-wide) are **recorded and not
+applied**.
+⛔ **That D33's figures are right beyond what I read** — I read `E`, the controls and `rank_test`
+from its artefact and re-derived the two ratios; I did not audit that family further.
+⛔ **No published number moved.** ⛔ **No GPU, no arm, no code change. TEST untouched.**
+
+**NEXT:** F11 and F12, then the choice S-437 flagged — draft part three, or keep checking what
+exists. §H needed a second reviewer's worth of defects found on its first pass, which is evidence
+for the latter.
+
+`git push` remains credential-blocked. Committed locally.
