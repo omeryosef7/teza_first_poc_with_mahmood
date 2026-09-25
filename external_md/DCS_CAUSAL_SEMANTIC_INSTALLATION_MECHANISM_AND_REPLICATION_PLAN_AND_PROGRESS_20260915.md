@@ -38445,3 +38445,87 @@ untouched.**
 **NEXT:** the §1–§6 review's findings.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-432 — the body review: §0 stated the WRONG n for every confirmatory result in the draft, and the gate I shipped one tick earlier could not have caught it
+
+**2026-09-25. Queue empty, no GPU.** The §1–§6 review returned 12 findings. **No number in the body
+disagrees with the claim table** — the reviewer re-derived the arithmetic independently and it all
+reproduces — and **§2, §3, §5 and §6 were found faithful**. Every defect is scope, attribution or a
+dropped caveat. Ten were applied; two were deliberately not.
+
+### 1. 🔴 MY error, from S-427, in the opening paragraph
+
+§0 read: *"the census families score **67** train domains"*. **Every census in this draft is read on
+the 23 VALIDATION domains** — verified by me across all five:
+
+```
+PR-014  split=validation n=23     PR-018  split=validation n=23
+PR-015  split=validation n=23     PR-020  split=validation n=23
+PR-016  split=validation n=23
+```
+
+**67 is the SCREEN's fit population, not the census's.** So §0 told a reader that the n behind every
+confirmatory p in the draft is 67 when it is 23 — and §1 said 23 three paragraphs later. I
+introduced this in S-427 while *correcting* the 70-vs-67 attribution: I fixed which file says 70 and
+carried the 67 onto the wrong population. §0 now separates the two explicitly and states that a
+230-row read is n = 23.
+
+### 2. 📌 The gate I shipped ONE TICK AGO names exactly this class and cannot catch it
+
+S-431's figure-provenance gate says in its own docstring:
+
+> *"SMALL INTEGERS ARE INVISIBLE … The 70-vs-67 error of S-417 would pass this gate, and the
+> docstring says so."*
+
+**67 and 23 are small integers. The gate passed the draft with 0 unaccounted figures while §0
+carried this.** That is not a failure of the gate — it is the blind spot it publishes, found by a
+reviewer one tick after I wrote it down. ⚠ **The lesson is the one the gate's docstring already
+draws and I should now act on: a check that publishes its limits tells you where to look by hand,
+and the place it told me to look is exactly where the error was.**
+
+### 3. Also applied
+
+**§0's `semantic_logodds` paragraph over-corrected** — my S-427 fix called it *"a different quantity
+this sprint does not use"* and said log-odds readings *"would be meaningless"*. §M.4's measured
+statement is sharper and weaker: it is the same contrast on **a different scale**, the endpoint is
+exactly `sigmoid(semantic_logodds)`, **every rank is invariant and every effect size is not**, and
+reading `E = −0.2269` as log-odds would **overstate** it, not be meaningless. **§0's sprint-wide
+*"No arm in this sprint touched a TEST domain"*** is a generalisation the table only ever makes
+per family — D35 and D36 both carry the S-328 correction *"the split is NOT untouched in general"* —
+now scoped to "any family reported here". **§1's heading said CELL** while its own ⛔ says the head
+coordinate is not held out → **LAYER**. **§1's uniform baseline** now carries the note that §3 and
+§L.5 measure 1/9 to be too generous. **§4's heading** dropped the word doing the work — D41 is a
+negative **methodological** result, not a negative result. **§4** now states the dependence §M.6
+asserts: PR-CSI-016 gates on `binomial_only`, so its p-gate **passed** and the spanning rule vetoed
+the PASS afterwards. **§6** now carries AM-45's S-428 amendment: byte-identity includes a sentence
+now known false, deliberately not rewritten.
+
+**Checklist: one row was WRONG and two were missing.** *"any rung-2/3/4 language"* forbade the
+draft's own correct sentences — §4 and §5 must name rung 2 as unreached — so the ban is now on the
+**claim**, not the vocabulary. Added: the **‼ false-floor sentence**, which is still live in both
+published artefacts and can therefore be re-imported by an editor reading them; and a row against
+**"deduplicating" the two `0.012346`s**, which are both exactly 1/81 — one certified in §2, one
+banned in §4.
+
+### 4. What was NOT applied, and why
+
+⛔ **Finding 12 — §1 quoting two probabilities three lines above "no rank, no p".** The reviewer
+flagged it as *inherited, not introduced*, and said so: D37's own row does exactly the same. **The
+body is faithful and I left it alone.** Recording it so a later reviewer does not "resolve" it by
+deleting one side.
+
+### 5. What was NOT established
+
+⛔ **That the body is now correct.** One pass, one reviewer, on a section that had already had one.
+⛔ **That the 12 findings were all right** — I verified the load-bearing ones at the artefacts and
+applied what I checked.
+⛔ **No published number moved.** Every edit narrows a scope, restores a caveat or fixes an
+attribution. ⛔ **No GPU, no arm, no code change. TEST untouched.**
+
+**NEXT:** the draft has had one adversarial pass per section and each pass has found real defects in
+sections I believed finished. The useful question is no longer "review it again" but what a SECOND,
+independent reviewer of the same section finds — and whether the two agree.
+
+`git push` remains credential-blocked. Committed locally.

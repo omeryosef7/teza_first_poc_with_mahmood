@@ -19,15 +19,22 @@ We ask where in a transformer a *codeword* — a token the model has been instru
 of a concept — is installed. The instrument ablates a single attention cell `(layer, head)` during
 the prefill of an in-context prompt and measures the change in the **installation probability** at
 a fixed position: the two-way softmax between the concept and codeword continuations,
-`y = exp(logp_concept) / (exp(logp_concept) + exp(logp_codeword))`, which lies in [0, 1]. 🔴 **It is
-NOT the `semantic_logodds` field**, which exists in every row and equals `logp_concept −
-logp_codeword` — a different quantity that this sprint does not use as its endpoint. Published
-`installation_by_arm` values such as 0.47336 / 0.23972 are probabilities, and read as log-odds they
-would be meaningless. §M.4 gives the full definition including the channel filter. The statistical unit is the **domain**. The split manifest
-`dcs_ts116_domain_split.json` assigns **70 train / 23 validation / 23 test**; the census families
-score **67** train domains, the 70 less **three whole-population domains excluded by every CSI
-prereg** — those three are `train`-assigned, and a config field once mislabelled them `test_domains`
-and collapsed them to the count "3", which is the error AM-37/S-312 corrected. **No arm in this sprint touched a TEST domain — and TEST is nonetheless NOT an available axis:**
+`y = exp(logp_concept) / (exp(logp_concept) + exp(logp_codeword))`, which lies in [0, 1]. ⚠ **It is
+not the `semantic_logodds` field**, which exists in every row and equals `logp_concept −
+logp_codeword`. That is the same contrast on **a different scale**: the endpoint is exactly
+`sigmoid(semantic_logodds)`, so **no rank in this draft changes with the choice — every argmax
+result in §2, §3 and §4 is invariant — while every effect size does.** Published
+`installation_by_arm` values such as 0.47336 / 0.23972 are probabilities, and reading an effect like
+`E = −0.2269` as a change in log-odds would **overstate** it. §M.4 gives the full definition
+including the channel filter. The statistical unit is the **domain**. The split manifest
+`dcs_ts116_domain_split.json` assigns **70 train / 23 validation / 23 test**. 🔴 **Two populations
+must be kept apart:** the *screen* is fitted on **67 train domains** — the 70 less three
+whole-population domains every CSI prereg excludes, which are `train`-assigned (a config field once
+mislabelled them `test_domains` and collapsed them to the count "3", the error AM-37/S-312
+corrected) — while **every census reported here is read on the 23 VALIDATION domains.** So the n
+behind every confirmatory p in this draft is **23, not 67**, and a 230-row read is n = 23 because
+the domain is the unit. **No arm of any family reported here touched a TEST domain — and TEST is
+nonetheless NOT an available axis:**
 it was read to completion on 2026-09-08 and is **selection-contaminated on knobs every CSI family
 inherits** (AM-39). ⛔ *"TEST is unspent / untouched / available"* is a predecessor-phase belief
 that S-314 refuted and D5 is annotated to block; it must not be re-imported. An
@@ -37,7 +44,7 @@ per-cell prediction hold up under intervention on data it was not fitted on?**
 
 ---
 
-## 1. The screen's per-cell prediction holds at the CELL coordinate on basket validation (D37)
+## 1. The screen's per-cell prediction holds at the LAYER coordinate on basket validation (D37)
 
 On basket VALIDATION, of 27 candidate cells exactly **three clear their own preregistered
 detectability bar**, one per head: `(17, L14)` **−0.02344221** against bar 0.009082 (**2.58×**),
@@ -59,7 +66,7 @@ the census reads — so this is a statement about **load-bearing heads, not abou
 
 The obvious rival, that the band edge simply attracts everything, is **refuted by the screen's own
 marginal**: L14 is the screen argmax for only **6 of 32** heads (the modal layer is L11 at 8/32), so
-P(all four match) is **2.06e-04** under that marginal against 1.52e-04 uniform [†], and **an all-L14
+P(all four match) is **2.06e-04** under that marginal against 1.52e-04 uniform [†] — ⚠ **and the uniform baseline is the one §3 and §L.5 measure to be too generous**, since the intervention argmax marginal concentrates on L10/L14; it is quoted here as the comparator D37 states, not as a null — and **an all-L14
 guesser scores 2 of 4.**
 
 ⛔ D37 is **descriptive**: no rank, no p, no control family. *"Cell (L,h) is the writer"* is
@@ -107,11 +114,11 @@ tested on button, **not as an independent draw**; heads 6 and 11 match and **hea
 attaches to that subset and none was computed** — quoting a 2-of-3 or 4-of-5 rate is forbidden
 whichever direction it points.
 
-## 4. One CANNOT ANSWER, and one honest negative
+## 4. One CANNOT ANSWER, and one honest METHODOLOGICAL negative
 
 **PR-CSI-016 could not test the question it asked (D38) — this is CANNOT ANSWER, NOT a negative result.** Both admitted heads matched at L14, so the
 preregistered **spanning rule fired**: a shared top-of-band bias and a correct screen are
-indistinguishable there. K = 2, M = 2; **the binomial is FORBIDDEN for this family** and is quoted below only inside the prohibition, because a ban that does not name what it bans cannot be checked. ⚠ **It is numerically identical to D39's certified conditional p in §2** — the same six digits appear as a certified result there and as a forbidden figure here, so an editor must keep the antecedents apart. Conditional 1.0
+indistinguishable there. K = 2, M = 2 — and this is the one family grandfathered to `binomial_only` gating (§M.6), so **its p-gate PASSED and the spanning rule vetoed the PASS afterwards.** **The binomial is FORBIDDEN for this family** and is quoted below only inside the prohibition, because a ban that does not name what it bans cannot be checked. ⚠ **It is numerically identical to D39's certified conditional p in §2** — the same six digits appear as a certified result there and as a forbidden figure here, so an editor must keep the antecedents apart. Conditional 1.0
 (K_unique = 0) and permutation 1.0 over a space of size **1**. The fallback delivered a head-level
 cross-codeword test never run before: head 17 **98.3 %**, head 19 **88.7 %** (both ci95 excluding
 0), head 23 **18.4 %** with **ci95 crossing zero** — ⚠ **an AMPLITUDE result only**: exploratorily, head 23's per-cell depth **shape** tracks across codewords at ρ = +0.817, so *"head 23 does not transfer"* is true of the amplitude and false of the shape (AM-41, **not preregistered**). ⛔ *"The screen transfers across codewords"* and
@@ -165,6 +172,12 @@ the published artefact at the read commit (md5 `512f42a1`, `e7f09f67`); at HEAD 
 two **added** disclosure keys, and each argmax artefact differs only in the input path. Every value
 the claims rest on is identical at every version.
 
+⚠ **Byte-identity includes a sentence now known FALSE.** Both artefacts' `GATING_FLOOR.WHAT_THIS_IS`
+says a floor above α gives CANNOT ANSWER and **never** FAIL — which holds only at K < 3; at K ≥ 3 it
+is a FAIL with an unwinnability warning. It is a disclosure that **decided nothing** in either family,
+and it is **deliberately not rewritten**, because rewriting a read after the fact is what VOID 12
+forbids and this very byte-identity claim rests on the files as they shipped.
+
 ⚠ **D39's readers themselves moved** — `scripts/` changed by +559/−18 across four files while its
 62 arms were landing, three of them the readers its frozen recipe names, and PR-CSI-018's read
 carried **no VOID 11** because that condition was introduced for the *next* family. **A frozen
@@ -190,8 +203,10 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | any margin-restricted subset | post-hoc subsetting the prereg forbids | D39/D40 |
 | "head 23's mechanism is refuted" | null on button is CANNOT ANSWER | D38 |
 | "the concept is undecodable" | nothing was measured held out | D41 |
-| any rung-2/3/4 language | every claim here is rung 1 | AM-34 |
+| any rung-2/3/4 **CLAIM** for a result here | every certified claim is rung 1 — but naming rung 2 as *unreached* is required, not forbidden, so the ban is on the claim and not the vocabulary | AM-34 |
 | "correcting" either 1.52e-04 | `(1/9)^4 = (1/3)^8 = 1/6561` — two real quantities, one value | [†] §4 |
+| ‼ "floor above α ⇒ CANNOT ANSWER, never FAIL" | true only at K < 3; at K ≥ 3 it is a FAIL with an unwinnability warning — and the sentence is **still live in both published artefacts**, so it can be re-imported from a source an editor will read | AM-45 (S-428), §M.6 |
+| "deduplicating" the two 0.012346s | D39's certified conditional (§2) and D38's forbidden binomial (§4) are **both exactly 1/81** — one is a result, one is banned | D39, D38, §4 |
 | ‼ "TEST is unspent / untouched / available" | read to completion 2026-09-08 and selection-contaminated | AM-39, D5 |
 | "the screen is a validated cell selector in general" | forbidden for **both** D39 and D40, not just D39 | D39, D40 |
 | "the basket result is weakened" (by D38) | D38 is CANNOT ANSWER; D37 stands | D38 |
