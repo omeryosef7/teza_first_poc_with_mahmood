@@ -37932,3 +37932,88 @@ here** (S-167c's rule), and would need checking before any launch.
 precondition for the escalation being actionable at all.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-425 — the S-167c check on PR-CSI-003-A: everything it names EXISTS, and it is blocked by TWO conditions, not one
+
+**2026-09-25. Queue empty, no GPU.** S-424 escalated PR-CSI-003-A as a decision waiting on the user
+and named the precondition: **does its prereg still name only things that exist?** This runs that
+check. It passes — and the check found a second blocker on the way.
+
+### 1. S-167c: PASSES, and my regex lied to me a third time
+
+Every path with a directory component exists: the axis file, both analysers, the launcher, the
+bank, the exclusion file, PR-CSI-003's prereg and read, `score_behavior.py`.
+
+⚠ **My first pass reported the bank MISSING** — because my extension alternation put `json` before
+`jsonl` and truncated `boombness_prompt_bank_ts116m_basket_bomb.jsonl` to `.json`. **Third time this
+sprint one of my own patterns manufactured a finding** (S-422's md5-vs-git-blob, S-423's
+prereg-id-in-first-2KB, this). The lesson has stopped being about regexes: **any detector I write is
+evidence about my detector until I read the underlying text.**
+
+**Verified deeper than paths, because existence is not sufficiency:**
+
+```
+axis file   configs/dcs_csi_axis_basket_behavioral_shuf24.pt loaded by me:
+            53 bases total, ctrl_shuffled0..23 = 24, ctrl_random* = 22, cand_rank1 and ctrl_orth
+            present, meta site rel-6, seed 20260915 -- EVERY claim in the prereg's
+            `basis_keys_available_in_the_frozen_axis_file` reproduces exactly.
+launcher    bash -n OK. Half 4 emits KO_NEC_SHUF4..13 from ctrl_shuffled4..13; half 5 emits
+            KO_NEC_SHUF14..23. 20 arms, range 4..23, NO gaps, NO repeats, `subnec` reused verbatim,
+            and an unknown half REFUSES. The 20 basis keys it names all exist.
+arithmetic  shuffled family 4 -> 24 controls, floor 1/5 = 0.2000 -> 1/25 = 0.0400. Halves 2+3 cap
+            the family at 16, floor 1/17 = 0.0588, which cannot certify. All re-derived.
+```
+
+### 2. 🔴 A SECOND stranded VOID condition, previously unknown
+
+VOID 6 has been the recorded blocker since S-142. **VOID 7 is also violated.** It requires *both*
+`dcs_csi_subspace_analyze.py` and `dcs_csi_rederive_subspace.py` to be unmodified between the
+PR-CSI-003 read and the PR-CSI-003-A read. Measured from the read commit `bd19a7e3` to HEAD:
+
+```
+dcs_csi_subspace_analyze.py    8c359875e0d9 -> 8c359875e0d9   IDENTICAL
+dcs_csi_rederive_subspace.py   4771d4b1dd6c -> 4ecc4fbc4c10   MOVED, +36 lines
+```
+
+**So the family is blocked by two conditions, not one** — recorded before a decision rather than
+discovered after it.
+
+### 3. 🔴 And the intent test cannot be run, for a reason worth more than the blocker
+
+The +36 lines are S-259's **narrowing** sign guard (*"can turn PASSES into a non-pass and can never
+create one"*) plus S-300's additive disclosure fields. Neither loosens anything and the necessity
+candidate is negative, so the letter is violated while the intent plausibly survives — the S-371
+shape. **That is testable: re-run the re-derivation and compare. I tried, with the artefact's own
+`run_dirs`, `require_rescue_layer: 18` and `require_slurm_job: ['906433','912736']`, and it
+REFUSES.**
+
+The cause is the finding: **three of the eight necessity control arms are `status: INCOMPLETE`** —
+`KO_NEC_RAND0` 669 rows, `KO_NEC_RAND2` **666**, `KO_NEC_RAND3` 669, against 670 elsewhere — and
+**today's script rejects a non-`ok` arm where the code of the time intersected instead.**
+
+✅ **The original handling was correct and is published:** the reader takes the **intersection**,
+`n_keys_common: 664` on 67 domains, so every arm contributes the same keys. **D18 and prohibition 26
+are untouched** — rank 1 of 9 at floor 0.1111 stands exactly as recorded.
+
+📌 **But it is the mirror image of AM-45.** Both published PASSes replay exactly; **the necessity
+re-derivation does not** — and the reason is that **the guards got stricter, not that the result got
+weaker**. A sprint that hardens its readers acquires artefacts its current code would refuse to
+produce, and nothing announces that. Published as **AM-47 / AM-47-a**.
+
+### 4. What was NOT established
+
+⛔ **That the necessity result is wrong.** It is not. The intersection is the designed mechanism and
+the published `n_keys_common` states it.
+⛔ **That VOID 7's intent is satisfied** — I could not test it, and I am not asserting it from
+reading the diff. The narrowing argument is a reason to expect it, not a measurement.
+⛔ **That VOID 6 and 7 are the only blockers.** Eight further VOID conditions exist; I checked the
+two that name code drift and did not evaluate hardware, bank, exclusion-file or ledger conditions.
+⛔ **No GPU, no arm, no code change. TEST untouched.** ⚠ **And I am not self-approving anything** —
+the escalation is the user's, and this tick only makes it decidable.
+
+**NEXT:** the remaining eight VOID conditions of PR-CSI-003-A, so the escalation is presented with
+a complete blocker list rather than a partial one.
+
+`git push` remains credential-blocked. Committed locally.
