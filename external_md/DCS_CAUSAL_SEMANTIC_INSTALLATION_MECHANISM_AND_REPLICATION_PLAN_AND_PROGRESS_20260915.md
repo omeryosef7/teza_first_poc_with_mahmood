@@ -37301,3 +37301,75 @@ S-416, so no code review is due on change grounds; the last was R36-C.
 the paper text itself, against a claim table whose corrections are now all in place.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-417 — the RESULTS SECTION is drafted, and writing it found an error in my own §0 plus a numeral coincidence that would invite an editor to introduce one
+
+**2026-09-25. Queue empty, no GPU.** S-416 closed the claim-table audit and said what remained was
+the paper text. This drafts it: **`reports/DCS_CSI_RESULTS_DRAFT.md`**, 145 lines, covering D37,
+D38, D39, D40, D41, the rung discipline and reproducibility. **Checked first that no such file
+existed** — none did, in `reports/` or `external_md/`.
+
+The file states in its own header that it **adds no claim and softens no caveat**, that the claim
+table wins any disagreement, and it carries an **editor's checklist of forbidden phrasings** so a
+later editor cannot reintroduce one by not knowing about it.
+
+### 1. Mechanical check: every figure in the draft against the claim table
+
+27 distinct multi-digit figures extracted from the draft body (the checklist is excluded — it
+quotes forbidden strings deliberately). **27 of 27 appear in the claim table. None absent.** Three
+— D37's per-cell effects — appear in the table but NOT the log, so I re-derived them from the
+artefact rather than trusting either:
+
+```
+reports/DCS_CSI_PR015_CELL_CENSUS_3HEADS_validation.json, 23 domains, 27 cell arms
+head 17  bar 0.009082   argmax L14  -0.02344221  2.581x    runner-up L9  0.314x
+head 19  bar 0.010223   argmax L14  -0.04397480  4.302x    runner-up L9  0.440x
+head 23  bar 0.006615   argmax L7   -0.01851354  2.799x    runner-up L9  0.393x
+TOTAL CLEARING THE BAR: 3 of 27, one per head -- exactly as D37 states, ratios matching 2.58/4.30/2.80
+```
+
+📌 **Not required by D37 and worth having:** each head's runner-up sits at **0.31–0.44× the bar**,
+so the three winners are not marginal — the gap between the clearing cell and the next is roughly
+sixfold in every head.
+
+### 2. 🔴 An error in MY OWN draft, caught by re-checking a small integer
+
+The draft's §0 read *"the statistical unit is the domain (n = **67** train / 23 validation / 23
+test, `dcs_ts116_domain_split.json`)"*. **The manifest says `n_train` = 70.** Its `assign` counts
+are train 70 / validation 23 / test 23, verified directly. The **67** is what the census families
+*score*, the 70 less the **three whole-population domains every CSI prereg excludes** — and those
+three are `train`-assigned, which is precisely the fact AM-37/S-312 corrected when a config field
+mislabelled them `test_domains` and collapsed them to the count "3".
+
+**The figure-against-table check could never have caught this**: it only extracts multi-digit
+numbers, and 67 and 70 are two digits. Corrected in §0, which now states both numbers and why they
+differ. ⚠ **The lesson is specific: a draft's most dangerous numbers are the small ones**, because
+every mechanical check is built for the long ones.
+
+### 3. 🔴 A numeral coincidence that would invite a future error
+
+The draft states **1.52e-04** twice, for two unrelated quantities: §1's uniform baseline for four
+heads each matching one of nine layers, `(1/9)^4`, and §4's depth-confound probability for eight
+heads each landing in the top three of nine, `(1/3)^8`. **These are exactly equal — both are
+1/6561 — because `(1/9)^4 = (1/3)^8`.** Verified with exact rationals.
+
+Nothing is wrong, and that is the hazard: an editor meeting the same numeral twice would reasonably
+diagnose a copy-paste slip and "fix" one of them, **introducing an error into a correct draft**.
+A `[†]` footnote now sits at both sites and in the checklist saying so in as many words.
+
+### 4. What was NOT established
+
+⛔ **The draft is not reviewed.** An adversarial read — is any sentence stronger than its source
+row, is any caveat dropped, is D39 conflated with D40, is any rung inflated — **was in flight when
+this entry was written and its findings are NOT in the draft.** They land next tick.
+⛔ **It is prose, not a claim source.** It creates nothing; if it and the claim table disagree, the
+table wins and the draft is what is wrong. It is marked that way in its own header.
+⛔ **No new measurement.** The only re-derivation is D37's three cells, which confirmed the table.
+⛔ **No GPU. TEST untouched. `scripts/` and `src/` still unchanged since S-410** — no code review is
+due on change grounds; the last was R36-C.
+
+**NEXT:** apply the adversarial read's findings to the draft.
+
+`git push` remains credential-blocked. Committed locally.
