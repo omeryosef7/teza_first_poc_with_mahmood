@@ -37373,3 +37373,80 @@ due on change grounds; the last was R36-C.
 **NEXT:** apply the adversarial read's findings to the draft.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-418 — the adversarial read lands: the draft's ARITHMETIC was clean and its CAVEATS were not, and its own checklist was missing the prohibition its own §0 violated
+
+**2026-09-25. Queue empty, no GPU.** S-417 committed the results draft with the adversarial read
+still in flight and said its findings land next tick. They land here. **14 findings; I verified the
+load-bearing ones against the artefacts before acting, and applied 13 edits plus 9 checklist rows.**
+
+### 1. The shape of the result, which is the interesting part
+
+**Not one figure in the draft disagreed with its governing row** — across all five families, checked
+independently of my own figure-vs-table script, which had already returned 27 of 27 present.
+**Every defect was a caveat that did not make the trip.** A draft can be arithmetically perfect and
+still misrepresent, and the failure mode is entirely one-directional: prose drops hedges, it does
+not drop numbers.
+
+### 2. The three that would have misled a reader
+
+🔴 **(a) §1 dropped all three of S-307's corrections, which D37 marks *"part of this claim, not
+footnotes"*.** Verified in the row and re-derived from the artefact: the four peaks are
+**−0.133478 / −0.226961 = 58.8 %** of `CL_KO`, so *"the mechanism is these four cells"* overstates
+by ~1.7×; the two L14 cells correlate **r = +0.719**, so 4-of-4 is **~3 effectively independent
+agreements**; and the shares 96.1 / 80.2 / 109.6 / 112.2 % do not generalise (head 17 significantly
+**sub-additive**, ci95 [70.4, 90.6] excluding 100 %). **What generalises is WHICH cell, not HOW
+MUCH.** Also restored: the heads are D34's load-bearing four **chosen on validation**, so the
+**layer** coordinate is held out and the **head** coordinate is not — the draft's heading said
+"holds on held-out data" and now says "holds at the CELL coordinate on basket validation".
+
+🔴 **(b) §4's conclusion was contradicted by its own preceding clause.** The draft read *"the PPV of
+a PASS is 0.24 / 0.42 / 0.55 … **a positive would more likely be false than true**"* — but 0.55 at
+prior 0.30 is **more likely true than false**. D41 deliberately declines the unconditional form and
+says *"a reader weighing the priors differently should reach a different answer"*. Now stated
+per-prior, with the licence restored. **A sentence of mine was falsified by a number of mine three
+words earlier, and the figure check could not see it because both were correct.**
+
+🔴 **(c) §0 asserted TEST was untouched — the one belief D5 is annotated to block.** Both halves are
+true separately (no arm of this sprint wrote to TEST; it was read to completion 2026-09-08 and is
+selection-contaminated), but the draft stated the first and, 94 lines later, the second — telling a
+reader a clean confirmatory axis is in hand and then that it is not. Now one sentence carrying both.
+
+### 3. Also applied
+
+D38 was grouped under a heading reading *"Two honest negatives"* — **the claim table's section C is
+titled "CANNOT ANSWER … NOT negatives"**, so the heading taught the opposite of the distinction the
+table maintains. Retitled, and the D38 paragraph now opens by naming itself CANNOT ANSWER. The
+draft also **printed `0.012346` for PR-CSI-016 while its own checklist forbade it** — and that
+figure is *also* D39's certified conditional p, eleven lines away, so a reader mis-tracking the
+antecedent concludes PR-CSI-016 passed. Removed. Plus: D40's three missing caveats (not a validated
+selector; `M_unique = 3` on the boundary, margin one head; the 6/11/27 replication disclosure),
+head 20's *"a miss, not a finding about L14"* guard, AM-41's amplitude-vs-shape qualifier on head
+23 (ρ = +0.817, exploratory), AM-44's disclosure gap and its S-414 resolution in §6, AM-45's *"a
+deterministic replay of a wrong arm is still wrong"*, and AM-34's disambiguation of the two senses
+of "transfer".
+
+### 4. The checklist was missing the entry the draft itself violated
+
+Its nine rows were all **correct**, and it was **incomplete by eight** — including *"TEST is unspent
+/ untouched / available"*, the prohibition §0 had just committed. Now 19 rows, with the TEST row
+marked **‼ "a phrasing this draft itself committed and had corrected"**. That is the argument for
+keeping the checklist attached to the prose instead of in a reviewer's head.
+
+### 5. What was NOT established
+
+⛔ **One finding was already fixed before the report arrived and is not evidence of anything:** the
+reviewer flagged §0's *"67 train"* attribution; **S-417 had already corrected it** to 70-in-the-
+manifest / 67-scored. The reviewer read the pre-fix file. Recorded so the count of findings is not
+inflated.
+⛔ **The draft is now reviewed ONCE, by one reader.** Nothing establishes it is complete.
+⛔ **No claim changed, no number moved, no verdict touched.** Every edit added a caveat, narrowed a
+scope, or removed a forbidden figure. **The draft states strictly less than it did.**
+⛔ **No GPU. TEST untouched. `scripts/`/`src/` unchanged since S-410.**
+
+**NEXT:** §5 and §6 are the sections no reviewer has pushed on hard; and the draft still has no
+methods section, which is where the instrument's own caveats belong.
+
+`git push` remains credential-blocked. Committed locally.
