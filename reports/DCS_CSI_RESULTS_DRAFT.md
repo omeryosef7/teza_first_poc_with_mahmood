@@ -1051,6 +1051,24 @@ subfamilies, both splits: shuffled-only 1 of 25 (floor 0.0400)   random-only 1 o
 population: 642 keys / 67 TRAIN domains and 215 keys / 23 VALIDATION domains, 53 arms each
 ```
 
+⛔ **ADDED S-454 — two more PRESPECIFIED secondaries this section owed and did not carry.**
+PR-CSI-005's S2 and S4 (restated as PR-CSI-007's S1 and S2) require the **family-size-free z** and
+the **exceedance rate with an exact Clopper–Pearson CI**, both precisely because they are the
+statistics that *do not* improve when the control family is enlarged. Re-derived:
+
+```
+                    z = (cand - mean(46 ctrl)) / sd   exceedance (R47-1)/46, Clopper-Pearson 95%
+basket TRAIN                 +2.56                     0 / 46 = 0.000  [0.000, 0.077]
+basket VALIDATION            +5.14                     0 / 46 = 0.000  [0.000, 0.077]
+```
+
+⚠ **The z is the honest cross-family number and it says the two splits are not alike**: the held-out
+cell sits **5.1 control-SDs** above the control mean, the TRAIN cell **2.6**. The rank is 1 of 47 in
+both and cannot show that. ⚠ **The prereg names basket's TRAIN z as `+2.561`; it does not reproduce
+to three decimals under any of four conventions I tried** (controls-only vs controls-plus-candidate
+× ddof 0/1); the closest is **+2.5577**, controls only, ddof = 1, which is the value quoted above.
+The discrepancy is in the reference, not the verdict, and nothing here turns on it.
+
 ⛔ **ADDED S-453 — the analyser's own PRESPECIFIED per-control test is weaker than the rank, and it
 was absent from this section.** PR-CSI-005's `secondary_statistics_PRESPECIFIED` S5 requires
 `specificity_holm` / `specificity_all_controls_rejected` *"as the analyser emits them, reported
@@ -1202,6 +1220,23 @@ fraction of what the whole clean state recovers (`recovery_fraction_candidate_of
 cell): **A train 1.4 %, A valid 2.5 %, B train 0.8 %, B valid 2.2 %** — **97–99 % of the recovery is
 elsewhere in every cell.** §A.3 states the same ratio for D12 and this family is no different: the
 axis is top-of-family in one cell, and top-of-family is a small thing.
+
+⛔ **The other prespecified secondaries this section owed, re-derived (S-454).** PR-CSI-006's S4
+requires `n_degenerate` and says it **MUST be 0** — it is **0 in all four cells**, so no arm is
+measuring rounding error. The family-size-free z and the exceedance rate (S6) for the four cells:
+
+```
+                   z      exceedance (R47-1)/46, Clopper-Pearson 95%
+A train         +1.64      3 / 46 = 0.065  [0.014, 0.179]
+A valid         +2.67      0 / 46 = 0.000  [0.000, 0.077]
+B train         +0.47     12 / 46 = 0.261  [0.143, 0.411]
+B valid         +2.65      1 / 46 = 0.022  [0.001, 0.115]
+```
+
+⚠ **The z says what the ranks cannot: B train's swap is half a control-SD above the control mean** —
+it is not near-missing, it is **inside the family** — while A train's z of +1.64 sits well above the
+family despite ranking only 4 of 47. **Rank and z disagree about which cell is closest to passing**,
+and the prereg asks for both for exactly this reason.
 
 ⛔ **And S5, the analyser's per-control specificity test, also prespecified and also absent until
 now.** `specificity_all_controls_rejected` is **False in all four cells**; rejections at α = 0.05 are

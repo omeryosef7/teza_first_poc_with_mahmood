@@ -40082,3 +40082,75 @@ running it before more drafting rather than after.
 **NEXT:** the three unfixed omissions above, then a sweep of all eight preregs for unreported
 `secondary_statistics_PRESPECIFIED` entries — AM-51's generalisation, and the only one of these
 findings with a mechanical form. **Push still credential-blocked.**
+
+---
+
+## S-454 — the prereg sweep AM-51 implied: it terminates, it found four more, and my own "eight preregs" was wrong (2026-09-26)
+
+**Why this one first.** Of S-453's open items it was the only one with a mechanical form, and AM-51
+had just shown that the preregistrations are the documents no gate reads. A sweep either finds more
+instances or bounds the problem; both are worth more than another drafted row.
+
+**The sweep.** Every `configs/dcs_csi_pr*.json` walked for keys matching `secondar|PRESPECIF`:
+**41 prespecified-secondary entries in 8 blocks across 6 of the 20 preregs** (PR-003a, 004, 005,
+006, 007, 020). The other fourteen declare none. ⚠ **S-453's NEXT said "all eight preregs". There
+are twenty** — eight was AM-48's count of frozen *read recipes*, which I carried into the wrong
+sentence one tick later. The sweep is bounded and complete over what exists.
+
+**Four were owed and absent from the draft**, all now reported and all re-derived by me:
+
+```
+                       z = (cand - mean 46 ctrl)/sd      exceedance (R47-1)/46 + Clopper-Pearson 95%
+basket TRAIN   (A.3)          +2.56                       0 / 46  [0.000, 0.077]
+basket VALID   (A.3)          +5.14                       0 / 46  [0.000, 0.077]
+swap A train   (A.4a)         +1.64                       3 / 46  [0.014, 0.179]
+swap A valid   (A.4a)         +2.67                       0 / 46  [0.000, 0.077]
+swap B train   (A.4a)         +0.47                      12 / 46  [0.143, 0.411]
+swap B valid   (A.4a)         +2.65                       1 / 46  [0.001, 0.115]
+```
+
+plus PR-006's **S4 degeneracy count**, which the prereg says MUST be 0 and which is **0 in all four
+swap cells**, and its **S3 dose-penalty** note.
+
+**Why the prereg wanted the z, demonstrated.** It disagrees with the rank about which cell is
+closest to passing. **B train ranks 13 of 47 with z = +0.47** — half a control-SD above the control
+mean, i.e. *inside* the family, not near-missing — while **A train ranks 4 of 47 with z = +1.64**,
+well above it. And on §A.3's two splits the rank is 1 of 47 in both while the z is **+2.56 TRAIN
+against +5.14 VALIDATION**: the held-out cell is twice as far above its family and the rank cannot
+say so. This is exactly the "does not improve with more controls" property S2 was written for.
+
+**Two validations of my own arithmetic, against numbers my code never saw.** PR-005 S4 states
+basket's exceedance as *"0/46 [0.000, 0.077]"* and PR-007 S2 states button TRAIN's as
+*"35/46 = 0.76087 [0.6123, 0.8741]"*. My Clopper–Pearson reproduces **both exactly**. I record this
+because the rest of this entry asserts CIs computed by code I wrote this tick.
+
+### What did NOT reproduce
+
+🔴 **PR-005 S2 names basket's TRAIN z as `+2.561` and I cannot obtain it.** At the governing n46
+family: **+2.5577** (controls only, ddof 1), **+2.5860** (ddof 0), **+2.3681** / **+2.3937** pooling
+the candidate into the reference set; at the superseded n34 family **+2.7573**. ⛔ **Not an error I
+can assert** — the prereg does not state its ddof convention, the closest value differs in the third
+decimal, and it is a cross-family *reference*, not a verdict. Recorded because S2's whole purpose is
+comparison against that number, so a reader following the prereg would compare against a figure that
+does not reproduce.
+
+### What is NOT established
+
+* ⛔ **That the sweep generalises past `secondary_statistics_*`.** It matched two key patterns. A
+  prereg obligation phrased some other way — inside a decision rule, a caveat, a `MUST` buried in
+  prose — would not be caught. **AM-51 was found by reading one prereg, not by this pattern.**
+* ⛔ **That the reported secondaries are now complete for §A.** They are complete for §A.3 and §A.4;
+  §A.1 and §A.2 were **not** re-checked against PR-005's and PR-007's lists this tick.
+* ⛔ **That PR-004's and PR-003a's secondaries will stay unowed** — they become owed the moment
+  either family runs, and nothing enforces that.
+* ⛔ Nothing measured on a GPU; queue empty; **TEST untouched**.
+
+⚠ **The honest shape of this tick: the sweep found four more instances and then bounded itself out
+of usefulness.** Four preregs' secondaries were missing, they are now in; the mechanism that let
+them go missing — no gate reads a preregistration — is **unchanged**, and the sweep I just ran is a
+grep, not a gate. Writing that gate is a bigger job than this tick and it is not started.
+
+**NEXT:** §A.1 and §A.2 against PR-005's and PR-007's secondary lists (the same check, two sections
+that were not covered). Then S-453's three unfixed omissions — native ranks beside the swap in three
+of four cells, direction B's verdict hinging on the contested AM-48 rule, §A.3's TRAIN denominators.
+**The rung-1 question (S-453) is still with the user and still unanswered. Push credential-blocked.**
