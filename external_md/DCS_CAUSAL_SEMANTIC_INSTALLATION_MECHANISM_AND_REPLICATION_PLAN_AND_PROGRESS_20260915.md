@@ -37860,3 +37860,75 @@ filename convention; a family frozen under another name is invisible to it.
 about *unrunnability* that deserve an adversarial check before they go anywhere.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-424 — the adversarial check on §L, run by me against my own section: "permanent" was wrong, and the two dead extensions turn out to have ONE cause
+
+**2026-09-25. Queue empty, no GPU.** S-423 said §L makes three unrunnability claims that deserve an
+adversarial check. **I ran it against my own section rather than waiting**, and it found the section
+overstating in one direction and under-explaining in another.
+
+### 1. 🔴 "PERMANENTLY floor-limited" was wrong, and the section contradicted itself
+
+§L.3 asserted the two results are **permanently** floor-limited **and, four lines later, named the
+escape** — a fresh freeze re-running every arm on one blob. **Both cannot be true.** The correct
+scoping, now in both §L.3 and AM-46:
+
+- **PERMANENT:** that **these two preregs** can never deliver a certifying family.
+- **NOT permanent:** that **the cells** are uncertifiable. A fresh full family would carry a floor
+  below α in both cases. What stands in the way is **cost, not possibility** — 53 arms for the L20
+  cell rather than the 36 the extension hoped to add.
+
+**The honest sentence is about who must pay, not about what is knowable.** Re-derived while fixing
+it: the analyser certifies at `round(1/(n+1),4) < 0.05`, so **n_controls = 19 gives exactly 0.0500
+and does NOT certify; 20 gives 0.0476 and does.** AM-8's *"at least 19 is off by one; the correct
+number is 20"* reproduces exactly.
+
+### 2. 🔴 The bigger find: the two extensions died the SAME death, and §L said "never ran" twice
+
+§L.3 said the two extension families "never ran" as if that were two unrelated accidents.
+**It is one cause.** Both were designed to **reuse already-run arms**, and both therefore had to pin
+the code blob so old and new arms would match:
+
+```
+PR-CSI-004    36 new arms must run the blob its 10 REUSED stage-1 controls ran    e94258bd -> moved
+PR-CSI-003-A  20 new arms must run the blob its two ALREADY-RUN halves ran        e94258bd -> moved
+```
+
+**The reuse that made each design cheap is exactly what killed it.** That is the transferable
+lesson and it is now stated as one: **a family that reuses archived arms and pins the blob has a
+shelf life, and nothing warns you when it expires.** Neither prereg is at fault for pinning — the
+pin is what makes reuse sound. The fault is that reuse and a moving file cannot coexist, and no gate
+watches the interval.
+
+### 3. ⚠ And a status I had flattened — PR-CSI-003-A is NOT dead, it is WAITING
+
+§L.3 and S-423 both wrote it as "BLOCKED … never launched", which reads as abandoned. The record
+says otherwise: **the launcher patch IS applied and verified** (`bash -n` OK, 20 arm names, range
+4..23, no gaps, no repeats), and **only the launch waits — escalated rather than self-approved**,
+because *"amending a VOID condition after it fires to let one's own experiment proceed"* is the
+shape of an earlier blocker. **8.7 GPU-hours were not spent on twenty arms that would have been
+VOID by a condition the author wrote.**
+
+🔴 **This is therefore a SECOND open escalation sitting with the user**, alongside the §3.2 TEST
+question — and unlike that one it has a built, verified launcher behind it. **I am not
+self-approving it**: the whole reason it waits is that approving it myself is the failure mode.
+Recorded here so it is visible rather than buried in an amendment from S-142.
+
+### 4. What was NOT established
+
+⛔ **That a fresh family WOULD certify either result.** Enlarging a control family lowers the
+**floor**; it does not move the candidate's **rank**, and D12's own history shows a rank can move
+the wrong way as a family grows. The claim is only that the floor would no longer be the binding
+constraint.
+⛔ **That PR-CSI-003-A's VOID 6 is still the only obstacle.** It was written against a blob that has
+since moved twice; whether the rest of the prereg still names things that exist is **not checked
+here** (S-167c's rule), and would need checking before any launch.
+⛔ **§L is still reviewed only by me.** This tick's adversarial pass was self-run.
+⛔ **No GPU, no arm, no code change. TEST untouched.**
+
+**NEXT:** whether PR-CSI-003-A still names only things that exist — the S-167c check — which is the
+precondition for the escalation being actionable at all.
+
+`git push` remains credential-blocked. Committed locally.

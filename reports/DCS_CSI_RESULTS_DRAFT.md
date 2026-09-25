@@ -434,24 +434,39 @@ the writer"* is unavailable throughout. This is not an omission that more comput
 admissible held-out axis exists, and restricting controls to one head's own nine cells returns the
 **1/9 = 0.111 floor**, which is above α at every attainable effect size.
 
-## L.3 🔴 Two results are PERMANENTLY floor-limited, and for the same reason
+## L.3 🔴 Two results are floor-limited, and BOTH extensions died the same death
 
 Both are **top of their control family** and both families are **too small to certify that**:
 
-| result | outcome | floor | certifiable at α = 0.05? | the family that would have fixed it |
+| result | outcome | floor | certifiable at α = 0.05? | the extension that would have fixed it |
 |---|---|---|---|---|
-| necessity, basket | rank **1 of 9** | 0.1111 | **no** | PR-CSI-003-A — **BLOCKED by its own VOID 6, never launched** |
-| sufficiency, basket at **L20** | rank **1 of 11** | 0.0909 | **no** | PR-CSI-004 — **frozen, never run, and NO LONGER RUNNABLE** |
+| necessity, basket | rank **1 of 9** | 0.1111 | **no** — needs ≥ 20 controls | PR-CSI-003-A — built, patched, **never launched** |
+| sufficiency, basket at **L20** | rank **1 of 11** | 0.0909 | **no** | PR-CSI-004 — frozen, **never run, unrunnable as frozen** |
 
-PR-CSI-004 required all 53 arms to run one `score_behavior.py` blob; the 10 reused controls ran
-`e94258bd…`, the file is now `9562bdf9…`, and its 36 new arms never began (AM-46). **So "rank 1 of
-11, floor-limited" on the L20 cell is a permanent statement, not a provisional one**, and the same
-holds for necessity at rank 1 of 9. ⚠ **Neither is a negative result.** Each is the *best attainable*
-outcome in a family whose floor sits above α — the distinction §4 draws between a FAIL and a
-structural CANNOT ANSWER, here arriving through family size rather than through K.
+🔴 **The two failures have ONE cause, not two.** Each extension was designed to **reuse
+already-run arms** and therefore had to pin the code blob so old and new arms would match.
+PR-CSI-004 requires its 36 new arms to run the blob its 10 reused controls ran; PR-CSI-003-A's
+VOID 6 requires its 20 new arms to run the blob its two already-run halves ran. **In both cases
+`src/boombness/score_behavior.py` moved before the new arms were launched, and the reuse that made
+each design cheap is exactly what killed it.** That is the transferable lesson: **a family that
+reuses archived arms and pins the blob has a shelf life, and nothing warns you when it expires.**
 
-The escape in both cases is a fresh freeze that re-runs **every** arm on one current blob. Reusing
-archived arms is what made these unfixable in the first place.
+⚠ **Their statuses differ and the draft should not blur them.** PR-CSI-004 is **dead as frozen** —
+its requirement can no longer be met. PR-CSI-003-A is **not dead: it is escalated and waiting.**
+Its launcher patch is applied and verified; the launch was withheld deliberately, because amending
+a VOID condition *after it fires* to let one's own experiment proceed is the shape of an earlier
+blocker. **8.7 GPU-hours were not spent on twenty arms that would have been VOID by a condition the
+author wrote** — a decision that is still open, not a dead end.
+
+⚠ **And "floor-limited" is a statement about these families, NOT about the cells.** Neither result
+is permanently uncertifiable: a **fresh freeze that re-runs every arm on one current blob** would
+carry a floor below α in both cases. What is permanent is that **these two preregs cannot deliver
+it**. The cost is the honest part — a full L20 family is 53 arms, not the 36 the extension hoped to
+add — and reusing archived arms to avoid that cost is what produced this situation.
+
+⚠ **Neither is a negative result.** Each is the *best attainable* outcome in a family whose floor
+sits above α — the same FAIL-versus-structural-CANNOT-ANSWER distinction §4 draws, arriving here
+through **family size** rather than through K.
 
 ## L.4 Every head was chosen because it was live
 
