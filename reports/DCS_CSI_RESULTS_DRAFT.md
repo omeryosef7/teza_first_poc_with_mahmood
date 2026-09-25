@@ -1037,7 +1037,7 @@ floor pair `(1/35, 1/31)`** was quoted for years where both floors are now `1/47
 1 of 13 and 1 of 9. **At n46 it is 1 of 25 on both splits, floor 0.0400 — it certifies on its own**,
 so that caveat understated the result rather than overstating it.
 
-## A.4 The cross-codeword axis swap: NO CELL IS CLAIMED FOR EITHER DIRECTION (D25, D26, D27, D30)
+## A.4 The cross-codeword axis swap: NO CELL IS CLAIMED FOR EITHER DIRECTION (D25, D27, D30; **D26 is reported in §A.4b**)
 
 🔴 **This family's original headline was WITHDRAWN, and a prohibition written to police it mandated
 a sentence that was itself later retracted.** It is drafted here with that history attached, because
@@ -1067,9 +1067,30 @@ once required *"CELL 4 on TRAIN, C1 refuted by the fixed rule"* as a mandatory c
 which a later amendment withdrew. **A rule that compels a retracted claim is the one failure mode
 care cannot catch**, because following it is what triggers it.
 
-⚠ **The rank p here is DESCRIPTIVE, not a valid permutation p:** the swap arm is not exchangeable
-with the control family it is ranked against, so the number may be quoted only as a position, never
-as a test.
+⚠ **The rank p here is DESCRIPTIVE, not a valid permutation p — and BOTH halves of that finding
+have to be read together, because each one alone misleads.** The rank test's null requires the
+candidate to be exchangeable with the family it is ranked against, and by construction it is not:
+`|cos|` with the recipient's native axis runs **min 0.0001, median 0.0156, max 0.1894** across the
+46 controls, while the swap axis sits at **0.5569** — **2.9× more aligned with the native axis than
+any control**. The controls are built near-orthogonal to the native axis; the transplanted axis
+retains 56 % of it. So the ranks — **4, 13 and 2 alike** — may be quoted as *positions*, never as
+tests.
+
+**The obvious repair was attempted and it failed, and that cuts the other way.** If alignment
+explained the swap's position, recovery should track `|cos|` across the control family. It does not:
+Pearson **r = −0.027** over the 46 controls, and a linear fit extrapolated to `|cos| = 0.5569`
+predicts **+0.000035** against an observed **+0.001499** — a residual of **+1.95 sd**. **The
+alignment asymmetry does not explain rank 4.** It weakens the inferential standing of the ranks
+without explaining them away. Stating only the first half reads as "the swap result is an artefact";
+stating only the second reads as "the objection was answered". Neither is what was measured.
+
+⚠ **This does not touch the paired contrast in §A.4b.** `XSWAP − KO_AXIS` is a within-report,
+domain-paired statistic and makes no exchangeability assumption; whatever is wrong with the ranks
+leaves it standing.
+
+*The `|cos|` and regression figures in these two paragraphs are* `[READ, not reproduced]` *— they
+derive from the `.pt` bases, which need the run environment, and no interpreter with `torch` is
+reachable from the login node. Everything else in §A.4 and §A.4b was re-derived (S-451, S-452).*
 
 🔴 **And direction B's validation cell is where the analyser and its preregistration DISAGREE
 (AM-48):** at **rank 2 of 47, rank_p 0.04255**, the prereg's `definition_of_HELPS` (`rank ≤ 2`) says

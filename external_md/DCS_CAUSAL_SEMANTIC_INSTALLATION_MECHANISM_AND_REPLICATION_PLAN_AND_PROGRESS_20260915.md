@@ -39890,3 +39890,71 @@ published blind spot — *"existence ≠ correctness"* — is exactly this, now 
 **NEXT:** the nine remaining cited §A rows should be checked body-against-heading the way D26 was
 (cheap: grep each row's distinguishing figure inside its own section). Then D21 and the D13/D15
 layer-exoneration pair. **No GPU work this tick; queue empty; push still credential-blocked.**
+
+---
+
+## S-452 — the body-against-heading sweep S-451 called for: one real defect, one detector failure, and D27 was stated in the half that flatters (2026-09-26)
+
+**The check.** S-451 found §A.4 claiming D26 in its heading and never reporting it, and named the
+generalisation: do the other cited rows report what they claim? Mechanised as — for every `##`/`###`
+section of §H and §A, take the D-rows cited in the heading, pull that row's distinguishing figures
+from the claim table, and count how many appear inside that section's body.
+
+**First run flagged two. One was mine.** `reports/DCS_CSI_CLAIM_TABLE.md` contains several tables
+whose first column is a D-number, and `dict.setdefault` bound **D12** to the first `| D12 |` line in
+the file — a 90-character audit-index row reading *"NOT contradicted; 3 amendments"* — instead of
+the 4 225-character claim row at line 27. Zero figures, so §A.3 read as reporting nothing. Binding
+each row to its **longest** matching line instead: D12 carries 24 figures and §A.3 carries **11** of
+them. ⚠ **Detector failure #14, and the same shape as the last thirteen** — the pattern matched
+something real and not the thing I meant. The flag was spurious; §A.3 is fine.
+
+**The other flag was real: §A.4 cited D27 and carried ONE of its nine figures.** The whole of D27 in
+the draft was three lines asserting *"the swap arm is not exchangeable … the number may be quoted
+only as a position, never as a test"* — the conclusion, with none of the measurement under it, and
+**missing the half D27's own caveat column makes mandatory**: *"both halves must be stated together
+or the row is misleading in whichever direction the reader is already leaning."*
+
+The missing half is that the reviewer **tried to convert the non-exchangeability into an explanation
+of rank 4 and failed, and reported the failure** — `r(|cos|, recovery)` = **−0.027** over the 46
+controls; a linear fit extrapolated to `|cos| = 0.5569` predicts **+0.000035** against an observed
+**+0.001499**, residual **+1.95 sd**. Without it the paragraph reads as *"the swap result is an
+artefact"*, which is not what was measured. With only the second half it would read as *"the
+objection was answered"*, which is also not what was measured.
+
+⚠ **This is the same defect class as S-451's, one step down**: S-451 was a heading claiming a row the
+body did not report; this is a body reporting a row's *conclusion* without the evidence that
+qualifies it. Both pass every gate the sprint owns. Neither is a wrong number.
+
+### What was corrected
+
+* **§A.4's heading** — was `(D25, D26, D27, D30)`; now `(D25, D27, D30; D26 is reported in §A.4b)`,
+  so the heading stops claiming what §A.4b holds.
+* **§A.4's D27 paragraph** — rewritten to carry both halves and six of the nine figures: the `|cos|`
+  family (min 0.0001, median 0.0156, max 0.1894 vs the swap's 0.5569, 2.9×), the failed regression,
+  and the statement that the ranks 4, 13 and 2 are **positions, not tests**. It also now records
+  that none of this touches §A.4b's paired contrast, which makes no exchangeability assumption.
+
+⛔ **The `|cos|` and regression figures are carried `[READ, not reproduced]`, and the draft says so in
+place.** They derive from the `.pt` bases (`configs/dcs_csi_axis_button_behavioral_L18.pt`,
+`…_button_L18_PLUS_basket_swap.pt`); **no interpreter with `torch` is reachable from the login node**
+— the run environment is `poc_stage2` on the compute nodes — so re-deriving them needs a job, and
+this tick did not run one. ⚠ **That makes them the only figures in §A.4/§A.4b not re-derived**, and
+the asymmetry is worth naming: everything I *could* recompute this tick and last, I did, and **two of
+those recomputations changed the record**.
+
+### What is NOT established
+
+* ⛔ **That the `|cos|` figures are right.** Not reproduced; flagged in place. They are the sole
+  unverified figures in the section.
+* ⛔ **That the sweep is a gate.** It counts figure *co-occurrence*; it cannot tell a figure that is
+  reported from one that merely appears, it is blind to short integers (S-431's known blind spot),
+  and it just produced a false positive on D12. It found D27 because D27 was badly thin, not because
+  the method is sound. **A row passing it has not been checked.**
+* ⛔ **That §H and §A.1/§A.2 are clean.** They pass this sweep at 3+ figures, which per the line above
+  means little. §A.3 and §A.4b have still had no adversarial review.
+* ⛔ No new measurement; no GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** D21 and the D13/D15 layer-exoneration pair are the remaining reviewable increments of §A
+(ten rows left: D13, D14, D15, D16, D17, D20, D21, D22, D28, D31). Before more drafting, §A.3 and
+§A.4/§A.4b deserve the adversarial review every other section got — each one so far has returned real
+defects on its first pass. **Push still credential-blocked.**
