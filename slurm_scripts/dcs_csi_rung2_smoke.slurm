@@ -49,6 +49,18 @@ echo "BLOB ${CSI_GIT_BLOB:-unset}  PORCELAIN [${CSI_GIT_PORCELAIN:-unset}]"
 
 MODEL=/home/sharifm/students/matanbentov/hub/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659
 LIMIT="${LIMIT:-3}"
+# ⚠ S-396: THE OUTPUT PATH WAS HARDCODED TO ..._SMOKE_... A full-population run (LIMIT=0) would
+#   have OVERWRITTEN the committed smoke artefact AND landed a 670-row result under a filename
+#   saying SMOKE. The artefact's own `IS_SMOKE` field would have said false while its NAME said
+#   otherwise -- a file that contradicts itself is worse than either version alone. Caught at
+#   submit time (927323 cancelled <1 min in, before the model load). The path now derives from
+#   LIMIT so the two can never disagree.
+if [ "$LIMIT" -eq 0 ]; then
+  OUT=reports/DCS_CSI_RUNG2_TRAIN_basket_full.json
+else
+  OUT=reports/DCS_CSI_RUNG2_SMOKE_basket_train.json
+fi
+echo "LIMIT=$LIMIT -> OUT=$OUT"
 # ⚠ S-391: THE FIRST ATTEMPT (926941) BUDGETED ONE HOUR FOR A ~23-MINUTE MODEL LOAD PLUS AN
 #   UNKNOWN PER-PROMPT COST, AND LEARNED NOTHING. It hit TIMEOUT at 01:00:15 with no artefact and
 #   -- because stdout was unflushed and SIGKILL discards the buffer -- no record of how far it got.
@@ -75,6 +87,6 @@ python scripts/dcs_csi_rung2_celldecode.py \
   --concept-ids 13054,33909 \
   --codeword-ids 14351,34217 \
   --limit "$LIMIT" \
-  --out reports/DCS_CSI_RUNG2_SMOKE_basket_train.json
+  --out "$OUT"
 
 echo "EXIT=$? $(date -Is)"

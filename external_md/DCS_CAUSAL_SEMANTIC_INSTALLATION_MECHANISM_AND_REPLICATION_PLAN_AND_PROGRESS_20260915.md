@@ -35444,3 +35444,95 @@ NEXT     the prereg: statistic settled (S-389), floor re-derived (S-379), cost m
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-396 — the full TRAIN run is the way out of S-379's power problem: **MEASURE q on the discovery split instead of borrowing rung 1's**. Submitted, caught a self-contradicting artefact path at submit time, cancelled and fixed (2026-09-25)
+
+### 1. Why a TRAIN run rather than the prereg
+
+S-379 established that the rung-2 power **cannot** be estimated without assuming the coincidence
+the experiment exists to test:
+
+> *"Assuming the decodability argmax behaves like the causal argmax assumes precisely the
+> coincidence the rung-2 experiment exists to test. Using it to power the experiment would make
+> the design circular before a single arm ran."*
+
+That left the prereg with a floor but no power table. **There is a way out that assumes nothing:
+measure `q` on TRAIN.** The split manifest's own discipline line makes train the discovery split;
+using a train-measured effect size to power a validation test is the ordinary, non-circular use of
+a discovery split, and it is exactly how PR-CSI-018's observed 5-of-6 rate informed PR-CSI-020's
+power table (S-354).
+
+It also needs **no new code** — the instrument is R35-reviewed and S-395-executed, and the full
+population is `--limit 0`. Cost is already measured: 670 x 5.267 s = 58.8 min plus load, inside the
+4 h walltime.
+
+### 2. 🔴 Caught at submit time: the launcher would have written a self-contradicting artefact
+
+`927323` was submitted and **cancelled under a minute later, before the model load**, on noticing:
+
+```
+--out reports/DCS_CSI_RUNG2_SMOKE_basket_train.json      <-- HARDCODED
+```
+
+With `LIMIT=0` that would have:
+
+```
+1. OVERWRITTEN the committed smoke artefact (md5 d89642f0, S-395) in the worktree, and
+2. landed a 670-row, 67-domain result under a filename saying SMOKE, while the artefact's own
+   `⚠ IS_SMOKE` field -- computed as bool(limit) -- read FALSE.
+```
+
+📌 **A file whose NAME and whose CONTENTS disagree is worse than either being wrong alone**, because
+each is evidence for the other and a reader has no way to tell which lied. The path now derives from
+`LIMIT`, so the two cannot disagree:
+
+```
+LIMIT = 0  -> reports/DCS_CSI_RUNG2_TRAIN_basket_full.json
+LIMIT > 0  -> reports/DCS_CSI_RUNG2_SMOKE_basket_train.json
+```
+
+and the launcher echoes `LIMIT=$LIMIT -> OUT=$OUT` so the binding is in the job log. A test asserts
+the path is not hardcoded again; 23 tests pass.
+
+⚠ **This was caught by asking what the RUN would produce, not by any check.** Nothing in the
+launcher, the instrument or its 22 tests would have objected — the smoke artefact is committed, so
+even the overwrite would have been silently recoverable and therefore silently unnoticed.
+
+### 3. What the train run will and will not license
+
+```
+WILL      an empirical q -- the rate at which the decodability argmax lands on the screen-predicted
+          layer, on TRAIN, over 67 domains. That powers the validation prereg WITHOUT assuming
+          rung 1 and rung 2 agree.
+WILL      a per-prompt cost at full population scale, replacing S-395's sample of three.
+WILL NOT  anything quotable as a result. TRAIN is the discovery split; a train q is an input to a
+          design, not a finding about the model.
+WILL NOT  touch validation, which is what the prereg will read, or TEST, which is unreachable by
+          construction (S-385).
+```
+
+### 4. What was NOT established
+
+```
+- NOT RESUBMITTED YET. This entry ships the launcher fix; the run goes after the commit, because
+  the submit helper refuses a dirty worktree.
+- NOT established: that a train q transfers to validation. It is an ESTIMATE for powering, and
+  the prereg must say so -- the same status PR-CSI-020 gave PR-CSI-018's rate.
+- NOT established: that the train population's prompt lengths match validation's. S-395 flagged
+  that prompt length drives the decomposition cost and was not varied; the train run measures
+  cost across 67 domains and will answer it for train, not for validation.
+- STILL OPEN: the direct-path surrogacy, to be named in the prereg.
+```
+
+### 5. State
+
+```
+QUEUE    EMPTY (927323 cancelled deliberately).
+CHANGED  slurm_scripts/dcs_csi_rung2_smoke.slurm (output path derives from LIMIT),
+         tests/... (23), external_md/...20260915.md
+NEXT     commit, resubmit with LIMIT=0, read q, then freeze the prereg.
+```
+
+`git push` remains credential-blocked. Committed locally.

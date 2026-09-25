@@ -359,3 +359,18 @@ def test_the_token_ids_have_a_decoded_WITNESS():
     DEFAULT, not a silent TYPO."""
     code = _code()
     assert "ids decode to" in code, "no id->string witness is printed"
+
+
+def test_the_launcher_cannot_write_a_full_run_into_a_SMOKE_filename():
+    """🔴 S-396. The launcher hardcoded --out ..._SMOKE_... so a full-population run (LIMIT=0)
+    would have OVERWRITTEN the committed smoke artefact and landed 670 rows under a filename
+    saying SMOKE -- with the artefact's own IS_SMOKE field reading false. A file that contradicts
+    itself is worse than either version alone."""
+    p = os.path.join(ROOT, "slurm_scripts", "dcs_csi_rung2_smoke.slurm")
+    if not os.path.exists(p):
+        pytest.skip("launcher absent")
+    s = open(p, encoding="utf-8").read()
+    assert '--out "$OUT"' in s, "the output path is hardcoded again"
+    assert 'if [ "$LIMIT" -eq 0 ]' in s, "the path no longer derives from LIMIT"
+    assert "RUNG2_TRAIN_basket_full" in s and "RUNG2_SMOKE_basket_train" in s, (
+        "the two run kinds no longer have distinct output names")
