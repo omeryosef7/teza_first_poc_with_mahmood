@@ -7,7 +7,8 @@ phrasing is named here too, so a later editor cannot reintroduce it by not knowi
 ⛔ **STATUS: DRAFT PROSE, NOT A CLAIM SOURCE.** If this file and the claim table ever disagree,
 **the claim table wins** and this file is the thing that is wrong. Figures in §2–§4 for **D39/D40/D41** were re-derived by hand in S-373, S-411 and S-415; **§1's D37
 figures were re-derived in S-417** from `DCS_CSI_PR015_CELL_CENSUS_3HEADS_validation.json`, and
-**§4's D38 figures come from S-307/S-328**, not from any of those three. None is copied from a
+**§4's D38 figures come from S-328**, not from any of those three — S-307 is the correction entry
+for **D37**, and §1 cites it for exactly that. None is copied from a
 summary field. ⚠ *The header of a draft is the first sentence a sceptical reviewer tests; this one
 names its scope rather than claiming a blanket.*
 
@@ -22,8 +23,10 @@ a fixed position: the two-way softmax between the concept and codeword continuat
 `y = exp(logp_concept) / (exp(logp_concept) + exp(logp_codeword))`, which lies in [0, 1]. ⚠ **It is
 not the `semantic_logodds` field**, which exists in every row and equals `logp_concept −
 logp_codeword`. That is the same contrast on **a different scale**: the endpoint is exactly
-`sigmoid(semantic_logodds)`, so **no rank in this draft changes with the choice — every argmax
-result in §2, §3 and §4 is invariant — while every effect size does.** Published
+`sigmoid(semantic_logodds)`, so **no rank in this draft changes with the choice**: every argmax
+**of this endpoint** — §1's four peaks, §2's, §3's, and §4's D38 — is invariant, **while every
+effect size is not.** ⚠ §4's D41 argmaxes are of a **different statistic** (a direct-path
+projection, not `y`), so they are outside this argument. Published
 `installation_by_arm` values such as 0.47336 / 0.23972 are probabilities, and reading an effect like
 `E = −0.2269` as a change in log-odds would **overstate** it. §M.4 gives the full definition
 including the channel filter. The statistical unit is the **domain**. The split manifest
@@ -31,9 +34,13 @@ including the channel filter. The statistical unit is the **domain**. The split 
 must be kept apart:** the *screen* is fitted on **67 train domains** — the 70 less three
 whole-population domains every CSI prereg excludes, which are `train`-assigned (a config field once
 mislabelled them `test_domains` and collapsed them to the count "3", the error AM-37/S-312
-corrected) — while **every census reported here is read on the 23 VALIDATION domains.** So the n
-behind every confirmatory p in this draft is **23, not 67**, and a 230-row read is n = 23 because
-the domain is the unit. **No arm of any family reported here touched a TEST domain — and TEST is
+corrected) — while **every census reported here is read on the 23 VALIDATION domains.** So every effect, bar and argmax
+below rests on **23** domains rather than 67, and a 230-row read is n = 23 because the domain is the
+unit. ⚠ **The confirmatory p's themselves are NOT over domains at all** — binomial, conditional and
+permutation are functions of the **admitted heads**, `K = 6` in §2 and `K = 8` in §3, which is why
+§3 can say "the margin is one head". The 23 domains are the n of the `E` and `bar(h)` estimates that
+feed argmax and admission. *(§4's D41 figures are a TRAIN pilot on 67 domains and carry no
+confirmatory p.)* **No arm of any family reported here touched a TEST domain — and TEST is
 nonetheless NOT an available axis:**
 it was read to completion on 2026-09-08 and is **selection-contaminated on knobs every CSI family
 inherits** (AM-39). ⛔ *"TEST is unspent / untouched / available"* is a predecessor-phase belief
@@ -66,7 +73,7 @@ the census reads — so this is a statement about **load-bearing heads, not abou
 
 The obvious rival, that the band edge simply attracts everything, is **refuted by the screen's own
 marginal**: L14 is the screen argmax for only **6 of 32** heads (the modal layer is L11 at 8/32), so
-P(all four match) is **2.06e-04** under that marginal against 1.52e-04 uniform [†] — ⚠ **and the uniform baseline is the one §3 and §L.5 measure to be too generous**, since the intervention argmax marginal concentrates on L10/L14; it is quoted here as the comparator D37 states, not as a null — and **an all-L14
+P(all four match) is **2.06e-04** under that marginal against 1.52e-04 uniform [†] — ⚠ **the uniform figure is a comparator, not a null.** The intervention argmax marginal is measured to concentrate on L10/L14 **for D40's eight-head multiset** (§3, §L.5); **no equivalent measurement exists for these four heads**, and AM-42 records that such corrections are specific to the multiset they were computed on — and **an all-L14
 guesser scores 2 of 4.**
 
 ⛔ D37 is **descriptive**: no rank, no p, no control family. *"Cell (L,h) is the writer"* is
@@ -82,6 +89,10 @@ across **four distinct layers** (L6, L8, L10, L11). The single miss is head 20, 
 
 **The claim is stated with the weakest of three preregistered p-values: conditional
 `p = 0.012346`** (binomial 0.000092; permutation 0.005556 over 180 distinct assignments). The
+**`K_unique = 2, M_unique = 2`: both unique-layer heads matched (11→L8, 29→L6)**, and AM-42 proves
+analytically that a miss on *either* would have given `p_cond = 1 − (8/9)² = 17/81 = 0.209877` and no
+certification **whatever the other four heads did**. ⚠ **So §2's conditional margin is TIGHTER than
+§3's** — the cross-codeword result is the more fragile of the two on this axis. The
 spanning rule is satisfied on four layers, so a shared band bias cannot account for the result, and
 the permutation p is why the family exists — a bias says nothing about *which* head gets *which*
 layer. VOID condition 8 passes on all six heads at ≤ 4.2e-09.
@@ -120,17 +131,22 @@ whichever direction it points.
 preregistered **spanning rule fired**: a shared top-of-band bias and a correct screen are
 indistinguishable there. K = 2, M = 2 — and this is the one family grandfathered to `binomial_only` gating (§M.6), so **its p-gate PASSED and the spanning rule vetoed the PASS afterwards.** **The binomial is FORBIDDEN for this family** and is quoted below only inside the prohibition, because a ban that does not name what it bans cannot be checked. ⚠ **It is numerically identical to D39's certified conditional p in §2** — the same six digits appear as a certified result there and as a forbidden figure here, so an editor must keep the antecedents apart. Conditional 1.0
 (K_unique = 0) and permutation 1.0 over a space of size **1**. The fallback delivered a head-level
-cross-codeword test never run before: head 17 **98.3 %**, head 19 **88.7 %** (both ci95 excluding
-0), head 23 **18.4 %** with **ci95 crossing zero** — ⚠ **an AMPLITUDE result only**: exploratorily, head 23's per-cell depth **shape** tracks across codewords at ρ = +0.817, so *"head 23 does not transfer"* is true of the amplitude and false of the shape (AM-41, **not preregistered**). ⛔ *"The screen transfers across codewords"* and
+cross-codeword test never run before: head 17 retains **98.3 %** of its basket whole-head effect on button, head 19 **88.7 %** (both ci95 excluding
+0), head 23 **18.4 %** with **ci95 crossing zero** — ⚠ **an AMPLITUDE result only**: exploratorily, head 23's per-cell depth **shape** tracks across codewords at ρ = +0.817, so *"head 23 does not transfer"* is true of the amplitude and false of the shape (AM-41, **not preregistered**) — ⚠ **measured on the same 23 domains as the basket census, which INFLATES ρ, and nine cells are not nine independent units.** ⛔ *"The screen transfers across codewords"* and
 the figure 0.012346 are forbidden from this family. ⛔ *"Head 23's mechanism is refuted"* is
 forbidden — null on button is CANNOT ANSWER, not a negative.
 
 **Rung 2 was attempted and is not reachable (D41).** Decodability was built, reviewed, executed and
 piloted, then **closed without a validation read, by decision**. Four measurements: K = 8 is the
 *whole* admissible population (0 of 7 fresh basket heads clear the frozen 1.5 gate, best 1.400; on
-button **this same eight-head basket set** tops out at K = 2 — head 10 at 1.45, head 21's ci95
-crossing zero, heads 4/13/18 never measured there — ⚠ **not the six BUTTON-selected heads §2
-admitted**, a different pool); the natural statistic is **confounded** — the direct-path projection
+button **this same eight-head basket set** tops out at K = 2, and the arithmetic needs all four
+reasons or it does not come to two: **heads 6, 11 and 27 are already cell-mapped on button** by
+PR-CSI-018, so re-running them counts a known outcome as a fresh draw; **head 10** sits at 1.45,
+below the gate; **head 21's** ci95 crosses zero; and **heads 4, 13 and 18** have no button
+whole-head measurement at all, head 18 additionally predicting L14, the band-edge layer PR-CSI-018
+excluded by design. **So only heads 4 and 13 are even conceivable, each needing its own button
+`HD_` arm with admission unknown until it lands.** ⚠ **These are not the six BUTTON-selected heads
+§2 admitted** — a different pool); the natural statistic is **confounded** — the direct-path projection
 puts all 8 raw argmaxes in the top three of nine layers, P = (1/3)^8 = 1.524158e-04 [†]; a
 layer-normalised statistic removes the confound and gives **M = 3 of 8 on train**; at that rate
 **power is 0.1446**, and the PPV of a PASS is **0.24 / 0.42 / 0.55** at priors 0.10 / 0.20 / 0.30.
@@ -158,7 +174,7 @@ would be matching the form and not the operation. **Nothing in this sprint has r
 
 ⛔ **There is no control family of arbitrary cells anywhere in this sprint**, so *"cell (L,h) is the
 writer"* is unavailable for every result above. The reason is measured, not assumed: no admissible
-held-out axis exists, and restricting controls to one head's nine cells returns the 1/9 floor.
+held-out axis exists, and restricting controls to one head's nine cells returns the 1/9 floor, **which is above α at every attainable effect size.**
 ⛔ The **source** question — whether the demonstrations supply the installed content — is open with
 no confirmatory instrument; the mass measurement licenses a **refutation reading only**.
 ⛔ **TEST is spent and selection-contaminated** and is not an available axis.
@@ -217,8 +233,10 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | "D37 is superseded by D40" / "D38 is explained by D39" | both ⛔; the §2→§3→§4 order invites both | D39, D40 |
 | "a NULL source control is support" | a null control is CONFOUNDED — report as CANNOT ANSWER | AM-43 |
 
-**‼ marks a phrasing this draft itself committed and had corrected** — the TEST row is here because
-§0 asserted exactly it in the first version (S-417), which is the whole argument for keeping this
+**‼ marks a phrasing this draft itself committed and had corrected.** The **TEST** row is here
+because §0 asserted exactly it in the first version (S-417); the **floor** row because §M copied it
+out of the published artefact, where it is still live (S-428). Two different routes to one failure —
+one written from memory, one inherited from a source — which is the whole argument for keeping this
 checklist attached to the prose rather than in a reviewer's head.
 
 ---

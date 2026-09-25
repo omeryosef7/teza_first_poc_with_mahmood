@@ -38609,3 +38609,83 @@ launched, because it tests whether one reviewer is enough on a section that has 
 corrected once.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-434 — the SECOND independent review of §0–§6: 11 findings on a section already reviewed and corrected, and its first finding is the defect S-433 predicted
+
+**2026-09-25. Queue empty, no GPU.** S-432 reviewed §0–§6 and I corrected it. S-433 measured that
+half my prose defects arrive *inside corrections*. This is the second, independent review of the
+same section — run to test whether one pass is enough. **It is not.**
+
+### 1. 🔴 Its first finding is a defect I introduced in S-432, one tick before measuring that I do this
+
+S-432's fix replaced *"the census families score 67 train domains"* with *"the n behind every
+confirmatory p in this draft is **23, not 67**"*. **The first half was the fix; the second half is a
+new error.** The confirmatory p's are not over domains at all:
+
+```
+P(Binom(K, 1/9) >= M)   K = ADMITTED HEADS (6 in §2, 8 in §3), M = matches
+artefact: K_admitted 8, M_matches 6, null_p_per_head 0.1111, n_band_layers 9  -- no domain term
+the 23 domains are the n of E and bar(h), which feed argmax and admission
+```
+
+Which is why §3 can say *"the margin is one head"*. **I corrected a wrong population onto the wrong
+statistic** — the sixth correction-induced defect, arriving one tick after S-433 counted five and
+adopted a rule to prevent them. ⚠ **The rule was adopted after this edit was already made, so this
+is not evidence the rule failed. It is the measurement that made the rule worth adopting.**
+
+### 2. The finding I checked hardest, because the reviewer was reconstructing rather than quoting
+
+§4 said button *"tops out at K = 2 — head 10 at 1.45, head 21's ci95 crossing zero, heads 4/13/18
+never measured there"*. The reviewer pointed out that disqualifying 10, 21, 4, 13 and 18 leaves
+**6, 11 and 27**, which §2 says were admitted on button — **so a reader doing the arithmetic gets
+K = 3, not 2** — and inferred the missing reason. **I did not take the reconstruction: I went to the
+source**, and it is verbatim there:
+
+> *"head 6, 11, 27 ALREADY CELL-MAPPED ON BUTTON by PR-CSI-018 … head 10 MEASURED … 1.45 BELOW the
+> 1.5 gate … head 21 CROSSES ZERO … head 4, 13, 18 NO BUTTON WHOLE-HEAD MEASUREMENT EXISTS … So the
+> best conceivable button extension is heads **4 and 13**."*
+
+The reviewer's reconstruction was right. §4 now carries **all four** reasons, because with any one
+missing the number does not come to two.
+
+### 3. Nine more, applied
+
+**§2 reported no `K_unique`/`M_unique` at all** while §3 carries D40-a's boundary warning — so the
+draft made the *cross-codeword* result look more robust than the within-codeword one when AM-42
+proves the opposite: a miss on either unique-layer head gives `p_cond = 17/81 = 0.209877` and no
+certification. **§2's margin is the tighter of the two** and now says so. **§0's invariance claim
+over-included §4** — D41's argmaxes are of a projection statistic, not of `y`, so the monotone
+argument does not reach them. **§4's three percentages had lost their denominator** (they are
+button/basket ratios of whole-head effects). **AM-41's ρ = +0.817 lost its inflation caveat** — same
+23 domains, nine cells not nine independent units. **§1 had imported D40's family-specific marginal
+measurement** to govern D37's four heads, where no equivalent exists and AM-42 says such corrections
+do not carry. **A provenance slip in the header**: §4's D38 figures come from S-328; S-307 is D37's
+correction entry. **§5** regained *"above α at every attainable effect size"*. **The checklist legend
+was stale** — it explained one ‼ row when there are now two, with different histories: one written
+from memory, one inherited from a live artefact.
+
+### 4. What the two reviews together establish about the process
+
+📌 **Two independent reviewers of the same corrected section overlap almost not at all.** The first
+found the wrong-n error; the second found that my *fix* for it was wrong. The first passed §2 as
+faithful; the second found §2's missing unique-head margin. **Neither is a superset of the other**,
+and both were checking against the same claim table. ⚠ **So "reviewed" is not a state a section
+enters** — and a single pass, including a careful one, is weak evidence of correctness.
+
+### 5. What was NOT established
+
+⛔ **That the body is now clean.** It has had two passes and each found real defects the other
+missed; the honest expectation is that a third would find more.
+⛔ **That all 11 findings were right.** I verified the load-bearing ones at the artefacts and the
+log; the smaller wording items I applied on the reviewer's reasoning.
+⛔ **That the second reviewer was independent in the strong sense** — it read the same claim table
+and was told the section had been corrected.
+⛔ **No published number moved.** ⛔ **No GPU, no arm, no code change. TEST untouched.**
+
+**NEXT:** with §M, §L and §0–§6 each reviewed and the body reviewed twice, the remaining
+write-up risk is concentrated in what no reviewer has been asked for: whether the draft's
+**structure** — what it leads with, what it omits entirely — misrepresents the sprint.
+
+`git push` remains credential-blocked. Committed locally.
