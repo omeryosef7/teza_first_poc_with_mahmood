@@ -37711,3 +37711,76 @@ PR-CSI-021 — a closed, never-executed family — and only the commit gate conn
 discussion or limitations section distinct from §5.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-422 — the pin sweep S-421 implied: my first attempt was WRONG, and the corrected one found a frozen family that can no longer be run
+
+**2026-09-25. Queue empty, no GPU.** S-421's commit was refused by a stale-pin guard covering
+**one** file. The generalisation was obvious and unmade: **how many other code pins exist, and is
+any of them stale?** This sweeps them.
+
+### 1. 🔴 My first sweep was wrong, and its error was the interesting part
+
+I wrote a regex for "a file path near a 32-hex string" and it reported **6 stale md5 pins**. Before
+acting I read the context of each — and they are **40-character git blob SHA-1s**, which my pattern
+had truncated to 32 and compared against md5. **Six findings, all artefacts of my own matcher.**
+
+Re-run distinguishing the two hash kinds (`git hash-object` for 40-hex, md5 for 32-hex), the real
+picture is:
+
+```
+PRESCRIPTIVE pins ("this is the code that WILL run")   1   runargs/dcs_csi_pr021_read.txt -- CURRENT since S-421
+HISTORICAL   pins ("this is what it WAS when we ran")  6   files have legitimately moved; nothing stale
+PINS NAMING A FILE THAT DOES NOT EXIST                 0
+```
+
+⚠ **The distinction is the whole point and no tool can make it** — a pin is stale only if it was
+prescriptive. Five of the six historical ones are claim-table provenance sentences, already
+governed by AM-14, which established that `git_commit` is not a witness of what code ran.
+
+### 2. 🔴 The sixth was not historical, and it is a real finding
+
+`configs/dcs_csi_pr004_basket_L20_family.json` carries a **standing prohibition**, not a record:
+
+> *"All 53 arms must have run the same `src/boombness/score_behavior.py`."*
+> *"…git blob `e94258bd…` — **THE SAME BLOB THE 10 STAGE-1 CONTROLS RAN**."*
+> *"`score_behavior.py` **MUST NOT be modified** between this freeze and the completion of the last
+> of the 36 arms."*
+
+**The 36 arms never ran.** Measured, not inferred: no `KO_SHUF4+` or `KO_RAND6+` L20 arm exists on
+disk (only three `*L20*` tags: BASE, KO, KO_FULL), there is no `reports/*L20*n46*`, and the only
+basket-L20 read remains `DCS_CSI_SUBSPACE_basket_train_L20.json` at **17 arms, 10 controls, rank 1
+of 11, floor 0.0909, 657 keys** — exactly what D14/D15 report. And the blob has moved:
+
+```
+at PR-CSI-004's freeze  e94258bd5fc44c70629e707b00504b7acac2a7b7
+now                     9562bdf90b86fdb2fbbcf3a7b75967796b949b2d
+```
+
+**So PR-CSI-004 is frozen, unexecuted, and its own central requirement can no longer be met**: the
+10 reused stage-1 controls ran one blob and any new arm would run another. Published as **AM-46**.
+
+⚠ **The consequence lands on a LIVE claim.** D15's *"floor-limited"* on the basket-at-L20 cell is
+**permanent, not provisional** — rank 1 of 11 at an attainable floor of 0.0909 > α, and the family
+that would have lifted it to 1 of 47 cannot run. **This changes no number**; it removes the
+expectation that the number was about to improve.
+
+### 3. What was NOT established
+
+⛔ **That PR-CSI-004 was abandoned deliberately.** Nothing in the log records a withdrawal: it has
+**two incidental mentions and zero claim-table rows**. It may simply never have reached the queue,
+and I am not inferring intent from absence.
+⛔ **That the prohibition was VIOLATED.** It binds "between this freeze and the completion of the
+last of the 36 arms", and those arms never began, so the interval it names never closed — the
+prohibition is **stranded, not breached**. Calling it a breach would be reading a rule backwards,
+the AM-39 error.
+⛔ **That no other pin class exists.** I swept `runargs/`, `configs/` and `reports/*.md` for pins
+that NAME A FILE. A pin that names no path — a bare hash in prose — is invisible to this sweep, and
+I did not look for one.
+⛔ **No GPU, no arm, no code change. TEST untouched.**
+
+**NEXT:** the draft's §5/§6 have had one pass and there is still no limitations section distinct
+from §5 — and AM-46 is now a limitation worth stating there.
+
+`git push` remains credential-blocked. Committed locally.
