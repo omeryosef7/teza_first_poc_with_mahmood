@@ -37450,3 +37450,68 @@ scope, or removed a forbidden figure. **The draft states strictly less than it d
 methods section, which is where the instrument's own caveats belong.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-419 — the METHODS section, written from the frozen artefacts, and it carries the prereg's disclosures about its OWN machinery
+
+**2026-09-25. Queue empty, no GPU.** S-418 named the gap: the draft had no methods section, which
+is where the instrument's own caveats belong. **`reports/DCS_CSI_RESULTS_DRAFT.md` is now 332 lines
+with a §M of eight subsections.** Every definition is quoted or derived from
+`configs/dcs_csi_pr020_cell_census_basket_8heads.json`, `runargs/dcs_csi_pr020_read.txt` or an arm's
+own `RUNMETA.json` — **not from memory and not from an earlier log entry**, which matters because a
+methods section is where a remembered detail becomes an unfalsifiable error.
+
+### 1. Verified rather than asserted
+
+```
+1.5 admission ratio frozen in all three families   pr016 1.5 | pr018 1.5 | pr020 1.5   CONFIRMED
+per-cell dose identity 2016/9 = 224                GATE 0 sweep: one-cell arms 224.0,
+                                                   HD_<h> 2016.0, BK_KO 2016.0          CONFIRMED
+model / dtype / attn / hardware                    Llama-3.1-8B-Instruct 0e9e39f2, bfloat16,
+                                                   attn_impl eager, RTX 3090 cc 8.6,
+                                                   torch 2.7.1+cu126, transformers 5.12.1
+figures in the whole draft incl. §M                32 checked against claim table + prereg +
+                                                   frozen read -- 0 unaccounted
+```
+
+📌 **A precision GATE 0 volunteered and I had missed: the dose is NOT identity-diagnostic.** 72 of
+82 arms expect 224 and 9 expect 2016, so the dose says an arm *is* a one-cell arm and **cannot say
+which cell**. That is exactly why identity is verified from each arm's own `knockout_cells` and
+never from its tag or its dose. Written into §M.3 in those terms.
+
+### 2. The prereg's disclosures about itself, carried into the prose
+
+A methods section that reports only what worked is advertising. Three are now in §M:
+
+- 🔴 **The bootstrap parameters were never preregistered.** The prereg says so about itself:
+  B = 10000, seed 20260922, ci 0.95 *"were COMMAND-LINE DEFAULTS of `dcs_csi_head_census.py`, not
+  preregistered quantities"*, frozen retroactively because every published census had used them.
+  **A convention that became a commitment, not a commitment from the start**, and §M.4 says that.
+- 🔴 **The VOID conditions are PROSE. No reader, gate or test enforces 5, 9, 10, 11 or 12** — the
+  frozen read states this rather than letting them read as automatic. Only VOID 8 is enforced, and
+  it **pins the MEAN only** while admission is a conjunction over mean, bar and ci95.
+- ⚠ **The permutation statistic is scored against the OBSERVED ARGMAX VECTOR**, not the prediction
+  vector. PR-CSI-020's first freeze got this wrong and S-352 caught it; the two statistics agree on
+  a perfect result and diverge elsewhere. §M.6 states the distinction and why it is not cosmetic.
+
+Also carried: the 1.5 ratio cannot be lowered without reinterpreting three published families,
+which is load-bearing because the best unadmitted basket head sits at **1.400**; and the commit of
+record is the launcher's `BLOB … PORCELAIN clean` line, **not** any arm's `RUNMETA git_commit`,
+because `git_dirty` is recorded as `true` or `None` but **never `false`** across this sprint.
+
+### 3. What was NOT established
+
+⛔ **§M is unreviewed.** §1–§6 have had one adversarial pass (S-418); the methods section has had
+none, and it is the section where a wrong operational definition is hardest for a reader to catch
+and most damaging if wrong.
+⛔ **It describes PR-CSI-020's machinery.** PR-CSI-016 and 018 share it, but §M was written from
+020's artefacts and **the differences between families are stated only where I checked them** — the
+1.5 ratio (checked in all three) and VOID 11 (absent from 018, checked).
+⛔ **No claim, number or verdict changed.** §M adds no result; it describes the instrument.
+⛔ **No GPU. TEST untouched. `scripts/`/`src/` unchanged since S-410.**
+
+**NEXT:** an adversarial pass over §M specifically — an operational definition that is subtly wrong
+is the failure this section exists to prevent and the one it is most exposed to.
+
+`git push` remains credential-blocked. Committed locally.

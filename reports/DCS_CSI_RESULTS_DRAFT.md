@@ -198,3 +198,135 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 **‼ marks a phrasing this draft itself committed and had corrected** — the TEST row is here because
 §0 asserted exactly it in the first version (S-417), which is the whole argument for keeping this
 checklist attached to the prose rather than in a reviewer's head.
+
+---
+
+# M. Methods
+
+**Added S-419.** Every definition below is quoted or derived from the frozen prereg
+`configs/dcs_csi_pr020_cell_census_basket_8heads.json`, the frozen read `runargs/dcs_csi_pr020_read.txt`,
+or an arm's own `RUNMETA.json` — **not from memory and not from an earlier log entry**. Where the
+prereg discloses a weakness in its own machinery, that disclosure is reproduced here rather than
+left in the config.
+
+## M.1 Model and hardware
+
+Llama-3.1-8B-Instruct (snapshot `0e9e39f2…`), **bfloat16**, `attn_impl = eager`, torch 2.7.1+cu126,
+transformers 5.12.1, on a single **NVIDIA GeForce RTX 3090** (compute capability 8.6). Generation
+seed 20260913. **Eager attention is load-bearing, not incidental**: it is VOID condition 10, and a
+fused kernel would change the arithmetic the cell-level intervention depends on.
+
+## M.2 Population and unit
+
+Prompt bank `boombness_prompt_bank_ts116m_{basket,button}_bomb.jsonl`, `n_examples = 4`. The split
+manifest `dcs_ts116_domain_split.json` assigns **70 train / 23 validation / 23 test**; families
+score **67** train domains (the three whole-population exclusions are train-assigned) and **23**
+validation domains. **The domain is the statistical unit — rows never inflate n**, so a 230-row
+validation read is n = 23, not n = 230.
+
+## M.3 Intervention and arms
+
+`demo_all:attn_knockout:6-14:1.0` with scope `target_surface_row_only`: attention from the
+demonstration block is zeroed within band layers 6–14 at the target surface row. Four arm kinds:
+
+| arm | what it is |
+|---|---|
+| `*_BASE` | no intervention — the clean reference every delta is taken against |
+| `*_KO` | the all-32-head band knockout — the denominator |
+| `HD_<h>` | all nine band cells of head h — **the bar source AND the admission arm** |
+| `*_H<h>_L<ll>` | one cell — the judged unit |
+
+The per-cell dose is an **identity**, not a measurement: `2016 / 9 = 224` edits per cell (verified
+from GATE 0's own sweep — one-cell arms at 224.0, `HD_<h>` and `*_KO` at 2016.0), so a deviation is
+a **code defect and a VOID condition**, not a surprising fact about the model.
+
+⚠ **The dose is NOT identity-diagnostic, and GATE 0 says so itself:** 72 of the 82 arms expect 224
+and 9 expect 2016, so the dose confirms an arm is a one-cell arm but **cannot say which cell**.
+That is precisely why arm identity is verified from each arm's own `knockout_cells` field and never
+from its tag or its dose.
+
+## M.4 Estimator
+
+Per arm, **E = the mean over DOMAINS of the per-domain paired delta** (arm minus its base arm).
+Confidence intervals are **percentile bootstrap, resampling domains, B = 10000, seed 20260922,
+ci 0.95**.
+
+⚠ **Disclosed by the prereg about itself:** those three bootstrap values *"were COMMAND-LINE
+DEFAULTS of `scripts/dcs_csi_head_census.py`, not preregistered quantities"*. Every published census
+used them, so they were frozen retroactively as a sprint-wide constant. **They are a convention that
+became a commitment, not a commitment from the start**, and the draft states this rather than
+letting the prereg's presence imply otherwise.
+
+## M.5 The detectability bar, and admission
+
+The bar is **a rule, not a number** — it must come from the family it judges:
+
+> `bar(h) = 1.96 × SD(per-domain paired delta of HD_<h> minus the base arm, ddof = 1) / √n_domains`
+
+`ddof = 1` is pinned: S-318 verified it reproduces the published bars exactly. **Head h is ADMITTED
+iff `HD_<h>`'s ci95 excludes 0 AND `|E(HD_<h>)| ≥ 1.5 × bar(h)`**, computed from the whole-head arm
+**alone and never from the cells** — the cells are what admission is a precondition for judging.
+A dropped head **leaves K and is reported with its measured power; it is not counted as a miss.**
+
+⚠ The ratio **1.5 is frozen across three published families** (PR-CSI-016/018/020). It cannot be
+lowered after the fact without reinterpreting all three — which matters because the best unadmitted
+basket head sits at **1.400** (D41).
+
+## M.6 The primary statistic and its three p-values
+
+**M = the number of ADMITTED heads whose argmax band layer by |E| equals that head's frozen
+screen-predicted layer.** Under the null the screen's per-cell prediction is unrelated to the depth
+profile. Three p-values, all preregistered:
+
+- **binomial** — `P(Binom(K, 1/9) ≥ M)`
+- **conditional** — the same over the admitted heads whose predicted layer is **unique** in the set
+- **permutation** — the fraction of distinct assignments of the prediction **multiset** to the
+  admitted heads achieving at least M agreements, **scored against the OBSERVED ARGMAX VECTOR**
+
+⚠ **That last clause is not cosmetic.** PR-CSI-020's first freeze compared against the *prediction*
+vector, which is a different statistic; S-352 caught it and the family was re-frozen. The two agree
+on a perfect result and diverge elsewhere.
+
+**Gating is `weakest_of_three`: the family PASSES iff the weakest of the three ≤ α = 0.05 AND the
+spanning rule is satisfied.** The **spanning rule** is that the matching heads must not all share
+one band layer — otherwise the family returns **CANNOT ANSWER whatever the p-values say**, because
+a shared top-of-band bias and a correct screen are indistinguishable there. This is not
+hypothetical: it is what happened to PR-CSI-016 (§4). **The claim must be stated with the weakest of
+the three, each named; quoting the binomial alone is forbidden.**
+
+## M.7 Gates and VOID conditions
+
+**GATE 0** checks liveness and arm identity on every arm, verifying each arm's identity **from its
+own `knockout_cells` field** rather than from its tag. Exit 0 = all arms pass; 1 = failure;
+**3 = ran but is not the verdict** (a partial sweep), a distinction that exists because a pipe once
+made `tail`'s exit status look like the gate's.
+
+**VOID 8 is enforced by the reader**: each `HD_<h>` must reproduce the corresponding whole-head
+effect from PR-CSI-012 within **1e-6**, across a different job and family. ⚠ **It pins the MEAN
+only** — `bar(h)` and `ci95` are unpinned, while admission is a conjunction over all three.
+
+🔴 **The other VOID conditions are PROSE. No reader, gate or test enforces them**, and the frozen
+read says so in as many words rather than letting them read as automatic:
+
+| | condition |
+|---|---|
+| VOID 5 | the screen artefact's md5 is unchanged (`81fc4dca…`) |
+| VOID 9 | every arm on one SLURM job and one GPU architecture |
+| VOID 10 | `attn_implementation == eager` on every arm |
+| VOID 11 | `scripts/` and `src/` unchanged while the arms are in flight |
+| VOID 12 | the read file is not amended after any number from the family is seen |
+
+⚠ **VOID 11 did not exist for PR-CSI-018** — it was introduced for PR-CSI-020. §6 records what that
+cost and what the decisive test found. ⚠ **The commit of record is the launcher's
+`BLOB <sha> PORCELAIN clean` line, NOT any arm's `RUNMETA git_commit`**: a job runs many arms, each
+stamps the repo at its own start, and `git_dirty` is recorded as `true` or as `None` but **never as
+`false`** across this sprint's runs — so the direction that would falsify a clean-tree claim is
+recorded while the direction that would confirm it is not.
+
+## M.8 What the design cannot do
+
+The screen is fitted on **basket TRAIN**. For the cross-codeword family (§2) the prediction is held
+out on **codeword**; for the within-codeword replication (§3) it is held out on **split only**.
+**There is no control family of arbitrary cells** in any family, because no admissible held-out
+axis exists — and restricting controls to one head's nine cells returns the 1/9 floor, which is
+above α for every attainable effect size.
