@@ -36710,3 +36710,104 @@ NEXT     back to rung-1 work. The escalated §3.2 question (a second TEST read) 
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-410 — 📌 **THE EXPERIMENTAL PROGRAMME IS COMPLETE: every direction this sprint's own claim table names as missing has been run, closed by measurement, or shown unrunnable.** Seven of them, each with its evidence. The binding constraint is no longer GPU, or a question — it is the design space (2026-09-25)
+
+### 1. The audit
+
+S-409 ended "back to rung-1 work", so the first question is what rung-1 work remains. Every
+direction the claim table's own fences name as missing, checked against the record:
+
+```
+DIRECTION                                  STATUS          WHY, and where it was established
+more heads, BASKET cells                   CLOSED          0 of 7 fresh heads clear the frozen 1.5
+                                                           admission gate; best is head 3 at 1.400
+                                                           (S-374, exact bars from PR-012's arms)
+more heads, BUTTON cells                   CLOSED          ceiling K = 2 -- heads 6/11/27 already
+                                                           cell-mapped, 10 below the gate at 1.45,
+                                                           21's ci95 crosses zero, 4/13/18 never
+                                                           measured there. And 0 of 28 K=2 sets can
+                                                           certify at ANY data (S-366's floor table)
+arbitrary-cell control                     BLOCKED         no admissible held-out axis: head identity
+  -- the "cell (L,h) is the writer" claim                  comes from a TRAIN selection, and
+                                                           restricting controls to one head's nine
+                                                           cells hits the 1/9 floor (S-279 section 6)
+SOURCE-side family                         WITHDRAWN       the comparison HAD ALREADY BEEN RUN on
+                                                           TRAIN with byte-identical --intervene
+                                                           strings: r ~ 0.00 on 8 of 8 conditions;
+                                                           and the honest MDE was r ~ 1.07
+                                                           (S-339/S-340, review R31)
+RUNG 2 decodability                        NOT REACHABLE   K = 8 cannot power it: power 0.1446 at the
+                                                           train rate, PPV of a PASS 0.24-0.55
+                                                           (D41 / S-408)
+a THIRD codeword                           DOES NOT EXIST  only basket and button banks are built
+                                                           (S-279; confirmed by ls today)
+the TEST split                             FORBIDDEN       PART I: never touched. And S-314: already
+                                                           spent AND selection-contaminated
+```
+
+### 2. 📌 What that means, stated plainly
+
+**Nothing is queued because nothing is runnable — not because nothing is interesting.** For most of
+this sprint the binding cost was idle GPU. S-374 changed it to "the absence of an admissible
+question", and this audit shows that was not a temporary gap: **every axis is closed by a
+measurement, a floor, or a rule, and each closure has a named entry behind it.**
+
+Two of the seven are closures I would want a reader to check hardest, because they are the ones a
+motivated person would try to reopen:
+
+```
+the 1.5 ADMISSION GATE   head 3 sits at 1.400 and button's head 10 at 1.45. Lowering the gate
+                         would admit heads chosen AFTER their distance from it was known, and
+                         `ADMISSION.ratio = 1.5` is frozen in PR-CSI-016, 018 and 020 alike -- so
+                         relaxing it retroactively reinterprets three published families (S-374).
+the SOURCE withdrawal    it rests on a TRAIN result (r ~ 0.00 on 8 of 8), which is a PRIOR, not a
+                         proof. The SECOND reason -- MDE r ~ 1.07, i.e. the design could not
+                         detect anything short of a 107% effect -- is independent and sufficient
+                         on its own (S-340).
+```
+
+### 3. What WOULD open the space, named so the next person does not have to rediscover it
+
+```
+(a) A THIRD CODEWORD BANK. The instrument, the screen, the census, the readers and the statistic
+    all generalise; only the bank is missing. This is the cheapest extension and it needs no new
+    method -- but building a bank is a data-generation task this sprint has not costed.
+(b) MORE ADMISSIBLE HEADS, which means either a larger model or a lower detectability bar -- and
+    the bar cannot be lowered without reinterpreting three published families.
+(c) AN INSTRUMENT WITHOUT THE DEPTH ASYMMETRY for rung 2 (S-399's option (c): read at the layer's
+    own residual rather than the final one). It changes the effect size rather than de-confounding
+    the measurement, so it is the only route that could make eight heads enough.
+(d) THE TEST SPLIT, which is the escalated section 3.2 question still with the user. ⛔ I am not
+    treating silence as permission, and nothing in this entry depends on it.
+```
+
+### 4. What was NOT established
+
+```
+- NOT established: that the sprint's CLAIMS are complete. This audits the EXPERIMENTAL programme.
+  The claim table still carries open corrections and the paper is not written.
+- NOT established: that no direction exists that nobody has thought of. This enumerates what the
+  claim table's own fences name as missing -- it is an audit against a list, and S-404 is the
+  precedent that a list I wrote can be incomplete.
+- NOT re-derived today: the seven closures' underlying numbers. Each was measured and recorded in
+  the entry named beside it, and several were independently re-derived at the time (the 1.5-gate
+  bars against PR-CSI-020's census to 4.24e-07; E[BF_KO] to ten digits, three times). This entry
+  assembles them; it does not re-measure them.
+- NOT proposed: any of (a)-(d). They are the exits from the current state, not a plan.
+```
+
+### 5. State
+
+```
+QUEUE    EMPTY, and now for a REASON rather than as a gap.
+CHANGED  external_md/...20260915.md  +S-410 only.
+NEXT     with the experimental programme closed, the remaining work is the WRITE-UP: the claim
+         table's open corrections, and whether D39/D40/D41 are stated in the paper exactly as the
+         log supports. That is a different kind of tick and it is where I will go next unless the
+         section 3.2 question comes back.
+```
+
+`git push` remains credential-blocked. Committed locally.
