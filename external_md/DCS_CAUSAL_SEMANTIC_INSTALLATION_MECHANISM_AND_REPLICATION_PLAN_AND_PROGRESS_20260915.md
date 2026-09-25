@@ -39775,3 +39775,118 @@ explanations are separate results in the same family, and neither is drafted.
 D13/D15 are the 2×2 layer-exoneration pair.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-451 — §A.4 claimed D26 in its heading and never reported it; reporting it found a fourth cell that does not exist in the record and a test that was silently swapped (2026-09-26)
+
+**How this started.** S-450 drafted §A.4 with the heading *"(D25, D26, D27, D30)"* and its own entry
+admitted D26's factorial reading was not drafted. That is the **§H.1 error exactly** — a heading
+claiming an experiment the body does not report — which the §H review caught once already. Checked
+before anything else: `factorial`, `RECIPIENT`, `main effect` and `R10` all absent from §A.4's body.
+Confirmed, so D26 was drafted.
+
+**What D26 is.** The 2×2 that the swap design implies, built by review R10 after the read: probe
+(whose axis) × recipient (whose knockout). Both TRAIN reports carry the same 67 domain names, so it
+pairs. It is the reading that points *against* §A.4's null, which is why leaving it out mattered.
+
+**Re-derived, not read.** Every figure below is recomputed from the four artefacts' `domain_means`
+with the repo's own `dcs_csi_rederive_patch.exact_signflip` / `boot_paired_diff` — the functions
+`dcs_csi_subspace_analyze.py` itself calls — and independently re-derived by a second reader given
+only the arm names and no target numbers. The two agree to full precision on all four points and all
+four p's. D25 and D26 both carry `[READ, not reproduced]`, so this is the work those flags invite.
+
+```
+                    probe=basket   probe=button          (arm - KO, TRAIN, n=67)
+recipient=button      +0.001499      -0.000145
+recipient=basket      +0.002649      +0.000900
+
+PROBE main effect      +0.00170  ci95 [+0.00092, +0.00251]  p2 = 0.0001
+RECIPIENT main effect  +0.00110  ci95 [-0.00056, +0.00286]  p2 = 0.2216
+INTERACTION            -0.00011  ci95 [-0.00148, +0.00122]  p2 = 0.8825
+|recipient|/|probe| = 0.647
+```
+
+All four cell means and the whole factorial **reproduce exactly** (to the 5-dp rounding the helper
+applies). **D26's headline survives**: a probe main effect is established, the recipient main effect
+is not tested, and *"the state hypothesis is REFUTED"* remains absence of evidence — only a **pure**
+state model with zero probe effect is refuted.
+
+### What did NOT reproduce, and it took recomputation to see
+
+**(i) THERE ARE FOUR CELLS, NOT THREE.** The probe contrast is defined in **all four** swap reports.
+The record names three. The missing one is **button/validation, +0.001195, p = 0.1716** — the only
+held-out cell for the **button** recipient and the **smallest of the four**. "Replicates three times"
+is three of four, and the omitted one is the weakest.
+
+**(ii) THE p'S ARE FROM A DIFFERENT TEST THAN THESE FILES PUBLISH.** Every `contrasts` block in these
+artefacts reports `ci95` from the paired bootstrap and `p_two_sided` from `exact_signflip`. I could
+not reproduce the recorded trio under the sign-flip, so I tried every other test in reach:
+
+```
+cell                point      sign-flip   boot pct   paired t   sign test   RECORD
+button/train        +0.001644   0.0019      0.0018     0.0018     0.00131    0.0014
+basket/train        +0.001749   0.0020      0.0008     0.0028     0.00674    0.0007
+basket/validation   +0.001770   0.0514      0.0177     0.0626     0.52347    0.019
+button/validation   +0.001195   0.1716      0.1502     0.1735     0.67764    NOT REPORTED
+```
+
+The record reproduces under the **bootstrap percentile** p and under nothing else. ⛔ **That is not a
+fabricated number and I am not calling it one** — it is a different, published, anti-conservative
+estimator. What is wrong is that it is quoted as *the* p while these artefacts publish the sign-flip,
+and **the switch moves the held-out basket cell from 0.0514 to 0.019, across α, in the only direction
+that matters.**
+
+⇒ **The accurate statement: the probe contrast is significant in BOTH TRAIN cells and in NEITHER
+held-out cell.** The PROBE main effect (p2 = 0.0001) is computed from the two TRAIN reports and is
+therefore **in-sample**: a real effect, and **not a replication**.
+
+⚠ **One asymmetry, stated in both directions because it does not resolve.** In each TRAIN cell the
+native arm was fit on that recipient's own domains and the transplanted arm on the donor's
+(`evaluation_is_in_sample` is True for both arms in both TRAIN files, False for both in both
+VALIDATION files). The native arm's advantage therefore **inflates** the basket-recipient cell and
+**deflates** the button-recipient cell — opposite directions. They came out nearly equal (+0.001644
+vs +0.001749), which is *consistent with* a small advantage and is **not a measurement of one**. No
+arm was re-fit; nothing here settles it.
+
+### What was corrected
+
+* **`reports/DCS_CSI_RESULTS_DRAFT.md`** — **§A.4b added** (76 lines), reporting the factorial, what
+  it licenses (narrow: a pure-state model only), the four-cell table, the test switch, and the
+  in-sample asymmetry. The heading's D26 claim is now true.
+* **`reports/DCS_CSI_CLAIM_TABLE.md`** — D26's three-cell sentence **marked in place** (struck, with
+  the four sign-flip p's beside it and the point estimates explicitly preserved); **A36/AM-49**
+  appended; **A30 supersession index row 19** added.
+
+### Counted, not subtracted
+
+Ten of the twenty axis rows are cited in §A headings — **12, 18, 19, 23, 24, 25, 26, 27, 29, 30** —
+measured by regex over the headings, not derived from last tick's number. Ten remain: **D13, D14,
+D15, D16, D17, D20, D21, D22, D28, D31**. ⚠ **The count was right last tick only by accident**: D26
+was counted as drafted while it was merely cited. Citing is not reporting, and the count could not
+tell the difference. It can not tell the difference now either — the remaining nine cited rows have
+not been re-checked against their bodies.
+
+### What is NOT established
+
+* ⛔ **That the probe factor generalises off TRAIN.** Neither held-out cell reaches α under the
+  family's own test. This is the substantive change.
+* ⛔ **That the recipient factor exists or does not.** The contrast crosses button and basket, which
+  §3.3 forbids pooling, so the design contains no legitimate test of it — and that cuts *for* the
+  finding that "REFUTED" has no measurement behind it.
+* ⛔ **That R10's other figures are affected.** Only the probe-contrast p's were re-derived. MAJOR-2's
+  exchangeability figures and MAJOR-3's cosine figures were **not** recomputed this tick.
+* ⛔ **That the nine other cited-but-unverified §A rows report what their headings claim.** That is
+  the same defect class this entry opened with, and it is unchecked.
+* ⛔ Nothing here touches **necessity**, never run in the swap design, and **TEST is untouched**.
+
+**This is the fourth quotable-but-wrong figure found in the record** — after the `never FAIL` floor
+sentence, the `WE FOUND (part of) THE WRITER` label and AM-48's verdict string — and **the first
+found by recomputation rather than by reading**. No string search could have caught it: the sentence
+is well-formed, its point estimates are correct, and only the p's and a missing fourth row are wrong.
+S-444's phrasing sweep and S-431's provenance gate would both pass it. ⚠ **The provenance gate's own
+published blind spot — *"existence ≠ correctness"* — is exactly this, now with an instance.**
+
+**NEXT:** the nine remaining cited §A rows should be checked body-against-heading the way D26 was
+(cheap: grep each row's distinguishing figure inside its own section). Then D21 and the D13/D15
+layer-exoneration pair. **No GPU work this tick; queue empty; push still credential-blocked.**

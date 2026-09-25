@@ -1082,3 +1082,80 @@ button's knockout recovers **+0.00150** where button's own axis recovers **−0.
 TRAIN domains and the same 46 controls — a paired difference of **+0.00164 [+0.00066, +0.00261]** —
 **but it ranks 4 of 47, does not clear its preregistered bar of rank ≤ 2, and its rank p is
 descriptive.** It must always be labelled **secondary and unpreregistered**.
+
+### A.4b The same four numbers, read as a 2×2: a probe main effect on TRAIN, and no test of the recipient factor (D26)
+
+§A.4 reports what the preregistration returns. The four cells also support a reading the
+preregistration does not contain, and it points the other way, so it is reported here rather than
+left out. **Everything in this subsection is UNPREREGISTERED and post-hoc**, built by review R10
+after the read; none of it may be quoted without §A.4's result beside it.
+
+Both TRAIN reports carry the **same 67 domain names** (intersection 67 of 67), so the 2×2 pairs
+domain by domain:
+
+|  | probe = basket | probe = button |
+|---|---|---|
+| **recipient = button** | +0.001499 | −0.000145 |
+| **recipient = basket** | +0.002649 | +0.000900 |
+
+Each cell is `arm − KO` within its own report, so the knockout baseline cancels within a recipient.
+Paired over the 67 common domains, under the family's own sign-flip test:
+
+```
+PROBE main effect      +0.00170  ci95 [+0.00092, +0.00251]  p2 = 0.0001
+RECIPIENT main effect  +0.00110  ci95 [-0.00056, +0.00286]  p2 = 0.2216
+INTERACTION            -0.00011  ci95 [-0.00148, +0.00122]  p2 = 0.8825
+|recipient| / |probe| = 0.647
+```
+
+**What this licenses, and it is narrow.** A *pure*-state model — one in which the probe contributes
+nothing and only the recipient's state matters — is refuted. Nothing more. The recipient main effect
+is **not estimated by this design**: the contrast crosses button and basket, which §3.3 forbids
+pooling, so the experiment contains **no legitimate test of the recipient factor at all**. Its point
+estimate is 65 % of the probe effect with a CI containing values *larger* than the probe effect, and
+the interaction is flat — the shape of "both factors, additively". **"The state hypothesis is
+REFUTED" is absence of evidence**, and the only permitted wording is: *a pure-state model with no
+probe effect is refuted; the recipient factor is not estimated by this design.*
+
+🔴 **CORRECTED S-451 — "the probe effect replicates three times" does not survive re-derivation, on
+two independent counts. Both were found by recomputing the cells from `domain_means` rather than
+re-reading the record.**
+
+**(i) There are FOUR cells, not three, and the fourth was never reported.** The probe contrast is
+defined in every one of the family's four reports. Re-derived, all four:
+
+| recipient | split | in-sample | probe contrast (basket-probe − button-probe) | sign-flip p2 |
+|---|---|---|---|---|
+| button | train | yes | **+0.001644** | **0.0019** |
+| basket | train | yes | **+0.001749** | **0.0020** |
+| basket | **validation** | **no** | **+0.001770** | **0.0514** |
+| button | **validation** | **no** | **+0.001195** | **0.1716** |
+
+The omitted cell is **button/validation** — the only held-out cell for the button recipient, and the
+smallest of the four. "Replicates three times" is three of four, and the one left out is the weakest.
+
+**(ii) The p-values in the record are BOOTSTRAP PERCENTILE p's, not the test this family reports.**
+Every `contrasts` block in these artefacts publishes `ci95` from the paired bootstrap and
+`p_two_sided` from `exact_signflip`; the record's trio (0.0014 / 0.0007 / 0.019) reproduces under the
+bootstrap percentile (0.0018 / 0.0008 / 0.0177) and under **no** other test tried — not the sign-flip,
+not a paired *t*, not a sign test, not one-sided forms of any of them. The switch is not neutral: it
+moves the held-out basket cell from **0.0514 to 0.019**, across the 0.05 line, in the only direction
+that matters.
+
+**So the accurate statement is: the probe contrast is significant in both TRAIN cells and in NEITHER
+held-out cell** (0.0514 and 0.1716 under the family's own test). The PROBE main effect itself
+(p2 = 0.0001) is computed from the two TRAIN reports and is therefore a **TRAIN-only, in-sample**
+quantity. It is real and it is not a replication.
+
+⚠ **One asymmetry that cannot be waved away in either direction.** In each TRAIN cell the *native*
+arm was fit on that recipient's own domains while the *transplanted* arm was fit on the donor's, so
+the native arm carries a recipient-specific in-sample advantage the swap arm does not. That advantage
+inflates the contrast where the native arm is the basket-probe term (recipient = basket) and
+*deflates* it where the native arm is the button-probe term (recipient = button) — it pushes the two
+TRAIN cells in **opposite** directions. They nonetheless came out nearly equal (+0.001644 vs
++0.001749). That is an observation consistent with a small advantage; it is **not** a measurement of
+one, and no arm here was re-fit to obtain it.
+
+**NOT ESTABLISHED by this subsection:** that the probe factor generalises off TRAIN; that the
+recipient factor exists or does not; that the state hypothesis is refuted in any form other than the
+pure one; and anything at all about **necessity**, which has never been run in the swap design.
