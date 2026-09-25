@@ -35715,3 +35715,113 @@ NEXT     read the train q when it lands; then the pr016 refactor + the rung-2 re
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-399 — 🔴🔴 **THE RUNG 2 DESIGN IS REFUTED ON TRAIN, BEFORE VALIDATION WAS SPENT.** The train q is **0 of 8** — because the instrument's direct-path projection is dominated by a **depth confound ~44× larger than any screen signal**. The discovery split did exactly what it exists for (2026-09-25)
+
+### 1. The run
+
+```
+927327  COMPLETED  01:18:05  exit 0:0    670/670 prompts over 67 domains
+artefact reports/DCS_CSI_RUNG2_TRAIN_basket_full.json  md5 recorded above, 187 KB
+recon_rel_err 3.06e-03 .. 3.49e-03 against a 3e-2 tolerance   -- the decomposition is SOUND
+per_prompt 1.186 s  (the smoke's 5.267 s was warm-up + the invariant check on 3 prompts)
+```
+
+**Nothing failed.** The instrument ran clean, the decomposition reconstructs the module output to an
+8.6× margin, and the population gate passed at 670/67. The design failed, which is a different
+thing and a much better one to learn on TRAIN.
+
+### 2. 🔴 The train q is ZERO
+
+```
+head   argmax|contrib|   screen predicted
+  4    L13              L11        .
+  6    L12              L11        .
+ 10    L13              L12        .
+ 11    L13              L8         .
+ 13    L14              L10        .
+ 18    L13              L14        .
+ 21    L13              L6         .
+ 27    L14              L10        .
+                                    TRAIN M = 0 of 8   ->   q_hat = 0.0000
+```
+
+### 3. 📌 And the reason is not "no signal" — it is a CONFOUND, measured
+
+```
+argmax layer marginal over the 8 heads:   {L12: 1, L13: 5, L14: 2}
+ALL EIGHT argmaxes fall in the TOP THREE of nine layers.
+P(that | argmax uniform over the band) = (3/9)^8 = 1.52e-04
+
+|contrib(L14)| / |contrib(L6)| per head:  50.7x  5.6x  68.7x  3.2x  140.0x  70.2x  2.7x  37.4x
+                                          median 44.0x
+```
+
+**This is R35-A's finding 6 — the DIRECT-PATH surrogacy — arriving as a measurement rather than a
+caveat.** `D_dir` projects a layer-L head's output onto a direction defined at the FINAL residual.
+A layer-14 head's contribution passes through 17 more blocks before that direction is read; a
+layer-6 head's passes through 25. **The later the layer, the more of its contribution survives, and
+the effect is ~44× across the band — far larger than any screen signal could be.**
+
+The screen's predictions span `L6, L8, L10, L10, L11, L11, L12, L14`. A depth-biased argmax can only
+match a head whose predicted layer happens to be late. It matched none.
+
+### 4. ⛔ What this does and does NOT establish
+
+```
+ESTABLISHED  the ARGMAX-OVER-BAND-LAYERS statistic is UNUSABLE with this quantity. The depth
+             main effect dominates it, so the statistic measures depth, not agreement.
+⛔ NOT ESTABLISHED: that the concept is not decodable at these cells. The measurement is
+             CONFOUNDED, and a confounded null is not a null -- it is a non-measurement. Saying
+             "rung 2 fails" from this would be exactly the inflation AM-34 exists to prevent,
+             pointed the other way.
+⛔ NOT ESTABLISHED: anything about D40 or any rung-1 result. The rungs are separable; this says
+             nothing about necessity, and nothing here touches a published claim.
+⛔ NOT A RESULT AT ALL in the reportable sense. TRAIN is the discovery split. This is a design
+             being refuted by its own pilot, which is what pilots are for.
+```
+
+### 5. 📌 The process worked, and it is worth saying why
+
+S-396 chose to measure `q` on TRAIN rather than borrow PR-CSI-020's causal rate, because borrowing
+it *"would assume the coincidence this experiment exists to test."* **That decision is the only
+reason this was caught before a validation read.** Had the power table been written from rung 1's
+q ≈ 0.75, PR-CSI-021 would have been frozen, launched on validation, and returned M = 0 — and the
+validation axis would have been spent on a confounded instrument.
+
+⚠ **And I had already been told.** R35-A flagged the direct-path surrogacy as finding 6, I recorded
+it in S-385 §7(b), fenced it in S-397's prohibition lists, and wrote in S-398 that it was "fenced,
+not fixed". **A fence is not a control.** The caveat was correct and it did not stop me building a
+statistic the confound dominates — because I never asked HOW LARGE the confound was until the data
+made me.
+
+### 6. What a workable design would have to do
+
+```
+The confound is a LAYER MAIN EFFECT. Any statistic that compares cells ACROSS layers inherits it.
+  (a) COMPARE WITHIN A LAYER instead -- e.g. is the screen's cell the strongest among the heads
+      AT ITS OWN LAYER. Every cell in that comparison shares a depth, so the main effect cancels.
+      ⚠ But it asks a DIFFERENT question (which HEAD at a layer, not which LAYER for a head), and
+      whether the screen even predicts that is an open question, not an assumption.
+  (b) NORMALISE per layer against a baseline of cells the screen does NOT name. There is no such
+      baseline here: all eight heads are screen-selected, which is S-279's bind again.
+  (c) A quantity without the depth asymmetry -- e.g. reading at the layer's own residual rather
+      than at the final one. That is a different instrument, not a different statistic.
+⛔ NONE of these is adopted here. This entry refutes a design; choosing the next one is a design
+   pass, and S-167c still applies.
+```
+
+### 7. State
+
+```
+QUEUE    EMPTY. 927327 COMPLETED.
+CHANGED  external_md/...20260915.md +S-399; the TRAIN artefact is a new EXPLORATORY deliverable.
+NOT EMITTED  PR-CSI-021. The freeze script would now compute q_hat = 0 and produce a power table
+         for a design whose statistic is confounded. It must not be frozen in this form.
+NEXT     a design pass on (a)/(b)/(c) -- or the honest conclusion that rung 2 is not reachable
+         with the instruments this sprint has.
+```
+
+`git push` remains credential-blocked. Committed locally.
