@@ -39051,3 +39051,49 @@ position §H was in one tick ago, when its first review found two misleading err
 by this author carries misapplied prohibitions rather than wrong numbers.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-440 — the SCOPE update S-439 intended did NOT land, and the commit went ahead without it
+
+**2026-09-25. Queue empty, no GPU.** A short entry for a real failure.
+
+### 1. What happened
+
+S-439 added §A and, in the same script, tried to update the SCOPE block to say two of the twenty
+rows were now drafted. **The assertion guarding that edit failed** — the anchor text had been
+reworded in S-437 — **so SCOPE was not updated. The commit ran anyway and succeeded**, because the
+edit and the commit were separate commands in one call and the failing one did not stop the other.
+
+**Result: `0fb6c615` shipped §A alongside a SCOPE block still claiming all twenty rows were omitted
+and "None of it is in this file."** The claim was false the moment §A was appended.
+
+### 2. What that says about the guard
+
+⚠ **The assert did its job and the harness around it did not.** Every in-place edit this sprint has
+been guarded by "this anchor must match exactly once", and that guard has caught five bad edits
+before they were written. **It cannot stop a commit that follows it in the same shell.** The
+protection was against writing the wrong text, not against shipping without the right text.
+
+📌 **The fix is ordering, not a new check:** an edit whose assertion can fail must not share a
+command with the commit that publishes it. Applied from here.
+
+### 3. Fixed, and two further inconsistencies found while fixing
+
+SCOPE now states two drafted / eighteen undrafted. And reading the resulting text — the S-433 rule,
+which is what caught these — **two more stale sentences** in the same block: *"None of it is in this
+file"* (false since §A) and *"§H has had NO adversarial review"* (false since S-438). The second is
+the kind of sentence that decays silently, so it is now a **review-coverage line** that states the
+count for every section rather than a claim about one: §1–§6 twice, §M once, §L once, §H once, **§A
+and §M.8 not at all.**
+
+### 4. What was NOT established
+
+⛔ **That no other sentence in the file has gone stale the same way.** Three were found in one block
+by re-reading it; I have not swept the other 890 lines for the same class.
+⛔ **No published number, claim or verdict moved** — this is a draft-consistency entry.
+⛔ **No GPU, no arm, no code change. TEST untouched.**
+
+**NEXT:** review §A and §M.8, still the newest and least-checked prose.
+
+`git push` remains credential-blocked. Committed locally.

@@ -45,14 +45,20 @@ it declined is what found it. Classified by reading each row rather than by patt
 | **CSI-sprint results, GENUINELY OMITTED** | **20 — D12–D31** | 🔴 **a whole third part** |
 | covered in §3/§4 prose, not cited by ID | 3 — D40-a, D40-b, D41-a | fine |
 
-**The omitted 20 are the AXIS, NECESSITY and DISSOCIATION families — PR-CSI-001 through 009**: the
-rank-1 installation axis and its control families, the necessity direction, the button/basket
-codeword dissociation at matched power, and the cross-codeword axis swap. **None of it is in this
-file.** §L.3 touches two of those results (necessity, basket-at-L20) only to limit them, which is
-how the gap stayed invisible — they appear as *limitations* of results the draft never states.
+⚠ **UPDATED S-439/S-440: TWO of the twenty are now drafted as §A** — D19's bidirectional conjunction
+and D24's matched-power dissociation, with D18, D23 and D29 as their supports. **That is an
+increment, not the part: EIGHTEEN rows remain undrafted.**
 
-⛔ **§H has had NO adversarial review** — §1–§6 have had two each, §M and §L one each, and every one
-of those passes found real defects.
+**The omitted rows are the AXIS, NECESSITY and DISSOCIATION families — PR-CSI-001 through 009**: the
+rank-1 installation axis and its control families, the necessity direction, the button/basket
+codeword dissociation at matched power, and the cross-codeword axis swap. **Only the two named
+above are in this file, as §A.** §L.3 touches two of these results (necessity, basket-at-L20) only
+to limit them, which is how the gap stayed invisible for so long — they appeared as *limitations of
+results the draft never stated*, and for the sixteen still undrafted they still do.
+
+⛔ **Review coverage is UNEVEN and every pass so far has found real defects:** §1–§6 twice, §M once
+(S-421, six mismatches against the source), §L once, **§H once** (S-438: thirteen findings, two that
+would have misled), and **§A and §M.8 NOT AT ALL** — they are the newest prose in the file.
 
 ---
 
