@@ -36811,3 +36811,125 @@ NEXT     with the experimental programme closed, the remaining work is the WRITE
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-411 — the write-up audit begins, and a CORRECTION ROW was itself carrying withdrawn numbers
+
+**2026-09-25. Queue empty, worktree clean at `e55ea54d`. No GPU. Read-and-verify tick.**
+S-410 closed the experimental programme and named the write-up as what remains: *"the claim table's
+open corrections, and whether D39/D40/D41 are stated exactly as the log supports."* This is that.
+
+### 1. What was MEASURED — every load-bearing figure in blocks A24–A29, re-derived from scratch
+
+Not checked against the reader's output: recomputed, in a file that imports no project code.
+
+```
+D39   binomial P(Binom(6,1/9)>=5)      9.22021e-05  vs published 0.000092   OK
+      conditional (1/9)^2                 0.012346  vs 0.012346             OK
+      permutation 1/180, 6!/(2!2!)=180    0.005556  vs 0.005556             OK
+AM-42 (1/9)^6                          1.88168e-06  vs 1.88e-6              OK
+      1-(8/9)^2 = 17/81                   0.209877  vs 0.209877             OK
+      M=3 of 6 binomial                   0.021167  vs 0.021167             OK
+D40   binomial P(Binom(8,1/9)>=6)   = 619/14348907  vs "exactly 619/14348907" OK  (exact rational)
+      conditional P(Binom(4,1/9)>=3)      0.005030  vs 0.005030             OK
+      permutation 2/10080, 8!/(2!2!)      0.000198  vs 0.000198             OK
+D40-a M_unique=2 conditional                0.063557  vs 0.063557           OK
+      map partition 59+21+176 = 256                                         OK
+D41   (1/3)^8                          1.524158e-04  vs 1.524158e-04        OK
+      PPV at priors .10/.20/.30     0.2432/0.4196/0.5535 vs 0.24/0.42/0.55  OK
+```
+
+**And the one figure that is not closed-form.** D41's whole NOT-RUN decision rests on power 0.1446,
+which came from `power_mc` in the freeze script. Re-derived with my own decision rule, my own
+permutation enumeration, my own RNG, seed 411411 (not 20260924) and N=40000 (not 200000):
+**0.144500, SE 0.00176** against the prereg's 0.144575 and D41's published 0.1446 — inside 1 SE.
+**A stronger statement than the MC, which needs no RNG at all:** `p_cond <= alpha` requires
+`M_unique >= 3` of the 4 unique-layer heads, because `P(Binom(4,1/9) >= 2) = 0.063557 > alpha`. So
+power is bounded above by `P(Binom(4, q) >= 3)` exactly, **= 0.151611 at q = 0.375**, and the MC
+sits under it. ⚠ **That number is NOT new** — it is already in S-407 §2 as *"the chance the
+NECESSARY condition is even met"*. What S-411 adds is only that it is a ceiling on power, which is
+one line of arithmetic on a figure already recorded. **I checked before claiming it, per S-367.**
+
+⚠ Likewise **the M=3 binomial knife edge** (`P(Binom(8,1/9)>=3) = 717419/14348907 = 0.04999816`,
+clearing alpha by 1.836e-06) came out of my derivation and **is already recorded twice** — S-353 §1
+and read file line 142 — and was already flagged once as a rediscovery in the R-block at line 32314.
+My exact rational matches the log's stored value. **Recorded as a reproduction, not a finding.**
+
+**Provenance, fanned out and then re-derived by hand rather than taken on trust:** all **9** quoted
+md5 prefixes in A24–A29 recomputed by me directly — 9 of 9 match. All **7** cited SLURM job IDs
+re-queried by me: 7 of 7 CLEAN, returned JobID equals queried ID, user `omeryosef`, states and
+elapsed matching to the second — no repeat of the `927135` recycled-ID trap.
+
+### 2. What was CORRECTED — and the worst of it was inside a correction
+
+The claim table's header says it *"is the file to read before writing any sentence for Matan or
+Mahmood"*. So the question is not whether the right number exists somewhere in 988 lines; it is
+whether a drafter landing on ONE ROW can tell that row is stale. **Four rows could not.**
+
+🔴 **The serious one, and it is new. `AM-40 CORRECTED` (claim table L936) was itself carrying
+withdrawn numbers.** It cites `0.6279 / 0.5951` as *"the correct STRICT, PROTECTED draw the real
+arms use"* — but that is the ORIGINAL mass run, whose `d1` S-339/S-343 showed to be the **`d2`**
+draw. AM-43 was corrected for exactly this; **AM-40's correction row was not, because S-343's
+correction named AM-43 and never mentioned AM-40.** Re-derived by me from both artefacts:
+
+```
+run       codeword draw   median m_c/m_d    rows m_c<m_d
+053138    basket   d1        0.627889        219/230 (95.2%)   <- what AM-40 CORRECTED cites
+053138    button   d1        0.595093        223/230 (97.0%)
+070942    basket   d1        0.765536        182/230 (79.1%)   <- what actually governs
+070942    button   d1        0.710643        188/230 (81.7%)
+070942    basket   d2        0.627889        219/230 (95.2%)   <- reproduces the original d1 TO THE DIGIT
+070942    button   d2        0.595093        223/230 (97.0%)
+```
+
+That bottom pair is an independent confirmation of S-343's diagnosis, obtained here without
+reference to it. Consequence for the prose: AM-40's *"moves it … to ~3/5 of it"* should read
+**~3/4** (0.7655 / 0.7106). ✅ **No verdict moves** — 3.74× → 0.77× is still the opposite side of
+1.0, so AM-40's reversal and AM-43's `REFUTATION TEST ONLY` licence both stand.
+
+**Fixed in place, four rows, using the convention this file already had** (D12's
+`(Superseded …)`, AM-37's `~~strikethrough~~ 🔴 CORRECTED S-328`, D36, D23's headline — S-328 says
+"Corrected in place" in as many words): **AM-40 (L911)** — the only sign reversal in the file;
+**AM-40 CORRECTED (L936)** — above; **AM-43 (L935)** — every magnitude is a `d2` value and
+"23 of 23 domains" was wrong in kind; **AM-42 (L924)** — `5 of 64`. New block **A30** is the
+supersession index and states the convention: *a correction is not complete until the corrected row
+says so where it stands.*
+
+⚠ **A correction to my own method inside this tick.** My first classifier labelled the L911/L924/L935
+occurrences "inside the correction itself (fine)" because they share a claim ID with their corrector.
+They are the ORIGINAL rows. Caught and re-run before anything was written.
+
+### 3. What was NOT established
+
+⛔ **That the claim table is now clean.** My greps were **a sample** — a hand-picked list of dead
+strings — exactly the limit S-365 recorded about its own three-string audit. A fan-out returned
+**~19 further candidate correction-pairs** whose earlier row carries no forward pointer. **I have
+NOT re-derived any of them and they are NOT in A30.** Leads, with line numbers, to be verified
+before any is acted on:
+
+```
+SERIOUS if true, unverified:
+  D25 L514 + prohibition 29 L541-551  "CELL 4 on TRAIN … C1 REFUTED" withdrawn by AM-15 (L772),
+                                      yet prohibition 29 still MANDATES it as a companion sentence
+  D12 L27                             governed by AM-2, AM-4, AM-5, AM-7; points at none. Its
+                                      "218 keys" -> 215, floors "(1/35, 1/31)" -> 1/47, and the
+                                      "INCONCLUSIVE on its own" shuffled-only caveat (AM-7 says it
+                                      no longer holds at n46)
+  prohibition 19/20 L78-79            repeat the conflated "3.9 % of the knockout" (AM-4)
+  prohibition 24 L139-145             its stated REASON is dead (D19 compares at the same L18);
+                                      the ban survives for a different reason
+MILDER, family-size / key-set supersessions with verdicts unmoved:
+  D13 L30, D15 L104, D16 L105, D21 L251, D22 L252, D23 L512, D24 L513, D17 L106, D32 L801
+```
+
+⛔ **That the ~19 are real.** They come from a subagent and **a subagent's number is not evidence**.
+The four in A30 are in A30 *because* I re-derived them from the artefacts; these are not.
+⛔ **No verdict changed anywhere.** D39, D40 and D41 stand exactly as published, with every figure
+now recomputed. ⛔ **Nothing was measured on any held-out axis; no GPU ran; TEST untouched.**
+
+**NEXT:** work the SERIOUS leads in order — prohibition 29 first, because a withdrawn conclusion
+that is still *mandatory wording* is the one failure mode that can put a dead claim into the paper
+by following the rules rather than by breaking them.
+
+`git push` remains credential-blocked. Committed locally.
