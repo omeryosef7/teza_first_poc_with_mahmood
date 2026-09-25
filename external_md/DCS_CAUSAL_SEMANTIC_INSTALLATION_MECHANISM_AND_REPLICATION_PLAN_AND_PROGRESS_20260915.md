@@ -38529,3 +38529,83 @@ sections I believed finished. The useful question is no longer "review it again"
 independent reviewer of the same section finds — and whether the two agree.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-433 — I measured my own error rate over 22 ticks, and the measurement errored three times while I was taking it
+
+**2026-09-25. Queue empty, no GPU.** Every review since S-418 has found real defects in sections I
+believed finished, and several were defects I had **introduced while correcting something else**.
+That is a pattern, not an anecdote, so this counts it. A second independent review of §0–§6 was
+launched in parallel and had not returned.
+
+### 1. The count, built by hand after the automated attempt failed
+
+**18 distinct self-introduced defects across S-411…S-433** — 7 faulty **detectors**, 10 wrong
+**prose**, 1 **omission**. And the number that matters:
+
+🔴 **5 of the 10 prose defects were introduced BY A CORRECTION of something else.**
+
+```
+introduced S-418 -> caught S-427   §4 said "not reproduced here" and reproduced it 4 lines down
+introduced S-417 -> caught S-427   §0 named `semantic_logodds` as the endpoint
+introduced S-420 -> caught S-421   §M said M=0 gives a structural non-verdict (it is the TIE branch)
+introduced S-427 -> caught S-432   §0 gave the census n as 67; every census reads 23
+introduced S-427 -> caught S-432   §0's `semantic_logodds` paragraph over-corrected
+```
+
+**S-427 appears on both sides**: it caught two defects and introduced two. **Fixing a paragraph is
+the most dangerous thing I do to it**, and the danger is not theoretical — it is half the prose
+defects in this stretch.
+
+### 2. 🔴 The audit itself errored three times, in three different ways
+
+This is the part worth keeping.
+
+```
+1. REGEX     my self-error pattern found 5 of 18. It missed S-424, S-426, S-427 -- entries I
+             WROTE, whose admissions I could recall. Undercount of more than half.
+2. BY HAND   the hand table I built to replace it mis-attributed the §4 self-contradiction to
+             S-428. It is in S-427.
+3. VERIFIER  the script I then wrote to CHECK the hand table failed to find it in S-427 either --
+             its context window required 80 characters before a phrase that sits near a line start.
+4. grep      a plain `grep -n` found it immediately, and `awk` on the preceding header settled
+             which entry it belonged to.
+```
+
+⚠ **Three layers of machinery, three distinct failures; the plainest tool answered it.** That is now
+the eighth detector error of this sprint, and it occurred *inside the audit of detector errors*.
+**The rule this has been converging on all sprint, stated plainly: the more apparatus I put between
+myself and the text, the more likely the apparatus is the thing that is wrong.** S-431's gate is
+worth having because it is committed, tested and publishes its blind spots — a one-off regex written
+mid-tick is not the same object and should not be trusted like one.
+
+### 3. What this changes
+
+📌 **A correction is a new claim and gets the same treatment as one.** Concretely, and starting now:
+after editing a paragraph, re-read the edited paragraph **against its source row** before committing
+— not the diff, the resulting text. Four of the five correction-induced defects would have been
+caught by reading the paragraph as it now stands (the n, the endpoint, the over-correction, the
+self-contradiction); the fifth (M=0) needed execution, which is what S-421 did.
+
+⚠ **And this does not argue for fewer corrections.** Every one of the 18 was found and recorded; the
+error rate is visible *because* the process surfaces it. A process that produced fewer visible
+defects would more likely be hiding them.
+
+### 4. What was NOT established
+
+⛔ **That 18 is the true count.** It is the count of defects I **found and recorded**. Defects nobody
+caught are by construction absent, and the reviews keep finding more — S-432's was found by a
+reviewer, not by me.
+⛔ **That the classification is right.** "Detector" vs "prose" vs "omission" is my judgement on my
+own entries, and the audit that produced it errored three times.
+⛔ **That the rate is improving or worsening.** 22 ticks is one stretch, and I have not compared it
+to any earlier stretch of the sprint.
+⛔ **No claim, number, verdict or artefact was touched by this entry.** It measures the process, not
+the result. ⛔ **No GPU, no arm. TEST untouched.**
+
+**NEXT:** the second independent §0–§6 review — whose value is now sharper than when it was
+launched, because it tests whether one reviewer is enough on a section that has already been
+corrected once.
+
+`git push` remains credential-blocked. Committed locally.
