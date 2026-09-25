@@ -51,6 +51,7 @@ GUARD_TESTS="tests/test_asr_protocol.py
              tests/test_cited_artifact_check.py
              tests/test_clustered_stats.py
              tests/test_commit_guard.py
+             tests/test_csi_argmax_verdict_shared.py
              tests/test_csi_argv_generator.py
              tests/test_csi_cell_identity.py
              tests/test_csi_pr016_argmax.py

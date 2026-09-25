@@ -36035,3 +36035,79 @@ NEXT     (1) the pr016 refactor + the rung-2 reader (S-398's chosen option (a));
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-402 — the argmax verdict now lives in **ONE** place, so the two rungs cannot drift apart. 📌 **The body was MOVED, not retyped** — and the gate is that PR-CSI-020's published read reproduces bit-for-bit. It does (2026-09-25)
+
+### 1. What was done
+
+S-398 established that PR-CSI-021 needs a read, that `pr016` cannot serve one (it requires a CENSUS
+report a rung-2 artefact has none of), and that the only defensible option was to **separate the
+verdict branches from the census I/O** so both rungs share them. Done:
+
+```
+NEW  scripts/dcs_csi_argmax_verdict.py   -- decide(admitted, band, alpha, gating, prereg_id)
+     the tie branch, the K<2 branch, the K<3 structural branch, the FAIL branch with its
+     STRUCTURALLY UNWINNABLE annotation, the spanning branch, and PASS -- plus the three
+     p-values, the gating selection and the floors.
+CHANGED  scripts/dcs_csi_pr016_argmax_test.py -- 147 lines of branches replaced by ONE CALL.
+```
+
+### 2. 📌 MOVED, not retyped — and that distinction is the whole point
+
+The body was extracted **programmatically** out of `pr016` and written into the new module verbatim.
+Nothing was rewritten by hand.
+
+**Why that matters more than it looks:** those 147 lines carry the comments recording *why each
+branch exists* — `R29/S-322` (which p gates is the prereg's decision), `R29/S-323` (fail closed on a
+missing GATING), `R30-B/S-332` (the floor, and my own first fix of it that was wrong), `R28/S-312`
+(the tie is undetermined, not a miss). **A clean rewrite would have produced working code with the
+reasons deleted, and the bugs those reasons prevent would come back.** A test now asserts all four
+tags survived the move.
+
+⛔ And the alternative to sharing was measured, not assumed: **S-350 found this sprint's two
+"independent implementations" of this very statistic agreed ONLY at M = K** — a difference that
+would have published a PASS against a prereg recording that it could not certify.
+
+### 3. ✅ THE GATE: the published verdict does not move
+
+```
+re-ran PR-CSI-020's read through the refactored path against its PUBLISHED artefact:
+  VERDICT / K / M / p_one_sided / gating_p_name / gating_p / why / matching_layers /
+  spanning_rule_satisfied / the whole ROBUSTNESS block        ALL IDENTICAL
+  ENTIRE VERDICT JSON IDENTICAL                               True
+91 tests across pr016 / cell-identity / S-375 debt            pass
+```
+
+⚠ The regression test first failed on ONE field: `prereg`, because it passes an absolute path where
+the published run used a relative one. **That is the invocation's provenance, not the verdict's**,
+and it is now excluded alongside `generated_utc` and `census_report` — with a comment saying so, so
+nobody later mistakes the exclusion for hiding a difference.
+
+### 4. What was NOT established
+
+```
+- THE RUNG-2 READER IS NOT WRITTEN. This tick made it POSSIBLE by putting the verdict where two
+  callers can reach it; it did not write the second caller.
+- NOT established: that the shared module is correct for rung 2's inputs. It is correct for
+  rung 1's, proven by the bit-for-bit reproduction. Rung 2 builds `admitted` rows from a
+  different artefact, and that mapping is the next thing to get right.
+- NOT REVIEWED: R36 now owes the freeze script, the reader (unwritten), AND this refactor --
+  which touched a reader three PUBLISHED families used. The bit-for-bit gate is evidence, not a
+  review.
+- NOT changed: any published number. Verified, not assumed.
+```
+
+### 5. State
+
+```
+QUEUE    EMPTY.
+CHANGED  scripts/dcs_csi_argmax_verdict.py (NEW), scripts/dcs_csi_pr016_argmax_test.py (calls it),
+         tests/test_csi_argmax_verdict_shared.py (NEW, 4 tests, in the gate -> 25 files),
+         external_md/...20260915.md
+NEXT     the rung-2 reader that builds `admitted` rows from a RUNG2 artefact and calls decide();
+         then R36 over the three pieces; then emit, freeze, launch.
+```
+
+`git push` remains credential-blocked. Committed locally.
