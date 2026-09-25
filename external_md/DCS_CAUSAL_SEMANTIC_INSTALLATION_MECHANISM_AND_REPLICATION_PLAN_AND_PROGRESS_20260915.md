@@ -39097,3 +39097,59 @@ by re-reading it; I have not swept the other 890 lines for the same class.
 **NEXT:** review §A and §M.8, still the newest and least-checked prose.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-441 — the stale-self-claim sweep S-440 left open: four found, including one no review would catch
+
+**2026-09-25. Queue empty, no GPU.** S-440 fixed three stale sentences in one block and recorded the
+gap: *"I have not swept the other 890 lines for the same class."* This sweeps them. A review of §A
+and §M.8 was launched in parallel and had not returned.
+
+### 1. The class, and why it is invisible to the reviews
+
+Every review so far asks *"is this sentence supported by its claim-table row?"* **A claim the draft
+makes about ITSELF has no row.** *"§H has had no adversarial review"*, *"none of it is in this
+file"*, *"the only X"* — these are true when written and decay as the file changes, and **nothing in
+the review method looks at them.** Swept by pattern for review-state, absence, uniqueness and count
+claims; 29 candidates, of which most are content counts ("five of six", "three of the eight") that
+describe results rather than the file.
+
+### 2. Four were genuinely stale
+
+```
+1. "the axis/necessity/dissociation families ... is NOT in this file at all"
+   FALSE since §A. Fixed in S-440 at one site; THIS was a SECOND site in the same block,
+   four lines earlier, that S-440 missed while fixing the first.
+2. "D33 ... the only rank-based certification in the head direction"
+   FALSE, and I verified it: BOTH D32 and D33 carry a rank_test at rank 1 of 21, p 0.047619.
+   Written when §H reported them as one experiment; survived the S-438 split that corrected that.
+3. "The four rows below are what §H covers"
+   UNDERCOUNTS -- §H also reports AM-36 and draws on AM-26/27/30/33/34/37.
+4. "## H.4 What the two halves are together"
+   A heading saying TWO halves, in a file that has had THREE parts since §A.
+```
+
+📌 **Finding 2 is the instructive one.** The S-438 review split D32 and D33 into H.1 and H.1b and
+corrected every sentence *in §H* — **and left the SCOPE table's description of D33 untouched**, where
+it still said "the only". A correction that fixes the section but not the index is half a
+correction, and the index is what a reader meets first.
+
+📌 **Finding 1 is worse: S-440 fixed this exact sentence and missed its twin four lines above.** I
+re-read the *paragraph* I edited, which is what the S-433 rule says to do, and the twin was outside
+it. **The rule as written is too narrow — re-read the block, not the paragraph.**
+
+### 3. What was NOT established
+
+⛔ **That the sweep is complete.** It is a pattern match over four phrasings, and **a pattern match
+of mine has been wrong ten times this sprint.** A self-claim phrased differently — *"this is the
+first section to…"*, *"elsewhere the draft…"* — is invisible to it. **I did not write this as a
+committed gate**, unlike S-431's figure checker, because I do not trust a pattern here and a gate
+that cannot be trusted is worse than a sweep that is honest about being one.
+⛔ **That the four were the only stale claims.** They are the four this pattern found.
+⛔ **No published number, claim or verdict moved.** ⛔ **No GPU, no arm, no code change. TEST
+untouched.**
+
+**NEXT:** the §A/§M.8 review's findings.
+
+`git push` remains credential-blocked. Committed locally.

@@ -20,13 +20,13 @@ names its scope rather than claiming a blanket.*
 §1–§4 report the five cell-census families (PR-CSI-014, 015, 016, 018, 020); **§H reports the
 head-level results, which the cell-level half subdivides and therefore depends on.** §H is written
 second and belongs first. ⚠ **A THIRD part — the axis, necessity and dissociation families
-(PR-CSI-001–009, 20 claim-table rows) — is NOT in this file at all**; see the correction below. The
-four rows below are what §H covers:
+(PR-CSI-001–009, 20 claim-table rows) — is **almost entirely absent**: two of its rows are drafted as §A and eighteen are not; see the correction below. The
+four rows below are the D-rows §H covers; it also reports **AM-36** and draws on AM-26, AM-27, AM-30, AM-33, AM-34 and AM-37:
 
 | row | what §H reports | where |
 |---|---|---|
 | **D32** | eight head indices carry most of the knockout's effect on basket, **replicating on the held-out split** at the preregistered bar | it is the result the cell-level work *subdivides*; §1–§3 localise within heads D32 selected |
-| **D33** | that 8-head set is **rank 1 of 21** against a control family drawn from all 32 band heads | the only rank-based certification in the head direction |
+| **D33** | that 8-head set is **rank 1 of 21** against a control family drawn from all 32 band heads | a **SECOND and harder** rank-based certification — D32 is also rank 1 of 21, but against the candidate's complement; → H.1b |
 | **D34** | four heads (2, 19, 17, 23) each clear the family's own null anchor, **all four inside `HD_TOPK` and none outside it** | it is where §1's four heads come from |
 | **D35** | 🔴 head 2's single-head effect, selected on basket by a rule frozen beforehand, **DOES NOT REPLICATE on button** — ci95 [−0.015452, +0.006019] **crosses zero** | **the sprint's one EMPIRICAL negative** |
 
@@ -817,7 +817,7 @@ unknown and could be larger. ⚠ **And D34's basket set does not predict button'
 five controls beating the candidate, **only head 19 is in D34's four** — heads 11, 20, 6 and 16 are
 basket-irrelevant yet outperform the basket-selected candidate.
 
-## H.4 What the two halves are together
+## H.4 How the parts depend on each other
 
 🔴 **The dependency is NARROWER than it looks, and I had it wrong.** Checked against the frozen
 preregs with `HD_TOPK = {2,6,13,17,19,23,24,28}` and `HD_BOTK = {0,9,10,11,15,16,29,30}`:
