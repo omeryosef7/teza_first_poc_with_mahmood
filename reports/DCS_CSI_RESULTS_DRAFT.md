@@ -567,7 +567,10 @@ the same hazard class as the floor sentence in §M.6.
 ## M.9 The AXIS-level machinery (§A)
 
 §A uses a third vocabulary, defined in neither §M.3 nor §M.8. From
-`configs/dcs_csi_pr001_subspace_rescue.json` and `..._pr003_necessity_basket.json`:
+`configs/dcs_csi_pr001_subspace_rescue.json` (the sufficiency arms) and `..._pr003_necessity_basket.json`
+(the necessity arms). ⚠ **The 46-control composition and the subfamily floors are NOT in either** — they
+are `..._pr005_button_L18_family.json` / `..._pr007_button_L18_validation.json`; and **pr003 declares its
+own floor as 0.10**, which `..._pr003a_necessity_family.json` corrects to 0.1111 at 8 controls:
 
 | arm | what it is |
 |---|---|
@@ -575,15 +578,39 @@ the same hazard class as the floor sentence in §M.6.
 | `KO_SELF` | knockout + whole-state rescue with **donor = self** — the intervention-mechanics identity control, which **MUST be inert** |
 | `KO_FULL` | knockout + whole-state **clean** rescue — the POSITIVE CONTROL and the upper bound |
 | `KO_AXIS` | knockout + the rank-1 installation axis (`cand_rank1`) — **the candidate** |
-| `KO_ORTH` | `ctrl_orth`, norm-matched to the candidate — **the PRIMARY COMPARATOR** |
+| `KO_ORTH` | `ctrl_orth`, norm-matched to the candidate — the prereg's words are **"THE PRIMARY COMPARATOR"**, ⚠ **but it is NOT the comparator §A's ranks use**: it enters as `--comparator-arm` only, is excluded from the 46-control family by `--control-prefixes KO_SHUF,KO_RAND`, and its single-comparator verdict is **SUPPRESSED** in both published artefacts (`single_comparator_verdict_SUPPRESSED`), because a verdict decided by which control the caller names is not a verdict |
+| `KO_PLS` | knockout + the rank-r\* PLS subspace, r\* selected on TRAIN — **not the candidate of any §A read**, but it is the arm on which *"the representation is one-dimensional"* would turn |
 | `KO_SHUF*` / `KO_RAND*` | shuffled-label and random directions, norm-matched — the control family, grown to **24 shuffled + 22 random = 46** |
-| `NEC_*` / `KO_NEC_*` | the same shapes for the NECESSITY direction: `NEC_BASE` clean, `NEC_KO`, `KO_NEC_AXIS` the candidate, `KO_NEC_SHUF0-3` / `KO_NEC_RAND0-3` the 8 controls. ⚠ The `NEC_` prefix is **load-bearing**: a second complete directory under one tag is the tag ambiguity an earlier entry had to untangle |
+| `NEC_*` / `KO_NEC_*` | the same shapes **except one**, for the NECESSITY direction: `NEC_BASE` clean, `NEC_KO`, `KO_NEC_AXIS` the candidate, `KO_NEC_FULL` the positive control, `KO_NEC_ORTH` the comparator, `KO_NEC_SHUF0-3` / `KO_NEC_RAND0-3` the 8 controls. ⛔ **There is NO `KO_SELF` analogue**: for removal the natural identity control IS the identity and is refused by the arm's own precondition, so the identity gate is **SKIPPED BY DESIGN** and the artefact records the skip and its reason — *"a real limitation of the direction, not an oversight"*. ⚠ The `NEC_` prefix is **load-bearing**: a second complete directory under one tag is the tag ambiguity an earlier entry had to untangle |
+
+**Three gates precede any rank**, all published and all true on every read in §A: `manipulation_check`,
+`identity_check` (SKIPPED for necessity, above) and `instrument_capable`. ⛔ **`instrument_capable` is
+the axis-side GATE 1**: if the whole-state rescue does not itself recover installation, the question is
+**CANNOT ANSWER for want of a capable instrument, NOT a negative**.
+
+🔴 **AND THE FLOOR IS NOT THE RULE — the implementation is STRICTER than the preregs.** The
+analyser's PASS branch is `rank == 1 AND round(1/(K+1), 4) < 0.05`, so **rank 2 of 47 takes the FAIL
+branch** even though `2/47 = 0.042553` is below α — while PR-CSI-005, 006 and 007 all declare that
+**rank 1 or 2 certifies**. **The divergence is live in a published artefact** (AM-48): the
+basket-validation swap cell sits at rank 2 of 47 and its `VERDICT` string says *"DOES NOT PASS …
+INSIDE the controls, not above them"* of a candidate above 45 of 46 controls. ⚠ **No published claim
+rests on that string** — the claim table read that cell by the prereg's rule — but nothing was
+checking. Also: the floor test is **strict on a 4-dp rounded value**, so K = 19 (floor exactly 0.0500)
+does not certify and **K ≥ 20 is the minimum**; and **ties count against the candidate**, which is what
+"strictly the largest" means.
+
+⚠ **Intervals in §A are domain-clustered percentile bootstrap at B = 20000, seed 20260915** — **not**
+§M.4's B = 10000 / seed 20260922, which are the cell-census constants and produced no number in §A.
 
 **The rank test is the same shape as §M.8's, with different arithmetic.** Direction is
 orientation-dependent: **more POSITIVE is stronger for sufficiency, more NEGATIVE for necessity**.
-At 46 controls the attainable floor is `1/47 = 0.0213`; the subfamilies carry their own floors,
+At 46 controls the attainable floor is `1/47 = 0.0213`; ⛔ the subfamilies are **SECONDARY and may not be substituted for the 46-control primary**, and for
+the NECESSITY direction PR-CSI-003-A **inverts** this — there the shuffled-only rank is the primary and
+the random-only rank is descriptive only and *"must never be quoted as a p-value"*. They carry their own floors,
 **shuffled-only `1/25 = 0.0400`** and **random-only `1/23 = 0.0435`**. ⚠ **The necessity family has
-only 8 controls, so its floor is `1/9 = 0.1111` — above α** — which is why §A.1's necessity half
+only 8 controls — not the 9 pr003's own prose and its `attainable_p_floor: 0.10` imply, because
+`--control-prefixes KO_NEC_SHUF,KO_NEC_RAND` matches neither `KO_NEC_ORTH` nor `KO_NEC_AXIS_ANCHOR`
+— so its floor is `1/9 = 0.1111`, above α** — which is why §A.1's necessity half
 cannot certify at any data and §L.3 records the extension that would have fixed it.
 
 ## M.10 What the design cannot do

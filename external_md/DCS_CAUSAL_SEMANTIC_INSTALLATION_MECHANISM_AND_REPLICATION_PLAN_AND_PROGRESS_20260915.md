@@ -39447,3 +39447,78 @@ untouched.**
 **NEXT:** the §M.9 review.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-446 / AM-48 — the §M.9 review found something bigger than §M.9: the ANALYSER CONTRADICTS THE PREREGS IT SERVES, and it has already bitten
+
+**2026-09-25. Queue empty, no GPU.** §M.9 was the last section never read by anyone but its author.
+Its review returned 11 findings — **and one of them is not about the draft at all.**
+
+### 1. 🔴 The finding: `rank == 1` in code, `rank ≤ 2` in three preregs
+
+```
+scripts/dcs_csi_subspace_analyze.py
+    attainable = rank_p_floor < 0.05
+    if rank == 1 and attainable:  -> PASS
+    elif rank == 1:               -> inconclusive
+    else:                         -> FAIL          <-- rank 2 lands HERE, unconditionally
+
+PR-CSI-005 / PR-CSI-007  "rank 1 or 2 of 47 (p = 0.02128 or 0.04255). Rank 3 ... does not certify."
+PR-CSI-006               definition_of_HELPS = "rank 1 or 2 among 46 controls (... <= 0.05)"
+```
+
+**2/47 = 0.042553 ≤ α, so the preregs' arithmetic is right and the code is stricter than what was
+frozen.** I read the branch and the three configs myself.
+
+🔴 **And it has bitten.** I swept all 22 subspace/swap artefacts for rank 2: **two**, one of them
+`DCS_CSI_SWAP_basket_validation_L18_from_button_n46.json` at **rank 2 of 47, rank_p 0.04255, floor
+0.0213** — whose published `VERDICT` string reads *"PRIMARY DOES NOT PASS … It is INSIDE the
+controls, not above them"*, **of a candidate above 45 of 46 controls.** (The other is rank 2 of 5,
+where the floor is 0.2 and nothing could certify anyway.)
+
+✅ **No published claim is wrong.** AM-10 read that cell **by the prereg's rule** and recorded *"B
+validation = rank 2 (helps)"*; AM-15 later withdrew the headline for an unrelated reason. **The claim
+table used the frozen rule and the artefact's verdict string disagreed with it silently for weeks.**
+
+⛔ **NOT established: which rule is right.** The preregs were frozen first; the code is stricter.
+**That is a decision, not a measurement, and it is the user's** — I have not changed either.
+
+📌 **This is the THIRD quotable-but-wrong string in a published artefact, and S-444's sweep could not
+have found it.** That sweep matched *forbidden claims*; **"DOES NOT PASS" is not a forbidden
+phrasing** — it is a verdict that contradicts its own preregistration. **The class is wider than I
+swept for**, and I have no sweep for this one: it needs comparing each artefact's verdict against
+its own prereg's decision rule, which is a different and harder check.
+
+### 2. §M.9's own defects, applied
+
+**A-1: `KO_ORTH` is the prereg's "PRIMARY COMPARATOR" and is NOT the comparator §A's ranks use** —
+it enters as `--comparator-arm` only, is excluded from the 46-control family, and **its
+single-comparator verdict is SUPPRESSED in both published artefacts**, because a verdict decided by
+which control the caller names is not a verdict. §M.9 had quoted the prereg and implied the reported
+test was `KO_AXIS − KO_ORTH`. **A-2: "the same shapes for the necessity direction" was FALSE** about
+the one shape that is missing — **there is no `KO_SELF` analogue**, the identity control *is* the
+identity for removal, and the gate is **SKIPPED BY DESIGN**. **A-3:** §M.9 stated no gate at all,
+where §M.8 states GATE 1; `instrument_capable` is its analogue and its failure is **CANNOT ANSWER,
+not a negative**. **A-9:** §A's intervals are **B = 20000, seed 20260915**, not §M.4's 10000/20260922.
+**A-4:** the sourcing line named two configs that contain neither the 46-control composition nor the
+subfamily floors, and pr003 declares a floor of **0.10** that pr003a corrects. Plus: subfamilies are
+**SECONDARY** (and inverted for necessity), `KO_PLS` was missing from a table claiming to be the
+vocabulary, and the 8-control count needed its mechanism.
+
+### 3. What was NOT established
+
+⛔ **That §M.9 is now right.** One review, eleven findings, and this is the section that had never
+been read — the pattern says a second pass finds more.
+⛔ **That the rank-2 divergence is confined to these families.** I checked the subspace/swap
+analyser. **The cell-census and head-census readers have their own decision rules and I did not
+compare them against their preregs.**
+⛔ **That AM-48's two rank-2 reads are the only affected outcomes.** They are the only ones *already
+at rank 2*; any future read landing there would hit the same disagreement.
+⛔ **No published number moved, and neither the code nor any prereg was changed.**
+⛔ **No GPU, no arm. TEST untouched.**
+
+**NEXT:** compare every reader's decision rule against its own prereg — the check AM-48 shows is
+missing, and the one no sweep so far performs.
+
+`git push` remains credential-blocked. Committed locally.
