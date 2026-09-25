@@ -35255,3 +35255,97 @@ NEXT     the per-prompt cost, and the projection to 230 validation rows that dec
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-394 — the claim table's **31 job ids are ALL CLEAN**, closing S-392's open gap. 🔴 **And the audit I wrote to catch "reading the wrong object" read the wrong object — two of its "collisions" were the decimal digits of a cosine similarity** (2026-09-25)
+
+### 1. ✅ The gap S-392 left open is closed
+
+S-392 audited only the three job ids that appear in published claims and recorded: *"NOT
+established: that no older log entry cites a recycled id."* Every job id in the claim table has now
+been checked:
+
+```
+31 job ids: 902004 902005 905990 906001 906433 912736 912835 912836 912837 912838 913232 913407
+            914043 914048 914750 916536 918169 918631 918967 919240 919296 919531 921664 922176
+            923233 923972 924485 924486 924666 924667 925438
+ALL CLEAN -- each returns exactly one omeryosef row and ZERO foreign rows.
+```
+
+**No published figure in this sprint rests on a recycled job id.** D40's `925438`, D35's `919531`,
+D36's `921664`, AM-43's `924666`/`924667` — all unambiguous.
+
+### 2. 🔴 But the audit flagged two collisions that do not exist, and they were MINE
+
+```
+997866  *** COLLISION ***        998406  *** COLLISION ***
+```
+
+Neither is a job id. They are the **fractional digits of D31's cosine similarities**:
+
+```
+| abs(cos(w_new, w_committed)) on cand_rank1: L18 = 0.998406, L20 = 0.997866 |
+```
+
+My extractor was `grep -oE "\b9[0-9]{5}\b"`, and in `0.998406` the `.`→`9` transition IS a word
+boundary, so it matched the decimals. **The audit I wrote specifically to guard against reading a
+number as the wrong object read a number as the wrong object** — the fourth such check this
+session, and the first to be a direct descendant of the previous one.
+
+⚠ The tell was there and I used it: both values exceed the current job counter (927135), so they
+could not be job ids that have already run. **Checking what the number IS, before checking what it
+says, is the only defence that has worked all session.**
+
+### 3. 📌 A SECOND finding, sharper than S-392's
+
+Asked for a job id that does not exist, `sacct` returned rows for a **different job**:
+
+```
+$ sacct -j 997866 --format=JobID,User,JobName
+       997837_28   mortsamir   count_k_per_read      <-- JobID is 997837_28, NOT 997866
+```
+
+So S-392's rule was not strong enough. It said to project `User` and `Submit`. **The stronger rule
+is to verify the RETURNED JobID against the one requested**, because sacct can answer with rows
+that are not about the job asked for at all:
+
+```
+asked 925438 -> rows whose JobID starts with 925438:  2   ✅
+asked 924666 -> rows whose JobID starts with 924666:  2   ✅
+asked 997866 -> rows whose JobID starts with 997866:  0   ⚠ yet it printed three rows
+```
+
+My audit counted "foreign rows" as *rows not belonging to omeryosef* — which is why a query
+returning somebody else's unrelated job scored as a collision rather than as a non-answer. **The
+audit's verdict was right for the 31 real ids and wrong in its reasoning for the 2 non-ids**, and
+those are not the same kind of correct.
+
+### 4. What was NOT established
+
+```
+- NOT established: that the 31 ids are the complete set cited anywhere. This audited the CLAIM
+  TABLE. The sprint log cites further ids in prose and they were not swept -- a collision there
+  would mislead a reader of the log but touches no published claim.
+- NOT established: why sacct answers a nonexistent id with a neighbouring job's rows. Observed,
+  recorded, not diagnosed; the defence is to check the returned JobID, not to understand the
+  cause.
+- NOT re-opened: D31. Its cosine figures are untouched -- they were only ever misread by my
+  regex, never by the claim table.
+```
+
+### 5. Smoke status
+
+`927135` RUNNING 57:32 of 4:00:00, weight load at **139/291 shards** (50:35 into the load, tqdm ETA
+~26 min, rate recovered to 8-10 s/shard from the 423 s first shard). Projected load end ~03:30
+against a 06:06 hard stop. **Still no per-prompt cost** — the measurement loop has not begun.
+
+### 6. State
+
+```
+QUEUE    927135 RUNNING, in the weight load.
+CHANGED  external_md/...20260915.md  +S-394 only. No code -- a job is in flight.
+NEXT     the per-prompt cost and the projection to 230 rows.
+```
+
+`git push` remains credential-blocked. Committed locally.
