@@ -112,3 +112,37 @@ def test_the_prereg_satisfies_every_key_the_reader_HARD_SUBSCRIPTS():
                         "--prereg", PREREG, "--reader", READER], capture_output=True, text=True)
     assert r.returncode == 0, r.stdout + r.stderr
     assert "0 MISSING" in r.stdout, r.stdout
+
+
+@pytest.mark.skipif(not os.path.exists(PREREG), reason="prereg absent")
+def test_the_prereg_CARRIES_every_disclosure_S401_requires():
+    """🔴 S-404. Six of eight were MISSING from the first emission, because the freeze script
+    predates S-400/S-401. This checks the EMITTED FILE, not the source that writes it -- a source
+    grep would pass on a script that writes a key it never populates."""
+    pr = json.load(open(PREREG))
+    blob = json.dumps(pr, ensure_ascii=False)
+    pw = pr["POWER_BY_SEEDED_MONTE_CARLO"]
+    assert pw.get("⚠ THE_STATISTIC_WAS_CHOSEN_AFTER_SEEING_TRAIN"), "no after-train disclosure"
+    d = pw["⚠ THE_STATISTIC_WAS_CHOSEN_AFTER_SEEING_TRAIN"]
+    assert "THREE candidate" in d, "the candidate set is not named"
+    assert "DECLINED" in d, "it does not say the better-scoring statistic was declined"
+    assert "FIDELITY" in d, "it does not state the criterion the choice was made on"
+    lo, hi = pw["q_exact_95CI"]
+    assert abs(lo - 0.085) < 0.01 and abs(hi - 0.755) < 0.01, (lo, hi)
+    assert "S-374" in blob, "it does not record that K=8 is the whole admissible population"
+    assert "LEAVE-ONE-OUT" in blob.upper(), "the normalisation is not frozen into the prereg"
+    assert "DIRECT-PATH" in blob.upper(), "the direct-path fence is gone"
+
+
+@pytest.mark.skipif(not os.path.exists(PREREG), reason="prereg absent")
+def test_the_reader_REFUSES_a_prereg_that_fails_to_disclose(tmp_path):
+    """A `.get()` that returns None publishes a disclosure field carrying nothing."""
+    pr = json.load(open(PREREG))
+    del pr["POWER_BY_SEEDED_MONTE_CARLO"]["⚠ THE_STATISTIC_WAS_CHOSEN_AFTER_SEEING_TRAIN"]
+    p = tmp_path / "pr.json"
+    p.write_text(json.dumps(pr, ensure_ascii=False))
+    r = subprocess.run([PY, READER, "--prereg", str(p), "--measurement", TRAIN,
+                        "--out", str(tmp_path / "o.json")], capture_output=True, text=True)
+    both = r.stdout + r.stderr
+    assert r.returncode != 0 and "S-404" in both, both[:300]
+    assert "cannot be published as null" in both, both[:300]

@@ -59,6 +59,25 @@ def main() -> int:
     pr = json.load(open(a.prereg))
     if pr.get("id") != "PR-CSI-021":
         sys.exit("REFUSING: this reader implements PR-CSI-021, not %r." % pr.get("id"))
+    # ---- the prereg must DISCLOSE, not merely contain fields ---------------------------------
+    # ⚠ S-404: this reader wrote `"⚠ CHOSEN_AFTER_SEEING_TRAIN": pr.get(...)` and the key did not
+    # exist in the emitted prereg, so it published the disclosure as `null` -- a field that exists
+    # to disclose, carrying nothing, in the output a reader would quote. A missing disclosure is
+    # now a REFUSAL: S-401 requires this read to travel with the fact that its statistic was chosen
+    # after seeing train, and a null cannot carry that.
+    _pw = pr.get("POWER_BY_SEEDED_MONTE_CARLO") or {}
+    for _k in ("⚠ THE_STATISTIC_WAS_CHOSEN_AFTER_SEEING_TRAIN", "q_exact_95CI",
+               "q_MEASURED_ON_TRAIN", "table"):
+        if not _pw.get(_k):
+            sys.exit("REFUSING: the prereg's POWER block carries no %r. S-401 requires this read "
+                     "to travel with its power table, the exact interval on q, and the fact that "
+                     "the statistic was chosen after seeing train. A disclosure that is absent "
+                     "cannot be published as null. (S-404)" % _k)
+    if not pr["PRIMARY"].get("⚠ THE_LAYER_NORMALISATION_IS_PART_OF_THE_STATISTIC"):
+        sys.exit("REFUSING: the prereg does not record that the LEAVE-ONE-OUT layer normalisation "
+                 "is part of the statistic. S-399 measured a ~44x depth confound without it; a "
+                 "prereg that does not say so describes a different experiment. (S-404)")
+
     art = json.load(open(a.measurement))
 
     # ---- the measurement must be the one the prereg describes -------------------------------
@@ -176,8 +195,8 @@ def main() -> int:
         "⚠ THE_NORMALISATION_IS_PART_OF_THE_STATISTIC": "leave-one-out mean of the OTHER heads at "
             "each layer. S-399 measured a ~44x depth confound in the RAW values; without this the "
             "read measures depth, not agreement.",
-        "⚠ CHOSEN_AFTER_SEEING_TRAIN": pr.get("POWER_BY_SEEDED_MONTE_CARLO", {}).get(
-            "⚠ THE_STATISTIC_WAS_CHOSEN_AFTER_SEEING_TRAIN"),
+        "⚠ CHOSEN_AFTER_SEEING_TRAIN": _pw["⚠ THE_STATISTIC_WAS_CHOSEN_AFTER_SEEING_TRAIN"],
+        "⚠ q_EXACT_95CI": _pw["q_exact_95CI"],
         "POWER": pr.get("POWER_BY_SEEDED_MONTE_CARLO"),
         "recon_rel_err_worst": worst, "dtype": art.get("dtype"),
         "MUST_NOT_BE_SAID": must_not,

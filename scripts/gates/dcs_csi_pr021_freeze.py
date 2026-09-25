@@ -77,6 +77,28 @@ def _pr020():
     return m
 
 
+def clopper_pearson(k, n, alpha=0.05):
+    """The EXACT binomial interval on q. S-401: q is estimated from K=8 Bernoulli trials and its
+    width is the reason the pilot cannot decide whether the design is worth running -- so the
+    interval belongs IN the prereg, not in a log entry a reader may not have."""
+    from math import comb
+
+    def _solve(pred):
+        a, b = 0.0, 1.0
+        for _ in range(200):
+            mid = (a + b) / 2
+            if pred(mid):
+                a = mid
+            else:
+                b = mid
+        return a
+    lo = 0.0 if k == 0 else _solve(
+        lambda m: sum(comb(n, i) * m ** i * (1 - m) ** (n - i) for i in range(k, n + 1)) < alpha / 2)
+    hi = 1.0 if k == n else _solve(
+        lambda m: sum(comb(n, i) * m ** i * (1 - m) ** (n - i) for i in range(0, k + 1)) > alpha / 2)
+    return lo, hi
+
+
 def train_q(art, heads, pred):
     """The MEASURED per-head match rate on TRAIN -- the discovery split.
 
@@ -214,6 +236,16 @@ def main() -> int:
         "PRIMARY": {
             "statistic": "M = number of heads whose |contribution| ARGMAX over the nine band layers "
                          "equals that head's frozen screen-predicted layer",
+            "⚠ THE_LAYER_NORMALISATION_IS_PART_OF_THE_STATISTIC": (
+                "each head's per-layer magnitude is divided by the LEAVE-ONE-OUT mean of the OTHER "
+                "heads at that layer before the argmax is taken. S-399 measured that the RAW "
+                "magnitude carries a ~44x depth confound across the band -- a layer-14 head's "
+                "output passes through 17 fewer blocks before the final-residual direction is read "
+                "than a layer-6 head's -- and that ALL EIGHT raw argmaxes landed in the top three "
+                "of nine layers (P = 1.52e-04 under a uniform argmax). Normalising collapses it to "
+                "1.40x. ⛔ WITHOUT IT THIS READ MEASURES DEPTH, NOT AGREEMENT. Implemented ONCE, in "
+                "scripts/dcs_csi_argmax_verdict.normalised_layer_profile(), and called by BOTH the "
+                "freeze (for q) and the read (for the verdict) -- S-403 caught them disagreeing."),
             "⚠ ABSOLUTE_VALUE": "|contribution|, mirroring PR-CSI-020's -abs(E) argmax. S-389: the "
                 "direction is a CONTRAST, so magnitude in either sign means the cell discriminates, "
                 "which is what decodability means. The SIGNED value is recorded alongside so the "
@@ -247,6 +279,28 @@ def main() -> int:
                 "use of one, exactly as PR-CSI-018's rate informed PR-CSI-020 (S-354).",
             "⚠ IT IS AN ESTIMATE": "a train q is an input to a design, not a claim about validation. "
                 "It may be wrong in either direction and the verdict does not depend on it.",
+            "⚠ THE_STATISTIC_WAS_CHOSEN_AFTER_SEEING_TRAIN": (
+                "S-400/S-401. THREE candidate statistics were evaluated on the SAME train "
+                "measurement: (1) the raw argmax over band layers -- REFUTED in S-399, a ~44x depth "
+                "confound put all 8 argmaxes in the top 3 of 9 layers; (2) WITHIN-LAYER, is head h "
+                "strongest of the 8 at its predicted layer -- M = 4/8, p = 0.011248; (3) "
+                "LAYER-NORMALISED argmax, the one frozen here -- M = 3/8, p = 0.049998. "
+                "⛔ (2) SCORED BETTER AND WAS DECLINED: the screen predicts a LAYER for each head, "
+                "which is what (3) tests with depth removed, while (2) asks which HEAD is strongest "
+                "at a layer -- a different question the screen does not make. Choosing the "
+                "higher-scoring statistic after seeing both scores is post-hoc selection; the "
+                "criterion is FIDELITY to the screen's claim, fixed independently of the numbers. "
+                "⚠ Selection on the discovery split is legitimate and is what it is for, but "
+                "VALIDATION remains the only held-out test and this disclosure travels with any "
+                "result."),
+            "q_exact_95CI": None,          # filled below -- computed, not quoted
+            "⚠ WHY THE CI MATTERS": (
+                "q is estimated from K = 8 Bernoulli trials -- ONE per head -- so its interval "
+                "spans power ~0.004 to ~0.74. The pilot CANNOT distinguish a hopeless design from "
+                "a well-powered one. ⛔ And it cannot be improved by measuring more prompts: S-374 "
+                "established that 0 of 7 fresh basket heads clear the 1.5 admission gate and the "
+                "button ceiling is K=2, so K = 8 IS THE WHOLE ADMISSIBLE POPULATION and q's "
+                "precision is bounded by it."),
             "train_evidence": {"artefact": TRAIN_ARTEFACT, "md5": m.md5(art_path),
                                "M": M_tr, "K": K_tr, "per_head": per_head_tr,
                                "n_rows": art.get("selection_n_rows"),
@@ -302,6 +356,8 @@ def main() -> int:
         "instrument_md5": m.md5(os.path.join(REPO, INSTRUMENT)),
     }
 
+    _lo, _hi = clopper_pearson(M_tr, K_tr)
+    pr["POWER_BY_SEEDED_MONTE_CARLO"]["q_exact_95CI"] = [_lo, _hi]
     pr["reader_md5"] = m.md5(reader_path)
     outp = os.path.join(REPO, OUT)
     with open(outp, "w", encoding="utf-8") as fh:

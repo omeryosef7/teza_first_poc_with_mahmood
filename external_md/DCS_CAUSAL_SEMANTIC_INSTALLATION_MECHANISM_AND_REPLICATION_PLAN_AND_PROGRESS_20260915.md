@@ -36218,3 +36218,95 @@ NEXT     verify the prereg carries S-401's disclosures; freeze the read recipe; 
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-404 — 🔴 **SIX OF EIGHT of S-401's required disclosures were MISSING from the emitted prereg**, and the reader was publishing one of them as `null`. Fixed, enforced by refusal, and the read recipe is frozen (2026-09-25)
+
+### 1. The audit
+
+S-403 listed "verify the prereg carries S-401's disclosures" as a next step. It did not:
+
+```
+statistic chosen AFTER seeing train    *** MISSING ***
+THREE candidates named                 *** MISSING ***
+the best-scoring one was DECLINED      *** MISSING ***
+q_hat exact 95% CI [0.085, 0.755]      *** MISSING ***
+K=8 is the WHOLE admissible population  *** MISSING ***
+leave-one-out normalisation frozen     *** MISSING ***
+the DIRECT-PATH fence                  present
+NOT a decomposition of y_install       present
+```
+
+The freeze script was written in S-397, **before** S-400 refuted the raw statistic and S-401 fixed
+the disclosure requirements. It was never revisited against them.
+
+### 2. 🔴 And the reader was publishing a disclosure as `null`
+
+```python
+"⚠ CHOSEN_AFTER_SEEING_TRAIN": pr.get("POWER_BY_SEEDED_MONTE_CARLO", {}).get(
+    "⚠ THE_STATISTIC_WAS_CHOSEN_AFTER_SEEING_TRAIN"),
+```
+
+The key did not exist, so `.get()` returned `None` and the verdict artefact would have carried
+**a field whose entire purpose is disclosure, containing nothing** — in the output a reader quotes.
+📌 **A `.get()` on a mandatory field converts "the prereg failed to disclose" into "the disclosure
+is null", and those are not the same fact.** It is now a REFUSAL, over four power keys and the
+normalisation record.
+
+### 3. ⚠ The refusal fired for the wrong reason until the order was fixed
+
+The new test could not reach the disclosure check: the reader validated the MEASUREMENT first, so a
+deliberately-stripped prereg was rejected on `split` instead. **The prereg is the contract and
+validating it needs no artefact at all**, so the disclosure block moved ahead of every measurement
+check — the same cheap-and-fundamental-first ordering R35-C's F14 required of the freeze.
+
+### 4. What the prereg now carries
+
+```
+q_exact_95CI            [0.085, 0.755], COMPUTED by Clopper-Pearson in the freeze, not quoted
+THREE CANDIDATES        the refuted raw argmax; within-layer (M=4/8, p=0.011248); layer-normalised
+                        (M=3/8, p=0.049998) -- with "(2) SCORED BETTER AND WAS DECLINED" and the
+                        FIDELITY criterion stated
+WHY THE CI MATTERS      q is 8 Bernoulli trials, the interval spans power 0.004-0.74, and S-374
+                        means it cannot be narrowed by measuring more prompts
+NORMALISATION           named as PART OF THE STATISTIC, with the 44x -> 1.40x measurement and the
+                        fact that it is implemented ONCE and called by both the freeze and the read
+```
+
+### 5. ✅ The read recipe is frozen — and it immediately caught an S-167c violation
+
+`runargs/dcs_csi_pr021_read.txt`, md5 `9d3d5d58`, pinning the prereg, instrument, reader AND the
+shared statistic module by md5. Writing it exposed that it named
+`slurm_scripts/dcs_csi_rung2_validation.slurm`, **which did not exist** — S-167c, caught by my own
+check one step after writing the line. The launcher now exists, and it **refuses a non-zero
+`--limit`**: a domain-contiguous sample is not the declared population, and the reader would refuse
+the resulting SMOKE artefact anyway.
+
+### 6. What was NOT established
+
+```
+- NOT RUN. No validation measurement exists. The recipe is frozen; nothing has been read.
+- NOT REVIEWED. R36 now owes FIVE pieces: the freeze, the reader, the S-402 refactor, the shared
+  normalisation, and the validation launcher. It is due BEFORE this reaches a GPU, and this tick
+  did not do it.
+- NOT established: that the prereg is now complete. Six gaps were found by checking it against a
+  list I wrote three ticks earlier. There is no reason to think that list is exhaustive, and the
+  test added here checks exactly the eight items on it.
+- NOT re-verified: the prereg md5 changed twice this tick (003f662c -> 73a69036). The read recipe
+  pins the CURRENT one; any further edit invalidates it.
+```
+
+### 7. State
+
+```
+QUEUE    EMPTY.
+CHANGED  scripts/gates/dcs_csi_pr021_freeze.py (+6 disclosures, Clopper-Pearson),
+         scripts/dcs_csi_pr021_rung2_read.py (refuses a non-disclosing prereg, ordered first),
+         configs/...pr021...json (RE-EMITTED, md5 73a69036),
+         runargs/dcs_csi_pr021_read.txt (NEW, md5 9d3d5d58),
+         slurm_scripts/dcs_csi_rung2_validation.slurm (NEW), tests/... (10), external_md/...
+NEXT     R36 over the five pieces -- then, and only then, launch.
+```
+
+`git push` remains credential-blocked. Committed locally.

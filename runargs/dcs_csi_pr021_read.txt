@@ -1,0 +1,75 @@
+# FROZEN READ for PR-CSI-021 -- RUNG 2 (DECODABILITY) on BASKET VALIDATION cells.
+# Frozen 2026-09-25, BEFORE ANY VALIDATION NUMBER EXISTS. Never re-freeze after seeing one.
+#
+# PREREG   configs/dcs_csi_pr021_rung2_decode_basket_validation.json  md5 73a69036f0f77fc5e7e12f860d06de23
+# INSTRUMENT scripts/dcs_csi_rung2_celldecode.py                      md5 a95dbc00157a86cc09633e78f3d9e3f0
+# READER   scripts/dcs_csi_pr021_rung2_read.py                        md5 1212b2213c757356d107e343bbd8d10c
+# STATISTIC scripts/dcs_csi_argmax_verdict.py                         md5 9e6eaee73bcb096f3c89df84a8e1f0b7
+#
+# WHY THIS FAMILY EXISTS. Every claim in this sprint is RUNG 1 on AM-34's ladder -- ablation
+#   damage, i.e. NECESSITY. This is the first attempt at RUNG 2, DECODABILITY. ⛔ The ladder's own
+#   claim is that the rungs are SEPARABLE: "information may be readable at a site without being
+#   used there." A result here stands BESIDE D40, never as a stronger version of it.
+#
+# ⚠⚠ ITS FIRST DESIGN WAS REFUTED ON TRAIN AND THAT IS WHY THIS ONE LOOKS AS IT DOES.
+#   S-399: the RAW per-cell magnitude carries a ~44x DEPTH CONFOUND across the band, and all EIGHT
+#   raw argmaxes landed in the top three of nine layers (P = 1.52e-04 under a uniform argmax). A
+#   layer-14 head's output passes through 17 fewer blocks before the final-residual direction is
+#   read than a layer-6 head's. The statistic frozen here divides by the LEAVE-ONE-OUT mean of the
+#   other heads at each layer, which collapses that to 1.40x. WITHOUT IT THIS MEASURES DEPTH.
+#
+# ⚠ THE STATISTIC WAS CHOSEN AFTER SEEING TRAIN, from three candidates, and the one that SCORED
+#   BETTER WAS DECLINED (S-400/S-401). The prereg carries the full disclosure and the READER
+#   REFUSES a prereg that omits it. Validation is the only held-out test.
+#
+# ⚠ K = 8 IS THE WHOLE ADMISSIBLE POPULATION (S-374), so q's precision cannot be improved by
+#   measuring more prompts. Its exact 95% CI spans power ~0.004 to ~0.74: THE PILOT CANNOT SAY
+#   WHETHER THIS DESIGN IS WELL POWERED. The decision to run anyway is S-401, with its arithmetic.
+#
+# ------------------------------------------------------------------------------------------------
+# STEP -1. OPERATOR CHECKS. These are PROSE -- no reader enforces them.
+#   VOID 5   the screen artefact md5 must still match the prereg's VOID_CONDITIONS["5"]
+#   VOID 9   one slurm job, one GPU architecture
+#   VOID 10  attn_implementation == eager (dominance_at needs output_attentions)
+#   VOID 11  scripts/ and src/ unchanged while the job is in flight
+#   VOID 12  THIS FILE is not amended after any validation number is seen
+#   VOID 13  ENFORCED BY THE READER: recon_rel_err must be present and within the dtype tolerance
+#
+# Read in order. STOP AT THE FIRST FAILURE.
+# ------------------------------------------------------------------------------------------------
+# STEP 1. THE MEASUREMENT. --limit 0 = the full declared population. The instrument REFUSES if the
+#   selection is not exactly 230 rows over 23 domains, and enforces the domain split PER ROW from
+#   dcs_ts116_domain_split.json -- ⛔ the exclusion FILE alone is NOT sufficient (S-384).
+
+LIMIT=0 sh scripts/gates/dcs_csi_submit.sh slurm_scripts/dcs_csi_rung2_validation.slurm
+
+# ------------------------------------------------------------------------------------------------
+# STEP 2. THE VERDICT. The reader computes NO statistic of its own: every branch, p-value, gating
+#   choice and floor comes from scripts/dcs_csi_argmax_verdict.decide(), the SAME function
+#   dcs_csi_pr016_argmax_test.py calls for rung 1 (S-402). S-350 measured the alternative: two
+#   "independent implementations" of this statistic agreed ONLY at M = K.
+
+python scripts/dcs_csi_pr021_rung2_read.py \
+  --prereg configs/dcs_csi_pr021_rung2_decode_basket_validation.json \
+  --measurement reports/DCS_CSI_RUNG2_VALIDATION_basket_full.json \
+  --out reports/DCS_CSI_PR021_RUNG2_READ_basket_validation.json
+
+# ------------------------------------------------------------------------------------------------
+# THE STATISTIC, PRE-COMMITTED -- identical in form to PR-CSI-020's, applied to a DIFFERENT
+#   QUANTITY, which is what makes a rung-1/rung-2 comparison meaningful (S-389).
+#     M = # of heads whose LAYER-NORMALISED |contribution| argmax equals the frozen screen layer
+#     binomial P(Binom(K,1/9) >= M) | conditional over unique-layer heads | permutation over the
+#     10080 distinct assignments, scored against the OBSERVED argmax vector
+#     WEAKEST FLOOR at K=8 = conditional 1.5242e-04.  SUCCESS = weakest <= 0.05 AND spanning.
+#     K IS FIXED AT 8 -- there is no rung-2 admission gate; the heads are PR-CSI-020's, all of
+#     which passed rung-1 admission. ⛔ The head set is RUNG-1-SELECTED and is NOT held out.
+#
+# WHAT MAY NEVER BE SAID FROM THIS FILE, whatever the numbers:
+#   * that the cell is where the concept IS USED. This is decodability; the rungs are separable.
+#   * that it decomposes y_install -- the endpoint aggregates casings with LOGSUMEXP and this
+#     direction is LINEAR (S-381/S-382).
+#   * anything about a cell's TOTAL contribution: ⛔ THIS IS A DIRECT-PATH ATTRIBUTION and ignores
+#     17-25 blocks of downstream processing.
+#   * if NULL: that the concept is not readable there. A causally necessary cell can have
+#     near-zero direct projection, and the power table must be quoted with any null.
+#   * that D40 or any rung-1 result is weakened. Each stands on its own arms.
