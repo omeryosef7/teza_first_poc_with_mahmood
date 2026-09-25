@@ -39712,3 +39712,66 @@ increment — it is the one whose headline was withdrawn and whose prohibition m
 sentence, so it is where a careless draft would do the most damage.
 
 `git push` remains credential-blocked. Committed locally.
+
+## S-450 — the swap family drafted: the verdict is NO CELL FOR EITHER DIRECTION, and the family carries a withdrawn headline, a retracted prohibition and the AM-48 divergence
+
+**2026-09-26. Queue empty, no GPU.** S-449 named the swap family as the next increment *"because it
+is where a careless draft would do the most damage"*. Drafted as **§A.4**, with every cell read by
+me from the four artefacts rather than from the claim table.
+
+### 1. All four cells, measured
+
+```
+A  basket's axis -> BUTTON's knockout   TRAIN  +0.00150 [+0.00047, +0.00256]  rank  4 of 47
+                                        VALID  +0.00338 [+0.00122, +0.00559]  rank  1 of 47
+B  button's axis -> BASKET's knockout   TRAIN  +0.00090 [-0.00029, +0.00217]  rank 13 of 47
+                                        VALID  +0.00224 [+0.00042, +0.00430]  rank  2 of 47
+TRAIN cells in_sample=True; VALIDATION cells in_sample=False -- read from each artefact
+```
+
+**The frozen rule is `HELPS iff R47 ≤ 2`, and step 6 says a direction whose splits DISAGREE is NOT
+REPLICATED with no cell claimed.** Direction A disagrees (4 vs 1); direction B disagrees (13 vs 2).
+⛔ **So: NO CELL IS CLAIMED FOR EITHER DIRECTION, the 2×2 is unresolved in both, and C1 is neither
+refuted nor supported.** I applied the rule to the measurements rather than importing the verdict.
+
+### 2. Three hazards, all carried into the section
+
+🔴 **The original headline was WITHDRAWN** — *"basket's axis rescues button 32 ranks better"*, *"C1
+is SUPPORTED"*, *"the STATE hypothesis is REFUTED"*. 🔴 **And its replacement was withdrawn too**: a
+prohibition once *required* *"CELL 4 on TRAIN, C1 refuted by the fixed rule"* as a mandatory
+companion sentence, which a later amendment retracted — **the failure mode where following the rule
+is what produces the error.** ⚠ **The rank p is DESCRIPTIVE**: the swap arm is not exchangeable with
+the family it is ranked against, so the number is a position and never a test.
+
+🔴 **And direction B's validation cell IS the AM-48 divergence.** At rank 2 of 47 the prereg says
+**HELPS** and the artefact's `VERDICT` says *"DOES NOT PASS … INSIDE the controls, not above them"*
+— of a candidate above 45 of 46 controls. §A.4 states both and says which the claim table used.
+
+**The one defensible quantitative sentence** is reproduced with its arithmetic checked:
+`+0.00150 − (−0.00014) = +0.00164` exactly, ci95 [+0.00066, +0.00261], ranking **4 of 47**, not
+clearing the bar, descriptive, **secondary and unpreregistered**.
+
+### 3. The count, measured rather than subtracted
+
+**Ten of the twenty axis rows are drafted; ten remain** — D13, D14, D15, D16, D17, D20, D21, D22,
+D28, D31. ⚠ **I measured this instead of subtracting four from fourteen**, because this count has
+been wrong twice in two ticks: SCOPE said eighteen when it was fifteen, and a re-measure said
+thirteen by reading a range as a list. SCOPE and the checklist now carry the measured pair and a
+note that it has been wrong before.
+
+### 4. What was NOT established
+
+⛔ **That §A.4 is right.** It is the newest and least-reviewed prose in the file, and it is the
+section with the most prohibitions attached — the combination that produced thirteen findings when
+§H was in the same position.
+⛔ **That applying step 6 myself matches how the record applied it.** It agrees with the amendment
+that governs D25, which is why I am confident; but **I derived the verdict from the rule and the
+four ranks**, and a reader should check that derivation rather than take it.
+⛔ **That "NO CELL IS CLAIMED" is the whole story.** D26's factorial reading and D21's five removed
+explanations are separate results in the same family, and neither is drafted.
+⛔ **No published number, claim or verdict moved. No GPU, no arm, no code change. TEST untouched.**
+
+**NEXT:** ten rows remain. D21 and D26 are the swap family's own neighbours and would complete it;
+D13/D15 are the 2×2 layer-exoneration pair.
+
+`git push` remains credential-blocked. Committed locally.

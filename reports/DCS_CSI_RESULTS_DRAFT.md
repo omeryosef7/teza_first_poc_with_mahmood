@@ -47,8 +47,9 @@ it declined is what found it. Classified by reading each row rather than by patt
 
 ⚠ **UPDATED S-439/S-440: TWO of the twenty are now drafted as §A** — D19's bidirectional conjunction
 and D24's matched-power dissociation, with D18, D23 and D29 as their supports. **That is an
-increment, not the part: FIFTEEN rows remain undrafted** (⚠ corrected S-449 — SCOPE said
-eighteen, counting the five §A cites as two).
+increment, not the part: TEN of the twenty are now drafted and TEN remain** — D13, D14, D15, D16,
+D17, D20, D21, D22, D28, D31. (⚠ This count has been wrong twice: SCOPE said eighteen when it was
+fifteen, and a re-measure said thirteen by reading a range as a list, S-449.)
 
 **The omitted rows are the AXIS, NECESSITY and DISSOCIATION families — PR-CSI-001 through 009**: the
 rank-1 installation axis and its control families, the necessity direction, the button/basket
@@ -271,7 +272,7 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | any rung-2/3/4 **CLAIM** for a result here | every certified claim is rung 1 — but naming rung 2 as *unreached* is required, not forbidden, so the ban is on the claim and not the vocabulary | AM-34 |
 | "correcting" either 1.52e-04 | `(1/9)^4 = (1/3)^8 = 1/6561` — two real quantities, one value | [†] §4 |
 | ‼ "floor above α ⇒ CANNOT ANSWER, never FAIL" | true only at K < 3; at K ≥ 3 it is a FAIL with an unwinnability warning — and the sentence is **still live in both published artefacts**, so it can be re-imported from a source an editor will read | AM-45 (S-428), §M.6 |
-| ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | §1–§4 are the CELL-level part and §H the HEAD-level part; of the axis / necessity / dissociation families (D12–D31) **only D18/D19/D23/D24/D29 + D12 are drafted, as §A — FOURTEEN rows remain in neither** — see SCOPE | D12–D31, SCOPE |
+| ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | §1–§4 are the CELL-level part and §H the HEAD-level part; of the axis / necessity / dissociation families (D12–D31) **ten of D12–D31 are drafted as §A and TEN remain in neither** — see SCOPE | D12–D31, SCOPE |
 | ‼ quoting `VERDICT: "WE FOUND (part of) THE WRITER"` | it is a **verdict LABEL live in TWO published artefacts** (PR-010 and PR-011), not a claim; the permitted form is that file's `REPORTABLE_AS` — 8 head indices, at least half the effect, **leg (i) only**, **not** a claim about any cell | D32, §M.8 |
 | "deduplicating" the two 0.012346s | D39's certified conditional (§2) and D38's forbidden binomial (§4) are **both exactly 1/81** — one is a result, one is banned | D39, D38, §4 |
 | ‼ "TEST is unspent / untouched / available" | read to completion 2026-09-08 and selection-contaminated | AM-39, D5 |
@@ -1035,3 +1036,49 @@ floor pair `(1/35, 1/31)`** was quoted for years where both floors are now `1/47
 ⚠ **The shuffled-only subfamily was once recorded as "INCONCLUSIVE on its own, both splits"** at
 1 of 13 and 1 of 9. **At n46 it is 1 of 25 on both splits, floor 0.0400 — it certifies on its own**,
 so that caveat understated the result rather than overstating it.
+
+## A.4 The cross-codeword axis swap: NO CELL IS CLAIMED FOR EITHER DIRECTION (D25, D26, D27, D30)
+
+🔴 **This family's original headline was WITHDRAWN, and a prohibition written to police it mandated
+a sentence that was itself later retracted.** It is drafted here with that history attached, because
+a careless summary of it would do more damage than any other section of this draft.
+
+All four cells, read by me from the four `DCS_CSI_SWAP_*_n46.json` artefacts:
+
+```
+direction A  basket's axis -> BUTTON's knockout   TRAIN  +0.00150 [+0.00047, +0.00256]  rank  4 of 47
+                                                 VALID  +0.00338 [+0.00122, +0.00559]  rank  1 of 47
+direction B  button's axis -> BASKET's knockout   TRAIN  +0.00090 [-0.00029, +0.00217]  rank 13 of 47
+                                                 VALID  +0.00224 [+0.00042, +0.00430]  rank  2 of 47
+                                   TRAIN cells are IN-SAMPLE; VALIDATION cells are held out
+```
+
+**The preregistered rule is `HELPS iff R47 ≤ 2`, and its step 6 is: if the two splits disagree, the
+direction is reported NOT REPLICATED and no cell is claimed for it.** Applying it: **direction A
+disagrees (4 vs 1) and direction B disagrees (13 vs 2).**
+
+⛔ **So the verdict is: NO CELL IS CLAIMED FOR EITHER DIRECTION. The 2×2 is unresolved in both
+directions, and C1 — "basket simply has a better probe" — is NEITHER REFUTED NOR SUPPORTED by it.**
+
+🔴 **What must never be said, because it was said and withdrawn:** *"basket's axis rescues button 32
+ranks better than button's own axis does"*, *"C1 is SUPPORTED"*, *"the STATE hypothesis is
+REFUTED"*, and any CELL 1 or CELL 2 reading. ⚠ **And the replacement was wrong too** — a prohibition
+once required *"CELL 4 on TRAIN, C1 refuted by the fixed rule"* as a mandatory companion sentence,
+which a later amendment withdrew. **A rule that compels a retracted claim is the one failure mode
+care cannot catch**, because following it is what triggers it.
+
+⚠ **The rank p here is DESCRIPTIVE, not a valid permutation p:** the swap arm is not exchangeable
+with the control family it is ranked against, so the number may be quoted only as a position, never
+as a test.
+
+🔴 **And direction B's validation cell is where the analyser and its preregistration DISAGREE
+(AM-48):** at **rank 2 of 47, rank_p 0.04255**, the prereg's `definition_of_HELPS` (`rank ≤ 2`) says
+**HELPS**, while the artefact's own `VERDICT` string says *"DOES NOT PASS … INSIDE the controls, not
+above them"* — of a candidate above 45 of 46 controls. **The claim table read it by the frozen rule.
+Nothing reconciles the two, and the divergence is live in the published file.**
+
+**The one defensible quantitative sentence**, and the only one: basket's axis transplanted into
+button's knockout recovers **+0.00150** where button's own axis recovers **−0.00014** on the same 67
+TRAIN domains and the same 46 controls — a paired difference of **+0.00164 [+0.00066, +0.00261]** —
+**but it ranks 4 of 47, does not clear its preregistered bar of rank ≤ 2, and its rank p is
+descriptive.** It must always be labelled **secondary and unpreregistered**.
