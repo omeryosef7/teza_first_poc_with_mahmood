@@ -509,16 +509,38 @@ through **family size** rather than through K.
 No family draws heads at random. PR-CSI-018's six were chosen because they were live **on button**;
 PR-CSI-020's eight because they were live **on basket**. The screen's per-cell prediction is
 therefore tested **only where there was something to find**, and nothing here licenses *"the screen
-is a validated cell selector in general"*. ⚠ And the **1.5 admission gate is frozen across three
+is a validated cell selector in general"*. 🔴 **And the worst selection case is §1's, not these two.** D37's four heads were chosen as D34's
+load-bearing four **ON VALIDATION — the same split the census then reads**. That is selection on the
+split being reported, which is strictly worse than choosing heads because they were live on the
+*other* codeword.
+
+⚠ **The screen is validated for WITHIN-head depth only, and has a MEASURED failure at ranking
+heads.** The same screen that localises head 2's effect to the right layer ranked head 2 — **the
+single strongest head of 32** — only **6th of 32** at head level. So "the screen works" is true of
+*which cell within a head* and false of *which head matters*.
+
+⚠ And the **1.5 admission gate is frozen across three
 published families**, so it cannot be relaxed after the fact — which matters because the best
 unadmitted basket head sits at **1.400**, close enough that a reader may wonder, and far enough that
 moving the bar would reinterpret three published results at once.
 
-## L.5 The held-out axes differ between the two positive results, and conflating them overstates both
+## L.5 The two positive results differ in what is held out — and D40's nominal null is measured to be wrong
 
 **§2 (D39) is held out on CODEWORD. §3 (D40) is held out on SPLIT only.** They are not two
 independent confirmations of the same thing, and **three of D40's eight heads were disclosed before
 the read as a replication** of predictions already tested in §2 — not an independent draw.
+
+🔴 **And D40's nominal null is MEASURED to be wrong for its own multiset.** The intervention argmax
+marginal is not uniform: across the cell censuses published at the time, **L10 and L14 together took
+60 % of ten heads** while uniform would be 11.1 % each. **Three of PR-CSI-020's eight predictions
+land on those two modal layers**, so a *random* screen predicting that multiset would match at
+**0.1625, not 1/9 = 0.1111 — 46 % higher** (re-derived: 1.30/8). **The binomial is therefore
+anti-conservative here**, which is the measured reason §3's binomial may never be quoted alone.
+⚠ **0.1625 is NOT a corrected null and must never be substituted into anything** — constructing a
+"corrected binomial" after seeing the marginal is exactly the post-hoc statistic-selection this
+sprint forbids. ✅ **The permutation and conditional p's are immune**: both condition on the
+multiset, so a marginal favouring L10/L14 helps every assignment equally and cancels. The claim
+rests on the weakest of three, and the binomial is never the weakest.
 
 ## L.6 Two axes are closed by contamination, not by design
 
@@ -528,7 +550,20 @@ demonstrations supply the installed content — has **no confirmatory instrument
 measurement licenses a **refutation reading only**, and a null control there is *confounded*, to be
 reported as CANNOT ANSWER and never as support.
 
-## L.7 What reproducibility does and does not buy
+## L.7 Every cell result reads the SAME 23 domains, and most heads were never looked at
+
+🔴 **All five cell censuses — PR-CSI-014, 015, 016, 018 and 020 — read an IDENTICAL set of 23
+validation domains.** Verified by comparing the domain sets arm-by-arm: union 23, intersection 23.
+**So §1, §2, §3 and §4 are not independent in the domain dimension**, and that includes the
+cross-codeword pair: D39 and D40 share their entire domain sample. Domain idiosyncrasy is common to
+every result in this draft, and **nothing here speaks to domain generality.**
+
+⚠ **Head coverage is thin and the two ways of counting it differ.** At most **8 of 32** heads are
+cell-censused in any single family; the **union across all five families is 15 of 32**, so
+**17 heads have never been cell-censused at all**. Every claim about "where the codeword is
+installed" is a claim about the heads that were looked at.
+
+## L.8 What reproducibility does and does not buy
 
 §6 shows both published reads replay from their landed artefacts, including under a later reader
 refactor. **That tests the reader, not the arm** — it re-reads the same arms, strengthens no p, and

@@ -38237,3 +38237,81 @@ cell family reads the SAME 23 domains) and **head coverage** (at most 8 of 32) a
 **NEXT:** the four §L omissions named above.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-429 — the four §L omissions closed, each re-derived: every cell result reads the SAME 23 domains, and 17 of 32 heads were never looked at
+
+**2026-09-25. Queue empty, no GPU.** S-428 named four omissions the §L review had listed and I had
+not applied. **All four are closed, and none was taken on trust** — the two that are measurements I
+re-derived from the artefacts, and the two that are quotations I traced to their source entry.
+
+### 1. 🔴 Measured: every cell family reads an IDENTICAL domain set
+
+```
+PR-CSI-014 basket cells    n_domains 23   tag csi7_cell_basket_validation     11 arms
+PR-CSI-015 basket 3heads   n_domains 23   tag csi8_cell3_basket_validation    29 arms
+PR-CSI-016 button cells    n_domains 23   tag csi9_cell3_button_validation    32 arms
+PR-CSI-018 button nonL14   n_domains 23   tag csi10_cell6_button_validation   62 arms
+PR-CSI-020 basket 8heads   n_domains 23   tag csi11_cell8_basket_validation   82 arms
+
+domain sets compared arm-by-arm:  union 23, intersection 23  -> IDENTICAL, all five
+```
+
+**So §1–§4 are not independent in the domain dimension, and that includes the cross-codeword pair:
+D39 and D40 share their entire domain sample.** Domain idiosyncrasy is common to every result in the
+draft and **nothing in it speaks to domain generality.** New **§L.7**.
+
+⚠ **Head coverage, and the two counts differ so both are given:** at most **8 of 32** heads are
+cell-censused in any single family; the **union across all five is 15 of 32**, leaving **17 heads
+never cell-censused at all** — `[0, 1, 3, 5, 7, 8, 9, 12, 14, 15, 16, 22, 25, 26, 28, 30, 31]`.
+
+### 2. 🔴 Re-derived: D40's nominal null is 46 % too low for its own multiset
+
+S-351's marginal — L6/L7/L8/L11 at 10 % each, **L10 and L14 at 30 % each**, L9/L12/L13 at 0 %.
+PR-CSI-020 predicts `[L11, L11, L12, L8, L10, L14, L6, L10]`, of which **three land on the two modal
+layers**. Re-derived by me:
+
+```
+per-head match prob  0.10 0.10 0.00 0.10 0.30 0.30 0.10 0.30   sum 1.30
+mean = 1.30 / 8 = 0.1625        binomial assumes 1/9 = 0.1111        46.3% higher
+```
+
+**The binomial is anti-conservative for this family** — the measured reason §3 may never quote it
+alone. ⛔ **And the caveat travels with the figure: 0.1625 is NOT a corrected null and must never be
+substituted into anything**, because building a "corrected binomial" after seeing the marginal is
+the post-hoc statistic-selection this sprint forbids. ✅ **The permutation and conditional p's are
+immune** — both condition on the multiset, so a marginal favouring L10/L14 helps every assignment
+equally and cancels. Added to **§L.5**, which was retitled and reordered so it leads with the claim
+its heading makes.
+
+### 3. Two selection facts §L.4 had omitted
+
+🔴 **The worst selection case in the draft is §1's, and §L.4 had listed only the other two.** D37's
+four heads were chosen as D34's load-bearing four **ON VALIDATION — the same split the census then
+reads.** That is selection on the split being reported, strictly worse than choosing heads because
+they were live on the *other* codeword.
+
+⚠ **And the screen has a MEASURED failure at the thing §L.4 did not mention.** It localises head 2's
+effect to the right layer while ranking head 2 — **the strongest head of 32** — only **6th of 32**.
+So "the screen works" is true of *which cell within a head* and false of *which head matters*.
+
+### 4. What was NOT established
+
+⛔ **That §L is complete.** These four were the ones named; the reviewer listed ten and I have now
+applied six across S-428 and S-429. **Still open: D19's "the axis moves only 7.8 % of what
+whole-state removal moves" and D18's sign-flip p's sitting at the Monte-Carlo sampler floor** — both
+attach to the necessity result §L.3 introduces, and both need checking at the artefact before they
+go in.
+⛔ **That the marginal S-351 measured is current.** It was computed over "ten heads across both
+codewords" as published *at that time*; PR-CSI-018 and PR-CSI-020 have since added more. **I did not
+recompute it over today's 15 heads**, and the §L text says "published at the time" rather than
+implying otherwise. ⚠ Recomputing it would be a *new* measurement of a null after seeing more data,
+which is the move the 0.1625 prohibition exists to forbid — so it is deliberately not done.
+⛔ **No number in §1–§6 moved.** Every addition is a limitation.
+⛔ **No GPU, no arm, no code change. TEST untouched.**
+
+**NEXT:** the two remaining §L items — D19's 7.8 % and D18's sampler-floor p's — verified at the
+artefacts first.
+
+`git push` remains credential-blocked. Committed locally.
