@@ -38830,3 +38830,72 @@ re-derivation and prose.
 written by the author of the results it reports.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-437 — I audited the claim I had flagged as unaudited, and it was WRONG: the draft is two of THREE parts
+
+**2026-09-25. Queue empty, no GPU.** S-435 and S-436 both closed with the same caveat: *"32 further
+D-rows are uncited; I judged them predecessor-phase from their content **without a row-by-row
+audit**."* **This tick ran the audit, and the judgement was wrong.** An adversarial review of §H was
+launched in parallel and had not returned.
+
+### 1. 🔴 Twenty of the uncited rows are CSI-sprint results, not predecessor-phase
+
+Classified **by reading each row**, after two patterns disagreed with each other:
+
+```
+predecessor-phase, pre-CSI            10   D1-D4, D6-D11   (A1 knockout, QPROBE, axis build, offsets)
+CSI-SPRINT RESULTS, GENUINELY OMITTED 20   D12-D31         <- a WHOLE THIRD PART
+covered in §3/§4 prose, uncited by ID  3   D40-a/b, D41-a
+```
+
+**The omitted twenty are the AXIS, NECESSITY and DISSOCIATION families — PR-CSI-001 through 009**:
+the rank-1 installation axis and its control families, the necessity direction, the button/basket
+codeword dissociation at matched power, and the cross-codeword axis swap. **So the draft is two of
+three parts, not "one of two halves" as S-435's SCOPE block said.** Corrected in place.
+
+📌 **And the reason the gap stayed invisible is worth naming:** §L.3 discusses two of those results —
+necessity and basket-at-L20 — **but only to LIMIT them.** They appear in the file as *limitations of
+results the draft never states*. A reader meets "rank 1 of 9, floor-limited" with no section that
+ever said what the necessity result is. **A missing part can hide behind its own caveats.**
+
+### 2. 🔴 And the audit itself needed three attempts — the ninth and tenth detector failures
+
+```
+1. "does the row name PR-CSI-01x/02x?"   -> called D12-D31 predecessor-phase. It only looked for
+                                            TWO-DIGIT families and missed PR-CSI-001..009 entirely.
+2. "does the row name ANY CSI prereg?"   -> 21 rows name none, including D12, D18, D19, D20, D21,
+                                            which are plainly CSI results. Wrong again, differently.
+3. READ THE HEADLINES                    -> settled it in one pass.
+```
+
+⚠ **That is now ten detector failures in this sprint, and the pattern has not varied once: the
+pattern-based attempt is wrong, the reading is right.** S-433 wrote the rule and I reached for a
+regex twice more before applying it. **Recording that the rule was adopted and then not followed is
+more useful than recording the rule again.**
+
+### 3. What this changes about the write-up's state
+
+The draft is **not** nearly finished. It holds the cell-level half (§1–§4, reviewed twice), the
+head-level half (§H, reviewed zero times), §M, §L — and **omits a third body of work whose results
+include the only bidirectional conjunction the sprint has (D19) and the codeword dissociation at
+matched power (D24), which is arguably the sprint's most-cited internal result.**
+
+### 4. What was NOT established
+
+⛔ **That the 20 are correctly stated in the claim table.** I read their headline cells to classify
+them and **re-derived none of their figures** — the same limit S-435 recorded about D32–D35, and it
+still stands for these.
+⛔ **That 10 / 20 / 3 is the right split.** It is my reading of 33 headlines. The two automated
+attempts disagreed with each other *and* with the reading, so the reading is the least-bad of three,
+not a verified fact.
+⛔ **That the third part should be drafted next.** It is 20 rows against §H's 4, and §H is still
+unreviewed. **Drafting more unreviewed prose is not obviously better than checking what exists.**
+⛔ **No published number, claim or verdict moved.** ⛔ **No GPU, no arm, no code change. TEST
+untouched.**
+
+**NEXT:** the §H review's findings, then a decision between drafting part three and reviewing what
+is already written — which is a real trade-off and should be recorded as one rather than defaulted.
+
+`git push` remains credential-blocked. Committed locally.

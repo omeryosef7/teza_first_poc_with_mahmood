@@ -19,7 +19,9 @@ names its scope rather than claiming a blanket.*
 ✅ **UPDATED S-436 — the head-level half is now DRAFTED as §H and this block is its index.**
 §1–§4 report the five cell-census families (PR-CSI-014, 015, 016, 018, 020); **§H reports the
 head-level results, which the cell-level half subdivides and therefore depends on.** §H is written
-second and belongs first. The four rows below are what §H covers:
+second and belongs first. ⚠ **A THIRD part — the axis, necessity and dissociation families
+(PR-CSI-001–009, 20 claim-table rows) — is NOT in this file at all**; see the correction below. The
+four rows below are what §H covers:
 
 | omitted | what it is | why its absence matters |
 |---|---|---|
@@ -33,10 +35,24 @@ added.** §4 offers "one CANNOT ANSWER and one honest **methodological** negativ
 might have taken that as the full negative ledger. **It is not** — the empirical negative is §H.3,
 and it is now in the file.
 
-⛔ **Still NOT a complete results section.** 32 further claim-table D-rows are uncited; I judged them
-predecessor-phase from their content **without a row-by-row audit**, and that judgement has not been
-checked. ⛔ **§H has had NO adversarial review** — §1–§6 have had two each and §M and §L one each,
-and every one of those passes found real defects.
+🔴 **CORRECTED S-437 — THIS DRAFT IS TWO OF THREE PARTS, NOT TWO HALVES.** S-435 said the remaining
+uncited rows were "predecessor-phase". **That was wrong for 20 of them**, and the row-by-row audit
+it declined is what found it. Classified by reading each row rather than by pattern:
+
+| | rows | status |
+|---|---|---|
+| predecessor-phase, pre-CSI | 10 — D1–D4, D6–D11 | correctly out of scope |
+| **CSI-sprint results, GENUINELY OMITTED** | **20 — D12–D31** | 🔴 **a whole third part** |
+| covered in §3/§4 prose, not cited by ID | 3 — D40-a, D40-b, D41-a | fine |
+
+**The omitted 20 are the AXIS, NECESSITY and DISSOCIATION families — PR-CSI-001 through 009**: the
+rank-1 installation axis and its control families, the necessity direction, the button/basket
+codeword dissociation at matched power, and the cross-codeword axis swap. **None of it is in this
+file.** §L.3 touches two of those results (necessity, basket-at-L20) only to limit them, which is
+how the gap stayed invisible — they appear as *limitations* of results the draft never states.
+
+⛔ **§H has had NO adversarial review** — §1–§6 have had two each, §M and §L one each, and every one
+of those passes found real defects.
 
 ---
 
