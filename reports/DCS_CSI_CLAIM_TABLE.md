@@ -1044,3 +1044,14 @@ design-map partitions, the PPV triple) and all reproduce, and re-derived PR-CSI-
 independently of `power_mc` — 0.1445 against the published 0.1446, under a different RNG, seed and
 N, and beneath an RNG-free analytic ceiling of `P(Binom(4, 0.375) ≥ 3) = 0.151611`. All 9 quoted
 md5 prefixes and all 7 cited SLURM job IDs in those blocks verified clean.
+
+---
+
+## A31. AM-44 — D39's ARMS are clean, but the CODE THAT READ THEM moved while they were in flight, and PR-CSI-018 had no condition against it (2026-09-25)
+
+*Added S-413. A PROVENANCE DISCLOSURE, not a correction: no number in D39 changes here. Measured by
+me from git and from the frozen read file; the two facts that protect the result are stated with it.*
+
+| # | claim | evidence | status |
+|---|---|---|---|
+| **AM-44** | ⚠ **`scripts/` changed by +559/−18 lines across FOUR files while PR-CSI-018's 62 arms were landing, and THREE of the four are the readers D39's frozen read invokes BY NAME** — `dcs_csi_head_census.py`, `dcs_csi_pr016_argmax_test.py`, `gates/dcs_csi_pr012_gate0_sweep.py` (the fourth, `dcs_csi_pr018_design_map.py`, is AM-42's map). The edits are S-332/S-333/S-334, the R30 fixes. ✅ **Two facts protect the result and both are measured, not assumed: (a) `src/` — the arms' own execution path — is EMPTY across the FULL arm window** `3c3c3d26..f34c71f8`, which *extends* R30-D's check (it diffed only `3c3c3d26..1e57d383` and only `src/`); **(b) the edits precede the read (S-335) and were made under a blind review.** ⛔ **But PR-CSI-018's frozen read carries NO VOID 11** — `grep -c "VOID 11"` returns **0** for `runargs/dcs_csi_pr018_read.txt` and **1** for `..._pr020_read.txt`. **The condition was introduced for PR-CSI-020 BECAUSE of R30-D, so it could not have bound the family that motivated it** | `git diff --stat 3c3c3d26..f34c71f8 -- scripts/` (4 files, 559 insertions, 18 deletions) and `-- src/` (empty); reader names read from `runargs/dcs_csi_pr018_read.txt`; R30-D's own range reproduced and found empty as it reported | 🟢 **D39's VERDICT AND EVERY NUMBER IN IT STAND.** Nothing here touches an arm, a p, or the PASS. ⛔ **NOT established: that these edits changed any published number.** I did not re-run the readers at the pre-edit commit against the landed arms, which is the decisive test and is available at any time with no GPU. ⛔ **NOT a claim that D39 violates VOID 11** — VOID 11 did not exist for it. ⚠ **What IS established is a DISCLOSURE GAP:** D39's row asserts the read *recipe* was frozen and unchanged (true, md5 `cbdf34a2`, verified), and says nothing about the reader *code*, which moved. **A frozen recipe and a moving reader are different guarantees, and only the first was claimed** |

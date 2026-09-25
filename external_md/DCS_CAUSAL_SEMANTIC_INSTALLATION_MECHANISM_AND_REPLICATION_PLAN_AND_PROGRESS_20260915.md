@@ -37007,3 +37007,91 @@ there the BAN survives while its stated REASON is dead — the inverse of prohib
 fails safe rather than dangerously.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-413 — the fan-out's eight leads, re-derived; two of my own "findings" were ALREADY RECORDED; and D39's readers moved while its arms were in flight
+
+**2026-09-25. Queue empty, no GPU.** A verification fan-out returned on the eight milder leads.
+**Nothing below is taken from it.** Every figure was re-derived by me; where my re-derivation and
+the fan-out disagreed I chased the disagreement, and the chase is where the real finding came from.
+
+### 1. Re-derived MYSELF, and CONFIRMED as real supersessions
+
+```
+D21 / D24  "no button-L18 VALIDATION arm has ever been run" / "Button has no held-out L18 cell"
+           REFUTED AT THE ARTEFACT: reports/DCS_CSI_SUBSPACE_button_validation_L18_n46.json
+           codeword=button split=validation 23 domains 221 keys 53 arms VOID=[]
+           candidate +0.00218 rank 6 of 47, and all 53 run dirs present on disk.
+           AM-18's "6 of 47 vs 1 of 47" is exact (basket validation = rank 1 of 47).
+D16        "9 control arms ... floor 1/10 = 0.10"  ->  n_controls=8, rank_p_floor=0.1111.
+           The control set is exactly KO_NEC_{SHUF0-3,RAND0-3}; KO_NEC_ORTH and KO_NEC_AXIS are
+           in `arms` but not in the control distribution. AM-8 CONFIRMED.
+D16 / D20  -0.11009 / 670 keys / 0.47037  ->  -0.10950 / 664 keys / 0.46867 (= -0.10950/-0.23364).
+           Key-set supersession, exactly as D20 self-declares. Both reads accurate.
+D17 / D22  "clean tree" is NOT witnessed: job 912838 records git_dirty=None, not false.
+           I scanned all 1775 RUNMETA.json: ZERO keys matching blob/sha/hash, and DONE.json too.
+           git_dirty over ALL runs: True 947 / False 260 / None 568 -- the schema CAN record false.
+           Restricted to this sprint's csi* runs (n=753): True 255 / None 498, and NEVER False.
+           So within CSI the asymmetry is TOTAL: a dirty tree is recorded, a clean one never is.
+```
+
+⚠ **NOT supersessions, and this matters as much:** D13 and D15's button-L18 figures (rank 8 of 11
+at a 10-control family vs rank 36 of 47 at 46) are two correct reads of two different families —
+AM-19 says so in as many words. D32's control statistics all reproduce and its four amendments are
+qualifications, not withdrawals. **None of these four went into the index.**
+
+### 2. 🔴 I was wrong, and chasing WHY produced the tick's real finding
+
+My first provenance script mapped job ID → run dir with a dict and **silently overwrote on
+collision**, so it printed commits for arbitrary arms and disagreed with the fan-out. **The fan-out
+was right and I was wrong.** The cause is the finding: **a SLURM job ID does not identify an arm.**
+81 of 972 jobs own more than one run dir — job 925438 owns **82**, job 923972 owns **62** — and
+**63 jobs record more than one distinct `git_commit`**, because each arm re-runs `git rev-parse` at
+its own start while the repo moves beneath the job.
+
+⛔ **NEITHER of those is new, and I checked before writing them as findings.** R30-D CONCERN 3
+already measured the per-arm `git rev-parse` drift ("33 of 34 arms record a commit that is not the
+code that produced them"), and **S-371 already disclosed that `d172e254` (S-362) was the one commit
+touching `scripts/` during PR-CSI-020's job.** Recorded as reproductions. This is the third time
+this sprint that reading the record first would have saved the work (S-367, S-411, here).
+
+### 3. What IS new: D39's ARMS are clean, its READERS are not, and nothing was watching
+
+VOID 11 exists because of R30-D. Its frozen text: *"scripts/ and src/ unchanged while the arms were
+in flight — the launcher's BLOB line is the family's commit of record, NOT any arm's RUNMETA
+git_commit."* **`grep -c "VOID 11"` returns 1 for `runargs/dcs_csi_pr020_read.txt` and 0 for
+`runargs/dcs_csi_pr018_read.txt`** — the condition was written for PR-CSI-020, so it never bound
+the family whose review motivated it. Measured across PR-CSI-018's full arm window:
+
+```
+git diff --stat 3c3c3d26..f34c71f8 -- src/       EMPTY   <- extends R30-D, which diffed only
+                                                             3c3c3d26..1e57d383 and only src/
+git diff --stat 3c3c3d26..f34c71f8 -- scripts/   4 files, +559 -18
+     scripts/dcs_csi_head_census.py              +169   <- INVOKED BY THE FROZEN READ
+     scripts/dcs_csi_pr016_argmax_test.py        +126   <- INVOKED BY THE FROZEN READ
+     scripts/gates/dcs_csi_pr012_gate0_sweep.py  + 47   <- INVOKED BY THE FROZEN READ
+     scripts/dcs_csi_pr018_design_map.py         +235   <- AM-42's map
+```
+
+**D39's row says the read RECIPE was frozen and unchanged — true, md5 `cbdf34a2`, re-verified. It
+says nothing about the reader CODE, which moved by +342 lines across the three scripts the recipe
+names.** A frozen recipe and a moving reader are different guarantees and only the first was
+claimed. Published as **AM-44** (block A31).
+
+### 4. What was NOT established
+
+⛔ **That any published number changed.** `src/` — the arms' execution path — never moved across
+the full window, so the ARMS are untouched; and the edits precede the read (S-335) under a blind
+review. **The decisive test is to re-run the three readers at the pre-edit commit against the
+landed arms and diff the outputs. I did not run it.** It needs no GPU and is available any time.
+⛔ **NOT a VOID 11 violation** — the condition did not exist for PR-CSI-018. Calling it one would be
+applying a rule backwards, which is the error AM-39 was corrected for.
+⛔ **D39, D40 and D41 all stand**, every number intact. Nothing in this entry touches a verdict.
+⛔ **No GPU. TEST untouched.**
+
+**NEXT:** run the decisive test — re-read PR-CSI-018's landed arms with the three readers at
+`1e57d383` and at `f34c71f8` and diff. If the outputs are identical, AM-44 downgrades from a
+disclosure gap to a closed question, and the write-up can cite it that way.
+
+`git push` remains credential-blocked. Committed locally.
