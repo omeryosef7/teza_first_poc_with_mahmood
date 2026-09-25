@@ -37515,3 +37515,83 @@ and most damaging if wrong.
 is the failure this section exists to prevent and the one it is most exposed to.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-420 — §M checked against the CODE, not the prereg, and it was wrong about which p-value gates PR-CSI-016
+
+**2026-09-25. Queue empty, no GPU.** S-419 wrote §M from the frozen prereg and artefacts and named
+its own exposure: an operational definition that is subtly wrong. This checks §M against **the
+source, which is authoritative over the prereg — the prereg states intent, the code states
+behaviour.** An adversarial pass was also launched and had not returned when this was written.
+
+### 1. CONFIRMED by my own reading of the source
+
+```
+M.5 bar rule     dcs_csi_head_census.py:654  bar = z * statistics.stdev(d) / math.sqrt(len(doms))
+                 statistics.stdev IS the sample SD (ddof=1); d = per[src][x] - per[base_arm][x]
+                 over domains, i.e. the per-domain paired delta of HD_<h> minus base.  EXACT.
+                 z is READ FROM THE PREREG and the reader REFUSES if absent -- it does not default.
+M.5 admission    pr016_argmax_test.py:174,178  power = abs(eh)/bar ; ok = excl0 and power >= ratio-1e-12
+                 ratio = float(pr["ADMISSION"]["ratio"]) -- from the prereg, NOT hardcoded.  EXACT.
+M.6 argmax       :181  top = sorted(band, key=lambda L: -abs(cells[L]))  -- |E|, over the NINE
+                 SINGLE CELLS only, never the whole-head arm.  EXACT.
+M.6 permutation  argmax_verdict.decide()  obs = [r["argmax_layer"] ...]; hits counted against OBS.
+                 Scored against the OBSERVED ARGMAX VECTOR, as §M says.  EXACT.
+M.6 conditional  uniq = admitted heads whose predicted layer is unique; p_cond over those.  EXACT.
+M.6 weakest      _gate_name = max(_cands, key=...)  -- weakest = max of three.  EXACT.
+M.6 spanning     span = {matched heads' argmax_layer}; spanning_ok = len(span) >= 2.  EXACT.
+M.7 exit codes   gate0_sweep: return 0 all-pass; sys.exit(3) partial; sys.exit(str) failure.  EXACT.
+```
+
+### 2. 🔴 One MISMATCH, and it bears on §4
+
+**§M.6 stated `weakest_of_three` as if it were sprint-wide. It is not.** Read from the three
+configs: **PR-CSI-016 declares NO `PRIMARY.GATING` field at all** and is the single family
+*grandfathered* to the legacy `binomial_only` rule; PR-CSI-018 and PR-CSI-020 declare
+`weakest_of_three`. The reader **fails closed** — any other prereg lacking the field is refused,
+precisely so a lost field cannot silently apply the wrong success criterion (R29/S-323).
+
+**This matters because §4 is about PR-CSI-016.** §M now states the exception and that the three
+families are not interchangeable in this respect.
+
+### 3. 🔴 And then I over-reached in the FIX, and caught it in the same tick
+
+Writing the correction I added that the `K_unique = 0` placeholder *"is why PR-CSI-016's outcome is
+CANNOT ANSWER"*. **That is false, and I checked instead of leaving it.** The verdict artefact gives
+its own cause: `why` = *"the SPANNING RULE is violated: all 2 matching head(s) share band layer
+L14"*, with `spanning_rule_satisfied: false`. And PR-CSI-016 gates on the **binomial alone**, so the
+placeholder could never have reached its gate. **Two different mechanisms.** Conflating them would
+misattribute the one real CANNOT ANSWER this sprint has. Corrected in place, with both stated.
+
+⚠ **This happened one tick after S-418 criticised the draft for exactly this class of error** — a
+causal claim that outruns its evidence. Writing a methods section does not make one immune to it;
+checking does.
+
+### 4. Also added to §M, found in the source and absent from the prose
+
+- **Admission carries a 1e-12 tolerance** (`power >= ratio - 1e-12`) because `abs(-0.009)/0.006`
+  is `1.4999999999999998` in IEEE doubles. **A head at exactly 1.5 is admitted**, and without the
+  tolerance it would not be. This is not cosmetic at a bar three published families share.
+- **p₀ = 1/|band|**, derived from the band size rather than hardcoded; 1/9 for the nine-layer band.
+- **Argmax ties are detected and recorded** per head (`argmax_is_a_TIE`), not broken silently.
+- **M = 0 yields a structural non-verdict** — `None` for M, p and span, not a FAIL.
+- At `K_unique = 0` the conditional is a **placeholder, not a p-value**, which under
+  `weakest_of_three` `max()` would promote to the gate (R30-B, found on synthetic censuses).
+
+### 5. What was NOT established
+
+⛔ **The adversarial pass had not returned.** Its findings are not in this entry and may overlap or
+contradict; it also reads a file I edited while it ran, so it may report against a stale §M — the
+same condition S-413's fan-out flagged about itself.
+⛔ **§M.3 does not state the readout POSITION.** The rung-2 artefact defines it as
+`len(tokenize(templated + answer_prefix)) - 1`, and the bare-prompt position was measured at
+~5.6e-06 option mass and abandoned. **I have not verified that the census arms use that same
+definition**, so I did not write it into §M. It is the next thing to check.
+⛔ **No claim, number or verdict changed.** Every edit describes the instrument.
+⛔ **No GPU. TEST untouched. `scripts/`/`src/` unchanged since S-410** — this was a READ of the
+source, not a change to it.
+
+**NEXT:** the readout-position definition for the census arms, and the adversarial pass's findings.
+
+`git push` remains credential-blocked. Committed locally.

@@ -268,6 +268,10 @@ iff `HD_<h>`'s ci95 excludes 0 AND `|E(HD_<h>)| ≥ 1.5 × bar(h)`**, computed f
 **alone and never from the cells** — the cells are what admission is a precondition for judging.
 A dropped head **leaves K and is reported with its measured power; it is not counted as a miss.**
 
+⚠ **Admission carries a 1e-12 tolerance** (`|E|/bar ≥ ratio − 1e-12`) because the comparison is not
+exact in IEEE doubles — `abs(-0.009)/0.006` evaluates to `1.4999999999999998`. **A head sitting
+exactly at 1.5 is admitted**, and without the tolerance it would not be.
+
 ⚠ The ratio **1.5 is frozen across three published families** (PR-CSI-016/018/020). It cannot be
 lowered after the fact without reinterpreting all three — which matters because the best unadmitted
 basket head sits at **1.400** (D41).
@@ -278,17 +282,38 @@ basket head sits at **1.400** (D41).
 screen-predicted layer.** Under the null the screen's per-cell prediction is unrelated to the depth
 profile. Three p-values, all preregistered:
 
-- **binomial** — `P(Binom(K, 1/9) ≥ M)`
+- **binomial** — `P(Binom(K, p₀) ≥ M)` where **p₀ = 1/|band| is derived from the band size**, not
+  hardcoded; with the nine-layer band 6–14 that is 1/9
 - **conditional** — the same over the admitted heads whose predicted layer is **unique** in the set
 - **permutation** — the fraction of distinct assignments of the prediction **multiset** to the
   admitted heads achieving at least M agreements, **scored against the OBSERVED ARGMAX VECTOR**
+
+Ties in the argmax are detected and recorded per head (`argmax_is_a_TIE`) rather than broken
+silently, and **M = 0 produces a structural non-verdict** — the reader emits `None` for M, p and the
+span rather than a FAIL.
 
 ⚠ **That last clause is not cosmetic.** PR-CSI-020's first freeze compared against the *prediction*
 vector, which is a different statistic; S-352 caught it and the family was re-frozen. The two agree
 on a perfect result and diverge elsewhere.
 
-**Gating is `weakest_of_three`: the family PASSES iff the weakest of the three ≤ α = 0.05 AND the
-spanning rule is satisfied.** The **spanning rule** is that the matching heads must not all share
+**Gating is `weakest_of_three` for PR-CSI-018 and PR-CSI-020: the family PASSES iff the weakest of
+the three ≤ α = 0.05 AND the spanning rule is satisfied.** The reader reads the rule from the
+prereg's `PRIMARY.GATING` and **fails closed** — a prereg that declares no gating is refused.
+
+🔴 **PR-CSI-016 is the exception and §4 depends on it: its frozen prereg declares NO `GATING`
+field**, and it is the one family grandfathered to the legacy `binomial_only` rule. Verified by
+reading all three configs. So "the weakest of three gates" is **not** a sprint-wide fact, and the
+three families are not interchangeable in this respect.
+
+⚠ **At `K_unique = 0` the conditional is not a p-value.** The reader sets `p_cond = 1.0` as a
+**placeholder for a statistic that does not exist**, and under `weakest_of_three` the `max()` would
+promote that placeholder to the gate and publish a structural FAIL. R30-B found this on synthetic
+censuses. ⚠ **It is NOT what happened to PR-CSI-016**: that family gates on the binomial alone, so
+the placeholder never reached its gate. Its verdict artefact gives the cause in its own `why`
+field — *"the SPANNING RULE is violated: all 2 matching head(s) share band layer L14"* — and
+`spanning_rule_satisfied` is `false`. The placeholder is a hazard for `weakest_of_three` families;
+the spanning rule is what returned PR-CSI-016's CANNOT ANSWER. **Two different mechanisms, and
+conflating them would misattribute the one real CANNOT ANSWER this sprint has.** The **spanning rule** is that the matching heads must not all share
 one band layer — otherwise the family returns **CANNOT ANSWER whatever the p-values say**, because
 a shared top-of-band bias and a correct screen are indistinguishable there. This is not
 hypothetical: it is what happened to PR-CSI-016 (§4). **The claim must be stated with the weakest of
