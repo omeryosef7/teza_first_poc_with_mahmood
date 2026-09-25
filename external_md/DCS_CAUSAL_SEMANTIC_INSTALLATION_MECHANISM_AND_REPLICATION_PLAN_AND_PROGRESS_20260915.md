@@ -36417,3 +36417,108 @@ NEXT     R36-C; then F3 (measurement identity) and F16 (the independence disclos
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-407 — 🔴🔴 **R36-C FOUND AN ERROR IN MY OWN REASONING, NOT JUST MY CODE.** The train evidence I used to justify running was quoted as a BINOMIAL-ONLY p. Under this prereg's own gating, design (b) scores **conditional 0.375705 on train — 7.5× worse, and indistinguishable from chance.** ⛔ S-401's decision is SUSPENDED (2026-09-25)
+
+### 1. The error, verified by me before acting
+
+The prereg's mandatory disclosure — the one the reader REFUSES to run without — says design (b)
+scored *"M = 3/8, p = 0.049998"* on train. That number is `P(Binom(8, 1/9) >= 3)`: **the binomial
+alone**, which this prereg's own `MUST_NOT_BE_SAID_IF_POSITIVE[5]` forbids quoting. Under the frozen
+`GATING: weakest_of_three`:
+
+```
+matched heads on TRAIN      : 4, 10, 27                 -> M = 3 of 8
+unique-layer heads          : 10, 11, 18, 21
+matched AND unique          : 10 ONLY                   -> M_unique = 1 of 4
+  binomial    P(Binom(8,1/9) >= 3) = 0.049998     <- what I quoted, in S-400, S-401 and the prereg
+  conditional P(Binom(4,1/9) >= 1) = 0.375705     <- THE WEAKEST, i.e. the actual score
+```
+
+**I compared the three candidate statistics on binomial-only p's under three different nulls, and
+then froze a family that gates on the weakest of three.** S-400 recorded (a) at 0.011248 and (b) at
+0.049998 and said (a) "scored better"; both figures are binomial-only and neither is the quantity
+the design decides on.
+
+### 2. 📌 And the consequence is larger than the number
+
+S-366 established the binding necessary condition: certification needs **M_unique ≥ 3 of the 4
+unique-layer heads**, because `P(Binom(4,1/9) >= 2) = 0.063557 > alpha`. So the four heads
+{10, 11, 18, 21} carry the whole design. **Train gave two rates and I only ever quoted the first:**
+
+```
+overall        M = 3/8         -> q_hat = 0.375     <- the number in the power table
+UNIQUE HEADS   M_unique = 1/4  -> q = 0.250         <- the number that GATES
+
+P(M_unique >= 3), i.e. the chance the NECESSARY condition is even met:
+   q = 0.111 (null)   0.0050
+   q = 0.250          0.0508    <- the train UNIQUE-head rate
+   q = 0.375          0.1516    <- the overall train rate, which is what the power table uses
+   q = 0.500          0.3125
+   q = 0.755 (CI hi)  0.7467
+```
+
+### 3. ⛔ S-401's DECISION IS SUSPENDED
+
+S-401 decided to run, and one of its four FOR arguments was: *"a PASS is interpretable ... train
+raises the prior above a coin flip: 3 of 8 against a 1/9 baseline."* **That argument is now known to
+be built on the wrong statistic.** Under the frozen gating the train weakest p is 0.375705 —
+indistinguishable from chance — and on the four heads that must carry the conditional, one matched.
+
+⚠ **I am not reversing the decision in this entry.** S-401's other three arguments stand (no
+competing use for the axis; 4.5 minutes of measurement; a null fenced in the prereg), and the power
+table is computed from q, not from train's p, so it is not itself wrong. But the decision was made
+on a stated arithmetic, one term of that arithmetic was wrong, and **the honest move is to suspend
+and re-derive rather than to re-justify the same answer with different numbers.** That re-derivation
+is the next tick's work.
+
+### 4. The other R36-C blockers, recorded
+
+```
+F1  NOTHING compares the artefact's RECORDED IDENTITY to the prereg. The instrument stamps
+    concept_ids, codeword_ids, answer_prefix, dtype, bank_block, condition, band, heads,
+    model_snapshot into every artefact; the prereg DECLARES all of them; neither the freeze nor
+    the reader reads ONE. R36-C emitted a full prereg from an artefact declaring the ' button'
+    ids and an empty answer prefix, and published a verdict from a validation-shaped one with
+    the same corruptions. ⛔ Same defect class as S-380/S-384, at the level above.
+F4  MUST_NOT_BE_SAID_IF_NULL omits BOTH the direct-path and the not-a-decomposition
+    prohibitions -- they are properties of the QUANTITY and so verdict-independent -- while the
+    reader's own docstring claims it "carries both, in BOTH directions". False, and the likely
+    outcome given the power is a FAIL, i.e. exactly the branch that loses them.
+F5  the prohibition lists omit three post-hoc moves this family affords: margin-restricted
+    subsetting (PR-CSI-020 forbids it explicitly and the ban was dropped in the widening),
+    falling back to the DECLINED candidate (2) after a null, and recomputing the REFUTED raw
+    statistic or a directional claim from the `signed_raw` block the reader publishes.
+F7  the "~44x depth confound" cannot be re-derived from the artefact it is attributed to --
+    R36-C gets 28.5x for the same aggregation. The partner figure (1.40x) reproduces. By this
+    sprint's own S-167c rule a document must not name a number it cannot compute.
+F2  no code verifies ANY md5 pin at read time; the pins are prose.
+F6  the freeze never checks the train artefact's schema or n_prompts_used -- R36-C computed a
+    power table from an artefact declaring 5 of 670 prompts measured.
+F8  the instrument stamps "EXPLORATORY ... may not be quoted" into EVERY artefact, so the
+    held-out validation measurement will assert on its face that it may not be quoted.
+```
+
+### 5. What R36-C verified as sound
+
+```
+launcher/prereg flag parity EXACT on all 11 flags; all four md5 pins current; screen predictions,
+q = 3/8, Clopper-Pearson [0.085233, 0.755137], the three floors and all seven power-table entries
+re-derived independently and bit-identical; perm_tail's cache brute-forced over all 10080
+assignments x 200 observation vectors with 0 mismatches; and -- the S-403 check -- the power
+model's certifies() and the reader's decide() agreed on 30000 random draws, 0 disagreements.
+```
+
+### 6. State
+
+```
+QUEUE    EMPTY. ⛔ NOT LAUNCHING.
+CHANGED  external_md/...20260915.md  +S-407 only. No code this tick: the finding is about a
+         DECISION, and patching around it would be re-justifying the same answer.
+NEXT     re-derive S-401's decision on the correct statistic; then F1 (identity enforcement),
+         F4/F5 (the prohibition lists), F7 (the 44x figure). ⛔ None of this launches.
+```
+
+`git push` remains credential-blocked. Committed locally.
