@@ -37234,3 +37234,70 @@ the ones that matter for correctness.
 prohibition 24's dead reason.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-416 — the claim-table audit is CLOSED: every lead resolved, and one of them was already answered in the file
+
+**2026-09-25. Queue empty, no GPU.** S-411 opened this audit with ~19 candidate correction-pairs.
+S-412 closed the two most serious, S-413 verified eight more against the artefacts, S-414/S-415
+proved both published PASSes replay. **This closes the remainder.** Block A30 goes 10 → 18 rows.
+
+### 1. Verified MYSELF this tick
+
+```
+D13  "could not have certified a pass"   TRUE OF THE 10-CONTROL FAMILY ONLY.
+     button_train_L18       10 ctrl, floor 0.0909, rank  8 of 11, 658 keys -- cannot certify
+     button_train_L18_n46   46 ctrl, floor 0.0213, rank 36 of 47, 626 keys -- CAN certify, FAILS
+     => the stale clause UNDERSTATES the dissociation. The cell was given a family that could
+        certify it and did not pass, which is stronger than never having had the chance.
+D15  quotes basket-L18 TRAIN at n46 (rank 1 of 47) beside basket-L18 VALIDATION at n30
+     (rank 1 of 31, p 0.0323, 218 keys) -- ONE ROW, TWO FAMILIES, read as a matched pair.
+     Governing VALIDATION read is n46: +0.00401, rank 1 of 47, p 0.0213, 215 keys. PASSES at both.
+```
+
+⚠ **Prohibition 24's dead reason was ALREADY ANSWERED IN THE FILE.** I was about to record it as a
+finding. **Prohibition 26 states it in as many words** — *"D19 measures the two directions at the
+same layer now, so the S-125/D15 layer objection no longer applies — but the two fractions still
+have different reference arms (`KO` vs `NEC_BASE`), which is by itself disqualifying."* Confirmed
+against D19, whose headline is literally *"at the same codeword, layer and population"*. **The only
+real gap was that prohibition 24 carried no pointer to prohibition 26.** A pointer, not a finding —
+the fourth time this sprint reading the record first was the whole job (S-367, S-411, S-413, here).
+
+📌 **And the two prohibitions are opposite failure modes, which is worth keeping:** prohibition 29
+mandated a sentence AM-15 had withdrawn and **failed DANGEROUSLY**; prohibition 24's reason died
+while its ban survived on other grounds, so it **fails SAFE**. Both are now marked, and A30 says
+which is which so they are not treated as the same defect.
+
+### 2. Marked in place — the five S-413 verified but never marked
+
+D16 (floor `1/10 = 0.10` → **8 controls, 0.1111**; `9 control arms` → **8**; `0.47037` → **0.46867**
+at 664 keys), D21 and D24 (*"no button-L18 VALIDATION arm"* / *"no held-out L18 cell"* — **false at
+the artefact**), D17 and D22 (provenance only: `git_dirty` is `None` not `false`, **no blob/sha/hash
+field in any of 1775 `RUNMETA.json`**, and a job ID does not name one arm). **Every bit-identity
+MEASUREMENT in D17 and D22 stands and was independently reproduced; only the claim about which code
+produced it is withdrawn.**
+
+⚠ **A refusal that worked.** My first edit script asserted each anchor matched exactly once and
+**refused on D21**, whose sentence appears twice — once in the row and once inside AM-22's quotation
+of it. Had it replaced both, the amendment would have been edited to quote its own correction.
+Nothing partial was written; the anchor was disambiguated on D21's own source cell and re-run.
+
+### 3. What was NOT established
+
+⛔ **The table is not certified.** The greps that found these were **a sample**, exactly as S-365's
+three-string audit was, and ~900 lines were never swept. A30 says so in its own text.
+⛔ **Two leads were DISMISSED after re-derivation and are deliberately absent from A30:** D13/D15's
+button-L18 figures are not supersessions (two correct reads of a 10- and a 46-control family, as
+AM-19 states), and **D32** is governed by four amendments that are all qualifications, with every
+figure in it reproducing exactly. **An audit that resolves every lead as a defect is not auditing.**
+⛔ **No verdict moved in any of the 18 rows.** Not one rank, p, or PASS. What moved: key counts,
+floors, a denominator, two provenance claims, and three caveats — **two of which were understating
+their own result**.
+⛔ **No GPU. TEST untouched. No code changed** — `scripts/` and `src/` are untouched across S-411…
+S-416, so no code review is due on change grounds; the last was R36-C.
+
+**NEXT:** the audit that has been the last six ticks is finished. What remains of the write-up is
+the paper text itself, against a claim table whose corrections are now all in place.
+
+`git push` remains credential-blocked. Committed locally.
