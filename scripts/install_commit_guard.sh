@@ -54,6 +54,7 @@ GUARD_TESTS="tests/test_asr_protocol.py
              tests/test_csi_argv_generator.py
              tests/test_csi_cell_identity.py
              tests/test_csi_pr016_argmax.py
+             tests/test_csi_pr021_freeze.py
              tests/test_csi_rung2_celldecode.py
              tests/test_csi_s375_review_debt.py
              tests/test_fcslots_preset.py

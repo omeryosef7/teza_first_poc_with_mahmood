@@ -35536,3 +35536,89 @@ NEXT     commit, resubmit with LIMIT=0, read q, then freeze the prereg.
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-397 — PR-CSI-021's freeze script is written, and it **REFUSES TO EMIT** until the train measurement exists — S-167c enforced in code, not in a comment. 📌 **The statistic is IMPORTED from PR-CSI-020 rather than reimplemented, because S-350 measured what "two identical implementations" is worth** (2026-09-25)
+
+### 1. The refusal is the feature
+
+```
+$ python scripts/gates/dcs_csi_pr021_freeze.py
+REFUSING TO EMIT: reports/DCS_CSI_RUNG2_TRAIN_basket_full.json does not exist. The power table is
+computed FROM the TRAIN measurement, and a prereg naming a power table it cannot compute is a
+document naming something that does not exist (S-167c).
+```
+
+It also refuses a SMOKE artefact as a power source (`IS_SMOKE: true` — S-395's was 3 prompts over
+ONE domain), refuses a non-`train` split, and refuses a train artefact that is not 670 rows / 67
+domains. **S-167c has been a rule this sprint has broken before; it is now a code path.**
+
+### 2. 📌 The statistic is IMPORTED, and that is a decision with a measurement behind it
+
+S-389 settled that the rung-2 statistic must mirror PR-CSI-020's exactly, because the ladder's
+separability claim can only be tested by applying **the same statistic to a different quantity**.
+The freeze therefore imports `binom_ge`, `n_assign` and `power_mc` from
+`dcs_csi_pr020_freeze.py` rather than reimplementing them.
+
+**The reason is S-350**, which is worth restating because it is easy to think importing is mere
+tidiness: this sprint once had two "independent implementations" of this very statistic, and they
+**agreed only at M = K**. The difference would have published a PASS against a prereg recording that
+it could not certify. *The way to make two things identical is to make them one thing.*
+
+### 3. ⚠ My own tests caught my own documentation twice, in one sitting
+
+```
+(a) The docstring said `binom_ge, perm_tail, certifies, power_mc, n_assign` are imported here.
+    The FREEZE uses three of them; `perm_tail` and `certifies` belong to the READ and live in
+    dcs_csi_pr016_argmax_test.py. THE DOCSTRING CLAIMED MORE THAN THE CODE DID -- which is the
+    defect this file exists to avoid committing at the scale of a prereg.
+(b) The ladder quote failed a grep that should have matched it. The text was split across source
+    lines by Python's implicit string concatenation, so "readable at a site without being used
+    there" existed at RUNTIME but not in the source the test read.
+```
+
+**(b) is the fifth variant this session of a source-grep that does not see what it is testing** —
+after comment-matching (S-385), a sentinel value (S-390), another user's job history (S-392) and my
+own regex matching a cosine similarity (S-394). The phrase is now written contiguous on purpose,
+with the hazard recorded in the test.
+
+### 4. What the prereg will carry that earlier ones did not
+
+```
+K_IS_FIXED_AT_8       there is NO rung-2 admission gate. The eight heads are PR-CSI-020's, all of
+                      which passed rung-1 admission (dropped_heads: [], D40), so K is 8 by
+                      construction and the floor is exact. ⛔ DISCLOSED: the head set is
+                      RUNG-1-SELECTED and is NOT held out.
+DIRECT-PATH FENCE     in BOTH prohibition lists, because it cuts both ways: a POSITIVE may not
+                      claim total contribution, and a NULL may not claim the concept is unreadable
+                      -- a causally necessary cell can have near-zero direct projection.
+NOT-THE-ENDPOINT      the logsumexp-vs-linear surrogacy (S-381/S-382).
+WHAT_KEEPS_TEST_OUT   names the per-row split enforcement, and says explicitly that the exclusion
+                      FILE alone is NOT sufficient -- S-384's blocker, written into the prereg so
+                      the next family cannot rediscover it.
+POWER                 a table at a q MEASURED ON TRAIN, with "IT IS AN ESTIMATE" beside it.
+```
+
+### 5. What was NOT established
+
+```
+- NOT EMITTED. No prereg exists yet; the script refuses until the train run lands.
+- NOT established: the train q. 927327 is at 50/291 shards.
+- NOT reviewed: the freeze script itself. R36 is due BEFORE this family reaches a GPU, and the
+  script is new code that decides a preregistration -- it does not get to skip that because the
+  INSTRUMENT was reviewed in R35.
+- STILL UNRESOLVED BY DESIGN: the direct-path surrogacy. It is fenced, not fixed, and the prereg
+  says so in terms.
+```
+
+### 6. State
+
+```
+QUEUE    927327 RUNNING 26:57, weight load at 50/291.
+CHANGED  scripts/gates/dcs_csi_pr021_freeze.py (NEW, 264 lines), tests/test_csi_pr021_freeze.py
+         (NEW, 6 tests, added to the commit gate in installer AND hook), external_md/...
+NEXT     read the train q; R36 on the freeze script; emit; freeze the read; then launch.
+```
+
+`git push` remains credential-blocked. Committed locally.
