@@ -35349,3 +35349,98 @@ NEXT     the per-prompt cost and the projection to 230 rows.
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-395 — ✅ **THE RUNG 2 INSTRUMENT RAN.** Exit 0, artefact written, decomposition valid to 8.6× margin — and the number that decides the design: **20.2 minutes of measurement for the full validation population.** The `dominance.py` cost work is NOT a prerequisite (2026-09-25)
+
+### 1. It ran
+
+```
+927135  COMPLETED  01:26:53  ExitCode 0:0   n-302   (JobID verified exactly, per S-394)
+artefact reports/DCS_CSI_RUNG2_SMOKE_basket_train.json  md5 recorded below, 8132 bytes
+```
+
+After two failed attempts — an import that meant it had never executed (S-385) and a timeout that
+left nothing behind (S-391) — the instrument completed end to end.
+
+### 2. ✅ THE DECISION NUMBER, re-derived rather than read off the log
+
+```
+measure_s 15.8 / 3 prompts            =  5.267 s/prompt     (artefact agrees exactly)
+projection to TRAIN (670 rows)         =  58.8 min           (artefact agrees exactly)
+
+THE VALIDATION POPULATION (230 rows)   =  230 x 5.267 s = 1211 s = 20.2 MINUTES
++ model load, worst observed 80.1 min  ->  ~100 min total, against a 12 h walltime
+```
+
+📌 **S-390 recorded that if the projection exceeded a 12 h walltime, the `dominance.py` cost work
+(2.12 GB/prompt of a `D_attn` tensor this instrument never reads) would stop being a note and
+become a prerequisite. It does not. The design is affordable by a factor of ~7 even at the worst
+load time observed, and the cost note stays a note.** That is a decision made by a measurement
+rather than by preference.
+
+⚠ The heartbeat reported **13.66 s** at prompt 1 against a final **5.267 s/prompt** — prompt 1 pays
+the `check_invariants=True` reconstruction and warm-up. Quoting the first-prompt figure as the rate
+would have overstated the cost 2.6×; the artefact's `measure_s / n_prompts` is the honest one.
+
+### 3. ✅ VALIDITY — the decomposition reconstructs the module's own output
+
+```
+recon_rel_err across the 9 band layers:  min 3.06e-03   max 3.49e-03
+dominance_at's bfloat16 tolerance:       3e-2           ->  8.6x MARGIN
+```
+
+This is the check `dominance.py` describes as the only thing standing between the instrument and a
+wrong GQA head map or wrong `o_proj` slicing. It passed, and — because of S-387's fix — the actual
+number is on disk rather than merely having not raised. S-385's `check_invariants=(n_done == 0)`
+fix is why it ran at all on the first measured row.
+
+### 4. 📌 R35-A's rms concern was REAL, and now it is measured
+
+```
+rms at the readout across THREE prompts:  min 0.9446   max 1.0347   mean 0.9982
+                                          -> a 9.0% SPREAD on three prompts
+```
+
+S-387 divided this out on an algebraic argument. **Three prompts already show a 9% spread**, so
+averaging the raw `<Y,û>` over 230 prompts would have produced an rms-weighted mean of a quantity
+whose weights vary by at least that much. The fix was not theoretical.
+
+### 5. ✅ Two open items closed by the run itself
+
+```
+skipped = {}          demo_key_positions returned a usable demo block on EVERY cell-C
+                      semantic_one_word row. S-383 recorded this as "NOT verified ... evidence,
+                      not proof". Now verified on real rows.
+72 cell means, no None   9 band layers x 8 heads, fully populated. The rms hook fired on every
+                      prompt (it REFUSES if it does not), so lm.model.model.norm is the right
+                      layout -- S-387 recorded that as an assumption only a real run could confirm.
+```
+
+### 6. ⛔ What this run does NOT license
+
+```
+- ⛔ NOTHING IN THE CELL MEANS MAY BE QUOTED. 3 prompts, ONE domain (--limit takes a contiguous
+  block and the bank is domain-clustered -- R35-C F7). The artefact carries IS_SMOKE: true and
+  limit_applied: 3. Domain is the statistical unit and n_domains = 1.
+- ⛔ It is TRAIN and EXPLORATORY. No prereg exists, no verdict was computed, and the file refuses
+  to compute one.
+- NOT established: the per-prompt cost at the VALIDATION prompt lengths. 5.267 s/prompt is three
+  TRAIN prompts from one domain; prompt length drives the decomposition cost and was not varied.
+  The 7x headroom absorbs a lot, but the number is a sample of three.
+- NOT established: that the load spread is bounded by 80 min. Two samples, 23 and 80 minutes.
+- STILL OPEN: the direct-path surrogacy (R35-A finding 6), which must be named in any prereg.
+```
+
+### 7. State
+
+```
+QUEUE    EMPTY. 927135 COMPLETED.
+CHANGED  external_md/...20260915.md  +S-395. The artefact is a new deliverable (EXPLORATORY).
+NEXT     the prereg: statistic settled (S-389), floor re-derived (S-379), cost measured (here),
+         instrument executed (here). What remains is writing the direct-path limitation into it
+         and freezing -- and S-167c is finally satisfied, because everything it would name exists.
+```
+
+`git push` remains credential-blocked. Committed locally.
