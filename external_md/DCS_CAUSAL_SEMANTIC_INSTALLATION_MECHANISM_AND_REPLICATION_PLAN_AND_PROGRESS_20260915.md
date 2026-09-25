@@ -38378,3 +38378,70 @@ start reporting false positives.
 had one (S-418) and has changed substantially since. It is the section now least recently reviewed.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-431 — the figure check becomes a GATE, because my ad-hoc detectors have been wrong five times
+
+**2026-09-25. Queue empty, no GPU.** S-430 recorded that the draft's figure check had outgrown its
+own question. This rebuilds it as a committed gate with tests. An adversarial review of the draft
+BODY was launched in parallel and had not returned.
+
+### 1. Why a script rather than another hand-check
+
+The check began as *"is this number in the claim table"* — right while the draft only restated
+claim-table rows, wrong now that it cites **artefact fields**, **code comments** and **my own
+derivations**. S-430 measured six such figures and the old question called all six unaccounted.
+
+⚠ **That is the sprint's most repeated failure and it is mine, not the code's.** Five ad-hoc
+detectors have produced confident false findings: S-422 (md5 compared against a truncated git blob
+sha1), S-423 (prereg-id in a report's first 2 KB), S-425 (`.jsonl` truncated to `.json` by an
+alternation), and S-426 twice (`limit is not None` matching `limit: 0`; `donor`/`positions` compared
+across arms that differ by design). **Every one was caught only by reading the underlying values
+before reporting.** A detector I write once and gate is worth more than a detector I improvise each
+tick and have to distrust.
+
+**`scripts/gates/dcs_csi_draft_figure_provenance.py`** searches every figure against the claim
+table, the preregs, the frozen reads, the published report artefacts and the CSI scripts. **Result
+on the current draft: 51 figures, 0 unaccounted.**
+
+### 2. What it says about itself, because a checker without published blind spots is the R29 shape
+
+```
+⛔ Existence is NOT correctness. A number attached to the wrong family, split or codeword PASSES.
+   S-428's "on button the ceiling is K = 2" was a correct figure with a missing antecedent.
+⛔ SMALL INTEGERS ARE INVISIBLE. The regex sees >=3 fractional digits, scientific notation and
+   n/m fractions. The 70-vs-67 error of S-417 would pass this gate, and the docstring says so.
+⛔ A short figure can match BY COINCIDENCE. Now surfaced rather than hidden: a figure found in
+   more than 8 files is printed with "⚠ in N files -- existence is WEAK evidence here". 0.111
+   appears in 45, 0.0909 in 31. The attribution also now PREFERS the authoritative source --
+   1.36e-20 was being credited to an unrelated 2025 report before I fixed that.
+⛔ The ALLOWLIST is an author's assertion, not a check -- so it is where an unverified number
+   would hide.
+```
+
+### 3. Four tests, and one of them exists because the gate could otherwise be decorative
+
+- the allowlist's every entry carries a reason naming **where the figure came from** (≥20 chars and
+  an S-entry or "computed/measured/executing"), so a bare number cannot be parked there;
+- the draft has **0 unaccounted** figures under `--strict`;
+- the gate still **publishes its own limits** — asserted on the docstring text, so deleting the
+  blind-spot section fails the suite;
+- 🔴 **the gate FAILS on a fabricated figure** (`0.31415926535897` in a temp draft) — without this
+  a gate that accepted everything would pass the other three.
+
+### 4. What was NOT established
+
+⛔ **This does not make the draft's figures correct**, and the gate says so in four places. It
+establishes traceability, which is strictly weaker.
+⛔ **It does not cover §M's or §L's prose claims**, only figures, and not the small integers that
+have already produced one error.
+⛔ **Three figures are ALLOWLISTED** — `1.355e-20`, `0.99999`, `1.1e-16` — all my own derivations
+from S-421/S-427/S-430. They are traceable to entries, not to files, and **an allowlist entry is my
+word.**
+⛔ **The body review had not returned.** ⛔ **No GPU, no arm, no published number changed. TEST
+untouched.**
+
+**NEXT:** the §1–§6 review's findings.
+
+`git push` remains credential-blocked. Committed locally.
