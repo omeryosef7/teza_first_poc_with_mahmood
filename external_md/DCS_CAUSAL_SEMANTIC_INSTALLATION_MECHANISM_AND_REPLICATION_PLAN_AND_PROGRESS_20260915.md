@@ -35825,3 +35825,111 @@ NEXT     a design pass on (a)/(b)/(c) -- or the honest conclusion that rung 2 is
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-400 — the replacement design **removes the confound** (44× → 1.40×) and recovers signal on train — but 📌 **the pilot cannot tell whether it is worth running: q = 3/8 has a 95% CI of [0.085, 0.755], which spans power 0.004 to 0.74.** The binding limit is EIGHT HEADS (2026-09-25)
+
+### 1. Two candidate designs, both tested on data already in hand
+
+S-399 refuted the argmax-over-band-layers statistic and named three options. Two were testable on
+the existing TRAIN artefact at zero GPU cost:
+
+```
+(a) WITHIN-LAYER   is head h the strongest of the 8 heads AT ITS PREDICTED LAYER?
+                   every cell in the comparison shares a depth, so the main effect cancels.
+                   TRAIN M = 4 of 8.   floor 1/8 -> P(Binom(8,1/8) >= 4) = 0.011248
+(b) LAYER-NORMALISED  divide each head's profile by the LEAVE-ONE-OUT mean of the other heads at
+                   that layer, then argmax over layers.
+                   TRAIN M = 3 of 8.   floor 1/9 -> P(Binom(8,1/9) >= 3) = 0.049998
+```
+
+### 2. ✅ (b) removes the confound, measured
+
+```
+median normalised value by layer:  0.63 0.15 1.01 0.59 0.69 0.75 0.49 0.93 0.89
+L14/L6 ratio of medians:           1.40x        (the RAW ratio was 44.0x -- S-399)
+argmax marginal:                   {L7:1, L9:1, L10:2, L11:1, L12:1, L13:1, L14:1}
+                                   -- SPREAD ACROSS THE BAND, not clustered in L12-14
+numerical stability:               layer baselines 6.5e-05 .. 1.8e-03, no zeros, largest
+                                   normalised ratio 8.77. No blow-up.
+```
+
+**The depth main effect is reduced ~97% and the argmax clustering that defined S-399's refutation
+is gone.**
+
+### 3. 📌 (a) SCORES BETTER AND I AM NOT CHOOSING IT
+
+(a) gives M = 4/8 and p = 0.011; (b) gives M = 3/8 and p = 0.050 — the S-366 knife edge, clearing
+alpha by 1.8e-6. **(b) is the one to take, and the reason is fidelity, not score.**
+
+The screen predicts **a LAYER for each head**. (b) asks exactly that question with the depth effect
+removed. (a) asks *which HEAD is strongest at a given layer* — a related but different question the
+screen does not make, and one where a head can "win" its layer while the screen's actual claim about
+that head is wrong. **Choosing the higher-scoring statistic after seeing both scores is precisely
+the post-hoc selection this sprint forbids**, and the only defence is to choose on a criterion fixed
+independently of the numbers. Fidelity to the screen's claim is that criterion.
+
+⚠ **Disclosed regardless: BOTH designs were evaluated on the SAME train data and one was chosen
+from that comparison.** That is selection on the discovery split — legitimate, and it is what a
+discovery split is for — but any prereg must record that the statistic was chosen after seeing
+train, and validation remains the only held-out test.
+
+### 4. 🔴 The decisive problem: the pilot cannot decide
+
+```
+power of the weakest-of-three at the frozen MC (N=200000, seed 20260924):
+   q = 0.1111 (null)  power 0.0041        q = 0.5000  power 0.3054
+   q = 0.2500         power 0.0453        q = 0.7500  power 0.7374
+   q = 0.3750         power 0.1446  <- the TRAIN estimate for (b)
+```
+
+At the train point estimate the design has **14% power** — a validation run would most likely
+return a null, and a null at 14% power is nearly uninformative. But the estimate itself is
+8 Bernoulli trials:
+
+```
+design (b)  q_hat = 3/8 = 0.375   exact 95% CI [0.085, 0.755]
+design (a)  q_hat = 4/8 = 0.500   exact 95% CI [0.157, 0.843]
+```
+
+📌 **That CI spans power 0.004 to 0.74.** The pilot cannot distinguish a design that is hopeless
+from one that is well-powered, because **the pilot has eight heads and the statistic is one draw
+per head.** Running 670 prompts bought precision on each head's cell profile and none at all on `q`.
+
+### 5. ⛔ And there is no way to widen it
+
+```
+S-374 established that the "more heads" direction is CLOSED: 0 of 7 fresh basket heads clear the
+preregistered 1.5 admission gate (best: head 3 at 1.400), and on button the ceiling is K=2.
+So K = 8 is not a choice -- it is the whole admissible population, and q's precision is bounded
+by it no matter how many prompts are measured.
+```
+
+### 6. What was NOT established
+
+```
+- NOT established: that rung 2 is unreachable. (b) removes the confound and shows M = 3/8 on
+  train, which is consistent with anything from "no effect" to "a strong one".
+- NOT established: that it IS reachable. 14% power at the point estimate is not a design worth
+  spending a held-out axis on without a reason to prefer the upper half of that CI.
+- NOT established: any claim about the model. TRAIN, exploratory, no prereg, no verdict.
+- NOT DONE: option (c) -- reading at the layer's own residual instead of the final one. That is
+  a different INSTRUMENT, not a different statistic, and it is the only route that would change
+  the effect size rather than just de-confound the measurement.
+- NOT EMITTED: PR-CSI-021, in any form.
+```
+
+### 7. State
+
+```
+QUEUE    EMPTY.
+CHANGED  external_md/...20260915.md  +S-400 only. No code: this tick analysed data already held.
+NEXT     a decision that is mine to make and should be stated plainly rather than drifted into:
+         (i) run (b) on validation at ~14% expected power, accepting that a null says little;
+         (ii) build option (c) and re-pilot; or (iii) record rung 2 as out of reach for this
+         sprint's head set and return to rung-1 work. The escalated §3.2 question to the user
+         is still open and does not block this.
+```
+
+`git push` remains credential-blocked. Committed locally.
