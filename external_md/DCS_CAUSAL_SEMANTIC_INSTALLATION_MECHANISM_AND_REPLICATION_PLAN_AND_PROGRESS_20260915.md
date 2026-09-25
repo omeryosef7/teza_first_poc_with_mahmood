@@ -37595,3 +37595,119 @@ source, not a change to it.
 **NEXT:** the readout-position definition for the census arms, and the adversarial pass's findings.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-421 / REVIEW R37 — §M checked against the SOURCE: six mismatches, and writing a methods section found a REAL CODE DEFECT
+
+**2026-09-25. Queue empty, no family in flight, no GPU.** An adversarial pass over §M returned
+alongside S-420's own source reading. **Every load-bearing finding was re-verified by me — three by
+EXECUTING the verdict function, not by reading it.** 13 corrections applied to §M, one code fix with
+a test, and both published reads re-verified afterwards.
+
+### 1. 🔴 The mismatch I introduced myself, caught by execution
+
+**§M said *"M = 0 produces a structural non-verdict — the reader emits `None` for M, p and the
+span"*. That is the TIE branch, not M = 0.** I wrote it in S-420. Executed on constructed inputs:
+
+```
+M=0 at K=8, no ties  ->  verdict=FAIL           M=0     p=0.9999999999999996  span=[]
+one TIE at K=8       ->  verdict=CANNOT ANSWER  M=None  p=None                span=None
+```
+
+The draft told a reader that **a total failure of the screen cannot produce a FAIL**, which is the
+opposite of the preregistered behaviour. ⚠ **That is two over-reaches by me in two consecutive
+ticks** (S-420's PR-CSI-016 attribution, this one), both in §M, both written while correcting
+something else. **Correcting a section is when it is least safe, not most.**
+
+### 2. 🔴 A REAL CODE DEFECT, found by writing prose about the code
+
+`dcs_csi_argmax_verdict.py`'s K<3 structural branch asserted its floor clause **unconditionally**:
+
+```
+K=2, M=1, PR-CSI-016 shape ->
+  "STRUCTURAL: K=2 ... the floor ... is binomial = 0.012346 > alpha = 0.05, so no outcome
+   could have certified"                      <- 0.012346 > 0.05 is FALSE
+```
+
+The branch fires when the **gating p** exceeds alpha at K < 3, which does **not** imply the
+**floor** does. **The VERDICT is right — K < 3 is the real reason — and the sentence justifying it
+was arithmetically false.** No published read reaches this branch (D39/D40 PASS; D38 exits at the
+spanning branch with its gate p *below* alpha), so nothing republished moves.
+
+**Fixed**: the reason now branches on the floor and says which case applies. **Test added** that
+fails on the pre-fix text (`assert "0.012346 > alpha" not in why`) and also pins the `> alpha` case.
+🔴 **Then both published reads were re-run with the patched module: D39 and D40 differ from their
+published artefacts in `census_report` ALONE — the input path — and K, M, every p, the gating name
+and the VERDICT are IDENTICAL.** A reader change is not safe because it looks safe.
+
+### 3. Five more mismatches, each verified at the source before acting
+
+- **VOID 10 is NOT unenforced.** §M.7 said no reader, gate or test enforces the prose VOIDs. **The
+  scoring script enforces VOID 10 at run time**: it forces eager on every knockout arm and
+  `assert_eager_for_knockout` refuses a non-eager backend *and refuses an absent one* — "a check
+  that reads its own absence as a pass" is the failure it was rewritten to avoid. 5, 9, 11, 12 are
+  prose. Corrected, with the distinction reader-vs-producer stated.
+- **GATE 0 does not identity-check every arm from `knockout_cells`.** The base arm is asserted
+  `"not intervened"` **unconditionally**; `*_KO` is checked as `knockout_heads == ALL` **and no cell
+  list**; only the 80 cell arms use `knockout_cells`. So 2 of 82 are not checked from their own
+  flags — including the clean reference every delta is taken against.
+- **The spanning rule is a PASS-VETO, not an override.** It is evaluated *after* the p-gate, so it
+  cannot rescue a FAIL; when the gate fails it is never reached and is published as
+  `"NOT_APPLICABLE"`. §M's *"CANNOT ANSWER whatever the p-values say"* overstated it.
+- **M's definition omitted the tie exclusion.** `COUNTED_IN_M` is admitted **and untied** and
+  matching — a three-way conjunction the draft had collapsed to two.
+- **VOID 8's tolerance is the PREREG's, not the reader's**, and only heads that declare a reference
+  are evaluated; others are named NOT EVALUATED. All eight PR-020 heads declared one.
+
+### 4. Gaps closed — one of which a reader could not have worked around
+
+🔴 **§M never stated the ENDPOINT.** §M.4 defined E as "the mean of the per-domain paired delta"
+**without ever saying a delta OF WHAT.** It is the two-way softmax
+`exp(logp_concept)/(exp(logp_concept)+exp(logp_codeword))` on rows filtered to
+`query_kind == "semantic_one_word"` **and** `cell == "C"` — and that filter is load-bearing, because
+the mandate forbids defining the target from the forced-choice channel, which supplies the option
+set and therefore names the answer. A duplicate key is a **refusal**, precisely so weakening the
+filter cannot substitute the forbidden channel silently. **This was the one place a reader could not
+reconstruct the measurement from §M.**
+
+Also added: the mask is live **during prefill only** (GATE 0 requires zero decode edits, so the
+answer is scored under an uncontaminated decode); **liveness is a four-way conjunction**;
+`knockout_scope` is read off the config and **verified by no CSI reader**; **the same bar has a
+second use at ratio 1.0 with a strict `>`, which is what §1's "clears its bar" means**; `z` is
+bounds-checked while `ratio` is validated not at all; and the `attn_impl` / `attn_implementation`
+field-name trap that would make VOID 10's operator check find nothing.
+
+### 5. What was NOT established
+
+⛔ **§M is now reviewed once against the source. It is not proven correct** — both the reviewer and
+I read the same code, and a shared misreading survives both.
+⛔ **The code fix changes no published number** — verified by replay, not asserted — but it changes
+a reader, and `scripts/` had been untouched since S-410. **The queue was empty and no family was in
+flight**, so no VOID 11 applies to anything.
+⛔ **No claim, verdict or p moved.** ⛔ **No GPU. TEST untouched.**
+
+### 6. 🔴 THE COMMIT WAS REFUSED, AND THE GUARD THAT REFUSED IT WAS RIGHT
+
+The first commit attempt **failed the pre-commit suite**:
+`test_the_read_recipes_md5_pins_are_CURRENT` — *"a stale pin is worse than none"*. **PR-CSI-021's
+frozen read recipe PINS the md5 of `dcs_csi_argmax_verdict.py`**, the very module S-421 patched, and
+I had not known it did. The guard caught a consequence of my change that I had not reasoned about.
+
+**Resolution, and why it is permitted rather than convenient.** The recipe's own rule — line 2 and
+its VOID 12 — is *"not amended after any VALIDATION number is seen"*. **PR-CSI-021 was closed
+WITHOUT a validation read (D41), so no such number exists.** The pin was re-stamped **with an
+in-place disclosure in the recipe itself**: what changed, that the verdict was always right and only
+its justifying sentence was false, that D39 and D40 were re-run and differ in `census_report` alone,
+that amending is permitted here and nowhere later, and — ⛔ the part that matters most — **that if
+the family is ever revived the pin is NOT enough**: R36's F1/F4/F5/F7 and R36-A's F15/F16 were left
+OPEN when it closed, so instrument and reader must be re-reviewed before any arm runs. **A current
+md5 records WHICH code would run, not that it is correct.**
+
+⚠ **I would have shipped a stale pin.** Nothing in my own reasoning about the fix reached
+PR-CSI-021 — a closed, never-executed family — and only the commit gate connected them.
+
+**NEXT:** §5 and §6 of the draft still have had only the S-418 pass; and the draft has no
+discussion or limitations section distinct from §5.
+
+`git push` remains credential-blocked. Committed locally.

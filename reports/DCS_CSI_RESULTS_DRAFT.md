@@ -236,6 +236,13 @@ demonstration block is zeroed within band layers 6–14 at the target surface ro
 | `HD_<h>` | all nine band cells of head h — **the bar source AND the admission arm** |
 | `*_H<h>_L<ll>` | one cell — the judged unit |
 
+**The mask is live during PREFILL ONLY.** GATE 0's pass predicate requires **zero decode edits** on
+every arm, so the generated answer is scored under an uncontaminated decode. This is the difference
+between measuring installation and measuring generation, and it is checked rather than assumed.
+⚠ **`knockout_scope` itself is read off the config and is verified by NO CSI reader** — it is in the
+same class as the prose VOID conditions, and this draft's standard is to say which facts are checked
+and which are read off a config.
+
 The per-cell dose is an **identity**, not a measurement: `2016 / 9 = 224` edits per cell (verified
 from GATE 0's own sweep — one-cell arms at 224.0, `HD_<h>` and `*_KO` at 2016.0), so a deviation is
 a **code defect and a VOID condition**, not a surprising fact about the model.
@@ -247,7 +254,17 @@ from its tag or its dose.
 
 ## M.4 Estimator
 
-Per arm, **E = the mean over DOMAINS of the per-domain paired delta** (arm minus its base arm).
+**The endpoint.** For each row the reader takes the two-way softmax between the concept and the
+codeword log-probabilities, `y = exp(logp_concept) / (exp(logp_concept) + exp(logp_codeword))`
+(max-subtracted for stability), on rows filtered to **`query_kind == "semantic_one_word"` and
+`cell == "C"`**. 🔴 **That filter is load-bearing, not cosmetic:** the mandate forbids defining the
+target from the forced-choice channel, which supplies the option set and therefore names the
+answer. A duplicate key is a **refusal** rather than an overwrite, precisely because weakening the
+filter would substitute the forbidden channel silently. Rows are averaged **within domain first**,
+so the domain is the unit before any statistic is taken.
+
+Per arm, **E = the mean over DOMAINS of the per-domain paired delta** (arm minus its base arm,
+which is the CLEAN `*_BASE` reference and never the KO arm).
 Confidence intervals are **percentile bootstrap, resampling domains, B = 10000, seed 20260922,
 ci 0.95**.
 
@@ -263,14 +280,26 @@ The bar is **a rule, not a number** — it must come from the family it judges:
 
 > `bar(h) = 1.96 × SD(per-domain paired delta of HD_<h> minus the base arm, ddof = 1) / √n_domains`
 
-`ddof = 1` is pinned: S-318 verified it reproduces the published bars exactly. **Head h is ADMITTED
+`ddof = 1` is pinned: S-318 verified it reproduces the published bars exactly. ⚠ **The rule's two
+prereg-supplied constants are not treated alike:** `z` **must** be declared, and is bounds-checked —
+a missing `z` once defaulted to 1.96 and was published as though the prereg had frozen it, and
+`z = 0.0` was once accepted, giving a bar of 0.0 and "11 of 27 cells CLEAR THE BAR". The admission
+`ratio` is read from the prereg with **no validation of any kind**. **Head h is ADMITTED
 iff `HD_<h>`'s ci95 excludes 0 AND `|E(HD_<h>)| ≥ 1.5 × bar(h)`**, computed from the whole-head arm
 **alone and never from the cells** — the cells are what admission is a precondition for judging.
 A dropped head **leaves K and is reported with its measured power; it is not counted as a miss.**
 
 ⚠ **Admission carries a 1e-12 tolerance** (`|E|/bar ≥ ratio − 1e-12`) because the comparison is not
 exact in IEEE doubles — `abs(-0.009)/0.006` evaluates to `1.4999999999999998`. **A head sitting
-exactly at 1.5 is admitted**, and without the tolerance it would not be.
+exactly at 1.5 is admitted**; the code's own note is that without the tolerance roughly **one
+boundary pair in twelve** would evaluate below the bar and be dropped.
+
+🔴 **The same bar has a SECOND use, and it is the one §1 reports.** Admission applies it to the
+whole-head arm at ratio **1.5**. The *depth map* applies it **per cell at ratio 1.0 with a strict
+inequality** — `|E(cell)| > bar(h)` — and that is what "clears its own preregistered detectability
+bar" means in §1, where the three clearing cells sit at 2.58× / 4.30× / 2.80× of it. The census
+also prints the weaker "ci95 excludes 0" count beside the bar count, because the two disagreed on
+PR-CSI-014.
 
 ⚠ The ratio **1.5 is frozen across three published families** (PR-CSI-016/018/020). It cannot be
 lowered after the fact without reinterpreting all three — which matters because the best unadmitted
@@ -278,8 +307,10 @@ basket head sits at **1.400** (D41).
 
 ## M.6 The primary statistic and its three p-values
 
-**M = the number of ADMITTED heads whose argmax band layer by |E| equals that head's frozen
-screen-predicted layer.** Under the null the screen's per-cell prediction is unrelated to the depth
+**M = the number of ADMITTED heads, WITH NO TIE for that head's argmax, whose argmax band layer by
+|E| equals that head's frozen screen-predicted layer.** The reader keeps the observation
+(`ARGMAX_EQUALS_SCREEN`) separate from the scoring decision (`COUNTED_IN_M`), which is a
+three-way conjunction: admitted **and** untied **and** matching. Under the null the screen's per-cell prediction is unrelated to the depth
 profile. Three p-values, all preregistered:
 
 - **binomial** — `P(Binom(K, p₀) ≥ M)` where **p₀ = 1/|band| is derived from the band size**, not
@@ -288,9 +319,11 @@ profile. Three p-values, all preregistered:
 - **permutation** — the fraction of distinct assignments of the prediction **multiset** to the
   admitted heads achieving at least M agreements, **scored against the OBSERVED ARGMAX VECTOR**
 
-Ties in the argmax are detected and recorded per head (`argmax_is_a_TIE`) rather than broken
-silently, and **M = 0 produces a structural non-verdict** — the reader emits `None` for M, p and the
-span rather than a FAIL.
+🔴 **A TIE for the argmax on any admitted head is a preregistered CANNOT ANSWER** — M, p and the
+span are emitted as `None` and never computed, because a tied head is *undetermined*, not a miss.
+⚠ **M = 0 is NOT that case:** it yields the ordinary gating p of 1.0 and the preregistered **FAIL**.
+Verified by executing the verdict function on constructed inputs: M=0 at K=8 returns
+`FAIL, M=0, p=0.99999…`; a single tie returns `CANNOT ANSWER, M=None, p=None`.
 
 ⚠ **That last clause is not cosmetic.** PR-CSI-020's first freeze compared against the *prediction*
 vector, which is a different statistic; S-352 caught it and the family was re-frozen. The two agree
@@ -314,30 +347,54 @@ field — *"the SPANNING RULE is violated: all 2 matching head(s) share band lay
 `spanning_rule_satisfied` is `false`. The placeholder is a hazard for `weakest_of_three` families;
 the spanning rule is what returned PR-CSI-016's CANNOT ANSWER. **Two different mechanisms, and
 conflating them would misattribute the one real CANNOT ANSWER this sprint has.** The **spanning rule** is that the matching heads must not all share
-one band layer — otherwise the family returns **CANNOT ANSWER whatever the p-values say**, because
-a shared top-of-band bias and a correct screen are indistinguishable there. This is not
+one band layer, because a shared top-of-band bias and a correct screen are indistinguishable there.
+⚠ **It is a PASS-VETO, not an override:** the spanning test is evaluated *after* the p-gate, so it
+converts a would-be PASS into CANNOT ANSWER however small the p-values are, and **it cannot rescue a
+FAIL** — when the gating p exceeds α the verdict is already FAIL (at K ≥ 3) and the rule is never
+reached, with `spanning_rule_satisfied` published as *"NOT_APPLICABLE — the rule was never reached"*. This is not
 hypothetical: it is what happened to PR-CSI-016 (§4). **The claim must be stated with the weakest of
 the three, each named; quoting the binomial alone is forbidden.**
 
+**The FAIL / CANNOT-ANSWER boundary is preregistered, and §4 rests on it.** The reader computes
+each statistic's **floor** — the p it would report on a *perfect* result at the realised K and
+admitted multiset. A p above α is a **FAIL** at K ≥ 3, but where the floor itself exceeds α **no
+outcome could have certified**, and the verdict is **CANNOT ANSWER (structural)** rather than
+evidence against the screen. At K < 2 the same applies. This is why a family that cannot win is not
+reported as a loss.
+
 ## M.7 Gates and VOID conditions
 
-**GATE 0** checks liveness and arm identity on every arm, verifying each arm's identity **from its
-own `knockout_cells` field** rather than from its tag. Exit 0 = all arms pass; 1 = failure;
+**GATE 0** checks liveness and arm identity. **Liveness is a four-way conjunction**: no recorded
+violations, **zero decode edits**, the median prefill-edit count equal to the arm's expected dose,
+and the identity check. Identity comes from each arm's **own recorded intervention flags, not its
+tag** — `knockout_cells` for the 80 cell-scoped arms; for the all-32 `*_KO` arm the conjunction
+`knockout_heads == ALL` **and no cell list at all**, because a full-band nine-cell arm records an
+empty `knockout_heads` and the *identical* dose 2016. ⚠ **The sweep asserts the base arm's identity
+unconditionally** (`"not intervened"`), so 2 of the 82 arms are not identity-checked from their own
+flags by GATE 0 — the census reader does read the base arm's flags separately. Exit 0 = all arms pass; 1 = failure;
 **3 = ran but is not the verdict** (a partial sweep), a distinction that exists because a pipe once
 made `tail`'s exit status look like the gate's.
 
 **VOID 8 is enforced by the reader**: each `HD_<h>` must reproduce the corresponding whole-head
-effect from PR-CSI-012 within **1e-6**, across a different job and family. ⚠ **It pins the MEAN
-only** — `bar(h)` and `ci95` are unpinned, while admission is a conjunction over all three.
+effect from PR-CSI-012 within **1e-6**, across a different job and family. ⚠ **It pins the MEAN only** — `bar(h)` and `ci95` are unpinned, while admission is a conjunction
+over all three. ⚠ **The 1e-6 tolerance is supplied by the PREREG, not the reader** (which refuses a
+missing one, and requires it in (0, 1e-3]), and **only heads that declare a reference are
+evaluated** — any others are named as NOT EVALUATED rather than silently passed. All eight
+PR-CSI-020 heads declared one.
 
-🔴 **The other VOID conditions are PROSE. No reader, gate or test enforces them**, and the frozen
-read says so in as many words rather than letting them read as automatic:
+🔴 **The other VOID conditions are unenforced BY ANY READER**, and the frozen read says so rather
+than letting them read as automatic. ⚠ **One is enforced upstream, and §M said otherwise until
+S-421 checked the source:** **VOID 10 is enforced by the scoring script at run time** —
+`score_behavior.py` forces eager on every knockout arm and `assert_eager_for_knockout` refuses a
+non-eager backend *and refuses an absent one* ("a check that reads its own absence as a pass" is
+the failure it was rewritten to avoid), so a non-eager arm could not have been written. **VOID 5, 9,
+11 and 12 are prose and nothing checks them.**
 
 | | condition |
 |---|---|
 | VOID 5 | the screen artefact's md5 is unchanged (`81fc4dca…`) |
 | VOID 9 | every arm on one SLURM job and one GPU architecture |
-| VOID 10 | `attn_implementation == eager` on every arm |
+| VOID 10 | `attn_implementation == eager` on every arm — ⚠ **the key actually recorded in each arm is `attn_impl`**; an operator grepping the prereg's spelling finds nothing |
 | VOID 11 | `scripts/` and `src/` unchanged while the arms are in flight |
 | VOID 12 | the read file is not amended after any number from the family is seen |
 

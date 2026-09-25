@@ -87,3 +87,36 @@ def test_binom_tail_agrees_with_the_readers_own_math():
     for K, M, p0 in ((8, 6, 1 / 9.), (4, 3, 1 / 9.), (8, 8, 1 / 9.), (3, 0, 1 / 9.)):
         want = sum(comb(K, i) * p0 ** i * (1 - p0) ** (K - i) for i in range(M, K + 1))
         assert abs(m.binom_tail(M, K, p0) - want) < 1e-15
+
+
+def test_s421_structural_K_lt_3_sentence_matches_the_arithmetic():
+    """S-421: the K<3 structural branch asserted "floor > alpha" UNCONDITIONALLY.
+
+    The branch fires when the GATING p exceeds alpha at K < 3, which does not imply the FLOOR does.
+    On a PR-CSI-016-shaped K=2/M=1 read the floor is the binomial 0.012346 -- BELOW alpha -- and the
+    emitted sentence read "binomial = 0.012346 > alpha = 0.05". The verdict was right; the sentence
+    justifying it was false. This fails on the pre-S-421 text."""
+    spec = importlib.util.spec_from_file_location("_v_s421", SHARED)
+    V = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(V)
+    band = list(range(6, 15))
+    rows = [{"head": 17, "screen_predicted_layer": 14, "argmax_layer": 14,
+             "argmax_is_a_TIE": False, "COUNTED_IN_M": True},
+            {"head": 19, "screen_predicted_layer": 14, "argmax_layer": 9,
+             "argmax_is_a_TIE": False, "COUNTED_IN_M": False}]
+    d = V.decide(rows, band, 0.05, None, "PR-CSI-016")
+    assert d["verdict"] == "CANNOT ANSWER"
+    why = d["why"]
+    assert "STRUCTURAL: K=2" in why
+    # the floor here is BELOW alpha, so the text must NOT claim it exceeds alpha
+    assert "0.012346 > alpha" not in why, "the sentence asserts a false inequality: %s" % why
+    assert "<= alpha" in why and "The reason is K alone" in why
+
+    # and the >alpha case must still say so: K=2 with M=0 forces the permutation floor of 0.5
+    rows2 = [{"head": 4, "screen_predicted_layer": 11, "argmax_layer": 7,
+              "argmax_is_a_TIE": False, "COUNTED_IN_M": False},
+             {"head": 6, "screen_predicted_layer": 8, "argmax_layer": 9,
+              "argmax_is_a_TIE": False, "COUNTED_IN_M": False}]
+    d2 = V.decide(rows2, band, 0.05, "weakest_of_three", "PR-CSI-020")
+    assert d2["verdict"] == "CANNOT ANSWER"
+    assert "> alpha" in d2["why"] and "NO outcome could have certified" in d2["why"]

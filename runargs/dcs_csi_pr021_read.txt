@@ -4,7 +4,20 @@
 # PREREG   configs/dcs_csi_pr021_rung2_decode_basket_validation.json  md5 325909afcda9b5d9444a81011bdb032e
 # INSTRUMENT scripts/dcs_csi_rung2_celldecode.py                      md5 a95dbc00157a86cc09633e78f3d9e3f0
 # READER   scripts/dcs_csi_pr021_rung2_read.py                        md5 e1f48420ad02434c24947044f1392cdb
-# STATISTIC scripts/dcs_csi_argmax_verdict.py                         md5 9e6eaee73bcb096f3c89df84a8e1f0b7
+# STATISTIC scripts/dcs_csi_argmax_verdict.py                         md5 5fede896f70033b4c772cc5392da2667
+#
+# 🔴 PIN RE-STAMPED S-421, AND THE REASON IS PART OF THE RECORD. The STATISTIC module changed
+#   after this file was frozen: its K<3 structural branch asserted "floor > alpha"
+#   unconditionally, which on a K=2/M=1 read printed "binomial = 0.012346 > alpha = 0.05" --
+#   a FALSE inequality inside a verdict artefact. The VERDICT was and is correct; only the
+#   sentence justifying it was wrong. Both published reads (D39, D40) were re-run with the
+#   patched module and differ from their published artefacts in `census_report` ALONE.
+#   ⚠ AMENDING THIS FILE IS PERMITTED HERE AND NOWHERE LATER: VOID 12 forbids amendment once
+#   a VALIDATION number is seen, and PR-CSI-021 was CLOSED WITHOUT A VALIDATION READ (D41),
+#   so no such number exists or ever will unless this family is revived.
+#   ⛔ IF IT IS REVIVED, THE PIN IS NOT ENOUGH: R36's F1/F4/F5/F7 and R36-A's F15/F16 were
+#   left OPEN when the family was closed, so the instrument and reader must be re-reviewed
+#   before any arm runs. A current md5 records WHICH code would run, not that it is correct.
 #
 # WHY THIS FAMILY EXISTS. Every claim in this sprint is RUNG 1 on AM-34's ladder -- ablation
 #   damage, i.e. NECESSITY. This is the first attempt at RUNG 2, DECODABILITY. ⛔ The ladder's own

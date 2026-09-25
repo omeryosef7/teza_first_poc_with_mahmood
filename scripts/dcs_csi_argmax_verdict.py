@@ -179,13 +179,31 @@ def decide(admitted, band, alpha, gating, prereg_id, grandfathered=("PR-CSI-016"
         # really a non-answer, because its floor is unflattering, is the post-hoc move this sprint
         # exists to forbid. The floor is now REPORTED everywhere and CHANGES THE VERDICT NOWHERE
         # the prereg has spoken.
+        # ⚠ S-421: THE VERDICT WAS RIGHT AND THE SENTENCE JUSTIFYING IT COULD BE ARITHMETICALLY
+        # FALSE. This string asserted "floor = %.6f > alpha" UNCONDITIONALLY, but the branch is
+        # reached whenever the gating p exceeds alpha at K < 3 -- which does NOT imply the floor
+        # does. Reproduced on a PR-CSI-016-shaped K=2/M=1 read: it printed "binomial = 0.012346 >
+        # alpha = 0.05", and 0.012346 is BELOW alpha. No published read reaches this branch, so
+        # nothing republished changes; but a false sentence in a verdict artefact is the kind of
+        # string that gets lifted verbatim into a methods section, which is how it was found.
+        # The REASON differs by case and the text now says which one applies.
+        if _floor_p > alpha:
+            _why_structural = (
+                "The gating statistic's floor at this K and admitted multiset is %s = %.6f > alpha "
+                "= %.2f, so NO outcome could have certified and the observed M=%d is NOT evidence "
+                "against the screen." % (_floor_name, _floor_p, alpha, M))
+        else:
+            _why_structural = (
+                "The gating statistic's floor at this K and admitted multiset is %s = %.6f, which "
+                "is <= alpha = %.2f -- so a certifying outcome was arithmetically reachable and the "
+                "floor is NOT the reason. The reason is K alone: the prereg defines no adverse "
+                "verdict below K = 3, so the observed M=%d is NOT evidence against the screen."
+                % (_floor_name, _floor_p, alpha, M))
         verdict, why = "CANNOT ANSWER", (
-            "STRUCTURAL: K=%d and the prereg defines FAILURE only with K >= 3. The gating "
-            "statistic's floor at this K and admitted multiset is %s = %.6f > alpha = %.2f, so no "
-            "outcome could have certified and the observed M=%d is NOT evidence against the screen. "
+            "STRUCTURAL: K=%d and the prereg defines FAILURE only with K >= 3. %s "
             "(binomial floor %.6f | conditional floor %.6f | permutation floor %.6f over %d "
             "assignments)"
-            % (K, _floor_name, _floor_p, alpha, M, _floor_parts["binomial"],
+            % (K, _why_structural, _floor_parts["binomial"],
                _floor_parts["conditional"], _floor_parts["permutation"], len(perms)))
     elif _gate_p > alpha:
         verdict, why = "FAIL", (
