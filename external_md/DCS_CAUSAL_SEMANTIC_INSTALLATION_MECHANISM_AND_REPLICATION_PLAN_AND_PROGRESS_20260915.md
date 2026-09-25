@@ -39958,3 +39958,127 @@ those recomputations changed the record**.
 (ten rows left: D13, D14, D15, D16, D17, D20, D21, D22, D28, D31). Before more drafting, §A.3 and
 §A.4/§A.4b deserve the adversarial review every other section got — each one so far has returned real
 defects on its first pass. **Push still credential-blocked.**
+
+---
+
+## S-453 — the adversarial review of §A.3/§A.4: four attack dimensions, and the preregistration turned out to be the document nobody was reading (2026-09-26)
+
+**Four reviewers in parallel**, one dimension each: figures-vs-artefacts, internal contradiction,
+compliance with the project's own rules, and flattering omission. Every load-bearing figure below was
+**re-derived by me** from the artefacts, the preregs or `domain_means`; where my number and a
+reviewer's differed I report mine and say so.
+
+### The finding that reframes the family: S1 is PRESPECIFIED, and three of its four required instances were never reported
+
+`configs/dcs_csi_pr006_axis_swap.json` carries
+`secondary_statistics_PRESPECIFIED.S1_paired_contrast_against_the_native_candidate` — *"Delta =
+recovery(XSWAP_FROM_<donor>) − recovery(KO_AXIS) … 20000 resamples, seed 20260913 … **This is the
+GRADED read and must be reported beside every cell of the 2×2.**"* D25 labels that contrast
+**"SECONDARY, UNPREREGISTERED"**. The second half is false, and this draft inherited it.
+
+Re-derived at the prereg's own B and seed, all four:
+
+```
+A  basket's axis -> BUTTON  TRAIN  +0.00164  [+0.00065, +0.00260]  p 0.0019  47 pos / 20
+                            VALID  +0.00120  [-0.00043, +0.00283]  p 0.1716  13 / 10
+B  button's axis -> BASKET  TRAIN  -0.00175  [-0.00288, -0.00070]  p 0.0020  22 / 45
+                            VALID  -0.00177  [-0.00366, -0.00024]  p 0.0514   9 / 14
+```
+
+Only the first was ever in the record. Together they are not "one survivable number": the foreign
+axis beats **button's** own on both splits and **loses to basket's** own on both, at nearly equal
+magnitude. ⚠ **And that has a ceiling explanation D25 already carries** — basket's native ranks
+**1 of 47** on both splits (no room above it) while button's ranks **36** and **6**. A negative S1 in
+direction B is a ceiling, not a failed transplant.
+
+### The held-out 2×2 existed all along and reverses a NOT-ESTABLISHED line I wrote
+
+Both VALIDATION reports carry the same 23 domain names, so D26's factorial has a held-out twin:
+
+```
+PROBE       +0.00148  ci95 [+0.00025, +0.00281]  p2 = 0.0363
+RECIPIENT   +0.00034  ci95 [-0.00205, +0.00294]  p2 = 0.7978
+INTERACTION -0.00057  ci95 [-0.00288, +0.00148]  p2 = 0.6394
+```
+
+**The probe main effect clears α off TRAIN**, at 87 % of the TRAIN magnitude. S-451's §A.4b said
+*"NOT ESTABLISHED: that the probe factor generalises off TRAIN"* — that line was written without
+computing the thing it denied. The per-cell claim survives intact (AM-49): significant in both TRAIN
+cells, neither held-out cell. **The pattern replicates when the recipients are pooled; the cells do
+not, at n = 23.** ⚠ **This is the first omission found this sprint that flattered the NULL** — every
+previous one flattered an effect — and it is the same defect class regardless.
+
+### What else was wrong, all verified by me
+
+* **A prespecified statistic absent from the entire draft: S5, the analyser's per-control Holm
+  test.** `specificity_all_controls_rejected` is **False in all six** governing artefacts.
+  Rejections at α = 0.05: §A.3 **6 of 46 TRAIN, 0 of 46 VALIDATION** (smallest Holm p **0.0529**);
+  swap cells **8 / 0 / 1 / 2 of 46**. ⚠ **On the held-out split the axis tops a family of 47 and
+  beats no single control once multiplicity is paid for.** Both true, different questions — but only
+  the rank was reported.
+* **D12 forbids quoting TRAIN's rank without its LOO sensitivity, and §A.3 did exactly that.**
+  Re-derived myself: TRAIN holds rank 1 under **65 of 67** drops, worst (`pipeline_station`) → rank 2
+  of 47, p = 0.0426; VALIDATION **23 of 23**. Block reordered to lead with VALIDATION, as D12 says.
+* **AM-50 — D12's and D15's instrument gates were quoted from SUPERSEDED families.** D12 reads
+  `KO_FULL − KO` = +0.12131 TRAIN / +0.10306 VALIDATION; re-derived, those are exactly the **n34**
+  and **n30** values. The governing n46 pair gives **+0.12041** and **+0.10370**. The gate holds
+  either way. ⚠ **Third instance of AM-7's defect class, in a row AM-7 and S-412 had both already
+  corrected** — the gate sentence sits a few clauses from S-412's own in-place marker.
+* **Prohibition 30 mandates carrying MAJOR-3 and §A.4b dropped it** — the one live *state*-side
+  reading (basket's axis fits **button's own** knockout delta better than button's own axis does:
+  0.056749 / 0.051459 / 0.036661). Added, `[READ, not reproduced]` — needs the `.pt` bases.
+* **D25's effect-size clause was missing.** Re-derived: the swap moves +0.00150 against a whole-state
+  **+0.10938** — **1.4 %**, and per cell 1.4 / 2.5 / 0.8 / 2.2 %. **97–99 % is elsewhere.**
+* **Two false blanket statements, both true when written.** §0 said *"every effect, bar and argmax
+  below rests on 23 domains"* and §L.7 said the limitation is *"sprint-wide"* — §A's TRAIN cells use
+  the **67 TRAIN domains**, disjoint from those 23. Both scoped to §1–§4 and §H.
+* **SCOPE's count was stale in five places** ("two", "eighteen", "sixteen", "only the two named"),
+  against its own correct "ten and ten" two lines below — in the very block that says *"this count
+  has been wrong twice"*.
+* **`§3.3` is cited in §A.4b and does not exist in this draft** — inherited from D26, where it points
+  at another document. Replaced with the actual reason (§A.2's dissociation forbids the pooling).
+* **"positions, never as tests"** overstated D27: the section's own verdict comes from testing four
+  ranks against the preregistered bar. Corrected to **"never as p-values"**.
+
+### What I got wrong, in text I committed last tick
+
+1. **S-451's §A.4b called the in-sample asymmetry DOMAIN-level. It is CODEWORD-level.** Both arms in
+   both TRAIN reports carry the *same* `fit_domains_sha16` (`4614853e5636eb5f`, n_fit 67) — the
+   donor's fit domains *are* the recipient's, as the pairing premise twelve lines above says. The
+   advantage is that the native arm was fit on the recipient's own **codeword**. Corrected in place.
+2. **AM-49 said the factorial figures "all match D26 to the rounding the helper applies."** True of
+   the points and CIs, **false of the p's**: D26's recipient **0.201** and interaction **0.888** are
+   *also* bootstrap percentile values (re-derived **0.2001**, **0.8890**) against sign-flip **0.2216**
+   and **0.8825**. ⇒ **AM-49's finding (ii) is SYSTEMATIC across D26**, not confined to the trio.
+   Corrected in place; A30 rows 20–21 index the two now-stale prohibitions.
+
+### NOT established, and NOT done
+
+* ⛔ **The rung question is OPEN and I am not deciding it.** §5 and §L.1 say *every certified claim is
+  RUNG 1 — NECESSITY, ablation damage*, inherited from AM-34. But the axis families run
+  `direction: sufficiency` — knock out, then **add the component back** and measure recovery — which
+  is rung 3's shape (same-prompt repair) by §5's own gloss, and §A.4 transplants a direction between
+  codewords. Either the blanket needs an explicit scope clause naming §1–§4 and §H, or it is false.
+  **This changes the draft's central framing, it is not a figure, and it is the user's call.**
+* ⛔ **Three omissions found and NOT fixed**, recorded so they are not lost: §A.4 still reports the
+  swap arm without the native arm's rank beside it in three of four cells; §A.4 states its verdict as
+  determinate without saying direction B's half **hinges on the contested AM-48 rule** (under the
+  analyser's rule B's splits agree and step 6 never fires); and §A.3 gives only the VALIDATION
+  denominators (TRAIN is **1.15 %** and **2.19 %**, ~40 % smaller).
+* ⛔ **Not swept: every other gate figure in the table.** AM-50 was found by auditing one field in one
+  family. `KO_SELF − KO`, the manipulation checks and other rows' key counts were **not** checked.
+* ⛔ **Not checked: whether other preregs carry unreported prespecified secondaries.** AM-51 was found
+  by reading PR-CSI-006. **Eight preregs exist and no gate reads any `secondary_statistics_*` field**
+  — the same shape as AM-48, one layer up.
+* ⛔ No GPU work; queue empty; TEST untouched.
+
+**The pattern of this tick, stated plainly.** Four of the six substantive findings came from
+documents that no gate reads — two preregistrations and two prohibition texts. The figure-level gate
+(S-431) and the phrasing sweep (S-444) both pass a section that omits three required instances of a
+prespecified statistic, because **nothing in the artefacts or the claim table says they are owed**.
+⚠ **And the review found two errors in my own corrections from last tick**, which is the argument for
+running it before more drafting rather than after.
+
+**NEXT:** the three unfixed omissions above, then a sweep of all eight preregs for unreported
+`secondary_statistics_PRESPECIFIED` entries — AM-51's generalisation, and the only one of these
+findings with a mechanical form. **Push still credential-blocked.**

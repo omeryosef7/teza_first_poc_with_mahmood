@@ -20,7 +20,9 @@ names its scope rather than claiming a blanket.*
 §1–§4 report the five cell-census families (PR-CSI-014, 015, 016, 018, 020); **§H reports the
 head-level results, which the cell-level half subdivides and therefore depends on.** §H is written
 second and belongs first. ⚠ **A THIRD part — the axis, necessity and dissociation families
-(PR-CSI-001–009, 20 claim-table rows) — is **almost entirely absent**: two of its rows are drafted as §A and eighteen are not; see the correction below. The
+(PR-CSI-001–009, 20 claim-table rows) — is **PARTLY PRESENT**: 🔴 *CORRECTED S-453 — this block said "two … and eighteen" long after the
+count reached ten:* **TEN of its rows are drafted as §A (D12, D18, D19, D23, D24, D25, D26, D27,
+D29, D30) and TEN are not** (D13, D14, D15, D16, D17, D20, D21, D22, D28, D31). The
 four rows below are the D-rows §H covers; it also reports **AM-36** and draws on AM-26, AM-27, AM-30, AM-33, AM-34 and AM-37:
 
 | row | what §H reports | where |
@@ -45,18 +47,19 @@ it declined is what found it. Classified by reading each row rather than by patt
 | **CSI-sprint results, GENUINELY OMITTED** | **20 — D12–D31** | 🔴 **a whole third part** |
 | covered in §3/§4 prose, not cited by ID | 3 — D40-a, D40-b, D41-a | fine |
 
-⚠ **UPDATED S-439/S-440: TWO of the twenty are now drafted as §A** — D19's bidirectional conjunction
-and D24's matched-power dissociation, with D18, D23 and D29 as their supports. **That is an
-increment, not the part: TEN of the twenty are now drafted and TEN remain** — D13, D14, D15, D16,
+⚠ **UPDATED S-439/S-440, RE-COUNTED S-453.** §A began as D19's bidirectional conjunction and
+D24's matched-power dissociation with D18, D23 and D29 as supports; it now also carries D12 (§A.3)
+and D25/D26/D27/D30 (§A.4, §A.4a, §A.4b). **That is an increment, not the part: TEN of the twenty
+are drafted and TEN remain** — D13, D14, D15, D16,
 D17, D20, D21, D22, D28, D31. (⚠ This count has been wrong twice: SCOPE said eighteen when it was
 fifteen, and a re-measure said thirteen by reading a range as a list, S-449.)
 
 **The omitted rows are the AXIS, NECESSITY and DISSOCIATION families — PR-CSI-001 through 009**: the
 rank-1 installation axis and its control families, the necessity direction, the button/basket
-codeword dissociation at matched power, and the cross-codeword axis swap. **Only the two named
-above are in this file, as §A.** §L.3 touches two of these results (necessity, basket-at-L20) only
+codeword dissociation at matched power, and the cross-codeword axis swap. 🔴 *CORRECTED S-453 — this sentence outlived its count by three ticks:* **ten of them are
+in this file, as §A; the ten listed above are not.** §L.3 touches two of these results (necessity, basket-at-L20) only
 to limit them, which is how the gap stayed invisible for so long — they appeared as *limitations of
-results the draft never stated*, and for the sixteen still undrafted they still do.
+results the draft never stated*, and for the **ten** still undrafted they still do.
 
 ⛔ **Review coverage is UNEVEN and every pass so far has found real defects:** §1–§6 twice, §M once
 (S-421, six mismatches against the source), §L once, **§H once** (S-438: thirteen findings, two that
@@ -85,8 +88,11 @@ must be kept apart:** the *screen* is fitted on **67 train domains** — the 70 
 whole-population domains every CSI prereg excludes, which are `train`-assigned (a config field once
 mislabelled them `test_domains` and collapsed them to the count "3", the error AM-37/S-312
 corrected) — while **every census reported here is read on the 23 VALIDATION domains.** So every effect, bar and argmax
-below rests on **23** domains rather than 67, and a 230-row read is n = 23 because the domain is the
-unit. ⚠ **The confirmatory p's themselves are NOT over domains at all** — binomial, conditional and
+in **§1–§4 and §H** rests on **23** domains rather than 67, and a 230-row read is n = 23 because the
+domain is the unit. 🔴 **CORRECTED S-453 — this said "every effect below" until §A existed, and §A
+is a large exception**: §A.3's TRAIN cell, §A.4a's two TRAIN cells and §A.4b's TRAIN factorial are
+computed on the **67 TRAIN domains**, which are **disjoint** from these 23. Each says so where it
+stands, and §A.4b's whole in-sample/held-out argument turns on the distinction. ⚠ **The confirmatory p's themselves are NOT over domains at all** — binomial, conditional and
 permutation are functions of the **admitted heads**, `K = 6` in §2 and `K = 8` in §3, which is why
 §3 can say "the margin is one head". The 23 domains are the n of the `E` and `bar(h)` estimates that
 feed argmax and admission. *(§4's D41 figures are a TRAIN pilot on 67 domains and carry no
@@ -625,6 +631,26 @@ above α for every attainable effect size.
 
 ---
 
+## M.11 Bootstrap confidence bounds are quoted to five decimals and are stable to four
+
+Every CI in §A comes from `dcs_csi_rederive_patch.boot_paired_diff`, a percentile bootstrap over
+domains. It is seeded, so a re-run at the same `(domains, arms, B, seed)` reproduces — but a bound
+recomputed at a **different** draw count, or by an independent implementation with its own seed,
+moves in the **fifth decimal**. Two instances, both measured while checking this draft:
+
+* D12's held-out upper bound is `+0.00775` in the artefact and `+0.00774` on re-run at B = 20000.
+* §A.4's paired difference has lower bound `+0.00064` at B = 20000 and at B = 400000, `+0.00065` at
+  B = 100000, against the claim table's independently computed `+0.000664`.
+
+⛔ **A fifth-decimal disagreement between two CIs for the same quantity is therefore not evidence
+that either is wrong**, and no argument in this draft turns on one. Where a stored artefact value
+exists it is quoted; where none does — §A.4's paired contrast is not published by its artefact — the
+re-derived value is quoted and named as re-derived.
+
+⚠ **This does not extend to p-values or point estimates.** Both reproduced *exactly* wherever they
+were checked in §A. A p-value disagreement here means a **different test**, not a different seed —
+which is precisely what §A.4b found.
+
 # L. Limitations
 
 **Added S-423.** §5 states what the evidence *is*; this states what it **cannot become** without new
@@ -757,7 +783,8 @@ reported as CANNOT ANSWER and never as support.
 
 🔴 **All five cell censuses — PR-CSI-014, 015, 016, 018 and 020 — read an IDENTICAL set of 23
 validation domains, and so does the head-level button family in §H.3**, whose 23 domains are
-recorded as identical to basket's. **The limitation is sprint-wide, not cell-level.** Verified by comparing the domain sets arm-by-arm: union 23, intersection 23.
+recorded as identical to basket's. **The limitation is sprint-wide within §1–§4 and §H, not cell-level.** 🔴 *CORRECTED S-453 —
+§A also reads the 67 TRAIN domains, which are disjoint from these 23; see §0.* Verified by comparing the domain sets arm-by-arm: union 23, intersection 23.
 **So §1, §2, §3 and §4 are not independent in the domain dimension**, and that includes the
 cross-codeword pair: D39 and D40 share their entire domain sample. Domain idiosyncrasy is common to
 every result in this draft, and **nothing here speaks to domain generality.**
@@ -926,7 +953,7 @@ p-value.** It holds for §1 and §4, which carry none.
 
 # A. The axis half — FIRST INCREMENT ONLY
 
-**Added S-439.** ⛔ **This is NOT part three. It is two of its twenty rows**, drafted as a deliberate
+**Added S-439.** ⛔ **This is NOT part three. It is ten of its twenty rows**, drafted as a deliberate
 increment rather than as a section. The axis/necessity/dissociation families (D12–D31) remain
 largely undrafted and SCOPE says so.
 
@@ -1007,14 +1034,33 @@ That caveat is unaffected by everything above and still binds.
 
 ⚠ **§A.1's sufficiency figures are D12's**, cited there as D19's because D19 restates them inside the
 conjunction. D12 is the primary, and it is the most-amended row in the claim table — four amendments
-govern it, and all four are carried here.
+govern it (AM-2, AM-4, AM-5, AM-7) and all four are carried here. ⚠ **Amendments are not the whole
+of that row**: its caveat column also carries binding instructions that were never issued as
+amendments, and the two below are both of that kind. **VALIDATION leads because D12 requires it** —
+it is both the held-out split and the sturdier one — and **TRAIN's rank may not be quoted without
+the sensitivity beside it**, which is why the leave-one-out line sits inside the block rather than
+in a footnote.
 
 ```
-TRAIN       KO_AXIS - KO  +0.00264 [+0.00068, +0.00471]  44 pos / 23 neg of 67  rank 1 of 47  p 0.0213
-VALIDATION                +0.00401 [+0.00098, +0.00775]  15 pos /  8 neg of 23  rank 1 of 47  p 0.0213
+VALIDATION  KO_AXIS - KO  +0.00401 [+0.00098, +0.00775]  15 pos /  8 neg of 23  rank 1 of 47  p 0.0213
+TRAIN                     +0.00264 [+0.00068, +0.00471]  44 pos / 23 neg of 67  rank 1 of 47  p 0.0213
+leave-one-domain-out on the rank:  VALIDATION holds rank 1 under 23 of 23 drops
+                                   TRAIN holds rank 1 under 65 of 67; its worst single-domain
+                                   deletion (pipeline_station) leaves rank 2 of 47, p = 0.0426 -- still passing
 subfamilies, both splits: shuffled-only 1 of 25 (floor 0.0400)   random-only 1 of 23 (floor 0.0435)
 population: 642 keys / 67 TRAIN domains and 215 keys / 23 VALIDATION domains, 53 arms each
 ```
+
+⛔ **ADDED S-453 — the analyser's own PRESPECIFIED per-control test is weaker than the rank, and it
+was absent from this section.** PR-CSI-005's `secondary_statistics_PRESPECIFIED` S5 requires
+`specificity_holm` / `specificity_all_controls_rejected` *"as the analyser emits them, reported
+unmodified"*. The test is a **one-sided sign-flip (candidate > control), Holm-corrected across the
+46-control family**, and `specificity_all_controls_rejected` is **False on both splits**. Rejections
+at α = 0.05: **6 of 46 on TRAIN**, **0 of 46 on VALIDATION** — where the smallest Holm-corrected p is
+**0.0529**. ⚠ **So on the held-out split the axis is top of its family of 47 and does not
+significantly beat a single individual control once multiplicity is paid for.** Both are true and
+they measure different things — the rank asks whether the candidate tops the family, Holm asks
+whether it beats each member — but quoting only the rank overstates the per-control evidence.
 
 ⚠ **Both p-values sit EXACTLY at their attainable floor** (0.02128 against 1/47 = 0.0213): a pass at
 the floor is a pass with **no margin**, and §M.9 records that the implementation certifies only at
@@ -1027,11 +1073,16 @@ of what the whole state restores (`KO_FULL − KO` = +0.1037) — the artefact's
 the two and is forbidden.
 
 ⛔ **TRAIN is IN-SAMPLE** (`evaluation_is_in_sample: true`, 67 of 67 scored domains in the fit);
-only VALIDATION is held out. ⛔ **The captured fraction is an AMPLITUDE, not an energy** — the
-energy fraction is its square, of order 0.1 %, and the persisted field is a mean of per-row ratios
-so the exact energy mean is **not recoverable** from it. ⚠ **Earlier figures at the 34- and
-30-control families are superseded** — the governing artefacts are the n46 pair — and a **stale
-floor pair `(1/35, 1/31)`** was quoted for years where both floors are now `1/47`.
+only VALIDATION is held out. ⛔ **The captured fraction is an AMPLITUDE, not an energy**, and the
+quantity itself belongs beside the correction: the axis spans **≈ 3.2 % of the displacement in
+amplitude** (`arm_meta.KO_AXIS.captured_frac` mean **0.03237** TRAIN, **0.03195** VALIDATION), so the
+energy fraction is of order **0.1 %**. ⚠ **But the persisted field is a mean of per-row ratios**, so
+squaring it yields the square of the mean and *not* the mean of the squares: the exact mean energy
+fraction is **not recoverable** from what was stored, and 0.1 % is an order, not a measurement.
+
+⚠ **Earlier figures at the 34- and 30-control families are superseded** — the governing artefacts
+are the n46 pair — and a **stale floor pair `(1/35, 1/31)`** stood uncorrected across several ticks, where both floors
+are now `1/47`.
 
 ⚠ **The shuffled-only subfamily was once recorded as "INCONCLUSIVE on its own, both splits"** at
 1 of 13 and 1 of 9. **At n46 it is 1 of 25 on both splits, floor 0.0400 — it certifies on its own**,
@@ -1060,6 +1111,14 @@ disagrees (4 vs 1) and direction B disagrees (13 vs 2).**
 ⛔ **So the verdict is: NO CELL IS CLAIMED FOR EITHER DIRECTION. The 2×2 is unresolved in both
 directions, and C1 — "basket simply has a better probe" — is NEITHER REFUTED NOR SUPPORTED by it.**
 
+⚠ **The family's single best-looking cell carries its own null, and the two facts are about the same
+23 domains.** Direction A's validation cell is **rank 1 of 47** — strictly the largest of the 46
+controls — yet the swap and button's **own** axis are **not statistically distinguishable there**:
+`XSWAP_FROM_BASKET − KO_AXIS` = **+0.00120**, ci95 **[−0.00044, +0.00282]**, p = **0.1716** over the
+23 held-out domains, **a CI that crosses zero**. That is the fourth cell of §A.4b's table. **"Rank 1
+of 47" and "indistinguishable from the native axis" are both true of this cell**, and quoting the
+rank without the contrast is the most flattering single sentence this family admits.
+
 🔴 **What must never be said, because it was said and withdrawn:** *"basket's axis rescues button 32
 ranks better than button's own axis does"*, *"C1 is SUPPORTED"*, *"the STATE hypothesis is
 REFUTED"*, and any CELL 1 or CELL 2 reading. ⚠ **And the replacement was wrong too** — a prohibition
@@ -1073,8 +1132,14 @@ candidate to be exchangeable with the family it is ranked against, and by constr
 `|cos|` with the recipient's native axis runs **min 0.0001, median 0.0156, max 0.1894** across the
 46 controls, while the swap axis sits at **0.5569** — **2.9× more aligned with the native axis than
 any control**. The controls are built near-orthogonal to the native axis; the transplanted axis
-retains 56 % of it. So the ranks — **4, 13 and 2 alike** — may be quoted as *positions*, never as
-tests.
+retains 56 % of it. So the ranks — **all four, 4 and 1 and 13 and 2 alike** — may be quoted as
+*positions*, never as **p-values**. ⚠ *(Not "never as tests":
+this section's own verdict comes from testing all four ranks against the preregistered `R47 ≤ 2`
+bar. A fixed threshold on a position is not a permutation p, and it is the p that is unavailable.)* ⚠ **Including rank 1**, direction A's validation cell and the strongest
+number this family has: the axis whose alignment breaks exchangeability is the *same axis* in that
+cell, so the objection governs it identically. (D27's own row enumerates only *"4, 13 and 2"*
+because it was written before D30 gave direction A a validation split; the omission is the row's
+vintage, not a judgement about that cell.)
 
 **The obvious repair was attempted and it failed, and that cuts the other way.** If alignment
 explained the swap's position, recovery should track `|cos|` across the control family. It does not:
@@ -1098,18 +1163,67 @@ reachable from the login node. Everything else in §A.4 and §A.4b was re-derive
 above them"* — of a candidate above 45 of 46 controls. **The claim table read it by the frozen rule.
 Nothing reconciles the two, and the divergence is live in the published file.**
 
-**The one defensible quantitative sentence**, and the only one: basket's axis transplanted into
-button's knockout recovers **+0.00150** where button's own axis recovers **−0.00014** on the same 67
-TRAIN domains and the same 46 controls — a paired difference of **+0.00164 [+0.00066, +0.00261]** —
-**but it ranks 4 of 47, does not clear its preregistered bar of rank ≤ 2, and its rank p is
-descriptive.** It must always be labelled **secondary and unpreregistered**.
+### A.4a The preregistration's GRADED read (S1), all four cells
+
+🔴 **CORRECTED S-453 — this contrast is PRESPECIFIED, and it had been reported for one cell of
+four and mislabelled.** `configs/dcs_csi_pr006_axis_swap.json` carries it as
+`secondary_statistics_PRESPECIFIED.S1_paired_contrast_against_the_native_candidate`: *"Delta =
+recovery(XSWAP_FROM_<donor>) − recovery(KO_AXIS) … domain-clustered bootstrap over the split's
+domains, 20000 resamples, seed 20260913 … **This is the GRADED read and must be reported beside
+every cell of the 2×2.** Sign convention: Delta > 0 means the FOREIGN axis rescues the recipient
+BETTER than the recipient's own."* It is **secondary**. It is **not unpreregistered** — this draft
+and the claim table both called it so, inheriting the error from D25.
+
+All four, at the prereg's own B and seed:
+
+```
+                                S1 = XSWAP - KO_AXIS         ci95              p2      pos/neg
+A  basket's axis -> BUTTON  TRAIN  +0.00164   [+0.00065, +0.00260]   0.0019   47 / 20
+                            VALID  +0.00120   [-0.00043, +0.00283]   0.1716   13 / 10
+B  button's axis -> BASKET  TRAIN  -0.00175   [-0.00288, -0.00070]   0.0020   22 / 45
+                            VALID  -0.00177   [-0.00366, -0.00024]   0.0514    9 / 14
+```
+
+🔴 **Reported together these are not "one survivable number". They are a DIRECTION-ASYMMETRIC
+pattern.** The foreign axis rescues **button** better than button's own on both splits (S1 > 0), and
+rescues **basket** worse than basket's own on both splits (S1 < 0), at nearly equal magnitude
+(+0.00164 against −0.00175 on TRAIN). ⚠ **Both TRAIN cells clear α and neither held-out cell does** —
+the same in-sample/held-out split §A.4b reports, because the probe contrast there **is ±S1**.
+
+⚠ **Direction B is the weaker test by construction, and that is why its sign is negative.** Basket's
+native axis already ranks **1 of 47** on both splits, so a transplant has almost no room above it;
+in both B cells the swap sits **below** the native. Direction A's native ranks **36 of 47** on TRAIN
+and **6 of 47** on validation — that is the room A has and B does not. **A negative S1 in direction
+B is a ceiling, not a failed transplant**, and reading the four signs as "basket's probe is better"
+without this is the reading D25's caveat exists to block.
+
+⛔ **The magnitude must travel with every one of them, or these read as large numbers.** As a
+fraction of what the whole clean state recovers (`recovery_fraction_candidate_of_full`, read per
+cell): **A train 1.4 %, A valid 2.5 %, B train 0.8 %, B valid 2.2 %** — **97–99 % of the recovery is
+elsewhere in every cell.** §A.3 states the same ratio for D12 and this family is no different: the
+axis is top-of-family in one cell, and top-of-family is a small thing.
+
+⛔ **And S5, the analyser's per-control specificity test, also prespecified and also absent until
+now.** `specificity_all_controls_rejected` is **False in all four cells**; rejections at α = 0.05 are
+**A train 8 of 46, A valid 0 of 46, B train 1 of 46, B valid 2 of 46** (smallest Holm p 0.0067 /
+0.0695 / 0.0308 / 0.0432). ⚠ **Neither held-out cell rejects a single control** — the same
+in-sample/held-out asymmetry S1 shows, from a statistic that never entered the record.
+
+⚠ **On the CI's last digit.** At the prereg's seed the A-TRAIN bound is `[+0.00065, +0.00260]`; the
+claim table records `[+0.000664, +0.002605]` from an independently seeded bootstrap, and the artefact
+publishes no stored value for this contrast. The disagreement is seed, not substance — §M.11.
+
 
 ### A.4b The same four numbers, read as a 2×2: a probe main effect on TRAIN, and no test of the recipient factor (D26)
 
 §A.4 reports what the preregistration returns. The four cells also support a reading the
 preregistration does not contain, and it points the other way, so it is reported here rather than
-left out. **Everything in this subsection is UNPREREGISTERED and post-hoc**, built by review R10
-after the read; none of it may be quoted without §A.4's result beside it.
+left out. 🔴 **CORRECTED S-453 — what is post-hoc here, precisely.** The **four cell contrasts** below are
+**±S1, the preregistration's graded read** (§A.4a); they are secondary but **prespecified**. What is
+post-hoc is the **2×2 arithmetic built on top of them** — the main effects and the interaction —
+which review R10 constructed after the read. An earlier draft called the whole subsection
+unpreregistered; that was wrong, and it understated the four cells while overstating nothing.
+⚠ None of it may be quoted without §A.4's result beside it.
 
 Both TRAIN reports carry the **same 67 domain names** (intersection 67 of 67), so the 2×2 pairs
 domain by domain:
@@ -1131,12 +1245,24 @@ INTERACTION            -0.00011  ci95 [-0.00148, +0.00122]  p2 = 0.8825
 
 **What this licenses, and it is narrow.** A *pure*-state model — one in which the probe contributes
 nothing and only the recipient's state matters — is refuted. Nothing more. The recipient main effect
-is **not estimated by this design**: the contrast crosses button and basket, which §3.3 forbids
-pooling, so the experiment contains **no legitimate test of the recipient factor at all**. Its point
+is **not estimated by this design**: the contrast crosses button and basket, and pooling the two
+codewords is what §A.2's dissociation forbids — they differ in their whole response to this
+instrument, which is the result §A.2 certifies. So the experiment contains **no legitimate test of the recipient factor at all**. Its point
 estimate is 65 % of the probe effect with a CI containing values *larger* than the probe effect, and
 the interaction is flat — the shape of "both factors, additively". **"The state hypothesis is
 REFUTED" is absence of evidence**, and the only permitted wording is: *a pure-state model with no
 probe effect is refuted; the recipient factor is not estimated by this design.*
+
+⚠ **And the rule that fixes that wording also requires the state-side reading to travel with it,
+because it is the one live alternative pointing the other way.** `|cos|` between each axis and
+**button's OWN knockout delta**, over 670 rows: **basket's axis 0.056749, button's own axis
+0.051459, best control 0.036661** — **basket's axis fits button's own knockout delta better than
+button's own axis does.** That reads as *"button's probe mis-estimates a real state direction"*,
+which is a **state** reading of the same data. It is **not proven** — alignment predicts recovery
+only weakly across the controls (r = 0.19, n = 46) — but it is live, and §A.4b argues the probe side
+for thirty lines, so leaving it out would make this subsection one-sided in exactly the way the rule
+exists to prevent. *These three cosines are* `[READ, not reproduced]` *— same reason as §A.4's:
+they need the `.pt` bases and there is no `torch` on the login node.*
 
 🔴 **CORRECTED S-451 — "the probe effect replicates three times" does not survive re-derivation, on
 two independent counts. Both were found by recomputing the cells from `domain_means` rather than
@@ -1163,20 +1289,59 @@ not a paired *t*, not a sign test, not one-sided forms of any of them. The switc
 moves the held-out basket cell from **0.0514 to 0.019**, across the 0.05 line, in the only direction
 that matters.
 
+**And the switch is systematic, not confined to those cells.** The factorial p's in the record are
+bootstrap percentile p's too — recipient **0.2001** quoted as *0.201*, interaction **0.8890** quoted
+as *0.888* — against the sign-flip **0.2216** and **0.8825** given in the block above. ⛔ **No
+conclusion moves there**: the recipient effect is NOT TESTED and the interaction is flat on either
+test. What moves is the claim that the row reproduces — **every p in it comes from the estimator
+these artefacts do not publish**.
+
 **So the accurate statement is: the probe contrast is significant in both TRAIN cells and in NEITHER
 held-out cell** (0.0514 and 0.1716 under the family's own test). The PROBE main effect itself
 (p2 = 0.0001) is computed from the two TRAIN reports and is therefore a **TRAIN-only, in-sample**
 quantity. It is real and it is not a replication.
 
-⚠ **One asymmetry that cannot be waved away in either direction.** In each TRAIN cell the *native*
-arm was fit on that recipient's own domains while the *transplanted* arm was fit on the donor's, so
-the native arm carries a recipient-specific in-sample advantage the swap arm does not. That advantage
+⚠ **One asymmetry that cannot be waved away in either direction.** 🔴 **CORRECTED S-453 — an
+earlier draft called this a DOMAIN-level asymmetry and it is not.** Both arms in both TRAIN reports
+carry the *same* `fit_domains_sha16` (`4614853e5636eb5f`, n_fit = 67), so the donor's fit domains and
+the recipient's are the **same 67 domains** — as the pairing premise twelve lines above already
+says. The asymmetry is **codeword-level**: the native arm was fit on the recipient's *own codeword*
+and the transplanted arm on the *donor's*, so the native arm carries a codeword-specific in-sample
+advantage the swap arm does not. That advantage
 inflates the contrast where the native arm is the basket-probe term (recipient = basket) and
 *deflates* it where the native arm is the button-probe term (recipient = button) — it pushes the two
 TRAIN cells in **opposite** directions. They nonetheless came out nearly equal (+0.001644 vs
 +0.001749). That is an observation consistent with a small advantage; it is **not** a measurement of
 one, and no arm here was re-fit to obtain it.
 
-**NOT ESTABLISHED by this subsection:** that the probe factor generalises off TRAIN; that the
-recipient factor exists or does not; that the state hypothesis is refuted in any form other than the
-pure one; and anything at all about **necessity**, which has never been run in the swap design.
+🔴 **ADDED S-453 — THE HELD-OUT 2×2, which an earlier draft said was not established and never
+computed.** Both VALIDATION reports exist and carry the **same 23 domain names** (intersection 23 of
+23), so the identical factorial is computable off TRAIN. Re-derived under the family's own sign-flip:
+
+```
+held-out cells       probe=basket   probe=button
+recipient=button       +0.003378      +0.002183
+recipient=basket       +0.004005      +0.002236
+
+PROBE main effect      +0.00148  ci95 [+0.00025, +0.00281]  p2 = 0.0363
+RECIPIENT main effect  +0.00034  ci95 [-0.00205, +0.00294]  p2 = 0.7978
+INTERACTION            -0.00057  ci95 [-0.00288, +0.00148]  p2 = 0.6394
+```
+
+⚠ **This cuts FOR the probe reading and it was missing, which is the same defect as every other one
+this section has had — only pointing the other way.** The held-out **probe main effect clears α**
+(+0.00148, p = 0.036) at 87 % of the TRAIN magnitude, while the recipient effect stays untested
+(p = 0.80) and the interaction stays flat (p = 0.64). **The pattern replicates off TRAIN; the
+individual cells do not.** Reporting the pooled effect on TRAIN and only the per-cell nulls held-out
+was an asymmetry a reader could not see: with n = 23 and one tied domain, the per-cell held-out tests
+are underpowered, and pooling the two recipients is what recovers the signal.
+
+⛔ **It does not rescue the per-cell claim.** "Significant in both TRAIN cells and in neither
+held-out cell" remains exactly true, and §A.4a's four S1 rows stand. What changes is that **the
+probe factor does generalise off TRAIN when the two recipients are pooled** — and the pooled
+contrast is as post-hoc as the TRAIN one, so it is secondary on both splits.
+
+**NOT ESTABLISHED by this subsection:** that the probe factor generalises **cell by cell** off TRAIN
+— it does not, and only the pooled contrast clears α; that the recipient factor exists or does not;
+that the state hypothesis is refuted in any form other than the pure one; and anything at all about
+**necessity**, which has never been run in the swap design.
