@@ -36630,3 +36630,83 @@ NEXT     a claim-table row recording rung 2 as attempted and not reachable, with
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-409 — D41 is in the claim table: **rung 2 attempted, not reachable**. ⚠ And writing it found that my own headline pairing — "44× → 1.40×" — compared TWO DIFFERENT AGGREGATIONS (2026-09-25)
+
+### 1. R36-C's F7 resolved: the 44× DOES reproduce
+
+R36-C reported the "~44× depth confound" as not re-derivable, getting 28.5×. **Both numbers are
+correct, for different quantities**, and S-399 did state which it used:
+
+```
+(a) L14/L6 of the MEAN over heads          28.5x    <- what R36-C computed
+(d) MEDIAN over heads of per-head L14/L6   44.0x    <- what S-399 listed and used
+(c) L14/L6 of the MEDIAN over heads        38.6x
+(e) max/min over all 72 cells            1165.8x
+```
+
+So F7 is **not a defect in the number**; it is a defect in how I quoted it — a ratio with no
+aggregation named invites exactly this. D41-a now states the aggregation with every figure.
+
+### 2. ⚠ But checking it exposed a REAL defect in the same sentence
+
+```
+S-399 published:  44.0x   =  MEDIAN over heads of each head's L14/L6 ratio
+S-400 published:  1.40x   =  L14/L6 of the MEDIAN NORMALISED value over heads
+```
+
+**Those are two different aggregations, so "44× → 1.40×" was never apples to apples** — and that
+pairing is the headline evidence that the normalisation fixes the confound. It appears in S-399,
+S-400, the prereg, the read recipe, the shared module's docstring and the reader's.
+
+Re-derived, matched:
+
+```
+median of per-head ratios :  RAW 44.0x  ->  NORMALISED 1.64x
+ratio of medians          :  RAW 38.6x  ->  NORMALISED 1.40x
+```
+
+📌 **The conclusion survives both matched pairings** — the normalisation removes the great majority
+of the depth effect either way — **so nothing downstream changes.** But the number I quoted as
+evidence was assembled from two statistics, and I quoted it six times without noticing. **A ratio
+of two aggregations is not a ratio.**
+
+### 3. What D41 records
+
+```
+D41    rung 2 attempted, NOT REACHABLE with eight heads, with the four measurements
+       (S-374 K=8 is the whole population; S-399 the confound; S-400 the fix and M=3/8;
+        S-408 power 0.1446 and PPV 0.24-0.55) and the artefacts that exist unexecuted.
+D41-a  the depth confound WITH its aggregation, and the correction above.
+```
+
+⛔ Fenced in the row itself: not a claim that the concept is undecodable there (nothing was measured
+on a held-out axis); not a claim that rung 2 is unreachable in general; not a retraction of anything
+at rung 1 — the ladder's own claim is that the rungs are separable and D40 stands on its own arms.
+
+### 4. What was NOT established
+
+```
+- NOT established: any new fact about the model. This tick re-derived five aggregations of a
+  number already on disk and wrote a claim-table row.
+- NOT corrected in place: S-399 and S-400 keep their text (append-only). D41-a carries the
+  correction, and this entry records it.
+- NOT re-emitted: the prereg, the recipe and the module docstrings still carry the mismatched
+  pairing. ⚠ They are FROZEN and PR-CSI-021 is closed without a read, so amending them now would
+  edit a preregistration after deciding not to execute it -- which is worse than the mismatch.
+  The correction lives in the claim table and the log, where a reader of the result will meet it.
+- STILL OPEN: R36's F1/F4/F5 and R36-A's F15/F16 -- blockers again if PR-CSI-021 is ever revived.
+```
+
+### 5. State
+
+```
+QUEUE    EMPTY. PR-CSI-021 closed without a read (S-408). Rung 2 recorded in the claim table.
+CHANGED  reports/DCS_CSI_CLAIM_TABLE.md +A29 (D41, D41-a), external_md/...20260915.md +S-409
+NEXT     back to rung-1 work. The escalated §3.2 question (a second TEST read) is still with the
+         user and is the only thing that could open a new axis.
+```
+
+`git push` remains credential-blocked. Committed locally.
