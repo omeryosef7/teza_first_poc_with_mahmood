@@ -93,3 +93,26 @@ def test_K_is_fixed_and_the_head_set_is_disclosed_as_NOT_held_out():
     code = _code()
     assert "K_IS_FIXED_AT_8" in code
     assert "NOT held out" in code, "the rung-1 selection of the head set is not disclosed"
+
+
+def test_it_refuses_without_a_READER_and_checks_that_FIRST():
+    """🔴 S-398. The S-167c enforcement was PARTIAL: this script refused when the POWER SOURCE was
+    missing and then emitted a prereg naming NO READ PATH. A preregistration must say how it will
+    be read, and the rung-1 reader cannot substitute -- pr016 requires a CENSUS report
+    (ON_PROTOCOL, GATE_0_and_identity.per_arm, E, ci95, CELL_FAMILY) and a rung-2 artefact has
+    none of those.
+
+    The check is ordered FIRST because an existence test is cheaper than reading and validating
+    the train artefact (R35-C F14: every cheap refusal before the expensive one)."""
+    code = _code()
+    assert "READER = " in code, "the prereg no longer names a reader"
+    assert '"reader": READER' in code, "the reader is not written into the prereg"
+    assert '"reader_md5"' in code, "the reader is named but not pinned by content"
+    i_reader = code.find("os.path.exists(reader_path)")
+    i_art = code.find("os.path.exists(art_path)")
+    assert 0 < i_reader < i_art, (
+        "the reader check must come BEFORE the train-artefact check -- cheap refusals first")
+    r = subprocess.run([PY, SCRIPT], capture_output=True, text=True)
+    both = r.stdout + r.stderr
+    assert "does not exist" in both and "S-398" in both, both[:300]
+    assert "cannot substitute" in both, "the refusal does not say why pr016 cannot be used"

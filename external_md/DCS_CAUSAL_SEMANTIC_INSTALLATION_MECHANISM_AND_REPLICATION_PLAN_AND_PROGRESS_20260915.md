@@ -35622,3 +35622,96 @@ NEXT     read the train q; R36 on the freeze script; emit; freeze the read; then
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-398 — 🔴 **MY S-167c ENFORCEMENT WAS PARTIAL.** The freeze script refused when the POWER SOURCE was missing and would then have emitted a prereg naming **no read path at all** — and the rung-1 reader cannot substitute (2026-09-25)
+
+### 1. The gap
+
+S-397 shipped a freeze script whose headline feature was refusing to name what does not exist. It
+enforced that for the power table. It did not enforce it for **the read**:
+
+```
+the emitted prereg named:   "instrument": scripts/dcs_csi_rung2_celldecode.py
+the emitted prereg named:   (no reader at all)
+```
+
+**A preregistration must say how it will be read** — the whole point is that the analysis is fixed
+before the data. Ours named the thing that produces the measurement and stopped.
+
+### 2. ⛔ And the rung-1 reader cannot stand in — checked, not assumed
+
+```
+dcs_csi_pr016_argmax_test.py REQUIRES:  prereg_id, ON_PROTOCOL, GATE_0_and_identity.per_arm,
+                                        rep["E"], rep["ci95"], rep["CELL_FAMILY"]
+a rung-2 artefact HAS:                  cell_mean_over_domains, per_domain, timing, rms_at_dst
+                                        -- no arms, no GATE 0, no ci95, no census
+```
+
+So there is no existing read for this family, and the honest options are narrow:
+
+```
+(a) REFACTOR pr016 so the VERDICT BRANCHES are separable from the census I/O, and let both
+    families share them. Correct, and it touches a reader that three PUBLISHED families used --
+    so it must reproduce PR-CSI-020's read EXACTLY, which is a regression I have run before
+    (S-375) and which the 496-test gate protects.
+(b) REIMPLEMENT the branches in a rung-2 reader. ⛔ S-350 measured what that is worth: two
+    "independent implementations" of this statistic agreed ONLY at M = K.
+(c) Emit a census-SHAPED artefact from the instrument. ⛔ That means fabricating GATE 0 and ci95
+    fields for a family that has neither. A field that exists to be read as a check, populated
+    to satisfy a reader, is worse than no field.
+```
+
+**(a) is the only one that survives.** It is not done in this tick, deliberately — refactoring a
+published reader is not something to bolt onto the end of a tick that has already changed the
+freeze script.
+
+### 3. The fix shipped now
+
+The freeze script REFUSES without the reader, names it (`scripts/dcs_csi_pr021_rung2_read.py`),
+will pin it by md5 in the prereg, and **checks it FIRST** — an existence test is cheaper than
+reading and validating the train artefact, and R35-C's F14 is that every cheap refusal belongs
+before the expensive one:
+
+```
+REFUSING TO EMIT: scripts/dcs_csi_pr021_rung2_read.py does not exist.
+A prereg must name the READ that will produce its verdict, and the rung-1 reader cannot
+substitute -- dcs_csi_pr016_argmax_test.py requires a CENSUS report (...) and a rung-2 artefact
+has none of those. (S-398)
+```
+
+### 4. 📌 What this says about the shape of my own checking
+
+**No test would have caught this**, and the 7 tests I wrote for the freeze script in S-397 did not.
+They checked that it refuses when the power source is missing, that the statistic is imported, that
+the prohibitions are present — every one of them a check on what the script DOES. **None asked what
+the emitted prereg would have to NAME in order to be executable.** The gap was found by asking
+"who reads this?", which is a question about the artefact's future, not about the code's behaviour.
+
+That is the same move that found S-396's self-contradicting output path: asking what the RUN would
+produce rather than whether the code is correct.
+
+### 5. What was NOT established
+
+```
+- NOT EMITTED, and now for TWO reasons: the train measurement and the reader both absent.
+- NOT DONE: the pr016 refactor. It is the chosen option and the next substantial piece of work.
+  It must reproduce PR-CSI-020's published read bit-for-bit, and that regression is the gate.
+- NOT REVIEWED: R36 is still owed on the freeze script, and is now owed on the reader too. It is
+  not due until this family approaches a GPU, and it cannot approach one without both.
+- NOT established: the train q. 927327 is at 243/291 shards, ~4 min of load left, then ~59 min
+  of measurement.
+```
+
+### 6. State
+
+```
+QUEUE    927327 RUNNING 55:47, load 243/291.
+CHANGED  scripts/gates/dcs_csi_pr021_freeze.py (refuses without a reader, checked first),
+         tests/test_csi_pr021_freeze.py (7 tests), external_md/...20260915.md
+NEXT     read the train q when it lands; then the pr016 refactor + the rung-2 reader; then R36;
+         then emit and freeze.
+```
+
+`git push` remains credential-blocked. Committed locally.

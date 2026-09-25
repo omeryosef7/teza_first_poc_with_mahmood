@@ -54,6 +54,7 @@ import sys
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 TRAIN_ARTEFACT = "reports/DCS_CSI_RUNG2_TRAIN_basket_full.json"
 INSTRUMENT = "scripts/dcs_csi_rung2_celldecode.py"
+READER = "scripts/dcs_csi_pr021_rung2_read.py"      # ⚠ S-398: does not exist yet -- see below
 OUT = "configs/dcs_csi_pr021_rung2_decode_basket_validation.json"
 
 # the population, MEASURED in S-388 and reproduced by the instrument's own gate in S-395
@@ -101,6 +102,25 @@ def train_q(art, heads, pred):
 
 def main() -> int:
     m = _pr020()
+    # ⚠ ORDERED FIRST: an existence check is cheaper than reading and validating the
+    # train artefact, and R35-C's F14 is that every cheap refusal belongs before the
+    # expensive one -- otherwise a missing reader costs a file read to discover.
+    # ⚠⚠ S-398: MY OWN S-167c ENFORCEMENT WAS PARTIAL, and a test would not have caught it.
+    # This script refuses when the POWER SOURCE is absent, and then happily emitted a prereg that
+    # names NO READ PATH AT ALL. A preregistration must say how it will be read; ours named an
+    # `instrument` and stopped there. And the rung-1 reader cannot stand in: pr016 requires
+    # ON_PROTOCOL, GATE_0_and_identity.per_arm, rep["E"], rep["ci95"] and rep["CELL_FAMILY"],
+    # none of which a rung-2 artefact has -- it has cell_mean_over_domains, no arms, no GATE 0.
+    # So the rule this file enforces for the power table applies to itself.
+    reader_path = os.path.join(REPO, READER)
+    if not os.path.exists(reader_path):
+        raise SystemExit(
+            "REFUSING TO EMIT: %s does not exist.\n"
+            "A prereg must name the READ that will produce its verdict, and the rung-1 reader\n"
+            "cannot substitute -- dcs_csi_pr016_argmax_test.py requires a CENSUS report\n"
+            "(ON_PROTOCOL, GATE_0_and_identity.per_arm, E, ci95, CELL_FAMILY) and a rung-2\n"
+            "artefact has none of those. Naming a read that does not exist is S-167c, the same\n"
+            "rule this script already enforces for the power table. (S-398)" % READER)
     art_path = os.path.join(REPO, TRAIN_ARTEFACT)
     if not os.path.exists(art_path):
         raise SystemExit(
@@ -145,6 +165,8 @@ def main() -> int:
         "statistical_unit": "domain",
         "heads": heads, "layers": list(m.BAND), "band": "6-14",
         "instrument": INSTRUMENT,
+        "reader": READER,
+        "reader_md5": None,          # filled below, once the file exists
         "⚠ THE_STATISTIC_IS_IMPORTED_FROM": "scripts/gates/dcs_csi_pr020_freeze.py -- binom_ge, "
             "perm_tail, certifies, power_mc, n_assign. S-389: the rungs are only comparable if the "
             "statistic is the SAME one applied to a DIFFERENT quantity, and S-350 showed that two "
@@ -253,6 +275,7 @@ def main() -> int:
         "instrument_md5": m.md5(os.path.join(REPO, INSTRUMENT)),
     }
 
+    pr["reader_md5"] = m.md5(reader_path)
     outp = os.path.join(REPO, OUT)
     with open(outp, "w", encoding="utf-8") as fh:
         json.dump(pr, fh, indent=1, ensure_ascii=False)
