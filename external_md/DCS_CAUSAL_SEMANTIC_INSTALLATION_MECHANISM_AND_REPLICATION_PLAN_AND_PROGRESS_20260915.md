@@ -37168,3 +37168,69 @@ D15's internal TRAIN-at-46 / VALIDATION-at-30 mismatch, and prohibition 24's dea
 disclosure-shaped, none touching a number.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-415 — both published PASSes REPLAY, and the S-402 refactor is verified by EXECUTION for the first time
+
+**2026-09-25. Queue empty, no GPU.** S-414 replayed D39 at two commits. This extends the test to
+**D40, which had never been replayed at all**, and to **HEAD for both** — which is the interesting
+direction, because since those reads the readers moved by **+307/−148 across three files**,
+including S-402's extraction of `scripts/dcs_csi_argmax_verdict.py`. **That refactor shipped
+verified only by "zero diff hunks" on the programmatically-moved body. It had never been run
+against a published family.** This runs it.
+
+### 1. What was measured
+
+Each family's frozen recipe, verbatim, against its own landed arms:
+
+```
+                       GATE 0        census md5                 argmax diff vs published
+D39  @ 1e57d383 (pre)  62/62 exit 0  (vs as-read: 8 fields, all non-gating -- S-414)
+D39  @ d0e4444c (read) 62/62 exit 0  512f42a1 BYTE-IDENTICAL   1 field: census_report (path)
+D39  @ HEAD            62/62 exit 0  1 field: VOID_8 +2 keys   1 field: census_report (path)
+D40  @ 7700473c (read) 82/82 exit 0  e7f09f67 BYTE-IDENTICAL   1 field: census_report (path)
+D40  @ HEAD            82/82 exit 0  1 field: VOID_8 +2 keys   1 field: census_report (path)
+```
+
+The single census difference at HEAD is the **S-375 disclosure**: `ci95_abs_diff` and `ci95_checked`
+ADDED to each VOID-8 entry. Checked rather than assumed — **every shared field is identical across
+all 6 (D39) and all 8 (D40) entries, and `within: true` still holds on every head.** Nothing was
+removed and nothing changed value.
+
+**Identical at every reader version, checked positively by name:**
+
+```
+D39   K_admitted 6   M_matches 5   binomial 9.220214473478709e-05
+      conditional 0.012345679012345678   permutation 0.005555555555555556   spanning true   PASS
+D40   K_admitted 8   M_matches 6   binomial 4.313917429390264e-05
+      conditional 0.005029721079103794   permutation 0.0001984126984126984
+      K_unique 4  M_unique 3   spanning true   PASS
+```
+
+### 2. What this is, and what it is NOT
+
+✅ It establishes that **the published numbers are recoverable from the artefacts** by anyone with
+the repo, and that **the S-402 refactor preserves both published verdicts under execution** — a
+stronger check than the inspection it shipped with, and one that would have caught a moved gating
+field. The only behavioural drift across a year of reader churn is an added disclosure.
+
+⛔ **It is REPRODUCIBILITY, not corroboration.** It re-reads the SAME arms. It adds **no independent
+evidence**, strengthens **no p**, and moves **no claim** up any rung. A deterministic replay of a
+wrong arm is still wrong, and this tests the reader, not the arm.
+⛔ **It says nothing about PR-CSI-021** (never read) or about D41, which rests on a train pilot.
+⛔ **No GPU. No arm re-run. TEST untouched.**
+
+### 3. What was NOT established
+
+⛔ **That the readers are CORRECT** — only that they are stable. Every replay shares the readers'
+assumptions, so a shared error would replay perfectly. The independent checks on those numbers are
+the by-hand re-derivations in S-373 and S-411, which are a different kind of evidence and remain
+the ones that matter for correctness.
+⛔ **That reader churn is generally safe.** Two families, one refactor.
+
+**NEXT:** the remaining S-411 leads are all disclosure-shaped and touch no number — D13/D15's
+"could not have certified" clause, D15's internal TRAIN-at-46 / VALIDATION-at-30 mismatch, and
+prohibition 24's dead reason.
+
+`git push` remains credential-blocked. Committed locally.
