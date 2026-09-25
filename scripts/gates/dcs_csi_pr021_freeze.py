@@ -85,13 +85,27 @@ def train_q(art, heads, pred):
     nothing: it is the ordinary, non-circular use of a discovery split, and is exactly how
     PR-CSI-018's observed rate informed PR-CSI-020's power table (S-354)."""
     cm = art["cell_mean_over_domains"]
+    band = _pr020().BAND
+    # ⚠⚠ S-403: THIS USED THE RAW |contrib| ARGMAX AND GAVE q = 0/8 -- the statistic S-399
+    # REFUTED. The reader applies the LEAVE-ONE-OUT layer normalisation, so a q computed without
+    # it describes a different experiment than the one the prereg will be read under. Both now
+    # call the SAME shared function.
+    import importlib.util as _il
+    _spec = _il.spec_from_file_location(
+        "shared_verdict", os.path.join(REPO, "scripts", "dcs_csi_argmax_verdict.py"))
+    _sv = _il.module_from_spec(_spec)
+    _spec.loader.exec_module(_sv)
+
+    def _abs(L, hh):
+        v = cm.get("L%d_h%d" % (L, hh))
+        if v is None:
+            raise SystemExit("REFUSING: the train artefact has no value for cell (L%d, head %d)."
+                             % (L, hh))
+        return abs(float(v))
+
     matched, per_head = 0, {}
     for h in heads:
-        vals = {L: abs(cm["L%d_h%d" % (L, h)]) for L in _pr020().BAND
-                if cm.get("L%d_h%d" % (L, h)) is not None}
-        if len(vals) != len(_pr020().BAND):
-            raise SystemExit("REFUSING: the train artefact has no value for every band layer of "
-                             "head %d, so its argmax would be taken over an incomplete set." % h)
+        vals = _sv.normalised_layer_profile(_abs, heads, band, h)
         top = max(vals, key=lambda L: vals[L])
         hit = (top == pred[str(h)]["layer"])
         matched += hit
@@ -139,14 +153,19 @@ def main() -> int:
         raise SystemExit("REFUSING: the train artefact covers %r rows / %r domains, not 670/67."
                          % (art.get("selection_n_rows"), art.get("selection_n_domains")))
 
-    pred, screen_meta = m.screen_predictions()
+    raw_pred, screen_meta = m.screen_predictions()
+    # ⚠ screen_predictions() returns head -> {layer, margin}; certifies()/power_mc() want
+    # head -> layer. Passing the record makes the set-build in certifies() raise
+    # "unhashable type: dict", which is loud -- but flattening HERE keeps the two shapes from
+    # being confused further down.
+    pred = {h: v["layer"] for h, v in raw_pred.items()}
     heads = list(m.HEADS)
-    M_tr, K_tr, per_head_tr = train_q(art, heads, pred)
+    M_tr, K_tr, per_head_tr = train_q(art, heads, raw_pred)
     q_hat = M_tr / float(K_tr)
 
     adm = [str(h) for h in heads]
-    pv = [pred[a]["layer"] for a in adm]
-    uq = [a for a in adm if pv.count(pred[a]["layer"]) == 1]
+    pv = [pred[a] for a in adm]
+    uq = [a for a in adm if pv.count(pred[a]) == 1]
     floors = {"binomial": m.binom_ge(len(adm), len(adm)),
               "conditional": m.binom_ge(len(uq), len(uq)),
               "permutation": 1.0 / m.n_assign(pv)}
@@ -183,6 +202,14 @@ def main() -> int:
                                 "score_behavior measured at ~5.6e-06 option mass and abandoned "
                                 "2026-08-18 (R35-A/B)." % ANSWER_PREFIX,
             "dtype": DTYPE,
+        },
+        "DETECTABILITY_PREREGISTERED_PER_HEAD": {
+            "⚠ NOT_A_DETECTABILITY_BAR_HERE": "rung 2 has NO admission gate -- K is fixed at 8 "
+                "(see PRIMARY.K_IS_FIXED_AT_8). This block carries the frozen SCREEN PREDICTIONS "
+                "in the same shape the rung-1 families use, so the reader reads one contract.",
+            "per_head": {str(h): {"screen_predicted_layer": pred[str(h)],
+                                  "screen_margin_over_runner_up": raw_pred[str(h)]["margin"]}
+                         for h in heads},
         },
         "PRIMARY": {
             "statistic": "M = number of heads whose |contribution| ARGMAX over the nine band layers "

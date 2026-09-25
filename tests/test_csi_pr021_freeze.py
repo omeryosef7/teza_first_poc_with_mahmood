@@ -112,7 +112,18 @@ def test_it_refuses_without_a_READER_and_checks_that_FIRST():
     i_art = code.find("os.path.exists(art_path)")
     assert 0 < i_reader < i_art, (
         "the reader check must come BEFORE the train-artefact check -- cheap refusals first")
+    # ⚠ S-403: this test USED to drive the refusal by running the script -- valid while the
+    # reader was absent, and the commit hook correctly went red the moment the reader was written,
+    # because a precondition failure cannot be demonstrated once the precondition holds. The
+    # refusal PATH is asserted by source (above); what is driven now is the live behaviour, which
+    # is that both preconditions exist and the script EMITS. Deleting the test instead would have
+    # thrown away the ordering guarantee, which is the part that still bites.
+    assert "REFUSING TO EMIT" in code, "the refusal was removed rather than satisfied"
+    assert "cannot substitute" in code, "the refusal no longer says why pr016 cannot be used"
     r = subprocess.run([PY, SCRIPT], capture_output=True, text=True)
     both = r.stdout + r.stderr
-    assert "does not exist" in both and "S-398" in both, both[:300]
-    assert "cannot substitute" in both, "the refusal does not say why pr016 cannot be used"
+    if os.path.exists(os.path.join(ROOT, "scripts", "dcs_csi_pr021_rung2_read.py")):
+        assert r.returncode == 0, "both preconditions exist but the freeze did not emit:\n" + both
+        assert "wrote configs/" in both, both[:300]
+    else:
+        assert r.returncode != 0 and "S-398" in both, both[:300]

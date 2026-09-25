@@ -36111,3 +36111,110 @@ NEXT     the rung-2 reader that builds `admitted` rows from a RUNG2 artefact and
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-403 — the rung-2 READER exists and the prereg is EMITTED. 🔴 **And the first emission was wrong: the freeze computed its power table from the REFUTED raw statistic while the reader used the corrected one — q = 0/8 against the reader's 3/8** (2026-09-25)
+
+### 1. The reader
+
+`scripts/dcs_csi_pr021_rung2_read.py`, 195 lines, and **it computes no statistic of its own** —
+every branch, p-value, gating choice and floor comes from `dcs_csi_argmax_verdict.decide()`, the
+same function `pr016` calls for rung 1 (S-402). What it contributes is the mapping from a rung-2
+artefact to the rows `decide()` consumes, and that mapping IS the S-400/S-401 design decision:
+
+```
+for each head h:   norm(L) = |contrib(L,h)| / mean_{h' != h} |contrib(L,h')|
+                   argmax over the nine band layers;  MATCH iff it equals the screen's layer
+```
+
+It refuses: a non-`DCS_CSI_RUNG2/1` artefact, a SMOKE run, the wrong split, a population that is
+not the declared 230/23, fewer measured prompts than declared, a **missing** `recon_rel_err`, and
+one exceeding the dtype tolerance (VOID 13).
+
+### 2. 🔴 The first emission carried a power table for a DIFFERENT experiment
+
+The freeze ran, emitted, and printed:
+
+```
+[pr021] TRAIN q = 0/8 = 0.0000     power at the measured q: 0.0
+```
+
+**`train_q()` predated S-400 and still used the RAW |contrib| argmax — the statistic S-399
+REFUTED** — while the reader applies the leave-one-out layer normalisation. So the prereg named a
+read it would not describe: a power table computed under one statistic, a verdict to be computed
+under another. The emitted file was deleted and re-emitted.
+
+📌 **This is S-402's lesson one level down.** There, two files held the same verdict branches and I
+made them one function. Here, two files held the same *normalisation* — and the one that was
+supposed to describe the other used the version the data had already refuted. **The fix is
+identical in shape:** `normalised_layer_profile()` now lives beside `decide()` in the shared
+module, and both the freeze and the read call it. After the move:
+
+```
+[pr021] TRAIN q = 3/8 = 0.3750     power at the measured q: 0.144575
+```
+
+which reproduces S-400's independently computed 3/8 and 0.1446 exactly.
+
+⚠ **The tell was in the output and nothing else would have caught it.** No test compared the
+freeze's statistic to the reader's; the prereg selftest checks that KEYS resolve, not that two
+files agree about what they are measuring. I caught it by reading a number I already knew the
+answer to — S-400 had measured 3/8 by hand, so `0/8` was visibly wrong. **Had I not held that
+number independently, a prereg with a self-consistent but wrong power table would have been
+frozen.**
+
+### 3. ✅ The contract holds
+
+```
+prereg selftest against the new reader:  9 hard-subscripted, 9 present, 0 MISSING
+the reader refuses the TRAIN artefact:   "the measurement is split 'train' but the prereg froze
+                                          'validation'"
+8 reader tests pass, including leave-one-out (a head excluded from its own baseline) and a
+zero-baseline raising rather than producing an infinity.
+```
+
+### 3b. ✅ The commit gate caught a test that had become unsatisfiable, and refused the commit
+
+The first attempt to commit this entry was **REFUSED by the pre-commit hook**:
+
+```
+FAILED tests/test_csi_pr021_freeze.py::test_it_refuses_without_a_READER_and_checks_that_FIRST
+[pre-commit] REFUSING: a guard TEST failed -- a guard may no longer be able to fail.
+```
+
+That test drove the refusal by RUNNING the freeze with the reader absent. Writing the reader
+satisfied the precondition, so the failure it asserted **can no longer be demonstrated** — not
+because anything regressed, but because the thing it guarded against was fixed. The hook's own
+message names the hazard exactly: *a guard may no longer be able to fail.*
+
+It was updated rather than deleted: the refusal PATH is asserted by source, and the subprocess now
+asserts the LIVE behaviour (both preconditions present → it emits), branching on whether the reader
+exists so the refusal is still driven in a checkout without it. **Deleting it would have thrown away
+the ordering guarantee — cheap refusals before expensive ones — which is the part that still bites.**
+
+### 4. What was NOT established
+
+```
+- NOT READ. There is no validation measurement yet; the prereg is emitted and the read is not run.
+- NOT FROZEN: the read RECIPE (the runargs file) naming the exact invocation, which every prior
+  family in this sprint has and this one does not yet.
+- NOT REVIEWED: R36 now owes FOUR pieces -- the freeze, the reader, the S-402 refactor, and the
+  shared normalisation. It is due BEFORE this reaches a GPU.
+- NOT established: that the prereg is complete. S-401 requires it to disclose that the statistic
+  was chosen after seeing train, from three candidates, with the best-scoring one declined --
+  and I have not verified that the emitted file says so.
+```
+
+### 5. State
+
+```
+QUEUE    EMPTY.
+CHANGED  scripts/dcs_csi_pr021_rung2_read.py (NEW), scripts/dcs_csi_argmax_verdict.py
+         (+normalised_layer_profile), scripts/gates/dcs_csi_pr021_freeze.py (uses it),
+         configs/dcs_csi_pr021_rung2_decode_basket_validation.json (EMITTED, md5 003f662c),
+         tests/test_csi_pr021_reader.py (NEW, 8 tests; gate -> 26 files), external_md/...
+NEXT     verify the prereg carries S-401's disclosures; freeze the read recipe; R36; launch.
+```
+
+`git push` remains credential-blocked. Committed locally.

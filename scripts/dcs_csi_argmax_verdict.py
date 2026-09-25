@@ -28,6 +28,36 @@ def binom_tail(M, K, p0):
     return sum(comb(K, m) * p0 ** m * (1 - p0) ** (K - m) for m in range(M, K + 1))
 
 
+def normalised_layer_profile(cell_abs, heads, band, head):
+    """The LEAVE-ONE-OUT layer normalisation -- PART OF THE RUNG-2 STATISTIC, not presentation.
+
+    ⚠⚠ S-399 measured that the RAW per-cell magnitude carries a DEPTH CONFOUND of ~44x across the
+    band: a layer-14 head's output passes through 17 fewer blocks before the final-residual
+    direction is read than a layer-6 head's, and all EIGHT raw argmaxes landed in the top three of
+    nine layers (P = 1.52e-04 under a uniform argmax). Normalising collapses that to 1.40x.
+    WITHOUT THIS THE READ MEASURES DEPTH, NOT AGREEMENT.
+
+    ⚠ LEAVE-ONE-OUT: the head is excluded from its own layer baseline. With 8 heads a
+    self-inclusive mean would let a large cell inflate its own denominator by 1/8 and shrink its
+    own normalised value -- an effect that points the wrong way and is avoidable.
+
+    ⚠⚠ IT LIVES HERE, beside decide(), because S-402's lesson applies one level down: the FREEZE
+    computes the power table's q from this profile and the READ computes the verdict from it. When
+    they were two functions the freeze used the RAW argmax and emitted a prereg whose power table
+    described a statistic its own reader would not use -- q = 0/8 against the reader's 3/8.
+    """
+    from statistics import fmean
+    out = {}
+    for L in band:
+        others = [cell_abs(L, hh) for hh in heads if hh != head]
+        base = fmean(others)
+        if not (base > 0):
+            raise ValueError("leave-one-out baseline at L%d is %r; the normalised value is "
+                             "undefined" % (L, base))
+        out[L] = cell_abs(L, head) / base
+    return out
+
+
 def decide(admitted, band, alpha, gating, prereg_id, grandfathered=("PR-CSI-016",)):
     """The preregistered argmax verdict.
 
