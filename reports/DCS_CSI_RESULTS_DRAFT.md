@@ -14,6 +14,29 @@ names its scope rather than claiming a blanket.*
 
 ---
 
+## SCOPE — what this draft covers, and what it LEAVES OUT
+
+🔴 **This is the CELL-level story only.** §1–§4 report the five cell-census families (PR-CSI-014,
+015, 016, 018, 020). **The sprint's HEAD-level results are not here**, and they are not minor:
+
+| omitted | what it is | why its absence matters |
+|---|---|---|
+| **D32** | eight head indices carry most of the knockout's effect on basket, **replicating on the held-out split** at the preregistered bar | it is the result the cell-level work *subdivides*; §1–§3 localise within heads D32 selected |
+| **D33** | that 8-head set is **rank 1 of 21** against a control family drawn from all 32 band heads | the only rank-based certification in the head direction |
+| **D34** | four heads (2, 19, 17, 23) each clear the family's own null anchor, **all four inside `HD_TOPK` and none outside it** | it is where §1's four heads come from |
+| **D35** | 🔴 head 2's single-head effect, selected on basket by a rule frozen beforehand, **DOES NOT REPLICATE on button** — ci95 [−0.015452, +0.006019] **crosses zero** | **the sprint's one EMPIRICAL negative** |
+
+⚠ **D35's absence is the one that could flatter.** §4 offers "one CANNOT ANSWER and one honest
+**methodological** negative", and a reader may take that as the sprint's full negative ledger. It is
+not: a head selected by a pre-frozen rule failed to replicate across codewords, and that result
+lives in the head-level section this draft does not contain.
+
+⛔ **So this draft must not be read as "the sprint's results".** It is one of two halves, and the
+half it omits contains both a certified positive chain and the only empirical negative. Section
+numbering here is local to this half.
+
+---
+
 ## 0. One paragraph of setup
 
 We ask where in a transformer a *codeword* — a token the model has been instructed to emit in place
@@ -222,6 +245,7 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | any rung-2/3/4 **CLAIM** for a result here | every certified claim is rung 1 — but naming rung 2 as *unreached* is required, not forbidden, so the ban is on the claim and not the vocabulary | AM-34 |
 | "correcting" either 1.52e-04 | `(1/9)^4 = (1/3)^8 = 1/6561` — two real quantities, one value | [†] §4 |
 | ‼ "floor above α ⇒ CANNOT ANSWER, never FAIL" | true only at K < 3; at K ≥ 3 it is a FAIL with an unwinnability warning — and the sentence is **still live in both published artefacts**, so it can be re-imported from a source an editor will read | AM-45 (S-428), §M.6 |
+| ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | this draft is the CELL-level half only; **D32/D33/D34 and the empirical negative D35 are omitted** — see SCOPE | D32-D35, SCOPE |
 | "deduplicating" the two 0.012346s | D39's certified conditional (§2) and D38's forbidden binomial (§4) are **both exactly 1/81** — one is a result, one is banned | D39, D38, §4 |
 | ‼ "TEST is unspent / untouched / available" | read to completion 2026-09-08 and selection-contaminated | AM-39, D5 |
 | "the screen is a validated cell selector in general" | forbidden for **both** D39 and D40, not just D39 | D39, D40 |

@@ -38689,3 +38689,77 @@ write-up risk is concentrated in what no reviewer has been asked for: whether th
 **structure** — what it leads with, what it omits entirely — misrepresents the sprint.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-435 — the STRUCTURAL audit: the draft is half the sprint and never said so, and the half it omits holds the only EMPIRICAL negative
+
+**2026-09-25. Queue empty, no GPU.** S-434 named the remaining write-up risk as **structure** — what
+the draft leads with and what it omits — since every review so far has been sentence-level. This
+audits it. **The omission half is measurable, so I measured it rather than commissioning an opinion.**
+
+### 1. Measured: 36 of 45 claim-table D-rows are not cited
+
+```
+D-rows in the claim table          45
+cited anywhere in the draft         9   D5, D34, D36, D37, D38, D39, D40, D40-c, D41
+NOT cited                          36
+```
+
+Most are predecessor-phase and correctly out of scope. **Four are not**, and they are the sprint's
+own head-level chain:
+
+```
+D32  eight head indices carry most of the knockout on basket, REPLICATING on the held-out split
+D33  that 8-head set is RANK 1 OF 21 against controls drawn from all 32 band heads
+D34  four heads clear the family's null anchor, ALL FOUR INSIDE HD_TOPK and none outside
+D35  🔴 head 2, selected on basket by a pre-frozen rule, DOES NOT REPLICATE on button --
+     ci95 [-0.015452, +0.006019] CROSSES ZERO
+```
+
+### 2. 🔴 Why this is a structural misrepresentation and not a scoping choice
+
+The file is titled **"CSI sprint — RESULTS SECTION"** and §0 opens *"We ask where in a transformer a
+codeword is installed"* — **a question the head-level results answer directly.** The header's one
+scope-sounding sentence (*"names its scope rather than claiming a blanket"*) is about **provenance**
+— which S-entry re-derived which figure — **not about content.** So the draft never said what it
+covers, and a reader would reasonably take five cell-level sections as the sprint's results.
+
+⚠ **The asymmetry is what makes it flattering rather than merely partial.** §4 offers *"one CANNOT
+ANSWER and one honest **methodological** negative"*, which reads as the negative ledger. **It is
+not.** The sprint's one EMPIRICAL negative — a head chosen by a rule frozen before the data, failing
+to replicate across codewords — sits in the omitted half. **A results draft whose only negative is
+methodological, while an empirical one exists and is left out, overstates by structure even when
+every sentence in it is true.** Every sentence in it *is* true; two reviews checked that.
+
+**Fixed by declaring the scope, not by widening it.** A new **SCOPE** block sits ahead of §0, naming
+all four omissions in a table with why each absence matters, stating that this is one of two halves,
+and saying D35's absence is the one that could flatter. Adding D32–D35 properly is a drafting job
+of its own and each would need the review treatment §1–§6 has had; **claiming to cover them would be
+worse than saying I do not.** A ‼ checklist row now blocks *"these are the sprint's results"*.
+
+### 3. What the sentence-level reviews could not have found
+
+📌 **Two independent reviews of §0–§6 passed over this**, and correctly: both were asked whether each
+sentence is supported by its row, and **every sentence was.** A claim that is absent has no row to
+contradict. ⚠ **So the review method that has been finding defects all week is structurally blind to
+omission**, and that is worth recording as a property of the method rather than a failure of the
+reviewers.
+
+### 4. What was NOT established
+
+⛔ **That the omitted four are correctly stated in the claim table** — I read their headline cells to
+establish what they are, and did **not** re-derive D32/D33/D34/D35's figures. The SCOPE block quotes
+only D35's ci95, which I read from its row and did not recompute.
+⛔ **That the cell-level half is otherwise complete.** 32 further D-rows are uncited; I judged them
+predecessor-phase from their content and did not audit that judgement row by row.
+⛔ **That declaring the scope is sufficient.** It makes the omission visible; it does not make the
+draft a full results section, and the head-level half remains undrafted.
+⛔ **No published number, claim or verdict moved.** ⛔ **No GPU, no arm, no code change. TEST
+untouched.**
+
+**NEXT:** the head-level half — D32, D33, D34 and D35 — is now the largest undrafted piece of the
+write-up, and D35 should be drafted first: it is the negative, and negatives are what a draft
+written by its own author is most likely to leave last.
+
+`git push` remains credential-blocked. Committed locally.
