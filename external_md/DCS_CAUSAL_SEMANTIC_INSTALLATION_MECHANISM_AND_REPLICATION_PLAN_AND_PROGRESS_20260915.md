@@ -39651,3 +39651,64 @@ TEST untouched.**
 undrafted work is the eighteen axis rows §A's own heading declares.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-449 — three different counts for one quantity in one tick, and §A was reporting D12's numbers under D19's name
+
+**2026-09-26. Queue empty, no GPU.** S-448 sent me back to the write-up. Counting what remained
+produced the tick's first finding, about the count itself.
+
+### 1. 🔴 Three numbers for one quantity, in one tick
+
+```
+SCOPE said                        EIGHTEEN rows remain undrafted
+my first re-measure said          13
+the truth is                      15   (5 drafted: D18, D19, D23, D24, D29)
+```
+
+**SCOPE's 18 was stale** — written when §A cited two rows, and §A cites five. **My re-measure's 13
+was wrong for a new reason: the regex matched `D12` and `D31` as the ENDPOINTS OF THE RANGE
+NOTATION `D12–D31`** in the checklist row, and counted them as citations. ⚠ **Thirteenth detector
+issue, and the shape is new again** — not a truncation, not a wrong corpus, but **a range read as a
+list.** Excluding that line gives 15, which matches the five §A actually cites.
+
+📌 **This is S-441's class recurring in the very entry that measures it**: a self-referential count
+that decays, and a pattern that mis-reads the text it counts. Both counts are now corrected in
+SCOPE and in the checklist row.
+
+### 2. §A was reporting D12's numbers under D19's name
+
+§A.1's sufficiency block — `+0.00264` TRAIN and `+0.00401` VALIDATION at rank 1 of 47 — **is D12**.
+§A.1 attributes it to D18/D19 because D19 restates those figures inside the bidirectional
+conjunction, but **D12 is the primary row and was uncited.** Not wrong; both rows carry the numbers.
+But the most-amended row in the claim table was invisible in a draft that reports its result.
+
+**Drafted as §A.3**, with all four of its amendments carried, each verified by me in S-412/S-428:
+
+- both p's sit **exactly at their attainable floor** (0.02128 vs 1/47 = 0.0213) — a pass with no margin;
+- the candidate is **1.74 % of the knockout** and **3.87 % of the whole-state recovery**
+  (`recovery_fraction_candidate_of_full` = 0.0386), and merging the two is forbidden;
+- **TRAIN is in-sample**, 67 of 67 scored domains in the fit; only VALIDATION is held out;
+- the captured fraction is an **amplitude**, not an energy, and the energy mean is **not recoverable**
+  from the persisted field;
+- the superseded n34/n30 figures and the stale floor pair `(1/35, 1/31)`;
+- and the shuffled-only caveat that **understated** the result — 1 of 13 / 1 of 9 became 1 of 25 on
+  both splits at floor 0.0400, which certifies on its own.
+
+### 3. What was NOT established
+
+⛔ **That §A.3 is right.** It is one tick old and unreviewed, and every section of this draft has had
+real defects found on its first review — §H's first pass returned thirteen.
+⛔ **That 15 → 14 is now stable.** It is a self-referential count, and this entry exists because two
+of those went stale or wrong within one tick.
+⛔ **That D12's figures needed no re-derivation.** They did not, because **I re-derived them in S-412
+and S-428** — the key counts, the floors, the subfamily ranks, the two denominators and the
+in-sample flags — and §A.3 rests on those, not on a fresh read of the claim table.
+⛔ **No published number, claim or verdict moved. No GPU, no arm, no code change. TEST untouched.**
+
+**NEXT:** fourteen axis rows remain. The swap family (D25, D26, D27, D30) is the natural next
+increment — it is the one whose headline was withdrawn and whose prohibition mandated a retracted
+sentence, so it is where a careless draft would do the most damage.
+
+`git push` remains credential-blocked. Committed locally.

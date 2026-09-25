@@ -47,7 +47,8 @@ it declined is what found it. Classified by reading each row rather than by patt
 
 ⚠ **UPDATED S-439/S-440: TWO of the twenty are now drafted as §A** — D19's bidirectional conjunction
 and D24's matched-power dissociation, with D18, D23 and D29 as their supports. **That is an
-increment, not the part: EIGHTEEN rows remain undrafted.**
+increment, not the part: FIFTEEN rows remain undrafted** (⚠ corrected S-449 — SCOPE said
+eighteen, counting the five §A cites as two).
 
 **The omitted rows are the AXIS, NECESSITY and DISSOCIATION families — PR-CSI-001 through 009**: the
 rank-1 installation axis and its control families, the necessity direction, the button/basket
@@ -270,7 +271,7 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | any rung-2/3/4 **CLAIM** for a result here | every certified claim is rung 1 — but naming rung 2 as *unreached* is required, not forbidden, so the ban is on the claim and not the vocabulary | AM-34 |
 | "correcting" either 1.52e-04 | `(1/9)^4 = (1/3)^8 = 1/6561` — two real quantities, one value | [†] §4 |
 | ‼ "floor above α ⇒ CANNOT ANSWER, never FAIL" | true only at K < 3; at K ≥ 3 it is a FAIL with an unwinnability warning — and the sentence is **still live in both published artefacts**, so it can be re-imported from a source an editor will read | AM-45 (S-428), §M.6 |
-| ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | §1–§4 are the CELL-level part and §H the HEAD-level part; of the axis / necessity / dissociation families (D12–D31) **only D18/D19/D23/D24/D29 are drafted, as §A — EIGHTEEN rows remain in neither** — see SCOPE | D12–D31, SCOPE |
+| ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | §1–§4 are the CELL-level part and §H the HEAD-level part; of the axis / necessity / dissociation families (D12–D31) **only D18/D19/D23/D24/D29 + D12 are drafted, as §A — FOURTEEN rows remain in neither** — see SCOPE | D12–D31, SCOPE |
 | ‼ quoting `VERDICT: "WE FOUND (part of) THE WRITER"` | it is a **verdict LABEL live in TWO published artefacts** (PR-010 and PR-011), not a claim; the permitted form is that file's `REPORTABLE_AS` — 8 head indices, at least half the effect, **leg (i) only**, **not** a claim about any cell | D32, §M.8 |
 | "deduplicating" the two 0.012346s | D39's certified conditional (§2) and D38's forbidden binomial (§4) are **both exactly 1/81** — one is a result, one is banned | D39, D38, §4 |
 | ‼ "TEST is unspent / untouched / available" | read to completion 2026-09-08 and selection-contaminated | AM-39, D5 |
@@ -1000,3 +1001,37 @@ different blobs.
 splits: a pass at the floor is a pass, but it has **no margin**. ⚠ **And basket's TRAIN rank 1 is
 not robust to per-domain reweighting** — two of five schemes move it to rank 3 of 47, p = 0.0638.
 That caveat is unaffected by everything above and still binds.
+
+## A.3 The result §A.1 reports without naming: the rank-1 axis is top of its control family on both splits (D12)
+
+⚠ **§A.1's sufficiency figures are D12's**, cited there as D19's because D19 restates them inside the
+conjunction. D12 is the primary, and it is the most-amended row in the claim table — four amendments
+govern it, and all four are carried here.
+
+```
+TRAIN       KO_AXIS - KO  +0.00264 [+0.00068, +0.00471]  44 pos / 23 neg of 67  rank 1 of 47  p 0.0213
+VALIDATION                +0.00401 [+0.00098, +0.00775]  15 pos /  8 neg of 23  rank 1 of 47  p 0.0213
+subfamilies, both splits: shuffled-only 1 of 25 (floor 0.0400)   random-only 1 of 23 (floor 0.0435)
+population: 642 keys / 67 TRAIN domains and 215 keys / 23 VALIDATION domains, 53 arms each
+```
+
+⚠ **Both p-values sit EXACTLY at their attainable floor** (0.02128 against 1/47 = 0.0213): a pass at
+the floor is a pass with **no margin**, and §M.9 records that the implementation certifies only at
+rank 1 in any case.
+
+🔴 **The effect is very small, and two denominators are routinely conflated.** The candidate
+`+0.00401` is **1.74 %** of the knockout it is rescuing from (`KO − BASE` = −0.23094) and **3.87 %**
+of what the whole state restores (`KO_FULL − KO` = +0.1037) — the artefact's own
+`recovery_fraction_candidate_of_full` reads **0.0386**. ⛔ *"Recovers 3.9 % of the knockout"* merges
+the two and is forbidden.
+
+⛔ **TRAIN is IN-SAMPLE** (`evaluation_is_in_sample: true`, 67 of 67 scored domains in the fit);
+only VALIDATION is held out. ⛔ **The captured fraction is an AMPLITUDE, not an energy** — the
+energy fraction is its square, of order 0.1 %, and the persisted field is a mean of per-row ratios
+so the exact energy mean is **not recoverable** from it. ⚠ **Earlier figures at the 34- and
+30-control families are superseded** — the governing artefacts are the n46 pair — and a **stale
+floor pair `(1/35, 1/31)`** was quoted for years where both floors are now `1/47`.
+
+⚠ **The shuffled-only subfamily was once recorded as "INCONCLUSIVE on its own, both splits"** at
+1 of 13 and 1 of 9. **At n46 it is 1 of 25 on both splits, floor 0.0400 — it certifies on its own**,
+so that caveat understated the result rather than overstating it.
