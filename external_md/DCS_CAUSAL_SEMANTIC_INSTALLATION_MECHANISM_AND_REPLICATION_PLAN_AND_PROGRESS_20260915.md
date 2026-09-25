@@ -36933,3 +36933,77 @@ that is still *mandatory wording* is the one failure mode that can put a dead cl
 by following the rules rather than by breaking them.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-412 — the rule that COMPELLED a retracted claim, and D12's three uncorrected cells
+
+**2026-09-25. Queue empty, worktree clean at `2ece6af2`. No GPU.** S-411 named the two most serious
+leads and said work them in order. Both are now closed, and **every figure below was re-derived by
+me from the artefacts** — not from the row that alleged the supersession, and not from a subagent.
+
+### 1. Prohibition 29 MANDATED a sentence AM-15 had withdrawn
+
+Verified by reading both sites. Prohibition 29 (claim table L549-551) says the rank-36 → rank-4
+contrast *"may **never** be stated without 'CELL 4, C1 refuted by the fixed rule' beside it"*.
+AM-15 (L772) says of that exact sentence: *"It no longer holds, and the companion sentence must be
+restated as: NO CELL IS CLAIMED FOR EITHER DIRECTION … C1 is neither refuted nor supported by it."*
+
+**So the file's own rules compelled a drafter to write a retracted claim.** This is the one failure
+mode that puts a dead result into the paper **by following the rules rather than by breaking them**,
+and no amount of care by the drafter would catch it — care is what triggers it. Fixed in place:
+prohibition 29 now carries AM-15's restatement. Everything else in it stands (the CELL 1 / CELL 2 /
+"C1 is SUPPORTED" / "basket's axis rescues button" readings remain FORBIDDEN).
+
+### 2. D12 — the statistic cell was updated to n46; the POPULATION, CAVEAT and SOURCE cells never were
+
+D12 is the most-amended row in the file (AM-2, AM-4, AM-5, AM-7). Its statistic cell was correctly
+rewritten at the 46-control family, with `(Superseded figures at the 34-control family: …)` inline —
+which is precisely why the other three cells reading as current is dangerous. Re-derived, all four
+artefacts, by counting arms and reading `n_keys_common`:
+
+```
+           keys  domains  arms  controls(rand/shuf)   pooled floor   shuffled-only family
+TRN n34     647     67      41    34 (22/12)          1/35 = 0.0286  1 of 13, floor 0.0769
+TRN n46     642     67      53    46 (22/24)          1/47 = 0.0213  1 of 25, floor 0.0400
+VAL n30     218     23      37    30 (22/ 8)          1/31 = 0.0323  1 of  9, floor 0.1111
+VAL n46     215     23      53    46 (22/24)          1/47 = 0.0213  1 of 25, floor 0.0400
+```
+
+- **population cell** said `647 keys (41 arms); 218 keys (37 arms)` — the n34/n30 families.
+  Governing: **642 / 215, 53 arms each.** Fixed.
+- **the floors `(1/35, 1/31)`** are the n34/n30 floors; at n46 **both are 1/47 = 0.0213**, and both
+  p values are still AT them. Fixed.
+- **the `3.9 %` denominator.** Re-derived from the n46 validation read: candidate `KO_AXIS − KO` =
+  **+0.00401**; against the KNOCKOUT (`KO − BASE` = **−0.23094**) that is **1.74 %**; against the
+  WHOLE-STATE recovery (`KO_FULL − KO` = **+0.1037**) it is **3.87 %**, and the artefact's own
+  `recovery_fraction_candidate_of_full` reads **0.0386**. **AM-4 CONFIRMED independently.** D12's
+  sentence conflates both denominators inside itself. Fixed at all three sites — D12's caveat and
+  **prohibitions 19 and 20**, which each repeat it.
+- **the shuffled-only caveat.** D12 says *"rank 1 of 13 (floor 0.0769) TRAIN and rank 1 of 9
+  (floor 0.1111) VALIDATION, i.e. INCONCLUSIVE on its own, both splits"*. Those are the n34/n30
+  subfamilies. **At n46 it is rank 1 of 25 on BOTH splits, floor 0.0400 ≤ alpha — it CERTIFIES on
+  its own on both.** ⚠ **This is the only dead figure found so far that is CONSERVATIVE: it
+  understates the claim.** Recorded for that reason — an audit that only ever finds errors in the
+  flattering direction is not auditing, and this one does not.
+- **source cell** cited the n34/n30 files for figures now read at n46. Fixed.
+
+**Claim table block A30 extended from 4 rows to 10.** All ten are in it because I re-derived them.
+
+### 3. What was NOT established
+
+⛔ **That the remaining leads are real.** Ten candidates are still open and **unverified by me** —
+D13 (L30), D15 (L104), D16 (L105), D21 (L251), D22 (L252), D23's caveat cell (L512), D24 (L513),
+D17 (L106), D32 (L801), prohibition 24 (L139-145). A verification fan-out was running when this
+entry was written and **its results are not in it**; nothing it returns enters A30 without my own
+re-derivation, which is the rule S-411 set and the reason A30 is trustworthy at all.
+⛔ **No verdict changed.** D12's verdict, and every verdict in the file, is exactly as published.
+The corrections move key counts, floors, a denominator and one caveat's direction — not one
+rank, not one p, not one PASS.
+⛔ **Nothing measured on any held-out axis. No GPU. TEST untouched.**
+
+**NEXT:** the ten open leads, in the order above; prohibition 24 is the interesting one, because
+there the BAN survives while its stated REASON is dead — the inverse of prohibition 29, and it
+fails safe rather than dangerously.
+
+`git push` remains credential-blocked. Committed locally.
