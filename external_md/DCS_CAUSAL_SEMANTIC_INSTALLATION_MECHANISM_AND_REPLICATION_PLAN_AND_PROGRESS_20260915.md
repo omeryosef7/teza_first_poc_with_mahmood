@@ -39382,3 +39382,68 @@ untouched.**
 been read by anyone but its author.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-445 — "which artefacts have I never opened?" is not measurable from text, and finding that out took three attempts
+
+**2026-09-25. Queue empty, no GPU.** S-444 established that **one unopened file produced two separate
+errors eleven ticks apart**, and the obvious follow-up was to ask which other artefacts are
+unopened. **The question turned out not to be answerable the way I asked it.** A review of §M.9 was
+launched in parallel and had not returned.
+
+### 1. Three attempts, two of them wrong, and the second was wrong for a reason I invented
+
+```
+1. "does the full basename appear in log/draft/claim table?"  -> 10 NEVER NAMED
+   Includes DCS_CSI_PR020_ARGMAX_TEST_basket_8heads_validation.json, which I have opened
+   in at least three entries this week. So the detector is wrong.
+2. HYPOTHESIS: line-wrapping breaks basenames across lines. Stripped ALL whitespace and re-ran.
+   -> IDENTICAL 10. The hypothesis was WRONG and the re-run disproved it.
+3. READ what the log actually writes:  `DCS_CSI_PR020_ARGMAX_TEST_...json`
+   and the claim table:                `..._ARGMAX_TEST_...json`
+   The artefacts ARE referenced -- ABBREVIATED WITH ELLIPSES, by my own convention.
+```
+
+⚠ **That is the eleventh detector failure of this sprint, and the second time in it I have proposed
+a cause and been refuted by my own re-run.** The fix was the same as every previous time: **read
+what the text actually says.** ⚠ **And the premise was wrong too** — "named in the log" was never
+the same as "opened". I opened files this session without naming them; the audit measured my
+citation habits.
+
+### 2. The salvageable question, and its answer
+
+*"Which published artefacts are referenced NOWHERE?"* is measurable if matching survives
+abbreviation — any contiguous 18-character slice of the basename:
+
+```
+published CSI artefacts                                     79
+referenced in log, claim table or draft                     78
+referenced NOWHERE                                           1   reports/DCS_CSI_POWER.json
+```
+
+**`DCS_CSI_POWER.json` is a day-one artefact** (committed 2026-09-15, entries DCS-CSI-002..006): a
+domain-unit power/MDE analysis, α 0.05, power target 0.8, exact sign-flip randomisation over
+domains. ⚠ **It is for the BEHAVIOURAL (native refusal) endpoint — not `y_install`**, which is what
+every claim in this sprint measures. So it is an orphan of a different endpoint, not a mislaid
+result: nothing cites it because nothing in the CSI line uses that endpoint.
+
+📌 **The useful finding is the denominator, not the orphan: 78 of 79 published artefacts support a
+recorded claim.** The corpus is well-referenced, and that is worth stating because the sweep was
+launched expecting otherwise.
+
+### 3. What was NOT established
+
+⛔ **That 78 are correctly used** — only that they are referenced. **Reference is not verification**,
+and S-438 is the standing counter-example: D33's artefact was cited in the claim table for eleven
+ticks while I had never opened it and reported its experiment as another's.
+⛔ **That `DCS_CSI_POWER.json` should be cited.** It may be correctly unused. I did not audit its
+contents beyond establishing which endpoint it analyses.
+⛔ **That "unopened" is now knowable.** It is not, from text. The only reliable signal remains what
+S-438 and S-444 used: **notice when a claim rests on a file whose contents you cannot recall.**
+⛔ **No published number, claim or verdict moved.** ⛔ **No GPU, no arm, no code change. TEST
+untouched.**
+
+**NEXT:** the §M.9 review.
+
+`git push` remains credential-blocked. Committed locally.
