@@ -270,7 +270,7 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | any rung-2/3/4 **CLAIM** for a result here | every certified claim is rung 1 — but naming rung 2 as *unreached* is required, not forbidden, so the ban is on the claim and not the vocabulary | AM-34 |
 | "correcting" either 1.52e-04 | `(1/9)^4 = (1/3)^8 = 1/6561` — two real quantities, one value | [†] §4 |
 | ‼ "floor above α ⇒ CANNOT ANSWER, never FAIL" | true only at K < 3; at K ≥ 3 it is a FAIL with an unwinnability warning — and the sentence is **still live in both published artefacts**, so it can be re-imported from a source an editor will read | AM-45 (S-428), §M.6 |
-| ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | §1–§4 are the CELL-level part and §H the HEAD-level part; **the axis / necessity / dissociation families (D12–D31) are in NEITHER** — see SCOPE | D12–D31, SCOPE |
+| ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | §1–§4 are the CELL-level part and §H the HEAD-level part; of the axis / necessity / dissociation families (D12–D31) **only D18/D19/D23/D24/D29 are drafted, as §A — EIGHTEEN rows remain in neither** — see SCOPE | D12–D31, SCOPE |
 | "deduplicating" the two 0.012346s | D39's certified conditional (§2) and D38's forbidden binomial (§4) are **both exactly 1/81** — one is a result, one is banned | D39, D38, §4 |
 | ‼ "TEST is unspent / untouched / available" | read to completion 2026-09-08 and selection-contaminated | AM-39, D5 |
 | "the screen is a validated cell selector in general" | forbidden for **both** D39 and D40, not just D39 | D39, D40 |
@@ -294,7 +294,7 @@ checklist attached to the prose rather than in a reviewer's head.
 
 **Added S-419.** Every definition below is quoted or derived from the frozen prereg
 `configs/dcs_csi_pr020_cell_census_basket_8heads.json`, the frozen read `runargs/dcs_csi_pr020_read.txt`,
-or an arm's own `RUNMETA.json` — **not from memory and not from an earlier log entry**. Where the
+or an arm's own `RUNMETA.json` — **except §M.8, derived from `configs/dcs_csi_pr010/011/012/013_*.json`** — **not from memory and not from an earlier log entry**. Where the
 prereg discloses a weakness in its own machinery, that disclosure is reproduced here rather than
 left in the config.
 
@@ -510,8 +510,9 @@ recorded while the direction that would confirm it is not.
 
 ## M.8 The HEAD-level machinery (§H)
 
-§M.1–§M.7 describe the cell-level families. §H uses a different arm vocabulary and a different
-decision rule, and neither was defined above.
+§M.1–§M.7 describe the cell-level families. §H uses a different CONTROL vocabulary and a different
+decision rule, neither defined above. ⚠ Two names for one intervention: **`SINGLE_hh` is §M.3's
+`HD_<h>` under PR-CSI-012's naming** — the same nine band cells of one head.
 
 | arm | what it is, from `configs/dcs_csi_pr010_head_causal_basket.json` and `..._pr012_...` |
 |---|---|
@@ -522,7 +523,14 @@ decision rule, and neither was defined above.
 | `HD_RAND00..19` | the 20 dose-matched control sets. ⚠ **Drawn from `control_pool`, the candidate's 24-head COMPLEMENT** — the restriction H.1 carries and H.1b lifts |
 | `SINGLE_hh` | one head, for every `h` in 0..31 — the census H.2 reads |
 | `LOO_hh` | `HD_TOPK` minus head `h` — the leave-one-out marginals |
-| `BT_*` | the same shapes on BUTTON (`BT_SINGLE` = head 2 alone, `BT_KO` = all 32, `BT_CTRL_*` = the 20 controls) |
+| `HD_ALL32_00..19` | the 20 controls of **PR-CSI-011** (`seed_base` 20261001), drawn from **ALL 32** band heads — the family §H.1b reads, and the one that lifts the complement restriction |
+| `BT_*` | BUTTON: `BT_SINGLE` = head 2 alone, `BT_KO` = all 32. ⚠ **`BT_CTRL_*` are 20 SINGLE heads** drawn from the 31 other than head 2 — singleton controls for a singleton candidate, **not** `HD_RAND`'s 8-head sets |
+
+⛔ **PR-CSI-012 (the census — `SINGLE_hh`, `LOO_hh`) is EXEMPT FROM THE RANK TEST BY DESIGN**, and
+its prereg says so in a field of its own: *"There is NO candidate, NO control family, NO rank and NO
+p-value in this preregistration"* — a rank among the 8 `HD_TOPK` singletons would carry a floor of
+**1/8 = 0.125** and could never clear α, so `control_prefix` and `n_controls` are **absent on purpose**
+so the rank tooling refuses the file. The rule below governs PR-CSI-010, 011 and 013 only.
 
 **The rank test.** The candidate is ranked among its controls by effect, most negative first, with an
 **attainable floor of `1/(n_controls + 1)`**. At 20 controls that is `1/21 = 0.047619`. ⚠ **The
@@ -851,8 +859,12 @@ largely undrafted and SCOPE says so.
 **Why these two first:** D19 is the sprint's only bidirectional conjunction and D24 its
 matched-power dissociation — the two results most often leaned on elsewhere in the record. **Every
 figure below was verified by me against the artefacts earlier in this sprint** (S-412 for the basket
-ranks and subfamilies, S-413 for button TRAIN, S-425 for the held-out button cell, S-425/S-430 for
-the necessity direction and its 7.8 %), not read off the claim table for this draft.
+ranks and the **shuffled-only** subfamily, **S-416** for button TRAIN, **S-413** for the held-out
+button cell, S-430 for the necessity candidate and its 7.8 %, S-425 for the necessity floor).
+⚠ **Two of those citations were wrong in the first version and are corrected here** — S-413 verified
+the *held-out* cell, not TRAIN, and S-425 mentions button nowhere. ⚠ **And the blanket "every
+figure" was too broad:** the point estimates and domain sign-counts were read from the artefacts
+**for this draft**, not re-derived in any earlier entry.
 
 ## A.1 The same direction is top-of-family in BOTH directions (D18, D19)
 
@@ -868,12 +880,20 @@ NECESSITY    KO_NEC_AXIS - NEC_BASE  -0.00852 [-0.01127, -0.00592]  55 of 67 dom
 ```
 
 🔴 **The two halves are NOT equally certified, and the conjunction must never be quoted as though
-they were.** Sufficiency passes at rank 1 of 47 with a floor of 0.0213. **Necessity is rank 1 of 9
-against an attainable floor of 0.1111 — above α — so it is INCONCLUSIVE by a ceiling declared before
-the first arm ran**, and §L.3 records that the family which would have fixed it can no longer run.
+they were.** Sufficiency passes at rank 1 of 47 with a floor of 0.0213 — ⚠ **but on TRAIN that cell
+is ALSO in-sample** (`evaluation_is_in_sample: true`, 67 of 67 scored domains in the fit); **only the
+VALIDATION cell is held out** (`false`, 0 in fit). **Necessity is rank 1 of 9
+against an attainable floor of 0.1111 — above α — so it is INCONCLUSIVE by a ceiling whose UNREACHABILITY
+was declared before the first arm ran** (⚠ the prereg declared the floor as **0.10**; the true floor
+at 8 controls is **0.1111** — AM-8's correction, not an advance figure), and §L.3 records that the family which would have fixed it — PR-CSI-003-A — is **built and patched
+but blocked by two of its own VOID conditions and never launched: escalated, not dead.** ⚠ *That is
+PR-CSI-004's status, not this one's, and §L.3 warns in terms against blurring them.*
 
-⛔ **Three clauses must travel with the necessity half every time: floor-limited, TRAIN-only,
-in-sample.** ⛔ **And the axis moves only 7.8 % [5.6, 10.1] of what whole-state removal moves —
+📌 **That the two directions use the SAME direction is MEASURED, not assumed:** the two arms load
+*different* basis files with different `basis_sha16`, and their `cand_rank1` tensors are
+**bit-identical**. The conjunction rests on this. ⛔ **Basket only** — nothing here was run on button,
+and §A.2 is the reason not to assume it transfers. ⛔ **Three clauses must travel with the necessity
+half every time: floor-limited, TRAIN-only, in-sample.** ⛔ **And the axis moves only 7.8 % [5.6, 10.1] of what whole-state removal moves —
 about 92 % of the effect is elsewhere.** ⛔ *"The axis is causal"* is forbidden unqualified; *"the
 axis is necessary"* is forbidden outright.
 
@@ -883,17 +903,26 @@ Same layer, same family size, same family composition, same procedure, same 67 T
 
 ```
 basket L18 TRAIN   +0.00264  [+0.00068, +0.00471]  44 pos / 23 neg of 67  rank  1 of 47  PASSES
-button L18 TRAIN   -0.00014  [-0.00111, +0.00081]  36 pos / 31 neg of 67  rank 36 of 47  DOES NOT PASS
+button L18 TRAIN   -0.00014  [-0.00111, +0.00081]  36 pos / 31 neg of 67  rank 36 of 47  DOES NOT PASS,
+                                                                                        CERTIFIED
+     ⚠ BOTH TRAIN cells are IN-SAMPLE (evaluation_is_in_sample: true, 67 of 67 in fit)
 ```
 
 **This removes "unequal control families" as the explanation of the dissociation, and nothing
 else** — it cannot say *why* the codewords differ.
 
-⚠ **The matched-power comparison proper is TRAIN vs TRAIN.** Basket's VALIDATION cell (+0.00401,
+⚠ **The matched-power comparison proper is TRAIN vs TRAIN** — ⚠ though the record notes this own-layer
+TRAIN cell as the **weakest** evidence in the dissociation set (its paired-domain Δz CI includes zero;
+matched-10 Fisher exact p = 0.1053), with the dissociation carried by the held-out split and the
+shared-layer comparison. Basket's VALIDATION cell (+0.00401,
 rank 1 of 47, 23 domains) is a **held-out strengthening and is NOT part of the power match** — *"the
 same 67 domains"* must never be said while pointing at it. ⚠ **Both sides now have a held-out cell
-and they are reported side by side, never pooled:** basket **rank 1 of 47**, button **rank 6 of 47**
-— so button's held-out cell is *not* the rank-36 of its TRAIN cell.
+and they are reported side by side, never pooled:** basket **rank 1 of 47**; button **+0.00218
+[+0.00030, +0.00406] at rank 6 of 47, rank p 0.1277 against a floor of 0.0213 — which DOES NOT
+PASS.** 🔴 **And by PR-CSI-007's own decision rule that means button's TRAIN result DOES NOT
+REPLICATE.** ⚠ *It is not "nearly significant", and nothing here says button's axis is or is not
+causal.* ⚠ Nothing pools this family's controls with TRAIN's — disjoint domains, and the two ran at
+different blobs.
 
 ⚠ **Basket's PASS sits EXACTLY at its attainable floor** (0.02128 against a floor of 0.0213) in both
 splits: a pass at the floor is a pass, but it has **no margin**. ⚠ **And basket's TRAIN rank 1 is

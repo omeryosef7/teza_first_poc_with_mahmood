@@ -39153,3 +39153,94 @@ untouched.**
 **NEXT:** the §A/§M.8 review's findings.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-442 — the §A/§M.8 review: I contradicted §L.3 in a sentence citing §L.3, and cited two sprint entries that say nothing of the kind
+
+**2026-09-25. Queue empty, no GPU.** 14 findings on the two newest sections. **Not one figure
+disagreed with its artefact** — the reviewer recomputed the subfamily ranks and domain sign-counts
+independently — **and every defect was a dropped caveat, a wrong citation or a contradiction.** I
+verified the load-bearing ones before acting.
+
+### 1. 🔴 §A.1 contradicted §L.3 while citing §L.3 as its authority
+
+```
+§L.3, L586:  "PR-CSI-003-A is not dead: it is escalated and waiting."
+§A.1, L873:  "§L.3 records that the family which would have fixed it can no longer run."
+```
+
+**That is PR-CSI-004's status applied to PR-CSI-003-A — the exact blur §L.3 warns against in terms,
+and which S-424 wrote §L.3 to prevent.** I reintroduced it eleven ticks later, in a sentence whose
+authority is the sentence it contradicts. Fixed.
+
+### 2. 🔴 Two of §A's four provenance citations point at entries that do not contain what I cited
+
+I wrote *"S-413 for button TRAIN, S-425 for the held-out button cell"*. Checked in the log:
+
+```
+S-413  verified the HELD-OUT button cell (button_validation_L18_n46, rank 6 of 47)
+S-416  verified button TRAIN (button_train_L18_n46, rank 36 of 47, 626 keys)
+S-425  mentions button NOWHERE -- it is the PR-CSI-003-A blocker check
+```
+
+**The citations were swapped and one was invented.** ⚠ **And the blanket was too broad**: *"every
+figure verified earlier in this sprint"* covered point estimates and domain sign-counts that **no
+cited entry re-derived** — they were read from the artefacts for this draft. Both corrected, with
+the error stated rather than quietly repaired. **The figures themselves are all correct**; the
+reviewer re-checked them and so had I. **A true claim with false provenance is still a false
+provenance claim**, and it is the sentence a sceptical reader tests first.
+
+### 3. 🔴 §A hid that the matched-power comparison is between two IN-SAMPLE cells
+
+Verified at the artefacts: `basket_train_n46` and `button_train_L18_n46` both carry
+`evaluation_is_in_sample: true` with **67 of 67 scored domains in the fit**; only the validation cell
+is `false / 0`. §A.1 attached "in-sample" to the **necessity** half alone — which affirmatively
+implies sufficiency is not — and §A.2 labelled basket TRAIN "PASSES" bare. **So §A.2's headline
+comparison is two in-sample cells and the draft never said so.** Now marked in both places.
+
+### 4. 🔴 §A.2 stated the fact of the held-out button cell and dropped its VERDICT
+
+I wrote *"button rank 6 of 47 — so button's held-out cell is not the rank-36 of its TRAIN cell"*,
+which places rank 6 beside basket's rank 1 with **no PASS/FAIL label** — the reading D29 forbids by
+name. From the artefact: **+0.00218 [+0.00030, +0.00406], rank 6 of 47, rank p 0.1277 against a floor
+of 0.0213 — DOES NOT PASS**, and by PR-CSI-007's own decision rule **button's TRAIN result does not
+replicate.** ⚠ **The reviewer gave this candidate's p as 0.0371; the artefact's `rank_p` is 0.1277,
+so I used what I read.** Also restored: it is not "nearly significant"; nothing pools the two
+families.
+
+### 5. 🔴 §M.8 put the census under a rank test its own prereg forbids
+
+PR-CSI-012 declares `NO_RANK_TEST` in a field of its own — *"There is NO candidate, NO control
+family, NO rank and NO p-value"*, with `control_prefix` and `n_controls` **absent on purpose so the
+tooling refuses the file**, because a rank over 8 singletons carries a floor of **1/8 = 0.125**.
+§M.8 listed `SINGLE_hh`/`LOO_hh` in its arm table and then described one head-level rank rule. **The
+census is the one head-level family deliberately outside it.** Now stated before the rule.
+
+Also in §M.8: **`BT_CTRL_*` are 20 SINGLE heads** drawn from the 31 others, not `HD_RAND`'s 8-head
+sets — "the same shapes" was wrong; **PR-CSI-011's `HD_ALL32_*` had no row at all**, in a table that
+names the restriction H.1b lifts; and **`SINGLE_hh` is §M.3's `HD_<h>` under another name**, two
+sections apart with no reconciliation.
+
+### 6. Also applied
+
+D19's *"the same direction"* is **measured** — two different basis files, bit-identical `cand_rank1`
+— which the conjunction rests on and §A.1 asserted without. The necessity ceiling: its
+**unreachability** was declared in advance; **0.1111 is AM-8's correction of a declared 0.10**, and
+§A.1 had merged the two. D21's record that the own-layer TRAIN cell is the **weakest** evidence in
+the dissociation set. Button TRAIN's **"certified"**. "Basket only." And the ‼ checklist row that
+still said D12–D31 are in neither part — **false since §A**.
+
+### 7. What was NOT established
+
+⛔ **That §A and §M.8 are now sound.** One review each; §1–§6 needed two and the second found what
+the first missed. ⛔ **Three smaller findings not applied**: §A has no Methods counterpart (§M
+defines none of `KO_AXIS`/`NEC_BASE`/the 46-control families — the same defect §M.8 was written to
+close, one section later); §M.8 omits `pr010`'s mandatory *"selection-contaminated"* label on TRAIN
+ranks and its `F ≥ 0.50` verdict leg. **Recorded, not fixed.**
+⛔ **No published number moved.** ⛔ **No GPU, no arm, no code change. TEST untouched.**
+
+**NEXT:** the three unapplied findings, §A's missing Methods counterpart first — it is the defect
+this review found me repeating one section after fixing it.
+
+`git push` remains credential-blocked. Committed locally.
