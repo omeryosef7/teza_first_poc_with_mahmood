@@ -35933,3 +35933,105 @@ NEXT     a decision that is mine to make and should be stated plainly rather tha
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-401 — 📌 **THE DECISION, MADE AND STATED: run design (b) on validation.** A rank statistic does NOT rescue the power, and I am stopping the search for one — three statistics tested on one train set is already the edge of p-hacking a discovery split (2026-09-25)
+
+### 1. A third statistic, tested and rejected on its merits
+
+S-400's binding problem was precision on `q` from 8 heads. The obvious escape is a statistic that
+uses more than one bit per head, so I tested the RANK of the predicted layer among the nine:
+
+```
+h4  rank 1    h6  rank 7    h10 rank 1    h11 rank 6
+h13 rank 7    h18 rank 2    h21 rank 3    h27 rank 1
+rank sum S = 28 over 8 heads   (H0: uniform 1..9, E[S] = 40, sd 7.30, mean rank 3.50 vs 5.0)
+EXACT one-sided p (enumerated over all 9^8 = 43,046,721 configurations) = 0.058186
+                                          -- against the BINARY statistic's 0.049998
+```
+
+**It does not help.** The rank test is more powerful against a uniform SHIFT; the train pattern is
+bimodal — three heads at rank 1, three at ranks 6-7 — i.e. *some heads match and others do not*,
+which is the alternative the binary statistic already handles. More information per head buys
+nothing when the information is concentrated.
+
+⛔ **And I am stopping here.** That is three statistics evaluated on one train set (argmax,
+within-layer, rank sum). Continuing until one produces a pleasing train p, then carrying it to
+validation, inflates the effective alpha no matter that train is the discovery split. **The
+discovery split licenses choosing a DESIGN; it does not license choosing the design that scored
+best.** S-400 chose (b) on FIDELITY to the screen's claim, with (a) scoring better and declined
+for that reason, and that choice stands.
+
+### 2. 📌 THE DECISION: run it
+
+```
+                    q=0.375        q=0.500        q=0.755      (the CI: [0.085, 0.755])
+power                0.1446         0.3054         0.7374
+PPV of a PASS, prior 0.3    0.55           0.72           0.86
+PPV of a PASS, prior 0.5    0.74           0.86           0.94
+cost of the validation read: 230 x 1.186 s = 4.5 MINUTES of measurement
+competing uses of the rung-2 validation axis: NONE
+```
+
+**Reasoning, so it can be disputed rather than assumed:**
+
+```
+FOR   the axis has NO alternative use. S-374 closed the cell-census direction, and the rung-1
+      validation cells are already read (D40). Declining to spend it does not preserve it for a
+      better question -- there is no better question queued.
+FOR   a PASS is interpretable. Even at the point estimate the PPV is 0.55-0.74, and train raises
+      the prior above a coin flip: 3 of 8 against a 1/9 baseline.
+FOR   it costs 4.5 minutes of measurement. The expensive part is a model load that is charged
+      whatever is run.
+FOR   a NULL is already fenced IN THE PREREG, not in a discussion afterwards: the power table is
+      frozen into it and MUST_NOT_BE_SAID_IF_NULL forbids reading it as "not readable".
+AGAINST  an underpowered confirmatory test is bad practice, and 14% at the point estimate is
+      underpowered by any standard. This is REAL and is why the power table must be prominent.
+AGAINST  it forecloses option (c) -- a different instrument reading at the layer's own residual --
+      because that would want the same axis. ⚠ But (c) is speculative: the depth asymmetry is
+      PHYSICAL (a layer-6 head's output passes through 25 more blocks), and (b) already corrects
+      it statistically to 1.40x. There is no evidence (c) would do better and it is a build.
+```
+
+**Decision: RUN design (b) on validation**, with the power table and the null-fence frozen into the
+prereg, and with the disclosure that the statistic was chosen after seeing train.
+
+⚠ **I have gone back and forth on this more than once.** Recording the arithmetic rather than the
+feeling is the point: the numbers above are what the decision rests on, and a reader who weighs the
+AGAINST column more heavily should reach the other answer and is entitled to.
+
+### 3. What must be in the prereg because of this entry
+
+```
++ the statistic was CHOSEN AFTER SEEING TRAIN, from three candidates, on a fidelity criterion --
+  and the one that scored best was declined. This is disclosed, not buried.
++ q_hat = 3/8 with its exact 95% CI [0.085, 0.755], and the power at all three points.
++ K = 8 is the WHOLE admissible population (S-374), so q's precision cannot be improved by
+  measuring more prompts -- only by heads that do not exist.
++ the layer-normalisation is part of the STATISTIC and must be frozen with it: leave-one-out mean
+  of the other heads at that layer.
+```
+
+### 4. What was NOT established
+
+```
+- NOTHING MEASURED THIS TICK. Three statistics were computed on the TRAIN artefact already held.
+- NOT established: that (b) is the right design. It is the one chosen on a stated criterion from
+  a stated candidate set, which is the most a discovery split can give.
+- NOT established: that the rank statistic is worse in general. It is worse AGAINST THIS
+  ALTERNATIVE; against a uniform shift it would be better, and that is a property of the
+  alternative, not of the test.
+- NOT DONE: the reader, R36, the prereg. The decision unblocks them; it does not do them.
+```
+
+### 5. State
+
+```
+QUEUE    EMPTY.
+CHANGED  external_md/...20260915.md  +S-401 only.
+NEXT     (1) the pr016 refactor + the rung-2 reader (S-398's chosen option (a));
+         (2) R36 on the freeze script AND the reader; (3) emit, freeze the read; (4) launch.
+```
+
+`git push` remains credential-blocked. Committed locally.
