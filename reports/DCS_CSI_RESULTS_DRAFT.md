@@ -412,3 +412,75 @@ out on **codeword**; for the within-codeword replication (§3) it is held out on
 **There is no control family of arbitrary cells** in any family, because no admissible held-out
 axis exists — and restricting controls to one head's nine cells returns the 1/9 floor, which is
 above α for every attainable effect size.
+
+---
+
+# L. Limitations
+
+**Added S-423.** §5 states what the evidence *is*; this states what it **cannot become** without new
+data. Each item is a measured constraint, not a hedge, and names the measurement that fixes it.
+
+## L.1 Everything here is one rung
+
+Every certified claim is **RUNG 1 — NECESSITY**: ablation damage. Nothing reaches decodability,
+repair or transfer, and the ladder's own result is that the four are **separable**. §4 records the
+attempt on rung 2 and why it stopped. A reader who wants "this cell writes the codeword" is asking
+for rung 3 or 4 evidence that does not exist here.
+
+## L.2 There is no arbitrary-cell control, and the reason is structural
+
+No family in this sprint contrasts a nominated cell against **arbitrary** cells, so *"cell (L,h) is
+the writer"* is unavailable throughout. This is not an omission that more compute fixes: no
+admissible held-out axis exists, and restricting controls to one head's own nine cells returns the
+**1/9 = 0.111 floor**, which is above α at every attainable effect size.
+
+## L.3 🔴 Two results are PERMANENTLY floor-limited, and for the same reason
+
+Both are **top of their control family** and both families are **too small to certify that**:
+
+| result | outcome | floor | certifiable at α = 0.05? | the family that would have fixed it |
+|---|---|---|---|---|
+| necessity, basket | rank **1 of 9** | 0.1111 | **no** | PR-CSI-003-A — **BLOCKED by its own VOID 6, never launched** |
+| sufficiency, basket at **L20** | rank **1 of 11** | 0.0909 | **no** | PR-CSI-004 — **frozen, never run, and NO LONGER RUNNABLE** |
+
+PR-CSI-004 required all 53 arms to run one `score_behavior.py` blob; the 10 reused controls ran
+`e94258bd…`, the file is now `9562bdf9…`, and its 36 new arms never began (AM-46). **So "rank 1 of
+11, floor-limited" on the L20 cell is a permanent statement, not a provisional one**, and the same
+holds for necessity at rank 1 of 9. ⚠ **Neither is a negative result.** Each is the *best attainable*
+outcome in a family whose floor sits above α — the distinction §4 draws between a FAIL and a
+structural CANNOT ANSWER, here arriving through family size rather than through K.
+
+The escape in both cases is a fresh freeze that re-runs **every** arm on one current blob. Reusing
+archived arms is what made these unfixable in the first place.
+
+## L.4 Every head was chosen because it was live
+
+No family draws heads at random. PR-CSI-018's six were chosen because they were live **on button**;
+PR-CSI-020's eight because they were live **on basket**. The screen's per-cell prediction is
+therefore tested **only where there was something to find**, and nothing here licenses *"the screen
+is a validated cell selector in general"*. ⚠ And the **1.5 admission gate is frozen across three
+published families**, so it cannot be relaxed after the fact — which matters because the best
+unadmitted basket head sits at **1.400**, close enough that a reader may wonder, and far enough that
+moving the bar would reinterpret three published results at once.
+
+## L.5 The held-out axes differ between the two positive results, and conflating them overstates both
+
+**§2 (D39) is held out on CODEWORD. §3 (D40) is held out on SPLIT only.** They are not two
+independent confirmations of the same thing, and **three of D40's eight heads were disclosed before
+the read as a replication** of predictions already tested in §2 — not an independent draw.
+
+## L.6 Two axes are closed by contamination, not by design
+
+**TEST** is never touched here, and it is also **not available**: read to completion on 2026-09-08
+and selection-contaminated on knobs every family inherits. **The SOURCE question** — whether the
+demonstrations supply the installed content — has **no confirmatory instrument**: the mass
+measurement licenses a **refutation reading only**, and a null control there is *confounded*, to be
+reported as CANNOT ANSWER and never as support.
+
+## L.7 What reproducibility does and does not buy
+
+§6 shows both published reads replay from their landed artefacts, including under a later reader
+refactor. **That tests the reader, not the arm** — it re-reads the same arms, strengthens no p, and
+a deterministic replay of a wrong arm is still wrong. ⚠ Relatedly, the **bootstrap parameters were
+command-line defaults frozen retroactively** (§M.4), so they are a convention that became a
+commitment rather than a commitment from the start.

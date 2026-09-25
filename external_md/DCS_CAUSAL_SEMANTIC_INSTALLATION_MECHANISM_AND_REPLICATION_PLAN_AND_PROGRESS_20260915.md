@@ -37784,3 +37784,79 @@ I did not look for one.
 from §5 — and AM-46 is now a limitation worth stating there.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-423 — the prereg sweep completes AM-46's generalisation, and TWO results turn out to be permanently floor-limited for the SAME reason
+
+**2026-09-25. Queue empty, no GPU.** AM-46 came from generalising S-421's stale-pin refusal. The
+same move was available once more: **PR-CSI-004 is a frozen-but-never-executed prereg with a
+stranded prohibition — how many others are there?** This answers it, exhaustively, and the answer
+turned into a limitation worth writing down.
+
+### 1. The sweep, and my crude detector corrected before it was trusted
+
+All **20** CSI preregs checked. My first pass asked "does the prereg id appear in a report's first
+2 KB" and flagged **seven** as having no deliverable. **That detector is wrong** — PR-CSI-006's
+outcome is reported at length in D25/AM-10 and PR-CSI-007's in D29. Re-checked against the claim
+table, which is the authoritative record:
+
+```
+PR-CSI-002    RAN     its L20 sufficiency read exists; prediction_fixed_before_data "rank 1 of 11"
+PR-CSI-005    RAN     the CODEANCHOR gate-0d family
+PR-CSI-006    RAN     D25 / AM-10 report its measured ranks
+PR-CSI-007    RAN     "has COMPLETED, 54 of 54" (D29)
+PR-CSI-003-A  NEVER LAUNCHED -- and DOCUMENTED: "BLOCKED by its own VOID condition 6" (S-142)
+PR-CSI-021    NEVER READ     -- and DOCUMENTED: D41
+PR-CSI-004    NEVER RUN      -- and was UNDOCUMENTED until AM-46 yesterday
+```
+
+**Three preregs were never executed; two carried their own record and one did not.** PR-CSI-004 had
+**zero claim-table mentions** before AM-46 — the sweep is now exhaustive over CSI preregs and
+**turns up no second undocumented case.** Only PR-CSI-004 carries a standing prohibition.
+
+### 2. 🔴 The finding: two results are floor-limited, and the cause is identical
+
+Re-derived from the artefacts:
+
+```
+necessity, basket        rank 1 of  9   floor 0.1111   certifiable at .05?  NO
+sufficiency, basket L20  rank 1 of 11   floor 0.0909   certifiable at .05?  NO
+```
+
+**Both are top of their control family, and both families are too small to certify that.** And in
+both cases **the family that would have enlarged it never ran** — PR-CSI-003-A blocked by its own
+VOID 6, PR-CSI-004 unrunnable as frozen (AM-46). This was visible in neither row alone; it is
+visible only with the prereg sweep beside them.
+
+⚠ **Neither is a negative result**, and the draft now says so: each is the *best attainable* outcome
+in a family whose floor sits above α — the same FAIL-versus-structural-CANNOT-ANSWER distinction §4
+draws, arriving here through **family size** rather than through K. ⚠ **And the escape is the same
+for both:** a fresh freeze that re-runs **every** arm on one current blob. **Reusing archived arms
+is what made them unfixable**, which is the generalisable lesson and is now in §L.3.
+
+### 3. §L written
+
+`reports/DCS_CSI_RESULTS_DRAFT.md` is 486 lines with a **Limitations** section in seven parts: one
+rung only; no arbitrary-cell control and why it is structural; the two permanently floor-limited
+results; every head chosen because it was live, with the frozen 1.5 gate and the 1.400 near-miss;
+the different held-out axes of §2 and §3; TEST and SOURCE closed by contamination rather than
+design; and what reproducibility does not buy. **39 figures, all accounted for** against the claim
+table, prereg and frozen read, bar the two sourced from code and my own execution.
+
+### 4. What was NOT established
+
+⛔ **That PR-CSI-002/005/006/007 ran CLEANLY** — only that they ran and are reported. Their caveats
+are their own rows' business and I did not re-audit them here.
+⛔ **That the two floor-limited results would have certified at 46 controls.** Enlarging the family
+lowers the **floor**; it does not move the candidate's **rank**, and D12's own history shows a rank
+can move the wrong way when a family grows. **What is established is that they CANNOT certify as
+they stand, not that they would have.**
+⛔ **That no prereg outside `configs/dcs_csi_pr*.json` exists.** The sweep is over CSI preregs by
+filename convention; a family frozen under another name is invisible to it.
+⛔ **No GPU, no arm, no code change. TEST untouched.**
+
+**NEXT:** §L and §M have each had one pass by me and none by a reviewer; §L makes three claims
+about *unrunnability* that deserve an adversarial check before they go anywhere.
+
+`git push` remains credential-blocked. Committed locally.
