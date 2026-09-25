@@ -38017,3 +38017,78 @@ the escalation is the user's, and this tick only makes it decidable.
 a complete blocker list rather than a partial one.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-426 — PR-CSI-003-A's TEN VOID conditions, all evaluated: 8 satisfied, 2 violated, and the escalation is now DECIDABLE
+
+**2026-09-25. Queue empty, no GPU.** S-425 said the escalation should reach the user with a complete
+blocker list rather than a partial one. **This completes it.** Every condition was measured against
+the 13 arms already on disk, not read off the prereg's own assurances.
+
+```
+VOID  1  HARDWARE = RTX 3090                       SATISFIED   13/13 arms "NVIDIA GeForce RTX 3090"
+VOID  2  one GPU architecture                      SATISFIED   one model across all 13
+VOID  3  arms agree on bank/exclusion/layer/       SATISFIED   the ELEVEN compared arms all carry
+         positions/donor/basis                                 donor=ko, positions=query, one basis;
+                                                               NEC_BASE/NEC_KO differ BY DESIGN
+VOID  4  no VALIDATION or TEST domain              SATISFIED   13 x 67 TRAIN, zero val, zero test
+VOID  5  DONE.json ledger agrees with rows         SATISFIED   every ledger == actual row count,
+                                                               INCLUDING the three short arms
+VOID  6  score_behavior.py unchanged between arms  *** VIOLATED ***   blob moved (S-142, confirmed)
+VOID  7  both analysers unchanged between reads    *** VIOLATED ***   rederive moved (S-425)
+VOID  8  family/statistic/floor fixed before any   SATISFIED   config committed 13:39:33, read
+         candidate rank was seen                               14:39:08 -- from GIT, not self-report
+VOID  9  no arm run with --limit                   SATISFIED   limit: 0 (= none) + expect_n: 670
+VOID 10  distinct --out paths for the two reads    NOT YET APPLICABLE -- an instruction for a read
+                                                               that has not happened
+```
+
+**8 satisfied, 2 violated, 1 pending. Both violations are the SAME class** — code drift against a
+design that reuses archived arms, which is S-424's lesson arriving a second time.
+
+### 1. 🔴 My detectors were wrong TWICE more, in the same tick, and I caught both
+
+**VOID 9 first read as VIOLATED** because my check was `limit is not None` and every arm records
+`limit: 0`. **Zero means no limit**, and every arm also carries `expect_n: 670` — the condition is
+*satisfied*, and the sharpest possible way. **VOID 3 first read as VIOLATED** because I compared
+`rescue_donor` and `rescue_positions` across *all thirteen* arms; `NEC_BASE` and `NEC_KO` are the
+clean references and differ **by design**. Grouped correctly, the eleven compared arms agree.
+
+⚠ **That is the fourth and fifth detector error of this sprint** (S-422 md5-vs-blob, S-423
+prereg-id, S-425 `.jsonl` truncation, and these two). **Every one was caught by reading the
+underlying values before reporting, and every one would have been a confident false finding.**
+The rule I keep re-learning: **a detector's output is evidence about the detector until the
+underlying text is read.**
+
+### 2. Two results worth stating on their own
+
+✅ **VOID 5 is satisfied in the strongest sense.** The three short arms — `KO_NEC_RAND0` 669,
+`KO_NEC_RAND2` 666, `KO_NEC_RAND3` 669 — **report themselves honestly**: each `DONE.json` states
+exactly the row count on disk and flags `status: INCOMPLETE`. The ledger never claimed completeness
+it did not have. AM-6's *"an artifact's existence is not evidence it is complete"* is satisfied
+here by the artefacts themselves.
+
+✅ **VOID 4 measured rather than asserted: 13 arms × 67 TRAIN domains, zero validation, zero test.**
+The sprint's standing claim that TEST is untouched is, for this family, a measurement.
+
+⚠ **One honest gap: VOID 1 names compute capability 8.6, and these run dirs record
+`compute_capability: None`.** The check rests on the GPU model string. The condition's own field is
+not in the artefact, so VOID 1 is satisfied *on the evidence available*, which is weaker than the
+condition as written — the same shape as AM-14's finding that `git_dirty` records one direction
+only.
+
+### 3. What was NOT established
+
+⛔ **That the two violations are fatal.** They are violations of the conditions **as written**.
+Whether either could be discharged — by re-running the reused arms, or by a re-freeze that drops the
+reuse — is a **decision, not a measurement**, and it is the user's. ⛔ **I am not self-approving it**,
+and I have not amended a VOID condition to let the experiment proceed: that is the precise move
+S-142 refused and the reason this family has waited since.
+⛔ **VOID 10 is untestable now** and must be checked by the operator at read time.
+⛔ **No GPU, no arm, no code change. TEST untouched** — and now measured to be, for this family.
+
+**NEXT:** the escalation is decidable and needs no more work from me. Returning to the write-up:
+§L and §M have had one pass each and no external review.
+
+`git push` remains credential-blocked. Committed locally.
