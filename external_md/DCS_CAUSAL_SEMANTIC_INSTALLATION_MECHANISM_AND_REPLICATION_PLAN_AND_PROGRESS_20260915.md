@@ -39244,3 +39244,77 @@ ranks and its `F ≥ 0.50` verdict leg. **Recorded, not fixed.**
 this review found me repeating one section after fixing it.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-443 — the three unapplied findings closed, and writing §M.9 found a SECOND false sentence live in a published artefact
+
+**2026-09-25. Queue empty, no GPU.** S-442 recorded three findings and did not apply them. All three
+are applied here, and the last of them turned up something neither review had.
+
+### 1. §M.9 — §A had no Methods counterpart, the defect §M.8 was written to close
+
+§A introduced `KO_AXIS`, `KO_ORTH`, `KO_SELF`, `KO_FULL`, `NEC_BASE`, `KO_NEC_AXIS`, the 46-control
+shuffled+random family and three different attainable floors — **and §M defined none of it**, one
+section after §M.8 was added for exactly that reason in §H. New **§M.9**, written from
+`configs/dcs_csi_pr001_subspace_rescue.json` and `..._pr003_necessity_basket.json`:
+
+```
+KO_SELF   donor = SELF -- the intervention-mechanics identity control, which MUST be inert
+KO_FULL   whole-state CLEAN rescue -- the positive control AND the upper bound
+KO_ORTH   norm-matched ctrl_orth -- THE PRIMARY COMPARATOR
+floors    46 controls -> 1/47 = 0.0213 ; shuffled-only 1/25 = 0.0400 ; random-only 1/23 = 0.0435
+          NECESSITY has only 8 controls -> 1/9 = 0.1111, ABOVE alpha
+```
+
+⚠ **And the direction is orientation-dependent** — more POSITIVE is stronger for sufficiency, more
+NEGATIVE for necessity — which §A used without ever stating.
+
+### 2. §M.8's two omissions: a rank of 1 is NECESSARY AND NOT SUFFICIENT
+
+The prereg's verdict ladder needs **rank 1 of 21 AND `F ≥ 0.50` with ci95 excluding 0**, behind
+GATE 0 and **GATE 1** (`E(HD_KO) < 0` with ci95 upper below 0), whose failure is *"CANNOT ANSWER …
+do NOT report the candidate"*. §M.8 had described the rank component alone. Also restored: the
+prereg's **mandatory label on every TRAIN rank** — *"selection-contaminated, not an inferential
+statement"* — and that VALIDATION adjudicates with **one** preregistered test, with `HD_BOTK` outside
+the control distribution.
+
+### 3. 🔴 And a SECOND false-by-omission sentence is live in a published artefact
+
+`DCS_CSI_PR010_HEAD_validation.json` records:
+
+```
+VERDICT        "WE FOUND (part of) THE WRITER"
+REPORTABLE_AS  "8 head INDICES ... carry at least half of the A1 knockout's effect on installation
+                for basket -- for leg (i) of the circuit ONLY. NOT a claim about any single
+                (layer, head) cell."
+```
+
+**The prereg's branch is named `WE_FOUND_THE_WRITER` and its conditions WERE met** — rank 1 of 21,
+`F = 0.86351092` with ci95 [0.78710197, 0.94784347], so `F ≥ 0.50` excluding 0, verified. **The
+reader hedged the label at write time to "(part of)", which is not one of the prereg's four branch
+names.** ⚠ **But the sprint forbids "the writer" language throughout**, and the same file's
+`REPORTABLE_AS` gives the permitted form.
+
+📌 **This is the S-428 hazard class a second time: a string in a published artefact that a later
+editor will read and quote.** S-428's was false; this one is a *label* whose plain reading the
+record forbids. **Neither §H nor §A quoted it — but nothing was stopping them**, so it is now named
+in §M.8 and blocked by a ‼ checklist row. ⛔ **The artefact is NOT rewritten**, for the same reason
+as S-428: it records what was read.
+
+### 4. What was NOT established
+
+⛔ **That the verdict label is wrong.** It is the prereg's own branch, its conditions were met, and
+the reader already softened it. **What is established is that it must not be quoted as a claim** —
+`REPORTABLE_AS` is the claim, and it is three restrictions narrower.
+⛔ **That §M.9 is right.** It is one tick old, written by me, and unreviewed — the position §M.8 was
+in when its first review returned six findings.
+⛔ **That no third artefact carries a quotable-but-forbidden string.** Two have now been found, both
+by accident while writing about something else. **I have not swept for the class**, and a sweep
+would need to read verdict and prose fields across every published artefact.
+⛔ **No published number moved.** ⛔ **No GPU, no arm, no code change. TEST untouched.**
+
+**NEXT:** sweep the published artefacts for quotable-but-forbidden strings — two found by accident
+is enough to make looking on purpose worthwhile.
+
+`git push` remains credential-blocked. Committed locally.

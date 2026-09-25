@@ -271,6 +271,7 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | "correcting" either 1.52e-04 | `(1/9)^4 = (1/3)^8 = 1/6561` — two real quantities, one value | [†] §4 |
 | ‼ "floor above α ⇒ CANNOT ANSWER, never FAIL" | true only at K < 3; at K ≥ 3 it is a FAIL with an unwinnability warning — and the sentence is **still live in both published artefacts**, so it can be re-imported from a source an editor will read | AM-45 (S-428), §M.6 |
 | ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | §1–§4 are the CELL-level part and §H the HEAD-level part; of the axis / necessity / dissociation families (D12–D31) **only D18/D19/D23/D24/D29 are drafted, as §A — EIGHTEEN rows remain in neither** — see SCOPE | D12–D31, SCOPE |
+| ‼ quoting `VERDICT: "WE FOUND (part of) THE WRITER"` | it is a **verdict LABEL live in a published artefact**, not a claim; the permitted form is that file's `REPORTABLE_AS` — 8 head indices, at least half the effect, **leg (i) only**, **not** a claim about any cell | D32, §M.8 |
 | "deduplicating" the two 0.012346s | D39's certified conditional (§2) and D38's forbidden binomial (§4) are **both exactly 1/81** — one is a result, one is banned | D39, D38, §4 |
 | ‼ "TEST is unspent / untouched / available" | read to completion 2026-09-08 and selection-contaminated | AM-39, D5 |
 | "the screen is a validated cell selector in general" | forbidden for **both** D39 and D40, not just D39 | D39, D40 |
@@ -538,10 +539,52 @@ prereg states the consequence in advance and it is severe: this clears α = 0.05
 rank 2 gives `2/21 = 0.0952` and cannot clear at any data.** A head-level family of this size has
 exactly one passing outcome.
 
+⚠ **A rank of 1 is NECESSARY AND NOT SUFFICIENT.** The prereg's verdict ladder requires rank 1 of
+21 **AND `F ≥ 0.50` with a ci95 excluding 0**, behind two gates: GATE 0 (liveness, per arm) and
+**GATE 1** — `E(HD_KO) < 0` with its ci95 upper bound below 0 — whose failure is *"CANNOT ANSWER;
+report feasibility and STOP; do NOT report the candidate"*.
+
+⛔ **Every TRAIN rank must be printed with the words the prereg mandates: *"selection-contaminated,
+not an inferential statement"*** — the heads were chosen on TRAIN activations, so a TRAIN rank of 1
+is partly a restatement of the selection. **VALIDATION adjudicates with ONE preregistered test**, so
+no multiplicity correction is applied or needed, and `HD_BOTK` does **not** enter the control
+distribution.
+
+🔴 **AND THE ARTEFACT'S OWN `VERDICT` STRING MUST NEVER BE QUOTED.** `DCS_CSI_PR010_HEAD_validation.json`
+records `VERDICT: "WE FOUND (part of) THE WRITER"` — the prereg's branch is named
+`WE_FOUND_THE_WRITER` and its conditions were met, and the reader hedged it at write time. **The
+sprint forbids "the writer" language throughout**, and the same file's `REPORTABLE_AS` gives the
+form that is permitted: *"8 head INDICES … carry at least half of the A1 knockout's effect on
+installation for basket — for leg (i) of the circuit ONLY. NOT a claim about any single (layer,
+head) cell."* ⚠ **A verdict LABEL is not a claim**, and this label is live in a published artefact —
+the same hazard class as the floor sentence in §M.6.
+
 ⚠ **`|E(HD_BOTK)|` doubles as the NULL ANCHOR in §H.2** — a third use of a threshold, beyond the two
 §M.5 enumerates. It is the family's own opposite-end set, not an external bar.
 
-## M.9 What the design cannot do
+## M.9 The AXIS-level machinery (§A)
+
+§A uses a third vocabulary, defined in neither §M.3 nor §M.8. From
+`configs/dcs_csi_pr001_subspace_rescue.json` and `..._pr003_necessity_basket.json`:
+
+| arm | what it is |
+|---|---|
+| `BASE` / `KO` | no knockout / the A1 knockout with no rescue |
+| `KO_SELF` | knockout + whole-state rescue with **donor = self** — the intervention-mechanics identity control, which **MUST be inert** |
+| `KO_FULL` | knockout + whole-state **clean** rescue — the POSITIVE CONTROL and the upper bound |
+| `KO_AXIS` | knockout + the rank-1 installation axis (`cand_rank1`) — **the candidate** |
+| `KO_ORTH` | `ctrl_orth`, norm-matched to the candidate — **the PRIMARY COMPARATOR** |
+| `KO_SHUF*` / `KO_RAND*` | shuffled-label and random directions, norm-matched — the control family, grown to **24 shuffled + 22 random = 46** |
+| `NEC_*` / `KO_NEC_*` | the same shapes for the NECESSITY direction: `NEC_BASE` clean, `NEC_KO`, `KO_NEC_AXIS` the candidate, `KO_NEC_SHUF0-3` / `KO_NEC_RAND0-3` the 8 controls. ⚠ The `NEC_` prefix is **load-bearing**: a second complete directory under one tag is the tag ambiguity an earlier entry had to untangle |
+
+**The rank test is the same shape as §M.8's, with different arithmetic.** Direction is
+orientation-dependent: **more POSITIVE is stronger for sufficiency, more NEGATIVE for necessity**.
+At 46 controls the attainable floor is `1/47 = 0.0213`; the subfamilies carry their own floors,
+**shuffled-only `1/25 = 0.0400`** and **random-only `1/23 = 0.0435`**. ⚠ **The necessity family has
+only 8 controls, so its floor is `1/9 = 0.1111` — above α** — which is why §A.1's necessity half
+cannot certify at any data and §L.3 records the extension that would have fixed it.
+
+## M.10 What the design cannot do
 
 The screen is fitted on **basket TRAIN**. For the cross-codeword family (§2) the prediction is held
 out on **codeword**; for the within-codeword replication (§3) it is held out on **split only**.
