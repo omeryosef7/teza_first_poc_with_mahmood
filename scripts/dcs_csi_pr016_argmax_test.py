@@ -268,10 +268,23 @@ def main():
                 % (_gating,)),
             "GATING_FLOOR": {
                 "name": _floor_name, "p": _floor_p, "parts": _floor_parts,
+                # ⚠ S-428: THIS STRING WAS FALSE AT K >= 3 AND IT SHIPPED IN TWO PUBLISHED
+                # ARTEFACTS. It asserted UNCONDITIONALLY that a floor above alpha yields "CANNOT
+                # ANSWER (structural), never FAIL". The verdict module rejects exactly that rule --
+                # its own comment: "MY FIRST ATTEMPT AT THIS GUARD KEYED ON THE FLOOR ALONE AND WAS
+                # WRONG ... the floor ... CHANGES THE VERDICT NOWHERE the prereg has spoken."
+                # Executed at K=4, M=0, floor 1.0 > alpha: the verdict is FAIL, with the
+                # unwinnability warning APPENDED -- not CANNOT ANSWER. The claim is true
+                # only at K < 3, where the prereg defines no adverse verdict. Stated conditionally
+                # now. Same class as S-421: a false sentence inside a verdict artefact.
                 "WHAT_THIS_IS": "the p the gating statistic would report on a PERFECT result at "
-                                "the realised K and admitted multiset. If it exceeds alpha the "
-                                "read was unwinnable before the data and the verdict is CANNOT "
-                                "ANSWER (structural), never FAIL. (R30-B/S-332)"},
+                                "the realised K and admitted multiset. Where it exceeds alpha the "
+                                "read was unwinnable before the data. It NEVER changes the verdict: "
+                                "at K >= 3 a gating p above alpha is a FAIL and this floor is "
+                                "reported beside it with an explicit unwinnability warning so the "
+                                "FAIL is not cited as evidence against the screen; only at K < 3, "
+                                "where the prereg defines no adverse verdict, is the outcome "
+                                "CANNOT ANSWER (structural). (R30-B/S-332, corrected S-428)"},
         },
         "matching_layers": (["L%d" % L for L in span] if span is not None else None),
         "spanning_rule_satisfied": (spanning_ok if (span is not None and verdict in

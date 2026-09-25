@@ -66,6 +66,21 @@ def test_PR_CSI_020s_published_read_still_reproduces(tmp_path):
     for k in ("VERDICT", "K_admitted", "M_matches", "p_one_sided", "gating_p_name", "gating_p",
               "why", "matching_layers", "spanning_rule_satisfied"):
         assert a[k] == b[k], "%s MOVED: %r -> %r" % (k, a[k], b[k])
+    # ⚠ S-428, THE ONE NAMED EXCEPTION, AND IT GATES MORE THAN IT EXCLUDES. The published artefact
+    # carries a GATING_FLOOR.WHAT_THIS_IS sentence that is FALSE at K >= 3 -- it claimed a floor
+    # above alpha yields "CANNOT ANSWER (structural), never FAIL", which the verdict module rejects
+    # by name. The PUBLISHED FILE IS NOT REWRITTEN: it records what was read, and AM-45's
+    # byte-identity claim rests on it. So this one prose field is compared by CONTRACT rather than
+    # by equality -- the old text must be gone from the new output and the corrected text present.
+    _old_gf = a["ROBUSTNESS"].pop("GATING_FLOOR")
+    _new_gf = b["ROBUSTNESS"].pop("GATING_FLOOR")
+    for _k in ("name", "p", "parts"):
+        assert _old_gf[_k] == _new_gf[_k], "GATING_FLOOR.%s MOVED: %r -> %r" % (
+            _k, _old_gf[_k], _new_gf[_k])
+    assert "never FAIL" in _old_gf["WHAT_THIS_IS"], "the published artefact no longer carries the " \
+        "false sentence this exception exists for -- delete the exception"
+    assert "never FAIL" not in _new_gf["WHAT_THIS_IS"]
+    assert "NEVER changes the verdict" in _new_gf["WHAT_THIS_IS"]
     assert a["ROBUSTNESS"] == b["ROBUSTNESS"], "ROBUSTNESS moved"
     for x in (a, b):
         # ⚠ these three record the INVOCATION, not the verdict: a timestamp and the two input
@@ -120,3 +135,30 @@ def test_s421_structural_K_lt_3_sentence_matches_the_arithmetic():
     d2 = V.decide(rows2, band, 0.05, "weakest_of_three", "PR-CSI-020")
     assert d2["verdict"] == "CANNOT ANSWER"
     assert "> alpha" in d2["why"] and "NO outcome could have certified" in d2["why"]
+
+
+def test_s428_gating_floor_prose_does_not_claim_the_floor_changes_the_verdict():
+    """S-428: the emitted GATING_FLOOR text asserted "CANNOT ANSWER (structural), never FAIL"
+    unconditionally, and SHIPPED that way in D39 and D40.
+
+    The verdict module rejects that rule by name. At K >= 3 a gating p above alpha is a FAIL with
+    the floor reported beside it; CANNOT ANSWER (structural) is reached only at K < 3. Fails on the
+    pre-S-428 string."""
+    src = open(os.path.join(ROOT, "scripts", "dcs_csi_pr016_argmax_test.py"), encoding="utf-8").read()
+    i = src.find('"WHAT_THIS_IS"')
+    assert i > 0, "the GATING_FLOOR WHAT_THIS_IS field is gone"
+    blob = src[i:i + 1200]
+    assert "never FAIL" not in blob, "the emitted prose still claims the floor overrides a FAIL"
+    assert "NEVER changes the verdict" in blob
+    assert "only at K < 3" in blob
+
+    # and the behaviour the prose must match, executed
+    spec = importlib.util.spec_from_file_location("_v_s428", SHARED)
+    V = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(V)
+    band = list(range(6, 15))
+    rows = [{"head": h, "screen_predicted_layer": p, "argmax_layer": a,
+             "argmax_is_a_TIE": False, "COUNTED_IN_M": False}
+            for h, p, a in ((1, 6, 7), (2, 8, 9), (3, 10, 11), (4, 12, 13))]
+    d = V.decide(rows, band, 0.05, "weakest_of_three", "PR-CSI-020")
+    assert d["verdict"] == "FAIL", "K>=3 with the floor above alpha must FAIL, not CANNOT ANSWER"

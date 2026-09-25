@@ -38160,3 +38160,80 @@ the draft's *description* of it that was wrong. Every E, rank and p stands.
 **NEXT:** the §L review's findings when they land.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-428 / REVIEW R38 — a FALSE sentence SHIPPED in both published verdict artefacts, and §M had copied it
+
+**2026-09-25. Queue empty, no family in flight, no GPU.** The §L review returned with 8
+cross-section findings. **Every load-bearing one was re-verified by me, three by executing
+`decide()`.** One is serious enough that it is the entry's title.
+
+### 1. 🔴 The defect: a false sentence, in the code, in §M, and in TWO PUBLISHED ARTEFACTS
+
+`ROBUSTNESS.GATING_FLOOR.WHAT_THIS_IS` is emitted by the reader and reads:
+
+> *"…If it exceeds alpha the read was unwinnable before the data and the verdict is CANNOT ANSWER
+> (structural), **never FAIL**."*
+
+**That is false at K ≥ 3**, and the verdict module rejects exactly that rule **by name**: *"MY FIRST
+ATTEMPT AT THIS GUARD KEYED ON THE FLOOR ALONE AND WAS WRONG … the floor … CHANGES THE VERDICT
+NOWHERE the prereg has spoken."* Executed at K=4, M=0, floor 1.0 → **FAIL**, with the unwinnability
+warning *appended*. It is true only at K < 3. **And it shipped verbatim in `DCS_CSI_PR018_ARGMAX_…`
+and `DCS_CSI_PR020_ARGMAX_…`** — I read it out of both files.
+
+⚠ **§M.6 had copied it faithfully from the artefact.** A methods section written from an artefact
+inherits the artefact's errors, which is an argument for writing methods from the **code** — the
+rule S-420 adopted, applied here one section too late.
+
+**Fixed:** the emitter now states the rule conditionally; **a test gates it** (fails on the
+pre-fix string *and* executes the K=4 case); §M.6 rewritten.
+
+🔴 **The published artefacts are NOT rewritten.** They are the record of what was read, AM-45's
+byte-identity rests on them, and rewriting a read after the fact is what VOID 12 forbids. Disclosed
+in **AM-45** instead. ✅ **The field decided nothing** — both families PASSED and neither reached the
+branch the sentence describes; no K, M, p or VERDICT moves.
+
+### 2. Two guards fired at me while fixing it, and both were right
+
+**(a)** The reproduction test `a["ROBUSTNESS"] == b["ROBUSTNESS"]` broke, because correcting the
+prose changes the artefact. I did **not** widen it: the one field is now compared **by contract** —
+the old text must be *absent* from new output, the corrected text *present*, and `name`/`p`/`parts`
+still equal — and the exception is named in the test with the reason. It now gates **more** than
+before. **(b)** `test_the_verdict_is_defined_ONCE` then fired because my replacement text contained
+the literal branch marker `STRUCTURALLY UNWINNABLE`, which must live only in the shared module —
+the S-350 drift guard. Reworded; the marker is now in one file, confirmed by count.
+
+### 3. The §L findings I verified and applied
+
+🔴 **The most serious was an OMISSION, and the reviewer was right to rank it above the overstatements:
+L.3 presented both floor-limited results as if family size were the only barrier.** Verified at the
+artefacts: **both are TRAIN-only and IN-SAMPLE**, `evaluation_is_in_sample: true` with
+`scored_domains_also_in_fit: 67` on **every arm of both reads**. The fresh freeze L.3 proposes fixes
+the floor and **not** the in-sampleness. In a limitations section, understating is as bad as
+overstating.
+
+Also applied: §4's *"on button the ceiling is K = 2"* had **no antecedent** and contradicted §2's
+K=6 — it is the same eight-head *basket* set measured on button, not §2's button-selected six;
+**"VOID 6" named two unrelated conditions** 90 lines apart (PR-CSI-020's tie condition in §M.6,
+PR-CSI-003-A's blob condition in §L.3) and is now disambiguated; **"2 of the 82 arms" is 1** — the
+gate's source says *"the two BASE arms"*, but `*_KO` **is** checked by the `ALL`-plus-no-cell-list
+conjunction, so only the clean base is unchecked; L.3's escape hatch needed *"and carries the full
+extension"* (33 arms for necessity, 53 for L20) because re-running the existing arms alone leaves
+the floor at 0.1111; L.3 now carries PR-CSI-003-A's **second** stranded condition; L.7 now carries
+the necessity re-derivation's non-reproducibility; and L.1 no longer gives a rung reason for a
+prohibition the claim table justifies on control design.
+
+### 4. What was NOT established
+
+⛔ **That §L's remaining omissions are closed.** The reviewer listed ten; I applied the ones I
+verified. **Still open and named for the next tick:** D40's binomial null measured at ~0.1625 vs 1/9
+belongs in L.5; AM-38's *"the screen ranks heads poorly — 6th of 32 for the strongest head"* and
+D37's heads **selected on the split the census reads** belong in L.4; **domain generality** (every
+cell family reads the SAME 23 domains) and **head coverage** (at most 8 of 32) appear nowhere in §L.
+⛔ **That the reviewer's other claims are all right.** I applied what I checked.
+⛔ **No published number moved.** ⛔ **No GPU, no arm. TEST untouched.**
+
+**NEXT:** the four §L omissions named above.
+
+`git push` remains credential-blocked. Committed locally.

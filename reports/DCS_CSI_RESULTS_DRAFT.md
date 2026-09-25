@@ -121,7 +121,9 @@ forbidden — null on button is CANNOT ANSWER, not a negative.
 **Rung 2 was attempted and is not reachable (D41).** Decodability was built, reviewed, executed and
 piloted, then **closed without a validation read, by decision**. Four measurements: K = 8 is the
 *whole* admissible population (0 of 7 fresh basket heads clear the frozen 1.5 gate, best 1.400; on
-button the ceiling is K = 2); the natural statistic is **confounded** — the direct-path projection
+button **this same eight-head basket set** tops out at K = 2 — head 10 at 1.45, head 21's ci95
+crossing zero, heads 4/13/18 never measured there — ⚠ **not the six BUTTON-selected heads §2
+admitted**, a different pool); the natural statistic is **confounded** — the direct-path projection
 puts all 8 raw argmaxes in the top three of nine layers, P = (1/3)^8 = 1.524158e-04 [†]; a
 layer-normalised statistic removes the confound and gives **M = 3 of 8 on train**; at that rate
 **power is 0.1446**, and the PPV of a PASS is **0.24 / 0.42 / 0.55** at priors 0.10 / 0.20 / 0.30.
@@ -370,10 +372,14 @@ the three, each named; quoting the binomial alone is forbidden.**
 
 **The FAIL / CANNOT-ANSWER boundary is preregistered, and §4 rests on it.** The reader computes
 each statistic's **floor** — the p it would report on a *perfect* result at the realised K and
-admitted multiset. A p above α is a **FAIL** at K ≥ 3, but where the floor itself exceeds α **no
-outcome could have certified**, and the verdict is **CANNOT ANSWER (structural)** rather than
-evidence against the screen. At K < 2 the same applies. This is why a family that cannot win is not
-reported as a loss.
+admitted multiset. 🔴 **The floor NEVER changes the verdict.** At **K ≥ 3** a gating p above α is a
+**FAIL whatever the floor**, and where the floor also exceeds α the verdict carries an explicit
+unwinnability warning beside it, so the FAIL is not cited as evidence against the screen. Structural
+**CANNOT ANSWER** is reached only at **K < 3**, where the prereg defines no adverse verdict at all.
+⚠ **The opposite rule — floor above α ⇒ CANNOT ANSWER — was tried and REJECTED in the code**, whose
+own comment records why: *"Deciding after the fact that a preregistered FAILURE is really a
+non-answer, because its floor is unflattering, is the post-hoc move this sprint exists to forbid."*
+Verified by execution at K=4, M=0, floor 1.0: the verdict is **FAIL**.
 
 ## M.7 Gates and VOID conditions
 
@@ -382,9 +388,11 @@ violations, **zero decode edits**, the median prefill-edit count equal to the ar
 and the identity check. Identity comes from each arm's **own recorded intervention flags, not its
 tag** — `knockout_cells` for the 80 cell-scoped arms; for the all-32 `*_KO` arm the conjunction
 `knockout_heads == ALL` **and no cell list at all**, because a full-band nine-cell arm records an
-empty `knockout_heads` and the *identical* dose 2016. ⚠ **The sweep asserts the base arm's identity
-unconditionally** (`"not intervened"`), so 2 of the 82 arms are not identity-checked from their own
-flags by GATE 0 — the census reader does read the base arm's flags separately. Exit 0 = all arms pass; 1 = failure;
+empty `knockout_heads` and the *identical* dose 2016. ⚠ **The sweep asserts the clean base arm's identity unconditionally** (`"not intervened"`), so
+**1 of the 82** arms is not identity-checked from its own flags by GATE 0. *(The gate's source calls
+`*_BASE` and `*_KO` "the two BASE arms", which invites "two unchecked"; the `*_KO` arm **is**
+checked, by the `ALL`-plus-no-cell-list conjunction just described.)* The census reader reads the
+base arm's flags separately. Exit 0 = all arms pass; 1 = failure;
 **3 = ran but is not the verdict** (a partial sweep), a distinction that exists because a pipe once
 made `tail`'s exit status look like the gate's.
 
@@ -438,7 +446,9 @@ data. Each item is a measured constraint, not a hedge, and names the measurement
 Every certified claim is **RUNG 1 — NECESSITY**: ablation damage. Nothing reaches decodability,
 repair or transfer, and the ladder's own result is that the four are **separable**. §4 records the
 attempt on rung 2 and why it stopped. A reader who wants "this cell writes the codeword" is asking
-for rung 3 or 4 evidence that does not exist here.
+for a claim **§L.2 shows is unavailable for a separate, structural reason on top of the rung
+limit** — the claim table gives the control-design reason, not a rung reason, and more rungs would
+not supply it.
 
 ## L.2 There is no arbitrary-cell control, and the reason is structural
 
@@ -458,8 +468,9 @@ Both are **top of their control family** and both families are **too small to ce
 
 🔴 **The two failures have ONE cause, not two.** Each extension was designed to **reuse
 already-run arms** and therefore had to pin the code blob so old and new arms would match.
-PR-CSI-004 requires its 36 new arms to run the blob its 10 reused controls ran; PR-CSI-003-A's
-VOID 6 requires its 20 new arms to run the blob its two already-run halves ran. **In both cases
+PR-CSI-004 requires its 36 new arms to run the blob its 10 reused controls ran; PR-CSI-003-A's **own VOID 6 — a different family's numbering: the code-blob condition, NOT
+PR-CSI-020's tie condition in §M.6** — requires its 20 new arms to run the blob its two already-run
+halves ran. **In both cases
 `src/boombness/score_behavior.py` moved before the new arms were launched, and the reuse that made
 each design cheap is exactly what killed it.** That is the transferable lesson: **a family that
 reuses archived arms and pins the blob has a shelf life, and nothing warns you when it expires.**
@@ -471,11 +482,23 @@ a VOID condition *after it fires* to let one's own experiment proceed is the sha
 blocker. **8.7 GPU-hours were not spent on twenty arms that would have been VOID by a condition the
 author wrote** — a decision that is still open, not a dead end.
 
+🔴 **FAMILY SIZE IS NOT THE ONLY THING BETWEEN EITHER RESULT AND A CERTIFIED ONE.** Both are
+**TRAIN-only and IN-SAMPLE** — `evaluation_is_in_sample: true` with `scored_domains_also_in_fit: 67`
+on **every arm of both reads**, verified at the artefacts. Neither has a held-out read, and the
+fresh freeze below **would not supply one**: it fixes the floor, not the in-sampleness.
+
+⚠ **PR-CSI-003-A is blocked by TWO stranded conditions, not one:** its own VOID 6 (the score blob)
+and **VOID 7** (`dcs_csi_rederive_subspace.py` moved, +36 lines). A launch would also intersect 20
+new arms against a key set **already reduced to 664 by three short control arms**, and today's
+re-derivation path refuses the family outright.
+
 ⚠ **And "floor-limited" is a statement about these families, NOT about the cells.** Neither result
-is permanently uncertifiable: a **fresh freeze that re-runs every arm on one current blob** would
-carry a floor below α in both cases. What is permanent is that **these two preregs cannot deliver
-it**. The cost is the honest part — a full L20 family is 53 arms, not the 36 the extension hoped to
-add — and reusing archived arms to avoid that cost is what produced this situation.
+is permanently uncertifiable: a fresh freeze that re-runs every arm on one current blob **and
+carries the full extension** — **33 arms for necessity** (the 13 existing plus 20) and **53 for
+L20** — would carry a floor below α in both cases. ⚠ Re-running the existing arms alone changes
+nothing: necessity would still have 8 controls and a floor of 0.1111. What is permanent is that
+**these two preregs cannot deliver it**, and reusing archived arms to avoid the cost is what
+produced this situation.
 
 ⚠ **Neither is a negative result.** Each is the *best attainable* outcome in a family whose floor
 sits above α — the same FAIL-versus-structural-CANNOT-ANSWER distinction §4 draws, arriving here
@@ -509,6 +532,9 @@ reported as CANNOT ANSWER and never as support.
 
 §6 shows both published reads replay from their landed artefacts, including under a later reader
 refactor. **That tests the reader, not the arm** — it re-reads the same arms, strengthens no p, and
-a deterministic replay of a wrong arm is still wrong. ⚠ Relatedly, the **bootstrap parameters were
-command-line defaults frozen retroactively** (§M.4), so they are a convention that became a
-commitment rather than a commitment from the start.
+a deterministic replay of a wrong arm is still wrong. ⚠ **And replay is NOT uniform.** The two published PASSes replay exactly; the **necessity
+re-derivation does not reproduce under today's code at all** — the script now refuses an arm whose
+`DONE.json` is not `ok`, and **three of the eight necessity controls are short** (669 / 666 / 669 of
+670, handled by intersection at 664 keys). **The guards got stricter; the result did not get
+weaker.** ⚠ Relatedly, the **bootstrap parameters were command-line defaults frozen retroactively**
+(§M.4), so they are a convention that became a commitment rather than a commitment from the start.
