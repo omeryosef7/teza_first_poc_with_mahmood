@@ -502,7 +502,32 @@ stamps the repo at its own start, and `git_dirty` is recorded as `true` or as `N
 `false`** across this sprint's runs — so the direction that would falsify a clean-tree claim is
 recorded while the direction that would confirm it is not.
 
-## M.8 What the design cannot do
+## M.8 The HEAD-level machinery (§H)
+
+§M.1–§M.7 describe the cell-level families. §H uses a different arm vocabulary and a different
+decision rule, and neither was defined above.
+
+| arm | what it is, from `configs/dcs_csi_pr010_head_causal_basket.json` and `..._pr012_...` |
+|---|---|
+| `HD_BASE` | no intervention — the clean reference every head-level delta is taken against |
+| `HD_KO` | `--knockout-heads` omitted = **all 32** band heads; the positive control **and the ceiling** |
+| `HD_TOPK` | the candidate 8-head set, `[19, 17, 23, 6, 13, 2, 24, 28]` |
+| `HD_BOTK` | the matched opposite end, `[29, 11, 30, 10, 15, 16, 0, 9]` — declared the **COMPARATOR and explicitly NOT part of the control family** |
+| `HD_RAND00..19` | the 20 dose-matched control sets. ⚠ **Drawn from `control_pool`, the candidate's 24-head COMPLEMENT** — the restriction H.1 carries and H.1b lifts |
+| `SINGLE_hh` | one head, for every `h` in 0..31 — the census H.2 reads |
+| `LOO_hh` | `HD_TOPK` minus head `h` — the leave-one-out marginals |
+| `BT_*` | the same shapes on BUTTON (`BT_SINGLE` = head 2 alone, `BT_KO` = all 32, `BT_CTRL_*` = the 20 controls) |
+
+**The rank test.** The candidate is ranked among its controls by effect, most negative first, with an
+**attainable floor of `1/(n_controls + 1)`**. At 20 controls that is `1/21 = 0.047619`. ⚠ **The
+prereg states the consequence in advance and it is severe: this clears α = 0.05 ONLY at rank 1 —
+rank 2 gives `2/21 = 0.0952` and cannot clear at any data.** A head-level family of this size has
+exactly one passing outcome.
+
+⚠ **`|E(HD_BOTK)|` doubles as the NULL ANCHOR in §H.2** — a third use of a threshold, beyond the two
+§M.5 enumerates. It is the family's own opposite-end set, not an external bar.
+
+## M.9 What the design cannot do
 
 The screen is fitted on **basket TRAIN**. For the cross-codeword family (§2) the prediction is held
 out on **codeword**; for the within-codeword replication (§3) it is held out on **split only**.
@@ -596,7 +621,7 @@ through **family size** rather than through K.
 
 ## L.4 Every head was chosen because it was live
 
-No family draws heads at random. PR-CSI-018's six were chosen because they were live **on button**;
+No family draws its **CANDIDATE** heads at random — the *control* sets are random by design (§M.8). PR-CSI-018's six were chosen because they were live **on button**;
 PR-CSI-020's eight because they were live **on basket**. The screen's per-cell prediction is
 therefore tested **only where there was something to find**, and nothing here licenses *"the screen
 is a validated cell selector in general"*. 🔴 **And the worst selection case is §1's, not these two.** D37's four heads were chosen as D34's
@@ -640,10 +665,11 @@ demonstrations supply the installed content — has **no confirmatory instrument
 measurement licenses a **refutation reading only**, and a null control there is *confounded*, to be
 reported as CANNOT ANSWER and never as support.
 
-## L.7 Every cell result reads the SAME 23 domains, and most heads were never looked at
+## L.7 Every result here reads the SAME 23 domains, and most heads were never looked at
 
 🔴 **All five cell censuses — PR-CSI-014, 015, 016, 018 and 020 — read an IDENTICAL set of 23
-validation domains.** Verified by comparing the domain sets arm-by-arm: union 23, intersection 23.
+validation domains, and so does the head-level button family in §H.3**, whose 23 domains are
+recorded as identical to basket's. **The limitation is sprint-wide, not cell-level.** Verified by comparing the domain sets arm-by-arm: union 23, intersection 23.
 **So §1, §2, §3 and §4 are not independent in the domain dimension**, and that includes the
 cross-codeword pair: D39 and D40 share their entire domain sample. Domain idiosyncrasy is common to
 every result in this draft, and **nothing here speaks to domain generality.**
@@ -807,3 +833,63 @@ OUTCOME … the pool was widened before any cell of any head here was measured."
 the deflationary reading I first wrote here (that the certified cell results rest on a head set
 whose strongest member fails to replicate) **is false for exactly the two results that carry a
 p-value.** It holds for §1 and §4, which carry none.
+
+---
+
+# A. The axis half — FIRST INCREMENT ONLY
+
+**Added S-439.** ⛔ **This is NOT part three. It is two of its twenty rows**, drafted as a deliberate
+increment rather than as a section. The axis/necessity/dissociation families (D12–D31) remain
+largely undrafted and SCOPE says so.
+
+**Why these two first:** D19 is the sprint's only bidirectional conjunction and D24 its
+matched-power dissociation — the two results most often leaned on elsewhere in the record. **Every
+figure below was verified by me against the artefacts earlier in this sprint** (S-412 for the basket
+ranks and subfamilies, S-413 for button TRAIN, S-425 for the held-out button cell, S-425/S-430 for
+the necessity direction and its 7.8 %), not read off the claim table for this draft.
+
+## A.1 The same direction is top-of-family in BOTH directions (D18, D19)
+
+At basket, layer 18, one rank-1 direction is the strongest in its control family **both** when added
+back under a live knockout and when removed from a clean forward:
+
+```
+SUFFICIENCY  KO_AXIS - KO          TRAIN  +0.00264 [+0.00068, +0.00471]  rank  1 of 47  p 0.0213
+                                   VALID  +0.00401 [+0.00098, +0.00775]  rank  1 of 47  p 0.0213
+             subfamilies pass separately on BOTH splits:
+                shuffled-only 1 of 25 (floor 0.0400)   random-only 1 of 23 (floor 0.0435)
+NECESSITY    KO_NEC_AXIS - NEC_BASE  -0.00852 [-0.01127, -0.00592]  55 of 67 domains  rank 1 of 9
+```
+
+🔴 **The two halves are NOT equally certified, and the conjunction must never be quoted as though
+they were.** Sufficiency passes at rank 1 of 47 with a floor of 0.0213. **Necessity is rank 1 of 9
+against an attainable floor of 0.1111 — above α — so it is INCONCLUSIVE by a ceiling declared before
+the first arm ran**, and §L.3 records that the family which would have fixed it can no longer run.
+
+⛔ **Three clauses must travel with the necessity half every time: floor-limited, TRAIN-only,
+in-sample.** ⛔ **And the axis moves only 7.8 % [5.6, 10.1] of what whole-state removal moves —
+about 92 % of the effect is elsewhere.** ⛔ *"The axis is causal"* is forbidden unqualified; *"the
+axis is necessary"* is forbidden outright.
+
+## A.2 The codeword dissociation, at matched power (D23, D24, D29)
+
+Same layer, same family size, same family composition, same procedure, same 67 TRAIN domains:
+
+```
+basket L18 TRAIN   +0.00264  [+0.00068, +0.00471]  44 pos / 23 neg of 67  rank  1 of 47  PASSES
+button L18 TRAIN   -0.00014  [-0.00111, +0.00081]  36 pos / 31 neg of 67  rank 36 of 47  DOES NOT PASS
+```
+
+**This removes "unequal control families" as the explanation of the dissociation, and nothing
+else** — it cannot say *why* the codewords differ.
+
+⚠ **The matched-power comparison proper is TRAIN vs TRAIN.** Basket's VALIDATION cell (+0.00401,
+rank 1 of 47, 23 domains) is a **held-out strengthening and is NOT part of the power match** — *"the
+same 67 domains"* must never be said while pointing at it. ⚠ **Both sides now have a held-out cell
+and they are reported side by side, never pooled:** basket **rank 1 of 47**, button **rank 6 of 47**
+— so button's held-out cell is *not* the rank-36 of its TRAIN cell.
+
+⚠ **Basket's PASS sits EXACTLY at its attainable floor** (0.02128 against a floor of 0.0213) in both
+splits: a pass at the floor is a pass, but it has **no margin**. ⚠ **And basket's TRAIN rank 1 is
+not robust to per-domain reweighting** — two of five schemes move it to rank 3 of 47, p = 0.0638.
+That caveat is unaffected by everything above and still binds.

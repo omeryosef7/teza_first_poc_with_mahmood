@@ -38982,3 +38982,72 @@ exists. §H needed a second reviewer's worth of defects found on its first pass,
 for the latter.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-439 — F11/F12 closed, and the draft-vs-check decision made explicitly rather than defaulted
+
+**2026-09-25. Queue empty, no GPU.** S-438 left two findings recorded-but-unapplied and S-437 left a
+choice unmade. Both are closed here.
+
+### 1. F11 — §M defined none of §H's machinery, and the gap hid a severe fact
+
+§M.1–§M.7 described the cell-level families only. §H uses `HD_TOPK`, `HD_BOTK`, `HD_RAND*`,
+`SINGLE_hh`, `LOO_hh` and the `BT_*` shapes, plus a **rank test §M never defined** — while §M's own
+standard is to define every criterion the results use. **New §M.8**, written from
+`configs/dcs_csi_pr010_head_causal_basket.json` and `..._pr012_...`, not from memory.
+
+🔴 **Writing it surfaced something the prereg states in advance and §H had not:** the rank test's
+attainable floor is `1/(n_controls+1)` = `1/21` = 0.047619 at 20 controls, and the prereg spells out
+the consequence — **it clears α = 0.05 ONLY at rank 1; rank 2 gives `2/21 = 0.0952` and cannot clear
+at any data** (I checked: 2/21 = 0.0952). **A head-level family of this size has exactly one passing
+outcome.** That is sharper than §H.1's "the p IS the floor" and now sits in §M.8.
+
+⚠ Also recorded there: `HD_RAND*` are drawn from `control_pool`, the candidate's **24-head
+complement** — the artefact-level confirmation of the F1 split — and `HD_BOTK` is declared the
+**COMPARATOR, explicitly not in the control family**, while §H.2 uses its magnitude as a **null
+anchor**. That is a third use of a threshold beyond the two §M.5 enumerates.
+
+### 2. F12 — two §L statements read against §H
+
+§L.4's *"No family draws heads at random"* is false of §H's twenty **random** control sets; scoped to
+*"its CANDIDATE heads"*, since the controls are random by design. §L.7's *"all five cell censuses
+read an IDENTICAL set of 23 validation domains"* now also covers the head-level button family, so
+the limitation is **sprint-wide, not cell-level**, and its heading says so.
+
+### 3. 📌 The decision S-437 flagged, made rather than defaulted
+
+**Draft part three, or keep checking what exists?** The evidence for checking is strong — §H's first
+review returned 13 findings including two that would mislead, and §1–§6's *second* review returned
+11 on an already-corrected section. The evidence for drafting is that a third of the sprint's
+results are absent, and SCOPE declaring that does not make the draft complete.
+
+**Decision: draft, but in INCREMENTS that can be reviewed, and say so in the file.** §A now holds
+**two of the twenty rows** — D19's bidirectional conjunction and D24's matched-power dissociation,
+the two most leaned-on elsewhere in the record — and its own heading says *"FIRST INCREMENT ONLY …
+NOT part three."* ⚠ **The alternative I rejected was drafting all twenty**: §H was four rows and
+produced thirteen findings, so twenty rows of unreviewed prose would add more defect surface than
+the last four reviews have removed.
+
+**Every figure in §A was verified by me earlier in this sprint** — S-412 (basket ranks, subfamilies
+1 of 25 / 1 of 23), S-413 (button TRAIN rank 36 of 47), S-425 (the held-out button cell, rank 6 of
+47), S-425/S-430 (necessity, rank 1 of 9 at floor 0.1111, and the 7.8 %) — and §A says so rather
+than implying a fresh derivation.
+
+📌 **Drafting it forced a distinction the record keeps blurred:** D19 is called a *bidirectional
+conjunction*, but its two halves are **not equally certified** — sufficiency passes at rank 1 of 47
+with floor 0.0213, while necessity is rank 1 of 9 against floor **0.1111, above α, INCONCLUSIVE by a
+ceiling declared before the first arm**. §A.1 states that in the same breath as the conjunction.
+
+### 4. What was NOT established
+
+⛔ **§A has had no review**, and it is now the newest and least-checked prose in the file — the
+position §H was in one tick ago, when its first review found two misleading errors.
+⛔ **Eighteen of the twenty rows remain undrafted.**
+⛔ **§M.8 is unreviewed**, and §M's last review (S-421) found six mismatches against the source.
+⛔ **No published number moved.** ⛔ **No GPU, no arm, no code change. TEST untouched.**
+
+**NEXT:** review §A and §M.8 together — both are new, both unchecked, and the pattern says new prose
+by this author carries misapplied prohibitions rather than wrong numbers.
+
+`git push` remains credential-blocked. Committed locally.
