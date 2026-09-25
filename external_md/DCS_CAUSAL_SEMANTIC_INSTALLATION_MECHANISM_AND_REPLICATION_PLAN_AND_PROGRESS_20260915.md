@@ -38763,3 +38763,70 @@ write-up, and D35 should be drafted first: it is the negative, and negatives are
 written by its own author is most likely to leave last.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-436 — the head-level half is DRAFTED, negative first, every figure read from the artefacts
+
+**2026-09-25. Queue empty, no GPU.** S-435 found the draft was one of two halves and said D35 should
+be drafted first *"because negatives are what a draft written by its own author leaves last."* **§H
+is now in the file, 88 lines, and D35 was written first.**
+
+### 1. Every figure re-derived by me from the artefact, not from the claim table
+
+That rule exists because S-428 caught §M inheriting an artefact's own false sentence, and because
+copying a row reproduces its errors silently.
+
+```
+D32/D33  HD_KO    -0.22696123 ci95 [-0.27586414, -0.17868012]
+         HD_TOPK  -0.19598350 ci95 [-0.24306753, -0.15349093]
+         HD_BOTK  -0.01256722 ci95 [-0.02020293, -0.00465766]
+         F = 0.86351092 -- and I checked it IS E(HD_TOPK)/E(HD_KO), exactly
+         20 random 8-head controls: mean -0.004006, sd 0.013205, 0 OF 20 more negative
+         rank 1 of 21, p = 0.047619 = the attainable floor EXACTLY
+D34      exactly FOUR heads clear |E(HD_BOTK)| = 0.012567 with ci95 excluding 0:
+         2 (-0.04947467), 19 (-0.04010869), 17 (-0.02921839), 23 (-0.01650303)
+         ALL FOUR inside HD_TOPK=[19,17,23,6,13,2,24,28]; NO head outside clears -- checked all 32
+D35      BT_SINGLE -0.00352162 ci95 [-0.0154519, +0.0060195] CROSSES ZERO
+         rank 6 of 21, p 0.285714, floor 0.047619, 5 strictly better, 0 ties
+         BT_KO     -0.28990714 ci95 [-0.34261611, -0.24548635] -- the instrument WORKS on button
+         collapse 0.04947467 / 0.00352162 = 14.05x ; retention 7.1%
+         independent re-derivation, no shared code: rank 6 of 21, DOES NOT PASS
+AM-36    21 arms sum to -0.058286 vs joint -0.289907 -> joint is 4.97x the sum, singles are 20.1%
+```
+
+**Every one reproduces.** ⚠ I nearly left AM-36's three figures as claim-table quotations; I checked
+them against `BT_SINGLE` plus the 20 controls and they hold, which is the only reason they are in
+§H.3.
+
+### 2. 📌 The finding writing it produced: the head result's p IS its floor
+
+`rank 1 of 21` gives `p = 0.047619`, and the attainable floor is `1/21 = 0.047619`. **They are the
+same number**, and the artefact prints them together for that reason. **The sprint's head-level
+certification has no margin at all — no data could have produced a smaller p in that family.** §H.1
+states it as a ⚠ rather than reporting the p alone.
+
+### 3. What §H says that the cell-level half could not
+
+§H.4 states the dependency plainly: **H.1–H.2 select the heads §1–§4 localise within**, so the
+cell-level results inherit every selection caveat above them. **Read in the published order they
+flatter** — four cell-level sections, three positive, resting on a head set whose certification sits
+exactly at its floor and whose strongest member fails to replicate across codewords. That sentence
+could not have been written while §H was missing, which is the point S-435 was making.
+
+### 4. What was NOT established
+
+⛔ **§H has had NO adversarial review.** §1–§6 have had two each, §M and §L one each, and **every one
+of those passes found real defects** — including defects in text I had just written and believed
+finished. §H is the least-checked section in the file and should be read as such.
+⛔ **The draft is still not a complete results section.** 32 claim-table D-rows remain uncited. I
+judged them predecessor-phase from their content **without a row-by-row audit**, and SCOPE now says
+so rather than implying completeness.
+⛔ **No new measurement.** §H reports results read and published long ago; the only new work is
+re-derivation and prose.
+⛔ **No GPU, no arm, no code change. TEST untouched.**
+
+**NEXT:** an adversarial review of §H — the section with the most new prose and the least checking,
+written by the author of the results it reports.
+
+`git push` remains credential-blocked. Committed locally.

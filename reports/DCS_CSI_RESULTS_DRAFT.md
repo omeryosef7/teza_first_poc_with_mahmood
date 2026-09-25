@@ -16,8 +16,10 @@ names its scope rather than claiming a blanket.*
 
 ## SCOPE — what this draft covers, and what it LEAVES OUT
 
-🔴 **This is the CELL-level story only.** §1–§4 report the five cell-census families (PR-CSI-014,
-015, 016, 018, 020). **The sprint's HEAD-level results are not here**, and they are not minor:
+✅ **UPDATED S-436 — the head-level half is now DRAFTED as §H and this block is its index.**
+§1–§4 report the five cell-census families (PR-CSI-014, 015, 016, 018, 020); **§H reports the
+head-level results, which the cell-level half subdivides and therefore depends on.** §H is written
+second and belongs first. The four rows below are what §H covers:
 
 | omitted | what it is | why its absence matters |
 |---|---|---|
@@ -26,14 +28,15 @@ names its scope rather than claiming a blanket.*
 | **D34** | four heads (2, 19, 17, 23) each clear the family's own null anchor, **all four inside `HD_TOPK` and none outside it** | it is where §1's four heads come from |
 | **D35** | 🔴 head 2's single-head effect, selected on basket by a rule frozen beforehand, **DOES NOT REPLICATE on button** — ci95 [−0.015452, +0.006019] **crosses zero** | **the sprint's one EMPIRICAL negative** |
 
-⚠ **D35's absence is the one that could flatter.** §4 offers "one CANNOT ANSWER and one honest
-**methodological** negative", and a reader may take that as the sprint's full negative ledger. It is
-not: a head selected by a pre-frozen rule failed to replicate across codewords, and that result
-lives in the head-level section this draft does not contain.
+⚠ **D35 was the omission that could flatter, and it is why §H was drafted before anything else was
+added.** §4 offers "one CANNOT ANSWER and one honest **methodological** negative", and a reader
+might have taken that as the full negative ledger. **It is not** — the empirical negative is §H.3,
+and it is now in the file.
 
-⛔ **So this draft must not be read as "the sprint's results".** It is one of two halves, and the
-half it omits contains both a certified positive chain and the only empirical negative. Section
-numbering here is local to this half.
+⛔ **Still NOT a complete results section.** 32 further claim-table D-rows are uncited; I judged them
+predecessor-phase from their content **without a row-by-row audit**, and that judgement has not been
+checked. ⛔ **§H has had NO adversarial review** — §1–§6 have had two each and §M and §L one each,
+and every one of those passes found real defects.
 
 ---
 
@@ -644,3 +647,97 @@ re-derivation does not reproduce under today's code at all** — the script now 
 670, handled by intersection at 664 keys). **The guards got stricter; the result did not get
 weaker.** ⚠ Relatedly, the **bootstrap parameters were command-line defaults frozen retroactively**
 (§M.4), so they are a convention that became a commitment rather than a commitment from the start.
+
+---
+
+# H. The head-level half
+
+**Added S-436**, closing the omission the SCOPE block declares. **Every figure below was read by me
+from the artefacts** — `DCS_CSI_PR010_HEAD_validation.json`, `DCS_CSI_PR012_CENSUS_validation.json`,
+`DCS_CSI_PR013_BUTTON_HEAD_validation.json` — **not copied from the claim table**, which is the rule
+§M was written under after a methods section inherited an artefact's error.
+
+The cell-level half (§1–§4) subdivides heads that *this* half selected. It is written second and
+belongs first.
+
+## H.1 Eight heads carry most of the knockout, and the set beats its controls (D32, D33)
+
+On basket VALIDATION, knocking out eight head indices across band layers 6–14 on the query-codeword
+row reproduces most of the all-32 knockout:
+
+```
+HD_KO    (all 32 heads)   E = -0.22696123   ci95 [-0.27586414, -0.17868012]
+HD_TOPK  (the eight)      E = -0.19598350   ci95 [-0.24306753, -0.15349093]
+HD_BOTK  (the null anchor) E = -0.01256722  ci95 [-0.02020293, -0.00465766]
+F = E(HD_TOPK) / E(HD_KO) = 0.86351092      ci95 [0.78710197, 0.94784347]
+```
+
+Against **20 random 8-head control sets**: mean −0.004006, sd 0.013205, range [−0.024571,
++0.019694], and **0 of 20 are more negative than the candidate**. `HD_TOPK` is **rank 1 of 21**.
+
+⚠ **The p IS the floor.** Rank 1 of 21 gives `p = 0.047619`, which is *exactly* the attainable floor
+`1/21` — the artefact reports the two together for this reason. **There is no margin: this family
+could not have produced a smaller p at any data.**
+
+⛔ **The controls are drawn K-of-(32−K) from the candidate's COMPLEMENT**, so this is **not** a
+statement about arbitrary 8-head subsets. ⛔ **`F` is a ratio of two net-of-compensation causal
+effects and is biased downward** — it is not "the fraction of the mechanism these heads are". ⛔
+RUNG 1, necessity. ⛔ D32's caveat that this says nothing about any single `(layer, head)` **cannot
+be lifted** with the axes this sprint has.
+
+## H.2 Exactly four heads clear the family's own null anchor (D34)
+
+Using `|E(HD_BOTK)| = 0.012567` as the anchor the family itself supplies, the 32 single-head arms on
+basket validation give **exactly four** heads with a negative effect, a magnitude above the anchor
+and a ci95 excluding zero:
+
+```
+head  2   -0.04947467   ci95 [-0.06973814, -0.03265628]
+head 19   -0.04010869   ci95 [-0.05037628, -0.03052043]
+head 17   -0.02921839   ci95 [-0.03880694, -0.02090066]
+head 23   -0.01650303   ci95 [-0.02320141, -0.01006879]
+```
+
+**All four are inside `HD_TOPK` = [19, 17, 23, 6, 13, 2, 24, 28], and no head outside it clears** —
+verified by me over all 32. These four are where §1's heads come from.
+
+⛔ **Descriptive. No rank, no p per head, no control family.** ⛔ **No singleton may be summed
+against `E(HD_KO)`** to attribute a share: head 2 alone is 25.2 % of `HD_TOPK` and 21.8 % of
+`HD_KO`, and the set-level effect does not decompose. ⚠ **Four of `HD_TOPK`'s eight carry no
+individually detectable load at this bar**, and two of those have marginals of the wrong sign — so
+the set is certified while per-head necessity is refuted for half of it.
+
+## H.3 🔴 The negative: head 2 does NOT replicate on the other codeword (D35)
+
+Head 2 — the strongest single head on basket, selected by a rule frozen **before the census
+existed** — was re-run on BUTTON. It fails:
+
+```
+BT_SINGLE  E = -0.00352162   ci95 [-0.0154519, +0.0060195]   <- CROSSES ZERO
+           rank 6 of 21, p = 0.285714, attainable floor 1/21 = 0.047619
+           5 controls strictly better, 0 ties
+BT_KO      E = -0.28990714   ci95 [-0.34261611, -0.24548635] <- the positive control fires hard
+```
+
+**The instrument works on button**: the all-32 knockout moves the endpoint by −0.290 with a ci95
+far from zero, so **this null is a measurement and not a dead apparatus.** The effect **collapsed
+14×** from the codeword it was selected on — basket **−0.04947467** (ci95 excluding 0) → button
+**−0.00352162** (ci95 crossing 0) — **retaining 7 %**. The independent re-derivation, sharing no
+analysis code, agrees: rank 6 of 21, candidate −0.00352, **DOES NOT PASS**.
+
+⛔ **It retracts NOTHING.** D32 and D33 are set-level basket results and H.2 is a basket census;
+this tests **codeword** generality only. ⛔ **It says nothing about domain transfer** — the 23
+button validation domains are *identical* to basket's. ⛔ *"Head 2 is the writer"* was forbidden
+before the data and is now also **unsupported**. ⛔ RUNG 1, and explicitly **not** rung 4: no
+activation state was transferred.
+
+⚠ **And the set-level effect does not decompose on button either**: 21 single-head arms sum to
+−0.058286 against a joint all-32 knockout of −0.289907 — the joint is **4.97×** the sum, and the
+measured singles account for **20.1 %** of it.
+
+## H.4 What the two halves are together
+
+**H.1–H.2 select heads; §1–§4 localise within them.** The dependency runs one way, and it means the
+cell-level results inherit every selection caveat above. ⚠ **Read in the other order they flatter**:
+four cell-level sections, three of them positive, resting on a head set whose own certification sits
+*exactly* at its attainable floor and whose strongest member **fails to replicate across codewords.**
