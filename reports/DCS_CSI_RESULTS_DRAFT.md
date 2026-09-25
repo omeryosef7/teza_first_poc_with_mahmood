@@ -500,6 +500,20 @@ nothing: necessity would still have 8 controls and a floor of 0.1111. What is pe
 **these two preregs cannot deliver it**, and reusing archived arms to avoid the cost is what
 produced this situation.
 
+🔴 **And the necessity result's EFFECT is small against the thing it is a fraction of.** Removing the
+rank-1 component from a clean forward moves the endpoint **−0.00852**, against **−0.10950** for
+removing the whole state: `removal_fraction_candidate_of_full` = **0.0778 [0.0560, 0.1009]**. **The
+axis accounts for 7.8 % of what whole-state removal moves — about 92 % of the effect is elsewhere**,
+and that figure must travel with any statement of the necessity direction.
+
+⚠ **And none of the necessity sign-flip p's carries information.** All of them — 15 of the 23
+contrasts, including the candidate's — report **p = 4.9999750001249995e-06**, which is *exactly*
+the Monte-Carlo sampler's floor of **1/200001**. The artefact says so in its own
+`p_floor_basis`: *"monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by
+the test that ran"* — the exact sign-flip floor over 2⁶⁷ assignments is 2/2⁶⁷ = 1.355e-20.
+**These p's record that the sampler saturated, not how strong the effect is**, and may not be quoted
+as evidence of magnitude.
+
 ⚠ **Neither is a negative result.** Each is the *best attainable* outcome in a family whose floor
 sits above α — the same FAIL-versus-structural-CANNOT-ANSWER distinction §4 draws, arriving here
 through **family size** rather than through K.

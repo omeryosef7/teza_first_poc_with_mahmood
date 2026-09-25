@@ -38315,3 +38315,66 @@ which is the move the 0.1625 prohibition exists to forbid — so it is deliberat
 artefacts first.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-430 — the last two §L items: the necessity axis moves 7.8 % of what whole-state removal moves, and NONE of its sign-flip p's carries information
+
+**2026-09-25. Queue empty, no GPU.** S-429 left two items open and said they needed checking at the
+artefact first. **Both check out, and the second is sharper than the note that named it.**
+
+### 1. The effect is 7.8 % of the thing it is a fraction of
+
+```
+candidate  KO_NEC_AXIS - NEC_BASE        -0.00852  ci95 [-0.01127, -0.00592]
+whole state KO_NEC_FULL - NEC_BASE       -0.10950  ci95 [-0.12482, -0.09451]
+removal_fraction_candidate_of_full        0.0778   ci95 [0.0560, 0.1009]
+   arithmetic check: -0.00852 / -0.10950 = 0.07781   ✓
+```
+
+**About 92 % of what whole-state removal moves is NOT accounted for by the axis**, and D19's mandate
+is that this figure travels with any statement of the necessity direction. Now in §L.3.
+
+### 2. 🔴 The sign-flip p's are the sampler's floor, and the artefact says so itself
+
+Every one of them — **15 of the 23 contrasts, the candidate's included** — reports
+**p = 4.9999750001249995e-06**. That is **exactly 1/200001**. The artefact names the basis in its
+own field:
+
+> `p_floor_basis`: *"monte-carlo sampler (200000 draws); the exact floor 1.36e-20 is unreachable by
+> the test that ran"*, with `test_mode: monte-carlo(200000)` and `p_at_its_floor: true`.
+
+I checked the exact floor it refers to: a true sign-flip test over 2⁶⁷ assignments has floor
+2/2⁶⁷ = **1.355e-20**, which matches the artefact's 1.36e-20. ⚠ **So these p's record that the
+sampler saturated, not how strong the effect is**, and may not be quoted as evidence of magnitude.
+
+📌 **Note the mismatch the artefact itself discloses and I nearly mis-stated:** `n_boot` is **20000**
+while `test_mode` is **monte-carlo(200000)** — the CI bootstrap and the sign-flip sampler are
+different resamplers with different draw counts. I derived 1/200001 from the p first and only then
+found the field that explains it; had I reasoned from `n_boot` I would have got the floor wrong.
+
+### 3. All ten §L omissions from the review are now applied
+
+S-428 took three (TRAIN-only/in-sample; the second stranded VOID; the non-reproducible necessity
+re-derivation and its three short arms). S-429 took five (the 0.1625 null; the screen's head-ranking
+failure; D37's selection on the read split; identical domains; head coverage). **This takes the last
+two.** §L now runs **L.1–L.8 across 589 lines**.
+
+### 4. What was NOT established
+
+⛔ **"All ten applied" is not "§L is complete."** They are the ten *one reviewer* listed. §L has had
+exactly one external pass, and the items it found were found in a section I had written and believed
+finished.
+⛔ **The figure check's scope has shifted and it should be said.** Six figures in the draft are no
+longer traceable to the claim table — `0.99999` and `1.1e-16` and `1.355e-20` are **my own
+derivations**, `1.4999999999999998` is a code comment, and `4.9999750001249995e-06` and `1.36e-20`
+are **artefact fields**. The draft now cites artefacts and code directly, so *"appears in the claim
+table"* is no longer the right test for every number, and a check that only asks that question will
+start reporting false positives.
+⛔ **No result changed.** Both additions are limitations on a result the draft already stated.
+⛔ **No GPU, no arm, no code change. TEST untouched.**
+
+**NEXT:** §M has had one adversarial pass (S-421) and §L one (S-428/429/430); the *body* §1–§6 has
+had one (S-418) and has changed substantially since. It is the section now least recently reviewed.
+
+`git push` remains credential-blocked. Committed locally.
