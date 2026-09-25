@@ -37095,3 +37095,76 @@ applying a rule backwards, which is the error AM-39 was corrected for.
 disclosure gap to a closed question, and the write-up can cite it that way.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-414 — the decisive test is RUN: D39's reader moved, and not one number it publishes moved with it
+
+**2026-09-25. Queue empty, no GPU.** S-413 named the test and did not run it. This runs it.
+
+### 1. The design
+
+Two detached worktrees, `1e57d383` (the last commit before S-332 touched `scripts/`) and
+`d0e4444c` (S-335, the commit the published read ran at — `git diff f34c71f8..d0e4444c -- scripts/
+src/` is EMPTY, so the readers at the read are the S-334 readers). Both were pointed at the SAME 62
+landed arm directories by symlink, and both ran the frozen recipe's three commands verbatim from
+`runargs/dcs_csi_pr018_read.txt`. The three readers differ across the two commits — md5
+`53a6b5c8`→`a527b8ec`, `655f9026`→`20a4f059`, `fc17b2b9`→`6fa29660` — so the comparison is real.
+
+⚠ **A harness bug I made and caught: `ln -sfn` against a TRACKED `outputs/` directory nests the
+link inside it** (`$W/outputs/outputs`) instead of replacing it, and the first run reported
+*"0 of 62 declared arms resolved"* at BOTH commits. Had I taken that at face value it would have
+read as a finding about the readers; it was a finding about my shell. Fixed by removing the
+tracked directory in the scratch worktree first.
+
+### 2. The harness validates itself before it is trusted
+
+```
+census, as-read commit   md5 512f42a10084de2bbb7a4ec0a0cf4c78
+census, PUBLISHED        md5 512f42a10084de2bbb7a4ec0a0cf4c78   <- BYTE-IDENTICAL
+argmax, as-read vs PUBLISHED: differ in EXACTLY ONE field -- `census_report`, the input PATH,
+                              because the re-run wrote to scratch. Every other field identical.
+```
+
+So the read is reproducible from the artefacts a year of ticks later, and the harness is sound.
+
+### 3. The result
+
+**GATE 0: exit 0, "every landed arm passes (62 of 62)", at BOTH commits.** Pre-edit vs as-read
+differ in **8 fields of the argmax artefact, and not one of them is a number the claim uses:**
+
+```
+.ROBUSTNESS.GATING_FLOOR.{WHAT_THIS_IS,name,p,parts.binomial,parts.conditional,parts.permutation}
+        ADDED by the edits -- absent pre-edit. A disclosure of the gating statistic's FLOOR.
+.ROBUSTNESS.THE_CLAIM_MUST_BE_STATED_WITH
+        prose only. PRE: "...each named -- two admitted heads share a predicted layer..." (R28/S-312)
+        POST: "...EACH NAMED -- this prereg declares PRIMARY.GATING = 'weakest_of_three'..." (R30-B)
+        BOTH state the weakest-of-three rule. The justification was reworded; the rule was not.
+.census_report                          the scratch input path.
+```
+
+**Identical at both commits, checked positively and by name rather than inferred from a silent
+diff:** `K_admitted` **6**, `M_matches` **5**, binomial **9.220214473478709e-05**, conditional
+**0.012345679012345678**, permutation **0.005555555555555556**, `gating_p_name` **conditional**,
+`spanning_rule_satisfied` **true**, `dropped_heads` **[]**, `K_unique`/`M_unique` **2/2**,
+**VERDICT PASS**.
+
+**AM-44 is CLOSED in place** (block A31, retitled so the result is visible from the heading).
+S-413's disclosure gap was real and is now answered by measurement rather than by argument.
+
+### 4. What was NOT established
+
+⛔ **This does not retroactively give PR-CSI-018 a VOID 11.** It never had one. What is established
+is that the specific edits that happened were inert for this family's numbers — **not** that
+editing readers mid-flight is safe, which is exactly the generalisation VOID 11 exists to forbid.
+⛔ **It covers PR-CSI-018 only.** PR-CSI-020's single in-flight commit (`d172e254`, S-362) touched
+`scripts/gates/dcs_csi_prereg_selftest.py`, a static tripwire the read does not invoke — disclosed
+in S-371 and NOT re-tested here.
+⛔ **No arm was re-run.** This re-reads landed artefacts; `src/` never moved across the window, so
+the arms were never in question. ⛔ **No GPU. TEST untouched. D39, D40, D41 all stand.**
+
+**NEXT:** the remaining open leads from S-411 are D13/D15's "could not have certified" clause,
+D15's internal TRAIN-at-46 / VALIDATION-at-30 mismatch, and prohibition 24's dead reason — all
+disclosure-shaped, none touching a number.
+
+`git push` remains credential-blocked. Committed locally.
