@@ -36522,3 +36522,111 @@ NEXT     re-derive S-401's decision on the correct statistic; then F1 (identity 
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-408 — 📌 **THE DECISION, RE-DERIVED AND REVERSED: PR-CSI-021 WILL NOT BE RUN.** At power 0.14 a PASS would be more likely false than true at any prior the ladder justifies. ⚠ And S-407 itself needed one correction (2026-09-25)
+
+### 1. ⚠ First, a correction to S-407 — I over-read my own finding
+
+S-407 said the unique-head rate (1/4) rather than the pooled rate (3/8) "is the number that GATES",
+implying the power table was built on the wrong q. **Checked, and that framing was wrong:**
+
+```
+unique-layer status is a property of the PREDICTION MULTISET -- which layers repeat -- and NOT of
+any head's behaviour. So a priori there is no reason those four heads match at a different rate.
+   unique heads     1 of 4 matched
+   non-unique heads 2 of 4 matched
+   hypergeometric two-sided p for that split = 1.000     -- entirely consistent
+```
+
+**The pooled q = 3/8 IS the right estimate, and `power_mc` already derives M_unique ~ Binom(4, q)
+from it.** So the power table stands at 0.144575. S-407's *numbers* were right and its
+*interpretation* over-reached — recorded here rather than left standing, since S-407 is the entry a
+reader would otherwise act on.
+
+**What does NOT survive is the other half of S-407**, and that half is the one that matters: under
+the frozen gating, train scores **weakest = 0.375705**, indistinguishable from chance. Train does
+not raise the prior. The pooled q = 3/8 sits exactly on the binomial knife edge (0.049998).
+
+### 2. 🔴 The decision arithmetic, corrected
+
+```
+power at the train q                     0.1446
+alpha                                    0.05
+
+PPV of a PASS:   prior 0.10 -> 0.24     prior 0.30 -> 0.55
+                 prior 0.20 -> 0.42     prior 0.50 -> 0.74
+```
+
+**AM-34's ladder is explicit that the rungs are SEPARABLE — *"information may be readable at a site
+without being used there"*. That argues for a LOW prior on decodability coinciding with necessity,
+not a high one.** At any prior the ladder justifies, **a PASS from this design would be more likely
+false than true.**
+
+And S-401's own FOR column does not survive contact with that:
+
+```
+"a PASS is interpretable"          ✗ WITHDRAWN. At prior <= 0.2 it is more likely a false positive.
+"train raises the prior"           ✗ WITHDRAWN. Train scores 0.375705 under the frozen gating.
+"the axis has no competing use"    ✓ stands -- but an axis with no competing use is not a reason
+                                     to spend it on a result that could not be believed.
+"it costs 4.5 minutes"             ✓ stands -- and is irrelevant. The cost was never the objection.
+"a null is fenced in the prereg"   ✓ stands -- and a fenced uninformative null is still
+                                     uninformative.
+```
+
+### 3. ⛔ DECISION: PR-CSI-021 IS NOT RUN
+
+**Two of the four arguments for running were built on a statistic the family does not use. Without
+them the case does not stand, and running anyway would be re-justifying a conclusion after its
+premises failed** — which is the move this sprint exists to forbid, and which I would have caught
+in someone else's work.
+
+### 4. 📌 What this IS — and it is not nothing
+
+This is a **negative methodological result with a measurement behind it**, and it follows from
+facts this sprint established rather than from giving up:
+
+```
+S-374  K = 8 is the WHOLE admissible population: 0 of 7 fresh basket heads clear the 1.5 gate
+       (best 1.400) and the button ceiling is K = 2. q's precision is bounded by EIGHT DRAWS and
+       cannot be improved by measuring more prompts.
+S-399  the natural rung-2 statistic is unusable: the direct-path projection carries a depth
+       confound that put all 8 raw argmaxes in the top 3 of 9 layers (P = 1.52e-04).
+S-400  a de-confounded statistic exists and works -- 44x -> 1.40x -- and shows M = 3/8 on train.
+S-408  at that effect size, EIGHT HEADS cannot power a confirmatory test whose positive anyone
+       should believe.
+```
+
+**RUNG 2 IS NOT REACHABLE WITH THIS SPRINT'S HEAD SET.** That is a statement about the design space,
+supported by four measurements, and it belongs in the paper beside D40 rather than being quietly
+dropped.
+
+### 5. What was NOT established
+
+```
+- NOT established: that rung 2 is unreachable IN GENERAL. A larger admissible head set, or an
+  instrument without the depth asymmetry (S-399's option (c), reading at the layer's own residual),
+  would change the arithmetic. Neither exists here.
+- NOT established: that the concept is not decodable at these cells. NOTHING in this sprint
+  measured that on a held-out axis, and the train pilot is confounded-then-corrected exploratory
+  data, not a null.
+- NOT withdrawn: the instrument, the shared verdict, the prereg or the read. They exist, they are
+  reviewed (R35, R36), and they are what a future family with more heads would use.
+- NOT fixed: R36-C's F1/F4/F5/F7 and R36-A/B's remaining concerns. ⚠ They are recorded in S-406
+  and S-407 and they are NOT closed by this decision -- if PR-CSI-021 is ever revived they are
+  blockers again, and F1 (nothing checks the artefact's identity against the prereg) is the one
+  that would bite first.
+```
+
+### 6. State
+
+```
+QUEUE    EMPTY. ⛔ PR-CSI-021 CLOSED WITHOUT A READ -- by decision, on the arithmetic above.
+CHANGED  external_md/...20260915.md  +S-408 only.
+NEXT     a claim-table row recording rung 2 as attempted and not reachable, with the four
+         measurements that support it; then back to rung-1 work.
+```
+
+`git push` remains credential-blocked. Committed locally.
