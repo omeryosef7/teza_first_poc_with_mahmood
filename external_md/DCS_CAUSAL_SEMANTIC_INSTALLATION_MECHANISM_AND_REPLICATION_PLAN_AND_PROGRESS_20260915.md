@@ -39584,3 +39584,70 @@ preregs declare goes unread. It is the same question one layer in, and §M's own
 every criterion the results use is defined.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-448 — the field-by-field audit: NO second AM-48, and my first count was inflated threefold by an incomplete reader list
+
+**2026-09-26. Queue empty, no GPU.** S-447 left the question one layer in: do the cell and head
+readers honour every threshold their preregs declare? **They do.**
+
+### 1. 🔴 My first pass was wrong, and the cause is the same one as always
+
+I scanned four readers — `head_census`, `pr016_argmax_test`, `argmax_verdict`, `gate0_sweep` — and
+got **41 threshold-bearing fields unread**. **I had omitted `dcs_csi_head_analyze.py`, which is the
+script that produces the head-level verdict**, and `dcs_csi_rederive_subspace.py`. With both
+included and documentation fields excluded, the count is **14**.
+
+⚠ **Twelfth detector issue of this sprint, and the first one where the flaw was the INPUT LIST rather
+than the pattern.** A sweep is only as complete as its corpus, and I chose the corpus from memory.
+
+### 2. ✅ The answer: the rules ARE implemented
+
+`scripts/dcs_csi_head_analyze.py:343` implements PR-010/011's `WE_FOUND_THE_WRITER` verbatim:
+
+```
+prereg   "HD_TOPK rank 1 of 21 vs HD_RAND AND F >= 0.50 with ci95 on F excluding 0"
+code     elif rank == 1 and F is not None and F >= 0.50 and F_ci and not (F_ci[0] <= 0 <= F_ci[1]):
+line 355 elif rank == 1 and F is not None and 0 < F < 0.50:      -> PARTIALLY_LOCALISED
+```
+
+And the gates above it implement GATE 0 and GATE 1 with the prereg's own consequences. **The
+remaining unsubscribed fields are rationale and disclosure** (`⚠ WHY_NOT_THE_SCREEN_TOP_8`,
+`A_DROPPED_HEAD_IS_NOT_A_MISS`, `TYPE_I`, `K_IS_FIXED_AT_8`), or definitions the verdict module
+computes directly rather than parsing (`p_conditional`, `p_permutation`).
+
+```
+dcs_csi_head_analyze.py     --prereg YES   14 pr[ reads   F threshold HARDCODED
+dcs_csi_head_census.py      --prereg YES   29 pr[ reads   ratio/z/tolerance READ from the prereg
+dcs_csi_subspace_analyze.py --prereg NO     0 pr[ reads   rank rule hardcoded, prereg never opened
+```
+
+### 3. ⚠ One residual, and it is AM-48's shape one step before the divergence
+
+**`F ≥ 0.50` is hardcoded in the reader and stated in prose in the prereg, with nothing linking
+them.** They agree — I checked both — but **agreement here is a fact about maintenance, not about
+construction.** That is precisely the configuration the axis families were in before `rank == 1` and
+`rank ≤ 2` drifted apart, and the thing that makes the head family safe today is that nobody edited
+either side, not that anything would notice.
+
+⛔ **I am not changing it.** Making the reader parse a prose verdict string is more likely to
+introduce an error than to prevent one, and altering the threshold would alter the rule that
+produced a published verdict. **The finding is recorded; the fix is a design decision.**
+
+### 4. What was NOT established
+
+⛔ **That "unsubscribed" means "unimplemented".** It does not — the argmax p-definitions are
+unsubscribed and correctly implemented. **The field-read test is a weak proxy, and only reading the
+code settles it**; I read the code for the decision-bearing fields and not for all 14.
+⛔ **That the 14 are all benign.** I classified them by reading; four I judged rationale rather than
+rule, and that judgement is mine.
+⛔ **That no reader outside my list exists.** This is the failure this very entry records, and the
+corpus is still one I chose.
+⛔ **No published number, claim or verdict moved. No code or prereg changed.** ⛔ **No GPU, no arm.
+TEST untouched.**
+
+**NEXT:** the write-up. §A's Methods counterpart is in, §M runs M.1–M.10, and the remaining
+undrafted work is the eighteen axis rows §A's own heading declares.
+
+`git push` remains credential-blocked. Committed locally.
