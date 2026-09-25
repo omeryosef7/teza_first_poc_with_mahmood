@@ -17,8 +17,13 @@ names its scope rather than claiming a blanket.*
 
 We ask where in a transformer a *codeword* — a token the model has been instructed to emit in place
 of a concept — is installed. The instrument ablates a single attention cell `(layer, head)` during
-the prefill of an in-context prompt and measures the change in a semantic log-odds readout at a
-fixed position. The statistical unit is the **domain**. The split manifest
+the prefill of an in-context prompt and measures the change in the **installation probability** at
+a fixed position: the two-way softmax between the concept and codeword continuations,
+`y = exp(logp_concept) / (exp(logp_concept) + exp(logp_codeword))`, which lies in [0, 1]. 🔴 **It is
+NOT the `semantic_logodds` field**, which exists in every row and equals `logp_concept −
+logp_codeword` — a different quantity that this sprint does not use as its endpoint. Published
+`installation_by_arm` values such as 0.47336 / 0.23972 are probabilities, and read as log-odds they
+would be meaningless. §M.4 gives the full definition including the channel filter. The statistical unit is the **domain**. The split manifest
 `dcs_ts116_domain_split.json` assigns **70 train / 23 validation / 23 test**; the census families
 score **67** train domains, the 70 less **three whole-population domains excluded by every CSI
 prereg** — those three are `train`-assigned, and a config field once mislabelled them `test_domains`
@@ -106,7 +111,7 @@ whichever direction it points.
 
 **PR-CSI-016 could not test the question it asked (D38) — this is CANNOT ANSWER, NOT a negative result.** Both admitted heads matched at L14, so the
 preregistered **spanning rule fired**: a shared top-of-band bias and a correct screen are
-indistinguishable there. K = 2, M = 2; **the binomial is forbidden for this family and is not reproduced here** — note it collides with D39's certified conditional p, so printing it invites a reader to conclude PR-CSI-016 passed. Conditional 1.0
+indistinguishable there. K = 2, M = 2; **the binomial is FORBIDDEN for this family** and is quoted below only inside the prohibition, because a ban that does not name what it bans cannot be checked. ⚠ **It is numerically identical to D39's certified conditional p in §2** — the same six digits appear as a certified result there and as a forbidden figure here, so an editor must keep the antecedents apart. Conditional 1.0
 (K_unique = 0) and permutation 1.0 over a space of size **1**. The fallback delivered a head-level
 cross-codeword test never run before: head 17 **98.3 %**, head 19 **88.7 %** (both ci95 excluding
 0), head 23 **18.4 %** with **ci95 crossing zero** — ⚠ **an AMPLITUDE result only**: exploratorily, head 23's per-cell depth **shape** tracks across codewords at ρ = +0.817, so *"head 23 does not transfer"* is true of the amplitude and false of the shape (AM-41, **not preregistered**). ⛔ *"The screen transfers across codewords"* and
@@ -262,6 +267,14 @@ target from the forced-choice channel, which supplies the option set and therefo
 answer. A duplicate key is a **refusal** rather than an overwrite, precisely because weakening the
 filter would substitute the forbidden channel silently. Rows are averaged **within domain first**,
 so the domain is the unit before any statistic is taken.
+
+📌 **The endpoint is exactly `sigmoid(semantic_logodds)`** — verified across all 670 rows of an arm
+at max |difference| **1.1e-16**, i.e. to floating point. The consequence is **asymmetric and worth
+stating**: because the transform is **monotone**, every **rank-based** result in this sprint is
+**invariant** to which scale one names — no rank can change. **Effect sizes are not.** `E = −0.2269`
+is a change of **22.7 percentage points of probability**, and reading it as a change in log-odds
+would overstate it. ⚠ Where a source describes this endpoint loosely as *"a concept-vs-codeword
+log-odds"*, that is right about the contrast and wrong about the scale.
 
 Per arm, **E = the mean over DOMAINS of the per-domain paired delta** (arm minus its base arm,
 which is the CLEAN `*_BASE` reference and never the KO arm).

@@ -38092,3 +38092,71 @@ S-142 refused and the reason this family has waited since.
 §L and §M have had one pass each and no external review.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-427 — the internal-consistency pass: §0 named the WRONG QUANTITY as the endpoint, and it is a field that really exists
+
+**2026-09-25. Queue empty, no GPU.** The draft had never been checked for *internal* consistency —
+only against the claim table. S-418 found one such contradiction by accident (§0 asserting TEST
+untouched while §5 said it was spent). This looks for the class deliberately. An external review of
+§L was launched in parallel and had not returned.
+
+### 1. 🔴 §0 named the endpoint as a "semantic log-odds readout". It is not.
+
+The endpoint `y_install` is the **two-way softmax** between the concept and codeword continuations,
+`exp(logp_concept) / (exp(logp_concept) + exp(logp_codeword))`, which lies in [0, 1]. **And
+`semantic_logodds` is a real field in every row**, equal to `logp_concept − logp_codeword` — so §0
+did not use a vague word, it **named a different quantity that exists**, which is the harder error
+to catch. Measured on one row:
+
+```
+logp_concept  -2.607799   logp_codeword  -2.931761
+semantic_logodds            0.323962    <- the FIELD, = lc - lk
+two-way softmax (y_install) 0.580290    <- the ENDPOINT
+published installation_by_arm: NEC_BASE 0.47336, NEC_KO 0.23972, KO_NEC_FULL 0.36386  -> all in [0,1]
+```
+
+The published arm means are probabilities; read as log-odds they are meaningless. **Corrected in
+§0**, which now names the quantity, shows the formula, and says explicitly that it is *not* the
+`semantic_logodds` field.
+
+### 2. 📌 And the relationship between them, which makes the consequence ASYMMETRIC
+
+`y = sigmoid(semantic_logodds)` — **exact to floating point, verified across all 670 rows of an arm
+at max |difference| 1.1e-16**, not on one row.
+
+- ✅ **Every RANK-based result in this sprint is INVARIANT to the distinction.** A monotone transform
+  cannot reorder a control family, so D12, D18, D23, D24 and the necessity rank are untouched
+  whichever scale one names.
+- ⛔ **EFFECT SIZES are not.** `E = −0.2269` is **22.7 percentage points of probability**. Quoting it
+  as a log-odds change overstates it.
+
+⚠ **The claim table has one loose instance** — AM-35's literature gloss says *"ours is … on a
+concept-vs-codeword log-odds"*. That is **right about the contrast and wrong about the scale**, and
+it sits in a citation gloss rather than a results row, so no published number depends on it. Noted
+rather than amended: it describes what the endpoint is *about*, and the sentence's actual job is to
+distinguish our setup from the copy-suppression paper's.
+
+### 3. A self-contradiction of my own, from S-418
+
+§4 read *"the binomial is forbidden for this family **and is not reproduced here**"* — and then
+reproduced it four lines later inside the prohibition. **Both cannot stand.** The prohibition needs
+the figure (a ban that does not name what it bans cannot be checked), so the false clause went.
+§4 now says it is quoted only inside the prohibition, and warns that **the same six digits are
+D39's certified conditional p in §2** so the antecedents must be kept apart.
+
+### 4. What was NOT established
+
+⛔ **That the draft is now internally consistent.** I checked figures appearing in more than one
+section (6 of them; five were the checklist quoting deliberately) and the endpoint definition. **I
+did not systematically check prose claims across all 514 lines**, and the endpoint error was found
+by reading §0 against §M.4 by hand, not by any tool I ran.
+⛔ **No published number changes.** The endpoint was always computed correctly by the code; it was
+the draft's *description* of it that was wrong. Every E, rank and p stands.
+⛔ **The external §L review had not returned** when this was written.
+⛔ **No GPU, no arm, no code change. TEST untouched.**
+
+**NEXT:** the §L review's findings when they land.
+
+`git push` remains credential-blocked. Committed locally.
