@@ -38,8 +38,18 @@ def test_the_normalisation_is_the_SHARED_one():
     function, which is why it lives beside decide()."""
     assert "def normalised_layer_profile" in open(SHARED, encoding="utf-8").read(), \
         "the normalisation is not in the shared module"
+    # ⚠⚠ R36-A/R36-B/S-406: THIS TEST CHECKED ONLY THE FREEZE. Its own docstring said "Both must
+    # call the same function", and it verified one of them -- so the reader inlined its own copy
+    # for three ticks while the FROZEN PREREG asserted "Implemented ONCE ... called by BOTH".
+    # Two independent reviewers found it; this test did not. Both callers are checked now.
     fc = _code(os.path.join(ROOT, "scripts", "gates", "dcs_csi_pr021_freeze.py"))
     assert "normalised_layer_profile" in fc, "the FREEZE no longer uses the shared normalisation"
+    rc = _code(READER)
+    assert "normalised_layer_profile" in rc, (
+        "the READER does not call the shared normalisation -- it has an inlined copy again, and "
+        "the prereg asserts in writing that it does not (S-406)")
+    assert "statistics.fmean(others)" not in rc, (
+        "the reader has re-inlined the leave-one-out baseline")
 
 
 def test_leave_one_out_excludes_the_head_from_its_own_baseline():
@@ -146,3 +156,27 @@ def test_the_reader_REFUSES_a_prereg_that_fails_to_disclose(tmp_path):
     both = r.stdout + r.stderr
     assert r.returncode != 0 and "S-404" in both, both[:300]
     assert "cannot be published as null" in both, both[:300]
+
+
+def test_a_NON_FINITE_cell_is_REFUSED_not_normalised():
+    """🔴 R36-B/S-406. `inf > 0` is True, so the zero-baseline guard admitted it, and the
+    arithmetic is DIRECTIONAL: inf/finite = inf FORCES that head's argmax to the layer, while
+    finite/inf = 0.0 REMOVES the layer for every other head. R36-B set three cells to Infinity and
+    turned a FAIL (M=3) into 'PASS -- permutation = 0.000694', with a clean VOID-13 recon. JSON
+    round-trips bare Infinity and NaN silently."""
+    c = _code(READER)
+    assert 'f != f or f == float("inf")' in c, "the finiteness guard is gone"
+    assert "manufactures matches" in c, "the refusal no longer says why it matters"
+
+
+def test_the_BINOMIAL_is_not_given_top_billing_under_a_neutral_name():
+    """🔴 R36-B/S-406. The output published `p_one_sided: <the binomial>` at top level beside
+    `alpha`, with the gating co-primaries demoted to ROBUSTNESS -- and the prereg's
+    MUST_NOT_BE_SAID_IF_POSITIVE forbids quoting the binomial alone. On the real numbers the
+    binomial is 0.049998, BELOW alpha, in a file whose verdict is FAIL."""
+    c = _code(READER)
+    assert '"p_one_sided"' not in c, "the neutral name is back"
+    assert '"p_binomial_NOT_THE_CLAIM"' in c, "the binomial is not named as what it is"
+    assert "_always" in c and "binomial" in c, (
+        "the binomial prohibition does not travel on the FAIL branch, which is exactly where the "
+        "binomial is the misleadingly small number")

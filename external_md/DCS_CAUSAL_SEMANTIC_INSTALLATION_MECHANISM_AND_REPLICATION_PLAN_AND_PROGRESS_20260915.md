@@ -36310,3 +36310,110 @@ NEXT     R36 over the five pieces -- then, and only then, launch.
 ```
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-406 — R36 (parts A and B) found **FOUR BLOCKERS**, and the worst is that **the FROZEN PREREGISTRATION ASSERTED SOMETHING FALSE**: it said the normalisation was called by both the freeze and the read. The read had its own copy (2026-09-25)
+
+### 1. 🔴 THE PREREG WAS FALSE, and my test verified one side of "both"
+
+Found INDEPENDENTLY by R36-A (F7) and R36-B (F4). Verified by me before acting:
+
+```
+the FREEZE   scripts/gates/dcs_csi_pr021_freeze.py:131  vals = _sv.normalised_layer_profile(...)
+the READ     inlined its own copy: for L in band / fmean(others) / base > 0 / divide
+the PREREG   "Implemented ONCE, in scripts/dcs_csi_argmax_verdict.normalised_layer_profile(),
+              and called by BOTH the freeze (for q) and the read (for the verdict)"
+```
+
+📌 **S-403 diagnosed exactly this failure — the freeze and the read computing one quantity from two
+copies — fixed it for the freeze, wrote the fix into the prereg as a completed fact, and left the
+read inlining its own version for three ticks.** The structure S-403 existed to destroy was intact,
+and the preregistration certified in writing that it was not.
+
+⚠ **And the test named `test_the_normalisation_is_the_SHARED_one`, whose own docstring says "Both
+must call the same function", asserted it of the FREEZE ONLY.** It never grepped the reader. The
+sibling guard forbade `def binom_tail`, `def decide`, `itertools.permutations` — none of which
+match an inlined `fmean` loop with no `def`. **A half-installed guard that reads as fully
+installed.** Both callers are checked now, plus an explicit assertion that the inlined baseline is
+gone.
+
+The two implementations were bit-identical on the real data (0 of 72 mismatches), so nothing was
+numerically wrong yet. That is the point: S-403's own lesson is that they agree until they don't.
+
+### 2. 🔴 A non-finite cell MANUFACTURES a PASS
+
+`inf > 0` is **True**, so the zero-baseline guard admitted it — and the arithmetic is
+**directional**:
+
+```
+inf / finite = inf     -> FORCES that head's argmax to that layer
+finite / inf = 0.0     -> REMOVES that layer from contention for every OTHER head
+```
+
+R36-B set three cells to `Infinity`, each at its own head's screen-predicted layer, and turned a
+`FAIL, M=3` into **`PASS -- permutation = 0.000694`**, carrying the IF_POSITIVE prohibitions and a
+clean VOID-13 recon (recon is per-layer reconstruction and says nothing about one overflowed cell).
+Reachability is real: the instrument computes in bfloat16 and divides by a per-prompt rms, and
+`json.dump`/`json.load` round-trip bare `Infinity` and `NaN` silently. Now refused, naming the cell.
+
+### 3. 🔴 The output gave the BINOMIAL top billing — which the prereg forbids
+
+```
+was:  "p_one_sided": <the binomial>     at top level, beside "alpha"
+      conditional and permutation demoted into "ROBUSTNESS"
+prereg MUST_NOT_BE_SAID_IF_POSITIVE[5]: "the binomial p alone. The claim is the WEAKEST of three."
+```
+
+On the real numbers the binomial is **0.049998 — BELOW alpha — in a file whose verdict is FAIL**.
+Two adjacent top-level fields quoted together read as a pass out of a null. Renamed to
+`p_binomial_NOT_THE_CLAIM`.
+
+⚠ **And the prohibition that would have stopped it was attached only on PASS** — absent from
+exactly the branch where the binomial is the misleadingly small number. It now travels on every
+branch.
+
+### 4. ✅ What R36-A verified as sound
+
+```
+the S-402 move is BYTE-IDENTICAL   diff of the 147 moved lines: ZERO hunks
+the `pr` shim is faithful          the moved range reads only pr["id"] and PRIMARY.GATING
+the caller loses nothing           AST set-difference of names used after the call: {} both ways
+binom_tail is bit-identical        455 combinations, float.hex() equality, 0 differences
+PR-CSI-020 reproduces              md5 76608072 == the published artefact
+PR-016 and PR-018 also reproduce   old-vs-new differential: byte-identical on all three families
+leave-one-out is correct           head excluded from its own baseline; fmean is order-independent
+                                   (200 shuffles, 0 bit-differences)
+```
+
+### 5. ⚠ Recorded, NOT fixed
+
+```
+R36-B F3   a TRAIN artefact relabelled `validation` with three counts edited gets a preregistered
+           verdict. The split guard reads a SELF-DECLARED STRING; the artefact's own `domains`
+           list (67 TRAIN domains), `exclude_prompt_ids`, bank_block, condition, concept/codeword
+           ids, dtype, readout_position and direction are never cross-checked against the prereg.
+           ⛔ THIS IS THE NEXT THING TO FIX and it is a BLOCKER: S-384 is the precedent that a
+           COUNT is not a POPULATION.
+R36-A F16  the leave-one-out normalisation COUPLES the eight heads -- a head that dominates a
+           layer shrinks its own denominator and inflates its peers'. `decide()`'s null assumes
+           INDEPENDENT draws. Measured: 7 distinct argmax layers of 8 (P = 0.126 under uniform).
+           The prereg's power model says "independently" and does not disclose this.
+R36-A F15  `decide()`'s `grandfathered` parameter is overwritten by a literal and fails OPEN.
+R36-B F5   on a tie, summing the published `COUNTED_IN_M` recovers the withheld M.
+R36-B F6   VOID 13 accepts a one-key recon dict; eight of nine layers go unchecked.
+R36-A F14  pr016's local `binom_tail` is now dead code -- a second copy of the statistic.
+```
+
+### 6. State
+
+```
+QUEUE    EMPTY. R36-C (freeze/launcher/recipe) has not reported.
+CHANGED  scripts/dcs_csi_pr021_rung2_read.py (4 blockers), tests (both callers checked, +2 guards),
+         configs/...pr021...json (RE-FROZEN --force, md5 325909af -- its normalisation claim is
+         now TRUE), runargs/dcs_csi_pr021_read.txt (re-pinned), external_md/...
+NEXT     R36-C; then F3 (measurement identity) and F16 (the independence disclosure) BEFORE any
+         launch. ⛔ NOT LAUNCHING until those are closed.
+```
+
+`git push` remains credential-blocked. Committed locally.

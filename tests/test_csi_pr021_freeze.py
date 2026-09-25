@@ -120,10 +120,57 @@ def test_it_refuses_without_a_READER_and_checks_that_FIRST():
     # thrown away the ordering guarantee, which is the part that still bites.
     assert "REFUSING TO EMIT" in code, "the refusal was removed rather than satisfied"
     assert "cannot substitute" in code, "the refusal no longer says why pr016 cannot be used"
-    r = subprocess.run([PY, SCRIPT], capture_output=True, text=True)
+    # ⚠⚠ S-405: this used to run the freeze with NO --out, so every test run RE-EMITTED the
+    # frozen preregistration in place -- which is how the committed prereg came to carry a
+    # reader_md5 naming a reader that no longer existed, and how the read recipe's md5 pin went
+    # stale. A test must never regenerate a frozen artefact.
+    import tempfile
+    _td = tempfile.mkdtemp()
+    r = subprocess.run([PY, SCRIPT, "--out", os.path.join(_td, "pr021_test_emission.json")],
+                       capture_output=True, text=True)
     both = r.stdout + r.stderr
     if os.path.exists(os.path.join(ROOT, "scripts", "dcs_csi_pr021_rung2_read.py")):
         assert r.returncode == 0, "both preconditions exist but the freeze did not emit:\n" + both
-        assert "wrote configs/" in both, both[:300]
+        assert "[pr021] wrote " in both, both[:300]   # S-405: emitted to a TEMP path
     else:
         assert r.returncode != 0 and "S-398" in both, both[:300]
+
+
+def test_the_freeze_REFUSES_to_overwrite_a_frozen_prereg():
+    """🔴 S-405. This script had NO overwrite guard, and a test in this very file ran it with no
+    --out -- so every test run, including the commit hook's, RE-EMITTED the preregistration in
+    place. The committed prereg ended up carrying a reader_md5 naming a reader version that no
+    longer existed, and the frozen read recipe's md5 pin went stale, because the file changed
+    underneath both after they were written.
+
+    A preregistration is the one artefact in this sprint that must not be regenerable by accident.
+    """
+    code = _code()
+    assert '"--force"' in code, "the overwrite guard was removed"
+    assert 'os.path.exists(outp) and not a.force' in code, "the guard no longer checks existence"
+    assert '"--out"' in code, "tests cannot redirect the emission away from the frozen path"
+    out = os.path.join(ROOT, "configs", "dcs_csi_pr021_rung2_decode_basket_validation.json")
+    if not os.path.exists(out):
+        pytest.skip("no frozen prereg in this checkout")
+    r = subprocess.run([PY, SCRIPT], capture_output=True, text=True)
+    both = r.stdout + r.stderr
+    assert r.returncode != 0, "the freeze overwrote a frozen preregistration without --force"
+    assert "S-405" in both and "FROZEN" in both, both[:300]
+
+
+def test_the_read_recipes_md5_pins_are_CURRENT():
+    """A stale pin is worse than none: it asserts a check that will fail, or -- unchecked --
+    asserts nothing. S-405 found the prereg pin stale because a test had rewritten the file."""
+    import hashlib
+    import re as _re
+    rec = os.path.join(ROOT, "runargs", "dcs_csi_pr021_read.txt")
+    if not os.path.exists(rec):
+        pytest.skip("read recipe absent")
+    text = open(rec, encoding="utf-8").read()
+    pairs = _re.findall(r"^#\s+\w+\s+(\S+)\s+md5 ([0-9a-f]{32})", text, _re.M)
+    assert len(pairs) >= 4, "the recipe no longer pins four artefacts: %r" % pairs
+    for path, pinned in pairs:
+        f = os.path.join(ROOT, path)
+        assert os.path.exists(f), "the recipe pins %s, which does not exist (S-167c)" % path
+        live = hashlib.md5(open(f, "rb").read()).hexdigest()
+        assert live == pinned, "%s: recipe pins %s but the file is %s" % (path, pinned, live)

@@ -31,7 +31,7 @@
  "band": "6-14",
  "instrument": "scripts/dcs_csi_rung2_celldecode.py",
  "reader": "scripts/dcs_csi_pr021_rung2_read.py",
- "reader_md5": "7d58f3c37674ad9410be564c1999cf5b",
+ "reader_md5": "e1f48420ad02434c24947044f1392cdb",
  "⚠ THE_STATISTIC_IS_IMPORTED_FROM": "scripts/gates/dcs_csi_pr020_freeze.py -- binom_ge, perm_tail, certifies, power_mc, n_assign. S-389: the rungs are only comparable if the statistic is the SAME one applied to a DIFFERENT quantity, and S-350 showed that two 'identical' implementations agreed only at M=K.",
  "QUANTITY": {
   "what": "per-cell contribution to the ENDPOINT's readout position along the model's own concept-minus-codeword direction, over demo_all's source positions, divided by the per-prompt rms, aggregated per DOMAIN then over domains",

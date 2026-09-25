@@ -125,21 +125,36 @@ def main() -> int:
         if v is None:
             sys.exit("REFUSING: the measurement has no value for cell (L%d, head %d), so this "
                      "head's argmax would be taken over an incomplete set." % (L, h))
-        return abs(float(v))
+        f = abs(float(v))
+        # ⚠⚠ R36-B/S-406: A NON-FINITE CELL MANUFACTURES A PASS. `inf > 0` is True, so the
+        # zero-baseline guard admits it, and the arithmetic is DIRECTIONAL: inf/finite = inf
+        # FORCES that head's argmax to this layer, while finite/inf = 0.0 REMOVES the layer from
+        # contention for every other head. One corrupt cell buys a guaranteed match and denies
+        # that layer to the rest. R36-B set three cells to Infinity and turned a FAIL (M=3) into
+        # "PASS -- permutation = 0.000694", carrying the IF_POSITIVE prohibitions and a clean
+        # VOID-13 recon. json.dump/json.load round-trip bare `Infinity` and `NaN` silently, and
+        # the instrument computes in bfloat16 and divides by a per-prompt rms.
+        if f != f or f == float("inf"):
+            sys.exit("REFUSING: cell (L%d, head %d) is %r. A non-finite value forces this head's "
+                     "argmax to this layer AND zeroes the layer for every other head -- it "
+                     "manufactures matches. (R36-B/S-406)" % (L, h, v))
+        return f
 
     rows = []
     for h in heads:
         # ⚠ LEAVE-ONE-OUT: head h is excluded from its own layer baseline. With 8 heads a
         # self-inclusive mean would let a large cell inflate its own denominator by 1/8 and
         # shrink its own normalised value -- an effect that points the wrong way and is avoidable.
-        norm = {}
-        for L in band:
-            others = [mag(L, hh) for hh in heads if hh != h]
-            base = statistics.fmean(others)
-            if not (base > 0):
-                sys.exit("REFUSING: the leave-one-out baseline at L%d is %r, so the normalised "
-                         "value is undefined. (S-401)" % (L, base))
-            norm[L] = mag(L, h) / base
+        # ⚠⚠ R36-A/R36-B/S-406: THIS INLINED ITS OWN COPY of the normalisation while the FROZEN
+        # PREREG asserted "Implemented ONCE ... and called by BOTH the freeze (for q) and the read
+        # (for the verdict)". That sentence was FALSE of the read. The S-403 structure -- freeze
+        # and read computing the same quantity from two copies -- was intact, and the prereg
+        # certified in writing that it was not. Two reviewers found it independently; the test
+        # that was supposed to prevent it checked only the freeze.
+        try:
+            norm = _verdict.normalised_layer_profile(mag, heads, band, h)
+        except ValueError as e:
+            sys.exit("REFUSING: %s. (S-401/S-406)" % e)
         order = sorted(band, key=lambda L: -norm[L])
         tie = norm[order[0]] == norm[order[1]]
         sp = int(per_head[str(h)]["screen_predicted_layer"])
@@ -161,10 +176,14 @@ def main() -> int:
     d = _verdict.decide(rows, band, float(pr["PRIMARY"]["alpha"]),
                         pr["PRIMARY"].get("GATING"), pr["id"])
 
+    # ⚠ R36-B/S-406: the "binomial alone" prohibition lived ONLY in the IF_POSITIVE list, so it
+    # was absent from FAIL -- exactly the branch where the binomial (0.049998, below alpha) is the
+    # misleadingly small number sitting beside a FAIL verdict. It now travels on every branch.
+    _always = [x for x in pr["MUST_NOT_BE_SAID_IF_POSITIVE"] if "binomial" in x.lower()]
     if d["verdict"] == "PASS":
         must_not = pr["MUST_NOT_BE_SAID_IF_POSITIVE"]
     elif d["verdict"] == "FAIL":
-        must_not = pr["MUST_NOT_BE_SAID_IF_NULL"]
+        must_not = _always + pr["MUST_NOT_BE_SAID_IF_NULL"]
     else:
         must_not = (["CANNOT ANSWER is NOT a null and NOT a positive."]
                     + pr["MUST_NOT_BE_SAID_IF_POSITIVE"] + pr["MUST_NOT_BE_SAID_IF_NULL"])
@@ -174,8 +193,15 @@ def main() -> int:
         "prereg_id": pr["id"], "measurement": a.measurement,
         "RUNG": "2 (DECODABILITY) -- AM-34's ladder. It stands BESIDE the rung-1 results, never "
                 "as a stronger version of them: the rungs are separable.",
-        "K_admitted": d["K"], "M_matches": d["M"], "alpha": float(pr["PRIMARY"]["alpha"]),
-        "p_one_sided": d["p"], "GATING": d["gating"],
+        "K_FIXED_AT_8": d["K"],
+        "⚠ K_IS_NOT_AN_ADMISSION": pr["PRIMARY"]["K_IS_FIXED_AT_8"],
+        "M_matches": d["M"], "alpha": float(pr["PRIMARY"]["alpha"]),
+        # ⚠⚠ R36-B/S-406: this was `"p_one_sided": d["p"]` -- the BINOMIAL, alone, at top level
+        # under a name that reads as THE p-value of the read, with the conditional and the
+        # permutation demoted into "ROBUSTNESS". The prereg's MUST_NOT_BE_SAID_IF_POSITIVE
+        # forbids quoting the binomial alone, and on the actual numbers the binomial is 0.049998
+        # -- BELOW alpha -- in a file whose verdict is FAIL. Renamed, and the gate is what leads.
+        "p_binomial_NOT_THE_CLAIM": d["p"], "GATING": d["gating"],
         "gating_p_name": (None if d["M"] is None else d["gate_name"]),
         "gating_p": (None if d["M"] is None else d["gate_p"]),
         "VERDICT": d["verdict"], "why": d["why"],

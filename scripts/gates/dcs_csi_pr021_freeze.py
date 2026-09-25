@@ -46,6 +46,7 @@ S-395 executed it (recon_rel_err 3.1e-03 against a 3e-2 tolerance, an 8.6x margi
 """
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import json
 import os
@@ -137,6 +138,13 @@ def train_q(art, heads, pred):
 
 
 def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--out", default=OUT,
+                    help="where to write. Defaults to the frozen path; tests MUST pass a temp one.")
+    ap.add_argument("--force", action="store_true",
+                    help="overwrite an existing preregistration. See the refusal text.")
+    a = ap.parse_args()
     m = _pr020()
     # ⚠ ORDERED FIRST: an existence check is cheaper than reading and validating the
     # train artefact, and R35-C's F14 is that every cheap refusal belongs before the
@@ -359,10 +367,25 @@ def main() -> int:
     _lo, _hi = clopper_pearson(M_tr, K_tr)
     pr["POWER_BY_SEEDED_MONTE_CARLO"]["q_exact_95CI"] = [_lo, _hi]
     pr["reader_md5"] = m.md5(reader_path)
-    outp = os.path.join(REPO, OUT)
+    outp = a.out if os.path.isabs(a.out) else os.path.join(REPO, a.out)
+    # ⚠⚠ S-405: A FREEZE THAT SILENTLY OVERWRITES IS NOT A FREEZE. This script had no such guard,
+    # and `tests/test_csi_pr021_freeze.py` RUNS it -- so every test run, including the commit
+    # hook's, re-emitted the preregistration in place. The committed prereg ended up carrying a
+    # `reader_md5` naming a reader version that no longer existed, and the frozen read recipe's
+    # md5 pin went stale, because the file changed underneath both after they were written.
+    # A preregistration is the one artefact in this sprint that must NOT be regenerable by
+    # accident.
+    if os.path.exists(outp) and not a.force:
+        raise SystemExit(
+            "REFUSING: %s already exists.\n"
+            "A preregistration is FROZEN: re-emitting it changes content that other artefacts\n"
+            "pin by md5 (runargs/dcs_csi_pr021_read.txt does) and that a reader may already have\n"
+            "been run against. If you genuinely mean to re-freeze -- which means nothing has been\n"
+            "read from this family yet -- pass --force and record WHY in the log. Tests must pass\n"
+            "--out to a temporary path instead. (S-405)" % a.out)
     with open(outp, "w", encoding="utf-8") as fh:
         json.dump(pr, fh, indent=1, ensure_ascii=False)
-    print("[pr021] wrote %s  md5 %s" % (OUT, m.md5(outp)))
+    print("[pr021] wrote %s  md5 %s" % (a.out, m.md5(outp)))
     print("[pr021] TRAIN q = %d/%d = %.4f   (artefact %s, md5 %s)"
           % (M_tr, K_tr, q_hat, TRAIN_ARTEFACT, m.md5(art_path)))
     print("[pr021] floors at K=8: %s  WEAKEST = %s"

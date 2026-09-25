@@ -1,9 +1,9 @@
 # FROZEN READ for PR-CSI-021 -- RUNG 2 (DECODABILITY) on BASKET VALIDATION cells.
 # Frozen 2026-09-25, BEFORE ANY VALIDATION NUMBER EXISTS. Never re-freeze after seeing one.
 #
-# PREREG   configs/dcs_csi_pr021_rung2_decode_basket_validation.json  md5 73a69036f0f77fc5e7e12f860d06de23
+# PREREG   configs/dcs_csi_pr021_rung2_decode_basket_validation.json  md5 325909afcda9b5d9444a81011bdb032e
 # INSTRUMENT scripts/dcs_csi_rung2_celldecode.py                      md5 a95dbc00157a86cc09633e78f3d9e3f0
-# READER   scripts/dcs_csi_pr021_rung2_read.py                        md5 1212b2213c757356d107e343bbd8d10c
+# READER   scripts/dcs_csi_pr021_rung2_read.py                        md5 e1f48420ad02434c24947044f1392cdb
 # STATISTIC scripts/dcs_csi_argmax_verdict.py                         md5 9e6eaee73bcb096f3c89df84a8e1f0b7
 #
 # WHY THIS FAMILY EXISTS. Every claim in this sprint is RUNG 1 on AM-34's ladder -- ablation
