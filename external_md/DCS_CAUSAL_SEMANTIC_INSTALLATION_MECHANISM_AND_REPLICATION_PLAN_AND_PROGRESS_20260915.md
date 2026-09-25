@@ -39522,3 +39522,65 @@ at rank 2*; any future read landing there would hit the same disagreement.
 missing, and the one no sweep so far performs.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-447 — AM-48 generalised: the preregistered threshold was UNIMPLEMENTABLE, and the axis analyser has never read a preregistration
+
+**2026-09-25. Queue empty, no GPU.** S-446 found the analyser certifying only at rank 1 where three
+preregs declare rank ≤ 2. **The general form is worse and simpler than a disagreement.**
+
+### 1. Measured
+
+```
+preregs declaring "rank <= 2 of 47 certifies"        FOUR  (PR-CSI-004, 005, 006, 007)
+                                                     -- S-446 said three; PR-004 says it too
+those threshold fields read by any script            ZERO  (rank_needed_to_certify_at_alpha_0_05,
+                                                            definition_of_HELPS, decision, ...)
+--prereg argument on dcs_csi_subspace_analyze.py     NONE  (21 flags: arm names, prefixes, tolerances)
+rank-threshold flag on it                            NONE  (grep count 0)
+frozen read recipes invoking it                      8, and none passes a threshold -- none could
+```
+
+**So `rank ≤ 2` never had a route into the code.** It is not that someone implemented the wrong
+rule; **it is that the declared rule was prose in a file the analyser has never opened.**
+
+🔴 **And the analyser's only executable uses of the word are to WRITE a label:** every subspace
+artefact carries `"prereg": "configs/dcs_csi_pr001_subspace_rescue.json"` (or pr003) — **a
+provenance claim, in the artefact, for a file the producing code never read.**
+
+### 2. ✅ The sprint already fixed this, for other families, and never migrated these
+
+```
+dcs_csi_subspace_analyze.py     0 prereg reads   -- the AXIS families (PR-CSI-001..007)
+dcs_csi_head_census.py        130 prereg refs    -- reads alpha, z, the bar rule, the tolerance,
+                                                    and REFUSES when a field is absent
+dcs_csi_pr016_argmax_test.py   51 prereg refs    -- reads ADMISSION.ratio, PRIMARY.GATING, alpha,
+                                                    and FAILS CLOSED on a missing gating rule
+```
+
+📌 **This is the same architectural lesson the sprint learned twice and wrote down each time** — S-323's
+*"fail closed: guessing which p-value gates is guessing the success criterion"*, and S-312's refusal
+to let `z` default. **Both fixes were made in the newer readers. The older analyser was never
+brought along, and nothing noticed because nothing compares a reader's rule to its prereg.**
+
+### 3. What was NOT established
+
+⛔ **Which rule is right.** The preregs were frozen first and their arithmetic is correct
+(2/47 = 0.042553 ≤ α); the code is stricter. **Changing either is a decision and it is the user's.**
+I have changed neither, and I am not migrating the analyser to read its prereg — that would alter
+the rule that produced every published axis number.
+⛔ **That the cell/head readers honour EVERY threshold their preregs declare.** They are
+prereg-*driven*, which is not the same as prereg-*complete*. **I checked that they read their
+constants; I did not audit field by field that no declared threshold is unread.** That is the same
+check, one layer in, and it is not done.
+⛔ **That PR-CSI-004's declaration matters in practice** — its family never ran (AM-46), so its
+threshold has no read to bind.
+⛔ **No published number, claim or verdict moved. No code or prereg was changed.** ⛔ **No GPU, no
+arm. TEST untouched.**
+
+**NEXT:** the field-by-field check on the cell and head readers — whether any threshold their
+preregs declare goes unread. It is the same question one layer in, and §M's own standard is that
+every criterion the results use is defined.
+
+`git push` remains credential-blocked. Committed locally.
