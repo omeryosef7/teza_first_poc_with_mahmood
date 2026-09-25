@@ -39318,3 +39318,67 @@ would need to read verdict and prose fields across every published artefact.
 is enough to make looking on purpose worthwhile.
 
 `git push` remains credential-blocked. Committed locally.
+
+---
+
+## S-444 — the sweep for quotable-but-forbidden artefact strings: 11 hits, 7 of them the artefacts doing their job, and ONE new
+
+**2026-09-25. Queue empty, no GPU.** S-428 and S-443 each found, by accident, a string in a published
+artefact that a later editor would read and quote. **Two by accident is enough to look on purpose.**
+Every string field of every `reports/DCS_CSI_*.json` was matched against the phrasings the claim
+table forbids.
+
+### 1. The result, with the good news stated first
+
+**11 hits. 7 are the artefacts NAMING WHAT THEY FORBID** — `CANNOT_DO`, `MUST_NOT_BE_SAID`,
+`SELECTION_RE_ENTERS_WHEN`, and PR-013's `REPORTABLE_AS`, which uses the phrase only to deny it:
+*"It is NOT a claim that head 2 is 'the writer'."* **That is the same convention the claim table
+uses, and it is working.** A prohibition that does not name what it bans cannot be checked.
+
+**4 are real, and 3 were already known:**
+
+```
+PR010_HEAD_validation.json     .VERDICT  "WE FOUND (part of) THE WRITER"   known (S-443)
+PR011_ALL32_validation.json    .VERDICT  "WE FOUND (part of) THE WRITER"   *** NEW ***
+PR018_ARGMAX_TEST_...json      .ROBUSTNESS.GATING_FLOOR.WHAT_THIS_IS       known (S-428)
+PR020_ARGMAX_TEST_...json      .ROBUSTNESS.GATING_FLOOR.WHAT_THIS_IS       known (S-428)
+```
+
+### 2. 🔴 The new one, and why S-443 missed it
+
+**PR-CSI-011's artefact carries the byte-identical verdict string to PR-CSI-010's.** S-443 found the
+label while reading PR-010 for §M.8 and wrote *"a published artefact"*, singular — **because I had
+opened one file, not because I had checked.** The sweep opened all of them. Corrected in §M.8 and in
+the checklist row, both of which now say **two**.
+
+📌 **The pattern is exact and I should name it: S-438 found that I reported D32 and D33 as one
+experiment because I had never opened D33's artefact; S-443 then recorded D33's verdict string as
+absent for the same reason.** The same unopened file produced two separate errors, eleven ticks
+apart, and each was found by something other than me noticing the file was unopened.
+
+### 3. What the sweep establishes about the corpus
+
+⚠ **Both real classes are concentrated, not endemic.** The `never FAIL` sentence appears in exactly
+the two argmax artefacts that carry a `GATING_FLOOR` block, and the verdict label in exactly the two
+head-level families that reach a verdict ladder. **No third class was found** — no artefact asserts
+"the axis is causal", "the screen transfers across codewords", "TEST is unspent" or a rung-2 claim
+anywhere outside a prohibition field.
+
+### 4. What was NOT established
+
+⛔ **That the sweep is complete.** It matches **ten** phrasings drawn from the editor's checklist and
+the claim table's prohibitions. **A forbidden claim phrased in words neither list anticipated is
+invisible to it** — and this is a pattern match of mine, which has been wrong ten times this sprint.
+⛔ **That the four are harmless where they sit.** They are not rewritten, for the S-428 reason: the
+artefacts record what was read. **What changed is that all four are now named in §M and blocked by
+checklist rows** — before, three were.
+⛔ **That `MUST_NOT_BE_SAID` fields are themselves correct.** I classified 7 hits as legitimate by
+reading the surrounding field name and the sentence. I did **not** check that each prohibition is
+the right prohibition for its family.
+⛔ **No published number, claim or verdict moved.** ⛔ **No GPU, no arm, no code change. TEST
+untouched.**
+
+**NEXT:** §M.9 and §A remain unreviewed, and §M.9 is now the only section in the file that has never
+been read by anyone but its author.
+
+`git push` remains credential-blocked. Committed locally.

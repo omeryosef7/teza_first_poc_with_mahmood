@@ -271,7 +271,7 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | "correcting" either 1.52e-04 | `(1/9)^4 = (1/3)^8 = 1/6561` — two real quantities, one value | [†] §4 |
 | ‼ "floor above α ⇒ CANNOT ANSWER, never FAIL" | true only at K < 3; at K ≥ 3 it is a FAIL with an unwinnability warning — and the sentence is **still live in both published artefacts**, so it can be re-imported from a source an editor will read | AM-45 (S-428), §M.6 |
 | ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | §1–§4 are the CELL-level part and §H the HEAD-level part; of the axis / necessity / dissociation families (D12–D31) **only D18/D19/D23/D24/D29 are drafted, as §A — EIGHTEEN rows remain in neither** — see SCOPE | D12–D31, SCOPE |
-| ‼ quoting `VERDICT: "WE FOUND (part of) THE WRITER"` | it is a **verdict LABEL live in a published artefact**, not a claim; the permitted form is that file's `REPORTABLE_AS` — 8 head indices, at least half the effect, **leg (i) only**, **not** a claim about any cell | D32, §M.8 |
+| ‼ quoting `VERDICT: "WE FOUND (part of) THE WRITER"` | it is a **verdict LABEL live in TWO published artefacts** (PR-010 and PR-011), not a claim; the permitted form is that file's `REPORTABLE_AS` — 8 head indices, at least half the effect, **leg (i) only**, **not** a claim about any cell | D32, §M.8 |
 | "deduplicating" the two 0.012346s | D39's certified conditional (§2) and D38's forbidden binomial (§4) are **both exactly 1/81** — one is a result, one is banned | D39, D38, §4 |
 | ‼ "TEST is unspent / untouched / available" | read to completion 2026-09-08 and selection-contaminated | AM-39, D5 |
 | "the screen is a validated cell selector in general" | forbidden for **both** D39 and D40, not just D39 | D39, D40 |
@@ -550,8 +550,10 @@ is partly a restatement of the selection. **VALIDATION adjudicates with ONE prer
 no multiplicity correction is applied or needed, and `HD_BOTK` does **not** enter the control
 distribution.
 
-🔴 **AND THE ARTEFACT'S OWN `VERDICT` STRING MUST NEVER BE QUOTED.** `DCS_CSI_PR010_HEAD_validation.json`
-records `VERDICT: "WE FOUND (part of) THE WRITER"` — the prereg's branch is named
+🔴 **AND THE ARTEFACTS' OWN `VERDICT` STRING MUST NEVER BE QUOTED.** **BOTH**
+`DCS_CSI_PR010_HEAD_validation.json` **and** `DCS_CSI_PR011_ALL32_validation.json` record the
+identical `VERDICT: "WE FOUND (part of) THE WRITER"` (a sweep in S-444 found the second; S-443 had
+seen only the first) — the prereg's branch is named
 `WE_FOUND_THE_WRITER` and its conditions were met, and the reader hedged it at write time. **The
 sprint forbids "the writer" language throughout**, and the same file's `REPORTABLE_AS` gives the
 form that is permitted: *"8 head INDICES … carry at least half of the A1 knockout's effect on
