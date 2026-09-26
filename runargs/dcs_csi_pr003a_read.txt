@@ -1,3 +1,7 @@
+# ⚠ S-495: <HALF4>/<HALF5> RESOLVED. Half 4 = job 932477, half 5 = job 932478, both submitted
+#   2026-09-26 at BLOB f195b6d1 with a clean worktree, after VOID 6 and VOID 7 were discharged by
+#   measurement (S-490, S-494). Written in BEFORE the read is run, so no rank has been seen.
+#
 # PR-CSI-003-A (NECESSITY CONTROL-FAMILY AMENDMENT) READ COMMANDS -- frozen 2026-09-20, while job
 # 912736 (necessity half 2) was RUNNING on n-350 and BEFORE any necessity CANDIDATE number existed.
 # Modelled on runargs/dcs_csi_pr003_read.txt, whose three foot-guns are carried forward below and
@@ -108,7 +112,7 @@ python scripts/dcs_csi_subspace_analyze.py \
   --candidate-arm KO_NEC_AXIS --comparator-arm KO_NEC_ORTH \
   --control-prefixes KO_NEC_SHUF \
   --split train --require-rescue-layer 18 \
-  --require-slurm-job 906433,912736,<HALF4>,<HALF5> \
+  --require-slurm-job 906433,912736,932477,932478 \
   --out reports/DCS_CSI_SUBSPACE_NECESSITY_basket_train_shuf24.json
 
 # ---- SECONDARY -- the POOLED family, K = 28, floor 0.0345. REPORTED, NOT THE TEST ----------------
@@ -123,7 +127,7 @@ python scripts/dcs_csi_subspace_analyze.py \
   --candidate-arm KO_NEC_AXIS --comparator-arm KO_NEC_ORTH \
   --control-prefixes KO_NEC_SHUF,KO_NEC_RAND \
   --split train --require-rescue-layer 18 \
-  --require-slurm-job 906433,912736,<HALF4>,<HALF5> \
+  --require-slurm-job 906433,912736,932477,932478 \
   --out reports/DCS_CSI_SUBSPACE_NECESSITY_basket_train_pooled28.json
 
 # ---- INDEPENDENT RE-DERIVATION (shares no code with the above) -------------------------------------
@@ -133,7 +137,7 @@ python scripts/dcs_csi_rederive_subspace.py \
   --tag-prefix csi1_basket_train --split train --expect-n 670 --allow-short 4 \
   --direction necessity --base NEC_BASE --ko NEC_KO --full KO_NEC_FULL --candidate KO_NEC_AXIS \
   --controls KO_NEC_SHUF0,KO_NEC_SHUF1,KO_NEC_SHUF2,KO_NEC_SHUF3,KO_NEC_SHUF4,KO_NEC_SHUF5,KO_NEC_SHUF6,KO_NEC_SHUF7,KO_NEC_SHUF8,KO_NEC_SHUF9,KO_NEC_SHUF10,KO_NEC_SHUF11,KO_NEC_SHUF12,KO_NEC_SHUF13,KO_NEC_SHUF14,KO_NEC_SHUF15,KO_NEC_SHUF16,KO_NEC_SHUF17,KO_NEC_SHUF18,KO_NEC_SHUF19,KO_NEC_SHUF20,KO_NEC_SHUF21,KO_NEC_SHUF22,KO_NEC_SHUF23 \
-  --require-rescue-layer 18 --require-slurm-job 906433,912736,<HALF4>,<HALF5> \
+  --require-rescue-layer 18 --require-slurm-job 906433,912736,932477,932478 \
   --out reports/DCS_CSI_REDERIVE_NECESSITY_basket_train_shuf24.json
 
 # ---- WRITE VERIFICATION, because the exit status of a write on this filesystem is not evidence ----

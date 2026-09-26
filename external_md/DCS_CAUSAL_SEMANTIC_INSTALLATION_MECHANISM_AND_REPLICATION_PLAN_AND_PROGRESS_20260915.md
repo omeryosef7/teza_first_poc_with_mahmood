@@ -42992,3 +42992,48 @@ Pre-flight, re-run rather than reused: `pr003a_verify_launcher` → **exit 0, `L
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** the two job ids, then watch the arms land.
+
+---
+
+## S-495 / 🚀 PR-CSI-003-A IS LAUNCHED — jobs 932477 (half 4) and 932478 (half 5), 20 arms (2026-09-26)
+
+```
+provenance: BLOB f195b6d1  PORCELAIN clean
+Submitted batch job 932477      CSI_NEC_HALF=4   KO_NEC_SHUF4..13
+Submitted batch job 932478      CSI_NEC_HALF=5   KO_NEC_SHUF14..23
+   932477  killable  csi_p1  PD  (Priority)
+   932478  killable  csi_p1  PD  (Priority)
+```
+
+Submitted as `basket configs/dcs_csi_axis_basket_behavioral_shuf24.pt train L`, `--gpus=geforce_rtx_3090:1 --time=08:00:00`, `CSI_STAGE=1`. **This family has been blocked since S-142 and is the first PR-CSI-003-A arm set to reach a GPU.**
+
+### Every gate that had to be green, and how
+
+| check | result |
+|---|---|
+| **User authorisation** | explicit *"Launch it"*, then, after I corrected my own framing, *discharge-both-then-launch, no further check-in* |
+| **VOID 7** | discharged S-490: 80 common leaves, **0 differing**, 12 added disclosure-only keys, `candidate_sign_ok=True` |
+| **VOID 6** | discharged S-494: job 932349, **670 rows × 12 fields = 8040 comparisons, bit-identical** |
+| **Launcher patch** | `pr003a_verify_launcher` **exit 0**, 20 arms over 4..23, no gaps, no repeats, halves 1–3 intact |
+| **Adversarial review before GPU** | **R39**, both streams, S-478–S-489 |
+| **S-167c — nothing named that does not exist** | the axis file carries **all 24** `ctrl_shuffled0..23` **and** `cand_rank1`, `meta.selected_layer = 18` |
+| **Clean worktree** | `f195b6d1`, 516 passed / 1 skipped, tracked dirty **0** |
+| **TEST** | untouched |
+
+⚠ **The S-167c check needed two attempts and both failures were mine**: the first used a `python3` without torch, the second read the top level (`meta`, `bases`) and reported **zero** shuffled keys before I looked inside `bases`. A check that reports "MISSING [4..23]" because the reader is wrong is exactly the false alarm this sprint keeps producing; it was caught by inspecting the object rather than trusting the first output.
+
+⚠ **Submitted by direct `sbatch`, deliberately.** `scripts/gates/dcs_csi_submit.sh` ends `exec sbatch … "$@" "$S"`, so the script is always last and there is **nowhere to put this launcher's four positional arguments**. Its two protections were replicated inline: the worktree was verified clean before submitting (it refuses otherwise) and the provenance variables were exported. Recorded because using the helper would have looked more disciplined and would not have worked.
+
+### What the 20 arms buy, in the amendment's own terms
+
+The shuffled control family goes **4 → 24**, and the attainable floor **0.2000 → 0.0400**. Halves 2+3 capped the family at 16, floor `1/17 = 0.0588`, which **is not < 0.05 and can never certify** — that is the whole reason this amendment exists.
+
+### WHAT IS NOT ESTABLISHED, AND WILL NOT BE UNTIL THE ARMS LAND
+
+- ⛔ **Nothing about the necessity result.** A larger family is **HARDER** to top at fixed separation: the amendment computes P(rank 1) = **0.6996 at K=8** and **0.5317 at K=24**, i.e. it *pays ~0.17 of rank-1 probability* to buy certifiability. **A floor of 0.0400 is also the smallest p this design can produce**, so if the candidate ranks 1 that must be said in the same sentence (the amendment's own instruction, S-079 precedent).
+- ⛔ **The read is not run and its recipe still carries placeholders** — `runargs/dcs_csi_pr003a_read.txt` names `--require-slurm-job 906433,912736,<HALF4>,<HALF5>`. Those become **932477, 932478**, and the recipe must be updated with them *before* the read, not after seeing a rank.
+- ⛔ **The other eight VOID conditions are not pre-checked here.** They are evaluated by the read's own gates at analysis time; VOID 1 (hardware) is the one to watch, since `p1_arms` uses a bare `--gpus=1` internally and I pinned 3090 only at submit.
+- ⛔ **`--allow-short 4` is still passed by recipe, not read from the prereg by any analyser** (R39 N-5).
+- ⛔ Push credential-blocked (~185 unpushed).
+
+**NEXT:** record 932477/932478 into the read recipe in place of `<HALF4>/<HALF5>`; watch the arms land; VOID 1 on both nodes.
