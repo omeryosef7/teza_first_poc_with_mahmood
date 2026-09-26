@@ -825,6 +825,50 @@ from the artefacts** — `DCS_CSI_PR010_HEAD_validation.json`, **`DCS_CSI_PR011_
 The cell-level half (§1–§4) subdivides heads that *this* half selected. It is written second and
 belongs first.
 
+
+## L.9 The readout is three times noisier on basket than on button, and most of the draft cannot test it
+
+The endpoint is a two-way softmax over `{concept, codeword}`. **`option_mass` is how much of the
+model's actual next-token distribution those two words hold** — when it is near zero the model is
+predicting some third word entirely and the two-way ratio is a renormalisation of noise.
+PR-CSI-001 declares **min 0.05** as a readout validity gate.
+
+Measured on the `BASE` arm — the unperturbed run, the same prompts in every family, so the figures
+are **bit-identical across all of them**:
+
+```
+                       rows below 0.05      median option mass
+basket TRAIN              243 / 670 = 36.3 %       0.0902
+basket VALIDATION          84 / 230 = 36.5 %       0.0835
+button VALIDATION          25 / 230 = 10.9 %       0.2650
+```
+
+⚠ **This is a property of the PROMPT BANK**, not of any arm, axis or intervention: it is the same
+in PR-CSI-014, 015, 020 and 010 (basket) and in PR-CSI-016 and 018 (button) as it is in the axis
+families, because `BASE` is the same clean run of the same bank.
+
+**§A can test it and does.** All eight axis cells were re-read at the 0.05 floor: **no verdict
+moves**, and every candidate's magnitude grows — the low-validity rows were attenuating (§A.3,
+§A.4a).
+
+🔴 **§1–§4 and §H cannot.** `scripts/dcs_csi_head_census.py` contains **no reference to
+`option_mass`**, and the shared loader every non-axis family uses — `load_installation`, whose own
+docstring calls it *"the SOLE implementation of the readout"* — selects on `query_kind`, `cell` and
+`n_examples` and **never reads the field**. There is no floor parameter to set. **Every result in
+§1–§4 and §H therefore includes all of those rows, and the sensitivity that reassured §A is
+unavailable there without new code.**
+
+⛔ **This is a limitation, not a finding against those results.** In the one family where the check
+could be run it changed nothing, twice over, on both codewords. But that is evidence *about the axis
+families*, and it transfers to the others by assumption rather than by measurement.
+
+⚠ **One place it touches a conclusion.** §H's **D35** — the sprint's only empirical negative — is a
+head selected on **basket** and failing to replicate on **button**, a comparison that crosses this
+asymmetry. It crosses it in the direction that **favours** the negative: button's readout is the
+cleaner of the two, so button was the easier place to detect the effect, and it was not detected.
+**Nothing here weakens D35; it is recorded because the comparison is cross-codeword and the two
+codewords are not matched on this.**
+
 ## H.1 Eight heads carry most of the knockout (D32)
 
 On basket VALIDATION, knocking out eight head indices across band layers 6–14 on the query-codeword

@@ -40436,3 +40436,81 @@ reachable from the artefacts or the claim table** — only from the preregistrat
 **NEXT:** measure readout validity in the head and cell families (§1–§4, §H), the one place the
 asymmetry has not been looked for. Then the remaining ten axis rows. **The rung-1 framing question
 from S-453 is still with the user. Push credential-blocked.**
+
+---
+
+## S-458 — the readout asymmetry is sprint-wide and bit-identical, and the instrument that produced both published PASSes cannot test it (2026-09-26)
+
+**S-457's named next action**: measure readout validity in the head and cell families, the one place
+the asymmetry had not been looked for.
+
+### It is everywhere, and it is the same number everywhere
+
+`BASE` option mass below PR-CSI-001's declared 0.05 floor, measured per family from its own
+`tag_prefix`:
+
+```
+family                          codeword  split        below 0.05      median
+PR-CSI-014 cell                 basket    validation   84 / 230 = 36.5 %   0.0835
+PR-CSI-015 cell3                basket    validation   84 / 230 = 36.5 %   0.0835
+PR-CSI-020 cell8                basket    validation   84 / 230 = 36.5 %   0.0835
+PR-CSI-010 head                 basket    validation   84 / 230 = 36.5 %   0.0835
+PR-CSI-010 head                 basket    train       243 / 670 = 36.3 %   0.0902
+PR-CSI-016 cell3                button    validation   25 / 230 = 10.9 %   0.2650
+PR-CSI-018 cell6                button    validation   25 / 230 = 10.9 %   0.2650
+(and the axis families, identical)
+```
+
+**The figures are bit-identical across families because `BASE` is the same unperturbed run of the
+same prompt bank.** That settles what AM-54-a could only infer from the swap family: readout
+validity is a property of the **bank**, not of the arm, the axis, the intervention or the
+instrument. ⇒ **Every basket-side result in this sprint rests on a readout where ~36 % of rows are
+below the declared validity floor; every button-side result on one where ~11 % are.**
+
+### 🔴 And §1–§4 and §H cannot run the check that reassured §A
+
+* `scripts/dcs_csi_head_census.py` — **zero** references to `option_mass`.
+* `load_installation` in `scripts/dcs_succ_pr066_behaviour.py`, the loader every non-axis family
+  uses and whose own docstring calls it *"the SOLE implementation of the readout"*, selects rows on
+  `query_kind`, `cell` and `n_examples`, drops excluded domains, and computes
+  `concept_binary_prob(logp_concept, logp_codeword)`. **It never reads `option_mass`.**
+
+**There is no floor parameter to set.** The axis analyser's `--option-mass-floor` is a bolt-on with
+its own re-implementation (asserted equal to the shared loader at floor 0); the shared loader has
+nothing. So the eight-cell reassurance in AM-54 **covers §A and transfers to §1–§4 and §H by
+assumption, not by measurement**.
+
+⛔ **This is a limitation, not a finding against those results**, and the distinction matters: where
+the check could be run it changed nothing, twice over, on both codewords and eight cells.
+
+⚠ **Building it for the head/cell families is NEW CODE that could in principle move D39 and D40 —
+the sprint's two published PASSes. That makes it PREREGISTERABLE, not an ad-hoc run.** It is not
+started, and I am not starting it inside a tick.
+
+### One conclusion it touches, and the direction is favourable
+
+**D35 is the sprint's only empirical negative**: head 2, selected on **basket** by a frozen rule,
+failing to replicate on **button** (ci95 [−0.015452, +0.006019], crosses zero). That is a
+cross-codeword comparison and it crosses this asymmetry — **in the direction that favours the
+negative.** Button's readout is the *cleaner* of the two (10.9 % invalid against 36.5 %), so button
+was the easier place to detect the effect, and it was not detected. **Nothing here weakens D35.** It
+is recorded because the two sides are unmatched on a dimension no row had named.
+
+### What is NOT established
+
+* ⛔ **That §1–§4 and §H survive the floor.** Untested and, as the code stands, untestable.
+* ⛔ **Why basket's bank reads three times worse.** Measured in eight families now, still
+  unexplained. It is a property of the prompt bank; whether of its wording, its concept words or
+  the model's priors over them, nothing here separates.
+* ⛔ **That 0.05 is the right threshold anywhere.** It is what PR-CSI-001 declared; no other prereg
+  names one.
+* ⛔ **That `BASE` is the right gating arm for the head/cell instrument** — the axis analyser uses it
+  by argument (option mass is an outcome, so a per-arm filter is post-treatment selection, R2-B1),
+  and that argument was never made for a head-level design.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** this line of work is now bounded by a decision I should not make alone — whether to
+preregister and build the readout-validity sensitivity for the head and cell families. **Pending
+that, the remaining runnable work is the ten undrafted axis rows** (D13, D14, D15, D16, D17, D20,
+D21, D22, D28, D31), of which D13/D15 are the 2×2 layer-exoneration pair and D21 is the
+dissociation's caveat row. **Push credential-blocked.**
