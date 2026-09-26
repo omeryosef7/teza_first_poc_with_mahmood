@@ -40669,3 +40669,83 @@ checklist row) and swept for survivors.
 and the only unreproduced numbers left in §A.6; then D14/D16/D17/D20/D22/D28/D31. **Five questions
 remain with the user** (head/cell readout sensitivity, rung-1 framing, second TEST read,
 PR-CSI-003-A, axis rank rule). **Push credential-blocked.**
+
+---
+
+## S-461 — §A.6's two weakening caveats put to the test: one re-derives, one resists, and I killed my own commit (2026-09-26)
+
+**S-460's next action**: re-derive caveats 1 and 2, the only `[READ, not reproduced]` figures left
+in §A.6 and the two that weaken the dissociation headline.
+
+### ✅ Caveat 1 RE-DERIVES, and its conclusion is now arithmetic I have done
+
+**The matched-10 Fisher exacts follow exactly from the exceedance counts S-460 verified** — a
+hypergeometric tail on a 2×2, no estimation involved:
+
+```
+own layers, matched-10   button 3/10 vs basket 0/10   p = 0.10526   (record 0.1053)
+both at L18, matched-10  button 7/10 vs basket 0/10   p = 0.00155   (record 0.0015)
+```
+
+**And the paired-domain Δz bootstrap reproduces all three conclusions:**
+
+```
+                                record                       re-derived (B=20000, seed 20260915)
+TRAIN, own layers      +2.023 [-0.226, +4.288]      +2.105 [-0.237, +4.254]   CI INCLUDES zero
+TRAIN, both at L18     +2.832 [+0.606, +5.057]      +2.937 [+0.625, +5.091]   excludes zero
+VALIDATION, own layers +4.209 [+0.630, +7.078]      +4.638 [+0.638, +7.094]   excludes zero
+```
+
+⚠ **Point estimates drift 0.08–0.43** — my basket z's run ~4–10 % above the record's (2.561 against
+2.465 on TRAIN, 5.128 against 4.653 on validation), a convention difference I could not pin down.
+**Every CI overlaps heavily and no conclusion moves.** ⇒ *"The dissociation is carried by the
+held-out split and the shared-layer comparison, not by the TRAIN headline"* now rests on my own
+arithmetic.
+
+### ⛔ Caveat 2 RESISTS re-derivation, and I am recording that rather than papering it
+
+The five reweighting schemes are **not specified precisely enough in the record to rebuild.** My
+closest reconstruction — drop domains where any of `BASE`/`KO`/`KO_AXIS`/`KO_FULL` leaves
+[0.05, 0.95], then difference logits — matches the reported **domains-kept count in four of six
+cells** (23, 60, 18, 60) and **misses two** (58 against 63, in both button-L20-TRAIN and
+button-L18-TRAIN), and reproduces **no** effect size exactly (basket L18 TRAIN cand +0.01258 against
+the record's +0.01357; positive control +0.6546 against +0.7730).
+
+⛔ **So caveat 2 stands on the record's authority, not on mine, and the draft now says so.**
+⚠ **The direction is conservative**: caveat 2 *weakens* the headline, so if it is wrong the result
+is stronger than stated. **An unverifiable caveat that cuts against the claim is a different risk
+from an unverifiable claim** — but it is still unverifiable, and four of six is not reproduction.
+
+### A caveat on that caveat, which the source states and a reader would miss
+
+Under the **untrimmed** logit, button-L18 appears to move to 3 of 11. That is the `1/(p(1−p))`
+blow-up on near-boundary domains — **instability of the transform, not a result** — and must never
+be quoted as button improving under reweighting. The licensed statement is narrower than the table
+looks: **the basket TRAIN headline depends on how per-domain effects are weighted; the held-out
+result does not.** The p-scale is the preregistered one and stands.
+
+### ⚠ A PROCESS FAILURE OF MINE, recorded because it nearly lost work
+
+A slow bootstrap of my own (I reloaded the JSON inside the resample loop, 20 000 times) ran long, and
+I killed it with **`pkill -u $USER -f 'python3 -'`**. That pattern also matched **the pre-commit
+hook's pytest for S-460**, which was running at the time: **the commit died mid-hook, HEAD stayed at
+S-459, and the staged content sat uncommitted.** It also killed three stale background waiters. No
+work was lost — the stage survived and I re-committed S-460 as `4153714f` — but the commit was
+silently gone and I only found it by checking `git log` against what I expected.
+
+⇒ **RULE, added here: never `pkill` by a pattern that can match an in-flight commit hook.** Kill by
+the specific background task, or let it finish. **The cost of the broad pattern is that it destroys
+exactly the process whose output is most expensive to recreate.**
+
+### What is NOT established
+
+* ⛔ **Caveat 2's five schemes.** Not reproduced; four of six domain counts and no effect size.
+* ⛔ **Why my z's run 4–10 % above the record's.** The conclusions are invariant to it; the
+  convention is not identified.
+* ⛔ **That the trimmed-logit reading is the right one.** Neither weighting is privileged and the
+  preregistered scale is the p-scale.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** D14/D16/D17/D20/D22/D28/D31 — seven axis rows, of which D16 and D20 are the necessity
+feasibility and instrument-capability rows and D17/D22/D28 are provenance/gate results. **Five
+questions remain with the user.** **Push credential-blocked.**

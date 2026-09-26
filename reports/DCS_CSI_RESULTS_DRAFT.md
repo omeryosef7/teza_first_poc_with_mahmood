@@ -1676,16 +1676,43 @@ not bought with extra controls.
 
 🔴 **THREE caveats, two of which WEAKEN it. All three must travel with the headline.**
 
-**(1) The cell the headline is usually quoted from is the WEAKEST evidence in the set.** For
-basket-L18-TRAIN the paired-domain Δz CI **includes zero** — +2.023 [−0.226, +4.288] — and its
-matched-10 Fisher exact is **p = 0.1053**. The dissociation is carried by the **held-out split**
-(Δz +4.209 [+0.630, +7.078]) and by the **shared-layer L18** comparison (Δz +2.832 [+0.606,
-+5.057], Fisher **p = 0.0015**) — **not** by the TRAIN headline. `[READ, not reproduced]`
+**(1) The cell the headline is usually quoted from is the WEAKEST evidence in the set — and this
+caveat is now RE-DERIVED, not read.** ✅ The matched-10 Fisher exacts follow exactly from the
+exceedance counts above: **0.10526** at own layers (3/10 against 0/10) and **0.00155** at the shared
+L18 layer (7/10 against 0/10), against the record's 0.1053 and 0.0015. ✅ The paired-domain Δz
+bootstrap over the shared domains reproduces all three **conclusions**:
+
+```
+                                record                       re-derived (B=20000)
+TRAIN, own layers      +2.023 [-0.226, +4.288]      +2.105 [-0.237, +4.254]   CI INCLUDES zero
+TRAIN, both at L18     +2.832 [+0.606, +5.057]      +2.937 [+0.625, +5.091]   excludes zero
+VALIDATION, own layers +4.209 [+0.630, +7.078]      +4.638 [+0.638, +7.094]   excludes zero
+```
+
+⚠ **The point estimates drift by 0.08 to 0.43** — my basket z's run ~4–10 % above the record's, a
+convention difference I could not pin down — **but every CI overlaps heavily and no conclusion
+changes.** ⇒ **The dissociation is carried by the held-out split and the shared-layer comparison,
+not by the TRAIN headline**, and that now rests on arithmetic I have done.
 
 **(2) Basket's TRAIN rank-1 is NOT robust to per-domain reweighting.** Under family-wide logit
 re-expression with trimming, **two of five schemes move it from rank 1 of 47 (p = 0.0213) to rank 3
 of 47 (p = 0.0638)** — from PASSES to does-not-pass at α = 0.05. VALIDATION and basket-at-L20 are
-rank 1 under **all five**. `[READ, not reproduced]`
+rank 1 under **all five**. ⚠ **This one is `[READ, NOT REPRODUCED]` and it resisted re-derivation:**
+the five schemes are not specified precisely enough in the record to rebuild. My closest
+reconstruction — dropping domains where any of `BASE`/`KO`/`KO_AXIS`/`KO_FULL` falls outside
+[0.05, 0.95], then differencing logits — matches the reported domains-kept count in **four of six
+cells** (23, 60, 18, 60) and misses two (**58 against 63** in both button-L20 and button-L18 TRAIN),
+and reproduces **no** effect size exactly. ⛔ **So caveat 2 stands on the record's authority, not on
+mine.** ⚠ *The direction is conservative: this caveat WEAKENS the headline, so if it is wrong the
+result is stronger than stated, not weaker.*
+
+⚠ **A caveat on that caveat, from the same source and easy to misread.** Under the *untrimmed*
+logit, button-L18 appears to move to 3 of 11. That is the `1/(p(1−p))` blow-up on near-boundary
+domains — **instability of the transform, not a result** — and it must not be quoted as button
+improving under reweighting. The licensed statement is narrower than the table looks: **the basket
+TRAIN headline depends on how per-domain effects are weighted; the held-out result does not.**
+Neither weighting is privileged, the p-scale is the preregistered one and stands, and this is a
+robustness note rather than a re-analysis.
 
 **(3) NOTHING EXPLAINS IT.** Six candidate explanations are removed by measurement — unequal
 families, headroom, population, axis geometry/dose, power, and **C6, which REVERSES** (button's axis
