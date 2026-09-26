@@ -1,0 +1,34 @@
+# ================================================================================================
+# PR-CSI-023 READ — button necessity at L18, TRAIN. Recipe written BEFORE the read ran (S-524), so
+# no rank existed when these flags were chosen. PR-CSI-023 VOID 8 freezes the family, the primary
+# statistic, the prefix strings and the floor.
+#
+# PRIMARY = the SHUFFLED-ONLY rank among the 24 KO_NEC_SHUF controls. 1/25 = 0.0400 <= 0.05.
+# CERTIFIES = rank 1 of 25 AND a NEGATIVE candidate point.  DOES NOT CERTIFY = rank >= 2.
+# THE PREDICTION, frozen at S-517: button necessity will NOT certify (rank >= 2).
+#
+# CRITICAL GATE (PR-CSI-023 CANNOT_ANSWER_IF): if KO_NEC_FULL - NEC_BASE is not negative with a
+# domain-clustered ci95 excluding 0, the result is CANNOT ANSWER, not a null -- a button null means
+# nothing unless removal demonstrably moves button installation at all.
+#
+# Eighteen arms lost 1-3 of 670 rows to the norm-match degeneracy guard; worst is 3, all inside the
+# preregistered --allow-short 4, all documented in KNOWN_SHORT with MEASURED dropped prompt_ids.
+# ================================================================================================
+
+python3 scripts/dcs_csi_subspace_analyze.py \
+  --codeword button --tag-prefix csi1_button_train --expect-n 670 --allow-short 4 \
+  --direction necessity \
+  --arms NEC_BASE,NEC_KO,KO_NEC_FULL,KO_NEC_AXIS,KO_NEC_ORTH,KO_NEC_SHUF0,KO_NEC_SHUF1,KO_NEC_SHUF2,KO_NEC_SHUF3,KO_NEC_SHUF4,KO_NEC_SHUF5,KO_NEC_SHUF6,KO_NEC_SHUF7,KO_NEC_SHUF8,KO_NEC_SHUF9,KO_NEC_SHUF10,KO_NEC_SHUF11,KO_NEC_SHUF12,KO_NEC_SHUF13,KO_NEC_SHUF14,KO_NEC_SHUF15,KO_NEC_SHUF16,KO_NEC_SHUF17,KO_NEC_SHUF18,KO_NEC_SHUF19,KO_NEC_SHUF20,KO_NEC_SHUF21,KO_NEC_SHUF22,KO_NEC_SHUF23 \
+  --base-arm NEC_BASE --ko-arm NEC_KO --full-arm KO_NEC_FULL \
+  --candidate-arm KO_NEC_AXIS --comparator-arm KO_NEC_ORTH \
+  --control-prefixes KO_NEC_SHUF \
+  --split train --require-rescue-layer 18 \
+  --require-slurm-job 934307,934308,934309,934310 \
+  --out reports/DCS_CSI_SUBSPACE_NECESSITY_button_train_shuf24.json
+
+python3 scripts/dcs_csi_rederive_subspace.py \
+  --tag-prefix csi1_button_train --split train --expect-n 670 --allow-short 4 \
+  --direction necessity --base NEC_BASE --ko NEC_KO --full KO_NEC_FULL --candidate KO_NEC_AXIS \
+  --controls KO_NEC_SHUF0,KO_NEC_SHUF1,KO_NEC_SHUF2,KO_NEC_SHUF3,KO_NEC_SHUF4,KO_NEC_SHUF5,KO_NEC_SHUF6,KO_NEC_SHUF7,KO_NEC_SHUF8,KO_NEC_SHUF9,KO_NEC_SHUF10,KO_NEC_SHUF11,KO_NEC_SHUF12,KO_NEC_SHUF13,KO_NEC_SHUF14,KO_NEC_SHUF15,KO_NEC_SHUF16,KO_NEC_SHUF17,KO_NEC_SHUF18,KO_NEC_SHUF19,KO_NEC_SHUF20,KO_NEC_SHUF21,KO_NEC_SHUF22,KO_NEC_SHUF23 \
+  --require-rescue-layer 18 --require-slurm-job 934307,934308,934309,934310 \
+  --out reports/DCS_CSI_REDERIVE_NECESSITY_button_train_shuf24.json

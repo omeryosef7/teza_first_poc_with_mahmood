@@ -44168,3 +44168,280 @@ Twenty-two are not, including `removal_KO_NEC_ORTH_minus_base` at **p = 0.734**.
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** launch PR-CSI-023; then A30 rows 26/27 and a D43 index row, which are my own and are the ones a drafter would trust most.
+
+---
+
+## S-519 / 🚀 PR-CSI-023 LAUNCHED — the missing cell of the 2×2; and a pre-launch check where MY verification was the unanchored one (2026-09-26)
+
+```
+provenance: BLOB abd4f3ab  PORCELAIN clean   (PR-CSI-023)
+  CSI_NEC_HALF=1 -> 934307     NEC_BASE, NEC_KO, KO_NEC_FULL, KO_NEC_AXIS, KO_NEC_ORTH
+  CSI_NEC_HALF=2 -> 934308     KO_NEC_AXIS_ANCHOR + KO_NEC_SHUF0-3 + KO_NEC_RAND0-3
+  CSI_NEC_HALF=4 -> 934309     KO_NEC_SHUF4-13
+  CSI_NEC_HALF=5 -> 934310     KO_NEC_SHUF14-23
+```
+
+`button configs/dcs_csi_axis_button_behavioral_L18.pt train L`, 3090-pinned, launcher **unmodified**. Prediction frozen at S-517: **button necessity will NOT certify.**
+
+### 🔶 The pre-launch check, and why it is worth an entry
+
+PR-CSI-023 **asserts** that the necessity arm names cannot collide with the existing button *sufficiency* arms under prefix globbing. Rather than trust my own prereg, I executed it — and the first result looked alarming:
+
+```
+  csi1_button_train_KO_AXIS  ->  4 existing dirs, including KO_AXIS_ANCHOR_...
+```
+
+`strict_run_dir`'s own comment names this hazard: *"`glob(tag + "_*")` also matches every SIBLING ARM whose tag EXTENDS this one … an ad-hoc check using the unanchored glob resolved arm "KO" to the KO_SELF directory and turned the identity gate into KO_SELF vs KO_SELF — a comparison that cannot fail. See S-042."* Since half 2 runs `KO_NEC_AXIS_ANCHOR`, that would make `KO_NEC_AXIS` ambiguous after the launch and refuse the read.
+
+⛔ **It does not, and the mistake was mine.** The code is **anchored** — `^<tag>_\d{8}_\d{6}_\d+$` — so `KO_NEC_AXIS_ANCHOR_2026…` cannot match tag `KO_NEC_AXIS`. **I had reproduced the hazard's shape with my own unanchored glob and briefly mistaken it for the code's behaviour.** Re-checked with the real pattern:
+
+```
+  csi1_basket_train_KO_NEC_AXIS  -> 1     (the anchor does NOT shadow its base arm)
+  csi1_button_train_KO_NEC_AXIS  -> 0     clean namespace for this launch
+  csi1_button_train_NEC_BASE     -> 0
+```
+
+🔶 **The guard is real, it is documented with the S-042 incident that produced it, and it works.** This is the first time this session that checking a suspicious result vindicated the code rather than finding a defect — worth recording, because a review that only ever confirms suspicions is not measuring anything.
+
+⚠ **One incidental observation, not mine to fix:** under anchored matching `csi1_button_train_KO_AXIS` still resolves to **2** complete run dirs — a pre-existing twin in the *sufficiency* family. Its reads presumably disambiguate by `--require-slurm-job`; I have **not** verified that and am not touching it. Recorded because S-487 is exactly this shape.
+
+### WHAT IS NOT ESTABLISHED
+
+- ⛔ **No arm has landed; there is no number**, and the prediction is a prediction.
+- ⛔ **A button null will NOT mean button has no removable installed component** — only that this axis at this layer does not top its family.
+- ⛔ **The positive control is the gate**: if `KO_NEC_FULL − NEC_BASE` is not clearly negative on button, the result is CANNOT ANSWER, not a null. **This is the outcome I consider most likely to complicate the story**, because the button sufficiency instrument was already the weaker one.
+- ⛔ **S-518's remaining ~12 audit items are untouched**, including **A30 rows 26/27, which I wrote and which are stale**.
+- ⛔ **No commit this tick yet.** **TEST untouched.** Push credential-blocked.
+
+**NEXT:** while the arms run — A30 rows 26/27 and a D43 index row; then the read.
+
+---
+
+## S-520 / A30's own rows brought current, D43 indexed, five draft sites cleared — and I broke a strikethrough and caught it with a parity check (2026-09-26)
+
+PR-CSI-023 running (934307–934310, 2 arms landed). Record work while it does.
+
+### ✅ A30 — the index's own rows were stale, and they were mine
+
+**Rows 26 and 27, which I wrote at S-511, had themselves gone out of date within three entries.** Both still gave *"no held-out necessity arm"* as the live reason. Row 26's clause (4) is now marked **DISCHARGED** with clauses (1)–(3) explicitly unchanged; row 27 is superseded **again**, and now names the live reason precisely: **the two rank tests are NOT independent** (same axis, same model, same 23 validation domains), and no combined test has been preregistered, computed or specified.
+
+🔶 **New row 29 for D43**, which had no index row at all — and it carries the two provenance corrections as well as the result, so a drafter landing on it sees that *"ten control arms"* was **eight** and *"every sign-flip p"* was **33 of 55**. All five A30 rows (25–29) verified at **5 columns**.
+
+⚠ **An index whose own rows go stale in three entries is worth noticing.** A30 exists because *"a later row that holds the right number is necessary and is not sufficient"* — and the index inherited exactly the failure it was built to catch.
+
+### ✅ Five draft sites cleared
+
+* *"it was declared and never run"* about `KO_NEC_AXIS_ANCHOR` → **it ran twice** (`csi1_basket_train_…_899423`, `csi1_basket_validation_…_2611659`, both on disk). ⚠ **"Absent from the read" and "never run" are different facts, and only the first is true** — the arm is never *read*, which is the real and still-valid point.
+* §L.3's *"a family whose floor sits above α"* → true of **basket-at-L20 only** (0.0909); necessity's is 0.0400 and certifies in both splits.
+* §L.3's *"the two stranded VOID conditions are unaffected and remain the block"* → both discharged by measurement.
+* §M.9's arm-vocabulary row → `KO_NEC_SHUF0-23` (24, primary) / `KO_NEC_RAND0-3` (pooled secondary only).
+* The unbalanced `**` remnant from the S-505 insertion.
+
+### 🔴 And I introduced a formatting defect in the middle of fixing formatting defects
+
+Edit (d) inserted a **closing `~~` with no opener** — the clause sat inside a `**bold**` ending in `***`, and I put the strike marker inside it. Caught by a **parity check**, not by reading:
+
+```
+  before fix: total ~~ markers: 33  *** ODD -- one is unpaired ***
+  after fix : total ~~ markers: 34  balanced        (claim table: 76, balanced)
+```
+
+**Fifth formatting defect I have introduced into these documents today**, after two malformed rows (S-503), an unescaped `|−0.01283|` (S-514) and a duplicated marker (S-507). The pattern is stable: **every one was found by a mechanical parity/count check and none by re-reading the text.** Parity of `~~` is now in the check set alongside unescaped-pipe columns and occurrence counts.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No figure computed.** Every number is S-501's, S-513's or S-518's.
+- ⛔ **Still open**: the SCOPE index omitting D42/D43; the Editor's checklist carrying no necessity rows; `:874-875`'s superseded −0.00852 / −0.10950 pair; **prohibition 28**; and the **five pre-existing broken claim-table rows** (D3, D22, D26, D27, D28).
+- ⛔ **PR-CSI-023 has 2 of ~34 arms down and no result.** The prediction stands as a prediction.
+- ⛔ **Nothing committed this tick** — deliberate, since button controls will very likely land short and the exemption treadmill (S-497/S-498) is a solved problem only if I do not re-enter it.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** let PR-CSI-023 land; exemptions in one instrument pass; one commit; then the read against the frozen prediction.
+
+---
+
+## S-521 / the five pre-existing broken rows are fixed, and the table checker is now one I can trust — after writing three that I could not (2026-09-27)
+
+PR-CSI-023 still running (934307–934310; half 1 slow on n-302 after a long stage, 10 arms landed, 3 short). VOID 1 **PASS so far** (10/10 RTX 3090) and VOID 6 **PASS so far** (1 commit → 1 blob `9562bdf9`), both measured on the arms' own `RUNMETA`.
+
+### ✅ All five pre-existing malformed rows fixed, each verified against ITS OWN header
+
+```
+  D3   cols 8  -> 6      `|diff| = 6.654...`
+  D22  cols 8  -> 6      `max|diff| = 0`
+  D26  cols 12 -> 6      `|recipient| / |probe|`, `|cos(axis, ...)|`
+  D27  cols 10 -> 6      `|cos| = 0.5569`, `r(|cos| with ...)`
+  D28  cols 8  -> 6      `max|diff| = 0.000e+00`
+```
+
+All five predate the necessity work. ⚠ **D26 took two passes**: my first fix escaped the *opening* bar of `` `\|cos(axis, … delta)|` `` and left the **closing** one, taking it 12 → 7. A partial escape looks fixed and is not — found by re-measuring rather than by assuming the replace had worked. D27 was already *half*-escaped by whoever wrote it, which is the same trap one step earlier.
+
+### 🔶 And the detector itself — the fourth attempt is the first correct one
+
+S-508 recorded that I could not audit these tables mechanically because three successive detectors were wrong. That is now fixed, and the wrong ones are written into the file so a fourth is not attempted:
+
+`scripts/gates/dcs_csi_table_shape_check.py`
+
+* **(a)** `awk -F'|'` counts **raw** pipes and cannot see `\|` escapes;
+* **(b)** *"first pipe-row after a blank is the header"* mis-assigns headers when prose separates tables — it once told me a header had **979** columns;
+* **(c)** *"nearest preceding separator"* counts every **new table's header** as a row of the **previous** table, because a header precedes its own separator. That is what produced *"24 disagreeing rows"* — all 24 were headers.
+
+The corrected rule: **a line is a header iff the NEXT line is a separator**, and a pipe preceded by a backslash is content. It **refuses** if it parses zero tables, so *"0 malformed"* can never mean *"I parsed nothing"* — the S-134/S-480 theme applied to the checker itself.
+
+```
+reports/DCS_CSI_CLAIM_TABLE.md:   49 tables, 0 malformed row(s)
+reports/DCS_CSI_RESULTS_DRAFT.md: 11 tables, 0 malformed row(s)
+exit 0        (and exit 1 on a file containing no tables)
+```
+
+**Sixty tables, zero malformed rows.** This is the first table audit this session whose *number* I will stand behind, and the reason is that the three earlier numbers are now documented as wrong inside the tool that replaces them.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **A clean shape check is not a clean document.** It proves no row's column count disagrees with its header. It says nothing about whether the *content* is right — every substantive error this session (the wrong arm count, the overstated sampler-floor claim, the missing removal fraction) would pass it untouched.
+- ⛔ **Still open**: the SCOPE index omitting D42/D43; the Editor's checklist carrying no necessity rows; `:874-875`'s superseded −0.00852 / −0.10950 pair; **prohibition 28**, which needs a decision.
+- ⛔ **PR-CSI-023 has no result**, and the prediction stands unexamined.
+- ⛔ **Nothing committed** — three button arms are already short and undocumented, so the completeness guard will refuse until the family lands and the exemptions are generated in one pass. **Re-entering the S-497/S-498 treadmill is the one thing I will not do twice.**
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** family lands → exemptions in one pass → one commit → the read against the frozen prediction.
+
+---
+
+## S-522 / the draft's own guard gets the six rows it was missing, and the SCOPE index stops being stale (2026-09-27)
+
+PR-CSI-023 at **17 of 29** primary arms; `KO_NEC_AXIS` and `KO_NEC_ORTH` are half 1's last two and not yet down, so there is still no candidate and no result. Record work meanwhile.
+
+### ✅ Six rows added to the Editor's checklist — the draft's guard against *"the phrasings this draft must never acquire"*
+
+It had **nothing** for the three newest and highest-risk phrasings, which is the worst possible gap in a list whose entire job is to catch them. Added:
+
+* ‼ **`p = 0.0400` quoted as a small p**, or without *"IS the attainable floor"* — *"the draft itself wrote it bare before S-509"*.
+* *"necessity is established" / "the axis is necessary" / "removal along the axis is certified"* — forbidden outright, **and a PASS is when it is likeliest to slip: the rank test certifies, the axis does not**.
+* *"the conjunction is certified"* as a **joint** claim — both halves certify *separately*; the tests are **not independent** and no combined test exists.
+* **Attaching TRAIN's 7.8 % to the held-out result** — D43 has its own **0.1146 [0.0676, 0.1649]**, TRAIN's is 1.4× smaller, *and prohibition 28 mandates a fraction travel, so the wrong one travels by default*. That is the subtle one: an existing rule actively pushes the error.
+* ‼ *"necessity is floor-limited" / "rank 1 of 9"* as the current result — *"the draft carried the dead form in §A.7 for four entries after §A.1 was fixed"*.
+* **D43 quoted without noting D42 is still in-sample** — the held-out read removes **one** of two caveats and the two are routinely conflated.
+
+🔶 **Two carry the ‼ mark, which in this table means *a phrasing this draft itself committed and had corrected*.** Both are mine, from this session. The checklist's own preamble says it exists because errors arrive by two routes — *"one written from memory, one inherited from a source"* — and these are the first route.
+
+### ✅ SCOPE index un-staled
+
+It read *"all twenty of their claim-table rows (D12–D31) are now drafted"*, verified at S-463 and true then. **§A.1 now also reports D42 and D43** — the set is **twenty-two**. ⚠ Its own adjacent note warns that this block *"carried a stale count for five consecutive ticks"*; it had gone stale again the same way, by rows being added after a one-time verification.
+
+### ✅ Both documents still clean on the mechanical checks
+
+```
+  dcs_csi_table_shape_check.py : DRAFT 11 tables / 0 malformed, CLAIM_TABLE 49 / 0, exit 0
+  ~~ parity                    : draft 34 balanced, claim table 76 balanced
+```
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No figure computed**; no result exists for PR-CSI-023.
+- ⛔ **A checklist row is not a guarantee.** It catches a phrasing a reader looks up; it does nothing about a wrong *number*, which is how every substantive error this session actually arrived.
+- ⛔ **Still open**: `:874-875`'s superseded −0.00852 / −0.10950 pair, and **prohibition 28**, which needs a decision rather than an edit and is now the only item I have carried without progress for five entries.
+- ⛔ **Nothing committed** — nine button arms are short and undocumented; the completeness guard exits **1**, as measured. One pass when the family lands.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** family lands → exemptions in one instrument pass → one commit → the read against S-517's frozen prediction.
+
+---
+
+## S-523 / prohibition 28 amended — the rule was forcing the error it existed to prevent (2026-09-27)
+
+The one item carried five entries without progress. PR-CSI-023 at **27 of 29** (`SHUF13`, `SHUF23` outstanding; half 1 finished, so the candidate and comparator are down).
+
+### 🔶 Why this needed a decision rather than an edit — and what the decision was
+
+Prohibition 28 forbade *"any necessity result quoted without the 7.8 %"* and pinned **`0.0778 [0.0560, 0.1009]`** as a literal. That was right when **one** necessity read existed. There are now **three**, and the literal had stopped enforcing the rule and started causing its violation:
+
+> **A reader obeying prohibition 28 while quoting D43 would attach a TRAIN figure 1.4× too small.** A rule that forces an error is not enforcing anything.
+
+I had recorded this as *"preregisterable, not an edit"* for five entries. On inspection that framing was wrong: **a preregistration governs an experiment, and this governs how a result is reported.** Changing *which* fraction must travel alters no test, no statistic and no verdict. What would have needed far more care is **relaxing** the requirement — and that is the one thing the amendment does not do.
+
+**What is now required: the removal fraction OF THE READ BEING QUOTED travels with it**, with all three named —
+
+* PR-CSI-003, 664 keys / 13 arms, **superseded** — `0.0778` [0.0560, 0.1009], ~92 % elsewhere
+* **D42**, TRAIN, 655 keys / 29 arms — `0.0803` [0.0584, 0.1041], ~92 % elsewhere
+* **D43**, HELD-OUT, 222 keys / 29 arms — `0.1146` [0.0676, 0.1649], **~89 % elsewhere**
+
+⚠ **This relaxes nothing**: one read was covered, now three are, and quoting a necessity result with **no** fraction remains forbidden. The `0.0778` string is kept struck rather than deleted, because three documents still quote it and a reader meeting it must be able to place it. And they are **not interchangeable, not to be averaged, pooled or "rounded to 8 %"** — different populations, and **D43's is the only one computed on data the axis had not seen.**
+
+### 🔴 I wrote a table nested in a numbered list, then removed it before it could render
+
+The amendment first carried the three values as a markdown table indented four spaces inside prohibition 28. **`grep -c '^    | '` returned 4 — and every one was mine: this file has no precedent for a table nested in a list item.** GFM table parsing inside list items is renderer-dependent, so in a document whose header calls it *"the file to read before writing any sentence"* that is an avoidable gamble. Converted to inline prose carrying the identical information; indented table rows now **0**.
+
+⚠ **My own shape checker passed it both ways** — 49 tables, 0 malformed, before and after. It compares rows to headers; **it has no opinion on whether a table should be there at all.** A clean checker result is not a clean document, which S-521 said in the abstract and this makes concrete.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No figure computed** — the three fractions are S-508's and S-518's, already re-derived.
+- ⛔ **The three documents quoting `0.0778` are NOT yet updated to the read-matched rule.** §A.1, §A.7 and §L.3 each carry it; §A.7 already lists all three (S-518), the other two do not. The prohibition now says the right thing and its dependents have not caught up — **the same lag I have criticised twice, created deliberately here because the rule had to change first.**
+- ⛔ **PR-CSI-023 has no result.** Two arms out.
+- ⛔ **Nothing committed**; the completeness guard exits 1 with nine short arms undocumented.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** the last two arms → exemptions → one commit → the read against S-517's frozen prediction.
+
+---
+
+## S-524 / 🔴 PR-CSI-023: THE PREDICTION FAILED. Button necessity CERTIFIES, and the codeword dissociation is NOT direction-general (2026-09-27)
+
+S-517 froze the prediction: *"button necessity at L18 will NOT certify: the candidate will rank ≥ 2 of 25."* **It ranked 1.** Read run from `runargs/dcs_csi_pr023_read.txt`, written before the read, both `--out` paths verified absent.
+
+### ✅ The gate first, because a null would have meant nothing without it
+
+```
+  positive_control_full_minus_base  -0.06986  ci95 [-0.0793, -0.06064]   66 neg / 1 pos
+  gates: manipulation_check True, instrument_capable True      VOID: 0
+```
+
+**The instrument IS capable on button.** This is not `CANNOT ANSWER`; it is a real read.
+
+### 🔴 The result, re-derived by me from `domain_means`
+
+```
+  candidate KO_NEC_AXIS  = -0.00215806
+  most negative controls: SHUF23 -0.00165851, SHUF18 -0.00134806, SHUF11 -0.00118478
+  controls at least as negative as the candidate: 0 of 24
+  RE-DERIVED RANK = 1 of 25    p = 0.040000    floor = 0.040000
+  candidate_minus_base -0.00216 [-0.00326, -0.00107], 49 neg / 18 pos of 67
+  651 keys / 29 arms / 67 TRAIN domains.  Independent path: rank 1 of 25, PASSES.
+```
+
+### ⛔ WHAT THIS MEANS, IN THE TERMS FIXED BEFORE THE DATA EXISTED
+
+PR-CSI-023 said: *"IF THE PREDICTION FAILS: button ALSO ranks 1 ⇒ the removal effect is NOT codeword-specific, and D23/D24's dissociation is either sufficiency-specific or an artefact of that design. **THIS WOULD WEAKEN THE SPRINT'S DISSOCIATION CLAIM AND IT WILL BE REPORTED AS SUCH.** No post-hoc reframing — *'necessity is a different question'* is NOT an available escape."*
+
+**So, reported as such.** The 2×2 is now complete and it does not show what the sprint expected:
+
+```
+                      SUFFICIENCY                NECESSITY
+  basket L18 TRAIN    rank  1 of 47  PASSES      rank 1 of 25  PASSES
+  button L18 TRAIN    rank 36 of 47  DOES NOT    rank 1 of 25  PASSES   <- the prediction failed here
+```
+
+⇒ **The codeword dissociation is SUFFICIENCY-SPECIFIC. It does not appear in the removal direction.** Both codewords' rank-1 axes top their shuffled families when removed. Whatever D23/D24 measure, it is **not** a general property of the codeword's installed component.
+
+### ⚠ There IS a quantitative difference, and I am NOT promoting it to a claim
+
+```
+            candidate      top control    margin   positive ctrl   removal fraction
+  basket   -0.00870343    -0.00489463     1.78×    -0.10843        0.0803 [0.0584, 0.1041]
+  button   -0.00215806    -0.00165851     1.30×    -0.06986        0.0309 [0.0160, 0.0455]
+```
+
+Button's effect is **4.0× smaller**, its margin over the best control is **1.30× against basket's 1.78×**, and its axis accounts for **3.1 %** of its own whole-state removal against basket's **8.0 %**. 🔴 **That is real and it is NOT the preregistered claim.** D23/D24 assert a *binary* dissociation — one codeword's axis is top-of-family and the other's is not — and in this direction **both are**. **Converting a failed binary prediction into a "graded dissociation" after seeing the numbers is precisely the reframing PR-CSI-023 forbids**, and VOID 8 freezes the statistic so it cannot be re-cut. The numbers are recorded; the claim is not made.
+
+### WHAT IS NOT ESTABLISHED
+
+- ⛔ **This does NOT retract D23/D24.** The sufficiency dissociation was measured and stands *as a fact about the sufficiency direction*. What fails is the **generalisation** — which the sprint had never tested and which §A.7 correctly flagged as untested.
+- ⛔ **TRAIN only, in-sample** (`evaluation_is_in_sample` true, 67/67). Button necessity has **no held-out read**, exactly as basket's lacked one before PR-CSI-022. A held-out button read is the obvious next question and is **not** run.
+- ⛔ **`p = 0.0400` IS the attainable floor** here too — rank 1 necessarily yields it, for button as for basket.
+- ⛔ **Nothing here licenses *"the axis is necessary"* for either codeword.** Prohibition 24 stands; the rank test certifies, the axis does not.
+- ⛔ **The claim table and draft are NOT updated.** D23/D24, D19 and §A.2 all describe a dissociation whose scope has just narrowed, and they say nothing about it yet.
+- ⛔ 934308 (half 2) was still finishing its last RAND arm during this read; **the primary is shuffled-only and complete**, but the **pooled-28 secondary was NOT run** and is owed.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** commit; then D23/D24/D19/§A.2 must record that the dissociation is sufficiency-specific — the most consequential record change of this sprint, and it reduces a headline rather than adding one.

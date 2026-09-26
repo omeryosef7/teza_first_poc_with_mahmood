@@ -22,7 +22,13 @@ head-level results, which the cell-level half subdivides and therefore depends o
 second and belongs first. ✅ **UPDATED S-463 — THE THIRD PART IS COMPLETE.** The axis, necessity and dissociation families
 (PR-CSI-001–009) are **§A, and all twenty of their claim-table rows (D12–D31) are now drafted**:
 §A.1 D18/D19 · §A.2 D23/D24/D29 · §A.3 D12 · §A.4 D25/D27/D30 · §A.4a · §A.4b D26 · §A.5 D13/D14/D15
-· §A.6 D21 · §A.7 D16/D20 · §A.8 D17/D22/D28/D31. *(Verified by regex over the §A headings, not by
+· §A.6 D21 · §A.7 D16/D20 · §A.8 D17/D22/D28/D31.
+🔴 **UPDATED S-522 — TWO ROWS HAVE BEEN ADDED SINCE, AND THE INDEX DID NOT SAY SO.** §A.1 now also
+reports **D42** (necessity certifies on TRAIN, rank 1 of 25, p = 0.0400 = its attainable floor) and
+**D43** (it REPLICATES held-out: rank 1 of 25 on 23 VALIDATION domains, `evaluation_is_in_sample`
+FALSE). The "twenty … D12–D31" count above is correct **as of S-463** and is no longer the whole
+set: it is **twenty-two, D12–D31 plus D42 and D43**. ⚠ *Exactly the failure the note below warns
+about — a count that was verified once and then went stale as rows were added.* *(Verified by regex over the §A headings, not by
 subtracting: the set matches D12–D31 exactly, with none left over.)* ⚠ *This block carried a stale
 count for five consecutive ticks — "two and eighteen" long after it was ten — so the count is now
 measured every tick it changes.* The
@@ -343,6 +349,12 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | "head 23 does not transfer", unqualified | true of amplitude, false of shape (ρ = +0.817) | AM-41 |
 | "D37 is superseded by D40" / "D38 is explained by D39" | both ⛔; the §2→§3→§4 order invites both | D39, D40 |
 | "a NULL source control is support" | a null control is CONFOUNDED — report as CANNOT ANSWER | AM-43 |
+| ‼ `p = 0.0400` quoted as a small p, or without "IS the attainable floor" | `1/25`; rank 1 **necessarily** yields exactly it and no data could produce less. **The draft itself wrote it bare before S-509** | D42/D43 |
+| "necessity is established" / "the axis is necessary" / "removal along the axis is certified" | forbidden **outright**, and a PASS is when it is likeliest to slip: **the rank test certifies, the axis does not** | prohibition 24/26 |
+| "the conjunction is certified" / "both directions are certified" as a JOINT claim | both halves certify **separately**; the two tests are **not independent** (same axis, same model, same 23 validation domains) and **no combined test has been preregistered, computed or specified** | D19 |
+| attaching TRAIN's 7.8 % / 0.0803 to the HELD-OUT result | D43 has **its own**: 0.1146 [0.0676, 0.1649]. TRAIN's is **1.4× smaller**, and prohibition 28 mandates a fraction travel — so the wrong one travels by default | D43 |
+| ‼ "necessity is floor-limited" / "rank 1 of 9" as the CURRENT result | the family is 24 shuffled, floor 0.0400, rank 1 of 25. **The draft carried the dead form in §A.7 for four entries after §A.1 was fixed** | D42 |
+| D43 quoted without "in-sample does not apply here, but D42 is still in-sample" | the held-out read removes **one** of two caveats; D42 is unchanged and the two are routinely conflated | D42/D43 |
 
 **‼ marks a phrasing this draft itself committed and had corrected.** The **TEST** row is here
 because §0 asserted exactly it in the first version (S-417); the **floor** row because §M copied it
@@ -686,7 +698,7 @@ own floor as 0.10**, which `..._pr003a_necessity_family.json` corrects to 0.1111
 | `KO_ORTH` | `ctrl_orth`, norm-matched to the candidate — the prereg's words are **"THE PRIMARY COMPARATOR"**, ⚠ **but it is NOT the comparator §A's ranks use**: it enters as `--comparator-arm` only, is excluded from the 46-control family by `--control-prefixes KO_SHUF,KO_RAND`, and its single-comparator verdict is **SUPPRESSED** in both published artefacts (`single_comparator_verdict_SUPPRESSED`), because a verdict decided by which control the caller names is not a verdict |
 | `KO_PLS` | knockout + the rank-r\* PLS subspace, r\* selected on TRAIN — **not the candidate of any §A read**, but it is the arm on which *"the representation is one-dimensional"* would turn |
 | `KO_SHUF*` / `KO_RAND*` | shuffled-label and random directions, norm-matched — the control family, grown to **24 shuffled + 22 random = 46** |
-| `NEC_*` / `KO_NEC_*` | the same shapes **except one**, for the NECESSITY direction: `NEC_BASE` clean, `NEC_KO`, `KO_NEC_AXIS` the candidate, `KO_NEC_FULL` the positive control, `KO_NEC_ORTH` the comparator, `KO_NEC_SHUF0-3` / `KO_NEC_RAND0-3` the 8 controls. ⛔ **There is NO `KO_SELF` analogue**: for removal the natural identity control IS the identity and is refused by the arm's own precondition, so the identity gate is **SKIPPED BY DESIGN** and the artefact records the skip and its reason: *"SKIPPED BY DESIGN, not absent … This is a real limitation of the direction."* 🔴 *S-474 — the words **"not an oversight"** are NOT in the artefact; the exact phrase *"This is a real limitation of the direction, not an oversight."* is in `configs/dcs_csi_pr003_necessity_basket.json` (`required_gates.no_inert_identity_control_exists`), which has it once and the analyser zero times. The claim is true of the PREREG and was attributed to the artefact.* ⚠ The `NEC_` prefix is **load-bearing**: a second complete directory under one tag is the tag ambiguity an earlier entry had to untangle |
+| `NEC_*` / `KO_NEC_*` | the same shapes **except one**, for the NECESSITY direction: `NEC_BASE` clean, `NEC_KO`, `KO_NEC_AXIS` the candidate, `KO_NEC_FULL` the positive control, `KO_NEC_ORTH` the comparator, `KO_NEC_SHUF0-23` (24, the PRIMARY family) / `KO_NEC_RAND0-3` (pooled secondary only) — ~~the 8 controls~~ **S-520**. ⛔ **There is NO `KO_SELF` analogue**: for removal the natural identity control IS the identity and is refused by the arm's own precondition, so the identity gate is **SKIPPED BY DESIGN** and the artefact records the skip and its reason: *"SKIPPED BY DESIGN, not absent … This is a real limitation of the direction."* 🔴 *S-474 — the words **"not an oversight"** are NOT in the artefact; the exact phrase *"This is a real limitation of the direction, not an oversight."* is in `configs/dcs_csi_pr003_necessity_basket.json` (`required_gates.no_inert_identity_control_exists`), which has it once and the analyser zero times. The claim is true of the PREREG and was attributed to the artefact.* ⚠ The `NEC_` prefix is **load-bearing**: a second complete directory under one tag is the tag ambiguity an earlier entry had to untangle |
 
 **Three gates precede any rank**, all published and all true on every read in §A: `manipulation_check`,
 `identity_check` (SKIPPED for necessity, above) and `instrument_capable`. ⛔ **`instrument_capable` is
@@ -854,8 +866,8 @@ and **VOID 7** (`dcs_csi_rederive_subspace.py` moved, +36 lines). A launch would
 new arms against a key set **already reduced to 664 by three short control arms**. 🔴 *CORRECTED
 S-473 — this also said "and today's re-derivation path refuses the family outright". **It does not.**
 I ran the frozen recipe today: exit 0, and the output reproduces the published artefact with
-`CHANGED=NONE` in every rank group. That clause is withdrawn; **the two stranded VOID conditions are
-unaffected and remain the block.***
+`CHANGED=NONE` in every rank group. That clause is withdrawn; ~~**the two stranded VOID conditions are
+unaffected and remain the block.**~~* 🔴 **SUPERSEDED S-520: both were discharged BY MEASUREMENT** — VOID 7 at S-490 (80 leaves, zero differing) and VOID 6 at S-494 (670 rows × 12 fields bit-identical) — **and the family launched, was read, and replicated held-out (D42, D43).**
 
 ⚠ **And "floor-limited" is a statement about these families, NOT about the cells.** Neither result
 is permanently uncertifiable: a fresh freeze that re-runs every arm on one current blob **and
@@ -885,9 +897,12 @@ the test that ran"* — the exact sign-flip floor over 2⁶⁷ assignments is 2/
 **These p's record that the sampler saturated, not how strong the effect is**, and may not be quoted
 as evidence of magnitude.
 
-⚠ **Neither is a negative result.** Each is the *best attainable* outcome in a family whose floor
-sits above α — the same FAIL-versus-structural-CANNOT-ANSWER distinction §4 draws, arriving here
+⚠ **Neither is a negative result.** ~~Each is the *best attainable* outcome in a family whose floor
+sits above α~~ — the same FAIL-versus-structural-CANNOT-ANSWER distinction §4 draws, arriving here
 through **family size** rather than through K.
+🔴 **CORRECTED S-520 — TRUE OF BASKET-AT-L20 ONLY.** Necessity's governing family now has a floor of
+**0.0400, BELOW α**, and it certifies in **both** splits (D42 TRAIN, D43 HELD-OUT). Basket-at-L20's
+floor is **0.0909** and still sits above α, so the sentence survives for that half alone.
 
 ## L.4 Every head was chosen because it was live
 
@@ -1264,7 +1279,7 @@ their own floors do not combine into a joint claim without specifying how, and t
 independent** (same axis, same model, and on validation the **same 23 domains**). No combined test is
 preregistered, computed or specified anywhere. **"Both halves certify" is sayable; "the conjunction
 is certified" is not.** ⚠ D42 itself is still the in-sample TRAIN read.
-The historical statement below is kept because it was true when written** (⚠ the prereg declared the floor as **0.10**; the true floor
+*The struck statement above is kept because it was true when written.* (⚠ the prereg declared the floor as **0.10**; the true floor
 at 8 controls is **0.1111** — AM-8's correction, not an advance figure), and §L.3 records that the family which would have fixed it — PR-CSI-003-A — is **built and patched
 ~~but blocked by two of its own VOID conditions and never launched: escalated, not dead.~~** 🔴 **SUPERSEDED S-504: both VOID conditions were discharged by measurement and the family was LAUNCHED and READ — rank 1 of 25 at floor 0.0400 (D42).** ⚠ *S-464 — this clause read "That is PR-CSI-004's status, not this one's" and inverted the very
 distinction it invoked §L.3 to police. §L.3 says **PR-CSI-004 is dead as frozen; PR-CSI-003-A is
@@ -2209,7 +2224,7 @@ reportable when it weakens is reportable when it does not.*
 
 ⛔ **A prespecified diagnostic that was never produced**: PR-003a's `secondary_endpoints` names
 *"`KO_NEC_AXIS` vs `KO_NEC_AXIS_ANCHOR`: the cross-allocation drift measurement"*. **There is no
-`KO_NEC_AXIS_ANCHOR` arm in the artefact's thirteen** — it was declared and never run.
+`KO_NEC_AXIS_ANCHOR` arm in the artefact's thirteen** — ~~it was declared and never run.~~ 🔴 **CORRECTED S-520: it was declared, is NEVER READ, but it DID RUN — twice.** `csi1_basket_train_KO_NEC_AXIS_ANCHOR_20260920_130627_899423` and `csi1_basket_validation_KO_NEC_AXIS_ANCHOR_20260926_193649_2611659` are both on disk. **"Absent from the read" and "never run" are different facts, and only the first is true.**
 
 ⚠ **This artefact carries only two gates** — `manipulation_check` and `instrument_capable`, both
 true. **There is no `identity_check`**, because the removal design has no self-patch arm to provide

@@ -273,6 +273,109 @@ KNOWN_SHORT = {
         "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
         "dropped prompt_id 9a5fb5e9ebc2699c (domain hospital_supply), differenced against the full 230-row csi1_basket_validation_KO_NEC_AXIS_20260926_195336_2615744. "
         "Inside --allow-short 4.",
+    # ---- PR-CSI-023 button necessity L18 TRAIN (jobs 934307-934310). S-524. -------------------
+    # NINETEEN arms, each losing 1-3 of 670 rows to the norm-match degeneracy guard -- the same
+    # deterministic (control basis, row) mechanism as S-152/S-154/S-159, PR-CSI-003-A and
+    # PR-CSI-022. Worst shortfall is THREE; all inside the preregistered --allow-short 4, frozen
+    # BEFORE these arms ran. Every dropped prompt_id was MEASURED by differencing against the full
+    # 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785, by
+    # scripts/gates/dcs_csi_known_short_entries.py and NOT by hand. REGENERATED after KO_NEC_RAND3
+    # landed late -- the whole block comes from ONE instrument run, not 18 plus a hand-added 19th.
+    "csi1_button_train_KO_NEC_ORTH_20260927_004051_1130146":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id eddba980ae033c93 (domain harbour_dock), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
+    "csi1_button_train_KO_NEC_RAND1_20260927_010308_1132836":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id f7e7fc11ef16a6bf (domain recycling_centre), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
+    "csi1_button_train_KO_NEC_RAND2_20260927_011429_1133900":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 3 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=3, rows_written=667). MEASURED "
+        "dropped prompt_id 281621c777c2a874 (domain theatre_backstage), 28af376a6af9b476 (domain surveying_office), b1471eb1c15d84b3 (domain council_depot), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
+    "csi1_button_train_KO_NEC_RAND3_20260927_012529_1135040":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 3 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=3, rows_written=667). MEASURED "
+        "dropped prompt_id 28af376a6af9b476 (domain surveying_office), f6049031ce03ece8 (domain warehouse_logistics), f813b98f8f6f1022 (domain solar_array), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
+    "csi1_button_train_KO_NEC_SHUF0_20260927_000749_1126248":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id 575716c72093dfad (domain city_bridge), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
+    "csi1_button_train_KO_NEC_SHUF10_20260927_002917_1957610":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id d16f41ed29a1eaa2 (domain postal_depot), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
+    "csi1_button_train_KO_NEC_SHUF12_20260927_004723_1959943":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 2 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=2, rows_written=668). MEASURED "
+        "dropped prompt_id 479e5633cb11c986 (domain garden_centre), 5dddd6708ac6fe30 (domain surveying_office), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
+    "csi1_button_train_KO_NEC_SHUF14_20260926_233439_1950416":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id a7d85ddcec76a01a (domain council_depot), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
+    "csi1_button_train_KO_NEC_SHUF17_20260927_000155_1954223":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 2 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=2, rows_written=668). MEASURED "
+        "dropped prompt_id 230ae7e6e0a502a7 (domain courier_hub), ba60cd7aafcbccce (domain orchard_store), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
+    "csi1_button_train_KO_NEC_SHUF19_20260927_001953_1956392":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id 3530313dd84f0342 (domain district_heating), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
+    "csi1_button_train_KO_NEC_SHUF1_20260927_001906_1127529":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id b0689c31bdc3c70c (domain district_heating), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
+    "csi1_button_train_KO_NEC_SHUF20_20260927_002901_1957526":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id 5d522324606416f9 (domain dairy_plant), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
+    "csi1_button_train_KO_NEC_SHUF21_20260927_003835_1958832":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id 0a0d3fbe94929bc8 (domain bar_cellar), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
+    "csi1_button_train_KO_NEC_SHUF22_20260927_004733_1960028":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id 70f061715b966317 (domain winery_cellar), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
+    "csi1_button_train_KO_NEC_SHUF2_20260927_002958_1128788":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 2 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=2, rows_written=668). MEASURED "
+        "dropped prompt_id d26d77a0d3e45840 (domain furniture_workshop), d6a1483494fa75b2 (domain news_report), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
+    "csi1_button_train_KO_NEC_SHUF4_20260926_233108_1949599":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id 973486466e4a008a (domain quarry_site), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
+    "csi1_button_train_KO_NEC_SHUF6_20260926_235216_1952510":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id d97b9a59b01ce7a5 (domain cargo_airfield), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
+    "csi1_button_train_KO_NEC_SHUF7_20260927_000120_1953876":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id a598e47e6c999c9d (domain quarry_site), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
+    "csi1_button_train_KO_NEC_SHUF8_20260927_001025_1955088":
+        "S-524: PR-CSI-023 button necessity L18 TRAIN, jobs 934307-934310. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id 32fe75322962a84f (domain construction_site), differenced against the full 670-row csi1_button_train_KO_NEC_AXIS_20260927_002958_1128785. "
+        "Inside --allow-short 4.",
     "csi1_button_validation_KO_SHUF14_20260921_040940_877308":
         "DCS-CSI-159: PR-CSI-007 family, job 914479 (group K), rescue_layer 18. SIXTH in-family "
         "instance. 2 rows of 230 REFUSED by the norm-match degeneracy guard ('1 of 28 positions are "
