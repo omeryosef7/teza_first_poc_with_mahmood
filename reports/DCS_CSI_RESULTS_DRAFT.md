@@ -21,8 +21,9 @@ names its scope rather than claiming a blanket.*
 head-level results, which the cell-level half subdivides and therefore depends on.** §H is written
 second and belongs first. ⚠ **A THIRD part — the axis, necessity and dissociation families
 (PR-CSI-001–009, 20 claim-table rows) — is **PARTLY PRESENT**: 🔴 *CORRECTED S-453 — this block said "two … and eighteen" long after the
-count reached ten:* **TEN of its rows are drafted as §A (D12, D18, D19, D23, D24, D25, D26, D27,
-D29, D30) and TEN are not** (D13, D14, D15, D16, D17, D20, D21, D22, D28, D31). The
+count reached ten:* **TWELVE of its rows are drafted as §A (D12, D13, D15, D18, D19, D23, D24,
+D25, D26, D27, D29, D30) and EIGHT are not** (D14, D16, D17, D20, D21, D22, D28, D31).
+*(Re-counted S-459 by regex over the §A headings, not by subtracting from last tick.)* The
 four rows below are the D-rows §H covers; it also reports **AM-36** and draws on AM-26, AM-27, AM-30, AM-33, AM-34 and AM-37:
 
 | row | what §H reports | where |
@@ -49,8 +50,8 @@ it declined is what found it. Classified by reading each row rather than by patt
 
 ⚠ **UPDATED S-439/S-440, RE-COUNTED S-453.** §A began as D19's bidirectional conjunction and
 D24's matched-power dissociation with D18, D23 and D29 as supports; it now also carries D12 (§A.3)
-and D25/D26/D27/D30 (§A.4, §A.4a, §A.4b). **That is an increment, not the part: TEN of the twenty
-are drafted and TEN remain** — D13, D14, D15, D16,
+and D25/D26/D27/D30 (§A.4, §A.4a, §A.4b). **That is an increment, not the part: TWELVE of the twenty
+are drafted and EIGHT remain** — D13, D14, D15, D16,
 D17, D20, D21, D22, D28, D31. (⚠ This count has been wrong twice: SCOPE said eighteen when it was
 fifteen, and a re-measure said thirteen by reading a range as a list, S-449.)
 
@@ -59,7 +60,7 @@ rank-1 installation axis and its control families, the necessity direction, the 
 codeword dissociation at matched power, and the cross-codeword axis swap. 🔴 *CORRECTED S-453 — this sentence outlived its count by three ticks:* **ten of them are
 in this file, as §A; the ten listed above are not.** §L.3 touches two of these results (necessity, basket-at-L20) only
 to limit them, which is how the gap stayed invisible for so long — they appeared as *limitations of
-results the draft never stated*, and for the **ten** still undrafted they still do.
+results the draft never stated*, and for the **eight** still undrafted they still do.
 
 ⛔ **Review coverage is UNEVEN and every pass so far has found real defects:** §1–§6 twice, §M once
 (S-421, six mismatches against the source), §L once, **§H once** (S-438: thirteen findings, two that
@@ -278,7 +279,7 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | any rung-2/3/4 **CLAIM** for a result here | every certified claim is rung 1 — but naming rung 2 as *unreached* is required, not forbidden, so the ban is on the claim and not the vocabulary | AM-34 |
 | "correcting" either 1.52e-04 | `(1/9)^4 = (1/3)^8 = 1/6561` — two real quantities, one value | [†] §4 |
 | ‼ "floor above α ⇒ CANNOT ANSWER, never FAIL" | true only at K < 3; at K ≥ 3 it is a FAIL with an unwinnability warning — and the sentence is **still live in both published artefacts**, so it can be re-imported from a source an editor will read | AM-45 (S-428), §M.6 |
-| ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | §1–§4 are the CELL-level part and §H the HEAD-level part; of the axis / necessity / dissociation families (D12–D31) **ten of D12–D31 are drafted as §A and TEN remain in neither** — see SCOPE | D12–D31, SCOPE |
+| ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | §1–§4 are the CELL-level part and §H the HEAD-level part; of the axis / necessity / dissociation families (D12–D31) **twelve of D12–D31 are drafted as §A and EIGHT remain in neither** — see SCOPE | D12–D31, SCOPE |
 | ‼ quoting `VERDICT: "WE FOUND (part of) THE WRITER"` | it is a **verdict LABEL live in TWO published artefacts** (PR-010 and PR-011), not a claim; the permitted form is that file's `REPORTABLE_AS` — 8 head indices, at least half the effect, **leg (i) only**, **not** a claim about any cell | D32, §M.8 |
 | "deduplicating" the two 0.012346s | D39's certified conditional (§2) and D38's forbidden binomial (§4) are **both exactly 1/81** — one is a result, one is banned | D39, D38, §4 |
 | ‼ "TEST is unspent / untouched / available" | read to completion 2026-09-08 and selection-contaminated | AM-39, D5 |
@@ -1004,7 +1005,7 @@ p-value.** It holds for §1 and §4, which carry none.
 
 # A. The axis half — FIRST INCREMENT ONLY
 
-**Added S-439.** ⛔ **This is NOT part three. It is ten of its twenty rows**, drafted as a deliberate
+**Added S-439.** ⛔ **This is NOT part three. It is twelve of its twenty rows**, drafted as a deliberate
 increment rather than as a section. The axis/necessity/dissociation families (D12–D31) remain
 largely undrafted and SCOPE says so.
 
@@ -1589,3 +1590,62 @@ contrast is as post-hoc as the TRAIN one, so it is secondary on both splits.
 — it does not, and only the pooled contrast clears α; that the recipient factor exists or does not;
 that the state hypothesis is refuted in any form other than the pure one; and anything at all about
 **necessity**, which has never been run in the swap design.
+
+## A.5 The 2×2 across codeword × layer: the LAYER is exonerated, and that is one explanation removed, not a mechanism found (D13, D15)
+
+The dissociation of §A.2 has an obvious alternative reading: basket's axis was fitted at **L18** and
+button's at **L20**, so perhaps the difference is the *layer*, not the codeword. The 2×2 that
+answers it exists — each codeword's axis read at **its own** layer and at **the other's** — and all
+six reads are below, taken by me from the artefacts:
+
+```
+                          candidate  KO_AXIS - KO         pos/neg    rank      floor    KO_FULL - KO
+basket  L18  (own)    TRAIN  +0.00264 [+0.00068,+0.00471]  44/23   1 of 47   0.0213     +0.12041
+basket  L18  (own)    VALID  +0.00401 [+0.00098,+0.00775]  15/8    1 of 47   0.0213     +0.10370
+basket  L20  (other)  TRAIN  +0.00294 [+0.00146,+0.00455]  46/21   1 of 11   0.0909     +0.09391
+button  L20  (own)    TRAIN  +0.00040 [-0.00025,+0.00108]  41/26   4 of 11   0.0909     +0.06955
+button  L20  (own)    VALID  +0.00132 [-0.00002,+0.00275]  14/9    4 of 11   0.0909     +0.09508
+button  L18  (other)  TRAIN  -0.00027 [-0.00124,+0.00068]  35/32   8 of 11   0.0909     +0.10842
+        all six: manipulation_check, identity_check and instrument_capable TRUE
+```
+
+**Basket is top of its control family at BOTH layers. Button is inside its controls at BOTH.** The
+layer does not track the outcome; the codeword does. ⇒ **"The dissociation is really a layer
+effect" is removed.**
+
+⛔ **The cells are NOT matched on control-family size, and this is the caveat that governs the
+whole section.** Basket's two passing cells carry **46** controls; the other four carry **10**.
+*"Rank 1 of 47"* and *"rank 1 of 11"* are **not comparable as p-values** — their attainable floors
+are 0.0213 and 0.0909. **What is comparable, and all this section claims, is TOP-OF-FAMILY versus
+INSIDE-FAMILY.** §A.2 is where the matched-power comparison lives; this is not it.
+
+⚠ **Basket-at-L20 is floor-limited and TRAIN-only.** At 10 controls the best attainable p is
+**0.0909**, so that cell **cannot certify** however large its effect, and it has no held-out split.
+**The exoneration therefore rests on both diagonals being read the same way, not on a certified
+symmetric pass.**
+
+🔴 **The negative at button-L18 is NOT a sign flip and must never be reported as one.** The
+candidate is **−0.00027 [−0.00124, +0.00068]**, sign-flip p = 0.58, **35 positive against 32
+negative domains** — indistinguishable from zero. The sign is noise, and "button's axis *hurts* at
+basket's layer" is a sentence the data does not support.
+
+✅ **The instrument was live at the foreign layer, and this was checked dose-normalised rather than
+by the raw ratio.** Button's rank-1 axis spans **3.87 %** of the ‖clean − ko‖ delta at L18 against
+**3.48 %** at its own L20 — ***more*, not less** — with `degenerate_positions` = 0 and
+`KO_FULL − KO` = **+0.10842** at L18, the largest whole-state recovery of the six cells. **So "the
+axis was never properly written at the foreign layer" is dead**, and it was the most likely benign
+explanation of button's null.
+
+⚠ **Two corrections this row carries.** Its VALIDATION gate figure was quoted from the superseded
+**n30** family (+0.10306); the governing n46 value is **+0.10370** (AM-50, S-453) — the gate holds
+either way. And the basket-VALIDATION cell was once quoted at the n30 family's *"rank 1 of 31,
+p = 0.0323"*; the governing read is **rank 1 of 47, p = 0.0213, 215 keys** (AM-7).
+
+⚠ **§L.9 applies here as it applies to §A.2**: the basket cells and the button cells are read off
+prompt banks whose readout validity differs threefold, and these six cells were **not** re-read at
+the 0.05 floor — only the eight cells of §A.3 and §A.4a were.
+
+**NOT ESTABLISHED by this section:** *why* the codewords differ — this removes the layer and nothing
+else; that button's axis is or is not causal at any layer; that basket's L20 cell would pass at a
+matched family, which was never run (D14, and PR-CSI-004 was frozen for it and is no longer runnable
+— AM-46); and anything at all about **necessity**, which has been run only on basket.

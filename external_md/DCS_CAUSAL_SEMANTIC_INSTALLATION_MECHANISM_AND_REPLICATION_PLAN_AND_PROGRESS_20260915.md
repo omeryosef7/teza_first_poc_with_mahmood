@@ -40514,3 +40514,78 @@ preregister and build the readout-validity sensitivity for the head and cell fam
 that, the remaining runnable work is the ten undrafted axis rows** (D13, D14, D15, D16, D17, D20,
 D21, D22, D28, D31), of which D13/D15 are the 2×2 layer-exoneration pair and D21 is the
 dissociation's caveat row. **Push credential-blocked.**
+
+---
+
+## S-459 — §A.5 drafted: the codeword × layer 2×2, where the layer is exonerated and the cells are not matched (D13, D15) (2026-09-26)
+
+**Why this pair.** S-458 left the sprint's open questions with the user, so the runnable work is the
+undrafted axis rows. D13/D15 are a pair and they answer the most obvious objection to §A.2: basket's
+axis was fitted at **L18** and button's at **L20**, so perhaps the dissociation is the *layer*.
+
+**All six reads re-derived by me from the artefacts**, not from the claim table:
+
+```
+                          candidate  KO_AXIS - KO         pos/neg    rank      floor    KO_FULL - KO
+basket  L18  (own)    TRAIN  +0.00264 [+0.00068,+0.00471]  44/23   1 of 47   0.0213     +0.12041
+basket  L18  (own)    VALID  +0.00401 [+0.00098,+0.00775]  15/8    1 of 47   0.0213     +0.10370
+basket  L20  (other)  TRAIN  +0.00294 [+0.00146,+0.00455]  46/21   1 of 11   0.0909     +0.09391
+button  L20  (own)    TRAIN  +0.00040 [-0.00025,+0.00108]  41/26   4 of 11   0.0909     +0.06955
+button  L20  (own)    VALID  +0.00132 [-0.00002,+0.00275]  14/9    4 of 11   0.0909     +0.09508
+button  L18  (other)  TRAIN  -0.00027 [-0.00124,+0.00068]  35/32   8 of 11   0.0909     +0.10842
+        all six: manipulation_check, identity_check, instrument_capable TRUE
+```
+
+**Basket is top of its family at BOTH layers; button is inside its controls at BOTH.** The layer
+does not track the outcome, the codeword does — so *"it is really a layer effect"* is removed.
+
+### What the section refuses to let that become
+
+* ⛔ **The cells are NOT matched on family size**: basket's two passing cells carry **46** controls,
+  the other four carry **10**, floors 0.0213 against 0.0909. *"Rank 1 of 47"* and *"rank 1 of 11"*
+  are **not comparable p's**. All the section claims is **top-of-family vs inside-family**; §A.2 is
+  where the matched comparison lives.
+* ⚠ **basket-at-L20 is floor-limited and TRAIN-only** — at 10 controls the best attainable p is
+  0.0909, so it **cannot certify** however large the effect. The exoneration rests on both diagonals
+  being read the same way, not on a certified symmetric pass.
+* 🔴 **The negative at button-L18 is NOT a sign flip.** −0.00027, sign-flip p = 0.58, **35 pos / 32
+  neg** — indistinguishable from zero. *"Button's axis hurts at basket's layer"* is unsupported.
+* ✅ **The instrument was live at the foreign layer, checked dose-normalised** (S-041's P1-g rule,
+  not the raw ratio): button's axis spans **3.871 %** of the ‖clean − ko‖ delta at L18 against
+  **3.479 %** at its own L20 — ***more*, not less** — `degenerate_positions` 0, and `KO_FULL − KO` =
+  **+0.10842**, the largest whole-state recovery of the six. **"The axis was never properly written
+  at the foreign layer" is dead**, and it was the most likely benign explanation of button's null.
+
+### Corrections this row already carried, now stated where it stands
+
+* **AM-50 (S-453)**: D15's VALIDATION gate was the **n30** figure (+0.10306); the governing n46 value
+  is **+0.10370**. The gate holds either way.
+* **AM-7**: the basket-VALIDATION cell was once quoted at n30 (*"rank 1 of 31, p = 0.0323"*); the
+  governing read is **rank 1 of 47, p = 0.0213, 215 keys**.
+* **§L.9 applies here too** and is stated in the section: the basket and button cells come off
+  prompt banks whose readout validity differs threefold, and **these six cells were NOT re-read at
+  the 0.05 floor** — only §A.3's and §A.4a's eight were.
+
+### Counted, not subtracted
+
+Measured by regex over the §A headings: **twelve of the twenty axis rows are now drafted** — 12, 13,
+15, 18, 19, 23, 24, 25, 26, 27, 29, 30 — and **eight remain**: 14, 16, 17, 20, 21, 22, 28, 31.
+⚠ **The count appears in four places and all four were stale**: SCOPE's header, SCOPE's update note,
+§A's preamble and the **Editor's checklist row** that exists to police this exact phrasing. All four
+corrected, then swept to confirm no fifth site survives. *(This is the third tick in which the
+checklist row disagreed with the body it polices.)*
+
+### What is NOT established
+
+* ⛔ **Why the codewords differ.** This removes the layer and nothing else.
+* ⛔ **That button's axis is or is not causal at any layer** — every button cell is inside its
+  controls, and "inside a 10-control family" is a weak statement.
+* ⛔ **That basket-at-L20 would pass at a matched family.** Never run: PR-CSI-004 was frozen for
+  exactly that and is **no longer runnable as frozen** (AM-46).
+* ⛔ **That these six cells survive the readout-validity floor** — not re-read at 0.05.
+* ⛔ Nothing about **necessity**, run only on basket. No GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** D21 — the dissociation's own caveat row, whose reweighting result §A.2 already cites
+without drafting — then D14/D16/D17/D20/D22/D28/D31. **Five questions remain with the user:** the
+readout-validity sensitivity for the head/cell families, the rung-1 framing, the second TEST read,
+PR-CSI-003-A's launch, and the axis rank rule. **Push credential-blocked.**
