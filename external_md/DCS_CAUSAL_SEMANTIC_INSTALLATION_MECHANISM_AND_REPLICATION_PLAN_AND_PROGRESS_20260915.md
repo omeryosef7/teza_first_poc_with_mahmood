@@ -43675,3 +43675,60 @@ Also unfixed: AM-13, AM-47, AM-47-a, AM-52 and three audit rows asserting the ex
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** D19 and prohibition 26, each verified against the artefacts first; then A30's missing supersession row.
+
+---
+
+## S-508 / D19 fixed — and I have to withdraw one of my own S-503 findings, because three of my table detectors were wrong (2026-09-26)
+
+S-507's NEXT, first half. **Every figure re-derived from the artefact before use**, and the audit's numbers all held:
+
+```
+  candidate_minus_base                point -0.0087  ci95 [-0.01152, -0.00612]  56 neg / 11 pos / 0 tied of 67
+  PRIMARY_candidate_minus_comparator  point -0.0088  ci95 [-0.01157, -0.00626]  57 neg / 10 pos
+  removal_fraction_candidate_of_full  0.0803  ci95 [0.0584, 0.1041]   (-0.0087 / -0.10843)
+  n_keys_common 655   arms 29
+```
+
+### ✅ D19, the row governing the sprint's headline conjunction — five edits
+
+1. **Necessity figures** struck and superseded: −0.00852 / 55-of-67 / rank 1 of 9 → **−0.00870343, [−0.01152, −0.00612], 56 neg / 11 pos, rank 1 of 25, p = 0.0400**, with the floor caveat attached.
+2. **Population**: necessity 664 keys → **655 keys common to all 29 arms**, the 664 labelled as PR-CSI-003's 13-arm read.
+3. 🔴 **The falsified premise.** D19 said the halves are unequal because *"necessity **cannot clear any bar at `n_controls = 8`** because the bar is unreachable there"*. **The conclusion survives, the premise does not** — necessity now clears its bar, and the halves remain unequal because **necessity has no held-out arm at all** (PR-CSI-001's replication criterion UNMET) while sufficiency has one. This was the audit's highest-priority item and it was right: §A.1 had been rewritten at S-505 while the row that governs it still carried a dead reason.
+4. **The mandated fraction.** D19 carried `0.0778 [0.0560, 0.1009]`. The governing read gives **0.0803 [0.0584, 0.1041]**. **Both are now stated**, because **prohibition 28 mandates the 0.0778 form verbatim and has not been amended** — I recorded that mismatch inside D19 as *"a live inconsistency, recorded not hidden"* rather than silently changing a figure a prohibition requires. The headline is unaffected: ~92 % of the effect is elsewhere either way.
+5. **An unescaped `|diff|`** was splitting D19 into 8 cells against a 6-column header. Escaped; **D19 is now 6/6.**
+
+### 🔴 AND I WITHDRAW A FINDING I MADE AT S-503
+
+S-503 recorded, as a pre-existing defect: *"D39 at 6 columns in a 4-column section — PRE-EXISTING, recorded and NOT touched."* **That was my measurement error, not a defect.** Measured correctly:
+
+```
+  D39   unescaped-pipe columns = 4   (raw pipes 7, escaped 2)   -> matches its 4-column header
+```
+
+**`awk -F'|'` counts raw pipes and cannot see markdown escapes.** D39 contains `\|`-escaped pipes in its content and renders correctly. The row is fine, and I reported it as broken while reporting two genuinely broken rows of my own — which made the false one look credible by association.
+
+⚠ **Three detectors, three failures, in one tick.** (a) `awk -F'|'` — blind to escapes; (b) "the first `|` row after a blank line is the header" — mis-assigns headers when tables are separated by prose, and told me D40-b's header had 979 columns; (c) "nearest preceding separator" — counts the *header rows of new tables* as offending rows, producing "30 disagreeing rows" of which most are its own artefacts. **I am not reporting a count.** A trustworthy table audit needs a real markdown parser, and until there is one, "this row is malformed" is only sayable per-row, checked by hand.
+
+### What I can stand behind, per row
+
+```
+  D18    6 cols / header 6   ✅ fixed at S-507
+  D19    6 cols / header 6   ✅ fixed here
+  D42    4 cols / header 4   ✅
+  AM-57  4 cols / header 4   ✅
+  D39    4 cols / header 4   ✅ NOT a defect — S-503's claim withdrawn
+  D40-b  6 cols              ⚠ UNRESOLVED: I could not reliably identify its table's header
+  D3, D22, D26, D27, D28     ⚠ CANDIDATES only — more cells than their apparent header, consistent
+                                with unescaped pipes in content (D26 shows 12), NOT asserted
+```
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **Prohibition 26 is still stale** — S-507's other named item. It mandates a sentence the new result contradicts and its clause list is still weaker than §A.1's four. Not touched here.
+- ⛔ **Prohibition 28 is not amended**, which is why D19 now carries two fractions. Amending a prohibition's mandated figure is preregisterable, not an edit.
+- ⛔ **A30 still has no supersession row for the floor lift**, which is precisely what A30 exists for.
+- ⛔ **The audit's remaining ~12 items are untouched** (AM-13, AM-47, AM-47-a, AM-52, three audit rows, §M.9, four §L.3/§A.7 sites).
+- ⛔ **No figure changed except by re-derivation from the artefact.** The result (rank 1 of 25, p = 0.0400) is untouched.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** prohibition 26, then A30's missing row; D40-b and the five candidates checked one row at a time, by hand.
