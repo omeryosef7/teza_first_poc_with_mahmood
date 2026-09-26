@@ -41535,3 +41535,66 @@ waited on the unfixable half.
 
 **NEXT:** §5's remaining claims and §0, then the §M/§L audit when it lands. **Six questions with the
 user, one of which has now shrunk by half.** **Push credential-blocked.**
+
+---
+
+## S-472 — §5's remaining claims and §0: both hold, and a pattern in how I read sources (2026-09-26)
+
+### ✅ §5's two substantive claims, verified
+
+**"There is no control family of arbitrary cells anywhere in this sprint."** Checked across every
+cell-level artefact: all five censuses (PR-014, 015, 016, 018, 020) carry **`NO_RANK_TEST: true`**
+and **zero** control-related keys, and the three argmax tests carry none either. ⇒ *"cell (L,h) is
+the writer"* is genuinely unavailable, by construction and not by omission.
+
+**The 1/9-floor argument.** `1/9 = 0.111111 > 0.05`, so a control family restricted to one head's
+nine cells cannot clear α **at any effect size** — the floor is a property of the family size, not of
+the effect. The sentence is right and its reason is right.
+
+### ✅ §0's population chain, verified end to end
+
+```
+data/boombness_prompts/dcs_ts116_domain_split.json   assign: 116 domains
+                                                     train 70 / validation 23 / test 23
+DCS_CSI_CELL_SCREEN_AGREEMENT_basket.json            screen: split=train, n_domains=67
+```
+
+**116 / 70-23-23 / 67** all match §0 exactly, and the 70 → 67 gap is the three whole-population
+exclusions §0 names. §0's endpoint definition, its `sigmoid(semantic_logodds)` identity and its
+`installation_by_arm` examples (0.47336 / 0.23972) were verified earlier this session and in S-462.
+
+### ⚠ A pattern in my own reading, recorded because it is now three incidents
+
+I nearly filed §0's citation of **AM-37** as a misattribution — the amendment looked to be about
+D32's caveat and cell families, with no mention of the `test_domains` mislabel §0 credits it for.
+**It does mention it. My read was truncated at 520 characters and cut before the relevant clause.**
+
+That is the **third** time this session a wrong-scope read nearly produced a false finding:
+
+1. **detector failure #16** — searched the whole claim table for `**(c)**`, found the first
+   occurrence in a different row, and concluded a reviewer had misquoted AM-14. The reviewer was
+   right.
+2. **the A30 row numbering** — reported a gap at rows 25–26 that was my regex catching rows from
+   other tables; the block is 1–24 contiguous.
+3. **this one** — a truncated row read that hid the clause I was looking for.
+
+⇒ **RULE, added here: when a source appears not to say the thing it is cited for, widen the read
+before concluding it. All three would have been caught by reading the whole row.** The cost
+asymmetry is stark — a false finding spends a tick and damages the record's credibility; widening a
+read costs one command.
+
+### What is NOT established
+
+* ⛔ **That §0 and §5 are fully audited.** I verified their load-bearing population, endpoint and
+  control-family claims. Their prose framing was not this tick's dimension, and §5 carries the
+  **escalated rung question** from S-471, unresolved.
+* ⛔ **The §M/§L audit** is still running and is not in this entry — §M.1–§M.5, §M.10, §M.11 and all
+  of §L remain unchecked by me.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+⚠ **Where the draft now stands on verification.** Every results section (§1–§4, §H, §A) has had a
+figure-by-figure audit against primary artefacts; §M has had a machinery spot-check against the code
+that was patched under it; §0, §5 and §6 have had their load-bearing claims verified. **The
+outstanding surface is §M.1–§M.5, §M.10–§M.11 and §L**, and the outstanding decisions are the user's.
+
+**NEXT:** the §M/§L audit on arrival. **Six questions with the user.** **Push credential-blocked.**
