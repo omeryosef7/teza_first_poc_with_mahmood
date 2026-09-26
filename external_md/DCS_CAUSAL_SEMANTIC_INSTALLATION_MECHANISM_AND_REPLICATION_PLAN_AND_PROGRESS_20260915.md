@@ -43372,3 +43372,87 @@ Halves 2+3 capped the shuffled family at 16 → floor `1/17 = 0.0588`, **which i
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** commit the three artefacts; then fold the result into the claim table and §A with both caveats attached to the number, not to a footnote.
+
+---
+
+## S-502 / the result is in the claim table — as D42, with both caveats welded to the number and D18 marked where it stands (2026-09-26)
+
+S-501's NEXT. Commit `41145bc5` landed the read; this folds it into the file whose header calls it *"the file to read before writing any sentence for Matan or Mahmood"*.
+
+### ✅ D42 added — and what it does NOT say is the load-bearing part
+
+The claim: *"NECESSITY CERTIFIES at the enlarged family: removing the rank-1 component from a CLEAN forward drops installation more than ALL TWENTY-FOUR shuffled controls."* Evidence re-derived from `domain_means`, not read off the verdict, with the full control ordering, the 1.78× margin, both corroborating reads, and the provenance line (655 keys / 31 arms / 67 TRAIN domains, SLURM 906433 + 912736 + 932477 + 932478, all 32 arms RTX 3090).
+
+**Five caveats are in the status column, not a footnote:**
+
+1. **`p = 0.0400` IS the attainable floor.** `1/25`, so rank 1 *necessarily* yields it — *"not a small p; it is the only p a rank-1 outcome can have here."*
+2. **TRAIN only and IN-SAMPLE**, 67/67 scored domains also in the fit — *"never to be quoted as held-out."*
+3. **PR-CSI-001's replication criterion is UNMET** for this direction; the validation arms do not exist.
+4. **Every sign-flip p is at the Monte-Carlo sampler floor 5.00e−06** and carries no information beyond *"the sampler saturated"* — inherited verbatim from D18, because it is as true of the new read as the old.
+5. **Prohibition 24 still stands.** A PASS does not license *"the axis is necessary"* or any necessity percentage. ⚠ This is the one I most wanted to check myself: the forbidden-claims list has an item aimed precisely at over-reading this result, it was written when the read was INCONCLUSIVE, and **a PASS is exactly the moment such a ban is most likely to be quietly dropped.** It is not dropped.
+
+### ✅ D18 marked in place, per A30's own convention
+
+A30 states the rule — *"A correction is not complete until the corrected row says so where it stands"* — so D18 now carries, on its own row:
+
+> 🔴 **SUPERSEDED IN PART BY D42 (S-501): the FLOOR LIMITATION this row describes is LIFTED** — the family went 8 → 24, the floor 0.1111 → 0.0400, and the PASS branch that was *"unreachable before the first arm ran"* is now reachable and reached. ⚠ **The IN-SAMPLE and TRAIN-ONLY caveats are NOT lifted, and neither is the sampler-floor caveat.**
+
+**Partially**, deliberately: D18 described *two* limitations and only one is gone.
+
+### ✅ AM-57 closes AM-56, with one thing left open on purpose
+
+AM-57 records the whole chain — authorisation, my corrected framing, VOID 7 discharged by 80-leaf identity, VOID 6 by 8040 bit-identical comparisons, launch, completion, read — and ends:
+
+> ⚠ **The amendment's internal contradiction was never resolved, only overtaken** — the status field and the passing gate still disagree in the frozen file, and nothing here repairs that.
+
+That contradiction was real, it is still in `configs/`, and a launch having succeeded is **not** a repair. Recording it as overtaken rather than fixed is the honest status.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **The results draft is NOT updated.** Only the claim table. §A still describes necessity as floor-limited, and that edit needs the same care rather than being bundled in at the end of a tick.
+- ⛔ **No number changed.** D42's figures are S-501's, re-derived once; nothing was recomputed here and nothing new was measured. This tick is bookkeeping on a result, and bookkeeping that invents a figure is the worst kind.
+- ⛔ **D19's bidirectional conjunction is NOT restated or strengthened.** It rests on both directions; only one moved, and whether its wording should change is a judgement I have not made.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** §A's necessity passage, carrying the same five caveats; then whether D19 needs a word.
+
+---
+
+## S-503 / I wrote TWO malformed rows into the claim table and caught them by audit, not by reading (2026-09-26)
+
+Appended immediately after S-502 because the defect was **mine, in the headline file, in the same tick that added a PASS to it**.
+
+### What went wrong
+
+```
+D42   5 content columns   against a section header of 4   -> MALFORMED
+AM-57 2 content columns   against a section header of 4   -> MALFORMED
+```
+
+The claim table does **not** have one schema. Its sections differ:
+
+```
+line 994 (D38-D42)  : | # | claim | evidence | status |                                        4 cols
+line 246 (D16-D2x)  : | # | claim | statistic (with CI and n_domains) | population / split /
+                        codeword / layer | caveats | source |                                  6 cols
+AM section          : | # | claim | evidence | status |                                        4 cols
+```
+
+I had **read D18 to model the new row** — and D18 lives in the **six-column** section. So I wrote D42 with a separate provenance column into a four-column table, and then wrote AM-57 as a bare two-column row without checking AM-56 at all. Both render as broken markdown.
+
+### How it was caught, and the part worth keeping
+
+Not by reading the rows back — by counting fields per row and **comparing each against the header of its own section**, which is a check a human eye does not perform on a 1200-line table. Fixed: D42's provenance merged into evidence under a `**PROVENANCE:**` label (4 cols); AM-57 rebuilt as claim / evidence / status to match AM-56 (4 cols).
+
+The audit also found **D18's marker in the wrong column** — appended at line end, it landed in `source` when it belongs in `caveats`. Moved. And it surfaced **D39 at 6 columns in a 4-column section**, which is **pre-existing, not mine** — recorded, not touched, because fixing an unrelated row inside a tick that is already adding a headline claim is how two changes get one review.
+
+⚠ **The general lesson:** *"model the new row on an existing one"* is only safe when the existing one is in **the same table**. D18 was the right row to copy the **rigour** from and the wrong row to copy the **shape** from, and I did not distinguish those until the counts disagreed.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No claim, figure or caveat changed.** This was formatting only — D42's five caveats, D18's partial-supersession marker and AM-57's "overtaken, not resolved" wording are all exactly as S-502 recorded them.
+- ⛔ **D39's malformation is NOT fixed** and is not mine to bundle in here.
+- ⛔ **The results draft is still not updated** — S-502's NEXT stands.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** §A's necessity passage with the same five caveats; then D39's column count as its own small change.
