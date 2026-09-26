@@ -41963,3 +41963,76 @@ of the two.*
 **NEXT:** the audit programme is complete on every dimension I can mechanise — figures, machinery,
 cross-references, causal clauses, and now the source document. **What remains is the six decisions,
 and the fact that nothing has reached a GPU in fourteen ticks.** **Push credential-blocked.**
+
+---
+
+## S-478 / REVIEW R39 opened — the review number was stale by ten, and PR-CSI-003-A's launcher is verified by its own gate (2026-09-26)
+
+### ⚠ First, a correction to the standing instruction
+
+The tick prompt says *"run an adversarial self code-review (next is **R28**)"*. **R28 was done at
+S-312**, and the series has since reached **R38** (S-428, this session). The next number is **R39**,
+and the prompt's review counter is stale by ten in the same way its CURRENT STATE is stale by a
+hundred entries. Recorded so the count does not drift further.
+
+### R39's theme, chosen from what the audits produced
+
+Two defect classes have each produced real findings and neither has had a dedicated code review:
+
+* **thresholds duplicated or unlinked between code and preregistration** — AM-48 (the analyser
+  certifies only at rank 1 while four preregs say rank 2 certifies, and it has **no `--prereg`
+  argument**) and S-470 (`F >= 0.50` is a literal in a reader that *requires* `--prereg`).
+* **checks that cannot fail** — the gate that *"matched ZERO rows and printed PASS … committed a
+  third time"* (R2-M5, S-042), and a truth-table test that was **tautological** until S-141.
+
+Two reviewers are auditing those; nothing from them is in this entry.
+
+### ✅ My own pass: AM-48's provenance defect is a SINGLETON, not a class
+
+Swept every CSI script for the pattern AM-48 found — writing a `"prereg"` label into an artefact
+without a `--prereg` argument to have read it:
+
+```
+14 scripts write a "prereg" field or take --prereg
+13 of them take --prereg
+ 1 writes the label with NO --prereg argument:  scripts/dcs_csi_subspace_analyze.py
+```
+
+⇒ **exactly the script AM-48 already names, and no other.** ⚠ *This bounds the defect: the artefacts
+of every other family declare a preregistration their producer actually opened. It does not bound
+S-470's class — "takes `--prereg`" is not "reads the thresholds from it", and `head_analyze.py` proves
+the difference.*
+
+### 🔴 PR-CSI-003-A's launcher patch is verified by the amendment's OWN gate
+
+`scripts/gates/dcs_csi_pr003a_verify_launcher.py` exists for exactly this and calls itself *"the
+verification PR-CSI-003-A demands before any half-4/5 arm is launched"*. **I ran it:**
+
+```
+half 4: 10 arm names [4..13]      half 5: 10 arm names [14..23]
+union: 20 values, range 4..23     gaps: NONE     repeats: NONE
+subnec / RNEC / NECCOMMON / halves 1-3 : all still present
+LAUNCHER PATCH VERIFIED           exit 0
+```
+
+⇒ **S-475 found the patch in the tree; this finds it verified by the instrument the amendment itself
+specified.** 🔴 **And it sharpens the contradiction into an internal one**: PR-CSI-003-A carries a
+status field reading *"REPORTED, NOT APPLIED. `slurm_scripts/dcs_csi_p1_arms.slurm` is not modified by
+this amendment"* **and** a gate that verifies that exact modification and passes. **One preregistration,
+both statements.** AM-56 strengthened.
+
+### What is NOT established
+
+* ⛔ **That the launcher being ready makes a launch appropriate.** It does not. **VOID 6 and VOID 7
+  still stand**, S-167c still forbids freezing a prereg naming anything nonexistent, and **the decision
+  is the user's.** What has changed is only that two of the four stated obstacles are gone and the
+  third — the launcher — is now verified rather than merely present.
+* ⛔ **Which of the amendment's two statements governs.** A status field saying "not applied" and a
+  passing verifier for the thing applied cannot both be the operative record. **That is part of the
+  decision, not something I resolve.**
+* ⛔ **R39's two reviewer streams.** Running; nothing here reflects them.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** R39's findings when they land. **Six questions with the user; the PR-CSI-003-A one is now
+two stranded VOID conditions plus a prereg that contradicts itself about its own launcher.**
+**Push credential-blocked.**
