@@ -1,0 +1,90 @@
+# ================================================================================================
+# THE OPTION-MASS (READOUT-VALIDITY) SENSITIVITY — the invocations, recorded (S-486)
+#
+# WHY THIS FILE EXISTS. S-484 found that an axis artefact does not record its own invocation, and
+# S-485 found that reports/DCS_CSI_SUBSPACE_basket_{train,validation}_n46.json are recorded as an
+# --out in NO runargs file — so for the sprint's two basket n46 PASSES the invocation was written
+# down nowhere. This file closes that, and records the sensitivity runs the draft's §A table quotes.
+#
+# ⛔ THESE ARE SENSITIVITY READS, NOT THE FROZEN PROTOCOL. The frozen protocol is
+#    --option-mass-floor 0.0 (the default), which is what every committed
+#    DCS_CSI_SUBSPACE_* / DCS_CSI_SWAP_* read carries. The 0.05 outputs are named
+#    DCS_CSI_SUBSPACE_OPTIONMASS05_SENSITIVITY_* so they cannot be mistaken for a primary read.
+#
+# ⛔ NOTHING HERE MAY OVERWRITE A COMMITTED READ. Check every --out with `ls` first.
+#
+# HOW THE RECONSTRUCTION WAS VALIDATED, and this is the only reason it may be trusted:
+#   the SAME invocation at --option-mass-floor 0.0 reproduces the committed artefact EXACTLY.
+#     basket train      candidate_minus_ko  0.00264 [0.00068, 0.00471]   == committed  ✓
+#     basket validation candidate_minus_ko  0.00401 [0.00098, 0.00775]   == committed  ✓
+#     button train L18  candidate_minus_ko -0.00014 [-0.00111, 0.00081]  == committed  ✓
+#   ⚠ Reproduction validates the COMPUTATION-RELEVANT flags (codeword, tag-prefix, expect-n,
+#     allow-short, arms, control-prefixes, split, option-mass-floor). It does NOT validate the
+#     VERIFICATION-ONLY flags (--require-slurm-job, --require-rescue-layer), which gate a VOID and
+#     do not enter any number. The committed basket n46 reads record require_slurm_job = null and
+#     no rescue layer; those two values remain unrecovered and are NOT asserted here.
+#
+# ⚠ S-487 CORRECTION TO THIS FILE. As first written it omitted --option-mass-reference and so
+#   RELIED ON ITS DEFAULT ("BASE", dcs_csi_subspace_analyze.py:467). That is precisely the hazard
+#   PR-CSI-007 names -- "relying on a default means a future default change silently" changes the
+#   read -- in a file written to CLOSE a provenance gap. Now spelled out on all four invocations.
+#
+# 🔴 S-487, SECOND CORRECTION TO THIS FILE, AND THE SERIOUS ONE. As first written the two BASKET
+#   invocations omitted --require-slurm-job and DID NOT RUN. Verified:
+#     REFUSING for tag 'csi1_basket_train_BASE': 2 complete run dirs (need exactly 1).
+#       csi1_basket_train_BASE_20260915_231554_1728969   (job 897145)  <- the committed read
+#       csi1_basket_train_BASE_20260917_213834_3178944   (job 905990)  <- landed 2 days LATER
+#   The committed artefacts record require_slurm_job = null because when they ran the tag was
+#   UNIQUE. The twin landed afterwards, so a tag that pinned one run then pins nothing now. The
+#   job ids below are taken from the validated floor-0.0 reproduction, whose BASE run dir equals
+#   the committed read's run dir exactly (csi1_basket_train_BASE_20260915_231554_1728969).
+#   ⚠ This is the hazard scripts/gates/dcs_csi_pr005_gate0d.py:18-24 records as "'newest' picked
+#     the wrong twin once already" -- and it bites a RECIPE, not a read.
+#
+# --arms is taken from the target artefact itself rather than retyped:
+#   A=$(python3 -c "import json;print(','.join(json.load(open('<artefact>'))['arms']))")
+# ================================================================================================
+
+# ---- BASKET (sufficiency, the axis's own codeword). expect-n 670 train / 230 validation. --------
+python3 scripts/dcs_csi_subspace_analyze.py \
+  --codeword basket --tag-prefix csi1_basket_train --expect-n 670 --allow-short 4 \
+  --arms "$(python3 -c "import json;print(','.join(json.load(open('reports/DCS_CSI_SUBSPACE_basket_train_n46.json'))['arms']))")" \
+  --control-prefixes KO_SHUF,KO_RAND --split train \
+  --require-slurm-job 897145,897416,897585,897586,898698 \
+  --option-mass-floor 0.05 --option-mass-reference BASE \
+  --out reports/DCS_CSI_SUBSPACE_OPTIONMASS05_SENSITIVITY_basket_train_n46.json
+
+python3 scripts/dcs_csi_subspace_analyze.py \
+  --codeword basket --tag-prefix csi1_basket_validation --expect-n 230 --allow-short 4 \
+  --arms "$(python3 -c "import json;print(','.join(json.load(open('reports/DCS_CSI_SUBSPACE_basket_validation_n46.json'))['arms']))")" \
+  --control-prefixes KO_SHUF,KO_RAND --split validation \
+  --require-slurm-job 897658,897659,897688,897689,898996,901739 \
+  --option-mass-floor 0.05 --option-mass-reference BASE \
+  --out reports/DCS_CSI_SUBSPACE_OPTIONMASS05_SENSITIVITY_basket_validation_n46.json
+
+# ---- BUTTON L18. These two targets DO record require_slurm_job / require_rescue_layer, so the ---
+# ---- verification flags are recoverable from the artefact and are passed through. ---------------
+python3 scripts/dcs_csi_subspace_analyze.py \
+  --codeword button --tag-prefix csi1_button_train --expect-n 670 --allow-short 4 \
+  --arms "$(python3 -c "import json;print(','.join(json.load(open('reports/DCS_CSI_SUBSPACE_button_train_L18_n46.json'))['arms']))")" \
+  --control-prefixes KO_SHUF,KO_RAND --split train \
+  --require-rescue-layer 18 \
+  --require-slurm-job "$(python3 -c "import json;print(','.join(json.load(open('reports/DCS_CSI_SUBSPACE_button_train_L18_n46.json'))['require_slurm_job']))")" \
+  --option-mass-floor 0.05 --option-mass-reference BASE \
+  --out reports/DCS_CSI_SUBSPACE_OPTIONMASS05_SENSITIVITY_button_train_L18_n46.json
+
+python3 scripts/dcs_csi_subspace_analyze.py \
+  --codeword button --tag-prefix csi1_button_validation --expect-n 230 --allow-short 4 \
+  --arms "$(python3 -c "import json;print(','.join(json.load(open('reports/DCS_CSI_SUBSPACE_button_validation_L18_n46.json'))['arms']))")" \
+  --control-prefixes KO_SHUF,KO_RAND --split validation \
+  --require-rescue-layer 18 \
+  --require-slurm-job "$(python3 -c "import json;print(','.join(json.load(open('reports/DCS_CSI_SUBSPACE_button_validation_L18_n46.json'))['require_slurm_job']))")" \
+  --option-mass-floor 0.05 --option-mass-reference BASE \
+  --out reports/DCS_CSI_SUBSPACE_OPTIONMASS05_SENSITIVITY_button_validation_L18_n46.json
+
+# WHAT THE SENSITIVITY SHOWED (draft §A, and these artefacts now carry it):
+#   basket TRAIN       floor 0.00  642 keys  +0.00264 [+0.00068, +0.00471]  p 0.0107  rank 1 of 47
+#   basket TRAIN       floor 0.05  412 keys  +0.00365 [+0.00080, +0.00686]  p 0.0164  rank 1 of 47
+#   basket VALIDATION  floor 0.00  215 keys  +0.00401 [+0.00098, +0.00775]  p 0.0182  rank 1 of 47
+#   basket VALIDATION  floor 0.05  135 keys  +0.00538 [+0.00197, +0.00923]  p 0.0069  rank 1 of 47
+#   ⇒ no verdict moves; the candidate grows or holds under the floor.

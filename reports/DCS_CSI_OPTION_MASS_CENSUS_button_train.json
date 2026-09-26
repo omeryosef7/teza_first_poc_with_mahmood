@@ -1,0 +1,84 @@
+{
+ "WHAT_THIS_IS": "a DESCRIPTIVE per-arm option-mass distribution. No verdict, no p, no threshold. The boundary is a reporting boundary.",
+ "allow_short": 4,
+ "argv": [
+  "scripts/dcs_csi_option_mass_census.py",
+  "--tag-prefix",
+  "csi1_button_train",
+  "--arms",
+  "BASE,KO,KO_AXIS,KO_FULL",
+  "--split",
+  "train",
+  "--expect-n",
+  "670",
+  "--allow-short",
+  "4",
+  "--assert-keys",
+  "--require-slurm-job",
+  "902004,902005,912835,912836,912837",
+  "--out",
+  "reports/DCS_CSI_OPTION_MASS_CENSUS_button_train.json"
+ ],
+ "boundary": 0.05,
+ "expect_n": 670,
+ "per_arm": {
+  "BASE": {
+   "boundary": 0.05,
+   "frac_below_boundary": 0.125373,
+   "key_set_matches_analyser_at_floor_0": true,
+   "max": 0.95681387,
+   "median": 0.329302,
+   "median_convention": "statistics.median (true median; NOT om[n//2] -- see S-468)",
+   "min": 6.126e-05,
+   "n_below_boundary": 84,
+   "n_rows": 670,
+   "p05": 0.02172099
+  },
+  "KO": {
+   "boundary": 0.05,
+   "frac_below_boundary": 0.01791,
+   "key_set_matches_analyser_at_floor_0": true,
+   "max": 0.95989287,
+   "median": 0.52138242,
+   "median_convention": "statistics.median (true median; NOT om[n//2] -- see S-468)",
+   "min": 0.00220038,
+   "n_below_boundary": 12,
+   "n_rows": 670,
+   "p05": 0.09459636
+  },
+  "KO_AXIS": {
+   "boundary": 0.05,
+   "frac_below_boundary": 0.01791,
+   "key_set_matches_analyser_at_floor_0": true,
+   "max": 0.95980567,
+   "median": 0.51922348,
+   "median_convention": "statistics.median (true median; NOT om[n//2] -- see S-468)",
+   "min": 0.00199387,
+   "n_below_boundary": 12,
+   "n_rows": 670,
+   "p05": 0.09732385
+  },
+  "KO_FULL": {
+   "boundary": 0.05,
+   "frac_below_boundary": 0.049254,
+   "key_set_matches_analyser_at_floor_0": true,
+   "max": 0.94459176,
+   "median": 0.40651236,
+   "median_convention": "statistics.median (true median; NOT om[n//2] -- see S-468)",
+   "min": 0.00079389,
+   "n_below_boundary": 33,
+   "n_rows": 670,
+   "p05": 0.04989708
+  }
+ },
+ "require_slurm_job": "902004,902005,912835,912836,912837",
+ "run_dirs": {
+  "BASE": "csi1_button_train_BASE_20260917_001351_1201896",
+  "KO": "csi1_button_train_KO_20260917_002735_1210807",
+  "KO_AXIS": "csi1_button_train_KO_AXIS_20260917_011438_1216054",
+  "KO_FULL": "csi1_button_train_KO_FULL_20260917_010015_1214716"
+ },
+ "schema": "dcs_csi_option_mass_census/1",
+ "split": "train",
+ "tag_prefix": "csi1_button_train"
+}

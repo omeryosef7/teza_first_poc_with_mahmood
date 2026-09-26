@@ -42036,3 +42036,764 @@ both statements.** AM-56 strengthened.
 **NEXT:** R39's findings when they land. **Six questions with the user; the PR-CSI-003-A one is now
 two stranded VOID conditions plus a prereg that contradicts itself about its own launcher.**
 **Push credential-blocked.**
+
+---
+
+## S-479 / REVIEW R39 stream 1 — threshold provenance: five new divergences, one of them narrower than reported, and AM-48 is now a live contradiction between two published artefacts (2026-09-26)
+
+Stream 1 of R39 ("is every decision threshold READ from a preregistration, or is it a literal?") reported five new findings plus the two briefed ones. **Every figure below I re-derived or executed myself.** Queue empty; no family running; no GPU touched; no code edited this tick.
+
+### CONFIRMED, and the one that matters most: AM-48 is no longer latent
+
+I ran `scripts/gates/dcs_csi_pr006_native_vs_swap.py` myself — **exit 0** — and on cell *B: button axis → BASKET ko, VALIDATION* it prints:
+
+```
+   swap   XSWAP_FROM_BUTTON    +0.00223565  -> rank  2 of 47
+   cross-check vs the report: candidate +0.00224 (report +0.00224) rank 2 (report 2)
+   PRE-FIXED RULE: HELPS == rank <= 2  ->  swap HELPS
+```
+
+while `reports/DCS_CSI_SWAP_basket_validation_L18_from_button_n46.json` commits the opposite:
+
+> *"PRIMARY DOES NOT PASS on split=validation -- the candidate ranks 2 of 47 in its own control distribution (rank p=0.04255, attainable floor 0.0213) ... It is INSIDE the controls, not above them."*
+
+**Two artefacts, one dataset, opposite verdicts, from two copies of one threshold.** The gate's own cross-check establishes that the disagreement is *purely the decision rule* — the ranks and points reproduce to the digit. And the artefact itself prints `rank p=0.04255`, which **clears alpha = 0.05**: the analyser calls DOES NOT PASS on a rank whose own p clears the alpha its prereg set. AM-48 was filed as a provenance defect; it is now a contradiction visible in the published record.
+Also confirmed: that PR-CSI-006 swap artefact is stamped `prereg = configs/dcs_csi_pr001_subspace_rescue.json` — the AM-48 mislabel, live.
+
+### N-1 — real, but NARROWER than the stream reported, and I am correcting it
+
+`scripts/dcs_csi_argmax_verdict.py:168` gates on `elif _gate_p > alpha and K < 3:` and justifies it at :169 with *"the prereg defines FAILURE as 'the weakest p > 0.05 WITH K >= 3'"*. That premise is **true of PR-CSI-018/-020/-021 and false of PR-CSI-016**, whose `PRIMARY.FAILURE` reads `p > 0.05 with K >= 2` — and PR-CSI-016 is the one family this module grandfathers by name at :86. Executed: at K=2, M=1 it returns `CANNOT ANSWER` with `why = "STRUCTURAL: K=2 and the prereg defines FAILURE only with K >= 3"`, a sentence arithmetically false of the prereg it is deciding under.
+
+**But the stream's blast radius does not hold.** It claimed the branch would otherwise have published *"the preregistered FAILURE"*. I enumerated **all 6480 K=2 configurations** over the 9-layer band with `gate_p > alpha`:
+
+```
+   verdict=CANNOT ANSWER  spanning_ok=False  M=0   n=5184
+   verdict=CANNOT ANSWER  spanning_ok=False  M=1   n=1296
+   => is spanning ALWAYS violated when gate_p>alpha at K=2?  True
+```
+
+At K=2, `gate_p > alpha` **forces** M ≤ 1, which forces the matched set into at most one layer, which violates the spanning rule — and spanning violation is PR-CSI-016's own `CANNOT_ANSWER_IF[1]`. So the branch can only ever preempt a *different, equally preregistered* CANNOT ANSWER. **The verdict label can never change; only the `why` string is false.** That is still S-421/S-428's class — a false sentence inside a verdict artefact — but it is not a verdict defect, and "FAILURE became CANNOT ANSWER" is NOT ESTABLISHED.
+
+The published read is also not what the stream described. `reports/DCS_CSI_PR016_ARGMAX_TEST_button_validation.json` already reads **CANNOT ANSWER** — `K_admitted 2`, `M_matches 2`, `p_one_sided 0.012346`, and `why = "the SPANNING RULE is violated: all 2 matching head(s) share band layer L14 ... p = 0.012346 is NOT quotable as a pass."` It never reached N-1's branch, and its non-answer is preregistered.
+
+### N-2 — confirmed dead by execution
+
+`:67` binds `_GATING_DEFAULT_GRANDFATHERED = grandfathered` from the parameter; `:86` **unconditionally overwrites it** with `("PR-CSI-016",)`. Executed `decide(..., prereg_id="PR-CSI-999", grandfathered=("PR-CSI-999",))` → `SystemExit: REFUSING: prereg 'PR-CSI-999' declares no PRIMARY.GATING, and only PR-CSI-016 may fall back...`. The caller's argument is silently discarded. No caller passes it, so **nothing published is affected** — it is a parameter that looks configurable and is not. `scripts/gates/dcs_csi_dead_flag_check.py` cannot see it: it inspects `add_argument`, and this is a function signature.
+
+### N-3 — confirmed, and the 19-control boundary computed
+
+`scripts/dcs_csi_rederive_subspace.py:339` decides PASSES/INCONCLUSIVE/DOES NOT PASS on the literal `(r == 1 and fl <= 0.05)`, and the file has **no `--prereg`** among its 13 flags — the same hole as AM-48, in the file the sprint keeps as its *independent* cross-check. The two paths also disagree on the boundary:
+
+```
+  n_controls=18 floor=0.052632 | subspace_analyze False | rederive False
+  n_controls=19 floor=0.050000 | subspace_analyze False | rederive True   <-- DISAGREE
+  n_controls=20 floor=0.047619 | subspace_analyze True  | rederive True
+```
+
+At exactly 19 controls the primary path (round-to-4dp then `< 0.05`) and the second-opinion path (`<= 0.05` unrounded) return **opposite certifiability**. **NOT LIVE** — realised families are 8/10/22/24/30/34/46. And `subspace_analyze.py:1029` still formats its INCONCLUSIVE advice with `min_controls=19`, which fails its own `< 0.05` test (19 gives exactly 0.0500; the correct number is 20). PR-CSI-003-A already filed that as *"NOT FIXED HERE"*; it is still not fixed, and the wrong number is in the published INCONCLUSIVE verdicts of three basket reports.
+
+### N-4 — confirmed divergence, not bitten, AND A CORRECTION OF MY OWN
+
+`subspace_analyze.py:801` VOIDs a control only at `worst > 1e-5`; `configs/dcs_csi_pr001_subspace_rescue.json` `.success_criterion.dose` requires the written delta norm *"matched to the controls' **within 1e-6 per position**"*. The code is **10× looser**, and compares a per-`prompt_id` value rather than per position — two softenings in the same direction.
+
+**Has it bitten? No.** I reproduced the stream's exact figures from each artefact's own `arm_meta.written_norm_by_pid`, over the **47 arms that declare `norm_match_keys`**: `8.327e-17 (KO_SHUF14)` on train, `5.551e-17 (KO_RAND8)` on validation — eleven orders below both thresholds.
+
+⚠ **My first sweep disagreed with the auditor and my sweep was wrong.** Scanning *every* arm in `arm_meta` I found `KO_PLS` at `2.304e-01`, above both thresholds, and was one step from filing a live VOID against three published artefacts. `KO_PLS` carries `norm_match_keys: []` — it never declares a norm match — and the code's `if not m.get("norm_match_keys"): continue` at :775 correctly skips it. The auditor's restriction was right and mine was over-broad. This is the **S-468 rule paying off in the auditor's favour**: reproducing their number before explaining it away is what stopped a false finding, and the rule is not only for when the auditor is wrong.
+
+### N-5 — confirmed
+
+`population.allow_short` is preregistered as `4` (PR-CSI-003-A) and `{"train": 4, "validation": 4}` (PR-CSI-006), and is read by **exactly one file in the repo** — `scripts/gates/dcs_document_short_runs.py`, a gate. Every analyser takes it from the CLI and never cross-checks the prereg: `subspace_analyze` **0**, `head_analyze` **0**, `head_census` **0**, `head_single_rank` **0**, `rederive_subspace` **3**. So the primary and independent paths admit **different run sets from the same command line** when the flag is omitted. Agreeing today only because 0 and 3 are both ≤ 4 and the frozen recipes pass the flag explicitly.
+
+### WHAT WAS NOT ESTABLISHED
+
+- **No published number has moved.** N-1 and N-3 are latent, N-2 is inert, N-4 is durability-only, N-5 agrees by luck. Nothing in §A, §H, §1–§4 or the claim table changes on this tick.
+- **Which rank rule governs is still decision (e), unresolved and with the user.** This tick does not settle it — it raises the cost of leaving it open, because two published artefacts now openly disagree about one dataset.
+- **No threshold was relinked to a prereg and no code was edited.** Every fix here touches a decision rule on a frozen read; doing that silently is exactly what AM-48 is a complaint about.
+- The stream's own framing of N-1 is corrected above, not adopted.
+
+**NEXT:** R39 stream 2 (checks that cannot fail) is still running — four background auditors. **Six questions with the user; (e) the rank rule is now the most expensive one to leave open.**
+
+---
+
+## S-480 / REVIEW R39 stream 2 — "checks that cannot fail": four Tier-0 vacuities executed, and the worst one cannot have harmed a published read (2026-09-26)
+
+⚠ **This entry shares DCS-CSI-479's commit.** When it was appended, S-479's commit was still queued behind a pre-commit hook stalled on filesystem contention (below), so one commit carries both entries. Recorded here rather than papered over.
+
+### Housekeeping: a stalled commit, deliberately not touched
+
+`git status` began timing out at 120 s. Diagnosis before any action: **4 processes in `D` state** (uninterruptible IO), including the pre-commit hook's `pytest` (pid 4076323) and two `git status` calls. S-478's `git commit` (pid 4076119) has been alive **~25 minutes** and legitimately holds `.git/index.lock` (0 bytes, 08:13:14). Small reads are fine (`.git/HEAD`, `ls external_md`, log `tail`, `/tmp` write all OK), so this is **IO contention, not a dead commit and not a corrupt repo**.
+
+⛔ **I killed nothing and removed no lock.** Per S-461 — where `pkill -f 'python3 -'` killed a hook mid-run and the commit silently died with HEAD unchanged — a `D`-state hook is exactly what must be left alone, and deleting an `index.lock` a live `git commit` is holding is how a repo gets corrupted. The commits are queued and will land. **Push remains credential-blocked** (~170 unpushed).
+
+### ✅ 0.1 — GATE 0 passes on a ZERO-ROW selection. Executed.
+
+`dcs_csi_head_analyze.liveness()` selects rows by `query_kind == "semantic_one_word" and cell == "C"`, then reports on what it selected, with `if pre else 0` fallbacks. I built two 230-row files differing **by one character** in `query_kind`, every row carrying `hook_n_prefill_edits: 99999`, `hook_n_decode_edits: 7` and a violation:
+
+```
+query_kind='semantic_one_word'  n_rows=230  median_prefill=99999.0 decode=1610  violations={"['BOOM']": 230} -> BASE GATE0 FAIL
+query_kind='semantic_one_wrd'   n_rows=0    median_prefill=0       decode=0     violations={}                -> BASE GATE0 PASS
+      raw lines on disk (what strict_run_dir counts): 230   [both cases]
+```
+
+**A one-character field-name drift turns 230 maximally-violating rows into a PASS**, and `strict_run_dir` cannot catch it because it counts raw lines (230), never the selected subset. In `dcs_csi_pr012_gate0_sweep.py` — STEP 0 of the frozen reads for PR-CSI-014/015/016/018/020 — `n_rows` appears **exactly once**, at `:322`, inside a print format string: recorded and compared to nothing. Confirmed.
+
+🔶 **But it cannot have harmed a published read, and the stream's framing is narrowed.** The published census artefact records the row count per arm itself:
+
+```
+reports/DCS_CSI_PR016_CELL_CENSUS_button_validation.json
+  GATE_0_and_identity.per_arm.BC_BASE.n_rows   = 230   median_prefill_edits = 0.0
+  GATE_0_and_identity.per_arm.BC_KO.n_rows     = 230   median_prefill_edits = 2016.0
+  GATE_0_and_identity.per_arm.BC_H17_L06.n_rows= 230   median_prefill_edits = 224.0
+```
+
+Every arm's selection was non-empty at **230 rows**, and the doses are the preregistered 2016 whole-head / 224 per cell — which also **independently confirms R39 stream 1's D4 arithmetic** (`2016 // 9 = 224`). So this is a **latent** vacuity in a gate, not a defect in any published number: the artefact carries the evidence that disconfirms the failure mode. The gate is nonetheless unable to detect the class, which is the finding.
+
+⚠ **My first repro harness was wrong**: I wrote `generations.jsonl`; `liveness()` reads `results.jsonl` (`:98`) and raised `FileNotFoundError`. Fixed and re-run. Recorded because a harness that errors is not a refutation, and mistaking one for the other is how S-465 went wrong.
+
+### ✅ 0.2 — "every landed arm passes" over ZERO landed arms. Reproduced, exit 0.
+
+Run with the *sibling generator's own default* `--tag-prefix`:
+
+```
+$ python3 scripts/gates/dcs_csi_pr010_gate0_sweep.py --prereg configs/dcs_csi_pr010_head_causal_basket.json \
+      --tag-prefix csi3_head_basket --split train
+... 24x "-- not landed --" ...
+GATE 0: every landed arm passes. No endpoint field was read.
+exit code = 0
+```
+
+**And the repo already owns the fix it did not carry back.** `dcs_csi_pr012_gate0_sweep.py:330,340` has it, with the lesson written down:
+
+```
+330:  # ⛔ ZERO LANDED ARMS IS NOT A PASS (S-292). This printed "GATE 0: every landed arm passes
+340:  if landed == 0:
+341:      print("GATE 0: NOTHING TO CHECK -- 0 of %d declared arms resolved%s. THIS IS NOT A PASS."
+```
+
+`pr010_gate0_sweep.py` has no `len(landed) > 0` guard at all. Same defect, fixed in the sibling at S-292, never ported — the third time this sprint a remedy existed and was not carried across (cf. S-470's third copy, and `rung2`'s `SystemExit`→`print` lesson).
+
+### ✅ 0.3 — the TEST-LEAK VOID condition is structurally unreachable. Confirmed.
+
+`:119` filters rows to `assign.get(k[0]) == keep_split`; `--split` has `choices=("train", "validation")` (`:455`); so at `:684` `test_in = [d for d in doms if assign.get(d) == "test"]` is **always `[]`** by construction. The upstream filter is the real and stronger protection — but the VOID list advertises an independent guard that cannot fire. `head_census.py:295` handles the identical situation correctly by **disclosing** it (*"⚠ TEST-LEAK CHECK NOT RUN … This is a NON-CHECK, not a pass (R20-6/S-375)"*); that treatment was never applied here.
+
+### ✅ 0.4 — the necessity control default empties the control family. Verified.
+
+`--control-prefixes` defaults to `KO_SHUF,KO_RAND` (`:456`) while the necessity arms are documented in the same file (`:442-443`) as `KO_NEC_SHUF*, KO_NEC_RAND*`:
+
+```
+  KO_NEC_SHUF0   startswith(default) -> False
+  KO_NEC_RAND1   startswith(default) -> False
+  KO_SHUF0       startswith(default) -> True
+```
+
+With an empty `ctrl_arms` the specificity loop runs zero times, `dist` is absent, `if dist and dist["n_controls"] >= 2` is False, and control falls to the **single-comparator verdict this file's own comment forbids** (*"A verdict that flips with an arbitrary naming choice is not a verdict"*) — while `single_comparator_verdict_SUPPRESSED`, the field that would disclose it, is written only inside the skipped branch. The hazard is preregistered prose in PR-CSI-007 (*"an EMPTY control distribution makes the rank vacuous"*) and enforced nowhere. **Relevant to PR-CSI-003-A**, whose arms are the `KO_NEC_*` family.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **The rest of the report is not re-derived.** Stream 2 raised ~60 items across Tiers 1–3 — ~34 source-grep tests, the two `dcs_mutate_*` scripts with no verdict, the `pytest.skip`-means-pass class, `prereg_selftest`'s 5-of-8 inert `--require` keys. **I verified four Tier-0 items and I am recording only those as findings.** The remainder are unconfirmed leads, not results.
+- ⛔ **The claimed 18 unaccounted draft figures are still pending** — `dcs_csi_draft_figure_provenance.py` is still running under the IO contention. Several of the figures named (2.105, 4.254, 4.638, 5.091, 7.094) look like **this session's caveat-1 delta-z values**, i.e. my own additions, so this is a check on my own draft and it will be answered before it is repeated.
+- ⛔ **No code was fixed.** All four are in gates standing in front of frozen reads; changing a gate's behaviour on a frozen read is preregisterable, not a tidy-up.
+- ⛔ **No published number moves.** 0.1 is disconfirmed by the artefact's own `n_rows`; 0.2/0.3/0.4 are latent or require an operator error not present in the frozen recipes.
+- ⛔ Queue **EMPTY**, no family running, no GPU, **TEST untouched**.
+
+**NEXT:** the figure-provenance answer — my own draft is implicated. **Six questions with the user**, unchanged.
+
+---
+
+## S-481 / the figure-provenance gate is RED on my own draft — 18 unaccounted figures, and the Δz "record" column has no artefact (2026-09-26)
+
+S-480 left this pending and said it would be answered before it was repeated. Answering it. **This is a finding against my own work, not against the code.**
+
+### The gate is red, and I misread it once first
+
+```
+python3 scripts/gates/dcs_csi_draft_figure_provenance.py            -> EXIT 0
+python3 scripts/gates/dcs_csi_draft_figure_provenance.py --strict   -> EXIT 1
+unaccounted: 18
+  0.000001, 0.000012, 0.003378, 0.004005, 0.00923, 0.069311, 0.761, 1.044,
+  1.046, 1.0e-06, 1.452, 2.105, 4.254, 4.638, 4.66e-05, 5.091, 7.094, 9.6e-07
+```
+
+⚠ **My first reading said `strict EXIT=0` and that was wrong.** I had piped the gate through `tail`, so `$?` was `tail`'s status, not the gate's. Re-run without the pipe: **default 0, `--strict` 1**. The reviewer's claim was right and my measurement was broken — the same shape as the `generations.jsonl`/`results.jsonl` harness error in S-480. **Two instrument errors in one tick, both mine, both caught by re-running rather than by reasoning.**
+
+### Five of the 18 are figures I added THIS SESSION
+
+`reports/DCS_CSI_RESULTS_DRAFT.md:1975-1977` — §L's caveat-1 table, the paired-domain Δz bootstrap:
+
+```
+                                record                       re-derived (B=20000)
+TRAIN, own layers      +2.023 [-0.226, +4.288]      +2.105 [-0.237, +4.254]   CI INCLUDES zero
+TRAIN, both at L18     +2.832 [+0.606, +5.057]      +2.937 [+0.625, +5.091]   excludes zero
+VALIDATION, own layers +4.209 [+0.630, +7.078]      +4.638 [+0.638, +7.094]   excludes zero
+```
+
+`2.105, 4.254, 4.638, 5.091, 7.094` are exactly the **re-derived column**, and `1.452` is the matched-10 row from the S-466 table at `:1986`. They are unaccounted because they were computed in an **ad-hoc background run whose output went to a scratchpad task file and was never written to a committed artefact**. The numbers are correct — they reproduce the run that produced them — but under the sprint's own standard a figure in the draft must trace to an artefact, and these trace to a transient file that will not survive the session.
+
+### 🔴 Worse: the "record" column may have no artefact either
+
+`1.452` appears in **no file** under `reports/`, `external_md/`, `configs/` or `scripts/` other than the draft itself. Yet the S-466 note at `:1983` calls it part of *"THE RECORD"* — *"the record holds five Δz rows and this section quoted three"*. If the record for those rows is the draft's own prose, then S-466 corrected the draft against **itself**, and the phrase "the record" was doing work it had not earned.
+
+⛔ **NOT ESTABLISHED:** whether `2.023`, `2.832`, `4.209` and the other "record" values are artefacted — that grep was still running when its timeout hit under the IO contention, so only `1.452` is confirmed absent. **I am not generalising from one.** The five re-derived values are separately confirmed unaccounted by the gate itself.
+
+### The gate has a test, and the commit hook does not run it
+
+`tests/test_csi_draft_figure_provenance.py` exists. It is **not** in the pre-commit hook's test list — I read the running hook's own argv (26 files: `test_asr_protocol … test_run_completeness_check`) and it is absent. So a gate that is red today has a test that nothing runs, which is why the 18 went unnoticed. `--strict` is also not the default, so the red state exits 0 in ordinary use.
+
+### What this does and does not mean
+
+- ✅ **Confirmed:** the draft carries 18 figures with no artefact behind them, at least six of which are mine from this session (§L caveat-1 and the S-466 matched-10 row).
+- ⛔ **No figure is shown to be WRONG.** The gate's own banner says so: *"Existence is not correctness: this cannot see a right number attached to the wrong family."* This is a provenance failure, not an arithmetic one, and I am not claiming the Δz conclusions move.
+- ⛔ **I did not allowlist anything.** Adding these to `ALLOWLIST` with a reason would make the gate green while leaving the figures un-artefacted — the wrong repair. The right one is to emit the Δz bootstrap to a committed artefact under `reports/`, which means re-running it with the recorded seed, and that is a measurement to be done deliberately, not wedged into the end of a tick.
+- ⛔ **I did not edit the draft.** Removing figures to satisfy a gate would be the worst available option.
+
+**NEXT:** emit the caveat-1 Δz bootstrap to a committed artefact (seed 20260915, B=20000, the five rows the record claims), then re-run the gate; and settle whether the "record" column is artefacted at all. **Six questions with the user**, unchanged. Queue **EMPTY**; **TEST untouched**; push credential-blocked.
+
+---
+
+## S-482 / RETRACTION — S-481's escalation was FALSE. The Δz record IS artefacted; I read three timed-out greps as absences (2026-09-26)
+
+🔴 **S-481 claimed** *"`1.452` appears in no file under `reports/`, `external_md/`, `configs/` or `scripts/` other than the draft"*, and escalated from it that *"if the record for those rows is the draft's own prose, then S-466 corrected the draft against itself, and the phrase 'the record' was doing work it had not earned."* **That is wrong. I withdraw it.**
+
+### The record exists, in exactly the form the draft claims
+
+`reports/DCS_CSI_BUTTON_BASKET_DISSOCIATION_ANALYSIS.md` carries the row:
+
+```
+| TRAIN, own layers, **matched 10** | 0.443 | 1.894 | **+1.452** | [-0.440, +3.345] | 0.0655 |
+```
+
+— the two per-arm z values, the Δz, its CI **and a p**. A literal (`grep -F`) search finds every "record"-column figure properly sourced outside the draft:
+
+```
+  1.452 -> DCS_SUCC_REVIEW3_DATA.md, DCS_CSI_BUTTON_BASKET_DISSOCIATION_ANALYSIS.md, sprint log
+  2.023 -> CLAIM_TABLE.md, DCS_CSI_BUTTON_BASKET_DISSOCIATION_ANALYSIS.md, RUNG2_TRAIN_basket_full.json, log
+  2.832 -> CLAIM_TABLE.md, DCS_CSI_BUTTON_BASKET_DISSOCIATION_ANALYSIS.md, RUNG2_TRAIN_basket_full.json, log
+  4.209 -> CLAIM_TABLE.md, DCS_CSI_BUTTON_BASKET_DISSOCIATION_ANALYSIS.md, log
+  2.871 -> CLAIM_TABLE.md, DCS_CSI_BUTTON_BASKET_DISSOCIATION_ANALYSIS.md, RUNG2_TRAIN_basket_full.json, log
+```
+
+So **S-466 did not correct the draft against itself** — it corrected the draft against a real artefact holding five Δz rows, which is precisely what it said it was doing. The escalation was manufactured by my own broken measurement.
+
+### 🔴 THE METHOD ERROR: a timed-out grep is not a negative result
+
+My earlier sweep was `timeout 90 grep -rln -- "$n" reports/ external_md/ configs/ scripts/ | grep -v RESULTS_DRAFT | head -4`. Including `scripts/` made it slow; **`timeout 90` killed it before it finished, and it printed a header with no rows.** I read that empty section as *"appears in no file"*. It meant *"the search did not complete."*
+
+**A silent timeout and a true absence are indistinguishable in that output**, and I did not distinguish them. This is the same class as S-473's "searched the whole claim table and found nothing" and the §M.7 anecdote — concluding a source does not say something from a search that never finished looking. **New rule, and it is the third instrument error this tick: a search that can time out must either print its own completion or be run with `grep -F` on a bounded set; a bare empty result is not evidence of absence.** The two dots were also unescaped, so the earlier positives were regex artefacts as well — the pattern `4.209` matched `4`+any+`209`.
+
+### What survives of S-481, and what does not
+
+✅ **SURVIVES — the gate is red and the re-derived column is genuinely un-artefacted.** `--strict` exits 1 on 18 figures, and the **re-derived (B=20000)** column I computed this session has no artefact: `2.105` exists **only** in the sprint log. Its two apparent hits elsewhere are coincidences in unrelated quantities:
+
+```
+  2.937 -> RUNG2_TRAIN_basket_full.json:  "L6_h11": 2.937416461961494e-05
+  4.638 -> DCS_CONT_ASR_FACTOR.json:      "mean_of_per_cluster_ratios_DO_NOT_CONFUSE": 4.6385361552028215
+```
+
+⚠ Those two coincidences are themselves a finding about the gate: **existence-based provenance can be satisfied by an unrelated number in an unrelated file** — the gate's own banner says so (*"Existence is not correctness"*, *"in 47 files -- existence is WEAK evidence here"*), and here a field literally named `DO_NOT_CONFUSE` would have supplied the match. So the gate's *green* is weaker than its *red*.
+
+❌ **WITHDRAWN:** that `1.452` is unsourced; that the Δz record may be prose-only; that S-466 corrected the draft against itself. All three were false.
+
+### NOT ESTABLISHED
+
+- ⛔ Whether the re-derived column should be artefacted **or deleted**. It reproduces the record's conclusions and adds nothing the record lacks, so the honest options are to emit it properly or to cut it as redundant re-derivation. **That is not a call to make at the end of a tick, and I am not making it.**
+- ⛔ The remaining 12 unaccounted figures (`0.000001, 0.000012, 0.003378, 0.004005, 0.00923, 0.069311, 0.761, 1.044, 1.046, 1.0e-06, 4.66e-05, 9.6e-07`) are **not traced** — S-481 traced six and I will not imply more.
+- ⛔ No code fixed, no draft edited, nothing allowlisted, **TEST untouched**, queue **EMPTY**, push credential-blocked.
+
+**NEXT:** trace the remaining 12; decide artefact-or-cut for the re-derived Δz column. **Six questions with the user**, unchanged.
+
+---
+
+## S-483 / the remaining 12 unaccounted figures, traced — and three of the gate's classes should never have an artefact (2026-09-26)
+
+S-482's NEXT. All twelve traced, with the method rule it established: bounded `grep -F` over `reports/` only, and the sweep **printed its own completion token** (`SWEEP_COMPLETED_OK`) so an empty result cannot be confused with a killed search. S-478's commit also finally landed (exit 0) after ~48 min behind a `Dl`-state pytest; the IO contention has cleared and D-state is back to 0.
+
+### 🔴 The headline: the gate's "unaccounted" is mis-specified for this draft
+
+Three of the twelve **cannot** have an artefact, by construction:
+
+**(a) Retracted values quoted inside correction notes.** `reports/DCS_CSI_RESULTS_DRAFT.md:1388`:
+
+> *"median **0.0901**, minimum **4.66e-05**) 🔴 S-465: this read "median 0.0902, minimum **0.000001**"; the 1e-06 minimum belongs to `KO` (9.6e-07) and `KO_AXIS` (1.0e-06), not to the arm the sentence is about."*
+
+`0.000001` is flagged as unaccounted — but it is **the wrong value the draft is retracting**. The gate says each unaccounted figure *"must be traced to a source or added to ALLOWLIST WITH A REASON"*. For a superseded number, having no source **is the point**. Demanding provenance for it is exactly backwards.
+
+⚠ **This is the same root cause as S-469**, where a blind global replace of `0.0902 → 0.0901` rewrote the number *inside* S-465's correction note and made it misquote what it corrected. **The draft's correction history is made of old values held as data**, and two separate tools have now mishandled that: a global replace, and a provenance gate.
+
+**(b) Figures derived in place from integers shown on the same line.** `:1238`:
+
+```
+button L18 TRAIN       36 of 47   -0.57       35 / 46 = 0.761  [0.612, 0.874]
+```
+
+I re-derived it: `35/46 = 0.7608695652173914 → 0.761`. ✓ The divisor and dividend are printed **immediately to its left**. No artefact can be more traceable than that, and the gate has no concept of it.
+
+**(c) Ratios of quantities that ARE persisted.** `:1657` — `A train 1.029, A valid 1.029, B train 1.044, B valid 1.046` — computed from the persisted `captured_frac` means, in a passage whose own subject is that the median and IQR are *"not recoverable without a re-run the prereg forbids: CANNOT ANSWER"*. The inputs are artefacted; the ratio is arithmetic on them.
+
+### ✅ Re-derived: the sensitivity rows are mine and they reproduce exactly
+
+`:1410-1412`, the option-mass sensitivity table, against the run I executed earlier this session:
+
+```
+draft  TRAIN floor 0.00  +0.00264 [+0.00068, +0.00471]  0.0107
+run                       0.00264  [0.00068, 0.00471]   p=0.010679946600266998   ✓ EXACT
+draft  TRAIN floor 0.05  +0.00365 [+0.00080, +0.00686]  0.0164
+run                       0.00365  [0.0008,  0.00686]   p=0.016409917950410247   ✓ EXACT
+```
+
+So the figures are right. `0.00923` (the VALID floor-0.05 CI upper bound) is flagged while `0.00471` and `0.00686` from the **same table** are not — which means the gate's *green* on those two is coincidental existence elsewhere, not provenance. That confirms S-482's point from the other side: **this gate's green is weaker than its red.**
+
+### The genuinely un-artefacted measurements
+
+Stripping (a), (b), (c) and the reproduced rows, what actually lacks an artefact is a short list:
+
+```
+  4.66e-05   BASE option-mass minimum (TRAIN)        -- the CORRECTED value from S-465
+  9.6e-07    KO option-mass minimum
+  0.00775 / 0.00923   VALID option-mass sensitivity CI bounds (this session)
+  0.003378 / 0.004005 swap recipient table :1797-98
+  0.069311   overlap-2 effect :1063
+  0.000012   pipeline_station per-domain effect :1192
+```
+
+plus the re-derived Δz column of S-481/S-482. These are real numbers from real runs whose outputs never became committed artefacts — the same gap, and the same remedy, as the Δz column.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No figure is shown to be wrong.** Every one I could re-derive reproduced exactly. This remains a provenance finding, not an arithmetic one.
+- ⛔ **`1.0e-06`'s and `0.004005`'s artefact matches are NOT verified as the same quantity.** They matched files literally, but after S-482's `DO_NOT_CONFUSE` coincidence I will not count a literal match as provenance without reading the context, and I have not read those two.
+- ⛔ **I did not change the gate, allowlist anything, or edit the draft.** The fix implied here — teaching the gate to exempt retracted values in correction notes and in-place derivations — is a change to a check that guards a headline document, so it is preregisterable, not a tidy-up. **And "make the gate stop complaining" is the wrong instinct: its red is the honest signal.**
+- ⛔ Queue **EMPTY**, no family running, no GPU, **TEST untouched**, push credential-blocked.
+
+**NEXT:** emit the un-artefacted measurements above (option-mass minima, VALID sensitivity, Δz) to committed artefacts, which is one bounded job; decide artefact-or-cut for the re-derived Δz column. **Six questions with the user**, unchanged.
+
+---
+
+## S-484 / I could not emit the missing sensitivity artefacts, and the reason is a deeper defect: an axis artefact cannot be reproduced from itself (2026-09-26)
+
+S-483's NEXT was *"emit the un-artefacted measurements to committed artefacts, which is one bounded job"*. **It is not one bounded job, and I am not doing it on a guess.** Attempting it surfaced something worse. Queue **EMPTY**; S-478 landed as `64c13831`; no GPU; **TEST untouched**.
+
+### ✅ First, the gap is confirmed as real
+
+Every committed axis artefact records `option_mass_floor = 0.0` — all 19 `DCS_CSI_SUBSPACE_*` / `SWAP_*` files:
+
+```
+  DCS_CSI_SUBSPACE_basket_train_n46.json        floor=0.0     n_keys_common=642
+  DCS_CSI_SUBSPACE_basket_validation_n46.json   floor=0.0
+  ... 17 more, all 0.0 ...
+  DCS_CSI_SWAP_REDERIVE_*                       (no floor field at all)
+```
+
+`n_keys_common = 642` matches the draft's `TRAIN floor 0.00 → 642 keys` row exactly, so these are the right cells and the **floor-0.05 rows have no committed artefact**, as S-481/S-483 said. Reuse was available in principle: the analyser writes JSON, so re-running it with `--option-mass-floor 0.05 --out reports/…` needs **no new code**.
+
+### 🔴 But the invocation is not recoverable. Of 21 flags, the artefact records TWO.
+
+I scanned the whole artefact — every nested key, not just the top level:
+
+```
+  allow_short        present_anywhere = False
+  control_prefixes   present_anywhere = False
+  self_inert_tol     present_anywhere = False
+  direction          present_anywhere = False
+  candidate_arm      present_anywhere = False
+  expect_n           present_anywhere = False
+  tag_prefix         present_anywhere = False
+  argv / command     present_anywhere = False
+  option_mass_floor  present  ✓
+  n_boot             present  ✓
+```
+
+And of the CSI scripts, **only `scripts/dcs_csi_arm_runner.py` records `sys.argv`** — no analyser does.
+
+The four `required=True` args (`--codeword`, `--tag-prefix`, `--expect-n`, `--arms`) are *inferable*: `run_dirs` holds `csi1_basket_train_BASE_20260915_231554_1728969`, `arms` holds all 53 names, `codeword` and `split` are fields. **The other seventeen are not**, and they are not cosmetic:
+
+* `--allow-short` decides **which runs are admitted**.
+* `--control-prefixes` decides **who is in the control family** — and per S-480 the wrong value empties it silently.
+* `--direction` decides the sign convention of every contrast **and** which prereg path is stamped into the artefact (`:827`). So direction is inferable only from the prereg label that direction itself assigned — circular.
+* `--self-inert-tol` decides a VOID.
+
+⇒ **A committed axis artefact cannot be reproduced from itself.** Re-running it means guessing flags that change admission and the verdict, and an artefact built on a guess whose numbers then disagreed with the draft would be **worse than the gap it closed** — it would manufacture a contradiction between a report and a committed artefact. That is why I stopped.
+
+### 🔴 This compounds R39 stream 1's N-5, sharply
+
+N-5 established that `--allow-short` defaults **0** in `subspace_analyze.py` and **3** in `rederive_subspace.py`, the *independent cross-check* path, with the preregistered value being **4** and read by neither. Adding today's result: **neither path records which value it used.** So the sprint's second-opinion architecture cannot demonstrate that its two paths admitted the same run set — not because they disagree, but because the artefacts do not say. The cross-check's agreement is evidence about the numbers, not about the population.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **That any committed read is wrong.** Nothing here shows a flag was passed wrongly. The defect is that the record cannot *tell us*, which is a reproducibility defect, not an error. The frozen recipes in `runargs/` may well hold the true invocations — **I have not checked them, and that is the obvious next move**, not a conclusion I get to assume.
+- ⛔ **That the sensitivity numbers are wrong.** S-483 re-derived the TRAIN rows exactly against this session's run.
+- ⛔ **I did not add `argv` recording.** It is a safe additive change that alters no computed value, but it would only fix **future** runs and closes nothing for the 19 existing artefacts, so it does not substitute for finding the real invocations.
+- ⛔ **I emitted no artefact and edited no draft.** Nothing allowlisted. Push credential-blocked.
+
+**NEXT:** check `runargs/` for the frozen axis invocations — if they are recorded there, the sensitivity can be re-emitted faithfully and this is a documentation gap rather than a lost provenance. If they are not, the 19 artefacts' invocations are unrecoverable and that belongs in the claim table as a limitation. **Six questions with the user**, unchanged.
+
+---
+
+## S-485 / the invocations ARE recorded — in `runargs/`, for 18 of 20 artefacts. The two exceptions are both PASSES (2026-09-26)
+
+S-484's open question, answered in the same tick rather than deferred. **This tempers S-484 and sharpens it at the same time.**
+
+### ✅ The frozen recipes spell the flags out
+
+`runargs/dcs_csi_pr004_read.txt` carries complete invocations, not sketches:
+
+```
+python scripts/dcs_csi_subspace_analyze.py \
+  --codeword basket --tag-prefix csi1_basket_train --expect-n 670 --allow-short 4 \
+  --arms BASE,KO,KO_SELF,KO_FULL,KO_AXIS,KO_PLS,KO_ORTH,KO_SHUF0,... \
+  --control-prefixes KO_SHUF,KO_RAND \
+  --split train --require-rescue-layer 20 --require-slurm-job 905990,906001,<I1>,<I2>,<K> \
+  --out reports/DCS_CSI_SUBSPACE_basket_train_L20_n46.json
+```
+
+⇒ **S-484's framing is corrected**: for the artefacts covered here this is a *documentation-location* gap, not lost provenance. The invocation is recoverable — from the frozen recipe, not from the artefact.
+
+### ✅ N-5's mitigation verified by reading, not assumed
+
+R39 stream 1 said the defaults (0 / 3) *"agree only because the frozen recipes pass the flag"*. I checked instead of accepting it: across `runargs/`, **`--allow-short 4` occurs 30 times and `--allow-short 0` once.** The preregistered value is 4, and it is passed explicitly in the recipes. ⚠ **The single `0` is not explained and I have not traced which read it belongs to** — that is a loose end, not a finding.
+
+### ✅ And S-480's 0.4 hazard is mitigated where a recipe exists
+
+The necessity control prefixes are spelled out — `--control-prefixes KO_NEC_SHUF,KO_NEC_RAND` appears twice, and `KO_NEC_SHUF` alone once. So the empty-control-family failure S-480 demonstrated is **prevented by operator discipline in the recorded recipes**, exactly as PR-CSI-007's prose demands. The defect stands as a defect — nothing in the *code* prevents it — but it is not live in any frozen read.
+
+### 🔴 The exception, and it is not a small one
+
+I listed every `--out` target for the axis and swap analysers in `runargs/`. **18 are recorded.** These two are not:
+
+```
+  reports/DCS_CSI_SUBSPACE_basket_train_n46.json         <- NOT an --out anywhere in runargs/
+  reports/DCS_CSI_SUBSPACE_basket_validation_n46.json    <- NOT an --out anywhere in runargs/
+```
+
+Both carry `PRIMARY PASSES … candidate is strictly the largest of 46 controls (rank p=0.02128 < 0.05)`. So for the sprint's two basket n46 PASSES the invocation is recorded **neither in the artefact (S-484) nor in the frozen recipes** — and `runargs/dcs_csi_pr003a_read.txt` note (k) states they are *"COMMITTED reads and are NOT outputs of this preregistration"*, i.e. they predate the runargs discipline. They are also the two cells the draft's option-mass sensitivity table is about, which is why that table could not be faithfully re-emitted.
+
+### ⚠ A method caveat on my own counting
+
+My `--control-prefixes` tally also matched `IS`, `and`, `cannot` and `MUST` — **prose from the recipe files' commentary, not invocations.** `runargs/*.txt` mixes commands with long explanatory notes, so a bare grep over them counts both. The four values above are the real ones; the counts of *invocations* I report only where the match was a literal flag-plus-value. I am not reporting a "15 of 25 invocations carry the flag" figure I computed with a crude `-A2` window, because that window is not reliable.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **That the two n46 PASSES are wrong, or were run with wrong flags.** Nothing suggests it. Their `n_keys_common = 642` and `n_domains = 67` are consistent with `--expect-n 670 --allow-short 4`, and 46 controls is consistent with `KO_SHUF,KO_RAND`. **Consistent is not recorded**, and I am not converting one into the other.
+- ⛔ **Whether they were produced under another name and renamed**, which would explain the absence. Not checked.
+- ⛔ **Which read the lone `--allow-short 0` belongs to.** Untraced.
+- ⛔ No artefact emitted, no code changed, no draft edited, nothing allowlisted. Queue **EMPTY**, no GPU, **TEST untouched**, push credential-blocked.
+
+**NEXT:** reconstruct the two n46 invocations from their own `run_dirs` + `arms` + the sibling `L20_n46` recipe, verify by reproducing the committed numbers exactly, and only then use it to emit the sensitivity artefacts — reproduction of the existing read is the test that the reconstruction is right. **Six questions with the user**, unchanged.
+
+---
+
+## S-486 / the two unrecorded invocations are reconstructed AND VALIDATED BY EXACT REPRODUCTION; four sensitivity artefacts emitted; and S-484 over-generalised from one file (2026-09-26)
+
+S-485's NEXT, done: *"reconstruct … verify by reproducing the committed numbers exactly, and only then use it to emit the sensitivity artefacts — reproduction of the existing read is the test that the reconstruction is right."* The test passes. Queue **EMPTY**, no GPU, **TEST untouched**.
+
+### ✅ The reconstruction reproduces three committed reads EXACTLY
+
+The same invocation at the frozen `--option-mass-floor 0.0`, against the committed artefact:
+
+```
+  basket train       candidate_minus_ko  0.00264 [0.00068, 0.00471]   ==  committed   MATCH=True
+  basket validation  candidate_minus_ko  0.00401 [0.00098, 0.00775]   ==  committed   MATCH=True
+  button train L18   candidate_minus_ko -0.00014 [-0.00111, 0.00081]  ==  committed   MATCH=True
+```
+
+⇒ **S-485's "the invocation is recorded nowhere" is resolved for the two basket n46 PASSES** — not by finding a record, but by reconstructing one and proving it right against the read it must reproduce. The flags are `--codeword basket --tag-prefix csi1_basket_{train,validation} --expect-n {670,230} --allow-short 4 --control-prefixes KO_SHUF,KO_RAND --split {train,validation}`, with `--arms` read out of the artefact itself.
+
+⚠ **Reproduction validates the COMPUTATION-RELEVANT flags only.** `--require-slurm-job` and `--require-rescue-layer` gate a VOID and enter no number; the committed basket n46 reads carry `require_slurm_job = null` and no rescue-layer field, so **those two values remain unrecovered and I assert nothing about them.**
+
+🔶 **A by-product worth recording:** the *current* analyser reproduces three committed reads to the digit. Those reads predate everything R33–R39 touched, so this is independent evidence that **no intervening code change moved these numbers** — a stronger statement than any of this tick's audits could make on their own.
+
+### ✅ Emitted: four committed sensitivity artefacts and the missing recipe
+
+```
+  reports/DCS_CSI_SUBSPACE_OPTIONMASS05_SENSITIVITY_basket_train_n46.json          floor=0.05 keys=412 +0.00365 [0.00080, 0.00686]
+  reports/DCS_CSI_SUBSPACE_OPTIONMASS05_SENSITIVITY_basket_validation_n46.json     floor=0.05 keys=135 +0.00538 [0.00197, 0.00923]
+  reports/DCS_CSI_SUBSPACE_OPTIONMASS05_SENSITIVITY_button_train_L18_n46.json      floor=0.05 keys=545 -0.00006 [-0.00118, 0.00103]
+  reports/DCS_CSI_SUBSPACE_OPTIONMASS05_SENSITIVITY_button_validation_L18_n46.json floor=0.05 keys=197 +0.00276 [0.00085, 0.00471]
+```
+
+The two basket rows match the draft's §A table **exactly** (412 keys / +0.00365 [+0.00080, +0.00686] / p 0.0164; 135 keys / +0.00538 [+0.00197, +0.00923] / p 0.0069). Names carry `OPTIONMASS05_SENSITIVITY` so they cannot be read as a primary: **the frozen protocol is floor 0.0**, which is what all 23 committed axis reads carry. The emitter refused to overwrite any existing path. And `runargs/dcs_csi_optionmass_sensitivity.txt` now records the invocations, the validation evidence, and the explicit warning that the verification-only flags are not recovered.
+
+### 🔴 S-484 CORRECTED — I generalised from one file, the error I had just warned myself about
+
+S-484 said *"of 21 flags, the artefact records TWO"*. I scanned **one** file. Scanning all 23:
+
+```
+  11 of 23 axis artefacts record BOTH require_slurm_job and require_rescue_layer
+  12 of 23 record NEITHER
+  (all 4 SWAP_* and the button/basket L18/L20 families: YES.  The older reads: no.)
+```
+
+So the claim is true of `basket_train_n46.json` and **false as a statement about "an axis artefact"** — the newer artefacts carry materially more provenance than I credited. ⚠ This is the same failure as S-482's, one entry later: **a property measured on one file, reported as a property of a class.** The rule S-482 wrote ("I am not generalising from one") was written about someone else's number and I did not apply it to my own.
+
+🔶 The corrected picture is *more* coherent, not less: the 12 artefacts carrying neither field include both basket n46 PASSES, i.e. **the same files `runargs/` omits.** The gap is concentrated, dated, and explained — those reads predate the provenance discipline on both axes at once.
+
+### ✅ And the repair moved the gate, by exactly one
+
+```
+  before: unaccounted: 18   --strict EXIT=1
+  after:  unaccounted: 17   --strict EXIT=1     (0.00923 cleared)
+```
+
+**One figure, not eighteen** — because the other sensitivity bounds were never in the unaccounted set. I am reporting the small number rather than the impression: the gate is still red, and the remaining 17 are S-483's classes (retracted values quoted in corrections, in-place derivations, the Δz re-derived column) plus the genuinely un-artefacted option-mass minima `4.66e-05 / 9.6e-07 / 1.0e-06` and `0.003378 / 0.004005 / 0.069311 / 0.000012`.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No verdict moves, and none was expected to.** All four sensitivity reads are `PRIMARY PASSES`, `VOID` empty, rank 1 of 47 — the candidate grows or holds under the floor, as AM-54 already said. **This tick added provenance, not evidence.**
+- ⛔ **The two button 0.05 rows are NOT checked against the draft** — I verified only the two basket rows that the §A table quotes. The button figures are now artefacted; that is not the same as verified against a prior claim.
+- ⛔ **The basket n46 verification flags remain unrecovered**, and whether those reads were produced under another name and renamed is still unchecked.
+- ⛔ **I did not change the analyser to record its argv.** Still the obvious forward fix; still fixes nothing retroactively.
+- ⛔ No prereg touched, no code changed, no draft edited, nothing allowlisted. Push credential-blocked.
+
+**NEXT:** the option-mass minima (`4.66e-05`, `9.6e-07`, `1.0e-06`) and the three effect figures need the same treatment — they are one recompute over the same run rows. Then the Δz artefact-or-cut decision. **Six questions with the user**, unchanged.
+
+---
+
+## S-487 / the option-mass census: ten figures artefacted and all ten reproduce — plus two defects in the recipe I wrote last tick, one of which meant it did not run (2026-09-26)
+
+S-486's NEXT. Queue **EMPTY**, no GPU, **TEST untouched**.
+
+### ✅ New code, and why nothing fitted
+
+`scripts/dcs_csi_option_mass_census.py`. The axis analyser reads `option_mass` only to **apply** a floor and never reports its distribution; per S-472 the shared loader `load_installation` has no `option_mass` concept at all. So the draft's per-arm distribution figures had no producer, let alone an artefact. The script reuses the analyser's own loader for a cross-check — `--assert-keys` compares the census key set against `installation_with_option_mass(run_dir, 0.0)` and **passed on all eight arms** — and uses `statistics.median`, never `om[n//2]`, the S-468 bug. It records `sys.argv` into its own artefact, which is what S-484 found the analysers do not do.
+
+### ✅ All ten draft figures reproduce exactly
+
+```
+  basket BASE  % below 0.05   draft 36.3      census 36.3       MATCH
+  basket BASE  n_below        draft 243       census 243        MATCH
+  basket BASE  median         draft 0.0901    census 0.0901     MATCH
+  basket BASE  min            draft 4.66e-05  census 4.66e-05   MATCH
+  basket KO    min            draft 9.6e-07   census 9.6e-07    MATCH
+  basket KO_AXIS min          draft 1.0e-06   census 1.0e-06    MATCH
+  basket KO_AXIS median       draft 0.190474  census 0.190474   MATCH
+  button BASE  % below 0.05   draft 12.5      census 12.5       MATCH
+  button BASE  n_below        draft 84        census 84         MATCH
+  button BASE  median         draft 0.3293    census 0.3293     MATCH
+```
+
+🔶 **Two of these independently confirm S-468's median-convention correction.** `KO_AXIS median 0.190474` is the exact value I dismissed with a confident wrong explanation at S-465 and had to restore at S-468; `button BASE 0.3293` is the value that replaced the withdrawn `0.3298`. A fresh computation with the correct median reproduces both. The correction was right, and now it has an artefact.
+
+⚠ **A correction of my own, against myself not the draft:** I expected button ≈ 11 % and measured 12.5 %. The draft says `button TRAIN 84 / 670 = 12.5 %` at `:1270`. **The draft was right and my recollection was wrong** — the 11 % I was thinking of is at `:1681` and is a different quantity (key loss in the swap cells).
+
+Emitted: `reports/DCS_CSI_OPTION_MASS_CENSUS_{basket,button}_train.json`, four arms each.
+
+### 🔴 Two defects in `runargs/dcs_csi_optionmass_sensitivity.txt` — the file I wrote LAST TICK to close a provenance gap
+
+**(a) It relied on a default.** It omitted `--option-mass-reference`, whose default is `BASE` (`:467`). That is precisely the hazard PR-CSI-007's prose names — *"relying on a default means a future default change silently"* changes the read — committed inside a provenance record. Now spelled out on all four invocations.
+
+**(b) And it did not run.** Executed:
+
+```
+REFUSING for tag 'csi1_basket_train_BASE': 2 complete run dirs (need exactly 1).
+  csi1_basket_train_BASE_20260915_231554_1728969   (job 897145)   <- the committed read
+  csi1_basket_train_BASE_20260917_213834_3178944   (job 905990)   <- landed two days LATER
+```
+
+The two basket invocations omitted `--require-slurm-job`, so the tag resolves to two runs and `strict_run_dir` refuses. Fixed with the job ids from the validated floor-0.0 reproduction, whose `BASE` run dir equals the committed read's exactly. **This is the hazard `scripts/gates/dcs_csi_pr005_gate0d.py:18-24` records as "'newest' picked the wrong twin once already"** — and here it bit a recipe rather than a read. It is also why I am glad reproduction is the test: the recipe looked right and was not executable.
+
+### 🔶 And this resolves S-485's puzzle in a more interesting way than S-486 did
+
+S-486 concluded the two basket n46 artefacts record `require_slurm_job = null` because they *predate the provenance discipline*. That is not the explanation. **They record null because the tag was UNAMBIGUOUS when they ran** — the twin landed on 2026-09-17, two days after. So their provenance was complete at the time and **decayed afterwards**, when a second run reused the tag. That is a different failure mode from sloppiness, and a worse one: no discipline applied at write time would have prevented it. The artefact's `run_dirs` field is what still pins them.
+
+### 🔴 The gate can barely see the repair, and that is the gate's defect
+
+```
+  before this tick: unaccounted 17     after: unaccounted 16     --strict EXIT=1 (both)
+```
+
+**Ten figures were artefacted and the gate cleared one** (`9.6e-07`). `4.66e-05` and `1.0e-06` are still listed **although their source artefact now exists**, because the artefact holds full precision — `4.658e-05`, `1.030e-06` — and the draft quotes the rounded value. Existence-matching on a literal string **cannot match a correctly-rounded figure to its own source.**
+
+⇒ Taken with S-483 (the gate's *green* is satisfiable by an unrelated number in an unrelated file, e.g. a field named `DO_NOT_CONFUSE`) this is now demonstrated from both sides: **"unaccounted: 16" overstates the provenance problem, and the repair belongs in the gate's matching — rounding-aware comparison — not in the draft.** I am not making that change inside a tick on a gate that guards a headline document.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No figure changed and no verdict moved.** Every one of the ten reproduced; the census carries no p, no threshold and no verdict, and says so in a `WHAT_THIS_IS` field.
+- ⛔ **Coverage is TRAIN only, four arms only** (`BASE, KO, KO_AXIS, KO_FULL`). Validation and the 46-arm control family are **not** censused, so nothing here speaks to the controls' readout validity.
+- ⛔ **`0.003378 / 0.004005 / 0.069311 / 0.000012` are still un-artefacted.** Not touched this tick.
+- ⛔ **I did not modify the provenance gate, and did not allowlist anything.**
+- ⛔ Push credential-blocked.
+
+**NEXT:** the four remaining effect figures; then the Δz artefact-or-cut decision. The gate's rounding-blindness is now a documented limitation and a candidate for a preregistered fix. **Six questions with the user**, unchanged.
+
+---
+
+## S-488 / R39 stream 2's last two Tier-0 items, executed — and `dcs_csi_pr005_gate0.py` can never pass again (2026-09-26)
+
+I chose these over S-487's four remaining figures: the gate is now known to be rounding-blind, so clearing more figures cannot turn it green, whereas these two are about whether the sprint's *checks* can fail. Queue **EMPTY**, no GPU, **TEST untouched**. No code changed.
+
+### ✅ 0.6 — the two mutation gates. Confirmed, and worse than reported.
+
+`scripts/gates/dcs_mutate_gate0_arch_pin.py` is 36 lines with **no `sys.exit`**, its `expect` is a string printed at `:28` and never compared to `r.returncode`, and its only assertion is `mut != src` — that the *patch applied*, not that the gate *caught* it. Executed:
+
+```
+== BASELINE                                exit=1  (expect 0(a) PASS, 54 inspected)
+== drop 4 stage-1 arms from the list       exit=1  (54 -> 50 inspected; ...)
+== point stage-1 at a nonexistent job      exit=1  (some stage-1 arms unresolved)
+arch_pin true EXIT=0
+```
+
+🔴 **Every row exits 1 — including the BASELINE, whose own `expect` string says "expect 0(a) PASS".** So the exit code carries **no signal whatsoever**: a caught mutation and a broken baseline are indistinguishable by it, and the harness exits 0 either way.
+
+`scripts/gates/dcs_mutate_ledger_integrity.py` is 55 lines with **no exit path at all** — `grep -nE 'sys\.exit|SystemExit|exit\('` returns nothing. Its own docstring names the defect class it still has: *"A mutation table built that way proves nothing: it is exactly BLOCKER-2's shape (a check whose result does not depend on the thing it claims to test)."*
+
+⚠ **But the reviewer's framing needs a correction in the fix's favour.** The mutant rows print genuine assertion text from the audited gate:
+
+```
+AssertionError: STAGE1_ARMS holds 14 arms, expected 18 -- this gate would 'pass' having pinned a
+  SMALLER family than the preregistered one (REVIEW R10 ...)
+AssertionError: inspected 43 run dirs, expected 54 -- 11 arm(s) went unchecked and an architecture
+  pin that skips arms is not a pin (REVIEW R10 MAJOR-...)
+```
+
+⇒ **The R10 MAJOR-10 fix does work, and both mutations are genuinely caught.** What is missing is the harness's ability to *say so mechanically*: the evidence exists only as printed text a human must read. That is a weaker defect than "proves nothing", and I am recording the weaker, true version.
+
+### 🔴 The root cause of the broken baseline is a trap in its own right
+
+`dcs_csi_pr005_gate0.py` is a **pre-flight** gate. Its GATE 0(f) is *"output paths must NOT exist"* — and all three now exist, because the family ran and the reads were committed:
+
+```
+GATE 0(f) -- output paths must NOT exist
+     reports/DCS_CSI_SUBSPACE_button_train_L18_n46.json    exists=True
+     reports/DCS_CSI_REDERIVE_button_train_L18_n46.json    exists=True
+     reports/DCS_CSI_SUBSPACE_button_train_L18_shufonly.json exists=True
+  GATE 0(f): FAIL
+PART 2 VERDICT: FAIL -> ['0f:...', '0f:...', '0f:...']
+pr005_gate0 EXIT=1
+```
+
+⇒ **This gate can never pass again**, and its FAIL is **not a defect** — it is the gate correctly reporting that the outputs it was built to protect now exist. Anyone re-running it against the committed state, or any harness whose baseline is "pr005_gate0 exits 0", is permanently broken by design success. That is what poisons the mutation table's control row.
+
+🔶 The irony is recorded in the file itself at `:167-169`: 0(f) was *hardened* after R10 MAJOR-5 caught it printing `"checked 0 paths -> GATE 0(f): PASS"`. The hardening is why it now fails honestly — and why the harness above it cannot tell honest failure from caught mutation.
+
+### ✅ 0.5 — a printed 3-way disagreement on a published PRIMARY. Confirmed by execution.
+
+```
+  controls whose recomputation round-trips to the report's 5-dp value: 43 of 46
+  observed X = 28   -> inside the 95% predictive interval? True
+pr005_primary_X true EXIT=0
+```
+
+**Three of 46 controls' two independent computations disagree**, and the number is printed and dropped: `n_ctrl_5dp_match` occurs at exactly two lines, `:120` (computed) and `:122` (printed), and reaches no `fail` list and no `sys.exit`. Meanwhile the **candidate** three lines above gets a real enforcement — `assert round(cand_hp, 5) == cand, "... domain_means and control_recovery_distribution disagree, STOP"`. So the candidate's round-trip is a refusal and the controls' is a printout. The preregistered predictive-interval check is likewise emitted as a **boolean inside a format string**, not asserted.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **That the three disagreeing controls move anything.** `X = 28` is inside the preregistered interval, and the candidate's round-trip assertion passes. **I have not identified which three controls they are, nor the size of the disagreement** — only that the gate computes it, prints it and discards it. Calling it a defect in the *check* is supported; calling it a defect in the *result* is not.
+- ⛔ **That the arch-pin fix is broken.** The opposite: it catches both mutations. Only the harness's verdict is missing.
+- ⛔ **Nothing fixed.** Adding a verdict to the two mutation gates, and making 0(f) distinguish "pre-flight" from "post-hoc" invocation, are changes to the machinery that certifies frozen reads — preregisterable, not tidy-ups. And the 0(f) case needs a *design* decision (a `--post-hoc` mode? a separate gate?), which is not mine to pick inside a tick.
+- ⛔ Push credential-blocked.
+
+**NEXT:** identify the three disagreeing controls and the magnitude — that is bounded and answers whether 0.5 is cosmetic or not. **Six questions with the user**, unchanged; the 0(f) design question is a seventh I am surfacing rather than deciding.
+
+---
+
+## S-489 / the three disagreeing controls, identified and measured: 0.5 is a real gap in the check and COSMETIC in effect (2026-09-26)
+
+S-488's NEXT, done in the same tick because it is bounded. **This settles a question I explicitly refused to assume the answer to one entry ago.**
+
+### ✅ The three controls, and the size of the disagreement
+
+Recomputing every control from `domain_means` against the stored `control_recovery_distribution` value, on `reports/DCS_CSI_SUBSPACE_button_train_L18_n46.json` (reference arm `KO`, 67 domains):
+
+```
+  KO_RAND8     report +0.00053   recomputed +0.0005244776   |diff| 5.522e-06   rounds to +0.00052
+  KO_SHUF10    report -0.00018   recomputed -0.0001850746   |diff| 5.075e-06   rounds to -0.00019
+  KO_SHUF21    report -0.00008   recomputed -0.0000749254   |diff| 5.075e-06   rounds to -0.00007
+```
+
+All three sit **about half a unit in the fifth decimal place** away from the stored value — 5.1–5.5e-06.
+
+**The cause is that neither path is the exact one.** `domain_means` is stored at **5 dp per domain**, so averaging 67 of them carries ~1e-6 of accumulated rounding against the analyser's unrounded mean, and the gate's own docstring says the stored scalars are the *lossier* path. So the gate is comparing two differently-lossy reconstructions of the same quantity, and a handful of near-boundary controls land on opposite sides of the 5th-dp rounding. That is not a disagreement about the measurement.
+
+### ✅ And none of them changes side relative to the candidate
+
+```
+  KO_SHUF10    report-vs-cand -0.00004   recomputed-vs-cand -4.015e-05   SIDE CHANGES = False
+  KO_SHUF21    report-vs-cand +0.00006   recomputed-vs-cand +7.000e-05   SIDE CHANGES = False
+  KO_RAND8     report-vs-cand +0.00067   recomputed-vs-cand +6.694e-04   SIDE CHANGES = False
+```
+
+All three are in the **NEW 36** (`STAGE1 = KO_SHUF0..3 + KO_RAND0..5`; `NEW = KO_SHUF4..23 + KO_RAND6..21`), i.e. all three are inside X's population — and none crosses the candidate, so **X cannot move.**
+
+🔶 **Two independent cross-checks fell out of this, both clean:**
+
+```
+  recomputed: 35 of 46 controls >= candidate  ->  rank 36    report's candidate_rank_among_controls = 36   ✓
+  the gate's X = 28 among the 36 NEW          ->  35 - 28 = 7 of the 10 stage-1, consistent            ✓
+```
+
+So my full-precision recomputation reproduces the committed rank exactly, and reconciles with the gate's X. ⚠ **I had noted "X = 28" and my own count of 35 without reconciling them in S-488** — they are different statistics (`X = len(ex_new)`, `:141`, is over the 36 new blind controls only), and the decomposition above is the reconciliation. Worth stating because an unreconciled pair of numbers is how a false contradiction gets published.
+
+### ⇒ The verdict on 0.5
+
+**A real gap in the check, cosmetic in effect on this artefact.** The gate computes a 3-way disagreement and discards it — that remains true and remains worth fixing, because a future disagreement of a *different* size would be discarded identically, and the candidate's equivalent check is a hard `assert`. But on the read it guards, the disagreement is fifth-decimal rounding that moves neither the rank nor X. **S-488 said "calling it a defect in the result is not supported"; it is now measured and it is not a defect in the result.**
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **That it is cosmetic elsewhere.** I checked **one** artefact, `button_train_L18_n46`. After S-486's over-generalisation from a single file I am not extending this to the other 22 axis reads, and the same recomputation on each is the obvious way to find out.
+- ⛔ **That the analyser should store more precision.** Storing `domain_means` at higher precision would remove the ambiguity, but it changes an artefact schema that frozen reads depend on — a design decision, not a tick-end edit.
+- ⛔ **Nothing fixed.** The gate still discards the count; the two mutation harnesses still have no verdict; `pr005_gate0`'s 0(f) still cannot pass post-hoc (S-488).
+- ⛔ Queue **EMPTY**, no GPU, **TEST untouched**, push credential-blocked.
+
+**NEXT:** run the same round-trip recomputation across all 23 axis artefacts — one bounded sweep that either clears the class or finds a case where it is not cosmetic. **Six questions with the user**, plus the 0(f) post-hoc design question surfaced in S-488.
+
+---
+
+## S-490 / USER AUTHORISED THE PR-CSI-003-A LAUNCH — and the two VOID conditions are being discharged first, by measurement. VOID 7 is discharged (2026-09-26)
+
+### ⚠ The authorisation, and a correction to how I put the question
+
+The user was asked whether to launch PR-CSI-003-A and answered **"Launch it."** I then found my own framing had been wrong and went back to them.
+
+🔴 **I had called VOID 6 and VOID 7 "two stranded VOID conditions", which reads as UNVERIFIED. They are TRIGGERED** — S-475 had already recorded both as standing, and I repeated the softer word for several entries without re-reading my own finding. Launching on that framing would have spent 20 arms to produce a result the preregistration defines as void, and VOID 6's own text says it *"would void the whole necessity experiment"* — i.e. the **14 completed arms** as well.
+
+Re-asked with that stated, the user chose: **discharge both first, then launch under the existing authorisation, no further check-in; stop and report if either fails.** That is what is happening. **The launch decision is the user's and is recorded here as theirs.**
+
+### ✅ VOID 7 — DISCHARGED BY MEASUREMENT
+
+The recipe states its own criterion (`runargs/dcs_csi_pr003a_read.txt:211-215`): *"diff it and decide whether the change is I/O-only, as that one was, or computational — in which case VOID condition 7 fires."*
+
+* `scripts/dcs_csi_subspace_analyze.py`: **exactly 3 hunks, 61 insertions / 2 deletions** — `import tempfile`, a new `_atomic_json_dump`, and the `_write` call-site swap. **I/O-only.** Its blob at the frozen commit `ce116c6f` is md5 `975280800b7539bc8453e85400374ad1`, **matching the freeze record exactly**.
+* `scripts/dcs_csi_rederive_subspace.py`: 97/3, and the S-259 hunk adds `cand_ok = (cand < 0) if NEC else (cand > 0)` **gating the verdict**. That is computational, so **VOID 7 fires as written**.
+
+So I ran the read again with the current code and compared every leaf:
+
+```
+  leaves: committed 80   re-run 92   common 80
+  VALUES THAT DIFFER ON COMMON KEYS: 0
+  keys REMOVED: 0
+  keys ADDED: 12   -- all disclosure only:
+     /ranks/{pooled,random_only,shuffled_only}/candidate_point         = -0.00852
+     /ranks/{...}/candidate_sign_ok                                    = True
+     /ranks/{...}/certifiable_at_0.05__MEANING                         = (prose)
+     /ranks/{...}/sign_clause                                          = (prose)
+```
+
+⇒ **Every committed number reproduces exactly, and the new gate evaluates `candidate_sign_ok = True`**, so it cannot change this verdict — consistent with its own comment, *"NARROWING ONLY: it can turn PASSES into a non-pass and can never create one."* The computational change is **demonstrably inert on this data**. VOID 7 discharged.
+
+### 🔴 VOID 6 — the trigger is now DOCUMENTARY, not inferred
+
+`RUNMETA.json` records `argv` **and `git_commit`** per arm (note: S-484's "artefacts do not record their invocation" was about the *analysers*; the **arm runs do**). Reading all 14 completed necessity arms and hashing the file at each recorded commit:
+
+```
+  ce116c6fd2 be0e681846 9c94c14904 ee61a767f7 e43944a4bc 95f6271167 4907efe151
+      -> src/boombness/score_behavior.py blob e94258bd5fc44c70629e707b00504b7acac2a7b7   (ALL SEVEN)
+  HEAD -> 9562bdf90b86fdb2fbbcf3a7b75967796b949b2d                                        (DIFFERENT)
+```
+
+⇒ The arms already ran at **seven different commits but ONE identical blob**, and HEAD's blob differs. **VOID 6 fires for any new arm** — established by hash, not by the date arithmetic I had been using.
+
+**Statically the change is inert** for a run that does not pass `--knockout-cells`: `_knock_cells` is set to `None` at `:3186` and `:3298`, every new block is behind `if knock_cells:`, and both production call sites pass the parameter **by keyword**, so inserting it between `knock_heads` and `knock_scope` cannot misbind — the hazard I hit in my own code at S-487 and therefore looked for here.
+
+**The empirical half is submitted**, on the standard S-139 set for exactly this question (*"Both proven INERT: 230 rows bit-identical across the blob change"*):
+
+* `slurm_scripts/dcs_csi_void6_inertness_check.slurm` — **one arm**, replaying `KO_NEC_SHUF0` from **the argv its own RUNMETA recorded**, changing only the tag. Pinned to `geforce_rtx_3090:1` because the p1 launcher uses a bare `--gpus=1` and a bf16 comparison must not land on a V100 (VOID 1).
+* ⛔ The tag is deliberately `VOID6CHK_`: re-running under the original tag would create a **second** complete run dir for it and `strict_run_dir` would refuse that tag forever — the twin hazard S-487 measured on `csi1_basket_train_BASE`. This check must not damage the read it protects.
+* `scripts/gates/dcs_csi_void6_compare.py` — row-for-row over 12 endpoint-bearing fields, and it **fails closed**: it refuses on a missing dir, on differing key sets, on duplicate keys, on zero rows, and on both tags resolving to the same directory. Run now, before the replay exists, it correctly prints `REFUSING: ... resolves to 0 complete run dirs` and exits 1.
+
+### WHAT IS NOT ESTABLISHED
+
+- ⛔ **VOID 6 is NOT yet discharged.** The static argument is not the test; the replay decides it. **If the rows are not bit-identical I stop and report, and no launch happens.**
+- ⛔ **That discharging 6 and 7 makes the experiment sound** — it makes the two *stated* obstacles addressed. The other eight VOID conditions are checked by the read's own gates at analysis time, not by me here.
+- ⛔ No analysis was re-frozen, no prereg amended, and the launcher is **untouched** — the check is a new file precisely so PR-CSI-003-A's frozen launcher is not modified.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** commit, submit the one check arm, and on a bit-identical result launch halves 4 and 5 (20 arms) under the user's authorisation.
