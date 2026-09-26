@@ -1212,6 +1212,11 @@ SUFFICIENCY  KO_AXIS - KO          TRAIN  +0.00264 [+0.00068, +0.00471]  rank  1
              subfamilies pass separately on BOTH splits:
                 shuffled-only 1 of 25 (floor 0.0400)   random-only 1 of 23 (floor 0.0435)
 NECESSITY    KO_NEC_AXIS - NEC_BASE  -0.00852 [-0.01127, -0.00592]  55 of 67 domains  rank 1 of 9
+             ^ PR-CSI-003's 8-control read (floor 0.1111, INCONCLUSIVE by design)
+             SUPERSEDED S-501 by the enlarged family (PR-CSI-003-A, 20 new arms, 2026-09-26):
+             KO_NEC_AXIS - NEC_BASE  -0.00870  rank 1 of 25 shuffled  p 0.0400 = THE FLOOR   CERTIFIES
+               strongest control KO_NEC_SHUF3 -0.00489 -> candidate 1.78x more negative; 0 of 24 reach it
+               secondary pooled28: rank 1 of 29, p 0.034483    independent path agrees
 ```
 
 ⚠ **ADDED S-464 — D12 forbids quoting the TRAIN rank above without its leave-one-domain-out
@@ -1224,20 +1229,34 @@ sturdier** — §A.3 carries the full block.
 🔴 **The two halves are NOT equally certified, and the conjunction must never be quoted as though
 they were.** Sufficiency passes at rank 1 of 47 with a floor of 0.0213 — ⚠ **but on TRAIN that cell
 is ALSO in-sample** (`evaluation_is_in_sample: true`, 67 of 67 scored domains in the fit); **only the
-VALIDATION cell is held out** (`false`, 0 in fit). **Necessity is rank 1 of 9
+VALIDATION cell is held out** (`false`, 0 in fit). ~~**Necessity is rank 1 of 9
 against an attainable floor of 0.1111 — above α — so it is INCONCLUSIVE by a ceiling whose UNREACHABILITY
-was declared before the first arm ran** (⚠ the prereg declared the floor as **0.10**; the true floor
+was declared before the first arm ran**~~ 🔴 **SUPERSEDED S-505 — NECESSITY NOW CERTIFIES, AND THE
+ASYMMETRY WITH SUFFICIENCY HAS CHANGED SHAPE, NOT DISAPPEARED.** The enlarged family (24 shuffled)
+gives **rank 1 of 25, p = 0.0400** (D42). ⚠ **`p = 0.0400` IS the attainable floor**, so rank 1
+necessarily yields exactly it — it is not a small p, it is the only p this design can produce.
+⚠ **The necessity half remains TRAIN-only and IN-SAMPLE** (67/67 scored domains in the fit), while
+sufficiency has a genuinely held-out VALIDATION cell. **So the two halves are STILL not equally
+certified, for a different reason than before**: it is no longer floor-limitation, it is the absence
+of any held-out necessity arm — PR-CSI-001's replication criterion is **UNMET** for this direction.
+The historical statement below is kept because it was true when written** (⚠ the prereg declared the floor as **0.10**; the true floor
 at 8 controls is **0.1111** — AM-8's correction, not an advance figure), and §L.3 records that the family which would have fixed it — PR-CSI-003-A — is **built and patched
 ~~but blocked by two of its own VOID conditions and never launched: escalated, not dead.~~** 🔴 **SUPERSEDED S-504: both VOID conditions were discharged by measurement and the family was LAUNCHED and READ — rank 1 of 25 at floor 0.0400 (D42).** ⚠ *S-464 — this clause read "That is PR-CSI-004's status, not this one's" and inverted the very
 distinction it invoked §L.3 to police. §L.3 says **PR-CSI-004 is dead as frozen; PR-CSI-003-A is
-not dead, it is escalated and waiting.** The description above is PR-CSI-003-A's and is correct;
+not dead, it is escalated and waiting.** 🔴 *S-505: §L.3 no longer says that — it was rewritten at
+S-504 to record that PR-CSI-003-A launched and certified. The quotation is kept as what §L.3 said
+when this note was written; PR-CSI-004's half of the contrast is unaffected.* The description above is PR-CSI-003-A's and is correct;
 what belongs to PR-CSI-004 is being **dead as frozen**, which PR-CSI-003-A is not.*
 
 📌 **That the two directions use the SAME direction is MEASURED, not assumed:** the two arms load
 *different* basis files with different `basis_sha16`, and their `cand_rank1` tensors are
 **bit-identical**. The conjunction rests on this. ⛔ **Basket only** — nothing here was run on button,
-and §A.2 is the reason not to assume it transfers. ⛔ **Three clauses must travel with the necessity
-half every time: floor-limited, TRAIN-only, in-sample.** ⛔ **And the axis moves only 7.8 % [5.6, 10.1] of what whole-state removal moves —
+and §A.2 is the reason not to assume it transfers. ⛔ ~~**Three clauses must travel with the necessity
+half every time: floor-limited, TRAIN-only, in-sample.**~~ 🔴 **REPLACED S-505 — now FOUR, and the first
+one has changed:** ⛔ **(1) `p = 0.0400` IS the attainable floor, so rank 1 could not have produced a
+smaller p; (2) TRAIN-only; (3) in-sample (67/67); (4) NO held-out necessity arm exists, so PR-CSI-001's
+replication criterion is UNMET.** ⚠ *"Floor-limited" is retired as a clause: the family is no longer
+limited BY the floor, it SITS ON it, and those are different statements.* ⛔ **And the axis moves only 7.8 % [5.6, 10.1] of what whole-state removal moves —
 about 92 % of the effect is elsewhere.** ⛔ *"The axis is causal"* is forbidden unqualified; *"the
 axis is necessary"* is forbidden outright.
 

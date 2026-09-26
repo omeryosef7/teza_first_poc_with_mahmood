@@ -43491,3 +43491,61 @@ S-503 recorded two malformed table rows written into the claim table. §L.3 cont
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** §A.1's necessity passage; then D19's wording; then D39's column count as its own change.
+
+---
+
+## S-505 / §A.1 updated — and the asymmetry between the two directions did not disappear, it changed shape (2026-09-26)
+
+S-504's NEXT. Commit `305da789` landed §L; this is §A.1, the section that states the bidirectional conjunction (D18, D19). Four in-place edits, nothing deleted.
+
+### ✅ The evidence block now carries both reads
+
+```
+NECESSITY    KO_NEC_AXIS - NEC_BASE  -0.00852 [-0.01127, -0.00592]  55 of 67 domains  rank 1 of 9
+             ^ PR-CSI-003's 8-control read (floor 0.1111, INCONCLUSIVE by design)
+             SUPERSEDED S-501 by the enlarged family (PR-CSI-003-A, 20 new arms, 2026-09-26):
+             KO_NEC_AXIS - NEC_BASE  -0.00870  rank 1 of 25 shuffled  p 0.0400 = THE FLOOR   CERTIFIES
+               strongest control KO_NEC_SHUF3 -0.00489 -> candidate 1.78x more negative; 0 of 24 reach it
+               secondary pooled28: rank 1 of 29, p 0.034483    independent path agrees
+```
+
+The old line is kept above the new one because it was true of the read it describes.
+
+### 🔶 The correction that matters: the asymmetry CHANGED SHAPE rather than closing
+
+§A.1's core warning was *"The two halves are NOT equally certified, and the conjunction must never be quoted as though they were"*, on the grounds that necessity was **floor-limited**. That ground is gone — and **the warning still stands, for a different reason**:
+
+> **It is no longer floor-limitation, it is the absence of any held-out necessity arm** — sufficiency has a genuinely held-out VALIDATION cell (`evaluation_is_in_sample: false`, 0 in fit); necessity has **none**, and PR-CSI-001's replication criterion is **UNMET** for that direction.
+
+⚠ **This is the failure mode I was most exposed to this tick.** A PASS arriving under a warning invites deleting the warning. The correct move was to check whether the *reason* for the warning had been removed or merely replaced — and it was replaced.
+
+### ✅ The travelling clauses: three became four, and the first one changed
+
+Old: *"Three clauses must travel with the necessity half every time: floor-limited, TRAIN-only, in-sample."* Now:
+
+1. **`p = 0.0400` IS the attainable floor** — rank 1 could not have produced a smaller p;
+2. TRAIN-only;
+3. in-sample (67/67);
+4. **no held-out necessity arm exists; PR-CSI-001's replication criterion is UNMET.**
+
+⚠ *"Floor-limited" is retired as a clause with its reason stated: **the family is no longer limited BY the floor, it SITS ON it, and those are different statements.***
+
+**Both prohibitions are preserved verbatim** — *"the axis is causal" unqualified is forbidden; "the axis is necessary" is forbidden outright* — and so is the 7.8 % [5.6, 10.1] whole-state clause. A certifying rank does not license either, and I checked that rather than assumed it.
+
+### ✅ A stale quotation marked
+
+§A.1's S-464 note quotes §L.3 as saying *"PR-CSI-003-A is not dead, it is escalated and waiting."* §L.3 no longer says that — **I rewrote it at S-504**. The quotation is kept, marked as what §L.3 said when the note was written. A document that quotes itself needs the quotations to age visibly.
+
+### 🔶 Noticed, NOT acted on
+
+Line 1213 shows sufficiency's **shuffled-only subfamily is already "1 of 25 (floor 0.0400)"** — so both directions now sit at the same family size and the same floor. That is a real symmetry and it is **not** written into D19, because sufficiency's 25 is a *subfamily* of its 47-control primary while necessity's 25 **is** its primary, and whether those are comparable is a judgement I have not made. **Recorded as an observation, not folded into the conjunction.**
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No figure computed this tick.** Every number is S-501's.
+- ⛔ **D19's wording is still not restated**, and the symmetry above is exactly the thing that would tempt a restatement.
+- ⛔ **§A.3's and §A.5's necessity mentions are not audited** — I updated §A.1 only.
+- ⛔ **D39's pre-existing malformation still unfixed.**
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** audit the remaining §A necessity mentions; then decide D19 on its merits.
