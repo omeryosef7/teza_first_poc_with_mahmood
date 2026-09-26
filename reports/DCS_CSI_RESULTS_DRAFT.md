@@ -776,13 +776,19 @@ the writer"* is unavailable throughout. This is not an omission that more comput
 admissible held-out axis exists, and restricting controls to one head's own nine cells returns the
 **1/9 = 0.111 floor**, which is above α at every attainable effect size.
 
-## L.3 🔴 Two results are floor-limited, and BOTH extensions died the same death
+## L.3 🔴 Two results were floor-limited; ONE has since been fixed and the other is still dead
+
+🔴 **CORRECTED S-504. This section was written when both extensions were stalled and its title said
+"BOTH extensions died the same death". That is now false of one of them: PR-CSI-003-A LAUNCHED on
+2026-09-26 (jobs 932477/932478, 20 arms) and its read CERTIFIES — see D42. The diagnosis below was
+right about the mechanism and wrong about the outcome, and both halves are kept so the correction is
+legible rather than tidy.**
 
 Both are **top of their control family** and both families are **too small to certify that**:
 
 | result | outcome | floor | certifiable at α = 0.05? | the extension that would have fixed it |
 |---|---|---|---|---|
-| necessity, basket | rank **1 of 9** | 0.1111 | **no** — needs ≥ 20 controls | PR-CSI-003-A — built, patched, **never launched** |
+| ~~necessity, basket~~ | ~~rank **1 of 9**~~ | ~~0.1111~~ | 🔴 **NOW YES — SUPERSEDED BY D42 (S-501)** | PR-CSI-003-A — **LAUNCHED 2026-09-26, 20 arms, read and CERTIFIED**: shuffled family 8 → 24, floor 0.1111 → **0.0400**, candidate **rank 1 of 25**. ⚠ `p = 0.0400` **IS** that floor, so rank 1 necessarily yields it; ⚠ **TRAIN only and IN-SAMPLE** (67/67 scored domains also in the fit); ⚠ PR-CSI-001's **replication criterion is UNMET** — no VALIDATION necessity arms exist; ⚠ every sign-flip p is at the Monte-Carlo sampler floor 5.00e−06; ⚠ **prohibition 24 still stands.** |
 | sufficiency, basket at **L20** | rank **1 of 11** | 0.0909 | **no** | PR-CSI-004 — frozen, **never run, unrunnable as frozen** |
 
 🔴 **The two failures have ONE cause, not two.** Each extension was designed to **reuse
@@ -794,8 +800,24 @@ halves ran. **In both cases
 each design cheap is exactly what killed it.** That is the transferable lesson: **a family that
 reuses archived arms and pins the blob has a shelf life, and nothing warns you when it expires.**
 
+🔴 **CORRECTED S-504 — TRUE OF PR-CSI-004, FALSE OF PR-CSI-003-A, AND THE LESSON NEEDS A SECOND
+CLAUSE.** The blob did move under PR-CSI-003-A: all 12 pre-existing necessity arms ran
+`score_behavior.py` blob `e94258bd`, the 20 new arms ran `9562bdf9`, measured across 8 distinct
+commits (S-499). **But a moved blob is not automatically a dead family — it is a VOID condition that
+can be DISCHARGED BY MEASUREMENT.** S-494 replayed one already-completed arm from the argv its own
+`RUNMETA.json` recorded, under a quarantined tag, and compared **670 rows × 12 fields = 8040
+values: bit-identical**. The intervening edit (`--knockout-cells`, +172/−3) is inert for arms that do
+not pass the flag. **So the shelf life is real and the expiry is not always fatal: an archived-arm
+family expires only if the code that moved actually changed what that family measures, and whether
+it did is a one-arm experiment, not a judgement.** ⚠ Nothing here rescues PR-CSI-004, whose
+requirement is a different one and remains unmet.
+
 ⚠ **Their statuses differ and the draft should not blur them.** PR-CSI-004 is **dead as frozen** —
-its requirement can no longer be met. PR-CSI-003-A is **not dead: it is escalated and waiting.**
+its requirement can no longer be met. ~~PR-CSI-003-A is **not dead: it is escalated and waiting.**~~ 🔴 **SUPERSEDED S-504: it was launched
+on the user's explicit authorisation after both stranded VOID conditions were discharged by
+measurement (VOID 7 at S-490, VOID 6 at S-494), and it is now READ — D42.** ⚠ The contradiction
+described in the next sentences was never repaired, only overtaken: the status field and the passing
+gate still disagree in the frozen file (AM-57).
 🔴 **Its launcher patch IS applied in the tree, and PR-CSI-003-A's own status field says it is not
 (S-475).** `slurm_scripts/dcs_csi_p1_arms.slurm` carries `CSI_NEC_HALF=4` and `=5`, both labelled
 **"(PR-CSI-003-A)"**, launching `KO_NEC_SHUF4..13` and `KO_NEC_SHUF14..23` — **exactly the 20 arms the
@@ -826,6 +848,12 @@ L20** — would carry a floor below α in both cases. ⚠ Re-running the existin
 nothing: necessity would still have 8 controls and a floor of 0.1111. What is permanent is that
 **these two preregs cannot deliver it**, and reusing archived arms to avoid the cost is what
 produced this situation.
+
+🔴 **CORRECTED S-504: "these two preregs cannot deliver it" is now FALSE of PR-CSI-003-A.** It
+delivered — 20 arms launched 2026-09-26, the shuffled family taken 4 → 24, floor **0.0400**, candidate
+**rank 1 of 25** (D42). What blocked it was two VOID conditions, and both were **discharged by
+measurement** rather than argued away (S-490, S-494). ⚠ **The sentence remains true of PR-CSI-004**,
+whose requirement is different and still unmet.
 
 🔴 **And the necessity result's EFFECT is small against the thing it is a fraction of.** Removing the
 rank-1 component from a clean forward moves the endpoint **−0.00852**, against **−0.10950** for
@@ -1200,7 +1228,7 @@ VALIDATION cell is held out** (`false`, 0 in fit). **Necessity is rank 1 of 9
 against an attainable floor of 0.1111 — above α — so it is INCONCLUSIVE by a ceiling whose UNREACHABILITY
 was declared before the first arm ran** (⚠ the prereg declared the floor as **0.10**; the true floor
 at 8 controls is **0.1111** — AM-8's correction, not an advance figure), and §L.3 records that the family which would have fixed it — PR-CSI-003-A — is **built and patched
-but blocked by two of its own VOID conditions and never launched: escalated, not dead.** ⚠ *S-464 — this clause read "That is PR-CSI-004's status, not this one's" and inverted the very
+~~but blocked by two of its own VOID conditions and never launched: escalated, not dead.~~** 🔴 **SUPERSEDED S-504: both VOID conditions were discharged by measurement and the family was LAUNCHED and READ — rank 1 of 25 at floor 0.0400 (D42).** ⚠ *S-464 — this clause read "That is PR-CSI-004's status, not this one's" and inverted the very
 distinction it invoked §L.3 to police. §L.3 says **PR-CSI-004 is dead as frozen; PR-CSI-003-A is
 not dead, it is escalated and waiting.** The description above is PR-CSI-003-A's and is correct;
 what belongs to PR-CSI-004 is being **dead as frozen**, which PR-CSI-003-A is not.*
@@ -2110,6 +2138,15 @@ look** — floor 0.2000 against 0.1111, both above α either way. ⛔ **Which st
 settled by the record**: PR-CSI-003a nominates shuffled-only *for the 25-control family it would
 have run*, and **that family was never launched**; this read is PR-CSI-003's, with four shuffled
 controls. **The draft reports both and claims neither as the governing one.**
+
+🔴 **CORRECTED S-504 — THIS IS NOW SETTLED, AND THE ANSWER IS SHUFFLED-ONLY.** The 25-control family
+**was** launched (2026-09-26) and read. PR-CSI-003-A's **VOID 8** froze the choice in advance — *"the
+family is 24 shuffled, the primary is the shuffled-only rank, the floor is 0.0400"* — so the governing
+statistic was fixed **before** any rank existed, which is the only condition under which choosing one
+is legitimate. D42 reports it: **rank 1 of 25, p = 0.0400**. The pooled 28-control read is **secondary**
+and agrees (rank 1 of 29, p 0.034483). ⚠ This settles *which statistic governs for the new family*; it
+does **not** retroactively make the four-shuffled-control read above into a governed statistic, and the
+sentence's caution about **that** read still holds.
 
 ✅ **And one thing this family PASSES that the sufficiency family fails.**
 `specificity_all_controls_rejected` is **True** here — **8 of 8** controls rejected under the

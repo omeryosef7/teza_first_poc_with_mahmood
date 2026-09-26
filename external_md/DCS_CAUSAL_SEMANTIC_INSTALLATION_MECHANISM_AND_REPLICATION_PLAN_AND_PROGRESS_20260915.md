@@ -43456,3 +43456,38 @@ The audit also found **D18's marker in the wrong column** — appended at line e
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** §A's necessity passage with the same five caveats; then D39's column count as its own small change.
+
+---
+
+## S-504 / the draft now says what happened — six corrections, and one of them settles a question the draft had left open (2026-09-26)
+
+S-502's NEXT. Commit `87f9c214` landed the claim table; this is the results draft. **Every edit is an in-place correction with a marker; nothing was deleted and no old figure was overwritten.**
+
+### ✅ §L.3 — the section that was most wrong
+
+Its title was *"Two results are floor-limited, and BOTH extensions died the same death"*. Four edits:
+
+1. **Retitled** to *"ONE has since been fixed and the other is still dead"*, with a correction block stating that the diagnosis below *"was right about the mechanism and wrong about the outcome, and both halves are kept so the correction is legible rather than tidy."*
+2. **The necessity table row** struck through and replaced: rank 1 of 9 / 0.1111 / *"never launched"* → **rank 1 of 25, floor 0.0400, LAUNCHED and CERTIFIED**, carrying all five D42 caveats inline.
+3. 🔴 **The "ONE cause" diagnosis corrected, and the transferable lesson given a second clause.** It said *"`score_behavior.py` moved before the new arms were launched, and the reuse that made each design cheap is exactly what killed it"*, concluding *"a family that reuses archived arms and pins the blob has a shelf life, and nothing warns you when it expires."* The blob **did** move — `e94258bd` → `9562bdf9` across 8 commits — **but a moved blob is a VOID condition that can be DISCHARGED BY MEASUREMENT**, and 8040 bit-identical comparisons discharged it. The lesson now reads: *an archived-arm family expires only if the code that moved actually changed what that family measures, and whether it did is a one-arm experiment, not a judgement.*
+4. **"Escalated and waiting"** superseded — launched, read, D42 — with the contradiction noted as *overtaken, not repaired*.
+
+### ✅ Three further sites
+
+* *"these two preregs cannot deliver it"* → **false of PR-CSI-003-A**, which delivered; ⚠ still true of PR-CSI-004.
+* *"blocked by two of its own VOID conditions and never launched"* → struck and superseded.
+* 🔶 **And the one that matters most, because it closes an open question rather than updating a status:** the draft said *"**Which statistic governs is NOT settled by the record**: PR-CSI-003a nominates shuffled-only for the 25-control family it would have run, and that family was never launched … The draft reports both and claims neither as the governing one."* **It is now settled, and the answer is shuffled-only** — because **VOID 8 froze it in advance** (*"the family is 24 shuffled, the primary is the shuffled-only rank, the floor is 0.0400"*), i.e. **before any rank existed**, which is the only condition under which picking one is legitimate. ⚠ And scoped: this settles it *for the new family* and does **not** retroactively make the old four-shuffled-control read a governed statistic.
+
+### ✅ One thing I checked because I got it wrong last tick
+
+S-503 recorded two malformed table rows written into the claim table. §L.3 contains a **table**, and I edited a row in it. **Verified before committing**: header and all rows carry 6 pipes = 5 content columns, intact. Checking the shape of a table I have just edited is now a step, not an afterthought.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No figure was computed in this tick.** Every number is S-501's, already re-derived once. A bookkeeping tick that invents a figure is the worst kind, and this one invents none.
+- ⛔ **Line ~954 was deliberately NOT touched.** It reports the S-475 replay of **PR-CSI-003's** read — 8 controls, 664 keys, floor 0.1111 — which is a *historical statement about the old read* and remains true. Updating it would have been wrong.
+- ⛔ **§A is still not touched**, only §L. §A.1's necessity half and the §A rows that quote the 0.1111 floor as context need the same treatment and did not get it here.
+- ⛔ **D19's bidirectional conjunction is still not restated**, and **D39's pre-existing 6-column malformation is still unfixed** — both deliberately left.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** §A.1's necessity passage; then D19's wording; then D39's column count as its own change.
