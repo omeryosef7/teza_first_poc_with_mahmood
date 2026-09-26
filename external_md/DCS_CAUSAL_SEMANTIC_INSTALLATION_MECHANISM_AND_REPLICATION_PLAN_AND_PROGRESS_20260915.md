@@ -41253,3 +41253,87 @@ sweep whenever a part is added — is now written down here rather than left to 
 **NEXT:** §A's cross-references OUT (the other direction), then the §1–§4/§H sections' own figures
 against artefacts, which have not been re-audited since S-438. **Six questions with the user.**
 **Push credential-blocked.**
+
+---
+
+## S-468 — every "median" I reported was the upper-middle element, and the reviewer I overruled in S-465 was right (2026-09-26)
+
+**Start**: S-467's other direction — §A's cross-references OUT — plus two figure auditors launched
+over §1–§4 and §H (still running; nothing from them is in this entry).
+
+### ✅ §A's outbound citations are clean
+
+All fourteen cited targets exist. The four cross-part citations each describe their target
+correctly: §M.9 does say the analyser certifies only at rank 1; §M.11 does cover the seed case §A.4a
+invokes it for; §L.9 does say the head and cell families cannot be tested at all; §L.3's PR-CSI-003-A
+description matches (its inverted companion clause was fixed in S-464). **That is the S-442 shape
+checked in the direction S-467 did not cover, and it holds.**
+
+### ⚠ One thing I declined
+
+None of §1–§4 or §H mentions readout validity. I did not add a pointer to all nine: §L.9 already
+covers the place it bites (D35's cross-codeword comparison), and repeating a limitation into nine
+results sections is bloat rather than rigour. **Recorded as a judgement rather than done silently.**
+
+### ✅ Load-bearing figures re-verified by me
+
+Read straight from the argmax artefacts: **D39/PR-CSI-018** K = 6, M = 5, binomial 9.22e-05, gating
+conditional **0.012346**, four matching layers, spanning satisfied; **D40/PR-CSI-020** K = 8, M = 6,
+binomial 4.31e-05, conditional **0.005030**, five layers, spanning satisfied. §2 and §3 print exactly
+those. **The sprint's two certified argmax p's are correct as drafted.**
+
+### 🔴 THE FINDING: every median I reported was not a median
+
+My option-mass scripts took `om[n//2]` — the **upper-middle element** — and labelled it *"median"*.
+With even n the median is the mean of the two middle values. Every such figure was wrong:
+
+```
+                  reported   true median
+basket TRAIN       0.0902      0.0901
+basket VALIDATION  0.0835      0.0833
+button TRAIN       0.3298      0.3293
+button VALIDATION  0.2650      0.2646
+KO / KO_AXIS       0.191       0.191 / 0.190   <- the pair no longer shares one rounded value
+```
+
+Corrected in all eight places across §A.2, §A.3 and §L.9. ⛔ **No percentage, count or conclusion
+moves** — the below-0.05 shares are order statistics and unaffected — but eight published figures
+were mislabelled.
+
+### 🔴 AND IT REVERSES SOMETHING I ASSERTED ONE TICK AGO
+
+S-465 recorded, under *"Where I did NOT accept the reviewer"*, that the figure auditor's KO_AXIS
+median of **0.190474** was wrong against my 0.190607, and attributed the difference to the
+**tag-prefix ambiguity of AM-53-a** — an auditor resolving `csi1_basket_train_KO_AXIS` by prefix
+instead of by the artefact's own mapping.
+
+**That was wrong on both counts. 0.190474 is the true median; 0.190607 is the upper-middle element.
+The reviewer was right, my figure was the mislabelled one, and the explanation I gave for the
+discrepancy was a confident fabrication that happened to name a real defect.** ⚠ **This is the worst
+shape in the session**: I dismissed a correct finding with a plausible mechanism I had not tested,
+in an entry whose whole subject was checking figures. The tag-prefix ambiguity is real and
+documented; **it simply had nothing to do with this.**
+
+⇒ **RULE, added here: when a re-derivation disagrees with an auditor, reproduce the auditor's number
+before explaining it away.** I could have: their value falls out of `statistics.median` in one line.
+
+### Also fixed
+
+**The A30 supersession index had no row for D25's struck label.** S-464 marked *"SECONDARY,
+UNPREREGISTERED"* dead in place and added AM-51, but never indexed it — and A30's own preamble says
+it exists so *"a drafter landing on a single row must be able to tell from that row alone whether its
+numbers are current"*. Added as **row 24**. ⚠ *The A30 block is rows 1–24 contiguous; a first pass of
+mine reported a gap at 25–26, which was my regex catching rows from other tables — the same
+wrong-scope error as detector failure #16.*
+
+### What is NOT established
+
+* ⛔ **That the median error is confined to option mass.** Every other "median" in the draft was
+  computed by other code at other times and was **not** re-checked this tick.
+* ⛔ **The two figure audits of §1–§4 and §H.** Running; nothing here reflects them.
+* ⛔ **That the eight corrected figures are the last of this class.** The convention error was
+  systematic in my scripts, so anything else they produced is suspect until checked.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** the two audits when they land, then sweep the draft for every other "median" and re-derive
+it. **Six questions with the user.** **Push credential-blocked.**

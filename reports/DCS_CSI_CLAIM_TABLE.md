@@ -1037,6 +1037,7 @@ holds the right number is necessary and is not sufficient, because nothing makes
 | **21** | **prohibition 30**'s quoted statistics | recipient **p = 0.201**, interaction **p = 0.888** | both are **bootstrap percentile** p's (0.2001 and 0.8890 re-derived); under `exact_signflip` they are **0.2216** and **0.8825**. The draft quotes the sign-flip values and labels them as such. ⛔ **No conclusion changes** — the recipient effect is NOT TESTED on either test | ✅ S-453, indexed |
 | **22** | **D12** instrument gate | `KO_FULL − KO` = **+0.12131** TRAIN, **+0.10306** VALIDATION | the n34 and n30 families respectively; the governing n46 pair gives **+0.12041** and **+0.10370**. Gate holds either way | ✅ S-453 (AM-50), in place |
 | **23** | **D15** instrument gate | `KO_FULL − KO` = **+0.10306** for basket L18 VALIDATION | the n30 value; n46 gives **+0.10370**. Its TRAIN figure beside it (+0.12041) was already n46, so the row mixed two families | ✅ S-453 (AM-50), in place |
+| **24** | **D25** label | *"**SECONDARY, UNPREREGISTERED**, and labelled as such"* — and prohibition 29's companion clause requiring that label | **PRESPECIFIED**, not unpreregistered: it is `secondary_statistics_PRESPECIFIED.S1` in PR-CSI-006, *"the GRADED read … must be reported beside every cell of the 2×2"*. **Secondary stands; unpreregistered is struck** | ✅ S-464 (AM-51), in place — **index row added S-468**, which the in-place mark alone had not done |
 
 ### What this index does NOT cover
 

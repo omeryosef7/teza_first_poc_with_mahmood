@@ -867,10 +867,16 @@ are **bit-identical across all of them**:
 
 ```
                        rows below 0.05      median option mass
-basket TRAIN              243 / 670 = 36.3 %       0.0902
-basket VALIDATION          84 / 230 = 36.5 %       0.0835
-button VALIDATION          25 / 230 = 10.9 %       0.2650
+basket TRAIN              243 / 670 = 36.3 %       0.0901
+basket VALIDATION          84 / 230 = 36.5 %       0.0833
+button VALIDATION          25 / 230 = 10.9 %       0.2646
 ```
+
+🔴 **CORRECTED S-468 — every median in this table was computed as the UPPER-MIDDLE element, not
+the median.** With even n the median is the mean of the two middle values; `om[n//2]` is the upper
+one. Corrected throughout: basket TRAIN **0.0901** (was 0.0902), basket VALIDATION **0.0833**
+(0.0835), button TRAIN **0.3293** (0.3298), button VALIDATION **0.2646** (0.2650). **No percentage
+or count changes** — the below-0.05 shares are unaffected — and no conclusion moves.
 
 ⚠ **This is a property of the PROMPT BANK**, not of any arm, axis or intervention: it is the same
 in PR-CSI-014, 015, 020 and 010 (basket) and in PR-CSI-016 and 018 (button) as it is in the axis
@@ -1151,10 +1157,10 @@ falling below PR-CSI-001's declared 0.05 validity floor:
 
 ```
                 rows below 0.05      median option mass
-basket TRAIN       243 / 670 = 36.3 %        0.0902
-basket VALIDATION   84 / 230 = 36.5 %        0.0835
-button TRAIN        84 / 670 = 12.5 %        0.3298
-button VALIDATION   25 / 230 = 10.9 %        0.2650
+basket TRAIN       243 / 670 = 36.3 %        0.0901
+basket VALIDATION   84 / 230 = 36.5 %        0.0833
+button TRAIN        84 / 670 = 12.5 %        0.3293
+button VALIDATION   25 / 230 = 10.9 %        0.2646
 ```
 
 ⚠ **On basket prompts the model puts roughly three times as much of its mass outside the two
@@ -1271,10 +1277,12 @@ names it *"the readout validity gate, min 0.05"*. The gate is applied to **one r
 (`BASE` by default) and its surviving key set is then used for every arm — never per-arm, because
 option mass is an outcome and a per-arm filter would be post-treatment selection (review R2-B1).
 Measured on TRAIN: **`BASE` has 36.3 % of its 670 scored rows below 0.05** (243 rows, median
-**0.0901**, minimum **4.66e-05**) 🔴 *S-465: this read "median 0.0902, minimum 0.000001"; the median
+**0.0901**, minimum **4.66e-05**) 🔴 *S-465: this read "median 0.0901, minimum 0.000001"; the median
 is 0.09008, and the 1e-06 minimum belongs to `KO` (9.6e-07) and `KO_AXIS` (1.0e-06), not to the arm
 the sentence is about*, while the rescued arms sit higher — `KO` and `KO_AXIS` both **18.1 %**
-below, median **0.191** — and it is those arms, not `BASE`, that reach 1e-06. ⚠ **It is `BASE`'s distribution that gates**, and it is the worst of the
+below, median **0.191** (`KO`) and **0.190** (`KO_AXIS`) — and it is those arms, not `BASE`,
+that reach 1e-06. 🔴 *S-468: a single "median 0.191" was quoted for the pair; at the true median they
+round differently.* ⚠ **It is `BASE`'s distribution that gates**, and it is the worst of the
 three. The analyser's own comment on those rows is that *"the model's actual prediction is some
 third word entirely"*. ⚠ **Every number in the record was computed at `option_mass_floor = 0.0`** —
 the analyser's help calls that *"the frozen protocol, which gates option mass POOLED"*, with 0.05
