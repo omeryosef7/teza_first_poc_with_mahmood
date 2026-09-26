@@ -40813,3 +40813,78 @@ section rather than four scattered ones. Five count sites updated and swept.
 **NEXT:** §A.8 — D17, D22, D28, D31, the provenance and inertness results, which completes §A's
 twenty rows. D28 is the interesting one: it records that an inertness **is not verifiable after the
 fact from the run directories**. **Five questions remain with the user.** **Push credential-blocked.**
+
+---
+
+## S-463 — §A.8 drafted, and §A IS COMPLETE: all twenty axis rows (2026-09-26)
+
+**§A.8 covers the last four rows — D17, D22, D28, D31 — the provenance and inertness results.**
+All three bit-identity comparisons were **re-derived by me from `results.jsonl`, row by row, on all
+six readout fields**:
+
+```
+D17  basket TRAIN L20   KO_AXIS (905990) vs KO_AXIS_ANCHOR (906001), SAME node
+       670/670 common, 0 A-only, 0 B-only     max|diff| = 0 on all six
+       config args 57 keys each, differing in exactly 2 -- `arm` and `tag`
+D22  button TRAIN L18   CODEANCHOR_R0 (912838, n-350) vs KO_RAND0 (902005, n-306), ACROSS nodes
+       670/670 rescue-fired, 0/0              max|diff| = 0 on all six
+       spans a measured +474 / -7 change to score_behavior.py
+D28  basket VALIDATION  CODEANCHOR_139B (913407) vs STAGEANCHOR_AXIS (913232)
+       230/230 rescue-fired, 0/0              max|diff| = 0 on all six
+       compute_capability 8.6 vs ABSENT; RUNMETA 24 keys vs 23
+```
+
+**D31's hardware A/B** (V100 emulated bf16 against RTX 3090 native, `|cos|` 0.998406 at L18 and
+0.997866 at L20) needs the `.pt` bases and `torch` is unreachable — `[READ, not reproduced]`.
+🔴 **Its own correction makes it STRONGER, which is rare enough to state**: the residuals were first
+dismissed as float noise inside bf16's ~2⁻⁸; that was wrong twice — `1 − cos` is **second** order in
+the angle, and the activations differ by a median **2.57 % / 2.76 %**, ~7× outside the quoted bound.
+**Corrected: inputs differing by ~2.6 % still give directions agreeing at cos 0.998 — robustness,
+not noise.**
+
+### The provenance defect, verified across the whole sprint
+
+```
+753 readable csi* RUNMETA.json:   git_dirty = True 255,  None 498,  False 0
+no RUNMETA field anywhere mentions a blob, sha, hash or digest
+```
+
+⚠ **`git_dirty` is never `False`: the direction that would FALSIFY a clean-tree claim is recorded,
+the direction that would CONFIRM it is not.** And `git_commit` is not a witness of what ran, because
+the tree may have been dirty and no blob is stored. ⇒ **Every "ran pre-edit" / "ran post-edit" /
+"clean tree" attribution in this family is withdrawn (AM-14); the bit-identity numbers, which do not
+depend on it, stand.** ⚠ **And this is a STANDING defect, not a historical one** — nothing in the
+current producer path records a blob either.
+
+⛔ **Each discharge is narrow**: D17 retires the Gate-0 VOID for **PR-CSI-002's arms only**, D22
+discharges **one** condition for **PR-CSI-005's pooled family only**, and neither licenses editing
+`score_behavior.py` mid-run. ⚠ **D17 is same-node determinism; D22 is the stronger test — across two
+nodes AND a +474/−7 diff.** They must not be quoted as the same thing.
+
+### §A IS COMPLETE
+
+**All twenty rows D12–D31 are drafted**: §A.1 D18/D19 · §A.2 D23/D24/D29 · §A.3 D12 · §A.4
+D25/D27/D30 · §A.4a · §A.4b D26 · §A.5 D13/D14/D15 · §A.6 D21 · §A.7 D16/D20 · §A.8 D17/D22/D28/D31.
+Verified by regex over the headings: the set matches D12–D31 exactly with none left over.
+
+⚠ **The SCOPE block is rewritten, and its count history is kept rather than erased**, because it is
+this draft's most repeated error: wrong at least **five** times — *eighteen* when it was fifteen;
+*thirteen* from reading a range as a list (S-449); *two/eighteen* three ticks after it reached ten
+(S-453); *ten* after it reached twelve (S-459); and this tick a **trailing enumeration that survived
+my word-level sweep because the sweep matched phrases and not lists.** The failure mode retires with
+the count, the lesson does not.
+
+### What is NOT established
+
+* ⛔ **That the edits were inert on any path other than the one measured.** Each test is one arm
+  pair on one path; none generalises.
+* ⛔ **That any run directory can be audited for the code it ran.** It cannot, and that is current.
+* ⛔ **D31's cosines** — need the run environment.
+* ⛔ **That §A is correct because it is complete.** §A.3, §A.5, §A.6, §A.7 and §A.8 have had **no
+  adversarial review**; only §A.1/§A.2/§A.4/§A.4b have, and that review returned six substantive
+  findings including two errors in my own corrections.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** the adversarial review of the five unreviewed §A sections — every section reviewed so far
+has returned real defects on its first pass, and five have never been read against their artefacts
+by anything but me. **Five questions remain with the user.** **Push credential-blocked.**

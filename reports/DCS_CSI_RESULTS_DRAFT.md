@@ -19,11 +19,13 @@ names its scope rather than claiming a blanket.*
 ✅ **UPDATED S-436 — the head-level half is now DRAFTED as §H and this block is its index.**
 §1–§4 report the five cell-census families (PR-CSI-014, 015, 016, 018, 020); **§H reports the
 head-level results, which the cell-level half subdivides and therefore depends on.** §H is written
-second and belongs first. ⚠ **A THIRD part — the axis, necessity and dissociation families
-(PR-CSI-001–009, 20 claim-table rows) — is **PARTLY PRESENT**: 🔴 *CORRECTED S-453 — this block said "two … and eighteen" long after the
-count reached ten:* **SIXTEEN of its rows are drafted as §A (D12, D13, D14, D15, D16, D18, D19,
-D20, D21, D23, D24, D25, D26, D27, D29, D30) and FOUR are not** — D17, D22, D28, D31, all
-provenance / gate rows. *(Re-counted S-462 by regex over the §A headings, not by subtracting.)* The
+second and belongs first. ✅ **UPDATED S-463 — THE THIRD PART IS COMPLETE.** The axis, necessity and dissociation families
+(PR-CSI-001–009) are **§A, and all twenty of their claim-table rows (D12–D31) are now drafted**:
+§A.1 D18/D19 · §A.2 D23/D24/D29 · §A.3 D12 · §A.4 D25/D27/D30 · §A.4a · §A.4b D26 · §A.5 D13/D14/D15
+· §A.6 D21 · §A.7 D16/D20 · §A.8 D17/D22/D28/D31. *(Verified by regex over the §A headings, not by
+subtracting: the set matches D12–D31 exactly, with none left over.)* ⚠ *This block carried a stale
+count for five consecutive ticks — "two and eighteen" long after it was ten — so the count is now
+measured every tick it changes.* The
 four rows below are the D-rows §H covers; it also reports **AM-36** and draws on AM-26, AM-27, AM-30, AM-33, AM-34 and AM-37:
 
 | row | what §H reports | where |
@@ -45,20 +47,20 @@ it declined is what found it. Classified by reading each row rather than by patt
 | | rows | status |
 |---|---|---|
 | predecessor-phase, pre-CSI | 10 — D1–D4, D6–D11 | correctly out of scope |
-| **CSI-sprint results, GENUINELY OMITTED** | **20 — D12–D31** | 🔴 **a whole third part** |
+| CSI-sprint axis / necessity / dissociation | 20 — D12–D31 | ✅ **all drafted as §A (S-463)** |
 | covered in §3/§4 prose, not cited by ID | 3 — D40-a, D40-b, D41-a | fine |
 
-⚠ **UPDATED S-439/S-440, RE-COUNTED S-453.** §A began as D19's bidirectional conjunction and
-D24's matched-power dissociation with D18, D23 and D29 as supports; it now also carries D12 (§A.3)
-and D25/D26/D27/D30 (§A.4, §A.4a, §A.4b). **That is an increment, not the part: SIXTEEN of the twenty
-are drafted and FOUR remain** — D13, D14, D15, D16,
-D17, D20, D21, D22, D28, D31. (⚠ This count has been wrong twice: SCOPE said eighteen when it was
-fifteen, and a re-measure said thirteen by reading a range as a list, S-449.)
+⚠ **HISTORY OF THIS COUNT, kept because it is the draft's most repeated error.** §A began as two
+rows (D19, D24) and grew over S-439 → S-463 to all twenty. The count was wrong in this block at
+least five times: *eighteen* when it was fifteen; *thirteen* from reading a range as a list (S-449);
+*two/eighteen* three ticks after it reached ten (S-453); *ten* after it reached twelve (S-459); and
+a trailing enumeration that survived a word-level sweep because the sweep matched phrases and not
+lists (S-463). **It is now complete, so the failure mode retires with it** — but the lesson does
+not: a count in prose is a claim, and it needs re-measuring at every edit that can move it.
 
 **The omitted rows are the AXIS, NECESSITY and DISSOCIATION families — PR-CSI-001 through 009**: the
 rank-1 installation axis and its control families, the necessity direction, the button/basket
-codeword dissociation at matched power, and the cross-codeword axis swap. 🔴 *CORRECTED S-453 — this sentence outlived its count by three ticks:* **ten of them are
-in this file, as §A; the ten listed above are not.** §L.3 touches two of these results (necessity, basket-at-L20) only
+codeword dissociation at matched power, and the cross-codeword axis swap. ✅ *S-463:* **all twenty are now in this file, as §A.1 through §A.8.** §L.3 touches two of these results (necessity, basket-at-L20) only
 to limit them, which is how the gap stayed invisible for so long — they appeared as *limitations of
 results the draft never stated*, and for the **four** still undrafted they still do.
 
@@ -279,7 +281,7 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | any rung-2/3/4 **CLAIM** for a result here | every certified claim is rung 1 — but naming rung 2 as *unreached* is required, not forbidden, so the ban is on the claim and not the vocabulary | AM-34 |
 | "correcting" either 1.52e-04 | `(1/9)^4 = (1/3)^8 = 1/6561` — two real quantities, one value | [†] §4 |
 | ‼ "floor above α ⇒ CANNOT ANSWER, never FAIL" | true only at K < 3; at K ≥ 3 it is a FAIL with an unwinnability warning — and the sentence is **still live in both published artefacts**, so it can be re-imported from a source an editor will read | AM-45 (S-428), §M.6 |
-| ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | §1–§4 are the CELL-level part and §H the HEAD-level part; of the axis / necessity / dissociation families (D12–D31) **sixteen of D12–D31 are drafted as §A and FOUR remain in neither** — see SCOPE | D12–D31, SCOPE |
+| ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | §1–§4 are the CELL-level part and §H the HEAD-level part; of the axis / necessity / dissociation families (D12–D31) **all twenty of D12–D31 are now drafted as §A (S-463)** — see SCOPE | D12–D31, SCOPE |
 | ‼ quoting `VERDICT: "WE FOUND (part of) THE WRITER"` | it is a **verdict LABEL live in TWO published artefacts** (PR-010 and PR-011), not a claim; the permitted form is that file's `REPORTABLE_AS` — 8 head indices, at least half the effect, **leg (i) only**, **not** a claim about any cell | D32, §M.8 |
 | "deduplicating" the two 0.012346s | D39's certified conditional (§2) and D38's forbidden binomial (§4) are **both exactly 1/81** — one is a result, one is banned | D39, D38, §4 |
 | ‼ "TEST is unspent / untouched / available" | read to completion 2026-09-08 and selection-contaminated | AM-39, D5 |
@@ -1785,3 +1787,58 @@ one; the sufficiency families gate on `KO_SELF − KO` and this one cannot.
 floor-limited, TRAIN-only and in-sample; that 46.9 % is comparable to anything in the sufficiency
 direction; and that the removal direction has ever been run on **button** — it has not, on any
 layer, so every necessity statement in this draft is basket-only.
+
+## A.8 Provenance: three code changes and one hardware change that provably moved nothing — and the reason none of it is checkable from the run directories (D17, D22, D28, D31)
+
+Several results in §A were produced across mid-sprint edits to `score_behavior.py` and across two
+GPU generations. Each was tested rather than argued. **All three bit-identity comparisons below were
+re-derived by me from `results.jsonl`, row by row, on all six readout fields** — `logp_concept`,
+`logp_codeword`, `semantic_logodds`, `p_concept`, `p_codeword`, `top1_id`:
+
+```
+D17  basket TRAIN L20   KO_AXIS (job 905990) vs KO_AXIS_ANCHOR (906001), SAME node
+       670 vs 670 rows, 670 common, 0 A-only, 0 B-only    max|diff| = 0 on all six
+       config args: 57 keys each, differing in exactly 2 -- `arm` and `tag`
+D22  button TRAIN L18   CODEANCHOR_R0 (912838, n-350) vs KO_RAND0 (902005, n-306), ACROSS nodes
+       670 rescue-fired each, 670 common, 0/0            max|diff| = 0 on all six
+       spans a measured +474 / -7 change to score_behavior.py
+D28  basket VALIDATION  CODEANCHOR_139B (913407) vs STAGEANCHOR_AXIS (913232)
+       230 rescue-fired each, 230 common, 0/0            max|diff| = 0 on all six
+       compute_capability 8.6 on one arm, ABSENT on the other; RUNMETA 24 keys vs 23
+```
+
+**D31 adds the hardware A/B**: basket's fitted direction from Tesla V100 activations (emulated
+bf16) against RTX 3090 (native) gives `|cos|` **0.998406** at L18 and **0.997866** at L20.
+⚠ *These need the `.pt` bases and* `torch` *is not reachable here —* `[READ, not reproduced]`.
+🔴 **And its own correction makes it stronger, which is worth stating because corrections usually
+do the opposite.** The residuals were first dismissed as *"float noise inside bf16's ~2⁻⁸ = 0.0039"*.
+That was wrong twice — `1 − cos` is **second** order in the angle, so it was being compared against
+a first-order bound, and **the activations themselves differ by a median 2.57 % / 2.76 %**, roughly
+seven times outside it. **Corrected: inputs differing by ~2.6 % still yield directions agreeing at
+cos 0.998. That is robustness, not noise.**
+
+🔴 **And now the part that governs all four: the measurements stand, and the claims about WHICH CODE
+produced them do not.** Verified by me across the sprint's run directories:
+
+```
+753 readable csi* RUNMETA.json:   git_dirty = True 255,  None 498,  False 0
+no RUNMETA field anywhere mentions a blob, sha, hash or digest
+```
+
+⚠ **`git_dirty` is never `False`.** The direction that would *falsify* a clean-tree claim is
+recorded; the direction that would *confirm* it is not. ⚠ **And `git_commit` is not a witness of
+what code ran**, because the tree may have been dirty and no blob is recorded. ⇒ **Every
+"ran pre-edit" / "ran post-edit" / "clean tree" attribution in this family is WITHDRAWN (AM-14);
+the bit-identity numbers, which do not depend on it, are not.**
+
+⛔ **What each discharge licenses, and it is narrow.** D17 retires PR-CSI-002's Gate-0 VOID
+condition **for PR-CSI-002's arms only**; D22 discharges **one** VOID condition for **PR-CSI-005's
+pooled family only**. **Neither is a general licence to edit `score_behavior.py` mid-run**, and
+PR-CSI-003 carries the same condition verbatim over its own arms. ⚠ **D17 is determinism across two
+jobs on the SAME node; D22 is the stronger one — across two nodes and a +474/−7 diff.** They must
+not be quoted as if they were the same test.
+
+**NOT ESTABLISHED:** that the edits were inert on any path other than the one measured — each test
+covers one arm pair on one path; that any run directory can be audited for the code it ran — it
+cannot, and that is the standing defect, not a historical one; and D31's cosines, which need the run
+environment to check.
