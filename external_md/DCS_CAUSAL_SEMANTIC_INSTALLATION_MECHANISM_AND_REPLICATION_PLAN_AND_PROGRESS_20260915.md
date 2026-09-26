@@ -43323,3 +43323,52 @@ commits: 8  ->  score_behavior.py BLOBS: 2
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** commit, then run the PR-CSI-003-A read exactly as `runargs/dcs_csi_pr003a_read.txt` specifies — the recipe whose `<HALF4>/<HALF5>` placeholders were resolved to `932477,932478` at S-495, **before** any rank existed.
+
+---
+
+## S-501 / 🔴 THE PR-CSI-003-A READ: NECESSITY PASSES AT RANK 1 OF 25 — and p = 0.0400 is the smallest number this design can produce (2026-09-26)
+
+Run exactly as `runargs/dcs_csi_pr003a_read.txt` specifies, all three invocations **extracted verbatim from the recipe** rather than retyped, with the `<HALF4>/<HALF5>` placeholders resolved to `932477,932478` at **S-495, before any rank existed**. Note (k) honoured: all three `--out` paths were verified **absent** first.
+
+### ✅ PRIMARY — `shuf24`, the preregistered statistic (VOID 8: *"the primary is the shuffled-only rank"*)
+
+> **PRIMARY PASSES on split=train — the candidate's removal is strictly the LARGEST DROP in installation of 24 controls, i.e. the single most NEGATIVE value in the distribution (rank p=0.04 < 0.05)**
+
+**I re-derived it from `domain_means` rather than reading the verdict:**
+
+```
+  candidate KO_NEC_AXIS   recovery = -0.00870343
+  most negative controls: KO_NEC_SHUF3  -0.00489463
+                          KO_NEC_SHUF15 -0.00365881
+                          KO_NEC_SHUF2  -0.00313776
+  controls at least as NEGATIVE as the candidate: 0
+  RE-DERIVED RANK = 1 of 25      p = 0.040000      floor = 0.040000      p IS THE FLOOR: True
+```
+
+The candidate is **1.78× more negative** than the strongest of twenty-four shuffled controls. `VOID` is **empty**; `manipulation_check` and `instrument_capable` both **True**; `identity_check` is `SKIPPED BY DESIGN` with a stated reason, not absent. All **24** specificity contrasts are negative with CIs excluding zero (`PRIMARY_candidate_minus_comparator = −0.0088, ci95 [−0.01157, −0.00626], p 5e-06`).
+
+### ✅ Both other reads agree
+
+* **Secondary `pooled28`** (28 controls): `PRIMARY PASSES`, rank **1 of 29**, `VOID` empty. Re-derived: candidate −0.00847597, zero controls at least as negative, **p = 0.034483**. ✓
+* **Independent path** `dcs_csi_rederive_subspace.py`: `"rank": 1, "of": 25, "floor": 0.04, "candidate_sign_ok": true, "candidate_point": -0.0087, "verdict": "PASSES"`.
+
+### ⛔ THE TWO THINGS THAT MUST BE SAID IN THE SAME BREATH
+
+**1. `p = 0.0400` IS THE ATTAINABLE FLOOR — the smallest p this design can produce.** With 24 controls, `1/(24+1) = 0.0400`. Rank 1 *necessarily* yields exactly 0.0400; no data could have produced less. Quoting it as though a stronger result would have given a smaller number misrepresents the design. The amendment demanded this sentence in advance and S-079 is the precedent.
+
+**2. THE EVALUATION IS IN-SAMPLE.** `evaluation_is_in_sample: True`, `fit_split: train`, `scored_domains_also_in_fit: 67 of 67`. **The axis was fit on the same 67 domains it is scored on.** This is a TRAIN result about a direction chosen on TRAIN. It is not a held-out claim and must never be quoted as one.
+
+### 🔶 What the amendment bought, in its own terms
+
+Halves 2+3 capped the shuffled family at 16 → floor `1/17 = 0.0588`, **which is not < 0.05 and could never certify**. Taking it to 24 moves the floor to 0.0400. The amendment also priced the cost: P(rank 1) **0.6996 at K=8 → 0.5317 at K=24**, i.e. it paid ~0.17 of rank-1 probability for certifiability. **The candidate topped the larger family anyway** — and topping 24 is a stronger fact than topping 8, which is the whole point of having paid.
+
+### WHAT IS NOT ESTABLISHED
+
+- ⛔ **No held-out necessity result exists.** The sufficiency direction has TRAIN *and* VALIDATION; necessity has TRAIN only, in-sample. **The replication criterion in PR-CSI-001 — "the sign and rough magnitude reproduce on VALIDATION at the frozen layer, rank, site and positions" — is UNMET for necessity because the arms do not exist.**
+- ⛔ **`n_keys_common = 655`, not 670.** Eleven arms lost 1–2 rows to the degeneracy guard and the intersection absorbed it. The 655 keys are common to **all 31 arms**; the result is computed on them.
+- ⛔ **Rank 1 at p = the floor is not a small p.** It is the only p a rank-1 outcome can have here.
+- ⛔ **This says nothing about the codeword-level claim, about button, or about any cell/head family.**
+- ⛔ **I have not updated the draft or the claim table.** A PASS on a headline is exactly when the claim table's discipline matters most, and folding it in is a deliberate act for the next tick, not a flourish on this one.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** commit the three artefacts; then fold the result into the claim table and §A with both caveats attached to the number, not to a footnote.
