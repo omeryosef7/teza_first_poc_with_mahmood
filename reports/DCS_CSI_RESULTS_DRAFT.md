@@ -638,12 +638,19 @@ domains. It is seeded, so a re-run at the same `(domains, arms, B, seed)` reprod
 recomputed at a **different** draw count, or by an independent implementation with its own seed,
 moves in the **fifth decimal**. Two instances, both measured while checking this draft:
 
-* D12's held-out upper bound is `+0.00775` in the artefact and `+0.00774` on re-run at B = 20000.
+* 🔴 **WITHDRAWN S-455.** This section first cited D12's held-out upper bound as `+0.00775` in the
+  artefact against `+0.00774` on re-run. **It reproduces EXACTLY** — `[+0.00098, +0.00775]`, p and
+  verdict identical — when the analyser is re-run end to end rather than when `boot_paired_diff` is
+  called directly on the stored `domain_means`. The discrepancy was in the re-derivation path, not
+  in the bootstrap, and citing it here overstated the instability.
 * §A.4's paired difference has lower bound `+0.00064` at B = 20000 and at B = 400000, `+0.00065` at
-  B = 100000, against the claim table's independently computed `+0.000664`.
+  B = 100000, against the claim table's independently computed `+0.000664`. **This one stands** —
+  the artefact does not publish that contrast, so there is no pipeline value to defer to.
 
 ⛔ **A fifth-decimal disagreement between two CIs for the same quantity is therefore not evidence
-that either is wrong**, and no argument in this draft turns on one. Where a stored artefact value
+that either is wrong**, and no argument in this draft turns on one. ⚠ **But the first place to look
+is the re-derivation path, not the seed**: on the one case where a stored value existed to check
+against, the pipeline reproduced it exactly and the shortcut did not. Where a stored artefact value
 exists it is quoted; where none does — §A.4's paired contrast is not published by its artefact — the
 re-derived value is quoted and named as re-derived.
 
@@ -1009,6 +1016,38 @@ button L18 TRAIN   -0.00014  [-0.00111, +0.00081]  36 pos / 31 neg of 67  rank 3
      ⚠ BOTH TRAIN cells are IN-SAMPLE (evaluation_is_in_sample: true, 67 of 67 in fit)
 ```
 
+⛔ **ADDED S-455 — the two PRESPECIFIED statistics designed for exactly this comparison, which
+this section owed and did not carry.** PR-CSI-005's S2/S4 and PR-CSI-007's S1/S2 require the
+**family-size-free z** and the **exceedance rate with an exact Clopper–Pearson CI**, *"because this
+statistic does not improve with more controls, so it is the honest cross-family comparison"* — which
+is this section's entire subject. Re-derived:
+
+```
+                       rank        z          exceedance (R47-1)/46, Clopper-Pearson 95%
+basket L18 TRAIN        1 of 47   +2.56        0 / 46 = 0.000  [0.000, 0.077]
+button L18 TRAIN       36 of 47   -0.57       35 / 46 = 0.761  [0.612, 0.874]
+basket L18 VALIDATION   1 of 47   +5.14        0 / 46 = 0.000  [0.000, 0.077]
+button L18 VALIDATION   6 of 47   +1.40        5 / 46 = 0.109  [0.036, 0.236]
+```
+
+🔴 **These say more than the ranks do, in both directions.** On TRAIN the two exceedance intervals
+are **disjoint by a wide margin** — [0.000, 0.077] against [0.612, 0.874] — so the dissociation is
+an interval statement, not a comparison of two ordinals; and **button's TRAIN z is NEGATIVE**
+(−0.57), meaning its own axis recovers *below the mean of its own control family*, which "rank 36 of
+47" understates. ⚠ **But the held-out pair is closer than the ranks suggest**: button's validation z
+is **+1.40** with exceedance [0.036, 0.236], against basket's +5.14 and [0.000, 0.077] — the
+intervals still do not overlap, but button's held-out cell is **not** where its TRAIN cell is.
+
+⚠ **Three further prespecified secondaries, reported because the preregs require them and because
+two of them weaken the section.** Subfamily ranks (S3): button TRAIN **20 of 25** shuffled-only and
+**17 of 23** random-only; button VALIDATION **4 of 25** and **3 of 23**. Leave-one-domain-out on the
+rank (PR-007 S4): button validation's histogram is `{3:2, 4:1, 5:4, 6:12, 7:3, 8:1}` — **the best
+attainable rank under any single deletion is 3**, still short of the bar, so the DOES-NOT-PASS
+verdict is invariant to dropping any one domain. The analyser's per-control Holm test (S5):
+`all_controls_rejected` **False** in both button cells, **0 of 46** rejected. And S6, the primary
+comparator contrast `KO_AXIS − KO_ORTH`: TRAIN **+0.00079 [−0.00021, +0.00178] p = 0.130**,
+VALIDATION **+0.00151 [−0.00017, +0.00309] p = 0.088** — **both CIs include zero**.
+
 **This removes "unequal control families" as the explanation of the dissociation, and nothing
 else** — it cannot say *why* the codewords differ.
 
@@ -1050,6 +1089,61 @@ leave-one-domain-out on the rank:  VALIDATION holds rank 1 under 23 of 23 drops
 subfamilies, both splits: shuffled-only 1 of 25 (floor 0.0400)   random-only 1 of 23 (floor 0.0435)
 population: 642 keys / 67 TRAIN domains and 215 keys / 23 VALIDATION domains, 53 arms each
 ```
+
+⛔ **ADDED S-455 — PR-CSI-001's OWN secondary endpoints, which S-454's sweep missed.** PR-001
+declares three under `endpoints.secondary`: the **recovery fraction with a degeneracy guard**, the
+**realised intervention dose** (written delta norm, captured energy fraction, norm-match degeneracy
+count) and the **semantic option mass**. The recovery fraction and the captured fraction are above;
+the rest, re-derived:
+
+```
+                      written_norm mean   captured_frac   degenerate   recovery_frac
+basket TRAIN              0.058492           0.03237          0           0.0219  (status ok, 0 draws dropped)
+basket VALIDATION         0.058819           0.03195          0           0.0386  (status ok, 0 draws dropped)
+                      28 rescue positions per row in both splits
+```
+
+✅ **The degeneracy guard passes**: `degenerate_positions` is **0** in both splits, so no row is
+measuring rounding error, and the recovery fraction's own status is `ok` with **0 bootstrap draws
+dropped**. ⚠ **The TRAIN recovery fraction is 0.0219, not the 0.0386 quoted above** — that figure is
+VALIDATION's, and the two splits' denominators differ (`KO_FULL − KO` = +0.12041 TRAIN against
++0.10370 VALIDATION). TRAIN's candidate is **1.15 %** of `|KO − BASE|` and **2.19 %** of the whole
+state, both ~40 % smaller than the validation figures this section leads with.
+
+🔴 **The semantic option mass is the one that raises a question rather than answering one.** PR-001
+names it *"the readout validity gate, min 0.05"*. The gate is applied to **one reference arm**
+(`BASE` by default) and its surviving key set is then used for every arm — never per-arm, because
+option mass is an outcome and a per-arm filter would be post-treatment selection (review R2-B1).
+Measured on TRAIN: **`BASE` has 36.3 % of its 670 scored rows below 0.05** (243 rows, median
+**0.0902**, minimum `0.000001`), while the rescued arms sit higher — `KO` and `KO_AXIS` both **18.1 %**
+below, median **0.191**. ⚠ **It is `BASE`'s distribution that gates**, and it is the worst of the
+three. The analyser's own comment on those rows is that *"the model's actual prediction is some
+third word entirely"*. ⚠ **Every number in the record was computed at `option_mass_floor = 0.0`** —
+the analyser's help calls that *"the frozen protocol, which gates option mass POOLED"*, with 0.05
+available as a **declared sensitivity** — and **that sensitivity had never been run**: all 27
+subspace and swap artefacts record floor 0.0 and no `_om` artefact exists.
+
+🔴 **ADDED S-455 — IT HAS NOW BEEN RUN, ON BOTH SPLITS, AND THE VERDICT IS INVARIANT.** The frozen
+read was re-executed at floor 0.0 as a control and at the prereg's 0.05, through the analyser end to
+end:
+
+```
+                 keys   candidate - KO                       p        rank        verdict
+TRAIN  floor 0.00  642   +0.00264  [+0.00068, +0.00471]   0.0107   1 of 47    PASSES
+TRAIN  floor 0.05  412   +0.00365  [+0.00080, +0.00686]   0.0164   1 of 47    PASSES
+VALID  floor 0.00  215   +0.00401  [+0.00098, +0.00775]   0.0182   1 of 47    PASSES
+VALID  floor 0.05  135   +0.00538  [+0.00197, +0.00923]   0.0069   1 of 47    PASSES
+```
+
+✅ **Both floor-0.0 controls reproduce the published artefacts exactly** — point, CI, p, key count
+and verdict — so the comparison is against a validated harness and not against a re-implementation.
+✅ **Dropping the invalid-readout rows costs 36 % of the keys on TRAIN (642 → 412) and 37 % on
+VALIDATION (215 → 135), and the candidate GROWS on both splits** (+38 % and +34 %), with all three
+gates still true and the rank unchanged at 1 of 47. ⛔ **The sensitivity does not threaten the
+result; it strengthens the point estimate and widens the interval.** ⚠ **This was not the only
+possible outcome, which is why it was worth running** — a third of the evidence is discarded and the
+verdict does not move. ⛔ **NOT established: that the same holds for any other family.** This was run
+for D12's two cells only; the swap cells and the button family were not re-run at 0.05.
 
 ⛔ **ADDED S-454 — two more PRESPECIFIED secondaries this section owed and did not carry.**
 PR-CSI-005's S2 and S4 (restated as PR-CSI-007's S1 and S2) require the **family-size-free z** and

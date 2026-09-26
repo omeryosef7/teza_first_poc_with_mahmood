@@ -40154,3 +40154,122 @@ grep, not a gate. Writing that gate is a bigger job than this tick and it is not
 that were not covered). Then S-453's three unfixed omissions — native ranks beside the swap in three
 of four cells, direction B's verdict hinging on the contested AM-48 rule, §A.3's TRAIN denominators.
 **The rung-1 question (S-453) is still with the user and still unanswered. Push credential-blocked.**
+
+---
+
+## S-455 — my own sweep had a type filter that hid the most important prereg; the sensitivity it hid has now been run, and the verdict is invariant (2026-09-26)
+
+**Start: S-454's named next action** — check §A.1 and §A.2 against PR-CSI-005's and PR-CSI-007's
+secondary lists, the two sections the sweep had not covered.
+
+### §A.2 owed six prespecified secondaries and carried none
+
+Re-derived and added. Two of them say more than the ranks:
+
+```
+                       rank        z          exceedance (R47-1)/46, Clopper-Pearson 95%
+basket L18 TRAIN        1 of 47   +2.56        0 / 46 = 0.000  [0.000, 0.077]
+button L18 TRAIN       36 of 47   -0.57       35 / 46 = 0.761  [0.612, 0.874]
+basket L18 VALIDATION   1 of 47   +5.14        0 / 46 = 0.000  [0.000, 0.077]
+button L18 VALIDATION   6 of 47   +1.40        5 / 46 = 0.109  [0.036, 0.236]
+```
+
+On TRAIN the two exceedance intervals are **disjoint**, so the dissociation is an interval statement
+rather than a comparison of ordinals; and **button's TRAIN z is NEGATIVE** — its own axis recovers
+*below the mean of its own control family*, which "rank 36 of 47" understates. Also added: the
+subfamily ranks, PR-007's S4 LOO (button validation's best attainable rank under any single deletion
+is **3**, so DOES-NOT-PASS is deletion-invariant), S5 (Holm: 0 of 46 rejected in both button cells)
+and S6 (`KO_AXIS − KO_ORTH` +0.00079 p 0.130 TRAIN, +0.00151 p 0.088 VALIDATION, **both CIs include
+zero**).
+
+### ⚠ DETECTOR FAILURE #15, AND IT IS IN MY OWN SWEEP FROM LAST TICK
+
+S-454's walker collected a block only when `isinstance(v, dict)`. **`PR-CSI-001 /endpoints/secondary`
+is a LIST**, so it was skipped in silence — and PR-001 governs **D12**, the most-cited family in §A.
+`PR-CSI-003a /secondary_endpoints` was skipped the same way. I reported that sweep as *"bounded and
+complete over what exists"*. It was neither. **The filter was mine, the pattern matched, and the type
+check threw the match away** — the same shape as the previous fourteen.
+
+PR-001 declares three: the recovery fraction with a degeneracy guard, the realised intervention dose,
+and the semantic option mass. The first two are now in §A.3 and both **pass**: `degenerate_positions`
+= 0 on both splits, recovery-fraction status `ok`, 0 bootstrap draws dropped, written-norm mean
+0.0585 / 0.0588, 28 rescue positions per row.
+
+### The third one was a live question, and it is now answered
+
+PR-001 names *"semantic option mass (the readout validity gate, min 0.05)"*. The gate applies to one
+**reference arm** (`BASE`) whose surviving key set is reused for every arm — never per-arm, because
+option mass is an outcome and a per-arm filter is post-treatment selection (R2-B1). Measured:
+**`BASE` carries 36.3 % of its 670 TRAIN rows below 0.05** (median 0.0902), while `KO` and `KO_AXIS`
+carry **18.1 %** (median 0.191). ⚠ **It is the CLEAN arm whose readout is worst**, which is the
+opposite of the obvious guess, and nothing here explains it. *(My first measurement of this was
+18.1 %, taken on `KO_AXIS`; the arm that gates is `BASE`, and the draft was corrected before it
+shipped.)*
+
+**Every number in the record ran at floor 0.0** — the analyser's help calls that *"the frozen
+protocol"*, with 0.05 as a declared sensitivity — and that sensitivity had **never been run**: 27
+artefacts, all at 0.0, no `_om` file. So I ran it, end to end through the analyser, on both splits:
+
+```
+                 keys   candidate - KO                       p        rank        verdict
+TRAIN  floor 0.00  642   +0.00264  [+0.00068, +0.00471]   0.0107   1 of 47    PASSES
+TRAIN  floor 0.05  412   +0.00365  [+0.00080, +0.00686]   0.0164   1 of 47    PASSES
+VALID  floor 0.00  215   +0.00401  [+0.00098, +0.00775]   0.0182   1 of 47    PASSES
+VALID  floor 0.05  135   +0.00538  [+0.00197, +0.00923]   0.0069   1 of 47    PASSES
+```
+
+✅ **Both floor-0.0 controls reproduce the published artefacts exactly** — point, ci95, p, key count
+and verdict — so this is a validated harness. ✅ **A third of the evidence is discarded and the
+candidate GROWS on both splits** (+38 %, +34 %), gates all true, rank unchanged. **The declared
+sensitivity does not threaten D12; it strengthens it.** ⚠ It was worth running precisely because it
+could have gone the other way.
+
+### And running it surfaced a reproducibility defect
+
+The first attempt **refused**: *"REFUSING for tag 'csi1_basket_train_BASE': 2 complete run dirs
+(need exactly 1)"*. `DCS_CSI_SUBSPACE_basket_train_n46.json` — **D12's TRAIN half, a published
+PASS** — pinned neither `--require-slurm-job` nor `--require-rescue-layer`, and the L20 arms later
+reused the prefix `csi1_basket_train`. A scan of all **379** `csi1_*` run dirs finds **57 ambiguous
+`<prefix>_<ARM>` combinations across three families** (`csi1_basket_train` 18, `csi1_button_train`
+18, `csi1_button_validation` 21). `BASE` records no rescue layer, so the S-104 layer pin **cannot**
+separate them — only the job pin can.
+
+✅ **Nothing is wrong with the number**: reconstructing the pin from the job ids in the artefact's own
+run dirs, the read reproduces exactly. ✅ **Scoped**: 8 of 23 artefacts are unpinned-and-ambiguous,
+but seven are superseded or early reads; **of the currently-governing artefacts only this one is
+affected**, and D23, D29 and all four swap cells pin both job and layer.
+⚠ **AM-45 proved both published PASSes replay — its scope was D39 and D40, the CELL-CENSUS families.
+The AXIS families were never tested, and the first one checked does not replay as written.**
+
+### What was corrected
+
+* **§M.11's first instance is WITHDRAWN.** It cited D12's held-out upper bound as `+0.00775` in the
+  artefact against `+0.00774` on re-run. Through the analyser end to end it reproduces **exactly**.
+  The discrepancy was in my re-derivation path — calling `boot_paired_diff` directly on stored
+  `domain_means` — not in the bootstrap. §A.4's instance stands, because no stored value exists
+  there to defer to. ⚠ **I wrote that overstatement two entries ago and it took running the pipeline
+  to catch it: the first place to look is the path, not the seed.**
+* §A.3's option-mass figures moved from `KO_AXIS`'s 18.1 % to `BASE`'s 36.3 %, the arm that gates.
+
+### What is NOT established
+
+* ⛔ **That the sensitivity holds anywhere else.** D12's two cells only. The four swap cells and the
+  button L18 family were **not** re-run at 0.05, and the swap family's own prereg does not declare
+  this endpoint.
+* ⛔ **That the other seven at-risk artefacts reproduce.** None was re-run.
+* ✅ **The corrected sweep WAS re-run this tick, without the type filter: 63 entries in 24 blocks
+  across 7 preregs**, against S-454's 41 in 8. The new hits are PR-001's list, PR-003a's list (that
+  family is not launched, so not owed) and scalar strings — prose notes, cost arithmetic, and
+  `outputs/*_secondary` **filenames**, which are checkable: **5 of the 6 declared secondary output
+  files exist**, and the one missing belongs to **PR-CSI-004, which AM-46 established was never
+  run**. ⇒ **No unreported secondary remains beyond PR-001's, which this entry handles.**
+* ⛔ **That the sweep would catch a third shape.** It still matches two key patterns on key NAMES.
+  An obligation phrased inside a decision rule or buried in prose is invisible to it, and **AM-51
+  was found by reading a prereg, not by this grep.**
+* ⛔ **Why `BASE` has the worst readout validity of the three arms.** Measured, unexplained.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** S-453's three unfixed omissions — native ranks beside the swap in three of four cells,
+direction B's verdict hinging on the contested AM-48 rule, §A.3's TRAIN denominators. Then the
+option-mass sensitivity on the four swap cells and the button family, which this tick did not run. **The rung-1 framing question
+from S-453 is still with the user. Push credential-blocked.**
