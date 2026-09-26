@@ -216,6 +216,63 @@ KNOWN_SHORT = {
         "honest (status=INCOMPLETE, n_rows_failed=2, rows_written=668). MEASURED "
         "dropped prompt_id 0fa7ee4819c655dc (domain lorry_park), 9a0236e9d1352291 (domain plumbing_depot), differenced against the full 670-row csi1_basket_train_KO_NEC_SHUF4_20260926_134421_1005926. "
         "Inside --allow-short 4.",
+    # ---- PR-CSI-022 held-out necessity on VALIDATION (jobs 933344/933345/933346/933347). S-513. ---
+    # TEN arms, each losing exactly ONE of 230 rows to the norm-match degeneracy guard -- the same
+    # deterministic (control basis, row) mechanism as S-152/S-154/S-159 and PR-CSI-003-A. Every
+    # dropped prompt_id below was MEASURED by differencing against the full 230-row
+    # csi1_basket_validation_KO_NEC_AXIS_20260926_195336_2615744, by
+    # scripts/gates/dcs_csi_known_short_entries.py and NOT by hand. All inside the preregistered
+    # --allow-short 4 (PR-CSI-022 .population.allow_short, frozen BEFORE these arms ran).
+    "csi1_basket_validation_KO_NEC_RAND0_20260926_200237_2618375":
+        "S-513: PR-CSI-022 held-out necessity, jobs 933344/933345/933346/933347. 1 row(s) of 230 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
+        "dropped prompt_id d3c6ae2a82912f1a (domain parks_yard), differenced against the full 230-row csi1_basket_validation_KO_NEC_AXIS_20260926_195336_2615744. "
+        "Inside --allow-short 4.",
+    "csi1_basket_validation_KO_NEC_RAND3_20260926_201557_2621259":
+        "S-513: PR-CSI-022 held-out necessity, jobs 933344/933345/933346/933347. 1 row(s) of 230 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
+        "dropped prompt_id 07bf48be72615a81 (domain airport_apron), differenced against the full 230-row csi1_basket_validation_KO_NEC_AXIS_20260926_195336_2615744. "
+        "Inside --allow-short 4.",
+    "csi1_basket_validation_KO_NEC_SHUF0_20260926_194437_2613323":
+        "S-513: PR-CSI-022 held-out necessity, jobs 933344/933345/933346/933347. 1 row(s) of 230 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
+        "dropped prompt_id 856e2acbe63222b3 (domain catering_unit), differenced against the full 230-row csi1_basket_validation_KO_NEC_AXIS_20260926_195336_2615744. "
+        "Inside --allow-short 4.",
+    "csi1_basket_validation_KO_NEC_SHUF14_20260926_193632_1926592":
+        "S-513: PR-CSI-022 held-out necessity, jobs 933344/933345/933346/933347. 1 row(s) of 230 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
+        "dropped prompt_id c0d39a2b757a3c9a (domain university_lab), differenced against the full 230-row csi1_basket_validation_KO_NEC_AXIS_20260926_195336_2615744. "
+        "Inside --allow-short 4.",
+    "csi1_basket_validation_KO_NEC_SHUF17_20260926_194840_1929497":
+        "S-513: PR-CSI-022 held-out necessity, jobs 933344/933345/933346/933347. 1 row(s) of 230 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
+        "dropped prompt_id 9941edd3c9e6ce8e (domain concert_hall), differenced against the full 230-row csi1_basket_validation_KO_NEC_AXIS_20260926_195336_2615744. "
+        "Inside --allow-short 4.",
+    "csi1_basket_validation_KO_NEC_SHUF18_20260926_195204_1930271":
+        "S-513: PR-CSI-022 held-out necessity, jobs 933344/933345/933346/933347. 1 row(s) of 230 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
+        "dropped prompt_id c11203c1e94192a0 (domain mountain_refuge), differenced against the full 230-row csi1_basket_validation_KO_NEC_AXIS_20260926_195336_2615744. "
+        "Inside --allow-short 4.",
+    "csi1_basket_validation_KO_NEC_SHUF2_20260926_195336_2615746":
+        "S-513: PR-CSI-022 held-out necessity, jobs 933344/933345/933346/933347. 1 row(s) of 230 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
+        "dropped prompt_id 618e09d0a9c1eb68 (domain canal_lock), differenced against the full 230-row csi1_basket_validation_KO_NEC_AXIS_20260926_195336_2615744. "
+        "Inside --allow-short 4.",
+    "csi1_basket_validation_KO_NEC_SHUF3_20260926_195806_2617037":
+        "S-513: PR-CSI-022 held-out necessity, jobs 933344/933345/933346/933347. 1 row(s) of 230 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
+        "dropped prompt_id 8ba7821a6a1ad243 (domain airport_ground), differenced against the full 230-row csi1_basket_validation_KO_NEC_AXIS_20260926_195336_2615744. "
+        "Inside --allow-short 4.",
+    "csi1_basket_validation_KO_NEC_SHUF5_20260926_194437_2613389":
+        "S-513: PR-CSI-022 held-out necessity, jobs 933344/933345/933346/933347. 1 row(s) of 230 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
+        "dropped prompt_id 6d38e2d677d6e08c (domain airport_apron), differenced against the full 230-row csi1_basket_validation_KO_NEC_AXIS_20260926_195336_2615744. "
+        "Inside --allow-short 4.",
+    "csi1_basket_validation_KO_NEC_SHUF7_20260926_195336_2615741":
+        "S-513: PR-CSI-022 held-out necessity, jobs 933344/933345/933346/933347. 1 row(s) of 230 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
+        "dropped prompt_id 9a5fb5e9ebc2699c (domain hospital_supply), differenced against the full 230-row csi1_basket_validation_KO_NEC_AXIS_20260926_195336_2615744. "
+        "Inside --allow-short 4.",
     "csi1_button_validation_KO_SHUF14_20260921_040940_877308":
         "DCS-CSI-159: PR-CSI-007 family, job 914479 (group K), rescue_layer 18. SIXTH in-family "
         "instance. 2 rows of 230 REFUSED by the norm-match degeneracy guard ('1 of 28 positions are "

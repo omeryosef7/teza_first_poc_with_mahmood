@@ -43777,3 +43777,192 @@ D42 carries two caveats that no amount of running can change or remove respectiv
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** commit, then submit halves 1, 2, 4 and 5 on validation — 29 arms plus the harmless extras — using the direct-`sbatch` route with the helper's protections replicated.
+
+---
+
+## S-510 / 🚀 PR-CSI-022 LAUNCHED — the held-out necessity family, 34 arms on VALIDATION (2026-09-26)
+
+```
+provenance: BLOB 48e665fc  PORCELAIN clean   (PR-CSI-022)
+  CSI_NEC_HALF=1  ->  job 933344    NEC_BASE, NEC_KO, KO_NEC_FULL, KO_NEC_AXIS, KO_NEC_ORTH
+  CSI_NEC_HALF=2  ->  job 933345    KO_NEC_AXIS_ANCHOR + KO_NEC_SHUF0-3 + KO_NEC_RAND0-3
+  CSI_NEC_HALF=4  ->  job 933346    KO_NEC_SHUF4-13
+  CSI_NEC_HALF=5  ->  job 933347    KO_NEC_SHUF14-23
+```
+
+Submitted as `basket configs/dcs_csi_axis_basket_behavioral_shuf24.pt validation L`, `--gpus=geforce_rtx_3090:1 --time=08:00:00`, `CSI_STAGE=1`, launcher **unmodified**. The 29 arms the primary needs, plus the anchor and `KO_NEC_RAND0-3`, which are harmless and enable the pooled secondary.
+
+### Checks done before submitting, none reused
+
+```
+  commit 48e665fc landed, 516 passed / 1 skipped, tracked dirty 0
+  queue EMPTY
+  csi1_basket_validation_*NEC* run dirs already on disk:  0   <- no twin hazard, tags unambiguous
+  before-GPU adversarial review: R40, opened S-506 this session
+  PR-CSI-022 frozen at S-509, BEFORE any validation necessity arm existed
+```
+
+⚠ The **zero existing run dirs** check matters specifically here: S-487 measured a tag that became ambiguous *after the fact* when a second run reused it, and S-494's whole quarantine design existed to avoid creating one. Starting from zero means every `csi1_basket_validation_KO_NEC_*` tag resolves uniquely by construction.
+
+### ⛔ The operational constraint is back, and it binds again
+
+**No commit may touch `src/boombness/score_behavior.py` until all four jobs finish.** VOID 6 of PR-CSI-022 is blob-constancy *within* this family; a third blob mid-family would be a new, undemonstrated change and the S-494 discharge does not transfer to it. The commit scripts already assert this.
+
+🔶 **And I am deliberately not attempting a commit while the arms land.** S-497 and S-498 each lost a commit to the exemption treadmill: validation controls will very likely hit the same norm-match degeneracy guard, each short arm breaks `test_the_real_corpus_passes_with_its_documented_exemption`, and the 8-minute hook cannot outrun arms landing every few minutes. **The record work I do during this run will be committed once, after the family completes** — that is S-498's lesson applied in advance rather than after two failures.
+
+### WHAT IS NOT ESTABLISHED
+
+- ⛔ **No arm has landed and there is no number.** Not a rank, not a sign, not a magnitude.
+- ⛔ **The outcome is open and I am not predicting it.** TRAIN's rank 1 was **in-sample**; 23 held-out domains against 67 in-sample ones is a genuinely different and noisier test, which is the entire reason for running it. **A failure would be informative, not a disappointment** — PR-CSI-022 states in advance what it would mean.
+- ⛔ **Nothing about D42 changes either way today.** A held-out PASS would remove one of its two caveats and leave the floor caveat untouched; a failure would recast it as a statement about the fit.
+- ⛔ **Prohibition 26, prohibition 28, A30's missing row and ~12 audit items remain outstanding**, now for the third entry running. They are next while the GPU works.
+- ⛔ **TEST untouched** — validation is not test, and PR-CSI-022's VOID 4 forbids any TRAIN or TEST domain in this read.
+- ⛔ Push credential-blocked.
+
+**NEXT:** prohibition 26 and A30's supersession row while the family runs; then the read, gated on all four jobs completing.
+
+---
+
+## S-511 / prohibition 26 and A30's missing rows — the two items I had deferred three entries running (2026-09-26)
+
+Done while PR-CSI-022's four jobs run. **Uncommitted on purpose** (S-510): validation controls will likely hit the degeneracy guard, and a commit racing the arms is how S-497 and S-498 were lost.
+
+### ✅ Prohibition 26 — bans kept verbatim, premises replaced
+
+It **mandated** a sentence the new result contradicts: *"rank 1 of 9, on 55 of 67 domains — and the comparison is floor-limited to INCONCLUSIVE at an attainable floor of 0.1111."* Now:
+
+> *"…**rank 1 of 25 shuffled controls, on 56 of 67 domains, p = 0.0400** — where **0.0400 IS that design's attainable floor**, so rank 1 could not have produced a smaller p."*
+
+and its **three** clauses became **four**, matching §A.1: p-is-the-floor, TRAIN-only, in-sample, and **no held-out arm (PR-CSI-001's replication criterion UNMET)**. ⚠ Clause (4) is marked **live** — PR-CSI-022 is running it right now, and the clause says so, to be re-read rather than assumed when the arms land.
+
+🔶 **The collision the audit found, resolved rather than ignored.** Prohibition 26 bans the strings *"Necessity is established"* and *"removal along the axis is certified"*, while D42 is headed **"NECESSITY CERTIFIES"**. Both stay, because they are about different objects:
+
+> **What certifies is the rank test** — a specific comparison against 24 shuffled controls at its attainable floor on TRAIN. **What remains forbidden is any claim that necessity, or the axis, is thereby established as a property of the model: the test certifies, the axis does not.**
+
+That distinction is the whole content of prohibition 24, and a PASS is exactly when it would have been easiest to let the headline quietly swallow it.
+
+### ✅ A30 — four rows added, one of them recording a failure
+
+A30's own rule is *"A correction is not complete until the corrected row says so where it stands. A later row that holds the right number is necessary and is not sufficient, because nothing makes a reader go there."* It had **no row for the necessity floor lift at all**. Now rows 25–28:
+
+* **25** — D18's *"FLOOR-LIMITED BY DESIGN"* caveat, with the scope made explicit: **only the floor limitation lifts**; TRAIN-only, in-sample and the sampler-floor caveat all still stand.
+* **26** — prohibition 26's mandated sentence and clause list.
+* **27** — D19's three cells, noting that **the conclusion survived and only its premise died**.
+* **28** — ⛔ **prohibition 28's mandated fraction, recorded as OPEN, not fixed.** It still mandates `0.0778 [0.0560, 0.1009]` while the governing read gives `0.0803 [0.0584, 0.1041]`. D19 carries both with the mismatch named. **Amending a prohibition's mandated figure is preregisterable, not an edit**, so A30 now carries an unrepaired entry — which is what A30 is for.
+
+All four verified at **5 columns** against A30's 5-column header, counting **unescaped** pipes (S-508's lesson).
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No figure computed this tick.** Every number is S-501's or S-508's, already re-derived.
+- ⛔ **Prohibition 28 is NOT repaired**, only recorded as open in the index that exists to track exactly that.
+- ⛔ **The audit's remaining ~12 items are still untouched** (AM-13, AM-47, AM-47-a, AM-52, three audit rows, §M.9, four §L.3/§A.7 sites). Three entries running; I keep naming them rather than letting the count quietly shrink.
+- ⛔ **D40-b and the five candidate rows are still unresolved** — they need a real markdown parser or a hand check, and I did neither.
+- ⛔ **Nothing is committed.** Deliberate, per S-510.
+- ⛔ **No PR-CSI-022 arm has landed; there is no held-out number.** **TEST untouched.** Push credential-blocked.
+
+**NEXT:** watch the four jobs; VOID 1 on the read's own run_dirs when they land (they are on **n-304**, not the n-307 the TRAIN family used, so this must be measured); then one commit.
+
+---
+
+## S-512 / PR-CSI-022 at 25 of ~34 arms — VOID 1, 2 and 6 measured on the arms' own run dirs, all passing (2026-09-26)
+
+Job **933344 (half 1) has completed**; 933345/6/7 still running. Measured, not assumed:
+
+```
+PR-CSI-022 arms with RUNMETA so far: 25
+  GPUs : {'NVIDIA GeForce RTX 3090': 25}      VOID 1: PASS so far
+  nodes: {'n-304': 17, 'n-350': 8}            VOID 2: PASS -- both nodes, one GPU model
+  jobs : {933344: 5, 933345: 6, 933346: 6, 933347: 8}
+  commits = 1  ->  score_behavior.py blobs = 1   ['9562bdf90b86']
+                                              VOID 6: PASS so far
+```
+
+⚠ **This check exists in PR-CSI-022 because I got it wrong at S-507.** VOID 1 there says the 3090 check must be measured *"on the read's OWN run_dirs, never on a glob pattern"*, and here it genuinely mattered: this family is split across **two nodes**, unlike the TRAIN family which sat entirely on n-307. Inheriting "it's a 3090 because I pinned one at submit" would have been an assumption; 25 RUNMETA files are a measurement.
+
+🔶 **And VOID 6 is cleaner than the TRAIN family's was.** One commit, one blob — no mid-family drift at all, because nothing has been committed since `48e665fc` (S-510's constraint, held deliberately). The blob is **`9562bdf9`**, the same one PR-CSI-003-A's twenty new TRAIN arms ran, so the eventual TRAIN-vs-VALIDATION comparison does not add a *new* blob difference on top of the one S-494 already discharged.
+
+### The family so far
+
+```
+  full 230 (14) : NEC_BASE, NEC_KO, KO_NEC_FULL, KO_NEC_AXIS, KO_NEC_ORTH, KO_NEC_AXIS_ANCHOR,
+                  SHUF1, SHUF4, SHUF6, SHUF8, SHUF15, SHUF16, SHUF19, SHUF20
+  229 rows,1 lost (8): SHUF0, SHUF2, SHUF3, SHUF5, SHUF7, SHUF14, SHUF17, SHUF18
+  in flight      : SHUF9, SHUF21, RAND0     (plus SHUF10-13, SHUF22-23, RAND1-3 to come)
+```
+
+**All five primary arms landed FULL at 230** — `NEC_BASE`, `NEC_KO`, `KO_NEC_FULL`, `KO_NEC_AXIS`, `KO_NEC_ORTH`. Every shortfall so far is **one row**, the same norm-match degeneracy mechanism, well inside the preregistered `--allow-short 4`.
+
+### WHAT IS NOT ESTABLISHED
+
+- ⛔ **I have not looked at any endpoint, contrast, rank or sign.** The read is not run and will not be until all four jobs finish. **Checking hardware and blob provenance is not peeking at a result**, and I have deliberately not evaluated the positive control early either, though PR-CSI-022 makes it a gate and it would have been defensible — there is no reason to when the family completes shortly.
+- ⛔ **"PASS so far" is not PASS.** Nine or so arms have not landed and any of them could be on a different GPU; VOID 1 must be re-measured on the completed family, over the read's own `run_dirs`.
+- ⛔ **Nothing is committed**, per S-510 — S-511's prohibition-26 and A30 work is on disk and uncommitted, and the exemptions for the eight short arms are not written yet.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** all four jobs finish → re-measure VOID 1/2/6 on the completed family → generate the exemptions with one instrument → **one** commit → then the read.
+
+---
+
+## S-513 / 🔴 PR-CSI-022 READ: NECESSITY REPLICATES ON HELD-OUT DATA — rank 1 of 25 on 23 domains the axis has never seen (2026-09-26)
+
+All four jobs `COMPLETED 0:0` (28–51 min). 34 arms, all 29 primary-family arms present. The read was run from `runargs/dcs_csi_pr022_read.txt`, **written before the read ran** so no rank existed when its flags were chosen, and both `--out` paths were verified absent first.
+
+### ✅ Every pre-read VOID condition, measured on the arms' OWN files
+
+```
+  VOID 1  34/34 arms on NVIDIA GeForce RTX 3090                       PASS
+  VOID 2  n-304 x24 + n-350 x10, one GPU model                        PASS
+  VOID 4  23/23 domains in the validation split, NO TRAIN/TEST leak   PASS
+  VOID 6  1 commit -> 1 score_behavior.py blob (9562bdf9)             PASS
+  VOID 9  every arm n_rows_attempted = 230 (--expect-n, not --limit)  PASS
+```
+
+### ✅ The result, re-derived by me from `domain_means` rather than read off the verdict
+
+```
+  candidate KO_NEC_AXIS            = -0.01283435
+  most negative controls: SHUF3    = -0.00476739     <- candidate is 2.69x more negative
+                          SHUF15   = -0.00415957
+                          SHUF2    = -0.00372957
+  controls at least as NEGATIVE as the candidate: 0 of 24
+  RE-DERIVED RANK = 1 of 25    p = 0.040000    floor = 0.040000
+```
+
+`VOID` **empty**; `manipulation_check` and `instrument_capable` both **True**; positive control `KO_NEC_FULL − NEC_BASE` = **−0.112 [−0.13914, −0.08519]** — a capable instrument. `candidate_minus_base` = **−0.01283 [−0.01941, −0.00685]**, **19 negative / 4 positive of 23 domains**. Independent path `rederive_subspace`: **rank 1 of 25, floor 0.04, `candidate_sign_ok` true, `PASSES`**.
+
+### 🔶 THE CRUX — this one is genuinely held out
+
+```
+  fit_split                    train
+  n_fit_domains                67
+  scored_domains_also_in_fit   0
+  evaluation_is_in_sample      False
+```
+
+**Zero overlap.** The axis was fit on 67 TRAIN domains and scored on 23 VALIDATION domains it has never seen, with the basis file unchanged — PR-CSI-022 forbade refitting and nothing was refit.
+
+### ✅ PR-CSI-022's SUCCESS criterion, frozen at S-509, evaluated now
+
+```
+  negative?                                     True
+  rank 1 of 25?                                 True  (re-derived)
+  |point| in the frozen band [0.0029, 0.0261]?  True  (|0.01283|)
+  => SUCCESS                                    MET
+```
+
+**The band was fixed numerically before any validation arm existed**, precisely so *"rough magnitude"* could not be argued after the fact. It was not argued; it was checked.
+
+⇒ **PR-CSI-001's replication criterion — *"the sign and rough magnitude reproduce on VALIDATION at the frozen layer, rank, site and positions, without retuning"* — is now MET for the necessity direction.** It has been UNMET in every entry from S-501 to S-512.
+
+### ⛔ WHAT THIS DOES NOT LICENSE — and one number I am explicitly refusing to make a story of
+
+- ⛔ **`p = 0.0400` IS STILL THE ATTAINABLE FLOOR.** Same design, 24 controls, `1/25`. Rank 1 necessarily yields exactly it. **This caveat is permanent and no experiment removes it.** What the held-out read removes is the *in-sample* caveat, which was one of two.
+- 🔴 **VALIDATION's effect is 1.47× TRAIN's (−0.01283 vs −0.00870). I am NOT reporting that as a finding.** It is one estimate on **23** domains against one on 67; the frozen band is [0.0029, 0.0261] *because* 23 domains is noisy, and a ratio inside a band set for noise is not evidence that the effect is larger out of sample. **Quoting "the effect is stronger on held-out data" would be exactly the kind of post-hoc story PR-CSI-022's band exists to prevent.**
+- ⛔ **`n_keys_common` is 222, not 230** — ten control arms lost one row each to the norm-match degeneracy guard, all inside the preregistered `--allow-short 4`, all documented in `KNOWN_SHORT` with **measured** dropped `prompt_id`s by one instrument.
+- ⛔ **Prohibition 24 stands.** This licenses neither *"the axis is necessary"* nor any necessity percentage. Prohibition 26's S-511 resolution applies verbatim: **the rank test certifies; the axis does not.**
+- ⛔ **Basket only, L18 only.** Nothing here touches button, any head or cell family, or the codeword-level claim.
+- ⛔ **The claim table and draft are NOT updated** — D42 and §A.1 still say no held-out arm exists. That is the next tick's work and it is a real inconsistency until done.
+- ⛔ **TEST untouched** — VOID 4 verified 23/23 validation domains and zero TRAIN or TEST.
+
+**NEXT:** one commit (exemptions + prohibition 26 + A30 rows + this read); then D42, §A.1 and prohibition 26's clause (4), which is now answered rather than live.

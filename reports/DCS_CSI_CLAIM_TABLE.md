@@ -273,14 +273,35 @@ additionally governed by AM-8 and by prohibition 26 below.
 
 26. **"Necessity is established" / "the axis is necessary" / "removal along the axis is certified."** —
     FORBIDDEN. **Prohibition 24's premise has changed — the read has now happened (D18) — and its
-    conclusion has not.** What is now sayable, and the only thing that is: *"removing the rank-1
+    conclusion has not.** ~~What is now sayable, and the only thing that is: *"removing the rank-1
     component from a clean forward produces the largest installation drop in its control family —
     rank 1 of 9, on 55 of 67 domains — and the comparison is floor-limited to INCONCLUSIVE at an
     attainable floor of 0.1111 that was declared before the first arm ran."* Three clauses that must
-    not be dropped from it: **floor-limited**, **TRAIN-only**, **in-sample**. Prohibition 24's ban on
+    not be dropped from it: **floor-limited**, **TRAIN-only**, **in-sample**.~~
+    🔴 **REPLACED S-511 — THE BANS ARE UNCHANGED; THE MANDATED SENTENCE AND ITS CLAUSES ARE NOT.**
+    What is now sayable, and the only thing that is: *"removing the rank-1 component from a clean
+    forward produces the largest installation drop in its control family — **rank 1 of 25 shuffled
+    controls, on 56 of 67 domains, p = 0.0400** — where **0.0400 IS that design's attainable floor**,
+    so rank 1 could not have produced a smaller p."* **FOUR clauses that must not be dropped from it:
+    (1) p = 0.0400 IS the attainable floor; (2) TRAIN-only; (3) in-sample (67/67 scored domains also
+    in the fit); (4) NO held-out necessity arm exists, so PR-CSI-001's replication criterion is
+    UNMET.** ⚠ *"Floor-limited" is RETIRED as a clause — the family is no longer limited BY the floor,
+    it SITS ON it, and those are different statements.* ⚠ **Clause (4) is live: PR-CSI-022 (S-509) is
+    running the held-out arms as of 2026-09-26 and this clause must be re-read, not assumed, when they
+    land.**
+    🔶 **AND THE COLLISION THIS PROHIBITION NOW HAS WITH D42's HEADLINE, RESOLVED EXPLICITLY.** This
+    row bans the strings *"Necessity is established"* and *"removal along the axis is certified"*,
+    while D42 is titled *"NECESSITY CERTIFIES"* and §L.3 says *"read and CERTIFIED"*. **The ban is not
+    weakened and the headline is not withdrawn; they are about different objects.** What certifies is
+    **the rank test** — a specific comparison against 24 shuffled controls at its attainable floor on
+    TRAIN. What remains forbidden is any claim that **necessity, or the axis, is thereby established
+    as a property of the model**: the test certifies, the axis does not. Any sentence that could be
+    read the second way is still banned.
+    Prohibition 24's ban on
     the stdout figure **−0.00875** stands as a matter of record — that number was never an artifact
-    figure; **the artifact figure is −0.00852 on 664 keys**, and the two must not be conflated or the
-    earlier one quoted. Prohibition 24's ban on comparing necessity's whole-state percentage to any
+    figure; ~~**the artifact figure is −0.00852 on 664 keys**~~ 🔴 **S-511: the GOVERNING artifact
+    figure is now −0.00870343 on 655 keys (D42); −0.00852 on 664 keys is PR-CSI-003's superseded
+    13-arm read**, and the two must not be conflated or the earlier one quoted. Prohibition 24's ban on comparing necessity's whole-state percentage to any
     sufficiency percentage **also stands, unchanged and for a second reason**: D19 measures the two
     directions at the **same** layer now, so the S-125/D15 layer objection no longer applies — but the
     two fractions still have **different reference arms** (`KO` vs `NEC_BASE`), which is by itself
@@ -1039,6 +1060,10 @@ holds the right number is necessary and is not sufficient, because nothing makes
 | **22** | **D12** instrument gate | `KO_FULL − KO` = **+0.12131** TRAIN, **+0.10306** VALIDATION | the n34 and n30 families respectively; the governing n46 pair gives **+0.12041** and **+0.10370**. Gate holds either way | ✅ S-453 (AM-50), in place |
 | **23** | **D15** instrument gate | `KO_FULL − KO` = **+0.10306** for basket L18 VALIDATION | the n30 value; n46 gives **+0.10370**. Its TRAIN figure beside it (+0.12041) was already n46, so the row mixed two families | ✅ S-453 (AM-50), in place |
 | **24** | **D25** label | *"**SECONDARY, UNPREREGISTERED**, and labelled as such"* — and prohibition 29's companion clause requiring that label | **PRESPECIFIED**, not unpreregistered: it is `secondary_statistics_PRESPECIFIED.S1` in PR-CSI-006, *"the GRADED read … must be reported beside every cell of the 2×2"*. **Secondary stands; unpreregistered is struck** | ✅ S-464 (AM-51), in place — **index row added S-468**, which the in-place mark alone had not done |
+| **25** | **D18** caveat cell | *"**INCONCLUSIVE — FLOOR-LIMITED BY DESIGN, NOT A CERTIFIED RESULT.** With 8 controls the attainable rank-p floor is **0.1111**, above α = 0.05, so the analyser's PASS branch was **unreachable before the first arm ran**"* | **D42**: PR-CSI-003-A took the shuffled family 8 → 24, the floor **0.1111 → 0.0400**, and the candidate ranks **1 of 25**, so the branch is reachable and reached. ⚠ **ONLY the floor limitation lifts** — D18's TRAIN-only, in-sample and sampler-floor caveats all still stand | ✅ S-501/S-507, in place on D18 |
+| **26** | **prohibition 26**'s mandated sentence and its clause list | the sentence *"rank 1 of 9, on 55 of 67 domains — and the comparison is floor-limited to INCONCLUSIVE at an attainable floor of 0.1111"*, and the **three** clauses *floor-limited, TRAIN-only, in-sample* | the sentence now reads **rank 1 of 25, on 56 of 67, p = 0.0400 where 0.0400 IS the floor**, and the clauses are **four**: p-is-the-floor, TRAIN-only, in-sample, **no held-out arm (PR-CSI-001's replication criterion UNMET)**. *"Floor-limited"* is **retired** — the family sits ON the floor rather than being limited BY it. ⚠ **The BANS are unchanged**, and the collision with D42's *"NECESSITY CERTIFIES"* is resolved in place: **the rank test certifies, the axis does not** | ✅ S-511, in place on prohibition 26 |
+| **27** | **D19** evidence, population and caveat cells | necessity **−0.00852** / 55 of 67 / **rank 1 of 9**; population **664 keys**; and the reason *"necessity **cannot clear any bar at `n_controls = 8`** because the bar is unreachable there"* | **−0.00870343** [−0.01152, −0.00612] / **56 neg / 11 pos** / **rank 1 of 25, p = 0.0400**; **655 keys common to all 29 arms**; and the reason is now **the absence of any held-out necessity arm**, not a floor. ⚠ **The conclusion — the two halves are NOT equally certified — survives; only its premise died** | ✅ S-508, in place on D19 |
+| **28** | **prohibition 28**'s mandated fraction | *"the 7.8 %, **0.0778** [0.0560, 0.1009]"* | at the governing 655-key read it is **0.0803 [0.0584, 0.1041]** (−0.0087 / −0.10843, re-derived S-508). ⛔ **NOT YET FIXED: prohibition 28 still mandates the 0.0778 form verbatim**, so D19 currently carries BOTH figures with the mismatch named. Amending a prohibition's mandated figure is preregisterable, not an edit | ⛔ **OPEN** — recorded S-508/S-511, not repaired |
 
 ### What this index does NOT cover
 

@@ -1,0 +1,37 @@
+# ================================================================================================
+# PR-CSI-022 READ — the HELD-OUT necessity family on VALIDATION. Recipe written BEFORE the read ran
+# (S-513), so no rank existed when these flags were chosen. PR-CSI-022 VOID 8 freezes the family,
+# the primary statistic, the prefixes, the floor and the magnitude band.
+#
+# PRIMARY = the SHUFFLED-ONLY rank among the 24 KO_NEC_SHUF controls. 1/25 = 0.0400 <= 0.05.
+# SUCCESS = rank 1 of 25 AND a NEGATIVE candidate point. FAILURE = rank >= 2.
+# Magnitude band, frozen at S-509: |point| in [0.0029, 0.0261]  (TRAIN 0.00870343, factor of 3).
+#
+# PRE-READ VOID CHECKS, all measured on the arms' OWN RUNMETA/results (S-512, S-513):
+#   VOID 1  34/34 arms on NVIDIA GeForce RTX 3090                       PASS
+#   VOID 2  nodes n-304 x24 + n-350 x10, one GPU model                  PASS
+#   VOID 4  23/23 domains in the validation split, no TRAIN/TEST leak   PASS
+#   VOID 6  1 commit -> 1 score_behavior.py blob 9562bdf9               PASS
+#   VOID 9  every arm n_rows_attempted = 230 (--expect-n, not --limit)  PASS
+#
+# Ten control arms lost exactly one row each to the norm-match degeneracy guard; all inside the
+# preregistered --allow-short 4, all documented in KNOWN_SHORT with MEASURED dropped prompt_ids.
+# ================================================================================================
+
+python3 scripts/dcs_csi_subspace_analyze.py \
+  --codeword basket --tag-prefix csi1_basket_validation --expect-n 230 --allow-short 4 \
+  --direction necessity \
+  --arms NEC_BASE,NEC_KO,KO_NEC_FULL,KO_NEC_AXIS,KO_NEC_ORTH,KO_NEC_SHUF0,KO_NEC_SHUF1,KO_NEC_SHUF2,KO_NEC_SHUF3,KO_NEC_SHUF4,KO_NEC_SHUF5,KO_NEC_SHUF6,KO_NEC_SHUF7,KO_NEC_SHUF8,KO_NEC_SHUF9,KO_NEC_SHUF10,KO_NEC_SHUF11,KO_NEC_SHUF12,KO_NEC_SHUF13,KO_NEC_SHUF14,KO_NEC_SHUF15,KO_NEC_SHUF16,KO_NEC_SHUF17,KO_NEC_SHUF18,KO_NEC_SHUF19,KO_NEC_SHUF20,KO_NEC_SHUF21,KO_NEC_SHUF22,KO_NEC_SHUF23 \
+  --base-arm NEC_BASE --ko-arm NEC_KO --full-arm KO_NEC_FULL \
+  --candidate-arm KO_NEC_AXIS --comparator-arm KO_NEC_ORTH \
+  --control-prefixes KO_NEC_SHUF \
+  --split validation --require-rescue-layer 18 \
+  --require-slurm-job 933344,933345,933346,933347 \
+  --out reports/DCS_CSI_SUBSPACE_NECESSITY_basket_validation_shuf24.json
+
+python3 scripts/dcs_csi_rederive_subspace.py \
+  --tag-prefix csi1_basket_validation --split validation --expect-n 230 --allow-short 4 \
+  --direction necessity --base NEC_BASE --ko NEC_KO --full KO_NEC_FULL --candidate KO_NEC_AXIS \
+  --controls KO_NEC_SHUF0,KO_NEC_SHUF1,KO_NEC_SHUF2,KO_NEC_SHUF3,KO_NEC_SHUF4,KO_NEC_SHUF5,KO_NEC_SHUF6,KO_NEC_SHUF7,KO_NEC_SHUF8,KO_NEC_SHUF9,KO_NEC_SHUF10,KO_NEC_SHUF11,KO_NEC_SHUF12,KO_NEC_SHUF13,KO_NEC_SHUF14,KO_NEC_SHUF15,KO_NEC_SHUF16,KO_NEC_SHUF17,KO_NEC_SHUF18,KO_NEC_SHUF19,KO_NEC_SHUF20,KO_NEC_SHUF21,KO_NEC_SHUF22,KO_NEC_SHUF23 \
+  --require-rescue-layer 18 --require-slurm-job 933344,933345,933346,933347 \
+  --out reports/DCS_CSI_REDERIVE_NECESSITY_basket_validation_shuf24.json
