@@ -42797,3 +42797,198 @@ So I ran the read again with the current code and compared every leaf:
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** commit, submit the one check arm, and on a bit-identical result launch halves 4 and 5 (20 arms) under the user's authorisation.
+
+---
+
+## S-491 / the VOID 6 inertness check is ON A GPU (job 932349) — and a false alarm of my own, twice reported (2026-09-26)
+
+### ✅ Submitted
+
+```
+provenance: BLOB a09d6c31  PORCELAIN clean
+Submitted batch job 932349
+   932349  killable  csi_void  omeryose  PD  0:00  1 (Priority)
+```
+
+**One arm.** `slurm_scripts/dcs_csi_void6_inertness_check.slurm`, replaying `KO_NEC_SHUF0` from the argv its own `RUNMETA.json` recorded, tag `csi1_basket_train_VOID6CHK_KO_NEC_SHUF0`, pinned `--gpus=geforce_rtx_3090:1`. **The queue was empty for this entire session; it is not now.**
+
+Pre-flight, all re-run rather than reused:
+* `scripts/gates/dcs_csi_pr003a_verify_launcher.py` → **exit 0, `LAUNCHER PATCH VERIFIED`**, half 4 = [4..13], half 5 = [14..23], union 20 over 4..23, no gaps, no repeats, halves 1–3 intact. S-478 verified it too, but several commits have landed since and a stale verification is not a verification.
+* Commit `a09d6c31` landed with **516 passed, 1 skipped** (437 s), tracked dirty **0** — the submit helper refuses a dirty tree and it did not have to.
+* The adversarial review requirement (*"before any family reaches a GPU"*) is met by **R39**, both streams, S-478–S-489 this session. Its findings are in this very harness: `dcs_csi_void6_compare.py` fails closed on a missing dir, mismatched key sets, duplicate keys, zero rows, or both tags resolving to one directory, because R39 stream 2 was *about* checks that cannot fail.
+
+### 🔴 A false alarm of my own, and I reported it twice
+
+In the two preceding ticks I wrote that the commit had *"silently died"* and that the background jobs *"died without running"*, citing HEAD unmoved and nothing staged. **That was wrong.** The suite takes **7 m 17 s**, and I was reading `git log` after ~2–3 minutes and treating "not yet" as "failed". Nothing was lost; the commit completed normally as `a09d6c31`.
+
+⚠ **This is the same error as S-482's timed-out grep**, in a new costume: **treating the absence of a result as evidence of a negative outcome, when it was evidence of an unfinished process.** S-482's rule was about searches; the general form is the one that matters — *a process that has not reported is not a process that has failed, and the distinction has to be measured (is it still running?) rather than inferred from elapsed impatience.* I did check `pgrep` at one point and saw the hook running, and still wrote "died" in the next entry. That is the part worth recording.
+
+⛔ It also caused real waste: I re-staged and re-ran a commit that was already in flight, which is exactly the condition that made **S-461** dangerous. It did no harm this time only because I did not `pkill`.
+
+### WHAT IS NOT ESTABLISHED
+
+- ⛔ **VOID 6 is NOT discharged.** Job 932349 is PENDING. The comparison decides it, and `dcs_csi_void6_compare.py` currently and correctly **REFUSES** (`resolves to 0 complete run dirs`, exit 1) because the replay does not exist yet.
+- ⛔ **Halves 4 and 5 are NOT launched** and will not be unless the 670 rows come back bit-identical. If they do not, I stop and report, per the user's condition.
+- ⛔ **Nothing about the necessity result itself is touched.** This arm is a code-inertness probe under a quarantined tag; it enters no read, no rank and no verdict.
+- ⛔ **TEST untouched.** Push credential-blocked (~180 unpushed).
+
+**NEXT:** watch 932349; on completion run the comparison gate; bit-identical ⇒ launch halves 4 and 5 (20 arms) under the user's authorisation.
+
+---
+
+## S-492 / the round-trip class is COSMETIC across all 14 axis artefacts — and my sweep raised two false alarms before it was right (2026-09-26)
+
+S-489's NEXT, run while job 932349 stages. S-489 measured the 5-dp round-trip disagreement on **one** artefact and explicitly refused to generalise. Now all of them.
+
+### ✅ The result: 34 non-round-trippers, zero consequences
+
+```
+artefact                                                 ctrl nonRT  worst|d| cand   rank check
+OPTIONMASS05_SENSITIVITY_basket_train_n46                  46     3  5.22e-06 KO_AXI rank  1==report  1 OK
+OPTIONMASS05_SENSITIVITY_basket_validation_n46             46     1  5.65e-06 KO_AXI rank  1==report  1 OK
+OPTIONMASS05_SENSITIVITY_button_train_L18_n46              46     5  5.67e-06 KO_AXI rank 36==report 36 OK
+OPTIONMASS05_SENSITIVITY_button_validation_L18_n46         46     3  5.65e-06 KO_AXI rank  6==report  6 OK
+SUBSPACE_basket_train_L20                                  10     1  5.07e-06 KO_AXI rank  1==report  1 OK
+SUBSPACE_button_train_L18_n46                              46     3  5.52e-06 KO_AXI rank 36==report 36 OK
+SUBSPACE_button_train_L18_shufonly                         24     1  5.22e-06 KO_AXI rank 19==report 19 OK
+SUBSPACE_button_validation_L18_n46                         46     1  5.22e-06 KO_AXI rank  6==report  6 OK
+SUBSPACE_button_validation_L18_randonly                    22     2  5.65e-06 KO_AXI rank  3==report  3 OK
+SUBSPACE_button_validation_L18_shufonly                    24     2  5.22e-06 KO_AXI rank  4==report  4 OK
+SWAP_basket_train_L18_from_button_n46                      46     3  5.52e-06 XSWAP_ rank 13==report 13 OK
+SWAP_basket_validation_L18_from_button_n46                 46     5  6.09e-06 XSWAP_ rank  2==report  2 OK
+SWAP_button_train_L18_from_basket_n46                      46     3  5.52e-06 XSWAP_ rank  4==report  4 OK
+SWAP_button_validation_L18_from_basket_n46                 46     1  5.22e-06 XSWAP_ rank  1==report  1 OK
+
+checked 14 | non-round-tripping controls total 34 | worst |diff| 6.09e-06
+artefacts where a non-round-tripper CHANGES SIDE vs the candidate: 0
+```
+
+⇒ **Every one of the 14 artefacts reproduces its own committed rank exactly**, and across all 34 near-boundary controls **not one changes side**. The worst disagreement anywhere is 6.09e-06 — the same half-a-unit-in-the-5th-dp band S-489 explained by `domain_means` being stored at 5 dp per domain. **S-489's "cosmetic" verdict now holds for the class, not just for one file.**
+
+🔶 Independent corroboration: `SWAP_basket_validation_L18_from_button_n46` recomputes to **rank 2**, matching both the report and the `pr006_native_vs_swap` gate I ran at S-479 (*"rank 2 (report 2)"*). Three instruments, one number.
+
+### 🔴 My first sweep was wrong twice, and the thing that caught it was not me re-reading my code
+
+The first run printed **`RANK MISMATCH!` on all four SWAP artefacts** and claimed **3 artefacts had a control changing side**. Both were false, and both came from one bug: I inferred the candidate arm with `for a in dm: if a in ("KO_AXIS","XSWAP_FROM_BUTTON",...)`, and a swap artefact contains **both** — `['BASE','KO','KO_SELF','KO_FULL','KO_AXIS','KO_ORTH','XSWAP_FROM_BUTTON']`. Dict order gave me `KO_AXIS`, the **native** arm, so I ranked the wrong arm and then reported the disagreement as the artefacts' fault.
+
+⚠ **What stopped it was an independent instrument, not review.** I had run `pr006_native_vs_swap` at S-479 and it reproduced rank 2 for that exact cell. When my ad-hoc sweep contradicted a purpose-built gate that had passed, the sweep was the suspect. Re-reading my own code would have taken longer and might not have worked — I had already read it once.
+
+**The fix generalises**: the candidate is now **self-identified** as the unique non-control arm whose recomputation rounds to `crd["candidate"]`, and the comparison direction is **read** from `stronger_candidate_is` rather than assumed to be "more positive". Both had been implicit assumptions; a necessity artefact would have inverted the second.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **Nine other axis JSONs were skipped**, not cleared: the sweep requires `control_recovery_distribution`, `domain_means` and a resolvable candidate, and the older reads (`basket_train`, `basket_validation`, `_n34`, `_n30`, `_prelim`, `button_train`, `button_train_rank1/rank5`, `NECESSITY_basket_train`) do not all carry them. **14 of 23 checked.**
+- ⛔ **This says nothing about whether the gate should be fixed.** `pr005_primary_X` still computes the count and discards it; a *larger* future disagreement would be discarded identically. The finding is that the class is harmless **today**, not that the check is adequate.
+- ⛔ **VOID 6 is still undischarged** — job 932349 is RUNNING on n-307 (RTX 3090, the node half 1 used), still in the 15 GB staging phase. No launch.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** 932349 → comparison gate → launch halves 4 and 5 if bit-identical.
+
+---
+
+## S-493 / the head/cell readout sensitivity is FEASIBLE — the rows do carry `option_mass`, and two clean arms six days apart agree to eight decimals (2026-09-26)
+
+The user delegated this branch to me (*"do what you think and document"*). My stated position was: **preregister first, then build**, because it can move D39 and D40. Before writing a preregistration, S-167c forbids naming anything that does not exist — so the first question is whether the data exists at all. Run while job 932349 stages.
+
+### ✅ S-167c cleared: the field exists in both families
+
+```
+csi3_head_basket_train_HD_BASE      option_mass present: True   value 0.12699971   qk semantic_one_word cell C
+csi3_head_basket_train_HD_KO        option_mass present: True   value 0.30890545
+csi3_head_basket_train_HD_TOPK      option_mass present: True   value 0.32553875
+csi9_cell3_button_validation_BC_BASE option_mass present: True  value 0.20024499
+```
+
+⚠ **This corrects the emphasis of S-472**, which said *"There is no floor parameter to set … the shared loader has nothing."* True of the **readers** — `head_census.py` has zero references to `option_mass` and `load_installation` never reads it — but **the rows carry the field**. "No reader consumes it" is not "the data is absent", and I had been treating them as the same thing. A sensitivity is therefore **feasible**, and a preregistration can name real quantities.
+
+### ✅ The descriptive census, with existing code and no preregistration
+
+`scripts/dcs_csi_option_mass_census.py` (S-487) already takes an arbitrary tag prefix, so the head family needed **no new code**. It carries no verdict, no p and no threshold — the 0.05 is a reporting boundary — so it is not preregisterable.
+
+```
+  HD_BASE    n=670  below 0.05: 243  (36.3%)  median 0.090077  min 4.658e-05
+  HD_KO      n=670  below 0.05: 121  (18.1%)  median 0.190896  min 9.600e-07
+  HD_TOPK    n=670  below 0.05:  96  (14.3%)  median 0.203921  min 1.930e-05
+  HD_BOTK    n=670  below 0.05: 222  (33.1%)  median 0.100558
+  HD_RAND00..19                 207-261 (30.9%-39.0%)  medians 0.0789-0.1058
+```
+
+**The interventions RAISE option mass; the random controls do not.** `HD_KO` and `HD_TOPK` roughly halve the thin-readout fraction (36.3% → 18.1% / 14.3%) and roughly double the median, while all twenty `HD_RAND` controls sit in a tight band around `HD_BASE`. So thin readout is concentrated in the **clean** arm, and a `BASE`-referenced floor — the P1-f design, applied identically to every arm rather than per-arm — would retain **427 of 670 keys**. That is the number a preregistration has to name.
+
+### 🔶 And an unplanned reproducibility result, which is the strongest thing here
+
+`HD_BASE` is the head family's clean arm; `BASE` is the axis family's. Different preregistrations, different tag prefixes, different jobs, **launched six days apart**:
+
+```
+                       axis BASE                 head HD_BASE
+  run dir              csi1_basket_train_BASE_20260915_231554   csi3_head_basket_train_HD_BASE_20260921_184235
+  n_rows               670                       670                IDENTICAL
+  n_below_boundary     243                       243                IDENTICAL
+  frac_below_boundary  0.362687                  0.362687           IDENTICAL
+  median               0.09007693                0.09007693         IDENTICAL
+  min                  4.658e-05                 4.658e-05          IDENTICAL
+  max                  0.75381458                0.75381458         IDENTICAL
+```
+
+⇒ **Two independently launched clean readouts, six days apart, agree on all six statistics to eight decimals.** Nothing asked for this; it falls out of censusing both families with one instrument. It is direct evidence that the readout is deterministic across runs, jobs and nodes — the assumption every cross-family comparison in this sprint rests on and which, as far as I can find, had not been measured this directly.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **The sensitivity is NOT run, and no preregistration is written yet.** This entry establishes only that it *can* be, and with what numbers. Running it is the step that could move D39/D40, and it stays behind a prereg — my own reason for not self-approving it.
+- ⛔ **No verdict is implied by the census.** That the interventions raise option mass does **not** mean the floor would not move a verdict: the floor removes *keys*, and which keys it removes interacts with the per-domain aggregation. **I am not predicting the outcome, and the prereg must not either.**
+- ⛔ **The cell-census families are NOT censused** — I confirmed only that `BC_BASE` carries the field. PR-CSI-014/015/016/018/020 remain unmeasured on this axis.
+- ⛔ **The determinism result is on ONE arm pair**, the clean arm, on one codeword and split. It is not a claim about intervened arms, where the hooks and seeds are what would have to match.
+- ⛔ VOID 6 still undischarged: job 932349 RUNNING on n-307 at 26:44, still staging. No launch. **TEST untouched.** Push credential-blocked.
+
+**NEXT:** 932349 → comparison gate → halves 4 and 5 if bit-identical. Then the cell-census censuses, then draft the sensitivity preregistration naming the 427-key population.
+
+---
+
+## S-494 / ✅ VOID 6 DISCHARGED — 670 rows bit-identical. Both conditions are cleared and halves 4 and 5 are being launched (2026-09-26)
+
+### ✅ The measurement
+
+Job **932349 COMPLETED**, exit `0:0`, 51:30 on **n-307** (RTX 3090), 670 rows, `failures: {}`. Then:
+
+```
+  committed : csi1_basket_train_KO_NEC_SHUF0_20260920_131722_900451          (670 rows)
+  replay    : csi1_basket_train_VOID6CHK_KO_NEC_SHUF0_20260926_124504_1001614 (670 rows)
+  committed  git_commit = 9c94c149042db89eec9cea9afed3e211f471660c   (blob e94258bd)
+  replay     git_commit = a09d6c31483d829d9d0232a3bba776a07f136c82   (blob 9562bdf9)
+  compared 670 rows x 12 fields = 8040 value comparisons
+
+VOID 6 DISCHARGED: 670 rows bit-identical across the score_behavior.py blob change.
+exit 0
+```
+
+⇒ **`--knockout-cells` (DCS-CSI-291, +172/−3) is inert for arms that do not pass the flag** — measured, on the S-139 standard, not argued from the diff. The static reading (`_knock_cells = None`, every block behind `if knock_cells:`, both call sites keyword) predicted this and the measurement confirms it.
+
+🔶 **The quarantine held.** `csi1_basket_train_KO_NEC_SHUF0` still resolves to **exactly one** complete run dir. The `VOID6CHK_` tag was chosen specifically so the check could not create a twin and poison the tag it was protecting — the S-487 hazard — and it did not.
+
+### ✅ Both VOID conditions are now discharged by measurement
+
+| | how | result |
+|---|---|---|
+| **VOID 7** | re-ran the PR-CSI-003 read with current code (S-490) | 80 common leaves, **0 differing**, 12 added disclosure-only keys, `candidate_sign_ok=True` |
+| **VOID 6** | replayed one arm from its own recorded argv (this entry) | **670 rows, 8040 comparisons, bit-identical** |
+
+Pre-flight, re-run rather than reused: `pr003a_verify_launcher` → **exit 0, `LAUNCHER PATCH VERIFIED`**, 20 arms over 4..23, no gaps, no repeats, halves 1–3 intact.
+
+### ⚠ One thing found on the way in, recorded rather than acted on
+
+`scripts/gates/dcs_csi_submit.sh` **cannot submit this launcher**: it ends `exec sbatch … "$@" "$S"`, so the script is always last and there is nowhere to put `dcs_csi_p1_arms.slurm`'s four positional arguments (`basket <axis> train L`). The necessity halves were therefore submitted historically by direct `sbatch --export=…` (log line 8821), and that is the route used here, with the helper's **two** protections replicated explicitly: the worktree is verified clean before submitting, and the provenance variables are exported.
+
+⚠ And the provenance mechanism is **not** what a preregistration claims. `configs`-adjacent comment in `dcs_csi_pr020_freeze.py:533` says *"The launcher records the commit at submit (CSI_GIT_BLOB)"*. Measured: `dcs_csi_pr010_arms.slurm` reads `CSI_GIT_BLOB` **twice**; `dcs_csi_p1_arms.slurm` reads it **zero** times. So for the necessity family that export is **inert**, and the provenance that actually exists is `RUNMETA.json`'s `git_commit` — which is what let me pin all seven arm commits in S-490, so nothing is lost. **Recorded as a claim defect, not fixed mid-launch.**
+
+### THE LAUNCH, and whose decision it is
+
+⛔ **The user authorised this launch explicitly**, then, when I corrected my own framing (I had called the conditions "stranded" when they were *triggered*), chose *discharge-both-then-launch, no further check-in*. Both are discharged. Halves 4 and 5 go out: **20 arms, `KO_NEC_SHUF4..23`, `ctrl_shuffled4..23`, norm-match `cand_rank1`**, basket/TRAIN, layer 18, taking the shuffled control family from 4 to 24 and the attainable floor from 0.2000 to **0.0400**.
+
+### WHAT IS NOT ESTABLISHED
+
+- ⛔ **Nothing about the necessity result.** The floor moving to 0.0400 makes certification *possible*; it does not make it likely, and **at a fixed separation a larger family is HARDER to top** (the amendment's own arithmetic: P(rank 1) 0.6996 at K=8 → 0.5317 at K=24). The read is not due until the arms land and it is not mine to anticipate.
+- ⛔ **The other eight VOID conditions are not checked here** — they are evaluated by the read's own gates at analysis time.
+- ⛔ **`--allow-short 4`, the preregistered value, is passed by the recipe, not read from the prereg by any analyser** (R39 N-5). Unchanged by this launch.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** the two job ids, then watch the arms land.
