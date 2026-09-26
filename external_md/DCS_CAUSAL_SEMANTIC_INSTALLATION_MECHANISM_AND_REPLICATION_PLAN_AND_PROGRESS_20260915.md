@@ -44039,3 +44039,44 @@ Its NOT-ESTABLISHED clause read: *"that the axis carries the removal effect — 
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** the claim table's remaining audit block, in one pass; then prohibition 28's figure, which needs a decision rather than an edit.
+
+---
+
+## S-516 / the last known block of stale text is cleared — six claim-table rows and §M.9 (2026-09-26)
+
+S-515's NEXT. Commit `e9c74fcb` landed. This closes the block I have been naming in every entry since S-507.
+
+### ✅ Six rows marked in place, each with its column count unchanged
+
+```
+  AM-13      line  557   cols 4 -> 4   marker occurrences 0 -> 1
+  D16, D18   line  636   cols 3 -> 3   marker occurrences 0 -> 1
+  AM-8       line  648   cols 3 -> 3   marker occurrences 0 -> 1
+  AM-47      line 1137   cols 4 -> 4   marker occurrences 0 -> 1
+  AM-47-a    line 1138   cols 4 -> 4   marker occurrences 0 -> 1
+  AM-52      line 1198   cols 4 -> 4   marker occurrences 0 -> 1
+```
+
+⚠ **Appended inside the last content cell, split on UNESCAPED pipes only** — the two failure modes I have already committed in this file (S-502 appending past the trailing pipe, S-503 verifying with `grep -c`) are both designed out: the helper asserts the row ends with a pipe, and every row was checked for **occurrence** count and column count before and after. Three of the six sit in **3-column** tables and three in 4-column ones, which is why a single assumed width would have broken half of them.
+
+The marker says the same thing in each: the extension **ran** (D42, TRAIN) and then **replicated held-out** (D43, VALIDATION), both VOIDs having been discharged by measurement rather than argument — **and** that each row's account of the code-blob mechanism and the 8.7 GPU-hours withheld *remains true as history*. Only the forward-looking "unlaunched / blocked / unreachable" claim is dead.
+
+### ✅ §M.9 corrected, and its real content preserved
+
+§M.9 explained that the necessity family had **8** controls, not the 9 pr003's prose implies, because `--control-prefixes KO_NEC_SHUF,KO_NEC_RAND` matches neither `KO_NEC_ORTH` nor `KO_NEC_AXIS_ANCHOR`. **That arithmetic is correct and is why the original read could not certify** — it is kept. What is struck is only its conclusion that §A.1's necessity half *"cannot certify at any data"*.
+
+🔶 And the paragraph's subtlety is now **more** load-bearing, not less: `--control-prefixes KO_NEC_SHUF` is exactly what selects the 24, and **S-480 measured that the analyser's default prefixes (`KO_SHUF,KO_RAND`) match none of the `KO_NEC_*` arms at all** — so an omitted flag would *empty* the family rather than shrink it. That is recorded in the correction rather than lost with the sentence.
+
+### ⛔ One site deliberately NOT touched
+
+`reports/DCS_CSI_CLAIM_TABLE.md:769` reads *"=> VOID condition 6 fires. 20 arms NOT LAUNCHED. Necessity floor stays 0.1111 at 8 controls."* It sits inside a **dated command log**, beside the `git hash-object` output that produced it. It is a true record of what was measured then, exactly like the draft's §L.8 replay block, and editing it would falsify a log.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No figure computed this tick.** Every number is S-501's or S-513's.
+- ⛔ **Prohibition 28 is still unamended** — its mandated `0.0778` against the governing `0.0803`. Recorded OPEN in A30 row 28. **This needs a decision, not an edit**, and it is now the only known-stale item I am carrying.
+- ⛔ **The joint-conjunction test is still unspecified**, and still deliberately not invented.
+- ⛔ **I have not re-audited.** The list I just cleared came from the S-507 subagent audit; whether *new* inconsistencies were introduced by D43 and by this pass is a question a fresh audit would answer, and I have not run one.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** commit; then a fresh audit pass, because the right time to check for newly-introduced inconsistencies is after a block of edits, not before.

@@ -715,8 +715,17 @@ the random-only rank is descriptive only and *"must never be quoted as a p-value
 **shuffled-only `1/25 = 0.0400`** and **random-only `1/23 = 0.0435`**. ⚠ **The necessity family has
 only 8 controls — not the 9 pr003's own prose and its `attainable_p_floor: 0.10` imply, because
 `--control-prefixes KO_NEC_SHUF,KO_NEC_RAND` matches neither `KO_NEC_ORTH` nor `KO_NEC_AXIS_ANCHOR`
-— so its floor is `1/9 = 0.1111`, above α** — which is why §A.1's necessity half
-cannot certify at any data and §L.3 records the extension that would have fixed it.
+— so its floor is `1/9 = 0.1111`, above α** — ~~which is why §A.1's necessity half
+cannot certify at any data and §L.3 records the extension that would have fixed it.~~
+🔴 **CORRECTED S-516 — TRUE OF PR-CSI-003's FAMILY, WHICH IS NO LONGER THE GOVERNING ONE.** The
+8-control arithmetic above is correct and worth keeping: it is why the ORIGINAL read could not
+certify. But the governing necessity family is now **24 shuffled controls** (PR-CSI-003-A), floor
+**0.0400**, and §A.1's necessity half **does** certify — **rank 1 of 25 on TRAIN (D42) and rank 1
+of 25 on 23 HELD-OUT VALIDATION domains (D43, PR-CSI-022)**. ⚠ **The control-prefix subtlety this
+paragraph documents is unchanged and still matters**: `--control-prefixes KO_NEC_SHUF` is what
+selects the 24, and S-480 measured that the analyser's DEFAULT prefixes (`KO_SHUF,KO_RAND`) match
+none of the `KO_NEC_*` arms at all, so an omitted flag would empty the family rather than shrink
+it.
 
 ## M.10 What the design cannot do
 
