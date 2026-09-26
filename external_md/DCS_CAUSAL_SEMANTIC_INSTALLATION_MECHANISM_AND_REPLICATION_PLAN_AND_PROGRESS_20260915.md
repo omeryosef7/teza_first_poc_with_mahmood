@@ -40749,3 +40749,67 @@ exactly the process whose output is most expensive to recreate.**
 **NEXT:** D14/D16/D17/D20/D22/D28/D31 — seven axis rows, of which D16 and D20 are the necessity
 feasibility and instrument-capability rows and D17/D22/D28 are provenance/gate results. **Five
 questions remain with the user.** **Push credential-blocked.**
+
+---
+
+## S-462 — §A.7 drafted: the removal instrument is capable, and that is the whole of what the pair licenses (D16, D20) (2026-09-26)
+
+**Re-derived by me** from `DCS_CSI_SUBSPACE_NECESSITY_basket_train.json` (664 keys, 13 arms, 67
+TRAIN domains, basket, L18):
+
+```
+arm installation:   NEC_BASE 0.47336  ->  KO_NEC_FULL 0.36386  ->  NEC_KO 0.23972
+KO_NEC_FULL - NEC_BASE  -0.10950 [-0.12482, -0.09451]  67 neg / 0 pos / 0 tied
+NEC_KO      - NEC_BASE  -0.23364 [-0.26346, -0.20408]  67 neg / 0 pos / 0 tied
+fraction of the clean->KO span removed = 0.4687 (46.9 %)
+```
+
+**Every figure in D20 reproduces exactly**, arm means included. D16's 670-key variant
+(−0.11009 / −0.23406 = 47.0 %) comes from the superseded 5-arm read and is **not on disk to
+re-derive**; D20 supersedes it **in key set, not in fact**, the 6-key gap being the intersection
+with the eight later control arms.
+
+### What the section refuses to let this become
+
+* ⛔ **Both p-values sit AT the MC sampler floor 5.0e−06 and carry NO information.** The informative
+  content is the **unanimity** — 67 of 67 negative, zero positive, zero tied, in both contrasts.
+* ⛔ **It is the WHOLE-STATE control, not the axis.** One licensed sentence: *"a removal-direction
+  effect is detectable by this instrument."* What the *axis* does in that direction is §A.1's
+  **rank 1 of 9, floor 0.1111, INCONCLUSIVE** — and the artefact's own `VERDICT` string says
+  `PRIMARY INCONCLUSIVE` in terms.
+* ⛔ **46.9 % may not be compared to any sufficiency percentage**, and the section states the
+  **surviving** reason rather than the dead one: the two fractions have **different reference arms**
+  (`KO` against `NEC_BASE`). ⚠ The reason usually given — necessity at L18 against sufficiency at
+  L20 — **is dead**, because D19 measures both at the same codeword, layer and population
+  (prohibition 24, corrected S-416). Getting this right matters: quoting a retracted reason for a
+  live ban is how prohibition 29 went wrong.
+* ⚠ **This artefact carries only two gates** — `manipulation_check` and `instrument_capable`. **There
+  is no `identity_check`**: the removal design has no self-patch arm to provide one, where the
+  sufficiency families gate on `KO_SELF − KO`. Noticed by reading the artefact, not the row.
+
+### Also corrected
+
+**§A.5's heading cited (D13, D15) while its body reported D14** — basket-at-L20 is the largest
+recovery in its family but the family is too small to certify, which is D14's claim verbatim and is
+in §A.5's table and its floor-limited caveat. **Heading now cites D14.** ⚠ *This is the S-451 defect
+inverted — reported but not cited rather than cited but not reported — and the same check catches
+both only because it compares the two directions.*
+
+### Counted, not subtracted
+
+**Sixteen of twenty drafted** — 12, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 26, 27, 29, 30 —
+**four remain**: **D17, D22, D28, D31, all provenance / gate rows**, which form one coherent final
+section rather than four scattered ones. Five count sites updated and swept.
+
+### What is NOT established
+
+* ⛔ **That the axis carries the removal effect.** §A.1's rank 1 of 9 is floor-limited, TRAIN-only
+  and in-sample, and the artefact calls itself INCONCLUSIVE.
+* ⛔ **That necessity transfers to button.** The removal direction has **never been run on button**,
+  at any layer, so every necessity statement in this draft is basket-only.
+* ⛔ **D16's 670-key figures.** Not re-derived — that read is not on disk; only D20's 664-key read is.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** §A.8 — D17, D22, D28, D31, the provenance and inertness results, which completes §A's
+twenty rows. D28 is the interesting one: it records that an inertness **is not verifiable after the
+fact from the run directories**. **Five questions remain with the user.** **Push credential-blocked.**

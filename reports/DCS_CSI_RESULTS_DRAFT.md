@@ -21,9 +21,9 @@ names its scope rather than claiming a blanket.*
 head-level results, which the cell-level half subdivides and therefore depends on.** §H is written
 second and belongs first. ⚠ **A THIRD part — the axis, necessity and dissociation families
 (PR-CSI-001–009, 20 claim-table rows) — is **PARTLY PRESENT**: 🔴 *CORRECTED S-453 — this block said "two … and eighteen" long after the
-count reached ten:* **THIRTEEN of its rows are drafted as §A (D12, D13, D15, D18, D19, D21, D23,
-D24, D25, D26, D27, D29, D30) and SEVEN are not** (D14, D16, D17, D20, D22, D28, D31).
-*(Re-counted S-460 by regex over the §A headings, not by subtracting from last tick.)* The
+count reached ten:* **SIXTEEN of its rows are drafted as §A (D12, D13, D14, D15, D16, D18, D19,
+D20, D21, D23, D24, D25, D26, D27, D29, D30) and FOUR are not** — D17, D22, D28, D31, all
+provenance / gate rows. *(Re-counted S-462 by regex over the §A headings, not by subtracting.)* The
 four rows below are the D-rows §H covers; it also reports **AM-36** and draws on AM-26, AM-27, AM-30, AM-33, AM-34 and AM-37:
 
 | row | what §H reports | where |
@@ -50,8 +50,8 @@ it declined is what found it. Classified by reading each row rather than by patt
 
 ⚠ **UPDATED S-439/S-440, RE-COUNTED S-453.** §A began as D19's bidirectional conjunction and
 D24's matched-power dissociation with D18, D23 and D29 as supports; it now also carries D12 (§A.3)
-and D25/D26/D27/D30 (§A.4, §A.4a, §A.4b). **That is an increment, not the part: THIRTEEN of the twenty
-are drafted and SEVEN remain** — D13, D14, D15, D16,
+and D25/D26/D27/D30 (§A.4, §A.4a, §A.4b). **That is an increment, not the part: SIXTEEN of the twenty
+are drafted and FOUR remain** — D13, D14, D15, D16,
 D17, D20, D21, D22, D28, D31. (⚠ This count has been wrong twice: SCOPE said eighteen when it was
 fifteen, and a re-measure said thirteen by reading a range as a list, S-449.)
 
@@ -60,7 +60,7 @@ rank-1 installation axis and its control families, the necessity direction, the 
 codeword dissociation at matched power, and the cross-codeword axis swap. 🔴 *CORRECTED S-453 — this sentence outlived its count by three ticks:* **ten of them are
 in this file, as §A; the ten listed above are not.** §L.3 touches two of these results (necessity, basket-at-L20) only
 to limit them, which is how the gap stayed invisible for so long — they appeared as *limitations of
-results the draft never stated*, and for the **seven** still undrafted they still do.
+results the draft never stated*, and for the **four** still undrafted they still do.
 
 ⛔ **Review coverage is UNEVEN and every pass so far has found real defects:** §1–§6 twice, §M once
 (S-421, six mismatches against the source), §L once, **§H once** (S-438: thirteen findings, two that
@@ -279,7 +279,7 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | any rung-2/3/4 **CLAIM** for a result here | every certified claim is rung 1 — but naming rung 2 as *unreached* is required, not forbidden, so the ban is on the claim and not the vocabulary | AM-34 |
 | "correcting" either 1.52e-04 | `(1/9)^4 = (1/3)^8 = 1/6561` — two real quantities, one value | [†] §4 |
 | ‼ "floor above α ⇒ CANNOT ANSWER, never FAIL" | true only at K < 3; at K ≥ 3 it is a FAIL with an unwinnability warning — and the sentence is **still live in both published artefacts**, so it can be re-imported from a source an editor will read | AM-45 (S-428), §M.6 |
-| ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | §1–§4 are the CELL-level part and §H the HEAD-level part; of the axis / necessity / dissociation families (D12–D31) **thirteen of D12–D31 are drafted as §A and SEVEN remain in neither** — see SCOPE | D12–D31, SCOPE |
+| ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | §1–§4 are the CELL-level part and §H the HEAD-level part; of the axis / necessity / dissociation families (D12–D31) **sixteen of D12–D31 are drafted as §A and FOUR remain in neither** — see SCOPE | D12–D31, SCOPE |
 | ‼ quoting `VERDICT: "WE FOUND (part of) THE WRITER"` | it is a **verdict LABEL live in TWO published artefacts** (PR-010 and PR-011), not a claim; the permitted form is that file's `REPORTABLE_AS` — 8 head indices, at least half the effect, **leg (i) only**, **not** a claim about any cell | D32, §M.8 |
 | "deduplicating" the two 0.012346s | D39's certified conditional (§2) and D38's forbidden binomial (§4) are **both exactly 1/81** — one is a result, one is banned | D39, D38, §4 |
 | ‼ "TEST is unspent / untouched / available" | read to completion 2026-09-08 and selection-contaminated | AM-39, D5 |
@@ -1005,7 +1005,7 @@ p-value.** It holds for §1 and §4, which carry none.
 
 # A. The axis half — FIRST INCREMENT ONLY
 
-**Added S-439.** ⛔ **This is NOT part three. It is thirteen of its twenty rows**, drafted as a deliberate
+**Added S-439.** ⛔ **This is NOT part three. It is sixteen of its twenty rows**, drafted as a deliberate
 increment rather than as a section. The axis/necessity/dissociation families (D12–D31) remain
 largely undrafted and SCOPE says so.
 
@@ -1591,7 +1591,7 @@ contrast is as post-hoc as the TRAIN one, so it is secondary on both splits.
 that the state hypothesis is refuted in any form other than the pure one; and anything at all about
 **necessity**, which has never been run in the swap design.
 
-## A.5 The 2×2 across codeword × layer: the LAYER is exonerated, and that is one explanation removed, not a mechanism found (D13, D15)
+## A.5 The 2×2 across codeword × layer: the LAYER is exonerated, and that is one explanation removed, not a mechanism found (D13, D14, D15)
 
 The dissociation of §A.2 has an obvious alternative reading: basket's axis was fitted at **L18** and
 button's at **L20**, so perhaps the difference is the *layer*, not the codeword. The 2×2 that
@@ -1739,3 +1739,49 @@ option-mass floor, the button cells off one where **11 %** do (§L.9). The eight
 the one measurement that would test it (held-out ρ) recorded nowhere; that power does not contribute
 — it partially does; and that the TRAIN headline cell would survive its own caveats, which on two of
 three readings it does not.
+
+## A.7 The removal instrument is capable — and that is the whole of what this pair establishes (D16, D20)
+
+§A.1's necessity half presupposes something that has to be shown separately: that this instrument
+can move installation **downward at all**. That is what D16 and D20 measure, and they measure it
+with the **whole clean state**, not with the axis. Re-derived by me from
+`DCS_CSI_SUBSPACE_NECESSITY_basket_train.json` (664 keys, 13 arms, 67 TRAIN domains, basket, L18):
+
+```
+arm installation:   NEC_BASE 0.47336  ->  KO_NEC_FULL 0.36386  ->  NEC_KO 0.23972
+
+removal by the whole state   KO_NEC_FULL - NEC_BASE  -0.10950 [-0.12482, -0.09451]  67 neg / 0 pos / 0 tied
+manipulation check           NEC_KO      - NEC_BASE  -0.23364 [-0.26346, -0.20408]  67 neg / 0 pos / 0 tied
+fraction of the clean->KO span removed by the whole state = 0.4687  (46.9 %)
+```
+
+✅ **The informative part is the unanimity, not the p.** Both contrasts are **negative on 67 of 67
+domains, with zero positive and zero tied**. ⛔ **Both p-values sit AT the Monte-Carlo sampler's
+floor of 5.0 × 10⁻⁶ and therefore carry no information** — the test had no resolution below it, and
+quoting either as evidence of *magnitude* is a misreading.
+
+⚠ **Two key sets, and neither figure is withdrawn.** D16 read **670** keys over **5** arms
+(−0.11009 / −0.23406 = **47.0 %**); D20 reads **664** over **13** (−0.10950 / −0.23364 =
+**46.9 %**). The six-key difference is the intersection with the eight control arms that landed
+later (`keys_dropped_by_intersection = 6`). **Same quantity, two populations, not a disagreement.**
+
+⛔ **THIS IS THE WHOLE-STATE CONTROL, NOT THE AXIS.** It licenses exactly one sentence — *"a
+removal-direction effect is detectable by this instrument"* — and nothing about whether the rank-1
+axis carries that effect. §A.1 reports what the axis does in this direction, and it is **rank 1 of
+9 against a floor of 0.1111, INCONCLUSIVE**.
+
+⛔ **Do not compare 46.9 % to any sufficiency percentage.** The two fractions have **different
+reference arms** — sufficiency is measured against `KO`, removal against `NEC_BASE` — which is
+disqualifying on its own. ⚠ *The reason usually given for this ban — that necessity is at L18 and
+the sufficiency read at L20 — is DEAD: D19 measures both directions at the same codeword, layer and
+population. The ban survives on the reference-arm grounds, and the two must not be confused
+(prohibition 24, corrected S-416).*
+
+⚠ **This artefact carries only two gates** — `manipulation_check` and `instrument_capable`, both
+true. **There is no `identity_check`**, because the removal design has no self-patch arm to provide
+one; the sufficiency families gate on `KO_SELF − KO` and this one cannot.
+
+**NOT ESTABLISHED:** that the axis carries the removal effect — that is §A.1's rank-1-of-9 and it is
+floor-limited, TRAIN-only and in-sample; that 46.9 % is comparable to anything in the sufficiency
+direction; and that the removal direction has ever been run on **button** — it has not, on any
+layer, so every necessity statement in this draft is basket-only.
