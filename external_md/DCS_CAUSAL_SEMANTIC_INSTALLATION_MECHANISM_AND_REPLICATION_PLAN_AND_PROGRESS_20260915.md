@@ -43604,3 +43604,74 @@ keys appearing in NO script, gate or test : 1017
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** the audit's findings, each verified myself; then whether the contract-surface idea is worth a preregistration.
+
+---
+
+## S-507 / the audit found two defects IN MY OWN EDITS and a wrong VOID-1 population — all three verified and fixed, and it found more than I fixed (2026-09-26)
+
+A subagent audited all 54 necessity lines in the draft and 47 in the claim table. **I re-derived every load-bearing figure before acting**, and three of its findings are against work I did in the last four ticks.
+
+### 🔴 (1) D18 carried the supersession marker TWICE, and lost its closing pipe — my S-503 edit
+
+```
+before: occurrences=2  pipes=7  ends_with_pipe=False
+stray after final pipe: 409 chars, contains marker=True
+after : occurrences=1  pipes=7  ends_with_pipe=True
+caveats has marker: 1   source has marker: 0
+```
+
+At S-502 I appended the marker with `l.rstrip() + MARK` — i.e. **after the row's final `|`, outside the table structure entirely**. At S-503 I tried to move it "from source to caveats" by editing `parts[6]`, but the stray copy was past the last pipe, so the strip did nothing and I added a **second** copy. Fixed: the row now ends at its final pipe, one marker, in the **caveats** cell.
+
+⚠ **And the reason I did not catch it is exact and worth more than the fix.** My S-503 verification was `grep -c 'SUPERSEDED IN PART BY D42'` → `1`, which I read as "one marker". **`grep -c` counts matching LINES, not occurrences.** Two copies on one line are invisible to it. The correct idiom is `grep -o … | wc -l`, which is what I used this time. That is the **third counting/quoting idiom to bite me today** — after reading `$?` through a pipe (S-481/S-487/S-498) and unescaped regex dots (S-482). These are not carelessness in the abstract; they are three specific idioms, and the fix is to name them.
+
+### 🔴 (2) D42's arm count was wrong: 31 → 29
+
+Re-derived from the artefacts themselves:
+
+```
+shuf24 PRIMARY       arms=29  arm_meta=29  run_dirs=29  domain_means=29  n_keys_common=655
+pooled28 secondary   arms=33  arm_meta=33  run_dirs=33  domain_means=33  n_keys_common=649
+PR-CSI-003 old read  arms=13  arm_meta=13  run_dirs=13  domain_means=13  n_keys_common=664
+```
+
+**29 = 5 (NEC_BASE, NEC_KO, KO_NEC_FULL, KO_NEC_AXIS, KO_NEC_ORTH) + 24 shuffled.** "31" matched nothing. Corrected in D42.
+
+### 🔴 (3) My VOID 1 verification used the WRONG POPULATION — and this is the serious one
+
+S-499/S-500 claimed *"VOID 1 PASS on all 32 arms"*. That 32 came from globbing `csi1_basket_train_KO_NEC_*`, **which excludes `NEC_BASE` and `NEC_KO`** — two arms that are **in the primary read**. So I verified a grep pattern's population, not the read's.
+
+Re-run against the artefact's **own** `run_dirs`:
+
+```
+THE PRIMARY READ'S OWN 29 ARMS:
+  GPUs : {'NVIDIA GeForce RTX 3090': 29}     VOID 1: PASS
+  nodes: {'n-307': 25, 'n-350': 4}           one architecture -> VOID 2 PASS
+  commits=7 -> score_behavior blobs=2        the S-494-discharged transition only
+  NEC_BASE: 3090, n-307, ce116c6f   NEC_KO: 3090, n-307, be0e6818
+```
+
+**The verdict is unchanged — VOID 1 passes — but it passed for a population I had not actually checked.** A hardware condition verified on "the arms my glob matched" instead of "the arms the read used" is the same defect class as everything else in R39, committed by me while writing up a PASS. Corrected in D42 and AM-57 to *"the read's own 29 arms"*.
+
+### ✅ (4) The secondary p was quoted without its floor note
+
+`pooled28: p = 0.034483` is **also exactly its family's attainable floor** (`1/29 = 0.034483`). Caveat (1) applies to it verbatim and was stated nowhere. Added to D42. ⚠ I was careful to attach that caveat to the primary's 0.0400 and then quoted the secondary's floor-p three times without it.
+
+### ⛔ WHAT THE AUDIT FOUND THAT I HAVE **NOT** FIXED — 15 further items, queued
+
+I fixed the three defects in my own edits plus one caveat. **The rest stand, and the two highest-value are both in the claim table:**
+
+* **D19, the bidirectional-conjunction row** — never touched, so its child §A.1 (rewritten S-505) is now *ahead of the row that governs it*. Its conclusion ("not equally strong") survives; its **premise** ("necessity cannot clear any bar at `n_controls = 8`") is falsified. A reader who checks the source and finds the premise dead could conclude the asymmetry itself is gone.
+* **Prohibition 26** — it **mandates** a sentence the new result contradicts, and its clause list is now **weaker than the draft's** (three clauses including the retired "floor-limited", against §A.1's four). The claim table is meant to be the stricter source. This is A30-row-5's class: a rule that mandates a dead sentence.
+
+Also unfixed: AM-13, AM-47, AM-47-a, AM-52 and three audit rows asserting the extension is unlaunched/unreachable; §M.9's *"the necessity family has only 8 controls"*; four §L.3 and §A.7 sites; prohibition 28's 7.8 % figure, which the new read puts at **0.0803 [0.0584, 0.1041]**; and **A30 has no row for the necessity floor lift at all**, which is precisely what A30 exists for.
+
+⚠ **I am not claiming the record is consistent. It is more consistent than it was and it is not consistent yet**, and the highest-value inconsistency is that the governing row for the sprint's headline conjunction still gives a falsified reason.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **The audit's remaining 15 findings are not verified by me**, only its three against my own work are. I re-derive before acting, so acting on them is next tick's work, not this entry's claim.
+- ⛔ **No figure changed except the four corrected above**; the result itself (rank 1 of 25, p = 0.0400) is untouched and still re-derived once, at S-501.
+- ⛔ **`D40-b`'s 6-column row** (unescaped `|diff|`) and **D39's** malformation are pre-existing and still unfixed.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** D19 and prohibition 26, each verified against the artefacts first; then A30's missing supersession row.

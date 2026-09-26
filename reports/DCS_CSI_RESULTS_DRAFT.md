@@ -801,7 +801,7 @@ each design cheap is exactly what killed it.** That is the transferable lesson: 
 reuses archived arms and pins the blob has a shelf life, and nothing warns you when it expires.**
 
 🔴 **CORRECTED S-504 — TRUE OF PR-CSI-004, FALSE OF PR-CSI-003-A, AND THE LESSON NEEDS A SECOND
-CLAUSE.** The blob did move under PR-CSI-003-A: all 12 pre-existing necessity arms ran
+CLAUSE.** The blob did move under PR-CSI-003-A: all **13 arms of PR-CSI-003's read** (14 necessity run dirs exist on disk) ran
 `score_behavior.py` blob `e94258bd`, the 20 new arms ran `9562bdf9`, measured across 8 distinct
 commits (S-499). **But a moved blob is not automatically a dead family — it is a VOID condition that
 can be DISCHARGED BY MEASUREMENT.** S-494 replayed one already-completed arm from the argv its own
