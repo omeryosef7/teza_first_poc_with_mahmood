@@ -41598,3 +41598,160 @@ that was patched under it; §0, §5 and §6 have had their load-bearing claims v
 outstanding surface is §M.1–§M.5, §M.10–§M.11 and §L**, and the outstanding decisions are the user's.
 
 **NEXT:** the §M/§L audit on arrival. **Six questions with the user.** **Push credential-blocked.**
+
+---
+
+## S-473 — the §M/§L audit: ~120 claims verified, eight defects, and one of them was a premise of an escalation (2026-09-26)
+
+The auditor **executed** `decide()` on constructed inputs, **ran** both necessity re-derivation
+paths, recomputed the option-mass table from raw rows and swept all 82 arm directories. **I
+reproduced every defect below myself before acting**, per S-468's rule.
+
+### 🔴 THE ONE THAT MATTERS: "the necessity re-derivation does not reproduce under today's code at all" is FALSE, and I was using it
+
+§L.8 said replay is not uniform and the necessity re-derivation fails; §L.3 said *"today's
+re-derivation path refuses the family outright"* as part of the **PR-CSI-003-A blocked-launch
+argument I have been escalating to the user.** Both halves are wrong:
+
+* **(a) The script does not refuse `INCOMPLETE`.** `dcs_csi_rederive_patch.py:136` is
+  `if done.get("status") not in ("ok", "INCOMPLETE")`, and its own comment says rejecting INCOMPLETE
+  *"flipped this gate from inert to actively wrong: it began rejecting exactly the documented-short
+  runs `allow_short` exists to admit."* The three short controls carry exactly `INCOMPLETE`
+  (**669 / 666 / 669** of 670, read from their own `DONE.json`).
+* **(b) It reproduces.** I ran the frozen recipe: **exit 0**; 19 keys against 19; the only
+  differences are **four ADDED disclosure keys per rank group**, `CHANGED=NONE` in all three, with
+  `candidate_minus_base = −0.00852`, `n_keys_common = 664`, rank 1 of 9, floor 0.1111.
+
+⇒ **ALL THREE reads replay exactly**, and the necessity read replays with *more* disclosure than it
+shipped with. ⚠ **A PREMISE OF AN ESCALATION WAS FALSE.** The PR-CSI-003-A block still stands on its
+two stranded VOID conditions (6 and 7), which are unaffected — **but I had been telling the user a
+third reason that does not exist.** The three short controls and the 664-key intersection are real;
+what was wrong was the claim that they defeat the re-derivation.
+
+### The other seven, each verified by me
+
+* **§M.7's VOID 10 row** said *"an operator grepping the prereg's spelling finds nothing"*. False:
+  `config.json`/`RUNMETA.json` spell it `attn_impl`, but **`metadata.json` and `summary.json` DO
+  carry `attn_implementation`** — `score_behavior.py` writes it deliberately so a verifier reads the
+  LOADED value.
+* **§M.3's "`knockout_scope` is verified by NO CSI reader"** — false of the axis side.
+  `dcs_csi_rederive_patch.py:713` refuses any intervened arm whose scope is not
+  `target_surface_row_only`, **:715 refuses non-eager `attn_impl` as well**, and
+  `subspace_analyze.py:766` refuses arms that disagree. True only of the three cell-census readers,
+  which contain no reference to it. §M.7's *"unenforced BY ANY READER"* narrowed the same way.
+* **§L.9 named the wrong function.** There are **two** `load_installation`s. The head/cell path uses
+  `dcs_cont_layerpos_map.py:107`, which filters on **`query_kind` and `cell` only**; the docstring I
+  quoted (*"the SOLE implementation of the readout"*) and the `n_examples` filter both belong to
+  `dcs_succ_pr066_behaviour.py:1139`, **which is not in that path**. ⚠ **My S-458 read had picked the
+  wrong definition of two** — my fourth wrong-scope read this session. ✅ **The conclusion is
+  untouched: `grep -c option_mass` is 0 in all four files.**
+* **§M.8's ladder scope said "PR-CSI-010, 011 and 013 only".** PR-013 has **no `verdicts` and no
+  `F_definition`**; its reader is a different file with verdicts `REPLICATES` / `DOES NOT REPLICATE`
+  / `DOES NOT REPLICATE AT RANK 1` and **no `F` condition**, and its artefact carries no `F` field.
+  Its rank-1 rule comes from `attainable_floor` and its gates from the frozen read.
+* **§L.5's "both condition on the multiset"** is false of the conditional.
+  `argmax_verdict.py:105` is `p_cond = binom_tail(M_u, K_u, p0)` at `p0 = 1/9`: **a binomial against
+  the same uniform null, conditioning on nothing.** It only drops shared-prediction heads — and in
+  PR-CSI-020 head 18's unique prediction is **L14, a modal layer**, so a modal-layer head is retained
+  and still scored at 1/9. The permutation clause was right.
+* **§M.6 described the corrected code and never disclosed that TWO PUBLISHED ARTEFACTS STILL CARRY
+  THE PRE-S-428 SENTENCE** — verified still present in both. §M.8 then pointed at *"the floor
+  sentence in §M.6"*, a referent §M.6 never established. Disclosure added; the reference repointed to
+  §6 and §M.6.
+
+### ✅ What the audit confirmed, and it is the larger half
+
+~120 claims MATCH, including **every branch condition in `decide()`** (executed: K=8/M=0 → FAIL;
+one tie → CANNOT ANSWER with M and p `None`; K=4/M=0/floor 1.0 → FAIL with the unwinnability
+warning), every threshold, seed and `B`, all three prereg `GATING` values, the whole §M.8 arm table
+and rank ladder, §M.9's PASS branch and the **K ≥ 20 minimum**, the `sigmoid(semantic_logodds)`
+identity at **max |diff| = 1.1102230246251565e-16** over 670 rows, the 82-arm dose sweep
+(**72 at 224.0, 9 at 2016.0, decode edits 0 everywhere**), `git_dirty` **{True: 255, None: 498}**,
+and **the entire §L.9 option-mass table including all four of S-468's corrected medians and all four
+"was" values.**
+
+### What is NOT established
+
+* ⛔ **Why §L.8's refusal claim was ever written.** If a refusal was once observed, the reason is not
+  the `DONE.json` status and is no longer recoverable. **It is withdrawn, not explained.**
+* ⛔ **Three minor items left as the auditor flagged them**: §M.5's note that PR-CSI-015 froze its
+  bars as NUMBERS from PR-CSI-012 rather than as a rule from its own family; §M.9's *"not an
+  oversight"* quote, which is the prereg's words and not the artefact's; and §M.7's `tail`/exit-status
+  anecdote, for which **no source exists in the repo** — the code gives two different reasons and
+  neither mentions a pipe.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** those three minor items, then the draft has been audited end to end. **Six questions with
+the user — and one of them now has one fewer reason behind it.** **Push credential-blocked.**
+
+---
+
+## S-474 — the §M/§L audit's three minor items, all three confirmed, and one is an anecdote with no source (2026-09-26)
+
+S-473 fixed the five substantive mismatches and the non-disclosure. These are the three the auditor
+flagged as minor. **All three verified by me, all three real.**
+
+### §M.5's "the bar is a rule, not a number" does not hold of the family it then cites
+
+§M.5 opens with the rule-not-a-number principle and then quotes §1's three clearing ratios
+(2.58× / 4.30× / 2.80×). Those cells are **PR-CSI-015's**, and PR-015 freezes its bars as **NUMBERS**:
+
+```
+min_abs_E_for_ci95_to_exclude_0    head 17 -> 0.009082    19 -> 0.010223    23 -> 0.006615
+declared method                    "computed from the PUBLISHED D34 arms via W4's own by_domain"
+ADMISSION                          null
+```
+
+⇒ **from PR-CSI-012, not from the family they judge**, and with no `ADMISSION` block at all. The
+rule-as-a-rule arrangement is PR-CSI-016/018/020's, i.e. **later**. §M.5 now says which arrangement
+each half belongs to. *(The three ratios themselves are correct — verified in S-469's audit.)*
+
+### §M.9 attributed a quote to the artefact; it is the preregistration's
+
+The identity-skip reason. §M.9 quoted the artefact as saying *"a real limitation of the direction,
+**not an oversight**"*. Counted: `not an oversight` appears **once in
+`configs/dcs_csi_pr003_necessity_basket.json`** (`required_gates.no_inert_identity_control_exists`)
+and **zero times in `dcs_csi_subspace_analyze.py`**. The artefact's own `IDENTITY_GATE_SKIP_REASON`
+says *"SKIPPED BY DESIGN, not absent … This is a real limitation of the direction"* — **without the
+clause quoted.** Re-attributed.
+
+### 🔴 §M.7's exit-3 anecdote has no source, and I am withdrawing it rather than sourcing it
+
+§M.7 explained exit code 3 — *"ran but is not the verdict"* — as a distinction that exists **"because
+a pipe once made `tail`'s exit status look like the gate's."** The exit codes are verified
+(`sys.exit(3)` at `:346` and `:380` of `dcs_csi_pr012_gate0_sweep.py`, `sys.exit("GATE 0: …")` → 1,
+`return 0`). **The rationale is not.** The sweep's own comments give **two different reasons**:
+
+```
+:344-346   "Either no arm has landed yet, or --tag-prefix/--split/--require-slurm-job name
+            something that does not exist."
+:377-379   "Re-run when the job is gone; an arm still lacking DONE.json then has DIED, and the
+            in-flight branch cannot tell those apart by itself. (R30-D/S-332)"
+```
+
+and the file contains **zero** occurrences of `tail` or `pipe`. A repo-wide search finds the words
+only in unrelated shell scripts. ⚠ **So a mechanism was asserted for a real design choice, with no
+evidence for the mechanism.** Withdrawn in place, and the two sourced reasons now stand in its place.
+
+⚠ **This is the worst small defect class in the draft**, because it is invisible to every gate I
+have: the figures are right, the code claim is right, the exit codes are right — **only the causal
+story is invented**, and nothing checks causal stories. It is the same shape as S-465's
+tag-prefix explanation, where I named a real defect as the cause of a discrepancy it had nothing to
+do with.
+
+### What is NOT established
+
+* ⛔ **Whether the `tail` incident ever happened.** It may have, outside this repo's records. **What
+  is established is that nothing here supports it**, which is why it is withdrawn and not corrected.
+* ⛔ **That other causal stories in the draft are sourced.** I have not swept for them. **Every
+  "because X" in a methods section is now suspect by the same argument**, and that sweep is not done.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+⚠ **The draft has now been audited end to end**: every results section figure-by-figure against
+artefacts (S-465, S-469), §M and §L against the code and preregs (S-470, S-473, S-474), and §0/§5/§6's
+load-bearing claims (S-467, S-471, S-472). **The remaining risk is the class this entry names —
+unsourced rationales — and the six decisions that are the user's.**
+
+**NEXT:** sweep the methods and limitations sections for *"because"* clauses and check each against a
+source; it is the one defect class the end-to-end audit provably does not cover. **Six questions with
+the user.** **Push credential-blocked.**

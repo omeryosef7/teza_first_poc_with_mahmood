@@ -390,8 +390,12 @@ demonstration block is zeroed within band layers 6–14 at the target surface ro
 **The mask is live during PREFILL ONLY.** GATE 0's pass predicate requires **zero decode edits** on
 every arm, so the generated answer is scored under an uncontaminated decode. This is the difference
 between measuring installation and measuring generation, and it is checked rather than assumed.
-⚠ **`knockout_scope` itself is read off the config and is verified by NO CSI reader** — it is in the
-same class as the prose VOID conditions, and this draft's standard is to say which facts are checked
+⚠ **`knockout_scope` is verified by the AXIS-side readers and by none of the cell-census readers.**
+🔴 *CORRECTED S-473 — this said "verified by NO CSI reader".* `dcs_csi_rederive_patch.py:713` refuses
+any intervened arm whose `knockout_scope != "target_surface_row_only"`, and
+`dcs_csi_subspace_analyze.py:766` refuses arms that disagree on it; `dcs_csi_head_census.py`,
+`dcs_csi_head_analyze.py` and `dcs_csi_pr016_argmax_test.py` contain no reference to it at all. **For
+the cell-census families it is in the same class as the prose VOID conditions**, and this draft's standard is to say which facts are checked
 and which are read off a config.
 
 The per-cell dose is an **identity**, not a measurement: `2016 / 9 = 224` edits per cell (verified
@@ -435,7 +439,12 @@ letting the prereg's presence imply otherwise.
 
 ## M.5 The detectability bar, and admission
 
-The bar is **a rule, not a number** — it must come from the family it judges:
+The bar is **a rule, not a number** — it must come from the family it judges: ⚠ 🔴 *S-474 — true of
+PR-CSI-016/018/020, and NOT of PR-CSI-015, whose cells this section then cites.* PR-015 freezes its
+bars as **NUMBERS** (`min_abs_E_for_ci95_to_exclude_0`: head 17 → 0.009082, 19 → 0.010223, 23 →
+0.006615) whose declared method is *"computed from the PUBLISHED D34 arms"* — **from PR-CSI-012, not
+from the family they judge** — and its `ADMISSION` is `null`. **The rule below is the later
+arrangement; §1's three ratios come from the earlier one.**
 
 > `bar(h) = 1.96 × SD(per-domain paired delta of HD_<h> minus the base arm, ddof = 1) / √n_domains`
 
@@ -520,6 +529,15 @@ admitted multiset. 🔴 **The floor NEVER changes the verdict.** At **K ≥ 3** 
 **FAIL whatever the floor**, and where the floor also exceeds α the verdict carries an explicit
 unwinnability warning beside it, so the FAIL is not cited as evidence against the screen. Structural
 **CANNOT ANSWER** is reached only at **K < 3**, where the prereg defines no adverse verdict at all.
+
+⚠ **ADDED S-473 — the CODE says this; TWO PUBLISHED ARTEFACTS STILL SAY THE OPPOSITE.** Both
+`DCS_CSI_PR018_ARGMAX_TEST_*` and `DCS_CSI_PR020_ARGMAX_TEST_*` carry
+`ROBUSTNESS.GATING_FLOOR.WHAT_THIS_IS` reading *"…the verdict is **CANNOT ANSWER (structural), never
+FAIL**"* — the pre-S-428 string, verified still present. It **decided nothing** in either family and
+is **deliberately not rewritten**, because rewriting a read after the fact is what VOID 12 forbids
+and §6's byte-identity claim rests on the files as they shipped. **This section describes the
+corrected code; the shipped artefacts describe the bug, and both statements are true of their own
+object.**
 ⚠ **The opposite rule — floor above α ⇒ CANNOT ANSWER — was tried and REJECTED in the code**, whose
 own comment records why: *"Deciding after the fact that a preregistered FAILURE is really a
 non-answer, because its floor is unflattering, is the post-hoc move this sprint exists to forbid."*
@@ -538,7 +556,11 @@ empty `knockout_heads` and the *identical* dose 2016. ⚠ **The sweep asserts th
 checked, by the `ALL`-plus-no-cell-list conjunction just described.)* The census reader reads the
 base arm's flags separately. Exit 0 = all arms pass; 1 = failure;
 **3 = ran but is not the verdict** (a partial sweep), a distinction that exists because a pipe once
-made `tail`'s exit status look like the gate's.
+made `tail`'s exit status look like the gate's. 🔴 *WITHDRAWN S-474 — **this rationale has no source
+in the repo.** The sweep's own comments give two different reasons for exit 3 — nothing has landed yet
+or the tag names something nonexistent (`:346`), and a partial sweep is a legitimate mid-flight state
+(`:380`, R30-D/S-332) — and the file contains **zero** mentions of `tail` or a pipe. The exit codes
+themselves are verified; the anecdote is not, and I cannot source it.*
 
 **VOID 8 is enforced by the reader**: each `HD_<h>` must reproduce the corresponding whole-head
 effect from PR-CSI-012 within **1e-6**, across a different job and family. ⚠ **It pins the MEAN only** — `bar(h)` and `ci95` are unpinned, while admission is a conjunction
@@ -547,7 +569,8 @@ missing one, and requires it in (0, 1e-3]), and **only heads that declare a refe
 evaluated** — any others are named as NOT EVALUATED rather than silently passed. All eight
 PR-CSI-020 heads declared one.
 
-🔴 **The other VOID conditions are unenforced BY ANY READER**, and the frozen read says so rather
+🔴 **The other VOID conditions are unenforced by any CELL-CENSUS reader**, and the frozen read says
+so rather
 than letting them read as automatic. ⚠ **One is enforced upstream, and §M said otherwise until
 S-421 checked the source:** **VOID 10 is enforced by the scoring script at run time** —
 `score_behavior.py` forces eager on every knockout arm and `assert_eager_for_knockout` refuses a
@@ -559,7 +582,7 @@ the failure it was rewritten to avoid), so a non-eager arm could not have been w
 |---|---|
 | VOID 5 | the screen artefact's md5 is unchanged (`81fc4dca…`) |
 | VOID 9 | every arm on one SLURM job and one GPU architecture |
-| VOID 10 | `attn_implementation == eager` on every arm — ⚠ **the key actually recorded in each arm is `attn_impl`**; an operator grepping the prereg's spelling finds nothing |
+| VOID 10 | `attn_implementation == eager` on every arm — ⚠ 🔴 *CORRECTED S-473:* **`config.json` and `RUNMETA.json` spell it `attn_impl`; `metadata.json` and `summary.json` DO carry `attn_implementation`** — so an operator grepping the prereg's spelling finds it in two files per arm, and `score_behavior.py` writes it deliberately so a verifier reads the LOADED value |
 | VOID 11 | `scripts/` and `src/` unchanged while the arms are in flight |
 | VOID 12 | the read file is not amended after any number from the family is seen |
 
@@ -592,7 +615,13 @@ decision rule, neither defined above. ⚠ Two names for one intervention: **`SIN
 its prereg says so in a field of its own: *"There is NO candidate, NO control family, NO rank and NO
 p-value in this preregistration"* — a rank among the 8 `HD_TOPK` singletons would carry a floor of
 **1/8 = 0.125** and could never clear α, so `control_prefix` and `n_controls` are **absent on purpose**
-so the rank tooling refuses the file. The rule below governs PR-CSI-010, 011 and 013 only.
+so the rank tooling refuses the file. The rule below governs **PR-CSI-010 and 011 only** — 🔴
+*CORRECTED S-473: it said "and 013".* `configs/dcs_csi_pr013_button_head_replication.json` has **no
+`verdicts` and no `F_definition`**; its reader is a different file
+(`scripts/dcs_csi_head_single_rank.py`, verdicts `REPLICATES` / `DOES NOT REPLICATE` /
+`DOES NOT REPLICATE AT RANK 1`) with **no `F` condition anywhere**, and its artefact carries no `F`
+field. **PR-013's rank-1 rule comes from its `attainable_floor`, and its gates from the frozen read,
+not from this ladder.**
 
 **The rank test.** The candidate is ranked among its controls by effect, most negative first, with an
 **attainable floor of `1/(n_controls + 1)`**. At 20 controls that is `1/21 = 0.047619`. ⚠ **The
@@ -631,7 +660,7 @@ sprint forbids "the writer" language throughout**, and the same file's `REPORTAB
 form that is permitted: *"8 head INDICES … carry at least half of the A1 knockout's effect on
 installation for basket — for leg (i) of the circuit ONLY. NOT a claim about any single (layer,
 head) cell."* ⚠ **A verdict LABEL is not a claim**, and this label is live in a published artefact —
-the same hazard class as the floor sentence in §M.6.
+the same hazard class as the `GATING_FLOOR` sentence disclosed in **§6 and §M.6**.
 
 ⚠ **`|E(HD_BOTK)|` doubles as the NULL ANCHOR in §H.2** — a third use of a threshold, beyond the two
 §M.5 enumerates. It is the family's own opposite-end set, not an external bar.
@@ -653,7 +682,7 @@ own floor as 0.10**, which `..._pr003a_necessity_family.json` corrects to 0.1111
 | `KO_ORTH` | `ctrl_orth`, norm-matched to the candidate — the prereg's words are **"THE PRIMARY COMPARATOR"**, ⚠ **but it is NOT the comparator §A's ranks use**: it enters as `--comparator-arm` only, is excluded from the 46-control family by `--control-prefixes KO_SHUF,KO_RAND`, and its single-comparator verdict is **SUPPRESSED** in both published artefacts (`single_comparator_verdict_SUPPRESSED`), because a verdict decided by which control the caller names is not a verdict |
 | `KO_PLS` | knockout + the rank-r\* PLS subspace, r\* selected on TRAIN — **not the candidate of any §A read**, but it is the arm on which *"the representation is one-dimensional"* would turn |
 | `KO_SHUF*` / `KO_RAND*` | shuffled-label and random directions, norm-matched — the control family, grown to **24 shuffled + 22 random = 46** |
-| `NEC_*` / `KO_NEC_*` | the same shapes **except one**, for the NECESSITY direction: `NEC_BASE` clean, `NEC_KO`, `KO_NEC_AXIS` the candidate, `KO_NEC_FULL` the positive control, `KO_NEC_ORTH` the comparator, `KO_NEC_SHUF0-3` / `KO_NEC_RAND0-3` the 8 controls. ⛔ **There is NO `KO_SELF` analogue**: for removal the natural identity control IS the identity and is refused by the arm's own precondition, so the identity gate is **SKIPPED BY DESIGN** and the artefact records the skip and its reason — *"a real limitation of the direction, not an oversight"*. ⚠ The `NEC_` prefix is **load-bearing**: a second complete directory under one tag is the tag ambiguity an earlier entry had to untangle |
+| `NEC_*` / `KO_NEC_*` | the same shapes **except one**, for the NECESSITY direction: `NEC_BASE` clean, `NEC_KO`, `KO_NEC_AXIS` the candidate, `KO_NEC_FULL` the positive control, `KO_NEC_ORTH` the comparator, `KO_NEC_SHUF0-3` / `KO_NEC_RAND0-3` the 8 controls. ⛔ **There is NO `KO_SELF` analogue**: for removal the natural identity control IS the identity and is refused by the arm's own precondition, so the identity gate is **SKIPPED BY DESIGN** and the artefact records the skip and its reason: *"SKIPPED BY DESIGN, not absent … This is a real limitation of the direction."* 🔴 *S-474 — the words **"not an oversight"** are NOT in the artefact; the exact phrase *"This is a real limitation of the direction, not an oversight."* is in `configs/dcs_csi_pr003_necessity_basket.json` (`required_gates.no_inert_identity_control_exists`), which has it once and the analyser zero times. The claim is true of the PREREG and was attributed to the artefact.* ⚠ The `NEC_` prefix is **load-bearing**: a second complete directory under one tag is the tag ambiguity an earlier entry had to untangle |
 
 **Three gates precede any rank**, all published and all true on every read in §A: `manipulation_check`,
 `identity_check` (SKIPPED for necessity, above) and `instrument_capable`. ⛔ **`instrument_capable` is
@@ -775,8 +804,11 @@ fresh freeze below **would not supply one**: it fixes the floor, not the in-samp
 
 ⚠ **PR-CSI-003-A is blocked by TWO stranded conditions, not one:** its own VOID 6 (the score blob)
 and **VOID 7** (`dcs_csi_rederive_subspace.py` moved, +36 lines). A launch would also intersect 20
-new arms against a key set **already reduced to 664 by three short control arms**, and today's
-re-derivation path refuses the family outright.
+new arms against a key set **already reduced to 664 by three short control arms**. 🔴 *CORRECTED
+S-473 — this also said "and today's re-derivation path refuses the family outright". **It does not.**
+I ran the frozen recipe today: exit 0, and the output reproduces the published artefact with
+`CHANGED=NONE` in every rank group. That clause is withdrawn; **the two stranded VOID conditions are
+unaffected and remain the block.***
 
 ⚠ **And "floor-limited" is a statement about these families, NOT about the cells.** Neither result
 is permanently uncertifiable: a fresh freeze that re-runs every arm on one current blob **and
@@ -838,7 +870,13 @@ land on those two modal layers**, so a *random* screen predicting that multiset 
 anti-conservative here**, which is the measured reason §3's binomial may never be quoted alone.
 ⚠ **0.1625 is NOT a corrected null and must never be substituted into anything** — constructing a
 "corrected binomial" after seeing the marginal is exactly the post-hoc statistic-selection this
-sprint forbids. ✅ **The permutation and conditional p's are immune**: both condition on the
+sprint forbids. ✅ **The permutation and conditional p's do not inherit the favourable marginal** — 🔴 *CORRECTED
+S-473: this said "both condition on the multiset", which is FALSE of the conditional.*
+`argmax_verdict.py:105` is `p_cond = binom_tail(M_u, K_u, p0)` with `p0 = 1.0/len(band)`: **it is a
+binomial against the same uniform 1/9 null and conditions on nothing** — it merely drops heads whose
+predicted layer is shared, and in PR-CSI-020 head 18's unique prediction is **L14, one of the two
+modal layers**, so a modal-layer head is retained and still scored at 1/9. The **permutation** p does
+condition on the
 multiset, so a marginal favouring L10/L14 helps every assignment equally and cancels. The claim
 rests on the weakest of three, and the binomial is never the weakest.
 
@@ -873,11 +911,19 @@ installed" is a claim about the heads that were looked at.
 
 §6 shows both published reads replay from their landed artefacts, including under a later reader
 refactor. **That tests the reader, not the arm** — it re-reads the same arms, strengthens no p, and
-a deterministic replay of a wrong arm is still wrong. ⚠ **And replay is NOT uniform.** The two published PASSes replay exactly; the **necessity
-re-derivation does not reproduce under today's code at all** — the script now refuses an arm whose
-`DONE.json` is not `ok`, and **three of the eight necessity controls are short** (669 / 666 / 669 of
-670, handled by intersection at 664 keys). **The guards got stricter; the result did not get
-weaker.** ⚠ Relatedly, the **bootstrap parameters were command-line defaults frozen retroactively**
+a deterministic replay of a wrong arm is still wrong. 🔴 **CORRECTED S-473 — this section claimed "replay is NOT uniform: the necessity re-derivation
+does not reproduce under today's code at all", and BOTH halves are false.** ⛔ **(a) The script does
+not refuse `INCOMPLETE`.** `dcs_csi_rederive_patch.py:136` is
+`if done.get("status") not in ("ok", "INCOMPLETE")`, and its own comment says rejecting INCOMPLETE
+*"flipped this gate from inert to actively wrong: it began rejecting exactly the documented-short
+runs `allow_short` exists to admit"* — so admitting it is deliberate. The three short controls carry
+exactly `status: INCOMPLETE` (**669 / 666 / 669** of 670, confirmed from their own `DONE.json`).
+⛔ **(b) It reproduces.** I ran the frozen recipe: **exit 0**, 19 keys against 19, and the only
+difference is **four ADDED disclosure keys per rank group** — `CHANGED=NONE` everywhere, with
+`candidate_minus_base = -0.00852`, `n_keys_common = 664`, rank 1 of 9, floor 0.1111. ⇒ **ALL THREE
+replay exactly**, and the necessity read replays with *more* disclosure than it shipped with. ⚠ *The
+three short controls and the 664-key intersection are real and unchanged; what was wrong was the
+claim that they defeat the re-derivation.* ⚠ Relatedly, the **bootstrap parameters were command-line defaults frozen retroactively**
 (§M.4), so they are a convention that became a commitment rather than a commitment from the start.
 
 ---
@@ -928,9 +974,14 @@ zero* — so the rows were attenuating wherever there was an effect to attenuate
 §A.4a).
 
 🔴 **§1–§4 and §H cannot.** `scripts/dcs_csi_head_census.py` contains **no reference to
-`option_mass`**, and the shared loader every non-axis family uses — `load_installation`, whose own
-docstring calls it *"the SOLE implementation of the readout"* — selects on `query_kind`, `cell` and
-`n_examples` and **never reads the field**. There is no floor parameter to set. **Every result in
+`option_mass`**, and the shared loader every non-axis family uses — **`dcs_cont_layerpos_map.load_installation`** — reached via
+`dcs_csi_head_analyze.by_domain`, which `dcs_csi_head_analyze.py:15` calls *"the SOLE definition of
+the endpoint"* — selects on **`query_kind` and `cell` only** and **never reads the field**. 🔴
+*CORRECTED S-473: an earlier draft named `load_installation` without saying which, quoted a docstring
+(*"the SOLE implementation of the readout"*) that belongs to a **different** function —
+`dcs_succ_pr066_behaviour.py:1139`, which is not in this path — and attributed that function's
+`n_examples` filter to this one. My S-458 read had picked the wrong definition of two.* ✅ **The
+conclusion is untouched: `grep -c option_mass` is 0 in all four files.** There is no floor parameter to set. **Every result in
 §1–§4 and §H therefore includes all of those rows, and the sensitivity that reassured §A is
 unavailable there without new code.**
 
