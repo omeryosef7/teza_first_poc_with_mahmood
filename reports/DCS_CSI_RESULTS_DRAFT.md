@@ -21,9 +21,9 @@ names its scope rather than claiming a blanket.*
 head-level results, which the cell-level half subdivides and therefore depends on.** §H is written
 second and belongs first. ⚠ **A THIRD part — the axis, necessity and dissociation families
 (PR-CSI-001–009, 20 claim-table rows) — is **PARTLY PRESENT**: 🔴 *CORRECTED S-453 — this block said "two … and eighteen" long after the
-count reached ten:* **TWELVE of its rows are drafted as §A (D12, D13, D15, D18, D19, D23, D24,
-D25, D26, D27, D29, D30) and EIGHT are not** (D14, D16, D17, D20, D21, D22, D28, D31).
-*(Re-counted S-459 by regex over the §A headings, not by subtracting from last tick.)* The
+count reached ten:* **THIRTEEN of its rows are drafted as §A (D12, D13, D15, D18, D19, D21, D23,
+D24, D25, D26, D27, D29, D30) and SEVEN are not** (D14, D16, D17, D20, D22, D28, D31).
+*(Re-counted S-460 by regex over the §A headings, not by subtracting from last tick.)* The
 four rows below are the D-rows §H covers; it also reports **AM-36** and draws on AM-26, AM-27, AM-30, AM-33, AM-34 and AM-37:
 
 | row | what §H reports | where |
@@ -50,8 +50,8 @@ it declined is what found it. Classified by reading each row rather than by patt
 
 ⚠ **UPDATED S-439/S-440, RE-COUNTED S-453.** §A began as D19's bidirectional conjunction and
 D24's matched-power dissociation with D18, D23 and D29 as supports; it now also carries D12 (§A.3)
-and D25/D26/D27/D30 (§A.4, §A.4a, §A.4b). **That is an increment, not the part: TWELVE of the twenty
-are drafted and EIGHT remain** — D13, D14, D15, D16,
+and D25/D26/D27/D30 (§A.4, §A.4a, §A.4b). **That is an increment, not the part: THIRTEEN of the twenty
+are drafted and SEVEN remain** — D13, D14, D15, D16,
 D17, D20, D21, D22, D28, D31. (⚠ This count has been wrong twice: SCOPE said eighteen when it was
 fifteen, and a re-measure said thirteen by reading a range as a list, S-449.)
 
@@ -60,7 +60,7 @@ rank-1 installation axis and its control families, the necessity direction, the 
 codeword dissociation at matched power, and the cross-codeword axis swap. 🔴 *CORRECTED S-453 — this sentence outlived its count by three ticks:* **ten of them are
 in this file, as §A; the ten listed above are not.** §L.3 touches two of these results (necessity, basket-at-L20) only
 to limit them, which is how the gap stayed invisible for so long — they appeared as *limitations of
-results the draft never stated*, and for the **eight** still undrafted they still do.
+results the draft never stated*, and for the **seven** still undrafted they still do.
 
 ⛔ **Review coverage is UNEVEN and every pass so far has found real defects:** §1–§6 twice, §M once
 (S-421, six mismatches against the source), §L once, **§H once** (S-438: thirteen findings, two that
@@ -279,7 +279,7 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | any rung-2/3/4 **CLAIM** for a result here | every certified claim is rung 1 — but naming rung 2 as *unreached* is required, not forbidden, so the ban is on the claim and not the vocabulary | AM-34 |
 | "correcting" either 1.52e-04 | `(1/9)^4 = (1/3)^8 = 1/6561` — two real quantities, one value | [†] §4 |
 | ‼ "floor above α ⇒ CANNOT ANSWER, never FAIL" | true only at K < 3; at K ≥ 3 it is a FAIL with an unwinnability warning — and the sentence is **still live in both published artefacts**, so it can be re-imported from a source an editor will read | AM-45 (S-428), §M.6 |
-| ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | §1–§4 are the CELL-level part and §H the HEAD-level part; of the axis / necessity / dissociation families (D12–D31) **twelve of D12–D31 are drafted as §A and EIGHT remain in neither** — see SCOPE | D12–D31, SCOPE |
+| ‼ "these are the sprint's results" / "the sprint's negatives are §4's" | §1–§4 are the CELL-level part and §H the HEAD-level part; of the axis / necessity / dissociation families (D12–D31) **thirteen of D12–D31 are drafted as §A and SEVEN remain in neither** — see SCOPE | D12–D31, SCOPE |
 | ‼ quoting `VERDICT: "WE FOUND (part of) THE WRITER"` | it is a **verdict LABEL live in TWO published artefacts** (PR-010 and PR-011), not a claim; the permitted form is that file's `REPORTABLE_AS` — 8 head indices, at least half the effect, **leg (i) only**, **not** a claim about any cell | D32, §M.8 |
 | "deduplicating" the two 0.012346s | D39's certified conditional (§2) and D38's forbidden binomial (§4) are **both exactly 1/81** — one is a result, one is banned | D39, D38, §4 |
 | ‼ "TEST is unspent / untouched / available" | read to completion 2026-09-08 and selection-contaminated | AM-39, D5 |
@@ -1005,7 +1005,7 @@ p-value.** It holds for §1 and §4, which carry none.
 
 # A. The axis half — FIRST INCREMENT ONLY
 
-**Added S-439.** ⛔ **This is NOT part three. It is twelve of its twenty rows**, drafted as a deliberate
+**Added S-439.** ⛔ **This is NOT part three. It is thirteen of its twenty rows**, drafted as a deliberate
 increment rather than as a section. The axis/necessity/dissociation families (D12–D31) remain
 largely undrafted and SCOPE says so.
 
@@ -1649,3 +1649,66 @@ the 0.05 floor — only the eight cells of §A.3 and §A.4a were.
 else; that button's axis is or is not causal at any layer; that basket's L20 cell would pass at a
 matched family, which was never run (D14, and PR-CSI-004 was frozen for it and is no longer runnable
 — AM-46); and anything at all about **necessity**, which has been run only on basket.
+
+## A.6 The dissociation at MATCHED family size — and the three caveats that must travel with it (D21)
+
+§A.2 removes "unequal control families" by rerunning button at 46. D21 does the complement and it is
+the stronger form: **basket's family is restricted to the identical ten arm names button was run
+with** — `KO_RAND0..5` and `KO_SHUF0..3`, the same 6-random / 4-shuffled composition — so every cell
+is the **same test at the same attainable floor**. Recomputed by me from each artefact's own control
+block:
+
+```
+                   candidate   best control   rank     exceedances   z (matched-10)
+basket L18 TRAIN    +0.00264     +0.00215    1 of 11        0            +1.94
+basket L18 VALID    +0.00401     +0.00278    1 of 11        0            +3.58
+basket L20 TRAIN    +0.00294     +0.00129    1 of 11        0            +5.00
+button L20 TRAIN    +0.00040     +0.00159    4 of 11        3            +0.45
+button L20 VALID    +0.00132     +0.00266    4 of 11        3            +0.49
+button L18 TRAIN    -0.00027     +0.00151    8 of 11        7            -0.37
+                    attainable floor 0.0909 in ALL SIX -- one test, six times
+```
+
+✅ **The populations are matched at the input, not merely in description**: `fit_domains_sha16` is
+**`4614853e5636eb5f` in all six cells**, verified by me. The arms differ in one input token.
+**Basket takes zero exceedances in three cells; button takes 3, 3 and 7.** So the dissociation is
+not bought with extra controls.
+
+🔴 **THREE caveats, two of which WEAKEN it. All three must travel with the headline.**
+
+**(1) The cell the headline is usually quoted from is the WEAKEST evidence in the set.** For
+basket-L18-TRAIN the paired-domain Δz CI **includes zero** — +2.023 [−0.226, +4.288] — and its
+matched-10 Fisher exact is **p = 0.1053**. The dissociation is carried by the **held-out split**
+(Δz +4.209 [+0.630, +7.078]) and by the **shared-layer L18** comparison (Δz +2.832 [+0.606,
++5.057], Fisher **p = 0.0015**) — **not** by the TRAIN headline. `[READ, not reproduced]`
+
+**(2) Basket's TRAIN rank-1 is NOT robust to per-domain reweighting.** Under family-wide logit
+re-expression with trimming, **two of five schemes move it from rank 1 of 47 (p = 0.0213) to rank 3
+of 47 (p = 0.0638)** — from PASSES to does-not-pass at α = 0.05. VALIDATION and basket-at-L20 are
+rank 1 under **all five**. `[READ, not reproduced]`
+
+**(3) NOTHING EXPLAINS IT.** Six candidate explanations are removed by measurement — unequal
+families, headroom, population, axis geometry/dose, power, and **C6, which REVERSES** (button's axis
+tracks the causal carrier *better* and rescues *worse*). One is **partial**: power contributes
+1.2–2.4× of a 4.3–5.6× z gap. **Exactly one survives and it is unquantified** — C1, *"basket simply
+has a better probe"*: rank-1 LOO ρ **0.5629 against 0.5021**, a **+12 % relative** gap that would
+have to account for a 4.3–5.6× z gap, with **no held-out ρ recorded anywhere** and **no ρ→z
+calibration in this sprint**. ⛔ **The residual is still the codeword.** *(And §A.4 reports the
+preregistered test of C1, which returns no claimable cell in either direction.)*
+
+⚠ **On the z values.** The matched-10 ranks, exceedances, best controls and candidates above all
+reproduce exactly. The z's are `[READ, not reproduced]` in the record; five of the six reproduce to
+±0.01 under the natural convention, and **button-L20-VALIDATION does not** — the record says 0.441,
+re-derivation gives 0.486 and no convention tried yields 0.441. **Nothing turns on it**: the
+dissociation is basket 1.9–5.0 against button 0.45, 0.49 and −0.37 on either value.
+
+🔴 **And one dimension on which these six cells are NOT matched, which no caveat named.** They are
+matched on family size, composition, domains, prompts and fit — and **not on readout validity**: the
+basket cells come off a prompt bank where **36 %** of `BASE` rows fall below the declared
+option-mass floor, the button cells off one where **11 %** do (§L.9). The eight cells of §A.3 and
+§A.4a were re-read at that floor and did not move; **these six were not re-read**.
+
+**NOT ESTABLISHED:** that C1 explains the gap — it is the only survivor and it is unquantified, with
+the one measurement that would test it (held-out ρ) recorded nowhere; that power does not contribute
+— it partially does; and that the TRAIN headline cell would survive its own caveats, which on two of
+three readings it does not.

@@ -40589,3 +40589,83 @@ checklist row disagreed with the body it polices.)*
 without drafting — then D14/D16/D17/D20/D22/D28/D31. **Five questions remain with the user:** the
 readout-validity sensitivity for the head/cell families, the rung-1 framing, the second TEST read,
 PR-CSI-003-A's launch, and the axis rank rule. **Push credential-blocked.**
+
+---
+
+## S-460 — §A.6 drafted: the dissociation at matched family size, and the dimension its "matched" list does not contain (D21) (2026-09-26)
+
+**D21 is the dissociation's own caveat row** and §A.2 had been citing one of its caveats without
+drafting it. It is also the stronger form of §A.2's argument: rather than enlarge button's family,
+it **shrinks basket's to the identical ten arm names button was run with** (`KO_RAND0..5`,
+`KO_SHUF0..3` — same 6-random / 4-shuffled composition), so all six cells become **one test at one
+floor**.
+
+**Re-derived by me from each artefact's own control block:**
+
+```
+                   candidate   best control   rank     exceedances   z (matched-10)
+basket L18 TRAIN    +0.00264     +0.00215    1 of 11        0            +1.94
+basket L18 VALID    +0.00401     +0.00278    1 of 11        0            +3.58
+basket L20 TRAIN    +0.00294     +0.00129    1 of 11        0            +5.00
+button L20 TRAIN    +0.00040     +0.00159    4 of 11        3            +0.45
+button L20 VALID    +0.00132     +0.00266    4 of 11        3            +0.49
+button L18 TRAIN    -0.00027     +0.00151    8 of 11        7            -0.37
+                    attainable floor 0.0909 in ALL SIX
+```
+
+✅ **Ranks, exceedances, best controls and candidates reproduce EXACTLY.** ✅ **And the populations
+are matched at the input, verified rather than described: `fit_domains_sha16` is
+`4614853e5636eb5f` in all six cells.**
+
+### The z's: five of six reproduce, one does not
+
+The z values are `[READ, not reproduced]` in the record. Under the natural convention (controls
+only, ddof = 1) five reproduce to ±0.01. **Button-L20-VALIDATION does not**: the record says
+**0.441**, I get **0.486**, and neither ddof = 0 (0.512) nor pooling the candidate (0.460) yields
+0.441. ⛔ **Nothing turns on it** — the dissociation is basket 1.9–5.0 against button 0.45 / 0.49 /
+−0.37 on any of those values — and the figure was already flagged unreproduced. Recorded because
+five of six reproducing and one not is the signature of a different input, not of rounding.
+
+### The three caveats, drafted as caveats
+
+* **(1) The cell the headline is usually quoted from is the weakest in the set.** basket-L18-TRAIN's
+  paired-domain Δz CI **includes zero** (+2.023 [−0.226, +4.288]) and its matched-10 Fisher exact is
+  **p = 0.1053**. The dissociation is carried by the **held-out split** (Δz +4.209 [+0.630, +7.078])
+  and the **shared-layer L18** comparison (Fisher **p = 0.0015**).
+* **(2) Basket's TRAIN rank-1 is not robust to per-domain reweighting** — two of five schemes move
+  it to rank 3 of 47, p = 0.0638, from PASSES to does-not-pass. VALIDATION and basket-at-L20 are
+  rank 1 under all five.
+* **(3) Nothing explains it.** Six explanations removed by measurement, including **C6 which
+  REVERSES**; one partial (power, 1.2–2.4× of a 4.3–5.6× gap); **one unquantified survivor**, C1,
+  at a +12 % relative ρ gap that would have to carry a 4.3–5.6× z gap, with **no held-out ρ anywhere
+  and no ρ→z calibration in this sprint**.
+
+### 🔴 And a dimension the "matched" list does not contain
+
+D21's headline is *"matched control-family size, composition, domains and prompts"*. Those are all
+verified. **Readout validity is not in that list and the six cells are not matched on it**: the
+basket cells come off a bank where **36 %** of `BASE` rows fall below the declared option-mass floor,
+the button cells off one where **11 %** do (§L.9, AM-55). **The eight cells of §A.3/§A.4a were
+re-read at that floor and did not move; these six were not re-read.**
+
+### Counted, not subtracted
+
+**Thirteen of twenty drafted** — 12, 13, 15, 18, 19, 21, 23, 24, 25, 26, 27, 29, 30 — **seven
+remain**: 14, 16, 17, 20, 22, 28, 31. Measured by regex over the §A headings. **Five count sites
+updated** (SCOPE header, SCOPE note, §A preamble, the undrafted-rows sentence, the Editor's
+checklist row) and swept for survivors.
+
+### What is NOT established
+
+* ⛔ **That C1 explains the gap.** Sole survivor, unquantified, and the measurement that would test
+  it — a held-out ρ — is recorded nowhere. §A.4 reports the preregistered test of C1 and it returns
+  no claimable cell in either direction.
+* ⛔ **That these six cells survive the readout-validity floor.** Not re-read.
+* ⛔ **Caveats 1 and 2's figures.** Δz CIs, Fisher exacts and the five reweighting schemes are
+  `[READ, not reproduced]` and were **not** re-derived this tick — only the matched-10 block was.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** re-derive caveat 1's and caveat 2's figures, which are the two that weaken the headline
+and the only unreproduced numbers left in §A.6; then D14/D16/D17/D20/D22/D28/D31. **Five questions
+remain with the user** (head/cell readout sensitivity, rung-1 framing, second TEST read,
+PR-CSI-003-A, axis rank rule). **Push credential-blocked.**
