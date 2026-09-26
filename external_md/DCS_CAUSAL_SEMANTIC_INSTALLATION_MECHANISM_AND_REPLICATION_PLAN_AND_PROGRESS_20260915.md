@@ -43732,3 +43732,48 @@ S-503 recorded, as a pre-existing defect: *"D39 at 6 columns in a 4-column secti
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** prohibition 26, then A30's missing row; D40-b and the five candidates checked one row at a time, by hand.
+
+---
+
+## S-509 / PR-CSI-022 FROZEN — the held-out necessity read, preregistered before a single validation arm exists (2026-09-26)
+
+I stopped doing record-consistency work to ask what the idle GPU should be doing. **The answer is the one caveat on D42 that compute can actually remove.**
+
+D42 carries two caveats that no amount of running can change or remove respectively: `p = 0.0400` **is** the attainable floor (permanent), and the evaluation is **in-sample** (removable). PR-CSI-001's replication criterion — *"the sign and rough magnitude reproduce on VALIDATION at the frozen layer, rank, site and positions, without retuning"* — is **UNMET** for necessity, and S-501/S-505/S-508 all had to say so. **No validation necessity arm exists.** So this is not a new question; it is one PR-CSI-001 asked and nobody answered.
+
+### ✅ Feasibility established by measurement, before writing a word of the prereg (S-167c)
+
+```
+  launcher: dcs_csi_p1_arms.slurm takes SPLIT as $3 with choices train|validation; group L is necessity
+  exclusion file runargs/dcs_cont/exclude_basket_bomb_sow_validation.txt        EXISTS
+  expect_n COMPUTED from the bank under the launcher's own filter:
+        train       NKEEP=670   distinct domains=67     (matches every committed read)
+        validation  NKEEP=230   distinct domains=23
+  axis basis keys: cand_rank1 + ctrl_shuffled0..23 -> ALL 25 PRESENT (loaded and checked)
+```
+
+⚠ The verification script **refused rather than proceeding** when run under a `python3` without torch — so no prereg was written on an unchecked basis file. That is the S-167c discipline working in my favour for once, after a session in which my own instruments failed six times.
+
+### ✅ What is frozen, and the two parts that matter most
+
+* **PRIMARY**: the shuffled-only rank of `KO_NEC_AXIS − NEC_BASE` among **24** `KO_NEC_SHUF` controls. `1/25 = 0.0400 ≤ 0.05`, so **rank 1 certifies and rank 2 (0.0800) does not**. SUCCESS = rank 1 **and** a negative point.
+* 🔶 **THE MAGNITUDE BAND IS FROZEN NOW, NUMERICALLY.** PR-CSI-001 says *"rough magnitude"*, which is exactly the phrase that gets argued after the fact. So: the validation point reproduces if it is negative and its absolute value lies in **[0.0029, 0.0261]** — a factor of 3 either side of TRAIN's 0.00870343. **Wide on purpose**: 23 domains against 67 is a much noisier estimate, and a tight band would fail for power rather than substance. The **sign** and the **rank** are the load-bearing claims; the band exists so that *"roughly the same"* cannot be argued either way.
+* **THE AXIS IS NOT REFIT.** The basis is the existing TRAIN-fit file, `fit_domains_sha16 4614853e5636eb5f`, unchanged. Refitting on validation would answer a different question and the file **forbids** it.
+* **PRE-COMMITMENT ON A NEGATIVE**, stated before the data: *"If the candidate does not rank 1, that is the result and it will be reported as one. The honest reading of a failure is that the TRAIN result was in-sample and did not survive held-out evaluation, which would make D42 a statement about the fit rather than about the model."* No pooled family or alternative statistic may be promoted afterwards — **VOID 8** freezes the family, the statistic, the prefixes, the floor and the band.
+
+### ✅ Ten VOID conditions, three of them written out of this session's own mistakes
+
+* **VOID 1** requires the 3090 check to be measured *"on the read's OWN run_dirs, never on a glob pattern — S-507 recorded that exact error"* — my error, now a preregistered prohibition.
+* **VOID 6** says *blob, not commit*, citing S-490/S-496/S-499, and states that a blob change is **dischargeable by the S-139/S-494 bit-identity demonstration, not automatically fatal** — the lesson §L.3 had to be corrected for.
+* **VOID 7** carries the I/O-only-vs-computational criterion and the S-490 leaf-comparison method.
+* And `HOW_TO_RUN` records that `dcs_csi_submit.sh` **cannot** submit this launcher, with the reason, so nobody rediscovers it.
+
+### WHAT IS NOT ESTABLISHED
+
+- ⛔ **Nothing is launched and no arm exists.** This entry freezes a rule; it produces no number.
+- ⛔ **The outcome is genuinely open.** TRAIN's rank 1 was **in-sample**; that is precisely why 23 held-out domains can fail it. I have not modelled the power and I am not predicting the result.
+- ⛔ **A held-out PASS would still leave `p` AT its floor**, and would still not make the two directions' fractions comparable.
+- ⛔ **Prohibition 26, prohibition 28, A30's missing row and ~12 further audit items are still outstanding** — S-508's NEXT is deferred, not done, and I am naming that rather than letting the prereg cover for it.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** commit, then submit halves 1, 2, 4 and 5 on validation — 29 arms plus the harmless extras — using the direct-`sbatch` route with the helper's protections replicated.

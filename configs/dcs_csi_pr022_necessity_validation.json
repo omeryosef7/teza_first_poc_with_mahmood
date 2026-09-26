@@ -1,0 +1,121 @@
+{
+ "id": "PR-CSI-022",
+ "title": "HELD-OUT NECESSITY: does removing the rank-1 component reproduce on the 23 VALIDATION domains?",
+ "written": "2026-09-26 (S-509). FROZEN BEFORE ANY VALIDATION NECESSITY ARM EXISTS.",
+ "WHY_THIS_EXISTS": "D42 (S-501) certifies necessity on TRAIN: rank 1 of 25 shuffled controls, p = 0.0400. Two caveats travel with it and only ONE is removable by more compute. (a) p = 0.0400 IS the attainable floor, which no experiment can change. (b) THE EVALUATION IS IN-SAMPLE -- the axis was fit on the same 67 TRAIN domains it was scored on (evaluation_is_in_sample true, 67/67), so PR-CSI-001's replication criterion is UNMET for this direction. This file discharges that criterion. It does not open a new question; it answers one PR-CSI-001 already asked.",
+ "population": {
+  "split": "validation",
+  "expect_n": 230,
+  "n_domains": 23,
+  "MEASURED_NOT_ASSUMED": "both figures recomputed from the bank minus runargs/dcs_cont/exclude_basket_bomb_sow_validation.txt under the launcher's own filter (query_kind semantic_one_word, bank_block cds_n4_sow, condition natural_doublespeak): 230 rows, 23 distinct domains. TRAIN under the same filter gives 670 / 67, matching every committed read.",
+  "allow_short": 4,
+  "allow_short_REASON": "the norm-match degeneracy guard refuses 1-2 rows per shuffled control arm and the loss is a DETERMINISTIC function of (control basis, row) (S-152/S-154/S-159). Eleven of PR-CSI-003-A's twenty arms were short, all inside 4. The same tolerance is frozen here BEFORE the arms run, not chosen after seeing how many were lost.",
+  "statistical_unit": "the domain"
+ },
+ "DIRECTION": {
+  "contract": "h' = h_clean - P_w(h_clean - h_ko): start CLEAN, REMOVE, expect installation to DROP",
+  "reference_arm": "NEC_BASE",
+  "stronger_candidate_is": "MORE NEGATIVE"
+ },
+ "THE_AXIS_IS_NOT_REFIT": "THE POINT OF THE EXPERIMENT. The basis is the EXISTING TRAIN-fit file configs/dcs_csi_axis_basket_behavioral_shuf24.pt, key cand_rank1, layer 18, site rel-6, fit_prompt behavioral, fit_domains_sha16 4614853e5636eb5f -- unchanged, not refit, not reselected. Refitting on validation answers a different question and is FORBIDDEN by this file.",
+ "arms": {
+  "base": "NEC_BASE",
+  "ko": "NEC_KO",
+  "positive_control": "KO_NEC_FULL",
+  "candidate": "KO_NEC_AXIS",
+  "comparator": "KO_NEC_ORTH",
+  "controls": [
+   "KO_NEC_SHUF0",
+   "KO_NEC_SHUF1",
+   "KO_NEC_SHUF2",
+   "KO_NEC_SHUF3",
+   "KO_NEC_SHUF4",
+   "KO_NEC_SHUF5",
+   "KO_NEC_SHUF6",
+   "KO_NEC_SHUF7",
+   "KO_NEC_SHUF8",
+   "KO_NEC_SHUF9",
+   "KO_NEC_SHUF10",
+   "KO_NEC_SHUF11",
+   "KO_NEC_SHUF12",
+   "KO_NEC_SHUF13",
+   "KO_NEC_SHUF14",
+   "KO_NEC_SHUF15",
+   "KO_NEC_SHUF16",
+   "KO_NEC_SHUF17",
+   "KO_NEC_SHUF18",
+   "KO_NEC_SHUF19",
+   "KO_NEC_SHUF20",
+   "KO_NEC_SHUF21",
+   "KO_NEC_SHUF22",
+   "KO_NEC_SHUF23"
+  ],
+  "n_arms_total": 29,
+  "basis_keys_VERIFIED_PRESENT": "cand_rank1 and ctrl_shuffled0..23 all present in the axis file, checked by loading it before this file was written (S-167c)"
+ },
+ "PRIMARY": {
+  "statistic": "the SHUFFLED-ONLY rank of KO_NEC_AXIS - NEC_BASE among the 24 KO_NEC_SHUF controls",
+  "alpha": 0.05,
+  "attainable_floor": 0.04,
+  "attainable_floor_ARITHMETIC": "1/(24+1) = 0.0400 <= 0.05, so rank 1 certifies and rank 2 (2/25 = 0.0800) does not",
+  "SUCCESS": "rank 1 of 25 AND the candidate point is NEGATIVE",
+  "FAILURE": "rank >= 2 of 25",
+  "CANNOT_ANSWER_IF": [
+   "the positive control KO_NEC_FULL - NEC_BASE is not negative with a domain-clustered ci95 excluding 0 -- without a capable instrument a null is uninterpretable",
+   "fewer than 24 shuffled control arms land, because the floor would then not be 0.0400 and this rule would not apply"
+  ],
+  "WHAT_A_RANK_1_MUST_SAY_IN_THE_SAME_SENTENCE": "p = 0.0400 IS the attainable floor of this design; rank 1 necessarily yields exactly it and no data could produce less. S-079 is the precedent and D42 already carries this clause."
+ },
+ "REPLICATION_CRITERION_BEING_DISCHARGED": {
+  "source": "configs/dcs_csi_pr001_subspace_rescue.json .success_criterion.replication",
+  "text": "the sign and rough magnitude reproduce on VALIDATION at the frozen layer, rank, site and positions, without retuning",
+  "TRAIN_COMPARATOR_FROZEN_HERE": {
+   "candidate_minus_base": -0.00870343,
+   "ci95": [
+    -0.01152,
+    -0.00612
+   ],
+   "sign_counts": "56 negative / 11 positive / 0 tied of 67",
+   "removal_fraction_candidate_of_full": 0.0803,
+   "removal_fraction_ci95": [
+    0.0584,
+    0.1041
+   ],
+   "n_keys_common": 655,
+   "n_arms": 29,
+   "SOURCE": "reports/DCS_CSI_SUBSPACE_NECESSITY_basket_train_shuf24.json, re-derived at S-501 and S-508"
+  },
+  "WHAT_ROUGH_MAGNITUDE_MEANS_HERE": "FROZEN NOW so it cannot be chosen later: the validation point reproduces the magnitude if it is NEGATIVE and its absolute value lies within a factor of 3 of TRAIN's 0.00870343, i.e. in [0.0029, 0.0261]. A factor of 3 is wide ON PURPOSE -- 23 domains against 67 is a much noisier estimate and a tight band would fail for power rather than for substance. The SIGN and the RANK are the load-bearing claims; the band is a sanity bound, stated so that a post-hoc 'roughly the same' cannot be argued either way."
+ },
+ "VOID_CONDITIONS": [
+  "1. any compared arm on anything other than an NVIDIA GeForce RTX 3090 (cc 8.6, native bfloat16). MEASURED on the read's OWN run_dirs, never on a glob pattern -- S-507 recorded that exact error.",
+  "2. compared arms spanning more than one GPU architecture",
+  "3. arms disagreeing on bank, exclusion file, layer, positions, donor or basis file",
+  "4. any TRAIN or TEST domain present in the validation read",
+  "5. a DONE.json ledger disagreeing with the rows on disk",
+  "6. src/boombness/score_behavior.py differing BY BLOB between arms of this family. Blob, not commit: S-490/S-496/S-499 established that many commits can share one blob and that treating 'the commit changed' as the trigger produces spurious VOIDs. A blob change is dischargeable by the S-139/S-494 bit-identity demonstration, not automatically fatal.",
+  "7. the analysers moving COMPUTATIONALLY between this read and D42's. The recipe's own criterion (I/O-only vs computational) and the S-490 method -- re-run and compare every leaf -- apply.",
+  "8. the control family, the primary statistic, the prefix strings, the floor or the magnitude band changed after any candidate rank has been seen. The family is 24 shuffled, the primary is the shuffled-only rank, the floor is 0.0400, the band is [0.0029, 0.0261]; those five facts are frozen by this file.",
+  "9. any arm run with --limit rather than --expect-n",
+  "10. the axis refit or reselected on validation (see THE_AXIS_IS_NOT_REFIT)"
+ ],
+ "PRE_COMMITMENT_ON_A_NEGATIVE": "IF THE CANDIDATE DOES NOT RANK 1, THAT IS THE RESULT AND IT WILL BE REPORTED AS ONE. The honest reading of a failure is that the TRAIN result was in-sample and did not survive held-out evaluation, which would make D42 a statement about the fit rather than about the model. No pooled family, no random-only subfamily and no alternative statistic may be promoted to primary afterwards -- VOID 8 exists to prevent exactly that.",
+ "SECONDARY_DESCRIPTIVE_ONLY": [
+  "the pooled rank if KO_NEC_RAND0-3 also land (28 controls, floor 1/29 = 0.034483 -- ALSO its own floor, the caveat D42 had to be corrected to state at S-507)",
+  "the removal fraction candidate/positive-control on validation, against TRAIN's 0.0803 [0.0584, 0.1041]",
+  "the per-domain sign count, against TRAIN's 56/11/0"
+ ],
+ "HOW_TO_RUN": {
+  "launcher": "slurm_scripts/dcs_csi_p1_arms.slurm (group L), UNMODIFIED",
+  "tag_prefix": "csi1_basket_validation",
+  "invocation": "CSI_NEC_HALF=<1|2|4|5> CSI_STAGE=1 sbatch --gpus=geforce_rtx_3090:1 --time=08:00:00 --export=ALL,CSI_NEC_HALF=<h>,CSI_STAGE=1,CSI_GIT_BLOB=<blob>,CSI_GIT_PORCELAIN=clean slurm_scripts/dcs_csi_p1_arms.slurm basket configs/dcs_csi_axis_basket_behavioral_shuf24.pt validation L",
+  "halves_needed": "1 (the five primary arms) + 2 (brings SHUF0-3, plus the anchor and RAND0-3, harmless and enabling the pooled secondary) + 4 (SHUF4-13) + 5 (SHUF14-23)",
+  "VERIFIED_BEFORE_FREEZING": "the launcher takes SPLIT as $3 with choices train|validation; group L is the necessity group; the validation exclusion file exists; expect_n 230 was COMPUTED, not assumed",
+  "NOTE_ON_THE_SUBMIT_HELPER": "scripts/gates/dcs_csi_submit.sh CANNOT submit this launcher -- it ends `exec sbatch ... \"$@\" \"$S\"` so the script is always last and there is nowhere for the four positional arguments (S-494). Submit directly and replicate its two protections: verify a clean worktree first, and export the provenance variables."
+ },
+ "NOT_CLAIMED_BY_THIS_FILE": [
+  "nothing here licenses 'the axis is necessary' -- prohibition 24 stands regardless of outcome",
+  "nothing here bears on button, on any head or cell family, or on the codeword-level claim",
+  "a held-out PASS would still leave p AT its floor, and would still not make the two directions' fractions comparable (different reference arms)"
+ ]
+}
