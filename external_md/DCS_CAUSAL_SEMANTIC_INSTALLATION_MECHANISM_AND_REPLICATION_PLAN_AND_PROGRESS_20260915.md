@@ -44005,3 +44005,37 @@ D19's stated reason for the two halves being unequal has now been superseded **t
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** commit; then §L.3 and §A.7, which D43 has just made stale in a new way.
+
+---
+
+## S-515 / §L.3 and §A.7 caught up with D43 — and one of the sentences I superseded was right all along (2026-09-26)
+
+S-514's NEXT. Commit `bf171d68` landed D43; this is the draft prose that D43 made stale. Three corrections, all in place.
+
+### ✅ §A.1 — the conjunction caveat carried forward, on its new footing
+
+My own S-505 sentence (*"the necessity half remains TRAIN-only and IN-SAMPLE … PR-CSI-001's replication criterion is UNMET"*) is superseded. In its place: both directions certify held-out, each on its own floor (1/47 = 0.0213, 1/25 = 0.0400), **and the conjunction is still not certified for the new statistical reason** — two rank-1 results at their floors do not combine without specifying how, and they are **not independent** (same axis, same model, same 23 validation domains).
+
+### 🔶 §L.3 — the sentence was RIGHT, and saying so matters more than replacing it
+
+§L.3 said: *"Neither has a held-out read, and the fresh freeze below **would not supply one**: it fixes the floor, not the in-sampleness."*
+
+**That observation is exactly correct, and it is why PR-CSI-022 did not freeze anything new — it ran the arms.** The distinction between *fixing the floor* and *fixing the in-sampleness* is the whole reason the held-out family existed to be run. So the correction records it as **right about the mechanism and overtaken by an experiment**, not as an error. ⚠ And it **remains true of basket-at-L20**, which still has neither a sufficient family nor a held-out cell — the paragraph is scoped, not deleted.
+
+### 🔶 §A.7 — three dead descriptors, one live headline, and the headline is the point
+
+Its NOT-ESTABLISHED clause read: *"that the axis carries the removal effect — that is §A.1's **rank-1-of-9** and it is **floor-limited, TRAIN-only and in-sample**"*. All three descriptors are now dead. **The claim they were supporting is not:**
+
+> ⚠ **THE HEADLINE OF THIS CLAUSE IS UNCHANGED AND STILL TRUE: the axis does NOT carry the removal effect** — about **92 %** of it is elsewhere, and **two certifying ranks do not alter that fraction.**
+
+🔴 **This is the discipline the whole session has been about.** A rank test certifying twice says the axis is *distinguishable from its controls*; it says nothing about how much of the effect the axis accounts for. Those are different quantities — a rank and a fraction — and a PASS on the first is exactly when the second gets quietly upgraded. It was not upgraded.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No figure computed this tick.** Every number is S-513's.
+- ⛔ **The joint test is still unspecified**, and I have still not invented one.
+- ⛔ **The claim table's ~12 audit items remain stale** — AM-13, AM-47, AM-47-a, AM-52, three audit rows and §M.9 still assert the extension is unlaunched or unreachable. **Five entries running now.** They are the last known block of stale text, and naming them again rather than letting the count fade is deliberate.
+- ⛔ **Prohibition 28 is still unamended** (its mandated 0.0778 against the governing 0.0803), recorded as OPEN in A30 row 28.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** the claim table's remaining audit block, in one pass; then prohibition 28's figure, which needs a decision rather than an edit.

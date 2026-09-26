@@ -833,6 +833,13 @@ author wrote** — a decision that is still open, not a dead end.
 on **every arm of both reads**, verified at the artefacts. Neither has a held-out read, and the
 fresh freeze below **would not supply one**: it fixes the floor, not the in-sampleness.
 
+🔴 **CORRECTED S-515 — TRUE OF BASKET-AT-L20, NO LONGER TRUE OF NECESSITY, AND THE OBSERVATION ITSELF
+WAS RIGHT.** *"A fresh freeze would not supply a held-out read: it fixes the floor, not the
+in-sampleness"* is exactly correct, and it is why PR-CSI-022 did not freeze anything new — **it ran
+the arms**. D43: necessity now has a held-out cell, **rank 1 of 25 on 23 VALIDATION domains**,
+`evaluation_is_in_sample` **FALSE**. ⚠ **Basket-at-L20 still has neither**, and this paragraph remains
+true of it.
+
 ⚠ **PR-CSI-003-A is blocked by TWO stranded conditions, not one:** its own VOID 6 (the score blob)
 and **VOID 7** (`dcs_csi_rederive_subspace.py` moved, +36 lines). A launch would also intersect 20
 new arms against a key set **already reduced to 664 by three short control arms**. 🔴 *CORRECTED
@@ -1235,10 +1242,19 @@ was declared before the first arm ran**~~ 🔴 **SUPERSEDED S-505 — NECESSITY 
 ASYMMETRY WITH SUFFICIENCY HAS CHANGED SHAPE, NOT DISAPPEARED.** The enlarged family (24 shuffled)
 gives **rank 1 of 25, p = 0.0400** (D42). ⚠ **`p = 0.0400` IS the attainable floor**, so rank 1
 necessarily yields exactly it — it is not a small p, it is the only p this design can produce.
-⚠ **The necessity half remains TRAIN-only and IN-SAMPLE** (67/67 scored domains in the fit), while
+~~⚠ **The necessity half remains TRAIN-only and IN-SAMPLE** (67/67 scored domains in the fit), while
 sufficiency has a genuinely held-out VALIDATION cell. **So the two halves are STILL not equally
 certified, for a different reason than before**: it is no longer floor-limitation, it is the absence
-of any held-out necessity arm — PR-CSI-001's replication criterion is **UNMET** for this direction.
+of any held-out necessity arm — PR-CSI-001's replication criterion is **UNMET** for this direction.~~
+🔴 **SUPERSEDED S-515 — THE HELD-OUT ARM EXISTS AND IT REPLICATES (D43).** PR-CSI-022 gives
+**rank 1 of 25 on 23 VALIDATION domains** (`evaluation_is_in_sample` **FALSE**, 0 of 23 in the fit),
+inside a magnitude band frozen before the arms ran. **Both directions now certify on held-out data,
+each sitting exactly on its own attainable floor** — sufficiency 1/47 = 0.0213, necessity 1/25 = 0.0400.
+⛔ **The conjunction is STILL not certified, for a NEW and statistical reason**: two rank-1 results at
+their own floors do not combine into a joint claim without specifying how, and they are **not
+independent** (same axis, same model, and on validation the **same 23 domains**). No combined test is
+preregistered, computed or specified anywhere. **"Both halves certify" is sayable; "the conjunction
+is certified" is not.** ⚠ D42 itself is still the in-sample TRAIN read.
 The historical statement below is kept because it was true when written** (⚠ the prereg declared the floor as **0.10**; the true floor
 at 8 controls is **0.1111** — AM-8's correction, not an advance figure), and §L.3 records that the family which would have fixed it — PR-CSI-003-A — is **built and patched
 ~~but blocked by two of its own VOID conditions and never launched: escalated, not dead.~~** 🔴 **SUPERSEDED S-504: both VOID conditions were discharged by measurement and the family was LAUNCHED and READ — rank 1 of 25 at floor 0.0400 (D42).** ⚠ *S-464 — this clause read "That is PR-CSI-004's status, not this one's" and inverted the very
@@ -2188,8 +2204,12 @@ reportable when it weakens is reportable when it does not.*
 true. **There is no `identity_check`**, because the removal design has no self-patch arm to provide
 one; the sufficiency families gate on `KO_SELF − KO` and this one cannot.
 
-**NOT ESTABLISHED:** that the axis carries the removal effect — that is §A.1's rank-1-of-9 and it is
-floor-limited, TRAIN-only and in-sample; that 46.9 % is comparable to anything in the sufficiency
+**NOT ESTABLISHED:** that the axis carries the removal effect — ~~that is §A.1's rank-1-of-9 and it is
+floor-limited, TRAIN-only and in-sample;~~ 🔴 **S-515: all three descriptors are dead** — it is now
+**§A.1's rank 1 of 25 (D42, TRAIN) with a HELD-OUT companion at rank 1 of 25 (D43, VALIDATION)**, it
+**sits on** its floor rather than being limited by it, and it is no longer TRAIN-only. ⚠ **THE
+HEADLINE OF THIS CLAUSE IS UNCHANGED AND STILL TRUE: the axis does NOT carry the removal effect** —
+about 92 % of it is elsewhere, and two certifying ranks do not alter that fraction; that 46.9 % is comparable to anything in the sufficiency
 direction; and that the removal direction has ever been run on **button** — it has not, on any
 layer, so every necessity statement in this draft is basket-only.
 
