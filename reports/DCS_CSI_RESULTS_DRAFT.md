@@ -1500,6 +1500,15 @@ it is not near-missing, it is **inside the family** — while A train's z of +1.
 family despite ranking only 4 of 47. **Rank and z disagree about which cell is closest to passing**,
 and the prereg asks for both for exactly this reason.
 
+⛔ **S3, the dose-penalty distribution — prespecified "for both directions" and reported in no
+form until now, and its REQUIRED form cannot be produced.** PR-CSI-006 asks for the **median and
+IQR** over admitted rows of `‖P_recipient(δ)‖ / ‖P_donor(δ)‖`. **The per-row rescale factor is not
+persisted** — only `captured_frac` mean/min/max — so the median and IQR are **not recoverable
+without a re-run the prereg forbids: CANNOT ANSWER.** What the persisted means do support is the
+ratio the statistic exists to detect, and it is near 1.0 in every cell: **A train 1.029, A valid
+1.029, B train 1.044, B valid 1.046** ⇒ **the dose-matching was very nearly inert**, which is a
+substantive statement about the swap arms that the draft did not carry.
+
 ⛔ **And S5, the analyser's per-control specificity test, also prespecified and also absent until
 now.** `specificity_all_controls_rejected` is **False in all four cells**; rejections at α = 0.05 are
 **A train 8 of 46, A valid 0 of 46, B train 1 of 46, B valid 2 of 46** (smallest Holm p 0.0067 /
@@ -1699,6 +1708,12 @@ At 0.0005 with no CI the two layers are **tied at this precision** — which is 
 and it supports the fairness basis rather than undermining it. *These ρ figures are* `[READ, not
 reproduced]` *— they are D2's, from the predecessor phase.*
 
+⚠ **ADDED S-466 — one asymmetry across these four probes that no section named.** The four fitted
+axes differ in `selected_rank` **by codeword** — **5** for both button axes, **3** for both basket
+axes — while the candidate arm is `cand_rank1` in **every** cell. ⛔ **NOT ESTABLISHED whether that
+matters**, and the record says in terms that it is *"precisely the asymmetry that could masquerade
+as a codeword effect"*. It is handed to D21's surviving explanation and is unresolved.
+
 ⛔ **The cells are NOT matched on control-family size, and this is the caveat that governs the
 whole section.** Basket's two passing cells carry **46** controls; the other four carry **10**.
 *"Rank 1 of 47"* and *"rank 1 of 11"* are **not comparable as p-values** — their attainable floors
@@ -1734,6 +1749,22 @@ p = 0.0323"*; the governing read is **rank 1 of 47, p = 0.0213, 215 keys** (AM-7
 ⚠ **§L.9 applies here as it applies to §A.2**: the basket cells and the button cells are read off
 prompt banks whose readout validity differs threefold, and these six cells were **not** re-read at
 the 0.05 floor — the eight that were are §A.3's two, §A.4a's four and §A.2's two button cells.
+
+🔴 **ADDED S-466 — EIGHT codeword × layer × split cells exist and this table shows SIX. Both
+omitted cells are button at L18 in the CERTIFYING 46-control family:**
+
+```
+button L18 TRAIN n46   -0.00014 [-0.00111,+0.00081]  36/31  rank 36 of 47  floor 0.0213  626 keys
+button L18 VALID n46   +0.00218 [+0.00030,+0.00406]  15/8   rank  6 of 47  floor 0.0213  221 keys
+```
+
+✅ **The TRAIN cell STRENGTHENS the section**: rank 36 of 47 in a family that *could* have
+certified, against the rank 8 of 11 the table shows. 🔴 **The VALIDATION cell WEAKENS it, and it is
+button's ONLY held-out read at basket's layer**: at **rank 6 of 47** only five controls beat button's
+axis there, against 7 of 10 in the floor-limited cell the table does show. ⇒ ***"Button is inside
+its controls at BOTH layers"* is carried by TRAIN-only 10-control reads where an eight-cell record
+exists**, and the held-out member of that pair puts button near the top of a 47-member family.
+Both cells are reported in §A.2; this was a table boundary, not an unknown.
 
 **NOT ESTABLISHED by this section:** *why* the codewords differ — this removes the layer and nothing
 else; that button's axis is or is not causal at any layer; that basket's L20 cell would pass at a
@@ -1797,6 +1828,24 @@ TRAIN, own layers      +2.023 [-0.226, +4.288]      +2.105 [-0.237, +4.254]   CI
 TRAIN, both at L18     +2.832 [+0.606, +5.057]      +2.937 [+0.625, +5.091]   excludes zero
 VALIDATION, own layers +4.209 [+0.630, +7.078]      +4.638 [+0.638, +7.094]   excludes zero
 ```
+
+🔴 **ADDED S-466 — THE RECORD HOLDS FIVE Δz ROWS AND THIS SECTION QUOTED THREE. The two dropped
+are the MATCHED-10 ones, in a section titled "at MATCHED family size", and both are SMALLER.**
+
+```
+                                     delta z      95 % CI              in the draft?
+TRAIN, own layers, full families      +2.023   [-0.226, +4.288]        yes
+TRAIN, own layers, MATCHED 10         +1.452   [-0.440, +3.345]        NO   <- CI includes zero
+TRAIN, both at L18, 10 vs 46          +2.832   [+0.606, +5.057]        yes  <- labelled UNMATCHED
+VALIDATION, own layers, full          +4.209   [+0.630, +7.078]        yes
+VALIDATION, own layers, MATCHED 10    +2.871   [+0.267, +4.977]        NO   <- 32 % smaller
+```
+
+⚠ **At matched family size the held-out Δz is +2.871, not +4.209** — caveat (1) above says the
+dissociation is *"carried by the held-out split (Δz +4.209)"*, and the matched-family version of
+that sentence is **+2.871**. ⚠ **And the row quoted as "both at L18" is labelled `10 vs 46` in the
+source: it is the one shared-layer comparison that is NOT matched.** The three rows the draft
+carried were exactly the three that are not matched-10.
 
 ⚠ **The point estimates drift by 0.08 to 0.43** — my basket z's run ~4–10 % above the record's, a
 convention difference I could not pin down — **but every CI overlaps heavily and no conclusion
@@ -1896,6 +1945,34 @@ the sufficiency read at L20 — is DEAD: D19 measures both directions at the sam
 population. The ban survives on the reference-arm grounds, and the two must not be confused
 (prohibition 24, corrected S-416).*
 
+🔴 **ADDED S-466 — §A.7 QUOTES THE POOLED RANK, AND THE AMENDMENT THAT GOVERNS THIS FAMILY
+NOMINATES A DIFFERENT ONE.** `configs/dcs_csi_pr003a_necessity_family.json` carries a block titled
+`why_the_SHUFFLED_ONLY_rank_is_the_primary_and_not_the_pooled_one`, and its `success_criterion` is
+*"rank 1 of 25 against the 24 `KO_NEC_SHUF` controls"* — the pooled family is explicitly its
+**SECONDARY**. Re-derived on the present 8-control read:
+
+```
+pooled        candidate -0.00852  rank 1 of 9  floor 0.1111   <- what this section quoted
+shuffled-only                     rank 1 of 5  floor 0.2000   <- PR-003a's nominated PRIMARY
+random-only                       rank 1 of 5  floor 0.2000   <- DESCRIPTIVE ONLY per PR-003a
+```
+
+⚠ **On the nominated primary the read is TWICE as far from α as the pooled statistic makes it
+look** — floor 0.2000 against 0.1111, both above α either way. ⛔ **Which statistic governs is NOT
+settled by the record**: PR-CSI-003a nominates shuffled-only *for the 25-control family it would
+have run*, and **that family was never launched**; this read is PR-CSI-003's, with four shuffled
+controls. **The draft reports both and claims neither as the governing one.**
+
+✅ **And one thing this family PASSES that the sufficiency family fails.**
+`specificity_all_controls_rejected` is **True** here — **8 of 8** controls rejected under the
+one-sided Holm test — where §A.3 reports the same statistic **False on both splits** for D12.
+⚠ *Reported because §A.3 and §A.4a both report this statistic where it weakens them; a statistic
+reportable when it weakens is reportable when it does not.*
+
+⛔ **A prespecified diagnostic that was never produced**: PR-003a's `secondary_endpoints` names
+*"`KO_NEC_AXIS` vs `KO_NEC_AXIS_ANCHOR`: the cross-allocation drift measurement"*. **There is no
+`KO_NEC_AXIS_ANCHOR` arm in the artefact's thirteen** — it was declared and never run.
+
 ⚠ **This artefact carries only two gates** — `manipulation_check` and `instrument_capable`, both
 true. **There is no `identity_check`**, because the removal design has no self-patch arm to provide
 one; the sufficiency families gate on `KO_SELF − KO` and this one cannot.
@@ -1967,6 +2044,16 @@ what code ran**, because the tree may have been dirty and no blob is recorded. �
 clause (c) and which an earlier draft dropped while calling that diff "measured" four lines above
 this withdrawal. **The bit-identity numbers, which depend on none of it, are not withdrawn.**
 
+🔴 **ADDED S-466 — BOTH OF THESE GATES HAVE A RECORDED HISTORY OF PASSING FOR THE WRONG REASON,
+and "provably" rests on them.** D22's gate, first version: it selected rows on a field name that
+**does not exist** (`rescue_positions_written` instead of `rescue_liveness.fired`), matched **0
+rows, and printed PASS** — caught only because the printout carried the comparison size beside the
+verdict. D28's guard tests were **source-text assertions** that *"pass if the text is present even
+when the code never executes"*; R10 found the truth-table test **tautological** and S-141 deleted
+and replaced it with one that locates the guard in the AST and **executes** it (9 of 9 mutations now
+fail). ⚠ **Both were caught and fixed, and both are the reason a bare "the gate passed" is worth
+less than the row count beside it.**
+
 ⛔ **What each discharge licenses, and it is narrow.** D17 retires PR-CSI-002's Gate-0 VOID
 condition **for PR-CSI-002's arms only**; D22 discharges **one** VOID condition for **PR-CSI-005's
 pooled family only**. **Neither is a general licence to edit `score_behavior.py` mid-run**, and
@@ -1975,6 +2062,35 @@ earlier version called D22 "the stronger one — across two nodes and a +474/−
 half stands and is witnessed; **the diff half is not** — AM-14(c) names D22's identification of the
 diff under test as "an inference from `git_commit` plus the worktree, exactly the inference S-143
 shows is unsound". The defensible ranking is on nodes alone.*
+
+🔴 **ADDED S-466 — THE EXPOSURE IS FIVE `score_behavior.py` TRANSITIONS AND THE COVERAGE IS ONE.**
+Resolving every arm's `git_commit` to its blob (`git rev-parse <commit>:src/boombness/score_behavior.py`):
+
+```
+cell                    blobs present
+basket TRAIN n46        73e541f1 (2 arms) · fe693529 (17) · 6f184ede (34)
+basket VALID n46        6f184ede (53)
+button L18 TRAIN n46    6f184ede (17) · e94258bd (36)
+button L18 VALID n46    11d2c617 (53)
+
+measured diffs   73e541f1 -> fe693529  +27 / -0      <- UNTESTED
+                 fe693529 -> 6f184ede  +10 / -1      <- UNTESTED
+                 6f184ede -> e94258bd  +474 / -7     <- the ONE tested, twice (D17, D22)
+                 e94258bd -> 11d2c617  +17 / -0      <- UNTESTED
+```
+
+🔴 **And the first untested transition runs THROUGH D12's own primary contrast.** In
+`basket_train_n46`, `KO` sits at blob **73e541f1** and `KO_AXIS` at **fe693529** — so
+`KO_AXIS − KO`, the contrast §A.3's headline is built on, **straddles a +27-line change to the
+scoring code**. `e94258bd → 11d2c617` likewise separates **every held-out button cell from its
+TRAIN counterpart**. **D28's pair, despite being presented as a code-change test, records the same
+`score_behavior.py` blob on both arms** — it is a bit-identity check across a RUNMETA-field
+difference, not across a change to that file.
+
+⚠ **These attributions are exactly as unreliable as this section argues** — they are inferences
+from `git_commit` with `git_dirty` True-or-None throughout, which AM-14(c) calls unsound. **But the
+section reported only the ABSENCE of witnesses. Read at face value, the witnesses that do exist say
+the exposure is five transitions and one is tested.**
 
 **NOT ESTABLISHED:** that the edits were inert on any path other than the one measured — each test
 covers one arm pair on one path; that any run directory can be audited for the code it ran — it

@@ -41098,3 +41098,89 @@ observed biting a second reader.** The draft's figure stands.
 
 **NEXT:** S-464's seven unapplied items, item 5 first (it changes a number §A.7 leads with).
 **Five questions remain with the user.** **Push credential-blocked.**
+
+---
+
+## S-466 — S-464's seven unapplied items, all closed, and the last one runs through D12's own primary contrast (2026-09-26)
+
+Every item re-derived by me before it was written. **One of the seven turned out to be partly
+wrong, and one is the most consequential provenance finding of the sprint.**
+
+### 🔴 The exposure is FIVE code transitions and the coverage is ONE — and the first runs through D12's primary contrast
+
+Resolving every arm's `git_commit` to its `src/boombness/score_behavior.py` blob:
+
+```
+basket TRAIN n46        73e541f1 (2 arms) · fe693529 (17) · 6f184ede (34)
+basket VALID n46        6f184ede (53)
+button L18 TRAIN n46    6f184ede (17) · e94258bd (36)
+button L18 VALID n46    11d2c617 (53)
+
+73e541f1 -> fe693529  +27 / -0    UNTESTED
+fe693529 -> 6f184ede  +10 / -1    UNTESTED
+6f184ede -> e94258bd  +474 / -7   the ONE tested, twice (D17 and D22)
+e94258bd -> 11d2c617  +17 / -0    UNTESTED
+```
+
+**In `basket_train_n46`, `KO` is at blob 73e541f1 and `KO_AXIS` at fe693529** — so `KO_AXIS − KO`,
+the contrast §A.3's headline rests on, **straddles a +27-line change to the scoring code**. And
+`e94258bd → 11d2c617` separates **every held-out button cell from its TRAIN counterpart**.
+⚠ **D28's pair records the SAME `score_behavior.py` blob on both arms** — presented as one of
+"three code changes", it is a bit-identity check across a RUNMETA-field difference, not across a
+change to that file. ⚠ *All of this is inference from `git_commit` with `git_dirty` True-or-None,
+which AM-14(c) calls unsound — but §A.8 reported only the ABSENCE of witnesses, and the witnesses
+that exist say five transitions, one tested.*
+
+### The other six
+
+* **§A.7 quoted the POOLED necessity rank** (1 of 9, floor 0.1111) where PR-CSI-003a's own block
+  `why_the_SHUFFLED_ONLY_rank_is_the_primary_and_not_the_pooled_one` nominates shuffled-only. On
+  this read that is **rank 1 of 5, floor 0.2000 — twice as far from α.** ⛔ **Which governs is not
+  settled**: PR-003a nominates it for a 25-control family that was never launched; this read is
+  PR-CSI-003's with four shuffled controls. Both are now reported and neither is claimed.
+* ⚠ **Here the reviewer was WRONG and I checked**: it reported
+  `removal_fraction_candidate_of_full` as **null**. It is not — it holds
+  `{point 0.0778, ci95 [0.056, 0.1009], status ok}`, which is the 7.8 % figure itself.
+* ✅ **And one thing the necessity family PASSES that the sufficiency family fails**:
+  `specificity_all_controls_rejected` is **True** here, 8 of 8, where §A.3 reports it **False on
+  both splits** for D12. Added, because a statistic reportable when it weakens is reportable when
+  it does not. ⛔ `KO_NEC_AXIS_ANCHOR`, a prespecified drift diagnostic, **is absent from the
+  thirteen arms** — declared, never run.
+* **Five Δz rows exist; §A.6 quoted three, and the two dropped were the MATCHED-10 ones** — in a
+  section titled *"at MATCHED family size"*. TRAIN own-layer **+1.452** (CI includes zero) against
+  the quoted +2.023; held-out **+2.871** against +4.209, **32 % smaller**. And the row quoted as
+  "both at L18" is labelled `10 vs 46` in the source: **the one shared-layer comparison that is not
+  matched.** The three carried were exactly the three that are not matched-10.
+* **§A.5 showed six of eight cells.** The omitted pair is button-at-L18 in the **certifying**
+  46-control family: TRAIN **rank 36 of 47** (which *strengthens* the section) and VALIDATION
+  **rank 6 of 47, 221 keys** (which weakens it, and is **button's only held-out read at basket's
+  layer** — five controls beat it, against 7 of 10 in the floor-limited cell the table showed).
+* **PR-CSI-006's S3** is prespecified *"for both directions"* and was reported in no form. Its
+  required median/IQR is a **CANNOT ANSWER** — the per-row rescale is not persisted. The persisted
+  means give the ratio the statistic exists to detect: **1.029 / 1.029 / 1.044 / 1.046 ⇒ the
+  dose-matching was very nearly inert**, a substantive fact the draft did not carry.
+* **Both §A.8 gates have a recorded history of passing for the wrong reason**: D22's first version
+  selected on a field name that does not exist, **matched 0 rows and printed PASS**; D28's guard
+  tests were source-text assertions, **tautological** until S-141 replaced them with an AST test
+  that executes the guard. Both caught and fixed — and both the reason a bare "the gate passed" is
+  worth less than the row count beside it.
+* **The `selected_rank` asymmetry**: the four fitted axes differ **by codeword** — 5 for both
+  button, 3 for both basket — while the candidate arm is `cand_rank1` in every cell. The record
+  calls it *"precisely the asymmetry that could masquerade as a codeword effect"*. **NOT
+  ESTABLISHED** whether it matters; now in §A.5.
+
+### What is NOT established
+
+* ⛔ **That the untested transitions are inert.** Four of five are untested, one runs through D12's
+  primary contrast, and testing them is a re-run this record does not authorise.
+* ⛔ **That the blob attributions are sound.** They are `git_commit` inferences and AM-14(c) says so.
+  **The finding is symmetric: the same unreliability that undercuts "clean tree" undercuts "five
+  transitions", and §A.8 now says both.**
+* ⛔ **Which necessity statistic governs.** Escalated, not resolved.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** §A has now had one adversarial pass and 28 defects fixed across S-464 → S-466. The
+remaining structural gap is that **§1–§4 and §H were reviewed before §A existed** and their
+cross-references to it were never re-checked — §H.4's "only two certified p's" (fixed S-464) was
+one such, found by accident. **Six questions now with the user**, the newest being whether the
+untested code transitions warrant a re-run. **Push credential-blocked.**
