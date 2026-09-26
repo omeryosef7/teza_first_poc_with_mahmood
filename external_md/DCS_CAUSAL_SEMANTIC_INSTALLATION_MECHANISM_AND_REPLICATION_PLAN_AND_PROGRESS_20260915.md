@@ -44124,3 +44124,47 @@ The GPU went idle again. The largest remaining **scientific** gap is not in the 
 - ⛔ **Prohibition 28 still unamended.** **TEST untouched.** Push credential-blocked.
 
 **NEXT:** commit, then launch halves 1, 2, 4, 5 on button/train — about 6 GPU-hours.
+
+---
+
+## S-518 / the fresh audit found three wrong numbers in MY OWN D42/D43 rows — all three verified and fixed, and one of them hides a favourable result (2026-09-26)
+
+A second subagent audited both documents specifically for inconsistencies the S-501…S-516 sweep *introduced or left behind*. **I re-derived every load-bearing figure from the artefacts before acting.** Its ground-truth table matched mine on every quantity I checked.
+
+### 🔴 Three defects in text I wrote, all confirmed by re-derivation
+
+**(1) D43: *"Ten control arms lost one row each"* — it is EIGHT.**
+
+```
+  arms IN THE READ (29) that are short: 8  -> SHUF 0,2,3,5,7,14,17,18
+  230 - n_keys_common(222) = 8
+  KNOWN_SHORT entries for this family = 10
+```
+
+**Ten is the count of `KNOWN_SHORT` entries**, which includes `KO_NEC_RAND0` and `KO_NEC_RAND3` — arms that ran but are **not among the 29 this primary read uses**. I mixed two populations inside one sentence, and the giveaway was in the same clause: *"230 → 222"* is a loss of **8**, not 10, and I wrote both.
+
+**(2) D42: *"Every sign-flip p sits at the Monte-Carlo sampler floor"* — measured, 33 of 55.**
+
+Twenty-two are not, including `removal_KO_NEC_ORTH_minus_base` at **p = 0.734**. The caveat *is* true of every figure D42 quotes, so it holds where it is used — but as written it is a false statement about the artefact.
+
+🔶 **And the VALIDATION half of this is a FAVOURABLE result I would have erased.** In D43's artefact only **3 of 55** contrasts are at the floor, and `candidate_minus_base` has **p = 1.35e−04 with `p_at_its_floor` FALSE**. **The held-out read's sign-flip p carries real information where TRAIN's was saturated and carried none.** Had the blanket caveat been copied onto D43 — which is exactly what "inherit D18's caveat" would have done — it would have thrown away the better-evidenced of the two reads. It was not copied; D43 never carried it.
+
+**(3) D43 had no removal fraction at all, which prohibition 28 requires.** Re-derived: **0.1146, ci95 [0.0676, 0.1649]** (−0.01283 / −0.112). Now in the row, with an explicit **⛔ do not attach TRAIN's 7.8 % to it — it is 1.4× smaller**. A reader obeying prohibition 28 while quoting D43 would otherwise have pinned a TRAIN figure to a VALIDATION result. **About 89 % of the held-out removal effect is still elsewhere**, and that is now stated where D43 stands.
+
+### ✅ Also fixed
+
+* **§A.7's *"§A.1 reports … rank 1 of 9 against a floor of 0.1111, INCONCLUSIVE"*** — the audit's highest-risk item, a live contradiction **and** an orphaned cross-reference, since §A.1 has said otherwise since S-505. Superseded in place.
+* **§A.7's mandated magnitude** now gives all three fractions — 0.0778 (664-key, the string prohibition 28 mandates), 0.0803 (governing TRAIN), 0.1146 (held-out) — rather than one silently substituted, with the OPEN status pointed at A30 row 28.
+* **§L.3's *"no VALIDATION necessity arms exist"*** — a live cell in a row whose first three cells were struck at S-504 and whose fifth was not.
+* **The claim table's `23, 24, 26` audit row** — 🔴 **S-516 patched the four sibling rows in those tables (557, 636, 648, 1137/1138) and missed this one.** A five-row edit that hits four is worse than one that hits none, because the survivors look deliberate.
+* **A duplicated fragment at `:102`** — *"which are, which are disjoint"*, the append-not-replace signature again.
+
+### WHAT IS NOT ESTABLISHED
+
+- ⛔ **I fixed eight of roughly twenty findings.** Still open and named: §L.3's *"floor sits above α"* and *"blocked by TWO stranded conditions"*; §M.9's arm-vocabulary table still calling them *"the 8 controls"*; **A30 rows 26 and 27, which I wrote at S-511 and which are now themselves stale, and A30 has no row for D43**; an unbalanced `**` at `:1267`; the SCOPE index omitting D42/D43; the Editor's checklist carrying no necessity rows; `:2208`'s *"declared and never run"* about `KO_NEC_AXIS_ANCHOR`, which **exists on disk in both splits**; and five **pre-existing** broken claim-table rows (D3, D22, D26, D27, D28) whose cause is unescaped `\|` bars.
+- ⛔ **Prohibition 28 is still unamended** and I did not touch it — three fractions are now on the record precisely *because* the mandated string cannot be edited freely.
+- ⛔ **No result changed.** D42 and D43's ranks, points, CIs and held-out status are exactly as S-501/S-513 re-derived them.
+- ⛔ **PR-CSI-023 is frozen but NOT launched** — S-517's commit landed (`f510c214`); the launch did not happen this tick.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** launch PR-CSI-023; then A30 rows 26/27 and a D43 index row, which are my own and are the ones a drafter would trust most.

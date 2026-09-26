@@ -99,7 +99,7 @@ corrected) — while **every census reported here is read on the 23 VALIDATION d
 in **§1–§4 and §H** rests on **23** domains rather than 67, and a 230-row read is n = 23 because the
 domain is the unit. 🔴 **CORRECTED S-453 — this said "every effect below" until §A existed, and §A
 is a large exception**: §A.2, §A.3, §A.4a, §A.4b, §A.5, §A.6 and §A.7 all carry cells
-computed on the **67 TRAIN domains** — §A.7 is TRAIN-only end to end — which are, which are **disjoint** from these 23. Each says so where it
+computed on the **67 TRAIN domains** — §A.7 is TRAIN-only end to end — which are **disjoint** from these 23. Each says so where it
 stands, and §A.4b's whole in-sample/held-out argument turns on the distinction. ⚠ **The confirmatory p's themselves are NOT over domains at all** — binomial, conditional and
 permutation are functions of the **admitted heads**, `K = 6` in §2 and `K = 8` in §3, which is why
 §3 can say "the margin is one head". The 23 domains are the n of the `E` and `bar(h)` estimates that
@@ -797,7 +797,7 @@ Both are **top of their control family** and both families are **too small to ce
 
 | result | outcome | floor | certifiable at α = 0.05? | the extension that would have fixed it |
 |---|---|---|---|---|
-| ~~necessity, basket~~ | ~~rank **1 of 9**~~ | ~~0.1111~~ | 🔴 **NOW YES — SUPERSEDED BY D42 (S-501)** | PR-CSI-003-A — **LAUNCHED 2026-09-26, 20 arms, read and CERTIFIED**: shuffled family 8 → 24, floor 0.1111 → **0.0400**, candidate **rank 1 of 25**. ⚠ `p = 0.0400` **IS** that floor, so rank 1 necessarily yields it; ⚠ **TRAIN only and IN-SAMPLE** (67/67 scored domains also in the fit); ⚠ PR-CSI-001's **replication criterion is UNMET** — no VALIDATION necessity arms exist; ⚠ every sign-flip p is at the Monte-Carlo sampler floor 5.00e−06; ⚠ **prohibition 24 still stands.** |
+| ~~necessity, basket~~ | ~~rank **1 of 9**~~ | ~~0.1111~~ | 🔴 **NOW YES — SUPERSEDED BY D42 (S-501)** | PR-CSI-003-A — **LAUNCHED 2026-09-26, 20 arms, read and CERTIFIED**: shuffled family 8 → 24, floor 0.1111 → **0.0400**, candidate **rank 1 of 25**. ⚠ `p = 0.0400` **IS** that floor, so rank 1 necessarily yields it; ⚠ **TRAIN only and IN-SAMPLE** (67/67 scored domains also in the fit); ⚠ ~~PR-CSI-001's **replication criterion is UNMET** — no VALIDATION necessity arms exist~~ 🔴 **SUPERSEDED S-518: they exist and they replicate — D43, rank 1 of 25 on 23 held-out domains; the criterion is MET**; ⚠ every sign-flip p is at the Monte-Carlo sampler floor 5.00e−06; ⚠ **prohibition 24 still stands.** |
 | sufficiency, basket at **L20** | rank **1 of 11** | 0.0909 | **no** | PR-CSI-004 — frozen, **never run, unrunnable as frozen** |
 
 🔴 **The two failures have ONE cause, not two.** Each extension was designed to **reuse
@@ -2159,10 +2159,12 @@ later (`keys_dropped_by_intersection = 6`). **Same quantity, two populations, no
 
 ⛔ **THIS IS THE WHOLE-STATE CONTROL, NOT THE AXIS.** It licenses exactly one sentence — *"a
 removal-direction effect is detectable by this instrument"* — and nothing about whether the rank-1
-axis carries that effect. §A.1 reports what the axis does in this direction, and it is **rank 1 of
-9 against a floor of 0.1111, INCONCLUSIVE**. ⛔ **And prohibition 28 requires the magnitude beside
+axis carries that effect. ~~§A.1 reports what the axis does in this direction, and it is **rank 1 of
+9 against a floor of 0.1111, INCONCLUSIVE**.~~ 🔴 **SUPERSEDED S-518 — §A.1 NO LONGER SAYS THAT.**
+It reports **rank 1 of 25, p = 0.0400 on TRAIN (D42)** and **rank 1 of 25 on 23 HELD-OUT VALIDATION
+domains (D43)**. ⚠ `p = 0.0400` **IS** that design's attainable floor, and D42 remains in-sample. ⛔ **And prohibition 28 requires the magnitude beside
 any necessity result: the axis removal moves 0.0778 [0.0560, 0.1009] of what whole-state removal
-moves — 7.8 %, so ~92 % of the removable effect is elsewhere.** This section quoted the necessity
+moves — 7.8 %, so ~92 % of the removable effect is elsewhere.** 🔴 **S-518: that pair is PR-CSI-003's 664-key read.** At the governing 655-key TRAIN read it is **0.0803 [0.0584, 0.1041]**, and the HELD-OUT read (D43) has **its own: 0.1146 [0.0676, 0.1649]** — so **~89 %** is elsewhere there. ⛔ **Prohibition 28 mandates the `0.0778` string verbatim and has NOT been amended**, which is why all three are given rather than one silently substituted; A30 row 28 records that as OPEN. This section quoted the necessity
 result twice without it until S-464.
 
 ⛔ **Do not compare 46.9 % to any sufficiency percentage.** The two fractions have **different
