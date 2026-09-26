@@ -1044,7 +1044,8 @@ NECESSITY    KO_NEC_AXIS - NEC_BASE  -0.00852 [-0.01127, -0.00592]  55 of 67 dom
 
 ⚠ **ADDED S-464 — D12 forbids quoting the TRAIN rank above without its leave-one-domain-out
 sensitivity, and this section was doing so.** TRAIN holds rank 1 under **65 of 67** single-domain
-deletions; its worst (`pipeline_station`) leaves **rank 2 of 47, p = 0.0426**. VALIDATION holds
+deletions; **two** drop it to **rank 2 of 47, p = 0.0426** — `rail_depot` (margin −0.000280) and
+`pipeline_station` (−0.000012), the former the worse deletion and the latter the narrowest miss. VALIDATION holds
 rank 1 under **23 of 23**. **The two splits are not equally sturdy and the held-out one is the
 sturdier** — §A.3 carries the full block.
 
@@ -1191,7 +1192,7 @@ TRAIN                     +0.00264 [+0.00068, +0.00471]  44 pos / 23 neg of 67  
    (the CONTRAST p's are different numbers and are given below: 0.0107 TRAIN, 0.0182 VALIDATION)
 leave-one-domain-out on the rank:  VALIDATION holds rank 1 under 23 of 23 drops
                                    TRAIN holds rank 1 under 65 of 67; its worst single-domain
-                                   deletion (pipeline_station, from my own LOO re-derivation) leaves rank 2 of 47,
+                                   deletions (rail_depot, margin -0.000280; pipeline_station, -0.000012) leave rank 2 of 47,
                                    p = 0.0426 -- which PASSES under the prereg's rank<=2 rule and
                                    FAILS under the analyser's rank==1 branch (AM-48): rule-dependent
 subfamilies, both splits: shuffled-only 1 of 25 (floor 0.0400)   random-only 1 of 23 (floor 0.0435)
@@ -1240,13 +1241,16 @@ names it *"the readout validity gate, min 0.05"*. The gate is applied to **one r
 (`BASE` by default) and its surviving key set is then used for every arm — never per-arm, because
 option mass is an outcome and a per-arm filter would be post-treatment selection (review R2-B1).
 Measured on TRAIN: **`BASE` has 36.3 % of its 670 scored rows below 0.05** (243 rows, median
-**0.0902**, minimum `0.000001`), while the rescued arms sit higher — `KO` and `KO_AXIS` both **18.1 %**
-below, median **0.191**. ⚠ **It is `BASE`'s distribution that gates**, and it is the worst of the
+**0.0901**, minimum **4.66e-05**) 🔴 *S-465: this read "median 0.0902, minimum 0.000001"; the median
+is 0.09008, and the 1e-06 minimum belongs to `KO` (9.6e-07) and `KO_AXIS` (1.0e-06), not to the arm
+the sentence is about*, while the rescued arms sit higher — `KO` and `KO_AXIS` both **18.1 %**
+below, median **0.191** — and it is those arms, not `BASE`, that reach 1e-06. ⚠ **It is `BASE`'s distribution that gates**, and it is the worst of the
 three. The analyser's own comment on those rows is that *"the model's actual prediction is some
 third word entirely"*. ⚠ **Every number in the record was computed at `option_mass_floor = 0.0`** —
 the analyser's help calls that *"the frozen protocol, which gates option mass POOLED"*, with 0.05
-available as a **declared sensitivity** — and **that sensitivity had never been run**: all 27
-subspace and swap artefacts record floor 0.0 and no `_om` artefact exists.
+available as a **declared sensitivity** — and **that sensitivity had never been run**: **23 of the 27**
+subspace and swap artefacts record floor 0.0 and no `_om` artefact exists — 🔴 *S-465: this said
+"all 27"; the four `DCS_CSI_SWAP_REDERIVE_*` files carry no `option_mass_floor` field at all.*
 
 🔴 **ADDED S-455 — IT HAS NOW BEEN RUN, ON BOTH SPLITS, AND THE VERDICT IS INVARIANT.** The frozen
 read was re-executed at floor 0.0 as a control and at the prereg's 0.05, through the analyser end to
@@ -1444,7 +1448,7 @@ All four, at the prereg's own B and seed:
 A  basket's axis -> BUTTON  TRAIN  +0.00164   [+0.00065, +0.00260]   0.0019   47 / 20
                             VALID  +0.00120   [-0.00043, +0.00283]   0.1716   13 / 10
 B  button's axis -> BASKET  TRAIN  -0.00175   [-0.00288, -0.00070]   0.0020   22 / 45
-                            VALID  -0.00177   [-0.00366, -0.00024]   0.0514    9 / 14
+                            VALID  -0.00177   [-0.00366, -0.00024]   0.0514    9 / 13 / 1 tied
 ```
 
 ⛔ **The transplant is fair only on D2's ρ plateau** (button 0.5931 / 0.5935, basket
@@ -1715,7 +1719,10 @@ basket's layer" is a sentence the data does not support.
 by the raw ratio.** Button's rank-1 axis spans **3.87 % in amplitude** of the ‖clean − ko‖ delta at L18 against
 **3.48 %** at its own L20 (≈ 0.1 % in energy — AM-2's mandated label; `captured_frac` is a ratio of
 norms despite its name) — ***more*, not less** — with `degenerate_positions` = 0 and
-`KO_FULL − KO` = **+0.10842** at L18, the largest whole-state recovery of the six cells. **So "the
+`KO_FULL − KO` = **+0.10842** at L18 — 🔴 *S-465: an earlier draft called this "the largest
+whole-state recovery of the six cells". It is the largest of the BUTTON cells; basket L18 TRAIN's
+**+0.12041** is larger. The argument rests on the dose-normalised span above, not on the
+superlative, but the superlative was false.* **So "the
 axis was never properly written at the foreign layer" is dead**, and it was the most likely benign
 explanation of button's null.
 
@@ -1839,7 +1846,9 @@ dissociation is basket 1.9–5.0 against button 0.45, 0.49, −0.37 and +1.03 on
 🔴 **And one dimension on which these six cells are NOT matched, which no caveat named.** They are
 matched on family size, composition, domains, prompts and fit — and **not on readout validity**: the
 basket cells come off a prompt bank where **36 %** of `BASE` rows fall below the declared
-option-mass floor, the button cells off one where **11 %** do (§L.9). The eight cells re-read at that floor
+option-mass floor, the button cells off one where **12.5 %** (TRAIN) and **10.9 %** (VALIDATION) do — 🔴 *S-465: an
+earlier draft wrote "11 %", the VALIDATION figure, across a table two of whose three button cells
+sit on the button-TRAIN bank* (§L.9). The eight cells re-read at that floor
 — §A.3's two, §A.4a's four and §A.2's two — did not move; **these six were not re-read**.
 
 **NOT ESTABLISHED:** that C1 explains the gap — it is the only survivor and it is unquantified, with
@@ -1944,7 +1953,10 @@ produced them do not.** Verified by me across the sprint's run directories:
 
 ```
 753 readable csi* RUNMETA.json:   git_dirty = True 255,  None 498,  False 0
-no RUNMETA field anywhere mentions a blob, sha, hash or digest
+no RUNMETA field records a CODE blob, hash or digest
+(all 753 do carry a nested `args.pr057_probe_sha`, EMPTY in every one — 🔴 *S-465: an earlier draft
+said "no field anywhere mentions a sha", which is literally false; the true and load-bearing point
+is that nothing records what code ran*)
 ```
 
 ⚠ **`git_dirty` is never `False`.** The direction that would *falsify* a clean-tree claim is

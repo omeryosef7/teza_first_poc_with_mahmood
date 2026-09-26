@@ -41028,3 +41028,73 @@ codeword effect". It is NOT in the draft and is now on the list below.)*
 
 **NEXT:** the seven unapplied items, in the order listed — item 5 first, because it changes a number
 §A.7 leads with. **Five questions remain with the user.** **Push credential-blocked.**
+
+---
+
+## S-465 — the figure audit of §A: seven mismatches in ~230 figures, two of them load-bearing and both mine (2026-09-26)
+
+The fourth reviewer of S-464's set re-derived **every** SUBSPACE/SWAP figure in §A.3–§A.8 from the
+artefacts' own `domain_means` / `control_recovery_distribution` / `arm_meta`, re-ran the floor-0.05
+rows end to end, and recomputed §A.8's bit-identity row by row. **Every figure I re-checked myself
+before acting.**
+
+✅ **The bulk reproduces exactly**: all 20 numbers of §A.3's floor-sensitivity table, all 24 of
+§A.4a's, all 36 of §A.5's 2×2 block, all 30 of §A.6's matched-10 block, the Fisher exacts, the three
+Δz point estimates, and every §A.8 bit-identity and provenance count.
+
+### The two that matter, both errors of mine
+
+* 🔴 **§A.5 called `KO_FULL − KO` = +0.10842 "the largest whole-state recovery of the six cells".**
+  Re-derived: **+0.12041** (basket L18 TRAIN) is larger. **+0.10842 is second, and is the largest of
+  the BUTTON cells.** The argument it supports — that the instrument was live at the foreign layer —
+  rests on the dose-normalised span (3.87 % against 3.48 %, verified), not on the superlative. **The
+  superlative was still false**, and I wrote it in S-459.
+* 🔴 **§A.6 applied "11 %" readout invalidity to a table two of whose three button cells sit on the
+  button-TRAIN bank.** 11 % is the **VALIDATION** figure; TRAIN measures **12.5 %**. Both now given.
+
+### The five smaller ones, all confirmed
+
+* `BASE` median is **0.09008 → 0.0901**, not 0.0902 (and §L.9 carried the same error).
+* `BASE`'s minimum is **4.66e-05**. The `0.000001` I attributed to it belongs to **`KO` (9.6e-07)
+  and `KO_AXIS` (1.0e-06)** — the wrong arm, in the sentence whose whole point is *"it is `BASE`'s
+  distribution that gates"*.
+* *"All 27 subspace and swap artefacts record floor 0.0"* — **23 do**; the four
+  `DCS_CSI_SWAP_REDERIVE_*` files carry **no `option_mass_floor` field at all**.
+* §A.4a's B-VALID row printed **9 / 14** pos/neg, which mixes conventions: the artefact's
+  `domain_means` give **9 / 13 / 1 tied** (`university_lab` is exactly 0 at stored precision) and
+  full precision gives 9 / 14 / 0. The row now prints the artefact's convention, matching its p.
+* *"No RUNMETA field anywhere mentions a blob, sha, hash or digest"* — **literally false**: all 753
+  carry a nested `args.pr057_probe_sha`, **empty in every one**. Reworded to what is true and
+  load-bearing: **no field records a CODE blob, hash or digest**.
+
+### And one the reviewer found that I would have defended
+
+**The worst leave-one-domain-out deletion is `rail_depot`, not `pipeline_station`.** Both drop the
+rank to 2 of 47; by margin `rail_depot` is **−0.000280** and `pipeline_station` **−0.000012**. My
+S-453 script took the first maximum *by rank*, the two tie at rank 2, and it kept whichever came
+first — so **I named the narrowest miss as the worst** and propagated it. Both are now named with
+their margins. ⚠ *`rail_depot` is also the domain the claim table names for the superseded n34 read,
+which is why it should have looked familiar to me.*
+
+### ⚠ Where I did NOT accept the reviewer
+
+It reported `KO_AXIS`'s median option mass as **0.190474 → 0.190**, against the draft's 0.191. Using
+the `run_dirs` mapping in the artefact itself I get **0.190607 → 0.191**, and the draft is right.
+**The likely cause is the tag-prefix ambiguity S-455 found**: `csi1_basket_train_KO_AXIS` matches
+**two** complete run dirs (L18 and L20), and an auditor resolving by prefix rather than by the
+artefact's own mapping can pick the wrong arm. ⇒ **The defect I documented in AM-53-a is now
+observed biting a second reader.** The draft's figure stands.
+
+### What is NOT established
+
+* ⛔ **That §A's figures are now clean.** Seven were wrong out of ~230; the audit covered §A.3–§A.8
+  and **not** §A.1, §A.2, §A.4 or §A.4b except where they overlap.
+* ⛔ **The `.pt`-derived cosines** remain `[READ, not reproduced]`, though the reviewer found them
+  stored in `reports/DCS_CSI_PR009_HARDWARE_AB.json` (`abs_cos` 0.99840599 / 0.99786556) and
+  matching as read — which upgrades them from unverifiable to **verified-as-read**, still not
+  recomputed.
+* ⛔ **The seven S-464 items remain unapplied.** This tick was the figure audit only.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** S-464's seven unapplied items, item 5 first (it changes a number §A.7 leads with).
+**Five questions remain with the user.** **Push credential-blocked.**
