@@ -586,7 +586,11 @@ the failure it was rewritten to avoid), so a non-eager arm could not have been w
 | VOID 11 | `scripts/` and `src/` unchanged while the arms are in flight |
 | VOID 12 | the read file is not amended after any number from the family is seen |
 
-⚠ **VOID 11 did not exist for PR-CSI-018** — it was introduced for PR-CSI-020. §6 records what that
+⚠ **VOID 11 did not exist for PR-CSI-018** — it was introduced for PR-CSI-020. ✅ *Verified S-475:
+it lives in the **frozen read recipes**, not the preregs — `runargs/dcs_csi_pr020_read.txt` and
+`pr021_read.txt` carry it (*"scripts/ and src/ unchanged while the arms were in flight"*), and
+`runargs/dcs_csi_pr018_read.txt` has **zero** occurrences. Neither prereg names a VOID by number at
+all.* §6 records what that
 cost and what the decisive test found. ⚠ **The commit of record is the launcher's
 `BLOB <sha> PORCELAIN clean` line, NOT any arm's `RUNMETA git_commit`**: a job runs many arms, each
 stamps the repo at its own start, and `git_dirty` is recorded as `true` or as `None` but **never as
@@ -792,7 +796,12 @@ reuses archived arms and pins the blob has a shelf life, and nothing warns you w
 
 ⚠ **Their statuses differ and the draft should not blur them.** PR-CSI-004 is **dead as frozen** —
 its requirement can no longer be met. PR-CSI-003-A is **not dead: it is escalated and waiting.**
-Its launcher patch is applied and verified; the launch was withheld deliberately, because amending
+🔴 **Its launcher patch IS applied in the tree, and PR-CSI-003-A's own status field says it is not
+(S-475).** `slurm_scripts/dcs_csi_p1_arms.slurm` carries `CSI_NEC_HALF=4` and `=5`, both labelled
+**"(PR-CSI-003-A)"**, launching `KO_NEC_SHUF4..13` and `KO_NEC_SHUF14..23` — **exactly the 20 arms the
+amendment calls "MATHEMATICALLY REQUIRED"**. The amendment's field reads *"REPORTED, NOT APPLIED.
+slurm_scripts/dcs_csi_p1_arms.slurm is not modified by this amendment."* ⇒ **the prereg's status is
+stale against the tree, in the permissive direction.** The launch was withheld deliberately, because amending
 a VOID condition *after it fires* to let one's own experiment proceed is the shape of an earlier
 blocker. **8.7 GPU-hours were not spent on twenty arms that would have been VOID by a condition the
 author wrote** — a decision that is still open, not a dead end.

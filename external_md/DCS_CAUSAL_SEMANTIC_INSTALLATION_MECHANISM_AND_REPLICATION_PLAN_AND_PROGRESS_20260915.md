@@ -41755,3 +41755,75 @@ unsourced rationales — and the six decisions that are the user's.**
 **NEXT:** sweep the methods and limitations sections for *"because"* clauses and check each against a
 source; it is the one defect class the end-to-end audit provably does not cover. **Six questions with
 the user.** **Push credential-blocked.**
+
+---
+
+## S-475 — the causal-clause sweep: 26 clauses, and it found that PR-CSI-003-A's launch is blocked by two reasons, not four (2026-09-26)
+
+S-474 named the one defect class the end-to-end audit provably does not cover: **an invented causal
+story passes every figure, code and threshold check.** This is that sweep, over §M and §L.
+
+**26 causal clauses found.** Most reason from premises the audit had already verified — the monotone
+transform, tie semantics, floor arithmetic — and are arguments rather than sourced-fact claims. The
+dangerous subset is the **historical** ones, *"because X once happened"*, which is what the withdrawn
+`tail` anecdote was. Two of those were unchecked. **Both turned out to be about the escalation.**
+
+### ✅ VOID 11's provenance holds, and the location was worth pinning
+
+§M.7: *"VOID 11 did not exist for PR-CSI-018 — it was introduced for PR-CSI-020."* **True.** It lives
+in the **frozen read recipes**, not the preregs: `runargs/dcs_csi_pr020_read.txt` and `pr021_read.txt`
+carry it, `runargs/dcs_csi_pr018_read.txt` has **zero** occurrences, and **neither prereg names a VOID
+by number at all** (PR-018's names none; PR-020's names 6 and 8). Recorded, because "the condition did
+not exist yet" and "the condition lives somewhere else" are different claims.
+
+### 🔴 The launcher patch IS applied, and PR-CSI-003-A's own status field says it is not
+
+```
+slurm_scripts/dcs_csi_p1_arms.slurm:209   CSI_NEC_HALF=4  ten more SHUFFLED controls (PR-CSI-003-A)
+slurm_scripts/dcs_csi_p1_arms.slurm:210   CSI_NEC_HALF=5  ten more SHUFFLED controls (PR-CSI-003-A)
+                               :279/:281   KO_NEC_SHUF4..13  and  KO_NEC_SHUF14..23   = 20 arms
+
+configs/dcs_csi_pr003a_necessity_family.json
+   "...ARMS_CAN_BE_LAUNCHED": {"status": "REPORTED, NOT APPLIED. slurm_scripts/dcs_csi_p1_arms.slurm
+                               is not modified by this amendment. ..."}
+```
+
+The amendment calls a launcher change *"MATHEMATICALLY REQUIRED, not a convenience"* because the file
+as written **could not produce more than 16 necessity control arms**. The tree produces 20 more, under
+halves labelled with the amendment's own name. ⇒ **The prereg's status field is stale against the
+tree, in the PERMISSIVE direction** — it under-reports what has been done.
+
+### ⇒ THE ESCALATION IS NARROWER THAN I HAVE BEEN PRESENTING IT
+
+I have been telling the user PR-CSI-003-A is held on several grounds. Re-measured:
+
+| stated reason | status |
+|---|---|
+| the re-derivation path refuses the family outright | **DEAD** — it runs, exit 0, and reproduces (S-473) |
+| the launcher cannot produce enough control arms | **DEAD** — halves 4 and 5 are in the tree |
+| **VOID 6** (the score blob) | **STANDS** |
+| **VOID 7** (`dcs_csi_rederive_subspace.py` moved) | **STANDS** |
+
+**What blocks PR-CSI-003-A is two stranded VOID conditions and nothing else.** Recorded as **AM-56**.
+⛔ **Whether those two can be waived is the decision and it is the user's** — I am not proposing a
+launch, and S-167c's rule against freezing a prereg that names anything nonexistent is untouched.
+
+### What is NOT established
+
+* ⛔ **Why the prereg's status field disagrees with the tree.** The halves carry the amendment's name,
+  so the patch was applied under it and the field was not updated. **Whether a prereg whose status is
+  stale in the permissive direction can still govern a launch is itself part of the decision.**
+* ⛔ **That the other 24 causal clauses are sourced.** They reason from verified premises, which is
+  weaker than being sourced. I checked the two historical ones and triaged the rest; **that triage is
+  mine and unreviewed.**
+* ⛔ **That `tail` never happened** (S-474) — only that nothing here records it.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+⚠ **What the sweep is worth.** It was proposed to catch invented rationales, and it caught something
+better: **two reasons on the record for holding a family that do not survive contact with the tree.**
+The defect class S-474 named is real, but its cost here was not a wrong sentence — it was **an
+escalation carrying twice the justification it has.**
+
+**NEXT:** the sweep covered §M and §L; **§0, §5, §6, §1–§4, §H and §A have not been swept for causal
+clauses.** **Six questions with the user, and the PR-CSI-003-A one is now a two-part question rather
+than a four-part one.** **Push credential-blocked.**
