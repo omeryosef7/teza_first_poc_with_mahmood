@@ -41827,3 +41827,76 @@ escalation carrying twice the justification it has.**
 **NEXT:** the sweep covered §M and §L; **§0, §5, §6, §1–§4, §H and §A have not been swept for causal
 clauses.** **Six questions with the user, and the PR-CSI-003-A one is now a two-part question rather
 than a four-part one.** **Push credential-blocked.**
+
+---
+
+## S-476 — the sweep finished: 37 more causal clauses, two historical, and one mechanism I had imported without checking (2026-09-26)
+
+S-475 swept §M and §L. This covers **§0, §1–§6, §H and §A** — completing the causal-clause pass over
+the whole draft.
+
+**37 causal clauses. Only TWO are historical**, which is the class that can be invented without any
+figure check noticing:
+
+* **§6's** *"PR-CSI-018's read carried no VOID 11 because that condition was introduced for the next
+  family"* — **verified in S-475.** PR-018's read recipe has zero occurrences; VOID 11 lives in
+  PR-020's and PR-021's.
+* **§A.8's** D22 vacuous-PASS story — **the mechanism was wrong**, below.
+
+The other 35 reason from premises the audits already verified. **The historical density is low, and
+that is the useful finding**: the draft mostly argues from measured facts, and the two places it tells
+a story are the two places it went wrong (this one and S-474's `tail`).
+
+### 🔴 The mechanism I imported from the claim table and did not check
+
+§A.8 said D22's first gate version *"matched 0 rows and printed PASS — **caught only because the
+printout carried the comparison size beside the verdict**."* I took that from the claim table's D22
+caveats in S-466. **The gate's own docstring says otherwise:**
+
+```
+scripts/gates/dcs_csi_pr005_gate0d.py:5-9
+  "NON-VACUITY IS ASSERTED, not hoped for. The first version of this script looked for a field
+   `rescue_positions_written` that does not exist, matched ZERO rows, and printed PASS -- which is
+   review finding R2-M5 ("checks that could not fail") and S-042's vacuous identity gate, committed
+   a third time. A gate that can pass on an empty comparison is not a gate."
+```
+
+⇒ **the catch is attributed to a REVIEW looking for checks that could not fail — not to a printout.**
+And the **fix** is an assertion, `MIN_ROWS = 600`, not a printout either. Two project documents give
+different mechanisms; **the file that was fixed is the better source**, and §A.8 now quotes it.
+⚠ **I imported a causal story from a secondary document into the draft without checking it against the
+primary** — which is the same failure as S-474's, one step removed.
+
+### ✅ And the sweep corroborated AM-53-a from a third direction
+
+The same gate carries, at lines 18–24:
+
+> *"A_DIR used to be `sorted(glob(...))[-1]` — "the newest dir", with no job filter and no layer
+> filter. That is the S-127 hazard by name: every tag exists twice, once at L18 and once at L20, and
+> **"newest" picked the wrong twin once already**"*, and *"the glob for KO_RAND0 matches two dirs …
+> so the filter is load-bearing."*
+
+⇒ **the tag-prefix ambiguity is documented in THREE independent places** (S-127, this gate's comment,
+AM-53-a) **and has now selected the wrong arm twice on the record** — once in the "newest dir" bug
+this comment exists to fix, once in an auditor's median in S-465. **I found it in S-455 believing it
+novel; it was already named and already fixed in one place.** AM-53-a corroborated in place.
+
+### What is NOT established
+
+* ⛔ **Which mechanism actually caught D22's vacuous gate.** The gate says a review; the claim table
+  says a printout. **I have corrected the draft to the gate and have not reconciled the claim table** —
+  and I cannot, without a record neither document supplies.
+* ⛔ **That the 35 non-historical clauses are sound arguments.** They reason from verified premises;
+  whether each inference is valid was not this sweep's dimension.
+* ⛔ **That the draft has no other imported-without-checking claims.** This one was found because it
+  was historical. **A borrowed claim that is not historical would not have shown up in this sweep.**
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+⚠ **The causal-clause pass is now complete over the draft**: 63 clauses, 4 historical, **2 of the 4
+wrong** — the `tail` anecdote (no source at all) and this mechanism (contradicted by its primary
+source). Both were withdrawn or re-sourced rather than repaired.
+
+**NEXT:** with figures, machinery, cross-references and causal clauses all audited, the draft's
+remaining risk is **the claim table itself**, which the draft inherits from and which has now been
+caught twice supplying a story the primary source contradicts. **Six questions with the user.**
+**Push credential-blocked.**

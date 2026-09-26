@@ -2195,8 +2195,14 @@ this withdrawal. **The bit-identity numbers, which depend on none of it, are not
 🔴 **ADDED S-466 — BOTH OF THESE GATES HAVE A RECORDED HISTORY OF PASSING FOR THE WRONG REASON,
 and "provably" rests on them.** D22's gate, first version: it selected rows on a field name that
 **does not exist** (`rescue_positions_written` instead of `rescue_liveness.fired`), matched **0
-rows, and printed PASS** — caught only because the printout carried the comparison size beside the
-verdict. D28's guard tests were **source-text assertions** that *"pass if the text is present even
+rows, and printed PASS**. 🔴 *CORRECTED S-476 — an earlier draft said it was "caught only because the
+printout carried the comparison size beside the verdict", which I imported from the claim table. **The
+gate's own docstring attributes the catch to a REVIEW, not a printout**: it names *"review finding
+R2-M5 (\"checks that could not fail\") and S-042's vacuous identity gate, committed a third time"*.
+Two project documents give different mechanisms, and the file that was fixed is the better source.*
+✅ **And the fix is an assertion, not a printout**: `scripts/gates/dcs_csi_pr005_gate0d.py` now carries
+`MIN_ROWS = 600` with *"NON-VACUITY IS ASSERTED, not hoped for"* and *"A gate that can pass on an empty
+comparison is not a gate."* D28's guard tests were **source-text assertions** that *"pass if the text is present even
 when the code never executes"*; R10 found the truth-table test **tautological** and S-141 deleted
 and replaced it with one that locates the guard in the AST and **executes** it (9 of 9 mutations now
 fail). ⚠ **Both were caught and fixed, and both are the reason a bare "the gate passed" is worth
