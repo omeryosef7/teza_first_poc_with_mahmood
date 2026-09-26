@@ -1,0 +1,149 @@
+{
+ "WHAT_THIS_IS": "a DESCRIPTIVE per-arm option-mass distribution. No verdict, no p, no threshold. The boundary is a reporting boundary.",
+ "allow_short": 4,
+ "argv": [
+  "scripts/dcs_csi_option_mass_census.py",
+  "--tag-prefix",
+  "csi9_cell3_button_validation",
+  "--arms",
+  "BC_BASE,BC_KO,HD_17,HD_19,HD_23,BC_H17_L06,BC_H17_L10,BC_H17_L14,BC_H19_L10,BC_H23_L10",
+  "--split",
+  "validation",
+  "--expect-n",
+  "230",
+  "--allow-short",
+  "4",
+  "--out",
+  "reports/DCS_CSI_OPTION_MASS_CENSUS_cell3_button_validation.json"
+ ],
+ "boundary": 0.05,
+ "expect_n": 230,
+ "per_arm": {
+  "BC_BASE": {
+   "boundary": 0.05,
+   "frac_below_boundary": 0.108696,
+   "max": 0.93483567,
+   "median": 0.2646448,
+   "median_convention": "statistics.median (true median; NOT om[n//2] -- see S-468)",
+   "min": 0.00138541,
+   "n_below_boundary": 25,
+   "n_rows": 230,
+   "p05": 0.02108738
+  },
+  "BC_H17_L06": {
+   "boundary": 0.05,
+   "frac_below_boundary": 0.104348,
+   "max": 0.93253964,
+   "median": 0.2704365,
+   "median_convention": "statistics.median (true median; NOT om[n//2] -- see S-468)",
+   "min": 0.001371,
+   "n_below_boundary": 24,
+   "n_rows": 230,
+   "p05": 0.02103395
+  },
+  "BC_H17_L10": {
+   "boundary": 0.05,
+   "frac_below_boundary": 0.117391,
+   "max": 0.9335736,
+   "median": 0.26578705,
+   "median_convention": "statistics.median (true median; NOT om[n//2] -- see S-468)",
+   "min": 0.00142634,
+   "n_below_boundary": 27,
+   "n_rows": 230,
+   "p05": 0.02070348
+  },
+  "BC_H17_L14": {
+   "boundary": 0.05,
+   "frac_below_boundary": 0.091304,
+   "max": 0.93791926,
+   "median": 0.31409018,
+   "median_convention": "statistics.median (true median; NOT om[n//2] -- see S-468)",
+   "min": 0.00258459,
+   "n_below_boundary": 21,
+   "n_rows": 230,
+   "p05": 0.02905976
+  },
+  "BC_H19_L10": {
+   "boundary": 0.05,
+   "frac_below_boundary": 0.108696,
+   "max": 0.93534356,
+   "median": 0.27085461,
+   "median_convention": "statistics.median (true median; NOT om[n//2] -- see S-468)",
+   "min": 0.00124833,
+   "n_below_boundary": 25,
+   "n_rows": 230,
+   "p05": 0.02060927
+  },
+  "BC_H23_L10": {
+   "boundary": 0.05,
+   "frac_below_boundary": 0.108696,
+   "max": 0.93359739,
+   "median": 0.26599783,
+   "median_convention": "statistics.median (true median; NOT om[n//2] -- see S-468)",
+   "min": 0.00131024,
+   "n_below_boundary": 25,
+   "n_rows": 230,
+   "p05": 0.02144794
+  },
+  "BC_KO": {
+   "boundary": 0.05,
+   "frac_below_boundary": 0.021739,
+   "max": 0.95262361,
+   "median": 0.52437496,
+   "median_convention": "statistics.median (true median; NOT om[n//2] -- see S-468)",
+   "min": 0.01879799,
+   "n_below_boundary": 5,
+   "n_rows": 230,
+   "p05": 0.10073942
+  },
+  "HD_17": {
+   "boundary": 0.05,
+   "frac_below_boundary": 0.082609,
+   "max": 0.94534969,
+   "median": 0.31600291,
+   "median_convention": "statistics.median (true median; NOT om[n//2] -- see S-468)",
+   "min": 0.00243145,
+   "n_below_boundary": 19,
+   "n_rows": 230,
+   "p05": 0.02961935
+  },
+  "HD_19": {
+   "boundary": 0.05,
+   "frac_below_boundary": 0.065217,
+   "max": 0.94211489,
+   "median": 0.34403482,
+   "median_convention": "statistics.median (true median; NOT om[n//2] -- see S-468)",
+   "min": 0.00499741,
+   "n_below_boundary": 15,
+   "n_rows": 230,
+   "p05": 0.03764538
+  },
+  "HD_23": {
+   "boundary": 0.05,
+   "frac_below_boundary": 0.121739,
+   "max": 0.91684723,
+   "median": 0.27323544,
+   "median_convention": "statistics.median (true median; NOT om[n//2] -- see S-468)",
+   "min": 0.00192078,
+   "n_below_boundary": 28,
+   "n_rows": 230,
+   "p05": 0.02241093
+  }
+ },
+ "require_slurm_job": null,
+ "run_dirs": {
+  "BC_BASE": "csi9_cell3_button_validation_BC_BASE_20260923_205708_42807",
+  "BC_H17_L06": "csi9_cell3_button_validation_BC_H17_L06_20260923_212422_42807",
+  "BC_H17_L10": "csi9_cell3_button_validation_BC_H17_L10_20260923_213444_42807",
+  "BC_H17_L14": "csi9_cell3_button_validation_BC_H17_L14_20260923_214508_42807",
+  "BC_H19_L10": "csi9_cell3_button_validation_BC_H19_L10_20260923_215807_42807",
+  "BC_H23_L10": "csi9_cell3_button_validation_BC_H23_L10_20260923_222150_42807",
+  "BC_KO": "csi9_cell3_button_validation_BC_KO_20260923_212054_42807",
+  "HD_17": "csi9_cell3_button_validation_HD_17_20260923_223508_42807",
+  "HD_19": "csi9_cell3_button_validation_HD_19_20260923_223906_42807",
+  "HD_23": "csi9_cell3_button_validation_HD_23_20260923_224303_42807"
+ },
+ "schema": "dcs_csi_option_mass_census/1",
+ "split": "validation",
+ "tag_prefix": "csi9_cell3_button_validation"
+}

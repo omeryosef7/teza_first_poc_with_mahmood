@@ -43037,3 +43037,289 @@ The shuffled control family goes **4 → 24**, and the attainable floor **0.2000
 - ⛔ Push credential-blocked (~185 unpushed).
 
 **NEXT:** record 932477/932478 into the read recipe in place of `<HALF4>/<HALF5>`; watch the arms land; VOID 1 on both nodes.
+
+---
+
+## S-496 / the family is landing and VOID 1 PASSES on every arm — plus an operational constraint I have to observe for the next two hours (2026-09-26)
+
+### ✅ Running family: 932477 / 932478 at 20:18, arms landing at ~13 min each
+
+```
+i   run dir                                   status    gpu                      job     commit     node
+0   KO_NEC_SHUF0_20260920_131722              ok        NVIDIA GeForce RTX 3090  912736  9c94c149   n-350
+1   KO_NEC_SHUF1_20260920_132636              ok        NVIDIA GeForce RTX 3090  912736  9c94c149   n-350
+2   KO_NEC_SHUF2_20260920_133558              ok        NVIDIA GeForce RTX 3090  912736  ee61a767   n-350
+3   KO_NEC_SHUF3_20260920_134517              ok        NVIDIA GeForce RTX 3090  912736  e43944a4   n-350
+4   KO_NEC_SHUF4_20260926_134421              ok        NVIDIA GeForce RTX 3090  932477  f195b6d1   n-307
+5   KO_NEC_SHUF5_20260926_135759              running   NVIDIA GeForce RTX 3090  932477  14800d9b   n-307
+14  KO_NEC_SHUF14_20260926_134421             ok        NVIDIA GeForce RTX 3090  932478  f195b6d1   n-307
+15  KO_NEC_SHUF15_20260926_135759             running   NVIDIA GeForce RTX 3090  932478  14800d9b   n-307
+```
+
+**VOID 1: PASS** — `{'NVIDIA GeForce RTX 3090'}` is the only GPU across all arms, old and new. **VOID 2** (one architecture across compared arms) holds by construction: the 20 new arms are all on **n-307**.
+
+### 🔴 The new arms are recording DIFFERENT commits, and that is fine — but only because of what VOID 6 is about
+
+`KO_NEC_SHUF4` recorded `f195b6d1`; `KO_NEC_SHUF5`, thirteen minutes later, recorded `14800d9b`. **I committed S-495 while the job was running**, and the runner reads git at each arm's start. Checked, rather than assumed:
+
+```
+  a09d6c31   -> score_behavior.py blob 9562bdf90b86fdb2fbbcf3a7b75967796b949b2d
+  f195b6d1   -> score_behavior.py blob 9562bdf90b86fdb2fbbcf3a7b75967796b949b2d
+  14800d9b   -> score_behavior.py blob 9562bdf90b86fdb2fbbcf3a7b75967796b949b2d
+  (the 14 old arms: 9c94c149 -> e94258bd...)
+  S-495's commit: 2 files, the sprint log and runargs/dcs_csi_pr003a_read.txt. No scoring code.
+```
+
+⇒ **Three commits, one blob.** This is exactly the distinction S-490 had to establish — *VOID 6 is about the FILE, not the commit* — and it is now playing out live inside the family it protects. Had I taken "the commit changed" as the trigger I would be reporting a spurious VOID on my own running experiment.
+
+### ⛔ THE CONSTRAINT, and it binds until roughly 16:00
+
+**No commit may touch `src/boombness/score_behavior.py` until all 20 arms have landed.** If it does, VOID 6 fires *within* the new family, and **my discharge would not cover it**: S-494 demonstrated that the specific change `e94258bd → 9562bdf9` is inert. A third blob mid-family is a different, undemonstrated change, and the discharge is not transferable. Log entries, reports, runargs and new gates are all safe; the scorer is not. ⚠ Recorded because this is the kind of constraint that is obvious now and invisible in two hours.
+
+### ✅ Meanwhile: the cell family's option-mass census (S-493's NEXT), read-only
+
+`csi9_cell3_button_validation`, the PR-CSI-016 family, 10 of its 32 arms:
+
+```
+  BC_BASE     n=230  below 0.05: 25 (10.9%)  median 0.264645  min 1.385e-03
+  BC_KO       n=230  below 0.05:  5 ( 2.2%)  median 0.524375  min 1.880e-02
+  HD_17       n=230  below 0.05: 19 ( 8.3%)  median 0.316003
+  HD_19       n=230  below 0.05: 15 ( 6.5%)  median 0.344035
+  HD_23       n=230  below 0.05: 28 (12.2%)  median 0.273235
+  BC_H17_L06/L10/L14, BC_H19_L10, BC_H23_L10     21-27 (9.1%-11.7%)  medians 0.266-0.314
+```
+
+Two things follow. **The codeword asymmetry is corroborated on a third family**: button validation `BC_BASE` is **10.9%** thin against basket train's **36.3%**, consistent with button train's 12.5% (S-487). And **the cell family's sensitivity is a much smaller perturbation than the axis family's** — a `BC_BASE`-keyed 0.05 floor would drop 25 of 230 keys, **retaining 205**, where the axis case dropped 243 of 670. That is the number a cell-family preregistration must name, and it is the second of the two populations S-493 said were needed.
+
+### WHAT IS NOT ESTABLISHED
+
+- ⛔ **Nothing about the necessity result.** 4 of 20 new arms are down; no rank, no read, and the recipe is frozen with `932477,932478` already written in.
+- ⛔ **Nothing about D39 or D40.** That `BC_KO` is barely thin (2.2%) is **not** evidence the floor cannot move a verdict — the floor removes *keys*, and the interaction with per-domain aggregation is precisely the unrun question. The sensitivity remains unwritten and preregisterable.
+- ⛔ **Only 10 of 32 cell arms censused**, and the 22 single-cell arms not covered are where the argmax actually lives.
+- ⛔ **VOID 1 is verified on 8 arms, not 20.** It must be re-checked when the family completes; an arm that lands on a V100 later would void the comparison and nothing yet rules that out — `p1_arms` uses a bare `--gpus=1` internally and the 3090 pin was applied at submit only.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** let the arms land; re-check VOID 1 across all 20; then the read, which is gated on the family being complete.
+
+---
+
+## S-497 / a guard test failed and blocked the commit — the cause is the known degeneracy mechanism, and MY "vacuous check" hypothesis was WRONG (2026-09-26)
+
+### 🔴 The commit was REFUSED, correctly
+
+S-496's commit came back `1 failed, 515 passed, 1 skipped`, `COMMIT_RC=1`:
+
+```
+FAILED tests/test_run_completeness_check.py::test_the_real_corpus_passes_with_its_documented_exemption
+[pre-commit] REFUSING: a guard TEST failed -- a guard may no longer be able to fail.
+```
+
+Cause, measured: four arms of the running family wrote `DONE.json` and persisted **669 of 670 rows**:
+
+```
+  SHUF4   status=ok          rows_written=670  n_failed=0
+  SHUF5   status=INCOMPLETE  rows_written=669  n_failed=1
+  SHUF6   status=INCOMPLETE  rows_written=669  n_failed=1
+  SHUF7   status=INCOMPLETE  rows_written=669  n_failed=1
+  SHUF14  status=ok          rows_written=670  n_failed=0
+  SHUF15  status=INCOMPLETE  rows_written=669  n_failed=1
+  failure_reasons: semantic_one_word:ValueError:REFUSING to patch: 1 of 28 positions are norm-match DEGENERATE
+```
+
+**The guard behaved exactly as designed**, and the pre-commit hook refusing on it is the system working: a new short run that nobody has documented is precisely what that test exists to stop.
+
+### 🔴 AND THEN I CHASED A DEFECT THAT IS NOT THERE. Recorded because the reasoning was seductive.
+
+I reasoned: the degenerate row is **refused and never persisted**; `rescue_liveness.n_positions_norm_match_degenerate` is **0 on every persisted row**; the analyser sums exactly that field (`:215`) and VOIDs only if non-zero (`:777`); PR-CSI-001's dose criterion requires *"the norm-match degeneracy counter is 0 on the controls used for the primary contrast"*. I then measured that **four controls of the published `basket_train_n46` family** — `KO_SHUF13`, `KO_SHUF18`, `KO_SHUF19`, `KO_SHUF23` — are `INCOMPLETE` with degeneracy refusals, while the artefact records `degenerate_positions > 0` for **no arm at all**. That looked like R39 stream 2's theme on a published PASS: a check passing on data from which the failing case was removed.
+
+⛔ **It is not.** The draft's actual sentence is:
+
+> *"`degenerate_positions` is **0** in both splits, **so no row is measuring rounding error**"*
+
+That claim is **true and correctly scoped**. The counter is defined over the rows being analysed, the guard's entire job is to keep degenerate patches out of those rows, and it did. `0` means *"no degeneracy survived into the analysed data"*, which is what the sentence says. The counter is 0 **because the guard worked**, not because evidence was hidden.
+
+⚠ And the mechanism is documented far better than my version of it. `KNOWN_SHORT` already carries the family: S-152/S-154/S-159, each entry naming the **measured dropped `prompt_id`s**, and one entry establishing the property I had not even reached — *"the loss is a DETERMINISTIC function of (control basis, row) … not stochastic, not node-dependent and not outcome-dependent. It also retroactively justifies S-152's decision not to re-run the short arms."*
+
+🔴 **This is the fifth false alarm I have raised this session** (S-482 timed-out greps, S-486 generalising from one file, S-487's own recipe, S-491 "the commit died", S-492's swap-arm ranking, now this). The shared shape is sharper than I had it: **I keep inferring that a check is vacuous from "the counter reads 0 while an event occurred", without first asking what the counter is defined over.** A counter over surviving rows saying 0 after a refusal is not a blind check — it is a refusal that worked.
+
+### ✅ What was genuinely new, and it is small
+
+Halves 4/5 reproduce the known mechanism, and I measured the losses to the standard the table sets — by differencing against the full 670-row sibling `KO_NEC_SHUF4`:
+
+```
+  SHUF5   dropped b1471eb1c15d84b3  (council_depot)
+  SHUF6   dropped 595c2488906ddb0d  (dairy_plant)
+  SHUF7   dropped 811518cee523f9ae  (sewage_plant)
+  SHUF15  dropped ab5725a897138252  (printing_works)
+```
+
+**Four distinct rows**, which is what the established mechanism predicts — a deterministic function of (control basis, row), so different bases lose different rows. All four are inside the preregistered `--allow-short 4`. Four `KNOWN_SHORT` entries added with these measurements; `run_completeness_check.py` now exits **0**.
+
+### WHAT IS NOT ESTABLISHED
+
+- ⛔ **No defect in any published read, and I am withdrawing the suggestion of one.** The degeneracy claim is sound as written.
+- ⛔ **The exemptions will need extending.** 14 arms of halves 4/5 have not landed; on this rate several more will be short, and the completeness test will fail again until each is documented. **That is the designed workflow, not a problem** — but it means every commit until the family completes may need new entries.
+- ⛔ **Whether the dropped rows matter statistically is not re-opened here.** The published read intersects to `n_keys_common = 642` of 670, so the shortfall is already absorbed by the intersection; S-152 settled the re-run question on outcome-independence grounds.
+- ⛔ **VOID 1 still verified on 8 arms, not 20.**
+- ⛔ `src/boombness/score_behavior.py` **untouched** — S-496's constraint held, and the commit script asserts it. **TEST untouched.** Push credential-blocked.
+
+**NEXT:** let the family land; extend `KNOWN_SHORT` as arms report; re-check VOID 1 across all 20; then the read.
+
+---
+
+## S-498 / the exemption treadmill, and the generator that ends it (2026-09-26)
+
+### 🔴 S-497's commit also failed, for the reason S-497 predicted one entry earlier
+
+```
+FAILED tests/test_run_completeness_check.py::test_the_real_corpus_passes_with_its_documented_exemption
+1 failed, 515 passed   COMMIT_RC=1
+```
+
+I had documented **4** short arms. By the time the 7-minute hook finished, **8** were short — `SHUF8`, `SHUF9` (668 rows, **2** failed), `SHUF18` and `SHUF19` landed during the run. The exemption table was stale before the test that reads it had finished.
+
+⚠ **This is a structural race, not carelessness**, and it will recur on every family that loses rows: the hook takes ~7 min, arms land every ~13 min, so any hand-maintained exemption list is a moving target while a family runs. S-497 said "the exemptions will need extending … every commit until the family completes may need new entries" and then I tried to commit anyway. **The right move is to stop attempting commits until the family is complete**, which is what I am doing.
+
+### ✅ Family progress: 12 of 20 landed at 1:20:17
+
+```
+  landed 12/20 : 4,5,6,7,8,9,14,15,16,17,18,19
+  INCOMPLETE   : 5,6,7,8,15,18,19 (669 rows, 1 failed)   9 (668 rows, 2 failed)
+  full 670     : 4, 14, 16, 17
+  outstanding  : 10,11,12,13,20,21,22,23
+```
+
+So **8 of 12 landed arms are short by 1–2 rows**, all to the same guard. `SHUF9` losing **2** is the first multi-row loss in this family and is still inside `--allow-short 4`.
+
+### ✅ New code, justified: `scripts/gates/dcs_csi_known_short_entries.py`
+
+The `KNOWN_SHORT` table's own standard is to name the **measured dropped `prompt_id`**, differenced against a full sibling — not to assert a row count. Hand-measuring that for up to twenty arms is how a wrong `prompt_id` enters a permanent exemption, and nothing in the repo generates them. So:
+
+* it differences each `INCOMPLETE` arm against a **full** reference and prints the entry with the measured ids and domains;
+* ⛔ **it prints, it does not edit** — a script that writes its own exemptions into a guard is a script that can silence the guard;
+* it **refuses** if the reference is not full (`"a reference that is itself short cannot establish what another arm dropped"`), if the glob matches no degeneracy-refused arm (`"an exemption generator that emits nothing has documented nothing"`, verified: **true exit 1**), or if an arm's dropped set is empty;
+* it **warns rather than silently accepting** when `len(dropped) != n_rows_failed`, and flags in red any arm short by more than `--allow-short` as *"needs a decision, not an exemption"*.
+
+Run now it emits **8 arms** with measured drops — e.g. `SHUF18 → 6d40e3608a4fc300 (rail_depot)`, `SHUF15 → ab5725a897138252 (printing_works)`.
+
+⚠ **A reporting habit of my own, again:** I wrote `... | tail -2; echo "exit=$?"` and read `exit=0` for a script that had just refused. That is `tail`'s status, the same pipe error as S-481 and S-487. The true exit is **1**. I caught it this time by re-running without the pipe, but I have now made this mistake three times and the lesson is not "be careful" — it is **never read `$?` through a pipe; put the command alone or use `PIPESTATUS`**.
+
+### WHAT IS NOT ESTABLISHED
+
+- ⛔ **No commit has landed since `14800d9b`.** S-496's and S-497's entries are appended and uncommitted; the generator is written and uncommitted. Nothing is lost — the log is append-only on disk — but the record is behind by three entries and I am saying so rather than letting it look current.
+- ⛔ **The exemptions are NOT yet written into the table for all 8** — only my 4 hand-written ones from S-497 are in, and they will be replaced wholesale by the generated set once the family completes, so the entries are uniform and measured by one instrument.
+- ⛔ **VOID 1 is still verified on 8 arms, not 20**, and 8 arms have not landed.
+- ⛔ **Nothing about the necessity result.** No read, no rank; the recipe is frozen with `932477,932478`.
+- ⛔ `score_behavior.py` untouched (the commit script asserts it). **TEST untouched.** Push credential-blocked.
+
+**NEXT:** wait for all 20; regenerate the full exemption set with one instrument; re-check VOID 1 across 20; then one commit, then the read.
+
+---
+
+## S-499 / VOID 1 and VOID 2 verified across all 30 necessity arms, and the scorer blob held at exactly two (2026-09-26)
+
+Family at **18 of 20** landed, jobs at 1:56. The two verifications that do not need the last two arms are done.
+
+### ✅ VOID 1 and VOID 2 — measured across every necessity arm, old and new
+
+```
+arms inspected: 30
+DISTINCT GPUs:
+   NVIDIA GeForce RTX 3090      30 arm(s)
+VOID 1 (every compared arm on an RTX 3090): PASS
+nodes: {'n-307': 21, 'n-350': 9}
+VOID 2 (one GPU architecture): PASS
+```
+
+This upgrades S-496's *"verified on 8 arms, not 20"*. **All 30** — halves 1, 2 and the 18 landed arms of 4/5 — ran on an RTX 3090. The two nodes differ but the architecture does not, which is what VOID 2 asks. ⚠ The 3090 pin was applied **at submit only** (`p1_arms` uses a bare `--gpus=1` internally), so this had to be measured rather than assumed; it is the condition that would have voided the comparison silently.
+
+### ✅ The scorer blob held at exactly two, which is the S-496 constraint discharged
+
+```
+distinct commits across arms      : 8
+distinct score_behavior.py BLOBS  : 2
+    e94258bd5fc44c70629e707b00504b7acac2a7b7   (the 14 pre-existing arms)
+    9562bdf90b86fdb2fbbcf3a7b75967796b949b2d   (the 20 new arms)
+```
+
+**Eight commits, two blobs, and no third.** The S-496 constraint — *no commit may touch `src/boombness/score_behavior.py` while the family runs* — held for the whole ~2 hours, and the commit script's own assertion is why I can say that rather than hope it. The two blobs are exactly the transition S-494 discharged by measurement (670 rows bit-identical), so VOID 6's position is unchanged: one demonstrated-inert change between the old and new halves, and nothing else.
+
+🔶 This is the third time this session the **file-versus-commit** distinction has decided an outcome (S-490 establishing it, S-496 catching a would-be spurious VOID mid-run, S-499 closing it out). Recording that it earned its place.
+
+### ✅ Staged, not run: the finalize sequence
+
+A detached script waits for both job ids, regenerates the **whole** exemption set with `dcs_csi_known_short_entries.py`, and **aborts rather than committing** if the generator refuses or flags any arm short by more than `--allow-short 4` — *"that needs a DECISION, not an exemption"*. Staged this way so the commit cannot race the arms the way S-497's and S-498's did.
+
+### Current shortfall tally (18 of 20 landed)
+
+```
+  full 670 : 4, 11, 12, 14, 16, 17, 20, 21, 22          (9 arms)
+  short    : 5,6,7,8,15,18,19 at 669 (1 failed)         (7 arms)
+             9, 10          at 668 (2 failed)           (2 arms)
+  missing  : 13, 23
+```
+
+**Nine short of eighteen, every one inside `--allow-short 4`**, and the worst is 2.
+
+### WHAT IS NOT ESTABLISHED
+
+- ⛔ **The family is not complete** — `SHUF13` and `SHUF23` have not landed, and either could be short or could fail outright.
+- ⛔ **No exemption is written yet for any of the nine**; my four hand-written S-497 entries will be **replaced wholesale** by the generated set, so all entries are measured by one instrument rather than two.
+- ⛔ **Still no commit since `14800d9b`** — four entries now appended and uncommitted. The log is safe on disk; the git record is behind and I am not letting it read as current.
+- ⛔ **Nothing about the necessity result.** No read, no rank, no p. The floor moves 0.2000 → 0.0400 only if all 24 shuffled controls are admitted, and admission is decided by the read's own gates, not by this tally.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** both jobs exit → regenerate all exemptions → verify the completeness guard → one commit → then the read.
+
+---
+
+## S-500 / ✅ PR-CSI-003-A IS COMPLETE — all 20 arms landed, both jobs exit 0:0, and every VOID condition I can check pre-read is verified (2026-09-26)
+
+```
+932477  COMPLETED  02:02:21  0:0
+932478  COMPLETED  02:02:08  0:0
+landed 20/20
+```
+
+### The family as it actually came out
+
+```
+  full 670 (9 arms) : 4, 11, 12, 14, 16, 17, 20, 21, 22
+  669 rows, 1 lost  : 5, 6, 7, 8, 15, 18, 19          (7 arms)
+  668 rows, 2 lost  : 9, 10, 13, 23                   (4 arms)
+  missing           : none
+```
+
+**Eleven of twenty lost 1–2 rows** to the norm-match degeneracy guard — the established deterministic mechanism. **Every one is inside the preregistered `--allow-short 4`, and the worst loss is 2.** Nothing needs a decision rather than an exemption, which is the case the generator was built to flag and did not have to.
+
+### ✅ VOID 1, VOID 2 and VOID 6's position, measured across all 32 necessity arms
+
+```
+necessity arms inspected: 32
+GPUs: {'NVIDIA GeForce RTX 3090': 32}        VOID 1: PASS
+nodes: {'n-307': 23, 'n-350': 9}             VOID 2: PASS (one architecture)
+commits: 8  ->  score_behavior.py BLOBS: 2
+    e94258bd...  (the 12 pre-existing arms)
+    9562bdf9...  (the 20 new arms)
+```
+
+**Eight commits, two blobs, and the two are exactly the transition S-494 discharged** with 670 bit-identical rows. No third blob appeared across a two-hour run spanning four of my own commits — the S-496 constraint held, asserted by the commit script rather than remembered.
+
+### ✅ Eleven exemptions, written by one instrument
+
+`scripts/gates/dcs_csi_known_short_entries.py` emitted all eleven with **measured** dropped `prompt_id`s, differenced against the full 670-row `KO_NEC_SHUF4` — e.g. `SHUF10 → 7d4b904ca9892286 (power_substation), bc93131fd8ed6a65 (juice_bottling)`. Generator `rc=0`, **no `🔴` tolerance warnings, no count mismatches**.
+
+⚠ **My four hand-written S-497 entries were REPLACED, not kept alongside.** Two instruments describing the same eleven runs is how a table drifts; all eleven now come from one. `run_completeness_check.py` **exits 0**.
+
+⚠ The first replacement attempt **failed** (`ValueError: substring not found`) because I anchored on a string my own hand-written entries did not contain in that form. I re-anchored on line numbers after *reading* the block. A textual anchor asserted rather than checked is the same class as everything else that went wrong today; the assertion on both boundary lines is what made the second attempt safe.
+
+### WHAT IS NOT ESTABLISHED — and this is the important part
+
+- ⛔ **Nothing about the necessity result. The read has NOT been run.** No rank, no p, no verdict. The arms exist; that is all.
+- ⛔ **The floor does NOT automatically become 0.0400.** That requires all 24 shuffled controls to be *admitted by the read's own gates*, which is decided at analysis time, not by my tally. Eleven arms are short, and `--allow-short 4` is passed by the recipe — admission is still the analyser's call.
+- ⛔ **The remaining eight VOID conditions are unevaluated.** I checked 1, 2 and 6's position. Conditions 3, 4, 5, 8, 9, 10 are the read's job.
+- ⛔ **A larger family is HARDER to top.** The amendment's own arithmetic: P(rank 1) **0.6996 at K=8** → **0.5317 at K=24**. And 0.0400 is the **smallest p this design can produce**, so a rank-1 outcome must say so in the same sentence (S-079).
+- ⛔ **Five entries have been appended without a commit landing since `14800d9b`.** This commit clears that backlog; until it lands the git record is behind and I am not describing it as current.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** commit, then run the PR-CSI-003-A read exactly as `runargs/dcs_csi_pr003a_read.txt` specifies — the recipe whose `<HALF4>/<HALF5>` placeholders were resolved to `932477,932478` at S-495, **before** any rank existed.

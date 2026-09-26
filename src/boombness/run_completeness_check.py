@@ -152,6 +152,70 @@ KNOWN_ZERO = {
 }
 
 KNOWN_SHORT = {
+    # ---- PR-CSI-003-A halves 4/5 (jobs 932477/932478, n-307, 2026-09-26). S-500. --------------
+    # ELEVEN arms, each losing 1-2 of 670 rows to the norm-match degeneracy guard -- the mechanism
+    # S-152/S-154/S-159 established as a DETERMINISTIC function of (control basis, row), hence not
+    # stochastic, not node-dependent and not outcome-dependent. Every dropped prompt_id below was
+    # MEASURED by differencing against the full 670-row sibling KO_NEC_SHUF4, by
+    # scripts/gates/dcs_csi_known_short_entries.py and NOT by hand: four of these were hand-written
+    # at S-497 and are replaced here so all eleven come from ONE instrument. Nine sibling arms
+    # (4, 11, 12, 14, 16, 17, 20, 21, 22) persisted all 670 rows. All inside the preregistered
+    # --allow-short 4; the worst loss is 2. No re-run: a re-run reproduces the identical loss.
+    "csi1_basket_train_KO_NEC_SHUF10_20260926_145702_1012499":
+        "S-500: PR-CSI-003-A halves 4/5, jobs 932477/932478, n-307. 2 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=2, rows_written=668). MEASURED "
+        "dropped prompt_id 7d4b904ca9892286 (domain power_substation), bc93131fd8ed6a65 (domain juice_bottling), differenced against the full 670-row csi1_basket_train_KO_NEC_SHUF4_20260926_134421_1005926. "
+        "Inside --allow-short 4.",
+    "csi1_basket_train_KO_NEC_SHUF13_20260926_153316_1016596":
+        "S-500: PR-CSI-003-A halves 4/5, jobs 932477/932478, n-307. 2 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=2, rows_written=668). MEASURED "
+        "dropped prompt_id 3dd41d5c17eac424 (domain sports_stadium), 4b80a26649209cf9 (domain ferry_terminal), differenced against the full 670-row csi1_basket_train_KO_NEC_SHUF4_20260926_134421_1005926. "
+        "Inside --allow-short 4.",
+    "csi1_basket_train_KO_NEC_SHUF15_20260926_135759_1007140":
+        "S-500: PR-CSI-003-A halves 4/5, jobs 932477/932478, n-307. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id ab5725a897138252 (domain printing_works), differenced against the full 670-row csi1_basket_train_KO_NEC_SHUF4_20260926_134421_1005926. "
+        "Inside --allow-short 4.",
+    "csi1_basket_train_KO_NEC_SHUF18_20260926_143434_1010397":
+        "S-500: PR-CSI-003-A halves 4/5, jobs 932477/932478, n-307. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id 6d40e3608a4fc300 (domain rail_depot), differenced against the full 670-row csi1_basket_train_KO_NEC_SHUF4_20260926_134421_1005926. "
+        "Inside --allow-short 4.",
+    "csi1_basket_train_KO_NEC_SHUF19_20260926_144547_1011475":
+        "S-500: PR-CSI-003-A halves 4/5, jobs 932477/932478, n-307. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id 526bb9baafd30f72 (domain textile_mill), differenced against the full 670-row csi1_basket_train_KO_NEC_SHUF4_20260926_134421_1005926. "
+        "Inside --allow-short 4.",
+    "csi1_basket_train_KO_NEC_SHUF23_20260926_153313_1016543":
+        "S-500: PR-CSI-003-A halves 4/5, jobs 932477/932478, n-307. 2 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=2, rows_written=668). MEASURED "
+        "dropped prompt_id 4c06268a96d17232 (domain surveying_office), e3908ca7caaee679 (domain winery_cellar), differenced against the full 670-row csi1_basket_train_KO_NEC_SHUF4_20260926_134421_1005926. "
+        "Inside --allow-short 4.",
+    "csi1_basket_train_KO_NEC_SHUF5_20260926_135759_1007137":
+        "S-500: PR-CSI-003-A halves 4/5, jobs 932477/932478, n-307. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id b1471eb1c15d84b3 (domain council_depot), differenced against the full 670-row csi1_basket_train_KO_NEC_SHUF4_20260926_134421_1005926. "
+        "Inside --allow-short 4.",
+    "csi1_basket_train_KO_NEC_SHUF6_20260926_141021_1008284":
+        "S-500: PR-CSI-003-A halves 4/5, jobs 932477/932478, n-307. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id 595c2488906ddb0d (domain dairy_plant), differenced against the full 670-row csi1_basket_train_KO_NEC_SHUF4_20260926_134421_1005926. "
+        "Inside --allow-short 4.",
+    "csi1_basket_train_KO_NEC_SHUF7_20260926_142222_1009308":
+        "S-500: PR-CSI-003-A halves 4/5, jobs 932477/932478, n-307. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id 811518cee523f9ae (domain sewage_plant), differenced against the full 670-row csi1_basket_train_KO_NEC_SHUF4_20260926_134421_1005926. "
+        "Inside --allow-short 4.",
+    "csi1_basket_train_KO_NEC_SHUF8_20260926_143434_1010394":
+        "S-500: PR-CSI-003-A halves 4/5, jobs 932477/932478, n-307. 1 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=669). MEASURED "
+        "dropped prompt_id 064e1bdd302c494a (domain cargo_airfield), differenced against the full 670-row csi1_basket_train_KO_NEC_SHUF4_20260926_134421_1005926. "
+        "Inside --allow-short 4.",
+    "csi1_basket_train_KO_NEC_SHUF9_20260926_144540_1011421":
+        "S-500: PR-CSI-003-A halves 4/5, jobs 932477/932478, n-307. 2 row(s) of 670 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=2, rows_written=668). MEASURED "
+        "dropped prompt_id 0fa7ee4819c655dc (domain lorry_park), 9a0236e9d1352291 (domain plumbing_depot), differenced against the full 670-row csi1_basket_train_KO_NEC_SHUF4_20260926_134421_1005926. "
+        "Inside --allow-short 4.",
     "csi1_button_validation_KO_SHUF14_20260921_040940_877308":
         "DCS-CSI-159: PR-CSI-007 family, job 914479 (group K), rescue_layer 18. SIXTH in-family "
         "instance. 2 rows of 230 REFUSED by the norm-match degeneracy guard ('1 of 28 positions are "
