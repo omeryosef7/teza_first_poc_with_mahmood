@@ -41337,3 +41337,89 @@ wrong-scope error as detector failure #16.*
 
 **NEXT:** the two audits when they land, then sweep the draft for every other "median" and re-derive
 it. **Six questions with the user.** **Push credential-blocked.**
+
+---
+
+## S-469 — the figure audits of §1–§4 and §H: 196 figures, three defects, and one of them reverses an argument (2026-09-26)
+
+Two auditors, one over the cell-level sections and one over the head-level ones — the halves last
+figure-checked at S-438 and before §A existed. **Every defect below was reproduced by me before it
+was acted on**, which is the rule S-468 forced me to write.
+
+### §H — 78 figures, 76 match
+
+🔴 **§H.1b's Spearman ρ was −0.0932. It is −0.34977.** Re-derived from PR-011's own `E` and frozen
+`head_sets`: the overlap histogram (**2/7/6/4/1**), all five group means (−0.024358 / −0.052264 /
+−0.069311 / −0.060652 / −0.080963) and the companion Pearson (**−0.26379**) reproduce **exactly**,
+so the overlap vector was right and **only the rank statistic was wrong** — by **3.8× in
+magnitude**. ⚠ **And the direction of the error matters**: the sentence used ρ to argue the
+dose-response in candidate-head count is *weak*, which is how it argued against additivity. At
+−0.35 it is **modest but real**. *"Non-monotone"* survives (overlap-3's mean is weaker than
+overlap-2's); *"weak"* does not. **This is the one defect in the session that changes what an
+argument supports.**
+
+🔴 **§H.4's "four of them sit in `HD_BOTK`" is three distinct heads — 10, 11 and 29.** The 4 sums two
+table cells, §2's {11, 29} and §3's {10, 11}, and **double-counts head 11**, which is in both. The
+sentence's antecedent is heads.
+
+✅ Everything else held: all four E/ci95 blocks, `F` = 0.86351092 with its CI, **both** rank-1-of-21
+certifications sitting exactly at their 1/21 floors, the control family's mean/sd/range, D34's
+exactly-four heads with the exhaustive *"no head outside `HD_TOPK` clears"*, all nine ratio
+derivations (86.4 / 77.8 / 67.2 / 25.2 / 21.8 / 20.1 %, 14×, 4.97×, 7 %), the button re-derivation,
+and the basket/button **domain-identity claim checked in the raw `results.jsonl`** rather than taken
+on trust.
+
+### §1–§4 — 118 figures, 117 match, ZERO mismatches
+
+✅ **This half is clean.** The load-bearing figures that live in **no JSON** were re-derived from raw
+rows and reproduce to the published digits: §1's two share CIs (**[70.4, 90.6]** excluding 100 %,
+**[92.9, 140.4]** crossing it), the cross-cell correlation **r = +0.719**, §4's **ρ = +0.817**, the
+**1.400** best power ratio and **0 of 7** clearing the gate, and **M = 3 of 8** on the
+layer-normalised statistic — the last recomputed independently and matching `train_evidence.per_head`
+head for head. Both certified p's, all three permutation spaces (180, 10080, 1), the
+**619/14348907** exact binomial, the PPV chain (0.24 / 0.42 / 0.55) and the (1/9)⁴ = (1/3)⁸ = 1/6561
+coincidence all check out.
+
+⚠ **One attribution flag, no number wrong.** §1 said the intervention argmax marginal concentrates on
+L10/L14 *"for D40's eight-head multiset"*. The marginal's **own basis is the TEN heads** censused
+before PR-CSI-020 (L10 and L14 take **6 of 10**); the **eight**-head object is D40's *prediction*
+multiset, which the marginal is applied **against**. Both counts are right; the sentence blurred
+which was which. Reworded.
+
+### ⚠ The auditors' own near-misses, recorded because they are the useful part
+
+* The cell auditor's first independent `y_install` implementation disagreed with **every** published
+  `E` by ~1e-3 — it had mis-extracted the family slot key. Re-running through the repo's own
+  `by_domain` reproduced `CL_KO`, `CL_H17_L14`, `CL_H19_L14` and `CL_H23_L07` **exactly**. It filed
+  this as its own error rather than as a mismatch. ✅ **That is the estimator reproducing through
+  independent hands, which is worth more than the 117 matches.**
+* It also checked two look-alike errors and cleared both: §2's realised binomial (9.22e-05) against
+  `GATING_FLOOR.parts.binomial` (1.88e-06, which is what a *perfect* M=6 would have scored), and the
+  two unrelated `1.40`s in §4.
+
+### The median sweep S-468 called for — and something I broke doing it
+
+Four remaining "median" claims are **not** mine and are unaffected: GATE 0's own definition, D27's
+`.pt`-derived `|cos|` median, PR-CSI-006's *requirement* for a median, and D31's activation median
+stored in `PR009_HARDWARE_AB.json`. ⇒ **the convention error was confined to option mass.**
+
+🔴 **But S-468's global replace of `0.0902 → 0.0901` rewrote the number INSIDE S-465's own correction
+note**, so a note reading *"this read 0.0902"* became *"this read 0.0901"* — **it misquoted the very
+thing it was correcting.** Restored, with both layers of the correction now recorded. ⚠ **The lesson
+is specific: a blind global replace is unsafe in a document whose correction history is MADE of the
+old values.** Anchor the replacement, or exclude the notes.
+
+### What is NOT established
+
+* ⛔ **That ρ = −0.34977 rescues or refutes additivity.** It makes the count-based dose-response
+  modest rather than weak. §H.2's *"no interaction model over the 8-set was run"* is unchanged and
+  still the governing limitation.
+* ⛔ **That the §H audit covered everything.** 78 figures; the section's prose claims and its
+  cross-references were not this auditor's dimension.
+* ⛔ **That 117/118 means §1–§4 are correct.** It means their figures match their artefacts. Whether
+  the artefacts answer the questions the sections pose is §5, §L and §M's territory.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** with §A, §1–§4 and §H all figure-audited, the unaudited surfaces are **§0, §5, §6, §L and
+§M** — the framing and methods sections, where the rung-1 question already sits. **Six questions with
+the user.** **Push credential-blocked.**

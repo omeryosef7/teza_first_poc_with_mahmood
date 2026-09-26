@@ -137,7 +137,10 @@ the census reads — so this is a statement about **load-bearing heads, not abou
 
 The obvious rival, that the band edge simply attracts everything, is **refuted by the screen's own
 marginal**: L14 is the screen argmax for only **6 of 32** heads (the modal layer is L11 at 8/32), so
-P(all four match) is **2.06e-04** under that marginal against 1.52e-04 uniform [†] — ⚠ **the uniform figure is a comparator, not a null.** The intervention argmax marginal is measured to concentrate on L10/L14 **for D40's eight-head multiset** (§3, §L.5); **no equivalent measurement exists for these four heads**, and AM-42 records that such corrections are specific to the multiset they were computed on — and **an all-L14
+P(all four match) is **2.06e-04** under that marginal against 1.52e-04 uniform [†] — ⚠ **the uniform figure is a comparator, not a null.** The intervention argmax marginal is measured to concentrate on L10/L14 ****against** D40's eight-head prediction multiset** (§3, §L.5); **no equivalent measurement exists for these four heads**, and AM-42 records that such corrections are specific to the multiset they were computed on — and **an all-L14
+⚠ *S-469: the marginal's own basis is the **TEN** heads cell-censused before PR-CSI-020 (L10 and L14
+take 6 of 10); the EIGHT-head object is D40's prediction multiset, which that marginal is applied
+to. Both counts are right and the sentence had blurred which was which.*
 guesser scores 2 of 4.**
 
 ⛔ D37 is **descriptive**: no rank, no p, no control family. *"Cell (L,h) is the writer"* is
@@ -956,7 +959,13 @@ D32's controls average −0.004006, D33's −0.057700.
 🔴 **And it carries the sharpest bound on the whole head-level story. Sufficiency is certified;
 UNIQUENESS IS NOT.** The strongest control shares **exactly ONE head** with the candidate (head 2)
 and still reaches **77.8 %** of the candidate's effect and **67.2 %** of the all-32 knockout's. The
-dose-response in candidate-head *count* is weak and non-monotone (Spearman ρ = −0.0932), which
+dose-response in candidate-head *count* is **present but modest, and non-monotone** — 🔴 *CORRECTED
+S-469: this read "weak … (Spearman ρ = −0.0932)". Re-derived from PR-011's own `E` and frozen
+`head_sets`, **ρ = −0.34977**, 3.8× larger in magnitude. The companion Pearson (−0.2638), the
+overlap histogram (2/7/6/4/1) and all five group means reproduce exactly, so the overlap vector was
+right and only the rank statistic was wrong. **"Non-monotone" survives** — the overlap-3 mean
+(−0.060652) is weaker than overlap-2's (−0.069311) — **but "weak" does not, and this cuts against
+the argument the sentence was making.*** (Spearman ρ = **−0.34977**), which
 argues against additivity across the eight. **Nothing here says this is *the* 8-set.** ⚠ Two
 rank-1-of-21 certifications, both sitting exactly at their floor — separate evidence, not one result
 counted twice.
@@ -1036,7 +1045,10 @@ preregs with `HD_TOPK = {2,6,13,17,19,23,24,28}` and `HD_BOTK = {0,9,10,11,15,16
 §A existed. §A.3's D12 clears its preregistered bar on both splits at rank 1 of 47. The two halves
 certify different kinds of p — binomial and permutation on argmax agreement here, a rank p at its
 attainable floor there — and the sentence now says which.* Their heads were admitted from H.2's and H.3's *whole-head* arms by the 1.5 gate, not
-selected from `HD_TOPK`; **four of them sit in `HD_BOTK`, the set H.1 uses as its null anchor.**
+selected from `HD_TOPK`; **three distinct heads — 10, 11 and 29 — sit in `HD_BOTK`, the set H.1
+uses as its null anchor, filling four of the two rows' slots.** 🔴 *CORRECTED S-469: this said "four
+of them", which sums two table cells (§2's {11, 29} and §3's {10, 11}) and double-counts **head
+11**, which appears in both. The antecedent is heads, so the count is three.*
 PR-CSI-020's prereg rejects the narrower pool by name: the screen's top-8 *"COULD NOT CERTIFY ON ANY
 OUTCOME … the pool was widened before any cell of any head here was measured."*
 
@@ -1277,9 +1289,11 @@ names it *"the readout validity gate, min 0.05"*. The gate is applied to **one r
 (`BASE` by default) and its surviving key set is then used for every arm — never per-arm, because
 option mass is an outcome and a per-arm filter would be post-treatment selection (review R2-B1).
 Measured on TRAIN: **`BASE` has 36.3 % of its 670 scored rows below 0.05** (243 rows, median
-**0.0901**, minimum **4.66e-05**) 🔴 *S-465: this read "median 0.0901, minimum 0.000001"; the median
-is 0.09008, and the 1e-06 minimum belongs to `KO` (9.6e-07) and `KO_AXIS` (1.0e-06), not to the arm
-the sentence is about*, while the rescued arms sit higher — `KO` and `KO_AXIS` both **18.1 %**
+**0.0901**, minimum **4.66e-05**) 🔴 *S-465: this read "median 0.0902, minimum 0.000001"; the 1e-06
+minimum belongs to `KO` (9.6e-07) and `KO_AXIS` (1.0e-06), not to the arm the sentence is about.
+S-468 then corrected 0.0902 to the true median 0.0901 — the value first written was the
+upper-middle element.* ⚠ *S-469: the "0.0902" inside this very note had itself been rewritten to
+"0.0901" by S-468's global replace, which made the note misquote what it was correcting. Restored.*, while the rescued arms sit higher — `KO` and `KO_AXIS` both **18.1 %**
 below, median **0.191** (`KO`) and **0.190** (`KO_AXIS`) — and it is those arms, not `BASE`,
 that reach 1e-06. 🔴 *S-468: a single "median 0.191" was quoted for the pair; at the true median they
 round differently.* ⚠ **It is `BASE`'s distribution that gates**, and it is the worst of the
