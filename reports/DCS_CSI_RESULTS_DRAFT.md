@@ -1077,6 +1077,13 @@ inference it is: deleting rows also changes the retained set in ways this test d
 what is established is the sign of the change, not a mechanism for it.* ⚠ **But "matched" must not be read as "matched on everything"** — it is
 matched on family size, composition, layer, procedure and domains, and **unmatched on this**.
 
+🔴 **ADDED S-457 — both button cells re-read at the 0.05 floor, completing §A.** Controls
+reproduce the published artefacts exactly; at the floor: button TRAIN 626 → 545 keys, **−0.00014 →
+−0.00006, rank 36 of 47 unchanged**; button VALIDATION 221 → 197 keys, **+0.00218 → +0.00276,
+rank 6 of 47 unchanged**. **Neither side of the dissociation moves when the invalid-readout rows are
+removed** — basket stays rank 1 on both splits, button stays 36 and 6 — so the dissociation is not
+a readout artefact in either direction.
+
 **This removes "unequal control families" as the explanation of the dissociation, and nothing
 else** — it cannot say *why* the codewords differ.
 
@@ -1381,6 +1388,26 @@ now.** `specificity_all_controls_rejected` is **False in all four cells**; rejec
 **A train 8 of 46, A valid 0 of 46, B train 1 of 46, B valid 2 of 46** (smallest Holm p 0.0067 /
 0.0695 / 0.0308 / 0.0432). ⚠ **Neither held-out cell rejects a single control** — the same
 in-sample/held-out asymmetry S1 shows, from a statistic that never entered the record.
+
+🔴 **ADDED S-457 — all four cells re-read at PR-CSI-001's declared 0.05 readout-validity floor.**
+Every floor-0.0 control reproduces its published artefact exactly, so the comparison is against a
+validated harness:
+
+```
+            floor 0.00                                   floor 0.05
+A train  626 k  +0.00150 p 0.0070  rank  4/47      545 k  +0.00171 p 0.0051  rank  4/47
+A valid  221 k  +0.00338 p 0.0074  rank  1/47      197 k  +0.00407 p 0.0072  rank  1/47
+B train  641 k  +0.00090 p 0.1606  rank 13/47      411 k  +0.00143 p 0.1283  rank 11/47
+B valid  215 k  +0.00224 p 0.0343  rank  2/47      135 k  +0.00285 p 0.0260  rank  2/47
+```
+
+✅ **No verdict moves.** Three of four ranks are identical; **B train moves 13 → 11**, which crosses
+no threshold — it is "does not help" on either rule at either floor. Every candidate **grows**, as
+in §A.3. ⚠ **And the key loss splits by RECIPIENT CODEWORD, not by arm**: the two button-recipient
+cells lose **13 % and 11 %** of their keys, the two basket-recipient cells **36 % and 37 %**. That
+is the same asymmetry §A.2 reports, and its appearing here — in a different family, with the
+recipient's codeword as the only thing that changes — is what identifies it as a property of the
+**prompt bank**, not of any arm or intervention.
 
 ⚠ **On the CI's last digit.** At the prereg's seed the A-TRAIN bound is `[+0.00065, +0.00260]`; the
 claim table records `[+0.000664, +0.002605]` from an independently seeded bootstrap, and the artefact

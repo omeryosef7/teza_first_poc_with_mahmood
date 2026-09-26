@@ -40360,3 +40360,79 @@ what is established is the SIGN of the change, not a mechanism.*
 **NEXT:** direction B's two cells when they land, then the button L18 family at the 0.05 floor —
 after which every §A cell will have been read at both floors. **The rung-1 framing question from
 S-453 remains with the user. Push credential-blocked.**
+
+---
+
+## S-457 — the declared sensitivity finished on all eight §A cells: no verdict moves, and the unmatched dimension is identified as a property of the prompt bank (2026-09-26)
+
+**Completes S-455/S-456.** PR-CSI-001's `"semantic option mass (the readout validity gate, min
+0.05)"` had never been applied in 27 artefacts. It has now been applied to **every cell §A reports**,
+each run end to end through the analyser at floor 0.0 as a control and 0.05 as the declared floor.
+
+```
+cell                     floor 0.00                      floor 0.05                 rank
+basket TRAIN     (D12)   642 k  +0.00264  p 0.0107        412 k  +0.00365  p 0.0164   1 -> 1
+basket VALIDATION(D12)   215 k  +0.00401  p 0.0182        135 k  +0.00538  p 0.0069   1 -> 1
+swap A train     (D25)   626 k  +0.00150  p 0.0070        545 k  +0.00171  p 0.0051   4 -> 4
+swap A valid     (D30)   221 k  +0.00338  p 0.0074        197 k  +0.00407  p 0.0072   1 -> 1
+swap B train     (D25)   641 k  +0.00090  p 0.1606        411 k  +0.00143  p 0.1283  13 -> 11
+swap B valid     (D25)   215 k  +0.00224  p 0.0343        135 k  +0.00285  p 0.0260   2 -> 2
+button TRAIN     (D23)   626 k  -0.00014  p 0.7717        545 k  -0.00006  p 0.9191  36 -> 36
+button VALIDATION(D29)   221 k  +0.00218  p 0.0371        197 k  +0.00276  p 0.0125   6 -> 6
+```
+
+✅ **All eight floor-0.0 controls reproduce their published artefacts EXACTLY** — point, ci95, p,
+key count and verdict — so this is a validated harness throughout, not eight re-implementations.
+✅ **NO VERDICT MOVES.** Seven ranks are identical; **B train moves 13 → 11**, which crosses no
+threshold under either rule. ✅ **Every candidate's magnitude grows or holds**, so the low-validity
+rows were **attenuating**, never manufacturing. ⚠ *The SIGN is established, the mechanism is not:
+deleting rows also changes the retained set in ways this test does not isolate.*
+
+⛔ **This does not say the record should be recomputed.** Floor 0.0 is the frozen protocol; 0.05 is
+a declared **sensitivity**. What is now true is that the check which was declared and skipped has
+been run, and the record survives it.
+
+### The identification the swap family made possible
+
+The key loss at the floor splits cleanly **by RECIPIENT codeword, not by arm or donor**:
+
+```
+recipient = button   swap A train 13 %   swap A valid 11 %   button TRAIN 13 %   button VALID 11 %
+recipient = basket   swap B train 36 %   swap B valid 37 %   basket TRAIN 36 %   basket VALID 37 %
+```
+
+The A and B swap cells differ only in **which codeword is the recipient** — hence which prompt bank
+is scored — and the loss tracks the recipient across four otherwise-different families. So the
+asymmetry is a property of the **prompt bank**, not of the axis, the donor or the intervention.
+Measured directly on `BASE`: basket **36.3 % / 36.5 %** of rows below 0.05 (median option mass
+**0.0902 / 0.0835**) against button **12.5 % / 10.9 %** (median **0.3298 / 0.2650**).
+
+🔴 **D24 claims the dissociation "at matched power". That is matched control-family size,
+composition, layer, procedure and domains. The two sides are UNMATCHED on readout validity, by a
+factor of three, and no row in the claim table said so.**
+
+✅ **It does not explain the dissociation away, and both halves of that were measured rather than
+argued.** At the 0.05 floor **basket stays rank 1 on both splits and button stays 36 and 6** — so
+neither side moves when the invalid rows go. And basket's candidate **grew** (+0.00264 → +0.00365;
++0.00401 → +0.00538), so the noisier readout was working **against** the side that passes.
+
+### What is NOT established
+
+* ⛔ **WHY basket's readout validity is three times worse.** Measured in four cells and unexplained.
+  It is a property of the bank, the codeword or the model, and nothing here separates those.
+* ⛔ **That the head and cell families are matched on it.** Never measured there — §1–§4 and §H use
+  a different instrument and were not touched by any of this.
+* ⛔ **That the attenuation reading is the only one.** The sign of the change is established; the
+  mechanism is not.
+* ⛔ **That floor 0.05 is the right protocol.** It is the declared sensitivity, not the frozen read.
+* ⛔ No GPU work this tick or the last three; queue empty; **TEST untouched**.
+
+⚠ **Worth stating plainly: this chain began with a `isinstance(v, dict)` filter in my own sweep two
+entries ago.** That filter hid PR-CSI-001, PR-CSI-001 declared a gate nobody had run, running it
+required reconstructing a read that no longer reproduces as written, and the run then exposed a
+three-fold asymmetry sitting underneath the sprint's central dissociation claim. **None of it was
+reachable from the artefacts or the claim table** — only from the preregistration.
+
+**NEXT:** measure readout validity in the head and cell families (§1–§4, §H), the one place the
+asymmetry has not been looked for. Then the remaining ten axis rows. **The rung-1 framing question
+from S-453 is still with the user. Push credential-blocked.**
