@@ -80,9 +80,13 @@ a fixed position: the two-way softmax between the concept and codeword continuat
 `y = exp(logp_concept) / (exp(logp_concept) + exp(logp_codeword))`, which lies in [0, 1]. ⚠ **It is
 not the `semantic_logodds` field**, which exists in every row and equals `logp_concept −
 logp_codeword`. That is the same contrast on **a different scale**: the endpoint is exactly
-`sigmoid(semantic_logodds)`, so **no rank in this draft changes with the choice**: every argmax
+`sigmoid(semantic_logodds)`, so **no ARGMAX in this draft changes with the choice**: every argmax
 **of this endpoint** — §1's four peaks, §2's, §3's, and §4's D38 — is invariant, **while every
-effect size is not.** ⚠ §4's D41 argmaxes are of a **different statistic** (a direct-path
+effect size is not.** 🔴 *S-467: this said "no RANK in this draft", which is too broad now that §A
+exists. §A's ranks are positions of a **domain-mean difference** within a control family, and a
+mean is not invariant under a monotone transform — `mean(sigmoid(x)) ≠ sigmoid(mean(x))`. The
+invariance argument covers **per-row argmaxes only**; §A's rank tests are a different object and
+are NOT covered by it.* ⚠ §4's D41 argmaxes are of a **different statistic** (a direct-path
 projection, not `y`), so they are outside this argument. Published
 `installation_by_arm` values such as 0.47336 / 0.23972 are probabilities, and reading an effect like
 `E = −0.2269` as a change in log-odds would **overstate** it. §M.4 gives the full definition
@@ -260,6 +264,23 @@ carried **no VOID 11** because that condition was introduced for the *next* fami
 recipe and a frozen reader are different guarantees, and only the first was originally claimed.**
 The decisive test was run (S-414): GATE 0 62/62 at both commits, a byte-identical census, and **not
 one number the claim rests on moved**.
+
+🔴 **ADDED S-467 — this section was written before §A existed and its title is broader than its
+contents were. §A's reproducibility is NOT the same story.** Of the axis families' governing
+artefacts, **one cannot be re-executed as written**: `DCS_CSI_SUBSPACE_basket_train_n46.json` —
+D12's TRAIN half, and a published PASS — pinned neither `--require-slurm-job` nor
+`--require-rescue-layer`, and the L20 arms later reused its tag prefix, so **18 of its arms now
+match two complete run dirs each** and the analyser refuses. `BASE` records no rescue layer, so the
+S-104 layer pin cannot separate them; only the job pin can. ✅ **Reconstructing that pin from the
+job ids in the artefact's own run dirs, the read reproduces EXACTLY** (S-455), and all eight §A
+cells were subsequently re-run at two option-mass floors with every floor-0.0 control matching its
+published artefact. ✅ **Scoped**: 8 of 23 subspace/swap artefacts are unpinned with a now-ambiguous
+prefix, but seven are superseded or early reads — **among the governing artefacts this is the only
+one affected**, and D23, D29 and all four swap cells pin both job and layer.
+
+⚠ **So the guarantee differs by half.** §1–§4's two PASSes replay from a frozen recipe run verbatim;
+§A's headline replays only after a pin its own recipe did not carry. **Both reproduce; only one
+reproduces from what was frozen.**
 
 ⚠ This is **reproducibility, not corroboration**: it re-reads the same arms, strengthens no p, and
 tests the reader rather than the arm. ⛔ It says nothing about PR-CSI-021, which was never read, or
@@ -790,15 +811,19 @@ demonstrations supply the installed content — has **no confirmatory instrument
 measurement licenses a **refutation reading only**, and a null control there is *confounded*, to be
 reported as CANNOT ANSWER and never as support.
 
-## L.7 Every result here reads the SAME 23 domains, and most heads were never looked at
+## L.7 §1–§4 and §H all read the SAME 23 domains, and most heads were never looked at
 
 🔴 **All five cell censuses — PR-CSI-014, 015, 016, 018 and 020 — read an IDENTICAL set of 23
 validation domains, and so does the head-level button family in §H.3**, whose 23 domains are
 recorded as identical to basket's. **The limitation is sprint-wide within §1–§4 and §H, not cell-level.** 🔴 *CORRECTED S-453 —
 §A also reads the 67 TRAIN domains, which are disjoint from these 23; see §0.* Verified by comparing the domain sets arm-by-arm: union 23, intersection 23.
 **So §1, §2, §3 and §4 are not independent in the domain dimension**, and that includes the
-cross-codeword pair: D39 and D40 share their entire domain sample. Domain idiosyncrasy is common to
-every result in this draft, and **nothing here speaks to domain generality.**
+cross-codeword pair: D39 and D40 share their entire domain sample. Domain idiosyncrasy is a limitation of
+**every** result in this draft — but the SHARED-SAMPLE part of it is specific to §1–§4 and §H;
+🔴 *S-467: this paragraph read "common to every result in this draft" directly after a sentence
+about §1–§4 sharing one sample, which invited the reading that §A shares it too. §A's TRAIN cells
+read 67 domains disjoint from these 23, and carry their own idiosyncrasy, not this one.*
+**Nothing anywhere here speaks to domain generality.**
 
 ⚠ **Head coverage is thin and the two ways of counting it differ.** At most **8 of 32** heads are
 cell-censused in any single family; the **union across all five families is 15 of 32**, so
@@ -868,7 +893,12 @@ unavailable there without new code.**
 could be run it changed nothing, twice over, on both codewords. But that is evidence *about the axis
 families*, and it transfers to the others by assumption rather than by measurement.
 
-⚠ **One place it touches a conclusion.** §H's **D35** — the sprint's only empirical negative — is a
+⚠ **One place it touches a conclusion.** §H's **D35** — 🔴 *S-467: called "the sprint's only empirical negative" before §A existed. §A.2
+carries certified negatives too: button at L18 **DOES NOT PASS on TRAIN at rank 36 of 47**, which
+D23 records as the first button failure that is **CERTIFIABLE rather than floor-limited**, and D29
+adds the held-out non-replication. **What is distinctive about D35 is narrower: it is the only case
+where a POSITIVE result, selected by a frozen rule, then FAILED TO REPLICATE.** The button cells
+never passed in the first place* — is a
 head selected on **basket** and failing to replicate on **button**, a comparison that crosses this
 asymmetry. It crosses it in the direction that **favours** the negative: button's readout is the
 cleaner of the two, so button was the easier place to detect the effect, and it was not detected.

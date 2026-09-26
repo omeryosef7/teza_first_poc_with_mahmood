@@ -41184,3 +41184,72 @@ remaining structural gap is that **§1–§4 and §H were reviewed before §A ex
 cross-references to it were never re-checked — §H.4's "only two certified p's" (fixed S-464) was
 one such, found by accident. **Six questions now with the user**, the newest being whether the
 untested code transitions warrant a re-run. **Push credential-blocked.**
+
+---
+
+## S-467 — the cross-references INTO §A from sections written before it existed: four found, and one is a whole section's scope (2026-09-26)
+
+**S-466's named gap**: §0, §1–§6, §H, §L and §M were all reviewed **before §A existed**, and their
+claims about what the draft contains were never re-checked. §H.4's *"the sprint's ONLY two certified
+p's"* was one such and was found by accident in S-464, which is the wrong way to find them.
+
+**Method**: sweep every line outside §A for scope quantifiers — *"the only"*, *"the sole"*, *"no
+other"*, *"every result / claim / census"*, *"sprint-wide"*, *"in this draft"*. **57 hits, most
+local and correct.** Four were stale, all in the same way: true when written, false once §A landed.
+
+### 🔴 "the sprint's only empirical negative" (§L.9, of D35)
+
+**§A.2 carries certified negatives.** D23's own headline: *"button at L18 with 46 controls **DOES
+NOT PASS ON TRAIN** — and for the first time button's TRAIN failure is **CERTIFIABLE rather than
+floor-limited**"*, with D29 adding the held-out non-replication. ⇒ **D35 is not the sprint's only
+empirical negative.** What is distinctive about it is narrower and is now what the draft says: **it
+is the only case where a POSITIVE result, selected by a frozen rule, then FAILED TO REPLICATE.** The
+button cells never passed in the first place.
+
+### 🔴 "no RANK in this draft changes with the choice of scale" (§0)
+
+The endpoint is exactly `sigmoid(semantic_logodds)`, so the two scales are a monotone transform of
+each other and **per-row argmaxes are invariant** — which is what the sentence goes on to say. But
+it opens with *"no **rank** in this draft"*, and **§A's ranks are not argmaxes**: they are the
+position of a **domain-mean difference** within a control family, and
+`mean(sigmoid(x)) ≠ sigmoid(mean(x))`. **The invariance argument does not cover them.** Narrowed to
+ARGMAX, with the reason stated.
+
+### 🔴 §L.7's heading outlived its own corrected body
+
+The body was scoped in S-453 to *"sprint-wide within §1–§4 and §H"*; **the heading still read
+"Every result here reads the SAME 23 domains"**, and the closing line still said domain idiosyncrasy
+is *"common to every result in this draft"* immediately after a sentence about §1–§4 sharing one
+sample. §A's TRAIN cells read **67 domains disjoint from those 23**. Heading and closing both fixed.
+⚠ **Third time a correction has landed in a body and not its heading.**
+
+### 🔴 §6 "Reproducibility" covered half the draft
+
+§6 reports that both published PASSes replay from frozen recipes — and says **nothing about §A**,
+because §A did not exist when it was written. **The §A story is different**: D12's TRAIN half, a
+published PASS, **cannot be re-executed as written** (AM-53-a) — it pinned neither job nor layer,
+the L20 arms later reused its tag prefix, and 18 of its arms now match two complete run dirs each.
+✅ It reproduces **exactly** once the pin is reconstructed from the artefact's own run dirs, and all
+eight §A cells were re-run at two floors with every control matching. ⇒ **The guarantee differs by
+half, and §6 now says so: §1–§4's PASSes replay from what was frozen; §A's headline replays only
+after a pin its own recipe did not carry. Both reproduce; only one reproduces from what was
+frozen.**
+
+### What is NOT established
+
+* ⛔ **That the sweep is complete.** It matched **quantifier phrasings**. A stale cross-reference
+  worded without one — a bare claim that happens to be about §A's territory — is invisible to it,
+  and §6's gap was found by reading, not by the sweep.
+* ⛔ **That the four fixes are the only stale ones.** 57 hits were triaged and 53 judged local and
+  correct; that triage was mine and unreviewed.
+* ⛔ **That §A's own cross-references OUT are sound.** This tick checked one direction only.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+⚠ **The pattern worth naming.** Every one of these four was true when written. The draft grew a
+third part and nothing re-examined the sentences that quantified over the whole. **Four of the
+sprint's last ~35 defects are this exact shape**, and the cheap defence — re-run the quantifier
+sweep whenever a part is added — is now written down here rather than left to be rediscovered.
+
+**NEXT:** §A's cross-references OUT (the other direction), then the §1–§4/§H sections' own figures
+against artefacts, which have not been re-audited since S-438. **Six questions with the user.**
+**Push credential-blocked.**
