@@ -62,7 +62,8 @@ not: a count in prose is a claim, and it needs re-measuring at every edit that c
 rank-1 installation axis and its control families, the necessity direction, the button/basket
 codeword dissociation at matched power, and the cross-codeword axis swap. ✅ *S-463:* **all twenty are now in this file, as §A.1 through §A.8.** §L.3 touches two of these results (necessity, basket-at-L20) only
 to limit them, which is how the gap stayed invisible for so long — they appeared as *limitations of
-results the draft never stated*, and for the **four** still undrafted they still do.
+results the draft never stated*. ✅ *S-464: none remain undrafted, so that gap is closed —
+§L.3's limits now sit beside the results they limit.*
 
 ⛔ **Review coverage is UNEVEN and every pass so far has found real defects:** §1–§6 twice, §M once
 (S-421, six mismatches against the source), §L once, **§H once** (S-438: thirteen findings, two that
@@ -93,8 +94,8 @@ mislabelled them `test_domains` and collapsed them to the count "3", the error A
 corrected) — while **every census reported here is read on the 23 VALIDATION domains.** So every effect, bar and argmax
 in **§1–§4 and §H** rests on **23** domains rather than 67, and a 230-row read is n = 23 because the
 domain is the unit. 🔴 **CORRECTED S-453 — this said "every effect below" until §A existed, and §A
-is a large exception**: §A.3's TRAIN cell, §A.4a's two TRAIN cells and §A.4b's TRAIN factorial are
-computed on the **67 TRAIN domains**, which are **disjoint** from these 23. Each says so where it
+is a large exception**: §A.2, §A.3, §A.4a, §A.4b, §A.5, §A.6 and §A.7 all carry cells
+computed on the **67 TRAIN domains** — §A.7 is TRAIN-only end to end — which are, which are **disjoint** from these 23. Each says so where it
 stands, and §A.4b's whole in-sample/held-out argument turns on the distinction. ⚠ **The confirmatory p's themselves are NOT over domains at all** — binomial, conditional and
 permutation are functions of the **admitted heads**, `K = 6` in §2 and `K = 8` in §3, which is why
 §3 can say "the margin is one head". The 23 domains are the n of the `E` and `bar(h)` estimates that
@@ -851,7 +852,9 @@ in PR-CSI-014, 015, 020 and 010 (basket) and in PR-CSI-016 and 018 (button) as i
 families, because `BASE` is the same clean run of the same bank.
 
 **§A can test it and does.** All eight axis cells were re-read at the 0.05 floor: **no verdict
-moves**, and every candidate's magnitude grows — the low-validity rows were attenuating (§A.3,
+moves**, and every candidate's magnitude **grows or holds** — 🔴 *S-464: an earlier draft said
+"grows", which is false of button TRAIN, whose candidate moves −0.00014 → −0.00006, i.e. TOWARD
+zero* — so the rows were attenuating wherever there was an effect to attenuate (§A.2, §A.3,
 §A.4a).
 
 🔴 **§1–§4 and §H cannot.** `scripts/dcs_csi_head_census.py` contains **no reference to
@@ -992,8 +995,11 @@ preregs with `HD_TOPK = {2,6,13,17,19,23,24,28}` and `HD_BOTK = {0,9,10,11,15,16
 | §2 (D39) | 6, 11, 20, 24, 27, 29 | 2 of 6 | **2 of 6** |
 | §3 (D40) | 4, 6, 10, 11, 13, 18, 21, 27 | 2 of 8 | **2 of 8** |
 
-**§1 and §4 localise within D34's four heads. §2 and §3 — the sprint's ONLY two certified p's — do
-not.** Their heads were admitted from H.2's and H.3's *whole-head* arms by the 1.5 gate, not
+**§1 and §4 localise within D34's four heads. §2 and §3 — the sprint's only two certified
+*argmax* p's — do not.** 🔴 *S-464: this read "the sprint's ONLY two certified p's", written before
+§A existed. §A.3's D12 clears its preregistered bar on both splits at rank 1 of 47. The two halves
+certify different kinds of p — binomial and permutation on argmax agreement here, a rank p at its
+attainable floor there — and the sentence now says which.* Their heads were admitted from H.2's and H.3's *whole-head* arms by the 1.5 gate, not
 selected from `HD_TOPK`; **four of them sit in `HD_BOTK`, the set H.1 uses as its null anchor.**
 PR-CSI-020's prereg rejects the narrower pool by name: the screen's top-8 *"COULD NOT CERTIFY ON ANY
 OUTCOME … the pool was widened before any cell of any head here was measured."*
@@ -1005,14 +1011,16 @@ p-value.** It holds for §1 and §4, which carry none.
 
 ---
 
-# A. The axis half — FIRST INCREMENT ONLY
+# A. The axis half — COMPLETE, all twenty rows (D12–D31)
 
-**Added S-439.** ⛔ **This is NOT part three. It is sixteen of its twenty rows**, drafted as a deliberate
-increment rather than as a section. The axis/necessity/dissociation families (D12–D31) remain
-largely undrafted and SCOPE says so.
+**Added S-439, COMPLETED S-463.** ✅ **This IS part three: all twenty rows of the axis, necessity
+and dissociation families (D12–D31) are drafted here, §A.1 through §A.8.** 🔴 *This preamble said
+"sixteen of its twenty rows … largely undrafted and SCOPE says so" for a full tick after SCOPE said
+the opposite — so a reader starting at §A was told §A.3–§A.8 did not exist. Corrected S-464.*
 
-**Why these two first:** D19 is the sprint's only bidirectional conjunction and D24 its
-matched-power dissociation — the two results most often leaned on elsewhere in the record. **Every
+**It was built as an increment and the order still shows it.** §A.1 (D19's bidirectional
+conjunction) and §A.2 (D24's matched-power dissociation) came first because they are the two results
+most often leaned on elsewhere in the record; **Every
 figure below was verified by me against the artefacts earlier in this sprint** (S-412 for the basket
 ranks and the **shuffled-only** subfamily, **S-416** for button TRAIN, **S-413** for the held-out
 button cell, S-430 for the necessity candidate and its 7.8 %, S-425 for the necessity floor).
@@ -1034,6 +1042,12 @@ SUFFICIENCY  KO_AXIS - KO          TRAIN  +0.00264 [+0.00068, +0.00471]  rank  1
 NECESSITY    KO_NEC_AXIS - NEC_BASE  -0.00852 [-0.01127, -0.00592]  55 of 67 domains  rank 1 of 9
 ```
 
+⚠ **ADDED S-464 — D12 forbids quoting the TRAIN rank above without its leave-one-domain-out
+sensitivity, and this section was doing so.** TRAIN holds rank 1 under **65 of 67** single-domain
+deletions; its worst (`pipeline_station`) leaves **rank 2 of 47, p = 0.0426**. VALIDATION holds
+rank 1 under **23 of 23**. **The two splits are not equally sturdy and the held-out one is the
+sturdier** — §A.3 carries the full block.
+
 🔴 **The two halves are NOT equally certified, and the conjunction must never be quoted as though
 they were.** Sufficiency passes at rank 1 of 47 with a floor of 0.0213 — ⚠ **but on TRAIN that cell
 is ALSO in-sample** (`evaluation_is_in_sample: true`, 67 of 67 scored domains in the fit); **only the
@@ -1041,8 +1055,10 @@ VALIDATION cell is held out** (`false`, 0 in fit). **Necessity is rank 1 of 9
 against an attainable floor of 0.1111 — above α — so it is INCONCLUSIVE by a ceiling whose UNREACHABILITY
 was declared before the first arm ran** (⚠ the prereg declared the floor as **0.10**; the true floor
 at 8 controls is **0.1111** — AM-8's correction, not an advance figure), and §L.3 records that the family which would have fixed it — PR-CSI-003-A — is **built and patched
-but blocked by two of its own VOID conditions and never launched: escalated, not dead.** ⚠ *That is
-PR-CSI-004's status, not this one's, and §L.3 warns in terms against blurring them.*
+but blocked by two of its own VOID conditions and never launched: escalated, not dead.** ⚠ *S-464 — this clause read "That is PR-CSI-004's status, not this one's" and inverted the very
+distinction it invoked §L.3 to police. §L.3 says **PR-CSI-004 is dead as frozen; PR-CSI-003-A is
+not dead, it is escalated and waiting.** The description above is PR-CSI-003-A's and is correct;
+what belongs to PR-CSI-004 is being **dead as frozen**, which PR-CSI-003-A is not.*
 
 📌 **That the two directions use the SAME direction is MEASURED, not assumed:** the two arms load
 *different* basis files with different `basis_sha16`, and their `cand_rank1` tensors are
@@ -1061,6 +1077,8 @@ basket L18 TRAIN   +0.00264  [+0.00068, +0.00471]  44 pos / 23 neg of 67  rank  
 button L18 TRAIN   -0.00014  [-0.00111, +0.00081]  36 pos / 31 neg of 67  rank 36 of 47  DOES NOT PASS,
                                                                                         CERTIFIED
      ⚠ BOTH TRAIN cells are IN-SAMPLE (evaluation_is_in_sample: true, 67 of 67 in fit)
+     ⚠ basket's TRAIN rank holds under 65 of 67 single-domain drops (worst: rank 2 of 47,
+       p = 0.0426); VALIDATION holds under 23 of 23 -- D12 forbids the TRAIN rank without this
 ```
 
 ⛔ **ADDED S-455 — the two PRESPECIFIED statistics designed for exactly this comparison, which
@@ -1124,6 +1142,10 @@ inference it is: deleting rows also changes the retained set in ways this test d
 what is established is the sign of the change, not a mechanism for it.* ⚠ **But "matched" must not be read as "matched on everything"** — it is
 matched on family size, composition, layer, procedure and domains, and **unmatched on this**.
 
+⛔ **D24's shared-layer L18 comparison is fair only on D2's ρ plateau** (button 0.5931 / 0.5935,
+basket 0.6525 / 0.6512 at L18 / L20), **hardware-contingent per AM-24**. Required beside D24 by the
+claim table and absent until S-464. `[READ, not reproduced]`
+
 🔴 **ADDED S-457 — both button cells re-read at the 0.05 floor, completing §A.** Controls
 reproduce the published artefacts exactly; at the floor: button TRAIN 626 → 545 keys, **−0.00014 →
 −0.00006, rank 36 of 47 unchanged**; button VALIDATION 221 → 197 keys, **+0.00218 → +0.00276,
@@ -1164,11 +1186,14 @@ the sensitivity beside it**, which is why the leave-one-out line sits inside the
 in a footnote.
 
 ```
-VALIDATION  KO_AXIS - KO  +0.00401 [+0.00098, +0.00775]  15 pos /  8 neg of 23  rank 1 of 47  p 0.0213
-TRAIN                     +0.00264 [+0.00068, +0.00471]  44 pos / 23 neg of 67  rank 1 of 47  p 0.0213
+VALIDATION  KO_AXIS - KO  +0.00401 [+0.00098, +0.00775]  15 pos /  8 neg of 23  rank 1 of 47  rank p 0.0213
+TRAIN                     +0.00264 [+0.00068, +0.00471]  44 pos / 23 neg of 67  rank 1 of 47  rank p 0.0213
+   (the CONTRAST p's are different numbers and are given below: 0.0107 TRAIN, 0.0182 VALIDATION)
 leave-one-domain-out on the rank:  VALIDATION holds rank 1 under 23 of 23 drops
                                    TRAIN holds rank 1 under 65 of 67; its worst single-domain
-                                   deletion (pipeline_station) leaves rank 2 of 47, p = 0.0426 -- still passing
+                                   deletion (pipeline_station, from my own LOO re-derivation) leaves rank 2 of 47,
+                                   p = 0.0426 -- which PASSES under the prereg's rank<=2 rule and
+                                   FAILS under the analyser's rank==1 branch (AM-48): rule-dependent
 subfamilies, both splits: shuffled-only 1 of 25 (floor 0.0400)   random-only 1 of 23 (floor 0.0435)
 population: 642 keys / 67 TRAIN domains and 215 keys / 23 VALIDATION domains, 53 arms each
 ```
@@ -1185,6 +1210,23 @@ basket TRAIN              0.058492           0.03237          0           0.0219
 basket VALIDATION         0.058819           0.03195          0           0.0386  (status ok, 0 draws dropped)
                       28 rescue positions per row in both splits
 ```
+
+🔴 **ADDED S-464 — THE IDENTITY CONTROL IS NOT INERT ON THE HELD-OUT SPLIT, and the draft was
+reporting it as a boolean.** `KO_SELF` re-patches what it just read, and PR-CSI-001 says it **"MUST
+be inert"** (`identity_check`, *"otherwise VOID"*). Measured:
+
+```
+basket TRAIN       KO_SELF - KO  -0.00035 [-0.00141, +0.00080]  p 0.5528  30 pos/37 neg   inert
+basket VALIDATION                +0.00112 [+0.00012, +0.00224]  p 0.0521  15 pos/ 8 neg   CI EXCLUDES ZERO
+```
+
+⚠ **On the held-out split the control moves, by 28 % of the candidate it is a control for**
+(+0.00112 against +0.00401). **The gate still reads `identity_check: true` because the gate is a
+±0.005 tolerance and +0.00112 clears it** — so a boolean hides a signed, CI-excluding-zero movement
+in the arm whose entire job is to be zero. ⛔ **This voids nothing**: the preregistered check is the
+tolerance and it passes. ⚠ **But every held-out basket number in §A.3–§A.6 sits on top of it**, and
+the identical block appears in the swap family's basket-validation cell. TRAIN is genuinely inert;
+the held-out split is not.
 
 ✅ **The degeneracy guard passes**: `degenerate_positions` is **0** in both splits, so no row is
 measuring rounding error, and the recovery fraction's own status is `ok` with **0 bootstrap draws
@@ -1226,7 +1268,10 @@ gates still true and the rank unchanged at 1 of 47. ⛔ **The sensitivity does n
 result; it strengthens the point estimate and widens the interval.** ⚠ **This was not the only
 possible outcome, which is why it was worth running** — a third of the evidence is discarded and the
 verdict does not move. ⛔ **NOT established: that the same holds for any other family.** This was run
-for D12's two cells only; the swap cells and the button family were not re-run at 0.05.
+for D12's two cells only. 🔴 *SUPERSEDED S-464 — this line outlived the thing it denied: S-457
+re-ran the **four swap cells** (§A.4a) and **both button cells** (§A.2), so **all eight §A cells
+have now been read at both floors and no verdict moves**.* The limitation that does remain is
+§L.9's, and it is different: the head and cell families cannot be tested at all.
 
 ⛔ **ADDED S-454 — two more PRESPECIFIED secondaries this section owed and did not carry.**
 PR-CSI-005's S2 and S4 (restated as PR-CSI-007's S1 and S2) require the **family-size-free z** and
@@ -1246,8 +1291,14 @@ to three decimals under any of four conventions I tried** (controls-only vs cont
 × ddof 0/1); the closest is **+2.5577**, controls only, ddof = 1, which is the value quoted above.
 The discrepancy is in the reference, not the verdict, and nothing here turns on it.
 
-⛔ **ADDED S-453 — the analyser's own PRESPECIFIED per-control test is weaker than the rank, and it
-was absent from this section.** PR-CSI-005's `secondary_statistics_PRESPECIFIED` S5 requires
+⛔ **ADDED S-453, RECLASSIFIED S-464 — this is not a borrowed secondary that came out weak. It is
+a LEG OF PR-CSI-001'S OWN SUCCESS CRITERION, and D12 FAILS IT.** PR-CSI-001's `success_criterion`
+has seven legs — manipulation, identity, instrument capability, primary, **specificity**,
+replication, dose — and specificity reads: *"the candidate's recovery **exceeds every shuffled and
+random control's recovery, each pairwise test surviving Holm correction**."* ⇒ **The accurate
+sentence is: D12 meets PR-CSI-001's PRIMARY and FAILS its SPECIFICITY leg — outright on the
+held-out split.** *(An earlier draft attributed this test to PR-CSI-005's S5, a different family's
+secondary, which understated what it is.)* PR-CSI-005's S5 likewise requires
 `specificity_holm` / `specificity_all_controls_rejected` *"as the analyser emits them, reported
 unmodified"*. The test is a **one-sided sign-flip (candidate > control), Holm-corrected across the
 46-control family**, and `specificity_all_controls_rejected` is **False on both splits**. Rejections
@@ -1257,7 +1308,9 @@ significantly beat a single individual control once multiplicity is paid for.** 
 they measure different things — the rank asks whether the candidate tops the family, Holm asks
 whether it beats each member — but quoting only the rank overstates the per-control evidence.
 
-⚠ **Both p-values sit EXACTLY at their attainable floor** (0.02128 against 1/47 = 0.0213): a pass at
+⚠ **Both RANK p-values sit EXACTLY at their attainable floor** (0.02128 against 1/47 = 0.0213)
+🔴 *S-464: this said "both p-values", which is false of the contrast p's (0.0107 / 0.0182) printed
+in the same section — two different quantities were sharing one label.*: a pass at
 the floor is a pass with **no margin**, and §M.9 records that the implementation certifies only at
 rank 1 in any case.
 
@@ -1394,11 +1447,24 @@ B  button's axis -> BASKET  TRAIN  -0.00175   [-0.00288, -0.00070]   0.0020   22
                             VALID  -0.00177   [-0.00366, -0.00024]   0.0514    9 / 14
 ```
 
+⛔ **The transplant is fair only on D2's ρ plateau** (button 0.5931 / 0.5935, basket
+0.6525 / 0.6512), which the claim table's third audit block calls *"load-bearing for a THIRD time"*
+and which this draft carried nowhere until S-464 — **and it is hardware-contingent** (AM-24).
+`[READ, not reproduced]`
+
 🔴 **Reported together these are not "one survivable number". They are a DIRECTION-ASYMMETRIC
 pattern.** The foreign axis rescues **button** better than button's own on both splits (S1 > 0), and
 rescues **basket** worse than basket's own on both splits (S1 < 0), at nearly equal magnitude
 (+0.00164 against −0.00175 on TRAIN). ⚠ **Both TRAIN cells clear α and neither held-out cell does** —
-the same in-sample/held-out split §A.4b reports, because the probe contrast there **is ±S1**.
+the same in-sample/held-out split §A.4b reports, because §A.4b's probe contrast **is ±S1**.
+
+⚠ **ADDED S-464 — the sign relation to §A.4b, stated because the two tables look contradictory and
+are not.** S1 is oriented *foreign minus native*; §A.4b orients its probe contrast *basket-probe
+minus button-probe*. For **direction A** (recipient button) the foreign axis *is* the basket probe,
+so the two agree: S1 +0.00164 = §A.4b's +0.001644. For **direction B** (recipient basket) the
+foreign axis is the *button* probe, so they are **negations**: S1 **−0.00175** is §A.4b's
+**+0.001749** with the sign flipped. **Same measurement, two orientations, and neither table is
+wrong** — but they must never be quoted side by side without this sentence.
 
 ⚠ **Direction B is the weaker test by construction, and that is why its sign is negative.** Basket's
 native axis already ranks **1 of 47** on both splits, so a transplant has almost no room above it;
@@ -1609,11 +1675,25 @@ button  L20  (own)    TRAIN  +0.00040 [-0.00025,+0.00108]  41/26   4 of 11   0.0
 button  L20  (own)    VALID  +0.00132 [-0.00002,+0.00275]  14/9    4 of 11   0.0909     +0.09508
 button  L18  (other)  TRAIN  -0.00027 [-0.00124,+0.00068]  35/32   8 of 11   0.0909     +0.10842
         all six: manipulation_check, identity_check and instrument_capable TRUE
+        basket L18 TRAIN holds rank 1 under 65 of 67 drops (worst: 2 of 47, p 0.0426);
+        VALIDATION under 23 of 23 -- D12 forbids its TRAIN rank without this (§A.3)
 ```
 
 **Basket is top of its control family at BOTH layers. Button is inside its controls at BOTH.** The
 layer does not track the outcome; the codeword does. ⇒ **"The dissociation is really a layer
 effect" is removed.**
+
+⛔ **THE FAIRNESS BASIS, which three separate audit blocks make compulsory here and which this
+draft carried nowhere until S-464.** Comparing a codeword at its own layer against the other's is
+fair only because **both layers sit on each codeword's ρ plateau** — button **0.5931 / 0.5935**,
+basket **0.6525 / 0.6512** at L18 / L20 (D2). Without the plateau the layer swap would be a
+handicap rather than a control. ⚠ **And the plateau is HARDWARE-CONTINGENT (AM-24, S-172):** on
+native bf16 the two-layer argmax **reverses** — new L18 **0.6540** < L20 **0.6545** against the
+committed L18 0.6525 > L20 0.6512. **The hardware moved the margin by 0.0018 where the margin that
+selected L18 was 0.0013**, so the *selection* is less stable than the direction it selects between.
+At 0.0005 with no CI the two layers are **tied at this precision** — which is what a plateau is,
+and it supports the fairness basis rather than undermining it. *These ρ figures are* `[READ, not
+reproduced]` *— they are D2's, from the predecessor phase.*
 
 ⛔ **The cells are NOT matched on control-family size, and this is the caveat that governs the
 whole section.** Basket's two passing cells carry **46** controls; the other four carry **10**.
@@ -1632,8 +1712,9 @@ negative domains** — indistinguishable from zero. The sign is noise, and "butt
 basket's layer" is a sentence the data does not support.
 
 ✅ **The instrument was live at the foreign layer, and this was checked dose-normalised rather than
-by the raw ratio.** Button's rank-1 axis spans **3.87 %** of the ‖clean − ko‖ delta at L18 against
-**3.48 %** at its own L20 — ***more*, not less** — with `degenerate_positions` = 0 and
+by the raw ratio.** Button's rank-1 axis spans **3.87 % in amplitude** of the ‖clean − ko‖ delta at L18 against
+**3.48 %** at its own L20 (≈ 0.1 % in energy — AM-2's mandated label; `captured_frac` is a ratio of
+norms despite its name) — ***more*, not less** — with `degenerate_positions` = 0 and
 `KO_FULL − KO` = **+0.10842** at L18, the largest whole-state recovery of the six cells. **So "the
 axis was never properly written at the foreign layer" is dead**, and it was the most likely benign
 explanation of button's null.
@@ -1645,14 +1726,14 @@ p = 0.0323"*; the governing read is **rank 1 of 47, p = 0.0213, 215 keys** (AM-7
 
 ⚠ **§L.9 applies here as it applies to §A.2**: the basket cells and the button cells are read off
 prompt banks whose readout validity differs threefold, and these six cells were **not** re-read at
-the 0.05 floor — only the eight cells of §A.3 and §A.4a were.
+the 0.05 floor — the eight that were are §A.3's two, §A.4a's four and §A.2's two button cells.
 
 **NOT ESTABLISHED by this section:** *why* the codewords differ — this removes the layer and nothing
 else; that button's axis is or is not causal at any layer; that basket's L20 cell would pass at a
 matched family, which was never run (D14, and PR-CSI-004 was frozen for it and is no longer runnable
 — AM-46); and anything at all about **necessity**, which has been run only on basket.
 
-## A.6 The dissociation at MATCHED family size — and the three caveats that must travel with it (D21)
+## A.6 The dissociation at MATCHED family size — and the FOUR caveats that must travel with it (D21)
 
 §A.2 removes "unequal control families" by rerunning button at 46. D21 does the complement and it is
 the stronger form: **basket's family is restricted to the identical ten arm names button was run
@@ -1668,15 +1749,34 @@ basket L20 TRAIN    +0.00294     +0.00129    1 of 11        0            +5.00
 button L20 TRAIN    +0.00040     +0.00159    4 of 11        3            +0.45
 button L20 VALID    +0.00132     +0.00266    4 of 11        3            +0.49
 button L18 TRAIN    -0.00027     +0.00151    8 of 11        7            -0.37
-                    attainable floor 0.0909 in ALL SIX -- one test, six times
+button L18 VALID    +0.00218     +0.00249    3 of 11        2            +1.03   <- ADDED S-464
+                    attainable floor 0.0909 in ALL SEVEN -- one test, seven times
 ```
+
+🔴 **The seventh row was missing, and it is the one this section's own thesis points at.** D21
+tabulates six cells; `DCS_CSI_SUBSPACE_button_validation_L18_n46.json` carries the **identical ten
+matched arm names** and the **same `fit_domains_sha16` 4614853e5636eb5f** §A.6 uses to certify
+matching, so it restricts exactly as the others do. It is **button's ONLY held-out read at the
+shared layer** — and §A.6's thesis is that the dissociation is carried by *the held-out split and
+the shared-layer comparison*. **On that exact cross the gap is basket +3.58 against button +1.03,
+about 3.5× — against the 4.3–5.6× z gap caveat (3) says C1 would have to explain.** All six
+existing rows were re-derived with the same code and reproduced exactly, so the method is the
+section's own.
+
+⛔ **The shared-layer L18 comparison below is fair only on D2's ρ plateau** — button
+0.5931 / 0.5935, basket 0.6525 / 0.6512 at L18 / L20 — and **that plateau is hardware-contingent**:
+on native bf16 the layer argmax reverses (AM-24, S-172), the margin moving by 0.0018 where the
+selecting margin was 0.0013. **Required beside D21 by the claim table's second audit block**, and
+absent from this draft until S-464. `[READ, not reproduced]`
 
 ✅ **The populations are matched at the input, not merely in description**: `fit_domains_sha16` is
 **`4614853e5636eb5f` in all six cells**, verified by me. The arms differ in one input token.
-**Basket takes zero exceedances in three cells; button takes 3, 3 and 7.** So the dissociation is
+**Basket takes zero exceedances in three cells; button takes 3, 3, 7 and 2.** So the dissociation is
 not bought with extra controls.
 
-🔴 **THREE caveats, two of which WEAKEN it. All three must travel with the headline.**
+🔴 **FOUR caveats, three of which WEAKEN it. All four must travel with the headline.** *(D21
+names three; the fourth — readout validity — is this sprint's own addition (AM-54-a), and the
+section below says in terms that no caveat had named it. Re-counted S-464.)*
 
 **(1) The cell the headline is usually quoted from is the WEAKEST evidence in the set — and this
 caveat is now RE-DERIVED, not read.** ✅ The matched-10 Fisher exacts follow exactly from the
@@ -1693,7 +1793,10 @@ VALIDATION, own layers +4.209 [+0.630, +7.078]      +4.638 [+0.638, +7.094]   ex
 
 ⚠ **The point estimates drift by 0.08 to 0.43** — my basket z's run ~4–10 % above the record's, a
 convention difference I could not pin down — **but every CI overlaps heavily and no conclusion
-changes.** ⇒ **The dissociation is carried by the held-out split and the shared-layer comparison,
+changes.** ⚠ **And there are TWO shared layers: only L18 carries it.** The same matched-10 design
+at **L20** gives button 3/10 against basket 0/10, Fisher **p = 0.10526 — not significant**
+(re-derived S-464). An earlier draft said *"the shared-layer comparison"*, singular, naming only the
+one that holds. ⇒ **The dissociation is carried by the held-out split and the L18 shared-layer comparison,
 not by the TRAIN headline**, and that now rests on arithmetic I have done.
 
 **(2) Basket's TRAIN rank-1 is NOT robust to per-domain reweighting.** Under family-wide logit
@@ -1716,10 +1819,12 @@ TRAIN headline depends on how per-domain effects are weighted; the held-out resu
 Neither weighting is privileged, the p-scale is the preregistered one and stands, and this is a
 robustness note rather than a re-analysis.
 
-**(3) NOTHING EXPLAINS IT.** Six candidate explanations are removed by measurement — unequal
-families, headroom, population, axis geometry/dose, power, and **C6, which REVERSES** (button's axis
-tracks the causal carrier *better* and rescues *worse*). One is **partial**: power contributes
-1.2–2.4× of a 4.3–5.6× z gap. **Exactly one survives and it is unquantified** — C1, *"basket simply
+**(3) NOTHING EXPLAINS IT.** **FIVE** candidate explanations are removed by measurement — unequal
+families, headroom, population, axis geometry/dose, and **C6, which REVERSES** (button's axis tracks
+the causal carrier *better* on its own family's profile-alignment rank, and rescues *worse*). ⚠ *A
+sixth, **power**, is **PARTIAL, not removed**: it contributes 1.2–2.4× of a 4.3–5.6× z gap.* 🔴 *The
+record and an earlier draft both counted power among "six removed" and then called it partial two
+clauses later; it is counted once here, as partial (S-464).* **Exactly one survives and it is unquantified** — C1, *"basket simply
 has a better probe"*: rank-1 LOO ρ **0.5629 against 0.5021**, a **+12 % relative** gap that would
 have to account for a 4.3–5.6× z gap, with **no held-out ρ recorded anywhere** and **no ρ→z
 calibration in this sprint**. ⛔ **The residual is still the codeword.** *(And §A.4 reports the
@@ -1729,13 +1834,13 @@ preregistered test of C1, which returns no claimable cell in either direction.)*
 reproduce exactly. The z's are `[READ, not reproduced]` in the record; five of the six reproduce to
 ±0.01 under the natural convention, and **button-L20-VALIDATION does not** — the record says 0.441,
 re-derivation gives 0.486 and no convention tried yields 0.441. **Nothing turns on it**: the
-dissociation is basket 1.9–5.0 against button 0.45, 0.49 and −0.37 on either value.
+dissociation is basket 1.9–5.0 against button 0.45, 0.49, −0.37 and +1.03 on either value.
 
 🔴 **And one dimension on which these six cells are NOT matched, which no caveat named.** They are
 matched on family size, composition, domains, prompts and fit — and **not on readout validity**: the
 basket cells come off a prompt bank where **36 %** of `BASE` rows fall below the declared
-option-mass floor, the button cells off one where **11 %** do (§L.9). The eight cells of §A.3 and
-§A.4a were re-read at that floor and did not move; **these six were not re-read**.
+option-mass floor, the button cells off one where **11 %** do (§L.9). The eight cells re-read at that floor
+— §A.3's two, §A.4a's four and §A.2's two — did not move; **these six were not re-read**.
 
 **NOT ESTABLISHED:** that C1 explains the gap — it is the only survivor and it is unquantified, with
 the one measurement that would test it (held-out ρ) recorded nowhere; that power does not contribute
@@ -1770,7 +1875,10 @@ later (`keys_dropped_by_intersection = 6`). **Same quantity, two populations, no
 ⛔ **THIS IS THE WHOLE-STATE CONTROL, NOT THE AXIS.** It licenses exactly one sentence — *"a
 removal-direction effect is detectable by this instrument"* — and nothing about whether the rank-1
 axis carries that effect. §A.1 reports what the axis does in this direction, and it is **rank 1 of
-9 against a floor of 0.1111, INCONCLUSIVE**.
+9 against a floor of 0.1111, INCONCLUSIVE**. ⛔ **And prohibition 28 requires the magnitude beside
+any necessity result: the axis removal moves 0.0778 [0.0560, 0.1009] of what whole-state removal
+moves — 7.8 %, so ~92 % of the removable effect is elsewhere.** This section quoted the necessity
+result twice without it until S-464.
 
 ⛔ **Do not compare 46.9 % to any sufficiency percentage.** The two fractions have **different
 reference arms** — sufficiency is measured against `KO`, removal against `NEC_BASE` — which is
@@ -1788,7 +1896,7 @@ floor-limited, TRAIN-only and in-sample; that 46.9 % is comparable to anything i
 direction; and that the removal direction has ever been run on **button** — it has not, on any
 layer, so every necessity statement in this draft is basket-only.
 
-## A.8 Provenance: three code changes and one hardware change that provably moved nothing — and the reason none of it is checkable from the run directories (D17, D22, D28, D31)
+## A.8 Provenance: three code changes that moved no measured endpoint, one hardware change that moved something it was not asked about, and the reason none of it is checkable from the run directories (D17, D22, D28, D31)
 
 Several results in §A were produced across mid-sprint edits to `score_behavior.py` and across two
 GPU generations. Each was tested rather than argued. **All three bit-identity comparisons below were
@@ -1801,7 +1909,8 @@ D17  basket TRAIN L20   KO_AXIS (job 905990) vs KO_AXIS_ANCHOR (906001), SAME no
        config args: 57 keys each, differing in exactly 2 -- `arm` and `tag`
 D22  button TRAIN L18   CODEANCHOR_R0 (912838, n-350) vs KO_RAND0 (902005, n-306), ACROSS nodes
        670 rescue-fired each, 670 common, 0/0            max|diff| = 0 on all six
-       spans a measured +474 / -7 change to score_behavior.py
+       straddles a +474 / -7 change to score_behavior.py -- INFERRED from git_commit, not
+       witnessed by the run dirs (AM-14c); see the withdrawal below
 D28  basket VALIDATION  CODEANCHOR_139B (913407) vs STAGEANCHOR_AXIS (913232)
        230 rescue-fired each, 230 common, 0/0            max|diff| = 0 on all six
        compute_capability 8.6 on one arm, ABSENT on the other; RUNMETA 24 keys vs 23
@@ -1817,6 +1926,19 @@ a first-order bound, and **the activations themselves differ by a median 2.57 % 
 seven times outside it. **Corrected: inputs differing by ~2.6 % still yield directions agreeing at
 cos 0.998. That is robustness, not noise.**
 
+🔴 **BUT THE HARDWARE DID MOVE SOMETHING, and this heading said it "provably moved nothing" until
+S-464.** D31's own in-place correction (S-172) records that **a two-layer argmax was computed and
+it REVERSED**: committed **L18 0.6525 > L20 0.6512**, new **L18 0.6540 < L20 0.6545**, both new
+axes recording `layer_argmax_not_used: 20`. **The hardware moved the margin by 0.0018 where the
+margin that selected L18 was 0.0013 — the layer SELECTION is less stable than the direction it
+selects between.** At 0.0005 with no CI the two layers are tied at this precision, which supports
+D2's plateau (§A.5) rather than undermining it. ⇒ **The direction is robust to the hardware; the
+layer choice is not** — and every section that swaps layers rests on the plateau for this reason.
+
+⛔ **D31 is BASKET-ONLY.** No button arm exists in it and pooling across codewords is forbidden, so
+it closes one candidate explanation for basket and says nothing about button. ⚠ **And a direction
+unchanged under a hardware swap is not thereby a CORRECT direction** — invariance is not validity.
+
 🔴 **And now the part that governs all four: the measurements stand, and the claims about WHICH CODE
 produced them do not.** Verified by me across the sprint's run directories:
 
@@ -1828,15 +1950,19 @@ no RUNMETA field anywhere mentions a blob, sha, hash or digest
 ⚠ **`git_dirty` is never `False`.** The direction that would *falsify* a clean-tree claim is
 recorded; the direction that would *confirm* it is not. ⚠ **And `git_commit` is not a witness of
 what code ran**, because the tree may have been dirty and no blob is recorded. ⇒ **Every
-"ran pre-edit" / "ran post-edit" / "clean tree" attribution in this family is WITHDRAWN (AM-14);
-the bit-identity numbers, which do not depend on it, are not.**
+"ran pre-edit" / "ran post-edit" / "clean tree" attribution in this family is WITHDRAWN (AM-14) —
+**and so is the identification of the +474/−7 diff D22 is said to straddle**, which is AM-14's
+clause (c) and which an earlier draft dropped while calling that diff "measured" four lines above
+this withdrawal. **The bit-identity numbers, which depend on none of it, are not withdrawn.**
 
 ⛔ **What each discharge licenses, and it is narrow.** D17 retires PR-CSI-002's Gate-0 VOID
 condition **for PR-CSI-002's arms only**; D22 discharges **one** VOID condition for **PR-CSI-005's
 pooled family only**. **Neither is a general licence to edit `score_behavior.py` mid-run**, and
-PR-CSI-003 carries the same condition verbatim over its own arms. ⚠ **D17 is determinism across two
-jobs on the SAME node; D22 is the stronger one — across two nodes and a +474/−7 diff.** They must
-not be quoted as if they were the same test.
+PR-CSI-003 carries the same condition verbatim over its own arms. ⚠ **D17 is determinism across two jobs on the SAME node; D22 adds a second node.** ⛔ *S-464: an
+earlier version called D22 "the stronger one — across two nodes and a +474/−7 diff". The cross-node
+half stands and is witnessed; **the diff half is not** — AM-14(c) names D22's identification of the
+diff under test as "an inference from `git_commit` plus the worktree, exactly the inference S-143
+shows is unsound". The defensible ranking is on nodes alone.*
 
 **NOT ESTABLISHED:** that the edits were inert on any path other than the one measured — each test
 covers one arm pair on one path; that any run directory can be audited for the code it ran — it

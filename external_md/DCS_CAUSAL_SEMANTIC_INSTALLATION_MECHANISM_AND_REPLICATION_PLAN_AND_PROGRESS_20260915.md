@@ -40888,3 +40888,143 @@ the count, the lesson does not.
 **NEXT:** the adversarial review of the five unreviewed §A sections — every section reviewed so far
 has returned real defects on its first pass, and five have never been read against their artefacts
 by anything but me. **Five questions remain with the user.** **Push credential-blocked.**
+
+---
+
+## S-464 — the review of the five unreviewed §A sections: twenty-one defects fixed, and the worst of them is that the identity control is not inert where it matters (2026-09-26)
+
+Four reviewers, one dimension each, over §A.3, §A.4a, §A.5, §A.6, §A.7, §A.8 — the sections no
+adversarial pass had ever read. **Every finding below was re-derived by me before it was acted on.**
+
+### 🔴 THE ONE THAT MATTERS MOST: the identity control is NOT inert on the held-out split
+
+`KO_SELF` re-patches what it just read; PR-CSI-001 says it **"MUST be inert"**, *"otherwise VOID"*.
+
+```
+basket TRAIN       KO_SELF - KO  -0.00035 [-0.00141, +0.00080]  p 0.5528  30 pos/37 neg   inert
+basket VALIDATION                +0.00112 [+0.00012, +0.00224]  p 0.0521  15 pos/ 8 neg   CI EXCLUDES ZERO
+```
+
+**On the held-out split the control moves by 28 % of the candidate it is a control for.** The gate
+reads `identity_check: true` because the gate is a **±0.005 tolerance** and +0.00112 clears it — so
+a boolean was hiding a signed, CI-excluding-zero movement in the arm whose entire job is to be zero.
+⛔ **Nothing is voided**: the preregistered check is the tolerance and it passes. ⚠ **But every
+held-out basket number in §A.3–§A.6 sits on top of it**, and the same block is in the swap family's
+basket-validation cell. **The draft reported only the boolean.**
+
+### 🔴 D12 FAILS a leg of its OWN preregistration's success criterion
+
+PR-CSI-001's `success_criterion` has **seven** legs — manipulation, identity, instrument capability,
+primary, **specificity**, replication, dose. Specificity: *"the candidate's recovery exceeds every
+shuffled and random control's recovery, each pairwise test surviving Holm correction."* Measured:
+`specificity_all_controls_rejected` **False on both splits**, 6 of 46 rejected on TRAIN, **0 of 46**
+held out. ⇒ **D12 meets PR-CSI-001's PRIMARY and FAILS its SPECIFICITY leg.** S-453 had attributed
+this test to *PR-CSI-005's S5* — a different family's secondary — which understated what it is.
+
+### 🔴 A SEVENTH matched-10 cell exists, and it is the cross §A.6's thesis names
+
+`DCS_CSI_SUBSPACE_button_validation_L18_n46.json` carries the identical ten matched arm names and
+the same `fit_domains_sha16`. Restricted exactly as the others: **+0.00218, best matched control
++0.00249, rank 3 of 11, 2 exceedances, z +1.03.** §A.6 said *"one test, six times"* and *"button
+takes 3, 3 and 7"*. **It is button's ONLY held-out read at the shared layer** — and the section's
+thesis is that the dissociation is carried by *the held-out split and the shared-layer comparison*.
+**On that exact cross: basket +3.58 against button +1.03, ~3.5×, against the 4.3–5.6× z gap caveat
+(3) says C1 must explain.** All six existing rows re-derived with the same code and reproduced
+exactly.
+
+### 🔴 There are TWO shared layers and only one carries the result
+
+L18 matched-10: button 7/10 vs basket 0/10, Fisher **0.00155**. **L20 matched-10: 3/10 vs 0/10,
+Fisher 0.10526 — not significant.** The draft said *"the shared-layer comparison"*, singular, naming
+only the one that holds.
+
+### 🔴 The hardware DID move something, and my §A.8 heading said it "provably moved nothing"
+
+D31's own correction (S-172): a two-layer argmax **was** computed and it **REVERSED** — committed
+L18 0.6525 > L20 0.6512, new **L18 0.6540 < L20 0.6545**. **The hardware moved the margin by 0.0018
+where the margin that selected L18 was 0.0013**: the layer *selection* is less stable than the
+direction it selects between. Heading rewritten.
+
+### The fairness basis three audit blocks demand, carried nowhere
+
+D2's L18/L20 ρ plateau (button 0.5931/0.5935, basket 0.6525/0.6512) is what makes a layer swap a
+control rather than a handicap. **Three separate audit blocks say "Quote D2 whenever D15 / D21 /
+D24 / D25 is quoted", escalating to "load-bearing for a THIRD time". The draft had zero mentions of
+`plateau` or any of the four figures.** Added to §A.2, §A.4a, §A.5, §A.6 — with AM-24's rider that
+the plateau is **hardware-contingent**, which is the same fact as the argmax reversal above.
+
+### The rest, applied
+
+* **Prohibition 28** — §A.7 quoted necessity results twice without the mandatory 7.8 % (0.0778
+  [0.0560, 0.1009], ~92 % elsewhere). Added.
+* **AM-14(c)** — §A.8 called the +474/−7 diff *"measured"* and ranked D22 above D17 on it, four
+  lines above withdrawing that class of attribution. AM-14(c) names that exact inference unsound.
+  Relabelled as inferred, the ranking narrowed to nodes alone, and (c) added to the withdrawal.
+* **§A's heading and preamble said §A was "sixteen of its twenty rows … largely undrafted and SCOPE
+  says so"** a full tick after SCOPE said the opposite. **A reader starting at §A was told §A.3–§A.8
+  did not exist.**
+* **§A.3's "NOT established: the swap cells and button family were not re-run"** — S-457 re-ran
+  them; the line outlived the thing it denied.
+* **§L.9 said "every candidate's magnitude grows"**; AM-54 says "grows **or holds**", and button
+  TRAIN moves −0.00014 → −0.00006, i.e. toward zero.
+* **"the eight cells of §A.3 and §A.4a"** — those hold six; the other two are §A.2's. Fixed twice.
+* **§A.3 printed `rank p` and contrast `p` under one label** and then said "both p-values sit at
+  their floor", false of the contrast p's in the same section.
+* **"rank 2 of 47 — still passing"** is rule-dependent (prereg yes, analyser no), which §A.4 sets
+  the standard against. Now stated both ways.
+* **§H.4's "the sprint's ONLY two certified p's"** predated §A; scoped to *argmax* p's.
+* **§A.6 promised three caveats and carried four.**
+* **§0's TRAIN-exception list** named three subsections and omitted four.
+* **§A.1 inverted PR-CSI-003-A and PR-CSI-004** in the very clause citing §L.3 to police it.
+* **Power was counted among "six removed" and called partial two clauses later** — five removed,
+  one partial.
+* **§A.5 lacked AM-2's "in amplitude" label**; **D31's basket-only scope** added.
+* **My own two, found before the reviewers returned**: D12's *"never quote TRAIN's rank without
+  this sensitivity"* binds in §A.1, §A.2 and §A.5, not just the §A.3 I happened to fix in S-453;
+  and §A.4a's S1 (−0.00175) and §A.4b's probe contrast (+0.001749) are the same measurement in
+  opposite orientations, which looked like a contradiction.
+
+### ⚠ My own detector failure #16
+
+Checking the reviewer's AM-14(c) citation I searched the whole claim table for `**(c)**`, found the
+**first occurrence in the file** — a clause of the D14/D15 audit row about `selected_rank` — and
+concluded the reviewer had misquoted. **The reviewer was right; I had searched the wrong scope.**
+Corrected before acting. *(That mis-found clause is itself an unreported caveat: the four probes
+differ in `selected_rank` by codeword, 5 for both button axes and 3 for both basket, while the
+candidate arm is `cand_rank1` in every cell — "precisely the asymmetry that could masquerade as a
+codeword effect". It is NOT in the draft and is now on the list below.)*
+
+### ⛔ VERIFIED OR REPORTED AND **NOT** APPLIED — seven items, recorded so they are not lost
+
+1. **Five `score_behavior.py` blob transitions occur inside the analysed arm sets; ONE is tested**
+   (twice, on two paths). Untested include `73e541f1→fe693529` (+27) which separates the two arms
+   of D12's own primary contrast, and `e94258bd→11d2c617` (+17) separating every held-out button
+   cell from its TRAIN counterpart. **Not re-derived by me.**
+2. **Five Δz rows exist; §A.6 quotes three, and the two dropped are the matched-10 ones** — TRAIN
+   own-layer **+1.452** (not +2.023) and held-out **+2.871** (not +4.209, −32 %) — in a section
+   titled "at MATCHED family size".
+3. **§A.5 has eight codeword × layer × split cells; its table shows six.** The omitted held-out
+   button-at-L18 cell is **rank 6 of 47**, which weakens "button is inside its controls at BOTH".
+4. **PR-CSI-006's S3 (dose-penalty median/IQR) is prespecified "for both directions" and absent**;
+   its required form is a **CANNOT ANSWER** (per-row rescale not persisted). The available proxy
+   says dose-matching was near-inert (~1.03–1.05).
+5. **§A.7 quotes the POOLED necessity rank (1 of 9, floor 0.1111); PR-CSI-003a nominates the
+   SHUFFLED-ONLY rank as primary**, on which the present read is **1 of 5, floor 0.2000** — twice as
+   far from α. Also: `removal_fraction_candidate_of_full` is **null**, and `KO_NEC_AXIS_ANCHOR`
+   (a prespecified diagnostic) **does not exist in the artefact**.
+6. **Both §A.8 gates have a recorded history of passing for the wrong reason** — D22's first
+   version matched **0 rows and printed PASS**; D28's guard test was **tautological** until S-141
+   replaced it. Neither is in the draft, and "provably" rests on them.
+7. **The `selected_rank` asymmetry** (5 button / 3 basket) from the D14/D15 audit row.
+
+### What is NOT established
+
+* ⛔ **That §A is now clean.** Twenty-one defects were fixed this tick and **seven remain listed
+  above, unapplied**. Five of the omission findings are the same failure at different scales — a
+  count stated where the record holds more, with the uncounted members systematically the weaker.
+* ⛔ **That the identity movement is benign.** It clears the preregistered tolerance and nothing
+  more; no one has modelled what a non-inert self-patch does to a rescue contrast.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** the seven unapplied items, in the order listed — item 5 first, because it changes a number
+§A.7 leads with. **Five questions remain with the user.** **Push credential-blocked.**
