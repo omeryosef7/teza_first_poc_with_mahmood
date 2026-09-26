@@ -1254,8 +1254,15 @@ what belongs to PR-CSI-004 is being **dead as frozen**, which PR-CSI-003-A is no
 and §A.2 is the reason not to assume it transfers. ⛔ ~~**Three clauses must travel with the necessity
 half every time: floor-limited, TRAIN-only, in-sample.**~~ 🔴 **REPLACED S-505 — now FOUR, and the first
 one has changed:** ⛔ **(1) `p = 0.0400` IS the attainable floor, so rank 1 could not have produced a
-smaller p; (2) TRAIN-only; (3) in-sample (67/67); (4) NO held-out necessity arm exists, so PR-CSI-001's
-replication criterion is UNMET.** ⚠ *"Floor-limited" is retired as a clause: the family is no longer
+smaller p; (2) TRAIN-only; (3) in-sample (67/67); ~~(4) NO held-out necessity arm exists, so PR-CSI-001's
+replication criterion is UNMET.~~**
+🔴 **CLAUSE (4) DISCHARGED S-514 — THE HELD-OUT ARM NOW EXISTS AND IT REPLICATES.** PR-CSI-022 read
+2026-09-26 (**D43**): `KO_NEC_AXIS − NEC_BASE` = **−0.01283435**, **rank 1 of 25** shuffled controls on
+**23 VALIDATION domains the axis has never seen** (`evaluation_is_in_sample` **FALSE**, 0 of 23 in the
+fit), inside the magnitude band **[0.0029, 0.0261]** frozen at S-509 *before any validation arm existed*.
+**PR-CSI-001's replication criterion is MET for the necessity direction.** ⚠ **Clauses (1)–(3) are
+UNCHANGED**: `p = 0.0400` is still the attainable floor, and the TRAIN read (D42) is still in-sample —
+what exists now is a held-out COMPANION, not a reclassification of D42. ⚠ *"Floor-limited" is retired as a clause: the family is no longer
 limited BY the floor, it SITS ON it, and those are different statements.* ⛔ **And the axis moves only 7.8 % [5.6, 10.1] of what whole-state removal moves —
 about 92 % of the effect is elsewhere.** ⛔ *"The axis is causal"* is forbidden unqualified; *"the
 axis is necessary"* is forbidden outright.

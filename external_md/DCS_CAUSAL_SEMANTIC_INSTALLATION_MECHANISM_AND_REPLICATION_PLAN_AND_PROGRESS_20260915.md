@@ -43966,3 +43966,42 @@ All four jobs `COMPLETED 0:0` (28–51 min). 34 arms, all 29 primary-family arms
 - ⛔ **TEST untouched** — VOID 4 verified 23/23 validation domains and zero TRAIN or TEST.
 
 **NEXT:** one commit (exemptions + prohibition 26 + A30 rows + this read); then D42, §A.1 and prohibition 26's clause (4), which is now answered rather than live.
+
+---
+
+## S-514 / the held-out result enters the record as D43 — and it closes one gap while opening a different one (2026-09-26)
+
+S-513's NEXT. Commit `27b18a64` landed the read; this folds it into the claim table and §A.1.
+
+### ✅ D43 added, with the held-out status measured rather than asserted
+
+Candidate **−0.01283435**, strongest control **−0.00476739** (2.69×), **zero of 24** reach it, **rank 1 of 25, p = 0.0400**, independent path agrees. `evaluation_is_in_sample` **FALSE**, `scored_domains_also_in_fit` **0 of 23**. Provenance: 222 keys / 29 arms / 23 validation domains, jobs 933344–933347, all 34 arms RTX 3090, one blob.
+
+**PR-CSI-001's replication criterion is MET for necessity** — the sentence I have had to write as *"UNMET"* in every entry since S-501.
+
+### ✅ Four dependent statements discharged, each where it stands
+
+* **D42's** *"replication criterion is UNMET"* → superseded, **with the scope held**: D42 *itself* is still the in-sample TRAIN read; what exists now is a held-out **companion**, not a reclassification.
+* **Prohibition 26's clause (4)**, which S-511 marked **live** → **discharged**, with clauses (1)–(3) explicitly unchanged and a note that the mandated sentence still describes D42, so quoting D43 requires D43's own caveats.
+* **§A.1's clause (4)** → same treatment.
+* **D40-b**, left **UNRESOLVED at S-508** because I could not identify its table's header → now resolvable, because D40, D41, D42 and D43 all sit at 4 columns around it. It **was** malformed (unescaped `|diff|`), and it is fixed. **Every row in that section is now 4 columns.**
+
+⚠ **And I introduced the same defect again while writing D43** — `|−0.01283|` in prose, six columns instead of four. Fourth instance of the unescaped-pipe class in this file, second by me. Caught by the unescaped-pipe counter before committing, not after.
+
+### 🔶 D19: one gap closes, a DIFFERENT one opens — and I am not letting the second PASS paper over it
+
+D19's stated reason for the two halves being unequal has now been superseded **twice**: first *"necessity cannot clear any bar at n_controls = 8"* (S-508), then *"necessity has no held-out arm"* (here). Measured, **both directions now certify on held-out data, each sitting exactly on its own attainable floor** — sufficiency rank 1 of 47 (`1/47 = 0.0213`), necessity rank 1 of 25 (`1/25 = 0.0400`).
+
+⛔ **The conjunction is still NOT certified, and the reason is now statistical rather than evidential.** Two rank-1 results, each at its own floor, **do not combine into a certified joint claim** without specifying how — and they are **not independent**: same axis, same model, and on validation the **same 23 domains**. **No combined test has been preregistered, computed, or even specified anywhere in this record.** Until one is, *"both halves certify"* is sayable and *"the conjunction is certified"* is not.
+
+🔴 **This is a NEW open question created by D43, not an inherited one** — it could not arise while one half was uncertified. A second PASS arriving is exactly when a caveat gets quietly dropped because its old justification expired; the justification expired and the caveat survives on a different footing.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No figure computed this tick** — every number is S-513's, already re-derived from `domain_means`.
+- ⛔ **The joint test is NOT specified and I did not invent one.** Combining two dependent rank tests is a design question; guessing at it after seeing both results is precisely what VOID 8 exists to forbid.
+- ⛔ **§L.3, §A.7 and the ~12 remaining audit items still say necessity has no held-out arm.** D43 makes those *more* wrong than they were an hour ago, and they are not fixed.
+- ⛔ **Nothing is committed yet** this tick.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** commit; then §L.3 and §A.7, which D43 has just made stale in a new way.
