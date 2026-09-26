@@ -230,14 +230,39 @@ held-out axis**. ⛔ Not a claim that rung 2 is unreachable in general.
 
 ## 5. What this evidence is, and what it is not
 
-**Every certified claim here is RUNG 1 — NECESSITY** on the ladder of `arXiv:2606.08292`
+🔴 **CORRECTED S-471 — THIS SECTION SAID "Every certified claim here is RUNG 1 — NECESSITY" AND
+THAT IS WRONG ABOUT §A, ON A POINT THAT NEEDS NO JUDGEMENT.** §1–§4 and §H are ablation designs and
+the sentence holds of them. **§A is mostly not**: of the eleven axis-family artefacts carrying a
+`direction` field, **ten say `sufficiency` and one says `necessity`**, and the two contracts are
+explicit opposites —
+
+```
+necessity   h' = h_clean - P_w(h_clean - h_ko)   start CLEAN, REMOVE the component, expect a DROP
+sufficiency h' = h_ko    + P_w(h_clean - h_ko)   start under a live KNOCKOUT, ADD IT BACK, expect RECOVERY
+```
+
+**D12's certified passes — §A.3's rank 1 of 47 on both splits — are RESCUES measured against `KO`.**
+Calling them *necessity* claims mislabels the direction, whatever rung a rescue belongs to.
+
+⛔ **AND THE RUNG CLASSIFICATION ITSELF IS OPEN AND ESCALATED, NOT DECIDED HERE.** Rung 1 is glossed
+in this draft as *ablation damage*, and rung 3 is *same-prompt repair*; a knock-out-then-add-back
+rescue has the shape of the latter, and §A.4 transplants a direction **between codewords**. Whether
+that makes §A rung 3, or whether the ladder's rung 1 is meant to cover both directions of a single
+ablation, **is a question about `arXiv:2606.08292`'s taxonomy and about AM-34's blanket, and it is
+with the user.** Until it is answered, this section's claim is scoped: **§1–§4 and §H are rung 1;
+§A's direction labels are on the record above and its rung is unresolved.**
+
+The original sentence, which holds of the cell- and head-level halves: **every certified claim in
+§1–§4 and §H is RUNG 1 — NECESSITY** on the ladder of `arXiv:2606.08292`
 (necessity / decodability / same-prompt repair / cross-prompt transfer). Their result is that the
 four are **separable**: passing 1–3 does not imply 4. ⚠ **"Transfers across codewords" in §2 is NOT the ladder's rung-4 transfer** — rung 4 moves an
 activation *state* between prompts requiring different operations, while §2 re-runs the same
 intervention on a different codeword and asks whether the prediction holds. That is **replication of
 a rung-1 finding across stimuli and has no number on their ladder** (AM-34); claiming otherwise
 would be matching the form and not the operation. **Nothing in this sprint has reached rung 2,
-3 or 4**, and D41 records the attempt that established rung 2 is out of reach at this head count.
+3 or 4** — ⚠ *inherited from AM-34's blanket, and subject to the same open question: if a rescue is
+rung 3, this sentence is false of §A. Escalated with the classification above, not resolved here.* —
+and D41 records the attempt that established rung 2 is out of reach at this head count.
 
 ⛔ **There is no control family of arbitrary cells anywhere in this sprint**, so *"cell (L,h) is the
 writer"* is unavailable for every result above. The reason is measured, not assumed: no admissible

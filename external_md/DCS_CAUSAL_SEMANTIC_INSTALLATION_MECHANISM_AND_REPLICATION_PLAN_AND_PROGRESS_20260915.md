@@ -41485,3 +41485,53 @@ of implying the code enforces the prereg.
 
 **NEXT:** the §M/§L audit when it lands, then §0, §5 and §6 — the last unaudited surfaces, and where
 the **rung-1 framing question** sits. **Six questions with the user.** **Push credential-blocked.**
+
+---
+
+## S-471 — §5 called §A's certified claims "NECESSITY"; ten of eleven artefacts say `sufficiency`, and that half needs no judgement (2026-09-26)
+
+**§5 is the section that frames the whole draft**, and it opened: *"Every certified claim here is
+**RUNG 1 — NECESSITY** on the ladder of `arXiv:2606.08292`."* It never mentions §A. That is the
+**fifth** instance of the shape S-467 swept for — a quantifier written before §A existed — and it is
+in the worst possible place.
+
+### The half that is a fact, not a judgement
+
+```
+direction field across the axis-family artefacts:   sufficiency 10,  necessity 1
+
+necessity    h' = h_clean - P_w(h_clean - h_ko)   start CLEAN, REMOVE the component, expect a DROP
+sufficiency  h' = h_ko    + P_w(h_clean - h_ko)   start under a live KNOCKOUT, ADD IT BACK, expect RECOVERY
+```
+
+**D12's certified passes — §A.3's rank 1 of 47 on both splits, the axis half's headline — are
+RESCUES, measured against `KO`.** The two contracts are explicit opposites in the artefacts' own
+words. ⇒ **Calling them "necessity" claims mislabels the direction, and that is true whatever rung a
+rescue belongs to.** §1–§4 and §H *are* ablation designs and the original sentence holds of them; it
+is now scoped to them.
+
+### The half that is NOT mine and stays escalated
+
+Whether a knock-out-then-add-back rescue is **rung 1** (this draft glosses rung 1 as *ablation
+damage*) or **rung 3** (*same-prompt repair*) is a question about the cited taxonomy and about
+AM-34's blanket *"nothing in this sprint has ever reached rung 2, 3 or 4"* — which §5 also carries,
+and which is false of §A if a rescue is rung 3. ⛔ **Not resolved here.** Both sentences now carry the
+open question explicitly, so a reader is not told a settled thing.
+
+⚠ **Why this separation matters.** I have been sitting on "the rung-1 question" as one escalation for
+several ticks. **It is two**: a mislabelled direction, which is checkable and now fixed, and a
+taxonomy call, which is the user's. Bundling them meant the fixable half went unfixed while it
+waited on the unfixable half.
+
+### What is NOT established
+
+* ⛔ **Which rung §A occupies.** Escalated. Everything in §5 and AM-34 that depends on it is now
+  marked as depending on it.
+* ⛔ **That §0 and §6 are audited.** §6's §A gap was closed in S-467; neither has had a full pass.
+* ⛔ **That §5's other claims hold.** Its *"no control family of arbitrary cells anywhere in this
+  sprint"* and the 1/9-floor argument were **not** re-derived this tick.
+* ⛔ **The §M/§L audit** is still running and is not in this entry.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** §5's remaining claims and §0, then the §M/§L audit when it lands. **Six questions with the
+user, one of which has now shrunk by half.** **Push credential-blocked.**
