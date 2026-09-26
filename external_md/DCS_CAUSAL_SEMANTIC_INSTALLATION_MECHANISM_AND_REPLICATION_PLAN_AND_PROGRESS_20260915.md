@@ -41900,3 +41900,66 @@ source). Both were withdrawn or re-sourced rather than repaired.
 remaining risk is **the claim table itself**, which the draft inherits from and which has now been
 caught twice supplying a story the primary source contradicts. **Six questions with the user.**
 **Push credential-blocked.**
+
+---
+
+## S-477 — the claim table's own historical claims: six, and it holds up better than the draft did (2026-09-26)
+
+S-476 named the claim table as the remaining risk — it had twice supplied a story its primary source
+contradicts, and the draft inherits from it. **Swept for the same dangerous class: historical and
+mechanism claims.** Six found. **Three verified, one marked, one a process note, one unverifiable by
+policy.**
+
+### ✅ Verified
+
+* **D13's key-count explanation** — *"the two key counts differ only because the re-derivation does not
+  load `KO_ORTH`/`KO_PLS`."* `scripts/dcs_csi_rederive_subspace.py` contains **no mention of either
+  arm** and takes `--controls` explicitly, while the analyser's arm list carries both. Measured:
+  analyser `button_train_L18_n46` **626** keys against the re-derivation's **627**, and the non-n46
+  pair **658** against **659**. ⇒ **Fewer arms intersected gives MORE surviving keys, +1 in both
+  pairs — the direction and the mechanism are both right.** *(My first check compared the wrong
+  families — 642 against 627 — and would have made the gap look like 15. Caught by pairing them
+  properly.)*
+* **VOID 11's introduction** — *"0 for `pr018_read.txt` and 1 for `pr020_read.txt` … introduced for
+  PR-CSI-020 BECAUSE of R30-D, so it could not have bound the family that motivated it."* Counted:
+  **0 and 1**, exactly.
+* **AM-53-a's corroboration** — added by me in S-476 from the gate's own comment, and re-read here.
+
+### 🔴 Marked in place
+
+**D22's catching mechanism.** The table said the vacuous PASS was *"caught only because the printout
+carried the comparison size next to the verdict."* The gate's own docstring attributes it to *"review
+finding R2-M5 (\"checks that could not fail\")"* and the fix to an assertion, `MIN_ROWS = 600`. **The
+vacuous-PASS fact is confirmed by that docstring; only the mechanism was wrong.** Marked in the table,
+matching the correction S-476 made in the draft, **so the table stops re-supplying it.**
+
+### ⛔ Not checked, on purpose
+
+**D24's *"TEST was read to completion on 2026-09-08 (job 869523)."*** The date is the one figure the
+§M/§L auditor could not source either. **Sourcing it means going into TEST's records, and PART I's rule
+is that TEST is never touched.** ⇒ **I am leaving it unverified and saying so, rather than verifying it
+and reporting a rule I bent.** The claim's load-bearing half — that TEST is spent and
+selection-contaminated — is sourced in `pr020`'s `population.test_note` and does not depend on the date.
+
+### The result worth stating
+
+**The claim table's historical density is 6 in ~1240 lines, and its error rate on them is 1 in 6.** The
+draft's was **4 historical in 63 causal clauses, 2 of them wrong — 1 in 2.** ⇒ **The table is the
+better-sourced document, and the draft's failures were mostly introduced in the drafting**, by me,
+either invented (S-474's `tail`) or imported without checking (S-476's printout). ⚠ *That reverses the
+suspicion S-476 ended on. I named the table as the remaining risk; measured, it is the more reliable
+of the two.*
+
+### What is NOT established
+
+* ⛔ **Which mechanism caught D22's vacuous gate.** Two documents, two stories, no record that settles
+  it. Both now carry the divergence.
+* ⛔ **The 2026-09-08 TEST read date.** Unverified by choice; the rule outranks the check.
+* ⛔ **That the sweep's pattern catches everything.** It matched historical phrasings. A mechanism
+  claim worded as a plain statement of fact is invisible to it — and **that is how the printout claim
+  survived into the draft in the first place**, since it reads as fact and not as a story.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** the audit programme is complete on every dimension I can mechanise — figures, machinery,
+cross-references, causal clauses, and now the source document. **What remains is the six decisions,
+and the fact that nothing has reached a GPU in fourteen ticks.** **Push credential-blocked.**
