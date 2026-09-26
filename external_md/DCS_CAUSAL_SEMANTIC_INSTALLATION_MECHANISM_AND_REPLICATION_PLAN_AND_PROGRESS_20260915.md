@@ -41423,3 +41423,65 @@ old values.** Anchor the replacement, or exclude the notes.
 **NEXT:** with §A, §1–§4 and §H all figure-audited, the unaudited surfaces are **§0, §5, §6, §L and
 §M** — the framing and methods sections, where the rung-1 question already sits. **Six questions with
 the user.** **Push credential-blocked.**
+
+---
+
+## S-470 — §M against the code that was patched under it: five claims hold, and one says the prereg decides where the reader decides (2026-09-26)
+
+**Why this surface now.** §A, §1–§4 and §H are figure-audited. §M is different in kind: it describes
+**machinery**, and that machinery was **patched twice during this sprint** — S-421 (a false
+inequality in the K<3 structural branch) and S-428 (a `GATING_FLOOR` sentence false at K≥3). A
+methods description written before those patches could be stale in **either** direction: describing
+behaviour the code no longer has, or still describing the bug as present. I checked both.
+
+### ✅ What holds, read out of the source
+
+| §M claim | source | found |
+|---|---|---|
+| `p₀ = 1/\|band\|` is **derived**, not hardcoded | `dcs_csi_argmax_verdict.py:73` | `p0 = 1.0 / len(band)` |
+| M is a **three-way conjunction**, kept separate from the observation | `dcs_csi_pr016_argmax_test.py:194` | `COUNTED_IN_M = bool(ok and not tie and row["ARGMAX_EQUALS_SCREEN"])` |
+| a **tie** is a preregistered CANNOT ANSWER | `argmax_verdict.py:153` | `if ties: verdict = "CANNOT ANSWER"`, with the R28/S-312 rationale attached |
+| *"weakest of three"* is **not sprint-wide** | the module's own comment | PR-016 froze `binomial_only`, PR-018 `weakest_of_three` |
+| **CANNOT ANSWER only at K < 3**; at K ≥ 3 a floor above α is a **FAIL with a warning** | `argmax_verdict.py:216` | `STRUCTURALLY UNWINNABLE` is appended *inside the FAIL path*, not as a verdict |
+| the axis analyser has **no `--prereg`** and still writes a `"prereg"` label | `dcs_csi_subspace_analyze.py` | 21 arguments, none a prereg; label written at lines 520 and 827 |
+| VOID 8 **pins the MEAN only** | `dcs_csi_head_census.py:958` | compares each head's whole-head `E` to the prereg's frozen prior measurement, tolerance per head and *"may not be defaulted by this reader"* |
+
+⇒ **§M reflects both patches, in the right direction.** It neither describes the old buggy behaviour
+nor over-claims the new.
+
+### 🔴 The one defect: §M.8 attributed the deciding threshold to the preregistration
+
+§M.8 read *"**The prereg's** verdict ladder requires rank 1 of 21 **AND `F ≥ 0.50`** with a ci95
+excluding 0"*. The ladder is right and the numbers are right. **The attribution is not.**
+
+```
+scripts/dcs_csi_head_analyze.py:131   ap.add_argument("--prereg", required=True)
+scripts/dcs_csi_head_analyze.py:343   elif rank == 1 and F is not None and F >= 0.50 and F_ci and ...
+scripts/dcs_csi_head_analyze.py:355   elif rank == 1 and F is not None and 0 < F < 0.50:
+configs/dcs_csi_pr010_...json         "WE_FOUND_THE_WRITER": "HD_TOPK rank 1 of 21 vs HD_RAND
+                                       AND F >= 0.50 with ci95 on F excluding 0"     <- a PROSE STRING
+```
+
+**The reader requires the prereg and reads 24 things from it, and the deciding threshold is still a
+literal.** The prereg carries the rule only as prose. ✅ **They agree today — verified, both 0.50.**
+⛔ **Nothing enforces that they keep agreeing.**
+
+⚠ **This is AM-48's shape, and a WORSE instance of it.** AM-48's residual already recorded that
+`F ≥ 0.50` is hardcoded and stated in prose "with nothing linking them" — what it did not record is
+that **this reader opens the file.** The axis analyser at least has no `--prereg` argument to make
+the omission look deliberate; here the file is open, required and parsed, and the number is not
+taken from it. AM-48's residual is **sharpened in place** to say so, and §M.8 now states it instead
+of implying the code enforces the prereg.
+
+### What is NOT established
+
+* ⛔ **That §M is clean.** I spot-checked seven claims across §M.6–§M.9. **§M.1–§M.5, §M.10, §M.11 and
+  all of §L were not checked by me this tick** — a full audit of §M and §L is running and is not in
+  this entry.
+* ⛔ **That the 0.50 duplication has ever bitten.** It has not: the values agree, and every published
+  head-level verdict was read with them agreeing. The defect is durability, not a wrong result.
+* ⛔ **That §0, §5 and §6 are audited.** They are not; only §6's §A gap was addressed (S-467).
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** the §M/§L audit when it lands, then §0, §5 and §6 — the last unaudited surfaces, and where
+the **rung-1 framing question** sits. **Six questions with the user.** **Push credential-blocked.**

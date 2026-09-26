@@ -575,7 +575,7 @@ prereg states the consequence in advance and it is severe: this clears α = 0.05
 rank 2 gives `2/21 = 0.0952` and cannot clear at any data.** A head-level family of this size has
 exactly one passing outcome.
 
-⚠ **A rank of 1 is NECESSARY AND NOT SUFFICIENT.** The prereg's verdict ladder requires rank 1 of
+⚠ **A rank of 1 is NECESSARY AND NOT SUFFICIENT.** The verdict ladder requires rank 1 of
 21 **AND `F ≥ 0.50` with a ci95 excluding 0**, behind two gates: GATE 0 (liveness, per arm) and
 **GATE 1** — `E(HD_KO) < 0` with its ci95 upper bound below 0 — whose failure is *"CANNOT ANSWER;
 report feasibility and STOP; do NOT report the candidate"*.
@@ -588,6 +588,17 @@ distribution.
 
 🔴 **AND THE ARTEFACTS' OWN `VERDICT` STRING MUST NEVER BE QUOTED.** **BOTH**
 `DCS_CSI_PR010_HEAD_validation.json` **and** `DCS_CSI_PR011_ALL32_validation.json` record the
+🔴 **ADDED S-470 — that ladder is NOT read from the preregistration, and this section implied it
+was.** `scripts/dcs_csi_head_analyze.py` **requires** `--prereg` (line 131, `required=True`) and
+reads **24** things from it — but `F >= 0.50` is a **LITERAL** in the reader, at lines 343 and 355,
+and the preregistration states it only as a **prose string**:
+`"WE_FOUND_THE_WRITER": "HD_TOPK rank 1 of 21 vs HD_RAND AND F >= 0.50 with ci95 on F excluding 0"`.
+✅ **They agree today — verified, both 0.50.** ⛔ **Nothing enforces that they keep agreeing**, and
+this is **AM-48's exact shape one layer over**: a threshold declared in a file the code opens and
+not read from it. ⚠ *It is more surprising here than in the axis analyser, which at least has no
+`--prereg` argument at all (§M.9): this reader has one, requires it, and still carries its own copy
+of the deciding number.*
+
 identical `VERDICT: "WE FOUND (part of) THE WRITER"` (a sweep in S-444 found the second; S-443 had
 seen only the first) — the prereg's branch is named
 `WE_FOUND_THE_WRITER` and its conditions were met, and the reader hedged it at write time. **The
