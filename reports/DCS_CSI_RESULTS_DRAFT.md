@@ -1307,7 +1307,31 @@ limited BY the floor, it SITS ON it, and those are different statements.* ⛔ **
 about 92 % of the effect is elsewhere.** ⛔ *"The axis is causal"* is forbidden unqualified; *"the
 axis is necessary"* is forbidden outright.
 
-## A.2 The codeword dissociation, at matched power (D23, D24, D29)
+## A.2 The codeword dissociation **in the sufficiency direction**, at matched power (D23, D24, D29, D44)
+
+🔴 **SCOPE, ADDED S-526 AND IT IS A NARROWING.** This section's title read *"The codeword
+dissociation, at matched power"* unqualified until **PR-CSI-023 tested whether it generalises and it
+does not.** In the **necessity** direction **button's rank-1 axis DOES top its shuffled family** —
+**rank 1 of 25, p = 0.0400**, candidate **−0.00215806** against the strongest control −0.00165851,
+zero of 24 reaching it, with the **instrument demonstrably capable** (positive control **−0.06986
+[−0.0793, −0.06064]**, 66 neg / 1 pos), so it is a read and not a non-answer (**D44**). The complete
+2×2:
+
+```
+                     SUFFICIENCY (this section)      NECESSITY (D42 / D44)
+  basket L18 TRAIN   rank  1 of 47   PASSES          rank 1 of 25   PASSES
+  button L18 TRAIN   rank 36 of 47   DOES NOT PASS   rank 1 of 25   PASSES   <- the prediction failed
+```
+
+⛔ **Everything below is unretracted and is a SUFFICIENCY result.** What is no longer available is the
+unqualified phrase: it must be *"the codeword dissociation **in the sufficiency direction**"*.
+⚠ **The prediction that it would generalise was frozen BEFORE the data** (PR-CSI-023, S-517) and
+**failed**; the prereg ruled out *"necessity is a different question"* as an escape, so it is not used
+here. ⚠ **A quantitative difference survives and is NOT a claim**: in the removal direction button's
+effect is **4.0× smaller** (−0.00216 vs −0.00870), its margin over the best control **1.30×** against
+basket's **1.78×**, its removal fraction **0.0309 [0.0160, 0.0455]** against **0.0803**. **D23/D24
+assert a BINARY dissociation and in that direction both codewords certify** — calling the residue a
+*"graded dissociation"* after the fact is the reframing PR-CSI-023 forbids.
 
 Same layer, same family size, same family composition, same procedure, same 67 TRAIN domains:
 

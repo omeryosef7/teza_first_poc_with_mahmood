@@ -44445,3 +44445,92 @@ Button's effect is **4.0× smaller**, its margin over the best control is **1.30
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** commit; then D23/D24/D19/§A.2 must record that the dissociation is sufficiency-specific — the most consequential record change of this sprint, and it reduces a headline rather than adding one.
+
+---
+
+## S-525 / the failed prediction enters the record as D44, and D24's scope narrows — a headline reduced, not added (2026-09-27)
+
+### ✅ D44 added, in the 4-column section beside D42/D43
+
+Carries the re-derived figures (−0.00215806, top control −0.00165851, zero of 24, rank 1 of 25, p = 0.0400), **the gate that makes it a read rather than a non-answer** (positive control −0.06986 [−0.0793, −0.06064], 66 neg / 1 pos, instrument capable), the independent path's agreement, and the full provenance.
+
+Its status cell states the outcome in the prereg's own terms: **the preregistered prediction failed and is reported as such**, with the 2×2 spelled out and *"necessity is a different question"* named as the escape PR-CSI-023 ruled out in advance.
+
+### 🔶 D24's scope narrowed — the claim is unretracted, the phrase is no longer sayable
+
+D24 asserts *"THE CODEWORD DISSOCIATION AT MATCHED POWER … basket is rank 1 of 47 and button is rank 36 of 47"*. **That measurement stands.** What is added, on its own row:
+
+> 🔴 **SCOPE NARROWED — THIS IS A SUFFICIENCY RESULT AND ONLY THAT.** … ⚠ *"The codeword dissociation"* unqualified is no longer sayable; it must be **"the codeword dissociation in the sufficiency direction"**.
+
+**That is the whole substance of the change**: not a retraction, a scope. The sprint had a two-word phrase doing work across both directions, and it was only ever entitled to one of them.
+
+### ⚠ The quantitative difference is recorded in D44 and refused as a claim, in the same cell
+
+Button's effect is 4.0× smaller, margin 1.30× against basket's 1.78×, removal fraction 0.0309 [0.0160, 0.0455] against 0.0803. **D23/D24 assert a BINARY dissociation and here both codewords certify.** Calling this a *"graded dissociation"* after seeing the numbers is the reframing PR-CSI-023 forbids — recorded beside the numbers so the temptation and its prohibition travel together.
+
+### ✅ Mechanical checks before writing anything
+
+```
+  D44 cols=4 (its section header is 4)    D24 cols=6 (its section header is 6)
+  dcs_csi_table_shape_check: 49 tables, 0 malformed        ~~ parity: 78, balanced
+```
+
+Two adjacent rows needing **different** column counts is exactly the trap that produced S-503's malformed pair; both were measured, not assumed.
+
+### ⚠ A process note on the failed commit
+
+The S-520–S-524 commit failed at `check_all` because `KO_NEC_RAND3` landed **after** I generated the exemptions. **It failed in about a minute, not eight** — `check_all.py` runs before the test suite, so the cheap guard caught it first. I regenerated the **whole** 19-arm block from one instrument rather than hand-adding a 19th entry, and the guard now exits **0**. Re-committing.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No figure computed this tick** — all are S-524's, re-derived once from `domain_means`.
+- ⛔ **§A.2, the draft's dissociation section, is NOT updated** and still presents the dissociation unqualified. It is the most-read prose statement of the claim whose scope just narrowed, and it is the next thing.
+- ⛔ **D19 is not re-examined** in light of D44; it is basket-only, so probably unaffected, and *"probably"* is why I have not touched it.
+- ⛔ **The pooled-28 secondary for button is still owed**, and a held-out button necessity read does not exist.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** §A.2; then D19 checked properly rather than assumed unaffected.
+
+## S-526 / D19's transfer caution was not a caution any more — both button directions have now run, and the conjunction is basket-specific (2026-09-27)
+
+Queue **EMPTY**. No GPU work this tick; this is bookkeeping that the last three ticks earned, plus one measurement error of my own caught before it could be committed.
+
+### WHAT WAS MEASURED
+
+**§A.2 of the draft is retitled and scoped** (the other half of S-525's NEXT). It is now *"The codeword dissociation **in the sufficiency direction**, at matched power (D23, D24, D29, D44)"*, and it carries a scope block giving the complete 2×2 rather than the sufficiency row alone. This was the most-read prose statement of a claim whose scope narrowed at S-525, and it no longer overstates it.
+
+**D19's caveat cell said something that had stopped being true.** Verbatim, it read: *"**basket only**: nothing here has been run on button, and D21 is the reason not to assume it transfers."* As of D44 that sentence is false in its first clause and obsolete in its second — **both** button directions have now been run:
+
+| direction | basket | button | transfers? |
+|---|---|---|---|
+| sufficiency (`KO_AXIS − KO`) | rank **1 of 47**, PASSES | rank **36 of 47**, **DOES NOT PASS** (D24) | **no** |
+| necessity (`KO_NEC_AXIS − NEC_BASE`) | rank **1 of 25**, PASSES (D42/D43) | rank **1 of 25**, **PASSES** (D44) | **yes** |
+
+⇒ **THE BIDIRECTIONAL CONJUNCTION IS BASKET-SPECIFIC.** Button has one direction top-of-family and one not, so it does not exhibit the conjunction D19 reports. **This does not weaken D19 — it bounds it.** A real basket result with an untested scope has become a real basket result with a measured scope. The caution is discharged by measurement rather than carried forward as a hedge, which is the only way a caution is ever supposed to leave this log.
+
+⚠ **And the two halves fail to transfer for OPPOSITE reasons**, which is worth more than the bare "it does not transfer": sufficiency fails because button's axis sits **below** its control family's mean; necessity does not fail at all. *"It does not transfer"* is therefore **two facts pointing in different directions**, not one.
+
+### WHAT WAS CORRECTED — MY OWN NUMBER, AND THE COINCIDENCE THAT ALMOST CERTIFIED IT
+
+I wrote **z = −0.57** into the new D19 text **from memory**, then re-derived it as the rule requires. My first re-derivation used `installation_by_arm` scalars as a proxy for the per-arm statistic and returned **z = −0.5760** and **rank 35 of 47**. Memory and computation agreed to two decimals. **Both were wrong.**
+
+The authoritative per-arm statistic is `candidate_minus_ko` in `DCS_CSI_REDERIVE_button_train_L18_n46.json`:
+
+- `candidate_minus_ko` = **−0.00015** (not the −0.000140 my scalar proxy produced)
+- 46 `controls_minus_ko`, mean **+0.00028630**, sd **0.00074131**
+- **35 of 46 controls exceed the candidate** ⇒ rank **36 of 47** — **D24's published rank is correct; my proxy's 35 was not**
+- **z = −0.5886**, i.e. **−0.59**
+
+D19 now carries **−0.59** with its derivation basis named inline. ⚠ **The lesson is not "check your numbers" — it is that agreement between a remembered figure and a recomputed one is not evidence, when the recomputation uses a different statistic than the claim does.** The scalar difference of two aggregate installations is *not* the per-arm contrast the rank is built on, and it crossed a control. A proxy that reproduces your prior to two decimals is the most dangerous possible proxy.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No new GPU measurement this tick.** Every figure above is a re-derivation of an existing read; nothing was run.
+- ⛔ **The conjunction is still NOT certified for basket** — unchanged by this entry. Two rank-1 results at their own floors do not combine: same axis, same model, same 23 validation domains, **not independent**, and no combined test is preregistered, computed or specified.
+- ⛔ **No held-out button necessity read exists.** D44 is TRAIN-only, so "necessity transfers" is a TRAIN statement; the basket side has both halves (D42 TRAIN, D43 held out) and button does not.
+- ⛔ **The pooled-28 secondary for button is still owed.**
+- ⛔ **§A.1 and §L.3 still quote `0.0778`** rather than the read-matched fraction prohibition 28 now requires, and §L.3 still carries the superseded −0.00852 / −0.10950 pair at `:874-875`. Deliberate lag: the rule changed first.
+- ⛔ **The head/cell readout-validity sensitivity is still unstarted** (user-delegated). Plan unchanged: preregister first, then build.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** §L.3's superseded pair at `:874-875`, then the `0.0778` → read-matched fraction sweep across §A.1 and §L.3 that prohibition 28 now mandates.
