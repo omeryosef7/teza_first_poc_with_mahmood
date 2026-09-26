@@ -1,0 +1,126 @@
+{
+ "id": "PR-CSI-023",
+ "title": "IS THE CODEWORD DISSOCIATION DIRECTION-GENERAL? Necessity on BUTTON at L18, at matched power",
+ "written": "2026-09-26 (S-517). FROZEN BEFORE ANY BUTTON NECESSITY ARM EXISTS -- there are none on disk.",
+ "WHY_THIS_EXISTS": "The SUFFICIENCY direction shows a codeword dissociation at matched power (D23/D24, draft SS A.2): basket L18 TRAIN ranks 1 of 47 and PASSES, button L18 TRAIN ranks 36 of 47 and DOES NOT PASS, same layer, same family size, same 67 domains. The NECESSITY direction now certifies on basket in BOTH splits (D42 TRAIN, D43 HELD-OUT VALIDATION). But necessity has NEVER been run on button, on any layer -- draft SS A.7 says so and it is still true. So every necessity statement in the record is basket-only, and whether the dissociation is a property of the CODEWORD or an artefact of the sufficiency DESIGN is untested.",
+ "THE_PREDICTION_FROZEN_IN_ADVANCE": {
+  "prediction": "button necessity at L18 will NOT certify: the candidate will rank >= 2 of 25 among the shuffled controls.",
+  "basis": "if the dissociation is a property of the codeword, it should appear in BOTH causal directions. D23/D24 measured it in sufficiency; this tests necessity.",
+  "IF_THE_PREDICTION_HOLDS": "button ranks >= 2 while basket ranks 1 in both splits ==> the dissociation is DIRECTION-GENERAL, which is a substantially stronger statement than either direction alone. It would also mean the basket result is not an artefact of the removal design, because the same design on button does not produce it.",
+  "IF_THE_PREDICTION_FAILS": "button ALSO ranks 1 ==> the removal effect is NOT codeword-specific, and D23/D24's dissociation is either sufficiency-specific or an artefact of that design. THIS WOULD WEAKEN THE SPRINT'S DISSOCIATION CLAIM AND IT WILL BE REPORTED AS SUCH. No post-hoc reframing -- 'necessity is a different question' is NOT an available escape, because this file asks the question in advance and says what each answer means.",
+  "WHY_BOTH_BRANCHES_ARE_WRITTEN": "a prediction that only names the outcome it expects is not a prediction. Both are stated so neither can be spun after the fact, and VOID 8 below freezes the statistic so the losing branch cannot be re-cut."
+ },
+ "population": {
+  "split": "train",
+  "expect_n": 670,
+  "n_domains": 67,
+  "MEASURED_NOT_ASSUMED": "recomputed from data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl minus runargs/dcs_cont/exclude_button_bomb_sow_train.txt under the launcher's own filter (query_kind semantic_one_word, bank_block cds_n4_sow, condition natural_doublespeak): 670 rows, 67 domains -- IDENTICAL to basket's, so the comparison is at MATCHED POWER by construction, not by adjustment.",
+  "allow_short": 4,
+  "allow_short_REASON": "the norm-match degeneracy guard refuses 1-2 rows per shuffled control arm, a DETERMINISTIC function of (control basis, row) (S-152/S-154/S-159). Eleven of twenty PR-CSI-003-A arms and ten of PR-CSI-022's were short, all inside 4. Frozen here BEFORE the arms run.",
+  "statistical_unit": "the domain"
+ },
+ "DIRECTION": {
+  "contract": "h' = h_clean - P_w(h_clean - h_ko): start CLEAN, REMOVE, expect installation to DROP",
+  "reference_arm": "NEC_BASE",
+  "stronger_candidate_is": "MORE NEGATIVE"
+ },
+ "arms": {
+  "base": "NEC_BASE",
+  "ko": "NEC_KO",
+  "positive_control": "KO_NEC_FULL",
+  "candidate": "KO_NEC_AXIS",
+  "comparator": "KO_NEC_ORTH",
+  "controls": [
+   "KO_NEC_SHUF0",
+   "KO_NEC_SHUF1",
+   "KO_NEC_SHUF2",
+   "KO_NEC_SHUF3",
+   "KO_NEC_SHUF4",
+   "KO_NEC_SHUF5",
+   "KO_NEC_SHUF6",
+   "KO_NEC_SHUF7",
+   "KO_NEC_SHUF8",
+   "KO_NEC_SHUF9",
+   "KO_NEC_SHUF10",
+   "KO_NEC_SHUF11",
+   "KO_NEC_SHUF12",
+   "KO_NEC_SHUF13",
+   "KO_NEC_SHUF14",
+   "KO_NEC_SHUF15",
+   "KO_NEC_SHUF16",
+   "KO_NEC_SHUF17",
+   "KO_NEC_SHUF18",
+   "KO_NEC_SHUF19",
+   "KO_NEC_SHUF20",
+   "KO_NEC_SHUF21",
+   "KO_NEC_SHUF22",
+   "KO_NEC_SHUF23"
+  ],
+  "n_arms_total": 29,
+  "axis_file": "configs/dcs_csi_axis_button_behavioral_L18.pt",
+  "axis_VERIFIED": "loaded before this file was written: selected_layer 18, fit_prompt behavioral, site rel-6, and cand_rank1 + ctrl_shuffled0..23 ALL PRESENT (S-167c).",
+  "PROVENANCE_ASYMMETRY_RECORDED": "this axis file records fit_domains_sha16 = None, where basket's dcs_csi_axis_basket_behavioral_shuf24.pt records 4614853e5636eb5f. The button axis's fit population is therefore NOT pinned by a hash in the file. This does not block the run -- the file is fixed and used unchanged -- but it means the in-sample/held-out bookkeeping for button cannot be verified from the basis file the way basket's was, and any in-sample claim about button must be checked against the READ's own in_sample block instead."
+ },
+ "PRIMARY": {
+  "statistic": "the SHUFFLED-ONLY rank of KO_NEC_AXIS - NEC_BASE among the 24 KO_NEC_SHUF controls, on button L18 TRAIN",
+  "alpha": 0.05,
+  "attainable_floor": 0.04,
+  "attainable_floor_ARITHMETIC": "1/(24+1) = 0.0400 <= 0.05; rank 1 certifies, rank 2 (0.0800) does not",
+  "CERTIFIES": "rank 1 of 25 AND a NEGATIVE candidate point",
+  "DOES_NOT_CERTIFY": "rank >= 2 of 25",
+  "CANNOT_ANSWER_IF": [
+   "the positive control KO_NEC_FULL - NEC_BASE is not negative with a domain-clustered ci95 excluding 0 -- an incapable instrument makes a null uninterpretable, and THIS IS THE CRITICAL GATE FOR THIS EXPERIMENT: a button null means nothing unless removal demonstrably moves button installation at all",
+   "fewer than 24 shuffled control arms land"
+  ],
+  "IF_RANK_1": "say in the same sentence that p = 0.0400 IS the attainable floor (S-079 precedent, as D42 and D43 do)"
+ },
+ "THE_COMPARISON_THIS_IS_FOR": {
+  "basket_necessity_TRAIN": {
+   "rank": "1 of 25",
+   "p": 0.04,
+   "candidate": -0.00870343,
+   "source": "D42"
+  },
+  "basket_necessity_VALIDATION": {
+   "rank": "1 of 25",
+   "p": 0.04,
+   "candidate": -0.01283435,
+   "source": "D43"
+  },
+  "basket_sufficiency_TRAIN": {
+   "rank": "1 of 47",
+   "source": "D23"
+  },
+  "button_sufficiency_TRAIN": {
+   "rank": "36 of 47",
+   "verdict": "DOES NOT PASS",
+   "source": "D24"
+  },
+  "button_necessity_TRAIN": "THIS EXPERIMENT -- the missing cell of the 2x2"
+ },
+ "VOID_CONDITIONS": [
+  "1. any compared arm on anything other than an NVIDIA GeForce RTX 3090 (cc 8.6, native bfloat16), MEASURED on the read's OWN run_dirs and never on a glob pattern (S-507 recorded that error; PR-CSI-022 VOID 1 is the precedent)",
+  "2. compared arms spanning more than one GPU architecture",
+  "3. arms disagreeing on bank, exclusion file, layer, positions, donor or basis file",
+  "4. any VALIDATION or TEST domain present in this TRAIN read",
+  "5. a DONE.json ledger disagreeing with the rows on disk",
+  "6. src/boombness/score_behavior.py differing BY BLOB between arms of this family (blob, not commit -- S-490/S-496/S-499; a blob change is dischargeable by the S-139/S-494 bit-identity demonstration)",
+  "7. the analysers moving COMPUTATIONALLY between this read and D42/D43's (I/O-only vs computational, the S-490 leaf-comparison method)",
+  "8. the control family, the primary statistic, the prefix strings or the floor changed after any candidate rank has been seen. The family is 24 shuffled, the primary is the shuffled-only rank, the floor is 0.0400.",
+  "9. any arm run with --limit rather than --expect-n",
+  "10. the button axis refit or reselected for this run -- the file is used unchanged"
+ ],
+ "NOT_CLAIMED_BY_THIS_FILE": [
+  "nothing here licenses 'the axis is necessary' for either codeword -- prohibition 24 stands whatever the outcome",
+  "a button null would NOT establish that button has no removable installed component; it would establish that THIS axis, at THIS layer, does not top its control family -- absence of rank-1 is not absence of effect",
+  "this is TRAIN only. A dissociation seen on TRAIN alone carries the same in-sample caveat D42 carries, and would need its own held-out read to match D43."
+ ],
+ "HOW_TO_RUN": {
+  "launcher": "slurm_scripts/dcs_csi_p1_arms.slurm (group L), UNMODIFIED",
+  "tag_prefix": "csi1_button_train",
+  "TAG_SAFETY_CHECKED": "zero csi1_button_*NEC* run dirs exist on disk, and the necessity arm names (NEC_BASE, KO_NEC_*) do not collide with the existing sufficiency arms (BASE, KO_AXIS, ...) under prefix globbing -- csi1_button_train_KO_AXIS_* does not match csi1_button_train_KO_NEC_AXIS_*",
+  "invocation": "CSI_NEC_HALF=<1|2|4|5> CSI_STAGE=1 sbatch --gpus=geforce_rtx_3090:1 --time=08:00:00 --export=ALL,... slurm_scripts/dcs_csi_p1_arms.slurm button configs/dcs_csi_axis_button_behavioral_L18.pt train L",
+  "halves_needed": "1 + 2 + 4 + 5 (the 29 primary arms plus the anchor and RAND0-3)",
+  "estimated_cost": "about 6 GPU-hours at ~13 min per 670-row arm"
+ }
+}

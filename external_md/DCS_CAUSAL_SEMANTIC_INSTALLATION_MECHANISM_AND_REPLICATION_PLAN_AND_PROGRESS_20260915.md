@@ -44080,3 +44080,47 @@ The marker says the same thing in each: the extension **ran** (D42, TRAIN) and t
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** commit; then a fresh audit pass, because the right time to check for newly-introduced inconsistencies is after a block of edits, not before.
+
+---
+
+## S-517 / PR-CSI-023 FROZEN — the missing cell of the 2×2: is the codeword dissociation direction-general? (2026-09-26)
+
+The GPU went idle again. The largest remaining **scientific** gap is not in the record, it is in the design: draft §A.7 says *"the removal direction has never been run on button, on any layer, so every necessity statement in this draft is basket-only"* — **and that is still true.**
+
+```
+                        SUFFICIENCY                 NECESSITY
+  basket L18 TRAIN      rank  1 of 47  PASSES       rank 1 of 25  PASSES   (D42)
+  basket L18 VALIDATION rank  1 of 47  PASSES       rank 1 of 25  PASSES   (D43, held out)
+  button L18 TRAIN      rank 36 of 47  DOES NOT     ← never run            (PR-CSI-023)
+```
+
+**One cell of the 2×2 is empty, and it is the one that decides whether the dissociation is a property of the CODEWORD or an artefact of the sufficiency DESIGN.**
+
+### 🔶 The prediction is frozen, and so is what each answer means
+
+> **Prediction: button necessity will NOT certify — the candidate will rank ≥ 2 of 25.**
+
+* **If it holds** — button ≥ 2 while basket ranks 1 in both splits ⇒ the dissociation is **direction-general**, a substantially stronger statement than either direction alone, and the basket result is not an artefact of the removal design, because the same design on button does not produce it.
+* **If it fails** — button also ranks 1 ⇒ the removal effect is **not codeword-specific**, and D23/D24's dissociation is either sufficiency-specific or an artefact. ⛔ **THIS WOULD WEAKEN THE SPRINT'S DISSOCIATION CLAIM AND WILL BE REPORTED AS SUCH.** *"Necessity is a different question"* is **not an available escape**, because this file asks the question in advance and states what each answer means.
+* **Both branches are written** because *"a prediction that only names the outcome it expects is not a prediction"*, and VOID 8 freezes the statistic so the losing branch cannot be re-cut.
+
+### ✅ Matched power by construction, not by adjustment
+
+`expect_n` recomputed from the **button** bank under the launcher's own filter: **670 rows, 67 domains** — *identical* to basket's. Same layer (18), same 24-shuffled family, same floor (0.0400), same direction contract. The comparison needs no normalisation because nothing differs but the codeword.
+
+### ✅ S-167c cleared, with one asymmetry recorded rather than glossed
+
+`configs/dcs_csi_axis_button_behavioral_L18.pt` **loaded and checked**: `selected_layer` 18, `fit_prompt` behavioral, site `rel-6`, and `cand_rank1` + `ctrl_shuffled0..23` **all 25 present**. Zero `csi1_button_*NEC*` run dirs exist, and the necessity arm names cannot collide with the existing sufficiency arms under prefix globbing (`..._KO_AXIS_*` does not match `..._KO_NEC_AXIS_*`).
+
+⚠ **But this axis file records `fit_domains_sha16: None`**, where basket's records `4614853e5636eb5f`. **The button axis's fit population is not pinned by a hash in the file.** That does not block the run — the file is fixed and used unchanged — but it means button's in-sample bookkeeping **cannot be verified from the basis file the way basket's was**, and the prereg says so: any in-sample claim about button must be checked against the **read's own `in_sample` block** instead. Recorded in the config, not just here.
+
+### WHAT IS NOT ESTABLISHED
+
+- ⛔ **Nothing is launched and no button necessity arm exists.** This freezes a rule and a prediction; it produces no number.
+- ⛔ **A button null would NOT establish that button has no removable installed component** — only that *this* axis at *this* layer does not top its control family. **Absence of rank 1 is not absence of effect**, and the prereg says so.
+- ⛔ **This is TRAIN only.** A dissociation seen on TRAIN alone carries the same in-sample caveat D42 carries and would need its own held-out read to match D43.
+- ⛔ **The positive control is the critical gate**: a button null means nothing unless removal demonstrably moves button installation at all. That is `CANNOT_ANSWER_IF`, not a footnote.
+- ⛔ **The fresh audit of S-516's edits is running in a subagent** and is not in this entry.
+- ⛔ **Prohibition 28 still unamended.** **TEST untouched.** Push credential-blocked.
+
+**NEXT:** commit, then launch halves 1, 2, 4, 5 on button/train — about 6 GPU-hours.
