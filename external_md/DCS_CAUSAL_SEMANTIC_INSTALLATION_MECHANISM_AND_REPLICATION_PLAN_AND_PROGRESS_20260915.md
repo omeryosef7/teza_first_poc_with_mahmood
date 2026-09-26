@@ -40273,3 +40273,90 @@ The AXIS families were never tested, and the first one checked does not replay a
 direction B's verdict hinging on the contested AM-48 rule, §A.3's TRAIN denominators. Then the
 option-mass sensitivity on the four swap cells and the button family, which this tick did not run. **The rung-1 framing question
 from S-453 is still with the user. Push credential-blocked.**
+
+---
+
+## S-456 — the AM-48 dependency resolved by applying both rules, and a codeword asymmetry in READOUT VALIDITY that no row has ever carried (2026-09-26)
+
+**Start: S-455's next action** — S-453's three unfixed omissions. Two had been absorbed by S-455's
+own edits without my noticing (the native ranks reached §A.4a's prose, and §A.3's TRAIN denominators
+went in with the recovery-fraction correction). I checked rather than assumed, and report it because
+a "still outstanding" list that has silently shrunk is the same defect as one that has silently
+grown.
+
+### 1. How much of §A.4's verdict rests on the contested AM-48 rule? Applied both ways
+
+```
+PREREG   (HELPS iff R47 <= 2)      A: 4 -> no,  1 -> HELPS  DISAGREE -> not replicated
+                                   B: 13 -> no, 2 -> HELPS  DISAGREE -> not replicated
+ANALYSER (PASS  iff rank == 1)     A: 4 -> no,  1 -> PASS   DISAGREE -> not replicated
+                                   B: 13 -> no, 2 -> no     AGREE    -> claimable: consistently does not help
+```
+
+✅ **The top line is ROBUST.** The 2×2 is unresolved under **both** rules, because **direction A's
+splits disagree under both** — rank 4 fails and rank 1 passes on either reading — and a cell needs
+both directions claimable. ⛔ **What is NOT robust is direction B's label**: *"NOT REPLICATED"* under
+the preregistration becomes *"consistently does not help"* under the rule the analyser implements.
+The draft now says so where the verdict is stated. **The verdict is determinate; that one label is
+rule-dependent, and it was being stated as if it were not.**
+
+### 2. The four-cell table now carries the recipient's own axis beside the swap
+
+Re-derived: native ranks **36, 6, 1, 1** of 47 against swap ranks **4, 1, 13, 2**. Direction B's
+recipient is **already rank 1 on both splits**, so a transplant has nowhere to go; direction A's sits
+at 36 and 6. **The two directions are not symmetric tests and the swap ranks alone make them look
+like one.**
+
+### 3. The option-mass sensitivity extended to the swap family — direction A complete
+
+```
+A train  floor 0.00  626 keys  +0.00150 [+0.00047,+0.00256] p 0.0070  rank 4 of 47
+A train  floor 0.05  545 keys  +0.00171 [+0.00059,+0.00291] p 0.0051  rank 4 of 47
+A valid  floor 0.00  221 keys  +0.00338 [+0.00122,+0.00559] p 0.0074  rank 1 of 47  PASSES
+A valid  floor 0.05  197 keys  +0.00407 [+0.00149,+0.00666] p 0.0072  rank 1 of 47  PASSES
+```
+
+Both floor-0.0 controls reproduce the published artefacts **exactly**. At the declared floor the
+candidate grows and **both ranks are unchanged** — the same result AM-53 found for D12. ⏳ **Direction
+B is still running** and is NOT reported here.
+
+### 4. What the swap runs surfaced: THE TWO CODEWORDS ARE NOT MATCHED ON READOUT VALIDITY
+
+Direction A lost only ~12 % of its keys at the 0.05 floor where basket lost ~36 %. That is a
+property of the codeword, not the arm. Measured on `BASE` — the clean run, and the arm whose option
+mass gates the retained key set:
+
+```
+                rows below 0.05      median option mass
+basket TRAIN       243 / 670 = 36.3 %        0.0902
+basket VALIDATION   84 / 230 = 36.5 %        0.0835
+button TRAIN        84 / 670 = 12.5 %        0.3298
+button VALIDATION   25 / 230 = 10.9 %        0.2650
+```
+
+🔴 **On basket prompts the model puts about three times as much mass outside the two options, and
+basket's median option mass is ~3.5× lower.** The endpoint is a two-way softmax over
+`{concept, codeword}`, so for basket it renormalises a **much smaller share of the distribution**.
+**§A.2 claims the dissociation "at matched power" — that is matched control-family size. The two
+sides are UNMATCHED on this, and no row in the claim table carries it.**
+
+⛔ **It does not explain the dissociation away, and the sign of the bias is measured.** At the 0.05
+floor basket's candidate **grew** on both splits (+0.00264 → +0.00365; +0.00401 → +0.00538) with the
+rank unchanged. **Deleting the low-validity rows enlarged the effect rather than shrinking it**,
+which is what attenuation looks like and the opposite of a readout artefact. ⚠ *Recorded as the
+inference it is: deleting rows also changes the retained set in ways this test does not isolate, so
+what is established is the SIGN of the change, not a mechanism.*
+
+### What is NOT established
+
+* ⛔ **Direction B's swap sensitivity.** Running; nothing about it is claimed here.
+* ⛔ **Why basket's readout validity is so much worse.** Measured in four cells, unexplained. It is
+  a property of the prompt bank, the codeword or the model, and this draft cannot say which.
+* ⛔ **That readout validity is matched anywhere else.** Only the basket/button pair was measured;
+  the head and cell families were not.
+* ⛔ **That the attenuation reading is the only one.** The sign is established, the mechanism is not.
+* ⛔ No GPU work; queue empty; **TEST untouched**.
+
+**NEXT:** direction B's two cells when they land, then the button L18 family at the 0.05 floor —
+after which every §A cell will have been read at both floors. **The rung-1 framing question from
+S-453 remains with the user. Push credential-blocked.**

@@ -1048,6 +1048,35 @@ verdict is invariant to dropping any one domain. The analyser's per-control Holm
 comparator contrast `KO_AXIS − KO_ORTH`: TRAIN **+0.00079 [−0.00021, +0.00178] p = 0.130**,
 VALIDATION **+0.00151 [−0.00017, +0.00309] p = 0.088** — **both CIs include zero**.
 
+🔴 **ADDED S-456 — THE TWO CODEWORDS ARE NOT MATCHED ON READOUT VALIDITY, and nothing in the record
+said so.** "Matched power" above means matched **control-family size**. Measured on the `BASE` arm —
+the clean run, and the arm whose option mass gates the retained key set — the share of scored rows
+falling below PR-CSI-001's declared 0.05 validity floor:
+
+```
+                rows below 0.05      median option mass
+basket TRAIN       243 / 670 = 36.3 %        0.0902
+basket VALIDATION   84 / 230 = 36.5 %        0.0835
+button TRAIN        84 / 670 = 12.5 %        0.3298
+button VALIDATION   25 / 230 = 10.9 %        0.2650
+```
+
+⚠ **On basket prompts the model puts roughly three times as much of its mass outside the two
+options**, and basket's median option mass is ~3.5× lower. The endpoint is a two-way softmax over
+`{concept, codeword}`, so for basket it renormalises a **much smaller share of the distribution**
+than it does for button. **This is a dimension on which the dissociation's two sides differ and were
+never compared.**
+
+⛔ **It does NOT explain the dissociation away, and the direction of the bias is measured rather
+than argued.** §A.3 re-executes basket's read at the 0.05 floor on both splits: a third of the keys
+are discarded and **the verdict is unchanged, rank 1 of 47 on both**. 🔴 **And the candidate GREW —
++0.00264 → +0.00365 on TRAIN, +0.00401 → +0.00538 held out.** If the low-validity rows had been
+manufacturing basket's effect, deleting them would have shrunk it; deleting them **enlarged** it. **That is what attenuation
+looks like, and it is the opposite of what a readout artefact would produce.** ⚠ *Stated as the
+inference it is: deleting rows also changes the retained set in ways this test does not isolate, so
+what is established is the sign of the change, not a mechanism for it.* ⚠ **But "matched" must not be read as "matched on everything"** — it is
+matched on family size, composition, layer, procedure and domains, and **unmatched on this**.
+
 **This removes "unequal control families" as the explanation of the dissociation, and nothing
 else** — it cannot say *why* the codewords differ.
 
@@ -1209,10 +1238,11 @@ a careless summary of it would do more damage than any other section of this dra
 All four cells, read by me from the four `DCS_CSI_SWAP_*_n46.json` artefacts:
 
 ```
-direction A  basket's axis -> BUTTON's knockout   TRAIN  +0.00150 [+0.00047, +0.00256]  rank  4 of 47
-                                                 VALID  +0.00338 [+0.00122, +0.00559]  rank  1 of 47
-direction B  button's axis -> BASKET's knockout   TRAIN  +0.00090 [-0.00029, +0.00217]  rank 13 of 47
-                                                 VALID  +0.00224 [+0.00042, +0.00430]  rank  2 of 47
+                                                        swap arm                    recipient's OWN axis
+direction A  basket's axis -> BUTTON's knockout  TRAIN  +0.00150 [+0.00047,+0.00256] r 4/47   -0.00014  rank 36/47
+                                                 VALID  +0.00338 [+0.00122,+0.00559] r 1/47   +0.00218  rank  6/47
+direction B  button's axis -> BASKET's knockout  TRAIN  +0.00090 [-0.00029,+0.00217] r13/47   +0.00265  rank  1/47
+                                                 VALID  +0.00224 [+0.00042,+0.00430] r 2/47   +0.00401  rank  1/47
                                    TRAIN cells are IN-SAMPLE; VALIDATION cells are held out
 ```
 
@@ -1222,6 +1252,11 @@ disagrees (4 vs 1) and direction B disagrees (13 vs 2).**
 
 ⛔ **So the verdict is: NO CELL IS CLAIMED FOR EITHER DIRECTION. The 2×2 is unresolved in both
 directions, and C1 — "basket simply has a better probe" — is NEITHER REFUTED NOR SUPPORTED by it.**
+
+⚠ **The native column is in that table for a reason**: direction B's recipient is already at
+**rank 1 of 47 on both splits**, so a transplant has nowhere to go, while direction A's recipient
+sits at **36** and **6**. The two directions are not symmetric tests, and reading the four swap
+ranks without the native beside them makes them look like one.
 
 ⚠ **The family's single best-looking cell carries its own null, and the two facts are about the same
 23 domains.** Direction A's validation cell is **rank 1 of 47** — strictly the largest of the 46
@@ -1274,6 +1309,15 @@ reachable from the login node. Everything else in §A.4 and §A.4b was re-derive
 **HELPS**, while the artefact's own `VERDICT` string says *"DOES NOT PASS … INSIDE the controls, not
 above them"* — of a candidate above 45 of 46 controls. **The claim table read it by the frozen rule.
 Nothing reconciles the two, and the divergence is live in the published file.**
+
+⚠ **So how much of this section's verdict rests on the contested rule? Applied both ways, the
+answer is: the top line survives, one label does not.** Under the prereg (`HELPS iff R47 ≤ 2`)
+direction B's splits **disagree** (13 vs 2) and it is NOT REPLICATED. Under the rule the analyser
+actually implements (`PASS iff rank == 1`) rank 2 fails, so B's splits **agree** and B becomes
+claimable as *consistently does not help*. ✅ **The 2×2 is unresolved either way**, because
+**direction A's splits disagree under BOTH rules** (4 vs 1 — rank 1 passes under both), and a cell
+needs both directions claimable. ⛔ **But "direction B is NOT REPLICATED" is rule-dependent and must
+not be stated as if it were not.** The verdict is determinate; that one label is not.
 
 ### A.4a The preregistration's GRADED read (S1), all four cells
 
