@@ -43549,3 +43549,58 @@ Line 1213 shows sufficiency's **shuffled-only subfamily is already "1 of 25 (flo
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** audit the remaining §A necessity mentions; then decide D19 on its merits.
+
+---
+
+## S-506 / REVIEW R40 opened — comments that assert something false about another file; one found, two cleared, and my systematic sweep failed as designed (2026-09-26)
+
+R39 was S-478–S-489 and a family has since reached a GPU, so the ~4h cadence is due. **R40's theme comes from what this session actually produced:** three times today I hit a *comment or docstring asserting a behaviour of a different file*, and one of those assertions was false. That class is not thresholds (R39 stream 1) and not vacuous checks (R39 stream 2).
+
+### 🔴 One confirmed false cross-file claim
+
+`scripts/gates/dcs_csi_pr020_freeze.py:533` writes into a preregistration:
+
+> *"The launcher records the commit at submit (CSI_GIT_BLOB)"*
+
+Measured:
+
+```
+  slurm_scripts/dcs_csi_pr010_arms.slurm  reads CSI_GIT_BLOB  2 times
+  slurm_scripts/dcs_csi_p1_arms.slurm     reads CSI_GIT_BLOB  0 times
+```
+
+**True of the launcher PR-CSI-020 uses, false of the one the necessity family uses** — and the sentence says "the launcher" as though there were one. Nothing was lost in practice: `RUNMETA.json` records `git_commit` directly, which is what let me pin all seven arm commits at S-490 and verify two-blob constancy at S-499. But a preregistration asserting a provenance mechanism that its sibling launcher does not implement is a claim defect, and it is now in a frozen file.
+
+### ✅ Two claims checked and TRUE — reported because negatives are the point of a review
+
+* `scripts/gates/dcs_csi_pr013_freeze.py:44` — *"(a) is checked by the census reader itself (it refuses to write on a GATE 0 failure)"*. **Verified:** `dcs_csi_head_census.py:449` is `sys.exit("CANNOT ANSWER: GATE 0 failed on %d arm(s)...")` and the write is at `:1013`. The exit precedes the write. **True.**
+* `scripts/gates/dcs_csi_pr005_gate0.py:4` — *"Gate 0(e) — 'no interim read' — is procedural and is enforced by this script refusing to report anything if the family is incomplete."* **Defensible:** the script reads no endpoint field at all and asserts every comparison's size before using it, so it cannot produce an interim endpoint read. Loosely worded ("anything" is stronger than what it does — it prints per-gate results as it goes) but **not a defect.**
+
+### 🔴 AND MY OWN SYSTEMATIC SWEEP FAILED. The number it produced is not a finding.
+
+I tried to mechanise the class: extract every leaf key name from all 20 CSI preregs, grep the whole reader corpus, report the keys nothing reads.
+
+```
+distinct prereg key names : 1636
+reader corpus             : 551 files, 10,961,474 chars
+keys appearing in NO script, gate or test : 1017
+```
+
+⛔ **1017 is not a defect count — it is my filter being wrong**, and I am recording it as a failed measurement rather than a result. The sweep conflates three different kinds of key:
+
+* **contract fields** a reader *should* look up by name (`alpha`, `allow_short`, `ADMISSION.ratio`) — the only ones where "unread" means anything;
+* **per-arm / per-cell data keys** (`BC_H17_L07`, `A_recipient_button`) which readers reach by **iterating** the dict, so their names correctly never appear in code;
+* **prose and documentation keys** (`AND_THE_POINT_WORTH_MAKING_PLAINLY`, `BASIS_PROVENANCE_THE_CIRCULARITY_QUESTION`, `13 <= R47 <= 23`) which are **never** meant to be read.
+
+🔶 **The interesting part is why the sweep cannot be fixed cheaply: the repo has no notion of which prereg keys are contract fields.** That absence is exactly why AM-48's class keeps recurring — with no declared contract surface, "is this field read?" has no mechanical answer, and every instance has to be found by hand. **Naming the contract surface is the fix, and it is a design change, not a tick.**
+
+⚠ Had I reported "1017 preregistered fields are read by nothing" it would have been the largest-sounding finding of the session and entirely false. This is the sixth false alarm I have caught in my own work today, and the first I caught **before** writing it down as a result.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **R40 is OPEN, not complete.** One false claim found, two cleared, one method abandoned. No sweep of the class exists.
+- ⛔ **The `CSI_GIT_BLOB` claim is NOT fixed.** It is in a frozen preregistration; editing prereg prose after its family has been read is preregisterable, not a typo fix.
+- ⛔ **The necessity-mention audit of the draft and claim table is running in a subagent and is NOT in this entry.** Whatever it reports I will re-derive before acting.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** the audit's findings, each verified myself; then whether the contract-surface idea is worth a preregistration.
