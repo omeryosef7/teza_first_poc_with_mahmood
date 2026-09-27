@@ -44578,3 +44578,53 @@ Prohibition 28, amended at S-523, requires *"the removal fraction **of the read 
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** sweep the remaining prohibitions for dependents left stale by their own amendments — the defect class this tick found twice, looked for once.
+
+## S-528 / the defect class generalised: a whole SECTION was frozen 390 entries ago and never said so — and my detector for this shipped with a false premise (2026-09-27)
+
+Queue **EMPTY**. No GPU work. S-527's NEXT: sweep for dependents left stale by their own amendments.
+
+### WHAT WAS BUILT, AND THE FALSE PREMISE IT SHIPPED WITH
+
+`scripts/gates/dcs_csi_stale_dependent_check.py`. New code, and I checked the reuse rule first: of 47 gates, `dcs_csi_draft_figure_provenance.py` is the nearest and answers a **different** question — *"does this figure exist in some source"* — and models no correction state at all (`grep -c '~~'` → 0). Mine asks *"is a figure from a retracted claim still asserted live"*.
+
+⚠ **Its first docstring called the struck tokens *"retracted numeric tokens"*. THAT IS WRONG, and the error is worth more than the tool.** A number inside `~~…~~` means **the SENTENCE was retracted, not the number**. Numbers routinely outlive the claim that carried them: a family is extended and the old floor becomes correct history; a claim is rescoped and its measurement stays valid for the narrower scope; a denominator is fixed while the numerator is untouched. The first run produced **82 "bare" hits** and the overwhelming majority were exactly this. **That 82 is the tool's PRECISION, not a defect count** — and had I reported it as a defect count this entry would have been a fabrication. Corrected in the docstring, in the output labels, and pinned by a self-test **before any hit was acted on**.
+
+**The self-test can fail** — verified, not assumed. Two mutants: `inside()` always True, and unpaired `~~` swallowing the tail. **Both die at exit 1.** S-488 found harnesses whose checks could not fail; this one's can.
+
+Three subagents triaged 16 tokens in parallel. **Every load-bearing figure below was re-derived by me from the artefacts**, not taken from their reports. **Eleven of sixteen tokens had zero genuine defects.**
+
+### WHAT WAS CORRECTED — four findings, one structural
+
+**(1) "Every sign-flip p is at the sampler floor" is FALSE in two more places** *(mine, first-hand)*. S-518 corrected this for the 29-arm read and **the correction was never propagated**. Re-derived:
+
+| read | contrasts at the MC floor | candidate |
+|---|---|---|
+| PR-CSI-003, 13 arms (D18's row) | **15 of 23** | at floor |
+| D42 TRAIN, 29 arms | **33 of 55** | at floor |
+| **D43 HELD-OUT** | **3 of 55** | **p = 1.35e-04, `p_at_its_floor` FALSE** |
+
+⚠ **The draft's version was SUPPRESSING ITS OWN FAVOURABLE RESULT.** On the held-out read the candidate p is **not** saturated and therefore *does* carry information; a blanket caveat was throwing that away. Same shape as S-518's find. Both sites corrected; the saturation caveat survives **for the TRAIN candidate only**.
+
+**(2) AM-4 was quoting the superseded n30 family as *"the correct set, all first-hand"***. Re-derived from both artefacts: AM-4's triple (**+0.00400** / `KO_FULL − KO` **+0.10306** / `recovery_fraction` **0.0388**) is exactly `..._validation_n30.json`, **218 keys**; the governing n46 read is **+0.00401 / +0.1037 / 0.0386**, **215 keys**. ⚠ **AM-4's conclusion survives entirely** — the two denominators are still conflated in the sources it corrects, and 0.0386 vs 0.0388 is a fourth-decimal difference. **What was wrong was the family label, not the arithmetic**, which is why it passed AM-50's sweep and two later re-endorsements untouched.
+
+⚠ **A slip of my own inside that fix, caught by checking the arithmetic:** I wrote *"3.86 %"* from the artefact's `recovery_fraction` 0.0386, but the ratio is 0.00401 / 0.1037 = **0.03867 → 3.87 %**. **A bootstrap point estimate is not the ratio of two point estimates.** Both are now given rather than one rounded into the other.
+
+**(3) THE STRUCTURAL FINDING: an entire section has been frozen for ~390 entries and never said so.** The block `## AUDIT — every existing row re-checked against S-127 … S-134` carries — measured — **ZERO** correction markers: no 🔴, no SUPERSEDED / CORRECTED / AMENDED / WITHDRAWN, and no reference to any entry above S-134. Every later sweep passed it by, while its rows read as **present-tense assertions**. Two of them would actively mislead:
+
+- prohibition 24's row asserts *"the artifact figure is **−0.00852**"* — **S-511 forbids exactly that quotation**; the governing figure is −0.00870343 on 655 keys.
+- the *"does any row treat NECESSITY as untested?"* answer gives *"rank 1 of 9, floor-limited to INCONCLUSIVE"* — a **‼ dead form** the draft's own index lists as forbidden as a current result.
+
+**The fix is a label on the block, not edits to its rows**, so the dated record stays intact and the hazards are named. ⚠ **This is S-527's defect class at section scale**: a correction applied where it was noticed and never propagated.
+
+**(4) The detector could never have found (3)'s second row.** *"rank 1 of 9"* carries no numeric token my regex collects. **A token-based detector is blind to the dead forms that are phrases** — that one surfaced only because a subagent read the surrounding prose. Recorded as a limit of the instrument, not a success of it.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No GPU measurement this tick.** No verdict moves; every figure is a re-derivation.
+- ⛔ **The detector's precision is low and inherently so.** 82 bare hits → 2 genuine defects among the 16 tokens triaged. It is a **reading aid**, and the docstring now says so instead of implying otherwise.
+- ⛔ **I did not sweep for OTHER frozen blocks.** One was found by following a single line; nothing licenses assuming it is the only one. `## Commands run to produce this block, 2026-09-20` is dated in its own title and is the obvious next candidate — **unchecked**.
+- ⛔ **The ‼ dead form at the audit block is LABELLED, not removed** — deliberate, the block is a dated record.
+- ⛔ **Seven tokens were never triaged at all** (`0.0778`, `0.0560`, `0.1009`, `0.00774`, `5.00`, `0.0323`-adjacent partials and others) beyond the two I did first-hand; absence of a report is not a clean bill.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** check whether `## Commands run to produce this block, 2026-09-20` and any sibling dated block are frozen in the same unlabelled way.
