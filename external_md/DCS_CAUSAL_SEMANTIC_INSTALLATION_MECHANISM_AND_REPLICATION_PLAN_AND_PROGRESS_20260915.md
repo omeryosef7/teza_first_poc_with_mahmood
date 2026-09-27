@@ -44534,3 +44534,47 @@ D19 now carries **−0.59** with its derivation basis named inline. ⚠ **The le
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** §L.3's superseded pair at `:874-875`, then the `0.0778` → read-matched fraction sweep across §A.1 and §L.3 that prohibition 28 now mandates.
+
+## S-527 / prohibition 28 said THREE and there are FIVE — two quoted necessity results were carrying no removal fraction at all (2026-09-27)
+
+Queue **EMPTY**. No GPU work. This is the `0.0778` sweep S-526 named as NEXT, and it found more than stale text.
+
+### WHAT WAS MEASURED — all five necessity removal fractions, re-derived from the artefacts
+
+Prohibition 28, amended at S-523, requires *"the removal fraction **of the read being quoted**"*. It enumerated **three** reads. There are **five**. Every figure below re-derived this tick from `removal_fraction_candidate_of_full` in the named artefact, not copied from prose:
+
+| read | population | numerator / denominator | fraction | elsewhere |
+|---|---|---|---|---|
+| PR-CSI-003 (**superseded**) | basket TRAIN, 664 keys / 13 arms | −0.00852 / −0.10950 | **0.0778** [0.0560, 0.1009] | ~92 % |
+| **D42** (**governing, basket TRAIN**) | basket TRAIN, 655 keys / 29 arms | −0.00870 / −0.10843 | **0.0803** [0.0584, 0.1041] | ~92 % |
+| D42 **pooled-28 secondary** | basket TRAIN, 649 keys | −0.00848 / −0.10784 | **0.0786** [0.0558, 0.1028] | ~92 % |
+| **D43** (**held out**) | basket VALIDATION, 222 keys / 23 domains | −0.01283 / −0.11200 | **0.1146** [0.0676, 0.1649] | **~89 %** |
+| **D44** | **button** TRAIN, 670 rows / 67 domains | −0.00216 / −0.06986 | **0.0309** [0.0160, 0.0455] | **~97 %** |
+
+⚠ **The headline survives all five**: the axis accounts for roughly a tenth of what whole-state removal moves. ⚠ **They are NOT interchangeable and must not be averaged or pooled** — different key sets, populations and reference arms, and in D44's case a different codeword.
+
+### WHAT WAS CORRECTED — the rule was being broken in two places, one of them by me, four entries after I wrote it
+
+**(1) D44 had no fraction.** I added D44 to the claim table at **S-525**, two entries after amending prohibition 28 to require exactly this. The rule was broken by the same hand that wrote it, on the very next necessity result it governed.
+
+**(2) The pooled-28 secondary has had no fraction since S-508 — nineteen entries.** D42's row has quoted that secondary's **rank 1 of 29** and **p 0.034483** all along, while `0.0786` appeared **nowhere in either document**. A quoted necessity result carrying no fraction at all is the precise thing prohibition 28 forbids.
+
+⚠ **I found (2) only because I went looking for (1).** The method that found it was sweeping the **artefacts** for every `removal_fraction_candidate_of_full` and asking which were quoted, rather than sweeping the prose for `0.0778`. A prose sweep cannot find a missing number — **only an artefact sweep finds the read nobody remembered to check.** Had I done what S-526's NEXT literally said (fix the `0.0778` strings), both would have survived.
+
+**(3) §A.1 attached the WRONG read's fraction to a held-out result.** Its closing carried *"the axis moves only 7.8 % [5.6, 10.1]"* at the end of a paragraph whose subject is **D43, the held-out read**. That is a TRAIN figure **1.4× too small**, and the SCOPE index already lists *"attaching TRAIN's 7.8 % / 0.0803 to the HELD-OUT result"* as forbidden. The draft was committing the error its own index names — and it is the error that forced the S-523 amendment. Now corrected to D43's `0.1146` with D42's `0.0803` beside it.
+
+**(4) Three places still described the pre-amendment world.** §A.1's *"Prohibition 28 mandates the `0.0778` string verbatim and has NOT been amended"*; D19's *"prohibition 28 mandates the 0.0778 form verbatim and has not yet been amended — that mismatch is a live inconsistency"*; and D43's *"a separate open question (A30 row 28)"*. All three struck and superseded. **A30 row 28 is now CLOSED** — opened S-508/S-511, repaired S-523, verified and closed here.
+
+**§L.3's superseded pair is retired.** The `−0.00852 / −0.10950` literal is struck and replaced by the five-read table, which is what the amended rule actually requires.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No GPU measurement this tick.** Every figure is a re-derivation of an existing artefact; nothing was run and no verdict moves.
+- ⛔ **The five fractions license NO cross-read comparison.** Button's ~97 %-elsewhere against basket TRAIN's ~92 % is a descriptive contrast between reads with different reference arms and different codewords — **not** a cross-codeword claim. S-109 killed weaker comparisons than that.
+- ⛔ **The conjunction is still NOT certified for basket** — unchanged: two rank-1 results at their own floors, not independent, no combined test preregistered or computed.
+- ⛔ **A pooled-28 secondary for BUTTON still does not exist**, and neither does a held-out button necessity read.
+- ⛔ **I did not audit the other prohibitions** for the same defect class — a rule amended while its dependents go unswept. Prohibition 28 is now consistent; nothing licenses assuming its neighbours are.
+- ⛔ **One `7.8 %` survives at `:1244`** as a historical citation of what S-430 recorded. Left deliberately: it describes an entry's past content, not a current mandate.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** sweep the remaining prohibitions for dependents left stale by their own amendments — the defect class this tick found twice, looked for once.

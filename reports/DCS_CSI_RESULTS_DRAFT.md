@@ -883,11 +883,26 @@ delivered — 20 arms launched 2026-09-26, the shuffled family taken 4 → 24, f
 measurement** rather than argued away (S-490, S-494). ⚠ **The sentence remains true of PR-CSI-004**,
 whose requirement is different and still unmet.
 
-🔴 **And the necessity result's EFFECT is small against the thing it is a fraction of.** Removing the
+🔴 **And the necessity result's EFFECT is small against the thing it is a fraction of.** ~~Removing the
 rank-1 component from a clean forward moves the endpoint **−0.00852**, against **−0.10950** for
-removing the whole state: `removal_fraction_candidate_of_full` = **0.0778 [0.0560, 0.1009]**. **The
-axis accounts for 7.8 % of what whole-state removal moves — about 92 % of the effect is elsewhere**,
-and that figure must travel with any statement of the necessity direction.
+removing the whole state: `removal_fraction_candidate_of_full` = **0.0778 [0.0560, 0.1009]**.~~
+🔴 **UPDATED S-527 — THE PAIR ABOVE IS PR-CSI-003's SUPERSEDED 664-KEY READ, AND PROHIBITION 28 NO
+LONGER PINS IT.** As amended at S-523 the rule requires the fraction **of the read being quoted**, so
+this paragraph now names each one instead of one literal, all re-derived S-527 from the artefacts:
+
+| read | population | numerator / denominator | `removal_fraction_candidate_of_full` | elsewhere |
+|---|---|---|---|---|
+| PR-CSI-003 (**superseded**) | basket TRAIN, 664 keys / 13 arms | −0.00852 / −0.10950 | **0.0778** [0.0560, 0.1009] | ~92 % |
+| **D42** (**governing for basket TRAIN**) | basket TRAIN, 655 keys / 29 arms | −0.00870 / −0.10843 | **0.0803** [0.0584, 0.1041] | ~92 % |
+| D42 pooled-28 secondary | basket TRAIN, 649 keys | −0.00848 / −0.10784 | **0.0786** [0.0558, 0.1028] | ~92 % |
+| **D43** (**held out**) | basket VALIDATION, 222 keys / 23 domains | −0.01283 / −0.11200 | **0.1146** [0.0676, 0.1649] | **~89 %** |
+| **D44** | **button** TRAIN, 670 rows / 67 domains | −0.00216 / −0.06986 | **0.0309** [0.0160, 0.0455] | **~97 %** |
+
+**The headline survives every one of them: the axis accounts for roughly a tenth of what whole-state
+removal moves, and the large majority of the effect is elsewhere.** ⚠ **The five are NOT
+interchangeable and must not be averaged or pooled** — different key sets, different populations,
+different reference arms, and in D44's case a different codeword. Whichever necessity result is
+quoted, **its own** fraction must travel with it.
 
 ⚠ **And none of the necessity sign-flip p's carries information.** All of them — 15 of the 23
 contrasts, including the candidate's — report **p = 4.9999750001249995e-06**, which is *exactly*
@@ -1303,8 +1318,15 @@ fit), inside the magnitude band **[0.0029, 0.0261]** frozen at S-509 *before any
 **PR-CSI-001's replication criterion is MET for the necessity direction.** ⚠ **Clauses (1)–(3) are
 UNCHANGED**: `p = 0.0400` is still the attainable floor, and the TRAIN read (D42) is still in-sample —
 what exists now is a held-out COMPANION, not a reclassification of D42. ⚠ *"Floor-limited" is retired as a clause: the family is no longer
-limited BY the floor, it SITS ON it, and those are different statements.* ⛔ **And the axis moves only 7.8 % [5.6, 10.1] of what whole-state removal moves —
-about 92 % of the effect is elsewhere.** ⛔ *"The axis is causal"* is forbidden unqualified; *"the
+limited BY the floor, it SITS ON it, and those are different statements.* ~~⛔ **And the axis moves only 7.8 % [5.6, 10.1] of what whole-state removal moves —
+about 92 % of the effect is elsewhere.**~~
+🔴 **CORRECTED S-527 — THIS ATTACHED THE WRONG READ'S FRACTION TO A HELD-OUT RESULT.** `7.8 %` is
+PR-CSI-003's **superseded 664-key TRAIN** value, sitting at the end of a paragraph whose subject is
+**D43, the held-out read** — precisely the substitution the SCOPE index lists as forbidden and the
+failure that caused prohibition 28 to be amended at S-523. Each read's own fraction, re-derived S-527:
+**D43 (held out, the subject here): `0.1146` [0.0676, 0.1649] — about 89 % of the effect is elsewhere.**
+**D42 (TRAIN, governing): `0.0803` [0.0584, 0.1041] — about 92 % elsewhere.** ⚠ The two differ by 1.4×
+and are **not** interchangeable; §L.3 tabulates all five necessity reads. ⛔ *"The axis is causal"* is forbidden unqualified; *"the
 axis is necessary"* is forbidden outright.
 
 ## A.2 The codeword dissociation **in the sufficiency direction**, at matched power (D23, D24, D29, D44)
@@ -2203,7 +2225,7 @@ axis carries that effect. ~~§A.1 reports what the axis does in this direction, 
 It reports **rank 1 of 25, p = 0.0400 on TRAIN (D42)** and **rank 1 of 25 on 23 HELD-OUT VALIDATION
 domains (D43)**. ⚠ `p = 0.0400` **IS** that design's attainable floor, and D42 remains in-sample. ⛔ **And prohibition 28 requires the magnitude beside
 any necessity result: the axis removal moves 0.0778 [0.0560, 0.1009] of what whole-state removal
-moves — 7.8 %, so ~92 % of the removable effect is elsewhere.** 🔴 **S-518: that pair is PR-CSI-003's 664-key read.** At the governing 655-key TRAIN read it is **0.0803 [0.0584, 0.1041]**, and the HELD-OUT read (D43) has **its own: 0.1146 [0.0676, 0.1649]** — so **~89 %** is elsewhere there. ⛔ **Prohibition 28 mandates the `0.0778` string verbatim and has NOT been amended**, which is why all three are given rather than one silently substituted; A30 row 28 records that as OPEN. This section quoted the necessity
+moves — 7.8 %, so ~92 % of the removable effect is elsewhere.** 🔴 **S-518: that pair is PR-CSI-003's 664-key read.** At the governing 655-key TRAIN read it is **0.0803 [0.0584, 0.1041]**, and the HELD-OUT read (D43) has **its own: 0.1146 [0.0676, 0.1649]** — so **~89 %** is elsewhere there. ~~⛔ **Prohibition 28 mandates the `0.0778` string verbatim and has NOT been amended**, which is why all three are given rather than one silently substituted; A30 row 28 records that as OPEN.~~ 🔴 **SUPERSEDED S-527 — IT WAS AMENDED AT S-523 AND A30 ROW 28 IS NOW CLOSED.** Prohibition 28 pins no literal: it requires the fraction **of the read being quoted**. For this section that is **D42's `0.0803` [0.0584, 0.1041]** on TRAIN and **D43's `0.1146` [0.0676, 0.1649]** held out. The `0.0778` above is retained, struck, only so a reader meeting it in older text can place it as PR-CSI-003's superseded 664-key value. This section quoted the necessity
 result twice without it until S-464.
 
 ⛔ **Do not compare 46.9 % to any sufficiency percentage.** The two fractions have **different
