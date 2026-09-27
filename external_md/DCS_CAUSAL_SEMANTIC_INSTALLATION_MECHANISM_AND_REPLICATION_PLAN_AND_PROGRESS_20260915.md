@@ -44628,3 +44628,58 @@ Three subagents triaged 16 tokens in parallel. **Every load-bearing figure below
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** check whether `## Commands run to produce this block, 2026-09-20` and any sibling dated block are frozen in the same unlabelled way.
+
+## S-529 / the third and oldest frozen audit, whose only temporal anchor was the word "today" — and I committed its defect twice while labelling it (2026-09-27)
+
+Queue **EMPTY**. No GPU work. S-528's NEXT: are there other unlabelled frozen blocks?
+
+### WHAT WAS MEASURED — a section-level freeze scan of both documents
+
+For all **98 sections** (56 claim table, 42 draft): the highest `S-###` each references, its count of 🔴 markers, and its length. A section that is long, references only old entries and carries **zero** markers is a candidate frozen block.
+
+**Three audit blocks exist, and they are not in the same condition:**
+
+| block | written at | correction markers | status |
+|---|---|---|---|
+| *"every existing row checked against **today's results**"* | **S-128** | **0** | 🔴 **frozen, unlabelled — labelled here** |
+| *"re-checked against S-127 … S-134"* | S-135 | 0 before S-528 | labelled S-528 |
+| *"re-checked against S-137 … S-143 and REVIEW R10"* | S-144 | 3 | **maintained** — not frozen |
+
+⚠ **The S-128 block is the oldest and was the worst-anchored: its title contained no date and no entry range, only the word *"today"*.** That is why it outlived two sweeps that touched its neighbours — there was nothing in it to match on. **"Today" is now resolved from git rather than guessed**: the heading was authored in commit `e43944a4`, whose subject is `DCS-CSI-128`, dated **2026-09-20**. Labelled, with its two misleading rows named rather than edited, so the dated record stays intact.
+
+**Three sections share the IDENTICAL heading `## Commands run to produce this block, 2026-09-20`**, so *"the commands block"* has been an ambiguous reference. Each is now tagged with the audit it belongs to — **S-128** (`e43944a4`), **S-135** (`ad1288d6`), **S-144** (`639ff1d5`).
+
+⚠ **A NEGATIVE RESULT, recorded because I went looking for the opposite:** I expected at least one of those three `2026-09-20` dates to be wrong, since the audits they serve span S-128 to S-144. **They are all correct.** Git blame puts all six headings — three audits and three command logs — on **2026-09-20**, in three separate commits on a single day.
+
+### WHAT WAS CORRECTED — MY OWN NUMBER, TWICE, INSIDE THE FIX FOR THAT VERY DEFECT
+
+S-528 relabelled AM-4 because it quoted the superseded **n30** family. In that relabel I wrote:
+
+> *"the governing numbers are **0.00401 → 1.75 % of the knockout** (0.00401 / 0.22930 = 0.01749)"*
+
+**That is wrong, and wrong in the precise way the relabel existed to correct.** `manipulation_ko_minus_base` is **−0.22930 at n30** and **−0.23094 at n46**. I took the n46 numerator and the **n30 denominator** while announcing the governing n46 figures. I then repeated it in this tick's own audit label before catching it.
+
+Re-derived from both artefacts:
+
+| family | numerator / denominator | knockout fraction |
+|---|---|---|
+| n30, 218 keys | 0.00400 / **0.22930** | 0.017444 → **1.74 %** |
+| **n46, 215 keys (governing)** | 0.00401 / **0.23094** | 0.017364 → **1.74 %** |
+| *my erroneous mix* | *0.00401 / 0.22930* | *0.017488 → 1.75 %* |
+
+⇒ ⚠ **AM-4's original *"1.74 %"* was RIGHT at both families and never needed correcting. My *"1.75 %"* was the only wrong number in that cell.** Both sites now corrected.
+
+⚠ **The lesson is sharper than "check the denominator".** I caught this only because a key-matching heuristic returned nothing and forced me to list the contrast keys by hand. Had my filter happened to match, I would have accepted 1.75 % — **a re-derivation that reuses the wrong operand is not a check, it is the same error performed more slowly.** S-528 said a bootstrap point is not a ratio of points; this says a ratio is only as governing as its *least* governing operand.
+
+**Verified after the fix:** `−0.23094` appears **6 times** across the two documents, so the governing value is recorded elsewhere; every one of the **6** `−0.22930` occurrences is confined to AM-4's cell, which is now explicitly labelled as the n30 triple.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No GPU measurement this tick.** No verdict moves.
+- ⛔ **The freeze scan is a HEURISTIC, not a proof.** "Zero 🔴 markers" also describes a section that was simply never wrong, and **19 sections in the claim table and 11 in the draft** have zero markers. I read only the ones that were also long and old-referencing; **the rest are unreviewed, not cleared.**
+- ⛔ **I labelled the S-128 block; I did NOT verify its remaining ~13 verdicts** against the current record. Two were checked because they were visibly dead forms. The others may be stale and are not claimed correct.
+- ⛔ **`## READ THIS FIRST` (maxS 163, 33 lines, zero markers)** and the draft's **`Editor's checklist`** (maxS 509, 50 lines, zero markers) are the next-strongest candidates and are **unchecked**.
+- ⛔ **Nothing here revisits whether AM-4's *conclusion* is right** — only which family its digits came from. The denominator conflation it corrects is untouched.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** `## READ THIS FIRST` — 33 lines, zero markers, and a title that asserts primacy is the worst possible place for stale text.
