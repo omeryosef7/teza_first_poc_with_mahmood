@@ -44683,3 +44683,45 @@ Re-derived from both artefacts:
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** `## READ THIS FIRST` — 33 lines, zero markers, and a title that asserts primacy is the worst possible place for stale text.
+
+## S-530 / "READ THIS FIRST" is SOUND — a negative result — and the Editor's checklist had no D44 row (2026-09-27)
+
+Queue **EMPTY**. No GPU work. S-529's NEXT: `## READ THIS FIRST`, 33 lines, zero correction markers.
+
+### WHAT WAS MEASURED — the section is not stale, and that is the finding
+
+`## READ THIS FIRST` exists to **foreclose** one withdrawn headline: S-138's *"C1 is SUPPORTED and the STATE hypothesis is REFUTED"*, killed by REVIEW R10 as BLOCKER-1 and retained only as the explicitly-WITHDRAWN `AM-10`. Its standing obligation is that the phrase **must never be entered as a live claim row**.
+
+⚠ **Unlike the three audit blocks, this one is NOT frozen** — it already carries an internal `[SUPERSEDED 2026-09-21]` note for PR-CSI-007. What it had was a **measurement that was never re-run**: the original grep covered **461** lines and this file is now **1337**.
+
+Re-run across **both** documents, counting occurrences not matching lines (`grep -o … | wc -l` — the S-507 correction; the original `grep -ic` would under-count a line carrying the phrase twice):
+
+| phrase | claim table | draft | live assertions |
+|---|---|---|---|
+| *"STATE hypothesis"* | 8 | 3 | **0** |
+| *"C1 is SUPPORTED"* | 7 | 1 | **0** |
+
+Every one of the **19** occurrences was classified by struck-span position and surrounding context. **All 19 either quote the phrase in order to withdraw, forbid or foreclose it, or are the literal search string inside the dated command log.** ⇒ **The foreclosure holds across 1337 + draft lines. The section is doing its job and needed no correction** — recorded as a result, because "I checked and it was fine" is a finding and leaving it unrecorded would mean the next sweep re-does it.
+
+⚠ *Against myself: my context classifier flagged **3 of 19** as bare assertions and **all three were false positives** — two were the grep pattern inside a code fence, one was a sentence whose entire purpose is to forbid the phrasing. Same imprecision S-528 measured at 82-hits-to-2-defects. **An automated read of correction context is a prompt to look, never a verdict.***
+
+### WHAT WAS CORRECTED — an omission, in the one place built to prevent omissions
+
+The draft's **Editor's checklist** (*"the phrasings this draft must never acquire"*, 50 lines, zero markers) was the other flagged candidate. It is current through **D43** — and **stops there.** It has **no row for D44**, the most recent result and the only **failed frozen prediction** in the sprint.
+
+That is the gap that matters most, because D44 *narrowed a headline*: the codeword dissociation is **sufficiency-specific**, and §A.2 carried the unqualified form **as its own title** until S-526. By the checklist's own convention (*"‼ marks a phrasing this draft itself committed and had corrected"*) that earns a ‼. **Three rows added:**
+
+1. ‼ *"the codeword dissociation"* stated unqualified, i.e. as direction-general — button **necessity certifies** (rank 1 of 25) while button **sufficiency does not** (rank 36 of 47).
+2. ‼ the failed prediction reported as anything other than a failure — PR-CSI-023 froze **both branches** before the read and forbids the escape it anticipated.
+3. the button/basket necessity **magnitude** gap quoted as a finding — 0.0309 vs 0.0803, **different reference arms and codewords**, descriptive only.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No GPU measurement this tick, and none in the last five.** The queue has been empty throughout; **idle GPU is the binding cost named in the standing brief and this tick did not reduce it.** Raised with the user below rather than self-approved.
+- ⛔ **"Zero live assertions" is a statement about TWO phrases**, the ones this section names. It says nothing about other withdrawn headlines, and no such sweep exists.
+- ⛔ **The three new checklist rows are PHRASING rules, not new evidence.** They restate D44 and PR-CSI-023; nothing was measured to produce them.
+- ⛔ **The remaining zero-marker sections are still unreviewed** (19 claim table, 11 draft, minus the three now read). Unreviewed is not cleared.
+- ⛔ **R41 is NOT run.** The last adversarial review was **R40 at S-506**, 24 entries ago. The cadence rule is ~4h *or before any family reaches a GPU* — **R41 is owed before any launch**, and that is a precondition on the decision below, not an afterthought.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** the decision below is the user's. If a launch is authorised, **R41 runs first**; if not, the next hygiene target is the remaining zero-marker sections.

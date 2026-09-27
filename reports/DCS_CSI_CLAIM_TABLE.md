@@ -599,6 +599,21 @@ always were.
 and `grep -ic "C1 is SUPPORTED"` over the 461 pre-existing lines both return **0**. The withdrawn
 headline had never entered this file. This block does not remove it; it forecloses it.
 
+🔴 **RE-MEASURED S-530 — THE FORECLOSURE STILL HOLDS, AND THIS SECTION IS NOT STALE.** The original
+measurement covered **461** lines; this file is now **1337**, and the check had not been re-run
+since. Re-run across **both** documents, counting OCCURRENCES not matching lines (`grep -o … | wc -l`,
+the S-507 correction — the original `grep -ic` would have under-counted a line carrying the phrase
+twice): *"STATE hypothesis"* **8** in the claim table and **3** in the draft; *"C1 is SUPPORTED"*
+**7** and **1**. **Every one was then classified by struck-span position and context, and NONE is a
+live assertion** — each either quotes the phrase in order to withdraw, forbid or foreclose it, or is
+the literal search string inside the dated command log. ⇒ **Zero live assertions of the withdrawn
+headline across 1337 + draft lines. The obligation this section exists to enforce is being met.**
+
+⚠ *Recorded against myself: the classifier I used flagged **3 of 19** occurrences as bare assertions
+and all three were **false positives** — two were the grep pattern inside a code fence, one was a
+sentence whose whole point is that the phrasing is forbidden. Same imprecision S-528 measured at
+82-hits-to-2-defects. **An automated read of correction context is a prompt to look, never a verdict.***
+
 Every number below was read by me out of the named artifact with `json.load`, recomputed by me from
 the artifact's own `domain_means` / `controls` block, recomputed from `results.jsonl`, or produced by
 running the committed script verbatim from the frozen read file — with the command given in the
