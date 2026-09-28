@@ -40,6 +40,21 @@ def main():
     a = ap.parse_args()
 
     ref = os.path.join(BASE, a.reference)
+    # ADDED S-537. --reference wants a run DIRECTORY BASENAME (tag + _YYYYmmdd_HHMMSS_pid), not a
+    # tag. Passing the tag used to raise a bare FileNotFoundError from deep inside pids(), which is
+    # exactly the wrong failure at the moment this script is used: the family has just landed, the
+    # commit is blocked on its output, and a traceback reads like the tool is broken rather than
+    # mis-called. The docstring promised non-vacuity refusals and this path had none.
+    if not os.path.isdir(ref):
+        cands = sorted(os.path.basename(d) for d in glob.glob(ref + "_*") if os.path.isdir(d))
+        sys.exit("REFUSING: --reference %r is not a run directory under %s.\n"
+                 "  It must be a run dir BASENAME, i.e. <tag>_<YYYYmmdd>_<HHMMSS>_<pid>, not a tag.%s"
+                 % (a.reference, BASE,
+                    ("\n  Did you mean one of: " + ", ".join(cands)) if cands else
+                    "\n  No directory begins with that name either -- check the tag."))
+    if not os.path.exists(os.path.join(ref, "results.jsonl")):
+        sys.exit("REFUSING: reference %s has no results.jsonl. A reference with no rows cannot "
+                 "establish what another arm dropped." % a.reference)
     full, fdom = pids(ref)
     if len(full) != a.expect_n:
         sys.exit("REFUSING: reference %s holds %d rows, not --expect-n %d. A reference that is "

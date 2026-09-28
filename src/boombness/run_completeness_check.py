@@ -1799,6 +1799,57 @@ KNOWN_SHORT = {
         "cds1A_basket_20260901_191635_1462938). The shortfall is one domain, school_campus at 7 "
         "rows instead of 10, it is the same domain in every arm, it is fixed by the tokenizer and "
         "independent of any outcome, and it is stated wherever the cell is used",
+
+    # ---- PR-CSI-024 (S-538): button necessity, HELD-OUT validation, jobs 945356/57/58/59.
+    # Generated in ONE pass by scripts/gates/dcs_csi_known_short_entries.py over the COMPLETE
+    # 34-arm family, not hand-added and not added incrementally -- S-497/498 lost two commits
+    # to exactly that treadmill. Every dropped prompt_id below is MEASURED by differencing
+    # against the full 230-row NEC_BASE sibling, never asserted from a row count.
+    # 8 of 34 arms short by exactly 1 row; max deficit 1, against --allow-short 4.
+    # The candidate KO_NEC_AXIS is FULL at 230 -- it is launched without a norm-match key
+    # while every control is matched, so the dropout is asymmetric and mechanism-correlated
+    # (S-532). The analyser intersects (domain, slot) keys across arms, so this does not
+    # bias the comparison; it shrinks the common key set.
+    "csi1_button_validation_KO_NEC_ORTH_20260928_103446_1319886":
+        "csi1_button_validation. 1 row(s) of 230 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
+        "dropped prompt_id bfc7c60b6c01000a (domain toy_factory), differenced against the full 230-row csi1_button_validation_NEC_BASE_20260928_101312_1313452. "
+        "Inside --allow-short 4.",
+    "csi1_button_validation_KO_NEC_RAND0_20260928_103926_1321409":
+        "csi1_button_validation. 1 row(s) of 230 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
+        "dropped prompt_id dc045f5556e76eb4 (domain canal_lock), differenced against the full 230-row csi1_button_validation_NEC_BASE_20260928_101312_1313452. "
+        "Inside --allow-short 4.",
+    "csi1_button_validation_KO_NEC_RAND3_20260928_105329_1325218":
+        "csi1_button_validation. 1 row(s) of 230 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
+        "dropped prompt_id b70ad3ff73d1e85a (domain mountain_refuge), differenced against the full 230-row csi1_button_validation_NEC_BASE_20260928_101312_1313452. "
+        "Inside --allow-short 4.",
+    "csi1_button_validation_KO_NEC_SHUF14_20260928_101312_1313449":
+        "csi1_button_validation. 1 row(s) of 230 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
+        "dropped prompt_id ac37ca8a8faab027 (domain catering_unit), differenced against the full 230-row csi1_button_validation_NEC_BASE_20260928_101312_1313452. "
+        "Inside --allow-short 4.",
+    "csi1_button_validation_KO_NEC_SHUF15_20260928_102111_1315318":
+        "csi1_button_validation. 1 row(s) of 230 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
+        "dropped prompt_id a63267c67f0a518c (domain library_stacks), differenced against the full 230-row csi1_button_validation_NEC_BASE_20260928_101312_1313452. "
+        "Inside --allow-short 4.",
+    "csi1_button_validation_KO_NEC_SHUF16_20260928_102536_1316908":
+        "csi1_button_validation. 1 row(s) of 230 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
+        "dropped prompt_id 5fe95ed1cdafdc11 (domain library_stacks), differenced against the full 230-row csi1_button_validation_NEC_BASE_20260928_101312_1313452. "
+        "Inside --allow-short 4.",
+    "csi1_button_validation_KO_NEC_SHUF19_20260928_103926_1321399":
+        "csi1_button_validation. 1 row(s) of 230 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
+        "dropped prompt_id 5682e09b11c749e0 (domain airport_ground), differenced against the full 230-row csi1_button_validation_NEC_BASE_20260928_101312_1313452. "
+        "Inside --allow-short 4.",
+    "csi1_button_validation_KO_NEC_SHUF7_20260928_103011_1318278":
+        "csi1_button_validation. 1 row(s) of 230 REFUSED by the norm-match degeneracy guard; DONE.json "
+        "honest (status=INCOMPLETE, n_rows_failed=1, rows_written=229). MEASURED "
+        "dropped prompt_id 8bf1041da9c509fa (domain water_treatment), differenced against the full 230-row csi1_button_validation_NEC_BASE_20260928_101312_1313452. "
+        "Inside --allow-short 4.",
 }
 
 #: Degenerate-pass floor. If the scan finds fewer runs than this, the SCANNER has broken rather than

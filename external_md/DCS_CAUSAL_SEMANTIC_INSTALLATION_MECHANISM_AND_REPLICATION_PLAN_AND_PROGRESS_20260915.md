@@ -45015,3 +45015,143 @@ S-533 recorded *"inertness is shown on ONE family"* as a limitation. That accept
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** submit halves **1, 2, 4, 5** with `setenv CSI_EXPECT_LAYER 18`, verify each log's banner reports `LAYER=18` and `>>>` counts of 5/9/10/10, then resolve the placeholders before any read.
+
+## S-536 / LAUNCHED — 34 arms of button necessity on the held-out split, jobs 945356–945359, and the queue is not empty for the first time in ten ticks (2026-09-28)
+
+**SUBMITTED.** provenance **BLOB `62a265e4`**, **PORCELAIN clean**. Four jobs, all **RUNNING on n-302**:
+
+| job | half | arms |
+|---|---|---|
+| **945356** | 1 | `NEC_BASE`, `NEC_KO`, `KO_NEC_FULL`, `KO_NEC_AXIS`, `KO_NEC_ORTH` (5) |
+| **945357** | 2 | `KO_NEC_AXIS_ANCHOR`, `KO_NEC_SHUF0–3`, `KO_NEC_RAND0–3` (9) |
+| **945358** | 4 | `KO_NEC_SHUF4–13` (10) |
+| **945359** | 5 | `KO_NEC_SHUF14–23` (10) |
+
+**34 arms. Half 3 was NOT submitted** — it launches `KO_NEC_RAND4..11`, eight extra random controls that would take the random family 4 → 12 and change the pooled-28 denominator and its floor (S-532).
+
+### PRE-FLIGHT, all seven checks measured before submitting
+
+1. suite **527 passed / 1 skipped** on the launching commit; 2. HEAD **`62a265e4`** = the commit that froze the prereg; 3. both PR-CSI-024 files present in that commit; 4. **tracked dirty 0** — checked by me, because the submit helper could not be used; 5. the prereg is **committed content**, 13 721 bytes read back out of `HEAD:`, not a working-tree file; 6. the axis exists, declares `selected_layer 18`, and carries **all 26** basis keys the 34 arms need (`cand_rank1`, `ctrl_orth`, `ctrl_shuffled0..23`) — **zero missing**; 7. **zero** `csi1_button_validation_*NEC*` run dirs, so every tag this family creates is unambiguous by construction.
+
+⚠ **`scripts/gates/dcs_csi_submit.sh` could NOT be used, and S-494's reason was re-checked rather than taken on faith.** It ends `exec sbatch … "$@" "$S"`, putting caller arguments **before** the script, so sbatch reads them as its own options and the launcher's four positional arguments (`button`, axis, `validation`, `L`) have nowhere to go. Its two protections were replicated explicitly: **the clean-tree refusal** (run by hand above) and **a single `--export`** carrying the provenance. ⚠ *One `--export` only, because the helper's own comment records job 915945 exiting 3 when a second `--export` silently replaced the first and stripped `CSI_GIT_BLOB` — sbatch takes the last and does not warn.*
+
+⚠ **And `CSI_GIT_BLOB` is INERT for this launcher, measured: `grep -c` over `dcs_csi_p1_arms.slurm` returns 0.** This confirms S-494's finding that `pr020_freeze.py`'s comment — *"the launcher records the commit at submit"* — is false for `p1_arms`. **The provenance that will actually exist is RUNMETA's `git_commit`, written per arm by the runner.** Exported anyway to honour the helper's contract, but it is not what makes this family reproducible, and recording that is the point.
+
+**`CSI_NEC_HALF` was passed inside each job's own `--export`, not via `setenv`.** S-532 measured that the launcher **silently defaults it to 1** when unset, and the shell here is tcsh where a stale `setenv` from a previous submission is a live hazard. Putting the half in the per-job export removes that failure mode entirely rather than relying on remembering.
+
+### THE READ RECIPE IS NOW PINNED
+
+`runargs/dcs_csi_pr024_read.txt`'s four `<HALF*>` placeholders were resolved to **945356 / 945357 / 945358 / 945359** — **at submit time, before any arm had finished and therefore before any rank could exist** (the S-495 discipline). **Zero placeholders remain.** VOID 13 made `--require-slurm-job` mandatory for this read, and it now names real jobs.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **NO RESULT. NOT ONE NUMBER.** The arms are running. No rank, no point estimate, no key count, no verdict exists, and none may be quoted from this entry.
+- ✅ **VOID 11 DISCHARGED AT SUBMIT TIME — and the S-533 guard fired on its first production use.** All four logs carry, verbatim:
+  `[axis-assert] configs/dcs_csi_axis_button_behavioral_L18.pt selected_layer=18 matches CSI_EXPECT_LAYER=18`
+  with the banner reading `CW=button SPLIT=validation GROUP=L`, **`LAYER=18`**, **`EXPECT_N=230`** and `GeForce RTX 3090`. ⚠ **`EXPECT_N=230` is the split-correct row count computed live by the launcher** — the 670-on-a-validation-run hazard R41 asked about did not occur. ⚠ *An assertion that has never fired in anger is a claim; this one has now run against the file it was written to protect.*
+- ⛔ **The `>>>` arm counts are NOT yet verified.** Each log shows **1** arm started at the time of writing; the prereg requires **5 / 9 / 10 / 10** and that can only be checked once the halves finish. **A launch is not a verification.**
+- ⛔ **n-302 is `geforce_rtx_3090:8` and the launcher now pins the architecture — but VOID 1 must still be checked per arm from RUNMETA**, not from the directive or from the node name.
+- ⛔ **`KNOWN_SHORT` will need new entries** once the family lands: S-532 measured 16 of 29 button TRAIN read arms below full length, and the candidate is unmatched while controls are norm-matched. Regenerate the whole block from `scripts/gates/dcs_csi_known_short_entries.py` rather than hand-adding, per the S-497/498 exemption-treadmill lesson.
+- ⛔ **VOID 3 is enforced by no reader** — that all 34 arms loaded one basis file must be checked by hand from `arm_meta`.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** verify `LAYER=18` and the 5/9/10/10 counts on all four logs; then wait for the family to land; then the pre-read VOID checklist; then the read, **once**.
+
+## S-537 / the S-536 commit FAILED on the exemption treadmill — the hazard I had listed in S-536's own limits, biting during the commit (2026-09-28)
+
+Family **RUNNING**: jobs 945356–945359, 5 arms started per half, **20 of 34** NEC dirs landed.
+
+### WHAT WAS CORRECTED — I reported S-536 as committed and it was not
+
+The notification said exit 0; **that was the wrapper's status, not the commit's.** The real output:
+
+```
+FAILED tests/test_run_completeness_check.py::test_the_real_corpus_passes_with_its_documented_exemption
+1 failed, 526 passed, 1 skipped
+[pre-commit] REFUSING: a guard TEST failed -- a guard may no longer be able to fail.
+COMMIT_RC=1
+```
+
+**HEAD never moved from `62a265e4`.** ⚠ *I announced a landing on the strength of an exit code that was not the commit's. The correct check is HEAD moving and the tree going clean, which I had used on every earlier commit and skipped on this one.*
+
+**Cause: the S-497/498 exemption treadmill**, and it is the hazard **S-536's own NOT-ESTABLISHED list named** — arms landing short need `KNOWN_SHORT` entries. It bit *during* the commit rather than after it. Two arms had landed at **229 of 230** — `KO_NEC_SHUF14` and `KO_NEC_SHUF15` — the norm-match degeneracy guard, documented behaviour, well inside the preregistered `--allow-short 4`. **Nothing is wrong with the family; the guard is demanding the shortfalls be documented, which is its job.**
+
+**An apparent instrument disagreement, resolved rather than left standing:** the hook's `check_all` printed `run_completeness_check 0` while the corpus test found 2. Re-running `check_all` afterwards gives **EXIT=1 with the same two arms**, so the two instruments agree. `check_all` runs ~11 minutes before the test suite, and both arms landed inside that gap (10:13:12 and 10:21:11). **Timing, not disagreement** — and worth recording, because "one guard says 0 and another says 2" is exactly the shape of a real bug.
+
+⚠ **AND I READ `$?` THROUGH A PIPE AGAIN — the fourth time (S-481, S-487, S-498).** The emitter's first dry-run traceback printed while my `EMITTER_EXIT=$?` after `| tail` reported **0**. I caught it only because a traceback was visible in the same output. **The rule has been written three times and broken a fourth; writing it again is not the fix, so what I did instead was stop piping on every subsequent check in this entry.**
+
+### WHAT WAS MEASURED — the critical path de-risked before it is needed
+
+**The `KNOWN_SHORT` emitter was dry-run now rather than when the family lands**, and it failed: `--reference` wants a run **directory basename**, not a tag, and it raised a bare `FileNotFoundError` from deep inside. ⚠ *That is the wrong failure at the worst moment — the family has just landed, the commit is blocked on this output, and a traceback reads as "the tool is broken" rather than "you mis-called it".* Its docstring promises non-vacuity refusals and this path had none. **Guard added**, and it now names the directory you meant:
+
+> `REFUSING: --reference 'csi1_button_validation_NEC_BASE' is not a run directory … Did you mean one of: csi1_button_validation_NEC_BASE_20260928_101312_1313452`
+
+Verified both ways, exit read **without a pipe**: the mis-call exits **1**, the correct call exits **0** and emits well-formed entries with **measured** dropped `prompt_id`s and their domains (e.g. `ac37ca8a8faab027`, domain `catering_unit`), differenced against the full 230-row `NEC_BASE`.
+
+**Pre-read VOID checks, on all 20 landed arms, from their own RUNMETA and config:**
+
+| condition | result |
+|---|---|
+| **VOID 1** GPU | **20/20 `NVIDIA GeForce RTX 3090`**, all on n-302 — the S-533 pin working |
+| **VOID 6** blob | **20/20 at git_commit `62a265e4`** — one commit, and it is the prereg's commit |
+| **VOID 3** basis | **every arm that loads a basis loads `dcs_csi_axis_button_behavioral_L18.pt`** |
+| **VOID 11** layer | 18 arms at `rescue_layer 18`, 2 at `None` |
+| dtype | 20/20 `bfloat16` |
+
+⚠ **The 17-vs-18 counts were reconciled by arm name rather than assumed**, because that is exactly where an off-by-one hides: the **three** arms with no basis are `KO_NEC_FULL` (layer 18 — whole-state removal needs no basis file), `NEC_BASE` and `NEC_KO`; only the latter **two** have a null layer. ⇒ **VOID 3 holds, and it is the condition the prereg says NO reader enforces**, so this hand check is the only thing standing behind it.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **THIS TICK DOES NOT COMMIT, AND THAT IS A DECISION, NOT AN OMISSION.** Any commit attempted now fails: 14 arms are still to land, several will land short during the ~11-minute hook, and the corpus test reads the live corpus rather than the staged tree. Documenting the 4 known short arms and committing would very likely fail again — **which is the treadmill that lost two commits at S-497/498.** The entry is written now and will be committed **with** the regenerated exemptions once the family is complete.
+- ⛔ **NO RESULT. NOT ONE NUMBER.** 20 of 34 arms have landed. No rank, point estimate, key count or verdict exists.
+- ⛔ **VOID 1/3/6/11 are discharged on 20 arms, NOT on 34.** They must be re-run over the complete family; a condition that holds on the first 20 is not a condition discharged.
+- ⛔ **The `>>>` counts are still unverified** — 5 per half so far against the required 5/9/10/10.
+- ⛔ **The emitter's output has NOT been pasted into `KNOWN_SHORT`.** It prints; the paste happens once, from one run, over the complete family.
+- ⛔ **TEST untouched.** Push credential-blocked, and this tick has nothing to push.
+
+**NEXT:** wait for all four halves; re-run VOID 1/3/6/11 over 34 arms; regenerate `KNOWN_SHORT` in ONE pass; verify 5/9/10/10; commit S-536+S-537+S-538 together; **then** the read, once.
+
+## S-538 / the family LANDED — 34 of 34 arms, every VOID condition discharged over the complete set, and the exemptions regenerated in one pass (2026-09-28)
+
+All four halves **COMPLETED 0:0**: 945356 (28:49), 945357 (47:30), 945358 (52:15), 945359 (52:14). **34 of 34 arms on disk.**
+
+**The `>>>` counts are 5 / 9 / 10 / 10 — exactly what the prereg required**, so half 3 was not run and the random family is 4, not 12. ⚠ *The launcher's own `GROUP L DONE rc=0` was NOT used as evidence: S-532 measured that `rc=$?` there is the status of the preceding `fi` under `set -e` and is always 0. The `sacct` states and the per-arm row counts are what stand behind this.*
+
+### VOID CONDITIONS, discharged over all 34 arms from their own RUNMETA
+
+| condition | measured |
+|---|---|
+| **VOID 1** hardware | **34/34 `NVIDIA GeForce RTX 3090`**, `compute_capability` **8.6**, nodelist n-302 |
+| **VOID 2** one architecture | one GPU model, one node |
+| **VOID 6** one blob | **34/34 at `git_commit 62a265e4`** — and that is the commit that froze the prereg |
+| **VOID 3** one basis | **31 arms load `dcs_csi_axis_button_behavioral_L18.pt`; 3 load none** |
+| **VOID 11** layer | 32 at `rescue_layer 18`, 2 null |
+| dtype | **34/34 `bfloat16`** |
+| halves | `slurm_job_id` splits **945356:5, 945357:9, 945358:10, 945359:10** |
+
+⚠ **The 31-vs-3 and 32-vs-2 counts were reconciled BY ARM NAME, not inferred**, because that is where an off-by-one hides: the three arms with no basis are `KO_NEC_FULL` (layer 18 — whole-state removal needs no basis file), `NEC_BASE` and `NEC_KO`; only the latter two have a null layer. ⇒ **Every arm that loads a basis loads the same one. VOID 3 is the condition the prereg records as enforced by NO reader, so this hand check is the whole of its evidence.**
+
+🔴 **A measurement error of my own, caught by the result looking wrong.** My first pass over the complete family reported `VOID 1 gpu: {'?': 34}` — I had dropped the fallback key used in the 20-arm pass. The RUNMETA field is **`gpu`**, not `gpu_name`, and `hostname`, not `host`. Re-derived: **34/34 RTX 3090.** *A guard reporting `'?'` for every arm is not a failing guard, it is a broken reader, and the two look identical in a table.*
+
+⚠ **`git_dirty` is NULL on all 34 arms.** The field exists and records nothing, so **"PORCELAIN clean" rests on my submit-time check, not on anything the arms witnessed.** Combined with S-536's finding that `CSI_GIT_BLOB` is read zero times by this launcher, the *only* provenance the arms themselves carry is `git_commit` — which is uniform and correct, but is one fact, not three.
+
+### THE ROW CENSUS, and the exemptions
+
+**8 of 34 arms are short by exactly 1 row; max deficit 1, against the preregistered `--allow-short 4`:** `KO_NEC_ORTH`, `KO_NEC_RAND0`, `KO_NEC_RAND3`, `KO_NEC_SHUF7`, `SHUF14`, `SHUF15`, `SHUF16`, `SHUF19`. `DONE.json` status is honest on every one (26 `ok`, 8 `INCOMPLETE`).
+
+⚠ **The candidate `KO_NEC_AXIS` is FULL at 230** — as S-532 predicted, because it is launched without a norm-match key while every control is matched. The dropout is **asymmetric and mechanism-correlated**, and it does **not** bias the comparison (the analyser intersects `(domain, slot)` keys across arms and averages every arm over the same set); it shrinks the common key set.
+
+**`KNOWN_SHORT` was regenerated in ONE pass over the complete family** — not hand-added, not added incrementally, because that is the treadmill S-497/498 lost two commits to and which took S-536's commit. All **8** entries carry a **measured** dropped `prompt_id` with its domain (`bfc7c60b6c01000a`/`toy_factory`, `ac37ca8a8faab027`/`catering_unit`, …), differenced against the full 230-row `NEC_BASE`. `check_all --strict` now exits **0**.
+
+⚠ **A count that did not reconcile, chased rather than accepted.** The guard printed *"144 KNOWN_SHORT run(s) re-measured"* against **151** keys, and **138** before my paste — +8 keys but only +6 re-measured. **It reconciles exactly**: the printed number is `len(_short_detail)`, which counts **all** short runs, exempted or not, and at the 138 measurement only **2** of my arms had landed short. 138 + 6 = 144. And *"keys not currently short"* is **7 both before and after**, so none of my 8 is an unverified exemption. **A green guard with an unexplained number is not a green guard.**
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **THE READ HAS NOT RUN. NO RANK, NO POINT ESTIMATE, NO VERDICT EXISTS.** Everything above is provenance and row bookkeeping. **Not one number in this entry is a result.**
+- ⛔ **The commit carrying S-536–S-538 has not landed** at the time of writing; the corpus test was still running.
+- ⛔ **VOID 7 is not re-checked for this read** — the analysers have not moved since S-533's discharge, but that must be confirmed at read time, not assumed from an earlier entry.
+- ⛔ **The 8 exemptions are INSIDE `--allow-short 4` individually; the key INTERSECTION cost is not yet known** and will only be visible in the read's `keys_dropped_by_intersection`.
+- ⛔ **`git_dirty` null means the clean-tree claim has one witness, me.**
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** confirm the guard suite passes, commit S-536+S-537+S-538 together, then run the frozen read **ONCE** — both paths, with `--expect-n-controls 24 --expect-n-domains 23 --require-rescue-layer 18 --require-slurm-job 945356,945357,945358,945359`.

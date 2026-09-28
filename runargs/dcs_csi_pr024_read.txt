@@ -11,7 +11,7 @@
 #     (anchor 0.00215806 = button necessity TRAIN / D44, re-derived from domain_means at S-531;
 #      factor of 3 either side, the same rule PR-CSI-022 used and verified to reproduce its band).
 #
-# ⛔ <HALF1>,<HALF2>,<HALF4>,<HALF5> BELOW ARE PLACEHOLDERS. They MUST be replaced with the four
+# ⛔ 945356,945357,945358,945359 BELOW ARE PLACEHOLDERS. They MUST be replaced with the four
 #    real SLURM job ids BEFORE the read is run, and that substitution must happen while no rank
 #    has been seen -- the S-495 discipline. Do not run this file with placeholders in it.
 #
@@ -42,6 +42,16 @@
 # arms and averages every arm over the same set; it shrinks the common key set. Read
 # keys_dropped_by_intersection and record it.
 # ================================================================================================
+#
+# ⛔ PLACEHOLDERS RESOLVED S-536, AT SUBMIT TIME, BEFORE ANY ARM HAD FINISHED AND THEREFORE
+#    BEFORE ANY RANK COULD EXIST (the S-495 discipline). The four job ids are:
+#      half 1 -> 945356   (NEC_BASE, NEC_KO, KO_NEC_FULL, KO_NEC_AXIS, KO_NEC_ORTH)
+#      half 2 -> 945357   (KO_NEC_AXIS_ANCHOR, KO_NEC_SHUF0-3, KO_NEC_RAND0-3)
+#      half 4 -> 945358   (KO_NEC_SHUF4-13)
+#      half 5 -> 945359   (KO_NEC_SHUF14-23)
+#    Submitted at BLOB 62a265e4 with a clean porcelain, which is the commit that froze
+#    configs/dcs_csi_pr024_necessity_button_validation.json -- so the prereg provably predates
+#    the arms.
 
 python3 scripts/dcs_csi_subspace_analyze.py \
   --codeword button --tag-prefix csi1_button_validation --expect-n 230 --allow-short 4 \
@@ -52,14 +62,14 @@ python3 scripts/dcs_csi_subspace_analyze.py \
   --control-prefixes KO_NEC_SHUF \
   --expect-n-controls 24 --expect-n-domains 23 \
   --split validation --require-rescue-layer 18 \
-  --require-slurm-job <HALF1>,<HALF2>,<HALF4>,<HALF5> \
+  --require-slurm-job 945356,945357,945358,945359 \
   --out reports/DCS_CSI_SUBSPACE_NECESSITY_button_validation_shuf24.json
 
 python3 scripts/dcs_csi_rederive_subspace.py \
   --tag-prefix csi1_button_validation --split validation --expect-n 230 --allow-short 4 \
   --direction necessity --base NEC_BASE --ko NEC_KO --full KO_NEC_FULL --candidate KO_NEC_AXIS \
   --controls KO_NEC_SHUF0,KO_NEC_SHUF1,KO_NEC_SHUF2,KO_NEC_SHUF3,KO_NEC_SHUF4,KO_NEC_SHUF5,KO_NEC_SHUF6,KO_NEC_SHUF7,KO_NEC_SHUF8,KO_NEC_SHUF9,KO_NEC_SHUF10,KO_NEC_SHUF11,KO_NEC_SHUF12,KO_NEC_SHUF13,KO_NEC_SHUF14,KO_NEC_SHUF15,KO_NEC_SHUF16,KO_NEC_SHUF17,KO_NEC_SHUF18,KO_NEC_SHUF19,KO_NEC_SHUF20,KO_NEC_SHUF21,KO_NEC_SHUF22,KO_NEC_SHUF23 \
-  --require-rescue-layer 18 --require-slurm-job <HALF1>,<HALF2>,<HALF4>,<HALF5> \
+  --require-rescue-layer 18 --require-slurm-job 945356,945357,945358,945359 \
   --out reports/DCS_CSI_REDERIVE_NECESSITY_button_validation_shuf24.json
 
 # ⚠ THE TWO PATHS DO NOT READ THE SAME KEY SET, and that is structural (S-531).
