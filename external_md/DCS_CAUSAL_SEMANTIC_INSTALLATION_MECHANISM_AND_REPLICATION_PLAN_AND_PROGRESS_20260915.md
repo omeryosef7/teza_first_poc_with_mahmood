@@ -45513,3 +45513,49 @@ The docstring records the measured phantom table and the two entries where the e
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** `0.0014`'s 6 live unstruck occurrences in the claim table — now a named worklist rather than a number.
+
+## S-547 / back to science: PR-CSI-025 frozen — the readout-validity check that reassured §A, preregistered for the families that have never had it (2026-09-28)
+
+S-546 landed. Queue **EMPTY**. ⚠ **Ten consecutive ticks of documentation hygiene since the read landed.** The hygiene was real and it found real defects, but the outstanding *scientific* item has been open since early in this session: the head/cell readout-validity sensitivity the user delegated with *"Do what you think and document"*, against a recorded plan of **preregister first, then build**. This tick does the preregistering.
+
+### THE GAP, MEASURED
+
+| | |
+|---|---|
+| option-mass mentions in `dcs_csi_head_census.py` (1019 lines) | **0** |
+| in `dcs_csi_head_analyze.py` (456) and `dcs_csi_head_single_rank.py` (275) | **0** and **0** |
+| in the AXIS analyser `dcs_csi_subspace_analyze.py` | **33** |
+| head/cell rows carrying `option_mass` + `option_mass_core_pair` | **yes**, verified on a real row |
+
+⇒ **AM-55-a is exactly right: the data supports the check and the instrument cannot perform it.** §A's eight cells were tested and found invariant (AM-53/AM-54); §H's claims carry no such assurance, and **that difference is an absence of instrumentation, not evidence about the claims.**
+
+### 🔴 TWO ERRORS OF MY OWN, BOTH CAUGHT BEFORE THE PREREG WAS COMMITTED
+
+**(1) I keyed head rows on `(domain, slot)` — and head/cell rows have NO `slot` field.** The key silently collapsed **230 rows to 23**, last-write-wins, and produced retention numbers that made a 0.05 floor look as though it **halved the domain count** (23 → 13). ⚠ **That would have argued against running the test at all.** The real key is `prompt_id`, verified unique over all 230 rows. Re-measured:
+
+| family | BASE arm | rows | kept @ 0.05 | **domains kept** |
+|---|---|---|---|---|
+| head basket TRAIN | `HD_BASE` | 670 | 427 (63.7 %) | **67 / 67** |
+| head basket VALID | `HD_BASE` | 230 | 146 (63.5 %) | **23 / 23** |
+| cell6 button VALID | `BF_BASE` | 230 | **205 (89.1 %)** | **23 / 23** |
+| cell8 basket VALID | `BK_BASE` | 230 | 146 (63.5 %) | **23 / 23** |
+
+⇒ **NO DOMAIN IS LOST IN ANY FAMILY.** The floor thins rows *within* domains and removes none, so **the statistical unit count is unchanged** — which is why a moved verdict would be about readout validity and not about lost power. *The corrected numbers reconcile exactly with S-493's independently recorded 427-of-670 and 205-of-230.*
+
+**(2) The prereg named `HD_BASE` as the reference arm for all four families — and the two CELL families have ZERO `HD_BASE` arms** (62 and 82 run dirs, none by that name). They use **`BF_BASE`** and **`BK_BASE`**. ⚠ **Caught by running the S-167c check against the prereg before committing it**, which is the rule's entire purpose: *do not freeze a prereg naming anything that does not exist.* Corrected, and **VOID 7 added** to forbid exactly that substitution. All four reference arms now resolve to exactly one run dir.
+
+### WHAT IS FROZEN
+
+`configs/dcs_csi_pr025_headcell_readout_validity.json` — 11 top keys, **7 VOID conditions**, written **before the instrument to run it exists**. Control **floor 0.0** must reproduce each family's published artefact exactly or the comparison is void (AM-54's own standard); treatment **floor 0.05** is PR-CSI-001's declared floor, **not a threshold chosen for this test**. Both branches written: invariance closes AM-55-a's gap; **any moved verdict makes that head/cell claim readout-dependent, is a headline, and will be reported as one — with *"the head instrument is different"* explicitly ruled out as an escape**, because AM-55 already measured the asymmetry to be identical across families.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **NO SENSITIVITY NUMBER EXISTS.** Nothing was run. This tick measured the *gap* and froze the design.
+- ⛔ **The instrument is NOT built.** `--option-mass-floor` does not exist in any head/cell reader — measured, and that absence is the prereg's premise.
+- ⛔ **Option mass is not endorsed as the right validity proxy.** It is the one PR-CSI-001 declared and the one §A was tested with; using it here is a **consistency** choice, stated as such in the prereg.
+- ⛔ **Invariance at 0.05 would not imply invariance at any other floor**, and `option_mass_core_pair` — which the rows also carry — is untouched by this design.
+- ⛔ **The design DETECTS, it does not LOCALISE**: a moved verdict would not identify which rows caused it.
+- ⛔ **Rows per domain drop by about a third in three of four families**, so a per-domain statistic is noisier even with the domain count fixed. **A real limitation, stated in the prereg rather than discovered after.**
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** commit this prereg, then build `--option-mass-floor` / `--option-mass-reference` into the head/cell reader **with a test that fails without it**, then run control and treatment across the four families.

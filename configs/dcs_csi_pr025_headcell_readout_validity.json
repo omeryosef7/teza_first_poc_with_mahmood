@@ -1,0 +1,57 @@
+{
+  "id": "PR-CSI-025",
+  "title": "THE READOUT-VALIDITY SENSITIVITY FOR §H AND §1-§4: the check that reassured §A, run on the families that have never had it.",
+  "written": "2026-09-28 (S-547). FROZEN BEFORE THE INSTRUMENT TO RUN IT EXISTS -- scripts/dcs_csi_head_census.py, dcs_csi_head_analyze.py and dcs_csi_head_single_rank.py contain ZERO option-mass mentions across 1750 lines, measured. No head or cell sensitivity number of any kind exists.",
+  "WHY_THIS_EXISTS": "AM-53/AM-54 (S-455/S-457) ran an option-mass readout-validity sensitivity on ALL EIGHT §A cells and found every verdict INVARIANT. AM-55 (S-458) then measured that the same low-validity asymmetry is present IDENTICALLY in every head and cell family -- it is a property of the PROMPT BANK, not of the axis. AM-55-a recorded the gap this file closes: §1-§4 and §H CANNOT run that sensitivity, because their instrument has no option-mass concept at all. So §A's claims carry a validity assurance that §H's claims do not, and the difference is not evidence about the claims -- it is an absence of instrumentation.",
+  "THE_USER_DECISION_THIS_DISCHARGES": "Early in this session the user was asked how to handle the head/cell readout sensitivity and answered 'Do what you think and document'. The plan recorded then was PREREGISTER FIRST, THEN BUILD. This file is that preregistration; no instrument code is written until it is committed.",
+  "THE_PREDICTION_FROZEN_IN_ADVANCE": {
+    "prediction": "NO head or cell verdict will move between floor 0.0 and floor 0.05.",
+    "basis": "AM-54 found every one of the eight §A cells invariant, and AM-55 measured the underlying asymmetry to be a bank property shared by all families. If the asymmetry is the bank's and the axis verdicts are invariant to it, the head/cell verdicts should be too.",
+    "IF_THE_PREDICTION_HOLDS": "§H and §1-§4 gain the same readout-validity assurance §A already has, and AM-55-a's gap is closed by measurement rather than by argument. NOTE WHAT THIS DOES NOT BUY: invariance to THIS floor is not general readout validity, and it says nothing about any other threshold or about option_mass_core_pair.",
+    "IF_THE_PREDICTION_FAILS": "any head or cell verdict that moves is READOUT-DEPENDENT and must be relabelled as such wherever it is quoted -- D32, D33, D34, D36, D39 and D40 are the rows at risk. THIS WOULD BE A HEADLINE AND IT WILL BE REPORTED AS ONE, including that §A's invariance did NOT transfer. No post-hoc reframing: 'the head instrument is different' is NOT an available escape, because AM-55 already measured the asymmetry to be identical across families, which is the whole reason this test is worth running.",
+    "WHY_BOTH_BRANCHES_ARE_WRITTEN": "PR-CSI-023's prediction failed at S-524 and the record survived only because both branches existed. The same discipline applies here."
+  },
+  "POPULATION_AND_POWER_MEASURED_BEFORE_THE_TEST": {
+    "unique_row_key": "prompt_id -- verified unique over all 230 rows of csi3_head_basket_validation_HD_BASE and asserted for all four families when the retention above was measured. NOTE: head/cell rows have NO `slot` field, so a (domain, slot) key silently collapses 230 rows to 23. That error was made and caught while writing this file (S-547), and it mattered: the collapsed key made the floor look as though it halved the DOMAIN count, which would have argued against running this test at all.",
+    "retention_at_floor_0.05": {
+      "csi3_head_basket_train (HD_BASE)": "427 of 670 rows (63.7 %), 67 of 67 domains",
+      "csi3_head_basket_validation (HD_BASE)": "146 of 230 rows (63.5 %), 23 of 23 domains",
+      "csi10_cell6_button_validation (BF_BASE)": "205 of 230 rows (89.1 %), 23 of 23 domains",
+      "csi11_cell8_basket_validation (BK_BASE)": "146 of 230 rows (63.5 %), 23 of 23 domains"
+    },
+    "THE_LOAD_BEARING_FACT": "NO DOMAIN IS LOST IN ANY FAMILY. The floor thins rows WITHIN domains and removes no domain at all, so the statistical unit count is UNCHANGED at 67 / 23 / 23 / 23. This is why a moved verdict would be about readout validity and NOT about lost power, and it is measured rather than hoped.",
+    "WHAT_DOES_CHANGE": "rows per domain, by about a third in three of the four families. A per-domain statistic computed over fewer rows is noisier even when the domain count is fixed, and that is a real limitation of this design, stated here rather than discovered later."
+  },
+  "DESIGN": {
+    "control": "floor 0.0 -- MUST reproduce each family's published artefact EXACTLY (point, ci95, p, key count, verdict). A control that does not reproduce invalidates the comparison and the run is discarded, exactly as AM-54 required for §A.",
+    "treatment": "floor 0.05 -- PR-CSI-001's declared floor, the same value AM-53/AM-54 used for §A. NOT a new threshold chosen for this test.",
+    "families": [
+      "csi3_head_basket_train",
+      "csi3_head_basket_validation",
+      "csi10_cell6_button_validation",
+      "csi11_cell8_basket_validation"
+    ],
+    "statistic": "whatever each family's own published primary is -- this file does NOT introduce a new statistic. The comparison is verdict-to-verdict against the published artefact.",
+    "reference_arm_for_the_floor": "each family's OWN BASE arm, keyed by prompt_id, and the arm is NOT uniformly named: csi3_head_* use HD_BASE, csi10_cell6_button_validation uses BF_BASE, csi11_cell8_basket_validation uses BK_BASE. Measured, because an earlier draft of this file named HD_BASE for all four and the two CELL families have ZERO HD_BASE arms (62 and 82 run dirs, none by that name) -- caught by the S-167c check before this prereg was committed. NOT a cross-family reference."
+  },
+  "VOID_CONDITIONS": [
+    "1. the floor-0.0 control failing to reproduce any family's published artefact exactly -- the comparison is then against an unvalidated harness and means nothing.",
+    "2. the floor applied with a reference arm other than that family's own BASE.",
+    "3. any change to the head/cell statistic, family composition or verdict rule between this freeze and the read.",
+    "4. the row key being anything other than prompt_id, or rows being collapsed by keying on a field the data does not carry.",
+    "5. TEST data touched. It is not, on any path.",
+    "6. a verdict reported as moved without reporting the retained row count and domain count beside it.",
+    "7. the floor applied with HD_BASE as the reference for a CELL family. The cell families' BASE arms are BF_BASE and BK_BASE; HD_BASE does not exist for them, so such a run would resolve to nothing or to the wrong arm."
+  ],
+  "NOT_CLAIMED_BY_THIS_FILE": [
+    "that option mass is the right validity proxy -- it is the one PR-CSI-001 declared and the one §A was tested with, and using it here is a CONSISTENCY choice, not an endorsement",
+    "that invariance at 0.05 implies invariance at any other floor",
+    "anything about option_mass_core_pair, which the rows also carry and which this test does not use",
+    "that a moved verdict would identify WHICH rows caused it -- the design detects, it does not localise"
+  ],
+  "HOW_TO_RUN": {
+    "instrument": "scripts/dcs_csi_head_census.py must first gain an --option-mass-floor and --option-mass-reference pair mirroring the axis analyser's, WITH A TEST THAT FAILS WITHOUT IT. No such flag exists today: measured ZERO option-mass mentions in that file.",
+    "cost": "CPU only. No GPU, no new arms -- every run directory this needs already exists on disk.",
+    "order": "commit this prereg; build the flag plus its failing test; run control and treatment for all four families; compare verdicts; report."
+  }
+}
