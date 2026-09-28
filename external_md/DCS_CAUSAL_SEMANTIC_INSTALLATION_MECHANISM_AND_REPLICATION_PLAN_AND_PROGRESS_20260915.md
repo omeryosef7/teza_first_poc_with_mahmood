@@ -45384,3 +45384,45 @@ S-542 landed as `3cf4556a`. Queue **EMPTY**. Three subagents audited A30's 30 ro
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** prohibition 28's stale surrounding arithmetic, and D25's unmarked bootstrap p.
+
+## S-544 / prohibition 28's own arithmetic recounted, and "three documents" was an undercount by an order of magnitude (2026-09-28)
+
+S-543 landed as `a6d9f726`, 527 passed. Queue **EMPTY**. The two items S-543 recorded as found-but-not-fixed.
+
+### PROHIBITION 28's SURROUNDING PROSE — five stale counts, one measured claim that survived
+
+The enumeration reached **seven** reads at S-540 while the prose around it still described a list of three or five. All five phrases were live and unstruck (verified by struck-span parser, not eye):
+
+| phrase | corrected to |
+|---|---|
+| *"TWO of these **five** were missing"* | **SEVEN** |
+| *"Button's fraction is the SMALLEST of the **four**"* | **SEVEN** — ⚠ **and the claim SURVIVES the recount** |
+| *"now all **three** are"* | **SEVEN** |
+| *"The **three** are NOT interchangeable"* | **SEVEN** |
+| *"because **three documents** still quote it"* | **at least 24 FILES** |
+
+⚠ **The "smallest" claim was re-measured rather than assumed to break.** All seven: 0.0309, 0.0354, 0.0356, 0.0778, 0.0786, 0.0803, 0.1146. **D44's 0.0309 is still the minimum**, so only the count was wrong and the substance held. *A recount is not the same as a retraction, and conflating them would have thrown away a true statement.*
+
+⚠ **The compliance score is now stated instead of implied:** of the seven, **two were retrofitted** after a sweep found them missing (d, e), **two arrived with their fraction already attached** (f, g — D45 and its secondary), and three predate the amendment. **(f) and (g) are the only two in the record born compliant.**
+
+🔴 **"THREE DOCUMENTS" WAS AN UNDERCOUNT BY AN ORDER OF MAGNITUDE, AND IT WAS LOAD-BEARING.** Measured: `0.0778` occurs **13** times in the claim table, **5** in the results draft, **24** in this log, and in **21 further files** under `reports/` and `runargs/`. ⚠ **That count was the stated REASON for retaining the struck literal at all** — *"because three documents still quote it and a reader meeting it must be able to place it."* The reason is stronger than it claimed, not weaker; but a justification resting on a number nobody had counted is the same defect class this row keeps finding in others.
+
+### D25's BOOTSTRAP p — the instance no index covered
+
+D25 carried `p2 = **0.0014**` live and unstruck. The p these artefacts publish for that cell is **0.0019** (`exact_signflip`, button/train — recorded in D26's row *immediately beside it*). Now marked.
+
+⚠ **No A30 row indexed this instance** — row 24 indexes D25's **label**, not its p — so it survived the S-453 sweep *and* the S-543 audit of A30's own rows, and surfaced only in that audit's blast radius. **An index cannot find what it does not list**, which is the structural limit of an index-driven correction discipline and the reason the S-528 token sweep exists alongside it.
+
+**Final sweep: ZERO live unguarded bootstrap-percentile p's remain** in the claim table across all four known forms (`0.0014`, `p2 = 0.0014`, `0.201`, `0.888`).
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No GPU work, no new measurement of any endpoint.** Every figure is a recount, a re-measurement of an existing artefact, or a citation.
+- ⛔ **The 21 other files quoting `0.0778` were COUNTED, not inspected.** Whether any of them asserts it as a current mandate is **unchecked** — the count is the finding, not a clearance.
+- ⛔ **`0.0778`'s 24 occurrences in THIS LOG are not audited either.** A sprint log is append-only history and most will be correct as history, but I have not verified that.
+- ⛔ **The amendments A30 points at (AM-15/19/22/23/49/51) remain unchecked** for whether each is itself still correct — carried forward from S-543 unchanged.
+- ⛔ **Prohibition 30's factorial p's are still CITED, not re-derived** — `[READ, not reproduced]` by this file's own convention.
+- ⛔ **No unlabelled-block sweep was run** beyond the three audit blocks; other sections may assert superseded verdicts without a label.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** the 21 files quoting `0.0778` — counted but not inspected — are the one item here where a count was substituted for a check.
