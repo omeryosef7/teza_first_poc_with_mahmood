@@ -361,6 +361,7 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | ‼ the held-out train→validation RATIO quoted as "the effect is stronger held out" | button **1.456×** (D44→D45) and basket **1.475×** (D42→D43), margins 2.714× and 2.69×. **The resemblance is striking and it is NOT a result.** One estimate on 23 domains against one on 67; the magnitude bands were frozen WIDE precisely to absorb that noise, so a point inside the band is a CHECK PASSED, not an effect measured. A second instance enlarges the temptation, not the licence | D45 / PR-CSI-024 |
 | the four HELD-OUT 2×2 cells treated as a balanced design, or compared cell-to-cell as magnitudes | they are four separate reads with **different key sets** (215 / 221 / 222 / 224) on the **same 23 domains**. The pattern (button fails only in sufficiency) is the claim; **no cell-to-cell magnitude comparison is offered**, and paired data does not become independent by being tabulated | D45 / D43 / D24 |
 | button's held-out sufficiency rank 6 of 47 described as "nearly passing" | the preregistered bar is rank **1** in a 46-control family. **6 is not 1.** It is also NOT the same number as TRAIN's rank 36, and that difference is not interpreted — one estimate on 23 domains against one on 67 | D24 / S-540 |
+| ‼ a count built on a NON-PREREGISTERED anchor presented with the authority of a preregistered one | PR-CSI-012 froze **no bar at all** (`NO_RANK_TEST`, descriptive `CENSUS_DELIVERABLE`, and `0.012567` appears **zero** times in it). §H.2's anchor was chosen in the write-up. **Every preregistered bar in the sprint survived the same floor; the only count that moved is the unpreregistered one.** Say which criteria were frozen and which were not | D34 / PR-CSI-012 / S-555 |
 | ‼ "**exactly** four heads clear the anchor" written without the floor qualifier | at PR-CSI-001's declared option-mass floor of 0.05 the count is **THREE** — head 23 drops because the **anchor rose 35.1 %** while its own effect fell 5.9 % and its ci95 still excludes zero. **The bar moved, not the head.** Say "four at the published readout, three at the declared floor", never the bare "exactly four" | D34 / PR-CSI-025 |
 | any §H count quoted as a property of the MODEL rather than of the readout population | ~~§A was invariant across all eight cells (AM-53/AM-54); §H was never testable until S-548 and its headline count moves.~~ 🔴 **TIGHTENED S-552: only D34's count moves.** PR-CSI-014/015/016 are **invariant** at the same floor, and PR-CSI-016's bar **recomputed** and still moved ≤ 5.27 %. The rule is narrower and more useful: **a bar built from a near-null arm's OWN EFFECT (D34's `\|E(HD_BOTK)\|`, 6.4 % of `HD_TOPK`) inherits that arm's instability; bars built as `1.96·SD/√n` did not.** ⛔ Still true that **an untested §H claim is a statement about a readout** — D32, D33, D36, D39, D40 are untested and three of them are untestable with today's instrument | §H / PR-CSI-025 / S-551 |
 | the two REFUSED families cited as evidence of invariance | `csi10_cell6_button_validation` and `csi11_cell8_basket_validation` could not be run at all: their own preregs pin each head's E to a prior measurement, and any row filter moves E. **Unrunnable is not invariant**, and switching off a VOID condition to obtain a number is forbidden | PR-CSI-025 |
@@ -1167,6 +1168,16 @@ rank-1-of-21 certifications, both sitting exactly at their floor — separate ev
 counted twice.
 
 ## H.2 Exactly four heads clear the family's own null anchor (D34) — 🔴 **AT THE PUBLISHED READOUT; THREE AT THE DECLARED FLOOR**
+
+🔴 **THE ANCHOR BELOW IS NOT PREREGISTERED — MEASURED AND RECORDED S-555.**
+`configs/dcs_csi_pr012_head_census_basket.json` contains **no bar, no anchor and no criterion key of
+any kind**; it declares `NO_RANK_TEST` and a descriptive `CENSUS_DELIVERABLE`, and the string
+`0.012567` occurs **zero** times in it. **This anchor was chosen here, in the write-up, to turn a
+deliberately verdict-free census into a count.** ⚠ **Every criterion in this sprint that WAS
+preregistered survived the same option-mass floor** — PR-CSI-014, PR-CSI-015 and PR-CSI-016 are all
+dispersion-built (`1.96·SD/√n`) and all three are invariant. ⛔ **The count below is the one quantity
+that moved, and it is the one that bypassed preregistration.** That is why it carries the qualifier
+and they do not.
 
 Using `|E(HD_BOTK)| = 0.012567` as the anchor the family itself supplies, the 32 single-head arms on
 basket validation give **exactly four** heads with a negative effect, a magnitude above the anchor

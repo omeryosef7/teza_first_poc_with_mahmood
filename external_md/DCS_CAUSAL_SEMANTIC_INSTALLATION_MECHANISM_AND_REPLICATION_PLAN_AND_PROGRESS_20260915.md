@@ -45870,3 +45870,45 @@ S-553 reported `corr(rows retained, |per-domain delta|) = −0.406` for `HD_BOTK
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** `SINGLE_27` — a stronger correlation than the arm that broke D34, attached to no claim today. Whether any other criterion in the record is built on an arm like it is unchecked.
+
+## S-555 / the one criterion that moved is the one that was never preregistered — and every frozen bar in the sprint survived the same floor (2026-09-28)
+
+S-554 landed as `966f1dfe`, **537 passed**. Queue **EMPTY**. S-554's NEXT asked whether any other criterion rests on a fragile arm. Surveying the preregs answered a sharper question instead.
+
+### THE MEASUREMENT
+
+Scanned every `configs/dcs_csi_pr*.json` for bar / anchor / detectability / criterion keys and classified each as **dispersion-built** (`1.96·SD/√n`) or **effect-built** (an arm's own `E`):
+
+| prereg | bar | class |
+|---|---|---|
+| PR-CSI-014 | `DETECTABILITY_PREREGISTERED` | dispersion (+ the source arm's E recorded as provenance) |
+| PR-CSI-015 | `DETECTABILITY_PREREGISTERED_PER_HEAD` | dispersion (+ provenance) |
+| PR-CSI-016 / 018 / 020 | `DETECTABILITY_PREREGISTERED_PER_HEAD` | **dispersion** |
+| **PR-CSI-012 — D34's own prereg** | **NONE** | ⛔ **no bar, no anchor, no criterion key of any kind** |
+
+**PR-CSI-012 declares `NO_RANK_TEST` and a descriptive `CENSUS_DELIVERABLE`. The string `0.012567` occurs ZERO times in it** — against 4 in the claim table and 3 in the draft. `anchor` occurs **zero** times.
+
+⇒ 🔴 **D34's null anchor was never preregistered. It was chosen in the write-up, to turn a deliberately verdict-free census into a count.**
+
+### WHY THIS REFRAMES S-549 THROUGH S-554
+
+Those five entries progressively narrowed the explanation: *"§H is readout-sensitive"* → *"a near-null bar is fragile"* → *"three facts compose"*. **All of that is true and none of it was the load-bearing fact.**
+
+⇒ ✅ **EVERY CRITERION THIS SPRINT ACTUALLY FROZE SURVIVED THE FLOOR.** PR-CSI-014, PR-CSI-015 and PR-CSI-016 are dispersion-built and all three are invariant — csi9's bar even **recomputed from scratch** and moved ≤ 5.27 %. ⛔ **The single quantity that moved is the single quantity that bypassed preregistration.**
+
+⚠ **That is a harder result to report than the one I had been building toward, and it is the better one.** The preregistration discipline was not merely decorative here: **it is the variable that separates the four families.** And the failure it exposes is not in the instrument, the bank, or §H — it is in a number added at write-up time.
+
+⚠ **This is NOT a fabrication and I am not implying one.** §H.2 always said it used *"the anchor the family itself supplies"* — transparent about provenance. What it never said, and now says, is that **no prereg froze it.** ⛔ **D34's relabel stands unchanged**: four clear at the published readout, three at the declared floor, *"exactly"* unavailable.
+
+**Recorded in three places** — D34's row, §H.2's opening (before the anchor is used), and a new Editor's-checklist row: *"a count built on a NON-PREREGISTERED anchor presented with the authority of a preregistered one."*
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **My classifier left 16 of 22 criterion keys "unclear"** — PR-CSI-001, 003-A, 004, 005, 006, 007 and 021's success/failure criteria were **not** classified, because they are prose conditions rather than numeric bars. **Whether any of them is effect-built is unchecked**, and the headline above is about the *census* bars only.
+- ⛔ **PR-CSI-008's `criteria` flagged EFFECT-BUILT and I did NOT investigate it.** It is the codeword screen. **Named, not cleared.**
+- ⛔ **"Every frozen bar survived" is at ONE floor.** Three bars, one filter, one value.
+- ⛔ **Nothing here says D34's anchor is a BAD choice of summary.** A verdict-free census invites one, and `HD_BOTK` is a defensible null. The finding is that it was **not frozen**, and therefore not protected by the discipline that protected the others.
+- ⛔ **`SINGLE_27` (corr −0.427, stronger than `HD_BOTK`) is still attached to no claim and still unchecked** — carried forward from S-554 undischarged.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** PR-CSI-008's `criteria`, the one key my scan flagged effect-built and I did not open.
