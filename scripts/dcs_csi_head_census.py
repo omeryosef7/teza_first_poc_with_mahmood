@@ -157,6 +157,19 @@ def _option_mass_keys(run_dir, floor):
             if om is None:
                 sys.exit("REFUSING: row %r in %s has no option_mass; missing is not zero."
                          % (r.get("prompt_id"), os.path.basename(run_dir)))
+            # ⚠ R42-F4 (S-563). `float(nan) >= floor` is False, so a NaN option_mass was SILENTLY
+            # DROPPED as if it were a small mass -- while the sibling's `if om < floor: continue`
+            # (also False for NaN) silently KEPT it. Two functions the record calls identical,
+            # disagreeing in OPPOSITE directions on the same row. And the sprint already knows this
+            # class: tests/test_option_mass_nan_guard.py exists because on 2026-08-28 a run produced
+            # NaN option_mass on 36 of 40 rows and the gate reported PASS. A NaN readout is an ABSENT
+            # measurement, not a small one, so no threshold can place it on either side of a floor.
+            if isinstance(om, float) and math.isnan(om):
+                sys.exit("REFUSING: row %r in %s has option_mass NaN. NaN is an ABSENT readout, not "
+                         "a small one: every NaN comparison is False, so it would be silently "
+                         "DROPPED here and silently KEPT by dcs_csi_subspace_analyze. Neither is a "
+                         "measurement. (R42-F4/S-563)"
+                         % (r.get("prompt_id"), os.path.basename(run_dir)))
             if float(om) >= floor:
                 keep.add((r["domain"], w4.lpm.family_slot(r["family_id"])))
     return keep, n, len(keep)

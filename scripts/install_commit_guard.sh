@@ -56,6 +56,7 @@ GUARD_TESTS="tests/test_asr_protocol.py
              tests/test_csi_cell_identity.py
              tests/test_csi_census_floor_paired.py
              tests/test_csi_control_family_guard.py
+             tests/test_csi_floor_ordering_and_nan.py
              tests/test_csi_option_mass_floor_headcell.py
              tests/test_csi_pr016_argmax.py
              tests/test_csi_pr021_freeze.py

@@ -46557,3 +46557,108 @@ own hook reports.
 refusal, and a NaN refusal aligned across `_option_mass_keys` and `dcs_csi_subspace_analyze`. Both are
 latent today and both are two lines; the reason to do them next is that F4 is a *disagreement between two
 functions the record calls identical*, which is how S-553's tag-twin and S-487 started.
+
+## S-563 / R42's F3 and F4 closed — and the review's own suggested fix for F3 did not work (2026-09-28)
+
+S-562 landed as `91943ebe`, **555 passed** (546 + its 9 new), 1 skipped, in **29:18**. Queue **EMPTY**.
+
+⚠ **CORRECTION TO S-562 FIRST.** S-562 attributed the 39-minute pre-commit to *"filesystem contention
+from this tick's own scans"*. That is at best partial and I had the evidence to know better: while
+S-562's own hook ran **41 minutes**, `ps` showed the node's top CPU consumers were **another user's two
+python jobs at 52.3 % and 42.4 %**, with my own scans finished. The correct statement is that the node
+is shared and was loaded by someone else's work; my scans contributed and were not the cause. Recorded
+because "I caused it" is the more self-critical reading and it was still the wrong one — being hard on
+myself is not the same as being accurate.
+
+### 1. F3, AND WHY THE REVIEW'S FIX WAS NOT THE FIX
+
+R42-F3: in `load_installation` the `keep_keys` skip sat **above** the duplicate-key refusal, so every
+key the option-mass floor dropped — **84 of 230 on csi5 at floor 0.05** — was exempt from the refusal
+that the function's own comment calls *"the only thing keeping the forced-choice channel out"*. Verified
+by me from the source, and the sibling `dcs_csi_subspace_analyze.py` has always checked duplicates first
+while its docstring claimed the two were identical.
+
+R42 called the remedy **"a two-line reorder"**. I applied exactly that, and my own behavioural test
+**failed**. ⛔ **A reorder cannot work.** The duplicate test is `k in out`, and a key the floor drops
+never enters `out` — so when the same dropped key appears again there is nothing for it to collide with.
+Moving the skip below the test changes nothing for precisely the 84 keys the defect was about.
+
+The fix is to make duplicate detection **independent of retention**: a `seen` set that every row of the
+selected channel enters, with the refusal keyed on it, and the floor's skip after. With
+`keep_keys=None`, `seen` and `out` have identical membership, so all ~26 callers are unchanged.
+
+⚠ **I would have shipped the broken fix if the test had been a source-grep** — which is what R42-F10
+criticised the existing floor tests for being (6 of 11 assert only that a literal string appears). A
+grep for *"the skip is below the refusal"* passes on the version that does not work.
+
+### 2. F4: NaN WAS BEING DROPPED BY ONE FUNCTION AND KEPT BY THE OTHER
+
+Verified by me:
+
+| implementation | test | NaN outcome |
+|---|---|---|
+| `dcs_csi_head_census._option_mass_keys` | `float(om) >= floor` → keep | **False → silently DROPPED** |
+| `dcs_csi_subspace_analyze` | `om < floor` → continue | **False → silently KEPT** |
+
+Two functions the record documents as applying the same selection, disagreeing in **opposite
+directions** on the same row, neither counting it. ⚠ **And the sprint already knew this class**:
+`tests/test_option_mass_nan_guard.py` exists because *"on 2026-08-28 a Qwen3-14B run produced
+`option_mass` NaN on 36 of 40 rows and the gate reported **PASS**… A NaN option mass is an ABSENT
+measurement, not a small one, so no threshold can make it reportable."* S-548's floor reintroduced the
+same hazard in two divergent forms. Both now refuse, each naming what the other would have done.
+
+**Latent, verified: 0 NaN and 0 None across 1380 selected rows in six csi5 arms.**
+
+### 3. VOID 7 HELD, CHECKED AT THE ARTEFACTS' OWN PRECISION
+
+Both published csi5 artefacts re-derived through the modified loader: **0 mismatches on 7 arms at floor
+0.0 and 7 at floor 0.05, 146 keys retained.** ⚠ My first check reported **14 of 14 arms DRIFTED** — my
+tolerance was 1e-12 against artefacts the census writes with `round(v, 8)`, so every arm differed by
+~3e-9 of pure rounding. **Sixth over-matching detector of mine in two days, and again inside the
+verification of a fix.** The pattern is now specific enough to state as a rule: *when I compare against
+a stored number, the tolerance must come from how that number was stored.*
+
+**4 of 4 mutations caught**, each by its own test — including one that restores exactly R42's suggested
+reorder, so the insufficiency is now pinned by a test rather than by this entry's prose.
+`tests/test_csi_floor_ordering_and_nan.py`, **9 behavioural entry points** on synthetic run dirs,
+registered in `GUARD_TESTS` in BOTH `.git/hooks/pre-commit` and `scripts/install_commit_guard.sh` (**31
+entries, sorted, verified identical**).
+
+### 4. THE AUDIT EXTENDED: AM-36, AND A SLIP INSIDE A FROZEN FILE
+
+**AM-36 — unacknowledged prohibition, weaker than D37/D40-c.** `pr013_read.txt:15-16` says PR-CSI-013
+*"CANNOT DO … say anything about the other 31 heads on button"*. AM-36 reports per-head ci95 signs for
+21 single heads, naming them. I verified the provenance: those 21 are `BT_SINGLE` plus the **20
+`BT_CTRL_*` arms PR-013 preregistered as an undifferentiated control family** (23 arms on disk). ⇒
+Converting a control family into per-head findings is what that line targets. ⚠ **But AM-36 does not
+contradict its own status column** — it labels itself DESCRIPTIVE and already flags the 21-of-32 subset
+limit. So the numbers are retained and the prohibition is now quoted beside them; the defect was the
+omission, not a false claim. That makes the audit **3 clear breaches in 7 claims**, with AM-36 a fourth,
+lesser one.
+
+**A slip inside a frozen file.** `dcs_csi_pr013_nomination_rule.txt:48` states the design as
+*"`BT_BASE, BT_KO (all 32), BT_SINGLE (= h*), BT_CTRL_00..19` **-> 24 arms**"*. That is **23**. The
+prereg's machine-read `n_arms_per_split` says **23**, the read executed **23/23**, and the floor
+1/21 is unaffected — so it is prose arithmetic that no reader consumed. Recorded on D35's row anyway,
+because the frozen files are the authority this audit checks claims against, and "the frozen file says
+24" would be a confusing thing to rediscover later.
+
+### NOT ESTABLISHED
+
+⛔ **Neither fix changes any published number**, and I am not claiming either defect ever fired. Both
+were latent: no duplicate keys exist in the corpus (0 in 319 848 rows per R42, not re-verified by me at
+that scale — I checked 1380 rows across six arms) and no NaN readouts exist.
+⛔ **R42's F5, F7–F11 remain open**, plus stream 1's M2 (no cross-arm slot-set guard in the paired tool),
+M3 (no `require_slurm_job`, no GATE 0, no arm-identity check) and M4 (`--out` optional, so the
+S-559/S-561/S-562 intervals are still in no artefact). **I have not re-verified F7–F11 myself.**
+⛔ **AM-36's numbers were not re-derived here.** I verified the arm provenance and the prohibition text,
+not the effects; the 4.97× superadditivity and the per-head signs are carried from the existing row.
+⛔ **38 of ~45 claims remain unaudited** against their frozen files.
+⛔ **The `seen` set is a behaviour CHANGE on a path nothing exercises.** If a corpus ever does contain a
+duplicate among dropped keys, the loader now REFUSES where before it proceeded — correct, and untested
+against real data because no such data exists.
+
+**NEXT:** make `--out` required on the paired reader and write the S-559/S-561/S-562 intervals to a
+`reports/` artefact with its run directories and job id (R42-M4/F6). The intervals now carry three
+entries' worth of load-bearing conclusions and live only in this log, which is the defect the census's
+own S-549 comment names: *"A sensitivity whose floor lives only in a terminal has exactly that defect."*

@@ -132,6 +132,7 @@ def load_installation(run_dir: str, keep_keys=None):
     if not os.path.exists(path):
         raise Refusal("no results.jsonl under %r" % run_dir)
     out, n_seen, kinds = {}, 0, set()
+    seen = set()
     with open(path, encoding="utf-8") as fh:
         for line in fh:
             r = json.loads(line)
@@ -147,9 +148,18 @@ def load_installation(run_dir: str, keep_keys=None):
             m = max(lc, lk)
             p = math.exp(lc - m) / (math.exp(lc - m) + math.exp(lk - m))
             k = (r["domain"], family_slot(r["family_id"]))
-            if keep_keys is not None and k not in keep_keys:
-                continue
-            if k in out:
+            # ⚠ R42-F3 (S-563), AND THE REVIEW'S SUGGESTED FIX WAS NOT ENOUGH. The `keep_keys` skip
+            # used to sit ABOVE this refusal, so every key the option-mass floor dropped -- 84 of 230
+            # on csi5 at floor 0.05 -- was EXEMPT from the refusal this function's own comment calls
+            # "the only thing keeping the forced-choice channel out". R42 called the fix "a two-line
+            # reorder"; it is not, and a behavioural test caught that. Moving the skip below a
+            # `k in out` test still misses duplicates among DROPPED keys, because a dropped key never
+            # enters `out` for the next occurrence to collide with. Duplicate detection has to be
+            # independent of retention, so it runs off `seen`, which every row of the selected channel
+            # enters. With keep_keys=None `seen` and `out` have identical membership, so all ~26
+            # existing callers stay byte-identical (VOID 7) -- verified by re-deriving both published
+            # csi5 artefacts to their full 8-decimal precision, 0 mismatches.
+            if k in seen:
                 # The corpus loader refuses on exactly this condition. Without the same refusal
                 # here, weakening the semantic_one_word filter above would substitute the
                 # forbidden forced-choice channel SILENTLY, last-row-in-file-order winning.
@@ -157,6 +167,9 @@ def load_installation(run_dir: str, keep_keys=None):
                               "concept-free channel filter is the only thing keeping the "
                               "forced-choice channel out, so a duplicate here is a silent "
                               "channel substitution" % (k, r.get("query_kind")))
+            seen.add(k)
+            if keep_keys is not None and k not in keep_keys:
+                continue
             out[k] = p
             n_seen += 1
     if not out:

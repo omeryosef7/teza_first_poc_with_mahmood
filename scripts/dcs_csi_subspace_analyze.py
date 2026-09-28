@@ -85,6 +85,14 @@ def installation_with_option_mass(run_dir, floor):
             if om is None:
                 raise SystemExit("row %r has no option_mass; cannot apply the P1-f floor"
                                  % r.get("prompt_id"))
+            # ⚠ R42-F4 (S-563). `nan < floor` is False, so a NaN readout was silently KEPT here --
+            # the OPPOSITE of the census's silent DROP, in two functions documented as applying the
+            # same selection. Aligned: both refuse. See tests/test_option_mass_nan_guard.py for the
+            # 2026-08-28 incident that established NaN-as-absent for this sprint.
+            if isinstance(om, float) and math.isnan(om):
+                raise SystemExit("row %r has option_mass NaN. NaN is an ABSENT readout, not a small "
+                                 "one; it would be silently KEPT here and silently DROPPED by the "
+                                 "census's _option_mass_keys. (R42-F4/S-563)" % r.get("prompt_id"))
             k = (r["domain"], lpm.family_slot(r["family_id"]))
             if k in out:
                 raise SystemExit("installation key %r binds two rows" % (k,))
