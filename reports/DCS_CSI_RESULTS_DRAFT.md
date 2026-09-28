@@ -361,7 +361,7 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | ‼ the held-out train→validation RATIO quoted as "the effect is stronger held out" | button **1.456×** (D44→D45) and basket **1.475×** (D42→D43), margins 2.714× and 2.69×. **The resemblance is striking and it is NOT a result.** One estimate on 23 domains against one on 67; the magnitude bands were frozen WIDE precisely to absorb that noise, so a point inside the band is a CHECK PASSED, not an effect measured. A second instance enlarges the temptation, not the licence | D45 / PR-CSI-024 |
 | the four HELD-OUT 2×2 cells treated as a balanced design, or compared cell-to-cell as magnitudes | they are four separate reads with **different key sets** (215 / 221 / 222 / 224) on the **same 23 domains**. The pattern (button fails only in sufficiency) is the claim; **no cell-to-cell magnitude comparison is offered**, and paired data does not become independent by being tabulated | D45 / D43 / D24 |
 | button's held-out sufficiency rank 6 of 47 described as "nearly passing" | the preregistered bar is rank **1** in a 46-control family. **6 is not 1.** It is also NOT the same number as TRAIN's rank 36, and that difference is not interpreted — one estimate on 23 domains against one on 67 | D24 / S-540 |
-| ‼ a count built on a NON-PREREGISTERED anchor presented with the authority of a preregistered one | 🔴 **CORRECTED S-559 — the ANCHOR was preregistered; the COUNT was not.** PR-CSI-012 froze no bar (`NO_RANK_TEST`, descriptive `CENSUS_DELIVERABLE`, `0.012567` zero times), but `runargs/dcs_csi_pr013_nomination_rule.txt` Rule 2(b) froze `\|E\| > \|E(HD_BOTK)\|` + ci95-excludes-0 on **2026-09-22 at 18 of 44 arms**, for **head 2 as a launch gate**. S-555 missed it by scanning `configs/*.json` only. ⛔ Do NOT write "the only count that moved is the unpreregistered one" — it was preregistered. Say: the tally over 32 heads is the write-up's step, and a near-null effect-built criterion is fragile **whether or not** it was frozen | D34 / PR-CSI-013 / S-559 |
+| ‼ a count built on a NON-PREREGISTERED anchor presented with the authority of a preregistered one | 🔴 **CORRECTED S-559/S-560 — the ANCHOR was preregistered (twice, including in the census's OWN frozen reading criteria `runargs/dcs_csi_pr012_reading_criteria.txt` md5 `5b99971c`, the md5 D34 already cites); the COUNT was not, and the frozen reading is an EXISTENCE claim ("at least one head") that HOLDS AT BOTH FLOORS. ⛔ Never write that the sensitivity moved the census's conclusion — it moved an unlicensed tally, in the direction the frozen file explicitly forbids reading ("a singleton that does NOT clear it is NOT thereby shown to be zero").** PR-CSI-012 froze no bar (`NO_RANK_TEST`, descriptive `CENSUS_DELIVERABLE`, `0.012567` zero times), but `runargs/dcs_csi_pr013_nomination_rule.txt` Rule 2(b) froze `\|E\| > \|E(HD_BOTK)\|` + ci95-excludes-0 on **2026-09-22 at 18 of 44 arms**, for **head 2 as a launch gate**. S-555 missed it by scanning `configs/*.json` only. ⛔ Do NOT write "the only count that moved is the unpreregistered one" — it was preregistered. Say: the tally over 32 heads is the write-up's step, and a near-null effect-built criterion is fragile **whether or not** it was frozen | D34 / PR-CSI-013 / S-559 |
 | ‼ "**exactly** four heads clear the anchor" written without the floor qualifier | at PR-CSI-001's declared option-mass floor of 0.05 the count is **THREE** — head 23 drops because the **anchor rose 35.1 %** while its own effect fell 5.9 % and its ci95 still excludes zero. **The bar moved, not the head.** Say "four at the published readout, three at the declared floor", never the bare "exactly four" | D34 / PR-CSI-025 |
 | any §H count quoted as a property of the MODEL rather than of the readout population | ~~§A was invariant across all eight cells (AM-53/AM-54); §H was never testable until S-548 and its headline count moves.~~ 🔴 **TIGHTENED S-552: only D34's count moves.** PR-CSI-014/015/016 are **invariant** at the same floor, and PR-CSI-016's bar **recomputed** and still moved ≤ 5.27 %. The rule is narrower and more useful: **a bar built from a near-null arm's OWN EFFECT (D34's `\|E(HD_BOTK)\|`, 6.4 % of `HD_TOPK`) inherits that arm's instability; bars built as `1.96·SD/√n` did not.** ⛔ Still true that **an untested §H claim is a statement about a readout** — D32, D33, D36, D39, D40 are untested and three of them are untestable with today's instrument | §H / PR-CSI-025 / S-551 |
 | the two REFUSED families cited as evidence of invariance | `csi10_cell6_button_validation` and `csi11_cell8_basket_validation` could not be run at all: their own preregs pin each head's E to a prior measurement, and any row filter moves E. **Unrunnable is not invariant**, and switching off a VOID condition to obtain a number is forbidden | PR-CSI-025 |
@@ -1167,7 +1167,7 @@ argues against additivity across the eight. **Nothing here says this is *the* 8-
 rank-1-of-21 certifications, both sitting exactly at their floor — separate evidence, not one result
 counted twice.
 
-## H.2 Exactly four heads clear the family's own null anchor (D34) — 🔴 **AT THE PUBLISHED READOUT; THREE AT THE DECLARED FLOOR; AND ONLY ONE SEPARABLE FROM THE ANCHOR AT ci95 (S-559)**
+## H.2 Exactly four heads clear the family's own null anchor (D34) — 🔴 **AT THE PUBLISHED READOUT; THREE AT THE DECLARED FLOOR; ONLY ONE SEPARABLE FROM THE ANCHOR AT ci95 (S-559); AND THE PREREGISTERED READING — "AT LEAST ONE" — INVARIANT ACROSS BOTH (S-560)**
 
 🔴 **THE *COUNT* BELOW IS NOT PREREGISTERED. THE *ANCHOR* IS — S-555 SAID OTHERWISE AND IS CORRECTED
 HERE (S-559).**
@@ -1186,6 +1186,49 @@ frozen **2026-09-22, while the census stood at 18 of 44 arms and no result had b
 later amendment adding clause (c) `E < 0`. ⚠ **S-555 missed this because it scanned
 `configs/dcs_csi_pr*.json` only and PR-013 records the gate as booleans (`abs_exceeds_HD_BOTK`)
 rather than as a `min_abs_*` threshold key — the rule text lives in `runargs/`.**
+
+🔴 **AND IT IS PREREGISTERED FOR *THIS* CENSUS TOO — FOUND S-560, IN THE FILE §H.2 AND D34 ALREADY
+CITE AS PROVENANCE.** `runargs/dcs_csi_pr012_reading_criteria.txt`, **md5 `5b99971c`** — the exact md5
+D34's evidence column names — was frozen **2026-09-22 20:05, while 41 of 44 arms had landed,
+`reports/DCS_CSI_PR012_CENSUS_validation.json` did not exist, and no census number had been seen**:
+
+> `--- THE NULL ANCHOR. |E(HD_BOTK)| from THIS census, on THESE rows, in THIS job.`
+> `--- READING A. "AT LEAST ONE HEAD CARRIES DETECTABLE LOAD ALONE"`
+> `  holds iff there EXISTS a head h with  |E(SINGLE_h)| > |E(HD_BOTK)|  AND  E(SINGLE_h) < 0`
+> `  AND ci95(SINGLE_h) excluding 0.`
+
+⛔ **So S-555 was wrong twice, and the second time about a file this section cites as its own
+provenance.** The criterion was audited without opening the document it lives in. ⚠ Census of the
+corpus S-555 omitted: of **25 `runargs/*.txt`**, exactly **two** carry an effect-built criterion (RHS
+`|E(HD_BOTK)|`) — and they are the *same* criterion stated twice, the reading criteria saying so
+outright (*"Same three clauses as PR-013's Rule 2"*) — while **three** carry the dispersion-built
+admission rule `|E(HD_<h>)| >= 1.5 × bar(h)`.
+
+🔴 **AND THE FROZEN READING IS AN EXISTENCE CLAIM, NOT A TALLY.** Evaluated over all 32 heads at both
+floors:
+
+| | floor 0.0 | floor 0.05 |
+|---|---|---|
+| heads satisfying Reading A | 4 — 2, 19, 17, 23 | 3 — 2, 19, 17 |
+| **READING A ("at least one")** | **HOLDS** | **HOLDS** |
+
+⇒ ⛔ **THE PREREGISTERED READING OF THIS CENSUS IS INVARIANT TO THE OPTION-MASS FLOOR.** One head is
+enough, and head 2 clears at both floors — it is also the only head whose margin excludes 1.0 at ci95
+(above). **What moves under the filter is a count the frozen criteria never licensed.**
+
+🔴 **AND THE FROZEN FILE FORBIDS THE DIRECTION THIS SECTION READS IT IN**, in words written to pre-empt
+exactly this:
+
+> `⚠ It is an 8-HEAD arm and a singleton is a 1-HEAD arm, so this is a DELIBERATELY CONSERVATIVE`
+> `bar for a singleton: it asks a single head to exceed what eight of the screen's worst do together.`
+> `A singleton that clears it is clearly non-trivial; a singleton that does NOT clear it is NOT`
+> `thereby shown to be zero. That asymmetry is stated here so it cannot be read the other way later.`
+
+⇒ **"Head 23 no longer clears" is the reading the preregistration prohibited.** The same file also
+forbids *"treating a per-arm ci95 excluding 0 as a certified finding about that head"* — which this
+section does when it leans on head 23's interval still excluding zero. ⇒ **The floor sensitivity is a
+statement about an unlicensed tally read in a prohibited direction; the census's frozen conclusion did
+not move.**
 
 ⇒ **So what is unpreregistered here is the TALLY, not the THRESHOLD.** PR-CSI-013 applies this anchor
 to **head 2 alone, as a launch GO/NO-GO**; extending it to a count over all 32 heads is this

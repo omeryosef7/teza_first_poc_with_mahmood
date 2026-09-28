@@ -46181,3 +46181,105 @@ put no interval on their margins either.
 **NEXT:** re-run S-555's effect-built/dispersion-built survey over the **`runargs/` corpus** it omitted
 — every frozen rule text and read recipe, not just `configs/*.json`. PR-CSI-013's Rule 2(b) was found by
 accident, through a subagent's config sweep, and one accident is not a census.
+
+## S-560 / the anchor was preregistered for the census ITSELF — in the file D34 already cites by md5 — and the frozen reading holds at BOTH floors (2026-09-28)
+
+S-559 landed as `b5f955ea`, **546 passed** (537 + the 9 new guards). Queue **EMPTY**. S-559's NEXT was to
+re-run S-555's effect-built/dispersion-built survey over the **`runargs/` corpus** it omitted. It found
+something worse than S-559 did.
+
+### 1. THE SURVEY, DONE PROPERLY
+
+Of **25 `runargs/*.txt`**, classified **by the RIGHT-HAND SIDE of the comparison** — which is what makes
+a bar effect- or dispersion-built:
+
+| file | criterion | RHS |
+|---|---|---|
+| `dcs_csi_pr012_reading_criteria.txt:28` | `\|E(SINGLE_h)\| > \|E(HD_BOTK)\|` AND `E < 0` AND ci95 excl 0 | **EFFECT-BUILT** |
+| `dcs_csi_pr013_nomination_rule.txt:36` | Rule 2(b), the same three clauses | **EFFECT-BUILT** |
+| `dcs_csi_pr016_read.txt:113` | `\|E(HD_<h>)\| >= 1.5 × bar(h)` | dispersion |
+| `dcs_csi_pr018_read.txt:89` | the same admission rule | dispersion |
+| `dcs_csi_pr020_read.txt:161` | the same admission rule | dispersion |
+
+⚠ **And my first pass over-matched, for the third time in two entries.** A regex asking only *"does an
+`|E(..)|` appear beside a comparison"* flagged all five, because the admission rule's LHS is an `|E|` —
+its RHS is `bar(h)`, a dispersion estimate. Classifying by RHS drops it from 5 to **2**. Same defect
+class as S-556's `re.I` and S-546's unbounded number, caught this time before anything was written down.
+
+**Exactly TWO effect-built criteria exist in the whole corpus, and they are the SAME criterion stated
+twice** — the reading criteria say so outright: *"Same three clauses as PR-013's Rule 2, including R21's
+Amendment 1 sign clause, so the two documents cannot disagree about what counts."*
+
+### 2. 🔴 AND THE SECOND ONE IS THE CENSUS'S OWN, IN THE FILE D34 CITES AS ITS PROVENANCE
+
+`runargs/dcs_csi_pr012_reading_criteria.txt`, **md5 `5b99971cd122fa83d72b3b8e424f0cf9`** — and D34's
+evidence column already reads *"reading criteria frozen before the data in
+`runargs/dcs_csi_pr012_reading_criteria.txt` (md5 `5b99971c`)"*. Its header: **FROZEN 2026-09-22 20:05,
+WHILE 41 OF 44 ARMS HAVE LANDED AND `reports/DCS_CSI_PR012_CENSUS_validation.json` DOES NOT EXIST**
+(verified by `ls` at the moment of writing; no census number seen). It exists precisely to supply a
+threshold before the data, and says so: *"'Near zero' has no threshold, so after the data any boundary I
+drew would be a boundary drawn to fit what I saw … A commitment that cannot be evaluated is not a
+commitment."*
+
+⛔ **So S-555's "this anchor was NEVER PREREGISTERED" is wrong twice over, and the second time it is
+wrong about a document the claim itself cites by md5.** S-559 explained the first miss as a corpus that
+excluded `runargs/`. This one needs no such explanation: **I audited a criterion without opening the file
+named in the very row I was auditing.** That is worse than a bad regex, and it is the third consecutive
+entry whose defect is *what I looked at* rather than how.
+
+### 3. WHAT THIS DOES TO D34 — IT RAISES THE FLOOR AND LOWERS THE HEADLINE
+
+**The frozen reading is an EXISTENCE claim, not a tally:** *"READING A. 'AT LEAST ONE HEAD CARRIES
+DETECTABLE LOAD ALONE' — holds iff there EXISTS a head h with …"*. Evaluated by me over all 32 heads at
+both floors:
+
+| | floor 0.0 | floor 0.05 |
+|---|---|---|
+| heads satisfying Reading A | 4 — 2, 19, 17, 23 | 3 — 2, 19, 17 |
+| **READING A ("at least one")** | **HOLDS** | **HOLDS** |
+| Reading B (set-carried) applicable | no | no |
+
+⛔ **THE PREREGISTERED READING OF THIS CENSUS IS INVARIANT TO THE OPTION-MASS FLOOR.** One head suffices;
+head 2 clears at both floors and is also the only head whose paired margin excludes 1.0 (S-559: 2.712×
+ci95 [1.344, 9.972]). ⇒ **The floor moves a tally the frozen criteria never licensed — not the census's
+conclusion.**
+
+**And the frozen file forbids the direction D34 reads it in**, in words written to pre-empt exactly this:
+
+```
+#   ⚠ It is an 8-HEAD arm and a singleton is a 1-HEAD arm, so this is a DELIBERATELY CONSERVATIVE
+#   bar for a singleton: it asks a single head to exceed what eight of the screen's worst do together.
+#   A singleton that clears it is clearly non-trivial; a singleton that does NOT clear it is NOT
+#   thereby shown to be zero. That asymmetry is stated here so it cannot be read the other way later.
+```
+
+⇒ **"Head 23 no longer clears" IS the reading the preregistration prohibited** — the bar is one-directional
+by design, and D34's headline movement is its failure direction. The same file also forbids *"treating a
+per-arm ci95 excluding 0 as a certified finding about that head"*, which D34 does when it leans on head
+23's interval still excluding zero. ⇒ **The sensitivity is a statement about an unlicensed tally read in a
+prohibited direction.** Recorded in D34's row, §H.2 (with both passages quoted) and the checklist.
+
+⚠ **This cuts BOTH ways and I am not banking only the favourable half.** D34's *preregistered* content is
+in better shape than four entries of relabelling implied — it is invariant, and PR-CSI-012 turns out to
+have frozen a threshold before the data after all. But D34's *headline* is in worse shape: "exactly four"
+was never the frozen reading, and the qualifier "three at the declared floor" that S-550 through S-559
+built is a refinement of a quantity the preregistration declined to license.
+
+### NOT ESTABLISHED
+
+⛔ **Reading A holding at both floors is NOT evidence that heads 19, 17 and 23 carry load.** Reading A is
+satisfied by head 2 alone; S-559's intervals leave 19/17/23 undecided, and the frozen asymmetry says a
+head that misses is not thereby zero. Both statements stand together: the reading holds, and three of the
+four heads are unresolved.
+⛔ **I have not re-audited S-555's `configs/` survey itself.** Its 22-key classification may contain the
+same RHS error my first pass here made; I checked the runargs corpus, not its original one.
+⛔ **No other claim has been checked against the frozen file it cites.** The failure mode here — auditing a
+criterion without opening the cited document — is generic, and D34 is the only claim I have tested for it.
+⛔ **Nothing re-measured.** Every number in this entry is a re-reading of the two existing artefacts plus
+the frozen text; no new run, and the two artefacts' provenance is unchanged.
+⛔ Reading C's branch was never reachable here and was not exercised.
+
+**NEXT:** take the generic failure mode seriously — for each claim in `DCS_CSI_CLAIM_TABLE.md` that cites
+a frozen `runargs/` recipe or reading-criteria file by md5, verify the md5 still matches AND that the
+claim's stated criterion is the one that file froze. D34 failed that check and it was cited correctly all
+along; the question is how many others have never been opened.
