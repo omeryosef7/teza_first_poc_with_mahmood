@@ -46283,3 +46283,123 @@ the frozen text; no new run, and the two artefacts' provenance is unchanged.
 a frozen `runargs/` recipe or reading-criteria file by md5, verify the md5 still matches AND that the
 claim's stated criterion is the one that file froze. D34 failed that check and it was cited correctly all
 along; the question is how many others have never been opened.
+
+## S-561 / D34's whole readout-dependence is ONE DOMAIN carrying ONE ROW — and all 32 md5 citations are sound, my detector's precision was 0/6 (2026-09-28)
+
+S-560 landed as `699f1ac2`, **546 passed**. Queue **EMPTY**. R41 landed 09-28 08:57 and it is now 17:44 —
+**8h47m**, so R42 is more than twice overdue on the ~4h clause and its streams are running.
+
+S-560's NEXT was to check every claim that cites a frozen `runargs/` recipe by md5: does the md5 still
+match, and is the claim's criterion the one that file froze?
+
+### 1. THE MECHANICAL HALF: ALL 32 CITATIONS ARE SOUND, AND MY CHECK WAS THE THING AT FAULT
+
+Extracted all **32** `md5 \`…\`` citations (28 in the claim table, 4 in the draft), hashed **1079**
+candidate files, and matched. My first pass flagged **6** problems. **All six were artefacts of my own
+detector — precision 0/6.**
+
+* `L255` `eee384be…`, `L594` `e0b0074b…` — flagged "matches NO repo file". They are **deliberately
+  historical**: *"byte-identical to the file as it stood at md5 `eee384be…` (40 981 B)"*. A citation of a
+  PAST state must not match the present one. My check's premise was wrong, not the claim.
+* `L1043`, `L1237`, `L1249` — flagged MISMATCH/MISSING by a "nearest backticked path before the md5"
+  heuristic that grabbed the wrong path out of a 5000-character row. Read as written, each is correct:
+  `L1043` cites `runargs/dcs_csi_pr013_read.txt` (`911c3a20` ✅), `L1237`/`L1249` cite the published
+  **artefact** `DCS_CSI_PR018_CELL_CENSUS_button_nonL14_validation.json` (`512f42a1` ✅).
+* `L1100` — a brace expansion, `retrmass_{basket,button}_validation_20260924_053138_*/retrieval.jsonl`,
+  which my glob never expanded. Verified by hand: **`861e70b3`** (basket) and **`d112c2b1`** (button),
+  **230 rows each** — both exact.
+
+⚠ **Fourth consecutive entry whose defect is the population of a search rather than its logic** (S-546's
+unbounded number, S-556's `re.I`, S-560's corpus, now a path heuristic). The pattern is stable enough to
+name: **I keep writing detectors whose matching rule is looser than the claim I am testing.** Recorded,
+and the audit's answer stands: **zero md5 defects in 32 citations.**
+
+### 2. 🔴 THE SUBSTANTIVE HALF, AND IT IS THE FINDING OF THE TICK
+
+S-560 established that D34's floor sensitivity moves a tally, not the census's frozen reading. S-561
+measures **where the movement comes from**, and it is one domain represented by one row.
+
+Under floor 0.05 the reference arm's **retained rows per domain** run **1…10, median 7** — against a
+uniform **10 in the control**:
+
+| branch | rows-per-domain histogram | min | median |
+|---|---|---|---|
+| control (floor 0.0) | `{10: 23}` | 10 | 10 |
+| floor 0.05 | `{1:1, 2:1, 3:3, 6:5, 7:5, 8:4, 9:3, 10:1}` | **1** | 7 |
+
+`freight_yard` keeps **1 of 10 rows** — the only one whose `option_mass` clears the floor (**0.064202**;
+the other nine run 0.000046 … 0.044860). And that single row is not representative of its domain:
+
+| | `y_install` |
+|---|---|
+| `freight_yard`, HD_BASE, control (10 rows) | 0.391504 |
+| `freight_yard`, HD_BASE, floor (**1 row**) | **0.884955** |
+
+Because `E` averages **per-domain means with every domain weighted equally regardless of rows retained**,
+that one row carries **1/23 = 4.35 %** of the estimate by construction — and because it is extreme, its
+share of the anchor's effect is far larger: the `HD_BOTK − HD_BASE` contribution at `freight_yard` goes
+**−0.045862 → −0.147618**, i.e. **15.9 % → 37.8 % of the 23-domain mean, rank 1 of 23 domains.**
+
+**⛔ LEAVE-ONE-DOMAIN-OUT, on BOTH branches:**
+
+| dropped | anchor \|E\| ctrl → floor | change | head 23 margin vs anchor | count |
+|---|---|---|---|---|
+| nothing (all 23) | 0.012567 → 0.016973 | **+35.1 %** | 0.915× | **3** |
+| `freight_yard` | 0.011054 → 0.011035 | **−0.2 %** | **1.096×** | **4** |
+| both thinnest | 0.011653 → 0.011889 | +2.0 % | 1.071× | **4** |
+
+⇒ **The anchor's +35.1 % rise IS `freight_yard`.** Without it the anchor does not move at all, head 23
+clears, and the count is **four at both floors**. So D34's entire readout-dependence — the S-550 relabel,
+"the bar moved not the head", "three, not four" — is carried by **a single prompt that equal-domain
+weighting promotes to a twenty-third of the estimate.** This is the same conclusion S-559's paired
+interval reached from the other direction (the `+35.1 %` never excluded zero); S-561 names the row.
+
+⚠ **There is NO guard on minimum retained rows per domain** anywhere in the filter.
+
+### 3. WHAT THIS DOES **NOT** DO, AND ONE WAY IT CUTS THE OTHER WAY
+
+⚠ **Leave-one-out is a DIAGNOSTIC, not a corrected estimate.** The preregistered population is 23
+domains; dropping one is itself a post-hoc choice, and I am not proposing a 22-domain `E`. It bounds
+robustness and nothing more. ⚠ **It does not make the floor the wrong readout** — 0.05 is PR-CSI-001's
+declared floor, not a number chosen here.
+
+⛔ **And it does NOT overturn the dispersion-vs-effect-built lesson — it sharpens it.** `csi7` and `csi8`
+carry the **byte-identical** perturbation — same 146/230, same histogram `{1:1, 2:1, 3:3, 6:5, 7:5, 8:4,
+9:3, 10:1}`, the same 1-row `freight_yard` — and their dispersion-built bars **did not move**. `csi9` is
+gentler (205/230, min 3 rows). ⇒ **The same single row sits in three families and moved only the
+effect-built near-null anchor.** That is a stronger statement of S-554's point than S-554 had.
+
+### 4. S-559'S INTERVAL RESULT IS ROBUST TO THE PARAMETERISATION
+
+A percentile CI on a **ratio** with a near-null denominator is the obvious way for S-559's margins to be
+an artefact, so I asked the same question as a **difference**, `|E(arm)| − |E(anchor)|`, on the identical
+paired resamples:
+
+| arm | ratio ci95 vs 1.0 | difference ci95 vs 0 | one-sided boot p |
+|---|---|---|---|
+| SINGLE_02 | [1.344, 9.972] **excl** | [+0.008919, +0.050294] **excl** | **0.0029** |
+| SINGLE_19 | [0.850, 7.354] straddles | [−0.004688, +0.028211] straddles | 0.0701 |
+| SINGLE_17 | [0.626, 5.937] straddles | [−0.011974, +0.022767] straddles | 0.2288 |
+| SINGLE_23 | [0.451, 3.418] straddles | [−0.014539, +0.011091] straddles | 0.5769 |
+
+Both parameterisations agree exactly on which arms clear: **only head 2.** ⚠ The p's are **descriptive
+and not preregistered** — reported because head 19 at **0.0701** is a near miss while head 23 at
+**0.5769** is a coin flip against the anchor, which is worth knowing when "undecided" covers both.
+
+### NOT ESTABLISHED
+
+⛔ **I have NOT re-measured anything.** Every number here re-reads the existing run directories and the
+two artefacts; no new GPU work, no new arms.
+⛔ **The criterion-agreement audit for D35/D36/D37/D39/D40 is NOT in this entry** — four review and audit
+streams are still running and I will not pre-empt their findings.
+⛔ **`freight_yard`'s single row is not shown to be an error.** Its `option_mass` legitimately clears the
+floor; it is unrepresentative of its domain, which is a different thing from being wrong.
+⛔ **No interval on the leave-one-out numbers.** `−0.2 %` is a point difference, as `+35.1 %` was.
+⛔ **I did not check whether `freight_yard` dominates any OTHER published quantity**, in this family or
+elsewhere — only the anchor and the four heads at this floor.
+⛔ **The 0/6 precision figure is about my detector, not about the claim table**, and it says nothing about
+the 17 prose criteria or A30's remaining rows, which are still unaudited.
+
+**NEXT:** put a **minimum-retained-rows guard** on the option-mass filter — not to change any published
+number, but so that a floor which reduces a domain to one row REFUSES or announces itself instead of
+being discovered by leave-one-out three entries later. With a test that fails without it.
