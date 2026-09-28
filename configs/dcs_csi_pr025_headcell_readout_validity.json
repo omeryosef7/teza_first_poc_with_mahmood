@@ -41,7 +41,8 @@
     "4. the row key being anything other than prompt_id, or rows being collapsed by keying on a field the data does not carry.",
     "5. TEST data touched. It is not, on any path.",
     "6. a verdict reported as moved without reporting the retained row count and domain count beside it.",
-    "7. the floor applied with HD_BASE as the reference for a CELL family. The cell families' BASE arms are BF_BASE and BK_BASE; HD_BASE does not exist for them, so such a run would resolve to nothing or to the wrong arm."
+    "7. the floor applied with HD_BASE as the reference for a CELL family. The cell families' BASE arms are BF_BASE and BK_BASE; HD_BASE does not exist for them, so such a run would resolve to nothing or to the wrong arm.",
+    "8. any family analysed that is not in AMENDED_S_548_FAMILY_LIST.the_six_census_families, or any claim that this file covers PR-CSI-010's csi3_head_* families -- it does not, and that gap is named."
   ],
   "NOT_CLAIMED_BY_THIS_FILE": [
     "that option mass is the right validity proxy -- it is the one PR-CSI-001 declared and the one §A was tested with, and using it here is a CONSISTENCY choice, not an endorsement",
@@ -53,5 +54,36 @@
     "instrument": "scripts/dcs_csi_head_census.py must first gain an --option-mass-floor and --option-mass-reference pair mirroring the axis analyser's, WITH A TEST THAT FAILS WITHOUT IT. No such flag exists today: measured ZERO option-mass mentions in that file.",
     "cost": "CPU only. No GPU, no new arms -- every run directory this needs already exists on disk.",
     "order": "commit this prereg; build the flag plus its failing test; run control and treatment for all four families; compare verdicts; report."
+  },
+  "AMENDED_S_548_FAMILY_LIST": {
+    "why": "The S-547 family list was assembled by GLOBBING RUN DIRECTORIES, not by reading the recipes that produced the published claims. Two of its four families (csi3_head_basket_train, csi3_head_basket_validation) are NOT read by dcs_csi_head_census.py at all -- they belong to PR-CSI-010 and are read by dcs_csi_head_analyze.py -- and four genuine census families were MISSING. Amended before any treatment number was computed; only the floor-0.0 CONTROL had been run at the time of this amendment.",
+    "the_six_census_families": [
+      {
+        "prereg": "configs/dcs_csi_pr012_head_census_basket.json",
+        "tag_prefix": "csi5_census_basket_validation"
+      },
+      {
+        "prereg": "configs/dcs_csi_pr014_cell_census_basket.json",
+        "tag_prefix": "csi7_cell_basket_validation"
+      },
+      {
+        "prereg": "configs/dcs_csi_pr015_cell_census_3heads_basket.json",
+        "tag_prefix": "csi8_cell3_basket_validation"
+      },
+      {
+        "prereg": "configs/dcs_csi_pr016_cell_census_button.json",
+        "tag_prefix": "csi9_cell3_button_validation"
+      },
+      {
+        "prereg": "configs/dcs_csi_pr018_cell_census_button_nonL14.json",
+        "tag_prefix": "csi10_cell6_button_validation"
+      },
+      {
+        "prereg": "configs/dcs_csi_pr020_cell_census_basket_8heads.json",
+        "tag_prefix": "csi11_cell8_basket_validation"
+      }
+    ],
+    "OUT_OF_SCOPE_AND_NAMED": "csi3_head_basket_train / csi3_head_basket_validation (PR-CSI-010, D32/D33) are read by dcs_csi_head_analyze.py, which this tick did NOT instrument with the flag. The underlying loader change reaches them (by_domain threads keep_keys), so the work is small -- but it is NOT done, and D32/D33 therefore remain WITHOUT the readout-validity assurance this file provides for the six census families. Recorded as a gap rather than quietly dropped.",
+    "reference_arm_per_family": "still each family's OWN BASE arm, resolved from that family's arm list, never HD_BASE by assumption -- VOID 7 stands unchanged."
   }
 }

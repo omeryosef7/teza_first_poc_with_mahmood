@@ -104,12 +104,29 @@ def readout_bank_sha(run_dir: str):
                   "log declares is not constructible without it" % run_dir)
 
 
-def load_installation(run_dir: str):
+def load_installation(run_dir: str, keep_keys=None):
     """(domain, slot) -> concept_binary_prob, from the CONCEPT-FREE one-word channel only.
 
     Mandate section 4 forbids defining the target from the forced-choice channel, which supplies
     the option set and therefore names the answer. That run directory contains BOTH channels, so
     the filter is load-bearing, not cosmetic.
+
+    `keep_keys` (ADDED S-548, for PR-CSI-025) is an optional set of (domain, slot) keys; rows whose
+    key is not in it are skipped. It exists so the head/cell readers can run the option-mass
+    readout-validity sensitivity that section A has had since AM-53/AM-54 and section H has never
+    had, because no head/cell reader has any option-mass concept at all -- measured S-547, zero
+    mentions across 1750 lines of the three readers.
+
+    THE DEFAULT IS None AND THAT IS LOAD-BEARING. This function has 26 callers and every one of
+    them passes a single positional argument. With keep_keys=None the body is exactly what it was,
+    so the change is INERT for all of them BY CONSTRUCTION rather than by inspection -- which is
+    what VOID 7 asks of an analyser change.
+
+    THE KEY SET MUST COME FROM ONE REFERENCE ARM, NEVER PER-ARM. `option_mass` is a property of the
+    ROW and so differs between arms; filtering each arm by its own mass would compare arms on
+    different populations. The axis analyser records the same rule at its own floor, its first
+    version having had exactly that defect. This function does not COMPUTE a key set, it only
+    APPLIES one, so the caller carries that responsibility where it can be seen.
     """
     path = os.path.join(run_dir, "results.jsonl")
     if not os.path.exists(path):
@@ -130,6 +147,8 @@ def load_installation(run_dir: str):
             m = max(lc, lk)
             p = math.exp(lc - m) / (math.exp(lc - m) + math.exp(lk - m))
             k = (r["domain"], family_slot(r["family_id"]))
+            if keep_keys is not None and k not in keep_keys:
+                continue
             if k in out:
                 # The corpus loader refuses on exactly this condition. Without the same refusal
                 # here, weakening the semantic_one_word filter above would substitute the

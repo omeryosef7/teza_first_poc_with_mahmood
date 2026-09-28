@@ -137,6 +137,31 @@ def per_cell_dose(prereg, dose_unit=None):
     return unit // n, n
 
 
+def _option_mass_keys(run_dir, floor):
+    """(domain, slot) keys of the reference arm whose option_mass clears `floor`.
+
+    ADDED S-548 for PR-CSI-025. Reads the SAME row selection the installation loader uses
+    (`semantic_one_word`, cell C) so the key space matches exactly; a mismatch here would silently
+    intersect two different populations. Refuses a row with no option_mass rather than treating
+    missing as zero -- missing and zero are different claims, and the axis analyser refuses the
+    same way.
+    """
+    keep, n = set(), 0
+    with open(os.path.join(run_dir, "results.jsonl"), encoding="utf-8") as fh:
+        for line in fh:
+            r = json.loads(line)
+            if r.get("query_kind") != "semantic_one_word" or r.get("cell") != "C":
+                continue
+            n += 1
+            om = r.get("option_mass")
+            if om is None:
+                sys.exit("REFUSING: row %r in %s has no option_mass; missing is not zero."
+                         % (r.get("prompt_id"), os.path.basename(run_dir)))
+            if float(om) >= floor:
+                keep.add((r["domain"], w4.lpm.family_slot(r["family_id"])))
+    return keep, n, len(keep)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--prereg", required=True)
@@ -144,6 +169,20 @@ def main():
     ap.add_argument("--split", required=True, choices=["train", "validation", "test"])
     ap.add_argument("--expect-n", type=int, required=True)
     ap.add_argument("--require-slurm-job", default=None)
+    ap.add_argument("--option-mass-floor", type=float, default=0.0,
+                    help="PR-CSI-025 readout-validity sensitivity. Drop rows whose option_mass is "
+                         "below this, using the key set of --option-mass-reference. 0.0 (default) "
+                         "is the CONTROL and must reproduce the published artefact exactly. 0.05 is "
+                         "PR-CSI-001's declared floor, the same value AM-53/AM-54 used for section "
+                         "A. Added S-548; before it, no head/cell reader had any option-mass "
+                         "concept at all.")
+    ap.add_argument("--option-mass-reference", default=None,
+                    help="The arm whose rows define the key set the floor selects. MANDATORY when "
+                         "--option-mass-floor > 0. It is ONE arm for the whole family, never "
+                         "per-arm: option_mass is a property of the ROW, so a per-arm floor would "
+                         "compare arms on different populations. NOT uniformly named across "
+                         "families -- csi3_head_* use HD_BASE, csi10_cell6_button_validation uses "
+                         "BF_BASE, csi11_cell8_basket_validation uses BK_BASE (PR-CSI-025 VOID 7).")
     ap.add_argument("--allow-short", type=int, default=0)
     ap.add_argument("--B", type=int, default=10000)
     ap.add_argument("--seed", type=int, default=20260922)
@@ -240,8 +279,39 @@ def main():
                                     row_file="results.jsonl", allow_short=a.allow_short,
                                     require_slurm_jobs=jobs)
         dirs[arm] = d
-        per[arm], slots[arm], _, _ = w4.by_domain(d)
-        live[arm] = w4.liveness(d)
+
+    # ---- PR-CSI-025 OPTION-MASS FLOOR (S-548) ------------------------------------------------
+    # The key set is built ONCE, from ONE reference arm, and applied to EVERY arm. Never per-arm:
+    # option_mass is a property of the ROW, so a per-arm floor compares arms on different
+    # populations -- the defect the axis analyser's first floor version had and records.
+    keep_keys = None
+    om_meta = {"option_mass_floor": a.option_mass_floor,
+               "option_mass_reference": a.option_mass_reference}
+    if a.option_mass_floor > 0.0:
+        if not a.option_mass_reference:
+            sys.exit("REFUSING: --option-mass-floor %g needs --option-mass-reference. The floor "
+                     "must be keyed on ONE arm for the whole family; leaving it implicit is how a "
+                     "per-arm floor gets applied by accident." % a.option_mass_floor)
+        if a.option_mass_reference not in dirs:
+            sys.exit("REFUSING: --option-mass-reference %r is not an arm of this family. Arms are "
+                     "%s. The BASE arm is NOT uniformly named across families (HD_BASE / BF_BASE / "
+                     "BK_BASE) -- PR-CSI-025 VOID 7."
+                     % (a.option_mass_reference, ",".join(sorted(dirs))))
+        ref_dir = dirs[a.option_mass_reference]
+        keep_keys, n_ref, n_kept = _option_mass_keys(ref_dir, a.option_mass_floor)
+        if not keep_keys:
+            sys.exit("REFUSING: the floor %g retains ZERO keys from %s. A sensitivity over nothing "
+                     "is not a sensitivity." % (a.option_mass_floor, a.option_mass_reference))
+        om_meta.update(reference_run_dir=os.path.basename(ref_dir), n_rows_in_reference=n_ref,
+                       n_keys_retained=n_kept,
+                       frac_retained=round(float(n_kept) / n_ref, 6) if n_ref else None)
+        print("[option-mass] floor %.3f on %s: %d of %d rows retained (%.1f%%)"
+              % (a.option_mass_floor, a.option_mass_reference, n_kept, n_ref,
+                 100.0 * n_kept / n_ref if n_ref else 0.0))
+
+    for arm in arms:
+        per[arm], slots[arm], _, _ = w4.by_domain(dirs[arm], keep_keys=keep_keys)
+        live[arm] = w4.liveness(dirs[arm])
 
     doms = sorted(set.intersection(*(set(v) for v in per.values())))
     print("[census] arms = %d | domains common to ALL arms = %d | expect-n = %d | split = %s"

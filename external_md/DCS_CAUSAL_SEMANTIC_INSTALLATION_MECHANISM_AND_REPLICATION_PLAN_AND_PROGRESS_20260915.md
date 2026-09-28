@@ -45559,3 +45559,53 @@ S-546 landed. Queue **EMPTY**. ⚠ **Ten consecutive ticks of documentation hygi
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** commit this prereg, then build `--option-mass-floor` / `--option-mass-reference` into the head/cell reader **with a test that fails without it**, then run control and treatment across the four families.
+
+## S-548 / the head/cell instrument gains the option-mass floor it never had — and my own prereg's family list was built from disk instead of from the read recipes (2026-09-28)
+
+S-547 landed as `5b746962`, 527 passed. Queue **EMPTY**. PR-CSI-025 said *build the flag with a test that fails without it*. Built.
+
+### WHAT WAS BUILT — additive, and inert by construction rather than by inspection
+
+| where | change |
+|---|---|
+| `dcs_cont_layerpos_map.load_installation` | `keep_keys=None` — skips rows whose `(domain, slot)` is not in the set |
+| `dcs_csi_head_analyze.by_domain` | threads `keep_keys` through |
+| `dcs_csi_head_census` | `--option-mass-floor`, `--option-mass-reference`, and `_option_mass_keys()` |
+
+⚠ **`load_installation` has 26 callers and every one passes a single positional argument.** With `keep_keys=None` the body is **exactly** what it was, so the change is inert for all of them **by construction** — which is what VOID 7 asks of an analyser change, rather than 26 inspections. Verified: `load_installation(d)` and `load_installation(d, keep_keys=None)` return **equal** objects, and `keep_keys=<all keys>` also equals the default.
+
+**The key set is built ONCE from ONE reference arm and applied to every arm.** Never per-arm: `option_mass` is a property of the **row**, so a per-arm floor would compare arms on different populations — the defect the axis analyser's first floor version had and records. The census **refuses** a floor with no reference, a reference that is not an arm of the family, a floor that retains zero keys, and a row with **missing** `option_mass` (*missing is not zero*).
+
+### THE CONTROL REPRODUCES — VOID 1 SATISFIED
+
+Ran PR-CSI-020's census at **floor 0.0** and diffed against the published artefact: **2 463 leaves compared, CHANGED 0, REMOVED 0**, 16 added — and the 16 are pre-existing `VOID_8_PROVENANCE.ci95_*` disclosure fields, **not** mine. ⇒ **The instrument is validated against a landed family before any treatment number is computed**, which is AM-54's own standard and PR-CSI-025's VOID 1.
+
+### THE TEST, AND IT FAILS WITHOUT THE FLAG
+
+`tests/test_csi_option_mass_floor_headcell.py` — **10 tests**, covering three properties: the flag exists and refuses the four ways it must; **the default path is byte-identical**; and **a real floor actually removes rows** — *a filter that silently keeps everything would pass a naive test and make the whole sensitivity vacuous.*
+
+**Mutation-tested:** deleting the two filter lines gives **2 failed, 8 passed**, naming `test_loader_takes_keep_keys_and_defaults_to_none` and `test_a_real_floor_actually_removes_rows`. Restored: **10 passed**, and the restored file is **byte-identical** to the backup.
+
+**Added to `GUARD_TESTS` in the deployed hook AND the installer** — 29 entries each, both sorted, both identical. ⚠ *S-534's lesson applied at the time of writing rather than discovered two entries later.*
+
+### 🔴 A REAL ERROR IN MY OWN PREREG, CAUGHT BEFORE ANY TREATMENT RAN
+
+**S-547's family list was assembled by GLOBBING RUN DIRECTORIES, not by reading the recipes that produced the published claims.** Consequences, both measured:
+
+- **Two of its four families are not census families at all.** `csi3_head_basket_train` / `_validation` belong to **PR-CSI-010** and are read by `dcs_csi_head_analyze.py`, not `head_census.py`.
+- **Four genuine census families were missing.** The six are `csi5_census_basket_validation`, `csi7_cell_basket_validation`, `csi8_cell3_basket_validation`, `csi9_cell3_button_validation`, `csi10_cell6_button_validation`, `csi11_cell8_basket_validation` — one per read recipe, all six verified to have their prereg on disk and run dirs present.
+
+⚠ **Amended while only the floor-0.0 CONTROL had been run and NO treatment number existed**, which is the only state in which amending a prereg's population is legitimate. **VOID 8 added** to forbid analysing a family outside the list.
+
+⚠ **`csi3_head_*` (PR-CSI-010, D32/D33) is now a NAMED GAP, not a quiet drop.** The loader change reaches it — `by_domain` threads `keep_keys` — but **`head_analyze.py` was not given the flags**, so **D32 and D33 remain without the readout-validity assurance this work provides for the six census families.**
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **NO SENSITIVITY NUMBER EXISTS. The treatment has not been run on any family.** Only the control, and only on one of the six.
+- ⛔ **The control was validated on ONE family** (PR-CSI-020). The other five are unvalidated, and VOID 1 requires each to reproduce before its treatment counts.
+- ⛔ **`om_meta` is computed but NOT written into the output artefact.** The floor's provenance currently exists only in stdout, which is the weaker place — **a number without its provenance in the artefact is the defect S-484 found across 21 flags.**
+- ⛔ **D32/D33 are NOT covered**, as above.
+- ⛔ **The 26 other callers were not individually re-run** — inertness rests on the default-argument construction plus two equality checks, not on 26 executions.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** wire `om_meta` into the artefact, validate the control on the remaining five families, then run the treatment.

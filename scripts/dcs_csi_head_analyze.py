@@ -74,7 +74,7 @@ def atomic_write_json(path, obj):
     return os.path.getsize(path)
 
 
-def by_domain(run_dir):
+def by_domain(run_dir, keep_keys=None):
     """(domain -> mean y_install over that domain's slots), plus the per-domain SLOT SET.
 
     The slot set is returned because comparing domain SETS is not enough (R15-3): if two arms bind
@@ -84,7 +84,10 @@ def by_domain(run_dir):
     10 slots per domain, so this is latent rather than live -- but it is latent only because
     `strict_run_dir` enforces `expect_n`, and a guard that depends on another guard should say so.
     """
-    inst, n_seen, kinds = lpm.load_installation(run_dir)
+    # keep_keys threads PR-CSI-025's option-mass floor through to the loader. Default None keeps
+    # every existing caller byte-identical -- the same construction the loader itself uses, and for
+    # the same VOID 7 reason (S-548).
+    inst, n_seen, kinds = lpm.load_installation(run_dir, keep_keys=keep_keys)
     per, slots = {}, {}
     for (dom, slot), p in inst.items():
         per.setdefault(dom, []).append(float(p))
