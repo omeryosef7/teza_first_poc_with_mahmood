@@ -45258,3 +45258,45 @@ PR-CSI-024 named it as prespecified and S-539 recorded it as **owed**. Run now, 
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** §A.7 and the Editor's checklist for D45; then A30's supersession index.
+
+## S-541 / §A.7 gains every positive control in the record — and I put a candidate's domain split in a positive control's column while building the table meant to prevent that (2026-09-28)
+
+S-540 landed as `f4e7fd0c`, 527 passed. Queue **EMPTY**. This tick finishes the D45 propagation: §A.7 and the Editor's checklist.
+
+### WHAT WAS MEASURED — §A.7 extended from one cell to four
+
+§A.7 exists to establish one thing: **that the removal instrument can move installation downward at all.** It established it for **basket TRAIN alone**. Every positive control in the record, each `KO_NEC_FULL − NEC_BASE`, re-derived by me from the four artefacts:
+
+| read | population | whole-state removal | domains negative |
+|---|---|---|---|
+| D16/D20 | basket TRAIN, 664 keys | −0.10950 [−0.12482, −0.09451] | **67 / 67** |
+| D43 | basket VALIDATION, 222 keys | −0.11200 [−0.13914, −0.08519] | **23 / 23** |
+| D44 | button TRAIN, 670 rows | −0.06986 [−0.07930, −0.06064] | 66 / 67 |
+| **D45** | **button VALIDATION**, 224 keys | −0.08825 [−0.10179, −0.07475] | **23 / 23** |
+
+⇒ **The instrument is now shown capable on a second codeword and on held-out data**, and **both held-out positive controls are unanimous at 23/23** — so D45's null, had it been one, would have been interpretable against a demonstrably live instrument on that exact population. ⛔ **It is still only the instrument**: it licenses the same single sentence for button-validation that it licenses for basket-train, and nothing about the axis. ⛔ **The four rows are NOT comparable as magnitudes** — different codewords, splits and key sets — and *"button's whole-state removal is smaller than basket's"* is **not** supported by this table.
+
+### WHAT WAS CORRECTED — my own, inside the table built to stop exactly this
+
+I first entered D43's positive control as **"19 neg / 4 pos of 23"**. **That is D43's CANDIDATE split, not its positive control's.** The positive control is **23 neg / 0 pos of 23**.
+
+⚠ **This is the S-518 error — two populations in one cell — committed again, in a table whose entire purpose is to put four positive controls side by side so they cannot be confused with anything else.** It survived my writing it and was caught only because I went back to `contrasts` in the artefacts instead of trusting the prose I had just copied from D43's claim row. **The prose was not wrong; my reading of which number it labelled was.** Corrected, and the correction is recorded inside §A.7 rather than only here, because a reader of that table is exactly who the error would have misled.
+
+### THE EDITOR'S CHECKLIST — three rows added, all about D45
+
+1. **‼ the train→validation RATIO quoted as *"the effect is stronger held out"*** — button **1.456×**, basket **1.475×**, margins 2.714× and 2.69×. *The resemblance is striking and it is not a result.* The bands were frozen **wide** to absorb 23-domain noise, so **a point inside the band is a check passed, not an effect measured.**
+2. **the four held-out 2×2 cells treated as a balanced design or compared cell-to-cell** — four reads, key sets 215 / 221 / 222 / 224, **same 23 domains**. The *pattern* is the claim; **paired data does not become independent by being tabulated.**
+3. **button's held-out sufficiency rank 6 of 47 called "nearly passing"** — the bar is rank **1** in a 46-control family. **6 is not 1**, and 6 is also not TRAIN's 36; that difference is not interpreted.
+
+⚠ *Rows 1 and 3 carry the ‼ mark by the checklist's own convention — a phrasing this draft itself is at risk of, written down before it appears rather than after.* **Row 1 is the one I would most expect to slip**, because the 1.456×/1.475× coincidence is genuinely the most interesting-looking number produced this week and it is licensed by nothing.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No GPU work, no new measurement.** Every figure is a re-derivation of a committed artefact.
+- ⛔ **A30's supersession index is NOT updated** for D45, and it is the file's own register of where dead figures still stand.
+- ⛔ **§M.9 (the axis-level machinery) is unchecked** against D45 — it describes the necessity read's mechanics and may name family sizes or floors that now have a second instance.
+- ⛔ **The random-only rank remains unreported** (floor 0.2000, above α, cannot certify).
+- ⛔ **No combined basket+button test exists.** Three passing held-out cells and one failing, all on the same domains, is the shape most likely to be over-read, which is why it is now a checklist row rather than a sentence in a results section.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** A30's supersession index for D45, then §M.9 checked against the second necessity instance.

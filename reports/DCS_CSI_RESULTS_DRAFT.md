@@ -358,6 +358,9 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | ‼ "the codeword dissociation" stated unqualified, i.e. as DIRECTION-GENERAL | **it is sufficiency-specific.** Button **necessity CERTIFIES** — rank 1 of 25, p = 0.0400, instrument capable — while button **sufficiency does not** (rank 36 of 47). The 2×2 is complete and only *one* of button's two directions fails. **The draft carried the unqualified form as §A.2's own title until S-526** | D44 |
 | ‼ the FAILED PREDICTION reported as anything other than a failure | PR-CSI-023 froze *"button necessity will NOT certify: rank ≥ 2 of 25"* **and both branches** before the read. It certified. The prereg forbids the escape it anticipated — *"necessity is a different question" is NOT available* — and this **weakens the dissociation claim and must be reported as such** | D44 / PR-CSI-023 |
 | the button/basket necessity MAGNITUDE gap quoted as a finding | button's removal fraction is **0.0309** [0.0160, 0.0455] vs basket TRAIN's **0.0803**; the two use **different reference arms and different codewords**, so this is a descriptive contrast between reads and **NOT** a cross-codeword claim (S-109 killed weaker ones) | D44 / prohibition 28 |
+| ‼ the held-out train→validation RATIO quoted as "the effect is stronger held out" | button **1.456×** (D44→D45) and basket **1.475×** (D42→D43), margins 2.714× and 2.69×. **The resemblance is striking and it is NOT a result.** One estimate on 23 domains against one on 67; the magnitude bands were frozen WIDE precisely to absorb that noise, so a point inside the band is a CHECK PASSED, not an effect measured. A second instance enlarges the temptation, not the licence | D45 / PR-CSI-024 |
+| the four HELD-OUT 2×2 cells treated as a balanced design, or compared cell-to-cell as magnitudes | they are four separate reads with **different key sets** (215 / 221 / 222 / 224) on the **same 23 domains**. The pattern (button fails only in sufficiency) is the claim; **no cell-to-cell magnitude comparison is offered**, and paired data does not become independent by being tabulated | D45 / D43 / D24 |
+| button's held-out sufficiency rank 6 of 47 described as "nearly passing" | the preregistered bar is rank **1** in a 46-control family. **6 is not 1.** It is also NOT the same number as TRAIN's rank 36, and that difference is not interpreted — one estimate on 23 domains against one on 67 | D24 / S-540 |
 
 **‼ marks a phrasing this draft itself committed and had corrected.** The **TEST** row is here
 because §0 asserted exactly it in the first version (S-417); the **floor** row because §M copied it
@@ -2237,6 +2240,30 @@ fraction of the clean->KO span removed by the whole state = 0.4687  (46.9 %)
 domains, with zero positive and zero tied**. ⛔ **Both p-values sit AT the Monte-Carlo sampler's
 floor of 5.0 × 10⁻⁶ and therefore carry no information** — the test had no resolution below it, and
 quoting either as evidence of *magnitude* is a misreading.
+
+🔴 **EXTENDED S-541 — THE REMOVAL INSTRUMENT IS NOW SHOWN CAPABLE ON A SECOND CODEWORD AND ON
+HELD-OUT DATA, WHICH THIS SECTION PREVIOUSLY ESTABLISHED FOR BASKET TRAIN ALONE.** Every positive
+control in the record, each `KO_NEC_FULL − NEC_BASE`:
+
+| read | population | whole-state removal | domains negative |
+|---|---|---|---|
+| D16/D20 | basket TRAIN, 664 keys | **−0.10950** [−0.12482, −0.09451] | **67 / 67** |
+| D43 | basket VALIDATION, 222 keys | **−0.11200** [−0.13914, −0.08519] | **23 / 23** |
+| D44 | **button** TRAIN, 670 rows | **−0.06986** [−0.07930, −0.06064] | 66 / 67 |
+| **D45** | **button VALIDATION**, 224 keys | **−0.08825** [−0.10179, −0.07475] | **23 / 23** |
+
+⚠ **D45's positive control is negative on ALL 23 held-out domains with zero positive**, so the
+instrument is demonstrably capable on the exact population D45's null would have had to be
+interpreted against, and **both held-out positive controls are unanimous at 23/23**.
+🔴 *Correction made while writing this table, S-541: I first entered D43's positive control as
+"19 neg / 4 pos", which is that read's **candidate** split, not its positive control's. The positive
+control is **23 / 23**. Two populations in one cell — the same error S-518 corrected in D43's own
+claim row, made again in a table built to display four of them side by side, and caught only
+because I re-read the contrasts instead of the prose.* ⛔ **This is still only the instrument.** It licenses the same single sentence
+for button-validation that it licenses for basket-train, and nothing about the axis. ⚠ **The four
+rows are NOT comparable as magnitudes** — different codewords, splits and key sets — and in
+particular *"button's whole-state removal is smaller than basket's"* is **not** a claim this table
+supports; §L.9 records that the readout's noise differs by codeword.
 
 ⚠ **Two key sets, and neither figure is withdrawn.** D16 read **670** keys over **5** arms
 (−0.11009 / −0.23406 = **47.0 %**); D20 reads **664** over **13** (−0.10950 / −0.23364 =
