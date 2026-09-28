@@ -1303,6 +1303,11 @@ was chosen after the point estimates were seen, and no preregistration froze it.
 estimates themselves were re-derived from the run directories independently of both artefacts and of
 S-558, and all ten `E` values reproduce the published artefacts to 8 decimals.
 
+🔬 **Artefact (written S-564; until then these intervals lived only in the sprint log):**
+`reports/DCS_CSI_FLOOR_PAIRED_csi5_census_basket_validation.json` (md5 `7f90588b`) — six run
+directories, slurm job **918631**, each arm's identity from its own `knockout_heads`, the
+per-domain retention histogram, and the slot-pooled decomposition.
+
 ⚠ **This does NOT retract the section.** Four clear at the published readout and three at the declared
 floor; both are measured, and the artefact is
 `reports/DCS_CSI_CENSUS_OPTIONMASS05_SENSITIVITY_csi5_census_basket_validation.json` (146 of 230 rows

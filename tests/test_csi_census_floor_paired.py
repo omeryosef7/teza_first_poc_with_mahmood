@@ -100,11 +100,15 @@ def test_it_declares_that_it_freezes_nothing():
 
 def test_it_refuses_a_nonpositive_floor_when_actually_invoked():
     """The guard is reachable from argv, not only present in the source."""
+    # --out became REQUIRED at S-564 (R42-M4), so it must be supplied here or argparse rejects the
+    # call before the floor guard is ever reached -- which would make this test pass for the wrong
+    # reason. The path is never written: the floor refusal fires first.
     p = subprocess.run([sys.executable, PAIRED, "--tag-prefix", "x", "--expect-n", "1",
-                        "--arms", "A", "--reference", "A", "--floor", "0"],
+                        "--arms", "A", "--reference", "A", "--floor", "0",
+                        "--out", os.devnull],
                        capture_output=True, text=True)
     assert p.returncode != 0
-    assert "REFUSING" in (p.stdout + p.stderr)
+    assert "REFUSING" in (p.stdout + p.stderr), (p.stdout + p.stderr)[:400]
 
 
 def test_it_reuses_the_census_option_mass_keys_rather_than_reimplementing_them():
@@ -198,3 +202,90 @@ def test_an_interval_from_fewer_than_B_draws_refuses():
     assert "if len(xs) != a.B:" in src
     i = src.index("if len(xs) != a.B:")
     assert "REFUSING" in src[i:i + 400]
+
+
+# ---- R42-M3 / M4 / F6, S-564: provenance, identity and a written artefact ------------------------
+
+def test_out_is_required_not_optional():
+    """R42-M4: --out defaulted to None and no artefact was ever written, so three entries' worth of
+    intervals lived only in a terminal. The census's own --out is required=True."""
+    src = _src()
+    assert 'ap.add_argument("--out", required=True' in src
+    assert '"--out", default=None' not in src
+
+
+def test_it_is_invoked_without_out_and_refuses():
+    p = subprocess.run([sys.executable, PAIRED, "--tag-prefix", "x", "--expect-n", "1",
+                        "--arms", "A", "--reference", "A", "--floor", "0.05"],
+                       capture_output=True, text=True)
+    assert p.returncode != 0
+    assert "--out" in (p.stdout + p.stderr)
+
+
+def test_the_artefact_is_written_atomically_through_w4():
+    """A half-written artefact is worse than none; w4.atomic_write_json fsyncs and re-reads."""
+    src = _src()
+    assert "w4.atomic_write_json(a.out, blob)" in src
+    assert "json.dump(blob" not in src, "a plain json.dump is not atomic"
+
+
+def test_a_slurm_job_filter_can_be_required():
+    """R42-M3: strict_run_dir was called with NO slurm filter, while the census's frozen read passes
+    --require-slurm-job. rederive's R8-B1 records the S-104b near-miss this reopens."""
+    src = _src()
+    assert '"--require-slurm-job"' in src
+    assert "require_slurm_jobs=jobs" in src
+
+
+def test_arm_identity_is_asserted_from_the_runs_own_record():
+    """Resolving arms by TAG NAME alone would publish a mislabelled directory as the named arm."""
+    src = _src()
+    assert "census.recorded_heads(d)" in src
+    assert 'if got is None:' in src
+    i = src.index("census.recorded_heads(d)")
+    seg = src[i:i + 1800]
+    assert "REFUSING" in seg and "Absence is not a value" in seg
+
+
+def test_a_SINGLE_arm_whose_record_disagrees_with_its_name_refuses():
+    src = _src()
+    assert 'want = [int(m.group(1))]' in src
+    i = src.index('want = [int(m.group(1))]')
+    assert "REFUSING" in src[i:i + 500]
+
+
+def test_the_base_arms_EMPTY_is_not_published_as_ALL():
+    """recorded_heads maps an EMPTY knockout_heads to the string "ALL" (S-292). Publishing that
+    verbatim would state that the clean reference knocked out all 32 heads -- the ACTIVELY CONCEALS
+    defect R30-A/S-332 fixed in the census."""
+    src = _src()
+    assert 'if arm == a.base_arm:' in src
+    i = src.index('if arm == a.base_arm:')
+    seg = src[i:i + 1400]
+    assert 'EMPTY -- no intervention flag' in seg
+    assert "REFUSING" in seg, "a base arm carrying a real head list must refuse"
+
+
+def test_the_artefact_records_run_dirs_reference_and_job():
+    src = _src()
+    for key in ('"run_dirs"', '"reference_run_dir"', '"require_slurm_job"',
+                '"arm_identity_from_own_knockout_heads"'):
+        assert key in src, "artefact does not record %s" % key
+
+
+def test_the_published_artefact_exists_and_carries_its_provenance():
+    """The point of M4/F6: the intervals must be reproducible from a file, not from the log."""
+    import json
+    p = os.path.join(REPO, "reports",
+                     "DCS_CSI_FLOOR_PAIRED_csi5_census_basket_validation.json")
+    if not os.path.isfile(p):
+        return                            # corpus/artefact absent in this checkout
+    d = json.load(open(p, encoding="utf-8"))
+    assert d["schema"] == "dcs_csi_census_floor_paired/1"
+    assert d["require_slurm_job"] == "918631"
+    assert d["reference_run_dir"].startswith("csi5_census_basket_validation_HD_BASE_")
+    assert len(d["run_dirs"]) == 6 and len(d["domains"]) == 23
+    ident = d["arm_identity_from_own_knockout_heads"]
+    assert ident["SINGLE_19"] == [19] and ident["SINGLE_23"] == [23]
+    assert "EMPTY" in ident["HD_BASE"], "base arm must not be recorded as ALL"
+    assert d["results"]["HD_BOTK"]["pooled"]["sign_reverses_vs_domain_equal"] is True

@@ -1,0 +1,439 @@
+{
+  "schema": "dcs_csi_census_floor_paired/1",
+  "tag_prefix": "csi5_census_basket_validation",
+  "floor": 0.05,
+  "reference": "HD_BASE",
+  "base_arm": "HD_BASE",
+  "anchor_arm": "HD_BOTK",
+  "n_domains": 23,
+  "B": 10000,
+  "seed": 20260922,
+  "ci": 0.95,
+  "n_rows_in_reference": 230,
+  "n_keys_retained": 146,
+  "frac_retained": 0.634783,
+  "run_dirs": {
+    "HD_BASE": "csi5_census_basket_validation_HD_BASE_20260922_164221_939328",
+    "HD_BOTK": "csi5_census_basket_validation_HD_BOTK_20260922_171657_939328",
+    "SINGLE_02": "csi5_census_basket_validation_SINGLE_02_20260922_181516_939328",
+    "SINGLE_17": "csi5_census_basket_validation_SINGLE_17_20260922_191521_939328",
+    "SINGLE_19": "csi5_census_basket_validation_SINGLE_19_20260922_192331_939328",
+    "SINGLE_23": "csi5_census_basket_validation_SINGLE_23_20260922_193956_939328"
+  },
+  "reference_run_dir": "csi5_census_basket_validation_HD_BASE_20260922_164221_939328",
+  "require_slurm_job": "918631",
+  "arm_identity_from_own_knockout_heads": {
+    "HD_BASE": "EMPTY -- no intervention flag (the helper's 'ALL' means EMPTY here, S-292)",
+    "HD_BOTK": [
+      29,
+      11,
+      30,
+      10,
+      15,
+      16,
+      0,
+      9
+    ],
+    "SINGLE_02": [
+      2
+    ],
+    "SINGLE_17": [
+      17
+    ],
+    "SINGLE_19": [
+      19
+    ],
+    "SINGLE_23": [
+      23
+    ]
+  },
+  "domains": [
+    "airport_apron",
+    "airport_ground",
+    "ambulance_station",
+    "botanic_glasshouse",
+    "canal_lock",
+    "catering_unit",
+    "cement_plant",
+    "ceramics_kiln",
+    "coal_yard",
+    "coastguard_post",
+    "concert_hall",
+    "fish_farm",
+    "fishing_harbour",
+    "freight_yard",
+    "game_manual",
+    "hospital_supply",
+    "library_stacks",
+    "mountain_refuge",
+    "parks_yard",
+    "shipyard_slip",
+    "toy_factory",
+    "university_lab",
+    "water_treatment"
+  ],
+  "rows_per_domain": {
+    "airport_apron": 10,
+    "airport_ground": 8,
+    "ambulance_station": 8,
+    "botanic_glasshouse": 6,
+    "canal_lock": 6,
+    "catering_unit": 9,
+    "cement_plant": 3,
+    "ceramics_kiln": 6,
+    "coal_yard": 6,
+    "coastguard_post": 3,
+    "concert_hall": 7,
+    "fish_farm": 6,
+    "fishing_harbour": 8,
+    "freight_yard": 1,
+    "game_manual": 9,
+    "hospital_supply": 8,
+    "library_stacks": 7,
+    "mountain_refuge": 7,
+    "parks_yard": 9,
+    "shipyard_slip": 2,
+    "toy_factory": 7,
+    "university_lab": 7,
+    "water_treatment": 3
+  },
+  "rows_per_domain_histogram": {
+    "1": 1,
+    "2": 1,
+    "3": 3,
+    "6": 5,
+    "7": 5,
+    "8": 4,
+    "9": 3,
+    "10": 1
+  },
+  "min_rows_per_domain": 1,
+  "min_rows_required": 1,
+  "WHY_ROWS_PER_DOMAIN_IS_RECORDED": "the domain SET is unchanged while the domains are THINNED; equal-domain weighting gives a 1-row domain the same weight as a 10-row one (S-561)",
+  "ci_level": 0.95,
+  "PAIRED": "the domain vector is resampled ONCE per replicate and BOTH floors are evaluated on that resample; the floor row set is a SUBSET of the control's, so the marginal ci95s in the two census artefacts are NOT a valid comparison of the difference",
+  "NO_PREREGISTERED_BAR": "PR-CSI-012 declares no DETECTABILITY block and no `layers`; this family froze effects-with-intervals and NO threshold, so nothing here clears or fails a preregistered bar",
+  "NO_VERDICT": true,
+  "results": {
+    "SINGLE_19": {
+      "E_ctrl": {
+        "point": -0.04010868521480036,
+        "ci95": [
+          -0.05050537009985548,
+          -0.030399217858343854
+        ],
+        "n_draws": 10000
+      },
+      "E_flr": {
+        "point": -0.029930338242061597,
+        "ci95": [
+          -0.038924581850424154,
+          -0.021252027562609837
+        ],
+        "n_draws": 10000
+      },
+      "abs_ctrl": {
+        "point": 0.04010868521480036,
+        "ci95": [
+          0.030399217858343854,
+          0.05050537009985548
+        ],
+        "n_draws": 10000
+      },
+      "abs_flr": {
+        "point": 0.029930338242061597,
+        "ci95": [
+          0.021252027562609833,
+          0.038924581850424154
+        ],
+        "n_draws": 10000
+      },
+      "delta_abs": {
+        "point": -0.010178346972738766,
+        "ci95": [
+          -0.018110758252539712,
+          -0.0034545878786952956
+        ],
+        "n_draws": 10000
+      },
+      "pct": {
+        "point": -25.376915045280242,
+        "ci95": [
+          -41.122906832663745,
+          -9.468174767442587
+        ],
+        "n_draws": 10000
+      },
+      "margin_flr": {
+        "point": 1.7633957443286659,
+        "ci95": [
+          0.8498860773728143,
+          7.3537907733655485
+        ],
+        "n_draws": 10000
+      },
+      "pooled": {
+        "abs_ctrl": 0.040108685214800356,
+        "abs_flr": 0.03273618188699549,
+        "pct": -18.38131389329204,
+        "sign_reverses_vs_domain_equal": false
+      }
+    },
+    "SINGLE_02": {
+      "E_ctrl": {
+        "point": -0.04947467431226556,
+        "ci95": [
+          -0.07045691161978936,
+          -0.032497894640421354
+        ],
+        "n_draws": 10000
+      },
+      "E_flr": {
+        "point": -0.046035753889439264,
+        "ci95": [
+          -0.0684303889162184,
+          -0.027002792252479303
+        ],
+        "n_draws": 10000
+      },
+      "abs_ctrl": {
+        "point": 0.04947467431226556,
+        "ci95": [
+          0.032497894640421354,
+          0.07045691161978934
+        ],
+        "n_draws": 10000
+      },
+      "abs_flr": {
+        "point": 0.046035753889439264,
+        "ci95": [
+          0.027002792252479303,
+          0.0684303889162184
+        ],
+        "n_draws": 10000
+      },
+      "delta_abs": {
+        "point": -0.003438920422826293,
+        "ci95": [
+          -0.012960617745678117,
+          0.006136128500853944
+        ],
+        "n_draws": 10000
+      },
+      "pct": {
+        "point": -6.950870259642578,
+        "ci95": [
+          -27.847210148473565,
+          13.121709117910108
+        ],
+        "n_draws": 10000
+      },
+      "margin_flr": {
+        "point": 2.712273140352169,
+        "ci95": [
+          1.3444957954666388,
+          9.971883110264837
+        ],
+        "n_draws": 10000
+      },
+      "pooled": {
+        "abs_ctrl": 0.04947467431226556,
+        "abs_flr": 0.0491071233258542,
+        "pct": -0.7429073389983587,
+        "sign_reverses_vs_domain_equal": false
+      }
+    },
+    "SINGLE_17": {
+      "E_ctrl": {
+        "point": -0.02921839023584005,
+        "ci95": [
+          -0.03910752675510745,
+          -0.02109274861379726
+        ],
+        "n_draws": 10000
+      },
+      "E_flr": {
+        "point": -0.023244714640949907,
+        "ci95": [
+          -0.031612541929425406,
+          -0.015813112755585477
+        ],
+        "n_draws": 10000
+      },
+      "abs_ctrl": {
+        "point": 0.02921839023584005,
+        "ci95": [
+          0.021092748613797258,
+          0.03910752675510745
+        ],
+        "n_draws": 10000
+      },
+      "abs_flr": {
+        "point": 0.023244714640949907,
+        "ci95": [
+          0.015813112755585477,
+          0.031612541929425406
+        ],
+        "n_draws": 10000
+      },
+      "delta_abs": {
+        "point": -0.005973675594890142,
+        "ci95": [
+          -0.009958140648783413,
+          -0.0020301376360838826
+        ],
+        "n_draws": 10000
+      },
+      "pct": {
+        "point": -20.44491687143898,
+        "ci95": [
+          -32.23468254821327,
+          -7.691672505504358
+        ],
+        "n_draws": 10000
+      },
+      "margin_flr": {
+        "point": 1.3695010909827239,
+        "ci95": [
+          0.6262226117204809,
+          5.936634422476752
+        ],
+        "n_draws": 10000
+      },
+      "pooled": {
+        "abs_ctrl": 0.02921839023584003,
+        "abs_flr": 0.025711162822267944,
+        "pct": -12.003492955166397,
+        "sign_reverses_vs_domain_equal": false
+      }
+    },
+    "HD_BOTK": {
+      "E_ctrl": {
+        "point": -0.012567216781567754,
+        "ci95": [
+          -0.020263034165394496,
+          -0.004789220436632422
+        ],
+        "n_draws": 10000
+      },
+      "E_flr": {
+        "point": -0.01697312604860359,
+        "ci95": [
+          -0.03347477838921363,
+          -0.004028417412696247
+        ],
+        "n_draws": 10000
+      },
+      "abs_ctrl": {
+        "point": 0.012567216781567754,
+        "ci95": [
+          0.0047892204366324215,
+          0.020263034165394496
+        ],
+        "n_draws": 10000
+      },
+      "abs_flr": {
+        "point": 0.01697312604860359,
+        "ci95": [
+          0.0040302695189646754,
+          0.03347477838921363
+        ],
+        "n_draws": 10000
+      },
+      "delta_abs": {
+        "point": 0.004405909267035837,
+        "ci95": [
+          -0.00318017789026858,
+          0.015578541702981856
+        ],
+        "n_draws": 10000
+      },
+      "pct": {
+        "point": 35.058751222450084,
+        "ci95": [
+          -36.7947228499762,
+          117.08938947876582
+        ],
+        "n_draws": 10000
+      },
+      "margin_flr": {
+        "point": 1.0,
+        "ci95": [
+          1.0,
+          1.0
+        ],
+        "n_draws": 10000
+      },
+      "pooled": {
+        "abs_ctrl": 0.012567216781567747,
+        "abs_flr": 0.011623223099640546,
+        "pct": -7.511557239242903,
+        "sign_reverses_vs_domain_equal": true
+      }
+    },
+    "SINGLE_23": {
+      "E_ctrl": {
+        "point": -0.016503034022491595,
+        "ci95": [
+          -0.023202426127665116,
+          -0.01015909774080342
+        ],
+        "n_draws": 10000
+      },
+      "E_flr": {
+        "point": -0.015525951210031124,
+        "ci95": [
+          -0.025187499355108077,
+          -0.007235933951108043
+        ],
+        "n_draws": 10000
+      },
+      "abs_ctrl": {
+        "point": 0.016503034022491595,
+        "ci95": [
+          0.01015909774080342,
+          0.023202426127665113
+        ],
+        "n_draws": 10000
+      },
+      "abs_flr": {
+        "point": 0.015525951210031124,
+        "ci95": [
+          0.007235933951108041,
+          0.025187499355108077
+        ],
+        "n_draws": 10000
+      },
+      "delta_abs": {
+        "point": -0.000977082812460471,
+        "ci95": [
+          -0.008874645603885092,
+          0.00802082831516638
+        ],
+        "n_draws": 10000
+      },
+      "pct": {
+        "point": -5.920625329432322,
+        "ci95": [
+          -48.7879965072526,
+          54.56718398636999
+        ],
+        "n_draws": 10000
+      },
+      "margin_flr": {
+        "point": 0.9147372832542224,
+        "ci95": [
+          0.45098567015557267,
+          3.417714870183309
+        ],
+        "n_draws": 10000
+      },
+      "pooled": {
+        "abs_ctrl": 0.016503034022491585,
+        "abs_flr": 0.013531559746501345,
+        "pct": -18.005624129117646,
+        "sign_reverses_vs_domain_equal": false
+      }
+    }
+  }
+}

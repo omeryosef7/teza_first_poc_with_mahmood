@@ -46662,3 +46662,96 @@ against real data because no such data exists.
 `reports/` artefact with its run directories and job id (R42-M4/F6). The intervals now carry three
 entries' worth of load-bearing conclusions and live only in this log, which is the defect the census's
 own S-549 comment names: *"A sensitivity whose floor lives only in a terminal has exactly that defect."*
+
+## S-564 / the paired intervals finally have an artefact — and reusing the census's identity helper without its interpretation nearly published "HD_BASE knocked out all 32 heads" (2026-09-28)
+
+S-563 landed as `70cead3e`, **564 passed** (555 + its 9), 1 skipped, in **30:28**. Queue **EMPTY**. R42
+landed 19:15; it is now 20:48, so **~1.5 h** — R43 is not due on the ~4 h clause and no family is near a
+GPU. S-563's NEXT: give the S-559/S-561/S-562 intervals an artefact (R42-M4/F6) and bind their provenance
+(R42-M3).
+
+### 1. WHAT WAS MISSING, AND IT WAS MORE THAN A FILE
+
+`--out` was **optional** and had never been passed, so three entries of load-bearing conclusions — the
+paired movement intervals, the margin intervals, the slot-pooled sign reversal — existed only in this
+log. The census's own `--out` is `required=True`, and its S-549 comment states the rule: *"A sensitivity
+whose floor lives only in a terminal has exactly that defect."*
+
+Beyond that, the reader had **no provenance of any kind**: `strict_run_dir` was called with no slurm
+filter, while the census's frozen read passes `--require-slurm-job`. `rederive`'s own **R8-B1** note
+records why: when exactly one directory survived the completeness check the filters never ran, so a lone
+directory from the **wrong allocation** was returned — the S-104b near-miss. And arms were resolved **by
+tag name alone**, so a directory named `..._SINGLE_19` produced by a config that knocked out a different
+head would have been published as SINGLE_19 — inside a tool whose whole purpose is checking another
+tool's numbers.
+
+**Fixed, entirely by reusing what exists** — `w4.atomic_write_json`, `census.recorded_heads`,
+`strict_run_dir(require_slurm_jobs=…)`. No new helper was written.
+
+| guard | what it now does |
+|---|---|
+| `--out` | **required**; written atomically (fsync + re-read) via `w4` |
+| `--require-slurm-job` | threaded into `strict_run_dir` for every arm |
+| arm identity | asserted from each arm's **own** `knockout_heads`; **absent field refuses** (R20-6) |
+| `SINGLE_<hh>` | record must equal `[hh]` — derivable from the name with no prereg |
+
+**Artefact:** `reports/DCS_CSI_FLOOR_PAIRED_csi5_census_basket_validation.json` (md5 `7f90588b`),
+recording all six run directories, `reference_run_dir`, the job id, per-arm identity, the 23 domains, the
+retention histogram, and the pooled decomposition. **Job 918631 verified by me across all 44 csi5 arm
+dirs** (a single job id, 44 of 44) rather than taken from D34's prose. Cited now in D34 and §H.2.
+
+### 2. 🔴 AND IT NEARLY SHIPPED A FIELD THAT STATED THE OPPOSITE OF THE TRUTH
+
+The first artefact I wrote recorded **`"HD_BASE": "ALL"`**. `recorded_heads` maps an **empty**
+`knockout_heads` to the string `"ALL"` (S-292), and HD_BASE's field is empty (verified: `knockout_heads`
+is present and is `''`, `intervene` is `''`). So the published line read as *"the clean reference knocked
+out all 32 heads"* — the exact inverse of what HD_BASE is.
+
+⚠ **This is R30-A/S-332 reintroduced.** That review fixed the census for writing `"recorded": null` on
+the base arm, and its comment says why in terms that apply verbatim here: the field *"ACTIVELY CONCEALS a
+flag rather than merely missing it"*, and *"'ALL' is the base arm's EMPTY, not a knockout of everything —
+the dose check (want 0) is what separates those two."* ⇒ **I reused the helper and left its
+interpretation behind.** The base arm now records `EMPTY -- no intervention flag`, and a base arm that
+records a real head list **refuses**.
+
+⚠ The general lesson, and it is the third variant this week: **a shared helper carries a convention, and
+reusing the helper without the convention is not reuse.** S-563's F4 was two functions disagreeing about
+NaN; S-562's F2 was a reference arm whose required property lived only in the sibling's docstring; this is
+a return value whose meaning is inverted for one caller.
+
+### 3. A GUARD CHANGE BROKE AN OLDER TEST, WHICH IS THE POINT
+
+Making `--out` required broke `test_it_refuses_a_nonpositive_floor_when_actually_invoked` — it invoked
+without `--out`, so argparse rejected the call before the floor guard was reached and the test would have
+**passed for the wrong reason** had it only checked the exit code. It checks the message, so it failed
+loudly. Updated to pass `--out os.devnull` (never written: the floor refusal fires first).
+
+**9 new test entry points, 27 in the file; 6 of 6 mutations caught**, each by its own test — including
+one that restores the `"ALL"` base-arm record (caught by 4 tests) and one that removes the slurm
+threading. Source verified byte-identical to backup afterwards. All 36 tests across the two floor files
+pass together.
+
+### NOT ESTABLISHED
+
+⛔ **No number changed.** The artefact records exactly the values S-559/S-561/S-562 published; it is
+provenance, not a re-measurement. Re-running under `--min-rows 1` reproduced every figure identically.
+⛔ **`--min-rows 1` was required to write it**, because `freight_yard` retains one row (S-561). The
+artefact records `min_rows_required: 1` so the waiver is visible, but **it is a waiver**, and the default
+of 3 exists precisely because this family trips it.
+⛔ **The identity check is partial.** `SINGLE_<hh>` is name-checked; `HD_BOTK` and `HD_TOPK` cannot be
+derived from their names without a prereg, so their records are required-to-exist and written out, **not
+verified against a frozen head set**. The census can do better because it has `head_sets`; this reader
+does not take a prereg.
+⛔ **No GATE 0 here.** Liveness/dose are not read, so a base arm whose hook really fired would pass this
+reader's identity check on its config alone — the census's dose check is what separates those, and it is
+not reproduced.
+⛔ **Only csi5 has an artefact.** csi7/csi8/csi9 were never run through this reader, so their invariance
+(D34's sibling comparison) still rests on the census artefacts alone.
+⛔ **R42's F5, F7–F11 and stream 1's M2 remain open** — in particular M2, the cross-arm slot-set guard the
+census has and this reader still does not. **F7–F11 are still not re-verified by me.**
+⛔ **38 of ~45 claims remain unaudited** against their frozen files.
+
+**NEXT:** close R42-M2 — carry the census's cross-arm slot-set refusal into the paired reader. It is the
+last structural guard the census has that this tool lacks, and S-561 showed why `by_domain`'s second
+return value matters: the domain-SET check passed while the domains were thinned 10 → 1, and the slot sets
+are the thing that would have said so per arm rather than per family.

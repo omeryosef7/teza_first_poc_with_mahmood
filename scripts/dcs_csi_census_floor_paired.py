@@ -24,7 +24,7 @@ detectability block and NO `layers` at all, so this family HAS no preregistered 
 `--anchor-arm` ratio is reported because D34 is written against an effect-built anchor that no prereg
 froze (S-556); putting an interval on that ratio does not make it preregistered.
 """
-import argparse, importlib.util, json, math, os, random, statistics, sys
+import argparse, importlib.util, json, math, os, random, re, statistics, sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -58,7 +58,18 @@ def main():
     ap.add_argument("--B", type=int, default=10000)
     ap.add_argument("--seed", type=int, default=20260922)
     ap.add_argument("--ci", type=float, default=0.95)
-    ap.add_argument("--out", default=None)
+    # R42-M4/F6 (S-564). --out was OPTIONAL and no artefact was ever written, so the intervals
+    # S-559/S-561/S-562 rest on lived only in a terminal and then only in the log. The census's own
+    # --out is required=True and its S-549 comment states the rule: "A sensitivity whose floor lives
+    # only in a terminal has exactly that defect."
+    ap.add_argument("--out", required=True,
+                    help="artefact path; REQUIRED (R42-M4). Written atomically via w4.")
+    # R42-M3 (S-564). This reader called strict_run_dir with no slurm filter, while the census's
+    # frozen read passes --require-slurm-job <VALIDATION_JOB_IDS>. rederive's own R8-B1 note records
+    # why that matters: when exactly one directory survived the completeness check the filters never
+    # ran, so a lone directory from the WRONG allocation was returned (the S-104b near-miss).
+    ap.add_argument("--require-slurm-job", default=None,
+                    help="comma-separated slurm job id(s) every arm dir must belong to (R42-M3)")
     a = ap.parse_args()
 
     # R42-M5 (S-562). Every interval used to be printed AND serialized under the literal key
@@ -74,10 +85,53 @@ def main():
 
     arms = [s for s in a.arms.split(",") if s]
     need = [a.base_arm] + arms + ([a.anchor_arm] if a.anchor_arm else [])
+    jobs = a.require_slurm_job.split(",") if a.require_slurm_job else None
     dirs = {}
     for arm in sorted(set(need)):
         dirs[arm] = rederive.strict_run_dir("%s_%s" % (a.tag_prefix, arm), a.expect_n,
-                                            row_file="results.jsonl", allow_short=a.allow_short)
+                                            row_file="results.jsonl", allow_short=a.allow_short,
+                                            require_slurm_jobs=jobs)
+
+    # ---- R42-M3: ARM IDENTITY, from each arm's OWN record, not from its directory name ------------
+    # The census asserts every arm against its recorded `knockout_heads` because S-246 measured that a
+    # 1-head arm's DOSE is indistinguishable from the all-32 arm's -- so a dose that looks right
+    # certifies nothing. This reader resolved arms by TAG NAME ALONE, which means a directory called
+    # `..._SINGLE_19` produced by a config that knocked out a different head would have been published
+    # as SINGLE_19, inside a tool whose whole purpose is checking another tool's numbers.
+    # For SINGLE_<hh> the expected set is derivable from the arm name with no prereg; for the
+    # set-valued arms it is not, so their record is REQUIRED TO EXIST and is written into the artefact
+    # rather than silently trusted (R20-6: a check whose PASS is consistent with reading nothing is
+    # not a check).
+    identity = {}
+    for arm, d in sorted(dirs.items()):
+        got = census.recorded_heads(d)
+        if got is None:
+            sys.exit("REFUSING: arm %s (%s) has NO knockout_heads field, so its identity cannot be "
+                     "asserted from its own record. Absence is not a value. (R42-M3/S-564)"
+                     % (arm, os.path.basename(d)))
+        if arm == a.base_arm:
+            # ⚠ S-564, caught on my OWN artefact before it shipped. `recorded_heads` maps an EMPTY
+            # knockout_heads to the string "ALL" (S-292), and the base arm's field IS empty -- so
+            # recording `got` verbatim publishes "HD_BASE": "ALL", which reads as "the clean reference
+            # knocked out all 32 heads", the exact opposite of the truth. That is the ACTIVELY
+            # CONCEALS defect R30-A/S-332 fixed in the census, reintroduced here by reusing its helper
+            # without its interpretation. The base arm must carry NO head list, and is recorded as
+            # what it is.
+            if got not in (None, "ALL", [], ""):
+                sys.exit("REFUSING: base arm %s records knockout_heads=%r -- a base arm carrying an "
+                         "intervention flag is not a clean reference. (R30-A/S-564)" % (arm, got))
+            identity[arm] = "EMPTY -- no intervention flag (the helper's 'ALL' means EMPTY here, S-292)"
+            continue
+        identity[arm] = got
+        m = re.match(r"^SINGLE_(\d+)$", arm)
+        if m:
+            want = [int(m.group(1))]
+            if got != want:
+                sys.exit("REFUSING: arm %s records knockout_heads=%r, not %r. The directory name says "
+                         "one head and the run's own config says another -- resolving arms by tag "
+                         "name alone is how that gets published. (R42-M3/S-564)" % (arm, got, want))
+    print("[identity] %d arms asserted from their own knockout_heads (%d SINGLE_* name-checked)"
+          % (len(identity), sum(1 for k in identity if re.match(r"^SINGLE_\d+$", k))))
 
     if a.reference not in dirs:
         sys.exit("REFUSING: --reference %r is not among the arms this run loads (%s). The key set "
@@ -260,6 +314,11 @@ def main():
             "anchor_arm": a.anchor_arm, "n_domains": len(doms), "B": a.B, "seed": a.seed,
             "ci": a.ci, "n_rows_in_reference": n_ref, "n_keys_retained": n_kept,
             "frac_retained": round(float(n_kept) / n_ref, 6),
+            "run_dirs": {k: os.path.basename(v) for k, v in sorted(dirs.items())},
+            "reference_run_dir": os.path.basename(dirs[a.reference]),
+            "require_slurm_job": a.require_slurm_job,
+            "arm_identity_from_own_knockout_heads": {k: v for k, v in sorted(identity.items())},
+            "domains": doms,
             "rows_per_domain": dict(sorted(rpd.items())),
             "rows_per_domain_histogram": {str(k): v for k, v in sorted(hist.items())},
             "min_rows_per_domain": min(rpd.values()), "min_rows_required": a.min_rows,
@@ -275,10 +334,8 @@ def main():
                                      "this family froze effects-with-intervals and NO threshold, so "
                                      "nothing here clears or fails a preregistered bar"),
             "NO_VERDICT": True, "results": res}
-    if a.out:
-        with open(a.out, "w", encoding="utf-8") as fh:
-            json.dump(blob, fh, indent=1, sort_keys=True)
-        print("\n[wrote] %s" % a.out)
+    w4.atomic_write_json(a.out, blob)
+    print("\n[wrote] %s" % a.out)
 
 
 if __name__ == "__main__":
