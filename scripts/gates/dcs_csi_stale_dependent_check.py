@@ -40,7 +40,7 @@ DESIGN NOTES, each earned:
   - The struck-span model is explicit and tested below, because getting "inside a
     struck span" wrong silently inverts the whole result.
 """
-import argparse, re, sys
+import argparse, os, re, sys
 
 MIN_SIG = 3
 NUM = re.compile(r'(?<![\d.])\d+\.\d+(?:[eE][-+]?\d+)?(?![\d])')
@@ -85,14 +85,66 @@ def selftest():
     assert len(live) == 1, "the surviving-number case must still be surfaced"
     return True
 
+def count_mode(files, tokens, context=0):
+    """Count a literal the way this file has always counted, and the way ad-hoc greps do not.
+
+    ADDED S-546. The detector below has used digit-bounded matching since it was written, and
+    S-528's figures reproduce exactly against it. The error this mode exists to prevent was never
+    in the instrument -- it was in reaching PAST the instrument for a bare `grep -o`, which matches
+    INSIDE longer numbers. S-544 counted `0.0778` that way and reported "at least 24 files"; the
+    bounded count is 51 occurrences in 7, because these artefacts are full of per-domain floats
+    like 0.07786075415465653. That is the S-482 error committed a second time, in the very entry
+    whose subject was an uncounted number.
+
+    Measured phantom rates over the three primary documents, loose minus bounded:
+        0.0014   67 %      0.00400  38 %      0.0323   30 %      0.0778   11 %
+        0.1111    5 %      0.0400    5 %      1/31      5 %      0.0213    1 %
+        0.0769, 0.201, 0.888, 0.10306, 0.12131, 0.00852, 1/35 -- all 0 %
+    A token's phantom rate is not guessable from its shape, which is the argument for never
+    eyeballing it: `0.0014` is 67 % phantom and `0.00852` is 0 %.
+
+    Prints BOTH counts, always, so the gap is visible rather than silently corrected.
+    """
+    for tok in tokens:
+        esc = re.escape(tok)
+        loose = re.compile(esc)
+        bound = re.compile(r'(?<![\d.])' + esc + r'(?![\d])')
+        tl = tb = 0
+        rows = []
+        for f in files:
+            t = open(f, encoding="utf-8", errors="ignore").read()
+            spans = struck_spans(t)
+            L = len(loose.findall(t))
+            B = [m for m in bound.finditer(t)]
+            live = [m for m in B if not inside(spans, m.start())]
+            tl += L; tb += len(B)
+            if L or B:
+                rows.append((f, L, len(B), len(live)))
+        print("\n[count] %r  loose=%d  BOUNDED=%d  phantom=%d%s"
+              % (tok, tl, tb, tl - tb,
+                 "  <== %d%% of the loose count is INSIDE longer numbers" % round(100.0 * (tl - tb) / tl)
+                 if tl and tl != tb else ""))
+        for f, L, B, live in rows:
+            print("    %-58s loose %-5d bounded %-5d live(unstruck) %d"
+                  % (os.path.basename(f), L, B, live))
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("files", nargs="+")
+    ap.add_argument("--count", metavar="TOKEN", action="append", default=None,
+                    help="Count this literal across the files with DIGIT BOUNDARIES, and print the "
+                         "unbounded count beside it. Repeatable. Use this instead of `grep -o` for "
+                         "any number: a bare grep matches inside longer numbers and has produced a "
+                         "wrong committed figure twice (S-482, S-544).")
     ap.add_argument("--min-sig", type=int, default=MIN_SIG)
     ap.add_argument("--context", type=int, default=90)
     a = ap.parse_args()
     selftest()
     print("[stale-dep] self-test PASSED")
+    if a.count:
+        return count_mode(a.files, a.count, a.context)
 
     docs = {f: open(f).read() for f in a.files}
     spans = {f: struck_spans(t) for f, t in docs.items()}

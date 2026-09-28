@@ -45465,3 +45465,51 @@ Of the 7 files with a genuine standalone `0.0778`:
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** the other superseded literals have never been counted with digit boundaries at all — `0.1111` especially, which S-528 measured at 34 occurrences using the same unbounded method.
+
+## S-546 / the instrument was right and the shortcuts around it were wrong — every superseded literal recounted, and the counting is now inside the tool (2026-09-28)
+
+S-545 landed as `5c036382`, 527 passed. Queue **EMPTY**. S-545's NEXT: the other superseded literals had never been counted with digit boundaries.
+
+### WHAT WAS MEASURED — fifteen literals, loose against bounded, across the three primary documents
+
+| token | loose | **bounded** | phantom |
+|---|---|---|---|
+| **`0.0014`** | 66 | **22** | **44 — 67 %** |
+| `0.00400` | 42 | 26 | 16 — 38 % |
+| `0.0323` | 30 | 21 | 9 — 30 % |
+| `0.0778` | 62 | 55 | 7 — 11 % |
+| `0.1111` | 94 | 89 | 5 — 5 % |
+| `0.0400` | 144 | 137 | 7 — 5 % |
+| `1/31` | 20 | 19 | 1 — 5 % |
+| `0.0213` | 96 | 95 | 1 — 1 % |
+| `0.0769`, `0.201`, `0.888`, `0.10306`, `0.12131`, `0.00852`, `1/35` | — | — | **0 %** |
+
+⚠ **A token's phantom rate is not guessable from its shape.** `0.0014` is **67 %** phantom and `0.00852` is **0 %** — both are four-or-five-digit decimals. *This is the argument against ever eyeballing a count, and it is why the rates are now recorded in the tool rather than in my head.*
+
+### 🔴 THE SCOPE OF S-545's ERROR IS NARROWER THAN I IMPLIED, AND I CHECKED RATHER THAN ASSUMED
+
+S-545 said the unbounded-match error might affect other committed counts. **It does not affect the detector's, and I verified that instead of leaving the suspicion standing.** `scripts/gates/dcs_csi_stale_dependent_check.py` has used `(?<![\d.])…(?![\d])` since it was written (line 111). **S-528's reported count of 34 live `0.1111` reproduces EXACTLY** — 24 in the claim table plus 10 in the draft.
+
+⇒ ⚠ **The instrument was never wrong. The error was reaching PAST the instrument for a bare `grep -o`** — twice (S-482, S-544). **A tool that is correct and inconvenient loses to a shortcut that is wrong and quick**, and the fix is not another rule telling me to use the tool.
+
+### WHAT WAS BUILT — the counting moved inside the tool
+
+`--count TOKEN` (repeatable) on the existing detector. It prints **both** counts always, so the gap is visible rather than silently corrected, and it breaks out per file and per live-unstruck occurrence. Exercised on the two extremes:
+
+- `0.0014` → loose 66, **bounded 22**, phantom 44, with the 67 % gap named in the output
+- `0.00852` → loose 40, **bounded 40**, phantom 0
+
+The docstring records the measured phantom table and the two entries where the error was committed, so the next person to reach for `grep -o` meets the evidence rather than an instruction.
+
+⚠ *A defect of my own while adding it: `os` was never imported in that script, so the first run died in the print. Caught immediately because the header line had already printed the correct count — **the failure was in the reporting, not the measurement**, which is the benign ordering.*
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No GPU work; no endpoint measured.** This tick measured text and wrote tooling.
+- ⛔ **The bounded counts are OCCURRENCE counts, not audits.** `0.0014` has **12 live unstruck occurrences in this log** and **6 in the claim table** — I have **not** read them. A live-unstruck count is a worklist, not a defect count, as S-528 established at 82-hits-to-2-defects.
+- ⛔ **`--count` has no test.** It is a reporting mode over already-tested primitives (`struck_spans`, the bounded pattern), both of which the self-test covers — **but the mode itself is unexercised by the suite**, and by S-534's own lesson that is exactly how a check ends up never running.
+- ⛔ **The detector is still not in `GUARD_TESTS`**; it is a hand-run advisory tool, and nothing makes anyone run it.
+- ⛔ **Fifteen literals is not all of them.** The list is the ones this session has touched; no sweep enumerated the superseded literals systematically.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** `0.0014`'s 6 live unstruck occurrences in the claim table — now a named worklist rather than a number.
