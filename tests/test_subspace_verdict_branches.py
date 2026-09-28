@@ -122,5 +122,44 @@ def main():
     return 1 if FAILS else 0
 
 
+# ---------------------------------------------------------------------------------------------
+# PYTEST ENTRY POINTS -- ADDED S-534.
+# This file was script-style (`main()` + `raise SystemExit`) with ZERO `def test_` functions, and
+# it was NOT in the pre-commit hook's GUARD_TESTS allowlist. So it ran ONLY when invoked by hand.
+# At S-533 its mirror-vs-source check caught a real drift in dcs_csi_subspace_analyze.py -- but it
+# caught it because I ran the file manually, NOT because the suite enforced it. A guard that only
+# fires when someone remembers to fire it is not a guard. Both halves are fixed at S-534: these
+# wrappers make pytest collect it, and the file is added to GUARD_TESTS and to the installer.
+# ---------------------------------------------------------------------------------------------
+def test_every_verdict_branch_reachable_and_sign_guarded():
+    """main() returns the failure count; 0 is the only acceptable value."""
+    assert main() == 0, "see the printed PASS/FAIL lines above for which check failed"
+
+
+def test_sign_guard_is_narrowing_only():
+    """The S-533 guard must never CREATE a pass -- checked independently of main()."""
+    for rank in (1, 2, 5):
+        for n in (8, 24, 46):
+            for cand in (-1.0, +1.0):
+                for nec in (True, False):
+                    guarded = verdict(rank, n, cand=cand, necessity=nec)
+                    unguarded = verdict(rank, n)
+                    if guarded == "PASS":
+                        assert unguarded == "PASS", (
+                            "guard CREATED a pass at rank=%d n=%d cand=%s nec=%s"
+                            % (rank, n, cand, nec))
+
+
+def test_committed_necessity_reads_still_pass():
+    """The five committed necessity candidates are all negative, so none loses its PASS."""
+    for cand in (-0.00852, -0.00848, -0.0087, -0.01283, -0.00216):
+        assert verdict(1, 24, cand=cand, necessity=True) == "PASS", cand
+
+
+def test_wrong_sign_is_its_own_outcome():
+    assert verdict(1, 24, cand=+0.00216, necessity=True) == "WRONG SIGN"
+    assert verdict(1, 46, cand=-0.00264, necessity=False) == "WRONG SIGN"
+
+
 if __name__ == "__main__":
     raise SystemExit(main())

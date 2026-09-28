@@ -44908,3 +44908,48 @@ The verdict string is **byte-identical**. ⇒ **The guard is inert on the family
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** freeze the PR-CSI-024 prereg — button necessity on VALIDATION, halves **1/2/4/5** only, axis `dcs_csi_axis_button_behavioral_L18.pt` with `CSI_EXPECT_LAYER=18`, `--expect-n 230`, `--allow-short 4`, `--expect-n-controls 24`, `--expect-n-domains 23`, magnitude band **[0.00072, 0.00647]**, and **both outcome branches** written before any arm runs. Then launch.
+
+## S-534 / the guard test I wrote at S-533 never ran, and neither does the one that caught my drift — corrected (2026-09-28)
+
+Queue **EMPTY**. S-533 landed as `270b70bb`, **516 passed / 1 skipped**. ⚠ **516 is the SAME count as every commit since S-527, and I had just added a test file.** That is what started this entry.
+
+### WHAT WAS MEASURED — my own S-533 claim was half wrong
+
+The pre-commit hook does not run `tests/`. It runs `pytest $GUARD_TESTS`, an **explicit allowlist**, and measured:
+
+| | |
+|---|---|
+| `tests/test_*.py` on disk | **124** |
+| in `GUARD_TESTS` before this entry | **26** |
+| `tests/test_csi_control_family_guard.py` (new at S-533) in it | **NO** |
+| `tests/test_subspace_verdict_branches.py` in it | **NO** |
+| `def test_` functions in either file | **ZERO** — both are script-style (`main()` + `raise SystemExit`) |
+
+⇒ **Two independent reasons my S-533 guard test could not have run**: it was not allowlisted, **and** pytest collects nothing from a file with no `test_` functions, so allowlisting alone would have been a no-op. **S-533's "516 passed" did not include it.**
+
+🔴 **CORRECTING MYSELF.** At S-533 I wrote that `test_subspace_verdict_branches.py` *"caught my own drift the instant I made it — the mechanism working exactly as designed."* **The first half is true and the implication is false.** It caught the drift because **I ran the file by hand**. That file has **never been in the suite**, so the commit that shipped the R41 CRITICAL-1 fix would have passed just as green with the guard reverted. ⚠ **A check that only fires when its author remembers to fire it is not a guard, and reporting it as one overstated the evidence for my own fix.**
+
+⚠ **The 96 other unenforced files are NOT a defect, and I checked before saying so.** The hook documents the tradeoff in its own text — *"Only the GUARD test files run here, not the full suite … a hook slow enough to skip is a hook that gets skipped."* The curated subset is deliberate. The defect was that **two files guarding a just-landed CRITICAL fix were outside it**, not that the subset exists.
+
+### WHAT WAS FIXED
+
+**Both halves, because either alone leaves the guard inert.** `test_subspace_verdict_branches.py` gained **4** pytest entry points (including `test_sign_guard_is_narrowing_only`, which re-checks across 36 rank×n×sign×direction combinations that the guard never *creates* a PASS) and `test_csi_control_family_guard.py` gained **7**. Both keep their script entry points. Both added to `GUARD_TESTS` in the **deployed hook** *and* in `scripts/install_commit_guard.sh` — the file the hook itself names as the source of truth, after a past divergence left one session's deliverables unguarded. **Verified: both lists are 28 entries and IDENTICAL.**
+
+⚠ **Sort order preserved, and that is load-bearing, not cosmetic.** The hook's own note records that this list once ran in append order while `pytest` runs alphabetically, and a real contamination bug *"failed 4 tests under `pytest tests/` while this hook reported 257 passed, because the hook happened to run the victim BEFORE the polluter."* Verified: both lists `== sorted(lst)`, with the new file between `test_csi_cell_identity.py` and `test_csi_pr016_argmax.py`.
+
+**VERIFIED THROUGH THE ENFORCED PATH, not by hand this time.** Under the hook's own interpreter: **11 passed in 0.41s**. Then the mutation — reverting the sign guard to `cand_sign_ok = True` — and `pytest` reports **1 failed, 3 passed**, naming `test_every_verdict_branch_reachable_and_sign_guarded`. Restored, **4 passed**, and the restored file is **byte-identical** to the backup (`diff -q` clean). ⇒ **The R41 CRITICAL-1 fix is now actually enforced at commit time.**
+
+### WHAT WAS CORRECTED IN PASSING — the hook's stated rationale is stale
+
+Its comment justifies the subset as *"140 tests in ~1.4s against ~11 minutes."* Measured on S-533's own run: the guard subset is now **516 passed / 1 skipped in 622.58s — 10 m 22 s.** The subset has grown into roughly the full-suite cost it was created to avoid, so the stated reason no longer holds. ⛔ **Recorded, NOT acted on** — re-scoping the commit gate is not a thing to do inside a tick, and it is not mine to decide unilaterally.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No GPU work, no prereg, no launch.** Ninth consecutive tick with an empty queue. This entry was forced by a number that did not move.
+- ⛔ **I did NOT run `pytest tests/`** (all 124 files), so I do not know whether the other 96 files pass. Their exclusion from the hook is documented; **their current state is unmeasured.**
+- ⛔ **`tests/test_subspace_donor_patch.py` is the one remaining script-style file** with zero `test_` functions and no allowlist entry. **Left alone** — it guards nothing I touched, and sweeping it in would be scope I did not measure.
+- ⛔ **The suite count is expected to go 516 → 527**, but that is a prediction until the next commit's hook prints it.
+- ⛔ **Nothing about the R41 fixes themselves changed** — S-533's VOID 7 discharge (21 875 leaves, 0 changed) stands. What changed is whether the suite defends them.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** the PR-CSI-024 prereg, unchanged from S-533's plan — button necessity on VALIDATION, halves 1/2/4/5, `CSI_EXPECT_LAYER=18`, `--expect-n-controls 24`, `--expect-n-domains 23`, band **[0.00072, 0.00647]**, both outcome branches frozen before any arm runs.

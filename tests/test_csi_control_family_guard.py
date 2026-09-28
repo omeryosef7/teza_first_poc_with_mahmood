@@ -112,5 +112,47 @@ def main():
     return 1 if FAILS else 0
 
 
+# ---------------------------------------------------------------------------------------------
+# PYTEST ENTRY POINTS -- ADDED S-534, for the reason given in test_subspace_verdict_branches.py:
+# this file shipped at S-533 with zero `def test_` functions and was not in GUARD_TESTS, so the
+# "516 passed" of that commit DID NOT INCLUDE IT.
+# ---------------------------------------------------------------------------------------------
+def test_control_family_guarded():
+    assert main() == 0, "see the printed PASS/FAIL lines above"
+
+
+def test_intended_prefix_selects_exactly_24():
+    assert len(select("KO_NEC_SHUF")) == 24
+
+
+def test_candidate_and_positive_control_never_in_intended_family():
+    sel = select("KO_NEC_SHUF")
+    assert CANDIDATE not in sel and FULL not in sel
+
+
+def test_broad_prefix_would_swallow_the_candidate():
+    """Why the unconditional candidate-in-family refusal exists."""
+    broad = select("KO_NEC")
+    assert CANDIDATE in broad and FULL in broad
+
+
+def test_unstripped_space_silently_shrinks_the_family():
+    """The silent defect: floor stays 0.0400 so nothing looks wrong."""
+    assert len(select("KO_NEC_SHUF, KO_NEC_RAND", strip=False)) == 24
+    assert len(select("KO_NEC_SHUF, KO_NEC_RAND")) == 28
+
+
+def test_empty_prefix_refused():
+    import pytest
+    for bad in ("", ",", "KO_NEC_SHUF,", "  "):
+        with pytest.raises(ValueError):
+            select(bad)
+
+
+def test_one_dropped_arm_changes_the_floor_but_not_the_verdict():
+    assert floor_of(24) < 0.05 and floor_of(23) < 0.05
+    assert abs(floor_of(24) - 0.0400) < 1e-4 and abs(floor_of(23) - 0.0417) < 1e-4
+
+
 if __name__ == "__main__":
     raise SystemExit(main())
