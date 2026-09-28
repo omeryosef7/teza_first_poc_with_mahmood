@@ -459,6 +459,17 @@ def main() -> int:
                          "and KO_NEC_SHUF,KO_NEC_RAND with --direction necessity. Deliberately NOT "
                          "defaulted per direction: the family is part of the preregistration and "
                          "naming it is the caller's job.")
+    ap.add_argument("--expect-n-controls", type=int, default=None,
+                    help="Assert the control family selected by --control-prefixes has EXACTLY "
+                         "this many arms, and refuse otherwise. The rank floor is 1/(n+1), so a "
+                         "family of the wrong size silently changes the reportable p. Added S-533 "
+                         "(R41): a mistyped prefix list can select the wrong family and still "
+                         "print the expected floor.")
+    ap.add_argument("--expect-n-domains", type=int, default=None,
+                    help="Assert the number of scored domains after split filtering and key "
+                         "intersection is EXACTLY this, and refuse otherwise. Added S-533 (R41): "
+                         "nothing previously pinned the 23 validation / 67 train domain counts "
+                         "that the preregs freeze.")
     ap.add_argument("--allow-short", type=int, default=0,
                     help="accept arms short by at most N rows, provided DONE.json's count matches "
                          "the rows on disk. The cross-arm key intersection makes a short arm safe; "
@@ -586,6 +597,16 @@ def main() -> int:
         print("[keys] intersected to %d keys common to all arms; dropped per arm: %s"
               % (len(common_keys), {k: v for k, v in per_arm_lost.items() if v}))
     doms = sorted({k[0] for k in common_keys})
+    # ADDED S-533 (R41 MAJOR-b): nothing pinned the domain count the preregs freeze (23 validation
+    # / 67 train). Checked HERE, after split filtering AND key intersection, because that is the
+    # population every downstream mean is actually taken over -- an assertion on the pre-filter
+    # count would pass while the read shrank.
+    if a.expect_n_domains is not None and len(doms) != a.expect_n_domains:
+        raise SystemExit(
+            "REFUSING: --expect-n-domains %d but %d domains survive split filtering and key "
+            "intersection on split=%r: %s. The domain is the statistical unit, so a different "
+            "count is a different experiment."
+            % (a.expect_n_domains, len(doms), a.split, ",".join(doms)))
     if not doms:
         raise SystemExit("REFUSING: no domain common to all arms on split=%s" % a.split)
 
@@ -913,7 +934,40 @@ def main() -> int:
     out["gates"] = gates
 
     # ---- specificity: candidate vs EACH shuffled/random control, Holm-corrected -----------------
-    ctrl_arms = [x for x in arms if x.startswith(tuple(a.control_prefixes.split(",")))]
+    # *** CONTROL-FAMILY GUARD -- ADDED S-533 (REVIEW R41 MAJOR-b). ***
+    # `--control-prefixes` was a bare unvalidated `startswith`. Measured against the 34 necessity
+    # arm names, three ways to get a WRONG family that still LOOKS right:
+    #   "KO_NEC_SHUF"              -> 24 controls, floor 1/25 = 0.0400   <- intended
+    #   "KO_NEC_SHUF, KO_NEC_RAND" -> 24, floor STILL 0.0400 (the leading space makes the second
+    #                                 prefix match nothing) -- silently the wrong family
+    #   "KO_NEC"                   -> 32, INCLUDING the candidate itself and the positive control,
+    #                                 so the candidate is compared against itself and against an
+    #                                 arm built to be maximal. Yields a plausible DOES NOT PASS.
+    # Prefixes are stripped so whitespace cannot silently drop one; the empty prefix is refused
+    # because "" makes startswith() true for every arm.
+    _prefixes = [x.strip() for x in a.control_prefixes.split(",")]
+    if not _prefixes or any(x == "" for x in _prefixes):
+        raise SystemExit("REFUSING: --control-prefixes %r contains an empty prefix. The empty "
+                         "string is a prefix of EVERY arm name, so the control family would "
+                         "swallow the candidate and the positive control." % a.control_prefixes)
+    ctrl_arms = [x for x in arms if x.startswith(tuple(_prefixes))]
+    # These two can never be legitimate, in any family, so they are unconditional.
+    for _role, _nm in (("--candidate-arm", a.candidate_arm), ("--full-arm", a.full_arm)):
+        if _nm and _nm in ctrl_arms:
+            raise SystemExit(
+                "REFUSING: %s %r is inside the control family selected by --control-prefixes %r "
+                "(%d arms). The candidate would be ranked against itself, and the positive "
+                "control is built to be maximal -- either makes the rank uninterpretable."
+                % (_role, _nm, a.control_prefixes, len(ctrl_arms)))
+    # Family SIZE and DOMAIN COUNT are family-specific, so they are opt-in -- but a prereg that
+    # freezes a floor (PR-CSI-022/023 VOID 8 freeze both the family and the floor) can now pin
+    # them, instead of trusting that the arm list was typed correctly.
+    if a.expect_n_controls is not None and len(ctrl_arms) != a.expect_n_controls:
+        raise SystemExit(
+            "REFUSING: --expect-n-controls %d but --control-prefixes %r selected %d: %s. "
+            "The attainable floor is 1/(n+1), so a family of the wrong size silently changes the "
+            "p this read can report."
+            % (a.expect_n_controls, a.control_prefixes, len(ctrl_arms), ",".join(sorted(ctrl_arms))))
     pairs = []
     for c in ctrl_arms:
         k = "specificity_candidate_minus_%s" % c
@@ -1016,11 +1070,45 @@ def main() -> int:
             # false. Two separate facts are now reported separately: WHERE the candidate sits, and
             # WHETHER the control count could certify it.
             attainable = dist["rank_p_floor"] < 0.05
+            # *** CANDIDATE SIGN GUARD -- ADDED S-533 (REVIEW R41 CRITICAL-1). ***
+            # `rank` answers "is the candidate extreme within its control family". It does NOT
+            # answer "did the candidate move the endpoint in the direction this experiment is
+            # about". Those come apart: under necessity a POSITIVE candidate (installation went
+            # UP when the component was removed) still ranks 1 if every control is MORE positive,
+            # and the branch below then printed "PRIMARY PASSES ... the single most NEGATIVE value
+            # in the distribution" -- a sentence false about its own number.
+            # S-259 wrote exactly this guard, and its audit table of "every tool that emits a
+            # verdict from these effects" listed five scripts and OMITTED THIS ONE, the most-used
+            # of them. A sweep can be complete within a scope it names and still miss the centre.
+            # NARROWING ONLY: this can turn a PASS into a non-pass and can never create one.
+            # Measured at S-532 before the change: all five committed necessity reads carry a
+            # NEGATIVE candidate (-0.00852, -0.00848, -0.0087, -0.01283, -0.00216), so no
+            # published verdict moves. Verified afterwards by re-reading a landed family.
+            cand_sign_ok = (cand_rec < 0) if NEC else (cand_rec > 0)
+            out["verdict_basis"]["candidate_point"] = round(cand_rec, 6)
+            out["verdict_basis"]["candidate_sign_ok"] = bool(cand_sign_ok)
+            out["verdict_basis"]["candidate_sign_required"] = (
+                "NEGATIVE (removal must LOWER installation)" if NEC
+                else "POSITIVE (add-back must RAISE installation)")
             # Each branch takes its text from VERDICT_TEXT[direction] under a key NAMED after the
             # branch, so the FAIL text cannot be emitted by the PASS branch (review R3-B1) and the
             # sufficiency wording ("recover ... not above them") cannot be emitted for a removal.
-            if rank == 1 and attainable:
+            if rank == 1 and attainable and cand_sign_ok:
                 out["VERDICT"] = TXT["rank_pass"].format(split=a.split, n=n, rank_p=rank_p)
+            elif rank == 1 and attainable and not cand_sign_ok:
+                # Rank 1 with the WRONG SIGN. Reported as its own outcome rather than folded into
+                # either PASS or FAIL, because it is neither: the candidate IS extreme in its
+                # family and the effect points the wrong way, and collapsing that into "FAIL"
+                # would hide which of the two facts held.
+                out["VERDICT"] = (
+                    "NO CLAIM -- RANK 1 WITH THE WRONG SIGN on split=%s. The candidate is the "
+                    "most extreme of %d controls, BUT its point estimate is %+.6f, and the %s "
+                    "direction requires %s. Rank measures EXTREMITY WITHIN THE FAMILY, not "
+                    "direction of effect, and the two have come apart here. No PASS is available "
+                    "on this read and the rank may not be quoted as one. (Guard added S-533, "
+                    "review R41 CRITICAL-1.)"
+                    % (a.split, n, cand_rec, a.direction,
+                       "a NEGATIVE candidate" if NEC else "a POSITIVE candidate"))
             elif rank == 1:
                 out["VERDICT"] = TXT["rank_inconclusive"].format(
                     split=a.split, n=n, floor=dist["rank_p_floor"], min_controls=19)

@@ -35,7 +35,15 @@
 #SBATCH --partition=killable
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
-#SBATCH --gpus=1
+# ⛔ PINNED TO A 3090 -- ADDED S-533 (REVIEW R41 CRITICAL-3, VOID 1).
+#    This was a bare `--gpus=1` while TWELVE sibling CSI launchers pinned the architecture.
+#    `killable` holds SEVEN GPU types (3090 x8, l40s x6, 2080 x4, a5000 x3, v100 x2,
+#    a6000 x2, quadro x1). v100/2080/quadro CRASH on bf16 below cc 8.0 -- loud, cheap. The
+#    SILENT case is a cc>=8.0 non-3090: l40s is sm_89 and a5000/a6000 are sm_86, so they pass
+#    that gate and produce plausible numbers on different kernels. All eight precedent jobs
+#    landed on 3090s (n-302/304/350, each geforce_rtx_3090:8) BY SCHEDULER LUCK, not by any
+#    directive. VOID 1 requires one architecture; this makes it a property of the submission.
+#SBATCH --gpus=geforce_rtx_3090:1
 set -euo pipefail
 cd /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
 source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh
@@ -115,6 +123,27 @@ if [ -n "${5:-}" ] && [ "$GROUP" != "I" ]; then
   echo "REFUSING: \$5 is a GROUP-SPECIFIC sub-selector (only group I uses it). To override the "\
        "layer, set CSI_LAYER=<n> in the environment. See DCS-CSI-076." >&2
   exit 2
+fi
+# *** AXIS/LAYER ASSERTION -- ADDED S-533 (REVIEW R41 CRITICAL-2). ***
+# $2 is taken verbatim and nothing ties it to $1. Two BUTTON behavioral axis files exist and
+# they DISAGREE on the layer (measured S-532):
+#     dcs_csi_axis_button_behavioral_L18.json -> selected_layer 18, layer_forced true, 24 shuffled
+#     dcs_csi_axis_button_behavioral.json     -> selected_layer 20,                     9 shuffled
+# Hand it the second and the codeword guard passes AND the basis-vs-write-layer guard passes
+# (it is self-consistent at L20), so the early halves complete AT THE WRONG LAYER with entirely
+# plausible numbers, and only a later half dies on a missing shuffled key. The L20/L18 twin pair
+# already exists under csi1_button_validation (S-531: 21 of 62 tags have >1 complete run dir).
+# CSI_EXPECT_LAYER lets a prereg pin the layer at SUBMIT time instead of discovering it post hoc
+# from each run's config.json. It refuses rather than warns, and it is opt-in so no existing
+# recipe changes behaviour.
+if [ -n "$CSI_EXPECT_LAYER" ]; then
+  _AXLAYER=$(python -c "import json;print(json.load(open('${AXIS%.pt}.json'))['selected_layer'])")
+  if [ "$_AXLAYER" != "$CSI_EXPECT_LAYER" ]; then
+    echo "REFUSING: CSI_EXPECT_LAYER=$CSI_EXPECT_LAYER but $AXIS declares selected_layer=$_AXLAYER." >&2
+    echo "  A family compared against arms at another layer is a different experiment (R41 C2)." >&2
+    exit 2
+  fi
+  echo "[axis-assert] $AXIS selected_layer=$_AXLAYER matches CSI_EXPECT_LAYER=$CSI_EXPECT_LAYER"
 fi
 if [ -z "$LAYER" ]; then
   LAYER=$(python -c "import json;print(json.load(open('${AXIS%.pt}.json'))['selected_layer'])")

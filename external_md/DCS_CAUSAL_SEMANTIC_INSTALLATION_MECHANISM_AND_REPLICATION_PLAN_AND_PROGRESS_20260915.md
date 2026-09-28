@@ -44851,3 +44851,60 @@ Nothing asserts `n_controls == 24`, `rank_p_floor == 0.0400`, or `n_domains == 2
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT, in this order:** (1) the sign guard into the primary, with a test that fails without it; (2) the family assertions (`n_controls`, floor, `n_domains`, non-empty prefixes, candidate/full ∉ controls); (3) pin `geforce_rtx_3090:1`; (4) **then** freeze the prereg naming halves 1/2/4/5, the L18 axis, `--expect-n 230`, `--allow-short 4`, `--require-rescue-layer 18` and both outcome branches; (5) **then** launch.
+
+## S-533 / R41's three fixes land, and VOID 7 is discharged on 21 875 leaves — the sign guard is INERT on the family it would have judged (2026-09-28)
+
+Queue **EMPTY**. R41's defects fixed, each with a test that fails without it, and the analyser change measured for inertness rather than argued for. **Still no prereg and no launch** — that is next, in the order S-532 set.
+
+### FIX 1 — R41 CRITICAL-1: the candidate sign guard
+
+`dcs_csi_subspace_analyze.py` now computes `cand_sign_ok = (cand_rec < 0) if NEC else (cand_rec > 0)` and the PASS branch requires it. A rank-1 candidate with the **wrong sign** gets its **own outcome**, not a FAIL:
+
+> **NO CLAIM — RANK 1 WITH THE WRONG SIGN.** *The candidate is the most extreme of N controls, BUT its point estimate is …, and the necessity direction requires a NEGATIVE candidate. Rank measures EXTREMITY WITHIN THE FAMILY, not direction of effect, and the two have come apart here.*
+
+⚠ **Folding it into "FAIL" would have hidden which of the two facts held**, so it is reported as neither. `candidate_point`, `candidate_sign_ok` and `candidate_sign_required` now go into `verdict_basis`, so the sign is in the artefact and not only in the prose.
+
+⚠ **THE EXISTING TEST CAUGHT MY OWN DRIFT THE INSTANT I MADE IT.** `tests/test_subspace_verdict_branches.py` keeps a *mirror* of the decision plus a source-grep for the branch conditions. Changing the analyser broke `source still contains "if rank == 1 and attainable:"` immediately — **the mechanism working exactly as designed, against its author.** The mirror gained the sign term and seven new branch tests.
+
+**Mutation-tested, because a test that cannot fail proves nothing:** reverting the guard (`cand_sign_ok = True`) makes the suite **exit 1** on two needles; restoring makes it **exit 0**.
+
+### FIX 2 — R41 MAJOR-b: the control family can no longer be silently wrong
+
+`--control-prefixes` was a bare `startswith`. Now: prefixes are **stripped** (so `"KO_NEC_SHUF, KO_NEC_RAND"` no longer silently selects 24 while printing the floor you expected), the **empty prefix is refused** (it is a prefix of every arm), and `--candidate-arm` / `--full-arm` **inside the control family is refused unconditionally** — it can never be legitimate in any family. Two new opt-in assertions let a prereg pin what VOID 8 already freezes: **`--expect-n-controls`** and **`--expect-n-domains`** (checked *after* split filtering and key intersection, because that is the population the means are actually taken over).
+
+New `tests/test_csi_control_family_guard.py` pins all of it, including the arithmetic that makes the defect silent: **24 → floor 0.0400**, but **23 → 0.0417, which still clears α** — so a single dropped arm changes the reportable floor without changing the verdict.
+
+### FIX 3 — R41 CRITICAL-3: the GPU is pinned
+
+`dcs_csi_p1_arms.slurm` carried `--gpus=1` on a partition holding **seven** GPU types. Now `--gpus=geforce_rtx_3090:1`, with the reason in the file: v100/2080/quadro **crash** on bf16, but **l40s (sm_89) and a5000/a6000 (sm_86) pass a cc ≥ 8 gate silently on different kernels**. VOID 1 is now a property of the submission instead of of the scheduler's luck.
+
+### FIX 4 — R41 CRITICAL-2: the axis file's LAYER can be pinned at submit time
+
+The hazard is the **layer**, not the codeword — `dcs_csi_axis_button_behavioral.json` is genuinely *button* and is **L20**, so a codeword check would not have caught it. `CSI_EXPECT_LAYER` now refuses a mismatch before any arm runs. Verified against both real files: the L18 file **ACCEPTS**, the L20 file **REFUSES**.
+
+### VOID 7 — DISCHARGED BY MEASUREMENT, NOT BY ARGUMENT
+
+The analyser moved **computationally**, so VOID 7 fires. I re-ran D44's **frozen recipe verbatim** under the new code and diffed leaf-for-leaf:
+
+| | |
+|---|---|
+| leaves compared | **21 875** |
+| **CHANGED** | **0** |
+| **REMOVED** | **0** |
+| ADDED | **3** — `candidate_point −0.00216`, `candidate_sign_ok true`, `candidate_sign_required "NEGATIVE …"` |
+
+The verdict string is **byte-identical**. ⇒ **The guard is inert on the family it would have judged**, and the only new fields are the guard recording its own decision. *(S-490 discharged VOID 7 on 80 leaves; this is 21 875.)*
+
+**New gate `scripts/gates/dcs_csi_void7_artefact_diff.py`** — justified by second use of a pattern I had done by hand at S-490. It **fails closed** on a missing file, zero comparable leaves, both paths resolving to one file, or the two artefacts being **byte-identical** (which would mean the re-run never happened). Verified: pointed at one file twice, it **refuses**. ADDED leaves are listed in full even when tolerated, so *"disclosure only"* is checkable rather than asserted.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No prereg, no freeze, no launch, no job id.** Eighth consecutive tick with an empty queue.
+- ⛔ **Inertness is shown on ONE family** (button necessity TRAIN). It is not shown for basket, for sufficiency, or for any head/cell reader — and the sign guard's `else` branch touches sufficiency too.
+- ⛔ **`--expect-n-controls` and `--expect-n-domains` default to None**, so every existing recipe is unchanged and **nothing is asserted until a prereg passes them.** The guard exists; it is not yet in force.
+- ⛔ **`CSI_EXPECT_LAYER` is opt-in** for the same reason, and a submission that omits it is exactly as exposed as before.
+- ⛔ **R41's remaining MAJORs are NOT fixed:** the rederive has no VOID block and computes an unused manipulation gate; no cross-arm assertion that all arms loaded the same axis file (PR-CSI-023's VOID 3, enforced by neither reader); both TEST-LEAK refusals are dead code; the two paths' floor tests differ at n=19. **Recorded, not repaired.**
+- ⛔ **The 651-vs-652 key asymmetry (S-531) is NOT fixed** and cannot be by flags — the rederive takes no comparator.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** freeze the PR-CSI-024 prereg — button necessity on VALIDATION, halves **1/2/4/5** only, axis `dcs_csi_axis_button_behavioral_L18.pt` with `CSI_EXPECT_LAYER=18`, `--expect-n 230`, `--allow-short 4`, `--expect-n-controls 24`, `--expect-n-domains 23`, magnitude band **[0.00072, 0.00647]**, and **both outcome branches** written before any arm runs. Then launch.
