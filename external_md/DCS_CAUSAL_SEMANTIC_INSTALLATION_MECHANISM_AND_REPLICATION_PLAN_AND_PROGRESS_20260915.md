@@ -45996,3 +45996,45 @@ Across S-549 → S-557 the explanation converged, and each step narrowed rather 
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** `SINGLE_19`'s **+0.355** — the one thing this entry raises and does not resolve: how far does a *positively* correlated arm's `E` actually move?
+
+## S-558 / the surviving heads clear on MARGIN, not stability — their own effects move up to 25 %, and the mechanism fails on one arm of five (2026-09-28)
+
+S-557 landed. Queue **EMPTY**. S-557's open item: how far does a *positively* correlated arm's `E` actually move?
+
+### FAR. AND THE DIRECTION IS PREDICTED 4 TIMES IN 5, NOT 5
+
+| arm | corr | `\|E\|` control | `\|E\|` floor | change | predicted | matches? |
+|---|---|---|---|---|---|---|
+| `SINGLE_02` | +0.144 | 0.049475 | 0.046036 | **−7.0 %** | FALL | ✅ |
+| `SINGLE_19` | +0.355 | 0.040109 | 0.029930 | **−25.4 %** | FALL | ✅ |
+| `SINGLE_17` | +0.353 | 0.029218 | 0.023245 | **−20.4 %** | FALL | ✅ |
+| `SINGLE_23` | −0.212 | 0.016503 | 0.015526 | **−5.9 %** | RISE | 🔴 **NO** |
+| `HD_BOTK` | −0.406 | 0.012567 | 0.016973 | **+35.1 %** | RISE | ✅ |
+
+⚠ **The mechanism is INCOMPLETE and I am recording that rather than the 4-of-5 as a success.** `SINGLE_23` has a negative correlation, so the reweighting should raise its `\|E\|`; it **fell**. **A rule that gets the direction right four times out of five is a heuristic, not an explanation**, and the one it misses is the head whose drop-out is the whole finding.
+
+### THE QUALIFICATION THAT MATTERS MOST — AND IT WEAKENS *BOTH* READINGS OF D34
+
+Margins over the **floor** anchor (0.016973):
+
+| head | `\|E\|` at floor | × anchor | |
+|---|---|---|---|
+| `SINGLE_02` | 0.046036 | **2.71×** | clears |
+| `SINGLE_19` | 0.029930 | **1.76×** | clears |
+| `SINGLE_17` | 0.023245 | **1.37×** | clears |
+| `SINGLE_23` | 0.015526 | **0.91×** | **misses by 9 %** |
+
+⇒ ⛔ **"Three, not four" is NOT a clean result.** Head 23 misses by **9 %** — a near-boundary call in **both** directions. And the three survivors clear on **margin**, not because their measurements are stable: their own `\|E\|` moved **−7.0 %, −25.4 % and −20.4 %** under the identical filter. **`SINGLE_17` at 1.37× is one more such shift away from the boundary itself.**
+
+⚠ **This cuts against the comfortable reading as much as the alarming one.** S-557 concluded *"the fragility is isolated to the anchor"* — true of **direction**, and **false of magnitude**: the named heads' effects are **more** volatile than head 23's 5.9 %, not less. What isolates the anchor is that it moved **the wrong way**, not that it moved most. **Recorded in D34.**
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **Why `SINGLE_23` defies its correlation is unknown.** Its correlation is the weakest of the five (−0.212), so noise over 23 domains is the obvious candidate — **but I did not test it**, and "probably noise" is the explanation I have criticised elsewhere in this log.
+- ⛔ **No confidence interval on any of these percentage changes.** `−25.4 %` is a point difference between two point estimates, each with a ci95 the census reports and I did not propagate.
+- ⛔ **Five arms of 43.** The other 38 were not measured for `E` movement, so *"effects move by up to 25 %"* is a floor on the maximum, not the maximum.
+- ⛔ **`SINGLE_17` at 1.37× is NOT predicted to flip** — nothing here says another floor would drop it. That would require running one, which I have not.
+- ⛔ **The claim itself does not move again.** D34 already reads *four at the published readout, three at the declared floor*; this adds that neither number is robust to a further shift of the size already observed.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** propagate the census's own ci95s through these five comparisons — every percentage in this entry is a difference of point estimates with intervals I left on the floor.
