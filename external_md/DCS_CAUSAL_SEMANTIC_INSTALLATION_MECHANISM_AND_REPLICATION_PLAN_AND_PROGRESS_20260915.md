@@ -45609,3 +45609,49 @@ Ran PR-CSI-020's census at **floor 0.0** and diffed against the published artefa
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** wire `om_meta` into the artefact, validate the control on the remaining five families, then run the treatment.
+
+## S-549 / 🔴 PR-CSI-025's PREDICTION FAILED: D34's "exactly four heads" becomes THREE under the declared floor — and the bar moved, not the effect (2026-09-28)
+
+S-548 landed. Queue **EMPTY**. The sensitivity ran. **The prediction frozen at S-547 — *"NO head or cell verdict will move"* — FAILED**, and it failed on the claim §H.2 leads with.
+
+### THE RESULT
+
+**D34: *"Exactly four heads clear the family's own null anchor"* → THREE.** Head 23 drops out.
+
+| | control (floor 0.0) | treatment (floor 0.05) |
+|---|---|---|
+| anchor `\|E(HD_BOTK)\|` | **0.012567** | **0.016973** — **rose 35.1 %** |
+| head 23 `\|E\|` | 0.016503 | 0.015526 — **fell 5.9 %** |
+| head 23 clears? | **0.016503 > 0.012567 → YES** | **0.015526 > 0.016973 → NO** |
+| head 23 ci95 excludes 0? | yes | **still yes** |
+| heads clearing | **4** — 2, 19, 17, 23 | **3** — 2, 19, 17 |
+
+⚠ **THE MECHANISM IS THE ANCHOR, NOT THE HEAD.** Head 23's effect is essentially intact — down 5.9 %, ci95 still excluding zero. What moved is **the bar**: the family's own null anchor `HD_BOTK` rose **35.1 %**, by six times as much as the head it disqualified. ⇒ **D34's "exactly four" is contingent on the readout population, and the sensitive part is the ANCHOR the family supplies to judge itself.**
+
+⛔ **This does NOT say D34 is wrong.** Four heads clear at the published readout; three clear at PR-CSI-001's declared floor. **It says the count is readout-dependent**, which is precisely the property §A was tested for and found to lack, and which §H had never been tested for at all.
+
+### THE CRITERION WAS ILL-POSED, AND I AM NOT REINTERPRETING IT AFTER THE FACT
+
+⚠ **The census families emit NO VERDICT.** Their own artefacts say so: *"This file contains NO verdict, NO rank and NO p-value by design"*, with `NO_RANK_TEST: true`. So PR-CSI-025's *"no verdict will move"* **cannot be evaluated as written on these families** — a fact I should have established at S-547 and did not, because I wrote the criterion from §A's shape without checking that §H shares it.
+
+**What I did instead of quietly re-cutting the criterion:** report the failure against the claim the record actually makes. **D34's "exactly four" is computed downstream in §H.2 from E and ci95**, both of which the census does emit, and it is that statement which moves. **The prereg's FAILURE branch is in force**, including its ban on *"the head instrument is different"* as an escape.
+
+### TWO OF SIX FAMILIES REFUSED — AND I DID NOT DISABLE A GUARD TO GET A NUMBER
+
+`csi10_cell6_button_validation` and `csi11_cell8_basket_validation` **refused the treatment**, each on **its own prereg's VOID condition**: those preregs freeze each head's E against a prior measurement of the same head/codeword/split, and **any row filter necessarily moves E**. ⇒ **The sensitivity is structurally unrunnable on those two families**, and the only way to run it would be to switch off a VOID condition to obtain a result — which is the thing this sprint exists not to do. **Reported as a limitation, not worked around.**
+
+### ALL SIX CONTROLS REPRODUCE EVERY ENDPOINT
+
+Four of six do not *byte*-reproduce, and I chased that before trusting anything: **across all six families, FLOAT/INT leaves changed = 0.** The 27 differences are **10 booleans** and **17 status strings**. ⚠ *My first classifier called the booleans "numeric" because Python's `isinstance(True, int)` is True — corrected before it reached a conclusion.* The 10 booleans are `dose_is_diagnostic_of_identity`, and **R26 already documents them**: it replaced a hardcoded rule with a derived one and recorded that the old rule *"was WRONG ON 10 OF D34's 44 ARMS"* — the same 10, reproduced independently here from an artefact diff. ⇒ **The published artefacts hold the OLD, WRONG value of that flag**, and every measured endpoint is identical.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **D34's claim row and §H.2 are NOT yet relabelled.** The prereg requires it and this entry does not do it.
+- ⛔ **Only ONE claim was checked against the floor.** D32, D33, D36, D39, D40 were **not** re-derived; the four-to-three result is D34's alone.
+- ⛔ **The per-arm sign flips and ci95 changes I first tabulated are NOT verdicts** and are not reported as findings — my first pass computed them with sloppy operator precedence and I did not build on it.
+- ⛔ **0.05 is ONE floor.** Nothing here says where the count changes, or that it is monotone in the floor.
+- ⛔ **csi3_head_\* (D32/D33) remains uninstrumented**, as S-548 recorded.
+- ⛔ **The treatment artefacts are in the scratchpad, not committed to `reports/`** — they are not published reads and must not be cited as if they were.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** relabel D34 and §H.2 as readout-dependent, with the anchor mechanism named — the prereg's failure branch requires it.

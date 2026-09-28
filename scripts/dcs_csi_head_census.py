@@ -1000,6 +1000,13 @@ def main():
         "prereg": a.prereg, "prereg_id": pr["id"], "split": a.split,
         "tag_prefix": a.tag_prefix, "expect_n": a.expect_n, "n_domains": len(doms),
         "B": a.B, "seed": a.seed, "ci": a.ci, "ON_PROTOCOL": on_protocol,
+        # PR-CSI-025 provenance, WRITTEN INTO THE ARTEFACT (S-549). S-548 computed this and printed
+        # it to stdout only, which is the weaker place: S-484 measured that of the axis analyser's
+        # 21 flags an artefact recorded TWO, so a read could not be reproduced from itself. A
+        # sensitivity whose floor lives only in a terminal has exactly that defect. At floor 0.0
+        # (the control) the block still appears, recording that NO filter was applied -- absence of
+        # the block would be indistinguishable from a control run of an older binary.
+        "option_mass": om_meta,
         "E": {k: round(v, 8) for k, v in E.items()},
         "ci95": {k: [round(v[0], 8), round(v[1], 8)] for k, v in CI.items()},
         "loo_marginal": {k: round(v, 8) for k, v in marg.items()},
