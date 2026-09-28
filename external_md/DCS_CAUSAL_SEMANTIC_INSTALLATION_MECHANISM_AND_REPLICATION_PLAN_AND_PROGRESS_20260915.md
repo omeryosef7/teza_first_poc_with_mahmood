@@ -45155,3 +45155,58 @@ All four halves **COMPLETED 0:0**: 945356 (28:49), 945357 (47:30), 945358 (52:15
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** confirm the guard suite passes, commit S-536+S-537+S-538 together, then run the frozen read **ONCE** — both paths, with `--expect-n-controls 24 --expect-n-domains 23 --require-rescue-layer 18 --require-slurm-job 945356,945357,945358,945359`.
+
+## S-539 / THE READ: button necessity REPLICATES held-out, the frozen prediction HELD, and the 2×2 is complete on data the axis has never seen (2026-09-28)
+
+The frozen read ran **once**, both paths, at HEAD `e24d9803` with a clean tree. **PR-CSI-024's prediction, written at S-535 before any arm existed, HELD.**
+
+### THE RESULT — re-derived by me from `domain_means`, not read off the verdict
+
+| | |
+|---|---|
+| `KO_NEC_AXIS − NEC_BASE` | **−0.00314304** |
+| domains | **16 neg / 7 pos of 23** |
+| controls at least as negative | **ZERO of 24** |
+| **rank** | **1 of 25**, `p` **0.0400** |
+| strongest control | `KO_NEC_SHUF15` −0.001158 → candidate **2.714×** more negative |
+| frozen band [0.00072, 0.00647] | **0.00314304 — INSIDE** |
+| `candidate_sign_ok` | **TRUE** |
+| positive control | **−0.08825 [−0.10179, −0.07475], 23 neg / 0 pos** |
+| `VOID` | **empty**; `manipulation_check` and `instrument_capable` both **True** |
+| held out | `evaluation_is_in_sample` **FALSE**, `scored_domains_also_in_fit` **0** on **all 26** basis-bearing arms |
+| population | **224 keys / 23 domains**, 29 arms |
+
+⚠ **`p = 0.0400` IS the attainable floor** (`1/25`) — rank 1 necessarily yields exactly it, and no data could have produced less. ⚠ **`candidate_minus_base` p = 0.0052 with `p_at_its_floor` FALSE**, so *that* p does carry information, unlike TRAIN's saturated sign-flip p's.
+
+**The S-533 sign guard on its first application to a live result: `candidate_sign_ok` TRUE.** It was written when no result needed it and it has now certified one.
+
+**Both paths agree on the RANK — 1 of 25** — which S-531 established is the genuine cross-check. The point estimates differ by **2.0e-05** (224 vs 225 keys) **exactly as S-531 predicted and for the predicted reason**: the rederive takes no comparator, so it omits the short `KO_NEC_ORTH`. *The prediction that the paths would disagree at ~1e-05 was itself frozen in the read recipe before the read ran.*
+
+### WHAT THIS MEANS, AND THE THREE THINGS IT DOES NOT
+
+**The 2×2 is now complete on held-out data:** basket sufficiency (D24/D29), basket necessity (D43), button sufficiency (D24, does not pass), button necessity (**D45**, passes).
+
+- ⛔ **It does NOT restore the codeword dissociation.** D44 narrowed it to the **sufficiency** direction at S-525. A second held-out necessity PASS makes that narrowing **firmer**, not weaker — and the prereg said so *in advance*, which is why that sentence cannot now be re-cut.
+- ⛔ **NO joint claim with D43.** This read uses the **set-identical** 23 domains, so a basket-vs-button comparison here is **PAIRED, not independent**; no combined test is preregistered, computed or specified.
+- ⛔ **Prohibition 24 stands**: the rank test certifies, **the axis does not**.
+
+⚠ **THE 1.456× IS NOT A FINDING, AND THE PARALLEL MAKES THAT HARDER, NOT EASIER.** Validation is 1.456× TRAIN; basket's was **1.475×**; margins **2.714×** vs **2.69×**. The resemblance is striking and it is **recorded as a non-claim**: one estimate on 23 domains against one on 67, with the band frozen wide *because* 23 domains is noisy. *"The effect is stronger held-out"* is precisely the post-hoc story the band exists to prevent, and **a second instance enlarges the temptation, not the licence.**
+
+**Prohibition 28 honoured at the moment of the claim, not afterwards:** `removal_fraction_candidate_of_full` = **0.0356 [0.0147, 0.0556]** (−0.00314 / −0.08825). **About 96 % of the held-out removal effect is elsewhere.** This is the **sixth** necessity read and it arrived with its own fraction attached — the failure S-527 found twice did not recur.
+
+### WHAT WAS CORRECTED — two of my own, both caught by instruments I had built
+
+**(1) The read never started for ~two ticks, and the cause is a self-matching `pgrep`.** `until ! pgrep -u $USER -f 'pre-commit|pytest'` **matches its own command line**, which contains that literal string, so the loop can never exit. Measured: the processes matching were **zsh shells running my own loops**, and real pytest/pre-commit processes numbered **0**. ⚠ **This retroactively explains the ~11 background shells that sat "still running" all session** — I killed them at S-526 as stale committers without diagnosing *why* they never finished. Same self-match class as S-530's false positives.
+
+**(2) D45 was first written with 6 columns instead of 4** — unescaped pipes around an absolute value, the exact S-514 defect. **The inline column assert caught it before it reached the file**, so the table never went malformed. *The guard I built after breaking this twice has now stopped me breaking it a third time.*
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **`D45` is one read on one codeword, one layer, one direction, one split.** It says nothing about sufficiency, about other layers, or about any other codeword.
+- ⛔ **The pooled-28 secondary was NOT computed** for this family, and PR-CSI-024 named it as prespecified. It is **owed**, and if it is ever quoted its own removal fraction must travel with it.
+- ⛔ **The random-only rank is NOT reported**; its floor is 1/5 = 0.2000, above α, so it cannot certify and is not evidence.
+- ⛔ **`git_dirty` is null on all 34 arms** (S-538), so the clean-tree claim still has one witness — me.
+- ⛔ **The 2.0e-05 inter-path difference is explained, not bounded.** Nothing here says how large it could get on a read where the candidate sits close to a control.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** the draft — §A.1, §A.7 and §L.3 carry the necessity story and none of them knows D45 exists; then the owed pooled-28 secondary.
