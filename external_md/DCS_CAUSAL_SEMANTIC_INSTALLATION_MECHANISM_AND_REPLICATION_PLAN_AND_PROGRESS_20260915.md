@@ -45830,3 +45830,43 @@ S-552 left this open: *"why does a row filter RAISE a near-null arm's magnitude 
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** whether the invariant families also show unequal retention — if they do, dispersion-built bars are robust *despite* the same estimator effect, which would be a stronger statement than S-552 made.
+
+## S-554 / the invariant families carry the SAME estimator effect and held anyway — so dispersion-built bars are robust DESPITE it, and D34's movement decomposes into three measured facts (2026-09-28)
+
+S-553 landed as `5aaefb55`. Queue **EMPTY**. S-553's NEXT: do the invariant families show the same unequal retention? **They do.**
+
+### RETENTION UNEVENNESS IS UNIVERSAL, NOT SPECIFIC TO THE FAMILY THAT MOVED
+
+| family | status | rows/domain | histogram |
+|---|---|---|---|
+| csi5 (D34) | 🔴 **moved** | **1..10** | `{1:1, 2:1, 3:3, 6:5, 7:5, 8:4, 9:3, 10:1}` |
+| csi7 | ✅ invariant | **1..10** | **identical** |
+| csi8 | ✅ invariant | **1..10** | **identical** |
+| csi9 | ✅ invariant | 3..10 | `{3:1, 7:1, 8:3, 9:9, 10:9}` — milder |
+
+⚠ **The three basket families share the histogram EXACTLY**, which independently confirms AM-55: option mass is *"a property of the PROMPT BANK and nothing else"*. Same 23 basket-validation domains ⇒ same retention pattern, whatever the arms.
+
+⇒ ✅ **THE STRONGER STATEMENT S-552 COULD NOT MAKE IS NOW AVAILABLE: csi7, csi8 and csi9 carry the SAME estimator perturbation and their counts held anyway.** Dispersion-built bars are robust **despite** the reweighting, not because they escape it.
+
+### 🔴 AND A CORRECTION TO THE SCOPE OF S-553's OWN NUMBER
+
+S-553 reported `corr(rows retained, |per-domain delta|) = −0.406` for `HD_BOTK` and flagged it as one arm. **Measured across all 43 arms of that family, the mean is −0.063 and the median −0.095.** ⚠ **`HD_BOTK` ranks 2 of 43** — only `SINGLE_27` (−0.427) is stronger. **So −0.406 is not a family-typical value and S-553's number would have been over-generalised by anyone reading it as one.**
+
+### D34's MOVEMENT NOW DECOMPOSES INTO THREE MEASURED FACTS
+
+1. **Unequal retention is universal** — identical across the basket families, a bank property. **Necessary but nowhere near sufficient**: three families have it and did not move.
+2. **`HD_BOTK`'s retention/|delta| correlation is 2nd strongest of 43 arms** (−0.406 vs median −0.095), so the reweighting bites it unusually hard.
+3. **`HD_BOTK`'s `\|E\|` is small** — 6.4 % of `HD_TOPK` — so the resulting absolute shift is a large relative one (+35.1 %).
+
+⇒ **All three are required.** Fact 1 alone predicts nothing; the invariant families prove that. ⚠ **This is why "§H is readout-sensitive" was the wrong generalisation and "a bar built from a near-null arm's own effect" was closer — but even that is incomplete without fact 2.**
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **`SINGLE_27` has a STRONGER correlation than `HD_BOTK` (−0.427) and is not a bar**, so nothing in the record depends on it — but its existence shows fact 2 is **not unique** to `HD_BOTK`, and **no claim was checked against it**. If a future criterion used `SINGLE_27`, it would inherit the same fragility.
+- ⛔ **Correlation is not causation here either.** `−0.406` describes an association across 23 domains; I have not shown that removing the association would remove the 35 % shift.
+- ⛔ **"Robust despite" is measured at ONE floor on ONE criterion per family.** csi7/csi8/csi9's E's and ci95s *did* move; only the clearing counts held.
+- ⛔ **csi9's milder histogram is unexplained.** Button validation retains 3..10 rather than 1..10, and why the button bank is less affected is not characterised — it may matter for any future button sensitivity.
+- ⛔ **No claim moves because of this entry.** D34's relabel and S-552's narrowing stand; this decomposes a mechanism they already reported.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** `SINGLE_27` — a stronger correlation than the arm that broke D34, attached to no claim today. Whether any other criterion in the record is built on an arm like it is unchecked.
