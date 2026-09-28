@@ -900,9 +900,12 @@ this paragraph now names each one instead of one literal, all re-derived S-527 f
 | D42 pooled-28 secondary | basket TRAIN, 649 keys | −0.00848 / −0.10784 | **0.0786** [0.0558, 0.1028] | ~92 % |
 | **D43** (**held out**) | basket VALIDATION, 222 keys / 23 domains | −0.01283 / −0.11200 | **0.1146** [0.0676, 0.1649] | **~89 %** |
 | **D44** | **button** TRAIN, 670 rows / 67 domains | −0.00216 / −0.06986 | **0.0309** [0.0160, 0.0455] | **~97 %** |
+| **D45** (**button, HELD OUT**) | button VALIDATION, 224 keys / 23 domains | −0.00314 / −0.08825 | **0.0356** [0.0147, 0.0556] | **~96 %** |
 
 **The headline survives every one of them: the axis accounts for roughly a tenth of what whole-state
-removal moves, and the large majority of the effect is elsewhere.** ⚠ **The five are NOT
+removal moves, and the large majority of the effect is elsewhere.** 🔴 **SIX READS AS OF S-540** —
+D45 (button, held out) is the newest and its fraction was attached when the claim was written rather
+than retrofitted after a sweep found it missing. ⚠ **The six are NOT
 interchangeable and must not be averaged or pooled** — different key sets, different populations,
 different reference arms, and in D44's case a different codeword. Whichever necessity result is
 quoted, **its own** fraction must travel with it.
@@ -1318,7 +1321,7 @@ replication criterion is UNMET.~~**
 2026-09-26 (**D43**): `KO_NEC_AXIS − NEC_BASE` = **−0.01283435**, **rank 1 of 25** shuffled controls on
 **23 VALIDATION domains the axis has never seen** (`evaluation_is_in_sample` **FALSE**, 0 of 23 in the
 fit), inside the magnitude band **[0.0029, 0.0261]** frozen at S-509 *before any validation arm existed*.
-**PR-CSI-001's replication criterion is MET for the necessity direction.** ⚠ **Clauses (1)–(3) are
+**PR-CSI-001's replication criterion is MET for the necessity direction.** 🔴 **AND AS OF S-540 IT IS MET FOR BUTTON NECESSITY TOO (D45):** rank **1 of 25** on the same 23 held-out domains, candidate **−0.00314304**, zero of 24 controls reaching it, inside the band **[0.00072, 0.00647]** frozen at S-535 before any arm ran, with the instrument capable (positive control **−0.08825 [−0.10179, −0.07475]**, 23 neg / 0 pos) — and its prespecified **pooled-28 secondary agrees at rank 1 of 29** on a larger family with a lower floor. ⛔ **This does NOT widen the dissociation claim**: §A.2 narrowed it to the sufficiency direction at S-526 and a second held-out necessity PASS makes that narrowing firmer. ⛔ **And it licenses no JOINT claim with basket**: the two reads share the **set-identical** 23 domains, so they are **paired, not independent**, and no combined test is preregistered, computed or specified. ⚠ **Clauses (1)–(3) are
 UNCHANGED**: `p = 0.0400` is still the attainable floor, and the TRAIN read (D42) is still in-sample —
 what exists now is a held-out COMPANION, not a reclassification of D42. ⚠ *"Floor-limited" is retired as a clause: the family is no longer
 limited BY the floor, it SITS ON it, and those are different statements.* ~~⛔ **And the axis moves only 7.8 % [5.6, 10.1] of what whole-state removal moves —
@@ -1347,6 +1350,25 @@ zero of 24 reaching it, with the **instrument demonstrably capable** (positive c
   basket L18 TRAIN   rank  1 of 47   PASSES          rank 1 of 25   PASSES
   button L18 TRAIN   rank 36 of 47   DOES NOT PASS   rank 1 of 25   PASSES   <- the prediction failed
 ```
+
+🔴 **AND AS OF S-540 THE 2×2 IS COMPLETE ON HELD-OUT DATA TOO — all four cells measured by me from
+the four committed VALIDATION artefacts, not carried over from TRAIN:**
+
+```
+                     SUFFICIENCY                     NECESSITY
+  basket L18 VALID   rank 1 of 47   PASSES  (215k)   rank 1 of 25   PASSES  (222k, D43)
+  button L18 VALID   rank 6 of 47   DOES NOT PASS    rank 1 of 25   PASSES  (224k, D45)
+                                    (221k)
+```
+
+⇒ ⚠ **THE HELD-OUT 2×2 REPRODUCES THE TRAIN PATTERN EXACTLY: button is the only cell that fails, and
+it fails only in SUFFICIENCY.** So *"the dissociation is sufficiency-specific"* is no longer a TRAIN
+statement — it holds on 23 domains the axis has never seen, in both codewords and both directions.
+⚠ **Note the rank, not just the verdict**: button's held-out sufficiency rank is **6 of 47**, against
+**36 of 47** on TRAIN. **Same verdict, materially different position in the family**, and that
+difference is *not* interpreted here — one estimate on 23 domains against one on 67, and §L.9 records
+that the readout is noisier on basket than button. ⛔ **Do not read rank 6 as "nearly passing"**: the
+preregistered bar is rank ≤ 1 for a 46-control family, and 6 is not 1.
 
 ⛔ **Everything below is unretracted and is a SUFFICIENCY result.** What is no longer available is the
 unqualified phrase: it must be *"the codeword dissociation **in the sufficiency direction**"*.

@@ -45210,3 +45210,51 @@ The frozen read ran **once**, both paths, at HEAD `e24d9803` with a clean tree. 
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** the draft — §A.1, §A.7 and §L.3 carry the necessity story and none of them knows D45 exists; then the owed pooled-28 secondary.
+
+## S-540 / the owed secondary is run and agrees on a LARGER family, and the HELD-OUT 2×2 is measured in all four cells (2026-09-28)
+
+S-539 landed as `7233f5be`, 527 passed. This tick discharges what S-539 listed as owed and propagates D45 into the prose.
+
+### THE PRESPECIFIED POOLED-28 SECONDARY — run, and re-derived by me
+
+PR-CSI-024 named it as prespecified and S-539 recorded it as **owed**. Run now, over the 24 shuffled **plus** 4 random controls:
+
+| | |
+|---|---|
+| **rank** | **1 of 29**, floor `1/29` = **0.034483** |
+| candidate (re-derived by me) | **−0.00305609** |
+| controls at least as negative | **ZERO of 28** |
+| `candidate_sign_ok` / `VOID` | **true** / **empty** |
+| keys | **222** |
+| **its own removal fraction** | **0.0354 [0.0141, 0.0560]** (−0.00306 / −0.08636) |
+
+⚠ **The secondary agrees with the primary on a LARGER family and a LOWER floor** — rank 1 of 29 against rank 1 of 25. ⚠ *The candidate differs from the primary's −0.00314 because adding the 4 RAND arms drops the intersection from 224 to 222 keys. The rank is unchanged; this is the same intersection mechanic S-531 measured, not a disagreement.*
+
+**Its fraction was attached at the moment it was written.** S-527 found D42's pooled-28 quoted for **nineteen entries** with no fraction at all; prohibition 28 governs a secondary exactly as it governs a primary, and this is the first pooled-28 in the record that has never been quoted without one. Prohibition 28's enumeration is now **SEVEN** reads, with D45 as (f) and its secondary as (g).
+
+### THE HELD-OUT 2×2, all four cells measured from the committed VALIDATION artefacts
+
+|  | SUFFICIENCY | NECESSITY |
+|---|---|---|
+| **basket L18 VALID** | rank **1 of 47** PASSES (215k) | rank **1 of 25** PASSES (222k, D43) |
+| **button L18 VALID** | rank **6 of 47** DOES NOT PASS (221k) | rank **1 of 25** PASSES (224k, D45) |
+
+⇒ ⚠ **THE HELD-OUT 2×2 REPRODUCES THE TRAIN PATTERN EXACTLY: button is the only failing cell, and it fails only in SUFFICIENCY.** So *"the dissociation is sufficiency-specific"* stops being a TRAIN statement — it holds on 23 domains the axis has never seen, across both codewords and both directions.
+
+⚠ **A number I went looking for and did not assume: button's HELD-OUT sufficiency rank is 6 of 47, not TRAIN's 36 of 47.** Same verdict, materially different position in the family. ⛔ **It is NOT interpreted** — one estimate on 23 domains against one on 67 — and ⛔ **rank 6 is NOT "nearly passing"**: the preregistered bar is rank 1 in a 46-control family.
+
+### WHAT WAS PROPAGATED
+
+**§A.2** gained the held-out 2×2 beside the TRAIN one. **§A.1** now records that PR-CSI-001's replication criterion is met for **button** necessity too, with the band, the capable instrument and the secondary — and carries both refusals: this does **not** widen the dissociation claim, and it licenses **no** joint claim with basket, because the two reads share the **set-identical** 23 domains and are therefore **paired, not independent**. **§L.3**'s per-read table is now six rows. **D45** carries the secondary inline.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **The random-only rank is still not reported.** Its floor is `1/5` = 0.2000, above α, so it **cannot** certify and is not evidence — naming it would only invite a reader to treat 4 controls as a test.
+- ⛔ **No combined basket+button test exists**, and after this tick the temptation is larger: four held-out cells, three passing, one failing, all on the same 23 domains. **Paired data does not become independent by being tabulated.**
+- ⛔ **The held-out 2×2's four cells come from four separate reads with different key sets** (215 / 221 / 222 / 224). They are **not** a balanced design and no cell-to-cell magnitude comparison is offered.
+- ⛔ **`git_dirty` null on all 34 arms** still stands (S-538): the clean-tree claim has one witness.
+- ⛔ **§A.7 and the Editor's checklist are NOT yet updated** for D45. §A.7 is the removal-instrument section and it is the obvious next place a stale necessity statement would sit.
+- ⛔ **Nothing here re-examines D19**, which is basket-only and whose transfer question S-526 already answered by measurement.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** §A.7 and the Editor's checklist for D45; then A30's supersession index.
