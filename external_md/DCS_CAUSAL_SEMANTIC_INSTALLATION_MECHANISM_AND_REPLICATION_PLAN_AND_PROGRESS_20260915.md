@@ -45300,3 +45300,37 @@ I first entered D43's positive control as **"19 neg / 4 pos of 23"**. **That is 
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** A30's supersession index for D45, then §M.9 checked against the second necessity instance.
+
+## S-542 / D45's supersession found and indexed — it kills exactly ONE clause, and §M.9's prefix hazard is now enforced rather than only documented (2026-09-28)
+
+S-541 landed as `9f9462c1`, 527 passed. Queue **EMPTY**. The last two owed items.
+
+### WHAT WAS MEASURED — what did D45 actually make stale?
+
+A30 is a **supersession** index, so the question is not *"add a D45 row"* but *"what did D45 kill?"* Swept both documents with the S-528 struck-span parser for live claims that button necessity is TRAIN-only or lacks a held-out read. **Of 18 matching statements, exactly ONE is a live claim that D45 supersedes:**
+
+> `DCS_CSI_CLAIM_TABLE.md:1138` (D44's own row) — *"⚠ **TRAIN only, in-sample** (67/67) — button necessity has **no held-out read**."*
+
+⚠ **Only the SECOND CLAUSE dies.** D45 is the held-out read, so *"has no held-out read"* is withdrawn — **but D44 remains TRAIN and remains in-sample (67/67).** D45 is a held-out **companion**, not a reclassification, exactly the relation D43 has to D42. **Conflating the two is the error the new A30 row exists to prevent**, and it is the error S-514 had to correct once already for D42/D43.
+
+⚠ **The other 17 matches were checked and are NOT mine to touch**: they concern button-**sufficiency** caveats (D13, D21, D24) already governed by AM-18/AM-19/AM-22/AM-23, and several are already struck. **A sweep that returns 18 hits and changes 1 is the sweep working**, not a sweep that found nothing.
+
+**A30 gained row 30**, and its column count was verified explicitly rather than inferred from a green gate: 5 columns, walked back to its own header `| # | row | the figure that is DEAD | what governs instead | fixed |`, matching row 28's 5.
+
+### §M.9 — the machinery section, and a hazard that stopped being merely documented
+
+M.9 listed the necessity certifications as **basket only** (D42 TRAIN, D43 held out). It now also carries **D44** and **D45** plus the **pooled-28 secondary at rank 1 of 29**, so the machinery it documents has produced **four necessity reads across two codewords and both splits**. ⛔ **Stated as a fact about the MACHINERY, not a joint result** — D43 and D45 share the set-identical 23 domains and are **paired, not independent**.
+
+⚠ **The more useful change:** M.9 has long documented the `--control-prefixes` hazard — that the analyser's default prefixes match **none** of the `KO_NEC_*` arms, so an omitted flag **empties** the family rather than shrinking it (S-480). **That paragraph was a warning to a careful reader. As of S-533 it is a refusal in code.** R41 measured three ways to get a wrong family that still *looks* right — including `'KO_NEC_SHUF, KO_NEC_RAND'`, whose leading space silently selects 24 and prints the **expected** floor 0.0400, and `'KO_NEC'`, which selects **32 including the candidate itself and the positive control**. M.9 now records that the analyser strips prefixes, refuses an empty one, refuses the candidate or positive control inside the family, and accepts `--expect-n-controls` / `--expect-n-domains`; and that **PR-CSI-024's read used `--expect-n-controls 24 --expect-n-domains 23`** — **the first read in this record whose family size and domain count were asserted rather than trusted.**
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No GPU work and no new measurement.** Every figure is a re-derivation of a committed artefact; the only new text is bookkeeping.
+- ⛔ **The 17 button-sufficiency caveats were READ, not re-verified.** I checked that they concern sufficiency and are governed elsewhere; I did **not** re-measure whether each governing amendment is still correct. *"Not mine to touch"* is a scope statement, not a clean bill.
+- ⛔ **A30 now has 30 rows and I did not re-audit the other 29** against the current record. The index is append-maintained, and S-527 found row 28 stale for nineteen entries — nothing licenses assuming the rest are current.
+- ⛔ **§M.9's own numbers were not re-derived this tick** beyond the D44/D45 additions; its 46-control composition and subfamily floors are as previously recorded.
+- ⛔ **The random-only rank is still unreported** (floor `1/5` = 0.2000, above α, cannot certify).
+- ⛔ **No combined basket+button test exists** and none is specified.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** A30's other 29 rows have never been audited as a block; that is the obvious debt, and S-527 already showed one of them can sit stale for nineteen entries.

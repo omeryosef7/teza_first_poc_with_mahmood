@@ -739,11 +739,25 @@ cannot certify at any data and §L.3 records the extension that would have fixed
 8-control arithmetic above is correct and worth keeping: it is why the ORIGINAL read could not
 certify. But the governing necessity family is now **24 shuffled controls** (PR-CSI-003-A), floor
 **0.0400**, and §A.1's necessity half **does** certify — **rank 1 of 25 on TRAIN (D42) and rank 1
-of 25 on 23 HELD-OUT VALIDATION domains (D43, PR-CSI-022)**. ⚠ **The control-prefix subtlety this
+of 25 on 23 HELD-OUT VALIDATION domains (D43, PR-CSI-022)**. 🔴 **AND ON BUTTON TOO, ADDED S-542:**
+**rank 1 of 25 on button TRAIN (D44)** and **rank 1 of 25 on 23 HELD-OUT VALIDATION domains
+(D45, PR-CSI-024)**, with the prespecified **pooled-28 secondary at rank 1 of 29** (floor
+`1/29` = 0.034483). ⚠ **So the machinery this section documents has now produced four necessity
+reads across two codewords and both splits** — and ⛔ **that is a statement about the MACHINERY, not
+a joint result**: D43 and D45 share the set-identical 23 domains and are **paired, not independent**.
+
+⚠ **The control-prefix subtlety this
 paragraph documents is unchanged and still matters**: `--control-prefixes KO_NEC_SHUF` is what
 selects the 24, and S-480 measured that the analyser's DEFAULT prefixes (`KO_SHUF,KO_RAND`) match
 none of the `KO_NEC_*` arms at all, so an omitted flag would empty the family rather than shrink
-it.
+it. 🔴 **AS OF S-533 IT IS NO LONGER ONLY DOCUMENTED — IT IS ENFORCED.** REVIEW R41 measured three
+ways to get a wrong family that still *looks* right, including `'KO_NEC_SHUF, KO_NEC_RAND'` whose
+leading space silently selects 24 and prints the expected floor `0.0400`, and `'KO_NEC'` which
+selects **32 including the candidate itself and the positive control**. The analyser now strips
+prefixes, refuses an empty one, refuses the candidate or the positive control inside the control
+family, and accepts `--expect-n-controls` / `--expect-n-domains` so a prereg can pin what VOID 8
+freezes. **PR-CSI-024's read used `--expect-n-controls 24 --expect-n-domains 23`** — the first read
+in this record whose family size and domain count were asserted rather than trusted.
 
 ## M.10 What the design cannot do
 
