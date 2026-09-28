@@ -38,7 +38,7 @@ four rows below are the D-rows §H covers; it also reports **AM-36** and draws o
 |---|---|---|
 | **D32** | eight head indices carry most of the knockout's effect on basket, **replicating on the held-out split** at the preregistered bar | it is the result the cell-level work *subdivides*; §1–§3 localise within heads D32 selected |
 | **D33** | that 8-head set is **rank 1 of 21** against a control family drawn from all 32 band heads | a **SECOND and harder** rank-based certification — D32 is also rank 1 of 21, but against the candidate's complement; → H.1b |
-| **D34** | four heads (2, 19, 17, 23) each clear the family's own null anchor, **all four inside `HD_TOPK` and none outside it** | it is where §1's four heads come from |
+| **D34** | four heads (2, 19, 17, 23) each clear the family's own null anchor, **all four inside `HD_TOPK` and none outside it** — ⚠ **three at PR-CSI-001's declared option-mass floor, and with paired intervals (S-559) only head 2's margin excludes 1.0; 19, 17 and 23 are UNDECIDED** | it is where §1's four heads come from |
 | **D35** | 🔴 head 2's single-head effect, selected on basket by a rule frozen beforehand, **DOES NOT REPLICATE on button** — ci95 [−0.015452, +0.006019] **crosses zero** | **the sprint's one EMPIRICAL negative** |
 
 ⚠ **D35 was the omission that could flatter, and it is why §H was drafted before anything else was
@@ -361,7 +361,7 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | ‼ the held-out train→validation RATIO quoted as "the effect is stronger held out" | button **1.456×** (D44→D45) and basket **1.475×** (D42→D43), margins 2.714× and 2.69×. **The resemblance is striking and it is NOT a result.** One estimate on 23 domains against one on 67; the magnitude bands were frozen WIDE precisely to absorb that noise, so a point inside the band is a CHECK PASSED, not an effect measured. A second instance enlarges the temptation, not the licence | D45 / PR-CSI-024 |
 | the four HELD-OUT 2×2 cells treated as a balanced design, or compared cell-to-cell as magnitudes | they are four separate reads with **different key sets** (215 / 221 / 222 / 224) on the **same 23 domains**. The pattern (button fails only in sufficiency) is the claim; **no cell-to-cell magnitude comparison is offered**, and paired data does not become independent by being tabulated | D45 / D43 / D24 |
 | button's held-out sufficiency rank 6 of 47 described as "nearly passing" | the preregistered bar is rank **1** in a 46-control family. **6 is not 1.** It is also NOT the same number as TRAIN's rank 36, and that difference is not interpreted — one estimate on 23 domains against one on 67 | D24 / S-540 |
-| ‼ a count built on a NON-PREREGISTERED anchor presented with the authority of a preregistered one | PR-CSI-012 froze **no bar at all** (`NO_RANK_TEST`, descriptive `CENSUS_DELIVERABLE`, and `0.012567` appears **zero** times in it). §H.2's anchor was chosen in the write-up. **Every preregistered bar in the sprint survived the same floor; the only count that moved is the unpreregistered one.** Say which criteria were frozen and which were not | D34 / PR-CSI-012 / S-555 |
+| ‼ a count built on a NON-PREREGISTERED anchor presented with the authority of a preregistered one | 🔴 **CORRECTED S-559 — the ANCHOR was preregistered; the COUNT was not.** PR-CSI-012 froze no bar (`NO_RANK_TEST`, descriptive `CENSUS_DELIVERABLE`, `0.012567` zero times), but `runargs/dcs_csi_pr013_nomination_rule.txt` Rule 2(b) froze `\|E\| > \|E(HD_BOTK)\|` + ci95-excludes-0 on **2026-09-22 at 18 of 44 arms**, for **head 2 as a launch gate**. S-555 missed it by scanning `configs/*.json` only. ⛔ Do NOT write "the only count that moved is the unpreregistered one" — it was preregistered. Say: the tally over 32 heads is the write-up's step, and a near-null effect-built criterion is fragile **whether or not** it was frozen | D34 / PR-CSI-013 / S-559 |
 | ‼ "**exactly** four heads clear the anchor" written without the floor qualifier | at PR-CSI-001's declared option-mass floor of 0.05 the count is **THREE** — head 23 drops because the **anchor rose 35.1 %** while its own effect fell 5.9 % and its ci95 still excludes zero. **The bar moved, not the head.** Say "four at the published readout, three at the declared floor", never the bare "exactly four" | D34 / PR-CSI-025 |
 | any §H count quoted as a property of the MODEL rather than of the readout population | ~~§A was invariant across all eight cells (AM-53/AM-54); §H was never testable until S-548 and its headline count moves.~~ 🔴 **TIGHTENED S-552: only D34's count moves.** PR-CSI-014/015/016 are **invariant** at the same floor, and PR-CSI-016's bar **recomputed** and still moved ≤ 5.27 %. The rule is narrower and more useful: **a bar built from a near-null arm's OWN EFFECT (D34's `\|E(HD_BOTK)\|`, 6.4 % of `HD_TOPK`) inherits that arm's instability; bars built as `1.96·SD/√n` did not.** ⛔ Still true that **an untested §H claim is a statement about a readout** — D32, D33, D36, D39, D40 are untested and three of them are untestable with today's instrument | §H / PR-CSI-025 / S-551 |
 | the two REFUSED families cited as evidence of invariance | `csi10_cell6_button_validation` and `csi11_cell8_basket_validation` could not be run at all: their own preregs pin each head's E to a prior measurement, and any row filter moves E. **Unrunnable is not invariant**, and switching off a VOID condition to obtain a number is forbidden | PR-CSI-025 |
@@ -1167,17 +1167,34 @@ argues against additivity across the eight. **Nothing here says this is *the* 8-
 rank-1-of-21 certifications, both sitting exactly at their floor — separate evidence, not one result
 counted twice.
 
-## H.2 Exactly four heads clear the family's own null anchor (D34) — 🔴 **AT THE PUBLISHED READOUT; THREE AT THE DECLARED FLOOR**
+## H.2 Exactly four heads clear the family's own null anchor (D34) — 🔴 **AT THE PUBLISHED READOUT; THREE AT THE DECLARED FLOOR; AND ONLY ONE SEPARABLE FROM THE ANCHOR AT ci95 (S-559)**
 
-🔴 **THE ANCHOR BELOW IS NOT PREREGISTERED — MEASURED AND RECORDED S-555.**
+🔴 **THE *COUNT* BELOW IS NOT PREREGISTERED. THE *ANCHOR* IS — S-555 SAID OTHERWISE AND IS CORRECTED
+HERE (S-559).**
 `configs/dcs_csi_pr012_head_census_basket.json` contains **no bar, no anchor and no criterion key of
 any kind**; it declares `NO_RANK_TEST` and a descriptive `CENSUS_DELIVERABLE`, and the string
-`0.012567` occurs **zero** times in it. **This anchor was chosen here, in the write-up, to turn a
-deliberately verdict-free census into a count.** ⚠ **Every criterion in this sprint that WAS
-preregistered survived the same option-mass floor** — PR-CSI-014, PR-CSI-015 and PR-CSI-016 are all
-dispersion-built (`1.96·SD/√n`) and all three are invariant. ⛔ **The count below is the one quantity
-that moved, and it is the one that bypassed preregistration.** That is why it carries the qualifier
-and they do not.
+`0.012567` occurs **zero** times in it. That much stands. ⛔ **But the criterion itself was frozen —
+elsewhere, and before the data.** `runargs/dcs_csi_pr013_nomination_rule.txt` (md5 `fae4adc6`, pinned
+by `configs/dcs_csi_pr013_button_head_replication.json`) states as **Rule 2(b)**:
+
+> `|E(SINGLE_h*)| > |E(HD_BOTK)|` in the SAME census, AND E(SINGLE_h*)'s ci95 excludes 0.
+> WHY HD_BOTK AND NOT A CONSTANT: HD_BOTK is this family's own null-ish comparator, measured on the
+> same rows in the same job, so the threshold needs no external number and cannot be tuned after the
+> fact. A constant chosen today would be a constant chosen by me.
+
+frozen **2026-09-22, while the census stood at 18 of 44 arms and no result had been read**, with a
+later amendment adding clause (c) `E < 0`. ⚠ **S-555 missed this because it scanned
+`configs/dcs_csi_pr*.json` only and PR-013 records the gate as booleans (`abs_exceeds_HD_BOTK`)
+rather than as a `min_abs_*` threshold key — the rule text lives in `runargs/`.**
+
+⇒ **So what is unpreregistered here is the TALLY, not the THRESHOLD.** PR-CSI-013 applies this anchor
+to **head 2 alone, as a launch GO/NO-GO**; extending it to a count over all 32 heads is this
+write-up's step. ⛔ **RETRACTED: "the count below is the one quantity that moved, and it is the one
+that bypassed preregistration."** It did not bypass preregistration. ⚠ **Every criterion frozen as a
+NUMBER survived the same floor** — PR-CSI-014, PR-CSI-015 and PR-CSI-016 are dispersion-built
+(`1.96·SD/√n`) and all three are invariant. ⇒ **The lesson that survives is narrower and does not
+implicate the discipline: a criterion built from a near-null arm's own effect is fragile whether or
+not it was preregistered, and this one was.**
 
 Using `|E(HD_BOTK)| = 0.012567` as the anchor the family itself supplies, the 32 single-head arms on
 basket validation give **exactly four** heads with a negative effect, a magnitude above the anchor
@@ -1208,6 +1225,40 @@ longer clears.
 disqualified, and head 23's interval still excludes zero. ⇒ ***"Exactly four"* is a statement about
 this readout population, not a property of the model**, and the sensitive term is the **family's own
 self-supplied anchor** rather than any head.
+
+🔴 **THE INTERVALS, PROPAGATED S-559 — AND THEY UNDERCUT BOTH READINGS ABOVE.** Every percentage in
+this section was a difference of two point estimates. Both floors are computed over the **same 23
+domains** from **nested row sets**, so the two census artefacts' marginal ci95s are not a valid
+comparison of the difference; the comparison has to be **paired**, resampling the domain vector once
+per replicate and evaluating both floors on that resample (B = 10000, seed 20260922 — the census's
+own; reader `scripts/dcs_csi_census_floor_paired.py`).
+
+| arm | \|E\| ctrl → floor | movement (paired ci95) | margin over the floor anchor | margin ci95 |
+|---|---|---|---|---|
+| `SINGLE_02` | 0.049475 → 0.046036 | −7.0 % [−27.8, +13.1] — **includes 0** | **2.712×** | **[1.344, 9.972] — clears** |
+| `SINGLE_19` | 0.040109 → 0.029930 | **−25.4 % [−41.1, −9.5] — excludes 0** | 1.763× | [0.850, 7.354] — **straddles 1.0** |
+| `SINGLE_17` | 0.029218 → 0.023245 | **−20.4 % [−32.2, −7.7] — excludes 0** | 1.370× | [0.626, 5.937] — **straddles 1.0** |
+| `SINGLE_23` | 0.016503 → 0.015526 | −5.9 % [−48.8, +54.6] — **includes 0** | 0.915× | [0.451, 3.418] — **straddles 1.0** |
+| `HD_BOTK` (anchor) | 0.012567 → 0.016973 | +35.1 % [−36.8, +117.1] — **includes 0** | 1.000× | by construction |
+
+⛔ **ONLY ONE OF THE FOUR HEADS IS DISTINGUISHABLE FROM THE ANCHOR AT ci95, AND IT IS HEAD 2** — the
+one head PR-CSI-013's frozen Rule 2(b) actually gates on. Heads 19, 17 and 23 all straddle 1.0:
+**whether they clear is UNDECIDED, at either floor.** ⇒ The published "**four**" and the qualified
+"**three**" are *both* statements about point estimates that the intervals do not separate.
+
+⛔ **AND THE ANCHOR'S OWN +35.1 % DOES NOT EXCLUDE ZERO.** The movement that this section calls "the
+bar moved, not the head" is, in magnitude, **within noise**; what S-553/S-554 established is its
+*direction* (the retention mechanism), not its size. ⇒ **"The anchor moved six times as much as the
+head" is a ratio of two point estimates, only one of which is distinguishable from no movement at
+all** — and it is not the anchor.
+
+⚠ **Why pairing is not a thumb on the scale, and where it still is a choice.** The two per-domain
+difference vectors correlate **r = 0.43…0.90**, and pairing narrows the movement interval
+**1.32×–2.99×**; unpaired, **both** of the two established movements read as null. Pairing is the
+correct estimator for nested rows on shared domains, which is why it is used — **but the statistic
+was chosen after the point estimates were seen, and no preregistration froze it.** The point
+estimates themselves were re-derived from the run directories independently of both artefacts and of
+S-558, and all ten `E` values reproduce the published artefacts to 8 decimals.
 
 ⚠ **This does NOT retract the section.** Four clear at the published readout and three at the declared
 floor; both are measured, and the artefact is

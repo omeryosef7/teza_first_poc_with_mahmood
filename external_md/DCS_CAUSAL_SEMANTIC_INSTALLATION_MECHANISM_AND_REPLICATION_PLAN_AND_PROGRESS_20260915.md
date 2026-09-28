@@ -46038,3 +46038,146 @@ Margins over the **floor** anchor (0.016973):
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** propagate the census's own ci95s through these five comparisons — every percentage in this entry is a difference of point estimates with intervals I left on the floor.
+
+## S-559 / the intervals S-558 left on the floor — and the anchor it called unpreregistered WAS frozen, before the data, by PR-CSI-013 (2026-09-28)
+
+S-558 landed as `20772f85`, **537 passed**. Queue **EMPTY**. Also killed **ten background shells** left
+spinning since S-526 — every one an `until ! pgrep -f 'pre-commit|pytest'` loop that matches **its own
+command line**, so none could ever exit. That hazard was diagnosed at S-526 and the shells were never
+reaped; two had been running **2 days 15 hours**.
+
+S-558's NEXT was to propagate the census's own ci95s through its five comparisons. Doing it properly
+required rejecting the obvious way to do it, and on the way it exposed a **wrong statement I published
+twice**.
+
+### 1. THE CORRECTION, AND IT IS THE BIGGER HALF OF THIS ENTRY
+
+**S-555 and S-556 are too strong and are corrected.** S-555: *"D34's `|E(HD_BOTK)|` anchor was NEVER
+PREREGISTERED."* S-556: *"ZERO of 22 preregistered criterion keys are effect-built, so D34's anchor is
+the only one in the record and it is the unfrozen one."* Both feed D34's row, §H.2 and the editor's
+checklist, and the second was written up as *"a stronger and less comfortable statement than 'a
+near-null bar is fragile'."*
+
+It was frozen. `runargs/dcs_csi_pr013_nomination_rule.txt` (md5 `fae4adc66ddfa3dec4f6933fdb5d1444`,
+pinned by `configs/dcs_csi_pr013_button_head_replication.json` as `nomination_rule_md5`), **RULE 2(b)**:
+
+```
+#   (b) |E(SINGLE_h*)| > |E(HD_BOTK)| in the SAME census, AND E(SINGLE_h*)'s ci95 excludes 0.
+#   WHY HD_BOTK AND NOT A CONSTANT: HD_BOTK is this family's own null-ish comparator, measured on the
+#   same rows in the same job, so the threshold needs no external number and cannot be tuned after
+#   the fact. A constant chosen today would be a constant chosen by me.
+```
+
+plus amendment clause (c) `E(SINGLE_h*) < 0`. The file's own header: *"FROZEN 2026-09-22, BEFORE ANY
+PR-CSI-012 CENSUS NUMBER EXISTS … frozen while 1 of 44 arms has started and NO result has been read"*,
+and the R21 amendment records the census at **18 of 44 arms** when clause (c) was added. So this is the
+exact effect-built criterion D34 uses, preregistered, before the data, **with the effect-built design
+argued for in writing**.
+
+**Why my scan missed it, precisely.** S-555 scanned **`configs/dcs_csi_pr*.json` only** — the rule text
+lives in `runargs/`. And the scan would have missed it even so: PR-013 records the gate in `configs/` as
+an **evaluation record of booleans** (`abs_exceeds_HD_BOTK: true`, `ci95_excludes_0: true`,
+`E_is_negative: true`, `GO: true`) rather than as a `min_abs_*` threshold key, and my classifier keyed on
+threshold-shaped key NAMES. ⚠ Third entry in a row where the defect is the **population of a search**,
+not its logic: S-546's `grep -o` matching inside a longer number, S-556's `re.I` `E\(` matching
+`tokenize(`, and now a corpus that excluded the directory the criterion lives in. **Neither S-555 nor
+S-556 mentions PR-CSI-013 anywhere** (grep over S-555…S-558: zero hits) — I never looked.
+
+**What survives, stated exactly.** What was never preregistered is **the COUNT, not the ANCHOR**.
+PR-CSI-012 froze no bar and no tally — that part of S-555 stands, and `0.012567` really does occur zero
+times in it. PR-CSI-013 applies the anchor to **head 2 alone, as a launch GO/NO-GO**, never as a census
+tally over 32 heads; extending it to "exactly four heads clear it" is the write-up's step. ⛔ So
+**"the one quantity that moved is the one that bypassed the preregistration discipline" is RETRACTED**:
+it did not bypass it. The surviving lesson is narrower and does not implicate the discipline — **a
+criterion built from a near-null arm's own effect is fragile whether or not it was preregistered, and
+this one was.**
+
+### 2. THE INTERVALS
+
+The obvious repair — compare the two census artefacts' marginal ci95s — is **invalid**, and saying why
+is most of the work. Both floors are computed over the **same 23 domains**, and the floor-0.05 row set
+is a strict **subset** of the floor-0.0 set, so the estimates are strongly positively correlated:
+measured, the two per-domain difference vectors correlate **r = 0.4322 … 0.8976**. The comparison has to
+be **paired** — resample the domain vector ONCE per replicate, evaluate BOTH floors on that resample.
+New reader `scripts/dcs_csi_census_floor_paired.py` (B = 10000, seed 20260922, ci 0.95 — the census's
+own, because these are census quantities), reusing `w4.by_domain`, the census's own
+`_option_mass_keys`, `rederive.strict_run_dir` and `w4.pct` rather than reimplementing any of them.
+
+| arm | \|E\| ctrl → floor | movement (paired ci95) | excl 0 | margin | margin ci95 |
+|---|---|---|---|---|---|
+| SINGLE_02 | 0.049475 → 0.046036 | −7.0 % [−27.8, +13.1] | no | 2.712× | **[1.344, 9.972] clears** |
+| SINGLE_19 | 0.040109 → 0.029930 | **−25.4 % [−41.1, −9.5]** | **yes** | 1.763× | [0.850, 7.354] straddles |
+| SINGLE_17 | 0.029218 → 0.023245 | **−20.4 % [−32.2, −7.7]** | **yes** | 1.370× | [0.626, 5.937] straddles |
+| SINGLE_23 | 0.016503 → 0.015526 | −5.9 % [−48.8, +54.6] | no | 0.915× | [0.451, 3.418] straddles |
+| HD_BOTK | 0.012567 → 0.016973 | +35.1 % [−36.8, +117.1] | no | 1.000× | by construction |
+
+**⛔ Only ONE of the four heads is separable from the anchor at ci95, and it is head 2 — the one head
+PR-CSI-013's frozen rule actually gates on.** Heads 19, 17 and 23 all straddle 1.0. So the published
+"four" and S-558's qualified "three" are **both** statements about point estimates that the intervals do
+not separate, and S-558's framing of "three, not four" as a near-boundary call understated it: **three
+of the four are undecided, not one.**
+
+**⛔ And the anchor's own +35.1 % does not exclude zero.** The movement that D34 calls "the bar moved,
+not the head" is, in magnitude, **within noise**. What S-553/S-554 established about it is its
+DIRECTION — the retention/estimator mechanism reproduces `−0.016973` exactly — not its size. "The
+anchor moved six times as much as the head it disqualified" is a ratio of two point estimates, and
+**neither** of those two movements excludes zero.
+
+**Only 2 of the 5 movements are established** (SINGLE_19, SINGLE_17). S-558 reported all five as facts.
+
+**Pairing is not a thumb on the scale, and I checked which way it cuts.** Pairing NARROWS the movement
+interval by **1.32× (SINGLE_23) to 2.99× (SINGLE_17)**, and unpaired **both** established movements read
+as null. So pairing is what creates the only two positives here. It is nonetheless the correct estimator
+for nested rows on shared domains — the unpaired version simply ignores that both estimates come from
+the same domains — which is why it is used. ⚠ **But the statistic was chosen after the point estimates
+were seen and no prereg froze it either.** Recorded rather than glossed, because that is the same class
+of step that §1 just corrected in this entry.
+
+**Verification, mine and not a subagent's.** All ten `E` values (5 arms × 2 floors) re-derived from the
+run directories reproduce the two published artefacts **to 8 decimals** (`−0.04947467` / `−0.04603575`
+etc.), so S-558's point-estimate table is independently confirmed. My marginal ci95s reproduce the
+artefacts' to ≤ **7.2e-4** — not exact, and the reason is structural, not a discrepancy: the census
+draws all 43 arms from ONE shared `random.Random(20260922)` stream, so an arm's draws depend on how many
+arms preceded it, while I draw a fresh stream per arm. The pattern of which movements exclude 0 and
+which margins straddle 1.0 is **identical across seeds 20260922 / 11 / 999**.
+
+### 3. CODE AND GUARDS
+
+`tests/test_csi_census_floor_paired.py`, **9 entry points**, registered in `GUARD_TESTS` in BOTH
+`.git/hooks/pre-commit` and `scripts/install_commit_guard.sh` (**30 entries, sorted, verified
+byte-identical lists**). Mutation-tested: **6 of 6** mutations caught, each by its own test —
+non-positive floor, unloaded reference arm, domain-set change, the anchor's own margin, **unpairing the
+bootstrap by drawing a second index vector**, and reimplementing the option-mass floor instead of
+reusing the census's. Source confirmed byte-identical to its backup afterwards. One printed falsehood in
+my own new code was fixed before any number was quoted from it: the anchor's margin is `1.000×` with a
+degenerate `[1,1]` interval, and the first version labelled that **"below 1.0"**.
+
+### 4. AND I MADE THE SAME MISTAKE INSIDE THE FIX
+
+D34 carried a stale parenthetical — `0.012567` *"(4 times in this file, 3 in the draft)"*. I recounted it
+with a bare `grep -o` and wrote **"5 times in this file, 5 in the draft"**. Then ran
+`scripts/gates/dcs_csi_stale_dependent_check.py --count 0.012567`, which counts **BOUNDED** occurrences:
+claim table **4**, draft **5** — loose 5 and 6, because the token matches inside **`0.01256722`**, the
+bit-identity print. ⚠ **So the original "4 in this file" was correct all along and only the draft count
+was stale, and my correction broke the half that was right.** This is S-546 verbatim — the bare
+`grep -o '0\.0778'` matching inside `0.07786075415465653` — committed *in the entry whose §1 is about a
+search with the wrong population.* Corrected in place, with the bounded/loose distinction now written
+into the parenthetical so the next recount cannot repeat it.
+
+### NOT ESTABLISHED
+
+⛔ **Whether heads 19, 17 and 23 clear the anchor is now UNDECIDED, not answered.** A straddling
+interval is an absence of resolution; it is not evidence that they fail. n = 23 domains is what it is.
+⛔ **The PR-CSI-013 finding does not license "the anchor was preregistered for D34's count."** It was
+preregistered for **head 2's launch gate**. I have not searched for any prereg that froze a COUNT.
+⛔ **I have not re-audited S-555/S-556's other conclusions against the `runargs/` corpus.** The
+classifier's population was wrong; I corrected the one claim I could check, and the rest of S-555's
+22-key survey has NOT been re-run over `runargs/*.txt`. That is the next thing, not a settled matter.
+⛔ **Still only 5 arms of 43.** The other 38 are unmeasured at either floor.
+⛔ **The paired statistic is unpreregistered**, chosen after the point estimates were seen.
+⛔ **No claim about §A, csi7/csi8/csi9 changes.** Their invariance was measured on counts, and I have
+put no interval on their margins either.
+
+**NEXT:** re-run S-555's effect-built/dispersion-built survey over the **`runargs/` corpus** it omitted
+— every frozen rule text and read recipe, not just `configs/*.json`. PR-CSI-013's Rule 2(b) was found by
+accident, through a subagent's config sweep, and one accident is not a census.

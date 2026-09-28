@@ -54,6 +54,7 @@ GUARD_TESTS="tests/test_asr_protocol.py
              tests/test_csi_argmax_verdict_shared.py
              tests/test_csi_argv_generator.py
              tests/test_csi_cell_identity.py
+             tests/test_csi_census_floor_paired.py
              tests/test_csi_control_family_guard.py
              tests/test_csi_option_mass_floor_headcell.py
              tests/test_csi_pr016_argmax.py
