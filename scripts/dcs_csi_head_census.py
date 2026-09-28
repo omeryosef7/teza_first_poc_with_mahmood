@@ -185,6 +185,10 @@ def main():
                          "BF_BASE, csi11_cell8_basket_validation uses BK_BASE (PR-CSI-025 VOID 7).")
     ap.add_argument("--allow-short", type=int, default=0)
     ap.add_argument("--B", type=int, default=10000)
+    ap.add_argument("--allow-intervened-reference", action="store_true",
+                    help="permit --option-mass-reference to be an arm OTHER than the base "
+                         "arm. A deliberate probe only: option_mass is post-treatment, so "
+                         "this selects on the outcome (R42-F2/S-562).")
     ap.add_argument("--seed", type=int, default=20260922)
     ap.add_argument("--ci", type=float, default=0.95)
     ap.add_argument("--out", required=True)
@@ -297,6 +301,23 @@ def main():
                      "%s. The BASE arm is NOT uniformly named across families (HD_BASE / BF_BASE / "
                      "BK_BASE) -- PR-CSI-025 VOID 7."
                      % (a.option_mass_reference, ",".join(sorted(dirs))))
+        # R42-F2 (S-562). Membership was the ONLY check here, and `base_arm` has been resolved since
+        # line ~265 without ever being compared to it. `option_mass` is a POST-TREATMENT outcome, so
+        # keying the floor on an INTERVENED arm selects on the outcome -- the collider that
+        # dcs_csi_subspace_analyze.py's reference_key_set records as R2-B1, a BLOCKER, whose stated
+        # fix is "the reference arm (default BASE, the un-intervened condition)". The census enforced
+        # only family membership, and the difference is not cosmetic: measured on csi5 at floor 0.05,
+        # E(HD_TOPK) is -0.238609 keyed on HD_BASE and -0.182068 keyed on HD_TOPK -- +21.7% vs +3.6%
+        # movement, i.e. the OPPOSITE sensitivity conclusion from the same flag and the same floor.
+        # Published runs all used the base arm, so no published number moves; the hole was latent.
+        if a.option_mass_reference != base_arm and not a.allow_intervened_reference:
+            sys.exit("REFUSING: --option-mass-reference %r is not this family's base arm %r. "
+                     "option_mass is a POST-TREATMENT outcome, so keying the readout floor on an "
+                     "INTERVENED arm selects on the outcome (R2-B1, recorded as a BLOCKER in "
+                     "dcs_csi_subspace_analyze.py). Measured spread on csi5 floor 0.05: E(HD_TOPK) "
+                     "-0.238609 keyed on the base arm vs -0.182068 keyed on HD_TOPK. Pass "
+                     "--allow-intervened-reference ONLY for a deliberate probe, never for a "
+                     "published read. (R42-F2/S-562)" % (a.option_mass_reference, base_arm))
         ref_dir = dirs[a.option_mass_reference]
         keep_keys, n_ref, n_kept = _option_mass_keys(ref_dir, a.option_mass_floor)
         if not keep_keys:

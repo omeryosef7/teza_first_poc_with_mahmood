@@ -52,11 +52,21 @@ def main():
     ap.add_argument("--floor", type=float, default=0.05)
     ap.add_argument("--reference", required=True, help="arm the floor's key set is built from")
     ap.add_argument("--allow-short", type=int, default=0)
+    ap.add_argument("--min-rows", type=int, default=3,
+                    help="refuse if any domain retains fewer than this many rows under the floor "
+                         "(R42-C1/S-561: equal-domain weighting gives a 1-row domain full weight)")
     ap.add_argument("--B", type=int, default=10000)
     ap.add_argument("--seed", type=int, default=20260922)
     ap.add_argument("--ci", type=float, default=0.95)
     ap.add_argument("--out", default=None)
     a = ap.parse_args()
+
+    # R42-M5 (S-562). Every interval used to be printed AND serialized under the literal key
+    # "ci95" whatever --ci said. Reproduced: `--ci 0.50` printed
+    # "SINGLE_02 -7.0% [-13.8,-0.4] / movement ci95 EXCLUDES 0" -- the published reading for that arm
+    # is INCLUDES 0. A one-character typo produced a wrong-but-plausible publishable line whose only
+    # label was the false string "ci95". The label is now derived from the value, so it cannot lie.
+    CIL = "ci%g" % round(a.ci * 100)
 
     if a.floor <= 0.0:
         sys.exit("REFUSING: --floor must be > 0; the control branch IS floor 0 and is run here "
@@ -92,6 +102,50 @@ def main():
                  % (len(dc), len(df), sorted(dc - df)[:5]))
     doms = sorted(dc)
     print("[paired] domains common to every arm under BOTH floors = %d" % len(doms))
+
+    # ---- R42-C1/F1, S-561, S-562: PER-DOMAIN RETENTION, DISCLOSED --------------------------------
+    # The domain-SET check above is what licensed the sentence "both floors are computed over the
+    # SAME 23 domains". That is true of the SET and conceals the thinning: on the published csi5 run
+    # the floor takes domains from a uniform 10 rows to 1..10, and `freight_yard` keeps ONE row which
+    # equal-domain weighting then hands 1/23 of the estimate. S-561 found that by leave-one-out three
+    # entries after the numbers were published. `by_domain` returns the per-domain SLOT SET precisely
+    # so this cannot happen silently (its R15-3 docstring) and the first version of this file threw it
+    # away with `[0]`. It is now printed and serialized, and a domain thinned below --min-rows refuses.
+    inst_f, _, _ = w4.lpm.load_installation(dirs[a.reference], keep_keys=keep)
+    inst_c, _, _ = w4.lpm.load_installation(dirs[a.reference], keep_keys=None)
+    rpd = {}
+    for (d, _s) in inst_f:
+        rpd[d] = rpd.get(d, 0) + 1
+    hist = {}
+    for v in rpd.values():
+        hist[v] = hist.get(v, 0) + 1
+    thin = sorted((v, d) for d, v in rpd.items())[:3]
+    print("[retention] rows per domain on %s: min %d, median %.1f, histogram %s"
+          % (a.reference, min(rpd.values()),
+             statistics.median(sorted(rpd.values())), dict(sorted(hist.items()))))
+    print("[retention] thinnest: %s" % ", ".join("%s=%d" % (d, v) for v, d in thin))
+    if min(rpd.values()) < a.min_rows:
+        sys.exit("REFUSING: domain %r retains %d row(s) under floor %g, below --min-rows %d. E "
+                 "weights every domain EQUALLY regardless of rows retained, so that domain's mean "
+                 "is one row carrying 1/%d of the estimate. Measured on csi5: freight_yard's single "
+                 "row carried 37.8%% of the anchor's floor effect and its removal took the anchor's "
+                 "movement from +35.1%% to -0.2%%. Pass --min-rows 1 to proceed deliberately. "
+                 "(R42-C1/S-561/S-562)"
+                 % (thin[0][1], thin[0][0], a.floor, a.min_rows, len(doms)))
+
+    # ---- the SLOT-POOLED counterfactual, which is NOT post hoc -----------------------------------
+    # At floor 0.0 every domain has the same row count, so domain-equal and slot-pooled averaging are
+    # IDENTICAL BY CONSTRUCTION. Their divergence at any floor > 0 is therefore an exact decomposition
+    # of "readout-validity effect" vs "re-weighting artefact" over the FULL preregistered population --
+    # no domain dropped, nothing post hoc. Measured on csi5 floor 0.05: HD_BOTK's movement is +35.1%
+    # domain-equal and -7.5% pooled, i.e. THE SIGN REVERSES, and it is the only arm of seven that does.
+    raw = {arm: {"c": w4.lpm.load_installation(dirs[arm], keep_keys=None)[0],
+                 "f": w4.lpm.load_installation(dirs[arm], keep_keys=keep)[0]} for arm in dirs}
+
+    def pooled(arm, br):
+        A, B = raw[arm][br], raw[a.base_arm][br]
+        ks = [k for k in A if k[0] in dc and k in B]
+        return statistics.fmean([float(A[k]) - float(B[k]) for k in ks])
 
     def vec(branch, arm):
         return [branch[arm][d] - branch[a.base_arm][d] for d in doms]
@@ -132,26 +186,58 @@ def main():
     for arm in V:
         res[arm] = {}
         for k, xs in draws[arm].items():
-            res[arm][k] = {"point": point[arm][k],
-                           "ci95": [w4.pct(xs, lo_q), w4.pct(xs, hi_q)],
+            # R42-m9: a quantile taken from fewer than B draws is not the interval it claims to be.
+            if len(xs) != a.B:
+                sys.exit("REFUSING: statistic %r on arm %s has %d of %d draws -- replicates were "
+                         "silently dropped, so this interval is conditional on something the label "
+                         "does not state. (R42-m9/S-562)" % (k, arm, len(xs), a.B))
+            res[arm][k] = {"point": point[arm][k], CIL: [w4.pct(xs, lo_q), w4.pct(xs, hi_q)],
                            "n_draws": len(xs)}
 
-    print("\n[paired] |E| MOVEMENT under the floor, ci95 from a PAIRED bootstrap (B=%d seed=%d)"
-          % (a.B, a.seed))
-    print("   %-11s %-22s %-24s %s" % ("arm", "|E| ctrl -> |E| floor", "delta (ci95)", "pct (ci95)"))
+    print("\n[paired] |E| MOVEMENT under the floor, %s from a PAIRED bootstrap (B=%d seed=%d)"
+          % (CIL, a.B, a.seed))
+    print("   %-11s %-22s %-24s %s"
+          % ("arm", "|E| ctrl -> |E| floor", "delta (%s)" % CIL, "pct (%s)" % CIL))
     for arm in arms:
         r = res[arm]
+        if "pct" not in r:
+            sys.exit("REFUSING: arm %s has no percentage movement because its CONTROL |E| is "
+                     "identically 0 -- that happens when --arms contains the base arm %r, whose "
+                     "difference against itself is 0 in every domain. Naming the symptom "
+                     "(KeyError: 'pct') instead of the cause is the S-295 defect. (R42-M6/S-562)"
+                     % (arm, a.base_arm))
         p = r["pct"]
         print("   %-11s %.6f -> %.6f  %+.6f [%+.6f,%+.6f]  %+.1f%% [%+.1f,%+.1f]"
               % (arm, point[arm]["abs_ctrl"], point[arm]["abs_flr"],
-                 r["delta_abs"]["point"], r["delta_abs"]["ci95"][0], r["delta_abs"]["ci95"][1],
-                 p["point"], p["ci95"][0], p["ci95"][1]))
-        excl = (r["delta_abs"]["ci95"][1] < 0) or (r["delta_abs"]["ci95"][0] > 0)
-        print("   %-11s movement ci95 %s 0" % ("", "EXCLUDES" if excl else "INCLUDES"))
+                 r["delta_abs"]["point"], r["delta_abs"][CIL][0], r["delta_abs"][CIL][1],
+                 p["point"], p[CIL][0], p[CIL][1]))
+        excl = (r["delta_abs"][CIL][1] < 0) or (r["delta_abs"][CIL][0] > 0)
+        print("   %-11s movement %s %s 0" % ("", CIL, "EXCLUDES" if excl else "INCLUDES"))
+
+    print("\n[decomp] DOMAIN-EQUAL vs SLOT-POOLED |E| (identical at floor 0.0 BY CONSTRUCTION, so "
+          "any divergence here is re-weighting, not readout validity)")
+    print("   %-11s %-30s %-30s %s" % ("arm", "equal-weight ctrl -> floor", "pooled ctrl -> floor",
+                                       "sign"))
+    for arm in arms:
+        ec, ef = abs(point[arm]["abs_ctrl"]), abs(point[arm]["abs_flr"])
+        pc, pf = abs(pooled(arm, "c")), abs(pooled(arm, "f"))
+        rev = (ef - ec) * (pf - pc) < 0
+        print("   %-11s %.6f -> %.6f (%+6.1f%%)    %.6f -> %.6f (%+6.1f%%)   %s"
+              % (arm, ec, ef, 100.0 * (ef - ec) / ec if ec else float("nan"),
+                 pc, pf, 100.0 * (pf - pc) / pc if pc else float("nan"),
+                 "REVERSES" if rev else "same"))
+        res[arm]["pooled"] = {"abs_ctrl": pc, "abs_flr": pf,
+                              "pct": (100.0 * (pf - pc) / pc) if pc else None,
+                              "sign_reverses_vs_domain_equal": bool(rev)}
 
     if a.anchor_arm:
         print("\n[paired] MARGIN over the anchor |E(%s)| at floor %.2f -- the anchor is EFFECT-BUILT "
               "and NO prereg froze it (S-556)." % (a.anchor_arm, a.floor))
+        if not any(res[arm].get("margin_flr") for arm in arms):
+            sys.exit("REFUSING: no arm has a margin, because the anchor %r has |E| identically 0 in "
+                     "every draw. Printing a MARGIN section with no rows and exiting 0 tells a "
+                     "reader the margins were computed and were unremarkable. (R42-M7/S-562)"
+                     % a.anchor_arm)
         for arm in arms:
             m = res[arm].get("margin_flr")
             if not m:
@@ -160,20 +246,27 @@ def main():
                 # 1.0 by construction, with a degenerate [1,1] interval. Printing "above" or
                 # "below" here states a comparison that does not exist.
                 verdict = "THE ANCHOR ITSELF -- 1.0 by construction, not a measurement"
-            elif m["ci95"][0] < 1.0 < m["ci95"][1]:
+            elif m[CIL][0] <= 1.0 <= m[CIL][1]:
                 verdict = "STRADDLES 1.0 -- clears or fails is UNDECIDED"
-            elif m["ci95"][0] > 1.0:
+            elif m[CIL][0] > 1.0:
                 verdict = "above 1.0"
             else:
                 verdict = "below 1.0"
-            print("   %-11s margin %.3fx  ci95 [%.3f, %.3f]   %s"
-                  % (arm, m["point"], m["ci95"][0], m["ci95"][1], verdict))
+            print("   %-11s margin %.3fx  %s [%.3f, %.3f]   %s"
+                  % (arm, m["point"], CIL, m[CIL][0], m[CIL][1], verdict))
 
     blob = {"schema": "dcs_csi_census_floor_paired/1", "tag_prefix": a.tag_prefix,
             "floor": a.floor, "reference": a.reference, "base_arm": a.base_arm,
             "anchor_arm": a.anchor_arm, "n_domains": len(doms), "B": a.B, "seed": a.seed,
             "ci": a.ci, "n_rows_in_reference": n_ref, "n_keys_retained": n_kept,
             "frac_retained": round(float(n_kept) / n_ref, 6),
+            "rows_per_domain": dict(sorted(rpd.items())),
+            "rows_per_domain_histogram": {str(k): v for k, v in sorted(hist.items())},
+            "min_rows_per_domain": min(rpd.values()), "min_rows_required": a.min_rows,
+            "WHY_ROWS_PER_DOMAIN_IS_RECORDED": ("the domain SET is unchanged while the domains are "
+                                                "THINNED; equal-domain weighting gives a 1-row "
+                                                "domain the same weight as a 10-row one (S-561)"),
+            "ci_level": a.ci,
             "PAIRED": ("the domain vector is resampled ONCE per replicate and BOTH floors are "
                        "evaluated on that resample; the floor row set is a SUBSET of the control's, "
                        "so the marginal ci95s in the two census artefacts are NOT a valid "

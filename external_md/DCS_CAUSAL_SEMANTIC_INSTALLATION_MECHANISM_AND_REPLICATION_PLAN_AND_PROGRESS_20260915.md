@@ -46403,3 +46403,157 @@ the 17 prose criteria or A30's remaining rows, which are still unaudited.
 **NEXT:** put a **minimum-retained-rows guard** on the option-mass filter — not to change any published
 number, but so that a floor which reduces a domain to one row REFUSES or announces itself instead of
 being discovered by leave-one-out three entries later. With a test that fails without it.
+
+## S-562 / R42 plus the criterion audit: two published claims broke their own frozen files, and the anchor's movement REVERSES SIGN under the weighting that is free of post-hoc choice (2026-09-28)
+
+S-561 landed as `46191217`, **546 passed** — after a **39-minute** pre-commit (normally 10–11). Diagnosed
+rather than waited out: pytest sat in state `Dl`, uninterruptible **I/O wait**, 51 s of CPU across 39 min
+of wall time and +1 s in a 20 s sample, load 11.9 on 16 cores. Not a hang — filesystem contention from
+this tick's own scans (1079 files hashed, ~320 k rows read, four subagents crawling at once). Worth
+recording because "the suite is hung" and "I saturated the filesystem" have the same symptom.
+
+Four streams ran in parallel: the criterion-agreement audit (S-560's NEXT) on five claims, and **review
+R42** on two targets. **I re-derived every load-bearing figure below myself**, and that is not a formality
+this time — one stream's headline was wrong (§4).
+
+### 1. THE CRITERION AUDIT: 5 CLAIMS, 3 CLEAN, 2 BROKEN
+
+D35, D36, D39 and D40 **AGREE** with their frozen recipes — several quote their file's prohibitions back
+almost line by line, and D39 explicitly declines the post-hoc margin subset its recipe forbids ("*head
+20's miss is a **miss**, not a finding about L14*"). Two failed.
+
+**🔴 D37 OVERREACHES.** Its headline says *"the band-edge rival is **REFUTED** by the screen's own
+marginal … P(all four match) is **2.06e-04**"*. Verified by me: the numbers are exactly right —
+`(6/32)²·(2/32)·(3/32) = 2.059937e-04` and `(1/9)⁴ = 1.524158e-04`, reproduced independently. **Their
+status is what is wrong.** They come from `reports/DCS_CSI_CELL_SCREEN_AGREEMENT_basket.json`, which D37
+**does not cite** and which self-labels `"STATUS": "EXPLORATORY -- NOT PREREGISTERED … Generated after
+PR-CSI-015 was read."`, `"verdict_is_preregistered": false`, and `"verdict_rule": "heuristic, NOT
+preregistered: call the rival refuted when L14 is the screen argmax for no more than 2x its uniform
+expectation (2 * 32/9 = 7.11 heads)"`. ⛔ **The observed 6 sits 16 % under that post-hoc threshold — and
+by the identical rule the modal layer L11, at 8, would NOT be refuted.** Meanwhile
+`runargs/dcs_csi_pr015_read.txt:14` froze *"⛔ IT IS A CENSUS. NO CANDIDATE, NO CONTROL FAMILY, NO RANK,
+NO p"*. ⚠ **And D37's own status column already said "No rank, no p, no control family" — the headline
+contradicted the same row, two columns away.** Relabelled 📌 EXPLORATORY, "REFUTED" struck, artefact
+cited, marginal retained as a descriptive comparator only.
+
+**🔴 D40-c IS IN A PROHIBITED DIRECTION.** `runargs/dcs_csi_pr020_read.txt:189-190`: *"any five-head
+analysis. The first freeze preregistered one; it is **DELETED** and may not be reported from this family
+**at all**."* The prereg repeats it at `what_was_removed` / `consequence`. D40-c's claim text reported
+*"Among the five heads never previously tested … **four of five MATCH**"* — **that deleted secondary's
+statistic, over exactly its five heads** ([4, 10, 13, 18, 21]). ⚠ **And the same row's status column
+said** *"Reporting a 4-of-5 or 2-of-3 rate as a result would be a violation whichever direction it
+pointed."* ⇒ **Dropping the p does not license the count**, which is what "DESCRIPTIVE ONLY, NO p
+ATTACHES" was doing. Withdrawn inside a struck span (gate confirms `live(unstruck) = 0`), with no
+regrouping of those five heads substituted for it — enumerating them would restate the rate in words.
+
+⚠ **Both defects have the same shape as D34's: the row carries the correct prohibition and violates it
+anyway.** That is now **3 of 6** audited claims, and in all three the frozen file was cited correctly and
+never opened.
+
+### 2. R42, AND FIVE REACHABLE PATHS TO A WRONG-BUT-PLAUSIBLE NUMBER — ALL REPRODUCED BY ME FROM ARGV
+
+| # | defect | reproduced |
+|---|---|---|
+| M5 | every interval printed and serialized under the literal `ci95` whatever `--ci` said | `--ci 0.50` printed *"SINGLE_02 −7.0 % [−13.8,−0.4] / movement **ci95** EXCLUDES 0"* — the published reading for that arm is **INCLUDES 0** |
+| M6 | base arm inside `--arms` → bare `KeyError: 'pct'` | yes, naming the symptom not the cause (S-295's defect) |
+| M7 | zero anchor → MARGIN header, no rows, **exit 0** | yes — reads as "computed and unremarkable" |
+| m9 | quantiles taken from however many draws survived | latent; all 35 statistics had exactly B on the published run |
+| F2 | `--option-mass-reference` checked for family membership **only** | see §3 |
+
+A one-character typo in `--ci` was enough to publish a line whose only label was the false string
+`ci95`. All five are fixed: the label is now **derived from `--ci`** so it cannot lie, the other four
+refuse by name. **6 of 6 mutations caught**, each by its own test (18 entry points now), source verified
+byte-identical to backup afterwards.
+
+⚠ **One of my own new tests over-matched** — it asserted the literal `"ci95"` was absent from the whole
+file, which the *comment recording the defect* legitimately contains. Tightened to key/subscript use.
+**Fifth instance this tick's family of a pattern looser than the property it tests**, and this one was in
+the fix for it.
+
+### 3. 🔴 F2: THE FLOOR'S REFERENCE ARM WAS A FREE PARAMETER
+
+`scripts/dcs_csi_head_census.py:295` required only that `--option-mass-reference` be **an arm of the
+family**. `base_arm` has been resolved since line ~265 and was never compared to it. `option_mass` is a
+**post-treatment outcome**, so keying the readout floor on an intervened arm selects on the outcome — the
+collider `dcs_csi_subspace_analyze.py` records as **R2-B1, a BLOCKER**, whose stated fix is *"the
+reference arm (default BASE, **the un-intervened condition**)"*. §H's instrument never enforced it.
+Measured by me on csi5 at floor 0.05:
+
+| reference | keys | domains | E(HD_TOPK) | E(HD_BOTK) |
+|---|---|---|---|---|
+| `HD_BASE` (published) | 146 | 23 | −0.238609 | −0.016973 |
+| `HD_KO` | 188 | 22 | −0.190833 | −0.011444 |
+| `HD_TOPK` | 195 | 23 | −0.182068 | −0.008976 |
+| `HD_BOTK` | 147 | 23 | −0.206996 | −0.007554 |
+
+⇒ **The same flag and the same floor yield +21.7 % or +3.6 % movement on HD_TOPK — opposite sensitivity
+conclusions — with no refusal and no warning.** Every published run used the base arm, so **no published
+number moves**; the hole was latent. Now refused unless `--allow-intervened-reference` is passed.
+
+### 4. 🔴 THE MEASUREMENT THAT MATTERS MOST, AND IT NEEDED NO POST-HOC CHOICE
+
+S-561's `freight_yard` finding was a **leave-one-out diagnostic**, and S-561 conceded that dropping a
+domain is itself post hoc. There is a counterfactual that drops nothing: **at floor 0.0 every domain has
+exactly 10 rows, so domain-equal and slot-pooled averaging are IDENTICAL BY CONSTRUCTION.** Their
+divergence at floor 0.05 is therefore an **exact decomposition of readout validity vs re-weighting over
+the full preregistered 23-domain population.** Computed by me:
+
+| arm | domain-equal ctrl → floor | pooled ctrl → floor | sign |
+|---|---|---|---|
+| SINGLE_02 | 0.049475 → 0.046036 (−7.0 %) | 0.049475 → 0.049107 (−0.7 %) | same |
+| SINGLE_19 | 0.040109 → 0.029930 (−25.4 %) | 0.040109 → 0.032736 (−18.4 %) | same |
+| SINGLE_17 | 0.029218 → 0.023245 (−20.4 %) | 0.029218 → 0.025711 (−12.0 %) | same |
+| SINGLE_23 | 0.016503 → 0.015526 (−5.9 %) | 0.016503 → 0.013532 (−18.0 %) | same |
+| **HD_BOTK (the anchor)** | 0.012567 → 0.016973 (**+35.1 %**) | 0.012567 → 0.011623 (**−7.5 %**) | **🔴 REVERSES** |
+
+⛔ **The anchor is the ONLY arm of the five whose movement changes SIGN, and it is the one D34's whole
+readout-dependence rests on.** Under the weighting that has no post-hoc choice in it, the floor does not
+raise `|E(HD_BOTK)|` by 35 % — it LOWERS it by 7.5 %. Three independent routes now say the same thing:
+the paired interval never excluded zero (S-559), removing one domain takes it to −0.2 % (S-561), and
+slot-pooling reverses it outright (here).
+
+**And S-559's two established movements SURVIVE.** Restricting to the **18 domains retaining ≥5 rows**,
+re-derived by me: `SINGLE_19` **[−0.013702, −0.001755]** and `SINGLE_17` **[−0.010993, −0.002487]** —
+**both still exclude 0**. `SINGLE_02`, `SINGLE_23` and the anchor all include 0, as they did at 23.
+
+🔴 **A REVIEW STREAM'S HEADLINE WAS WRONG AND I DID NOT TAKE IT.** It reported that *"the only two
+'established' results in S-558/S-559/S-560 are artefacts of a missing guard"* and that they *"become null
+the moment a minimum-retention guard of 5 rows/domain is imposed"* — measuring **HD_KO and HD_TOPK**,
+arms this sprint never analysed in the paired exercise and never published as established. S-559's two
+established movements are **SINGLE_19 and SINGLE_17**, and they survive the same restriction. The stream
+later self-corrected its other headline (F1 duplicates S-561) unprompted. ⚠ **This is the standing rule
+earning its keep**: the claim was specific, plausible, adversarial and about my own work, and it was
+still wrong about which arms the record had established.
+
+### 5. WHAT LANDED IN CODE
+
+`--min-rows` (default **3**, so the guard is not inert on the run that needed it) refuses a domain thinned
+below it, naming the measured consequence; per-domain retention is printed **and serialized**
+(`rows_per_domain`, histogram, `min_rows_per_domain`); the slot-pooled decomposition prints beside the
+domain-equal one at every floor > 0 with `sign_reverses_vs_domain_equal` recorded. The published run
+reproduces **every number identically** under `--min-rows 1`.
+
+### NOT ESTABLISHED
+
+⛔ **The sign reversal does NOT make −7.5 % the right answer.** Slot-pooling is a different estimator, not
+a correction; the census's preregistered estimator is domain-equal, and PR-CSI-012 froze that. What is
+established is that the two disagree in SIGN on this one arm, which no published number disclosed.
+⛔ **D34's status is not re-decided here.** S-560 already showed the frozen reading (Reading A) holds at
+both floors; this adds that the moved tally's direction is an artefact of the weighting. The claim text
+is amended, not withdrawn.
+⛔ **R42's remaining findings are NOT fixed**: F3 (the `keep_keys` test sits ABOVE the duplicate-key
+channel refusal, exempting dropped keys from it), F4 (NaN `option_mass` silently dropped by the census
+and silently KEPT by the axis analyser — two implementations documented as identical), F5's slot-set
+guard in the paired tool, F7–F11. All verified latent on today's corpus by their reporter; **I have not
+re-verified F3/F4/F7–F11 myself**, so they are carried as reported, not as established.
+⛔ **No artefact for the S-559/S-561/S-562 intervals is in `reports/`** — `--out` is still optional and
+the published numbers still live only in the log.
+⛔ **The audit covered 6 claims of ~45.** D32, D33, D38, D41–D45 and every AM- row are unaudited against
+their frozen files, and one stream flagged AM-36 as brushing `pr013_read.txt:15-16` — unverified by me.
+⛔ **546 passed is the count BEFORE this entry's 9 new tests**; the figure for this commit is whatever its
+own hook reports.
+
+**NEXT:** fix R42-F3 and F4 — the two-line reorder that puts `keep_keys` below the duplicate-key channel
+refusal, and a NaN refusal aligned across `_option_mass_keys` and `dcs_csi_subspace_analyze`. Both are
+latent today and both are two lines; the reason to do them next is that F4 is a *disagreement between two
+functions the record calls identical*, which is how S-553's tag-twin and S-487 started.

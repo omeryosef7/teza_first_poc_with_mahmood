@@ -113,3 +113,88 @@ def test_it_reuses_the_census_option_mass_keys_rather_than_reimplementing_them()
     assert "census._option_mass_keys" in src
     assert "w4.by_domain" in src
     assert "w4.pct" in src
+
+
+# ---- R42 / S-562: the guards review R42 said were missing --------------------------------------
+# Each of these was a REACHABLE path to a wrong-but-plausible output, reproduced from argv before the
+# fix. They are asserted against the source AND, where cheap, exercised, because the published numbers
+# came out of this file before any of them existed.
+
+def test_the_interval_label_is_derived_from_ci_and_cannot_say_ci95_when_it_is_not():
+    """R42-M5: `--ci 0.50` printed AND serialized the literal "ci95" and flipped a verdict."""
+    src = _src()
+    assert 'CIL = "ci%g" % round(a.ci * 100)' in src, "no derived label"
+    # The literal must not survive as a KEY or SUBSCRIPT. It legitimately appears in prose
+    # (docstring, and the comment recording the defect), so a bare substring test over the whole
+    # file is looser than the property -- which is the exact over-matching this review kept finding.
+    assert '["ci95"]' not in src, "a hardcoded ci95 subscript can lie about the level"
+    assert '"ci95":' not in src, "a hardcoded ci95 key can lie about the level"
+    assert 'delta (%s)" % CIL' in src
+
+
+def test_a_nondefault_ci_actually_prints_its_own_label():
+    p = subprocess.run([sys.executable, PAIRED, "--tag-prefix", "csi5_census_basket_validation",
+                        "--expect-n", "230", "--reference", "HD_BASE", "--floor", "0.05",
+                        "--arms", "SINGLE_02", "--anchor-arm", "HD_BOTK", "--ci", "0.50",
+                        "--min-rows", "1"], capture_output=True, text=True)
+    if p.returncode != 0:          # corpus absent in this checkout
+        return
+    assert "ci50" in p.stdout, "the label must follow --ci"
+    assert "ci95" not in p.stdout, "a 50%% interval must never be labelled ci95"
+
+
+def test_the_base_arm_among_arms_is_a_named_refusal_not_a_keyerror():
+    """R42-M6: `--arms HD_BASE,...` raised a bare KeyError: 'pct' naming the symptom."""
+    src = _src()
+    assert 'if "pct" not in r:' in src
+    i = src.index('if "pct" not in r:')
+    seg = src[i:i + 600]
+    assert "REFUSING" in seg and "base arm" in seg
+
+
+def test_a_zero_anchor_refuses_instead_of_printing_an_empty_margin_section():
+    """R42-M7: it printed a MARGIN header with no rows and exited 0."""
+    src = _src()
+    assert 'if not any(res[arm].get("margin_flr") for arm in arms):' in src
+    i = src.index('if not any(res[arm].get("margin_flr") for arm in arms):')
+    assert "REFUSING" in src[i:i + 500]
+
+
+def test_a_domain_thinned_below_min_rows_refuses():
+    """R42-C1/S-561: the floor took freight_yard to ONE row carrying 1/23 of the estimate."""
+    src = _src()
+    assert "--min-rows" in src
+    assert "if min(rpd.values()) < a.min_rows:" in src
+    i = src.index("if min(rpd.values()) < a.min_rows:")
+    assert "REFUSING" in src[i:i + 700]
+
+
+def test_min_rows_default_is_not_1():
+    """A default of 1 would make the guard inert on exactly the run that needed it."""
+    src = _src()
+    i = src.index('"--min-rows"')
+    seg = src[i:i + 200]
+    assert "default=1" not in seg, "min-rows must not default to the value that permits everything"
+
+
+def test_per_domain_retention_is_printed_and_serialized():
+    """The domain SET check licensed 'the SAME 23 domains' while the domains were thinned 10 -> 1."""
+    src = _src()
+    assert "[retention] rows per domain" in src
+    assert '"rows_per_domain"' in src and '"min_rows_per_domain"' in src
+
+
+def test_the_slot_pooled_decomposition_is_computed_and_reported():
+    """Identical to domain-equal at floor 0 BY CONSTRUCTION, so divergence = re-weighting."""
+    src = _src()
+    assert "def pooled(arm, br):" in src
+    assert "sign_reverses_vs_domain_equal" in src
+    assert "[decomp]" in src
+
+
+def test_an_interval_from_fewer_than_B_draws_refuses():
+    """R42-m9: quantiles were taken from however many draws survived, with no disclosure."""
+    src = _src()
+    assert "if len(xs) != a.B:" in src
+    i = src.index("if len(xs) != a.B:")
+    assert "REFUSING" in src[i:i + 400]
