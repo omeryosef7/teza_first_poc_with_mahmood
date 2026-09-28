@@ -45704,3 +45704,89 @@ Both now carry the measurement and, more importantly, **the mechanism**:
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** the three other families that ran — csi7, csi8, csi9 — have published sensitivity artefacts that nobody has read for claim-level movement.
+
+## S-551 / the other three families are INVARIANT — D34 is the only claim that moves, and the reason is that its bar is a near-null arm's own effect (2026-09-28)
+
+S-550 landed as `bff1952d`, **537 passed** (+10, the new option-mass test now enforced). Queue **EMPTY**. S-550's NEXT: three published sensitivity artefacts nobody had read for claim-level movement.
+
+### THE CLAIM-LEVEL RESULT — read against each family's OWN preregistered bar
+
+| family | bar type | control | floor 0.05 | verdict |
+|---|---|---|---|---|
+| **csi5** (D34) | the family's own **HD_BOTK effect** | **4** heads | **3** heads | 🔴 **MOVED** |
+| csi7 (PR-CSI-014) | frozen number 0.019181 | 1 cell — `CL_L10` | 1 cell — `CL_L10` | ✅ **invariant** |
+| csi8 (PR-CSI-015) | per-head numbers from the D34 arms | 3 cells | **same 3 cells** | ✅ **invariant** |
+| csi9 (PR-CSI-016) | **a RULE**, recomputed at read time | 2 cells | **same 2 cells** | ✅ **invariant** |
+
+csi8's set is `CL_H17_L14`, `CL_H19_L14`, `CL_H23_L07` at both floors — **nothing gained, nothing lost**. csi9's is `BC_H17_L14`, `BC_H19_L14` at both, **and its bars did recompute** (they are a rule, not a number).
+
+⇒ **Of the four runnable families, exactly ONE claim moves, and it is D34.** S-549/S-550 reported the failure honestly but left the impression of a general fragility. **It is not general.**
+
+### 🔴 WHY D34 IS THE OUTLIER — and it is a property of its BAR, not of §H
+
+| quantity | control | floor 0.05 | change |
+|---|---|---|---|
+| **D34's anchor** `\|E(HD_BOTK)\|` | 0.012567 | 0.016973 | **+35.1 %** |
+| `\|E(HD_TOPK)\|` | 0.195984 | 0.238609 | +21.7 % |
+| csi9's rule-computed bars (3 heads) | — | — | **max 5.27 %** |
+
+⚠ **`HD_BOTK` is 6.4 % of `HD_TOPK` — a near-null arm BY CONSTRUCTION** (it is the *bottom*-8 heads). **D34's bar is a small effect, and a small absolute shift in a small number is a large relative one.** The other three families' bars are `1.96·SD/√n` — a **dispersion** estimate, not a near-null **effect** — and they moved by at most 5.27 % even when recomputed from scratch.
+
+⇒ **The lesson is sharper than "§H is readout-sensitive":** a criterion that divides by a near-null arm's own effect inherits that arm's instability, and **three bars built as dispersion estimates were stable under the same filter that moved D34's by 35 %.** That is a statement about how to build a bar, and it is measured on four families rather than argued.
+
+⚠ **This does NOT soften D34's relabel.** Four clear at the published readout and three at the declared floor; both remain measured and stated, and *"exactly"* remains unavailable. **What changes is the scope of the concern** — it is D34's anchor, not §H's instrument.
+
+### WHAT WAS CORRECTED — a broken extraction, caught before it became a result
+
+My first pass at csi8 pulled the per-head bars with a key that does not exist and got `{'19': None, '17': None, '23': None}`, which yielded **"0 cells clearing"** at both floors. ⚠ **That would have read as a clean invariance and it was a broken read.** The real key is `min_abs_E_for_ci95_to_exclude_0` nested per head (0.010223 / 0.009082 / 0.006615), and the true answer is **3 cells at both**. *An invariance produced by extracting nothing is indistinguishable in shape from a real one — and both print as equality.*
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **D32, D33, D36, D39, D40 are STILL not re-derived at the floor.** D36/D39/D40 belong to the two REFUSED families and to `csi3_head_*`, so **they cannot be tested with today's instrument at all** — not "were not", *cannot*.
+- ⛔ **The invariance of csi7/csi8/csi9 is at ONE floor, on ONE criterion each.** Their E's and ci95s did move; what did not move is the **count of cells clearing the bar**.
+- ⛔ **The near-null-bar explanation is a mechanism, not a proof.** Four families is four; nothing here shows every dispersion-built bar is stable or every effect-built bar is not.
+- ⛔ **`HD_BOTK`'s own 35 % shift is unexplained beyond "it is small".** Why the filter raises it rather than lowering it is not characterised.
+- ⛔ **D34's relabel was written BEFORE this entry**, when the concern looked broader. It is accurate as written but the **scope** sentence could now be tighter; not rewritten this tick, and flagged rather than left implicit.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** tighten D34's and §H.2's scope sentence with today's result — the concern is the anchor's construction, not §H generally.
+
+## S-552 / the scope narrowed in three places — "§H is readout-sensitive" is NOT supported; "a bar built from a near-null arm's own effect is" is (2026-09-28)
+
+S-551 landed as `bff1952d`. Queue **EMPTY**. S-551's NEXT: tighten the scope I wrote before the sibling families had been read.
+
+### WHY THIS TICK EXISTS, STATED PLAINLY
+
+S-549 and S-550 relabelled D34 on the strength of **one** family, and both are accurate. But they were written when the natural reading was *"§H's claims are readout-sensitive"* — and S-551 then measured **three sibling families as invariant**. ⚠ **Leaving a correct sentence that invites a wrong generalisation is its own defect**, and the fix is not another log entry noting it: it is narrowing the text a reader actually meets.
+
+**Three places narrowed, all with the same measurement:**
+
+| where | was | now |
+|---|---|---|
+| **D34** (claim table) | *"the sensitive term is the family's own self-supplied anchor"* | + the three invariant siblings, and the bar-construction mechanism |
+| **§H.2** (draft) | §A-vs-§H contrast implying §H is the fragile one | a four-family table, and *"the general claim §H is readout-sensitive is NOT supported"* |
+| **Editor's checklist** | *"§H … its headline count moves"* | struck; **only D34's moves**, and the rule restated as a property of bar construction |
+
+### THE MEASUREMENT THE NARROWING RESTS ON
+
+| family | how its bar is built | control | floor 0.05 | |
+|---|---|---|---|---|
+| **csi5 / D34** | the family's own **`\|E(HD_BOTK)\|` effect** | 4 heads | **3** | 🔴 moves |
+| csi7 / PR-CSI-014 | frozen number `0.019181` | 1 cell | 1 cell | ✅ invariant |
+| csi8 / PR-CSI-015 | per-head `1.96·SD/√n` | 3 cells | **same 3** | ✅ invariant |
+| csi9 / PR-CSI-016 | **a RULE**, `1.96·SD/√n`, recomputed | 2 cells | **same 2** | ✅ invariant |
+
+⇒ **The discriminating property is how the bar is BUILT, not which section it lives in.** `\|E(HD_BOTK)\|` is **6.4 %** the size of `\|E(HD_TOPK)\|` — near-null **by construction**, being the *bottom*-8 heads — so a small absolute shift is a large relative one (**+35.1 %**). The three stable bars are **dispersion** estimates, and PR-CSI-016's **recomputed from scratch** and still moved **≤ 5.27 %**.
+
+⚠ **What survives in full, and is not softened:** four heads clear at the published readout and three at the declared floor; **both measured, both stated**; *"exactly"* remains unavailable; and the prereg's failure branch stands, including its ban on *"the head instrument is different"* as an escape. ⛔ **The narrowing is of the GENERALISATION, not of the finding.**
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **Four families is four.** *"Dispersion-built bars are stable"* is a mechanism with four data points and **no theory** — nothing here shows it holds at other floors, on other families, or for other near-null arms.
+- ⛔ **D32, D33, D36, D39, D40 remain untested at the floor**, and **three of them are UNTESTABLE with today's instrument** — D36/D39/D40 belong to the two families whose own VOID conditions refuse the run, and to the uninstrumented `csi3_head_*`. **Untestable is not invariant**, and the checklist row now says so explicitly.
+- ⛔ **`HD_BOTK`'s +35.1 % is still unexplained in direction.** Why the filter *raises* a near-null arm's magnitude rather than lowering it is not characterised, and "it is small" does not answer it.
+- ⛔ **No new measurement this tick.** Every figure is S-551's, re-stated where a reader will meet it; nothing was re-derived and nothing needed to be.
+- ⛔ **The two REFUSED families still have no artefact and must not be read as invariant.**
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** `HD_BOTK`'s direction — why a row filter *raises* a near-null arm's magnitude — is the one mechanistic question this line of work has opened and not answered.

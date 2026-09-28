@@ -362,7 +362,7 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | the four HELD-OUT 2×2 cells treated as a balanced design, or compared cell-to-cell as magnitudes | they are four separate reads with **different key sets** (215 / 221 / 222 / 224) on the **same 23 domains**. The pattern (button fails only in sufficiency) is the claim; **no cell-to-cell magnitude comparison is offered**, and paired data does not become independent by being tabulated | D45 / D43 / D24 |
 | button's held-out sufficiency rank 6 of 47 described as "nearly passing" | the preregistered bar is rank **1** in a 46-control family. **6 is not 1.** It is also NOT the same number as TRAIN's rank 36, and that difference is not interpreted — one estimate on 23 domains against one on 67 | D24 / S-540 |
 | ‼ "**exactly** four heads clear the anchor" written without the floor qualifier | at PR-CSI-001's declared option-mass floor of 0.05 the count is **THREE** — head 23 drops because the **anchor rose 35.1 %** while its own effect fell 5.9 % and its ci95 still excludes zero. **The bar moved, not the head.** Say "four at the published readout, three at the declared floor", never the bare "exactly four" | D34 / PR-CSI-025 |
-| any §H count quoted as a property of the MODEL rather than of the readout population | §A was invariant to this floor across all eight cells (AM-53/AM-54); §H was never testable until S-548 and its headline count moves. **Until a §H claim has been run at both floors, it is a statement about a readout** | §H / PR-CSI-025 |
+| any §H count quoted as a property of the MODEL rather than of the readout population | ~~§A was invariant across all eight cells (AM-53/AM-54); §H was never testable until S-548 and its headline count moves.~~ 🔴 **TIGHTENED S-552: only D34's count moves.** PR-CSI-014/015/016 are **invariant** at the same floor, and PR-CSI-016's bar **recomputed** and still moved ≤ 5.27 %. The rule is narrower and more useful: **a bar built from a near-null arm's OWN EFFECT (D34's `\|E(HD_BOTK)\|`, 6.4 % of `HD_TOPK`) inherits that arm's instability; bars built as `1.96·SD/√n` did not.** ⛔ Still true that **an untested §H claim is a statement about a readout** — D32, D33, D36, D39, D40 are untested and three of them are untestable with today's instrument | §H / PR-CSI-025 / S-551 |
 | the two REFUSED families cited as evidence of invariance | `csi10_cell6_button_validation` and `csi11_cell8_basket_validation` could not be run at all: their own preregs pin each head's E to a prior measurement, and any row filter moves E. **Unrunnable is not invariant**, and switching off a VOID condition to obtain a number is forbidden | PR-CSI-025 |
 
 **‼ marks a phrasing this draft itself committed and had corrected.** The **TEST** row is here
@@ -1207,6 +1207,26 @@ available is the unqualified word "exactly".**
 ⚠ **§A ran this identical check at AM-53/AM-54 and all eight of its cells were INVARIANT.** §H could not
 run it at all until the instrument was built at S-548 — so the contrast between §A's robustness and §H's
 sensitivity is now a measurement, where before it was an absence of instrumentation.
+
+🔴 **SCOPE TIGHTENED S-552 — AND IT IS NARROWER THAN THIS SECTION FIRST IMPLIED.** The sensitivity ran on
+**four** head/cell families. **Only this one moves:**
+
+| family | how its bar is built | control | floor 0.05 | |
+|---|---|---|---|---|
+| **this one (D34)** | the family's own **`\|E(HD_BOTK)\|` effect** | 4 heads | **3** | 🔴 moves |
+| PR-CSI-014 | frozen number `0.019181` | 1 cell | 1 cell | ✅ invariant |
+| PR-CSI-015 | per-head numbers, `1.96·SD/√n` | 3 cells | **same 3** | ✅ invariant |
+| PR-CSI-016 | **a RULE**, `1.96·SD/√n`, recomputed at read time | 2 cells | **same 2** | ✅ invariant |
+
+⚠ **The difference is how the bar is BUILT, not which section it lives in.** This section's anchor is the
+***bottom*-8 head arm's own effect** — `\|E(HD_BOTK)\|` is **6.4 % the size of `\|E(HD_TOPK)\|`**, near-null
+**by construction** — so a small absolute shift under the filter is a large relative one (**+35.1 %**).
+The three invariant bars are **dispersion** estimates (`1.96·SD/√n`), and PR-CSI-016's **recomputed from
+scratch** and still moved by at most **5.27 %**.
+
+⇒ ⛔ **The general claim *"§H is readout-sensitive" is NOT supported* — what is supported is that a
+criterion dividing by a near-null arm's own effect inherits that arm's instability.** Three sibling
+families with dispersion-built bars were stable under the identical filter.
 
 ⛔ **Descriptive, RUNG 1. No rank, no p per head, no control family** — and **32 unadjusted
 intervals are read at once, with no multiplicity correction**, which is exactly the inference "no
