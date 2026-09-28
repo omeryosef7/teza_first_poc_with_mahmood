@@ -45334,3 +45334,53 @@ M.9 listed the necessity certifications as **basket only** (D42 TRAIN, D43 held 
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** A30's other 29 rows have never been audited as a block; that is the obvious debt, and S-527 already showed one of them can sit stale for nineteen entries.
+
+## S-543 / A30's own rows audited for the first time — SIX of 30 were not what they claimed, a withdrawn HEADLINE had never been marked at all, and one live contradiction is mine (2026-09-28)
+
+S-542 landed as `3cf4556a`. Queue **EMPTY**. Three subagents audited A30's 30 rows over disjoint ranges; **every load-bearing finding below was re-verified by me** before anything was changed.
+
+### THE HEADLINE RESULT — "all 30 CLOSED" was not true
+
+| | |
+|---|---|
+| rows audited | **30** |
+| rows whose "fixed" status was accurate | **24** |
+| **rows NOT fully in place** | **6** — 8, 11, 18, 20, 21, 24 |
+| found outside any A30 row | **4 more** |
+
+⚠ **Row 29 was the one I most expected to fail** — it claims a sweep applied "in place on D42, D43, prohibition 26, §A.1, §A.7 and §L.3", six named sites, and a row naming six and applied to five is the classic defect. **All six verified marked. It holds.** Recorded because a negative result from a targeted check is worth as much as a positive one.
+
+### THE SIX ROWS
+
+- **Row 8** — S-412 struck the parenthetical `(1/35, 1/31)` but a **second, live, present-tense instance of the dead n30 floor stood ~1500 characters further along the SAME cell**: *"does not lower the 1/31 floor"*, **for 131 entries**, after that cell had already said both floors are `1/47`. Verified by me: `STRUCK=False`, no marker. **"In place" was true of the figure the row quoted and false of the figure as it still stood.**
+- **Row 20** — prohibition 29's mandated sentence carried the **bootstrap-percentile** `p = 0.0014` live, and that prohibition contained **zero** mentions of AM-49, `0.0019`, `exact_signflip` or S-453 — measured. The row's own status admitted *"rule text not rewritten"*, which **A30's own convention explicitly forbids**: *"a later row that holds the right number is necessary and is not sufficient, because nothing makes a reader go there."* A self-exempting status.
+- **Row 21** — prohibition 30's `p = 0.201` and `p = 0.888`, both live and unstruck, no pointer to AM-49 anywhere in the rule. Status said "indexed", without even row 20's rationale.
+- **Row 24** — names **two** sites. D25's label was struck; **prohibition 29's clause MANDATING the false label was not**, and still required *"secondary and unpreregistered"* after AM-51 established the contrast IS prespecified.
+- **Rows 11 and 18** — correct at their named sites, but the **S-144 audit block re-asserted both caveats live and unmarked**: *"D13's caveat STILL STANDS and is NOT discharged"* (which **AM-23 had already named as superseded**) and *"D21's 'TRAIN-only on the button-L18 side' caveat still stands"* (withdrawn by AM-22, and **not even named by AM-23** — unindexed twice over).
+
+⚠ **Rows 20, 21 and 24 are one failure class, and it is the worst one in this file: a RULE that mandates a form the record has falsified.** A30 row 5 already caught one instance and fixed the mandate while the mandated sentence stood. **Fixing a rule that points at a claim is not the same as fixing the claim, and vice versa.**
+
+### FOUR FINDINGS NO A30 ROW COVERED
+
+**(1) D25's HEADLINE had never been marked at all.** AM-15 states it *"no longer holds"* and gives the replacement verbatim — yet D25's row contained **zero** occurrences of `AM-15`, `NO CELL IS CLAIMED`, `no longer holds` or `SUPERSEDED` (its two `WITHDRAWN` mentions are AM-10's, a different retraction). **A withdrawn headline, live in the headline column, unindexed.** Now struck with AM-15's replacement, and the surviving half — *no cell of the 2×2 was cleanly attained* — retained.
+
+**(2) 🔴 THE THIRD AUDIT BLOCK WAS UNLABELLED, AND THAT IS A JUDGEMENT OF MINE, CORRECTED.** At **S-529** I scanned every section for frozen blocks, measured this one as carrying **3** markers, concluded it *"HAS been maintained"*, labelled its two siblings and left it alone. **`FROZEN BLOCK` appears exactly twice in the file — both mine, neither this one.** ⚠ **Three markers in a sixty-line block does not make its verdicts current; my heuristic conflated "has been touched" with "is current".** It is now labelled **PARTIALLY MAINTAINED, NOT CURRENT** — which is harder to read safely than a block never touched at all, and says so.
+
+**(3) and (4) TWO LIVE CONTRADICTIONS IN THE DRAFT, AND THE SECOND IS MINE.** §A.1 still said *"Basket only — nothing here was run on button"* (the same clause D19 had corrected at S-526; this prose copy was missed). And §A.7 said *"the removal direction has ever been run on **button** — it has not, on any layer"* — ⚠ **about twenty-five lines below the table I added to that very section at S-541, which lists D44's and D45's button positive controls by name.** I extended §A.7 to four codeword×split cells and left a sentence denying one of those codewords had ever been run. **A self-contradiction inside a single section, created by me, and found not by re-reading my own edit but by an audit of a different file's index.**
+
+### WHAT WAS CORRECTED IN METHOD
+
+⚠ **A30's rows share physical lines.** My first two fix attempts asserted and aborted because I assumed one row per line and sliced on `\n` — rows 20 and 21 are both on line 1190, and three different lines begin `| **21** |` (the frozen audit blocks have their own row 21s). **Both attempts failed closed and wrote nothing**, because the write is the last statement after every assertion. Re-anchored on unique row text.
+
+⚠ **I did NOT re-derive the factorial p's** (0.2216 / 0.8825). They are `[READ, not reproduced]` figures by this file's own convention, so prohibition 30 now cites **AM-49's** values and says explicitly that they are cited, not measured by me. **The verdict is unaffected — neither p is near α on either estimator.**
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No GPU work, no new measurement.** Every figure is a re-derivation or a citation.
+- ⛔ **The audit covered A30's 30 rows, NOT the amendments they point at.** Whether AM-15, AM-19, AM-22, AM-23, AM-49 and AM-51 are each still correct is **unchecked**.
+- ⛔ **Prohibition 28's surrounding PROSE is stale in its arithmetic** — "TWO of these five", "the SMALLEST of the four", "now all three are", "The three are NOT interchangeable" — written when the list held three or five entries and never updated to seven. **Found, recorded, NOT fixed this tick.**
+- ⛔ **D25's p2 = 0.0014 at its own site is still unmarked** (AM-49 applies; no A30 row indexes it — row 24 indexes D25's *label*, not its p).
+- ⛔ **Two of the three audit blocks are now labelled and the third is labelled differently**; I have not checked whether any OTHER unlabelled block asserts superseded verdicts.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** prohibition 28's stale surrounding arithmetic, and D25's unmarked bootstrap p.

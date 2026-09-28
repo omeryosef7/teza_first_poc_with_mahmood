@@ -1328,8 +1328,12 @@ what belongs to PR-CSI-004 is being **dead as frozen**, which PR-CSI-003-A is no
 
 📌 **That the two directions use the SAME direction is MEASURED, not assumed:** the two arms load
 *different* basis files with different `basis_sha16`, and their `cand_rank1` tensors are
-**bit-identical**. The conjunction rests on this. ⛔ **Basket only** — nothing here was run on button,
-and §A.2 is the reason not to assume it transfers. ⛔ ~~**Three clauses must travel with the necessity
+**bit-identical**. The conjunction rests on this. ⛔ ~~**Basket only** — nothing here was run on button,
+and §A.2 is the reason not to assume it transfers.~~ 🔴 **FALSE AS OF S-543 — BOTH DIRECTIONS HAVE NOW BEEN RUN ON BUTTON.** Button
+sufficiency: rank **36 of 47** TRAIN and **6 of 47** held out — does not pass (D24/D29). Button
+necessity: rank **1 of 25** TRAIN (D44) and **1 of 25** held out (D45) — passes. ⇒ **The conjunction
+this section reports IS basket-specific, and that is now MEASURED rather than assumed** — the same
+correction D19 received at S-526, whose prose copy here was missed. ⛔ ~~**Three clauses must travel with the necessity
 half every time: floor-limited, TRAIN-only, in-sample.**~~ 🔴 **REPLACED S-505 — now FOUR, and the first
 one has changed:** ⛔ **(1) `p = 0.0400` IS the attainable floor, so rank 1 could not have produced a
 smaller p; (2) TRAIN-only; (3) in-sample (67/67); ~~(4) NO held-out necessity arm exists, so PR-CSI-001's
@@ -2348,8 +2352,8 @@ floor-limited, TRAIN-only and in-sample;~~ 🔴 **S-515: all three descriptors a
 **sits on** its floor rather than being limited by it, and it is no longer TRAIN-only. ⚠ **THE
 HEADLINE OF THIS CLAUSE IS UNCHANGED AND STILL TRUE: the axis does NOT carry the removal effect** —
 about 92 % of it is elsewhere, and two certifying ranks do not alter that fraction; that 46.9 % is comparable to anything in the sufficiency
-direction; and that the removal direction has ever been run on **button** — it has not, on any
-layer, so every necessity statement in this draft is basket-only.
+direction; and ~~that the removal direction has ever been run on **button** — it has not, on any
+layer, so every necessity statement in this draft is basket-only.~~ 🔴 **FALSE, AND THIS ONE IS MINE — CORRECTED S-543.** The removal direction HAS been run on button: **D44** (TRAIN, rank 1 of 25) and **D45** (held out, rank 1 of 25). ⚠ **This sentence sat about twenty-five lines BELOW the table I added to this very section at S-541, which lists D44's and D45's button positive controls by name.** I extended §A.7 to four codeword×split cells and left a sentence asserting one of those codewords had never been run — a self-contradiction inside a single section, created by me, and found not by re-reading my own edit but by an audit of a different file's index. ⚠ *What survives: the whole-state figures in this section are basket, and the 46.9 % remains basket-only.*
 
 ## A.8 Provenance: three code changes that moved no measured endpoint, one hardware change that moved something it was not asked about, and the reason none of it is checkable from the run directories (D17, D22, D28, D31)
 
