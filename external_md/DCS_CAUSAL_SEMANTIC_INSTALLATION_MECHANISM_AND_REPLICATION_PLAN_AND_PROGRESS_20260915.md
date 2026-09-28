@@ -45912,3 +45912,39 @@ Those five entries progressively narrowed the explanation: *"§H is readout-sens
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** PR-CSI-008's `criteria`, the one key my scan flagged effect-built and I did not open.
+
+## S-556 / the last flag was a regex artefact — ZERO preregistered criteria are effect-built, so D34's anchor is the only one in the record and it is the unfrozen one (2026-09-28)
+
+S-555 landed. Queue **EMPTY**. S-555's NEXT: PR-CSI-008's `criteria`, flagged EFFECT-BUILT and carried for two entries as *"named, not cleared"*.
+
+### 🔴 IT WAS NEVER REAL, AND THE CAUSE IS ONE CHARACTER OF MINE
+
+PR-CSI-008's criteria are a **pre-GPU LEXICAL SCREEN**: `L1` single-token-with-leading-space, `L2` literal incidence ≤ 0.005. **They depend on no arm's `E` whatsoever** — they screen candidate *words* before any GPU run exists.
+
+**What my classifier actually matched:** the regex was `E\(` compiled with **`re.I`**, so it matched the lowercase **`e(`** inside `tokeniz`**`e(`**. ⚠ **A case-insensitive `E\(` matches any word ending in "e" before a parenthesis.** Same defect class as S-482's unescaped dot and S-544's unbounded number: **a pattern matching far more than intended**, and this time it manufactured a finding I then carried across two entries as an open item.
+
+### THE RE-CLASSIFICATION, CASE-SENSITIVE
+
+| class | count | which |
+|---|---|---|
+| **EFFECT-BUILT only** | **0** | — |
+| BOTH (an arm's `E` recorded as *provenance* beside a dispersion bar) | 2 | PR-CSI-014, PR-CSI-015 |
+| **DISPERSION only** | 3 | PR-CSI-016, PR-CSI-018, PR-CSI-020 |
+| neither — prose conditions | 17 | success/failure/cannot-answer criteria |
+
+⇒ ✅ **ZERO of the 22 preregistered criterion keys in this sprint is effect-built.** The two "BOTH" cases record the source arm's `E` as *provenance beside* a `1.96·SD/√n` bar — the right way round.
+
+⇒ **S-555's finding is not weakened, it is sharpened: D34's `\|E(HD_BOTK)\|` anchor is the ONLY effect-built criterion anywhere in the record, and it is precisely the one no prereg froze.** There is now no counterexample and no unexamined flag.
+
+⚠ **Also confirmed in passing:** PR-CSI-021's key is literally named `"⚠ NOT_A_DETECTABILITY_BAR_HERE"` and states rung 2 has **no** admission gate — correctly not a bar, and it says so itself.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **The 17 prose criteria were classified as "not a numeric bar", NOT audited for content.** Whether any of them is *substantively* fragile in some other way is unchecked; the only claim is that none defines a numeric bar from an arm's own effect.
+- ⛔ **"Zero effect-built" is about `configs/dcs_csi_pr*.json`.** Preregs outside that glob, and any criterion defined only in a runargs recipe or in prose, were **not scanned** — and D34's anchor is itself the proof that a criterion can live outside the preregs entirely.
+- ⛔ **My classifier is still a regex over JSON text.** It has now produced one false positive out of one flag raised; **its precision on this corpus is 0/1**, and nothing licenses trusting the next flag it raises without opening the file.
+- ⛔ **`SINGLE_27` remains unchecked** (corr −0.427, stronger than `HD_BOTK`, attached to no claim) — carried from S-554 and S-555, still undischarged, and **not** cleared by this entry.
+- ⛔ **No measurement of any endpoint.** This tick read configs and fixed a regex.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** `SINGLE_27` — twice carried forward, twice not done. Either check whether anything in the record depends on an arm like it, or stop listing it.
