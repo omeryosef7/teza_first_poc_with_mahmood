@@ -45948,3 +45948,51 @@ PR-CSI-008's criteria are a **pre-GPU LEXICAL SCREEN**: `L1` single-token-with-l
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** `SINGLE_27` — twice carried forward, twice not done. Either check whether anything in the record depends on an arm like it, or stop listing it.
+
+## S-557 / `SINGLE_27` closed, and the sharper question it pointed at answered: the fragility is in D34's ANCHOR alone — the four heads it names are not in that class (2026-09-28)
+
+S-556 landed as `ca90c10e`. Queue **EMPTY**. `SINGLE_27` had been carried forward twice without being checked. Done, and it opened a question I had not asked.
+
+### THE QUESTION I HAD NOT ASKED
+
+Every entry from S-549 on measured the **anchor's** fragility. **None asked whether the four heads D34 actually names are fragile** — and if they were, the claim would be unsafe for a second, independent reason. Measured, same method, same family:
+
+| arm | role | corr(rows retained, `\|per-domain delta\|`) |
+|---|---|---|
+| `SINGLE_02` | **D34 clearing head** | **+0.144** |
+| `SINGLE_19` | **D34 clearing head** | **+0.355** |
+| `SINGLE_17` | **D34 clearing head** | **+0.353** |
+| `SINGLE_23` | **D34 clearing head** (the one that drops) | **−0.212** |
+| `HD_BOTK` | **the anchor** | **−0.406** |
+| `SINGLE_27` | attached to no claim | −0.427 |
+| `SINGLE_15` | attached to no claim | −0.395 |
+
+⇒ ✅ **THE FRAGILITY IS ISOLATED TO THE ANCHOR.** Three of D34's four heads have **positive** correlations — the *opposite* direction — and the fourth (`SINGLE_23`) is **−0.212, about half the anchor's**. **No head D34 names is in the fragile class.**
+
+⚠ **This independently explains S-549's numbers rather than merely restating them:** head 23's `\|E\|` fell just **5.9 %** while the anchor rose **35.1 %**, and the correlations are now the reason — −0.212 against −0.406. *The measurement predicts the asymmetry it was made to explain.*
+
+### `SINGLE_27` — CLEARED, AND THE NEAR-MISS NAMED
+
+`SINGLE_27` and `SINGLE_15` are cited **zero times** in the claim table and **zero times** in the draft. **Nothing in the record depends on either.**
+
+⚠ **One trap avoided, and it is the error class this session keeps finding:** *"head 27"* **does** appear once in each document — *"Heads 6 and 11 MATCH; **head 27 MISSES** (argmax L9, predicted L10)"* — but that is **D40 / PR-CSI-020, a DIFFERENT FAMILY (`csi11`), a DIFFERENT ARM, and a DIFFERENT STATISTIC** (argmax-layer agreement, not `E` against an anchor). ⛔ **`SINGLE_27`'s `csi5` correlation says nothing whatever about D40's head-27 statement.** Treating the two as the same head would be exactly the two-populations-in-one-cell error corrected at S-518, S-541 and S-551.
+
+### THE THREAD IS NOW CLOSED
+
+Across S-549 → S-557 the explanation converged, and each step narrowed rather than broadened it:
+
+1. *"§H is readout-sensitive"* — **wrong**; three sibling families are invariant (S-551).
+2. *"a near-null bar is fragile"* — true but incomplete (S-552).
+3. *"three facts compose"* — unequal retention, an outlier correlation, a small `\|E\|` (S-553/S-554).
+4. *"the only effect-built criterion in the record is the one no prereg froze"* — **the load-bearing fact** (S-555/S-556).
+5. **and the fragility does not touch the effects D34 reports, only the bar** (here).
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **A positive correlation is not a safety guarantee.** `SINGLE_19`'s **+0.355** means the reweighting pushes its `\|E\|` the *other* way; that is not "stable", it is "fragile in the opposite direction", and **I did not measure how much its `E` actually moved.**
+- ⛔ **All of this is ONE floor, ONE family, 23 domains.** The correlations are over 23 points.
+- ⛔ **D40's head-27 statement is untested and UNTESTABLE** with today's instrument — `csi11` is one of the two families whose own VOID condition refuses the run. **Its appearance here is a disambiguation, not a check.**
+- ⛔ **No endpoint measured; no claim moves.** D34's relabel and §H.2's qualifier stand exactly as written.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** `SINGLE_19`'s **+0.355** — the one thing this entry raises and does not resolve: how far does a *positively* correlated arm's `E` actually move?
