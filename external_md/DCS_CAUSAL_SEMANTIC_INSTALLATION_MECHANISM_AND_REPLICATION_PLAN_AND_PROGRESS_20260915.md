@@ -44953,3 +44953,65 @@ Its comment justifies the subset as *"140 tests in ~1.4s against ~11 minutes."* 
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** the PR-CSI-024 prereg, unchanged from S-533's plan — button necessity on VALIDATION, halves 1/2/4/5, `CSI_EXPECT_LAYER=18`, `--expect-n-controls 24`, `--expect-n-domains 23`, band **[0.00072, 0.00647]**, both outcome branches frozen before any arm runs.
+
+## S-535 / PR-CSI-024 FROZEN — button necessity on held-out data, the last missing cell of the 2×2, with both branches written and the new guards verified in both directions (2026-09-28)
+
+Queue **EMPTY**. S-534 landed as `2a72e6ac`. ⚠ **Its prediction is confirmed: the suite went 516 → 527 passed / 1 skipped**, exactly the +11 the two new files contribute. The guard tests are now genuinely enforced.
+
+### WHAT WAS FROZEN
+
+**`configs/dcs_csi_pr024_necessity_button_validation.json`** — 14 top-level keys, **13 VOID conditions**, 13 721 bytes. Written **before any button-validation necessity arm exists**, and that is measured, not asserted: **zero** `csi1_button_validation_*NEC*` run dirs are on disk (S-531).
+
+**The magnitude band is frozen NOW, at [0.00072, 0.00647].** Anchor **0.00215806** — button necessity TRAIN, re-derived at S-531 from `domain_means`, *not* the analyser's 5-dp `−0.00216` and *not* the rederive path's `−0.00214`, which reads a different key set. Rule: a factor of 3 either side, **the same rule PR-CSI-022 used**, and verified before use by reproducing basket's frozen `[0.0029, 0.0261]` from `0.00870343` exactly.
+
+**Both outcome branches are written**, and the prediction is the one I *expect* to hold — which is the harder case:
+
+- **HOLDS** → the 2×2 is complete on held-out data. ⚠ *"It does NOT restore the codeword dissociation, which D44 already narrowed to the SUFFICIENCY direction. A second held-out necessity PASS makes that narrowing firmer, not weaker."*
+- **FAILS** → D44 is an **in-sample** result and must be relabelled wherever quoted. *"Basket necessity replicates and button necessity does not, which is itself a codeword difference in the NECESSITY direction and would REOPEN the question S-525 closed."* And explicitly: **"validation is noisier" is NOT an available escape**, because the band is frozen wide for exactly that reason and 23 domains is the same population on which D43 succeeded.
+
+⚠ **Why both branches matter more this time:** PR-CSI-023's prediction **failed** at S-524, and the record survived only because both branches existed. *A prereg that only guards against unwelcome outcomes guards nothing.*
+
+**The conjunction is pre-emptively NOT claimed.** This read is on the **set-identical** 23 domains D43 used, so a basket-vs-button comparison there is **paired, not independent**, and no joint test is specified.
+
+### WHAT WAS MEASURED — S-167c discharged, and the new guards exercised in BOTH directions
+
+**S-167c: *"do not freeze a prereg naming anything that does not exist."*** Every path, flag and environment variable the file names was checked: `dcs_csi_axis_button_behavioral_L18.pt`/`.json`, `dcs_csi_axis_button_behavioral.json`, `p1_arms.slurm`, `score_behavior.py`, `void7_artefact_diff.py`, the validation exclusion file — **all exist**; the nine `--flags` all resolve to the analyser or the launcher; `CSI_NEC_HALF`, `CSI_EXPECT_LAYER`, `CSI_STAGE` are all in the launcher.
+
+⚠ **The S-533 flags had never actually been run. Freezing a prereg that mandates them without that check would have been the S-167c violation in a new costume.** Exercised both ways on the basket validation family, which has exactly the 24/23 shape PR-CSI-024 will have:
+
+| probe | outcome |
+|---|---|
+| `--expect-n-domains 99` | **REFUSES**, and lists all 23 surviving domains |
+| `--expect-n-controls 99` | **REFUSES**, and lists all 24 selected controls |
+| `--expect-n-domains 23 --expect-n-controls 24` | **ACCEPTS** — `PRIMARY PASSES on split=validation` |
+
+### A SECOND FAMILY CONFIRMS THE S-533 GUARD IS INERT
+
+S-533 recorded *"inertness is shown on ONE family"* as a limitation. That accepting run **is** a second: D43's read, re-run under the new sign guard **and** with both new assertions in force, diffed against the committed artefact —
+
+| | |
+|---|---|
+| leaves compared | **9 170** |
+| **CHANGED** | **0** |
+| **REMOVED** | **0** |
+| ADDED | **3** — the guard's own `candidate_point −0.01283`, `candidate_sign_ok true`, `candidate_sign_required` |
+
+⇒ **Inertness now holds on button TRAIN (21 875 leaves) and basket VALIDATION (9 170 leaves).** That limitation is retired, for those two.
+
+### WHAT ELSE WAS WRITTEN
+
+**`runargs/dcs_csi_pr024_read.txt`**, the read recipe, **written before any arm was submitted** so no rank existed when the flags were chosen. Job ids are `<HALF1>…<HALF5>` placeholders that must be resolved **while no rank has been seen** (the S-495 discipline), and the file says so. It carries the pre-read VOID checklist, the *"expect short arms"* warning with the asymmetric-dropout explanation, and — stated rather than glossed — that **the two read paths do not intersect the same key set**, so the **RANK** is the genuine cross-check and a ~1e-05 point difference is the key-set asymmetry, not a bug.
+
+⚠ **A correction to my own S-532 alarm:** PR-CSI-023's `HOW_TO_RUN` **already** named halves *"1 + 2 + 4 + 5"* correctly. The 42-vs-34 hazard I flagged is real but applies to someone launching `1..5` naively — **the existing prereg had it right**, and I should have checked that before framing it as an open trap.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **NOTHING IS LAUNCHED.** Tenth consecutive tick with an empty queue. The prereg must be **committed first** so it provably predates the arms, which is what this commit does.
+- ⛔ **The job-id placeholders are UNRESOLVED**, so the read recipe is not runnable as it stands — deliberately.
+- ⛔ **No number in this entry is a result about button validation.** Every figure is either a frozen commitment or a re-derivation of an existing read. **The experiment has not run.**
+- ⛔ **VOID 3 is enforced by NO reader** — that all arms loaded the same basis file must be checked by hand from `arm_meta`, and the prereg says so rather than pretending otherwise.
+- ⛔ **Inertness is still unshown for sufficiency reads and for every head/cell reader**, though the sign guard's `else` branch touches sufficiency.
+- ⛔ **R41's remaining MAJORs are still unrepaired** (no VOID block in the rederive, the unused manipulation gate, dead TEST-leak code, the n=19 floor divergence).
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** submit halves **1, 2, 4, 5** with `setenv CSI_EXPECT_LAYER 18`, verify each log's banner reports `LAYER=18` and `>>>` counts of 5/9/10/10, then resolve the placeholders before any read.

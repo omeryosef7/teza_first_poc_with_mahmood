@@ -1,0 +1,73 @@
+# ================================================================================================
+# PR-CSI-024 READ -- BUTTON necessity on the HELD-OUT VALIDATION split.
+# Recipe written at S-535, BEFORE ANY ARM WAS SUBMITTED, so no rank, point or key count existed
+# when these flags were chosen. PR-CSI-024 VOID 8 freezes the family, the primary statistic, the
+# prefixes, the floor and the magnitude band; VOID 12 makes the two --expect-n-* assertions
+# MANDATORY for this read; VOID 13 makes --require-slurm-job mandatory.
+#
+# PRIMARY = the SHUFFLED-ONLY rank of KO_NEC_AXIS - NEC_BASE among the 24 KO_NEC_SHUF controls.
+#   1/25 = 0.0400 <= 0.05.  CERTIFIES = rank 1 of 25 AND a NEGATIVE point AND |point| in band.
+#   Magnitude band, frozen S-535: |point| in [0.00072, 0.00647]
+#     (anchor 0.00215806 = button necessity TRAIN / D44, re-derived from domain_means at S-531;
+#      factor of 3 either side, the same rule PR-CSI-022 used and verified to reproduce its band).
+#
+# ⛔ <HALF1>,<HALF2>,<HALF4>,<HALF5> BELOW ARE PLACEHOLDERS. They MUST be replaced with the four
+#    real SLURM job ids BEFORE the read is run, and that substitution must happen while no rank
+#    has been seen -- the S-495 discipline. Do not run this file with placeholders in it.
+#
+# WHY --require-slurm-job IS NOT OPTIONAL HERE (S-531, measured):
+#   the csi1_button_validation prefix already has 21 of 62 tags resolving to MORE THAN ONE
+#   complete run dir, mostly L20/L18 pairs. For NEC_BASE and NEC_KO the rescue layer is null by
+#   construction, so --require-rescue-layer CANNOT separate a twin -- the job id is the only
+#   discriminator. Omitting it would let strict_run_dir refuse the tag, or worse, resolve it
+#   after a future run reuses the tag (the S-487 decay hazard).
+#
+# PRE-READ VOID CHECKS to perform on the arms' OWN RUNMETA/results before analysing:
+#   VOID 1  every arm on NVIDIA GeForce RTX 3090 (cc 8.6)        -- from RUNMETA, not the directive
+#   VOID 2  one GPU architecture across the family
+#   VOID 3  one basis file + basis_sha16 across ALL arms         -- BY HAND: no reader asserts this
+#   VOID 4  23/23 domains in the validation split, no TRAIN/TEST leak
+#   VOID 5  basis = dcs_csi_axis_button_behavioral_L18.pt, cand_rank1 sha16 7d4e01f5475e6b53
+#   VOID 6  one commit -> one score_behavior.py BLOB
+#   VOID 9  every arm n_rows_attempted = 230 (--expect-n, never --limit)
+#   VOID 10 verdict_basis.candidate_sign_ok MUST be true         -- the S-533 guard
+#   VOID 11 resolved_rescue_layers = 18 on every rescue arm
+#
+# EXPECT SHORT ARMS. --expect-n is a PRE-scoring population check, not a guarantee of rows
+# written: the norm-match degeneracy guard legitimately declines rows INSIDE the scoring loop and
+# the run still exits 0 (S-532). On button TRAIN, 16 of the 29 read arms came in below 670. The
+# candidate KO_NEC_AXIS is launched WITHOUT a norm-match key and keeps full rows while every
+# control is matched and loses its own degenerate rows -- asymmetric and mechanism-correlated.
+# That does NOT bias the comparison, because the analyser intersects (domain, slot) keys across
+# arms and averages every arm over the same set; it shrinks the common key set. Read
+# keys_dropped_by_intersection and record it.
+# ================================================================================================
+
+python3 scripts/dcs_csi_subspace_analyze.py \
+  --codeword button --tag-prefix csi1_button_validation --expect-n 230 --allow-short 4 \
+  --direction necessity \
+  --arms NEC_BASE,NEC_KO,KO_NEC_FULL,KO_NEC_AXIS,KO_NEC_ORTH,KO_NEC_SHUF0,KO_NEC_SHUF1,KO_NEC_SHUF2,KO_NEC_SHUF3,KO_NEC_SHUF4,KO_NEC_SHUF5,KO_NEC_SHUF6,KO_NEC_SHUF7,KO_NEC_SHUF8,KO_NEC_SHUF9,KO_NEC_SHUF10,KO_NEC_SHUF11,KO_NEC_SHUF12,KO_NEC_SHUF13,KO_NEC_SHUF14,KO_NEC_SHUF15,KO_NEC_SHUF16,KO_NEC_SHUF17,KO_NEC_SHUF18,KO_NEC_SHUF19,KO_NEC_SHUF20,KO_NEC_SHUF21,KO_NEC_SHUF22,KO_NEC_SHUF23 \
+  --base-arm NEC_BASE --ko-arm NEC_KO --full-arm KO_NEC_FULL \
+  --candidate-arm KO_NEC_AXIS --comparator-arm KO_NEC_ORTH \
+  --control-prefixes KO_NEC_SHUF \
+  --expect-n-controls 24 --expect-n-domains 23 \
+  --split validation --require-rescue-layer 18 \
+  --require-slurm-job <HALF1>,<HALF2>,<HALF4>,<HALF5> \
+  --out reports/DCS_CSI_SUBSPACE_NECESSITY_button_validation_shuf24.json
+
+python3 scripts/dcs_csi_rederive_subspace.py \
+  --tag-prefix csi1_button_validation --split validation --expect-n 230 --allow-short 4 \
+  --direction necessity --base NEC_BASE --ko NEC_KO --full KO_NEC_FULL --candidate KO_NEC_AXIS \
+  --controls KO_NEC_SHUF0,KO_NEC_SHUF1,KO_NEC_SHUF2,KO_NEC_SHUF3,KO_NEC_SHUF4,KO_NEC_SHUF5,KO_NEC_SHUF6,KO_NEC_SHUF7,KO_NEC_SHUF8,KO_NEC_SHUF9,KO_NEC_SHUF10,KO_NEC_SHUF11,KO_NEC_SHUF12,KO_NEC_SHUF13,KO_NEC_SHUF14,KO_NEC_SHUF15,KO_NEC_SHUF16,KO_NEC_SHUF17,KO_NEC_SHUF18,KO_NEC_SHUF19,KO_NEC_SHUF20,KO_NEC_SHUF21,KO_NEC_SHUF22,KO_NEC_SHUF23 \
+  --require-rescue-layer 18 --require-slurm-job <HALF1>,<HALF2>,<HALF4>,<HALF5> \
+  --out reports/DCS_CSI_REDERIVE_NECESSITY_button_validation_shuf24.json
+
+# ⚠ THE TWO PATHS DO NOT READ THE SAME KEY SET, and that is structural (S-531).
+#   dcs_csi_rederive_subspace.py has NO comparator argument, so it intersects 28 arms where the
+#   primary intersects 29 (base, ko, full, candidate + 24 controls, vs those plus KO_NEC_ORTH).
+#   On basket that cost nothing because KO_NEC_ORTH was full-length on both splits; on button
+#   TRAIN it cost one key (651 vs 652) and moved the candidate point by 2.0e-05. So:
+#     * the RANK is the genuine cross-check and both paths must agree on it;
+#     * a point-estimate difference of order 1e-05 is the key-set asymmetry, NOT a bug;
+#     * the PRIMARY's 29-arm point is the one that is quoted and banded.
+#   Record both, and do not report their agreement as stronger than it is.

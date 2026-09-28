@@ -1,0 +1,107 @@
+{
+  "id": "PR-CSI-024",
+  "title": "DOES BUTTON NECESSITY REPLICATE ON HELD-OUT DATA? The last missing cell of the 2x2, on 23 VALIDATION domains the axis has never seen.",
+  "written": "2026-09-28 (S-535). FROZEN BEFORE ANY BUTTON-VALIDATION NECESSITY ARM EXISTS -- measured, not assumed: zero csi1_button_validation_*NEC* run dirs are on disk (S-531). No rank, no point estimate and no key count from this family existed when this file was written.",
+
+  "WHY_THIS_EXISTS": "The 2x2 of codeword x causal direction is complete on TRAIN and INCOMPLETE on held-out data. Basket has both halves held out (D42 TRAIN, D43 VALIDATION). Button has sufficiency held out (D24/D29) and necessity on TRAIN ONLY (D44). So 'button necessity certifies' is currently a TRAIN statement, while every other cell of the 2x2 has been taken to a held-out split. This file closes that asymmetry. It is the direct analogue of PR-CSI-022, which did the same for basket.",
+
+  "THE_PREDICTION_FROZEN_IN_ADVANCE": {
+    "prediction": "button necessity WILL certify on VALIDATION: the candidate will rank 1 of 25 among the shuffled controls, with a NEGATIVE point whose magnitude falls inside the band frozen below.",
+    "basis": "D44 certified on button TRAIN (rank 1 of 25, candidate -0.00215806, zero of 24 controls at least as negative, positive control -0.06986 with ci95 [-0.0793, -0.06064]). Basket's necessity replicated from TRAIN to VALIDATION (D42 -> D43) with the point estimate moving 1.47x and staying inside its frozen band. If the button TRAIN result is real rather than an in-sample artefact, the same should happen here.",
+    "IF_THE_PREDICTION_HOLDS": "button necessity is held-out replicated, the 2x2 is complete on held-out data, and 'necessity transfers across codewords' becomes a held-out statement instead of a TRAIN one. NOTE WHAT THIS DOES NOT BUY: it does NOT restore the codeword dissociation, which D44 already narrowed to the SUFFICIENCY direction (S-525). A second held-out necessity PASS makes that narrowing firmer, not weaker.",
+    "IF_THE_PREDICTION_FAILS": "button necessity does NOT replicate held-out ==> D44 is an IN-SAMPLE result and must be relabelled as such wherever it is quoted, including the claim table row and the section A.2 scope block. THE 2x2 WOULD THEN BE ASYMMETRIC IN A WAY THAT FAVOURS NO STORY: basket necessity replicates and button necessity does not, which is itself a codeword difference in the NECESSITY direction and would REOPEN the question S-525 closed. It will be reported that way. No post-hoc reframing: 'validation is noisier' is NOT an available escape, because the band below is frozen wide (a factor of 3 either side) precisely to absorb that noise, and 23 domains is the same population on which D43 succeeded.",
+    "WHY_BOTH_BRANCHES_ARE_WRITTEN": "PR-CSI-023's prediction FAILED (S-524) and the record survived that only because both branches had been written in advance. The same discipline applies here, and it applies more sharply because this time the prediction is the one I expect to hold -- a prereg that only guards against unwelcome outcomes guards nothing."
+  },
+
+  "population": {
+    "split": "validation",
+    "expect_n": 230,
+    "n_domains": 23,
+    "MEASURED_NOT_ASSUMED": "230 rows = 23 domains x 10 slots, recomputed from the bank minus exclude_button_bomb_sow_validation.txt. The 23 VALIDATION domains are SET-IDENTICAL to the 23 that D43 used (verified by set equality against DCS_CSI_SUBSPACE_NECESSITY_basket_validation_shuf24.json, 23/23) and have ZERO overlap with the axis's 67 TRAIN fit domains.",
+    "HELD_OUT_MEANS": "the basis is NOT refitted. configs/dcs_csi_axis_button_behavioral_L18.pt carries fit_split=train, n_fit_domains=67, fit_domains_sha16=4614853e5636eb5f. The SAME file D44 used, unchanged. Refitting on validation would void this experiment and is forbidden."
+  },
+
+  "DIRECTION": {
+    "contract": "h' = h_clean - P_w(h_clean - h_ko): start CLEAN, REMOVE the component, expect installation to DROP. Removal, not add-back.",
+    "stronger_candidate_is": "MORE NEGATIVE",
+    "sign_policy": "reported contrasts keep their NATURAL sign; only the DECISIONS are oriented. A candidate that fails to drop installation appears as a POSITIVE number and CANNOT certify -- see VOID 10."
+  },
+
+  "arms": {
+    "base": "NEC_BASE",
+    "ko": "NEC_KO",
+    "positive_control": "KO_NEC_FULL",
+    "candidate": "KO_NEC_AXIS",
+    "comparator": "KO_NEC_ORTH",
+    "shuffled_controls": "KO_NEC_SHUF0 .. KO_NEC_SHUF23 (24 arms)",
+    "random_controls": "KO_NEC_RAND0 .. KO_NEC_RAND3 (4 arms, SECONDARY only)",
+    "anchor": "KO_NEC_AXIS_ANCHOR",
+    "total_launched": 34,
+    "total_in_the_PRIMARY_read": 29,
+    "WHY_29_NOT_34": "the primary read passes base, ko, full, candidate, comparator and the 24 shuffled controls. The anchor and the 4 random controls LAND but are not in the primary rank. This is the same 29/34 split D42, D43 and D44 used, and it is stated here because S-532 found that 34 is the LAUNCH count and 29 the READ count, and conflating them changes the key intersection."
+  },
+
+  "PRIMARY": {
+    "statistic": "the SHUFFLED-ONLY rank of KO_NEC_AXIS - NEC_BASE among the 24 KO_NEC_SHUF controls, on button L18 VALIDATION",
+    "alpha": 0.05,
+    "attainable_floor": 0.04,
+    "attainable_floor_ARITHMETIC": "1/(24+1) = 0.0400 <= 0.05; rank 1 certifies, rank 2 (0.0800) does not",
+    "CERTIFIES": "rank 1 of 25 AND a NEGATIVE candidate point AND |point| inside the frozen band",
+    "DOES_NOT_CERTIFY": "rank >= 2 of 25, OR a non-negative candidate point (VOID 10), OR a point outside the band",
+    "MAGNITUDE_BAND_FROZEN_NOW": {
+      "band": [0.00072, 0.00647],
+      "anchor": 0.00215806,
+      "anchor_provenance": "button necessity TRAIN (D44), KO_NEC_AXIS - NEC_BASE, re-derived at S-531 from the artefact's own domain_means over 67 domains (49 neg / 18 pos). NOT the analyser's 5-dp rounded -0.00216 and NOT the rederive path's -0.00214, which reads a 652-key rather than 651-key intersection (S-531).",
+      "rule": "a factor of 3 either side of the TRAIN point, the SAME rule PR-CSI-022 used for basket (0.00870343 -> [0.0029, 0.0261]); verified to reproduce that frozen band exactly before being applied here",
+      "WHY_WIDE": "23 domains is a noisy population and D43's validation point came in 1.47x TRAIN's. A band that only admitted a near-identical point would fail on noise alone. It is frozen NOW so 'roughly the same magnitude' is a check rather than an argument."
+    },
+    "CANNOT_ANSWER_IF": [
+      "the positive control KO_NEC_FULL - NEC_BASE is not negative with a domain-clustered ci95 excluding 0 -- an incapable instrument makes any outcome uninterpretable. This is the CRITICAL GATE: on TRAIN it was -0.06986 [-0.0793, -0.06064] with 66 of 67 domains negative, and nothing licenses assuming it holds on 23 held-out domains.",
+      "fewer than 24 shuffled control arms land within --allow-short 4"
+    ],
+    "IF_RANK_1": "say in the SAME SENTENCE that p = 0.0400 IS the attainable floor (1/25). S-079 precedent, as D42, D43 and D44 all do. Rank 1 necessarily yields exactly this value and no data could produce less.",
+    "REMOVAL_FRACTION_MUST_TRAVEL": "prohibition 28 as amended at S-523 requires the removal fraction OF THIS READ to be quoted with it. It must be computed and reported, and it must NOT be substituted by D44's 0.0309 (button TRAIN) or by any basket figure. S-527 found two necessity results carrying no fraction at all; this one will not be a third."
+  },
+
+  "SECONDARY_PRESPECIFIED": {
+    "pooled_28": "rank among the 24 shuffled + 4 random controls, floor 1/29 = 0.034483. SECONDARY, and it does not replace the primary. Named here because S-527 found D42's pooled-28 secondary had been quoted for 19 entries with no removal fraction attached -- if this one is quoted, its own fraction travels with it.",
+    "random_only": "rank among the 4 KO_NEC_RAND controls, floor 1/5 = 0.2000, which is ABOVE alpha and therefore CANNOT certify. Reported for completeness only."
+  },
+
+  "THE_CONJUNCTION_NON_CLAIM": "This read is on the SAME 23 VALIDATION domains as D43 (set-identical, verified). Therefore a basket-vs-button comparison on validation is PAIRED, NOT INDEPENDENT, and no combined or joint test is preregistered, computed or specified here. 'Both codewords certify on held-out necessity' would be the sayable claim; 'the conjunction is certified' would not, exactly as D19 records for the two directions on basket.",
+
+  "VOID_CONDITIONS": [
+    "1. any compared arm on anything other than an NVIDIA GeForce RTX 3090 (cc 8.6, native bf16). The launcher now pins --gpus=geforce_rtx_3090:1 as of S-533; before that it used a bare --gpus=1 on a partition holding seven GPU types, and all eight precedent jobs landed on 3090s by scheduler luck. Verify per arm from RUNMETA, not from the directive.",
+    "2. more than one GPU architecture across the family.",
+    "3. any arm disagreeing with another on the basis file, the bank, attn_impl or dtype. NOTE: no reader asserts the basis file ACROSS arms (R41 MAJOR-4), so this must be checked by hand from arm_meta.rescue_basis and basis_sha16.",
+    "4. any TRAIN or TEST domain in the scored population. TEST is never touched.",
+    "5. the axis basis refitted, or any basis file other than configs/dcs_csi_axis_button_behavioral_L18.pt (basis_sha16 7d4e01f5475e6b53 for cand_rank1, 93da8f28600e203b for ctrl_orth).",
+    "6. score_behavior.py moving to a different BLOB (not commit) between the first and last arm of the family.",
+    "7. either analyser moving COMPUTATIONALLY between this freeze and the read. I/O-only changes do not void. If it moves, discharge it the S-490/S-533 way: re-run a landed family and show every published leaf unchanged (scripts/gates/dcs_csi_void7_artefact_diff.py).",
+    "8. the control family, the primary statistic, the prefix strings, the floor or the magnitude band changed after any candidate rank has been seen.",
+    "9. --limit used in place of --expect-n anywhere in the family.",
+    "10. a candidate point that is not NEGATIVE being reported as a PASS. The primary analyser gained this guard at S-533 (R41 CRITICAL-1); before that it could print 'PRIMARY PASSES ... the single most NEGATIVE value' on a positive number. The read MUST show verdict_basis.candidate_sign_ok true.",
+    "11. the axis file's selected_layer not being 18. Two BUTTON behavioral axis files exist and they disagree (L18.json -> 18, behavioral.json -> 20), so this is pinned at SUBMIT time via CSI_EXPECT_LAYER=18 (added S-533) and re-checked in the read via --require-rescue-layer 18.",
+    "12. the read not asserting the family it froze: --expect-n-controls 24 and --expect-n-domains 23 are MANDATORY for this read. Without them a mistyped --control-prefixes can select the wrong family and still print the expected floor 0.0400 (R41 MAJOR-b, measured).",
+    "13. the read omitting --require-slurm-job. The csi1_button_validation prefix already has 21 of 62 tags resolving to MORE THAN ONE complete run dir (S-531), and for NEC_BASE/NEC_KO the rescue layer is null so --require-rescue-layer CANNOT disambiguate them -- the job id is their only discriminator."
+  ],
+
+  "NOT_CLAIMED_BY_THIS_FILE": [
+    "nothing here licenses 'the axis is necessary' for either codeword -- prohibition 24 stands, the rank test certifies and the axis does not",
+    "nothing here restores the codeword dissociation as direction-general; D44 narrowed it to sufficiency at S-525 and this file cannot widen it again",
+    "no cross-codeword magnitude comparison is offered or permitted: button and basket removal fractions use different reference arms and different codewords",
+    "no combined basket+button test is specified, and the two reads share their 23 domains",
+    "this file says nothing about the 651-vs-652 key asymmetry between the primary and the re-derivation (S-531); that gap is structural, the rederive takes no comparator, and only the RANK is genuinely cross-checked"
+  ],
+
+  "HOW_TO_RUN": {
+    "launcher": "slurm_scripts/dcs_csi_p1_arms.slurm (group L), as modified at S-533 to pin the GPU and honour CSI_EXPECT_LAYER",
+    "tag_prefix": "csi1_button_validation",
+    "TAG_SAFETY_CHECKED": "zero csi1_button_validation_*NEC* run dirs exist (measured S-531). The necessity arm names do not collide with the 62 existing sufficiency tags under the ANCHORED pattern ^<tag>_\\d{8}_\\d{6}_\\d+$ -- verified that csi1_button_validation_KO_NEC_AXIS does not match ..._KO_NEC_AXIS_ANCHOR_..., and NEC_BASE does not match NEC_BASELINE.",
+    "halves_needed": "1, 2, 4 and 5 ONLY -- 5 + 9 + 10 + 10 = 34 arms. HALF 3 IS NOT PART OF THIS DESIGN: it launches KO_NEC_RAND4..11, eight EXTRA random controls that would take the random family from 4 to 12 and change the pooled-28 denominator and its floor (measured S-532).",
+    "invocation": "for H in 1 2 4 5: setenv CSI_NEC_HALF $H ; setenv CSI_EXPECT_LAYER 18 ; setenv CSI_STAGE 1 ; sbatch slurm_scripts/dcs_csi_p1_arms.slurm button configs/dcs_csi_axis_button_behavioral_L18.pt validation L",
+    "SHELL_NOTE": "the session shell is tcsh, where `VAR=x sbatch ...` is NOT a valid prefix assignment. Each variable must be set with setenv, and a stale CSI_NEC_HALF from a previous submission is a real hazard: the launcher DEFAULTS it to 1 when unset (S-532), which would produce a second complete run dir under NEC_BASE and poison that tag.",
+    "estimated_cost": "about 34 arms x ~4-5 min at 230 rows = roughly 2.5-3 GPU-hours, well under the 6 hours D44's 670-row family took",
+    "BEFORE_SUBMITTING": "the worktree must be clean (the submit helper refuses otherwise) and this file must be committed, so the prereg provably predates the arms."
+  }
+}
