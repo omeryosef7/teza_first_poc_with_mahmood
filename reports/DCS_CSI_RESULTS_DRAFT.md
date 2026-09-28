@@ -361,6 +361,9 @@ about any arm's correctness — **a deterministic replay of a wrong arm is still
 | ‼ the held-out train→validation RATIO quoted as "the effect is stronger held out" | button **1.456×** (D44→D45) and basket **1.475×** (D42→D43), margins 2.714× and 2.69×. **The resemblance is striking and it is NOT a result.** One estimate on 23 domains against one on 67; the magnitude bands were frozen WIDE precisely to absorb that noise, so a point inside the band is a CHECK PASSED, not an effect measured. A second instance enlarges the temptation, not the licence | D45 / PR-CSI-024 |
 | the four HELD-OUT 2×2 cells treated as a balanced design, or compared cell-to-cell as magnitudes | they are four separate reads with **different key sets** (215 / 221 / 222 / 224) on the **same 23 domains**. The pattern (button fails only in sufficiency) is the claim; **no cell-to-cell magnitude comparison is offered**, and paired data does not become independent by being tabulated | D45 / D43 / D24 |
 | button's held-out sufficiency rank 6 of 47 described as "nearly passing" | the preregistered bar is rank **1** in a 46-control family. **6 is not 1.** It is also NOT the same number as TRAIN's rank 36, and that difference is not interpreted — one estimate on 23 domains against one on 67 | D24 / S-540 |
+| ‼ "**exactly** four heads clear the anchor" written without the floor qualifier | at PR-CSI-001's declared option-mass floor of 0.05 the count is **THREE** — head 23 drops because the **anchor rose 35.1 %** while its own effect fell 5.9 % and its ci95 still excludes zero. **The bar moved, not the head.** Say "four at the published readout, three at the declared floor", never the bare "exactly four" | D34 / PR-CSI-025 |
+| any §H count quoted as a property of the MODEL rather than of the readout population | §A was invariant to this floor across all eight cells (AM-53/AM-54); §H was never testable until S-548 and its headline count moves. **Until a §H claim has been run at both floors, it is a statement about a readout** | §H / PR-CSI-025 |
+| the two REFUSED families cited as evidence of invariance | `csi10_cell6_button_validation` and `csi11_cell8_basket_validation` could not be run at all: their own preregs pin each head's E to a prior measurement, and any row filter moves E. **Unrunnable is not invariant**, and switching off a VOID condition to obtain a number is forbidden | PR-CSI-025 |
 
 **‼ marks a phrasing this draft itself committed and had corrected.** The **TEST** row is here
 because §0 asserted exactly it in the first version (S-417); the **floor** row because §M copied it
@@ -1163,7 +1166,7 @@ argues against additivity across the eight. **Nothing here says this is *the* 8-
 rank-1-of-21 certifications, both sitting exactly at their floor — separate evidence, not one result
 counted twice.
 
-## H.2 Exactly four heads clear the family's own null anchor (D34)
+## H.2 Exactly four heads clear the family's own null anchor (D34) — 🔴 **AT THE PUBLISHED READOUT; THREE AT THE DECLARED FLOOR**
 
 Using `|E(HD_BOTK)| = 0.012567` as the anchor the family itself supplies, the 32 single-head arms on
 basket validation give **exactly four** heads with a negative effect, a magnitude above the anchor
@@ -1178,6 +1181,32 @@ head 23   -0.01650303   ci95 [-0.02320141, -0.01006879]
 
 **All four are inside `HD_TOPK` = [19, 17, 23, 6, 13, 2, 24, 28], and no head outside it clears** —
 verified by me over all 32. These four are where §1's heads come from.
+
+🔴 **READOUT-DEPENDENT, MEASURED S-549/S-550 BY PR-CSI-025 — AND THE PREDICTION THAT IT WOULD NOT BE
+FAILED.** At PR-CSI-001's declared option-mass floor of **0.05**, this count is **THREE**: head 23 no
+longer clears.
+
+| | published readout (floor 0.0) | declared floor (0.05) |
+|---|---|---|
+| anchor `\|E(HD_BOTK)\|` | **0.012567** | **0.016973** — **+35.1 %** |
+| head 23 `\|E\|` | 0.016503 | 0.015526 — **−5.9 %** |
+| head 23 ci95 excludes 0 | yes | **still yes** |
+| heads clearing | **4** — 2, 19, 17, 23 | **3** — 2, 19, 17 |
+
+⛔ **THE BAR MOVED, NOT THE HEAD.** The anchor rose **six times as much** as the effect of the head it
+disqualified, and head 23's interval still excludes zero. ⇒ ***"Exactly four"* is a statement about
+this readout population, not a property of the model**, and the sensitive term is the **family's own
+self-supplied anchor** rather than any head.
+
+⚠ **This does NOT retract the section.** Four clear at the published readout and three at the declared
+floor; both are measured, and the artefact is
+`reports/DCS_CSI_CENSUS_OPTIONMASS05_SENSITIVITY_csi5_census_basket_validation.json` (146 of 230 rows
+retained, **all 23 domains retained**, so the statistical unit count is unchanged). **What is no longer
+available is the unqualified word "exactly".**
+
+⚠ **§A ran this identical check at AM-53/AM-54 and all eight of its cells were INVARIANT.** §H could not
+run it at all until the instrument was built at S-548 — so the contrast between §A's robustness and §H's
+sensitivity is now a measurement, where before it was an absence of instrumentation.
 
 ⛔ **Descriptive, RUNG 1. No rank, no p per head, no control family** — and **32 unadjusted
 intervals are read at once, with no multiplicity correction**, which is exactly the inference "no

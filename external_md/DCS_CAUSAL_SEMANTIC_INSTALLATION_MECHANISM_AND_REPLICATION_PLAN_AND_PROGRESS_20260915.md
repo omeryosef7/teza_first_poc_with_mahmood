@@ -45655,3 +45655,52 @@ Four of six do not *byte*-reproduce, and I chased that before trusting anything:
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** relabel D34 and §H.2 as readout-dependent, with the anchor mechanism named — the prereg's failure branch requires it.
+
+## S-550 / the failed prediction enters the record: D34 and §H.2 relabelled READOUT-DEPENDENT, with the anchor named as the moving part (2026-09-28)
+
+S-549 landed as `98633b22`, 527 passed. Queue **EMPTY**. PR-CSI-025's FAILURE branch required the relabel; this does it.
+
+### WHAT WAS PUBLISHED
+
+Four sensitivity artefacts, named on the axis's own precedent (`..._OPTIONMASS05_SENSITIVITY_...`) so they can never be mistaken for primary reads:
+
+| artefact | reference | rows retained |
+|---|---|---|
+| `..._csi5_census_basket_validation.json` | `HD_BASE` | 146 / 230 |
+| `..._csi7_cell_basket_validation.json` | `CL_BASE` | 146 / 230 |
+| `..._csi8_cell3_basket_validation.json` | `CL_BASE` | 146 / 230 |
+| `..._csi9_cell3_button_validation.json` | `BC_BASE` | 205 / 230 |
+
+**The two refused families have NO artefact**, because refusing to run is not a result and a file would imply one.
+
+### D34 AND §H.2 RELABELLED
+
+Both now carry the measurement and, more importantly, **the mechanism**:
+
+| | published readout | declared floor 0.05 |
+|---|---|---|
+| anchor `\|E(HD_BOTK)\|` | 0.012567 | **0.016973 — +35.1 %** |
+| head 23 `\|E\|` | 0.016503 | 0.015526 — **−5.9 %** |
+| head 23 ci95 excludes 0 | yes | **still yes** |
+| heads clearing | **4** | **3** |
+
+⛔ **THE BAR MOVED, NOT THE HEAD.** The anchor rose **six times as much** as the effect it disqualified. ⇒ ***"Exactly four"* is a statement about a readout population, not a property of the model**, and the sensitive term is **the family's own self-supplied anchor**.
+
+⚠ **Neither D34 nor §H.2 is retracted.** Four clear at the published readout, three at the declared floor; **both are measured and both are stated.** What is withdrawn is the unqualified word *"exactly"*. §H.2's title now carries the qualifier so a reader meets it before the prose.
+
+### THREE CHECKLIST ROWS, ONE OF WHICH GUARDS AN INFERENCE I COULD EASILY HAVE DRAWN
+
+1. ‼ *"exactly four heads"* without the floor qualifier.
+2. any §H count quoted as a property of the **model** rather than of the readout population — §A was invariant across all eight cells, §H's headline count moves.
+3. ⚠ **the two REFUSED families cited as evidence of invariance.** *They could not be run at all.* **Unrunnable is not invariant**, and that is the inference most available to someone reading "4 ran, 2 didn't move" in a hurry — including me.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **D32, D33, D36, D39, D40 are still NOT re-derived at the floor.** Only D34 was. §H's other claims are neither confirmed nor impugned — **they are untested**, which is what §H was before S-548 and still is for them.
+- ⛔ **The three families that ran besides csi5 were NOT mined for claim-level changes.** Their artefacts are published; **nobody has asked what moved in them.** The Editor's-checklist row about §H counts applies to them too, and is not discharged by this entry.
+- ⛔ **0.05 is one floor.** Nothing establishes where head 23 crosses back, or that the count is monotone in the floor.
+- ⛔ **The anchor's own sensitivity was measured once.** That `HD_BOTK` moves 35 % under a row filter is itself a fact about `HD_BOTK` that nothing here characterises further.
+- ⛔ **csi3_head_\* (D32/D33) remains uninstrumented** — the reason those two rows cannot even be tested yet.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** the three other families that ran — csi7, csi8, csi9 — have published sensitivity artefacts that nobody has read for claim-level movement.
