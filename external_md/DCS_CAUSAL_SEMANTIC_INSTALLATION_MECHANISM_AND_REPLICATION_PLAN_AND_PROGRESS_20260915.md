@@ -44782,3 +44782,72 @@ Queue **EMPTY**. The user chose **held-out button necessity** as the next family
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** R41 streams 2 and 3 (launcher, analyser path). Only when R41 closes: write and freeze the prereg, then launch.
+
+## S-532 / R41 COMPLETE — the primary analyser can print "PASSES … most NEGATIVE" on a POSITIVE candidate, and three more launch-blockers (2026-09-28)
+
+Queue **EMPTY**. R41 streams 2 and 3 returned. **Every load-bearing claim below was re-derived by me**; what I did not check myself is listed separately and is not claimed.
+
+### 🔴 CRITICAL 1 — the PRIMARY has no candidate-sign guard; the RE-DERIVATION does
+
+Verified by me: `scripts/dcs_csi_subspace_analyze.py` contains **ZERO** occurrences of `cand_ok` / `candidate_sign`. Its verdict branch is
+
+```
+:1022    if rank == 1 and attainable:
+:1023        out["VERDICT"] = TXT["rank_pass"].format(...)
+```
+
+— **no sign term.** `scripts/dcs_csi_rederive_subspace.py` has the guard at `:308`, `cand_ok = (cand < 0) if NEC else (cand > 0)`, gating its verdict at `:338`. So under necessity a **POSITIVE** candidate that happens to rank 1 (every control more positive) makes the primary emit *"PRIMARY PASSES … the single most NEGATIVE value in the distribution"* — a sentence false about its own number, while the independent path would refuse.
+
+⚠ **This moves NO published verdict, and I checked rather than assumed.** All five committed necessity reads have a negative candidate: −0.00852, −0.00848, −0.0087, −0.01283, −0.00216. **The defect is latent.** The fix is **narrowing-only** — adding `and cand < 0` can turn a PASS into a non-PASS and can never create one.
+
+⚠ **Why it survived:** S-259 wrote this exact guard and its audit table of *"every tool that emits a verdict from these effects"* lists five scripts and **omits the primary subspace analyser**. A sweep that names its own scope can be complete within it and still miss the most-used file.
+
+### 🔴 CRITICAL 2 — the axis file is an unchecked positional argument, and two button axis files disagree on LAYER
+
+`dcs_csi_p1_arms.slurm:45` takes `AXIS="${2:?axis .pt}"` verbatim; nothing ties it to the codeword. Verified by me:
+
+| file | `selected_layer` | forced | shuffled / random keys |
+|---|---|---|---|
+| `dcs_csi_axis_button_behavioral_L18.json` | **18** | **True** | 24 / 22 |
+| `dcs_csi_axis_button_behavioral.json` | **20** | — | 9 / 14 |
+
+Hand it the second and the codeword guard passes, the basis-vs-write-layer guard passes (self-consistent at L20), and the early halves complete **at the wrong layer with plausible numbers**. This is not hypothetical: S-531 measured **21 of 62** `csi1_button_validation` tags with multiple admissible run dirs, and the KO_AXIS pair is exactly an **L20/L18** split. *(I measured 9/14 control keys where the review reported 5/8; I use my own count.)*
+
+### 🔴 CRITICAL 3 — the launcher does not pin the GPU, on a partition with seven types
+
+Verified: `dcs_csi_p1_arms.slurm` carries `#SBATCH --gpus=1`, while **12** sibling launchers pin `--gpus=geforce_rtx_3090:1`. `killable` offers **7** types — `geforce_rtx_3090` (8), `l40s` (6), `geforce_rtx_2080` (4), `a5000` (3), `v100` (2), `a6000` (2), `quadro` (1). v100/2080/quadro would **crash** on bf16; **`l40s` (sm_89) and `a5000`/`a6000` (sm_86) pass a cc≥8 gate silently on different kernels.** All eight precedent jobs landed on 3090s — n-302/n-304/n-350, each `geforce_rtx_3090:8`, with the logs recording *"GeForce RTX 3090"* 16 times — **by scheduler luck, not by directive.** The repo's own `dcs_csi_void6_inertness_check.slurm` names this file as the defect.
+
+### MAJOR — four more, all verified by me
+
+**(a) `CSI_NEC_HALF=1..5` is 42 arms, not 34.** Enumerated: half 1 = `NEC_BASE, NEC_KO, KO_NEC_FULL, KO_NEC_AXIS, KO_NEC_ORTH` (5); half 2 = `KO_NEC_AXIS_ANCHOR, SHUF0-3, RAND0-3` (9); **half 3 = `RAND4..11` (8 EXTRAS)**; half 4 = `SHUF4..13` (10); half 5 = `SHUF14..23` (10). **1+2+4+5 = 34.** Launching "1..5" gives a **12-member random family**, changing the pooled denominator and floor. ⇒ **Submit exactly 1, 2, 4, 5.**
+
+**(b) `--control-prefixes` is an unvalidated `startswith`.** Selection measured against the 34 names:
+
+| argument | selects | floor | hazard |
+|---|---|---|---|
+| `KO_NEC_SHUF` | **24** | **0.0400** | ✅ the intended value is safe |
+| `KO_NEC_SHUF,KO_NEC_RAND` | 28 | 0.0345 | different family |
+| `KO_NEC_SHUF, KO_NEC_RAND` *(space)* | **24** | **0.0400** | 🔴 **silent** — looks identical to correct |
+| `KO_NEC` | **32** | 0.0303 | 🔴 **includes the CANDIDATE and the POSITIVE CONTROL** |
+
+Nothing asserts `n_controls == 24`, `rank_p_floor == 0.0400`, or `n_domains == 23`, all of which PR-CSI-023's VOID 8 freezes.
+
+**(c) The candidate is NOT norm-matched while every control is.** `:262 subnec KO_NEC_AXIS cand_rank1` takes no norm-match reference; `:263 subnec KO_NEC_ORTH ctrl_orth cand_rank1` does. So the candidate is scored on all rows and each control loses exactly the rows where **its own** subspace is degenerate — **mechanism-correlated, not random, dropout.** ⚠ **This does not bias the comparison**, because the analyser intersects `(domain, slot)` keys across arms and averages every arm over the same set; what it does is **shrink the common key set**, which is why button gives 651 keys.
+
+**(d) `--expect-n` is a PRE-scoring population check**, not a guarantee of rows written: rows failing inside the loop are ledgered and the run exits 0. Measured by me over the 29 arms of the button read: **16 arms below 670** (`KO_NEC_ORTH` and 15 SHUF, at 667–669). ⚠ *The review reported "19 of 34" — both are right about different populations: mine counts the arms in the READ, theirs the arms LAUNCHED. This is the exact ten-versus-eight distinction S-518 corrected, and I am recording it rather than reconciling it away.*
+
+### WHAT I DID NOT VERIFY — reported, not adopted
+
+- `evaluation_is_in_sample` can read **FALSE** when a basis config is silent about its fit population (the review verified it is **not** triggered here, since `dcs_csi_axis_button_behavioral_L18.json` carries `fit_population` with 67 train domains). **I did not re-check that code path.**
+- The rederive has **no VOID block** and computes a manipulation gate it never uses.
+- **No cross-arm assertion that all arms used the same axis file** (PR-CSI-023's VOID 3 enforced by neither reader).
+- Both TEST-LEAK refusals are dead code; the two paths' floor tests differ at exactly n=19; the 34-arm/645-key figure.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **Nothing is fixed yet.** R41 identified the defects; **no code was changed this tick.**
+- ⛔ **No prereg, no freeze, no launch, no job id.** Seventh consecutive tick with an empty queue.
+- ⛔ **R41 found no defect that moves a published number.** CRITICAL 1 is latent; 2 and 3 are hazards on a *future* run. **No result in this record changes.**
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT, in this order:** (1) the sign guard into the primary, with a test that fails without it; (2) the family assertions (`n_controls`, floor, `n_domains`, non-empty prefixes, candidate/full ∉ controls); (3) pin `geforce_rtx_3090:1`; (4) **then** freeze the prereg naming halves 1/2/4/5, the L18 axis, `--expect-n 230`, `--allow-short 4`, `--require-rescue-layer 18` and both outcome branches; (5) **then** launch.
