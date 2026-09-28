@@ -44725,3 +44725,60 @@ That is the gap that matters most, because D44 *narrowed a headline*: the codewo
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** the decision below is the user's. If a launch is authorised, **R41 runs first**; if not, the next hygiene target is the remaining zero-marker sections.
+
+## S-531 / R41 stream 1: the "independent re-derivation" agreed with the primary on basket BY LUCK, and on button it does not (2026-09-28)
+
+Queue **EMPTY**. The user chose **held-out button necessity** as the next family and **R41 before launching**. This entry is R41 stream 1 — the launch path measured. **R41 is NOT complete** (two delegated code-review streams still running) and **nothing is launched**.
+
+### WHAT WAS MEASURED — launch preconditions, all first-hand
+
+**The family does not exist and must run from scratch.** `csi1_button_validation` has **62** arm tags on disk and **ZERO** `NEC` arms. Basket's validation necessity family is **34** dirs (`NEC_BASE`, `NEC_KO`, `KO_NEC_FULL`, `KO_NEC_AXIS`, `KO_NEC_ORTH`, `KO_NEC_AXIS_ANCHOR`, `KO_NEC_SHUF0…23`, `KO_NEC_RAND0…3`), so 34 arms at **230 rows / 23 domains**.
+
+**⚠ `--require-slurm-job` is MANDATORY for this prefix, and `--require-rescue-layer` is NOT a substitute.** **21 of 62** button-validation tags have more than one admissible run dir, so `strict_run_dir` refuses them bare — correctly. Measured on four:
+
+| tag | bare | +jobs | +layer 18 | +both |
+|---|---|---|---|---|
+| `KO_AXIS` | refuse | ✅ | ✅ | ✅ |
+| `BASE` | refuse | ✅ | **refuse** | ✅ |
+| `KO_AXIS_ANCHOR` | refuse | ✅ | **refuse** | ✅ |
+| `KO_RAND3` | refuse | ✅ | ✅ | ✅ |
+
+`BASE` carries `rescue_layer: null` by construction, so the layer cannot discriminate it; `KO_AXIS_ANCHOR` has two dirs *at* layer 18. Most twins are an **L20/L18 pair** (jobs 897057 vs 914043), not a duplicate.
+
+⚠ **An alarm of my own, withdrawn before it was recorded as a result:** I first concluded the committed button-validation reads were irreproducible. **False.** The **governing** artefacts (`_L18_n46`, `_randonly`, `_shufonly`, and the REDERIVE) all record `require_slurm_job` = 914043 / 914476–914479. Only the oldest, non-governing `DCS_CSI_SUBSPACE_button_validation.json` records `null`.
+
+**Basis — correct for a held-out read, and cleaner than basket's.** Button **sufficiency** (D24) and **necessity** (D44) load the **same file** `dcs_csi_axis_button_behavioral_L18.pt`, the same `cand_rank1` `basis_sha16` **7d4e01f5475e6b53**, `fit_split: train`, **67** fit domains, layer 18. Basket needed a bit-identity check because it used two different files; button needs none. Fit is on TRAIN, so reuse on VALIDATION requires **no refit**, satisfying PR-CSI-022. ⚠ **Evidence is two independently-produced artefacts (different SLURM job sets) agreeing on the recorded hash — I did NOT hash the tensor: `torch` is unavailable in this interpreter (the S-509 condition).**
+
+**The 23 validation domains are IDENTICAL for basket and button** (set equality, 23/23). ⇒ A button held-out necessity read would be **paired with D43 on the same domains, not independent** — this must be frozen as a non-claim in the prereg.
+
+**Anchoring verified on the exact names this family will use:** `KO_NEC_AXIS` does **not** match `KO_NEC_AXIS_ANCHOR`, and `NEC_BASE` does not match `NEC_BASELINE`.
+
+### THE FINDING — the two-path cross-check is weaker than this record implies
+
+`dcs_csi_rederive_subspace.py` is cited throughout as an **independent** re-derivation. Measured across all three necessity reads:
+
+| read | analyser keys / arms | rederive keys / arms | candidate: analyser vs rederive |
+|---|---|---|---|
+| basket TRAIN (D42) | 655 / 29 | 655 / **28** | −0.0087 vs −0.0087, **diff 0** |
+| basket VALIDATION (D43) | 222 / 29 | 222 / **28** | −0.01283 vs −0.01283, **diff 0** |
+| **button TRAIN (D44)** | **651** / 29 | **652** / **28** | **−0.00216 vs −0.00214, diff 2.0e-05** |
+
+**The rederive omits `KO_NEC_ORTH` on ALL THREE** — it intersects 28 arms where the analyser intersects 29. **Mechanism, measured:** button's `KO_NEC_ORTH` is **SHORT, 669 of 670** (documented in `KNOWN_SHORT`), so including it costs one extra key; basket's is at **FULL length on both splits** (670 and 230), so omitting it costs nothing.
+
+⇒ ⚠ **The exact agreement on basket was LUCK, not design.** The two paths have never intersected the same arm set; it only showed once the comparator happened to be short. And it is **structural, not a flag mistake**: `dcs_csi_rederive_subspace.py` has **no comparator/orth argument at all**, while `KO_NEC_ORTH` must stay in the primary because it *is* the preregistered comparator (`PRIMARY_candidate_minus_comparator`). **Only the RANK is genuinely cross-checked when the comparator is short** — and both paths do give **rank 1 of 25**, so **no verdict moves.**
+
+**D44 re-derived by me from `domain_means`, not read off any verdict:** `KO_NEC_AXIS − NEC_BASE` = **−0.00215806**, **49 neg / 18 pos of 67**, and **ZERO of 24 controls at least as negative** ⇒ **rank 1 of 25**. This matches D44's row exactly; the analyser's `−0.00216` is 5-dp rounding and the rederive's `−0.00214` is the different-population value. **The claim row is the correct one.**
+
+**Prereg band computed, NOT frozen:** anchored on **0.00215806** under the factor-of-3 rule basket used (verified: 0.00870343/3 and ×3 reproduce basket's frozen `[0.0029, 0.0261]`) ⇒ **[0.00072, 0.00647]**.
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **R41 IS NOT COMPLETE.** Two delegated adversarial streams — the necessity launcher, and the analyser/rederive necessity+validation path — were still running when this was written. **This entry is stream 1 of R41 and the launch gate is NOT discharged.**
+- ⛔ **No prereg is written and nothing is frozen.** The band above is a computation, not a commitment; `--expect-n 230`, `--allow-short 4`, the VOID list and both outcome branches are all still to be written.
+- ⛔ **No GPU work, no submission, no job id.** Sixth consecutive tick with an empty queue.
+- ⛔ **I did NOT verify the tensor hashes** — `torch` is absent here; the basis claim rests on two artefacts agreeing, which is weaker than hashing.
+- ⛔ **The 2.0e-05 divergence is NOT shown to be harmless in general.** It is harmless *here* because no control changes side. Nothing bounds it for a future read where the candidate sits close to a control.
+- ⛔ **I checked 4 of the 21 twinned tags**, not all 21.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** R41 streams 2 and 3 (launcher, analyser path). Only when R41 closes: write and freeze the prereg, then launch.
