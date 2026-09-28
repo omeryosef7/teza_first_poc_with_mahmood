@@ -45790,3 +45790,43 @@ S-549 and S-550 relabelled D34 on the strength of **one** family, and both are a
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** `HD_BOTK`'s direction — why a row filter *raises* a near-null arm's magnitude — is the one mechanistic question this line of work has opened and not answered.
+
+## S-553 / the direction is answered — unequal row retention plus domain-equal weighting — and S-551/S-552 SHARE ONE COMMIT, which the message does not say (2026-09-28)
+
+Queue **EMPTY**. Two things: a provenance defect to disclose, and the one mechanistic question this line of work had left open.
+
+### 🔴 DISCLOSURE FIRST — S-551 AND S-552 ARE IN ONE COMMIT, LABELLED ONLY S-551
+
+`95d68961` says **"DCS-CSI-551"** and contains **both** entries. Verified by reading the committed blobs: `## S-551` present, `## S-552` present, S-552's `SCOPE TIGHTENED` edits present in both the claim table and the draft, and **zero** uncommitted tracked work. **Nothing was lost.**
+
+**How:** S-551's commit sat in its ~10-minute hook while I made S-552's edits and ran S-552's commit. My S-552 `git add` updated the index **before** S-551's `git commit` fired, so S-551's commit swept up the newer index. S-552's own commit then found *"nothing added to commit"* and exited **1**.
+
+⚠ **This is the S-461 hazard by name — staging while a commit is in flight — and I walked into it after quoting it at S-536.** The consequence is not lost work but a **misleading message**: `95d68961`'s body describes S-551's findings and its gate line says *"table shape 186"* when the committed file has **188**. ⛔ **Not rewritten.** Rewriting a landed commit to fix its message is worse than an append-only disclosure, and S-480 set the precedent for entries sharing a commit: **say so.**
+
+### THE DIRECTION QUESTION, ANSWERED
+
+S-552 left this open: *"why does a row filter RAISE a near-null arm's magnitude rather than lower it?"* Measured on `HD_BOTK`, and **my reproduction is exact — E over domains = −0.016973, matching the artefact to six decimals**, so the mechanism below is computed on the same number the claim moved on.
+
+| | |
+|---|---|
+| rows retained **per domain** | **1 to 10** — the floor keeps `{10:1, 9:3, 8:4, 7:5, 6:5, 3:3, 2:1, 1:1}` |
+| domains keeping **≤3 rows** (n=5) | mean `\|delta\|` = **0.050383** |
+| domains keeping **≥8 rows** (n=8) | mean `\|delta\|` = **0.021680** — **2.3× smaller** |
+| corr(rows retained, `\|per-domain delta\|`) | **−0.406** |
+
+⇒ **It is not that the filter selects larger-effect ROWS. It is that `E` averages PER-DOMAIN means with every domain weighted equally, regardless of how many rows survived in it** — and the domains that lose the most rows are the ones with the **largest** deltas. A domain reduced to **one row** contributes a single-row "mean" **at full weight**.
+
+⇒ **Two facts compose to give the 35 %:** the reweighting perturbs `\|E\|` upward for this arm, **and** `HD_BOTK`'s `\|E\|` is small (6.4 % of `HD_TOPK`), so a given perturbation is a large relative one. ⚠ **Neither fact alone explains it**, which is why "it is small" was not an answer.
+
+⚠ **This is a property of the ESTIMATOR under row filtering, not of option mass.** Any filter that thins rows unevenly across domains does this to a domain-equal-weighted mean. **That makes it more general than the sensitivity that exposed it — and correspondingly more worth knowing.**
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **The correlation is ONE arm, ONE family, ONE floor.** `−0.406` is `HD_BOTK` on `csi5` at 0.05. I did **not** compute it for the invariant families, so *"unequal retention explains why csi7/csi8/csi9 did NOT move"* is **unsupported** — their bars being dispersion-built is the recorded reason, and this is a different mechanism that may or may not also apply.
+- ⛔ **The perturbation is NOT shown to be proportional or absolute.** `HD_BOTK` moved +35.1 % (Δ 0.0044) and `HD_TOPK` +21.7 % (Δ 0.0426) — **a 10× difference in absolute size**, so no single simple scaling describes both, and I am not proposing one.
+- ⛔ **Nothing here says the published readout is the RIGHT weighting.** Domain-equal weighting is the sprint's declared unit convention; this entry describes its behaviour under filtering, and takes **no** position on whether row-weighting would be better.
+- ⛔ **No claim moves because of this entry.** D34's relabel and S-552's narrowing stand exactly as written; this explains a mechanism they already reported.
+- ⛔ **`95d68961`'s message remains wrong about its own contents** — disclosed, not repaired.
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** whether the invariant families also show unequal retention — if they do, dispersion-built bars are robust *despite* the same estimator effect, which would be a stronger statement than S-552 made.
