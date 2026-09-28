@@ -45426,3 +45426,42 @@ D25 carried `p2 = **0.0014**` live and unstruck. The p these artefacts publish f
 - ⛔ **TEST untouched.** Push credential-blocked.
 
 **NEXT:** the 21 files quoting `0.0778` — counted but not inspected — are the one item here where a count was substituted for a check.
+
+## S-545 / the check I owed found that my own count was wrong — S-482's unbounded-match error, committed inside the entry that corrected an uncounted number (2026-09-28)
+
+S-544 landed as `27d4a1b6`, 527 passed. Queue **EMPTY**. S-544's NEXT was the one item where I had substituted a count for a check: *"the 21 files quoting `0.0778` were COUNTED, not INSPECTED."* Inspecting them showed the count itself was wrong.
+
+### 🔴 THE CORRECTION — to S-544, by S-545
+
+S-544 counted with a bare `grep -o '0\.0778'`. **That matches INSIDE longer numbers**, and these artefacts are full of per-domain floats like `0.07786075415465653`, `0.07783789078837139`, `0.07781340542790643`. ⚠ **This is the S-482 unbounded-match error — committed in the very entry whose point was that a number had been asserted without being counted.**
+
+| measurement | result |
+|---|---|
+| S-544, unbounded `grep -o` | "at least **24 files**" |
+| **S-545, digit-bounded** `(?<![\d.])0\.0778(?![\d])` | **51 occurrences across 7 files** |
+| files matching loosely but NOT bounded | **19 — all substring coincidences** |
+
+Per file: claim table **12**, results draft **5**, this log **28**, `DCS_CSI_SUBSPACE_NECESSITY_basket_train.json` **1**, and three other prose documents with **2 / 1 / 2**.
+
+### WHAT THE INSPECTION FOUND — and it is a clean negative
+
+Of the 7 files with a genuine standalone `0.0778`:
+
+- **3 are the primary documents** (claim table, results draft, this log) — the known population, already governed.
+- **1 is `DCS_CSI_SUBSPACE_NECESSITY_basket_train.json`**, the artefact whose read `0.0778` **is** — correct by construction, machine output, not a mandate.
+- **3 are other prose documents, and every occurrence in them is a DIFFERENT QUANTITY that merely shares digits:** a confidence-interval bound `[−0.0778, +0.1000]` on a raw-judge rate; a `query_prefill_only` conditioning effect `+0.0778`; and a **retracted** August control band `−0.0778 ± 0.0241` (already marked ⛔ at its site).
+
+⇒ ✅ **ZERO stale assertions of the removal fraction exist outside the three primary documents.** The retention reason in prohibition 28 is **narrower than either count implied** — but it still holds for the three documents that genuinely carry it.
+
+⚠ **The 20-of-21 "JSON artefacts" intuition was right but for a weaker reason than I gave.** I said machine output "cannot be a stale mandate by construction". True — but it turned out **19 of those 20 did not contain the figure at all**. *A correct conclusion resting on a wrong premise is still a thing to catch, because the premise was what I would have reused next time.*
+
+### WHAT WAS NOT ESTABLISHED
+
+- ⛔ **No GPU work, no new measurement of any endpoint.** This tick measured text.
+- ⛔ **The 28 occurrences in THIS LOG are still not individually audited.** An append-only log is history and most will be correct as history; **that is an argument, not a check**, and I am not making it a clearance.
+- ⛔ **The 12 in the claim table and 5 in the draft were not re-audited either** — they were swept at S-527 and S-544 for *mandate* status, not each re-read here.
+- ⛔ **`0.0778` is ONE figure.** Nothing here says the other superseded literals (`0.1111`, `1/31`, `0.0014`, `0.201`, `0.888`) have been counted with boundaries; **S-544-style unbounded counts may exist for them too and have not been checked.**
+- ⛔ **The amendments A30 points at remain unchecked** (carried from S-543).
+- ⛔ **TEST untouched.** Push credential-blocked.
+
+**NEXT:** the other superseded literals have never been counted with digit boundaries at all — `0.1111` especially, which S-528 measured at 34 occurrences using the same unbounded method.
