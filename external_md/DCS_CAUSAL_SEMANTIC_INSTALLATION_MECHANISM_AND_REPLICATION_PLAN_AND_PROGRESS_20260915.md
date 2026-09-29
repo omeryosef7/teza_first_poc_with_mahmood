@@ -47222,3 +47222,314 @@ proposed and not done unilaterally.
 in-process subset and the ~30 subprocess tests run out-of-band before any family reaches a GPU — and get a
 decision on it, because at 4 h per commit the gate now costs more than the work it guards. Then resume the
 audit at D26/D27/D28 with the per-case reading D23 got, not with greps.
+
+## S-569 / three more claims audited BY READING, and they are clean — which corrects S-567's "systemic citation gap" from a raw count into a real one (2026-09-29)
+
+S-568 is committing (2 files, 96 insertions); HEAD is `59a5fc02`. Queue **EMPTY**. Per S-568's NEXT the audit
+resumed at D26/D27/D28, and deliberately **by reading each row and the files it cites**, not by grepping —
+because S-568 exists to record that a grep produced a false breach against D23.
+
+### 1. D26, D27, D28 ARE NOT BREACHES, AND THEIR LACK OF A PREREG CITATION IS CORRECT
+
+All three are **adversarial-review findings about the sprint's own methods**, not results a preregistration
+licensed:
+
+| row | what it claims | cites |
+|---|---|---|
+| D26 | R10's factorial read establishes a PROBE main effect; the RECIPIENT main effect was **never tested**, so *"the STATE hypothesis is REFUTED"* is absence of evidence | REVIEW R10 MAJOR-1/-3, `reports/reviews/attack_the-swap-conclusion.md`, three `DCS_CSI_SWAP_*_n46.json` |
+| D27 | the swap arm is **not exchangeable** with the family it is ranked against, so its rank p is DESCRIPTIVE, not a valid permutation p | REVIEW R10 MAJOR-2, `DCS_CSI_EXCHANGEABILITY_basket_train_n46.json`, the `.pt` files |
+| D28 | the S-119 bf16 guard is **inert** on the producer path (230 rows bit-identical across the blob change) **and** that inertness is not verifiable after the fact | S-139 corrected by S-143, S-141, `RUNMETA.json`, `git hash-object`/`rev-parse` |
+
+⇒ **Verdict: NO CRITERION FROZEN, appropriately.** No prereg governs "this guard is inert" or "this rank p is
+descriptive"; these are corrections, and they cite the review, the artefacts and the S-entries that produced
+them. ⚠ **They are among the most disciplined rows in the table.** D26 volunteers that its own recipient
+contrast crosses button and basket, which §3.3 forbids pooling, *"and that cuts FOR this finding"*. D27
+records that the reviewer **tried to explain the result away and failed**, with the numbers —
+`r(|cos|, recovery) = −0.027`, a linear fit predicting `+0.000035` against an observed `+0.001499`, residual
+`+1.95 sd` — and states *"the failure is part of the record, not a footnote"*. D28 separates the two halves
+outright: *"THE MEASUREMENT STANDS; ITS PROVENANCE DOES NOT."*
+
+### 2. 🔴 WHICH CORRECTS S-567's CITATION-GAP FINDING
+
+S-567 published: *"9 of 11 rows cite NEITHER a `configs/` nor a `runargs/` path"* and called it systemic.
+**A row with no governing preregistration has nothing to cite**, so the raw count conflates two populations.
+Classified by reading:
+
+| class | rows | cite a prereg | cite a read recipe |
+|---|---|---|---|
+| methodology / cross-family / review — **no single prereg governs them** | D21, D26, D27, D28 | n/a | n/a |
+| family results — **a prereg governs the primary** | D18, D19, D20, D22, D23, D24, D25 | **2 of 7** (D23, D25 only) | **0 of 7** |
+
+⇒ **The defect is real but smaller and sharper than I stated: 5 of 7 family-result rows cite no prereg, and
+ZERO of all eleven cite a frozen READ RECIPE.** The second half needs no qualification and is the more
+damaging one, because the read recipe is where the mandated report orders live — including the
+`pr005_read.txt:275` order D23 violated and the arithmetic floor it omitted.
+
+⚠ **Eleventh instance this week of my own counting being looser than the claim it tests**, and the second in
+two entries. The previous ten were matching-rule errors; this one is a **population** error — I counted rows
+that could not have satisfied the test. That is the same class as the bold-ID enumerator (S-567 §1), and it
+is now frequent enough that the pattern, not any single instance, is the finding.
+
+### 3. D22 AND D24 READ TOO — CLEAN ON CONTENT, AND BOTH POLICE THEMSELVES
+
+**D22** (*"PR-CSI-005 gate 0d PASSES: the +474/−7 `score_behavior.py` change is INERT on the norm-matched
+sufficiency path — measured, not argued"*) scopes itself in its own status cell: *"This discharges **one**
+VOID condition for **PR-CSI-005's pooled family only** — it is **not** a general licence to edit
+`score_behavior.py` mid-run"*, records that the release point has not arrived, and flags that two results
+*"came free and neither was designed for"* (a cross-node comparison that re-confirms bit-determinism).
+
+**D24** (the codeword dissociation at matched power, basket rank 1 of 47 vs button 36 of 47) separates the
+matched comparison from the held-out cell in terms that forbid the misreading: *"The matched-power comparison
+proper is TRAIN vs TRAIN, at 67 domains in both cells … do not quote 'same 67 domains' while pointing at
+it"*, and carries its **S-524 scope narrowing** and the S-416/AM-18 supersession as struck spans.
+
+⇒ **Both AGREE.** Their only defect is the block's systemic one: neither cites a prereg or a read recipe.
+⚠ **This makes the block's content record better than its citation record** — of the eleven rows, the
+content defects are D23's mandated-companion omission and nothing else, while the citation gap touches
+almost all of them. Those are different failures and the audit should stop treating them as one.
+
+### 4. 🔴 D18 READ — AND IT DOES EXACTLY WHAT D23 FAILED TO DO, WHICH SETTLES THAT FINDING
+
+D18 was the last unread row of the block. It is a **model row**, and its status cell is the decisive
+comparison:
+
+> **"INCONCLUSIVE — FLOOR-LIMITED BY DESIGN, NOT A CERTIFIED RESULT.** With 8 controls the attainable rank-p
+> floor is **0.1111**, above α = 0.05, so the analyser's PASS branch was **unreachable before the first arm
+> ran**; its own verdict string says *"NOT a pass and NOT a failure"*."
+
+It also prints the **entire** control distribution candidate-first (−0.00852 ≫ SHUF3 −0.00478 … SHUF0
++0.00013), records that the comparison sizes were *"asserted non-empty before the rank was computed"*, states
+TRAIN-only and in-sample 67/67, and carries a self-correction (**S-528**, *"'EVERY' IS FALSE HERE TOO"*).
+
+⇒ **This is the same arithmetic D23 omitted, done right, in the same sprint.** D23's arithmetic floor of
+`8/47` = **0.170** likewise exceeded α, so its PASS branch was equally unreachable — and its row quotes only
+the `0.0213` attainable floor. ⚠ **So the standard is not ambiguous and was not unknown: D18 meets it and
+D23 misses it.** That removes the last charitable reading of S-568's D23 finding, and it is a stronger
+result than the finding itself, because it is internal evidence rather than my inference from a recipe.
+
+**Block complete: 11 of 11 read.** Content defects in the block: **D23 alone**. Citation defects: nearly all
+of it.
+
+### 5. D29, D30, D31 READ — ALL CLEAN, ALL CITING THEIR PREREGS, AND THE GAP NARROWS AGAIN
+
+| row | what makes it clean |
+|---|---|
+| **D29** | reports a NON-PASS and quotes the branch verbatim: *"3 ≤ R47 ≤ 12 → top quartile, does NOT certify. The train result does not replicate. NOT a pass, NOT 'nearly significant'."* Records the prespecified 95 % band **[24, 43]**, point prediction 32, the observation **18 ranks below** it, calls it a **SURPRISE "not absorbed"**, and applies its **pre-committed counterweight** (R47 = 6 ∈ [3, 15]) |
+| **D30** | *"THE RANK IS A PASS; THE DIRECTION IS NOT REPLICATED"* — quotes `decision_rule/step_6`, has TRAIN rank 4 and VALIDATION rank 1 on opposite sides of the bar ⇒ no cell claimed, and states the forbidden reading by name: *"may NOT be reported as 'basket's axis rescues button held-out'"* |
+| **D31** | closes REVIEW R11 MAJOR-1 by measurement, notes the threshold was committed **nine minutes before the job existed — "git history, not a sentence in a file"**, and limits itself: closes ONE explanation, says nothing about button, and *"a direction unchanged under a hardware swap is not thereby a right direction"*. Discloses that the committed nine-layer argmax was **not re-run** |
+
+⇒ **All three AGREE. And all three CITE their prereg configs** (`pr007_button_L18_validation.json`,
+`pr006_axis_swap.json`, `pr009_basket_reextract_3090.json`). ⚠ **So the citation gap is BLOCK-SPECIFIC to
+D18–D28, not a property of the table** — the third narrowing of one of my own generalisations in this entry,
+after the raw 9/11 and the bold-ID enumerator.
+
+### 6. THE PATTERN THAT ACTUALLY PREDICTS WHERE THE DEFECTS ARE
+
+Across the 29 claims audited, the split is not positive-vs-negative and it is not old-vs-new. It is:
+
+* **Rows that state what the design COULD NOT DO are reliable** — D18 (*"the PASS branch was unreachable
+  before the first arm ran"*), D29 (*"NOT 'nearly significant'"*), D30 (*"no cell is claimed"*), D26
+  (*"absence of evidence"*), D27 (*"DESCRIPTIVE rather than a valid permutation p"*), D28 (*"the measurement
+  stands; its provenance does not"*), D31 (*"closes ONE candidate explanation and nothing else"*).
+* **Every defect is a row asserting something BEYOND what its design could support** — D34 a count, D37 a
+  refutation with a p, D40-c a deleted secondary's rate, D38 an absence from a dropped arm, D44 one disjunct
+  of two, D23 a floor without the constraint that made α unreachable.
+
+⇒ **The table is trustworthy exactly where it reports limits and unreliable exactly where it reports
+conclusions.** That is a more useful predictor for the remaining 82 rows than anything structural I have
+measured, and it says where to look next: headline rows, not amendment rows.
+
+### NOT ESTABLISHED
+
+⚠ **Both items S-569 first flagged as unverified are now RESOLVED BY ME, and one went against my guess.**
+(a) D19's two `configs/` citations are **both `.pt` basis files** — `dcs_csi_axis_basket_behavioral.pt` and
+`…_shuf24.pt` — with PR-CSI-001/003 named in prose only and no recipe and no md5. It joins the rows citing
+no prereg, which is what moves the count to **5 of 7**. (b) **D20 was mine to get wrong**: I had placed it in
+the review class, but *"the positive control moves on every domain"* reports a **gate outcome from a
+preregistered family's own arms**, so it is a family result and belongs with the uncited five. D21 stays in
+the methodology class, now with a reason rather than a guess: it is a **matched comparison assembled across
+two families from six subspace cells**, and no single preregistration governs a cross-family construction.
+⛔ **D21's placement remains the one arguable call** in the classification; a reader who treats the matched
+comparison as PR-CSI-005's business would make it 6 of 8.
+⚠ **One corroboration found while verifying D19**: it handles the `0.0778` / `0.0803` pair **correctly** —
+both figures given, the governing one named, citing the S-523/S-527 amendment that replaced prohibition 28's
+pinned literal with *"the fraction of the read being quoted"*. **D42 omitted exactly that** (S-565), so the
+table contains a worked example of the right form two hundred rows from the row that lacks it.
+⛔ **D26/D27/D28's NUMBERS were not re-derived.** I verified what they claim, what they cite and that the
+citation is appropriate to the claim's kind — not the −0.027 correlation, the `+1.95 sd` residual, or the
+230-row bit-identity.
+⛔ **No arm ran.** The queue has been empty for many ticks; nothing is launchable without a new prereg.
+⛔ **D18's NUMBERS were not re-derived** — I read its claim, its floor logic and its caveats, not the
+−0.00852 or the eight control values.
+⛔ **D29/D30/D31's NUMBERS were not re-derived** — I read their claims, their quoted decision rules and
+their caveats, not the rank-6-of-47, the rank-1-of-47 or the hardware-swap agreement.
+⛔ **The §6 pattern is a DESCRIPTION of 29 rows, not a tested predictor.** It was formed after reading them,
+so it is the kind of after-the-fact regularity this sprint refuses elsewhere; it earns its keep only if it
+predicts defects in rows not yet read, which has not been tried.
+⛔ **32 of 111 claims audited; 79 remain.** The five clear breaches are unchanged: D34, D37, D40-c, D38, D44.
+⛔ **The commit-gate proposal is still unanswered** and I have not acted on it. At ~4 h per commit it now
+costs more than the work it guards, but changing the sprint's own protection is not mine to decide alone.
+
+**NEXT:** re-verify D19's citations myself (the one item above that would move the 4/7 to 5/7), then continue
+the audit at D20/D21/D22 — the three whose classification I flagged as arguable — since a finding that
+depends on my own classification is exactly the kind this week keeps proving wrong.
+
+## S-570 / I froze a prediction and it came back UNINFORMATIVE — but the 17 oldest claims are all clean, which localises every defect to the recent half (2026-09-29)
+
+S-569 §6 proposed a regularity: *"the table is trustworthy exactly where it reports LIMITS and unreliable
+exactly where it reports CONCLUSIONS."* It was formed **after** reading 32 rows, so it is the kind of
+after-the-fact pattern this sprint refuses elsewhere. I tested it the only way that counts.
+
+### 1. THE PREDICTION, FROZEN BEFORE ANY STATUS CELL WAS OPENED
+
+From the **claim-cell opening alone** (≤118 chars — what a reader sees first) I classified all 17 unread
+rows of D1–D17, ranked the five highest-risk, and wrote the falsification conditions down first
+(`scratchpad/S570_prediction_FROZEN.md`, frozen 10:34:08):
+
+* **CLASS A, conclusion-asserting, predicted defect-prone (12):** D3, D4, D7, D9, D10, D11, D12, D13, D14,
+  D15, D16, D17.
+* **CLASS B, limit-stating or plain, predicted clean (5):** D1, D2, D5, D6, D8.
+* **Ranked highest-risk:** 1. **D15** (completeness + exoneration), 2. **D12** (superlative on BOTH splits),
+  3. **D16** (a universal, "on every"), 4. **D17** (retiring a guard), 5. **D9** ("predominantly").
+* **Falsifiers written in advance:** defects concentrated in CLASS B; or CLASS A no more defective than
+  CLASS B; or **zero defects anywhere, in which case the test is UNINFORMATIVE, NOT a confirmation**.
+* **Prior, stated so it could not be softened:** *"at most 2–3 genuine defects… these are the sprint's
+  OLDEST claims and have had the most amendment passes, so the prior is that they are CLEANER."*
+
+### 2. THE RESULT: ZERO DEFECTS IN ALL 17 — SO THE TEST IS UNINFORMATIVE BY MY OWN CRITERION
+
+⛔ **The hypothesis is neither supported nor refuted.** There were no defects to distribute between the
+classes. Recorded as **uninformative**, which is what I pre-committed to calling it.
+
+And the rows I ranked most dangerous are the ones that guard themselves hardest:
+
+| row | my rank | what it actually says |
+|---|---|---|
+| **D15** | 1 | *"The cells are **NOT matched** on control-family size … 'rank 1 of 47' and 'rank 1 of 11' are therefore **not comparable as p-values**"* — plus an AM-50 correction and *"this does not de-confound the dissociation"* |
+| **D12** | 2 | *"**CORRECTED S-412 (AM-4) — two denominators are conflated in this very sentence**"*, and both p's stated as **AT their attainable floors** (1/47) |
+| **D16** | 3 | *"**THIS IS THE WHOLE-STATE CONTROL, NOT THE AXIS** … it says **nothing** about whether the rank-1 axis carries that effect — Gate 3 deliberately not evaluated, `ranks` is `{}`"* |
+| **D17** | 4 | retires the VOID condition *"for PR-CSI-002's arms **only** — it is **not** a general licence"*, and distinguishes same-node from cross-node determinism |
+| **D9** | 5 | *"**12 positions unmeasured — the remainder is NOT inferred by subtraction**"* |
+| **D10** | — | *"linearity under **random** subsets does **not** imply uniformity — a concentrated effect gives the same curve"* — the exact over-reading I predicted, refused in the row |
+| **D14** | — | *"**INCONCLUSIVE — NOT a pass and NOT a failure.** Ten controls cannot reach α = 0.05; certifying needs **≥ 19**"* |
+| **D4** | — | *"**not** template generalisation, **not** domain generalisation, **not** causal"* |
+| **D8** | — | an anomalous earlier build is *"**unexplained**, not attributed"* |
+
+### 3. 🔴 WHAT THE BLOCK DOES ESTABLISH, AND IT IS WORTH MORE THAN THE TEST
+
+**All 17 of the sprint's oldest claims are clean.** Combined with the D18–D31 reading, the audit now covers
+**49 of 111 distinct claims**, and **every defect found sits in the D23-and-later range**:
+
+| range | rows audited | defects |
+|---|---|---|
+| D1–D17 (oldest) | 17 | **0** |
+| D18–D31 | 14 | **1** (D23, an omitted mandated companion) |
+| D32–D45 + AM-36 (newest) | 18 | **5 clear** (D34, D37, D38, D40-c, D44) **+ 2 omission-class** (AM-36, D41) |
+
+⇒ **The defects are not spread through the record; they cluster in the newest work.** ⚠ The charitable
+reading is that the old rows have had more amendment passes over them. ⚠ **The uncharitable reading, which I
+cannot rule out, is that the recent rows were written by me at a higher rate under a cron loop, with less
+re-reading per claim** — and the ten detector errors this week are consistent with that. Either way the
+actionable form is the same: **the remaining 62 unaudited rows should be read newest-first.**
+
+### NOT ESTABLISHED
+
+⛔ **The §6 pattern remains untested**, not validated. A block with zero defects cannot distinguish it, and
+I will not quote it as support.
+⛔ **"Clean" here means the claim is bounded by its own caveats** — I read claim and caveat cells, and did
+**not** re-derive any of the 17 rows' numbers.
+⛔ **The clustering is a COUNT over what I chose to read**, and I chose the newest rows first in earlier
+ticks precisely because they looked risky. That is a selection effect on the denominator and it inflates the
+contrast; the 62 unread rows could change it.
+⛔ **D13's caveat carries a WITHDRAWN span** (AM-19/AM-22 superseding a "TRAIN only" claim) that I did not
+trace to its amendments.
+⛔ **49 of 111 audited; 62 remain.** Five clear breaches unchanged: D34, D37, D40-c, D38, D44.
+⛔ **No arm ran.** Queue empty for many ticks; nothing launchable without a new prereg.
+
+**NEXT:** read the remaining rows **newest-first**, which is where §3 says the defects are, starting with the
+AM-40s and AM-50s that amend the five breached claims — because an amendment to a defective row is where a
+correction should already exist, and its absence would be the more serious finding.
+
+## S-571 / the amendments already carried three of the four items I "supplied" — D23's real defect is ONE, and it is the one that matters (2026-09-29)
+
+S-570's NEXT said to read newest-first and start with the amendments to the breached claims, *"because an
+amendment to a defective row is where a correction should already exist, and its absence would be the more
+serious finding."* The opposite happened: **the corrections were there, and my finding was too wide.**
+
+### 1. 🔴 THIRD CONSECUTIVE NARROWING OF MY OWN D23 FINDING
+
+`AM-17` (*"D23 caveat"*, superseded by D29) carries, in the record before I touched anything:
+
+> *"The held-out cell does **NOT** replicate the TRAIN failure: rank 36 → 6, **z −0.5702 → +1.3999**,
+> exceedance **35/46 → 5/46** with **non-overlapping** Clopper-Pearson intervals"*
+
+Measured across the whole table, excluding my own S-568 edit at D23's line:
+
+| mandated item | already in the record? | where |
+|---|---|---|
+| `z = −0.5702` | **YES** | D29, **AM-17**, AM-21 |
+| exceedance `35/46` | **YES** | D29, **AM-17**, AM-21, AM-52 |
+| Clopper-Pearson `[0.6123, 0.8741]` | **YES** | D29, AM-52 |
+| basket's `+2.561` | **YES** | AM-52 |
+| **arithmetic floor of 8 / `8/47` / `0.1702`** | **NO — my edit is its only occurrence** | — |
+
+⛔ **So S-568's sentence *"computed by me because the row carried neither"* is wrong about the record.** The
+row carried neither; the **table** carried three of four, in the amendment that supersedes D23's caveat and
+in the held-out row that answers it. I searched D23's row and concluded the record lacked them — **the same
+population error as the bold-ID enumerator and the `0.02128` grep, now for the third time on this one
+claim.**
+
+⚠ **What survives is the item I called the important one.** The **arithmetic floor of 8** appears nowhere in
+the claim table except the line I added. It is what makes `rank_p ≥ 8/47 = 0.170` and therefore α = 0.05
+**unreachable by construction** — the point D18 states explicitly for its own family and D23 never states
+for its. That finding is unchanged and is now the whole of it.
+
+⚠ **And my independent computations were right**: `−0.5702` and `35/46` reproduce AM-17's values exactly,
+from the artefacts, without having seen them. That is corroboration of the arithmetic and an indictment of
+the search, in the same measurement.
+
+### 2. THE SPRINT HAD ALREADY RUN MY AUDIT ON THIS ROW, AND BETTER
+
+`AM-20` (*"D23 headline wording"*) records the amendment *"button at L18 with 46 controls DOES NOT PASS"* →
+*"DOES NOT PASS **ON TRAIN**"*, driven by PR-CSI-007's decision branch: *"Every sentence in the sprint that
+states button's L18 failure without naming the split is amended to name it."* And it records the method:
+**"A measured sweep found exactly one unqualified headline in this file (D23) and three sentences in the
+append-only log, which cannot be edited and are amended by restatement in S-165."**
+
+⇒ **That is this audit, run earlier, with a tighter scope and a stated sweep.** ⚠ It also shows the record
+already distinguishes *"the row's own cell"* from *"the record as a whole"* — the distinction I failed to
+make three times.
+
+### 3. AN UNRELATED FINDING WORTH RECORDING: AM-53-a
+
+While reading the amendments I hit `AM-53-a`, which is a serious defect **already caught and correctly
+handled**: `DCS_CSI_SUBSPACE_basket_train_n46.json` — **D12's TRAIN half, a published PASS** — *"is NO
+LONGER REPRODUCIBLE AS WRITTEN"*, because its read pinned neither `--require-slurm-job` nor
+`--require-rescue-layer` and the L20 arms later reused the tag prefix, so **18 of its arms now match two
+complete run dirs each**. A scan of all 379 `csi1_*` run dirs found **57 ambiguous combinations across three
+families**. ✅ *"NOTHING IS WRONG WITH THE RESULT"* — reconstructing the pin from the job ids in the
+artefact's own run dirs reproduces the read exactly; the defect is in the recipe's durability. ✅ Scoped:
+of currently-governing artefacts it is the only one at risk.
+
+⚠ **This is the tag-twin hazard that bit my own paired reader at S-564**, and the record had it first, with
+a wider scan than mine.
+
+### NOT ESTABLISHED
+
+⛔ **I have not re-derived AM-17's `+1.3999` or `5/46`**, nor AM-52's or AM-21's figures; I verified that the
+values exist and that two of them match what I computed.
+⛔ **Whether the mandate is satisfied by the TABLE rather than by D23's ROW is a judgement I am not
+certain of.** The frozen recipe says *"Report, in this order and none omitted"*; if the report is the claim
+table, three items were always present and only the arithmetic floor was missing. If it is the row, all four
+were. I have recorded the stricter reading as unproven rather than asserting either.
+⛔ **The order violation is unchanged and unfixed** — D23 still reports rank/`rank_p`/floor before `X` and
+the predictive.
+⛔ **AM-53-a's numbers are carried, not re-derived** — the 57 ambiguous combinations, the 379 run dirs and
+the five job ids are its own.
+⛔ **52 of 111 claims audited; 59 remain.** The five clear breaches are unchanged; **D23's omission-class
+entry now rests on one item, not four.**
+⛔ **No arm ran.** Queue empty; nothing launchable without a new prereg.
+
+**NEXT:** stop widening and go and check the four amendments that touch the FIVE clear breaches — AM-32,
+AM-34, AM-36, AM-41, AM-45 — with the row/record distinction made explicit up front, because on this
+evidence the correction I am about to claim is missing may already be written somewhere I did not look.
