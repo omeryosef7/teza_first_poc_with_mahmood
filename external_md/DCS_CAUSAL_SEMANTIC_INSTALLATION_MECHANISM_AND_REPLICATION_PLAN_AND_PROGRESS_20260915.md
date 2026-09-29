@@ -47953,3 +47953,55 @@ preregistered family**, and every code item that was blocking nothing is now don
 **NEXT:** there is no code or audit work left that is worth doing ahead of science. The bounded remainder is
 re-reading D37, D38 and D40-c once to confirm their applied wording holds; beyond that the sprint needs a
 preregistered family to run, which is a decision rather than a task.
+
+## S-578 / the three applied corrections verified and holding — the bounded remainder is discharged, and two of my own verification checks were wrong (2026-09-29)
+
+S-577 landed as `2a4c5e96`, **580 passed** (573 + the seven census tests) in **9 m 04 s**. Queue **EMPTY**.
+This was the last item I had named as worth doing ahead of science: re-read D37, D38 and D40-c and confirm
+the wording applied at S-562/S-566 still says what it should.
+
+### 1. ALL THREE HOLD
+
+| row | strike markers | withdrawn text live? | substance |
+|---|---|---|---|
+| **D37** | 2, balanced | 0 (see below) | replacement wording, the artefact now cited, `"verdict_is_preregistered": false` quoted, the post-hoc **7.11** threshold exposed, and the **L11** counterexample — all present |
+| **D38** | 2, balanced | **0** | `power_ratio` **0.6235** against the **1.5** gate, `NOT_A_MISS` quoted, its own status cell's *"CANNOT ANSWER"* cited, and the **18.4 %** measurement retained |
+| **D40-c** | 2, balanced | **0** | the prohibition quoted verbatim, `runargs/dcs_csi_pr020_read.txt:189-190` **and** `:44-45` cited, the prereg's *"separate preregistration"* consequence quoted, and the row's own self-contradiction named |
+
+⇒ **The bounded remainder is discharged.** Every claim-table correction this audit produced is in place and
+says what it was meant to.
+
+### 2. AND TWO OF THE CHECKS I USED TO VERIFY THEM WERE WRONG
+
+⚠ **(a)** My struck-span test reported **1 LIVE "REFUTED"** in D37. It is inside my own withdrawal notice —
+*"THE WORD **"REFUTED"** IS WITHDRAWN"* — which is exactly where the word belongs. A test that flags the
+announcement of a withdrawal as an unstruck claim is matching the token, not the assertion.
+
+⚠ **(b)** My substance check reported D40-c's recipe citation **MISSING**, because I tested for
+`dcs_csi_pr005_read.txt` against a claim governed by **PR-CSI-020**. The row cites
+`runargs/dcs_csi_pr020_read.txt:189-190` and `:44-45`, correctly. **Had I not printed the context and chased
+it, I would have "found" a defect that does not exist** — which is precisely what happened for real at S-568,
+where a grep for `0.02128` put a false breach into a committed entry.
+
+⇒ **Twelfth and thirteenth instances this week of a matching rule looser or narrower than the property it
+tests**, both caught only because I read the output rather than the verdict. ⚠ **The rate has not fallen
+across the sprint**, and it is the single most reliable finding about my own work here: **I should treat any
+check I write as suspect until its output has been read in context, and never report a verdict from a
+count alone.**
+
+### NOT ESTABLISHED
+
+⛔ **This verified WORDING, not arithmetic.** I confirmed that each row says what the correction intended and
+that the withdrawn text is struck; I did not re-derive 0.6235, 18.4 %, 7.11 or the PR-020 prohibition's
+scope — those were measured at S-562/S-566 and are unchanged here.
+⛔ **No third-party check.** The same person who wrote the corrections verified them, one tick apart, which is
+the weakest form of review available and is worth naming as such.
+⛔ **Nothing was measured, and no arm ran.** The queue has been empty for many ticks.
+⛔ **The five clear breaches are corrected in the claim table only.** `reports/DCS_CSI_RESULTS_DRAFT.md`
+carries §H.2 and the editor's checklist updates for D34, but I have **not** swept the draft for D37, D38,
+D40-c or D44 wording, and a defect fixed in one document and not the other is the D42-vs-D19 inconsistency
+this audit itself found.
+
+**NEXT:** sweep `reports/DCS_CSI_RESULTS_DRAFT.md` for the four corrected claims whose fixes exist only in the
+claim table — that is a real, bounded gap this entry just surfaced, and it is the last thing I can see that
+does not require a preregistration decision.
