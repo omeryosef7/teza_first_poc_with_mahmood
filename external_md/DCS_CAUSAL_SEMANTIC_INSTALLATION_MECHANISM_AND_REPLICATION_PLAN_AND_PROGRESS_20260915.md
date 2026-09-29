@@ -47605,3 +47605,133 @@ that remains the real cost of this stretch — the audit is cheap and the scienc
 **NEXT:** read the remaining **headline** rows newest-first — the D32/D33 pair and the AM-46…AM-57 block that
 covers the most recent work — and stop reading amendments, since 6 of 6 came back clean while 5 of 5 breaches
 were headlines.
+
+## S-573 / the D-series is complete at 49 of 49 — and S-572's "amendments are cleaner" is VOID, refuted by a counterexample I had found myself and left off my own list (2026-09-29)
+
+S-572 landed as `0b17c414`, **573 passed in 10 m 50 s** — back to the healthy-mount baseline after 4 h 07 m
+and 1 h 34 m. **The commit-gate problem has resolved itself**, so the proposal to split the suite is no
+longer urgent and I am withdrawing it as a request rather than leaving it hanging.
+
+### 1. D32 AND D33 READ BY ME — THE D-SERIES IS NOW COMPLETE
+
+Both were previously **agent-reported** clean and never verified by me. Both are clean, and **D32 is one of
+the few rows in the table that cites BOTH its prereg config and its read recipe**.
+
+* **D32** carries a strong headline — *"the verdict is **WE FOUND (part of) THE WRITER**, which the design
+  predicted in advance it would not see"* — and bounds it immediately: *"It is 8 head **INDICES**, not 8
+  (layer, head) **CELLS** … nothing here resolves which layer a head acts at"*, *"Leg (i) only"*, *"Blocks
+  0–5 and 15–18 are untouched"*, *"No cross-codeword transfer … pooling is forbidden (§3.3)"*, and **"the
+  TRAIN rank is selection-contaminated by construction and adjudicates nothing"**.
+* **D33** states its floor inline — `rank 1 of 21, p = 0.047619 = the attainable floor` — carries an
+  independent re-derivation with no shared code, and records that the frozen read was *"executed in order …
+  **never amended after numbers were seen**"*.
+
+⇒ **All 49 distinct D-series rows have now been read by me.**
+
+### 2. 🔴 AND S-572's PATTERN IS VOID — I OMITTED MY OWN COUNTEREXAMPLE
+
+S-572, committed one entry ago, said: *"Every amendment read so far — AM-17, AM-20, AM-32, AM-41, AM-45,
+AM-53-a — is clean"* and *"all five clear breaches are HEADLINE claim rows; **not one is an amendment**"*.
+
+⛔ **AM-36 is an amendment, I read it at S-563, and I classified it DEFECTIVE myself** (omission class: it
+converts PR-013's undifferentiated control family into per-head findings without quoting the prohibition
+that names them). **I left it off my own list.** With it restored:
+
+| class | audited | defective | rate |
+|---|---|---|---|
+| D rows | 49 | 7 — D23, D34, D37, D38, D40-c, D41, D44 | **14.3 %** |
+| AM rows | 7 | 1 — AM-36 | **14.3 %** |
+
+⇒ **The rates are indistinguishable. "Amendments are cleaner than the claims they amend" is not weakened; it
+is VOID**, and the guidance I derived from it — *"read headline-first, treat amendments as low-yield"* — is
+withdrawn. ⚠ **The 55 unread AM rows are as likely to carry defects as the D rows were, so the audit must
+continue through them rather than stop at the D-series.**
+
+⚠ **This is the same failure as the bold-ID enumerator, the `0.02128` grep and the three D23 row-vs-record
+errors, in its purest form: a population that excluded the case that would have falsified the claim** — and
+this time the excluded case was one I had found, written up and committed myself, eight entries earlier.
+S-570 tested a pattern honestly by freezing a prediction; S-572 asserted one from a list I had curated
+without noticing. **The difference between those two entries is the whole lesson.**
+
+### NOT ESTABLISHED
+
+⛔ **14.3 % vs 14.3 % is a coincidence of small numbers, not a measured equality.** 1 of 7 has a 95 %
+interval running from roughly 0.4 % to 58 %; it is consistent with amendments being much cleaner OR much
+dirtier. **The correct statement is that 7 amendments cannot distinguish the hypothesis at all** — which is
+precisely what S-570 concluded about a 17-row block and what I failed to apply here.
+⛔ **D32's and D33's numbers are NOT re-derived** — not the `−0.195984`, the `F = 0.8635109`, or the rank 1
+of 21. I read the claims, the bars and the caveats.
+⛔ **The defect COUNT per class is not a defect RATE per opportunity.** D rows and AM rows are not
+comparable units: an AM row is usually a single correction, a D row a full result with a statistic,
+population and caveat cell. A per-row rate flatters whichever class has shorter rows, and I have not
+controlled for that.
+⛔ **56 of 111 audited; 55 remain, all AM rows.**
+⛔ **No arm ran.** Queue empty for many ticks; nothing launchable without a new prereg. The commit gate is no
+longer the constraint — **the absence of a preregistered family is.**
+
+**NEXT:** work the 55 remaining AM rows in ID order rather than by any cleverness about which are risky,
+since every heuristic I have formed about where defects live has now been either uninformative (S-570) or
+void (S-572). Order is at least unbiased.
+
+## S-574 / 20 more amendments read in ID order, all clean — and the D-vs-AM comparison is still undetermined at Fisher p = 0.42, so I am not re-asserting the pattern I voided (2026-09-29)
+
+S-573 is committing. Queue **EMPTY**. Per its NEXT the remaining rows are being worked **in ID order**, with
+no heuristic about which look risky, because every such heuristic I have formed was either uninformative
+(S-570) or void (S-572/S-573).
+
+### 1. AM-1 … AM-22 READ (20 distinct rows new this tick). ZERO DEFECTS
+
+They are substantive corrections, and several catch exactly the class of error I keep making:
+
+| row | what it catches |
+|---|---|
+| **AM-1** | a **frozen read file** and S-109 both record *"captured fraction 0.03001 / delta_norm 1.4012"*, which are a **prefix mean over the first 213 of 670 rows of a job still running**. Full-population: **0.02820 / 1.36796** |
+| **AM-2** | `captured_energy_frac_mean = mean(proj_norm / delta_norm)` is a ratio of **NORMS — amplitude — despite the key name**. The energy fraction is the square, **≈0.1 %, not 3 %** |
+| **AM-6** | `json.dump(out, open(p,"w"))` with no close: on a full quota `EDQUOT` raises at GC, is printed to stderr and **swallowed**, so the script prints `wrote …` and **exits 0 having written a 0-byte file at a preregistered artefact name**. Two such files existed |
+| **AM-12** | *"**Cosine is symmetric.** `cos(a,b) ≡ cos(b,a)`, so '0.5569 in both directions' is **ONE measurement printed twice**, not two independent confirmations"* |
+| **AM-8** | the necessity floor is **0.1111, not 0.10**, and the control count **8, not 9** — correcting a **frozen read file's** lines 59–61; and AM-8b, that the analyser's `min_controls=19` is off by one because `round(1/20, 4) = 0.05` is not `< 0.05` |
+| **AM-10** | withdraws a headline *"as it stands in the sprint log title and in `git log` at commit `d515cc76`"* |
+| **AM-7** | corrects **AM-5** — an amendment correcting an amendment, closing the half AM-5 left standing |
+
+⚠ **AM-12 and AM-2 are the same failure I have made repeatedly** — one quantity mistaken for two, and a name
+trusted over the computation. The record caught both in itself.
+
+### 2. 🔴 AND THE COMPARISON IS STILL UNDETERMINED — I COMPUTED IT RATHER THAN EYEBALLING IT
+
+With AM-36 included, the counts are now:
+
+| class | audited | defective | rate |
+|---|---|---|---|
+| D rows | 49 | 7 | 14.3 % |
+| AM rows | **21** | 1 | **4.8 %** |
+
+**Fisher exact, two-sided: p = 0.4203.** ⇒ **NOT significant.** ⛔ **So I am not re-asserting "amendments are
+cleaner" now that the numbers look favourable to it.** At 21 rows the data cannot distinguish the
+hypothesis, exactly as it could not at 7.
+
+⚠ **And this corrects S-573's REASON.** S-573 voided the pattern because *"the rates are indistinguishable —
+14.3 % vs 14.3 %"*. That equality was a **coincidence of small numbers**, not a measurement: voiding the
+pattern was right, but the stated ground for it was as unfounded as the assertion it replaced. ⇒ The durable
+rule is the one S-570 arrived at honestly: **a comparison this small cannot decide anything, and the only
+legitimate move is to keep reading and not to narrate the running score.**
+
+### NOT ESTABLISHED
+
+⛔ **"Zero defects in 20" is a reading result, not a re-derivation.** I did not recompute AM-1's 0.02820,
+AM-2's 0.1 %, AM-8's 0.1111, or AM-12's 0.5569; I verified what each row claims, what it corrects and that
+its correction is internally coherent.
+⛔ **A per-row defect rate is still not a per-opportunity rate** (S-573): AM rows are usually one correction,
+D rows a full result with statistic, population and caveat cells. The Fisher test inherits that flaw — it
+compares rows, not claims-at-risk, and I have not controlled for it.
+⛔ **The 20 rows include several that are RE-STATEMENTS of the same amendment in a later block** (AM-3…AM-8
+appear twice, AM-6 three times). I read each occurrence but counted **distinct IDs**, so the "20" is
+optimistic as a measure of independent content.
+⛔ **76 of 111 audited; 35 remain**, all AM rows: AM-23…AM-35, AM-37…AM-40, AM-42…AM-44, AM-46…AM-57.
+⛔ **Five clear breaches unchanged** (D34, D37, D40-c, D38, D44) plus three omission-class (D23, D41, AM-36).
+⛔ **No arm ran.** The queue has been empty for many ticks. The commit gate is no longer the constraint
+(S-572 landed in 10 m 50 s); **the absence of a launchable preregistered family is**, and the audit does not
+substitute for it.
+
+**NEXT:** finish the remaining 35 AM rows in ID order — AM-23 onward — and then stop auditing, because at
+that point every row in the claim table will have been read once and further passes have diminishing value
+against the unstarted science.
