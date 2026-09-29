@@ -304,6 +304,15 @@ def main():
     keep_keys = None
     om_meta = {"option_mass_floor": a.option_mass_floor,
                "option_mass_reference": a.option_mass_reference}
+    # R42-F11 (S-576). The gate was `> 0.0`, so a NEGATIVE floor skipped the whole block, required
+    # no reference arm, ran no filter -- and still wrote {"option_mass_floor": -1.0,
+    # "option_mass_reference": null} into the artefact, i.e. a floor RECORDED AS APPLIED that never
+    # was. The numbers would have been right (every mass exceeds a negative floor) and the
+    # provenance block false, which is the S-332 "actively conceals" shape.
+    if a.option_mass_floor < 0.0:
+        sys.exit("REFUSING: --option-mass-floor %g is negative. A negative floor filters nothing "
+                 "but is recorded in the artefact as though it had been applied. (R42-F11/S-576)"
+                 % a.option_mass_floor)
     if a.option_mass_floor > 0.0:
         if not a.option_mass_reference:
             sys.exit("REFUSING: --option-mass-floor %g needs --option-mass-reference. The floor "
@@ -339,9 +348,46 @@ def main():
         om_meta.update(reference_run_dir=os.path.basename(ref_dir), n_rows_in_reference=n_ref,
                        n_keys_retained=n_kept,
                        frac_retained=round(float(n_kept) / n_ref, 6) if n_ref else None)
-        print("[option-mass] floor %.3f on %s: %d of %d rows retained (%.1f%%)"
+
+        # ---- R42-F1 / S-561, PORTED FROM THE PAIRED READER (S-576) ----------------------------
+        # WHY THIS IS DISCLOSURE AND NOT A GUARD. S-561 measured that at floor 0.05 this family's
+        # retained rows per domain run 1..10 against a UNIFORM 10 in the control, and that
+        # `freight_yard` -- which keeps ONE row -- carried 37.8% of the anchor's floor effect,
+        # because E weights every domain equally regardless of rows retained. The paired reader got
+        # a refusing `--min-rows` at S-564. THE CENSUS DELIBERATELY DOES NOT: it produced the four
+        # published sensitivity artefacts, and a default that refused would change a shipped
+        # instrument's behaviour on re-run, which is exactly what VOID 7 forbids. Recording the
+        # distribution changes NO computed number and is what a reader needs to detect the case;
+        # the guard belongs in the tool that was built after the fact, not in the one that shipped.
+        # ⚠ The census already refuses on CROSS-ARM slot-set mismatch (below), which is what would
+        # corrupt E BETWEEN arms. This closes the WITHIN-arm blind spot, which is a different thing.
+        _inst, _, _ = w4.lpm.load_installation(ref_dir, keep_keys=keep_keys)
+        _rpd = {}
+        for (_d, _s) in _inst:
+            _rpd[_d] = _rpd.get(_d, 0) + 1
+        _hist = {}
+        for _v in _rpd.values():
+            _hist[_v] = _hist.get(_v, 0) + 1
+        om_meta.update(rows_per_domain={k: _rpd[k] for k in sorted(_rpd)},
+                       rows_per_domain_histogram={str(k): _hist[k] for k in sorted(_hist)},
+                       min_rows_per_domain=min(_rpd.values()),
+                       max_rows_per_domain=max(_rpd.values()),
+                       WHY_ROWS_PER_DOMAIN_IS_RECORDED=(
+                           "the domain SET is unchanged while the domains are THINNED; E weights "
+                           "every domain equally regardless of rows retained, so a 1-row domain "
+                           "carries the same 1/n as a 10-row one (S-561). Recorded, NOT guarded: a "
+                           "refusing default would change this shipped instrument's behaviour on "
+                           "re-run (VOID 7). The paired reader carries the guard."))
+
+        # R42-F9 (S-576): this printed a KEY count as "%d of %d rows retained". The two coincide on
+        # every family read so far (230 rows -> 230 distinct (domain, slot) keys), so the published
+        # 146/230 is right -- but the label was not, and `frac_retained` mixes keys over rows.
+        print("[option-mass] floor %.3f on %s: %d of %d KEYS retained (%.1f%% of %d rows)"
               % (a.option_mass_floor, a.option_mass_reference, n_kept, n_ref,
-                 100.0 * n_kept / n_ref if n_ref else 0.0))
+                 100.0 * n_kept / n_ref if n_ref else 0.0, n_ref))
+        print("[retention]   rows per domain on %s: min %d, max %d, histogram %s"
+              % (a.option_mass_reference, min(_rpd.values()), max(_rpd.values()),
+                 {k: _hist[k] for k in sorted(_hist)}))
 
     for arm in arms:
         per[arm], slots[arm], _, _ = w4.by_domain(dirs[arm], keep_keys=keep_keys)

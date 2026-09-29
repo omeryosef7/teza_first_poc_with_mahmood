@@ -47816,3 +47816,80 @@ audit does not address and was never going to.
 clear breaches**: D34 and D44 carry their corrections already, D37, D38 and D40-c have edits applied, and
 what is left is to re-read those three rows once against their frozen files to confirm the applied wording
 holds — a bounded task, not a new sweep.
+
+## S-576 / the census now DISCLOSES the thinning it produced but deliberately does NOT guard it — and the review's supporting claim was wrong (2026-09-29)
+
+S-575 landed as `dc6aa218`, closing the claim-table audit at 111 of 111. R42's stream 2 then sent a second
+correction of its own report — most of its findings had been closed by S-561…S-564 while it was reviewing —
+and named one remaining gap. **I verified it myself rather than relaying it, and it is right on the substance
+and wrong on its supporting claim.**
+
+| review's claim | verdict |
+|---|---|
+| the census has no `min_rows` / `rows_per_domain` machinery | ✅ **true** — 0 occurrences, against 5 in the paired reader |
+| *"it still **discards the slot sets** at `:347`"* | ❌ **FALSE** — `per[arm], slots[arm], _, _ = w4.by_domain(...)` **captures** them, and the census already REFUSES on cross-arm slot-set mismatch |
+| F9: a KEY count printed as *"%d of %d rows retained"* | ✅ true, `:342` |
+| F11: a negative floor accepted and recorded as applied | ✅ true, `:307` gated on `> 0.0` |
+
+⚠ **The distinction the review missed is the one that matters.** The census already guards **cross-arm**
+comparability — the thing that would corrupt `E` *between* arms. What it lacked is **within-arm** disclosure
+of thinning: the `freight_yard` case (S-561), where one domain kept **1 of 10** rows and carried **37.8 %**
+of the anchor's floor effect because `E` weights domains equally regardless of rows retained.
+
+### 1. DISCLOSURE PORTED. THE GUARD DELIBERATELY NOT
+
+`om_meta` now carries `rows_per_domain`, `rows_per_domain_histogram`, `min_rows_per_domain`,
+`max_rows_per_domain` and a `WHY_ROWS_PER_DOMAIN_IS_RECORDED` note, and the reader prints a `[retention]`
+line. On csi5 at floor 0.05 that reads **min 1, max 10, histogram {1:1, 2:1, 3:3, 6:5, 7:5, 8:4, 9:3, 10:1}**.
+
+⛔ **The census does NOT get `--min-rows`, and that asymmetry with the paired reader is intentional.** The
+census produced the four **published** sensitivity artefacts; a refusing default would change a shipped
+instrument's behaviour on re-run, which is precisely what **VOID 7** forbids. Recording the distribution
+changes no computed number. The guard belongs in the tool built after the fact, not in the one that shipped —
+and a test now **pins that decision**, so a later reader "fixing" the asymmetry cannot silently invalidate
+the published reads.
+
+### 2. VOID 7 VERIFIED END-TO-END, NOT ARGUED
+
+Re-ran the full csi5 census at floor 0.05 against the published artefact:
+
+* **0 mismatches** across **43 arms** on `E`, `ci95` and `loo_marginal`
+* keys **added** only; every pre-existing `option_mass` value identical
+* `146 of 230` keys retained, unchanged
+
+### 3. F9 AND F11
+
+**F9:** the banner said *"%d of %d **rows** retained"* while counting **keys**. They coincide on every family
+read so far (230 rows → 230 distinct `(domain, slot)` keys), so the published **146/230 is right and the
+label was not**; it now says KEYS. **F11:** a negative floor skipped the filter entirely, required no
+reference arm, and still wrote `{"option_mass_floor": -1.0, "option_mass_reference": null}` — a floor
+**recorded as applied that never was**, the S-332 "actively conceals" shape. Now refused.
+
+### 4. AND MY OWN TEST OVER-MATCHED, ON MY OWN COMMENT
+
+`test_the_census_does_NOT_refuse_a_thin_domain_and_says_why` asserted the string `--min-rows` was absent —
+and the census's own explanatory comment *mentions* the paired reader's flag. **Eleventh instance this week
+of a matching rule looser than the property it tests**, this time caught by the suite within a minute.
+Corrected to test for the argparse registration.
+
+**3 of 3 mutations caught**, each by its own test; 15 tests pass; source verified byte-identical to backup.
+
+### NOT ESTABLISHED
+
+⛔ **The four published sensitivity artefacts were NOT regenerated.** They still lack the disclosure. The
+values are provably identical, so a regeneration would add only metadata — while changing files that claims
+reference, for no numerical gain. D34's row already records the `freight_yard` case in prose (S-561), so a
+reader is served; **the artefacts are not, and that is a deliberate trade, not an oversight.**
+⛔ **Only csi5 was re-run.** csi7, csi8 and csi9 were not, so the VOID 7 demonstration covers one family of
+four; the change is additive by construction and by test, but that is an argument, not four measurements.
+⛔ **F7 and F8 remain open** — `w4.liveness` is still unfiltered, so the floor artefact still reports
+`n_rows: 230` beside `n_keys_retained: 146`; and `schema` is still `dcs_csi_head_census/1` for two
+incompatible shapes, with the control artefact carrying no `option_mass` block and no code sha.
+⛔ **The review's own two retractions are accepted and recorded**: its F3 fix was wrong (a reorder still
+misses duplicates among dropped keys — caught by the behavioural test at S-563), and its F6 was stale when
+filed. Its F1 novelty belongs to **S-561**, which found `freight_yard` first.
+⛔ **No arm ran.** Queue empty. The binding constraint remains the absence of a launchable preregistered
+family.
+
+**NEXT:** F7 and F8 — filter `liveness` to the retained keys, or record alongside it that `n_rows` is the
+UNFILTERED count; and bump the schema so one version string stops denoting two shapes.

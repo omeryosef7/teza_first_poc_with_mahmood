@@ -115,3 +115,61 @@ def test_floor_refuses_when_it_retains_nothing():
 def test_missing_option_mass_is_not_treated_as_zero():
     src = open(CENSUS).read()
     assert "missing is not zero" in src
+
+
+# ---- R42-F1/F9/F11, S-576: the census DISCLOSES thinning but deliberately does NOT guard it ------
+
+def test_the_census_refuses_a_negative_floor():
+    """R42-F11: `> 0.0` let a negative floor skip the filter and still be RECORDED as applied."""
+    src = open(CENSUS).read()
+    assert "if a.option_mass_floor < 0.0:" in src
+    i = src.index("if a.option_mass_floor < 0.0:")
+    seg = src[i:i + 500]
+    assert "REFUSING" in seg and "recorded in the artefact as though it had been applied" in seg
+
+
+def test_the_census_records_per_domain_retention():
+    """S-561: the domain SET is unchanged while the domains are THINNED 10 -> 1, and nothing in the
+    artefact let a reader see it. The four published sensitivity artefacts were produced blind to it."""
+    src = open(CENSUS).read()
+    for key in ("rows_per_domain", "rows_per_domain_histogram",
+                "min_rows_per_domain", "max_rows_per_domain"):
+        assert key in src, "census does not record %s" % key
+    assert "WHY_ROWS_PER_DOMAIN_IS_RECORDED" in src
+
+
+def test_the_census_does_NOT_refuse_a_thin_domain_and_says_why():
+    """THE DESIGN DECISION, PINNED. The paired reader got a refusing --min-rows at S-564; the census
+    deliberately did not, because it produced the four PUBLISHED artefacts and a refusing default
+    would change a shipped instrument's behaviour on re-run -- which is what VOID 7 forbids. A later
+    reader 'fixing' this asymmetry would silently invalidate the published reads."""
+    src = open(CENSUS).read()
+    # ⚠ the first version of this assertion tested for the STRING "--min-rows", which the census's
+    # own explanatory comment contains ("the paired reader got a refusing --min-rows at S-564").
+    # Testing for a mention rather than for the FLAG is the same over-matching defect this file's
+    # sibling tests keep catching elsewhere; it is the argparse registration that must be absent.
+    assert 'ap.add_argument("--min-rows"' not in src, \
+        "the census must not grow a refusing retention gate"
+    assert "min_rows_per_domain" in src, "...but it must still RECORD the retention"
+    assert "VOID 7" in src[src.index("WHY_ROWS_PER_DOMAIN_IS_RECORDED"):
+                           src.index("WHY_ROWS_PER_DOMAIN_IS_RECORDED") + 600]
+
+
+def test_the_key_count_is_not_labelled_a_row_count():
+    """R42-F9: it printed a KEY count as '%d of %d rows retained'. They coincide on every family read
+    so far (230 rows -> 230 distinct keys), so 146/230 was right and the LABEL was not."""
+    src = open(CENSUS).read()
+    assert "KEYS retained" in src
+    assert "rows retained (%.1f%%)" not in src
+
+
+def test_the_disclosure_is_additive_only():
+    """VOID 7: the retention block must not touch keep_keys, per[], or any arm's data -- it reads the
+    reference arm again and writes metadata. Verified end-to-end at S-576 by re-running the csi5
+    census and diffing: 0 mismatches across 43 arms' E, ci95 and loo_marginal."""
+    src = open(CENSUS).read()
+    i = src.index("_inst, _, _ = w4.lpm.load_installation(ref_dir, keep_keys=keep_keys)")
+    j = src.index("print(\"[option-mass]")
+    block = src[i:j]
+    for forbidden in ("keep_keys =", "per[", "slots[", "E[", "CI["):
+        assert forbidden not in block, "retention block mutates %r" % forbidden
