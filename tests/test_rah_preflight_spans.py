@@ -106,7 +106,19 @@ def test_d11_provenance_block_is_emitted_and_complete():
     for k in ("git_commit", "git_dirty", "slurm_job_id", "slurm_nodelist", "hostname", "argv",
               "started_utc", "finished_utc", "python"):
         assert k in p, k
-    assert isinstance(p["git_dirty"], bool)          # never a string -- it is read as a condition
+    # ⚠ S-566: this asserted `isinstance(p["git_dirty"], bool)`, which CONTRADICTS the tri-state
+    # `provenance()` deliberately returns -- `"git_dirty": (bool(status) if ok_status else None)`,
+    # commented there as "None means 'could not tell', which is NOT 'clean'" -- and contradicts
+    # `test_c030_git_dirty_is_tristate_and_never_claims_clean_on_failure` thirty lines below, which
+    # asserts `in (True, False, None)`. It therefore FAILED whenever git could not measure, which is
+    # exactly the case `_git`'s own docstring names: "a timeout on this NFS repo" (its limit is 20 s).
+    # It fired for real: it blocked the S-565 commit during 38 minutes of shared-node I/O starvation,
+    # with `git status --porcelain` exceeding the timeout while the suite ran. A guard that fails when
+    # the machine is busy blocks commits nondeterministically and teaches the reader to retry rather
+    # than to look. The property actually wanted is "never a STRING, because it is read as a
+    # condition", and `in (True, False, None)` pins that without denying the tri-state.
+    assert p["git_dirty"] in (True, False, None), repr(p["git_dirty"])
+    assert not isinstance(p["git_dirty"], str)       # the defect the original was reaching for
     assert isinstance(p["argv"], list)
     assert p["git_commit"] is None or len(p["git_commit"]) == 40
     src = open(pf.__file__, encoding="utf-8").read()

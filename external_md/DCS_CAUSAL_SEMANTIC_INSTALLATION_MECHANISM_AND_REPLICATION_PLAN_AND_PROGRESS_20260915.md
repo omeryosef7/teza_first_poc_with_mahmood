@@ -46755,3 +46755,375 @@ census has and this reader still does not. **F7–F11 are still not re-verified 
 last structural guard the census has that this tool lacks, and S-561 showed why `by_domain`'s second
 return value matters: the domain-SET check passed while the domains were thinned 10 → 1, and the slot sets
 are the thing that would have said so per arm rather than per family.
+
+## S-565 / the audit reaches 18 claims: a published row names a commit as a blob, and a FROZEN PREREG states something false (2026-09-28)
+
+S-564 landed as `54260330`, **573 passed** (564 + its 9), 1 skipped, in **43:06**. Queue **EMPTY**. The
+hook's 43 minutes were again I/O starvation, not compute — the same shared-node contention S-563 corrected
+S-562's attribution about.
+
+The criterion audit was fanned out over **11 further claims** (D32, D33, D38, D41, D41-a, D42, D43, D44,
+D45), taking it to **18 of ~45**. Four findings are recorded here; **every one was re-derived by me**, and
+two of the four are of a kind the audit had not yet turned up.
+
+### 1. 🔴 A PUBLISHED ROW NAMES A COMMIT AS A BLOB
+
+D45's provenance read *"1 commit → 1 blob `62a265e4`"*. Verified:
+
+```
+$ git cat-file -t 62a265e4                                   -> commit
+$ git rev-parse 62a265e4:src/boombness/score_behavior.py     -> 9562bdf90b86fdb2...
+```
+
+`62a265e4` is a **commit**; `score_behavior.py`'s blob at it is **`9562bdf9`** — the same blob D43 cites.
+**VOID 6 asks about the BLOB and is satisfied**, so no result moves; the row named the wrong object for
+it. ⚠ **The frozen recipe induced the error.** `runargs/dcs_csi_pr024_read.txt:52` reads *"Submitted at
+**BLOB** 62a265e4 with a clean porcelain, which is **the commit** that froze …"* — both words for one
+hash in one sentence. Corrected inside a struck span (gate: 4 bounded occurrences, 3 live).
+
+⚠ Checking it paid a dividend: that commit is stamped **09:58** and the two read artefacts **11:39** and
+**11:55** the same day, which **independently confirms the prereg predates the arms** — provenance the
+row asserted but never demonstrated.
+
+### 2. 🔴 A FROZEN PREREG STATES SOMETHING FALSE
+
+`configs/dcs_csi_pr023_necessity_button.json` carries a field called `PROVENANCE_ASYMMETRY_RECORDED`:
+*"this axis file records `fit_domains_sha16 = None`, where basket's … records `4614853e5636eb5f`. The
+button axis's fit population is therefore NOT pinned by a hash in the file."*
+
+**There is no asymmetry.** Read out of the pickles myself:
+
+| file | inside the `.pt` | `.json` sidecar |
+|---|---|---|
+| `dcs_csi_axis_button_behavioral_L18` | `domains_sha16 = 4614853e5636eb5f` | `null` |
+| `dcs_csi_axis_basket_behavioral_shuf24` | `domains_sha16 = 4614853e5636eb5f` | `null` |
+
+⇒ **The prereg compared button's SIDECAR against basket's `.pt`.** ⚠ **No result moves**, and the reason
+is worth stating: the prereg's own prescribed remedy — *"any in-sample claim about button must be checked
+against the READ's own `in_sample` block instead"* — is exactly what D44 and D45 did, and all three button
+read artefacts record `fit_domains_sha16 = 4614853e5636eb5f`. So a false premise led to a *correct*
+procedure. The frozen file is **annotated on D44's row, not amended** — it is frozen and a validation
+number has been seen.
+
+⚠ **This is a new category for the audit.** S-560/S-562/S-563 found claims that broke their frozen files.
+This is a frozen file that is **wrong about the world**, which no amount of claim-vs-file checking would
+have caught — it needed the artefact read.
+
+### 3. D42 QUOTED THE WRONG REMOVAL FRACTION, AGAINST A PROHIBITION ON THE SAME PAGE
+
+The primary read `..._basket_train_shuf24.json` (655 keys) records
+`removal_fraction_candidate_of_full` = **0.0803 [0.0584, 0.1041]**. D42's row carried only **0.0786** —
+the *pooled-28 secondary's*. ⛔ **Prohibition 28, on the same page, requires *"the removal fraction OF THE
+READ BEING QUOTED must travel with it"* and itself lists `0.0803` as D42's governing figure.** Added.
+(For the record the unsuffixed `..._basket_train.json` carries **0.0778**, the stale value §L.3/§A.1 still
+lag on — a separate open item, untouched here.)
+
+### 4. THE STRUCTURAL GAP: FOUR CLAIMS CITED NO FILE AT ALL
+
+Verified by me — D42, D43, D44 and D45 cited **zero** `runargs/` or `configs/` paths and **zero** md5s;
+their preregs appeared only as prose names like "PR-CSI-024". ⇒ **The audit trail whose absence produced
+D34, D37 and D40-c is structurally missing on the sprint's four necessity claims, and it is only luck that
+those four are otherwise clean.** All eight md5s re-derived by me and now on the rows:
+
+| claim | prereg | md5 | frozen read | md5 |
+|---|---|---|---|---|
+| D42 | `dcs_csi_pr003a_necessity_family.json` | `d2ebfe67` | `dcs_csi_pr003a_read.txt` | `d89641af` |
+| D43 | `dcs_csi_pr022_necessity_validation.json` | `ccb85f00` | `dcs_csi_pr022_read.txt` | `0b25a4ce` |
+| D44 | `dcs_csi_pr023_necessity_button.json` | `12b0e173` | `dcs_csi_pr023_read.txt` | `09e351ef` |
+| D45 | `dcs_csi_pr024_necessity_button_validation.json` | `a9da6526` | `dcs_csi_pr024_read.txt` | `460c104c` |
+
+### NOT ESTABLISHED
+
+⛔ **Two flagged items are CARRIED AS REPORTED, not established, because I have not read the frozen text
+myself.** (a) **D38** is said to cite no frozen file at all and to assert *"head 23 … no transfer"* from
+an arm measured at **0.62× its own detection bar**, while its status column forbids the refutation
+reading. (b) **D44's** headline *"THE CODEWORD DISSOCIATION IS SUFFICIENCY-SPECIFIC"* is said to assert
+one disjunct of a disjunction PR-CSI-023 left open (*"either sufficiency-specific **or an artefact of
+that design**"*). Both are plausible and neither is in this entry's amendments.
+⛔ **D32, D33, D41, D41-a are reported AGREES/clean and I did not re-derive their numbers.** "Clean" here
+means the reporting stream said so, not that I checked.
+⛔ **Nothing measured.** No arm ran; this entry is provenance and text.
+⛔ **The 0.0778 lag is untouched**, and so are A30's remaining rows and the 17 prose criteria.
+⛔ **27 of ~45 claims remain unaudited.**
+⛔ **R42's F5, F7–F11 and stream 1's M2 remain open.** M2 verified latent by me: all five arms have slot
+sets identical to `HD_BASE` in **both** branches (control uniform at 10, floor spanning 1–10), because the
+shared `keep_keys` makes the key space common by construction — only `--allow-short > 0` could break it.
+
+**NEXT:** read PR-CSI-016's and PR-CSI-023's frozen text **myself** and settle the two carried items —
+D38's no-transfer assertion against its own 0.62×-of-bar arm, and whether D44's headline picks one disjunct
+of a frozen disjunction. Both are claim-vs-frozen-file questions of exactly the kind this audit exists for,
+and carrying them on a subagent's reading is the thing this sprint's own rule forbids.
+
+## S-566 / S-565's COMMIT FAILED, and the guard that blocked it contradicts the tri-state it was written beside — plus the two carried audit items, settled by me (2026-09-28)
+
+### 0. 🔴 FIRST: S-565 DID NOT LAND, AND I NEARLY REPORTED THAT IT HAD
+
+S-565's commit returned **`1 failed, 572 passed, 1 skipped in 2287.73s`** and the hook **REFUSED** it:
+*"a guard TEST failed -- a guard may no longer be able to fail."* HEAD stayed at `54260330` (S-564) with
+the two files still staged. S-565's entry is in the log above this one and its claim-table edits are real,
+but **its commit is this one**, not its own. ⚠ This is the third time in this sprint I have had to correct
+a commit I described as landed (S-536, S-552) — the check that works is HEAD moving, and this time the
+hook's own exit status is what caught it, not me.
+
+### 1. THE GUARD THAT BLOCKED IT IS WRONG, AND IT IS WRONG IN THE WEEK'S RECURRING SHAPE
+
+`tests/test_rah_preflight_spans.py::test_d11_provenance_block_is_emitted_and_complete` asserted:
+
+```python
+assert isinstance(p["git_dirty"], bool)          # never a string -- it is read as a condition
+```
+
+`provenance()` in `src/boombness/rah_preflight_transport.py:118` returns:
+
+```python
+"git_dirty": (bool(status) if ok_status else None),
+# tri-state ON PURPOSE: None means "could not tell", which is NOT "clean".
+```
+
+⛔ **So the assertion contradicts the tri-state the function deliberately returns — and contradicts
+`test_c030_git_dirty_is_tristate_and_never_claims_clean_on_failure` thirty lines below it in the same
+file, which asserts `p["git_dirty"] in (True, False, None)`.** Two tests, one file, one field, opposite
+requirements.
+
+**When does it fire?** `_git` returns `(False, None)` on any exception or non-zero exit, with a **20-second
+timeout**, and its own docstring names the case: *"a timeout on this NFS repo"*. So the guard fails exactly
+when git cannot measure — which is what happened: S-565's suite ran **38 minutes** under shared-node I/O
+starvation (another user's jobs at 111 % and 88 % CPU, pytest in state `Dl`), and `git status --porcelain`
+exceeded 20 s while the hook held the repo.
+
+**Demonstrated, not inferred.** Injecting a failing `_run`:
+
+```
+git_ok: False | git_dirty: None | git_commit: None
+in (True, False, None): True
+isinstance bool (the OLD assertion): False     <-- the old test failed here
+```
+
+⇒ Fixed to `in (True, False, None)` **plus** `not isinstance(..., str)` — which is the property the
+original comment was actually reaching for ("never a string, it is read as a condition") and which does not
+deny the tri-state. 11 tests in the file pass.
+
+⚠ **Third instance this week of two checks on one quantity disagreeing**: S-563's F4 (NaN dropped by the
+census, kept by the axis analyser), S-564's `recorded_heads` (`"ALL"` meaning EMPTY for one caller), and now
+this. ⛔ **A guard that fails when the machine is busy is worse than a missing guard**: it blocks commits
+nondeterministically and trains the author to retry rather than to look.
+
+### 2. THE TWO ITEMS S-565 CARRIED, NOW SETTLED BY MY OWN READING
+
+**🔴 D38 is PROHIBITED-DIRECTION, and the instrument says so itself.** D38's claim read *"head 23 **18.4 %**
+with **ci95 crossing zero — no transfer**"*. From head 23's own artefact
+(`reports/DCS_CSI_PR016_ARGMAX_TEST_button_validation.json`), read by me:
+
+| field | value |
+|---|---|
+| `power_ratio` | **0.623524146445571** (the ADMISSION gate is **1.5**) |
+| `ci95_excludes_0` | **false** |
+| `NOT_A_MISS` | *"dropped by the frozen ADMISSION rule, computed from the whole-head arm alone; it is removed from K, not counted against the screen"* |
+
+⇒ **"No transfer" asserts absence about an arm the preregistered instrument DROPPED as too weak to detect
+anything, at 0.62× its own bar.** ⚠ **And D38's own status column already said so** — *"it is **null on
+button**, which is **CANNOT ANSWER** at head level per §3.3"* — so the claim text contradicted the status
+column two cells to its right. Same shape as D37 and D40-c. The 18.4 % point and its interval are
+**retained**; what is withdrawn is the inference from a wide interval to an absence.
+
+**🔴 D44 asserts one disjunct of a frozen disjunction.** PR-CSI-023's
+`THE_PREDICTION_FROZEN_IN_ADVANCE.IF_THE_PREDICTION_FAILS`, read by me verbatim: *"button ALSO ranks 1 ==>
+the removal effect is NOT codeword-specific, and D23/D24's dissociation is **either sufficiency-specific or
+an artefact of that design**."* D44's headline states **"THE CODEWORD DISSOCIATION IS
+SUFFICIENCY-SPECIFIC"** as the finding. ⚠ **And it is the disjunct that PRESERVES D23/D24**, while the same
+branch says the outcome *"WOULD WEAKEN THE SPRINT'S DISSOCIATION CLAIM AND IT WILL BE REPORTED AS SUCH"* —
+the more comfortable reading was the one taken. ⇒ The available claim is the **disjunction**. ⚠ That
+PR-CSI-024, frozen later, adopted the narrowing does **not** license it: a later prereg of mine cannot
+retroactively close a disjunct the earlier one left open; it propagates the overreach.
+
+**And D41 is NOT clean either — two omissions, verified by me.** (a) The row says the instrument was
+*"built, reviewed (R35, R36), executed"*; `runargs/dcs_csi_pr021_read.txt:18-19` records *"**R36's
+F1/F4/F5/F7 and R36-A's F15/F16 were left OPEN when the family was closed**, so the instrument and reader
+must be re-reviewed before any arm runs"*. (b) The row quotes power **0.1446** and **neither bound** of the
+prereg's own `q_exact_95CI` **[0.0852, 0.7551]**, while the recipe states *"THE PILOT CANNOT SAY WHETHER
+THIS DESIGN IS WELL POWERED"*. ⚠ **This is an OMISSION class, not a breach**: the row already scopes its
+headline to "the eight admissible heads", disclaims the general version, and says *"a reader weighing the
+priors differently should reach a different answer"*. Both caveats added.
+
+**Audit tally: 5 clear breaches (D34, D37, D40-c, D38, D44) and 2 omission-class (AM-36, D41) in 18
+claims** — and in every one of the seven, the frozen file was cited correctly and had never been opened.
+
+### 3. AND THE RETRY FAILED TOO — A STALE `index.lock`, AND MY `git add` FAILED SILENTLY
+
+The first attempt to commit this entry returned **`RC=128`**: *"fatal: Unable to create
+'.git/index.lock': File exists."* S-565's **refused** commit had left the lock behind — 0 bytes, stamped
+22:17:55, still there at 22:51 with **no `git`, hook or pytest process alive**, i.e. 33 minutes stale.
+
+⚠ **And the `git add` in the same command had failed on the same lock without my noticing**, because I
+checked `$?` only after `git commit`. The evidence was in the output and I read past it: the staged diff
+printed *"2 files changed, 102 insertions"* — S-565's two files — when I had just asked for **three**. ⛔
+**A staged-file count that disagrees with what I staged is exactly the signal I put in front of myself and
+then did not read.** Fourth time in this sprint that `$?` through the wrong step has cost a step (S-537
+named the third).
+
+Cleared only after verifying **zero** live git/hook/pytest processes, then re-staged: **3 files, 232
+insertions**, which is the count that matches what this entry changes.
+
+### NOT ESTABLISHED
+
+⛔ **I have not established that the NFS timeout is the ONLY way that guard can fail.** I demonstrated the
+tri-state path with an injected failure and matched it to the observed conditions; I did not capture the
+failing run's own `git_dirty` value, which is gone.
+⛔ **The 20-second `_git` timeout is NOT raised**, and I am not claiming it should be. The fix makes the
+guard tolerate the tri-state; it does nothing about the contention that produced it.
+⛔ **No claim that other guards are free of this.** I checked one file because one test failed; a sweep for
+assertions contradicting a deliberate tri-state has not been run.
+⛔ **D32, D33, D41-a are still reported-clean without my re-derivation**, and **27 of ~45 claims remain
+unaudited**.
+⛔ **Nothing measured.** No arm ran; the queue has been empty all tick.
+⛔ **My own patch script's final check was over-strict** and printed 160 "rows with != 4 columns": the file
+legitimately carries 3-, 4-, 5- and 6-column tables (59/96/61/39 rows). Seventh over-strict or over-loose
+detector of mine this week; the four edited rows are 4-column and intact.
+
+**NEXT:** sweep the `tests/` tree for the defect this entry found — assertions that demand a `bool`/exact
+type from a function whose own contract is a tri-state or an optional. `git_dirty` was found because it
+blocked a commit; the same shape sitting in a guard that never fires is invisible until the day it costs an
+hour.
+
+## S-567 / the audit's own denominator was wrong by 2.5x, because my enumerator required a bold ID — and D23 omits four elements its frozen read mandates (2026-09-28)
+
+**S-565+S-566's commit STALLED and had to be killed. This commit carries S-565, S-566 and S-567.**
+
+Measured, not guessed. The node's NFS degraded until a trivial `stat` cost **2.34 s**, `cat .git/HEAD`
+**3.57 s** then **6.06 s**, and `ls` of a 1908-entry directory **1.63 s** — normally microseconds — with
+**seven `ld` processes from another user in D state** and load peaking at **60.66**. The guard suite reads
+thousands of files, so it could not finish: the `git commit` ran **1 h 10 m** and its pytest consumed
+**90 seconds of CPU in 64 minutes**, flat at `1:30` across every sample from the 50-minute mark on, in
+state `Dl`. ⇒ Killed it, then cleared its stale `index.lock` (0 bytes, 26 minutes old, holder dead,
+**0 index writers alive** — checked by executable name, not by argument string). HEAD was verified
+unmoved at `54260330f894` by reading `.git/refs/heads/` directly, because `git log` itself hangs when a
+single file read costs seconds. Every edit survived in the working tree and was re-verified by grep before
+this commit. ⛔ **`--no-verify` was NOT used**: the guard suite is the protection this log exists to
+maintain, and bypassing it to escape a slow disk is the exact trade this sprint refuses.
+
+⚠ **AND THE SECOND ATTEMPT WEDGED TOO, WITH A KERNEL-LEVEL DIAGNOSIS THIS TIME.** The retry passed
+`check_all` (all 9 guards) and then sat **54 minutes** in the guard suite on **51 seconds of CPU**. Reading
+`/proc/<pid>/wchan` named it: **`rpc_wait_bit_killable`** — an NFS client blocked on a hung RPC reply —
+gaining 1 second of CPU in 60 while MY OWN new file reads were fast. ⇒ That is the distinction worth
+keeping: **accumulating CPU is slow, `rpc_wait_bit_killable` with flat CPU is wedged**, and only the second
+justifies a kill. Killed it; the hook then reported *"a guard TEST failed"* and refused with `RC=1` —
+⚠ **that refusal is MY KILL, not a guard finding**, and it would read as a real failure to anyone scanning
+the log for `REFUSING`. Recorded here so it cannot.
+
+⚠ **A THIRD attempt wedged the same way, and its recovery VALIDATED the discriminator.** It sat **73
+minutes** inside `check_all.py` — a step that normally takes two — on **34 seconds of CPU**, in
+`rpc_wait_bit_killable`. What made the call clean this time is that the mount had meanwhile RECOVERED: cold
+reads of files never touched this session came back in **0.862 s** and **0.427 s** (against **46.5 s** at the
+worst), and `git status` fell from 37.7 s to 9.2 s — yet that process still crawled at **~1.6 s of CPU per
+minute**. ⇒ **Fast mount + still-stalled process = a handle that will not recover**, which is the one
+signature that justifies a kill, and it is a sharper rule than "flat CPU" alone. Killed; zero git/python
+processes and no lock afterwards; all three entries and both code fixes re-verified present by grep.
+
+⚠ **Measured NFS behaviour worth keeping.** The same 64-byte file read three times cost **46.5 s → 10.0 s →
+0.233 s**: caching works, and it is the COLD read that collapses. The suite reads thousands of DISTINCT
+files, so every one is cold — which is why a 10-minute suite became unbounded while my own repeated probes
+looked fine. Mount: NFS v3/TCP, `timeo=600, retrans=2, rsize=wsize=32768`. Only five D-state processes
+node-wide, two of them mine, so this was server-side latency and not local contention.
+
+⚠ **The disk was ~10x slow, not healthy, for most of this.** A single cached read is 0.049 s, but `git status` costs
+**37.7 s** and an 11-test file **60.9 s** against ~6 s normally. The full 574-test suite is therefore an
+~100-minute commit, which is the price of this entry and is being paid rather than skipped.
+
+⚠ **AND THE KILL ITSELF MISFIRED.** `pkill -u $USER -f 'pytest tests/'` matched **its own command line**
+and killed my shell (exit 144) — the S-526 self-matching-`pgrep` hazard, which I had already recorded, now
+repeated in the *kill* direction. It did kill the real targets first, so nothing was lost, but I then hit
+the same shape **twice more** in the same tick: a process-liveness loop that reported two processes "ALIVE"
+which were its own wrapper and search strings. ⇒ **Three self-matches in one tick from a hazard already in
+the log.** The fix that works is matching on `comm` (the executable name), which cannot contain the
+pattern.
+
+⚠ **And I contributed for the third tick running.** I launched two filesystem-crawling audit agents while a
+commit's hook was live, having already recorded at S-562/S-563 that this starves the hook. The node's own
+load dominates — it peaked at **60.66** — but the part that was mine was avoidable and repeated.
+
+### 1. 🔴 THE AUDIT COVERAGE FIGURE I PUBLISHED FIVE TIMES IS WRONG
+
+S-562, S-563, S-565 and S-566 quote "18 of ~45 claims", "27 of ~45" (twice) and "38 of ~45" (twice). The
+claim table actually holds **134 ID-bearing rows and 111 DISTINCT claim IDs** — 49 `D`, 62 `AM`. Audited:
+**17. That is 15 %, not the ~40 % I implied.** Off by **2.5× on the denominator**.
+
+**The cause is an eighth detector-population error**, and it is the same shape as the previous seven. My
+enumerator matched `\|\s*\*\*(D\d+|AM-\d+)\*\*\s*\|` — a **bold** ID cell. The later blocks are bold
+(`| **D44** |`); the earlier ones are **not** (`| D1 |`, `| D18 |`, `| D32 |`). **52 rows** were invisible
+to it: every claim D1–D32 and AM-3–AM-29. ⇒ It is also why `D32` sat in my "audited" set matching no row at
+all — a fact I noticed and, at the time, did not chase.
+
+⚠ **Two ID conventions in one table, and nothing enforces either.** That is the latent defect behind the
+whole miscount, and it is worth more than the corrected number.
+
+### 2. THE CITATION GAP IS SYSTEMIC, NOT CONFINED TO THE NECESSITY CLAIMS
+
+S-565 found D42–D45 citing no frozen file. Measured by me across the older blocks:
+
+| rows | cite a `configs/` path | cite a `runargs/` recipe | cite any md5 |
+|---|---|---|---|
+| D18, D19, D20, D21, D22 | **0 of 5** | **0 of 5** | **0 of 5** |
+| D23, D24, D25, D26, D27, D28 | 2 of 6 (D23, D25) | **0 of 6** | **0 of 6** |
+
+⇒ **9 of 11 rows cite neither**, and **zero of the eleven cite the frozen read recipe that governs them.**
+The failure mode behind every breach this audit has found — the cited file never opened — has no citation to
+open in most of the table.
+
+### 3. 🔴 D23 OMITS FOUR OF TEN MANDATED ELEMENTS, AND INVERTS THE ORDER
+
+`runargs/dcs_csi_pr005_read.txt:275` opens: *"Report, in this order and none omitted:"* — then ten items.
+Checked by me against D23's whole row:
+
+| mandated element | in D23's row |
+|---|---|
+| `X` and `X/36` | yes |
+| the BetaBinomial(36, 7.5, 3.5) predictive, `E[X] = 24.5455` | yes |
+| 95 % predictive interval `[13, 34]` | yes |
+| the decision-rule branch `X` selects | yes |
+| `R47` and `p = R47/47` | yes |
+| **its attainable floor `0.02128`** | **NO** |
+| **its arithmetic floor of 8** | **NO** |
+| **z beside basket's `+2.561`** | **NO** |
+| the exceedance rate over 46 | yes |
+| **Clopper-Pearson 95 % CI, beside basket's `0/46 [0.000, 0.077]`** | **NO** |
+
+⇒ **Four omitted.** And the order is inverted: `R47` sits at character 1454, the BetaBinomial at 1548,
+where the mandate puts the predictive **first** and says *"THEN R47"*.
+
+⛔ **The floor omission is the sharpest.** This sprint's standing discipline is *"p IS the floor"* (S-079),
+several preregs mandate that the floor travel in the same sentence as the p, and D23 quotes a rank p with
+**neither** its attainable floor `0.02128` nor the arithmetic floor of 8 that the seven committed stage-1
+exceedances fixed in advance. ⇒ Sixth confirmed breach.
+
+### 4. AND ONE VERIFIED CLEAN, WHICH IS ALSO A RESULT
+
+**D25 is properly marked.** Its superseded headline sits inside `~~…~~`, followed by *"🔴 HEADLINE
+SUPERSEDED BY AM-15, MARKED HERE S-543 — IT HAD NEVER BEEN MARKED AT ALL"*, with AM-15's replacement quoted
+verbatim and the surviving half explicitly retained. An unmarked withdrawn headline is the worst defect a
+claim table can carry; this one was already fixed at S-543 and the fix holds.
+
+**Audit tally: 6 clear breaches (D34, D37, D40-c, D38, D44, D23) + 2 omission-class (AM-36, D41) in 22 of
+111 distinct claims.**
+
+### NOT ESTABLISHED
+
+⛔ **Nothing in this entry is a measurement of the model.** No arm ran; the queue has been empty for many
+ticks and no family is launchable without a new prereg.
+⛔ **D23's row is NOT yet fixed** — the four omissions are identified, not repaired, because the tree is
+locked by the in-flight commit.
+⛔ **D18–D22 and D24, D26, D27, D28 have verdicts I have NOT re-derived.** I verified the structural
+citation counts myself and D23's ten-element check myself; the per-claim AGREES/OVERREACHES verdicts for the
+other nine rows are carried as reported.
+⛔ **The 111 figure counts ID-bearing ROWS' distinct IDs.** Nine IDs appear on 2–3 rows each (D12, D13,
+D17, AM-5, AM-6, AM-8, AM-40, AM-42, AM-43), so a claim restated in several blocks can drift between copies
+and auditing one copy does not cover the others. I have not checked any pair for drift.
+⛔ **89 of 111 distinct claims remain unaudited.**
+⛔ **My AM-15 lookup regex failed too** (`\*\*?AM-15\*\*?` requires at least one asterisk; that cell is
+unbolded) — ninth instance this week, caught in passing and costing nothing here only because D25's row
+quoted AM-15 in full.
+
+**NEXT:** fix D23's row — add the attainable floor `0.02128`, the arithmetic floor of 8, z beside basket's
+`+2.561`, and the Clopper-Pearson CI, in the mandated order, and cite
+`runargs/dcs_csi_pr005_read.txt` with its md5 `07cf927c`. Then add a guard that fails when a claim row
+quotes a rank p without its attainable floor in the same cell: this is the sixth breach and the second
+whose specific shape is a missing floor, so it is a rule, not an incident.
