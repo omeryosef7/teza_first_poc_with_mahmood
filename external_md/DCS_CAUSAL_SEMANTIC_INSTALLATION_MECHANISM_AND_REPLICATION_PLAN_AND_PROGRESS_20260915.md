@@ -47127,3 +47127,98 @@ quoted AM-15 in full.
 `runargs/dcs_csi_pr005_read.txt` with its md5 `07cf927c`. Then add a guard that fails when a claim row
 quotes a rank p without its attainable floor in the same cell: this is the sixth breach and the second
 whose specific shape is a missing floor, so it is a rule, not an incident.
+
+## S-568 / S-567's D23 finding was WRONG about which number was missing — the floor was there; what is missing makes α = 0.05 unreachable (2026-09-29)
+
+S-565+S-566+S-567 landed as `59a5fc02`, **573 passed, 1 skipped in 14825.28 s — 4 h 07 m**. That figure
+closes the infrastructure thread: **the suite completes, it is not wedged, and my three kills across earlier
+ticks destroyed progressing work.** The cost is explained arithmetically — **30 of 37 subprocess-spawning
+test files invoke a `scripts/` entry point**, each a fresh interpreter importing its stack cold from the
+NFS-mounted env, and torch's `site-packages` alone holds **1972 `.py` files**. ~30 × ~2000 cold reads is the
+whole 4 hours. ⚠ **A cold import presents exactly like a wedge** — healthy mount for small reads,
+`rpc_wait_bit_killable`, ~4 s of CPU in 11 minutes — so the discriminator I wrote into S-567 ("fast mount +
+flat CPU = a handle that will not recover") is **too strong and is withdrawn**. The only reliable test is
+reading `/proc/<pid>/cmdline` to see whether a plausible cold import is in flight.
+
+### 1. 🔴 THE CORRECTION: D23 DOES CARRY ITS ATTAINABLE FLOOR
+
+S-567 stated that D23 omits *"the attainable floor 0.02128"* and called that omission **"the sharpest
+against this sprint's standing *p IS the floor* rule"**. **It is present.** The row reads
+`attainable floor **0.0213**`. My check grepped for the recipe's unrounded `0.02128` and the row carries the
+4-dp form. ⚠ **Tenth detector-population error of this week, and the first that put a FALSE BREACH into a
+committed entry.** Same family as the other nine: a matching rule narrower than the claim it tests.
+
+⚠ **A second miscount in the same check**: I had scored the exceedance rate as PRESENT because my pattern
+matched the word *"exceedances"*, which the cell uses in a different sense. It is absent. So the count was
+wrong in both directions — **three items missing, not four**, and not the three I named.
+
+### 2. AND WHAT IS ACTUALLY MISSING IS WORSE THAN A MISSING NUMBER
+
+`runargs/dcs_csi_pr005_read.txt:275-283` (md5 `07cf927c`, verified) mandates *"THEN R47, its p = R47/47, its
+attainable floor 0.02128 **AND its arithmetic floor of 8**, stated as having been fixed in advance by the 7
+committed stage-1 exceedances"*. The row gives the attainable floor and **not** the arithmetic one. Derived
+by me:
+
+| quantity | value |
+|---|---|
+| attainable floor `1/47` | **0.02128** |
+| **arithmetic floor `8/47`** | **0.17021** |
+| observed `rank_p` `36/47` | 0.76596 |
+
+⛔ **With 7 stage-1 exceedances committed in advance, the best achievable rank was 8, so `rank_p` could never
+fall below 0.170: α = 0.05 was UNREACHABLE BY CONSTRUCTION.** ⇒ **Quoting 0.0213 alone implies a test that
+could have certified, and it could not.** That is exactly why the frozen recipe pairs the two floors in one
+sentence, and it is a sharper finding than the one S-567 published — arrived at only because the false
+version forced me to read the row instead of grepping it.
+
+**The other two, computed by me because the row carried neither:**
+
+| mandated item | value |
+|---|---|
+| `z = (cand − mean(46 ctrls))/sd(46 ctrls)`, PRIMARY artefact | **−0.5702** (cand −0.00014; mean +0.00028370, sd 0.00074304, ddof=1) |
+| the same on the INDEPENDENT re-derivation | **−0.5886** (`candidate_minus_ko` −0.00015; mean +0.00028630, sd 0.00074131) |
+| beside basket's | **+2.561** (TRAIN, 46) |
+| exceedance rate `(7+X)/46 = 35/46` | **0.7609**, Clopper-Pearson 95 % **[0.6123, 0.8741]** |
+| beside basket's | **0/46 [0.000, 0.077]** |
+
+⚠ **Both candidate values are rounded to 5 dp AT SOURCE**, and the `1e−05` spread between readers is the
+key-set asymmetry the recipe names, not a discrepancy — *"do not report their agreement as stronger than it
+is"*. ⚠ I recomputed the re-derivation's **−0.5886** rather than carrying it from the record, because the
+earlier instance of this exact number was a case of a remembered value agreeing with a lossy proxy. All of
+it is now on D23's row, with the recipe cited by md5.
+
+### 3. 🔴 AND THE GUARD I PROMISED RESTS ON A PREMISE I JUST FALSIFIED
+
+S-565's NEXT said: *"add a guard that fails when a claim row quotes a rank p without its attainable floor in
+the same cell: two of six breaches are now missing-floor, so it is a rule, not an incident."* ⛔ **With D23
+corrected, that count is wrong and the premise is gone.** I did not build it.
+
+I measured the pattern instead: of **41** cells across 134 claim rows that quote a rank or `rank_p`,
+**16 carry no floor in the SAME cell**. ⚠ **That number is NOT a finding.** Its precision is unestablished
+and at least one hit is visibly false — D43's row does state *"`p = 0.0400` IS STILL THE ATTAINABLE FLOOR"*,
+in a different cell than the rank, and several other hits are prose in caveats columns. ⇒ **Per-cell
+co-location is not the sprint's rule**, and building a guard on a raw 16/41 would be the exact move this
+entry's §1 is an argument against.
+
+### NOT ESTABLISHED
+
+⛔ **The 16 of 41 is a candidate signal, not a defect count.** Each needs the per-case reading D23 got, and
+none has had it.
+⛔ **D23's ORDER violation is recorded but NOT fixed.** The row still reports rank/`rank_p`/floor before `X`
+and the predictive, where the recipe puts `X` first and says *"THEN R47"*. I added the missing items; I did
+not re-sequence a 6-column published row, and that is a deliberate stop, not an oversight.
+⛔ **z is reported from ROUNDED inputs.** Neither artefact carries more than 5 dp, so −0.5702 and −0.5886
+are both floor-limited by the source, and I did not recompute either from `domain_means`.
+⛔ **The audit tally drops to 5 clear breaches, not 6** — D34, D37, D40-c, D38, D44 — plus D23 as a
+mandated-companion omission and AM-36/D41 in the same omission class. **22 of 111 claims audited; 89
+remain.**
+⛔ **Nothing measured on the model.** No arm has run for many ticks; the queue is empty and no family is
+launchable without a new prereg, which remains the real cost of this stretch.
+⛔ **The tooling fix is NOT made.** ~30 subprocess tests each paying a cold import is a commit-gate design
+problem; changing what the pre-commit hook runs is a decision about the sprint's own protection, so it is
+proposed and not done unilaterally.
+
+**NEXT:** propose the commit-gate change explicitly — split the guard suite so the hook runs the fast
+in-process subset and the ~30 subprocess tests run out-of-band before any family reaches a GPU — and get a
+decision on it, because at 4 h per commit the gate now costs more than the work it guards. Then resume the
+audit at D26/D27/D28 with the per-case reading D23 got, not with greps.
