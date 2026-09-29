@@ -47735,3 +47735,84 @@ substitute for it.
 **NEXT:** finish the remaining 35 AM rows in ID order — AM-23 onward — and then stop auditing, because at
 that point every row in the claim table will have been read once and further passes have diminishing value
 against the unstarted science.
+
+## S-575 / THE CLAIM-TABLE AUDIT IS COMPLETE — 111 of 111 rows read, 8 defective (7.2 %) — and I caused a concurrent-commit race doing it (2026-09-29)
+
+### 1. THE AUDIT IS CLOSED
+
+Every ID-bearing row in `reports/DCS_CSI_CLAIM_TABLE.md` has now been read by me — claim, statistic,
+caveat and source cells — across S-560 … S-575.
+
+| class | rows read | defective | which |
+|---|---|---|---|
+| `D` rows | **49** | **7** | D23, D34, D37, D38, D40-c, D41, D44 |
+| `AM` rows | **62** | **1** | AM-36 |
+| **total** | **111** | **8 (7.2 %)** | 5 clear breaches + 3 omission-class |
+
+**The five clear breaches** — a claim stating something its own cited frozen file forbids or does not
+license: **D34** (a count the criteria never licensed, read in the direction they forbade), **D37** (a rival
+"REFUTED" with a probability, from an artefact self-labelled `"verdict_is_preregistered": false`),
+**D40-c** (a deleted secondary's rate, which its own status cell called a violation), **D38** (absence
+asserted from an arm the instrument dropped at `power_ratio` 0.6235 in a field named `NOT_A_MISS`),
+**D44** (one disjunct of a frozen "either/or", and the disjunct that preserves the sprint's own result).
+
+**The three omission-class** — a mandated companion missing, without a false statement: **D23** (the
+arithmetic floor of 8, whose absence leaves α = 0.05 looking reachable when `8/47 = 0.170` made it not),
+**D41** (six review findings "left OPEN" and both bounds of `q_exact_95CI`), **AM-36** (per-head findings
+from an undifferentiated control family, without quoting the prohibition that names it).
+
+### 2. THE FINAL 23 AMENDMENTS, ALL CLEAN — AND MORE SELF-CRITICAL THAN MY AUDIT WAS
+
+AM-37…AM-57 close the sweep with zero defects, and several exceed the standard I was auditing against:
+
+* **AM-47-a** — *"The letter is violated; the INTENT may survive and **I could not test it**."*
+* **AM-51-a** — *"This cuts FOR the probe reading, and it **reverses a 'NOT ESTABLISHED' line the draft had
+  written**."*
+* **AM-55** — *"So **every basket-side result in the sprint** rests on a readout where …"*
+* **AM-55-a** — `grep -c option_mass scripts/dcs_csi_head_census.py` = **0**, the measurement that forced
+  the S-548 instrument work.
+* **AM-30** — *"⛔ POST-HOC, 20 draws … NO preregistered test. Gate C applies: **this does not license
+  inventing a circuit**."*
+
+⚠ **The record corrected ME four times during this audit** — AM-17 and AM-41 already carried findings I
+announced as new, AM-20 had already run the same sweep with a tighter scope, and AM-53-a had already found
+the tag-twin hazard that later bit my own paired reader at S-564.
+
+### 3. 🔴 AND I CAUSED A CONCURRENT-COMMIT RACE
+
+I launched S-574's commit while S-573's pre-commit hook was still running. **Two full suites then competed
+for over an hour**, each slowing the other; the older reached 1 h 33 m against a 10 m 50 s baseline.
+
+⛔ **This is S-461, recorded at S-536 and S-552, named by me in this session, and repeated anyway.** The
+cause is nameable: commits had fallen from ~4 h to ~11 min, I stopped treating them as long-running, and I
+fired the next one without checking for a live hook.
+
+**Bounded, and resolved deliberately.** S-574's `git add` staged the log *after* both entries were appended,
+so the single staged blob (`6d306312`, 130 insertions) contains **both**; whichever hook commits first
+carries both. I then killed the younger suite — **redundant by construction**, since both stage the identical
+blob and one commit suffices — which loses no work and halves the contention. ⚠ **That kill is different in
+kind from the three wrong ones at S-566/S-567**: those were guesses that a slow process was wedged; this is
+an argument that a second commit of the same blob cannot add anything. **Cost: S-574's commit message. Its
+entry text survives in the log.**
+
+### NOT ESTABLISHED
+
+⛔ **"111 of 111 read" is a READING audit, not a re-derivation.** For most rows I verified what is claimed,
+what is cited, what the cited frozen file says, and whether the row contradicts itself — **not the
+arithmetic**. Numbers I did re-derive are confined to the D23 items (z −0.5702, 35/46, CP [0.6123, 0.8741],
+8/47), D34's paired intervals, and the option-mass measurements of S-559…S-564.
+⛔ **7.2 % is a per-ROW rate over unequal units** and should not be quoted as a defect rate for the sprint:
+an AM row is usually one correction, a D row a full result with several cells.
+⛔ **A single reading pass finds what a reader notices.** The four occasions where the record corrected me
+are direct evidence that one pass misses things; a second pass by someone else would not be redundant.
+⛔ **Nothing here re-opens a result.** All 8 defects are in how claims are STATED. **No number in the record
+was found wrong by this audit** — the closest is D23's missing floor, which changes what the row implies
+about reachability, not what was measured.
+⛔ **No arm ran, and none has for many ticks.** The queue is empty, the commit gate is no longer the
+constraint, and **the binding constraint is the absence of a launchable preregistered family** — which this
+audit does not address and was never going to.
+
+**NEXT:** stop auditing, per S-574. The remaining work that is actually blocked on nothing is the **five
+clear breaches**: D34 and D44 carry their corrections already, D37, D38 and D40-c have edits applied, and
+what is left is to re-read those three rows once against their frozen files to confirm the applied wording
+holds — a bounded task, not a new sweep.
