@@ -47533,3 +47533,75 @@ entry now rests on one item, not four.**
 **NEXT:** stop widening and go and check the four amendments that touch the FIVE clear breaches — AM-32,
 AM-34, AM-36, AM-41, AM-45 — with the row/record distinction made explicit up front, because on this
 evidence the correction I am about to claim is missing may already be written somewhere I did not look.
+
+## S-572 / the amendments are cleaner than the claims they amend — and one of them already qualified D38, which STRENGTHENS the breach rather than dissolving it (2026-09-29)
+
+S-569+570+571 are committing. Per S-571's NEXT I read the amendments touching the five clear breaches, **with
+the row/record distinction stated up front** — the error I had made three times on D23. It paid immediately.
+
+### 1. 🔴 AM-41 ALREADY QUALIFIES D38, AND IT DOES SO WITH A MEASUREMENT
+
+`AM-41`, labelled **📌 EXPLORATORY, NOT PREREGISTERED** in its claim cell *and again* in its status cell:
+
+> *"⚠ **Head 23 — which D38 reports as not transferring — tracks at ρ = +0.817**, so "head 23 does not
+> transfer" is true of the **AMPLITUDE** and false of the **SHAPE**"*
+
+⇒ **The record was not silent about D38's headline.** S-566 framed the D38 breach as one nobody had caught;
+that framing was wrong, and this is the **fourth** time this audit has found the correction already written.
+
+⚠ **But the breach does NOT dissolve — it gets stronger, and the two findings are independent.** AM-41 is an
+*empirical* qualification (the depth profile transfers even where the amplitude does not). Mine is an
+*inferential* one: D38 asserts **absence** from an arm its own instrument **DROPPED** at `power_ratio`
+**0.6235** against a gate of 1.5, in a field named `NOT_A_MISS`, while D38's own status cell says head 23 is
+**"CANNOT ANSWER at head level"**. ⇒ So the claim text *"— no transfer"* is now contradicted **three ways**:
+by its own status cell, by the artefact that dropped the arm, and by a measurement two hundred rows away
+showing the shape transfers at ρ = +0.817. **That is a worse position for the claim than S-566 described.**
+
+### 2. AM-41 IS ALSO THE STANDARD D37 MISSED — THE D18/D23 SHAPE, AGAIN
+
+D37's defect (S-562) was stating a rival **"REFUTED"** with a probability, from an artefact self-labelled
+`"verdict_is_preregistered": false`, uncited. AM-41 is the same kind of post-hoc cross-family correlation and
+it is handled correctly: **EXPLORATORY** twice, sources named, and it volunteers the objection that most
+weakens it — *"⛔ 27 cells are **not** 27 independent units; both censuses read the **SAME 23 domains**, so
+domain idiosyncrasy is shared and **inflates ρ**"* — plus the contrast that the screen's sub-argmax ordering
+does **not** transfer while the intervention agrees with itself.
+
+⇒ **Second instance of the internal-standard argument**, after D18 vs D23: the sprint knows how to label an
+exploratory correlation, does it in AM-41, and failed to in D37.
+
+### 3. THE OTHER TWO READ CLEAN, AND ONE IS A MODEL OF REFUSING CREDIT
+
+| row | verdict | the sentence that earns it |
+|---|---|---|
+| **AM-32** | clean self-correction | *"S-245 was right that one surrogate had to be wrong and right not to guess — **but its headline named the screen, and that was the wrong half**"*, with ρ(`S[h]`, census E) = **+0.7713** against ρ(gap, census E) = **+0.0696** |
+| **AM-45** | clean, and refuses the credit it could have taken | *"🟢 **REPRODUCIBILITY, not corroboration.** It re-reads the SAME arms, so it adds **no independent evidence** for either claim and **no p is strengthened by it**"*, and *"a deterministic replay of a wrong arm"* is still wrong. GATE 0 exit 0 at every version, 62 of 62 and 82 of 82 |
+
+### 4. THE PATTERN ACROSS 56 ROWS: AMENDMENTS ARE CLEANER THAN THE CLAIMS THEY AMEND
+
+Every amendment read so far — AM-17, AM-20, AM-32, AM-41, AM-45, AM-53-a — is clean, several exemplary, and
+**two of them (AM-17, AM-41) contain corrections to rows I had flagged as defective.** The five clear
+breaches are all **headline claim rows**; not one is an amendment.
+
+⚠ **The likely reason is mundane and worth saying: an amendment is written in correction mode, about a
+result already in hand, while a headline row is written at the moment of the result.** ⇒ **The actionable
+form: the remaining unaudited rows should be read HEADLINE-FIRST, and amendments are a lower-yield target** —
+which inverts S-571's NEXT, and the inversion is the finding.
+
+### NOT ESTABLISHED
+
+⛔ **AM-41's ρ = +0.7949 / +0.7148 / +0.817 are NOT re-derived by me**, nor AM-32's +0.7713 / +0.0696, nor
+AM-45's 62-of-62 and 82-of-82. I verified what each row claims, how it labels itself, and that its
+self-limitation is present — not its arithmetic.
+⛔ **"Amendments are cleaner" is a description of the 6 amendments I have read**, out of 62 AM-series rows.
+It is exactly the kind of after-the-fact regularity S-570 tested and found uninformative, and I am not
+treating it as established. 6 of 62 is not a sample worth generalising from.
+⛔ **D38's breach is NOT re-verified here** — I am reasoning from S-566's measurement of `power_ratio`
+0.6235 and the `NOT_A_MISS` field, which I did re-derive at the time.
+⛔ **AM-34 was not read**, so the D32/D33/D34 rung taxonomy is still unchecked.
+⛔ **56 of 111 claims audited; 55 remain.** Five clear breaches unchanged.
+⛔ **No arm ran.** The queue has been empty for many ticks; nothing is launchable without a new prereg, and
+that remains the real cost of this stretch — the audit is cheap and the science is stopped.
+
+**NEXT:** read the remaining **headline** rows newest-first — the D32/D33 pair and the AM-46…AM-57 block that
+covers the most recent work — and stop reading amendments, since 6 of 6 came back clean while 5 of 5 breaches
+were headlines.
