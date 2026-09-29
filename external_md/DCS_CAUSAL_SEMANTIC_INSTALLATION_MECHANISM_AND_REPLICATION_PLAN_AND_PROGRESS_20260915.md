@@ -48005,3 +48005,58 @@ this audit itself found.
 **NEXT:** sweep `reports/DCS_CSI_RESULTS_DRAFT.md` for the four corrected claims whose fixes exist only in the
 claim table — that is a real, bounded gap this entry just surfaced, and it is the last thing I can see that
 does not require a preregistration decision.
+
+## S-579 / the draft gap was ONE claim, not four — and the draft's editor checklist was PRESCRIBING the unlicensed wording (2026-09-29)
+
+S-578 landed as `fea4ad09`, **580 passed** in 9 m 17 s. Queue **EMPTY**. S-578's NEXT was to sweep
+`reports/DCS_CSI_RESULTS_DRAFT.md` for *"the four corrected claims whose fixes exist only in the claim
+table"*.
+
+### 1. ⚠ THAT PHRASING WAS AN OVERSTATEMENT — THREE OF THE FOUR WERE NEVER IN THE DRAFT
+
+| claim | in the draft? | outcome |
+|---|---|---|
+| D37 — *"the band-edge rival is REFUTED"* | **no** | nothing to fix |
+| D38 — *"no transfer"* | **no** | nothing to fix |
+| D40-c — the five-head rate | **no** | nothing to fix |
+| **D44 — *"sufficiency-specific"*** | **yes, twice** | **real gap, fixed** |
+
+⇒ I had implied four gaps and there was one. The defective wording of D37, D38 and D40-c never propagated
+out of the claim table, which is the opposite of the D42-vs-D19 inconsistency I was reasoning from.
+
+### 2. 🔴 BUT THE ONE THAT EXISTED WAS WORSE THAN A STALE MENTION
+
+The first D44 site is **line 358, inside the draft's own editor's forbidden-statements checklist** — the
+table that tells a writer what not to say. Its entry read:
+
+> `| ‼ "the codeword dissociation" stated unqualified, i.e. as DIRECTION-GENERAL |` **it is
+> sufficiency-specific.** `| D44 |`
+
+⇒ **The checklist was PRESCRIBING the unlicensed disjunct as the corrective wording.** S-566 established
+that PR-CSI-023's frozen failure branch reads *"D23/D24's dissociation is **either sufficiency-specific OR
+an artefact of that design**"*, with the second disjunct untested — and *"sufficiency-specific"* is the
+reading that **preserves** the sprint's own result, in a branch the prereg said *"WOULD WEAKEN THE SPRINT'S
+DISSOCIATION CLAIM"*. ⚠ **A defect in a checklist is worse than a defect in a claim**: the claim is one
+sentence, the checklist manufactures more of them.
+
+Both sites corrected — line 358 now gives the disjunction as the sayable form, and line 1545's prose now
+reads *"either sufficiency-specific or an artefact of that design (PR-CSI-023's frozen disjunction; the
+second disjunct is untested)"*. Verified afterwards: the sweep is clean on all four, the checklist row still
+has its 5 columns, `~~` parity 48 balanced, and **both documents now carry the disjunction**.
+
+### NOT ESTABLISHED
+
+⛔ **The sweep tested FOUR claims, not the whole draft.** D34's corrections were propagated at S-559–S-561
+and D23's were not swept at all; the draft may carry other claim-table corrections that never crossed over,
+and I have not looked.
+⛔ **My probe patterns are the usual hazard.** `\bno transfer\b` and `four of five` returning zero is
+evidence those exact strings are absent, not that the *ideas* are. A paraphrase in the draft would not have
+been caught, and I did not read the draft's D37/D38/D40-c sections to check.
+⛔ **Nothing was measured; no arm ran.** Queue empty for many ticks.
+⛔ **Both documents agreeing is not both documents being right** — they now agree because I wrote the same
+correction into each, one tick apart, with no independent check.
+
+**NEXT:** nothing in code, the claim table or the draft is now known-broken and blocking nothing. Every
+remaining item requires a preregistration decision: the loop's CURRENT STATE still names PR-CSI-016, which
+closed long ago as D38, and **S-167c forbids freezing a prereg that names anything not yet existing**, so the
+choice of the next family is not mine to make alone.
