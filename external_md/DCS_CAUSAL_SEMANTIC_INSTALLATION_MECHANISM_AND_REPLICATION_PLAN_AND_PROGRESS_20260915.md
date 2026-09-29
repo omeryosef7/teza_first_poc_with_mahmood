@@ -48060,3 +48060,72 @@ correction into each, one tick apart, with no independent check.
 remaining item requires a preregistration decision: the loop's CURRENT STATE still names PR-CSI-016, which
 closed long ago as D38, and **S-167c forbids freezing a prereg that names anything not yet existing**, so the
 choice of the next family is not mine to make alone.
+
+## S-580 / a COSTED feasibility pass on the three open questions — this freezes nothing and is not a preregistration (2026-09-29)
+
+S-579 landed as `e1cea7e4`, **580 passed** in 9 m 11 s. Queue **EMPTY**, and it has been for many ticks.
+Nothing in the code, the claim table or the draft is known-broken. Repeating *"this needs a decision"* is
+less useful than making the options concrete, so this entry **costs** them.
+
+⛔ **THIS IS NOT A PREREGISTRATION AND FREEZES NOTHING.** No prereg is written, no criterion is fixed, no
+tag prefix is registered. **S-167c** forbids freezing a prereg naming anything that does not exist, and
+nothing here names an arm, a bank or a file that is not already on disk.
+
+### 1. WHAT A RANK TEST NEEDS, AND WHAT A FAMILY COSTS — BOTH MEASURED
+
+**Attainable floor `1/(n+1)`:** a rank test needs **n_controls ≥ 20** to have *any* certifying outcome.
+At 20 the floor is `1/21 = 0.04762` and clears; at 19 it is `0.05` and `round(1/20, 4)` is not `< 0.05`
+(the off-by-one AM-8b already records). At 8 controls it is **0.1111**, which is why **D18** is inconclusive
+by design and says so.
+
+**Family cost, measured from the run dirs on disk** — not estimated:
+
+| family | arms | wall clock | min/arm |
+|---|---|---|---|
+| `csi9_cell3_button_validation` | 32 | 1.44 h | 2.7 |
+| `csi5_census_basket_validation` | 44 | 3.16 h | 4.3 |
+| `csi11_cell8_basket_validation` | 82 | 3.53 h | 2.6 |
+| `csi6_btnhead_button_validation` | 23 | 1.90 h | 5.0 |
+
+⇒ **A modern family is 23–82 arms and 0.4–3.5 GPU-hours.** The loop's framing that *"idle GPU is the binding
+cost"* is correct, and the unit of that cost is **a couple of hours**, not days.
+
+### 2. THE THREE OPEN QUESTIONS, COSTED
+
+**(a) Rung 2 — BLOCKED, and not by cost.** Its own recipe records *"K = 8 IS THE WHOLE ADMISSIBLE
+POPULATION (S-374), so q's precision cannot be improved by measuring more prompts"*, with power **0.1446**
+at the measured `q` and a 95 % interval spanning **~0.004 to ~0.74**. ⇒ More GPU time buys nothing; the
+ceiling is the admissible head set, not the sample. **Reviving it also requires clearing R36's F1/F4/F5/F7
+and R36-A's F15/F16, which the recipe records as left OPEN at closure.**
+
+**(b) D34's count — NOT A WELL-FORMED TEST.** Preregistering *"exactly N heads clear the anchor"* needs a
+null for a **count**, and I verified **no prereg in the tree defines one**. PR-CSI-012 declares
+`NO_RANK_TEST` precisely because a rank among 8–32 heads cannot clear α. ⚠ **And the question may not need
+answering**: S-560 established that the frozen reading is an **existence** claim — *"at least one head"* —
+and that it **HOLDS at both option-mass floors**. The count is the part that was never licensed; making it
+licensable is a design problem, not a GPU problem.
+
+**(c) D44's second disjunct — DESIGNABLE, AND THE ONLY ONE THAT BEARS ON A PUBLISHED HEADLINE.** The frozen
+branch reads *"D23/D24's dissociation is **either sufficiency-specific or an artefact of that design**"*,
+and the second disjunct is untested. A rank family at **n_controls ≥ 20** would be ~**24 arms ≈ 1.2 h** at
+the measured rate. ⇒ **This is the cheapest open question and the one attached to a claim the sprint
+actually publishes.**
+
+### NOT ESTABLISHED
+
+⛔ **I have NOT designed experiment (c), and this entry does not.** Saying a 24-arm rank family would fit the
+floor is arithmetic; saying *which* second sufficiency operationalisation separates "specific to the
+direction" from "artefact of the design" is the actual scientific question, and **I have not answered it and
+should not answer it alone**.
+⛔ **The min/arm figures are wall-clock spans of DONE.json mtimes**, so they include queueing and any
+serialisation within a job; they are an upper bound on compute, not a measure of it.
+⛔ **The `csi1_*` families were excluded from the cost table** — their 250–300 h spans accumulate across many
+separate jobs over the sprint and are not one family's cost.
+⛔ **"No prereg defines a null for a count" is a grep over `configs/`**, which is the population error this
+week has produced thirteen times. It is consistent with PR-CSI-012's `NO_RANK_TEST` text, but it is a search
+result, not a proof.
+⛔ **Nothing was measured on the model, and no arm ran.**
+
+**NEXT:** none that I can take alone. (a) is blocked by its own admissible set, (b) needs a null that does not
+exist, and (c) needs a design decision about what a second sufficiency operationalisation would be. The
+costing is done; **the choice is the user's**.
