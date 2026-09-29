@@ -391,6 +391,13 @@ def main():
 
     for arm in arms:
         per[arm], slots[arm], _, _ = w4.by_domain(dirs[arm], keep_keys=keep_keys)
+        # R42-F7 (S-577). `liveness` is DELIBERATELY NOT filtered by keep_keys, and the
+        # artefact now says so rather than leaving `n_rows: 230` next to
+        # `n_keys_retained: 146` for a reader to reconcile. GATE 0 reads the INTERVENTION --
+        # prefill/decode edits and dose -- and the hook fired on every row of the run
+        # regardless of whether that row's readout clears an option-mass floor. Filtering it
+        # would under-report what the run actually did, which is the opposite of the guard's
+        # purpose. The review that raised this proposed filtering; that would be wrong.
         live[arm] = w4.liveness(dirs[arm])
 
     doms = sorted(set.intersection(*(set(v) for v in per.values())))
@@ -1076,7 +1083,15 @@ def main():
     print("\n[census] anchors:  " + "   ".join("%s %+.6f" % (k, v) for k, v in _anch))
 
     out = {
-        "schema": "dcs_csi_head_census/1",
+        # R42-F8 (S-577). `/1` denoted TWO incompatible shapes: artefacts written before
+        # S-549 carry no `option_mass` block, and every artefact written after always does
+        # (the block is emitted unconditionally below). A reader could not tell from the
+        # version string which shape it held. `/2` means "carries an option_mass block";
+        # `/1` means it does not. Verified before bumping that NOTHING branches on this
+        # string: the only other mention in the tree is a synthetic fixture in
+        # scripts/gates/dcs_csi_pr013_freeze_selftest.py, and dcs_csi_pr013_freeze.py does
+        # not read `schema` at all. The 10 artefacts already on disk keep their `/1`.
+        "schema": "dcs_csi_head_census/2",
         "prereg": a.prereg, "prereg_id": pr["id"], "split": a.split,
         "tag_prefix": a.tag_prefix, "expect_n": a.expect_n, "n_domains": len(doms),
         "B": a.B, "seed": a.seed, "ci": a.ci, "ON_PROTOCOL": on_protocol,
@@ -1086,6 +1101,12 @@ def main():
         # sensitivity whose floor lives only in a terminal has exactly that defect. At floor 0.0
         # (the control) the block still appears, recording that NO filter was applied -- absence of
         # the block would be indistinguishable from a control run of an older binary.
+        "GATE_0_ROW_COUNTS_ARE_UNFILTERED": (
+            "GATE 0 / liveness n_rows is the count of rows the INTERVENTION ran on, never "
+            "reduced by --option-mass-floor. When a floor is in force it will exceed "
+            "option_mass.n_keys_retained, and that is correct: the hook fired on every row, "
+            "while the floor selects which readouts enter E. Filtering liveness would "
+            "under-report the intervention. (R42-F7/S-577)"),
         "option_mass": om_meta,
         "E": {k: round(v, 8) for k, v in E.items()},
         "ci95": {k: [round(v[0], 8), round(v[1], 8)] for k, v in CI.items()},

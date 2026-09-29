@@ -47893,3 +47893,63 @@ family.
 
 **NEXT:** F7 and F8 — filter `liveness` to the retained keys, or record alongside it that `n_rows` is the
 UNFILTERED count; and bump the schema so one version string stops denoting two shapes.
+
+## S-577 / F7 and F8 closed — and F7's fix is NOT the one the review proposed, because filtering liveness would have been wrong (2026-09-29)
+
+S-576 landed as `be4cd53c`. Queue **EMPTY**. These were the last two open R42 items.
+
+### 1. 🔴 F7 — THE REVIEW'S PROPOSED FIX WOULD HAVE BEEN A DEFECT
+
+R42 stream 2's ask was: *"filter `liveness` to the retained keys, or record alongside it that `n_rows` is the
+UNFILTERED count."* ⛔ **The first branch is wrong and I did not take it.** `liveness` reads the
+**INTERVENTION** — prefill/decode edits, dose, violations — and the hook fired on **every row of the run**,
+regardless of whether that row's readout clears an option-mass floor. Filtering it would **under-report what
+the run actually did**, which inverts the guard's purpose: GATE 0 exists to prove the intervention happened,
+not to describe the readout population.
+
+**The real defect was silence.** The floor artefact showed GATE 0 `n_rows: 230` beside
+`option_mass.n_keys_retained: 146` and left a reader to reconcile them. The artefact now carries
+`GATE_0_ROW_COUNTS_ARE_UNFILTERED`, stating that the excess is **correct and expected** when a floor is in
+force, and the code says the same at the call site. ⚠ **Disclosure again, not filtering** — the same shape as
+S-576's retention decision, and for the same reason: the number was never wrong, the framing was.
+
+### 2. F8 — ONE SCHEMA STRING FOR TWO SHAPES
+
+Verified by me: the control artefact carries **no** `option_mass` block, the floor artefact carries one, and
+**both are stamped `dcs_csi_head_census/1`**. Since S-549 the block is emitted unconditionally, so every new
+artefact has it and every pre-S-549 one does not — with nothing in the version string to tell them apart.
+Bumped to **`/2`**.
+
+⚠ **Checked before bumping that nothing branches on it**, because a shared version string is exactly the kind
+of coupling that breaks quietly: the only other mention in the tree is a **synthetic fixture** in
+`scripts/gates/dcs_csi_pr013_freeze_selftest.py`, and `dcs_csi_pr013_freeze.py` does **not read `schema` at
+all**. The 10 artefacts already on disk keep their `/1`, which is now meaningful rather than ambiguous.
+
+### 3. VOID 7 RE-VERIFIED BY MEASUREMENT
+
+Re-ran the full csi5 census at floor 0.05 against the published artefact: **0 mismatches across 43 arms** on
+`E`, `ci95` and `loo_marginal`. The only differences are the bumped `schema` and the two added disclosure
+fields. **17 tests pass; 2 of 2 mutations caught; source verified byte-identical to backup.**
+
+### NOT ESTABLISHED
+
+⛔ **Nothing here changes a number, and no published artefact was regenerated.** The four sensitivity
+artefacts still carry `/1` and lack both disclosures; as at S-576 that is a deliberate trade — regenerating
+would churn files that claims reference in exchange for metadata only.
+⛔ **The schema bump is a CONVENTION I am asserting, not one the sprint had.** `/2` means "carries an
+`option_mass` block" because I have just defined it to; no prereg or read recipe specifies census schema
+versions, and nothing validates them. Its only enforcement is the test I added.
+⛔ **Only csi5 was re-run** — csi7, csi8 and csi9 were not, so VOID 7 is demonstrated on one family of four
+for the second entry running. The change is additive by construction and by test; that is an argument, not
+four measurements.
+⛔ **F10 (source-grep tests) is only partly addressed.** The paired reader has behavioural tests; the census
+side of the option-mass suite is still largely source assertions, including the ones added here.
+⛔ **R42 is now closed on my side** — F1…F9 and F11 are either fixed, disclosed, or recorded as deliberate
+non-fixes with reasons. **I did not re-verify F7/F8's original measurements from the review**; I re-measured
+both myself from the artefacts before acting.
+⛔ **No arm ran.** Queue empty for many ticks. **The binding constraint remains the absence of a launchable
+preregistered family**, and every code item that was blocking nothing is now done.
+
+**NEXT:** there is no code or audit work left that is worth doing ahead of science. The bounded remainder is
+re-reading D37, D38 and D40-c once to confirm their applied wording holds; beyond that the sprint needs a
+preregistered family to run, which is a decision rather than a task.

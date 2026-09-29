@@ -173,3 +173,28 @@ def test_the_disclosure_is_additive_only():
     block = src[i:j]
     for forbidden in ("keep_keys =", "per[", "slots[", "E[", "CI["):
         assert forbidden not in block, "retention block mutates %r" % forbidden
+
+
+# ---- R42-F7 / F8, S-577 -------------------------------------------------------------------------
+
+def test_the_schema_distinguishes_the_two_artefact_shapes():
+    """R42-F8: `dcs_csi_head_census/1` denoted BOTH shapes -- artefacts written before S-549 carry no
+    `option_mass` block, every artefact written after always does. A reader could not tell which."""
+    src = open(CENSUS).read()
+    assert '"schema": "dcs_csi_head_census/2"' in src
+    assert '"schema": "dcs_csi_head_census/1"' not in src
+
+
+def test_liveness_is_NOT_filtered_and_the_artefact_says_so():
+    """R42-F7, and the fix is NOT the one the review proposed. It suggested filtering liveness to the
+    retained keys; that would be WRONG -- GATE 0 reads the INTERVENTION (prefill/decode edits, dose),
+    which fired on every row of the run regardless of whether that row's readout clears a floor.
+    Filtering would under-report what the run did. The defect was that nothing SAID the count is
+    unfiltered, leaving `n_rows: 230` beside `n_keys_retained: 146` for a reader to reconcile."""
+    src = open(CENSUS).read()
+    assert "live[arm] = w4.liveness(dirs[arm])" in src, "liveness must stay unfiltered"
+    assert "w4.liveness(dirs[arm], keep_keys" not in src, "liveness must NOT take the floor's keys"
+    assert "GATE_0_ROW_COUNTS_ARE_UNFILTERED" in src, "the artefact must disclose it"
+    i = src.index("GATE_0_ROW_COUNTS_ARE_UNFILTERED")
+    seg = src[i:i + 700]
+    assert "will exceed" in seg and "n_keys_retained" in seg
