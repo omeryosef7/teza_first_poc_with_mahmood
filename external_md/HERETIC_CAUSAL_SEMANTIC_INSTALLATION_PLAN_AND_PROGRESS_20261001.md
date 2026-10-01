@@ -312,6 +312,84 @@ Heretic; we note the AGPL network-copyleft implication (we do not distribute a n
 - Launched isolated-env subagent to build conda env `heretic_csi` (install pinned Heretic, verify imports/CLI,
   no GPU, do not touch `poc_stage2`). **Pending.**
 
+## S-004 — 2026-10-01 — DESIGN RULING: architecture for the headline rank sweep (consequential; documented per plan §24)
+
+Reconstructing the CSI scoring + position + intervention infrastructure revealed a genuine fork that
+determines whether the rank sweep is *comparable* to the inherited basket/button rank-1 dissociation. Decision
+made autonomously (conservative choice, documented, continue):
+
+**The headline operator rank-sweep (P2) is run in the CSI "rescue" paradigm, forced to eager attention, reusing
+the frozen CSI readout and rank-matched control families — with Heretic's ARA L-BFGS kNN optimizer + plugin API
++ Optuna as the operator-fitting *engine*.** Concretely:
+- **Intervention modality = rescue under the live attention knockout** (`demo_all:attn_knockout:6-14:1.0`,
+  `--knockout-scope target_surface_row_only`, dose 4, cell C, `query_kind=semantic_one_word`). TARGET = clean
+  (no-KO) module-I/O at the codeword row; SOURCE = KO module-I/O at the codeword row. The learned operator ΔW=BA
+  is fit to move SOURCE→TARGET at the per-example codeword position, generalizing the inherited rank-1-axis
+  rescue to an arbitrary-rank weight operator. This is the ONLY framing directly comparable to basket rank 1/47
+  PASS vs button 36/47 NEGATIVE and to the whole-state ceiling (recovery 0.341).
+- **Position = per-example codeword row (`rel-10`), axis site (`rel-6`) as a secondary site** — NEVER
+  last-token, NEVER an absolute index (CSI proved absolute indices VOID: 0/2300 triples match; the capture must
+  be end-relative and self-validated by decoding the captured token == the codeword, failing loudly otherwise).
+- **Endpoint = the frozen CSI readout** `y_install = logistic(logp_concept − logp_codeword)` via
+  `score_behavior.py`'s forward-only `next_token_readout` at the "Answer:" position, with `option_mass<0.05`
+  degraded-regime flagging, and validated concept/codeword id-groups (`signals.readout_id_pair`). Scored in
+  `poc_stage2` (eager) by loading the exported LoRA adapter — maximal reuse of guard-tested code — AND by an
+  inline heretic scorer cross-checked against it (independent re-derivation; satisfies VOID 9).
+- **Eager everywhere:** force `attn_implementation="eager"` in the heretic env (minimal tracked patch to
+  `model.py` load, under `patches/`, OR a wrapper monkeypatch) so the operator is fit under the same attention
+  implementation it is scored under. An eager-vs-SDPA sensitivity smoke runs first.
+- **Controls = the existing CSI rank-matched families** (random orthogonal rank-k, shuffled source↔target,
+  norm-matched random LoRA, neutral-position, identity no-op, source→source, target→target) at every rank.
+
+**What still uses Heretic natively:**
+- **Phase B** = Heretic ARA run *as shipped* (last-position, knockout-free) on our matched populations — a
+  deliberate baseline/control answering "is generic end-of-prompt operator editing sufficient?" (expected: no).
+- **Optuna layer/component search (P4)** as a corroborating *knockout-free* modality, scoped separately and never
+  mixed into the headline rescue numbers.
+
+**Why not pure Heretic-native for the headline:** knockout-free source/target (installed vs not-installed
+domains) conflates "installs" with "already installed", runs under SDPA≠eager, and cannot reuse the CSI
+knockout/controls — so its rank numbers would not be comparable to the inherited dissociation, defeating the
+scientific purpose. **Why not pure CSI-reimplementation:** the plan mandates exploiting Heretic's ARA optimizer,
+plugin API and Optuna; we use all three as the engine and run native ARA as a control. This hybrid is the
+plan-faithful AND inherited-science-faithful choice. **Reversibility:** nothing frozen is touched; both Phase B
+and the hybrid are new artifacts under `research/heretic_csi/` + new `outputs/heretic_csi/`.
+
+## S-005 — 2026-10-01 — P1 position primitive VALIDATED; QUOTA blocker + strategy pivot; env escalation
+
+**P1 position primitive validated offline (no GPU), against the real Llama tokenizer:**
+- id-pairs (mode=primary, leading-space, single-token, distinct): **bomb=13054, basket=14351, button=3215**.
+- `positions.py` is correct: on the **chat-templated prompt (add_generation_prompt=True, NO "Answer:")**, the
+  **codeword row is `rel_end=-10`** and decodes exactly to ` basket`/` button`; the LOUD self-check correctly
+  REFUSED when `-10` was applied to the `+"Answer:"` input (there the codeword shifts to `-12`). Axis site
+  `rel_end=-6` is the query-final `?` on the bare prompt (not the codeword — expected; `require_codeword_match`
+  is off for the axis site).
+- **VOID-critical fact pinned:** CSI's knockout/axis offsets (-10 codeword, -6 axis) are relative to the **bare
+  templated prompt**; the `y_install` readout appends `"Answer:"` and reads the last position. `dcs_csi_axis.py`
+  fits on `semantic_one_word`, cell C, site `rel-6` FROZEN, from pre-extracted `extract_boombness` states —
+  consistent with the bare-templated construction. **TODO before any scored run:** confirm `extract_boombness`
+  captured on the bare templated prompt (expected) so the operator anchor matches the axis/KO site exactly.
+
+**BLOCKER (escalation, per plan §24 — NOT stalling the headline):** the `heretic_csi` conda env install fails
+on `torch` with `OSError [Errno 122] Disk quota exceeded`. Root cause = a **group/qtree quota on
+`/Netapp5_sharifm` (group `cs_sharifm`), exhausted by the whole group (~25T)** — invisible to `quota` (which
+reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0-byte files. Volume is 94% full,
+~1.4T physical free. `heretic_llm` itself builds fine; only the ~8–10G torch stack can't be written.
+- **Reclaimed ~6G of my own** to relieve the razor's edge: removed the broken partial `heretic_csi` env (2.9G)
+  and `/home/sharifm/students/omeryosef/.pip_cache` (3.2G). Writes healthy again, but the group volume remains
+  near its limit — **stay frugal; prefer compact JSON; clean scratch.**
+- **STRATEGY PIVOT (keeps P0–P3 moving with zero new env):** the headline operator rank-sweep already runs in
+  `poc_stage2` per the S-004 ruling (working torch/transformers/peft, eager). We implement the position-aware
+  low-rank operator optimization by **porting ARA's L-BFGS kNN-steer objective as a clean-room reimplementation
+  from the §9 audit (attributed to ARA / Weidmann 2026; algorithm, not AGPL code)** into `research/heretic_csi/`,
+  driven by the existing CSI knockout + readout + control families. **No torch install needed for the headline.**
+- **What remains env-blocked (deferred, not headline):** Phase B (native Heretic ARA *as shipped*) and the
+  Optuna layer/component **search** modality (P4 corroboration). **USER DECISION needed to unblock these** (not
+  needed for P0–P3): (A) raise/free the `cs_sharifm` qtree quota [cleanest]; (B) build the env on a spacious
+  shared FS visible to SLURM nodes — candidates `/specific/scratches` (8.3T free) or `Netapp5_tkoren` (7.4T),
+  each pending access/visibility verification; (C) treat native ARA as a `poc_stage2` reimplementation too
+  (loses "ran the shipped tool" provenance). Recommendation: (A). This is surfaced to the user; core work proceeds.
+
 ## S-003 — 2026-10-01 — scaffolding research/heretic_csi (in progress)
 - Creating `research/heretic_csi/` with: README (AGPL provenance note), a position-aware Modifier plugin
   skeleton, custom Scorer skeletons (SemanticInstallation / Preservation), a `configs/` dir, and unit-test
