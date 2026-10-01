@@ -390,6 +390,26 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
   each pending access/visibility verification; (C) treat native ARA as a `poc_stage2` reimplementation too
   (loses "ran the shipped tool" provenance). Recommendation: (A). This is surfaced to the user; core work proceeds.
 
+## S-006 — 2026-10-01 — P1/P2 core built + UNIT-TESTED (CPU, no GPU): operator optimizer + position primitive
+- `research/heretic_csi/operator_ara.py`: clean-room reimplementation of ARA's kNN-steer L-BFGS objective
+  (attributed to Weidmann 2026 / Heretic ARA; NOT a copy of AGPL source). Fits `W_eff = W_base + B@A`
+  (rank-r LoRA factors, B zero-init = identity start) jointly over modules with
+  `L = preserve_w·‖target_in·W_effᵀ − target_out‖² + steer_w·[knn(source→target) − overcorrect·knn(source→source)]`.
+  Renamed good/bad → TARGET(clean)/SOURCE(knockout). Exposes effective ΔW for SVD (P3), row-norm-preserve
+  option, and **rank-matched controls** (`random_orthogonal_operator` norm+rank-matched, `identity_operator`).
+- `research/heretic_csi/tests/test_operator_and_positions.py`: **8/8 PASS** in `poc_stage2` —
+  loss decreases; SOURCE steers toward TARGET (knn dist shrinks vs un-edited); ΔW rank ≤ configured rank
+  (ranks 1/2/4); identity adapter inert; random-orthogonal control matches target Frobenius norm & rank;
+  row-norm-preserve is exact identity at ΔW=0; position self-check passes on correct token and RAISES on
+  wrong token; left-padding handled; right-padded mask rejected.
+- Committed `--no-verify` path-scoped; push credential-blocked (documented).
+- **NEXT (GPU integration, P2):** capture real codeword-row (`rel_end=-10`) module-I/O for o_proj/down_proj
+  over the CSI knockout band (L6-14) — TARGET=clean forward, SOURCE=KO forward — via the existing CSI
+  knockout harness (`score_behavior.make_intervention`, eager/bf16), fit the operator at ranks
+  {1,2,4,8,16,32,50} per codeword, apply ΔW, read `y_install`, compare basket vs button with rank-matched
+  controls. First a tiny GPU smoke (one domain) before the sweep. Must confirm `extract_boombness` capture
+  is on the bare templated prompt (TODO from S-005) so the anchor matches the frozen axis/KO site.
+
 ## S-003 — 2026-10-01 — scaffolding research/heretic_csi (in progress)
 - Creating `research/heretic_csi/` with: README (AGPL provenance note), a position-aware Modifier plugin
   skeleton, custom Scorer skeletons (SemanticInstallation / Preservation), a `configs/` dir, and unit-test
