@@ -42,6 +42,19 @@ TAGP="hcsi_p2a_${CW}"
 echo "HOST=$(hostname) JOB=${SLURM_JOB_ID:-none} CW=$CW RANKS=$RANKS NRAND=$NRAND NSHUF=$NSHUF LIMIT=$LIMIT $(date -Is)"
 nvidia-smi --query-gpu=name,compute_cap --format=csv,noheader || true
 
+# TMPDIR: prefer SLURM_TMPDIR (SLURM auto-cleans it on job end, incl. scancel) so a killed job does NOT
+# leave a ~30G stage behind filling the node's /tmp (that littering filled n-803 and ENOSPC'd S-028).
+# mktemp + the stage both live here. Trap TERM/INT/EXIT to also clean the fallback /tmp path.
+export TMPDIR="${SLURM_TMPDIR:-/tmp/${USER}/${SLURM_JOB_ID:-$$}}"
+mkdir -p "$TMPDIR"
+trap 'rm -rf "$TMPDIR/llama31" 2>/dev/null || true' EXIT TERM INT
+AVAIL_KB=$(df --output=avail -k "$TMPDIR" 2>/dev/null | tail -1 || echo 0)
+echo "TMPDIR=$TMPDIR avail_kb=${AVAIL_KB} host=$(hostname)"
+if [ "${AVAIL_KB:-0}" -lt 36000000 ]; then
+  echo "INSUFFICIENT_TMP: need ~36G node-local, have ${AVAIL_KB}KB on $(hostname):$TMPDIR -- exiting fast (no GPU wasted)"
+  exit 1
+fi
+
 # PRE-FLIGHT (no GPU): resolve + validate every arm's basis key BEFORE the expensive model load.
 ARMS=$(mktemp)
 "$PY" research/heretic_csi/emit_sweep_arms.py --pt "$PT" --ranks "$RANKS" --nrand "$NRAND" --nshuf "$NSHUF" > "$ARMS"
@@ -50,7 +63,7 @@ echo "PREFLIGHT_OK n_sweep_arms=$(wc -l < "$ARMS")"
 # STAGE THE MODEL TO NODE-LOCAL DISK. The cross-user snapshot on netapp loads at ~30-50 s/tensor under
 # contention (hours). A single SEQUENTIAL bulk copy (deref symlinks) to node-local /tmp is far faster,
 # and the subsequent load reads from local disk. Standing rule for all GPU jobs (log S-014).
-LOCAL="${SLURM_TMPDIR:-/tmp/${USER}/${SLURM_JOB_ID:-$$}}"
+LOCAL="$TMPDIR"
 mkdir -p "$LOCAL"
 echo "STAGE_IN start $(date -Is) -> $LOCAL/llama31"
 if cp -rL "$SNAP" "$LOCAL/llama31" 2>/dev/null; then
@@ -59,7 +72,6 @@ if cp -rL "$SNAP" "$LOCAL/llama31" 2>/dev/null; then
 else
   echo "STAGE_IN FAILED -- falling back to NFS snapshot (slow) $(date -Is)"
 fi
-trap 'rm -rf "$LOCAL/llama31" 2>/dev/null || true' EXIT
 
 COMMON="--bank $BANK --model $SNAP --query-kinds semantic_one_word \
 --conditions natural_doublespeak --n-examples 4 --readout-ids whole_answer --readout-max-batch $BATCH \

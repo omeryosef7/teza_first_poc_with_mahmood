@@ -740,3 +740,18 @@ No headline exists yet (both runs staging); nothing to overclaim. The pipeline +
   if a verdict is marginal).
 - NEXT tick: watch staging (4 parallel source reads on n-803 → may be slow) + arm cadence on L40S (likely faster
   than 3090's 520s); analyze each (cw,rank) as it completes → first matched dissociation signal (rank 1 vs 16).
+
+## S-029 — 2026-10-02 — BUG: scancel littered node /tmp → ENOSPC; fix staging (SLURM_TMPDIR + TERM trap + df precheck)
+- All 4 L40S jobs FAILED in 22s: `OSError [Errno 28] No space left on device` at the preflight mktemp. Root cause:
+  my EXIT-only cleanup trap does NOT fire on `scancel` (SIGTERM), so every killed job left its ~30G node-local
+  stage behind, filling nodes' /tmp (n-803 was full before the job even staged). The repeated kill/resubmit cycles
+  caused this.
+- **FIX in rescue_sweep.slurm:** (1) `export TMPDIR="${SLURM_TMPDIR:-/tmp/$USER/$JOBID}"` so mktemp + stage live in
+  SLURM-managed per-job scratch (auto-cleaned on scancel); (2) `trap ... EXIT TERM INT` (clean on kill too);
+  (3) a fast **df pre-check** (needs ~36G node-local; else exit 1 in seconds — no cryptic ENOSPC, no wasted stage).
+  `bash -n` clean.
+- Relaunched basket/button × ranks {1,16} → 965927-30 on L40S (`--exclude=n-803,n-302`), PENDING for L40S slots.
+- ⚠ NOTE: killed-job /tmp litter from earlier runs still sits on n-304/n-350/n-803 (cannot rm node-local from
+  login; SLURM/node reboot or the owner's cleanup reclaims it). The df precheck now routes jobs AWAY from full
+  nodes automatically.
+- NEXT tick: confirm 965927-30 start + pass df precheck + stage + arm cadence on L40S.
