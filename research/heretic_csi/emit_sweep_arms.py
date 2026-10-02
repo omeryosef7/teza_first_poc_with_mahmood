@@ -33,12 +33,16 @@ def main() -> int:
         if cand not in keys:
             missing.append(cand); continue
         lines.append(f"KO_CAND_r{r}\t{cand}\tNONE\tcandidate\t{r}")  # NONE sentinel: bash read collapses empty tab fields
-        if r == 1:
+        # Use the RANK-MATCHED control family uniformly for ALL ranks (incl. r=1): ctrl_random_r{r}_*
+        # (46) + ctrl_shuffled_pls{r}_* (10). This is what --rank-controls 1,... emits and what the
+        # inherited n46 rank-1 PASS used (floor 0.0213). Only fall back to the smaller legacy r=1 family
+        # (ctrl_orth/ctrl_random{i}/ctrl_shuffled{j}, floor ~0.067) if the axis was built WITHOUT
+        # --rank-controls 1 (rank-matched r1 keys absent).
+        rand = [f"ctrl_random_r{r}_{i}" for i in range(100) if f"ctrl_random_r{r}_{i}" in keys]
+        shuf = [f"ctrl_shuffled_pls{r}_{j}" for j in range(100) if f"ctrl_shuffled_pls{r}_{j}" in keys]
+        if r == 1 and not rand:
             rand = [k for k in (["ctrl_orth"] + [f"ctrl_random{i}" for i in range(50)]) if k in keys]
             shuf = [f"ctrl_shuffled{j}" for j in range(50) if f"ctrl_shuffled{j}" in keys]
-        else:
-            rand = [f"ctrl_random_r{r}_{i}" for i in range(100) if f"ctrl_random_r{r}_{i}" in keys]
-            shuf = [f"ctrl_shuffled_pls{r}_{j}" for j in range(100) if f"ctrl_shuffled_pls{r}_{j}" in keys]
         for i, k in enumerate(rand[:a.nrand]):
             lines.append(f"KO_RAND_r{r}_{i}\t{k}\t{cand}\tcontrol_random\t{r}")
         for j, k in enumerate(shuf[:a.nshuf]):

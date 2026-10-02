@@ -692,3 +692,17 @@ Reviewed the live P2a path against the plan's bug classes. Findings:
 - **Duplicate-dir hygiene:** stale hcsi_p2a_* dirs exist from killed runs; analysis disambiguates by
   --require-slurm-job <jobid> (cannot rm them — deletion permission-denied). Confirmed clean mechanism.
 No headline exists yet (both runs staging); nothing to overclaim. The pipeline + controls are sound.
+
+## S-025 — 2026-10-02 — arm_runner verified (1 eager load); FIX r=1 control-count bug; relaunch all-ranks-correct
+- **arm_runner validated:** `MODEL LOAD #1 (18.8s) key=(...,'eager',...)` — exactly ONE load, EAGER (VOID 9 clear);
+  304-line argv; arms advancing in-process (no reload). option_mass medians sane (basket 0.090, button 0.330 at
+  BASE — note these are per-arm BASE aggregates, button installs more as expected).
+- **BUG (self-check): rank-1 was under-powered.** emit_sweep_arms had an r==1 branch using the LEGACY small
+  control family (ctrl_orth + 8 random + 5 shuffled = 14 → floor 0.067, cannot certify at 0.05), instead of the
+  rank-matched 46+10 family (ctrl_random_r1_*/ctrl_shuffled_pls1_*) that the .pt has and the inherited n46 rank-1
+  PASS used. Fixed: use the rank-matched family uniformly for ALL ranks (legacy only as fallback if absent).
+  Verified r=1 now emits 57 arms (1+46+10). Only 1 arm had run on the buggy jobs → negligible waste.
+- Killed 965561/965562; relaunched **basket 965624 + button 965625** (n-350). Now every rank (incl r=1) is
+  certifiable at floor 0.0213. argv will be 346 lines (4 + 6×57).
+- **NEXT tick:** monitor arms to completion (~2-3h, one load); then analyze_sweep per codeword, TRAIN then
+  VALIDATION, --require-slurm-job → the first defensible basket-vs-button rescue-vs-rank curve.
