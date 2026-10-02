@@ -657,3 +657,15 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
   BATCH=1); run `arm_runner --argv-file F --expect-n N --out LOG`. One model load, all 346 arms. Relaunch full
   basket + button. Then analyze_sweep for the first defensible curve.
 - Nothing running now (both killed). No results lost (BATCH=8 runs were invalid).
+
+## S-023 — 2026-10-02 — loop tick: rescue_sweep rebuilt on arm_runner (model loads ONCE); full sweeps relaunched
+- Rewrote `rescue_sweep.slurm`: after staging, it emits an argv-file (one `python score_behavior.py ...` line per
+  arm: liveness + candidate + rank-matched controls) and runs `scripts/dcs_csi_arm_runner.py --argv-file F
+  --expect-n EXPECTN --out ...`. arm_runner memoizes `dc.load_model` → **one model load for all 346 arms** (no
+  per-arm reload), hook-leak-checks between arms, skips complete arms. `set +e` guard around it to capture RC.
+  BATCH reverted to 1 (no OOM). `bash -n` clean.
+- Relaunched full **basket 965561** + **button 965562** (both n-304, BATCH=1, LIMIT=0, ranks {1,2,4,8,16,32},
+  46 rand + 10 shuf controls). EXPECTN=0 (fresh run, skip-if-done off).
+- NEXT tick: confirm arm_runner log shows exactly ONE "MODEL LOAD" (key=...eager...) and arms advancing fast;
+  verify liveness option_mass≈0.1212 at BATCH=1; when done, analyze_sweep per codeword (floor 0.0213) for the
+  first defensible basket-vs-button rescue-vs-rank curve.

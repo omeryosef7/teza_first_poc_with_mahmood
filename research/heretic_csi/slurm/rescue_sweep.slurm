@@ -68,22 +68,32 @@ COMMON="--bank $BANK --model $SNAP --query-kinds semantic_one_word \
 KO="--intervene demo_all:attn_knockout:6-14:1.0 --knockout-scope target_surface_row_only"
 RESC="--rescue-positions query --rescue-layer $LAYER"
 
-run () { local arm="$1"; shift; echo ">>> $arm $(date -Is)"; "$PY" src/boombness/score_behavior.py "$@"; }
-
-# ---- liveness arms (fail-fast signal: KO_FULL must recover, KO_SELF must be inert) ----
-run BASE    $COMMON                                --arm BASE    --tag ${TAGP}_BASE
-run KO      $COMMON $KO                            --arm KO      --tag ${TAGP}_KO
-run KO_SELF $COMMON $KO $RESC --rescue-donor self  --arm KO_SELF --tag ${TAGP}_KO_SELF
-run KO_FULL $COMMON $KO $RESC --rescue-donor clean --arm KO_FULL --tag ${TAGP}_KO_FULL
-
-# ---- sweep arms (candidate + rank-matched controls) ----
+# Build the argv-file: one full score_behavior command per arm. arm_runner memoizes dc.load_model so
+# the model loads ONCE and every arm runs in-process (no per-arm reload). It also hook-leak-checks
+# between arms and skips already-complete arms.
+ARGV=$(mktemp)
+emit () { echo "python src/boombness/score_behavior.py $*" >> "$ARGV"; }
+# liveness arms
+emit $COMMON                                --arm BASE    --tag ${TAGP}_BASE
+emit $COMMON $KO                            --arm KO      --tag ${TAGP}_KO
+emit $COMMON $KO $RESC --rescue-donor self  --arm KO_SELF --tag ${TAGP}_KO_SELF
+emit $COMMON $KO $RESC --rescue-donor clean --arm KO_FULL --tag ${TAGP}_KO_FULL
+# sweep arms (candidate + rank-matched controls)
 while IFS=$'\t' read -r ARM KEY NM ROLE RANK; do
   [ -z "$ARM" ] && continue
   EXTRA="--rescue-basis $PT --rescue-basis-key $KEY"
   [ -n "$NM" ] && [ "$NM" != "NONE" ] && EXTRA="$EXTRA --rescue-norm-match-key $NM"
-  run "$ARM" $COMMON $KO $RESC --rescue-donor clean $EXTRA --arm "$ARM" --tag "${TAGP}_${ARM}"
+  emit $COMMON $KO $RESC --rescue-donor clean $EXTRA --arm "$ARM" --tag "${TAGP}_${ARM}"
 done < "$ARMS"
+echo "ARGV_FILE lines=$(wc -l < "$ARGV")  (model loads ONCE via arm_runner)"
 
-echo "---- SWEEP DONE rc=$? CW=$CW $(date -Is) HOST=$(hostname)"
-echo "DONE_MARKER sweep_arms=$(wc -l < "$ARMS") codeword=$CW ranks=$RANKS"
-rm -f "$ARMS"
+# --expect-n 0 for fresh LIMIT=0 runs (skip-if-done disabled); for LIMIT>0 it enables resume/skip.
+EXPECTN=0; [ "$LIMIT" != "0" ] && EXPECTN="$LIMIT"
+set +e
+"$PY" scripts/dcs_csi_arm_runner.py --argv-file "$ARGV" --expect-n "$EXPECTN" \
+  --out "outputs/heretic_csi/arm_runner_${CW}_${SLURM_JOB_ID:-0}.json"
+RC=$?
+set -e
+echo "---- SWEEP DONE rc=$RC CW=$CW $(date -Is) HOST=$(hostname)"
+echo "DONE_MARKER sweep_arms=$(wc -l < "$ARMS") argv_lines=$(wc -l < "$ARGV") codeword=$CW ranks=$RANKS rc=$RC"
+rm -f "$ARMS" "$ARGV"
