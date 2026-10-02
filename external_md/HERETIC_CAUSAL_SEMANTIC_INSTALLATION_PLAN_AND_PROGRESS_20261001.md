@@ -766,3 +766,15 @@ No headline exists yet (both runs staging); nothing to overclaim. The pipeline +
   button r1 (966085), button r16 (966086) with lean staging, PENDING for L40S.
 - NEXT tick: 965928 arm cadence on L40S (expect faster than 3090 520s); pending jobs start + lean-stage fast;
   analyze each (cw,rank) as it completes → first matched rank-1-vs-16 dissociation signal.
+
+## S-031 — 2026-10-03 — cadence confirmed ~517s/arm (L40S=3090, readout-bound); 4 (cw,rank) jobs progressing
+- basket r16 (965928): BASE arm = 517.6s → ~517s/arm is FIXED (L40S not faster than 3090; the whole-answer
+  readout over ~670 rows is CPU/IO-bound, not GPU-bound). 61 arms/job => ~8.75h/job (20h limit ample).
+- In flight: basket r16 (965928, t-806, arm 1/61 done), basket r1 (966084, n-801, staging), button r1 (966157)
+  + button r16 (966158) PENDING (L40S, excl full nodes n-803/804/302). L40S /tmp broadly tight (my scancel litter
+  + others); df precheck routing around it.
+- **Trade-off noted for the FULL 6-rank sweep:** 12 jobs × 8.75h is heavy. These 4 full-row jobs give the key
+  rank-1-vs-16 dissociation at FULL power (defensible). For the remaining ranks {2,4,8,32}, consider a
+  domain-stratified subset bank (~3 rows/domain → ~2.6min/arm, ~2.6h/job) — a declared power trade-off — decided
+  AFTER seeing these effect sizes.
+- NEXT tick: monitor arm progress (no action unless a job dies); analyze_sweep each (cw,rank) when it hits 61/61.
