@@ -778,3 +778,8 @@ No headline exists yet (both runs staging); nothing to overclaim. The pipeline +
   domain-stratified subset bank (~3 rows/domain → ~2.6min/arm, ~2.6h/job) — a declared power trade-off — decided
   AFTER seeing these effect sizes.
 - NEXT tick: monitor arm progress (no action unless a job dies); analyze_sweep each (cw,rank) when it hits 61/61.
+
+## S-032 — 2026-10-03 — monitor: all 4 (cw,rank) jobs healthy on L40S; lean staging confirmed
+- basket r16 (965928) 3/61, basket r1 (966084) loaded, button r1 (966157) 3/61, button r16 (966158) model loading
+  after **STAGE_IN done size=15G** (original/-skip lean stage CONFIRMED working). All RUNNING, ≤6 cap, no failures,
+  ~517s/arm. Each completes in ~8-9h. No action; analyze each at 61/61.
