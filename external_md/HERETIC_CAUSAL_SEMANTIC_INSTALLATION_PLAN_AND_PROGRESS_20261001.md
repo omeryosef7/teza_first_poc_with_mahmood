@@ -410,6 +410,32 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
   controls. First a tiny GPU smoke (one domain) before the sweep. Must confirm `extract_boombness` capture
   is on the bare templated prompt (TODO from S-005) so the anchor matches the frozen axis/KO site.
 
+## S-007 — 2026-10-02 — loop tick: capture-reuse mapping + refined P2 plan (P2a activation / P2b weight)
+- Ops: SLURM idle; index unlocked; HEAD `9c225600`; **quota eased to 4.4T free (85%, was 1.4T/94%)** — more
+  headroom (user freed space / admin); still staying frugal.
+- **Finding (decisive for P2 design):** the existing `extract_boombness` runs store **residual-stream
+  representations only** (`cache/final_occurrence_reps.pt`, `multiposition_reps.pt`) at sites — **NOT**
+  o_proj/down_proj module input/output, and **clean only (no KO arm)**. So the *weight-level* ARA fit (needs
+  matrix I/O under clean AND KO) requires a **fresh capture**. The KO itself is reusable: `pc = pair()` (from
+  `common`) is the patch-core provider; the attention-knockout context manager lives in `surgical_knockout.py` /
+  `score_behavior.py` (`make_intervention` builds it, but is deeply coupled to composed-arm plumbing).
+- **REFINED P2 (two complementary experiments, both feed H1 "dimensionality explains the dissociation"):**
+  - **P2a — activation-space LEARNED low-rank rescue (do FIRST; maximal reuse, maximal comparability).** The
+    inherited basket-PASS/button-NEGATIVE was an *activation-space rank-1 axis* rescue. Extend it by replacing
+    the PLS/fixed subspace with an **optimization-learned rank-r projector** fit on the already-captured
+    clean (`h_clean`) and KO (`h_ko`) site states, run through the **existing** `dcs_csi_subspace*` rescue+rank
+    harness (which already does KO, site capture, rescue arm `h' = h_ko + P_r(h_clean−h_ko)`, rank test vs the
+    46-control family, splits, independent rederive). Rank sweep {1,2,4,8,16,32} per codeword → the
+    rescue-vs-rank curve, directly comparable to the rank-1 result. New code ≈ a small projector fitter.
+  - **P2b — weight-space ARA operator ΔW=BA (the plan's literal "compact weight-level operator").** Fresh
+    capture of o_proj/down_proj I/O at the codeword row (`rel_end=-10`) under clean (TARGET) and KO (SOURCE)
+    over band L6-14, fit `operator_ara` at ranks {1,2,4,8,16,32,50}, apply, read `y_install`. Reuse the KO CM
+    from patch-core (validated by reproducing the frozen manipulation KO−BASE≈−0.2, a GATE-0 liveness check).
+- **Decision:** P2a first (fast, high-reuse, comparable), then P2b (novel weight distillation). Both with
+  rank-matched controls; TRAIN for fitting, VALIDATION for the certifying rank test; TEST never touched.
+- **NEXT tick:** read `dcs_csi_subspace_analyze.py` rescue entrypoints; add the rank-r projector fitter
+  (`research/heretic_csi/learned_projector.py`) + unit test; wire a one-domain GPU smoke for P2a.
+
 ## S-003 — 2026-10-01 — scaffolding research/heretic_csi (in progress)
 - Creating `research/heretic_csi/` with: README (AGPL provenance note), a position-aware Modifier plugin
   skeleton, custom Scorer skeletons (SemanticInstallation / Preservation), a `configs/` dir, and unit-test
