@@ -706,3 +706,11 @@ No headline exists yet (both runs staging); nothing to overclaim. The pipeline +
   certifiable at floor 0.0213. argv will be 346 lines (4 + 6×57).
 - **NEXT tick:** monitor arms to completion (~2-3h, one load); then analyze_sweep per codeword, TRAIN then
   VALIDATION, --require-slurm-job → the first defensible basket-vs-button rescue-vs-rank curve.
+
+## S-026 — 2026-10-02 — loop tick: both full sweeps staging; built rescue-vs-rank table generator (deliverable prep)
+- 965624 (basket) + 965625 (button) still in STAGE_IN on n-350 (~28min; parallel source reads). No arms yet.
+- Built `research/heretic_csi/make_rank_table.py` (GPU-free): reads the analyze_sweep SUMMARY jsons → the P2a
+  deliverable markdown table (rank | recovery_fraction | candidate−ko | verdict, basket vs button) + ascii plot.
+  Syntax-clean. Ready for when the sweeps + analyze_sweep complete.
+- NEXT tick: monitor arms; when a sweep finishes, analyze_sweep (TRAIN+VALIDATION, --require-slurm-job) then
+  make_rank_table → first defensible basket-vs-button rescue-vs-rank comparison.
