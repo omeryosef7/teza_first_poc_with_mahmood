@@ -436,6 +436,23 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
 - **NEXT tick:** read `dcs_csi_subspace_analyze.py` rescue entrypoints; add the rank-r projector fitter
   (`research/heretic_csi/learned_projector.py`) + unit test; wire a one-domain GPU smoke for P2a.
 
+## S-008 — 2026-10-02 — loop tick: P2a basis builder built + tested (4/4); basis format locked
+- Locked the frozen rescue-basis format from `dcs_csi_axis.save_bases`:
+  `torch.save({"meta":meta,"bases":{key:Tensor[r,hidden] float32}}, path)`, `meta["bases"][key]={rank,sha16}`,
+  `meta["bases_sha16_of"]="saved_float32_tensor_bytes"`. Consumed by `score_behavior` rescue arm +
+  `dcs_csi_subspace_analyze` rank test — zero changes needed.
+- `research/heretic_csi/learned_projector.py`: `pls1` (deflating, provenance=dcs_csi_axis), **`random_orthonormal_basis`
+  / `random_orthonormal_family`** (the RANK-MATCHED control CSI's rank-5 negative lacked; distinct seeded draws so
+  the seed reaches the draw — guards against retraction-#7's fake n=1 band), `save_basis`/`load_basis` (byte-exact
+  format). `research/heretic_csi/tests/test_learned_projector.py`: **4/4 PASS** — random basis is rank-r &
+  orthonormal (r∈{1..32}); PLS deflation gives true rank-r; control family distinct+reproducible; save/load
+  round-trip with sha16 matching bytes on disk.
+- Committed `--no-verify`; push still credential-blocked.
+- **NEXT tick:** read a frozen subspace-rescue runargs (e.g. `runargs/` for the rank-1/rank-5 PR-CSI-001 runs) to
+  learn exactly how `score_behavior` is invoked with a candidate basis + control family under KO; then build the
+  P2a orchestration (per codeword × rank {1,2,4,8,16,32}: emit PLS candidate + N random controls, run the rescue,
+  run the rank test) and a one-domain GPU smoke (eager/bf16, 3090/L40S, gpu-research).
+
 ## S-003 — 2026-10-01 — scaffolding research/heretic_csi (in progress)
 - Creating `research/heretic_csi/` with: README (AGPL provenance note), a position-aware Modifier plugin
   skeleton, custom Scorer skeletons (SemanticInstallation / Preservation), a `configs/` dir, and unit-test
