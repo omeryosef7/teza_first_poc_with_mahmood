@@ -491,6 +491,19 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
   `dcs_csi_axis.py --max-rank 32 --rank-controls 1,2,4,8,16,32 --n-random-rank 46` per codeword) and write the
   P2a rescue sweep slurm (ranks {1,2,4,8,16,32} × candidate+controls, batched per allocation).
 
+## S-011 — 2026-10-02 — loop tick: smoke 964277 FAILED (protective HW guard) → resubmitted 3090-pinned (964329)
+- **Self-check catch (log, not sacct):** smoke 964277 landed on **RTX 2080 Ti (cc 7.5, Turing = EMULATED bf16)**
+  because `--gpus=1` had no architecture constraint. The inherited `score_behavior` has a **built-in hardware
+  guard** that REFUSED: *"--dtype bfloat16 on RTX 2080 Ti … native bf16 requires >=8.0; below that EMULATED …
+  (S-037/S-119/S-121)."* So the job FAILED **before producing any number** — the guard protected us; **no VOID
+  result**. This is the V100-class emulated-bf16 hazard from §0/§12.
+- **STANDING RULE (added):** every GPU job in this sprint MUST pin a native-bf16 architecture:
+  **`--gpus=geforce_rtx_3090:1`** (positive constraint, never an exclude-list) — or l40s/a5000 equivalently; never
+  bare `--gpus=1`. Verify `nvidia-smi compute_cap >= 8.0` in the log trailer.
+- **Resubmitted:** `sbatch --gpus=geforce_rtx_3090:1 dcs_csi_p1_smoke.slurm basket configs/dcs_csi_axis_basket_behavioral.pt`
+  → **job 964329 RUNNING on n-302** (3090-pinned). Read next tick for GATE-0 liveness.
+- Quota fine; index unlocked.
+
 ## S-003 — 2026-10-01 — scaffolding research/heretic_csi (in progress)
 - Creating `research/heretic_csi/` with: README (AGPL provenance note), a position-aware Modifier plugin
   skeleton, custom Scorer skeletons (SemanticInstallation / Preservation), a `configs/` dir, and unit-test
