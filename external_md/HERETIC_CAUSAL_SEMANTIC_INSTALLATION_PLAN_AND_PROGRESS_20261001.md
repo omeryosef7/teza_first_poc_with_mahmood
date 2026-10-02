@@ -518,6 +518,24 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
   clean, write + launch the P2a rescue sweep (ranks {1,2,4,8,16,32} × candidate+controls, 3090-pinned, batched
   per allocation) for basket, then button.
 
+## S-013 — 2026-10-02 — loop tick: P2a runner built+validated; basket axisfit DONE; reduced sweep LAUNCHED
+- **basket axisfit 964404 COMPLETED** (5:54): `hcsi_ranksweep_basket.pt`, 383 bases, 33 candidates
+  (cand_rank1/cand_pls1..32), L18 rho_loo=+0.6525, TRAIN-selected rank r3 (candidate, not a finding).
+- **button axisfit 964435 RUNNING** (CPU).
+- **Model-load tax CONFIRMED pathological under contention:** smoke 964329 loaded at ~30 s/tensor (47/291 @ 54min,
+  ETA +2h) on contended n-302 — and the per-arm `python` invocation means a **cold load on the FIRST arm only**
+  (warm page cache after). Killed the 2h-limited smoke (couldn't extend; killable denies). Design response:
+  **one allocation, generous `--time=08:00:00`, liveness arms first, all sweep arms after** → one cold load amortized.
+- **Built + validated the P2a runner:** `research/heretic_csi/emit_sweep_arms.py` (resolves candidate +
+  rank-matched control keys from the .pt, pre-flight fail-fast if missing — dry-run exit 0, all keys resolve for
+  ranks 1..32 with correct norm-match) and `research/heretic_csi/slurm/rescue_sweep.slurm` (pre-flight →
+  BASE/KO/KO_SELF/KO_FULL liveness → per-rank candidate+controls; reuses score_behavior KO+rescue UNCHANGED,
+  3090-pinned, eager/bf16).
+- **LAUNCHED reduced basket sweep 964437** (ranks 1,4,32; 6 random + 2 shuffled controls; --limit 24) on n-302
+  → validates the whole pipeline end-to-end in one cold load + first basket rescue-vs-rank signal.
+- **NEXT tick:** read 964437 liveness (KO_FULL recovers, KO_SELF inert, KO_CAND fires) + button axisfit; if clean,
+  run `dcs_csi_subspace_analyze` per rank for the reduced basket signal, then launch the FULL basket + button sweeps.
+
 ## S-003 — 2026-10-01 — scaffolding research/heretic_csi (in progress)
 - Creating `research/heretic_csi/` with: README (AGPL provenance note), a position-aware Modifier plugin
   skeleton, custom Scorer skeletons (SemanticInstallation / Preservation), a `configs/` dir, and unit-test
