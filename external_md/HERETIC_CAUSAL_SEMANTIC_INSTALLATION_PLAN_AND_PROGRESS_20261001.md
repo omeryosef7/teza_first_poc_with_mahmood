@@ -504,6 +504,20 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
   → **job 964329 RUNNING on n-302** (3090-pinned). Read next tick for GATE-0 liveness.
 - Quota fine; index unlocked.
 
+## S-012 — 2026-10-02 — loop tick: smoke cold-loading (not hung); basket axis-fit launched (CPU, parallel)
+- **Smoke 964329:** on RTX 3090 (native bf16 ✓). `.err` shows `Loading weights: 0/291` at ~30 min — the
+  documented **cold cross-user NFS model-load tax** (§8; snapshot lives under `matanbentov/`), NOT a hang
+  (diagnosed via the loading bar per the stall-diagnostic rule, not elapsed time). 2h limit is ample; read next tick.
+- **Launched basket rank-sweep axis fit** (CPU, `cpu-killable`): `research/heretic_csi/slurm/axisfit_ranksweep.slurm
+  basket` → **job 964404 RUNNING on rack-iscb-31**. Reuses `dcs_csi_axis.py` unchanged
+  (`--max-rank 32 --rank-controls 1,2,4,8,16,32 --n-random-rank 46 --n-shuffled-rank 10 --force-layer 18
+  --fit-prompt behavioral --site rel-6`) → emits `configs/heretic_csi/hcsi_ranksweep_basket.pt` with candidates
+  `cand_rank1`/`cand_pls{2..32}` + rank-matched control families. Independent of the smoke outcome (valid PLS
+  artifacts regardless). 2 GPU/CPU jobs running (≤6 cap).
+- **NEXT tick:** read smoke 964329 (GATE-0 liveness) + axisfit 964404 (DONE_MARKER, candidate count); if both
+  clean, write + launch the P2a rescue sweep (ranks {1,2,4,8,16,32} × candidate+controls, 3090-pinned, batched
+  per allocation) for basket, then button.
+
 ## S-003 — 2026-10-01 — scaffolding research/heretic_csi (in progress)
 - Creating `research/heretic_csi/` with: README (AGPL provenance note), a position-aware Modifier plugin
   skeleton, custom Scorer skeletons (SemanticInstallation / Preservation), a `configs/` dir, and unit-test
