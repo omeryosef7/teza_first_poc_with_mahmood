@@ -40,6 +40,7 @@ def main():
     ap.add_argument("--nrand", type=int, default=46)
     ap.add_argument("--nshuf", type=int, default=10)
     ap.add_argument("--option-mass-floor", default="0.05")
+    ap.add_argument("--slurm-job", default=None, help="--require-slurm-job: disambiguate stale same-tag run dirs")
     ap.add_argument("--out-dir", default="reports/heretic_csi")
     a = ap.parse_args()
     os.makedirs(os.path.join(ROOT, a.out_dir), exist_ok=True)
@@ -58,6 +59,8 @@ def main():
                "--control-prefixes", "KO_SHUF,KO_RAND", "--split", a.split,
                "--direction", "sufficiency", "--option-mass-floor", a.option_mass_floor,
                "--out", outj]
+        if a.slurm_job:
+            cmd += ["--require-slurm-job", a.slurm_job]
         print(f"\n=== rank {r}: candidate={cand} n_controls={len(sweep)-1} ===", flush=True)
         res = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
         sys.stdout.write(res.stdout[-2000:])
@@ -67,10 +70,15 @@ def main():
             continue
         try:
             d = json.load(open(outj))
+            rf = d.get("recovery_fraction_candidate_of_full") or {}
+            vb = d.get("verdict_basis") or {}
+            ctr = {c.get("name"): c.get("point") for c in (d.get("contrasts") or []) if isinstance(c, dict)}
             rows.append({"rank": r,
-                         "recovery_fraction": d.get("recovery_fraction_candidate_of_full"),
-                         "rank_p": (d.get("specificity_test") or {}).get("rank_p"),
-                         "verdict": d.get("VERDICT")})
+                         "recovery_fraction": rf.get("point") if isinstance(rf, dict) else rf,
+                         "candidate_minus_ko": ctr.get("candidate_minus_ko"),
+                         "candidate_minus_comparator": ctr.get("PRIMARY_candidate_minus_comparator"),
+                         "verdict_basis": vb,
+                         "verdict": (d.get("VERDICT") or "")[:160]})
         except Exception as e:
             rows.append({"rank": r, "status": f"PARSE_ERR {e}"})
     print("\n==== RESCUE-vs-RANK SUMMARY (", a.codeword, a.split, ") ====")

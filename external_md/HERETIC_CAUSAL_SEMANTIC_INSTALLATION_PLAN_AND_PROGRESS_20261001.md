@@ -618,3 +618,20 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
   the harness produces verdicts, NOT a real rank test; full population comes next.)
 - NEXT tick: 965233 done → run analyze_sweep for the reduced basket (sanity that candidate rescues > controls at
   some rank); validate the analyzer JSON keys; then launch full basket (LIMIT=0 BATCH=8) + full button.
+
+## S-020 — 2026-10-02 — MILESTONE: first end-to-end P2a analysis works (gates PASS); FULL basket launched
+- 965233 reduced basket COMPLETED; `analyze_sweep.py` runs the FROZEN `subspace_analyze` per rank and produces
+  verdicts. Disambiguation: the analyzer REFUSES duplicate same-tag run dirs ("separate by slurm_job_id, never by
+  recency") — added `--slurm-job` → `--require-slurm-job` (clean; no need to delete the un-deletable stale dirs).
+- **GATES PASS at every rank** (reduced, 3 train domains — harness validation, NOT a result): manipulation
+  KO−BASE=−0.301, identity KO_SELF−KO=+0.001 (inert), instrument KO_FULL−KO=+0.211. option_mass OK; KO live.
+- **Interpretable early signal (not certifiable at 3 domains / 8 controls):** candidate raw rescue
+  (candidate−ko) rises with rank (r1 +0.012 → r4 +0.036 → r32 +0.047), BUT at r32 random rank-matched controls
+  also rescue (candidate ranks 3/9, DOES NOT PASS) while at r1 the candidate is top-of-controls (INCONCLUSIVE,
+  floor 0.111). → the **dose/dimensionality confound is real and visible**; rank-matched controls are doing exactly
+  their job (this is why CSI's rank-5 was a confounded negative). A real verdict needs the 46-control family.
+- **LAUNCHED the real experiment — full basket sweep 965462** (LIMIT=0 = all 67 TRAIN domains, ranks
+  {1,2,4,8,16,32}, 46 random + 10 shuffled controls/rank, BATCH=8, 346 arms, one stage). ~3h expected.
+- **NEXT tick:** verify 965462 BATCH=8 liveness option_mass matches the BATCH=1 reduced (0.1212) before trusting;
+  when done, analyze_sweep full basket (floor 0.0213) → the first DEFENSIBLE basket rescue-vs-rank curve; launch
+  full button (staggered to avoid stage contention).
