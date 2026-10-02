@@ -29,7 +29,9 @@ CW="${1:?usage: sbatch rescue_sweep.slurm <basket|button> [RANKS] [NRAND] [NSHUF
 RANKS="${2:-1,2,4,8,16,32}"
 NRAND="${3:-46}"
 NSHUF="${4:-10}"
-LIMIT="${5:-24}"
+LIMIT="${5:-24}"      # 0 => no --limit (full population)
+BATCH="${6:-1}"       # --readout-max-batch; 1 matches the validated smoke, raise (e.g. 8/16) for speed
+LIMITARG=""; [ "$LIMIT" != "0" ] && LIMITARG="--limit $LIMIT"
 PT=configs/heretic_csi/hcsi_ranksweep_${CW}.pt
 SNAP=/home/sharifm/students/matanbentov/hub/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659
 BANK="data/boombness_prompts/boombness_prompt_bank_ts116m_${CW}_bomb.jsonl"
@@ -60,8 +62,8 @@ fi
 trap 'rm -rf "$LOCAL/llama31" 2>/dev/null || true' EXIT
 
 COMMON="--bank $BANK --model $SNAP --query-kinds semantic_one_word \
---conditions natural_doublespeak --n-examples 4 --readout-ids whole_answer --readout-max-batch 1 \
---exclude-prompt-ids $EXCL --limit $LIMIT --min-option-mass 0.05 --seed 20260913 \
+--conditions natural_doublespeak --n-examples 4 --readout-ids whole_answer --readout-max-batch $BATCH \
+--exclude-prompt-ids $EXCL $LIMITARG --min-option-mass 0.05 --seed 20260913 \
 --dtype bfloat16 --attn-impl eager"
 KO="--intervene demo_all:attn_knockout:6-14:1.0 --knockout-scope target_surface_row_only"
 RESC="--rescue-positions query --rescue-layer $LAYER"

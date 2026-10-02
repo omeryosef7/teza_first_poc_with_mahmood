@@ -596,3 +596,13 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
   location so parallel per-rank jobs each stage quickly; evaluate next tick.
 - **NEXT tick:** confirm 965233 candidate+control arms produce valid rescue output; run subspace_analyze (one-off
   --control-prefixes KO_SHUF,KO_RAND) for the first basket rescue-vs-rank verdict; design the full-population run.
+
+## S-018 — 2026-10-02 — loop tick: full-population knobs added to sweep slurm (965233 still staging)
+- 965233 still in STAGE_IN (~28min; ~51min expected) — no arms yet.
+- Prepared the full-population run: `rescue_sweep.slurm` now takes `LIMIT=0` (no --limit = all 67 TRAIN domains)
+  and `BATCH` (--readout-max-batch; 1 = validated smoke, raise to 8/16 for speed). One job per codeword, all ranks,
+  one stage → avoids parallel-stage contention on the slow source. `bash -n` syntax-clean. Does not affect the
+  in-flight 965233 (submitted pre-edit).
+- Plan: once 965233 confirms candidate+control arms produce valid rescue output, launch full basket (LIMIT=0
+  BATCH=8, ranks 1,2,4,8,16,32) and full button, ~2-3h each; then subspace_analyze per rank → rescue-vs-rank curve.
+- NEXT tick: read 965233 candidate/control arms + analyze; validate batch=8 numerics match batch=1 before trusting.
