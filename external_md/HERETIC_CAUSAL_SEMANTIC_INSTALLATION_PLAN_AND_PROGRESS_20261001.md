@@ -473,6 +473,24 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
   then VALIDATION (TEST never touched). Deliverable: **rescue-vs-rank curve, basket vs button**, with the exact
   rank-matched controls CSI's rank-5 negative lacked. One-domain GPU smoke first.
 
+## S-010 — 2026-10-02 — loop tick: FIRST GPU JOB — PR-CSI-001 smoke launched (job 964277); P2a recipe pinned
+- **Launched the validated 6-arm smoke** `sbatch dcs_csi_p1_smoke.slurm basket configs/dcs_csi_axis_basket_behavioral.pt`
+  → **job 964277 RUNNING on n-205** (killable, gpu-research, 1 GPU, eager/bf16, --limit 24). Purpose: GATE-0
+  liveness of the KO+rescue+readout harness in THIS environment before the full sweep — expect KO−BASE≈−0.2,
+  KO_FULL recovers, KO_AXIS writes nonzero delta, KO_SELF inert. Inherited basket axis verified smoke-compatible
+  (selected_layer=18, fit_prompt=behavioral, site=rel-6, bases incl. cand_rank1+ctrl_orth, 41 total).
+- **P2a recipe fully pinned (basis key naming from `dcs_csi_axis.py`):** candidates `cand_rank1` (r=1) and
+  `cand_pls{r}` (r≥2); rank-matched controls `ctrl_random_r{r}_{i}` + `ctrl_shuffled_pls{r}_{j}` (via
+  `--rank-controls 1,2,4,8,16,32 --n-random-rank 46 --n-shuffled-rank …`); rank-1 controls ctrl_orth/ctrl_random*/
+  ctrl_shuffled*. Corpus=`cont1_behavioral_<cw>_bomb`, readout=`ts116m_readout_<cw>_bomb_*`, bank=ts116m, excl=
+  `runargs/dcs_cont/exclude_<cw>_bomb_sow_train.txt`, model snapshot `0e9e39f2…`, COMMON = `--query-kinds
+  semantic_one_word --conditions natural_doublespeak --n-examples 4 --readout-ids whole_answer --min-option-mass
+  0.05 --dtype bfloat16 --attn-impl eager`, KO=`demo_all:attn_knockout:6-14:1.0 --knockout-scope
+  target_surface_row_only`, RESC=`--rescue-positions query --rescue-layer 18`.
+- **NEXT tick:** read smoke 964277 (validate GATE-0 + artifacts + DONE), then fit the ranksweep axes (CPU job:
+  `dcs_csi_axis.py --max-rank 32 --rank-controls 1,2,4,8,16,32 --n-random-rank 46` per codeword) and write the
+  P2a rescue sweep slurm (ranks {1,2,4,8,16,32} × candidate+controls, batched per allocation).
+
 ## S-003 — 2026-10-01 — scaffolding research/heretic_csi (in progress)
 - Creating `research/heretic_csi/` with: README (AGPL provenance note), a position-aware Modifier plugin
   skeleton, custom Scorer skeletons (SemanticInstallation / Preservation), a `configs/` dir, and unit-test
