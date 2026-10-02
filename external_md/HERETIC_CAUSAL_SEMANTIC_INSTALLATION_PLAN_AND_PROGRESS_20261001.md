@@ -669,3 +669,26 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
 - NEXT tick: confirm arm_runner log shows exactly ONE "MODEL LOAD" (key=...eager...) and arms advancing fast;
   verify liveness option_mass≈0.1212 at BATCH=1; when done, analyze_sweep per codeword (floor 0.0213) for the
   first defensible basket-vs-button rescue-vs-rank curve.
+
+## S-024 — 2026-10-02 — ~4h DEEP SELF-REVIEW (adversarial; GPU-blocked tick, both full sweeps staging)
+Reviewed the live P2a path against the plan's bug classes. Findings:
+- **Rank-matched controls — CORRECT (the thing CSI's rank-5 lacked).** emit_sweep_arms emits, per rank r, the
+  candidate (cand_rank1 / cand_pls{r}) and ONLY rank-r controls (ctrl_random_r{r}_* [46] + ctrl_shuffled_pls{r}_*
+  [10]); analyze_sweep runs the rank test per rank with exactly that family (--control-prefixes KO_SHUF,KO_RAND on
+  the per-rank --arms). So a rank-r candidate is scored vs rank-r nulls — no rank-1-null confound. ✓
+- **No TEST leak.** dcs_csi_axis refuses TEST domains in the fit; analyze_sweep uses --split train (discovery).
+  ⚠ ACTION: the certifying claim must also read --split validation; TEST stays spent (never use).
+- **option_mass degraded handling.** --min-option-mass 0.05 (row filter) + analyzer --option-mass-floor 0.05. ✓
+- **positions.** P2a does NOT use my positions.py — it uses dcs_csi_axis/score_behavior's frozen rel-6 site logic
+  (guard-tested); positions.py is for P2b only (and is unit-tested with decode==codeword). ✓
+- **sufficiency vs necessity.** analyze_sweep uses --direction sufficiency (rescue ADDs back under KO) — correct;
+  not the necessity contract. ✓
+- **MINOR:** analyze_sweep's --comparator-arm is an arbitrary rank-r random control for r>=2 (no ctrl_orth at r>=2).
+  This only affects the single "candidate−comparator" reported contrast; the VERDICT rests on the rank test vs the
+  whole family, so it does not bias the decision. Acceptable; noted.
+- **OPEN VERIFY (next tick):** confirm arm_runner logs exactly ONE "MODEL LOAD key=(...eager...)" — if score_behavior
+  failed to thread --attn-impl eager into dc.load_model, the memo default is sdpa (VOID 9). The smoke's liveness
+  already reported attn=eager, so expected fine, but verify on the arm_runner path explicitly.
+- **Duplicate-dir hygiene:** stale hcsi_p2a_* dirs exist from killed runs; analysis disambiguates by
+  --require-slurm-job <jobid> (cannot rm them — deletion permission-denied). Confirmed clean mechanism.
+No headline exists yet (both runs staging); nothing to overclaim. The pipeline + controls are sound.
