@@ -728,3 +728,15 @@ No headline exists yet (both runs staging); nothing to overclaim. The pipeline +
   codewords at full power — the directional H1 test ("does button need higher rank?").
 - **NEXT tick:** confirm steady arm cadence (~520s) + pending jobs start (watch the 30-min pending rule); fill in
   ranks {2,4,8,32} after; analyze when a (cw,rank) completes.
+
+## S-028 — 2026-10-02 — 3090s drained/contended → moved all 4 jobs to L40S (matched, CSI-approved)
+- sinfo: most 3090 nodes DRAIN (only n-302/304/350 usable, busy) → 965767/768 would dead-wait ~9h (pending>30min
+  rule). L40S nodes (n-801-805) available and are in the CSI-approved native-bf16 set (sm_89). a5000/a6000 also
+  available (sm_86) but L40S is explicitly inherited-approved.
+- Killed all 4 (basket staging had no compute done — only ~28min stage lost) and relaunched ALL on **L40S** so the
+  headline **basket-vs-button comparison is hardware-matched**: basket r1 (965838), basket r16 (965839), button r1
+  (965840), button r16 (965841) — all RUNNING on n-803, parallel, no pending. Hardware for these runs = L40S
+  (note alongside the inherited 3090 results; both native-bf16, CSI lists them interchangeably; verify robustness
+  if a verdict is marginal).
+- NEXT tick: watch staging (4 parallel source reads on n-803 → may be slow) + arm cadence on L40S (likely faster
+  than 3090's 520s); analyze each (cw,rank) as it completes → first matched dissociation signal (rank 1 vs 16).
