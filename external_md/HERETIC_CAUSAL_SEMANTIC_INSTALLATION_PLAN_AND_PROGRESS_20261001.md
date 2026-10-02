@@ -606,3 +606,15 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
 - Plan: once 965233 confirms candidate+control arms produce valid rescue output, launch full basket (LIMIT=0
   BATCH=8, ranks 1,2,4,8,16,32) and full button, ~2-3h each; then subspace_analyze per rank → rescue-vs-rank curve.
 - NEXT tick: read 965233 candidate/control arms + analyze; validate batch=8 numerics match batch=1 before trusting.
+
+## S-019 — 2026-10-02 — loop tick: candidate+control arms RUN clean; analysis harness built
+- 965233 arms running clean with the tab fix: KO_CAND_r1/r4 + KO_RAND_r{1,4}_* + KO_SHUF_r{1,4}_* all
+  `failures: {}` (~45s/arm). rank-32 arms finishing; whole reduced run ~completes this hour.
+- Learned analyzer semantics: `--tag-prefix <p>` (tags=`<p>_<arm>`), `--arms <names>`, `--candidate-arm
+  KO_CAND_r{r}`, `--control-prefixes KO_SHUF,KO_RAND`, per-rank. 965233 uses KO_RAND naming (submitted post-rename).
+- Built `research/heretic_csi/analyze_sweep.py`: per rank → builds arm list (liveness + candidate + that rank's
+  controls via emit_sweep_arms), calls the FROZEN `dcs_csi_subspace_analyze.py` (reused rank test), tabulates
+  rank→recovery_fraction/rank_p/verdict into a SUMMARY json. (Reduced run has only ~3 train domains → validates
+  the harness produces verdicts, NOT a real rank test; full population comes next.)
+- NEXT tick: 965233 done → run analyze_sweep for the reduced basket (sanity that candidate rescues > controls at
+  some rank); validate the analyzer JSON keys; then launch full basket (LIMIT=0 BATCH=8) + full button.
