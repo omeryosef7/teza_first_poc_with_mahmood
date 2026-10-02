@@ -453,6 +453,26 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
   P2a orchestration (per codeword × rank {1,2,4,8,16,32}: emit PLS candidate + N random controls, run the rescue,
   run the rank test) and a one-domain GPU smoke (eager/bf16, 3090/L40S, gpu-research).
 
+## S-009 — 2026-10-02 — loop tick: P2a recipe fully specified (near-pure reuse); feasible both codewords
+- **`dcs_csi_axis.py` already emits the whole rank-r candidate + rank-matched control family:** `--max-rank`,
+  `--rank-controls 1,2,4,8,16,32` ("for each rank r, random rank-r subspaces AND rank-r PLS fits on shuffled
+  labels"), `--n-random-rank` (set 46 to match the hardened family), `--force-layer`, with built-in TEST-leak
+  refusal + codeword/cell checks. So P2a needs **no new fitting code** — my `learned_projector` is demoted to a
+  cross-check / P2b tool.
+- **`score_behavior` rescue interface** (from `dcs_csi_p1_smoke.slurm`): arms via `--rescue-donor clean|self`,
+  `--rescue-basis <pt> --rescue-basis-key <key> --rescue-norm-match-key <key>`, `--rescue-positions query
+  --rescue-layer L`, under `--intervene demo_all:attn_knockout:6-14:1.0 --knockout-scope target_surface_row_only`,
+  `--attn-impl eager --dtype bfloat16`, model = pinned local snapshot `0e9e39f2…`.
+- **Inherited setup (for comparability, read from `DCS_CSI_SUBSPACE_basket_train_n46.json`):** fit_prompt=**behavioral**
+  corpus (`cont1_behavioral_<cw>_bomb`), scored on semantic `y_install`; arms BASE/KO/KO_SELF/KO_FULL/KO_AXIS/
+  KO_PLS/KO_ORTH/KO_RAND0..N. **Both behavioral + semantic corpora exist for basket AND button** → P2a feasible
+  both codewords. (Layer: dissociation at L18/L20 — confirm exact `rescue_layer` + locate the `--readout` dir next.)
+- **P2a orchestration (next build):** per codeword: (1) `dcs_csi_axis.py` CPU job → one `.pt` with candidates at
+  ranks {1,2,4,8,16,32} + 46 matched controls each; (2) `score_behavior` rescue arms per rank (GPU, batched per
+  alloc, eager/bf16); (3) `dcs_csi_subspace_analyze.py` rank test per rank → recovery-fraction + rank-p, TRAIN
+  then VALIDATION (TEST never touched). Deliverable: **rescue-vs-rank curve, basket vs button**, with the exact
+  rank-matched controls CSI's rank-5 negative lacked. One-domain GPU smoke first.
+
 ## S-003 — 2026-10-01 — scaffolding research/heretic_csi (in progress)
 - Creating `research/heretic_csi/` with: README (AGPL provenance note), a position-aware Modifier plugin
   skeleton, custom Scorer skeletons (SemanticInstallation / Preservation), a `configs/` dir, and unit-test
