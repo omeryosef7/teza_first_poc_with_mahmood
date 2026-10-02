@@ -554,3 +554,11 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
   skeleton, custom Scorer skeletons (SemanticInstallation / Preservation), a `configs/` dir, and unit-test
   stubs. Code is written against the audited base-class signatures (§9.6) and will be compiled/tested once the
   `heretic_csi` env is ready. No frozen CSI behavior is touched.
+
+## S-015 — 2026-10-02 — loop tick: n-302 is a bad-I/O node (not contention) → exclude it
+- 964500 STAGE_IN (16GB cp -rL) ran >29min without finishing; `squeue -w n-302` showed ONLY my job → the
+  slowness is **n-302's NFS path itself**, not SLURM contention. Killed 964500.
+- Resubmitted reduced basket sweep with `--exclude=n-302` → **964561 on n-350**. If n-350 stages+loads fast,
+  the rule is simply "exclude n-302"; if n-350 is also slow, the durable fix is a one-time model copy to a fast FS
+  (/specific/scratches 8.3T) that all jobs read from.
+- NEXT tick: confirm 964561 STAGE_IN done + load fast + liveness; run subspace_analyze for first basket signal.
