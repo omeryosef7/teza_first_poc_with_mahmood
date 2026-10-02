@@ -642,3 +642,18 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
   ≤6 cap; share source read-bandwidth but parallel wins overall). Quota 4.4T free, fine.
 - NEXT tick: when each finishes, verify BATCH=8 liveness option_mass≈0.1212 (vs BATCH=1 ref) + gates, then
   analyze_sweep per codeword (floor 0.0213) → the first DEFENSIBLE basket-vs-button rescue-vs-rank comparison.
+
+## S-022 — 2026-10-02 — BUGS: BATCH=8 OOMs + per-arm reload too slow → switch to arm_runner (model-once)
+- **BATCH=8 OOMs the 3090** (23GB): full BASE arm flooded with CUDA OOM on the whole-answer readout + KO mask.
+  `--readout-max-batch 1` is why the inherited code used batch 1. Numerics fine (survivor option_mass 0.1239 ≈
+  batch-1 0.1212) — purely memory. **Revert to BATCH=1.**
+- **Per-arm reload too slow:** my `rescue_sweep.slurm` runs a separate `python score_behavior.py` per arm = a
+  model reload each; 346 arms × reload is many hours. Killed both broken full runs (965462, 965502).
+- **FIX = reuse `scripts/dcs_csi_arm_runner.py`:** it reads an argv-file (one full score_behavior command/line) and
+  **memoizes `dc.load_model`** → model loads ONCE, reused across all arms (keyed on load params incl.
+  attn_implementation=eager); also hook-leak-checks between arms + skip-if-done (strict_run_dir) for resume.
+- **Rebuild plan (next tick):** rescue_sweep.slurm → stage model; emit an argv-file of lines
+  `python src/boombness/score_behavior.py $COMMON [$KO $RESC $EXTRA] --arm X --tag Y` (model = staged local path,
+  BATCH=1); run `arm_runner --argv-file F --expect-n N --out LOG`. One model load, all 346 arms. Relaunch full
+  basket + button. Then analyze_sweep for the first defensible curve.
+- Nothing running now (both killed). No results lost (BATCH=8 runs were invalid).
