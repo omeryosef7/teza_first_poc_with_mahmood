@@ -562,3 +562,17 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
   the rule is simply "exclude n-302"; if n-350 is also slow, the durable fix is a one-time model copy to a fast FS
   (/specific/scratches 8.3T) that all jobs read from.
 - NEXT tick: confirm 964561 STAGE_IN done + load fast + liveness; run subspace_analyze for first basket signal.
+
+## S-016 — 2026-10-02 — loop tick: slow load is SOURCE-path (not node); analyzer CLI + naming fix; patience
+- n-350 ALSO staged slowly → the ~9MB/s read is the **matanbentov snapshot netapp path itself**, not a single
+  node. Decision: **STOP killing jobs** (each kill wasted a partial stage); 964561 has an 8h limit — let the
+  one-time stage finish, then 31 warm arms run fast. If a durable fix is needed later: one-time copy of the model
+  to my own FS and point all jobs there.
+- Learned `dcs_csi_subspace_analyze.py` CLI: `--codeword --tag-prefix --expect-n --arms --direction sufficiency
+  --candidate-arm --comparator-arm KO_ORTH --full-arm KO_FULL --ko-arm KO --base-arm BASE --self-arm KO_SELF
+  --split --control-prefixes KO_SHUF,KO_RAND --option-mass-floor 0.05 --self-inert-tol 0.005`. Per-rank test:
+  `--candidate-arm KO_CAND_r{r}` against that rank's `KO_RAND_r{r}_*`/`KO_SHUF_r{r}_*` controls.
+- **BUG FIX:** `emit_sweep_arms.py` named random controls `KO_RND_*`; analyzer default prefix is `KO_RAND`.
+  Renamed emitter → `KO_RAND_r{r}_{i}` (full sweep will match the analyzer default). The in-flight reduced run
+  964561 still emits `KO_RND` → analyze it one-off with `--control-prefixes KO_SHUF,KO_RND`.
+- NEXT tick: if 964561 stage done + liveness clean, analyze the reduced basket signal per rank; launch full sweeps.

@@ -40,7 +40,7 @@ def main() -> int:
             rand = [f"ctrl_random_r{r}_{i}" for i in range(100) if f"ctrl_random_r{r}_{i}" in keys]
             shuf = [f"ctrl_shuffled_pls{r}_{j}" for j in range(100) if f"ctrl_shuffled_pls{r}_{j}" in keys]
         for i, k in enumerate(rand[:a.nrand]):
-            lines.append(f"KO_RND_r{r}_{i}\t{k}\t{cand}\tcontrol_random\t{r}")
+            lines.append(f"KO_RAND_r{r}_{i}\t{k}\t{cand}\tcontrol_random\t{r}")
         for j, k in enumerate(shuf[:a.nshuf]):
             lines.append(f"KO_SHUF_r{r}_{j}\t{k}\t{cand}\tcontrol_shuffled\t{r}")
     if missing:
