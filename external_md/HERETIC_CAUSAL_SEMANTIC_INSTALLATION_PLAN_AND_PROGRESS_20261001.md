@@ -714,3 +714,17 @@ No headline exists yet (both runs staging); nothing to overclaim. The pipeline +
   Syntax-clean. Ready for when the sweeps + analyze_sweep complete.
 - NEXT tick: monitor arms; when a sweep finishes, analyze_sweep (TRAIN+VALIDATION, --require-slurm-job) then
   make_rank_table → first defensible basket-vs-button rescue-vs-rank comparison.
+
+## S-027 — 2026-10-02 — SCALE FIX: ~520s/arm → per-rank jobs (not all-ranks-in-one); launch ranks 1 & 16
+- **Measured cost:** BASE arm = 521s over the full ~670-row population (whole-answer readout, batch 1). 346 arms
+  in one job = ~50h >> 8h limit → the all-ranks jobs (965624/965625) were infeasible; killed them.
+- score_behavior has only `--limit` (first-N, not domain-stratified) → no cheap row subsample. Keeping FULL rows
+  (maximal power/defensibility, exact inherited population).
+- **Design = one job per (codeword, rank):** liveness(4) + candidate + 46 rand + 10 shuf = 61 arms × ~520s ≈ 8.8h;
+  bumped slurm `--time` to 20:00:00. Matches how the inherited expensive n46 runs were structured (one rank-family
+  per job). Each job self-contained (own liveness) so analyze_sweep --require-slurm-job groups it cleanly.
+- **Launched 4 jobs:** basket r1 (965765), basket r16 (965766) RUNNING on n-350; button r1 (965767), button r16
+  (965768) PENDING (resources). Tests the DISSOCIATION ANCHOR (rank 1, inherited) vs a HIGH rank (16) for both
+  codewords at full power — the directional H1 test ("does button need higher rank?").
+- **NEXT tick:** confirm steady arm cadence (~520s) + pending jobs start (watch the 30-min pending rule); fill in
+  ranks {2,4,8,32} after; analyze when a (cw,rank) completes.
