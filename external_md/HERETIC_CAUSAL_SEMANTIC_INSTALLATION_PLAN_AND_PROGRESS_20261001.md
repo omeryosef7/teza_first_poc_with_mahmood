@@ -635,3 +635,10 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
 - **NEXT tick:** verify 965462 BATCH=8 liveness option_mass matches the BATCH=1 reduced (0.1212) before trusting;
   when done, analyze_sweep full basket (floor 0.0213) → the first DEFENSIBLE basket rescue-vs-rank curve; launch
   full button (staggered to avoid stage contention).
+
+## S-021 — 2026-10-02 — loop tick: full button sweep launched in parallel (both full sweeps staging)
+- 965462 (full basket) still staging on n-350. Launched **full button sweep 965502 on n-304** (LIMIT=0, ranks
+  {1,2,4,8,16,32}, 46 rand + 10 shuf controls, BATCH=8). Both full-population runs now staging in parallel (2 jobs,
+  ≤6 cap; share source read-bandwidth but parallel wins overall). Quota 4.4T free, fine.
+- NEXT tick: when each finishes, verify BATCH=8 liveness option_mass≈0.1212 (vs BATCH=1 ref) + gates, then
+  analyze_sweep per codeword (floor 0.0213) → the first DEFENSIBLE basket-vs-button rescue-vs-rank comparison.
