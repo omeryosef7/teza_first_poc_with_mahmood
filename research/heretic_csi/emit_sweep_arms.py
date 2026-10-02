@@ -32,7 +32,7 @@ def main() -> int:
         cand = "cand_rank1" if r == 1 else f"cand_pls{r}"
         if cand not in keys:
             missing.append(cand); continue
-        lines.append(f"KO_CAND_r{r}\t{cand}\t\tcandidate\t{r}")
+        lines.append(f"KO_CAND_r{r}\t{cand}\tNONE\tcandidate\t{r}")  # NONE sentinel: bash read collapses empty tab fields
         if r == 1:
             rand = [k for k in (["ctrl_orth"] + [f"ctrl_random{i}" for i in range(50)]) if k in keys]
             shuf = [f"ctrl_shuffled{j}" for j in range(50) if f"ctrl_shuffled{j}" in keys]

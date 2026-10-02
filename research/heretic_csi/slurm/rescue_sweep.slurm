@@ -78,7 +78,7 @@ run KO_FULL $COMMON $KO $RESC --rescue-donor clean --arm KO_FULL --tag ${TAGP}_K
 while IFS=$'\t' read -r ARM KEY NM ROLE RANK; do
   [ -z "$ARM" ] && continue
   EXTRA="--rescue-basis $PT --rescue-basis-key $KEY"
-  [ -n "$NM" ] && EXTRA="$EXTRA --rescue-norm-match-key $NM"
+  [ -n "$NM" ] && [ "$NM" != "NONE" ] && EXTRA="$EXTRA --rescue-norm-match-key $NM"
   run "$ARM" $COMMON $KO $RESC --rescue-donor clean $EXTRA --arm "$ARM" --tag "${TAGP}_${ARM}"
 done < "$ARMS"
 

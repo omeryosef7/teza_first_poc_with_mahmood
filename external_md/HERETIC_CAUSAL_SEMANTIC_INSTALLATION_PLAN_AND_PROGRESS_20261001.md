@@ -576,3 +576,23 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
   Renamed emitter → `KO_RAND_r{r}_{i}` (full sweep will match the analyzer default). The in-flight reduced run
   964561 still emits `KO_RND` → analyze it one-off with `--control-prefixes KO_SHUF,KO_RND`.
 - NEXT tick: if 964561 stage done + liveness clean, analyze the reduced basket signal per rank; launch full sweeps.
+
+## S-017 — 2026-10-02 — MILESTONE: staging works (4s load), GATE-0 liveness PASSES; tab-parse bug fixed
+- **Node-local staging SOLVES the load tax:** 964561 STAGE_IN done (51min cp, 30G node-local) → model loaded in
+  **~4 seconds** (291/291 @ 62 it/s) vs hours from NFS. Arms then ran ~45s each.
+- **GATE-0 LIVENESS PASSES (pipeline validated end-to-end):** BASE/KO/KO_SELF/KO_FULL all completed
+  (`failures: {}`). KNOCKOUT LIVENESS: `median_prefill_edits=2016, total_prefill_edits=47484,
+  total_decode_edits=0, scope_violations={}, attn=eager` — the attention knockout is LIVE and scope-correct;
+  `option_mass median=0.1212` (>0.05 floor OK); readout ids concept=13054 / codeword=14351 (matches offline
+  validation). The semantic-one-word forward-only rescue contract is satisfied.
+- **BUG FOUND + FIXED (self-check):** candidate arm failed with `--rescue-norm-match-key 'candidate'`. Cause: bash
+  `read` with `IFS=$'\t'` **collapses consecutive tabs** (tab is IFS-whitespace), eating the candidate's empty
+  norm-match field and shifting ROLE into `$NM`. Fix: emit `NONE` sentinel for candidates; slurm skips norm-match
+  when `NONE`. Verified emitter output.
+- Resubmitted reduced basket sweep (fixed) → **965233 on n-350** (stages, then candidate+control arms).
+- **SCALE NOTE for the real rank test:** --limit 24 covers only ~3 domains; the domain-level rank test needs all
+  67 TRAIN domains (~670 rows) × (46+10 controls) × ranks. That is ~hours/allocation and 6 parallel per-rank jobs
+  would contend on the slow source stage. **Next design:** likely a one-time DURABLE model copy to a fast-read
+  location so parallel per-rank jobs each stage quickly; evaluate next tick.
+- **NEXT tick:** confirm 965233 candidate+control arms produce valid rescue output; run subspace_analyze (one-off
+  --control-prefixes KO_SHUF,KO_RAND) for the first basket rescue-vs-rank verdict; design the full-population run.
