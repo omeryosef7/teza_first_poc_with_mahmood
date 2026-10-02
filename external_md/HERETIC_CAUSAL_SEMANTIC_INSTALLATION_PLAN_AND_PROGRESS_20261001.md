@@ -755,3 +755,14 @@ No headline exists yet (both runs staging); nothing to overclaim. The pipeline +
   login; SLURM/node reboot or the owner's cleanup reclaims it). The df precheck now routes jobs AWAY from full
   nodes automatically.
 - NEXT tick: confirm 965927-30 start + pass df precheck + stage + arm cadence on L40S.
+
+## S-030 — 2026-10-03 — df precheck works; lean staging (skip `original/` 30G->16G); 4 (cw,rank) jobs in flight
+- df precheck validated: 965928 passed (t-806, staging + PREFLIGHT_OK 57 arms); 965927/929/930 fast-failed in
+  <7s with INSUFFICIENT_TMP on n-801 (33.6G free) — no wasted stage, exactly as designed.
+- **Stage reduced 30G->16G:** the 30G was the snapshot's `original/` subdir (consolidated .pth duplicate).
+  from_pretrained needs only the 4 safetensors (16G) + config/tokenizer/index jsons. Staging now copies just
+  those; df threshold lowered 36G->18G (fits far more nodes). `bash -n` clean.
+- In flight: basket r16 (965928, RUNNING t-806, old 30G stage — fine); resubmitted basket r1 (966084),
+  button r1 (966085), button r16 (966086) with lean staging, PENDING for L40S.
+- NEXT tick: 965928 arm cadence on L40S (expect faster than 3090 520s); pending jobs start + lean-stage fast;
+  analyze each (cw,rank) as it completes → first matched rank-1-vs-16 dissociation signal.

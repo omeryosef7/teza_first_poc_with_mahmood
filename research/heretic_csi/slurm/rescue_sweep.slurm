@@ -50,8 +50,8 @@ mkdir -p "$TMPDIR"
 trap 'rm -rf "$TMPDIR/llama31" 2>/dev/null || true' EXIT TERM INT
 AVAIL_KB=$(df --output=avail -k "$TMPDIR" 2>/dev/null | tail -1 || echo 0)
 echo "TMPDIR=$TMPDIR avail_kb=${AVAIL_KB} host=$(hostname)"
-if [ "${AVAIL_KB:-0}" -lt 36000000 ]; then
-  echo "INSUFFICIENT_TMP: need ~36G node-local, have ${AVAIL_KB}KB on $(hostname):$TMPDIR -- exiting fast (no GPU wasted)"
+if [ "${AVAIL_KB:-0}" -lt 18000000 ]; then
+  echo "INSUFFICIENT_TMP: need ~18G node-local, have ${AVAIL_KB}KB on $(hostname):$TMPDIR -- exiting fast (no GPU wasted)"
   exit 1
 fi
 
@@ -66,9 +66,12 @@ echo "PREFLIGHT_OK n_sweep_arms=$(wc -l < "$ARMS")"
 LOCAL="$TMPDIR"
 mkdir -p "$LOCAL"
 echo "STAGE_IN start $(date -Is) -> $LOCAL/llama31"
-if cp -rL "$SNAP" "$LOCAL/llama31" 2>/dev/null; then
+# Copy ONLY what from_pretrained needs (~16G safetensors + config/tokenizer). SKIP the `original/`
+# subdir (the ~16G consolidated .pth duplicate) that made cp -rL 30G and ENOSPC'd marginal nodes (S-029).
+mkdir -p "$LOCAL/llama31"
+if cp -L "$SNAP"/*.safetensors "$SNAP"/*.json "$SNAP"/tokenizer* "$SNAP"/special_tokens_map.json "$LOCAL/llama31/" 2>/dev/null; then
   SNAP="$LOCAL/llama31"
-  echo "STAGE_IN done $(date -Is) size=$(du -sh "$SNAP" | cut -f1) model=$SNAP"
+  echo "STAGE_IN done $(date -Is) size=$(du -sh "$SNAP" | cut -f1) files=$(ls "$SNAP" | wc -l) model=$SNAP"
 else
   echo "STAGE_IN FAILED -- falling back to NFS snapshot (slow) $(date -Is)"
 fi
