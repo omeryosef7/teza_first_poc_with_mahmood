@@ -783,3 +783,15 @@ No headline exists yet (both runs staging); nothing to overclaim. The pipeline +
 - basket r16 (965928) 3/61, basket r1 (966084) loaded, button r1 (966157) 3/61, button r16 (966158) model loading
   after **STAGE_IN done size=15G** (original/-skip lean stage CONFIRMED working). All RUNNING, ≤6 cap, no failures,
   ~517s/arm. Each completes in ~8-9h. No action; analyze each at 61/61.
+
+## S-033 — 2026-10-03 — monitor (jobs ~20%); built domain-stratified row-reduction tool for the remaining ranks
+- 4 jobs healthy (~12/61 arms each). Population structure: after SOW exclusion = 670 rows = 67 TRAIN domains ×
+  10 rows (5 dev + 5 heldout sub-splits); analyzer applies the train/val/test domain split.
+- Built `research/heretic_csi/make_stratified_exclusion.py`: keeps K rows/domain (deterministic sort by
+  split,family_slot,prompt_id) by UNIONing the base SOW exclusion with the overflow prompt_ids — reuses
+  score_behavior's --exclude-prompt-ids (no bank edit), all 67 domains retained. Generated K=4 exclusions
+  (`runargs/heretic_csi/exclude_{basket,button}_K4.txt`): verified 268 rows = 67×4. ~2.5x faster (~210s/arm,
+  ~3.5h/job). Added slurm arg7 to override the exclusion file. DECLARED power trade-off (noisier domain means).
+- Plan: headline rank-1-vs-16 uses FULL rows (the 4 running jobs). Remaining ranks {2,4,8,32} will use K4 subset
+  (feasible) IF the full-row results show an effect worth mapping — decided after they land.
+- NEXT tick: monitor; analyze at 61/61.

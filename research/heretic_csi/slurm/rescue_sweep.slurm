@@ -35,7 +35,7 @@ LIMITARG=""; [ "$LIMIT" != "0" ] && LIMITARG="--limit $LIMIT"
 PT=configs/heretic_csi/hcsi_ranksweep_${CW}.pt
 SNAP=/home/sharifm/students/matanbentov/hub/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659
 BANK="data/boombness_prompts/boombness_prompt_bank_ts116m_${CW}_bomb.jsonl"
-EXCL="runargs/dcs_cont/exclude_${CW}_bomb_sow_train.txt"
+EXCL="${7:-runargs/dcs_cont/exclude_${CW}_bomb_sow_train.txt}"  # arg7: override to a K-per-domain exclusion for faster subset runs
 LAYER=18
 TAGP="hcsi_p2a_${CW}"
 
