@@ -45,6 +45,20 @@ ARMS=$(mktemp)
 "$PY" research/heretic_csi/emit_sweep_arms.py --pt "$PT" --ranks "$RANKS" --nrand "$NRAND" --nshuf "$NSHUF" > "$ARMS"
 echo "PREFLIGHT_OK n_sweep_arms=$(wc -l < "$ARMS")"
 
+# STAGE THE MODEL TO NODE-LOCAL DISK. The cross-user snapshot on netapp loads at ~30-50 s/tensor under
+# contention (hours). A single SEQUENTIAL bulk copy (deref symlinks) to node-local /tmp is far faster,
+# and the subsequent load reads from local disk. Standing rule for all GPU jobs (log S-014).
+LOCAL="${SLURM_TMPDIR:-/tmp/${USER}/${SLURM_JOB_ID:-$$}}"
+mkdir -p "$LOCAL"
+echo "STAGE_IN start $(date -Is) -> $LOCAL/llama31"
+if cp -rL "$SNAP" "$LOCAL/llama31" 2>/dev/null; then
+  SNAP="$LOCAL/llama31"
+  echo "STAGE_IN done $(date -Is) size=$(du -sh "$SNAP" | cut -f1) model=$SNAP"
+else
+  echo "STAGE_IN FAILED -- falling back to NFS snapshot (slow) $(date -Is)"
+fi
+trap 'rm -rf "$LOCAL/llama31" 2>/dev/null || true' EXIT
+
 COMMON="--bank $BANK --model $SNAP --query-kinds semantic_one_word \
 --conditions natural_doublespeak --n-examples 4 --readout-ids whole_answer --readout-max-batch 1 \
 --exclude-prompt-ids $EXCL --limit $LIMIT --min-option-mass 0.05 --seed 20260913 \

@@ -536,6 +536,19 @@ reports user 200G/16T, group 16.9T/32T), but a `dd` probe fails EDQUOT leaving 0
 - **NEXT tick:** read 964437 liveness (KO_FULL recovers, KO_SELF inert, KO_CAND fires) + button axisfit; if clean,
   run `dcs_csi_subspace_analyze` per rank for the reduced basket signal, then launch the FULL basket + button sweeps.
 
+## S-014 — 2026-10-02 — loop tick: model-load tax FIX (node-local staging); button bases ready; sweep resubmitted
+- **button axisfit 964435 COMPLETED** (5:44) → `hcsi_ranksweep_button.pt` ready. Both codewords' bases now exist.
+- **Model-load tax worsened on n-302** (964437: 77/291 @ 22min, 50 s/tensor, ETA +3h) — unusable. Root cause =
+  per-tensor random NFS reads of the cross-user snapshot under node contention.
+- **FIX (standing rule S-014):** `rescue_sweep.slurm` now **stages the snapshot to node-local disk once**
+  (`cp -rL $SNAP $SLURM_TMPDIR/llama31`, dereferencing HF blob symlinks) and loads `--model` from there — a single
+  sequential bulk copy instead of hours of per-tensor NFS reads. Falls back to NFS if the copy fails. All future
+  GPU jobs should stage-in likewise.
+- Killed 964437; **resubmitted reduced basket sweep → 964500** (ranks 1,4,32; 6 rand + 2 shuf; --limit 24).
+- **NEXT tick:** verify STAGE_IN succeeded + load became fast on 964500; read liveness (KO_FULL recover / KO_SELF
+  inert / candidate fires); run `dcs_csi_subspace_analyze` for the first basket rescue-vs-rank signal; then launch
+  full basket + button sweeps.
+
 ## S-003 — 2026-10-01 — scaffolding research/heretic_csi (in progress)
 - Creating `research/heretic_csi/` with: README (AGPL provenance note), a position-aware Modifier plugin
   skeleton, custom Scorer skeletons (SemanticInstallation / Preservation), a `configs/` dir, and unit-test
