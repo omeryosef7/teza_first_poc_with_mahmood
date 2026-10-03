@@ -965,3 +965,16 @@ Attempted to break S-040/043/044 before validation lands:
 - NEXT tick: read the 2 validation verdicts; analyze the last 2; assemble the TRAIN+VALIDATION matched table.
   Certification criterion: does the dissociation (basket r1 specific vs button r1 null; both r16 dose-fail)
   REPLICATE on validation (a5000, held-out domains)?
+
+## S-048 — 2026-10-03 — VALIDATION CERTIFIES the dissociation direction (2 of 4 cells in)
+Held-out validation, 23 val domains, a5000 (cross-hardware vs TRAIN's L40S); gates all PASS.
+- **basket r1: PRIMARY PASSES on VALIDATION** — strictly largest of 56 controls, rank p=0.01754 < 0.05
+  (recovery 0.0359 [0.013,0.066]). Basket's rank-1 carrier CERTIFIES held-out (cleaner than TRAIN's 2/57), and
+  on DIFFERENT hardware => cross-hardware robust. This is a DEFENSIBLE positive (rung-1-style sufficiency rescue).
+- **button r16: DOES NOT PASS on VALIDATION** — ranks 10/57, p=0.1754 (floor 0.0175, well-powered). Higher rank
+  does NOT give button a specific carrier on held-out data either. DEFENSIBLE negative.
+- Awaiting basket r16 (968533) + button r1 (968534) validation analyses to complete the matched 2x2.
+- INTERPRETATION so far (now VALIDATION-backed): basket has a specific, certifiable rank-1 installation carrier;
+  button is not rescued at rank 1 (TRAIN null) nor rank 16 (TRAIN+VAL certified fail). The dissociation is about
+  the EXISTENCE of a specific low-rank causal direction, not dimensionality (prereg D). Still PLS/axis candidate,
+  not the ARA weight operator; no behavioral claim.
