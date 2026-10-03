@@ -52,7 +52,7 @@ def main():
         cand = f"KO_CAND_r{r}"
         comparator = next((s for s in sweep if s.startswith(f"KO_RAND_r{r}_")), cand)
         arms = LIVENESS + sweep
-        outj = os.path.join(ROOT, a.out_dir, f"{a.tag_prefix}_r{r}.json")
+        outj = os.path.join(ROOT, a.out_dir, f"{a.tag_prefix}_r{r}_{a.split}.json")  # split in name: train/val must not collide
         cmd = [PY, os.path.join(ROOT, "scripts/dcs_csi_subspace_analyze.py"),
                "--codeword", a.codeword, "--tag-prefix", a.tag_prefix,
                "--expect-n", str(a.expect_n), "--arms", ",".join(arms),

@@ -978,3 +978,38 @@ Held-out validation, 23 val domains, a5000 (cross-hardware vs TRAIN's L40S); gat
   button is not rescued at rank 1 (TRAIN null) nor rank 16 (TRAIN+VAL certified fail). The dissociation is about
   the EXISTENCE of a specific low-rank causal direction, not dimensionality (prereg D). Still PLS/axis candidate,
   not the ARA weight operator; no behavioral claim.
+
+## S-049 — 2026-10-03 — HEADLINE CERTIFIED (TRAIN + VALIDATION): dissociation = specific low-rank direction, NOT dimensionality
+Full matched 2x2 (gates PASS all cells; 56 rank-matched controls, floor 0.0175; TRAIN=L40S/67dom, VAL=a5000/23dom):
+
+| cell | TRAIN rank/p (recovery) | VALIDATION rank/p (recovery) | verdict |
+|---|---|---|---|
+| basket r1  | 2/57 p=0.035 (0.028) | **1/57 p=0.0175 (0.036)** | **PASS on VALIDATION** (TRAIN borderline/AM-48) |
+| basket r16 | 10/57 p=0.175 (0.167) | 10/57 p=0.175 (0.152) | FAIL both (dose) |
+| button r1  | 23/57 p=0.40 (-0.001) | 14/57 p=0.246 (0.008) | FAIL both (recovers ~0) |
+| button r16 | 10/57 p=0.175 (0.118) | 10/57 p=0.175 (0.118) | FAIL both (dose) |
+
+**CERTIFIED FINDING:** basket has a specific, held-out-certifiable RANK-1 installation-rescue direction
+(VALIDATION rank 1/57, p=0.0175, cross-hardware L40S->a5000). Button has NO specific carrier at rank 1 OR rank
+16 (all fail, well-powered). Higher rank rescues NEITHER codeword beyond generic dose (both r16 ~ random rank-16).
+=> The basket-vs-button dissociation is about the EXISTENCE of a specific low-rank causal direction, NOT about
+button needing higher dimensionality (prereg outcome **D**, TRAIN+VAL). New vs inherited: adds the full rank
+sweep + rank-matched controls at every rank, cross-hardware validation, and the decodability!=rescue-specificity
++ same-geometry!=same-causality framings (S-043/S-044).
+
+### WHAT WE CAN DEFEND (this sprint, so far)
+- basket's rank-1 installation-rescue direction CERTIFIES on held-out validation (p=0.0175) and is cross-hardware.
+- Higher rank (16) does NOT give EITHER codeword a specific carrier — both r16 are certified fails vs rank-matched
+  controls (the extra recovery is dimensionality/dose any subspace matches). Dissociation != dimensionality.
+- C1 replicated: basket rank-1 probe LOO rho +12% over button (both decodable); button decodability rises with
+  rank yet rescue never specific (decodability != rescue-specificity).
+- basket & button recruit geometrically similar directions (rank-1 cos 0.56; r16 subspaces overlap) => same
+  geometry, different causal efficacy.
+
+### WHAT WE MUST NOT SAY
+- NOT the ARA-optimized WEIGHT operator yet (these are PLS/axis-family activation-space candidates; P2b pending).
+- NO behavioral/ASR claim (semantic-installation rescue only; rung-1-style sufficiency).
+- basket r1 TRAIN is 2/57 (passes only under AM-48 rank<=2); the clean PASS is the VALIDATION 1/57 read.
+- button's "no carrier" is scoped to the tested ranks {1,16} and the PLS family; not "button is uninstallable".
+- TEST never used (spent). Only 2 codewords => a 2-point dissociation, not yet a population law (P6 = generalize).
+- basket's bank has more option-mass-degraded rows than button's (unmatched caveat, inherited).
