@@ -795,3 +795,11 @@ No headline exists yet (both runs staging); nothing to overclaim. The pipeline +
 - Plan: headline rank-1-vs-16 uses FULL rows (the 4 running jobs). Remaining ranks {2,4,8,32} will use K4 subset
   (feasible) IF the full-row results show an effect worth mapping — decided after they land.
 - NEXT tick: monitor; analyze at 61/61.
+
+## S-034 — 2026-10-03 — self-check PASS: candidate rescue writes NONZERO delta (not a silent null); jobs ~30%
+- Verified on basket KO_CAND_r16 (completed, 670 rows): `fired=true, wrote_nonzero=true`, delta_norm_mean=1.16,
+  written_norm_mean=0.272, captured_energy_frac_mean=0.178 (rank-16 subspace captures ~18% of the KO->clean
+  difference energy), n_positions=28, norm_match_degenerate=0. So the subspace rescue is genuinely applied — rules
+  out the "rescue writes ~0 == indistinguishable from never fired" bug class (plan §3 self-check).
+- All 4 jobs healthy (~16-18/61 arms), 0 hook leaks/OOM. On track (~4-5h remaining).
+- NEXT tick: monitor; analyze_sweep at 61/61 (first matched rank-1-vs-16 dissociation).
