@@ -897,3 +897,10 @@ All gates PASS (manip/identity/instrument), n_domains=67, 56 rank-matched contro
 - These CERTIFY the S-040 TRAIN headline on the held-out validation split. (TEST remains spent — never used.)
 - Next after validation lands: fill intermediate ranks {2,4,8,32} via the K4 subset bank (feasible), run
   make_rank_table for the full curve, and begin P2b (the ARA-optimized WEIGHT operator) + P3 SVD.
+
+## S-042 — 2026-10-03 — validation moved to a5000 (L40S pended >30min); running
+- 968528-31 pended >30min on L40S (contended). Moved to a5000 (sm_86 native-bf16, 3090-class, CSI-approved family):
+  basket r1 (968532), basket r16 (968533), button r1 (968534) on n-501; button r16 (968535) on n-503 — all RUNNING.
+- Note: TRAIN headline ran on L40S, validation on a5000 — a cross-hardware replication (bonus robustness; both
+  native bf16; inherited used 3090/L40S interchangeably). Will note the hardware in the result.
+- NEXT tick: monitor (validation ~3h on 230 rows); analyze --split validation when done => certify/deny S-040.
