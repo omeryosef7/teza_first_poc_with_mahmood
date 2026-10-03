@@ -862,3 +862,31 @@ No headline exists yet (both runs staging); nothing to overclaim. The pipeline +
 - Launched final TRAIN analyses: basket r1 (966084) and button r16 (966158) — the latter is the key H1 test
   (does higher rank rescue button?). Awaiting.
 - NEXT: assemble make_rank_table (basket vs button, r1 vs r16, TRAIN); then VALIDATION for all 4 before any claim.
+
+## S-040 — 2026-10-03 — FIRST HEADLINE (TRAIN, PLS candidate, NOT yet certified): rank does NOT rescue button
+All gates PASS (manip/identity/instrument), n_domains=67, 56 rank-matched controls (floor 0.0175, well-powered).
+
+| codeword | rank | recovery_fraction | rank in 57 | rank-p | verdict (rank-1 rule) |
+|---|---|---|---|---|---|
+| basket | 1  | 0.0275 [0.008,0.047] | **2/57**  | 0.0351 | DOES NOT PASS (rank-1); **PASS under rank<=2 (AM-48)** |
+| basket | 16 | 0.1667 [0.127,0.205] | 10/57     | 0.1754 | DOES NOT PASS (dose) |
+| button | 1  | -0.0009              | 23/57     | 0.4035 | DOES NOT PASS (recovers ~nothing) |
+| button | 16 | 0.1180 [0.096,0.140] | 10/57     | 0.1754 | DOES NOT PASS (dose) |
+
+**READING (preliminary, TRAIN-only):**
+- The inherited **codeword dissociation replicates at rank 1**: basket's rank-1 PLS direction sits near the top
+  of its controls (2/57, p=0.035 ~ "specific") while button's recovers ~nothing and is mid-pack (23/57, p=0.40).
+- **Higher rank does NOT give either codeword a *specific* carrier.** At r16 both recover more (basket 0.167,
+  button 0.118) but BOTH rank 10/57 (p=0.175) — i.e. a random rank-16 subspace recovers just as much. The extra
+  recovery is generic DOSE/dimensionality, not a button-specific mechanism.
+- => Prereg outcome **D** (button remains resistant even at high rank) + partial **B**: the basket-vs-button
+  dissociation is about the EXISTENCE of a specific low-rank direction (basket has one, button does not), NOT
+  about button needing a higher-dimensional operator. Adding dimensions helps both only as much as any subspace.
+
+**WHAT WE CANNOT SAY YET (honesty contract):**
+- TRAIN only — NOT certified. VALIDATION is the certifying split (launching now).
+- These are **PLS/axis-family candidates** (the inherited rank-1 method extended to more ranks), NOT yet an
+  ARA-OPTIMIZED weight operator (that is P2b). This answers H1 for the activation-space PLS family only.
+- basket r1 = rank 2/57: the AM-48 rank-1-vs-rank<=2 choice flips its verdict — report BOTH; do not pick silently.
+- No behavioral/ASR claim; this is semantic-installation rescue (rung-1-style sufficiency) only.
+- Only ranks {1,16} so far; the intermediate ranks {2,4,8,32} (K4 subset) fill the curve.
