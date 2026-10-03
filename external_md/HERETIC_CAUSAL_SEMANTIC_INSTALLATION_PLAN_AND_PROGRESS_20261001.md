@@ -919,3 +919,17 @@ All gates PASS (manip/identity/instrument), n_domains=67, 56 rank-matched contro
   flagged). Descriptive geometry; not a causal test by itself. basket's modestly-better probe is a LIVE partial
   explanation for why basket (not button) has a specific rank-1 carrier — but 12% probe-rho does not obviously
   explain a 2/57-vs-23/57 rescue gap, so "better probe" is necessary-maybe, not clearly sufficient.
+
+## S-044 — 2026-10-03 — P3 geometry (descriptive): same geometry, different causal efficacy
+- cos(basket rank-1 axis, button rank-1 axis) = **0.557** (4096-D; well above chance ~0) => the codewords use
+  MODERATELY ALIGNED directions, not geometrically distinct ones.
+- PLS subspaces are NESTED (deflation): the rank-1 direction is captured 0.989 by rank-4, 1.0 by rank-16/32 for
+  BOTH codewords. So rank-16 = rank-1 carrier + 15 generic "dose" dimensions.
+- basket-r16 vs button-r16 subspaces heavily overlap: principal cosines 0.96/0.94/0.94/0.92/0.91, mean cos^2=0.46.
+- SYNTHESIS (geometry paired with the S-040 causal rescue test): basket & button recruit geometrically SIMILAR
+  directions/subspaces, yet their causal rescue DISSOCIATES (basket rank-1 specific 2/57; button never specific).
+  => the dissociation is NOT "different directions" but **same geometry, different causal efficacy** — coherent
+  with S-043 (button decodable + probe rises with rank, yet not rescuable). The puzzle sharpens: button's concept
+  is decodable AND lives in a basket-like subspace, but adding back that subspace does not causally reinstall it.
+- SCOPING: cosine/principal-angle = DESCRIPTIVE geometry; the causal claim rests on the rescue rank test (S-040),
+  TRAIN-only until validation certifies. No held-out geometry yet.
