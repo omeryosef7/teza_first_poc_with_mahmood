@@ -958,3 +958,10 @@ Attempted to break S-040/043/044 before validation lands:
   rows (unmatched caveat, inherited); no behavioral/ASR claim.
 - Verdict of review: the headline is defensible pending validation; no overclaim detected in the log.
 - Validation jobs ~3h elapsed on a5000, healthy (~1h left).
+
+## S-047 — 2026-10-03 — validation jobs completing; certifying analyses launched
+- Validation arm row count = 230 (23 val domains x10). basket r1 (968532) + button r16 (968535) DONE; analyses
+  launched (--split validation --expect-n 230 --allow-short 20). basket r16 (968533) + button r1 (968534) at 60/61.
+- NEXT tick: read the 2 validation verdicts; analyze the last 2; assemble the TRAIN+VALIDATION matched table.
+  Certification criterion: does the dissociation (basket r1 specific vs button r1 null; both r16 dose-fail)
+  REPLICATE on validation (a5000, held-out domains)?
