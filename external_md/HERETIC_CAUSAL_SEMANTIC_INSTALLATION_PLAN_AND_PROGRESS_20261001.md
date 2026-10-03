@@ -803,3 +803,14 @@ No headline exists yet (both runs staging); nothing to overclaim. The pipeline +
   out the "rescue writes ~0 == indistinguishable from never fired" bug class (plan §3 self-check).
 - All 4 jobs healthy (~16-18/61 arms), 0 hook leaks/OOM. On track (~4-5h remaining).
 - NEXT tick: monitor; analyze_sweep at 61/61 (first matched rank-1-vs-16 dissociation).
+
+## S-035 — 2026-10-03 — ~4h REVIEW of the analysis path: rank-matched control scoping CONFIRMED correct
+- Verified in `scripts/dcs_csi_subspace_analyze.py`: the control family is built from the `--arms` list
+  (line 518 `arms=a.arms.split(',')`) filtered by `--control-prefixes` (line 956) — it does NOT glob all-rank
+  `KO_RAND_*` dirs. Since analyze_sweep passes ONLY that rank's arms, the control family is genuinely RANK-MATCHED
+  (candidate rank-r vs rank-r controls). Analyzer also REFUSES if candidate/comparator/norm-match is inside the
+  control family (line 966). require_slurm_jobs parsed from --require-slurm-job disambiguates stale dirs.
+- Hardening: analyze_sweep now passes `--expect-n-controls = len(sweep)-1` so a MISSING control run dir (a failed
+  arm) fails the analysis loudly rather than silently shrinking the family. PY syntax clean.
+- Jobs ~48% (33/61 ish), 0 failures, ~2h remaining.
+- NEXT tick: monitor; analyze at 61/61.

@@ -58,6 +58,7 @@ def main():
                "--candidate-arm", cand, "--comparator-arm", comparator,
                "--control-prefixes", "KO_SHUF,KO_RAND", "--split", a.split,
                "--direction", "sufficiency", "--option-mass-floor", a.option_mass_floor,
+               "--expect-n-controls", str(len(sweep) - 1),  # assert every emitted control produced a run dir
                "--out", outj]
         if a.slurm_job:
             cmd += ["--require-slurm-job", a.slurm_job]
