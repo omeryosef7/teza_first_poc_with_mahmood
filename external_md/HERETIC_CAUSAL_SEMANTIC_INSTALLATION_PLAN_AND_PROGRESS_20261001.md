@@ -841,3 +841,15 @@ No headline exists yet (both runs staging); nothing to overclaim. The pipeline +
 - Also neutralized the one stale DONE-but-no-results crash dir (S-036). Re-running button r1 + basket r16 TRAIN.
 - NEXT tick: read the first real verdicts (both TRAIN); finish basket r1 + button r16 when their jobs complete →
   matched rank-1-vs-16 per codeword + make_rank_table.
+
+## S-038 — 2026-10-03 — FIRST DEFENSIBLE RESULT: basket rank-16 TRAIN = DOES NOT PASS (dose-confounded)
+- **basket r16 (TRAIN, n_domains=67, 56 rank-matched controls):** gates ALL PASS (manip/identity/instrument);
+  recovery_fraction = 0.1667 [0.1272, 0.2053]; **VERDICT DOES NOT PASS** — candidate ranks 10/57, rank p=0.1754
+  (floor 0.0175); 9 controls recover >= it. "INSIDE the controls, not above them."
+- INTERPRETATION (preliminary, TRAIN only): at rank 16 a PLS subspace recovers ~17% of whole-state but random
+  rank-16 subspaces recover as much → the rank-16 candidate is DOSE/DIMENSIONALITY, not a specific carrier. With
+  the inherited basket rank-1 PASS (1/47), this says basket's installed meaning is a LOW-RANK-SPECIFIC direction;
+  adding dimensions does not give a MORE specific operator (it just adds generic dose any subspace matches).
+  ⚠ TRAIN only; VALIDATION needed before any claim; and this is the PLS/axis-family candidate (not yet an
+  ARA-optimized operator — that's P2b).
+- button r1 analysis running; basket r1 (966084) + button r16 (966158) jobs finishing → full matched comparison next.
