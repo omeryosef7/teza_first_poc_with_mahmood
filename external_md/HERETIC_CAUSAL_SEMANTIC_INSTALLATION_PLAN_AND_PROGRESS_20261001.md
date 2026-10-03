@@ -1013,3 +1013,13 @@ sweep + rank-matched controls at every rank, cross-hardware validation, and the 
 - button's "no carrier" is scoped to the tested ranks {1,16} and the PLS family; not "button is uninstallable".
 - TEST never used (spent). Only 2 codewords => a 2-point dissociation, not yet a population law (P6 = generalize).
 - basket's bank has more option-mass-degraded rows than button's (unmatched caveat, inherited).
+
+## S-050 — 2026-10-03 — fill rank-sweep curve: intermediate ranks {4,8} launched (K4 subset, TRAIN)
+- Headline certified (S-049). Now completing the {1,2,4,8,16,32} curve middle: basket r4 (969085), basket r8
+  (969086), button r4 (969087), button r8 (969088) on a5000, K4 domain-stratified subset (268 rows, ~3.5h), TRAIN.
+- These are CURVE-SHAPE (K4 subset = fewer rows/domain than the full-row headline cells; declared trade-off) —
+  they test WHERE basket loses rank-1 specificity (only r1? or r2-8 too) and confirm the dose monotonicity. The
+  certified PASS/FAIL headline stands on full-row r1/r16 (S-049), not on these.
+- Parallel plan: begin P2b design (ARA-optimized WEIGHT operator ΔW=BA on o_proj/down_proj via operator_ara +
+  the KO capture) — the plan's literal novel step; and P6 (generalize across screen-viable codewords).
+- NEXT tick: monitor; analyze {4,8} when done; extend table to {1,4,8,16}.
