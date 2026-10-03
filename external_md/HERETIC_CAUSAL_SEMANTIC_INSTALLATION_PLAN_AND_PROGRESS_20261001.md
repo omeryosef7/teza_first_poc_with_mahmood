@@ -853,3 +853,12 @@ No headline exists yet (both runs staging); nothing to overclaim. The pipeline +
   ⚠ TRAIN only; VALIDATION needed before any claim; and this is the PLS/axis-family candidate (not yet an
   ARA-optimized operator — that's P2b).
 - button r1 analysis running; basket r1 (966084) + button r16 (966158) jobs finishing → full matched comparison next.
+
+## S-039 — 2026-10-03 — button r1 TRAIN = DOES NOT PASS (recovery ~0); last 2 analyses launched
+- **button r1 (TRAIN, 67 domains, 56 controls):** gates ALL PASS; recovery_fraction = -0.0009 (≈ zero);
+  VERDICT DOES NOT PASS — ranks 23/57, rank p=0.4035. The rank-1 PLS candidate recovers ~nothing for button and
+  is mid-pack among controls. Consistent with the inherited button rank-1 NEGATIVE.
+- TRAIN verdicts so far: basket r16 DOES NOT PASS (recovery 0.167, dose); button r1 DOES NOT PASS (recovery ~0).
+- Launched final TRAIN analyses: basket r1 (966084) and button r16 (966158) — the latter is the key H1 test
+  (does higher rank rescue button?). Awaiting.
+- NEXT: assemble make_rank_table (basket vs button, r1 vs r16, TRAIN); then VALIDATION for all 4 before any claim.
