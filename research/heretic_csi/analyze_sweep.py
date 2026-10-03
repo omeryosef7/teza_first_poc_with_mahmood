@@ -41,6 +41,7 @@ def main():
     ap.add_argument("--nshuf", type=int, default=10)
     ap.add_argument("--option-mass-floor", default="0.05")
     ap.add_argument("--slurm-job", default=None, help="--require-slurm-job: disambiguate stale same-tag run dirs")
+    ap.add_argument("--allow-short", type=int, default=20, help="admit arms short by <=N rows (norm-match degeneracy drops); inherited standard = 4")
     ap.add_argument("--out-dir", default="reports/heretic_csi")
     a = ap.parse_args()
     os.makedirs(os.path.join(ROOT, a.out_dir), exist_ok=True)
@@ -59,6 +60,7 @@ def main():
                "--control-prefixes", "KO_SHUF,KO_RAND", "--split", a.split,
                "--direction", "sufficiency", "--option-mass-floor", a.option_mass_floor,
                "--expect-n-controls", str(len(sweep) - 1),  # assert every emitted control produced a run dir
+               "--allow-short", str(a.allow_short),
                "--out", outj]
         if a.slurm_job:
             cmd += ["--require-slurm-job", a.slurm_job]

@@ -829,3 +829,15 @@ No headline exists yet (both runs staging); nothing to overclaim. The pipeline +
 - Launched basket r16 + button r1 analyses in background (bzb8ihqal, bzn67m0vv) → SUMMARY jsons incoming.
 - NEXT tick: read the first real verdicts (gates + recovery + rank test); when basket r1 + button r16 finish,
   complete the matched rank-1-vs-16 per-codeword comparison + make_rank_table.
+
+## S-037 — 2026-10-03 — analysis fix: allow-short for norm-match degeneracy drops (controls lose up to 6 rows)
+- Real cause of button-r1 ANALYZER_ERROR: control arms drop a few rows to NORM-MATCH DEGENERACY (control can't
+  match the candidate's norm at some positions). Button r1 (job 966157) control row counts: 22×670, 23×669,
+  8×668, 2×667, 1×664 (KO_RAND_r1_6 drops 6). strict_run_dir with allow_short=0 (then my first try =4) rejects
+  the 664 arm → "0 complete". Inherited standard is `--allow-short 4`, but one control here drops 6.
+- FIX: analyze_sweep `--allow-short` default 20 (~3%; still rejects a truly broken arm via the rows_written==
+  n_lines consistency check). The analyzer intersects (domain,slot) keys across arms, so short arms don't bias
+  domain means — admission just needs to cover the worst degeneracy drop. (NOT a science change.)
+- Also neutralized the one stale DONE-but-no-results crash dir (S-036). Re-running button r1 + basket r16 TRAIN.
+- NEXT tick: read the first real verdicts (both TRAIN); finish basket r1 + button r16 when their jobs complete →
+  matched rank-1-vs-16 per codeword + make_rank_table.
