@@ -904,3 +904,18 @@ All gates PASS (manip/identity/instrument), n_domains=67, 56 rank-matched contro
 - Note: TRAIN headline ran on L40S, validation on a5000 — a cross-hardware replication (bonus robustness; both
   native bf16; inherited used 3090/L40S interchangeably). Will note the hardware in the result.
 - NEXT tick: monitor (validation ~3h on 230 rows); analyze --split validation when done => certify/deny S-040.
+
+## S-043 — 2026-10-03 — P5/C1 QUANTIFIED (TRAIN LOO): basket better probe (+12%); decodability != rescue-specificity
+- Probe quality (TRAIN LOO rho, from the ranksweep axis .json; layer 18, behavioral fit):
+  - basket: rank-1 LOO rho = 0.5629 (peaks r3=0.6407); button: rank-1 LOO rho = 0.5042 (peaks r7=0.5889).
+  - shuffled-label null ~0 (basket -0.052, button +0.017) => both codewords DECODABLE; basket's rank-1 probe is
+    +0.0587 (~12% rel) better. **C1 replicated** (inherited: 0.5629 vs 0.5021, +12%).
+- KEY OBSERVATION (links P5 to S-040): button's DECODABILITY rises with rank (peaks r7=0.589) yet its causal
+  RESCUE never becomes specific (S-040: button r1 23/57, r16 10/57, both fail vs rank-matched controls). So
+  **decodability and causal-rescue-specificity DISSOCIATE** for button — the concept is linearly readable but not
+  rescuable by a specific low-rank operator at any tested rank. (Echoes the inherited decodability!=causality /
+  representation!=behavior theme.)
+- SCOPING: TRAIN LOO rho only (NOT held-out; a held-out probe rho still does not exist, same gap the inherited C1
+  flagged). Descriptive geometry; not a causal test by itself. basket's modestly-better probe is a LIVE partial
+  explanation for why basket (not button) has a specific rank-1 carrier — but 12% probe-rho does not obviously
+  explain a 2/57-vs-23/57 rescue gap, so "better probe" is necessary-maybe, not clearly sufficient.
