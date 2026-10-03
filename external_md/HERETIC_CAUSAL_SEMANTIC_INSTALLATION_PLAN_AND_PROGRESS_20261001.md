@@ -933,3 +933,12 @@ All gates PASS (manip/identity/instrument), n_domains=67, 56 rank-matched contro
   is decodable AND lives in a basket-like subspace, but adding back that subspace does not causally reinstall it.
 - SCOPING: cosine/principal-angle = DESCRIPTIVE geometry; the causal claim rests on the rescue rank test (S-040),
   TRAIN-only until validation certifies. No held-out geometry yet.
+
+## S-045 — 2026-10-03 — deliverable #4 table generated (TRAIN); validation ~37%
+- make_rank_table.py works; wrote reports/heretic_csi/RANK_TABLE_train.md (regenerable; not committed per the
+  research/+external_md commit scope). Recovery-vs-rank: basket r1=0.028 r16=0.167; button r1=-0.001 r16=0.118;
+  all FAIL the rank test (basket r1 = the 2/57 borderline; AM-48 rank<=2 would pass — see S-040).
+- Validation jobs ~22-23/61 arms on a5000 (~2h left). No failures.
+- NEXT: certify on validation; then decide the next big build — P4 (head-restricted rescue, links to the 8-head
+  circuit), P6 (fresh codewords = generalize the "specific low-rank direction" finding, highest paper value), or
+  P2b (ARA weight operator, Heretic-native confirmation).
