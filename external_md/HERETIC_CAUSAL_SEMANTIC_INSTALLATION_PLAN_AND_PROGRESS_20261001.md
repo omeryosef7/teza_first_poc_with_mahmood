@@ -942,3 +942,19 @@ All gates PASS (manip/identity/instrument), n_domains=67, 56 rank-matched contro
 - NEXT: certify on validation; then decide the next big build — P4 (head-restricted rescue, links to the 8-head
   circuit), P6 (fresh codewords = generalize the "specific low-rank direction" finding, highest paper value), or
   P2b (ARA weight operator, Heretic-native confirmation).
+
+## S-046 — 2026-10-03 — ~4h ADVERSARIAL REVIEW (tried to kill the headline): survives
+Attempted to break S-040/043/044 before validation lands:
+- **NOT domain-floor-limited** (the inherited behavioral-recovery failure mode): all 4 verdicts use n_domains=67
+  and recovery.n_domains_with_movement=67 — recovery estimated over ALL 67 train domains, tight CIs. (Inherited
+  behavioral recovery rested on 5 informative domains; this does not.)
+- **button r1 recovery = -0.0009 CI [-0.0115, 0.009]** — tightly on ZERO across 67 domains (robust null, not a
+  noisy few-domain artifact). basket r16 0.167[0.127,0.205], button r16 0.118[0.096,0.140] clearly positive (dose).
+- **rank-test well-powered:** floor 0.0175 (57 controls) << 0.05, so r16 "DOES NOT PASS" (10/57) are CERTIFIED
+  negatives, not floor-limited.
+- Dissociation gap at r1 is large (basket 2/57 recovery 0.028 vs button 23/57 recovery ~0) — not a borderline.
+- SURVIVING caveats (all already logged, none fatal): TRAIN-only (validation in flight); PLS/axis candidate NOT
+  the ARA weight operator (P2b); AM-48 flips basket-r1 pass/fail; basket's bank has more option-mass-degraded
+  rows (unmatched caveat, inherited); no behavioral/ASR claim.
+- Verdict of review: the headline is defensible pending validation; no overclaim detected in the log.
+- Validation jobs ~3h elapsed on a5000, healthy (~1h left).
