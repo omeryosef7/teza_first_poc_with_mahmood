@@ -814,3 +814,18 @@ No headline exists yet (both runs staging); nothing to overclaim. The pipeline +
   arm) fails the analysis loudly rather than silently shrinking the family. PY syntax clean.
 - Jobs ~48% (33/61 ish), 0 failures, ~2h remaining.
 - NEXT tick: monitor; analyze at 61/61.
+
+## S-036 — 2026-10-03 — first 2 (cw,rank) jobs DONE; analysis unblocked (stale-dir crash + bash-timeout)
+- **DONE:** basket r16 (965928, 61/61 rc=0) + button r1 (966157, 61/61 rc=0). basket r1 (966084) 57/61, button r16
+  (966158) 58/61 — finishing soon.
+- Two analysis snags fixed (NOT science bugs):
+  1. `strict_run_dir`'s completeness loop CRASHED on a stale killed-job KO dir (965462: DONE.json, status
+     INCOMPLETE, rows_written=0, NO results.jsonl) — it reads results.jsonl before the slurm-job filter runs.
+     Can't rm it (permission), so wrote an empty results.jsonl there → now cleanly REJECTED (0≠670), no crash.
+     (Only 1 such dir across hcsi_p2a_*.)
+  2. The `ANALYZER_ERROR` was my 118s BASH timeout killing the analyzer mid-bootstrap (20000 draws × 56 controls
+     is slow, ~2-3min), NOT a code error — direct run completed exit 0. Fix: run analyze_sweep in background (no
+     timeout).
+- Launched basket r16 + button r1 analyses in background (bzb8ihqal, bzn67m0vv) → SUMMARY jsons incoming.
+- NEXT tick: read the first real verdicts (gates + recovery + rank test); when basket r1 + button r16 finish,
+  complete the matched rank-1-vs-16 per-codeword comparison + make_rank_table.
