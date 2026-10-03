@@ -890,3 +890,10 @@ All gates PASS (manip/identity/instrument), n_domains=67, 56 rank-matched contro
 - basket r1 = rank 2/57: the AM-48 rank-1-vs-rank<=2 choice flips its verdict — report BOTH; do not pick silently.
 - No behavioral/ASR claim; this is semantic-installation rescue (rung-1-style sufficiency) only.
 - Only ranks {1,16} so far; the intermediate ranks {2,4,8,32} (K4 subset) fill the curve.
+
+## S-041 — 2026-10-03 — VALIDATION (certifying) runs launched for ranks 1 & 16
+- Launched 4 validation sweeps (arg7 = exclude_<cw>_bomb_sow_validation.txt; 23 val domains x10 ~230 rows, ~3x
+  faster than train): basket r1 (968528), basket r16 (968529), button r1 (968530), button r16 (968531). PENDING L40S.
+- These CERTIFY the S-040 TRAIN headline on the held-out validation split. (TEST remains spent — never used.)
+- Next after validation lands: fill intermediate ranks {2,4,8,32} via the K4 subset bank (feasible), run
+  make_rank_table for the full curve, and begin P2b (the ARA-optimized WEIGHT operator) + P3 SVD.
