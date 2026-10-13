@@ -1,0 +1,76 @@
+{
+  "schema": "hcsi_phaseB_datasets/1",
+  "codeword": "button",
+  "concept": "knife",
+  "bank": "data/boombness_prompts/boombness_prompt_bank_ts116m_button_knife.jsonl",
+  "bank_sha256": "94fd300d611fccf2a8c65584edfc612e345a8e162a87fa396b432d9bb8f36fbe",
+  "split_manifest_sha16": "be7d2c772d814ef3",
+  "excluded_domains": [
+    "restaurant_kitchen",
+    "school_campus",
+    "subway_station"
+  ],
+  "roles": {
+    "good(TARGET)": "cell C",
+    "bad(SOURCE)": "cell A"
+  },
+  "sets": {
+    "fit_good": {
+      "path": "configs/heretic_csi/phaseB/button_knife/fit_good.jsonl",
+      "n_rows": 335,
+      "n_domains": 67,
+      "sha256": "fabbecf510148dd87c04f43e5bb6c9855de0043f853d132b2e55bef6c8fb9897",
+      "heretic_dir": "configs/heretic_csi/phaseB/button_knife/fit_good"
+    },
+    "fit_bad": {
+      "path": "configs/heretic_csi/phaseB/button_knife/fit_bad.jsonl",
+      "n_rows": 335,
+      "n_domains": 67,
+      "sha256": "6a0f20c15a88018624150d22ace218716b323960b7929d345375de6d0bdbab4c",
+      "heretic_dir": "configs/heretic_csi/phaseB/button_knife/fit_bad"
+    },
+    "opt_A": {
+      "path": "configs/heretic_csi/phaseB/button_knife/opt_A.jsonl",
+      "n_rows": 134,
+      "n_domains": 67,
+      "sha256": "414f1a782a1c4a40a4dd98fd9fbc324b932022c4655001cb1b6c8814467e1312"
+    },
+    "opt_C": {
+      "path": "configs/heretic_csi/phaseB/button_knife/opt_C.jsonl",
+      "n_rows": 134,
+      "n_domains": 67,
+      "sha256": "78fd846bcf31dc0ac7a4b7247caf3643760c411ebb5cf9b79dee7a35ec4aa448"
+    },
+    "trainread_A": {
+      "path": "configs/heretic_csi/phaseB/button_knife/trainread_A.jsonl",
+      "n_rows": 335,
+      "n_domains": 67,
+      "sha256": "caac6f42741e229a7bf6db7e6338f34e4a45f8b73a4e3a6960899f0a62d1f85f"
+    },
+    "trainread_C": {
+      "path": "configs/heretic_csi/phaseB/button_knife/trainread_C.jsonl",
+      "n_rows": 335,
+      "n_domains": 67,
+      "sha256": "63fef027a950d6a73b2b897bff9fa52e3a65517537ff77eceba42a7ff1db2ea4"
+    },
+    "val_A": {
+      "path": "configs/heretic_csi/phaseB/button_knife/val_A.jsonl",
+      "n_rows": 230,
+      "n_domains": 23,
+      "sha256": "22531963c96b73627566ad83a0b324b6d5916d99be5e02b5085220e5f777930b"
+    },
+    "val_C": {
+      "path": "configs/heretic_csi/phaseB/button_knife/val_C.jsonl",
+      "n_rows": 230,
+      "n_domains": 23,
+      "sha256": "0b41b8bf3c9c9513487b51524025fb8cad40540c65febc900a1ba0908a4ecb29"
+    },
+    "val_behav_C": {
+      "path": "configs/heretic_csi/phaseB/button_knife/val_behav_C.jsonl",
+      "n_rows": 46,
+      "n_domains": 23,
+      "sha256": "782d8cb4cfc900007df536c3f6903799319fc23ec283021c0340701920d15c33",
+      "heretic_dir": "configs/heretic_csi/phaseB/button_knife/val_behav_C"
+    }
+  }
+}

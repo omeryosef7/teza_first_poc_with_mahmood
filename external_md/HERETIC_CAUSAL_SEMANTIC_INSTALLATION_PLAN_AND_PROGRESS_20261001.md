@@ -1456,3 +1456,35 @@ Verifier F3 (`research/heretic_csi/verify/verify_r4_val.py`, analyzer logic not 
   probe weights; GPU truncation/removal plans gated on a validated operator. P4 = verify Llama o_proj head-column
   layout from source; recover the inherited head circuit; fit head-restricted o_proj operators (target heads vs ≥20
   matched random head sets vs full o_proj vs MLP-only vs attn+MLP, ranks {1,4}); draft PREREG_P4 before any endpoint.
+
+## S-077 — 2026-10-14 02:20 — PHASE A PASS; PHASE B VERDICT: native last-position ARA is NOT sufficient for installation (context-free answer bias)
+Env: pinned Heretic 662e4ba2 in venv `/specific/scratches/scratch/omeryosef/envs/heretic_csi` (torch 2.13+cu126, tf
+5.6.2, optuna 4.8.0, peft 0.19.1; conda create blocked by an unaccepted channel ToS — not accepted on the user's behalf).
+**Cell mapping recovered from `prompt_families.py`:** A = benign_literal, B = direct_harmful, C = natural_doublespeak,
+E = concept_in_benign_ctx. Phase-B ARA groups renamed target = C (installed), source = A (not installed).
+- **Phase A PASS (1023185;** 1022919 = superseded failed-gate record): eager+bf16, deterministic base, exact reset to
+  identity, Optuna resume works. Heretic findings (S-062) confirmed + one more: **resume re-draws trial 0's exact
+  params** (re-seeded TPE). Restoring lora_A makes replay bit-exact.
+- **Phase B (MEASURED control; TRAIN-tuned 67 dom, VAL 23 dom read once, TEST never):**
+
+  | | basket | button |
+  |---|---|---|
+  | VAL cell A ΔY (not installed) | +0.925 | +0.796 |
+  | rank vs 42 rank-matched controls | 1/43, p=0.023 (floor) | 1/43, p=0.023 (floor) |
+  | control ΔY | ≤6e-5 | ≤0.0035 |
+  | VAL cell C ΔY (installed) | −0.124 | −0.111 |
+  | Δlogp(bomb) on VAL A | +13.9 | +13.4 |
+  | first-token KL, VAL C | 0.85 | 1.02 |
+  | keyword refusal (secondary) | 0.065→0.022 | 0.196→0.087 |
+
+  Specificity reads (MEASURED): cross-codeword — button-fit edit on basket prompts gives A +0.995 / C +0.530; wrong
+  concept — on knife contexts the basket edit raises P(bomb) +0.395 > P(knife) +0.289 (gun: bomb +0.272 > gun +0.215);
+  damages installed prompts; basket VAL C option mass 0.036 (< 0.05 floor); first-token KL on benign A prompts 4.55.
+  Saved-factor replay bit-exact on another node.
+- **VERDICT (plan §6 question):** generic end-of-prompt operator editing is **NOT sufficient for semantic
+  installation** — it beats random controls only by installing a context-free "answer bomb" output bias at the answer
+  position (Heretic's capture site). Expected; motivates position-aware ARA (P1/P2b). Caveats: freeze rule v1 (no
+  option-mass clause); 42 controls exclude random perturbation but not answer bias (the specificity reads do);
+  r1/r8 same-param refits descriptive (basket 0.0 / +0.43 [r8 below floor]; button +0.75 / +0.48).
+- Ops: several F1 jobs lost to node /tmp exhaustion (n-803, n-804, n-801); scripts now fall back to loading from the
+  mirror directly (~20 min).

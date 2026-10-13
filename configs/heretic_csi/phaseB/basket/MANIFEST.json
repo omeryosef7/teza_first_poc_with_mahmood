@@ -1,6 +1,7 @@
 {
   "schema": "hcsi_phaseB_datasets/1",
   "codeword": "basket",
+  "concept": "bomb",
   "bank": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl",
   "bank_sha256": "79511d9e254571e66a471d0353b318001ff0c1c32713be75ca0f0484e2606692",
   "split_manifest_sha16": "be7d2c772d814ef3",

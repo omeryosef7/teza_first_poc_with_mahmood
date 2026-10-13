@@ -1,6 +1,7 @@
 {
   "schema": "hcsi_phaseB_datasets/1",
   "codeword": "button",
+  "concept": "bomb",
   "bank": "data/boombness_prompts/boombness_prompt_bank_ts116m_button_bomb.jsonl",
   "bank_sha256": "dcd92d723f3e6d008a9bfce5f0c88b5c1d2e71c594eb42073f46717d59e053b2",
   "split_manifest_sha16": "be7d2c772d814ef3",
