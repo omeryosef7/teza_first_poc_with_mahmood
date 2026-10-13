@@ -87,7 +87,7 @@ def main():
     print("\n==== RESCUE-vs-RANK SUMMARY (", a.codeword, a.split, ") ====")
     for row in rows:
         print(json.dumps(row))
-    summ = os.path.join(ROOT, a.out_dir, f"{a.tag_prefix}_SUMMARY_{a.split}.json")
+    summ = os.path.join(ROOT, a.out_dir, f"{a.tag_prefix}_SUMMARY_r{'-'.join(map(str, ranks))}_{a.split}.json")  # ranks in name: concurrent per-rank runs must not clobber each other (S-051)
     json.dump({"codeword": a.codeword, "split": a.split, "rows": rows}, open(summ, "w"), indent=2)
     print("wrote", summ)
 

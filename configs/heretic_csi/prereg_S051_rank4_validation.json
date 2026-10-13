@@ -1,0 +1,24 @@
+{
+  "schema": "hcsi_prereg/1",
+  "id": "PR-HCSI-S051",
+  "frozen_at": "2026-10-13, BEFORE any rank-4/rank-8 VALIDATION run exists",
+  "trigger": "TRAIN K4-subset rank curve (S-051): button r4 = rank 1/57 (PASS, p=0.0175) while button r1 = 23/57, r8 = 3/57, r16 = 10/57; basket r1 2/57, r4 3/57, r8 3/57 (K4), r16 10/57. Four ranks were examined per codeword on TRAIN => the button-r4 TRAIN pass is subject to multiplicity (~4 x 0.0175) and is NOT a finding.",
+  "primary": {
+    "cell": "button, PLS candidate cand_pls4 (rank 4), activation-space rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14:1.0 target_surface_row_only",
+    "split": "validation (23 domains x 10 rows = 230; runargs/dcs_cont/exclude_button_bomb_sow_validation.txt)",
+    "controls": "56 rank-matched controls (46 random orthonormal rank-4 + 10 shuffled-label PLS rank-4), norm-matched; floor 1/57 = 0.0175",
+    "statistic": "frozen dcs_csi_subspace_analyze.py rank rule (sufficiency direction, option-mass floor 0.05): PASS iff candidate is strictly the largest of its 56 controls (rank 1/57)",
+    "alpha": 0.05,
+    "single_test": "this is the ONE confirmatory test; no rank-selection on validation"
+  },
+  "secondary_descriptive": [
+    "basket r4 on validation (symmetry; same rule) -- descriptive, not confirmatory",
+    "button r8 / basket r8 on validation only if GPU budget allows -- descriptive"
+  ],
+  "interpretation_frozen": {
+    "button_r4_PASS": "button HAS a specific low-rank (rank-4, not rank-1) activation-space rescue carrier at L18 => partial support for H1 / outcome A in the PLS activation family; S-049's 'button has no specific carrier' must be re-scoped to ranks {1,16}. Still not the ARA weight operator.",
+    "button_r4_FAIL": "the TRAIN r4 pass was a multiplicity false positive; S-049 outcome D (button resistant at tested ranks) stands, now with r4 tested held-out."
+  },
+  "hardware": "a5000 (same as S-048/049 validation), eager bf16, pinned snapshot 0e9e39f2",
+  "test_split": "never used"
+}
