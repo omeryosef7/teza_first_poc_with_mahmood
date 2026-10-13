@@ -1339,3 +1339,10 @@ land BEFORE any P2b result (the frozen-before-endpoint discipline holds).
 - Scheduling: a primary rank = 163 arms (~12 GPU-h) ⇒ one primary rank per job: 1023012 → basket r1 + liveness;
   1023264 → button r1 + liveness; evalD_{basket,button} (r4) queued for free slots. Primary Holm verdicts only after
   BOTH r1 and r4 land. Smoke3 1023398 (12 rows, r1+r4) GPU-testing the secondary path.
+
+## S-070 — 2026-10-14 01:10 — CORRECTION to S-058/S-059: the "5 s stage-in" was a warm NFS client cache
+- The 5 s stage-in on n-503 came from that node's NFS client cache (mount uses fsc), not general scratch-mirror speed.
+  Cold staging from the mirror on n-501 (smoke3 1023398) runs ~5.4 MB/s (~45 min for 15 GB). The mirror spreads load
+  off the contended netapp but is NOT a general fix. Warm nodes: n-503, n-501.
+- Decision: no node pinning (45 min ≈ 6% of a 12 h primary job; queue wait likely costs more); opportunistic `-w`
+  only when a warm node has a free matching GPU at submit. S-053 stagger rule stays.
