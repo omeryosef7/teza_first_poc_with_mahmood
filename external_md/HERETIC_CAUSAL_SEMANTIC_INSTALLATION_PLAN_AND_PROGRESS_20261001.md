@@ -1351,3 +1351,22 @@ land BEFORE any P2b result (the frozen-before-endpoint discipline holds).
 - r4 VAL: button 52/61, basket 50/61 ok (shuffled-control arms now), 0 failures; read ETA ~01:50. 6 GPU jobs running
   (= cap): 1022698, 1022699, 1023012 (P2b), 1023398 (P2b smoke3), 1023251 (Phase-B button), 1023386 (Phase-B replay);
   1023264 pending. No failures/duplicates.
+
+## S-072 — 2026-10-14 01:45 — PREREGISTERED TEST (PR-HCSI-S051): button r4 PASSES on VALIDATION (pending independent verification)
+- Job 1022698 (a5000, n-501): DONE_MARKER rc=0, 61/61 arms, 1 model load, 1 attempt (61 run dirs, no preemption).
+  Frozen analyzer (`dcs_csi_subspace_analyze.py` via analyze_sweep, `--split validation --expect-n 230 --nrand 46
+  --nshuf 10 --slurm-job 1022698`), output `reports/heretic_csi/hcsi_p2a_button_r4_validation.json`.
+- Gates: KO_SELF−KO −0.0005 [−0.0026,0.0015] (inert); KO_FULL−KO **+0.142** [0.123,0.162] (23/23 domains).
+- **PRIMARY: candidate (button cand_pls4, L18 rel-6) is strictly the largest of its 56 rank-matched, norm-matched
+  controls ⇒ rank 1/57, p = 0.0175 < 0.05 ⇒ PASS** (frozen rule). Candidate−KO **+0.0129 [0.0065, 0.0190]**,
+  20/23 domains positive; recovery fraction **0.091** of whole-state rescue.
+- **Frozen interpretation (from the prereg, written before the run):** button HAS a specific low-rank (rank-4, not
+  rank-1) activation-space rescue carrier at L18 ⇒ partial support for H1 / outcome A in the PLS activation family;
+  S-049's "button has no specific carrier" must be re-scoped to ranks {1,16}. Still NOT the ARA weight operator.
+- Status: **PASS pending independent verification (F3 re-tasked: recount, rank, CI, floor sensitivity, best-control
+  margin, leave-one-domain-out).** Not yet quotable. basket r4 VAL (1022699, descriptive) still running.
+- Scoping notes recorded now: (i) the prereg was written AFTER seeing TRAIN K4 r1–r16 (that is what motivated it);
+  this VALIDATION read is the single held-out test, so it is clean, but the rank (4) was selected on TRAIN;
+  (ii) small absolute effect (9% of whole-state rescue) — specificity, not magnitude; (iii) a5000 only (within-job
+  comparison, so cross-HW noise S-062 does not affect the verdict); (iv) semantic-installation rescue only — no
+  behavioral claim.

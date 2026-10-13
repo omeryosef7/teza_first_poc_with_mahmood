@@ -1,0 +1,24 @@
+{
+  "codeword": "button",
+  "split": "validation",
+  "rows": [
+    {
+      "rank": 4,
+      "recovery_fraction": 0.0909,
+      "candidate_minus_ko": null,
+      "candidate_minus_comparator": null,
+      "verdict_basis": {
+        "rule": "candidate's rank within the control distribution (P1-i)",
+        "candidate_rank": 1,
+        "n_controls": 56,
+        "rank_p": 0.0175,
+        "rank_p_floor": 0.0175,
+        "single_comparator_verdict_SUPPRESSED": "would have said PASS against --comparator-arm KO_RAND_r4_0; not reported, see S-050",
+        "candidate_point": 0.01292,
+        "candidate_sign_ok": true,
+        "candidate_sign_required": "POSITIVE (add-back must RAISE installation)"
+      },
+      "verdict": "PRIMARY PASSES on split=validation -- candidate is strictly the largest of 56 controls (rank p=0.01754 < 0.05)"
+    }
+  ]
+}
