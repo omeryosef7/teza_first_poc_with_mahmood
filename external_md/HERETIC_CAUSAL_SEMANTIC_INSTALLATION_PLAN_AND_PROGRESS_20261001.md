@@ -1023,3 +1023,44 @@ sweep + rank-matched controls at every rank, cross-hardware validation, and the 
 - Parallel plan: begin P2b design (ARA-optimized WEIGHT operator ΔW=BA on o_proj/down_proj via operator_ara +
   the KO capture) — the plan's literal novel step; and P6 (generalize across screen-viable codewords).
 - NEXT tick: monitor; analyze {4,8} when done; extend table to {1,4,8,16}.
+
+## S-051 — 2026-10-13 — RESUME after 10-day gap; rank {4,8} TRAIN analyzed; button-r4 TRAIN pass → prereg'd VALIDATION test
+- **Resume / ops.** User re-issued the sprint mandate; recorded VERBATIM at
+  `external_md/HERETIC_CSI_SPRINT_MANDATE_VERBATIM.md` (this log remains the authoritative plan+progress).
+  30-min ops loop re-armed (session cron); ~4h adversarial reviews continue. No jobs were running.
+- **S-050 jobs (969085-88) validated** by log (not sacct): each `DONE_MARKER ... rc=0`, 61/61 arms ok, 1 model load,
+  no hook leak.
+- **BUG/OPS (mine, now fixed):** running `analyze_sweep.py` per-rank in parallel CLOBBERED
+  `reports/heretic_csi/hcsi_p2a_<cw>_SUMMARY_train.json` (all runs wrote the same name). The r1/r16 TRAIN summary files
+  from S-049 are therefore overwritten; the per-rank analyzer jsons and this log's S-049 table remain the record.
+  Fix: summary filename now includes the ranks (`..._SUMMARY_r<ranks>_<split>.json`).
+- **PREEMPTION duplicates (new mechanical attrition rule, declared before reading any endpoint):** 969085 (n-501→n-503)
+  and 969088 (n-501→n-501) were preempted+requeued on `killable`, leaving complete-looking duplicate run dirs with the
+  same `slurm_job_id`; the frozen analyzer correctly refused. Rule: keep only dirs whose RUNMETA `hostname` == the job
+  log's final `SWEEP DONE ... HOST=` AND `start_ts` ≥ the log's last `STAGE_IN start`. Exactly 61 dirs/job remain; the
+  49 first-attempt dirs were MOVED (not deleted) to `outputs/boombness/score_behavior/_preempted_attempts/`.
+  Independent verifier (F3) asked to re-check the rule.
+- **TRAIN rank curve (PLS activation-space rescue, L18 rel-6, 56 rank-matched controls, floor 0.0175).**
+  r1/r16 = full 67-domain rows (S-049); r4/r8 = K4 domain-stratified subset (268 rows, 63-67 domains).
+
+  | codeword | r1 | r4 (K4) | r8 (K4) | r16 |
+  |---|---|---|---|---|
+  | basket rank/57 (recovery) | 2 (0.028) | 3 (0.132) | 4 (0.131) | 10 (0.167) |
+  | button rank/57 (recovery) | 23 (−0.001) | **1 (0.090) PASS** | 3 (0.102) | 10 (0.118) |
+
+  Liveness on these jobs: KO_SELF−KO ≈ 0 (button r4: −0.0008 [−0.003,0.001]); KO_FULL−KO > 0 (0.109–0.142).
+- **Reading (TRAIN, NOT a finding):** button's candidate is near-top at ranks 4–8 (1/57, 3/57) but not at r1 or r16;
+  basket is near-top at r1–r8 and dilutes by r16. If real, this is the outcome-A shape (basket specific from rank 1,
+  button needs rank ~4), contradicting a too-broad reading of S-049 ("button has no carrier") — S-049 tested only
+  {1,16}. BUT four ranks were examined per codeword on TRAIN ⇒ multiplicity (~4×0.0175 ≈ 0.07 family-wise) and r4/r8
+  are on the K4 subset. **Must not be quoted.**
+- **PREREGISTERED (committed `532d220d` BEFORE launch):** `configs/heretic_csi/prereg_S051_rank4_validation.json`
+  (sha256 `e170da61…`). PRIMARY = button r4 on VALIDATION (230 rows/23 domains, a5000, frozen analyzer rule: strictly
+  largest of 56 controls), single confirmatory test; basket r4 descriptive. Interpretations frozen for PASS/FAIL.
+  **Launched:** 1022698 (button r4 val), 1022699 (basket r4 val).
+- **Parallel workstreams launched (subagents; parent owns this log + commits):**
+  F1 = P0 Phase-A Heretic env + base→modify→reset audit + Phase-B native last-position ARA control;
+  F2 = P1/P2b position-aware WEIGHT-space operator ΔW=BA rank sweep {1..50} with rank-matched controls, ΔW saved for P3;
+  F3 = independent re-computation of S-049 + r4/r8 (own code, mutation tests);
+  F4 = P5/P6 codeword provenance/contamination table, frequency, power design, held-out probe quality (CPU).
+  GPU budget: parent 2 + F1 ≤2 + F2 ≤2 ≤ 6.
