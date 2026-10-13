@@ -1488,3 +1488,9 @@ E = concept_in_benign_ctx. Phase-B ARA groups renamed target = C (installed), so
   r1/r8 same-param refits descriptive (basket 0.0 / +0.43 [r8 below floor]; button +0.75 / +0.48).
 - Ops: several F1 jobs lost to node /tmp exhaustion (n-803, n-804, n-801); scripts now fall back to loading from the
   mirror directly (~20 min).
+
+## S-078 — 2026-10-14 02:40 — ops tick
+- P2b fits (1023012): basket factors r1,2,4,8,16,32 saved (fitting-side in-sample gap-closure r16 0.677, r32 0.637;
+  preserve damage ≤0.003); r50 then button ranks next. 1023508/09 (r4) waiting on factors; 1023264 pending.
+- F5 CPU jobs (cpu-killable): P4 head-restricted fits 1023554–57 (basket/button × r1/r4), P3 1023558. 3 GPU running.
+  No failures/duplicates.
