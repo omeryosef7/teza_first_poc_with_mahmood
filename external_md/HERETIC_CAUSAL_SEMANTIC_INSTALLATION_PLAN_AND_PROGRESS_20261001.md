@@ -1346,3 +1346,8 @@ land BEFORE any P2b result (the frozen-before-endpoint discipline holds).
   off the contended netapp but is NOT a general fix. Warm nodes: n-503, n-501.
 - Decision: no node pinning (45 min ≈ 6% of a 12 h primary job; queue wait likely costs more); opportunistic `-w`
   only when a warm node has a free matching GPU at submit. S-053 stagger rule stays.
+
+## S-071 — 2026-10-14 01:10 — ops tick
+- r4 VAL: button 52/61, basket 50/61 ok (shuffled-control arms now), 0 failures; read ETA ~01:50. 6 GPU jobs running
+  (= cap): 1022698, 1022699, 1023012 (P2b), 1023398 (P2b smoke3), 1023251 (Phase-B button), 1023386 (Phase-B replay);
+  1023264 pending. No failures/duplicates.
