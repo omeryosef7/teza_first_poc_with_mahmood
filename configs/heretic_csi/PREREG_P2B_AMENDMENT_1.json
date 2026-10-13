@@ -1,0 +1,22 @@
+{
+ "schema": "hcsi_p2b_prereg_amendment/1",
+ "amends": "outputs/heretic_csi/p2b/prod/PREREG_P2B.json (sha256 e273df1db75f6c2aeb1860dd23639d23286570920e85d139ad66f911e8ced378)",
+ "written": "2026-10-14T00:35:59+03:00",
+ "endpoint_status_at_writing": "NO production y_install computed. Production run dirs hcsi_p2b_cap_* (capture arms) exist but their y_install has not been read or analyzed; eval arms (hcsi_p2b_<cw>_k4_*) not yet run. Only the 12-row smoke (hcsi_p2b_smoke1_*) was read (plumbing only).",
+ "trigger": "parent adversarial review reports/heretic_csi/REVIEW_ADVERSARIAL_20261014.md (items 1-9)",
+ "changes": {
+  "multiplicity": "PRIMARY confirmatory cells = ranks {1,4} per codeword (motivated by P2a: rank-1 axis result and the r4 PLS curve point). Holm over the 2 primary ranks within a codeword. Ranks {2,8,16,32,50} DESCRIPTIVE only (rank p reported, no pass/fail). Basket and button are separate codewords, never pooled.",
+  "pass_rule": "PASS iff Holm-adjusted rank p < 0.05 AND recovery CI95 lower bound > 0 AND all gates (unchanged from PREREG except Holm).",
+  "control_family_primary": "61 RAND (random orthonormal rank-r, per-module Frobenius norm = CAND, exact double-precision match) + 5 SHUF (role-swap + domain-deranged pairing fits, rescaled to CAND) + 15 DER (domain-deranged pairing fits WITHOUT role swap, rescaled to CAND) = 81 controls, floor 1/82 = 0.0122 < 0.025 (Holm first step).",
+  "control_family_descriptive": "41 RAND + 5 SHUF + 5 DER = 51 controls, floor 0.0192",
+  "derangement": "constructive (seeded cyclic domain map + within-domain permutation); rejection sampling removed (it failed at 670 rows)",
+  "position_controls": "KO_CWONLY_r = CAND applied ONLY at the codeword row; KO_ATLAST_r = CAND applied ONLY at the last prompt row (norm-matched by construction: same factors). Position contrast = CWONLY - ATLAST. KO_NEUT_r (fit at the last row, own norm) is DESCRIPTIVE; position claims rest on CWONLY vs ATLAST only.",
+  "collapse_screen": "median option mass < 0.05 on BASE/KO/KO_FULL/KO_IDENT/CAND => VOID; collapsed controls flagged + sensitivity rank test without them.",
+  "decomposition": "report d logp_concept and d logp_codeword (arm - KO) for CAND, CWONLY, ATLAST, NEUT.",
+  "deployed_vs_fitted": "KO_CAPOP_r at primary ranks: capture deployed module I/O at the codeword row; report GC_fitted vs GC_deployed and input shift (p2b_deployed_residual.py); KO_CAPOP must replay KO_CAND (|dy|<=1e-4) else VOID.",
+  "objective_freeze": "unchanged: TRAIN-only fitting-side CV (held-out gap_closure - preserve_damage), pooled over basket+button; y_install never read.",
+  "wording": "no 'position-aware'/'mechanism' wording unless CWONLY carries the effect and CWONLY > ATLAST; a weight edit applied at all rows is described as such."
+ },
+ "gpu_cost_estimate": "primary: 87 arms/rank x 2 ranks + 4 liveness = 178 arms/codeword x ~264 s = ~13 GPU-h/codeword; descriptive {16,50}: 112 arms ~8.2 h/cw; {2,8,32}: 168 arms ~12.3 h/cw. Total ~67 GPU-h for both codewords on TRAIN K4.",
+ "jobs": {"1023012": "capture + CV (+ fits, then basket PRIMARY eval)", "1023264": "button PRIMARY eval (begins 03:20, waits for button factors)"}
+}

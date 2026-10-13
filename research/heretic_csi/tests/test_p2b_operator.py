@@ -161,3 +161,58 @@ def test_random_norm_match_exact_at_model_scale():
     tgt = {"L0.down_proj": 7.8245973805690}
     (A, B), = po.random_norm_matched(shapes, 4, tgt, seed=7400).values()
     assert abs(po.fro_norm(A, B) - tgt["L0.down_proj"]) < 1e-6 * tgt["L0.down_proj"]
+
+
+def _dom_pairs(sizes):
+    return [{"domain": f"d{d}"} for d, n in enumerate(sizes) for _ in range(n)]
+
+
+def test_derangement_real_scale_every_seed():
+    """67 domains x 10 rows (the TRAIN population), many seeds incl. the ones that failed (1000, 1001)."""
+    pairs = _dom_pairs([10] * 67)
+    idx = list(range(len(pairs)))
+    for seed in list(range(1000, 1005)) + list(range(5000, 5030)) + list(range(55000, 55005)):
+        for rs in (True, False):
+            perm, swap = pf.shuffle_plan(pairs, idx, seed, role_swap=rs)
+            assert all(pairs[i]["domain"] != pairs[j]["domain"] for i, j in zip(idx, perm))
+            assert sorted(perm) == idx                       # equal sizes => a true permutation
+            assert (0 < sum(swap) < len(swap)) if rs else not any(swap)
+    p1, _ = pf.shuffle_plan(pairs, idx, 7); p2, _ = pf.shuffle_plan(pairs, idx, 7); p3, _ = pf.shuffle_plan(pairs, idx, 8)
+    assert p1 == p2 and p1 != p3
+
+
+def test_derangement_unequal_domain_sizes():
+    pairs = _dom_pairs([3, 7, 1, 5])
+    idx = list(range(len(pairs)))
+    perm, _ = pf.shuffle_plan(pairs, idx, 3, role_swap=False)
+    assert all(pairs[i]["domain"] != pairs[j]["domain"] for i, j in zip(idx, perm))
+
+
+def test_position_restricted_operator():
+    torch.manual_seed(1)
+    m = Toy(); lin = m.model.layers[1].self_attn.o_proj
+    x = torch.randn(1, 6, D); base = lin(x)
+    A, B = torch.randn(2, D), torch.randn(D, 2)
+    holder = {"pos": None}
+    with po.OperatorHooks(m, {"L1.o_proj": (A, B)}, holder=holder) as hk:
+        assert torch.equal(lin(x), base)                         # no position set -> no edit
+        holder["pos"] = [2]
+        y = lin(x)
+    full = base + (x @ A.t()) @ B.t()
+    assert torch.allclose(y[0, 2], full[0, 2], atol=1e-5)          # edited exactly at the row
+    keep = [0, 1, 3, 4, 5]
+    assert torch.equal(y[0, keep], base[0, keep])                  # untouched elsewhere
+    assert hk.n_applied == 1 and _hooks(m) == 0
+
+
+def test_capture_after_operator_sees_edited_output():
+    m = Toy(); lin = m.model.layers[0].self_attn.o_proj
+    x = torch.randn(1, 4, D)
+    A, B = torch.randn(1, D), torch.randn(D, 1)
+    op = po.OperatorHooks(m, {"L0.o_proj": (A, B)})
+    cap = po.CaptureHooks(m, ["L0.o_proj"])
+    with op, cap:                                                  # op registered FIRST
+        cap.arm({"cw": 1}, {})
+        y = lin(x)
+    xin, yout = cap.records[0]["acts"]["L0.o_proj"]["cw"]
+    assert torch.allclose(yout.float(), y[0, 1].detach().bfloat16().float())

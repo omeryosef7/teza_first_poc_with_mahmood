@@ -1300,3 +1300,31 @@ land BEFORE any P2b result (the frozen-before-endpoint discipline holds).
   (button Phase-B) running; 1023386 (Phase-B replay) pending (1023385 cancelled/replaced by F1). F2: 1023012 still in
   CV (expected to hit the S-065 derangement bug after CV unless F2 intervenes), 1023264 + 1023389 pending. Watching the
   ≤6 concurrent-GPU cap as pending jobs start.
+
+## S-068 — 2026-10-14 00:55 — P2b review fixes DONE (F2); PREREG AMENDMENT 1 frozen before endpoint
+- All 9 review items fixed; tests 30 passed / 1 skipped; new arms GPU-smoked (1023389, 15/15 ok). No production
+  endpoint read (0 prod score dirs).
+  1. Constructive derangement (seeded cyclic domain→domain map + within-domain permutation); tested 67×10 × 40 seeds
+     incl. 1000/1001 + unequal domain sizes. 1023012 survives: CV never builds shuffles; its final fit spawns a fresh
+     process on the fixed code (sha logged, source copied to `fac/code_<attempt>_<cw>/`).
+  2. PASS = Holm-adjusted p<0.05 AND recovery CI-lo>0 AND gates (pure `decide()`); mutation test: rank 1/82 with
+     negative recovery ⇒ DOES NOT PASS.
+  3. Option-mass collapse screen on every arm (BASE/KO/FULL/IDENT/CAND collapse ⇒ VOID; collapsed controls flagged +
+     sensitivity rank test without them).
+  4. KO_CWONLY_r (CAND only at the codeword row) + Δlogp_concept/Δlogp_codeword decomposition.
+  5. KO_ATLAST_r = CAND's ΔW applied only at the last row (norm-matched by construction); position contrast
+     CWONLY−ATLAST. NEUT demoted to descriptive.
+  6. DER family: domain-deranged pairing, NO role swap, rescaled to CAND (15 at primary ranks, 5 descriptive).
+  7. **AMENDMENT 1** `configs/heretic_csi/PREREG_P2B_AMENDMENT_1.json` (sha256 fd01d54e…baf10a): PRIMARY ranks {1,4},
+     Holm over 2, 61 RAND + 5 SHUF + 15 DER = 81 controls (floor 0.0122); descriptive ranks 41+5+5 = 51. GPU ≈67 h.
+  8. Per-job code snapshot + SHA256SUMS; importorskip("heretic"). 1023012's capture ran the pre-review runner (its
+     fit/eval stages record their own shas) — capture code path was reviewed OK in S-065 (positions/split).
+  9. KO_CAPOP_r replays KO_CAND within |Δy|≤1e-4 (smoke-verified); `p2b_deployed_residual.py` reports fitted vs
+     deployed gap-closure (sanity cases give exactly 0 and 1).
+  Also fixed: random controls were 0.1% off in norm (float32 dW.norm()); now exact double — caught by the norm guard.
+- **Parent decision (consequential, documented):** add codeword-row-only matched controls (61 RAND + 15 DER, applied
+  only at the codeword row) at primary ranks {1,4} as a **SECONDARY** preregistered test (Amendment 2, to be written
+  before any endpoint). PRIMARY (all-rows KO_CAND) unchanged. **Disclosure:** a 12-row in-sample smoke hinted
+  CWONLY ≫ CAND before this test was added (forking-path risk); any CWONLY claim requires VALIDATION replication with
+  the frozen operator. Cost ≈ +24 GPU-h. Rationale: position-specificity is central to the mandate and is untestable
+  without a matched null.

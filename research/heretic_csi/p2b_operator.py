@@ -221,11 +221,19 @@ def identity_factors(shapes: Dict[str, Tuple[int, int]], rank: int):
 # Runtime hooks
 # ----------------------------------------------------------------------------------------------
 class OperatorHooks:
-    """Apply ΔW=B@A to named Linear modules for the duration of a `with` block (all positions)."""
+    """Apply ΔW=B@A to named Linear modules for the duration of a `with` block.
 
-    def __init__(self, model, factors: Dict[str, Tuple[torch.Tensor, torch.Tensor]]):
-        self.model, self.factors, self.handles = model, factors, []
+    holder=None: a true weight edit, active at EVERY position of every forward.
+    holder=dict: POSITION-RESTRICTED application (review 2026-10-14 #4/#5): the delta is added only at
+    the positions in holder["pos"] (set per readout by the runner's PositionWrap, batch row 0, batch
+    size 1 enforced); when holder["pos"] is None nothing is added. Used for the codeword-row-only arm
+    (KO_CWONLY) and the norm-matched neutral-row arm (KO_ATLAST: CAND's ΔW at the last prompt row).
+    """
+
+    def __init__(self, model, factors: Dict[str, Tuple[torch.Tensor, torch.Tensor]], holder: Optional[dict] = None):
+        self.model, self.factors, self.handles, self.holder = model, factors, [], holder
         self.n_calls = 0
+        self.n_applied = 0
         self.delta_norm_sum = 0.0
 
     def __enter__(self):
@@ -235,10 +243,24 @@ class OperatorHooks:
             At, Bt = A.to(dev, torch.float32).contiguous(), B.to(dev, torch.float32).contiguous()
 
             def hook(mod, inp, out, At=At, Bt=Bt):
-                d = (inp[0].float() @ At.t()) @ Bt.t()
                 self.n_calls += 1
+                x = inp[0]
+                if self.holder is None:
+                    d = (x.float() @ At.t()) @ Bt.t()
+                    self.n_applied += 1
+                    self.delta_norm_sum += float(d[0, -1].norm())
+                    return out + d.to(out.dtype)
+                pos = self.holder.get("pos")
+                if pos is None:
+                    return None
+                if x.shape[0] != 1:
+                    raise RuntimeError("position-restricted operator requires batch size 1")
+                d = (x[:, pos].float() @ At.t()) @ Bt.t()
+                o = out.clone()
+                o[:, pos] = o[:, pos] + d.to(out.dtype)
+                self.n_applied += 1
                 self.delta_norm_sum += float(d[0, -1].norm())
-                return out + d.to(out.dtype)
+                return o
             self.handles.append(lin.register_forward_hook(hook))
         return self
 

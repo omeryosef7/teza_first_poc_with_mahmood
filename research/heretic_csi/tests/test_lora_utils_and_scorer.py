@@ -6,8 +6,10 @@ import math
 import os
 import sys
 
+import pytest
 import torch
 
+pytest.importorskip("heretic")   # heretic_csi env only; lets poc_stage2 collection of tests/ succeed
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import lora_utils  # noqa: E402
 import semantic_installation_scorer as sis  # noqa: E402

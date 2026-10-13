@@ -43,6 +43,9 @@ if cp -L "$SNAP"/*.safetensors "$SNAP"/*.json "$SNAP"/tokenizer* "$SNAP"/special
   SNAP="$TMPDIR/llama31"; echo "STAGE_IN done $(date -Is) $(du -sh $SNAP | cut -f1)"
 else echo "STAGE_IN FAILED -- NFS fallback"; fi
 export SNAP
+# CODE PROVENANCE (review #8): snapshot every research/heretic_csi source this job could run, at job start.
+CODEDIR=outputs/heretic_csi/p2b/code_snapshots/${ATTEMPT}; mkdir -p $CODEDIR
+cp research/heretic_csi/*.py "$PLAN" $CODEDIR/ && sha256sum $CODEDIR/* > $CODEDIR/SHA256SUMS && echo "CODE_SNAPSHOT $CODEDIR"
 set +e
 bash "$PLAN"
 RC=$?

@@ -15,7 +15,8 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--model", required=True)
 ap.add_argument("--factors", required=True, help="ara_factors_<cw>_r<rank>.pt from phaseB_native_ara.py")
 ap.add_argument("--rank", type=int, required=True)
-ap.add_argument("--reads", required=True, help="comma list cw:set, e.g. basket:val_A,button:val_A,button:val_C")
+ap.add_argument("--reads", required=True, help="comma list dsdir:set[:concept], e.g. basket:val_A,button:val_A,basket_knife:val_C:knife (concept default bomb; codeword from the rows)")
+ap.add_argument("--kl-sets", default="", help="comma list dsdir:set; first-token KL(base||edited) on those prompts (Heretic get_logits)")
 ap.add_argument("--out", required=True)
 a = ap.parse_args()
 sys.argv = [sys.argv[0]]
@@ -28,7 +29,9 @@ os.makedirs(os.path.dirname(OUT), exist_ok=True)
 import torch  # noqa: E402
 import heretic.model as hm  # noqa: E402
 from heretic.config import Settings  # noqa: E402
-from semantic_installation_scorer import readout_rows, domain_mean, READOUT_IMPL  # noqa: E402
+import torch.nn.functional as F  # noqa: E402
+from heretic.utils import Prompt  # noqa: E402
+from semantic_installation_scorer import readout_rows, domain_mean, floor_summary, READOUT_IMPL  # noqa: E402
 
 _orig = hm.get_model_class
 
@@ -47,20 +50,42 @@ T0 = time.time()
 settings = Settings(model=a.model, dtypes=["bfloat16"], batch_size=8, max_batch_size=8, system_prompt="")
 model = hm.Model(settings)
 assert getattr(model.model.config, "_attn_implementation", None) == "eager"
-reads = [tuple(x.split(":")) for x in a.reads.split(",") if x]
+reads = [(x.split(":") + ["bomb"])[:3] for x in a.reads.split(",") if x]
+BASE_KEYS = {}
+
+
+def load_rows(dsdir, name):
+    return [json.loads(l) for l in open(os.path.join(REPO, "configs/heretic_csi/phaseB", dsdir, f"{name}.jsonl"))]
 
 
 def do_reads():
     out = {}
-    for cw, name in reads:
-        rows = [json.loads(l) for l in open(os.path.join(REPO, "configs/heretic_csi/phaseB", cw, f"{name}.jsonl"))]
-        recs = readout_rows(model, rows, "bomb", cw)
+    for dsdir, name, concept in reads:
+        rows = load_rows(dsdir, name)
+        cws = {r["codeword"] for r in rows}
+        assert len(cws) == 1, cws
+        recs = readout_rows(model, rows, concept, cws.pop())
+        key = f"{dsdir}:{name}:{concept}"
+        if key not in BASE_KEYS:
+            BASE_KEYS[key] = {r["prompt_id"] for r in recs if r["option_mass"] >= 0.05}
         v, dm = domain_mean(recs)
-        out[f"{cw}:{name}"] = {"y_domain_mean": v, "domain_means": dm, "n_rows": len(recs), "n_domains": len(dm)}
+        out[key] = {"y_domain_mean": v, "domain_means": dm, "n_rows": len(recs), "n_domains": len(dm),
+                    "mean_logp_concept": sum(r["logp_concept"] for r in recs) / len(recs),
+                    "mean_logp_codeword": sum(r["logp_codeword"] for r in recs) / len(recs),
+                    **floor_summary(recs, 0.05, BASE_KEYS[key])}
     return out
 
 
+kl_sets = [x.split(":") for x in a.kl_sets.split(",") if x]
+KL_PROMPTS = {f"{d}:{n}": [Prompt(system="", user=r["full_prompt"]) for r in load_rows(d, n)] for d, n in kl_sets}
+
+
+def first_token_logprobs():
+    return {k: F.log_softmax(model.get_logits_batched(p).float(), -1).cpu() for k, p in KL_PROMPTS.items()}
+
+
 base = do_reads()
+base_lp = first_token_logprobs()
 blob = torch.load(a.factors)
 model.apply_lora(a.rank)
 n_set = 0
@@ -76,6 +101,8 @@ with torch.no_grad():
                     n_set += 1
 assert n_set == len(blob["factors"]), (n_set, len(blob["factors"]))
 mod = do_reads()
+mod_lp = first_token_logprobs()
+kl = {k: float(F.kl_div(mod_lp[k], base_lp[k], reduction="batchmean", log_target=True)) for k in base_lp}
 
 
 def dy(c, b):
@@ -83,10 +110,17 @@ def dy(c, b):
     return sum(c["domain_means"][d] - b["domain_means"][d] for d in ds) / len(ds)
 
 
-R = {"schema": "hcsi_phaseB_replay/1", "factors": a.factors, "params": blob["params"], "rank": a.rank,
+import hashlib  # noqa: E402
+SRC = {os.path.basename(f): hashlib.sha256(open(f, "rb").read()).hexdigest()
+       for f in (os.path.abspath(__file__), os.path.join(HERE, "semantic_installation_scorer.py"))}
+R = {"schema": "hcsi_phaseB_replay/1", "factors": a.factors, "source_sha256": SRC,
+     "factors_sha256": hashlib.sha256(open(a.factors, "rb").read()).hexdigest(), "params": blob["params"], "rank": a.rank,
      "n_modules_set": n_set, "readout_impl": READOUT_IMPL, "gpu": torch.cuda.get_device_name(0),
      "job": os.environ.get("SLURM_JOB_ID"), "base": base, "replayed": mod,
-     "dY": {k: dy(mod[k], base[k]) for k in base}, "wall_seconds": time.time() - T0}
+     "dY": {k: dy(mod[k], base[k]) for k in base},
+     "d_logp_concept": {k: mod[k]["mean_logp_concept"] - base[k]["mean_logp_concept"] for k in base},
+     "d_logp_codeword": {k: mod[k]["mean_logp_codeword"] - base[k]["mean_logp_codeword"] for k in base},
+     "kl_first_token": kl, "wall_seconds": time.time() - T0}
 json.dump(R, open(OUT, "w"), indent=2)
 print("dY", json.dumps(R["dY"]), flush=True)
 print("REPLAY_DONE", OUT, flush=True)

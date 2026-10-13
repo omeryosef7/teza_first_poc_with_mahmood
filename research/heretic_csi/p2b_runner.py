@@ -73,19 +73,33 @@ def resolve_op(spec):
     if kind == "capture":
         return kind, None, {"out": parts[1], "codeword": parts[2],
                             "n_extra": int(parts[3]) if len(parts) > 3 else 0}
+    extra = {}
+    if kind == "randat":     # randat:<factors.pt>:<key>:<seed>:<cw|last>  random norm-matched, ONLY at that row
+        if parts[4] not in ("cw", "last"):
+            raise SystemExit(f"randat position must be cw|last, got {parts[4]!r}")
+        extra = {"where": parts[4]}
+        parts = parts[:4]
+    if kind == "capop":      # capop:<out.pt>:<codeword>:<factors.pt>:<key>  (operator at all rows + capture)
+        extra = {"out": parts[1], "codeword": parts[2], "n_extra": 0}
+        parts = ["op"] + parts[3:]
+    if kind == "opat":       # opat:<factors.pt>:<key>:<cw|last>  (operator ONLY at that prompt row)
+        if parts[3] not in ("cw", "last"):
+            raise SystemExit(f"opat position must be cw|last, got {parts[3]!r}")
+        extra = {"where": parts[3]}
     path, key = parts[1], parts[2]
     blob = load_factors(path)
     fac = blob["operators"][key]["factors"]
     meta = {"factors_file": path, "factors_sha16": sha16(path), "key": key,
             "fit_meta": blob["operators"][key].get("meta", {})}
-    if kind == "op":
+    meta.update(extra)
+    if kind in ("op", "capop", "opat"):
         return kind, fac, meta
     shapes = {n: (B.shape[0], A.shape[1]) for n, (A, B) in fac.items()}
     rank = next(iter(fac.values()))[0].shape[0]
-    if kind == "rand":
+    if kind in ("rand", "randat"):
         seed = int(parts[3])
         norms = {n: po.fro_norm(A, B) for n, (A, B) in fac.items()}
-        meta.update(seed=seed, norm_matched_to=key)
+        meta.update(seed=seed, norm_matched_to=key, **extra)
         return kind, po.random_norm_matched(shapes, rank, norms, seed), meta
     if kind == "ident":
         return kind, po.identity_factors(shapes, rank), meta
@@ -102,10 +116,13 @@ def newest_run_dir(tag, t0):
 class CaptureWrap:
     """Monkeypatches signals.string_option_readout to arm a CaptureHooks per readout call."""
 
-    def __init__(self, sg, cap, tokenizer, codeword, n_extra=0):
+    def __init__(self, sg, cap, tokenizer, codeword, n_extra=0, holder=None, where=None):
         self.sg, self.cap, self.tok, self.cw, self.n_extra = sg, cap, tokenizer, codeword, n_extra
+        self.holder, self.where = holder, where     # position-restricted operator (opat)
         self.orig = sg.string_option_readout
         self.ans_ids = None
+        self.n_readouts = 0
+        self.positions_used = []
 
     def __enter__(self):
         def wrapped(lm, context, options, max_batch=16):
@@ -129,9 +146,19 @@ class CaptureWrap:
                     "ctx_sha16": h16,
                     "last_token": lm.tokenizer.decode([bare[-1]]),
                     "context_tail": context[-160:]}
-            self.cap.arm(pos, meta)
-            res = self.orig(lm, context, options, max_batch=max_batch)
-            if self.cap.pending is not None:
+            self.n_readouts += 1
+            if self.cap is not None:
+                self.cap.arm(pos, meta)
+            if self.holder is not None:
+                self.holder["pos"] = [pos[self.where]]
+                self.positions_used.append({"ctx_sha16": h16, "pos": pos[self.where],
+                                            "token": lm.tokenizer.decode([bare[pos[self.where]]])})
+            try:
+                res = self.orig(lm, context, options, max_batch=max_batch)
+            finally:
+                if self.holder is not None:
+                    self.holder["pos"] = None
+            if self.cap is not None and self.cap.pending is not None:
                 raise SystemExit("[p2b capture] REFUSING: readout ran but the capture never fired")
             return res
         self.sg.string_option_readout = wrapped
@@ -154,6 +181,9 @@ def main():
     names = [po.module_name(l, c) for l in range(lo, hi + 1) for c in ("o_proj", "down_proj")]
 
     lines = [l.rstrip("\n") for l in open(a.argv_file) if l.strip() and not l.startswith("#")]
+    CODE = {f: hashlib.sha256(open(os.path.join(REPO, "research/heretic_csi", f), "rb").read()).hexdigest()
+            for f in ("p2b_runner.py", "p2b_operator.py", "operator_ara.py", "positions.py", "p2b_emit.py")}
+    print("[p2b] code sha256 %s" % json.dumps(CODE), flush=True)
     if a.expect_n:
         # REQUEUE SAFETY (S-051). A preempted+requeued allocation must not re-run an arm that already
         # landed: a second run dir under the same tag makes strict_run_dir refuse the whole family.
@@ -216,7 +246,7 @@ def main():
             sys.exit("REFUSING before arm %s: %d hook(s) survive: %s" % (arm, pre_n, pre_w[:6]))
         kind, fac, meta = resolve_op(spec)
         t0 = time.time()
-        status, rc, side = "ok", None, {"opspec": spec, "kind": kind, **{k: v for k, v in meta.items()
+        status, rc, side = "ok", None, {"opspec": spec, "kind": kind, "code_sha256": CODE, **{k: v for k, v in meta.items()
                                                                          if k != "fit_meta"}}
         if "fit_meta" in meta:
             side["fit_meta"] = meta["fit_meta"]
@@ -231,12 +261,32 @@ def main():
                 cap = po.CaptureHooks(lm.model, names)
                 with cap, CaptureWrap(sg, cap, lm.tokenizer, meta["codeword"], meta["n_extra"]):
                     rc = sb.main()
+            elif kind == "capop":
+                # operator hooks registered FIRST so the capture hooks see the EDITED module output
+                hk = po.OperatorHooks(lm.model, fac)
+                cap = po.CaptureHooks(lm.model, names)
+                with hk, cap, CaptureWrap(sg, cap, lm.tokenizer, meta["codeword"], 0):
+                    rc = sb.main()
+                side["hook_calls"] = hk.n_calls
+                side["mean_last_pos_delta_norm"] = hk.delta_norm_sum / max(1, hk.n_applied)
+            elif kind in ("opat", "randat"):
+                holder = {"pos": None}
+                hk = po.OperatorHooks(lm.model, fac, holder=holder)
+                cw = re.search(r"_ts116m_([a-z]+)_bomb", " ".join(argv)).group(1)
+                wr = CaptureWrap(sg, None, lm.tokenizer, cw, 0, holder=holder, where=meta["where"])
+                with hk, wr:
+                    rc = sb.main()
+                side["hook_calls"] = hk.n_applied
+                side["n_readouts"] = wr.n_readouts
+                side["positions_used_first5"] = wr.positions_used[:5]
+                side["positions_tokens"] = sorted({u["token"] for u in wr.positions_used})
+                side["mean_last_pos_delta_norm"] = hk.delta_norm_sum / max(1, hk.n_applied)
             elif fac is not None:
                 hk = po.OperatorHooks(lm.model, fac)
                 with hk:
                     rc = sb.main()
-                side["hook_calls"] = hk.n_calls
-                side["mean_last_pos_delta_norm"] = hk.delta_norm_sum / max(1, hk.n_calls)
+                side["hook_calls"] = hk.n_applied
+                side["mean_last_pos_delta_norm"] = hk.delta_norm_sum / max(1, hk.n_applied)
             else:
                 rc = sb.main()
             if rc:   # main() RETURNED nonzero (e.g. 4 = option-mass gate overridden): rows exist, flag it
@@ -273,7 +323,7 @@ def main():
         if post_n:
             print("[p2b] REFUSING: arm %s leaked %d hooks %s" % (arm, post_n, post_w[:6]), flush=True)
             break
-    json.dump({"schema": "hcsi_p2b_runner/1", "n_lines": len(lines), "n_run": len(results),
+    json.dump({"schema": "hcsi_p2b_runner/1", "code_sha256": CODE, "n_lines": len(lines), "n_run": len(results),
                "n_ok": sum(r["status"] == "ok" for r in results), "loads": loads, "arms": results},
               open(a.out, "w"), indent=1)
     print("[p2b] arms ok %d/%d | MODEL LOADS %d" % (sum(r["status"] == "ok" for r in results), len(lines), len(loads)))

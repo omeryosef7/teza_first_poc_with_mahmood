@@ -7,7 +7,9 @@ validated P2a recipe): COMMON + KO (+ RESC for KO_FULL). Only the OPSPEC column 
 Arm families (--what):
   capture   BASE (clean=TARGET) and KO (SOURCE) with capture hooks -> <capdir>/cap_<cw>_{BASE,KO}.pt
   liveness  BASE, KO, KO_FULL (whole-state rescue, layer 18, query positions), KO_IDENT (zero operator)
-  rank      per rank r: KO_CAND_r, BASE_CAND_r (preservation), KO_NEUT_r, KO_SHUF_r_j, KO_RAND_r_i
+  rank      per rank r: KO_CAND_r, BASE_CAND_r (preservation), KO_CWONLY_r / KO_ATLAST_r (CAND applied only
+            at the codeword / last row), KO_NEUT_r (last-row fit, own norm), [KO_CAPOP_r: CAND + capture of
+            the deployed module I/O], KO_SHUF_r_j, KO_DER_r_j, KO_RAND_r_i (RAND seeds 7000+100r+i)
 """
 import argparse, os
 
@@ -39,6 +41,10 @@ def main():
     ap.add_argument("--ranks", default="")
     ap.add_argument("--nrand", type=int, default=46)
     ap.add_argument("--nshuf", type=int, default=5)
+    ap.add_argument("--nder", type=int, default=5)
+    ap.add_argument("--cw-nrand", type=int, default=0, help="codeword-row-only RAND controls (for KO_CWONLY)")
+    ap.add_argument("--cw-nder", type=int, default=0, help="codeword-row-only DER controls (for KO_CWONLY)")
+    ap.add_argument("--capop", action="store_true", help="add the deployed-I/O capture arm (needs --capdir)")
     ap.add_argument("--no-base-cand", action="store_true")
     ap.add_argument("--n-extra", type=int, default=6, help="extra clean PRESERVE rows captured per prompt (BASE only)")
     a = ap.parse_args()
@@ -66,11 +72,22 @@ def main():
             emit(f"op:{fp}:CAND", f"{C} {KO}", f"KO_CAND_r{r}")
             if not a.no_base_cand:
                 emit(f"op:{fp}:CAND", C, f"BASE_CAND_r{r}")
-            emit(f"op:{fp}:NEUT", f"{C} {KO}", f"KO_NEUT_r{r}")
+            emit(f"opat:{fp}:CAND:cw", f"{C} {KO}", f"KO_CWONLY_r{r}")      # CAND only at the codeword row
+            emit(f"opat:{fp}:CAND:last", f"{C} {KO}", f"KO_ATLAST_r{r}")    # CAND only at the last row (norm-matched position ctrl)
+            emit(f"op:{fp}:NEUT", f"{C} {KO}", f"KO_NEUT_r{r}")            # fit at the last row, own norm (descriptive)
+            if a.capop:
+                emit(f"capop:{a.capdir}/capop_{a.cw}_r{r}.pt:{a.cw}:{fp}:CAND", f"{C} {KO}", f"KO_CAPOP_r{r}")
             for j in range(a.nshuf):
                 emit(f"op:{fp}:SHUF{j}", f"{C} {KO}", f"KO_SHUF_r{r}_{j}")
+            for j in range(a.nder):
+                emit(f"op:{fp}:DER{j}", f"{C} {KO}", f"KO_DER_r{r}_{j}")
             for i in range(a.nrand):
                 emit(f"rand:{fp}:CAND:{7000 + 100 * r + i}", f"{C} {KO}", f"KO_RAND_r{r}_{i}")
+            # OPTIONAL codeword-row-only control family for KO_CWONLY (same seeds/fits, applied ONLY at the row)
+            for i in range(a.cw_nrand):
+                emit(f"randat:{fp}:CAND:{7000 + 100 * r + i}:cw", f"{C} {KO}", f"KO_CWRAND_r{r}_{i}")
+            for j in range(a.cw_nder):
+                emit(f"opat:{fp}:DER{j}:cw", f"{C} {KO}", f"KO_CWDER_r{r}_{j}")
     print("\n".join(out))
 
 

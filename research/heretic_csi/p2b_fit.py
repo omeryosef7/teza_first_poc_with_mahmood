@@ -19,13 +19,15 @@ Operators saved per rank r (keys):
   CAND           fit at the codeword row (rel_end -10): SOURCE=KO -> TARGET=clean
   NEUT           same, fit at the last prompt row (rel_end -1; Heretic-native position analogue)
   SHUF{j}        j=0..4: per-prompt random source/target ROLE swap + domain-deranged pairing
+  DER{j}         domain-deranged pairing WITHOUT role swap (keeps the KO->clean direction; review #6):
+                 15 at the PRIMARY ranks {1,4}, 5 elsewhere
   SRC2SRC/TGT2TGT  degenerate fits (source->itself, target->itself): pipeline sanity, expect ΔW = 0
-SHUF{j} are rescaled per module to CAND's Frobenius norm (raw norms recorded) so the rank test compares
+SHUF{j} and DER{j} are rescaled per module to CAND's Frobenius norm (raw norms recorded) so the rank test compares
 directions at matched rank, modules, layers, #params, training rows and norm. NEUT keeps its own fitted
 norm (see the note at its fit) and is a separate position contrast, not a rank-family member.
 PRESERVE set = clean module inputs at the codeword row, the last row and the BASE capture's extra rows.
 """
-import argparse, hashlib, importlib.util, json, os, random, sys, time
+import argparse, hashlib, importlib.util, json, os, random, shutil, sys, time
 
 import torch
 
@@ -34,9 +36,11 @@ sys.path.insert(0, os.path.join(REPO, "research", "heretic_csi"))
 import p2b_operator as po   # noqa: E402
 
 RANKS = [1, 2, 4, 8, 16, 32, 50]
+PRIMARY_RANKS = (1, 4)          # PREREG AMENDMENT 2026-10-14: confirmatory cells; others descriptive
 CV_RANKS = [1, 4, 16]
 STEER_WS = [0.3, 1.0, 3.0]
 N_SHUF = 5
+N_DER = {1: 15, 4: 15}          # pure domain-deranged pairing fits (no role swap); 5 at descriptive ranks
 
 
 def _load_lpm():
@@ -82,22 +86,36 @@ def load_pairs(clean_pt, ko_pt, codeword):
     return pairs, C["names"]
 
 
-def shuffle_plan(pairs, idx, seed):
-    """(perm, swap): per-prompt role swap (p=0.5) and a DOMAIN DERANGEMENT of the pairing -- the target
-    of prompt i comes from a prompt in a different domain."""
+def shuffle_plan(pairs, idx, seed, role_swap=True):
+    """(perm, swap). DOMAIN DERANGEMENT built CONSTRUCTIVELY (review 2026-10-14, CRITICAL #1: rejection-
+    sampling a 670-row derangement almost never succeeds -- ~9 expected same-domain collisions per draw).
+    Seeded shuffle of the domain list, cyclic map domain[k] -> domain[k+1] (no fixed point when >= 2
+    domains), then each source row of domain d takes a row of the mapped domain via a seeded permutation of
+    that domain's rows (cycled if sizes differ). `role_swap`: per-prompt source/target swap with p=0.5
+    (SHUF family); False = pure deranged pairing (DER family, keeps the KO->clean direction)."""
     rng = random.Random(seed)
-    swap = [rng.random() < 0.5 for _ in idx]
-    perm = list(idx)
-    for _ in range(1000):
-        rng.shuffle(perm)
-        if all(pairs[i]["domain"] != pairs[j]["domain"] for i, j in zip(idx, perm)):
-            return perm, swap
-    raise SystemExit("could not build a domain derangement")
+    by = {}
+    for i in idx:
+        by.setdefault(pairs[i]["domain"], []).append(i)
+    doms = sorted(by)
+    if len(doms) < 2:
+        raise SystemExit("a domain derangement needs >= 2 domains")
+    rng.shuffle(doms)
+    nxt = {d: doms[(k + 1) % len(doms)] for k, d in enumerate(doms)}
+    pools = {d: rng.sample(by[d], len(by[d])) for d in doms}
+    seen = {d: 0 for d in doms}
+    perm = []
+    for i in idx:
+        d2 = nxt[pairs[i]["domain"]]
+        perm.append(pools[d2][seen[d2] % len(pools[d2])]); seen[d2] += 1
+    swap = [rng.random() < 0.5 for _ in idx] if role_swap else [False] * len(idx)
+    return perm, swap
 
 
-def build(pairs, names, idx, pos, shuffle_seed=None):
+def build(pairs, names, idx, pos, shuffle_seed=None, role_swap=True):
     """PairedIO per module for prompts `idx` at fit position `pos` ('cw' or 'last')."""
-    perm, swap = (list(idx), [False] * len(idx)) if shuffle_seed is None else shuffle_plan(pairs, idx, shuffle_seed)
+    perm, swap = ((list(idx), [False] * len(idx)) if shuffle_seed is None
+                  else shuffle_plan(pairs, idx, shuffle_seed, role_swap=role_swap))
     out = []
     for n in names:
         s_in, s_out, t_in, t_out, p_in = [], [], [], [], []
@@ -145,11 +163,20 @@ def main():
     a = ap.parse_args()
     os.makedirs(a.out_dir, exist_ok=True)
     t0 = time.time()
+    code = {}
+    for f in ("p2b_fit.py", "p2b_operator.py", "operator_ara.py"):
+        fp = os.path.join(REPO, "research/heretic_csi", f)
+        code[f] = hashlib.sha256(open(fp, "rb").read()).hexdigest()
+    cdir = os.path.join(a.out_dir, "code_" + os.environ.get("ATTEMPT", "local") + "_" + a.codeword)
+    os.makedirs(cdir, exist_ok=True)
+    for f in code:
+        shutil.copy(os.path.join(REPO, "research/heretic_csi", f), cdir)
+    print(f"[fit] code sha256 {json.dumps(code)} copied to {cdir}", flush=True)
     pairs, names = load_pairs(a.clean, a.ko, a.codeword)
     doms = sorted({p["domain"] for p in pairs})
     print(f"[fit] {a.codeword}: {len(pairs)} paired prompts, {len(doms)} train domains, {len(names)} modules", flush=True)
     allidx = list(range(len(pairs)))
-    prov = {"codeword": a.codeword, "n_pairs": len(pairs), "n_domains": len(doms), "modules": names,
+    prov = {"code_sha256": code, "codeword": a.codeword, "n_pairs": len(pairs), "n_domains": len(doms), "modules": names,
             "clean_capture": a.clean, "ko_capture": a.ko,
             "anchors": [{"prompt_id": p["prompt_id"], "domain": p["domain"], **p["anchor"],
                          "last_token": p["last_token"]} for p in pairs]}
@@ -192,7 +219,7 @@ def main():
     # ---------------- rank sweep + fitted controls (all TRAIN rows) ----------------
     full_cw = build(pairs, names, allidx, "cw")
     full_last = build(pairs, names, allidx, "last")
-    summary = {"frozen": frozen, "ranks": {}}
+    summary = {"frozen": frozen, "code_sha256": code, "ranks": {}}
     for r in [int(x) for x in a.ranks.split(",")]:
         cfg = po.FitCfg(rank=r, objective=obj, steer_weight=w, n_steps=a.n_steps, device=a.device)
         ops = {}
@@ -213,6 +240,12 @@ def main():
                                "meta": {"fit": "role-swap + domain-deranged pairing", "seed": 1000 * r + j,
                                         "raw_fro": {n: po.fro_norm(A, B) for n, (A, B) in sh.items()},
                                         "norm_matched_to": "CAND"}}
+        for j in range(N_DER.get(r, 5)):
+            dr = po.fit_factored(build(pairs, names, allidx, "cw", shuffle_seed=5000 + 1000 * r + j, role_swap=False), cfg)
+            ops[f"DER{j}"] = {"factors": po.rescale_to(dr, cn),
+                              "meta": {"fit": "domain-deranged pairing, NO role swap", "seed": 5000 + 1000 * r + j,
+                                       "raw_fro": {n: po.fro_norm(A, B) for n, (A, B) in dr.items()},
+                                       "norm_matched_to": "CAND"}}
         for which in ("SRC2SRC", "TGT2TGT"):
             dg = po.fit_factored(degenerate(full_cw, which), cfg)
             ops[which] = {"factors": dg, "meta": {"fit": which, "raw_fro": {n: po.fro_norm(A, B) for n, (A, B) in dg.items()}}}

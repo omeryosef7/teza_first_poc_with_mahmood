@@ -33,12 +33,13 @@ EXCLUDED = {"restaurant_kitchen", "school_campus", "subway_station"}
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--codeword", required=True)
+ap.add_argument("--concept", default="bomb", help="bank concept; non-bomb banks are SPECIFICITY-control populations (dir <cw>_<concept>)")
 ap.add_argument("--out-root", default="configs/heretic_csi/phaseB")
 a = ap.parse_args()
 
 split = json.load(open("data/boombness_prompts/dcs_ts116_domain_split.json"))
 assign = split["assign"]
-bank_path = f"data/boombness_prompts/boombness_prompt_bank_ts116m_{a.codeword}_bomb.jsonl"
+bank_path = f"data/boombness_prompts/boombness_prompt_bank_ts116m_{a.codeword}_{a.concept}.jsonl"
 rows = [json.loads(l) for l in open(bank_path)]
 rows = [r for r in rows if r.get("bank_block") == "cds_n4_sow" and r["cell"] in ("A", "C")
         and assign.get(r["domain"]) in ("train", "validation") and r["domain"] not in EXCLUDED]
@@ -72,9 +73,9 @@ sets = {
     "val_A": sel("A", "validation"), "val_C": sel("C", "validation"),
     "val_behav_C": [{k: r[k] for k in KEEP} for r in behav],
 }
-od = os.path.join(a.out_root, a.codeword)
+od = os.path.join(a.out_root, a.codeword if a.concept == "bomb" else f"{a.codeword}_{a.concept}")
 os.makedirs(od, exist_ok=True)
-man = {"schema": "hcsi_phaseB_datasets/1", "codeword": a.codeword, "bank": bank_path,
+man = {"schema": "hcsi_phaseB_datasets/1", "codeword": a.codeword, "concept": a.concept, "bank": bank_path,
        "bank_sha256": hashlib.sha256(open(bank_path, "rb").read()).hexdigest(),
        "split_manifest_sha16": split.get("manifest_sha16"), "excluded_domains": sorted(EXCLUDED),
        "roles": {"good(TARGET)": "cell C", "bad(SOURCE)": "cell A"}, "sets": {}}
