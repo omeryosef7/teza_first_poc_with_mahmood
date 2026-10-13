@@ -1232,3 +1232,12 @@ Artifact `reports/heretic_csi/PHASE_A_heretic_audit_job1022919_r0.json` (L40S; i
   fold 1/5 done (898 s/fold; 670 paired prompts, 67 TRAIN domains, 26 modules). F1: 1023182 exited fast on
   INSUFFICIENT_TMP guard (no GPU wasted) → 1023185 running (Phase-A rerun), 1023251 Phase-B pending; F2 1023264 pending
   (BeginTime-deferred). Concurrency ≤6 GPU respected. Deep adversarial review due next tick (~00:00, 4 h since resume).
+
+## S-064 — 2026-10-14 00:10 — ops tick + ~4h DEEP ADVERSARIAL REVIEW launched
+- r4 VAL: button 36/61, basket 32/61 ok, 0 failures. P2b 1023012: objective CV fold 3/5. F1: 1023185 (Phase-A rerun)
+  and 1023251 (Phase-B native ARA) running. F2 1023264 pending. 5 GPU running ≤6.
+- **Deep adversarial review (4 h since resume):** delegated to a FRESH independent reviewer agent (no shared context
+  with F1/F2 implementers), read-only, covering: token positions; source/target pairing & split leakage; rank+norm
+  matching of controls (incl. NEUT exclusion); objective-freeze data flow (no y_install); domain-clustered statistic;
+  norm confound; the S-054 held-out-probe shuffle-null anomaly (null max 0.42/0.52); requeue safety; overclaim audit
+  of S-051…S-063; unit tests + mutation tests. Output → `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014.md`.
