@@ -1197,3 +1197,32 @@ sweep + rank-matched controls at every rank, cross-hardware validation, and the 
 - F1: 1022919 (Phase-A/B) COMPLETED in 27 min (results pending F1's report); 1023043 FAILED at t=0 — node-local
   `/tmp` full on the assigned node ("mkdir /tmp/omeryosef: No space left on device"; node-side, not our data). F1 owns
   resubmission (exclude that node). Not a scientific result.
+
+## S-062 — 2026-10-13 23:25 — P0 / PHASE A (F1, job 1022919): Heretic audit — gate FAILED by design; 2 real Heretic findings
+Artifact `reports/heretic_csi/PHASE_A_heretic_audit_job1022919_r0.json` (L40S; isolated venv
+`/specific/scratches/scratch/omeryosef/envs/heretic_csi` — torch 2.13+cu126, transformers 5.6.2; eager bf16 forced).
+1. **Heretic ARA reset is NOT a full reset (upstream finding @662e4ba2).** `reset_model` zeroes `lora_B` only;
+   `lora_A` retains the previous trial's values. Same params re-applied after reset ⇒ ΔW rel diff 1.08, max |Δlogit| 4.2;
+   Optuna trial-0 objective 0.0706 vs replay 0.0513 ⇒ **shipped Heretic trials are history-dependent and not exactly
+   replayable.** Our drivers restore `lora_A` to its post-`apply_lora` snapshot at every reset (documented deviation;
+   no upstream patch). Candidate upstream bug report — NOT filed (outward-facing; user's call).
+2. **Reset to identity itself is exact:** ΔW after reset = 0; greedy-16 tokens identical to base. Base vs
+   LoRA-wrapped (B=0) max |Δlogit| 0.0625 (bf16 rounding of the wrapped path).
+3. **Deployed ≠ optimized operator (upstream finding):** with default `preserve_row_magnitudes=True`, ARA's loss uses
+   `normalize(W+BA)·‖W‖_row` but PEFT deploys `W+BA`; per-module relative gap 1–30% (max 0.298, L15 down_proj); on
+   captured I/O the loss is similar for both (0.0279 deployed vs 0.0246 objective-form; base 0.207). Our P2b operator
+   deploys exactly what it optimizes (no row-norm reparam) — keep it that way.
+4. **Learned ΔW (tiny fixed config, L12–16, rank 8):** numerical rank 8 everywhere, but entropy-effective rank
+   ≈1.0–4.0; down_proj L12/13/15 ≈1.0 (essentially rank-1); ‖ΔW‖/‖W‖ 0.02–0.35. (Descriptive; P3 template.)
+5. **Cross-hardware readout noise (affects interpretation of OUR numbers):** the frozen `score_behavior` readout is
+   bit-exact within a GPU type but differs ACROSS types (3090/L40S/a5000): mean |Δy_install| 0.009–0.013, max 0.25,
+   |Δlogp| up to 0.87 (over existing hcsi_p2a BASE dirs, n≤670). F1's inline-scorer port: mean |Δy| 0.0088 vs frozen
+   (gate set at ≤0.015 from this hardware envelope, not from any endpoint).
+   **Implication audit (parent):** every certified rank-test cell is self-contained within ONE job on ONE GPU type
+   (candidate + all 56 controls + liveness) ⇒ the verdicts are not cross-hardware confounded. BUT the descriptive
+   rescue-vs-rank curve (S-051) mixes L40S (r1/r16) and a5000 (r4/r8, all VAL) — curve *recoveries* across those
+   cells carry hardware noise; only within-cell ranks/p are clean. Recorded as a standing caveat.
+6. Optuna JournalStorage resume works (2 trials → reload → 3). Llama chat template with empty system prompt is
+   byte-identical to the CSI no-system template (date string stays "26 Jul 2024" under tf 5.6).
+- Gate failed by design on (1)/(5-old gate); Phase B was skipped, fixes applied, **resubmitted as 1023182**
+  (mirror stage-in, `--exclude=n-803`).

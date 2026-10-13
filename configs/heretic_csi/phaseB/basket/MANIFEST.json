@@ -1,0 +1,75 @@
+{
+  "schema": "hcsi_phaseB_datasets/1",
+  "codeword": "basket",
+  "bank": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl",
+  "bank_sha256": "79511d9e254571e66a471d0353b318001ff0c1c32713be75ca0f0484e2606692",
+  "split_manifest_sha16": "be7d2c772d814ef3",
+  "excluded_domains": [
+    "restaurant_kitchen",
+    "school_campus",
+    "subway_station"
+  ],
+  "roles": {
+    "good(TARGET)": "cell C",
+    "bad(SOURCE)": "cell A"
+  },
+  "sets": {
+    "fit_good": {
+      "path": "configs/heretic_csi/phaseB/basket/fit_good.jsonl",
+      "n_rows": 335,
+      "n_domains": 67,
+      "sha256": "cd68880892aceeaab174ba622ed4390488ea78895f9ef8b1ae6feaea75b5c5a1",
+      "heretic_dir": "configs/heretic_csi/phaseB/basket/fit_good"
+    },
+    "fit_bad": {
+      "path": "configs/heretic_csi/phaseB/basket/fit_bad.jsonl",
+      "n_rows": 335,
+      "n_domains": 67,
+      "sha256": "4244b8e749cbfe3e888514741cc7de5ecf9cc68b4fcece4df5de95f5e8ca1a7b",
+      "heretic_dir": "configs/heretic_csi/phaseB/basket/fit_bad"
+    },
+    "opt_A": {
+      "path": "configs/heretic_csi/phaseB/basket/opt_A.jsonl",
+      "n_rows": 134,
+      "n_domains": 67,
+      "sha256": "85bf15e1b22242f8b6ba06be015297ee3e596ca2888c2ef526d28b7427956b24"
+    },
+    "opt_C": {
+      "path": "configs/heretic_csi/phaseB/basket/opt_C.jsonl",
+      "n_rows": 134,
+      "n_domains": 67,
+      "sha256": "ac0ef4deb0e7a1c5fbeb6cac8d6137a9da2cf86cf65af5dc8f80c449a0c8f301"
+    },
+    "trainread_A": {
+      "path": "configs/heretic_csi/phaseB/basket/trainread_A.jsonl",
+      "n_rows": 335,
+      "n_domains": 67,
+      "sha256": "feda738e6e2402bf289100df525dd6b4a53f26c87aff0a92b9580b8986745fdc"
+    },
+    "trainread_C": {
+      "path": "configs/heretic_csi/phaseB/basket/trainread_C.jsonl",
+      "n_rows": 335,
+      "n_domains": 67,
+      "sha256": "b1f16f92f52e8e0558f0b3f7cd6f67727d60315a21dbe084ba9d1d928aab5b87"
+    },
+    "val_A": {
+      "path": "configs/heretic_csi/phaseB/basket/val_A.jsonl",
+      "n_rows": 230,
+      "n_domains": 23,
+      "sha256": "9801e72c12d7876c531c408d03ea6092a3719ca0087ac979d3718ec14e3909bf"
+    },
+    "val_C": {
+      "path": "configs/heretic_csi/phaseB/basket/val_C.jsonl",
+      "n_rows": 230,
+      "n_domains": 23,
+      "sha256": "cd647c6f5263341d0db30c057824a88213985e5905c265f664f9c85cfabd2400"
+    },
+    "val_behav_C": {
+      "path": "configs/heretic_csi/phaseB/basket/val_behav_C.jsonl",
+      "n_rows": 46,
+      "n_domains": 23,
+      "sha256": "06815b0d80280303fbd8694d0f5ecea5800d3b24113d9e550eb776d7fc23cccf",
+      "heretic_dir": "configs/heretic_csi/phaseB/basket/val_behav_C"
+    }
+  }
+}
