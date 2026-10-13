@@ -13,7 +13,9 @@ Per (codeword, rank r), on keys common to all arms:
   PASS RULE (PREREG + AMENDMENT 2026-10-14): only at the PRIMARY ranks {1,4}; Holm over those two ranks
     of the codeword; PASS iff Holm-adjusted p < 0.05 AND recovery CI lower bound > 0 AND all gates hold.
     Other ranks are DESCRIPTIVE (rank p reported, never a pass/fail).
-  position contrast (norm-matched by construction): KO_CWONLY_r (CAND only at the codeword row) vs
+  SECONDARY (AMENDMENT 2): KO_CWONLY_r vs its codeword-row-only family (KO_CWRAND/KO_CWDER), Holm over
+    {1,4}, pass = Holm p < 0.05 AND CWONLY recovery CI-lo > 0; any claim needs VALIDATION replication.
+  position contrast (norm-matched by construction, DESCRIPTIVE): KO_CWONLY_r (CAND only at the codeword row) vs
     KO_ATLAST_r (CAND only at the last prompt row); KO_NEUT_r (fit at the last row, OWN norm) descriptive.
   decomposition: d logp_concept and d logp_codeword (arm - KO), domain means.
   preservation: BASE_CAND_r - BASE on y_install and option mass.
@@ -243,7 +245,21 @@ def main():
         ok = x["gates"]["manipulation_ok"] and x["gates"]["instrument_ok"]
         x["verdict"] = decide(x["primary"], ok, x["void"],
                               x["holm_p"] if x["holm_p"] is not None else 1.0, x["recovery_CAND"])
-        print(json.dumps({k: x.get(k) for k in ("rank", "verdict", "stat_CAND_minus_KO", "recovery_CAND",
+    # SECONDARY (PREREG AMENDMENT 2): KO_CWONLY_r vs its codeword-row-only RAND+DER family, Holm over {1,4}
+    sec = {x["rank"]: x["rank_test_CWONLY_vs_cw_family"]["p"] for x in rows
+           if x.get("primary") and x.get("rank_test_CWONLY_vs_cw_family")}
+    sadj = holm(sec) if sec else {}
+    for x in rows:
+        if "rank_test" not in x:
+            continue
+        if x.get("rank_test_CWONLY_vs_cw_family"):
+            ok = x["gates"]["manipulation_ok"] and x["gates"]["instrument_ok"]
+            x["holm_p_secondary_CWONLY"] = sadj.get(x["rank"])
+            x["verdict_secondary_CWONLY"] = decide(
+                x["primary"], ok, x["void"], sadj.get(x["rank"], 1.0),
+                x["position"][f"KO_CWONLY_r{x['rank']}"]["recovery"]) + \
+                " [SECONDARY; requires VALIDATION replication with the frozen operator before any claim]"
+        print(json.dumps({k: x.get(k) for k in ("rank", "verdict", "verdict_secondary_CWONLY", "stat_CAND_minus_KO", "recovery_CAND",
                                                 "rank_test", "holm_p", "preservation")}, default=str), flush=True)
     json.dump({"codeword": a.codeword, "prefix": a.prefix, "split": a.split, "expect_n": a.expect_n,
                "rows": rows}, open(a.out, "w"), indent=1, default=str)

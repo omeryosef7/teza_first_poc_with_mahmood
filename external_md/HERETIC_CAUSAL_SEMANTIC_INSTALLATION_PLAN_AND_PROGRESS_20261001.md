@@ -1328,3 +1328,14 @@ land BEFORE any P2b result (the frozen-before-endpoint discipline holds).
   CWONLY ≫ CAND before this test was added (forking-path risk); any CWONLY claim requires VALIDATION replication with
   the frozen operator. Cost ≈ +24 GPU-h. Rationale: position-specificity is central to the mandate and is untestable
   without a matched null.
+
+## S-069 — 2026-10-14 01:05 — PREREG AMENDMENT 2 (secondary CWONLY test) frozen before endpoint
+- `configs/heretic_csi/PREREG_P2B_AMENDMENT_2.json` (sha256 65a5f0cb…06a3bf; tracked copy of the outputs/ file):
+  secondary = KO_CWONLY vs 61 CWRAND + 15 CWDER codeword-row-only controls (floor 0.0130), Holm over {1,4}, CI-lo>0;
+  forking-path disclosure; mandatory VALIDATION replication. Primary unchanged.
+- **Disclosure numbers (corrected in-file before the sha, with revision_note):** smoke2 (12 rows, in-sample) CWONLY
+  ΔY +0.267 (recovery 1.48) vs CAND +0.150 (0.83), ATLAST +0.001. F2's earlier "CWONLY ≫ CAND" → "CWONLY > CAND";
+  a first-draft CAND −0.01 came from smoke1's differently-fit operator (wrong source; corrected).
+- Scheduling: a primary rank = 163 arms (~12 GPU-h) ⇒ one primary rank per job: 1023012 → basket r1 + liveness;
+  1023264 → button r1 + liveness; evalD_{basket,button} (r4) queued for free slots. Primary Holm verdicts only after
+  BOTH r1 and r4 land. Smoke3 1023398 (12 rows, r1+r4) GPU-testing the secondary path.

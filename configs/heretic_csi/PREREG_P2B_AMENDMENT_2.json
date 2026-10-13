@@ -1,0 +1,22 @@
+{
+ "schema": "hcsi_p2b_prereg_amendment/1",
+ "amends": [
+  "outputs/heretic_csi/p2b/prod/PREREG_P2B.json (sha256 e273df1db75f6c2aeb1860dd23639d23286570920e85d139ad66f911e8ced378)",
+  "outputs/heretic_csi/p2b/prod/PREREG_P2B_AMENDMENT_1.json (sha256 fd01d54e41809493b2abd4dd5c15ae852824007dab2a22debab13ea782baf10a)"
+ ],
+ "written": "2026-10-14T00:56:31+03:00",
+ "decided_by": "parent coordinator (2026-10-14), implemented by F2",
+ "endpoint_status_at_writing": "NO production y_install computed or read (eval arms hcsi_p2b_<cw>_k4_* not yet run; capture arms' y_install never read).",
+ "primary_unchanged": "KO_CAND_r (CAND at ALL rows = a weight edit) remains PRIMARY at ranks {1,4}, Holm over {1,4}, 81 all-row norm-matched controls, PASS = Holm p<0.05 AND recovery CI-lo>0 AND gates.",
+ "secondary_hypothesis": "KO_CWONLY_r (CAND's dW applied ONLY at the codeword row) ranks above its codeword-row-only control family: 61 KO_CWRAND_r_i (the SAME seeded random rank-r factors as KO_RAND_r_i, per-module Frobenius norm = CAND, applied only at the codeword row) + 15 KO_CWDER_r_j (the DER_j fits, rescaled to CAND, applied only at the codeword row) = 76 controls, floor 1/77 = 0.0130, rank- and norm-matched. Statistic = mean_d(KO_CWONLY_r - KO) on keys common to all arms. PASS = Holm-adjusted p < 0.05 over ranks {1,4} AND CWONLY recovery CI95 lower bound > 0 AND gates.",
+ "disclosure_forking_path": "BEFORE this secondary test was added, a 12-row, 3-domain, IN-SAMPLE smoke (job 1023389, prefix hcsi_p2b_smoke2_basket, rank-4 operator fit on those same 12 prompts with 1 L-BFGS step) was read: KO_CWONLY stat +0.267 (recovery 1.48) vs KO_CAND stat +0.150 (recovery 0.83), KO_ATLAST +0.001. (An earlier smoke, job 1022701, with a differently-fit operator, gave KO_CAND -0.008.) That look HINTED the codeword-row-only application carries more of the effect and motivated adding this test. The secondary test is therefore NOT independent of a look at (smoke) data and is labelled accordingly.",
+ "replication_requirement": "Any CWONLY claim requires replication on VALIDATION (exclude_<cw>_bomb_sow_validation.txt, 23 domains) with the FROZEN TRAIN operator and the same codeword-row-only control family; TRAIN K4 is in-sample for CAND/DER fits.",
+ "descriptive_only": [
+  "position contrast KO_CWONLY_r - KO_ATLAST_r (both CAND's factors, norm-matched by construction)",
+  "KO_NEUT_r (last-row fit, own norm)",
+  "ranks {2,8,16,32,50}"
+ ],
+ "scheduling": "a primary rank now carries 87 + 76 = 163 arms (~12 GPU-h); one primary rank per job: job 1023012 -> basket r1 (+liveness), job 1023264 -> button r1 (+liveness), evalD_<cw>.sh -> r4 per codeword (to be submitted when GPU slots free).",
+ "code": "p2b_analyze.py verdict_secondary_CWONLY; p2b_emit.py --cw-nrand 61 --cw-nder 15; p2b_runner.py OPSPEC randat",
+ "revision_note": "disclosure numbers corrected at 2026-10-14T00:56:48 (first draft misquoted smoke2's CAND stat as -0.01, which was smoke1's); corrected before this file's sha256 was communicated; still before any production endpoint."
+}
