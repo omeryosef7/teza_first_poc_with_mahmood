@@ -1370,3 +1370,44 @@ land BEFORE any P2b result (the frozen-before-endpoint discipline holds).
   (ii) small absolute effect (9% of whole-state rescue) — specificity, not magnitude; (iii) a5000 only (within-job
   comparison, so cross-HW noise S-062 does not affect the verdict); (iv) semantic-installation rescue only — no
   behavioral claim.
+
+## S-073 — 2026-10-14 02:10 — INDEPENDENTLY VERIFIED: button r4 VALIDATION PASS (PR-HCSI-S051) is robust; basket r4 VAL fragile
+Verifier F3 (`research/heretic_csi/verify/verify_r4_val.py`, analyzer logic not reused) →
+`reports/heretic_csi/VERIFY_S072_r4_validation.{md,json}`.
+- **PRIMARY button r4 VAL (1022698): AGREES — PASS.** 230 rows / 23 VAL domains, no TEST; 203 rows after the frozen
+  BASE-ref 0.05 floor; 61 run dirs, single attempt. Rank **1/57, p=0.0175**, strictly largest (no ties); also 1/47
+  vs RAND-only and 1/11 vs SHUF-only. Recovery **0.0909 [0.051, 0.126]**; candidate−KO **0.0129 [0.0063, 0.0192]**;
+  20/23 domains positive. **Floor-robust** (strict paired floor keeps the same 203 rows → 1/57; no floor → 1/57,
+  recovery 0.087). **Leave-one-domain-out: rank 1 in all 23 drops.** Margin over best control (KO_SHUF_r4_9, 0.0092)
+  +0.0037 ≈ 1.2 control-SD. Liveness KO−BASE −0.302, FULL−KO +0.142, SELF−KO −0.0005. All 57 arms rank 4 (basis +
+  per-row), norm-match exact (≤5e-16), distinct keys, seed 20260913, no short arms. Mutations null (median p 0.45 /
+  0.39). Matches the frozen analyzer on every number.
+- **DESCRIPTIVE basket r4 VAL (1022699, frozen analyzer: rank 1/57):** recovery 0.141 [0.077, 0.233], candidate−KO
+  0.0198, 19/23 positive, but **FRAGILE**: margin over KO_SHUF_r4_9 only +0.0015 (0.3 SD); strict floor → 2/57
+  (p=0.035, margin −0.0020); dropping `airport_apron` or `botanic_glasshouse` alone → rank 2; only 145/230 rows pass
+  the floor (basket's option-mass-degraded bank, inherited caveat). **Not quoted as a pass.**
+- **Status: CONFIRMED (held-out, preregistered, independently verified)** — button has a specific rank-4 (not rank-1)
+  activation-space installation-rescue carrier at L18 rel-6 under the attention knockout.
+
+### Updated synthesis of the P2a rank sweep (supersedes the S-049 "outcome D" reading)
+| codeword | r1 | r4 | r16 | held-out status |
+|---|---|---|---|---|
+| basket | VAL 1/57 PASS (floor-sensitive, S-052) | VAL 1/57 (fragile, descriptive) | VAL 10/57 FAIL | specific carrier from rank 1 (fragile margin) |
+| button | VAL 18/57 FAIL (verifier) | **VAL 1/57 PASS (robust, prereg)** | VAL 10/57 FAIL | **no rank-1 carrier; specific carrier at rank 4** |
+- **Reading:** this is the **outcome-A shape** (prereg §3): basket's specific carrier appears at rank 1; button needs
+  rank ~4; by rank 16 neither is specific (extra dimensions add generic dose any random subspace matches). Combined
+  with S-054/S-065 (no evidence of a basket probe advantage held-out), the basket/button dissociation is better
+  described as **a difference in the dimensionality of the specific carrier** than as "button has no carrier" or
+  "basket has a better probe". H1 PARTIALLY SUPPORTED (activation-space PLS family only).
+
+### WHAT WE CAN DEFEND (addendum S-073)
+- Held-out, preregistered, independently verified: button's rank-4 PLS subspace at L18 rescues semantic installation
+  under knockout more than every one of 56 rank- and norm-matched controls (p=0.0175, floor-robust, LODO-robust),
+  whereas its rank-1 direction does not (VAL 18/57).
+
+### WHAT WE MUST NOT SAY (addendum S-073)
+- "Button requires exactly 4 dimensions" — ranks tested on VAL are {1,4,16}; 2/3 not tested; rank 4 was chosen on TRAIN.
+- "Basket rank 4 also passes" — fragile (0.3 SD margin; strict floor 2/57; single-domain drops flip it).
+- Anything about the ARA *weight* operator (P2b not yet read), behavior/ASR, or a population law (2 codewords).
+- "Large effect" — recovery 9% of whole-state rescue; the claim is specificity, and p is at the 56-control floor.
+- "Button has no specific carrier" (S-049 wording) — superseded.
