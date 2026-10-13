@@ -1432,3 +1432,15 @@ Verifier F3 (`research/heretic_csi/verify/verify_r4_val.py`, analyzer logic not 
   (DER/SHUF fitted controls partly level this.) The VALIDATION plan must be written + committed before the TRAIN read.
 - Jobs: 1023012 (n-503; final fits → basket r1 + liveness, ~12 h), 1023264 (button r1, begins 03:20), 1023508 /
   1023509 (basket / button r4, n-501). Descriptive plans evalC {16,50}, evalB {2,8,32} not yet submitted.
+
+## S-075 — 2026-10-14 02:50 — P2b VALIDATION plan PREREGISTERED before any P2b endpoint
+- `configs/heretic_csi/PREREG_P2B_VALIDATION.json` (sha256 5b1f3bac…5d2b9b) + plans
+  `configs/heretic_csi/p2b_plans/val_{basket,button}_r{1,4}.sh` (copies of outputs/heretic_csi/p2b/plans/; not yet
+  submitted — GPU cap). Frozen fac/ operators, no refit, factor-file sha256 recorded per job; population = VALIDATION
+  230 rows / 23 domains; same 163 arms/rank (81 primary + 76 secondary CW-row controls + CAND/BASE_CAND/CWONLY/ATLAST/
+  NEUT/CAPOP); same pass rule + analyzer; a5000.
+- **Control draws IDENTICAL to TRAIN** (same seeds, same frozen CAND norms ⇒ byte-identical RAND; same frozen SHUF/DER
+  fits): the control family is part of the frozen intervention spec, so validation tests the same candidate-vs-family
+  comparison on new domains with no new random degree of freedom. A fresh-draw run may follow as a separately
+  labelled descriptive sensitivity.
+- Cost ≈ 42 GPU-h for 4 jobs (~227 s/230-row arm). Submit order when slots free: r1 both codewords, then r4.

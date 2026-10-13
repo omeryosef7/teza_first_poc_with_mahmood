@@ -1,0 +1,20 @@
+{
+ "schema": "hcsi_p2b_prereg_validation/1",
+ "written": "2026-10-14T02:03:23+03:00",
+ "builds_on": {"PREREG_P2B.json": "e273df1db75f6c2aeb1860dd23639d23286570920e85d139ad66f911e8ced378",
+               "PREREG_P2B_AMENDMENT_1.json": "fd01d54e41809493b2abd4dd5c15ae852824007dab2a22debab13ea782baf10a",
+               "PREREG_P2B_AMENDMENT_2.json": "65a5f0cb1adaaa414319402ba947d29dbc9dbaf5c8e0cbdabb68c7794906a3bf"},
+ "endpoint_status_at_writing": "NO P2b TRAIN or VALIDATION y_install has been computed or read (TRAIN eval arms not yet run; only 12-row smokes read).",
+ "operators": "FROZEN TRAIN fits in outputs/heretic_csi/p2b/prod/fac/factors_<cw>_r{1,4}.pt (objective mse, steer 0.3, pooled TRAIN CV). NO refit, NO re-selection. Factor-file sha256 recorded per job (val_factors_sha_*.txt) and must equal the TRAIN eval's factors.",
+ "population": "runargs/dcs_cont/exclude_<cw>_bomb_sow_validation.txt: 230 rows = 23 VALIDATION domains x 10 (cell C, semantic_one_word, natural_doublespeak, n_examples 4); tag prefix hcsi_p2b_<cw>_val; --expect-n 230. TEST never used.",
+ "cells": {"primary": "KO_CAND_r (CAND at all rows) vs 61 KO_RAND + 5 KO_SHUF + 15 KO_DER = 81 controls (floor 0.0122)",
+           "secondary": "KO_CWONLY_r (CAND at the codeword row only) vs 61 KO_CWRAND + 15 KO_CWDER = 76 controls (floor 0.0130)",
+           "ranks": [1, 4], "per_codeword": ["basket", "button"], "never_pooled": true},
+ "control_draws": "IDENTICAL to TRAIN, not fresh: RAND/CWRAND use the same seeds (7000+100r+i) and are norm-matched to the same frozen CAND => byte-identical random operators; SHUF/DER are the same frozen TRAIN-fitted operators. Why: the control family is part of the frozen intervention specification (the set of equal-rank, equal-norm alternative operators the candidate is compared against). Validation must test the SAME candidate-vs-family comparison on new domains, introducing no new random degree of freedom; fresh draws would change the null family between splits and make a TRAIN/VALIDATION difference partly a draw difference. Fresh-draw robustness may be run later as a separately labelled DESCRIPTIVE sensitivity.",
+ "statistic_and_pass_rule": "identical to TRAIN (p2b_analyze.py, --split validation --expect-n 230): stat = mean_d(arm - KO) over keys common to all arms with the BASE option-mass>=0.05 key set; recovery = mean_d(arm-KO)/mean_d(KO_FULL-KO) with domain bootstrap; rank p = (1+#controls>=cand)/(N+1). PASS iff Holm-adjusted p<0.05 over {1,4} (separately for primary and for secondary, per codeword) AND recovery CI95 lower bound > 0 AND gates (KO<BASE, FULL>KO, KO_IDENT==KO on every key, hooks fired, control norm/rank matched, KO_CAPOP replays KO_CAND, readout-collapse screen: median option mass < 0.05 on BASE/KO/FULL/IDENT/candidate => VOID).",
+ "role": "VALIDATION certifies or fails the TRAIN primary/secondary verdicts. A claim needs PASS on VALIDATION; a TRAIN PASS + VALIDATION fail is reported as non-replicating. The secondary (CWONLY) claim REQUIRES VALIDATION PASS (forking-path disclosure, amendment 2).",
+ "plans": ["outputs/heretic_csi/p2b/plans/val_basket_r1.sh (LIVE=1)", "val_basket_r4.sh", "val_button_r1.sh (LIVE=1)", "val_button_r4.sh", "template: val_template.sh"],
+ "hardware": "a5000 (p2b_job.slurm --gpus=a5000:1), same type as TRAIN eval; bf16 eager.",
+ "analysis_command": "python research/heretic_csi/p2b_analyze.py --codeword <cw> --prefix hcsi_p2b_<cw>_val --split validation --expect-n 230 --ranks 1,4 --nrand 61 --nshuf 5 --nder 15 --capop --cw-nrand 61 --cw-nder 15 --out reports/heretic_csi/p2b_<cw>_primary_validation.json",
+ "gpu_cost_estimate": "~0.99 s/row/arm (TRAIN K4: ~264 s per 268-row arm) -> ~227 s per 230-row arm; r1 job 167 arms ~10.5 GPU-h, r4 job 163 arms ~10.3 GPU-h; 4 jobs ~42 GPU-h (+ up to ~0.8 h cold stage-in each). Each job fits within the 23 h limit."
+}
