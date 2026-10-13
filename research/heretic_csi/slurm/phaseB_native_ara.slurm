@@ -38,7 +38,7 @@ else
   else echo "STAGE_IN FAILED -- loading from mirror $SNAP"; fi
 fi
 
-CW="${1:?usage: sbatch phaseB_native_ara.slurm <basket|button> [NTRIALS] [NRAND]}"
+CW="${1:?usage: sbatch phaseB_native_ara.slurm <basket|button> [NTRIALS] [NRAND] [CROSS_CW]}"
 NT="${2:-16}"; NR="${3:-39}"
 case "$CW" in
   basket) XC=outputs/boombness/score_behavior/hcsi_p2a_basket_BASE_20261003_011736_2629822,outputs/boombness/score_behavior/hcsi_p2a_basket_BASE_20261003_095601_2131856 ;;
@@ -48,6 +48,6 @@ esac
 "$PY" research/heretic_csi/phaseB_native_ara.py --codeword "$CW" --model "$SNAP" \
   --workdir /specific/scratches/scratch/omeryosef/hcsi_work/phaseB_$CW \
   --blob-dir /specific/scratches/scratch/omeryosef/hcsi_blobs/phaseB_$CW \
-  --out-dir reports/heretic_csi/phaseB --rank 50 --n-trials "$NT" --n-startup 8 --n-rand "$NR" --n-shuffle 3 --extra-ranks 1,8 --xcheck-run-dirs "$XC"
+  --out-dir reports/heretic_csi/phaseB --rank 50 --n-trials "$NT" --n-startup 8 --n-rand "$NR" --n-shuffle 3 --extra-ranks 1,8 --xcheck-run-dirs "$XC" --cross-codeword "${4:-}"
 echo "---- PHASEB EXIT $(date -Is)"
 echo "DONE_MARKER phaseB cw=$CW att=$ATT"

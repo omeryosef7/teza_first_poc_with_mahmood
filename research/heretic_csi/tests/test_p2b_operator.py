@@ -154,3 +154,10 @@ def test_preserve_set_includes_extra_rows():
         p["clean"]["acts"]["L0.o_proj"]["x1"] = (torch.randn(D), torch.randn(D))
     m = pf.build(pairs, ["L0.o_proj"], list(range(len(pairs))), "cw")[0]
     assert m.p_in.shape == (len(pairs) * 4, D) and m.s_in.shape == (len(pairs), D)
+
+
+def test_random_norm_match_exact_at_model_scale():
+    shapes = {"L0.down_proj": (4096, 14336)}
+    tgt = {"L0.down_proj": 7.8245973805690}
+    (A, B), = po.random_norm_matched(shapes, 4, tgt, seed=7400).values()
+    assert abs(po.fro_norm(A, B) - tgt["L0.down_proj"]) < 1e-6 * tgt["L0.down_proj"]

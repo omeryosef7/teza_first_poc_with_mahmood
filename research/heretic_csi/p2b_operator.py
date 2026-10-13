@@ -204,9 +204,12 @@ def rescale_to(factors, target_norms: Dict[str, float]):
 
 def random_norm_matched(shapes: Dict[str, Tuple[int, int]], rank: int, target_norms: Dict[str, float],
                         seed: int):
-    """Reuses operator_ara.random_orthogonal_operator (rank-r, orthonormal factors, Fro-matched)."""
+    """Reuses operator_ara.random_orthogonal_operator (rank-r, orthonormal factors), then re-applies the
+    norm match with the EXACT double-precision `fro_norm`: operator_ara scales by a float32 CPU
+    `dW.norm()` of the dense 4096x14336 product, which is off by ~0.1% (caught by p2b_analyze's
+    norm guard on the smoke, 2026-10-13)."""
     mods = [SimpleNamespace(name=n, W_base=torch.empty(o, i, device="meta")) for n, (o, i) in shapes.items()]
-    return random_orthogonal_operator(mods, rank, target_norms, seed=seed)
+    return rescale_to(random_orthogonal_operator(mods, rank, target_norms, seed=seed), target_norms)
 
 
 def identity_factors(shapes: Dict[str, Tuple[int, int]], rank: int):

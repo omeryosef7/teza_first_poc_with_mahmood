@@ -1241,3 +1241,40 @@ Artifact `reports/heretic_csi/PHASE_A_heretic_audit_job1022919_r0.json` (L40S; i
   matching of controls (incl. NEUT exclusion); objective-freeze data flow (no y_install); domain-clustered statistic;
   norm confound; the S-054 held-out-probe shuffle-null anomaly (null max 0.42/0.52); requeue safety; overclaim audit
   of S-051…S-063; unit tests + mutation tests. Output → `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014.md`.
+
+## S-065 — 2026-10-14 00:30 — ~4h ADVERSARIAL REVIEW (independent reviewer): 2 CRITICAL + 5 HIGH; no result affected yet
+Report: `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014.md`. No P2b production endpoint had been read ⇒ all fixes
+land BEFORE any P2b result (the frozen-before-endpoint discipline holds).
+- **CRITICAL-1 (parent-confirmed by reading `p2b_fit.py:85-95`):** SHUF control's domain derangement by rejection
+  sampling (1000 shuffles of 670 rows, 10/domain) almost never succeeds (expected ~9 same-domain collisions per
+  shuffle ⇒ P(success)≈e^−9). Reviewer: 7/35 production seeds succeed; seed 1000 fails both codewords ⇒ **1023012 would
+  SystemExit at basket r=1 after CV with no factors.** Fix: constructive derangement + 67×10 test; rerun with --freeze.
+- **CRITICAL-2 (parent-confirmed `p2b_analyze.py:106-108`):** verdict PASSes on rank p alone; the prereg requires rank
+  p<0.05 AND recovery CI-lo>0. Smoke shows norm-matched random/SHUF controls *damage* y by 0.17–0.28, so a candidate
+  that merely damages less (negative recovery) would rank 1 and "PASS". Fix + mutation test.
+- HIGH: option-mass screened only on BASE (smoke KO_NEUT: mass 8e-5, y=0.99 ⇒ fake rescue) → screen every arm.
+- HIGH: "position-aware" applies to the FIT only; the edit is a real weight edit active at all positions incl. the
+  Answer/readout rows (unconstrained by the preserve set) ⇒ a rescue could be lexical codeword-logit suppression. Need a
+  codeword-row-only application arm + Δlogp_concept vs Δlogp_codeword decomposition before any position/mechanism wording.
+- HIGH: NEUT (‖ΔW‖ ≈1.5% of CAND) is a size control, not a position control. HIGH: SHUF's 50% role swap cancels the
+  KO→clean direction (weak fitted control; fitted-only family floor 1/6). HIGH: 7 ranks × "smallest passing rank" ⇒
+  ~30% false-pass/codeword; Bonferroni 0.0071 < 51-control floor 0.0192.
+- **Parent decision (PREREG AMENDMENT, to be filed by F2 before any production endpoint):** PRIMARY confirmatory
+  ranks {1,4} per codeword, Holm over 2, ≥80 norm-matched controls (floor ≤0.0123); other ranks DESCRIPTIVE.
+  Add a no-role-swap fitted control family. Record per-job code provenance (source copied into output dir).
+- MEDIUM: uncommitted code in production (p2b_operator.py edited 23:41 during 1023012; phaseB_native_ara.py in
+  1023251) — committed now as a snapshot; scorer declares but never applies its option-mass floor; Phase B maximizes
+  y_install with no floor (F1 notified); per-module fits deployed jointly can compound.
+- **Verified OK:** codeword-row capture correct (Answer suffix stripped, rel −10 decode-checked, right-padding, KO
+  site = capture site per row); no VAL/TEST leakage (per-row split filter, domain-grouped CV); objective freeze never
+  reads y_install; domain-clustered bootstrap; p-floor 1/(n+1) correct. Heretic reset finding (S-062) confirmed in
+  source (`model.py:313` zeroes lora_B only).
+- **S-054 correction (held-out probe):** reviewer re-ran rank-1 with 400 within-domain shuffles: real ρ reproduced,
+  null SD 0.26, 95th pct ≈0.43, max 0.50/0.51 ⇒ p = 1/401 both codewords (the wide null arises because y_install
+  correlates with single top PCs, |ρ| up to 0.40 — not a leak). BUT **"equal decodability" is an overclaim**: no
+  paired test, CIs ±0.1, unequal y variance. Correct reading: **no evidence of a basket probe advantage held-out
+  (C1 unsupported); a basket-vs-button decodability difference is CANNOT ANSWER.** S-054's wording is superseded by this.
+- Tests: `pytest research/heretic_csi/tests` fails collection in poc_stage2 (heretic import) → importorskip; 23 other
+  tests pass; that file 5/5 in heretic_csi env.
+- Actions: fix list sent to F2 (items 1–9) and F1 (scorer floor, Phase-B floor, provenance). r4 VAL (P2a, frozen
+  analyzer — unaffected by these P2b bugs) continues.

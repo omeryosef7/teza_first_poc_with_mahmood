@@ -47,6 +47,7 @@ ap.add_argument("--n-shuffle", type=int, default=3)
 ap.add_argument("--extra-ranks", default="1,8")
 ap.add_argument("--seed", type=int, default=20261013)
 ap.add_argument("--kl-feasible", type=float, default=1.0)
+ap.add_argument("--cross-codeword", default="", help="MEASURED specificity read: other codeword's val_A/val_C under this edit")
 ap.add_argument("--xcheck-run-dirs", default="", help="comma list of frozen score_behavior BASE run dirs for this codeword")
 A = ap.parse_args()
 sys.argv = [sys.argv[0]]
@@ -182,9 +183,12 @@ def rows_of(name):
 LAST_RECS = {}
 
 
-def read(name):
-    recs = readout_rows(model, rows_of(name), "bomb", A.codeword)
-    LAST_RECS[name] = recs
+def read(name, cw=None):
+    cw = cw or A.codeword
+    rows = ([json.loads(l) for l in open(os.path.join(REPO, "configs/heretic_csi/phaseB", cw, f"{name}.jsonl"))]
+            if cw != A.codeword else rows_of(name))
+    recs = readout_rows(model, rows, "bomb", cw)
+    LAST_RECS[(cw, name)] = recs
     v, dm = domain_mean(recs)
     om = sorted(r["option_mass"] for r in recs)
     return {"y_domain_mean": v, "domain_means": dm, "n_rows": len(recs), "n_domains": len(dm),
@@ -210,6 +214,10 @@ def refusal():
 
 # -------- base reads (pure base model, before any LoRA) --------
 base = {n: read(n) for n in ("trainread_A", "trainread_C", "val_A", "val_C")}
+XC = A.cross_codeword
+if XC:  # MEASURED (not preregistered): does the edit raise P(bomb) on ANOTHER codeword's prompts too?
+    base_x = {n: read(n, XC) for n in ("val_A", "val_C")}
+    R["base_cross"] = {"codeword": XC, **base_x}
 base_kl_logits = F.log_softmax(model.get_logits_batched(kl_val_prompts).float(), -1).cpu()
 R["base"] = base
 R["readout_impl"] = READOUT_IMPL
@@ -219,7 +227,7 @@ for d in [x for x in A.xcheck_run_dirs.split(",") if x]:
         r = json.loads(l)
         if r.get("readout") == "semantic":
             ref[r["prompt_id"]] = r
-mine = {r["prompt_id"]: r for n in ("trainread_C", "val_C") for r in LAST_RECS[n]}
+mine = {r["prompt_id"]: r for n in ("trainread_C", "val_C") for r in LAST_RECS[(A.codeword, n)]}
 common = sorted(set(ref) & set(mine))
 if common:
     dyx = [abs(mine[k]["y_install"] - 1 / (1 + math.exp(-(ref[k]["logp_concept"] - ref[k]["logp_codeword"]))))
@@ -348,6 +356,10 @@ ara_read = {n: read(n) for n in ("trainread_A", "trainread_C", "val_A", "val_C")
 R["ara"] = {"reads": ara_read, "kl_val_C": kl_val(), "refusal": refusal(), "spectra": spec, "factors_path": fpath,
             "factors_sha256": hashlib.sha256(open(fpath, "rb").read()).hexdigest(),
             "dY": {n: dy(ara_read[n], base[n]) for n in ara_read}}
+if XC:
+    ax = {n: read(n, XC) for n in ("val_A", "val_C")}
+    R["ara"]["cross"] = {"codeword": XC, "reads": ax, "dY": {n: dy(ax[n], base_x[n]) for n in ax}}
+    log("cross-codeword dY", XC, R["ara"]["cross"]["dY"])
 dump()
 log("ARA reads dY", {n: round(v, 4) for n, v in R["ara"]["dY"].items()}, "KL", R["ara"]["kl_val_C"])
 

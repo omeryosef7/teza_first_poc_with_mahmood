@@ -21,14 +21,17 @@ if a.phaseA:
           f"Env: {R['env']}", f"Params (fixed): `{json.dumps(R['params'])}`, rank={R['argv']['rank']}", "",
           "| check | value | verdict |", "|---|---|---|",
           f"| load | {c['load']} | eager+bf16={v['load_eager_bf16']} |",
-          f"| identity after apply_lora (B=0) | max|dlogit|={f(c['identity_after_apply_lora']['max_abs_logit_diff'])} | {v['identity_exact']} |",
+          f"| base determinism (base vs base) | max|dlogit|={f(c['base_determinism']['max_abs_logit_diff_base_vs_base'])} | {v['base_deterministic']} |",
+          f"| identity: LoRA-wrapped (B=0) vs unwrapped base | max|dlogit|={f(c['identity_after_apply_lora']['max_abs_logit_diff'])}, max KL={f(c['identity_after_apply_lora']['max_KL_base_to_identity'])}, greedy16 identical={c['identity_after_apply_lora']['greedy16_identical_to_base']} | within bf16: {v['identity_within_bf16']} |",
           f"| modify changes model | max|dlogit|={f(c['modify_changes_logits']['max_abs_logit_diff'])}, mean KL={f(c['modify_changes_logits']['mean_KL_base_to_mod'])} (n={c['modify_changes_logits']['n']}) | {v['modify_nonzero']} |",
-          f"| reset -> base | max|dlogit|={f(c['reset']['max_abs_logit_diff_vs_base'])}, greedy16 identical={c['reset']['greedy16_identical']} (n={c['reset']['n_gen_prompts']}), max|dW| after reset={f(c['reset']['max_abs_dW_after_reset'])} | {v['reset_exact']} |",
-          f"| replay same params | max rel ||dW1-dW2||={f(c['replay']['max_rel_fro_dW_diff'])}, max|dlogit|={f(c['replay']['max_abs_logit_diff_vs_mod1'])} | {v['replay_dW_rel_lt_1e-3']} |",
-          f"| Optuna resume | {c['optuna_resume']['n_trials_first_session']} -> loaded {c['optuna_resume']['n_trials_loaded_on_resume']} -> {c['optuna_resume']['n_trials_after_resume']}; trial0 value {f(c['optuna_resume']['trial0_value'])} vs replay {f(c['optuna_resume']['trial0_replay_value'])} | {v['optuna_resumed']} |"]
+          f"| reset -> identity state | max|dlogit| vs identity={f(c['reset']['max_abs_logit_diff_vs_identity'])}, vs base={f(c['reset']['max_abs_logit_diff_vs_base'])}, greedy16 identical={c['reset']['greedy16_identical']}, max|dW|={f(c['reset']['max_abs_dW_after_reset'])} | {v['reset_exact_to_identity']} |",
+          f"| reset leaves lora_A changed (shipped Heretic) | max|A - A_init|={f(c['reset']['max_abs_dA_vs_init_after_reset'])} | FINDING: {v['reset_keeps_lora_A']} |",
+          f"| replay, shipped reset (history-dependent) | rel||dW1-dW2||={f(c['replay_shipped_history_dependent']['max_rel_fro_dW_diff'])}, max|dlogit|={f(c['replay_shipped_history_dependent']['max_abs_logit_diff_vs_mod1'])} | FINDING: not replayable |",
+          f"| replay, lora_A restored | rel||dW1-dW3||={f(c['replay']['max_rel_fro_dW_diff'])}, max|dlogit|={f(c['replay']['max_abs_logit_diff_vs_mod1'])} | {v['replay_A_restored_rel_lt_1e-3']} |",
+          f"| Optuna resume | {c['optuna_resume']['n_trials_first_session']} -> loaded {c['optuna_resume']['n_trials_loaded_on_resume']} -> {c['optuna_resume']['n_trials_after_resume']}; values {[f(x) for x in c['optuna_resume']['trial_values']]}; trial0 replay |diff|={f(c['optuna_resume']['trial0_abs_diff'])} | {v['optuna_resumed']} |"]
     if "readout_xcheck_vs_score_behavior" in c:
         x = c["readout_xcheck_vs_score_behavior"]
-        L += [f"| y_install readout vs frozen score_behavior | n={x['n']}, max|dy|={f(x['max_abs_dy_install'])}, max|dlogp_c|={f(x['max_abs_dlogp_concept'])} | {v['readout_xcheck_max_dy_lt_0.02']} |"]
+        L += [f"| y_install readout vs frozen score_behavior | n={x['n']}, max|dy|={f(x['max_abs_dy_install'])}, mean|dy|={f(x['mean_abs_dy_install'])}, max|dlogp_c|={f(x['max_abs_dlogp_concept'])} | mean|dy|<=0.015: {v['readout_xcheck_mean_dy_le_0.015']} |"]
     L += ["", "## Learned dW per module (ARA, preserve_row_magnitudes=True)", "",
           "| layer | comp | ||dW||_F | ||dW||/||W|| | num. rank (cfg) | eff. rank | top-3 s | rel gap deployed vs objective-form | ARA loss base / deployed / objective-form |",
           "|---|---|---|---|---|---|---|---|---|"]
