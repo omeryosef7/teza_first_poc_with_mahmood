@@ -1444,3 +1444,15 @@ Verifier F3 (`research/heretic_csi/verify/verify_r4_val.py`, analyzer logic not 
   comparison on new domains with no new random degree of freedom. A fresh-draw run may follow as a separately
   labelled descriptive sensitivity.
 - Cost ≈ 42 GPU-h for 4 jobs (~227 s/230-row arm). Submit order when slots free: r1 both codewords, then r4.
+
+## S-076 — 2026-10-14 02:10 — ops tick; P3/P4 CPU workstream (F5) launched
+- Running: 1023012 (P2b final fits — basket r1, r2 factors written; then basket r1 TRAIN eval), 1023508/1023509 (r4,
+  waiting on factors), 1023386 (Phase-B replay); 1023264 pending. Completed: 1023251 (Phase-B button, 1h48m),
+  1023398 (smoke3). No failures/duplicates. VALIDATION P2b plans gated on fit_summary (not yet present).
+- First production fit (fitting-side, in-sample, not an endpoint): basket r1 gap-closure 0.594, preserve damage
+  0.0006, total ‖ΔW‖ 44.9 (vs 172 in smoke — wider preserve set constrains it); ~12 min per rank.
+- **F5 launched (CPU only, additive code):** P3 = SVD/effective-rank/norm-location of every fitted ΔW + descriptive
+  alignment (with matched random-subspace nulls) to basket/button r1 axes, PLS r4 subspaces, d_surface, refusal dir,
+  probe weights; GPU truncation/removal plans gated on a validated operator. P4 = verify Llama o_proj head-column
+  layout from source; recover the inherited head circuit; fit head-restricted o_proj operators (target heads vs ≥20
+  matched random head sets vs full o_proj vs MLP-only vs attn+MLP, ranks {1,4}); draft PREREG_P4 before any endpoint.
