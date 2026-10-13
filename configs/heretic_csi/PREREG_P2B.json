@@ -1,0 +1,20 @@
+{
+ "schema": "hcsi_p2b_prereg/1",
+ "written": "2026-10-13T23:05+03:00, BEFORE any P2b production endpoint (y_install) was computed; only the 12-row smoke (job 1022701, prefix hcsi_p2b_smoke1_*) had been read, and it is plumbing-only, never quoted",
+ "question": "Does a position-aware weight-space operator dW=B@A (o_proj+down_proj, layers 6-18), fit so the KO codeword-row module outputs match clean, rescue semantic installation under the codeword-row attention knockout, and what rank is required, basket vs button?",
+ "population_fit": "TRAIN full (exclude_<cw>_bomb_sow_train.txt): 670 rows = 67 domains x 10, cell C, semantic_one_word, natural_doublespeak, n_examples 4",
+ "population_eval_train": "TRAIN K4 subset (runargs/heretic_csi/exclude_<cw>_K4.txt): 268 rows = 67 domains x 4 (in-sample w.r.t. the fit; DECLARED)",
+ "population_eval_heldout": "VALIDATION (exclude_<cw>_bomb_sow_validation.txt): 230 rows = 23 domains, frozen operators only, after TRAIN read. TEST never.",
+ "ranks_fit": [1,2,4,8,16,32,50],
+ "ranks_eval_pass1": [1,4,16,50],
+ "ranks_eval_pass2": [2,8,32],
+ "objective_selection": "TRAIN-only, fitting-side: 5-fold domain-grouped CV, held-out net = gap_closure - preserve_damage on captured module I/O; objectives {knn,mse,cos,whiten} x steer_weight {0.3,1,3}; pooled mean over basket+button CV; y_install NEVER read",
+ "endpoint": "y_install = sigmoid(logp_concept - logp_codeword), domain means over (domain,slot) keys common to all arms, option-mass key set from BASE at 0.05",
+ "primary_statistic": "recovery = mean_d(KO_CAND_r - KO) / mean_d(KO_FULL - KO); rank test of mean_d(KO_CAND_r - KO) vs 46 KO_RAND_r (random orthonormal rank-r, per-module Frobenius norm matched to CAND) + 5 KO_SHUF_r (role-swap + domain-deranged pairing fits, rescaled to CAND per-module norm): 51 controls, floor 1/52 = 0.0192",
+ "pass_rule": "rank p < 0.05 AND recovery CI lower bound > 0, gates: KO<BASE, KO_FULL>KO, KO_IDENT==KO on every key, hooks fired, control norms/rank matched",
+ "secondary": ["preservation: BASE_CAND_r - BASE (y_install and option mass) on clean prompts", "position control KO_NEUT_r: fit at the last prompt row (rel_end -1), its OWN fitted norm, reported with its achieved norm next to CAND's; not a rank-family member", "SRC2SRC/TGT2TGT fits must give dW=0"],
+ "neutral_not_norm_matched_reason": "the last row's clean-vs-KO gap is small, so the fitted dW is small (smoke: |dW|_F 2.6 vs CAND 172); rescaling it x56 collapsed the readout (option mass 8e-5, smoke 1022701) -- a norm-inflated fit is a different, pathological intervention, not a position control. Norm-matching is enforced for the rank family (RAND, SHUF).",
+ "min_sufficient_rank": "smallest r whose CAND PASSES",
+ "outcomes": {"A": "basket min rank < button min rank (both pass somewhere)", "B": "both pass at r<=2", "C": "both pass only at r>2", "D": "basket passes at some r, button at none", "E": "neither passes at any r (or gates fail)"},
+ "caveats_declared": ["TRAIN eval rows are in-sample for CAND and SHUF fits, out-of-fit for RAND; held-out read on VALIDATION decides", "operator is applied at ALL positions (a weight edit), unlike the position-specific P2a rescue"]
+}

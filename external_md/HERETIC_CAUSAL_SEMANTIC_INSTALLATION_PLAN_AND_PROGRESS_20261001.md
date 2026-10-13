@@ -1176,3 +1176,17 @@ sweep + rank-matched controls at every rank, cross-hardware validation, and the 
   ranks {1,4,16,50} + liveness (~17 h). Parent asked F2 to (i) fill in {2,8,32} for both codewords and record the
   rank set before any endpoint, (ii) justify/report norm of the neutral-position control vs candidate ΔW (§10),
   (iii) confirm objective freeze uses no y_install.
+
+## S-060 — 2026-10-13 — P2b PREREG frozen before any production y_install (F2)
+- `outputs/heretic_csi/p2b/prod/PREREG_P2B.json` (sha256 4d0a6b5f…), committed now with 0 production score dirs on
+  disk. Ranks fit {1,2,4,8,16,32,50} both codewords; eval pass 1 {1,4,16,50}, pass 2 {2,8,32}.
+- Controls per (cw, rank): 46 RAND random-orthonormal rank-r, per-module Frobenius norm = CAND, same modules/layers/
+  rank/#params + 5 SHUF (role-swap + domain-deranged pairing fits, rescaled to CAND norm) ⇒ 51 controls, floor 0.0192;
+  analyzer VOIDs a cell on any norm/rank mismatch. NEUT (fit at last prompt row) kept at its own norm — its clean-vs-KO
+  gap is tiny (smoke ‖ΔW‖ 2.6 vs CAND 172), and ×56 inflation collapsed option mass to 8e-5 (pathological); NEUT is
+  therefore a *position* control reported with its achieved norm, NOT part of the rank-matched null family.
+- Objective freeze: TRAIN-only, 5-fold domain-grouped CV on captured module I/O; score = held-out gap_closure −
+  preserve_damage; {knn,mse,cos,whiten} × steer {0.3,1,3}, averaged over basket+button; y_install never read.
+- **Correction (same entry):** the PREREG_P2B sha256 above ("4d0a6b5f…", as first reported by F2) is wrong; the
+  actual hash (parent-recomputed, F2 confirmed) is **e273df1d…ced378**. Because `outputs/` is a symlink outside git,
+  the frozen file is committed as a byte copy at `configs/heretic_csi/PREREG_P2B.json` (same sha256).
