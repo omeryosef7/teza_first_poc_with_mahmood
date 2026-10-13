@@ -1064,3 +1064,28 @@ sweep + rank-matched controls at every rank, cross-hardware validation, and the 
   F3 = independent re-computation of S-049 + r4/r8 (own code, mutation tests);
   F4 = P5/P6 codeword provenance/contamination table, frequency, power design, held-out probe quality (CPU).
   GPU budget: parent 2 + F1 ≤2 + F2 ≤2 ≤ 6.
+
+## S-052 — 2026-10-13 — INDEPENDENT VERIFICATION (F3) of S-049 + S-050 K4: all verdicts reproduce; two caveats
+- From-scratch code (`research/heretic_csi/verify/verify_s049.py`, did not reuse the analyzer), report
+  `reports/heretic_csi/VERIFY_S049_independent.{md,json}`.
+- **Reproduced (BASE-referenced option-mass floor = analyzer rule):** basket r1 VAL 1/57 p=0.0175 recovery 0.036;
+  basket r16 10/57 (TRAIN 0.167 / VAL 0.152); button r16 10/57 (0.118 / 0.118); button r1 FAILS (TRAIN 25/57, VAL
+  18/57; recorded 23 / 14). K4 r4/r8 match the analyzer exactly (basket 3,4; button **1**,3).
+  Rank-1 ±1–4 rank shifts trace to norm-match-degenerate row drops (mechanical); no verdict changes.
+- **Integrity PASS:** no TEST domain anywhere; split membership correct; every control is truly rank-r (matrix_rank)
+  and norm-matched (rel err ≤6e-16); 57 distinct keys; KO−BASE −0.21…−0.30, KO_FULL+ 0.11…0.14, |KO_SELF−KO| ≤0.0008;
+  mutation tests null (candidate↔control swap median p 0.32–0.54; within-domain arm shuffle 0.27–0.66).
+  Preemption quarantine rule (S-051) verified against logs for all 12 jobs.
+- **CAVEAT 1 — basket r1 is option-mass-floor-SENSITIVE (correction to how S-049 may be quoted).** With a stricter
+  *paired* floor (drop a prompt if BASE, KO or KO_FULL < 0.05; drops 42% of basket TRAIN rows): TRAIN 5/57 p=0.088
+  (fail), VAL 2/57 p=0.035 (still p<0.05 but not strictly largest). The BASE-only floor is the frozen, pre-treatment
+  rule and stays primary (paired floor conditions on post-treatment arms), but **"basket r1 strictly largest" must
+  not be presented as robust** — added to WHAT WE MUST NOT SAY.
+- **CAVEAT 2 — button r4 K4-TRAIN 1/57 holds under every floor variant** (recovery 0.090 [0.068,0.114]); still
+  TRAIN/K4 only and cannot survive Bonferroni over 4 ranks (floor 0.0175 > 0.0125). S-049's "outcome D" is
+  PROVISIONAL pending the preregistered button-r4 VALIDATION test (S-051; jobs 1022698/99).
+- Hygiene: r1/r16 analyzer jsons exist only un-split (pre-fix); F3's JSON regenerates both splits.
+
+### WHAT WE MUST NOT SAY (addendum S-052)
+- "basket r1 is robustly the strictly-largest of its controls" — it is floor-sensitive (paired-floor VAL 2/57).
+- "button has no specific carrier at any rank" — r4 TRAIN passes; tested held-out ranks are {1,16} only until S-051 reads.

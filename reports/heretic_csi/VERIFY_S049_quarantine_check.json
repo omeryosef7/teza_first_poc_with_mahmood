@@ -1,0 +1,134 @@
+{
+ "966084": {
+  "n_logged": 61,
+  "n_live_same_jobid": 61,
+  "n_quarantined": 0,
+  "live_eq_logged": true,
+  "quarantined_intersect_logged": 0,
+  "live_not_logged": [],
+  "logged_missing": [],
+  "dup_arms_live": [],
+  "quar_all_DONE": 0
+ },
+ "965928": {
+  "n_logged": 61,
+  "n_live_same_jobid": 61,
+  "n_quarantined": 0,
+  "live_eq_logged": true,
+  "quarantined_intersect_logged": 0,
+  "live_not_logged": [],
+  "logged_missing": [],
+  "dup_arms_live": [],
+  "quar_all_DONE": 0
+ },
+ "966157": {
+  "n_logged": 61,
+  "n_live_same_jobid": 61,
+  "n_quarantined": 0,
+  "live_eq_logged": true,
+  "quarantined_intersect_logged": 0,
+  "live_not_logged": [],
+  "logged_missing": [],
+  "dup_arms_live": [],
+  "quar_all_DONE": 0
+ },
+ "966158": {
+  "n_logged": 61,
+  "n_live_same_jobid": 61,
+  "n_quarantined": 0,
+  "live_eq_logged": true,
+  "quarantined_intersect_logged": 0,
+  "live_not_logged": [],
+  "logged_missing": [],
+  "dup_arms_live": [],
+  "quar_all_DONE": 0
+ },
+ "968532": {
+  "n_logged": 61,
+  "n_live_same_jobid": 61,
+  "n_quarantined": 0,
+  "live_eq_logged": true,
+  "quarantined_intersect_logged": 0,
+  "live_not_logged": [],
+  "logged_missing": [],
+  "dup_arms_live": [],
+  "quar_all_DONE": 0
+ },
+ "968533": {
+  "n_logged": 61,
+  "n_live_same_jobid": 61,
+  "n_quarantined": 0,
+  "live_eq_logged": true,
+  "quarantined_intersect_logged": 0,
+  "live_not_logged": [],
+  "logged_missing": [],
+  "dup_arms_live": [],
+  "quar_all_DONE": 0
+ },
+ "968534": {
+  "n_logged": 61,
+  "n_live_same_jobid": 61,
+  "n_quarantined": 0,
+  "live_eq_logged": true,
+  "quarantined_intersect_logged": 0,
+  "live_not_logged": [],
+  "logged_missing": [],
+  "dup_arms_live": [],
+  "quar_all_DONE": 0
+ },
+ "968535": {
+  "n_logged": 61,
+  "n_live_same_jobid": 61,
+  "n_quarantined": 0,
+  "live_eq_logged": true,
+  "quarantined_intersect_logged": 0,
+  "live_not_logged": [],
+  "logged_missing": [],
+  "dup_arms_live": [],
+  "quar_all_DONE": 0
+ },
+ "969085": {
+  "n_logged": 61,
+  "n_live_same_jobid": 61,
+  "n_quarantined": 14,
+  "live_eq_logged": true,
+  "quarantined_intersect_logged": 0,
+  "live_not_logged": [],
+  "logged_missing": [],
+  "dup_arms_live": [],
+  "quar_all_DONE": 13
+ },
+ "969086": {
+  "n_logged": 61,
+  "n_live_same_jobid": 61,
+  "n_quarantined": 0,
+  "live_eq_logged": true,
+  "quarantined_intersect_logged": 0,
+  "live_not_logged": [],
+  "logged_missing": [],
+  "dup_arms_live": [],
+  "quar_all_DONE": 0
+ },
+ "969087": {
+  "n_logged": 61,
+  "n_live_same_jobid": 61,
+  "n_quarantined": 0,
+  "live_eq_logged": true,
+  "quarantined_intersect_logged": 0,
+  "live_not_logged": [],
+  "logged_missing": [],
+  "dup_arms_live": [],
+  "quar_all_DONE": 0
+ },
+ "969088": {
+  "n_logged": 61,
+  "n_live_same_jobid": 61,
+  "n_quarantined": 35,
+  "live_eq_logged": true,
+  "quarantined_intersect_logged": 0,
+  "live_not_logged": [],
+  "logged_missing": [],
+  "dup_arms_live": [],
+  "quar_all_DONE": 34
+ }
+}
