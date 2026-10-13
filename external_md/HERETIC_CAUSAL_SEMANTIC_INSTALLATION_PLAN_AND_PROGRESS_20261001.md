@@ -1411,3 +1411,24 @@ Verifier F3 (`research/heretic_csi/verify/verify_r4_val.py`, analyzer logic not 
 - Anything about the ARA *weight* operator (P2b not yet read), behavior/ASR, or a population law (2 codewords).
 - "Large effect" — recovery 9% of whole-state rescue; the claim is specificity, and p is at the 56-control floor.
 - "Button has no specific carrier" (S-049 wording) — superseded.
+
+## S-074 — 2026-10-14 02:30 — P2b BUILT + smoke-validated (F2 hand-off); primary eval jobs running; no endpoint read
+- Code (research/heretic_csi): `p2b_operator.py` (joint factored ΔW=B@A on o_proj+down_proj, layers 6–18 = 26 modules;
+  objectives knn/mse/cos/whiten; weight-edit hooks all-rows or single-row; capture hooks; rank+norm-matched controls),
+  `p2b_runner.py` (arm_runner design: one model load, hook-leak check per arm, per-arm operator spec, code sha256 per
+  arm), `p2b_fit.py` (exact-context clean/KO pairing, loud per-row anchor==KO-row and TRAIN-domain checks,
+  domain-grouped CV, rank sweep, controls), `p2b_freeze.py`, `p2b_emit.py`, `p2b_analyze.py`,
+  `p2b_deployed_residual.py`, `slurm/p2b_job.slurm` (no-requeue, mirror stage, code snapshot). score_behavior.py
+  UNCHANGED. Tests 30 passed / 1 skipped.
+- Verified: 268/268 K4 prompts codeword at rel −10; production capture 670 prompts × 2 codewords, 67 TRAIN domains,
+  every anchor matched the KO-recorded row; smokes (1022701, 1023389, 1023398): KO 0.399 < BASE 0.732, FULL recovers,
+  KO_IDENT == KO exactly, CWONLY/ATLAST hit ' basket' / '\n\n', CAPOP replays CAND exactly, 1 load, 0 hook leaks.
+- **Objective FROZEN (TRAIN-only CV, no endpoint):** paired **MSE, steer 0.3**; pooled held-out net gap-closure 0.650
+  (basket 0.621); kNN 0.38; cosine overshoots.
+- Populations (PREREG_P2B, declared): fit = TRAIN full 670 rows; **TRAIN eval = K4 subset 268 rows — IN-SAMPLE w.r.t.
+  the fit**; held-out = VALIDATION 230 rows with frozen operators, after the TRAIN read; TEST never.
+  **Parent note:** because the candidate is fit on the TRAIN rows it is scored on while the RAND controls are not fit,
+  a TRAIN rank-test PASS is structurally favoured and is weak evidence; only the VALIDATION read is confirmatory.
+  (DER/SHUF fitted controls partly level this.) The VALIDATION plan must be written + committed before the TRAIN read.
+- Jobs: 1023012 (n-503; final fits → basket r1 + liveness, ~12 h), 1023264 (button r1, begins 03:20), 1023508 /
+  1023509 (basket / button r4, n-501). Descriptive plans evalC {16,50}, evalB {2,8,32} not yet submitted.
