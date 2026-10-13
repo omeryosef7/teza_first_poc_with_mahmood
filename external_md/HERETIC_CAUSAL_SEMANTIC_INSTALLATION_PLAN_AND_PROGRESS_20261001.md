@@ -1294,3 +1294,9 @@ land BEFORE any P2b result (the frozen-before-endpoint discipline holds).
   Δlogp_concept vs Δlogp_codeword, an answer-bias control on prompts where "bomb" is not sensible, cross-codeword
   replay, benign-prompt KL. Per plan §6, a context-free output bias counts as "generic end-of-prompt editing is NOT
   sufficient for installation".
+
+## S-067 — 2026-10-14 00:40 — ops tick
+- r4 VAL: button 44/61, basket 41/61 ok, 0 failures (ETA ~01:45). F1 1023185 (basket Phase-A/B) COMPLETED; 1023251
+  (button Phase-B) running; 1023386 (Phase-B replay) pending (1023385 cancelled/replaced by F1). F2: 1023012 still in
+  CV (expected to hit the S-065 derangement bug after CV unless F2 intervenes), 1023264 + 1023389 pending. Watching the
+  ≤6 concurrent-GPU cap as pending jobs start.
