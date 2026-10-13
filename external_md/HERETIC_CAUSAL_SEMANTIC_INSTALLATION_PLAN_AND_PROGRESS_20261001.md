@@ -1190,3 +1190,10 @@ sweep + rank-matched controls at every rank, cross-hardware validation, and the 
 - **Correction (same entry):** the PREREG_P2B sha256 above ("4d0a6b5f…", as first reported by F2) is wrong; the
   actual hash (parent-recomputed, F2 confirmed) is **e273df1d…ced378**. Because `outputs/` is a symlink outside git,
   the frozen file is committed as a byte copy at `configs/heretic_csi/PREREG_P2B.json` (same sha256).
+
+## S-061 — 2026-10-13 23:10 — ops tick
+- 1022698 (button r4 VAL) 18/61 arms ok, 1022699 (basket r4 VAL) 14/61, 0 failures. 1023012 (P2b production) capturing
+  TRAIN I/O (500/670 rows).
+- F1: 1022919 (Phase-A/B) COMPLETED in 27 min (results pending F1's report); 1023043 FAILED at t=0 — node-local
+  `/tmp` full on the assigned node ("mkdir /tmp/omeryosef: No space left on device"; node-side, not our data). F1 owns
+  resubmission (exclude that node). Not a scientific result.
