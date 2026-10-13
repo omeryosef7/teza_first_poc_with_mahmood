@@ -1135,3 +1135,11 @@ sweep + rank-matched controls at every rank, cross-hardware validation, and the 
   CONFIRM n=16 → 0.60/0.74/0.87 at ρ=0.6/0.7/0.8; MDE(80%) ρ≈0.75; if attrition leaves <12 → pre-label UNDERPOWERED.
 - **Decision:** P6 Stage-0 GPU work is QUEUED behind P2b/P3/P4 per the priority order and the stage-in stagger rule;
   the design is adopted as the working plan and frozen in that file (any change gets a new S-entry).
+
+## S-055 — 2026-10-13 21:10 — ops tick: staging slow but progressing; Phase-A deferred
+- Running: 1022698 / 1022699 (r4 VAL; staged 6.9 / 5.5 GB of ~16 GB after 50 min), 1022701 (P2b; 5.5 GB). Throughput
+  ≈1.7 MB/s per job from the cross-user NFS snapshot ⇒ stage-in ETA ~22:45–23:00, then ~3 h of arms (r4 VAL read
+  expected ~02:00). Bytes increasing ⇒ not stalled. 1022704 (Phase-A) cancelled by F1 per S-053 stagger rule.
+- Ops note: an `srun --overlap` progress probe hit its 60 s timeout and its own step (1022701.0) was cancelled; the
+  batch step is unaffected (verified RUNNING). Future probes: `timeout` > srun runtime or `sattach`-free `du` only.
+- No failures, no duplicates. Next: STAGE_IN done → check per-arm cadence.
