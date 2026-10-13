@@ -34,6 +34,10 @@ BATCH="${6:-1}"       # --readout-max-batch; 1 matches the validated smoke, rais
 LIMITARG=""; [ "$LIMIT" != "0" ] && LIMITARG="--limit $LIMIT"
 PT=configs/heretic_csi/hcsi_ranksweep_${CW}.pt
 SNAP=/home/sharifm/students/matanbentov/hub/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659
+# S-058: prefer the VERIFIED byte-identical copy on /specific/scratches (different server than the contended netapp;
+# shard sha256 == HF LFS blob names). Falls back to the netapp snapshot if the VERIFIED marker is absent.
+SCR=/specific/scratches/scratch/omeryosef/models/llama31_0e9e39f2
+[ -f "$SCR/VERIFIED" ] && SNAP="$SCR" && echo "STAGE_SOURCE scratch-verified $SCR" || echo "STAGE_SOURCE netapp $SNAP"
 BANK="data/boombness_prompts/boombness_prompt_bank_ts116m_${CW}_bomb.jsonl"
 EXCL="${7:-runargs/dcs_cont/exclude_${CW}_bomb_sow_train.txt}"  # arg7: override to a K-per-domain exclusion for faster subset runs
 LAYER=18

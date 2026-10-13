@@ -1152,3 +1152,17 @@ sweep + rank-matched controls at every rank, cross-hardware validation, and the 
 - 1022698: STAGE_IN done; first arm running; KO pre-flight 230/230 rows ok (23 val domains), readout ids
   concept=[13054] codeword=[3215] (button) — correct population + ids. 1022699 (basket r4 VAL) and 1022701 (P2b) still
   staging. No failures/duplicates.
+
+## S-058 — 2026-10-13 22:40 — ops tick: model mirror on /specific/scratches; P2b smoke PASSES plumbing
+- **Stage-in bottleneck fix (F2):** byte-identical Llama snapshot mirrored to
+  `/specific/scratches/scratch/omeryosef/models/llama31_0e9e39f2` (separate server from the contended netapp; copied
+  from 1022701's node-local stage, so netapp wasn't re-read; VERIFIED marker + SHA256SUMS). Parent check: all 10 file
+  sizes equal the snapshot's; shard blob names = sha256; independent re-hash in progress (shard 1 ✓ `2b1879f3…`).
+  `rescue_sweep.slurm` now prefers the mirror when VERIFIED exists (STAGE_SOURCE logged), falls back to netapp;
+  `p2b_job.slurm` likewise. Running jobs unaffected (SLURM copies the script at submit).
+- **P2b smoke 1022701 (F2) DONE** (DONE_MARKER rc=0, 10/10 arms, 1 model load, 0 hook leaks, 2h03m mostly stage-in):
+  codeword anchors verified (basket id 14351), KO_IDENT == KO exactly, KO_FULL live. Two design fixes made by F2
+  before production: preserve set widened to 6 extra clean rows/prompt; neutral last-row control NOT norm-matched.
+  (To be audited in the next adversarial review: is "not norm-matched" a rank/norm-mismatched control? — mandate §10.)
+- Progress: 1022698 (button r4 VAL) 10/61 arms ok; 1022699 (basket r4 VAL) first arm 100/230 rows; 1022919 (F1
+  Phase-A/B) running on n-805. No failures/duplicates. button r4 VAL read ETA ~02:00.
