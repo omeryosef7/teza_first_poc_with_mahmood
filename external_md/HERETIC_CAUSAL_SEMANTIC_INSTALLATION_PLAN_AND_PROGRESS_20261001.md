@@ -1089,3 +1089,16 @@ sweep + rank-matched controls at every rank, cross-hardware validation, and the 
 ### WHAT WE MUST NOT SAY (addendum S-052)
 - "basket r1 is robustly the strictly-largest of its controls" — it is floor-sensitive (paired-floor VAL 2/57).
 - "button has no specific carrier at any rank" — r4 TRAIN passes; tested held-out ranks are {1,16} only until S-051 reads.
+
+## S-053 — 2026-10-13 20:40 — ops tick: NFS stage-in contention (4 concurrent stagers)
+- Running: 1022698/1022699 (prereg r4 VALIDATION, a5000), 1022701 (F2 P2b weight-operator, a5000), 1022704 (F1 Phase-A
+  Heretic audit, L40S), 1022696 (F4 CPU probe job). No failures, no duplicates.
+- **Problem:** all 4 GPU jobs began staging the same 16 GB snapshot from the cross-user NFS path within ~11 min;
+  `srun --overlap du` shows ~2 GB staged per job after 20 min (≈7 MB/s aggregate) — the cold-NFS-load bottleneck the
+  mandate warns about. NOT a hang (bytes increasing).
+- **Action:** asked F1 to cancel/resubmit Phase-A after the others finish staging; F2 told not to submit more GPU jobs
+  until current stage-ins finish. **Standing rule S-053:** never start a stage-in while another of our jobs is
+  mid-stage-in (stagger), and batch arms per allocation.
+- `sacct -u` also lists 3 ancient "RUNNING" records (740944/741053/741054, 64 days, other project) absent from
+  `squeue` — stale accounting rows, not ours to act on in this sprint; ignored.
+- Next: read STAGE_IN done; then verify arm cadence; prereg r4 VAL read when DONE_MARKER appears.
