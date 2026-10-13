@@ -88,3 +88,12 @@ def test_domain_mean_unit_is_domain():
     recs = [{"domain": "a", "y_install": 1.0}] * 9 + [{"domain": "b", "y_install": 0.0}]
     v, dm = sis.domain_mean(recs)
     assert v == 0.5 and dm == {"a": 1.0, "b": 0.0}
+
+
+def test_floor_summary_uses_reference_keys_and_flags_collapse():
+    recs = [{"prompt_id": f"p{i}", "domain": "a" if i < 5 else "b", "y_install": 0.9, "option_mass": om}
+            for i, om in enumerate([0.5, 0.5, 0.01, 0.01, 0.01, 0.5, 0.01, 0.01, 0.01, 0.01])]
+    fl = sis.floor_summary(recs, 0.05, ref_keys={"p0", "p1", "p5"})
+    assert fl["collapsed"] and abs(fl["frac_below_floor"] - 0.7) < 1e-9
+    assert fl["n_rows_floor"] == 3 and fl["n_domains_floor"] == 2 and abs(fl["y_floor"] - 0.9) < 1e-12
+    assert not sis.floor_summary(recs[:2], 0.05)["collapsed"]

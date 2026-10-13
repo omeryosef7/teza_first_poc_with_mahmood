@@ -20,6 +20,12 @@ Score contract (fixed for every experiment; never changes meaning):
   unit      : DOMAIN — value = mean over domains of the domain-mean y_install.
   baseline  : the unmodified model on the same rows (`get_baseline_score`).
   denominator: n_domains (and n_rows) reported in `last_detail`.
+OPTION-MASS FLOOR (readout validity; CSI AM-53/54 rule — the key set comes from ONE reference arm, the BASE
+model, never per arm): `value` stays the frozen all-rows protocol; `last_detail` additionally reports
+  y_floor        : the same statistic restricted to rows whose BASE option_mass >= floor (keys fixed at baseline),
+  frac_below_floor / median_option_mass of the CURRENT arm (collapse detector: an edit that wins y_install by
+  destroying the answer distribution shows up here), and n_rows / n_domains for both denominators.
+`collapsed` = median option mass of the current arm < floor.
 """
 from __future__ import annotations
 
@@ -81,6 +87,17 @@ def readout_rows(model, rows, concept: str, codeword: str):
     return out
 
 
+def floor_summary(recs, floor, ref_keys=None):
+    """Option-mass validity summary. ref_keys: prompt_ids admitted by the BASE arm (None -> all rows)."""
+    om = sorted(r["option_mass"] for r in recs)
+    kept = [r for r in recs if ref_keys is None or r["prompt_id"] in ref_keys]
+    out = {"median_option_mass": om[len(om) // 2], "frac_below_floor": sum(o < floor for o in om) / len(om),
+           "collapsed": om[len(om) // 2] < floor, "floor": floor,
+           "n_rows_floor": len(kept), "n_domains_floor": len({r["domain"] for r in kept})}
+    out["y_floor"] = domain_mean(kept)[0] if kept else None
+    return out
+
+
 def domain_mean(recs, key="y_install"):
     by = defaultdict(list)
     for r in recs:
@@ -105,14 +122,25 @@ class SemanticInstallationScore(Scorer):
         self.prompts_sha256 = hashlib.sha256(raw).hexdigest()
         self.rows = [json.loads(l) for l in raw.decode().splitlines() if l.strip()]
         self.last_detail = None
+        self.ref_keys = None  # set by get_baseline_score (BASE arm)
 
     def _score(self, ctx: Context) -> Score:
         recs = readout_rows(ctx.get_model(), self.rows, self.settings.concept, self.settings.codeword)
         v, dm = domain_mean(recs)
-        om = sorted(r["option_mass"] for r in recs)
+        fl = floor_summary(recs, self.settings.option_mass_floor, self.ref_keys)
         self.last_detail = {"rows": recs, "n_rows": len(recs), "n_domains": len(dm), "value": v,
-                            "median_option_mass": om[len(om) // 2], "prompts_sha256": self.prompts_sha256}
-        return Score(value=v, rich_display=f"[bold]{v:.4f}[/] (n_dom={len(dm)})", md_display=f"{v:.4f}")
+                            "prompts_sha256": self.prompts_sha256, **fl}
+        flag = " [red]COLLAPSED[/]" if fl["collapsed"] else ""
+        return Score(value=v, rich_display=f"[bold]{v:.4f}[/] (n_dom={len(dm)}, med_om={fl['median_option_mass']:.3g}){flag}",
+                     md_display=f"{v:.4f}")
+
+    def get_baseline_score(self, ctx: Context) -> Score:
+        sc = self._score(ctx)
+        self.ref_keys = {r["prompt_id"] for r in self.last_detail["rows"]
+                         if r["option_mass"] >= self.settings.option_mass_floor}
+        self.last_detail.update(floor_summary(self.last_detail["rows"], self.settings.option_mass_floor, self.ref_keys))
+        self.baseline_detail = {k: v for k, v in self.last_detail.items() if k != "rows"}
+        return sc
 
     def get_score(self, ctx: Context) -> Score:
         return self._score(ctx)

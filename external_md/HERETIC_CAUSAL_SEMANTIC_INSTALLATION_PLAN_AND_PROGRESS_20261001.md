@@ -1278,3 +1278,19 @@ land BEFORE any P2b result (the frozen-before-endpoint discipline holds).
   tests pass; that file 5/5 in heretic_csi env.
 - Actions: fix list sent to F2 (items 1–9) and F1 (scorer floor, Phase-B floor, provenance). r4 VAL (P2a, frozen
   analyzer — unaffected by these P2b bugs) continues.
+
+## S-066 — 2026-10-14 00:45 — F1 review fixes landed; PHASE B (native last-position ARA) interim — MEASURED
+- F1 fixes: scorer applies the CSI option-mass floor (AM-53/54: key set fixed from BASE; reports y_floor,
+  denominators, per-arm median option mass + `collapsed` flag), test 6/6. Phase-B freeze rule v2: KL ≤1.0 AND not
+  collapsed; option mass logged per trial/read. Provenance: per-job src_snapshot + sha256s; the two running jobs
+  (1023185 basket, 1023251 button) ran v1 — deltas in `reports/heretic_csi/phaseB/PROVENANCE_v1_jobs.md` (readout
+  identical v1/v2). Both TRAIN-tuned; validation read once after freeze.
+- **Phase-B interim, basket (1023185; TRAIN-chosen trial 5: layers 6–30, rank 50, KL_val_C 0.85):** frozen edit
+  ΔY on VAL not-installed cell A **+0.925** (y 0.000→0.925, 23 domains); on VAL installed cell C **−0.124**; TRAIN reads
+  A +0.914 / C −0.238. Spectrum-matched random controls (≥30/39 so far) ΔY ≈ 0.000.
+- **Reading (MEASURED, not a verdict):** native ARA edits module outputs at the LAST prefill (= answer) position, so a
+  large rise on cell A with a FALL on installed cell C is the signature of a context-free answer bias ("say bomb"),
+  not coherent installation. Requested before any verdict: option mass on those reads (collapse check),
+  Δlogp_concept vs Δlogp_codeword, an answer-bias control on prompts where "bomb" is not sensible, cross-codeword
+  replay, benign-prompt KL. Per plan §6, a context-free output bias counts as "generic end-of-prompt editing is NOT
+  sufficient for installation".

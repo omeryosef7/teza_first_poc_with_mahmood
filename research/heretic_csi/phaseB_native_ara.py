@@ -11,8 +11,10 @@ Objectives (Heretic Scorer plugins): maximize y_install on opt_A (SOURCE rows, T
 semantic_installation_scorer.py), minimize Heretic KLDivergence on opt_C texts; y_install on opt_C
 recorded (optimization="none").
 
-PREDECLARED FREEZE RULE (written before any trial ran): among COMPLETE trials with KL <= 1.0, pick the one
-with the largest opt_A y_install; ties -> lower KL; if none feasible, the lowest-KL trial. The whole
+PREDECLARED FREEZE RULE v2 (2026-10-14, after adversarial review; v1 = jobs 1023185/1023251 lacked the
+option-mass clause): among COMPLETE trials with KL <= 1.0 AND opt_A median option mass >= 0.05 (readout not
+collapsed), pick the one with the largest opt_A y_install; ties -> lower KL; if none feasible, the lowest-KL
+trial. Option mass is recorded for EVERY trial and every read (base-reference key floors, CSI AM-53/54). The whole
 Pareto front (study.best_trials) and every trial are saved.
 
 PREDECLARED READ (after freeze, once): y_install on trainread_A/C and val_A/C; KL on val_C. Controls on
@@ -63,6 +65,12 @@ WORK = os.path.join(A.workdir, ATT)
 BLOB = os.path.join(A.blob_dir, ATT)
 os.makedirs(WORK, exist_ok=True)
 os.makedirs(BLOB, exist_ok=True)
+import glob as _glob, shutil as _shutil  # noqa: E402
+SRC = {}
+os.makedirs(os.path.join(WORK, "src_snapshot"), exist_ok=True)
+for _f in sorted(_glob.glob(os.path.join(HERE, "*.py")) + _glob.glob(os.path.join(HERE, "slurm", "*.slurm"))):
+    _shutil.copy2(_f, os.path.join(WORK, "src_snapshot", os.path.basename(_f)))
+    SRC[os.path.relpath(_f, REPO)] = hashlib.sha256(open(_f, "rb").read()).hexdigest()
 
 # KL prompts as a Heretic local dataset (texts of opt_C, and val_C for the final read)
 for name in ("opt_C", "val_C"):
@@ -132,7 +140,7 @@ from heretic.modifiers.ara import ARA, Parameters, Settings as ARASettings  # no
 from heretic.plugin import Context  # noqa: E402
 from heretic.scorers.keyword_rate import KeywordRate, Settings as KWSettings  # noqa: E402
 from heretic.utils import Prompt  # noqa: E402
-from semantic_installation_scorer import readout_rows, domain_mean, READOUT_IMPL  # noqa: E402
+from semantic_installation_scorer import readout_rows, domain_mean, floor_summary, READOUT_IMPL  # noqa: E402
 import lora_utils  # noqa: E402
 
 _orig_gmc = hm.get_model_class
@@ -158,10 +166,11 @@ def log(*x):
 cap = torch.cuda.get_device_capability(0)
 if cap[0] < 8:
     raise SystemExit(f"REFUSE: native bf16 needs cc>=8.0, got {cap}")
-R = {"schema": "hcsi_phaseB/1", "codeword": A.codeword, "args": vars(A), "attempt": ATT, "manifest": MAN,
+R = {"schema": "hcsi_phaseB/2", "codeword": A.codeword, "args": vars(A), "attempt": ATT, "manifest": MAN,
+     "source_sha256": SRC, "source_snapshot_dir": os.path.join(WORK, "src_snapshot"),
      "env": {"torch": torch.__version__, "transformers": transformers.__version__, "optuna": optuna.__version__,
              "gpu": torch.cuda.get_device_name(0), "cc": list(cap)},
-     "freeze_rule": f"COMPLETE trials with KL<={A.kl_feasible}: max opt_A y_install (tie: lower KL); else min KL"}
+     "freeze_rule": f"v2: COMPLETE trials with KL<={A.kl_feasible} AND opt_A median option mass>=0.05: max opt_A y_install (tie: lower KL); else min KL"}
 OUTJ = os.path.join(OUT, f"PHASEB_native_ara_{A.codeword}_{ATT}.json")
 
 
@@ -181,6 +190,7 @@ def rows_of(name):
 
 
 LAST_RECS = {}
+BASE_KEYS = {}
 
 
 def read(name, cw=None):
@@ -189,10 +199,11 @@ def read(name, cw=None):
             if cw != A.codeword else rows_of(name))
     recs = readout_rows(model, rows, "bomb", cw)
     LAST_RECS[(cw, name)] = recs
+    if (cw, name) not in BASE_KEYS:  # first read of a set is the BASE arm (all base reads precede any LoRA)
+        BASE_KEYS[(cw, name)] = {r["prompt_id"] for r in recs if r["option_mass"] >= 0.05}
     v, dm = domain_mean(recs)
-    om = sorted(r["option_mass"] for r in recs)
-    return {"y_domain_mean": v, "domain_means": dm, "n_rows": len(recs), "n_domains": len(dm),
-            "median_option_mass": om[len(om) // 2],
+    fl = floor_summary(recs, 0.05, BASE_KEYS[(cw, name)])
+    return {"y_domain_mean": v, "domain_means": dm, "n_rows": len(recs), "n_domains": len(dm), **fl,
             "mean_logp_concept": sum(r["logp_concept"] for r in recs) / len(recs),
             "mean_logp_codeword": sum(r["logp_codeword"] for r in recs) / len(recs)}
 
@@ -214,6 +225,7 @@ def refusal():
 
 # -------- base reads (pure base model, before any LoRA) --------
 base = {n: read(n) for n in ("trainread_A", "trainread_C", "val_A", "val_C")}
+base_opt_A = read("opt_A")  # fixes the BASE option-mass key set for the replay read of opt_A
 XC = A.cross_codeword
 if XC:  # MEASURED (not preregistered): does the edit raise P(bomb) on ANOTHER codeword's prompts too?
     base_x = {n: read(n, XC) for n in ("val_A", "val_C")}
@@ -285,6 +297,10 @@ def objective(trial):
     scores = evaluator.get_scores()
     trial.set_user_attr("scores", evaluator.get_paired_score_records(scores))
     trial.set_user_attr("named", {n: s.value for n, s in scores})
+    trial.set_user_attr("option_mass", {e.name: {k: e.scorer.last_detail[k] for k in
+                                                 ("median_option_mass", "frac_below_floor", "collapsed", "y_floor",
+                                                  "n_rows_floor", "n_domains_floor")}
+                                        for e in evaluator._scorer_entries if getattr(e.scorer, "last_detail", None)})
     trial.set_user_attr("seconds", time.time() - t)
     log("trial", trial.number, p.to_dict(), {n: round(s.value, 4) for n, s in scores})
     return evaluator.get_objective_values(scores)
@@ -297,9 +313,16 @@ kA = next(n for n in nm if "y_install" in n and "- A" in n)
 kC = next(n for n in nm if "y_install" in n and "- C" in n)
 kKL = next(n for n in nm if "KL" in n)
 R["trials"] = [{"number": t.number, "params": t.user_attrs["parameters"], "named": t.user_attrs["named"],
-                "seconds": t.user_attrs["seconds"]} for t in done]
+                "option_mass": t.user_attrs.get("option_mass"), "seconds": t.user_attrs["seconds"]} for t in done]
+R["baseline_option_mass"] = {e.name: getattr(e.scorer, "baseline_detail", None) for e in evaluator._scorer_entries}
+
+
+def _collapsed_A(t):
+    om = t.user_attrs.get("option_mass", {})
+    return any(v["collapsed"] for k, v in om.items() if "- A" in k)
+
 R["pareto_front"] = [t.number for t in study.best_trials]
-feas = [t for t in done if t.user_attrs["named"][kKL] <= A.kl_feasible]
+feas = [t for t in done if t.user_attrs["named"][kKL] <= A.kl_feasible and not _collapsed_A(t)]
 chosen = (max(feas, key=lambda t: (t.user_attrs["named"][kA], -t.user_attrs["named"][kKL])) if feas
           else min(done, key=lambda t: t.user_attrs["named"][kKL]))
 R["chosen_trial"] = chosen.number
@@ -376,7 +399,8 @@ for i in range(A.n_rand):  # spectrum-matched random operator, same modules
             Aw.copy_(An.to(Aw.device, Aw.dtype))
     rd = read("val_A")
     ctrl.append({"kind": "random_spectrum_matched", "i": i, "dY_val_A": dy(rd, base["val_A"]),
-                 "median_option_mass": rd["median_option_mass"]})
+                 "median_option_mass": rd["median_option_mass"], "frac_below_floor": rd["frac_below_floor"],
+                 "y_floor": rd["y_floor"]})
     log("ctrl rand", i, round(ctrl[-1]["dY_val_A"], 4))
 ara.reset_model(ctx)
 
@@ -402,7 +426,8 @@ for j in range(A.n_shuffle):  # label-shuffled ARA: same params, good/bad = rand
     sh.modify_model(ctx, P)
     rd = read("val_A")
     ctrl.append({"kind": "label_shuffled_ara", "i": j, "dY_val_A": dy(rd, base["val_A"]),
-                 "median_option_mass": rd["median_option_mass"]})
+                 "median_option_mass": rd["median_option_mass"], "frac_below_floor": rd["frac_below_floor"],
+                 "y_floor": rd["y_floor"]})
     log("ctrl shuf", j, round(ctrl[-1]["dY_val_A"], 4))
     sh.reset_model(ctx)
     ara = sh  # current LoRA owner
