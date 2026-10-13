@@ -1147,3 +1147,8 @@ sweep + rank-matched controls at every rank, cross-hardware validation, and the 
 ## S-056 — 2026-10-13 21:40 — ops tick: staging 13 / 9.5 / 9.5 GB (accelerating, ~3.5 MB/s/job)
 - 1022698 (button r4 VAL) 13 GB of ~16; 1022699 (basket r4 VAL) 9.5 GB; 1022701 (P2b) 9.5 GB. No failures/duplicates.
   Agents F1 (Phase-A/B) and F2 (P2b) still working; no new GPU submissions while staging (S-053 rule).
+
+## S-057 — 2026-10-13 22:10 — ops tick: button r4 VAL (1022698) staged and scoring
+- 1022698: STAGE_IN done; first arm running; KO pre-flight 230/230 rows ok (23 val domains), readout ids
+  concept=[13054] codeword=[3215] (button) — correct population + ids. 1022699 (basket r4 VAL) and 1022701 (P2b) still
+  staging. No failures/duplicates.
