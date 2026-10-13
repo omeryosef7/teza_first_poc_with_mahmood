@@ -1166,3 +1166,13 @@ sweep + rank-matched controls at every rank, cross-hardware validation, and the 
   (To be audited in the next adversarial review: is "not norm-matched" a rank/norm-mismatched control? — mandate §10.)
 - Progress: 1022698 (button r4 VAL) 10/61 arms ok; 1022699 (basket r4 VAL) first arm 100/230 rows; 1022919 (F1
   Phase-A/B) running on n-805. No failures/duplicates. button r4 VAL read ETA ~02:00.
+
+## S-059 — 2026-10-13 22:55 — mirror independently VERIFIED; P2b production launched (1023012)
+- Parent re-hashed all 4 shards of the `/specific/scratches` mirror: sha256 == the netapp snapshot's LFS blob names
+  for every shard (2b1879f3…, 09d433f6…, fc1cdddd…, 92ecfe1a…). Mirror is the verified stage source (5 s stage-in vs
+  1h46m from netapp).
+- **P2b production 1023012 (F2, n-503):** stage 1 = capture clean/KO module I/O at the codeword row on full TRAIN
+  (670 rows × basket, button); TRAIN-CV objective selection (fitting-side criteria) → pooled freeze → basket fits at
+  ranks {1,4,16,50} + liveness (~17 h). Parent asked F2 to (i) fill in {2,8,32} for both codewords and record the
+  rank set before any endpoint, (ii) justify/report norm of the neutral-position control vs candidate ΔW (§10),
+  (iii) confirm objective freeze uses no y_install.
