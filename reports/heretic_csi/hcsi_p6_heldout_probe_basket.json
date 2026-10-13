@@ -1,0 +1,102 @@
+{
+  "schema": "hcsi_p6_heldout_probe/1",
+  "codeword": "basket",
+  "layer": 18,
+  "site": "rel-6",
+  "corpus": "outputs/boombness/extract_boombness/cont1_behavioral_basket_bomb_20260910_113902_3966018",
+  "readout": "outputs/boombness/score_behavior/ts116m_readout_basket_bomb_20260907_152329_3191150",
+  "bank_sha16": "79511d9e254571e6",
+  "n_train_rows": 670,
+  "n_train_domains": 67,
+  "n_val_rows": 230,
+  "n_val_domains": 23,
+  "val_domains_sha16": "952202156bf70d33",
+  "statistic": "Spearman(pred,y) over within-domain-centred VALIDATION rows; fit TRAIN only",
+  "ci": "95% domain-cluster bootstrap (2000)",
+  "by_rank": {
+    "1": {
+      "rank_effective": 1,
+      "val_rho": 0.5329,
+      "ci95": [
+        0.4336,
+        0.631
+      ],
+      "shuffle_null_mean": -0.0046,
+      "shuffle_null_max": 0.4212,
+      "shuffle_rank_p": 0.0476
+    },
+    "2": {
+      "rank_effective": 2,
+      "val_rho": 0.642,
+      "ci95": [
+        0.5702,
+        0.7124
+      ],
+      "shuffle_null_mean": 0.0548,
+      "shuffle_null_max": 0.3583,
+      "shuffle_rank_p": 0.0476
+    },
+    "3": {
+      "rank_effective": 3,
+      "val_rho": 0.636,
+      "ci95": [
+        0.5493,
+        0.718
+      ],
+      "shuffle_null_mean": 0.0189,
+      "shuffle_null_max": 0.359,
+      "shuffle_rank_p": 0.0476
+    },
+    "4": {
+      "rank_effective": 4,
+      "val_rho": 0.6377,
+      "ci95": [
+        0.5414,
+        0.7207
+      ],
+      "shuffle_null_mean": 0.0163,
+      "shuffle_null_max": 0.274,
+      "shuffle_rank_p": 0.0476
+    },
+    "8": {
+      "rank_effective": 8,
+      "val_rho": 0.6348,
+      "ci95": [
+        0.5622,
+        0.7019
+      ],
+      "shuffle_null_mean": 0.0201,
+      "shuffle_null_max": 0.215,
+      "shuffle_rank_p": 0.0476
+    },
+    "16": {
+      "rank_effective": 16,
+      "val_rho": 0.6027,
+      "ci95": [
+        0.5345,
+        0.6663
+      ],
+      "shuffle_null_mean": -0.0062,
+      "shuffle_null_max": 0.0949,
+      "shuffle_rank_p": 0.0476
+    },
+    "32": {
+      "rank_effective": 32,
+      "val_rho": 0.5678,
+      "ci95": [
+        0.4889,
+        0.6385
+      ],
+      "shuffle_null_mean": -0.0152,
+      "shuffle_null_max": 0.0608,
+      "shuffle_rank_p": 0.0476
+    }
+  },
+  "ridge_full": {
+    "val_rho": 0.6525,
+    "ci95": [
+      0.5769,
+      0.7287
+    ]
+  }
+}

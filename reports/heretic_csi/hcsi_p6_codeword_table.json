@@ -1,0 +1,616 @@
+[
+ {
+  "word": "button",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.75,
+  "zipf_en": 4.56,
+  "llama_token_ids": [
+   3215
+  ],
+  "contamination": "CONTAMINATED: incumbent; CSI + HERETIC-CSI selection (TRAIN+VALIDATION)",
+  "banks_on_disk": [
+   "boombness_prompt_bank_button_bomb",
+   "boombness_prompt_bank_button_club",
+   "boombness_prompt_bank_button_gun",
+   "boombness_prompt_bank_button_knife",
+   "boombness_prompt_bank_cds116_button_bomb",
+   "boombness_prompt_bank_cds38_button_bomb",
+   "boombness_prompt_bank_cdslow38_button_bomb",
+   "boombness_prompt_bank_ts116_button_bomb",
+   "boombness_prompt_bank_ts116_button_gun",
+   "boombness_prompt_bank_ts116_button_knife",
+   "boombness_prompt_bank_ts116m_button_bomb",
+   "boombness_prompt_bank_ts116m_button_gun",
+   "boombness_prompt_bank_ts116m_button_knife",
+   "boombness_prompt_bank_ts116n_button_bomb",
+   "boombness_prompt_bank_ts116n_button_gun",
+   "boombness_prompt_bank_ts116n_button_knife"
+  ],
+  "n_readout_dirs": 16,
+  "n_extract_dirs": 19
+ },
+ {
+  "word": "basket",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.004002,
+  "zipf_en": 4.07,
+  "llama_token_ids": [
+   14351
+  ],
+  "contamination": "CONTAMINATED: incumbent; every CSI + HERETIC-CSI selection (TRAIN+VALIDATION), head set chosen on basket validation",
+  "banks_on_disk": [
+   "boombness_prompt_bank_basket_bomb",
+   "boombness_prompt_bank_basket_club",
+   "boombness_prompt_bank_basket_gun",
+   "boombness_prompt_bank_basket_knife",
+   "boombness_prompt_bank_cds38_basket_bomb",
+   "boombness_prompt_bank_ts116_basket_bomb",
+   "boombness_prompt_bank_ts116_basket_gun",
+   "boombness_prompt_bank_ts116_basket_knife",
+   "boombness_prompt_bank_ts116m_basket_bomb",
+   "boombness_prompt_bank_ts116m_basket_gun",
+   "boombness_prompt_bank_ts116m_basket_knife",
+   "boombness_prompt_bank_ts116n_basket_bomb",
+   "boombness_prompt_bank_ts116n_basket_gun",
+   "boombness_prompt_bank_ts116n_basket_knife"
+  ],
+  "n_readout_dirs": 13,
+  "n_extract_dirs": 10
+ },
+ {
+  "word": "carrot",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.0,
+  "zipf_en": 3.62,
+  "llama_token_ids": [
+   75294
+  ],
+  "contamination": "PARTIAL: cds38_carrot_bomb bank exists (earlier DCS phase) + literature example; check for any GPU number before use",
+  "banks_on_disk": [
+   "boombness_prompt_bank_cds38_carrot_bomb"
+  ],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "ticket",
+  "pr008_survivor": false,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.005542,
+  "zipf_en": 4.61,
+  "llama_token_ids": [
+   11989
+  ],
+  "contamination": "PARTIAL: ticket_bomb/ticket_knife banks (earlier phase); FAILS PR-008 L2 anyway",
+  "banks_on_disk": [
+   "boombness_prompt_bank_38dom_ticket_knife",
+   "boombness_prompt_bank_ticket_bomb",
+   "boombness_prompt_bank_ticket_knife"
+  ],
+  "n_readout_dirs": 10,
+  "n_extract_dirs": 1
+ },
+ {
+  "word": "lamp",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.002463,
+  "zipf_en": 4.05,
+  "llama_token_ids": [
+   29062
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "kettle",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.000308,
+  "zipf_en": 3.54,
+  "llama_token_ids": [
+   73418
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "pencil",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.0,
+  "zipf_en": 3.95,
+  "llama_token_ids": [
+   47218
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "ladder",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.002463,
+  "zipf_en": 4.03,
+  "llama_token_ids": [
+   36865
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "blanket",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.001847,
+  "zipf_en": 4.07,
+  "llama_token_ids": [
+   39139
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "mirror",
+  "pr008_survivor": false,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.005542,
+  "zipf_en": 4.47,
+  "llama_token_ids": [
+   18327
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "bucket",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.000308,
+  "zipf_en": 4.07,
+  "llama_token_ids": [
+   15994
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "candle",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.000616,
+  "zipf_en": 3.88,
+  "llama_token_ids": [
+   38899
+  ],
+  "contamination": "PARTIAL: rbd_candle_missile banks (earlier phase, concept=missile not bomb)",
+  "banks_on_disk": [
+   "boombness_prompt_bank_rbd_candle_missile",
+   "boombness_prompt_bank_rbdn16_candle_missile"
+  ],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "napkin",
+  "pr008_survivor": false,
+  "L1_single_token": false,
+  "L2_incidence_rate": 0.000616,
+  "zipf_en": 3.16,
+  "llama_token_ids": [
+   26944,
+   8148
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "pillow",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.000616,
+  "zipf_en": 3.96,
+  "llama_token_ids": [
+   43425
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "saddle",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.0,
+  "zipf_en": 3.73,
+  "llama_token_ids": [
+   61858
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "teapot",
+  "pr008_survivor": false,
+  "L1_single_token": false,
+  "L2_incidence_rate": 0.000616,
+  "zipf_en": 2.91,
+  "llama_token_ids": [
+   1028,
+   91001
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "wagon",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.0,
+  "zipf_en": 3.9,
+  "llama_token_ids": [
+   61519
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "mitten",
+  "pr008_survivor": false,
+  "L1_single_token": false,
+  "L2_incidence_rate": 0.0,
+  "zipf_en": 2.48,
+  "llama_token_ids": [
+   296,
+   23257
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "cushion",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.0,
+  "zipf_en": 3.58,
+  "llama_token_ids": [
+   45738
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "curtain",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.000616,
+  "zipf_en": 3.86,
+  "llama_token_ids": [
+   46866
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "envelope",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.0,
+  "zipf_en": 3.86,
+  "llama_token_ids": [
+   35498
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "stapler",
+  "pr008_survivor": false,
+  "L1_single_token": false,
+  "L2_incidence_rate": 0.0,
+  "zipf_en": 2.53,
+  "llama_token_ids": [
+   36114,
+   1565
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "thimble",
+  "pr008_survivor": false,
+  "L1_single_token": false,
+  "L2_incidence_rate": 0.0,
+  "zipf_en": 2.53,
+  "llama_token_ids": [
+   270,
+   318,
+   901
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "bottle",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.004002,
+  "zipf_en": 4.57,
+  "llama_token_ids": [
+   16893
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "jacket",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.0,
+  "zipf_en": 4.32,
+  "llama_token_ids": [
+   27300
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "ribbon",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.000616,
+  "zipf_en": 3.81,
+  "llama_token_ids": [
+   45667
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "sponge",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.0,
+  "zipf_en": 3.59,
+  "llama_token_ids": [
+   69448
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "trolley",
+  "pr008_survivor": false,
+  "L1_single_token": false,
+  "L2_incidence_rate": 0.008005,
+  "zipf_en": 3.44,
+  "llama_token_ids": [
+   259,
+   75143
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "whistle",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.003079,
+  "zipf_en": 3.88,
+  "llama_token_ids": [
+   40649
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "yogurt",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.000616,
+  "zipf_en": 3.63,
+  "llama_token_ids": [
+   55575
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "apple",
+  "pr008_survivor": false,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.006773,
+  "zipf_en": 4.76,
+  "llama_token_ids": [
+   24149
+  ],
+  "contamination": "PARTIAL: demo_pools_apple_drug (earlier phase, concept=drug); FAILS PR-008 L2 anyway",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "banana",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.001232,
+  "zipf_en": 4.0,
+  "llama_token_ids": [
+   44196
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "chair",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.004926,
+  "zipf_en": 4.69,
+  "llama_token_ids": [
+   10716
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "table",
+  "pr008_survivor": false,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.044643,
+  "zipf_en": 5.05,
+  "llama_token_ids": [
+   2007
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "window",
+  "pr008_survivor": false,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.012931,
+  "zipf_en": 4.8,
+  "llama_token_ids": [
+   3321
+  ],
+  "contamination": "PARTIAL: window_bomb/window_knife banks (earlier phase); FAILS PR-008 L2 anyway",
+  "banks_on_disk": [
+   "boombness_prompt_bank_window_bomb",
+   "boombness_prompt_bank_window_knife"
+  ],
+  "n_readout_dirs": 2,
+  "n_extract_dirs": 1
+ },
+ {
+  "word": "garden",
+  "pr008_survivor": false,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.031096,
+  "zipf_en": 4.77,
+  "llama_token_ids": [
+   13863
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "balloon",
+  "pr008_survivor": true,
+  "L1_single_token": true,
+  "L2_incidence_rate": 0.004002,
+  "zipf_en": 3.9,
+  "llama_token_ids": [
+   47856
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "crayon",
+  "pr008_survivor": false,
+  "L1_single_token": false,
+  "L2_incidence_rate": 0.0,
+  "zipf_en": 3.05,
+  "llama_token_ids": [
+   90016,
+   263
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "muffin",
+  "pr008_survivor": false,
+  "L1_single_token": false,
+  "L2_incidence_rate": 0.001539,
+  "zipf_en": 3.35,
+  "llama_token_ids": [
+   55404,
+   258
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ },
+ {
+  "word": "tulip",
+  "pr008_survivor": false,
+  "L1_single_token": false,
+  "L2_incidence_rate": 0.0,
+  "zipf_en": 3.18,
+  "llama_token_ids": [
+   62036,
+   575
+  ],
+  "contamination": "untouched (no GPU/selection use found)",
+  "banks_on_disk": [],
+  "n_readout_dirs": 0,
+  "n_extract_dirs": 0
+ }
+]

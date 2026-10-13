@@ -1102,3 +1102,36 @@ sweep + rank-matched controls at every rank, cross-hardware validation, and the 
 - `sacct -u` also lists 3 ancient "RUNNING" records (740944/741053/741054, 64 days, other project) absent from
   `squeue` — stale accounting rows, not ours to act on in this sprint; ignored.
 - Next: read STAGE_IN done; then verify arm cadence; prereg r4 VAL read when DONE_MARKER appears.
+
+## S-054 — 2026-10-13 — P5/P6 (F4, CPU job 1022696, DONE_MARKER x2): C1 NOT SUPPORTED held-out; P6 staged design + power
+- **Held-out probe quality** (fit TRAIN 67 dom → score VALIDATION 23 dom/230 rows; L18 rel-6; Spearman over
+  within-domain-centred rows; 95% domain-cluster bootstrap):
+  rank-1 basket **0.533 [0.434,0.631]** vs button **0.574 [0.497,0.653]**; full ridge 0.653 vs 0.647.
+  Installer strength (C−A, one-word, n4): VAL basket 0.40 vs button **0.67** (TRAIN 0.48 vs 0.68).
+- **Reading (MEASURED, n=2 codewords):** the TRAIN-LOO +12% basket probe advantage (S-043, inherited C1) does **not**
+  replicate held-out: decodability is statistically indistinguishable (point estimate favours button) and button is
+  the STRONGER installer. The certified dissociation (basket r1 rescue PASS / button FAIL) therefore occurs at equal
+  held-out decodability ⇒ the surviving C1 explanation ("basket simply has a better probe") is **not supported**
+  for this pair. Scoping: (i) 2 codewords — no population claim; (ii) the held-out statistic is within-domain-centred
+  Spearman, not byte-identical to S-043's LOO rho definition; (iii) the shuffle null used only 20 within-domain
+  shuffles (p floor 0.048) and one shuffle reached 0.42/0.52 — a large shuffle family is required before quoting any
+  p; I'm treating the shuffle-max as an open check (adversarial review item).
+- **Codeword pool (PR-CSI-008):** 25 lexical survivors; GPU screen never ran. Contaminated: basket, button. Excluded:
+  carrot (pool placeholder — 9,396 hits in demo_pools — + early-DCS GPU use). candle = DEV-only (missile banks).
+  **21 untouched**: lamp kettle pencil ladder blanket bucket pillow saddle wagon cushion curtain envelope bottle jacket
+  ribbon sponge whistle yogurt banana chair balloon. Zipf range narrow (3.54–4.69) ⇒ frequency question low-power.
+- **Cost/codeword (measured on basket):** bank+exclusions CPU minutes; readout 34 GPU-min; behavioral extraction
+  33 GPU-min (MUST be slimmed to L18 — full grid 12 GB/codeword breaks the 200 GB cap); axisfit 6 CPU-min; r1 VAL
+  rescue ~3.5 GPU-h ⇒ ~4.7 GPU-h/codeword. axisfit/rescue slurm hard-code cw paths (need generic branch).
+- **Hardware provenance caveat (inherited, re-surfaced):** basket/button behavioral corpora behind every axis fit were
+  extracted on V100 (emulated bf16); new codewords will be extracted on native-bf16 GPUs ⇒ incumbents and new
+  codewords differ in extraction hardware. Must be stated in any P6 result.
+- **Proposed frozen P6 design** (`reports/heretic_csi/P6_CODEWORD_PROVENANCE_AND_DESIGN.md`, written before any P6 GPU
+  number): Stage-0 covariates for all 22 (~26 GPU-h) → mechanical gates G1 installer-strength CI-lo>0.05, G2 KO
+  liveness, G3 option-mass (attrition in denominators) → DEV 6 (candle + 5 seeded 20261013 across freq tertile ×
+  installer strength; basket/button as contaminated DEV points; ranks 1/4/16) → freeze → CONFIRM ~16 at r1 on VAL.
+  Primary per-codeword outcome = r1 specificity z vs 56 rank-matched controls. H6a probe→specificity (1-sided),
+  H6b frequency→specificity (2-sided), Holm. Power: n=2 CANNOT ANSWER; DEV 6 shakedown only (0.24–0.39);
+  CONFIRM n=16 → 0.60/0.74/0.87 at ρ=0.6/0.7/0.8; MDE(80%) ρ≈0.75; if attrition leaves <12 → pre-label UNDERPOWERED.
+- **Decision:** P6 Stage-0 GPU work is QUEUED behind P2b/P3/P4 per the priority order and the stage-in stagger rule;
+  the design is adopted as the working plan and frozen in that file (any change gets a new S-entry).
