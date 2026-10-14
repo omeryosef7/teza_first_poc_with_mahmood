@@ -2113,3 +2113,10 @@ button's rank-1 direction does not (VAL 14–18/57).
 - "Button needs more dimensions than basket" as a CONTRAST finding (no supported interaction; S-097/098).
 - "Fresh confirmation" — same VAL data; rank 4 chosen on TRAIN; SHUF null n=10; margin ~1.1 SD.
 - Anything about the ARA weight operator (P2b unread), behavior, or a population law.
+
+## S-127 — 2026-10-14 16:10 — ops tick; P6 Stage-0 PILOT launched (candle)
+- Running: add-ons 1036622 (basket 18/43) / 1036626 (button 11/43) — each with 2 designed tail-gate exits (all-rows
+  MEANBIAS collapse); button P2b VAL 1036679 (r1) / 1036680 (r4), unread. No failures otherwise.
+- **P6 Stage-0 pilot:** `p6_stage0.slurm candle` → **1038879** (n-503 warm; a5000; no-requeue). candle is the
+  DEV-forced codeword (PREREG_P6). Per S-092 caveat, this single codeword's readout + L18-only extraction (+ CPU axisfit
+  next) is inspected end-to-end before fanning out to the other 20. Stage-0 covariates only (no rescue run). GPU 5.
