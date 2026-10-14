@@ -2294,3 +2294,8 @@ No leakage found (K4 exclude list + right bank on every arm; overlap and NM-over
 - Button P2b VAL: 1036679 (r1) 48 ok, 1036680 (r4) 60 ok (unread). VAL add-on 1040101 (basket) started — first arm
   KO_MEANBIAS exited rc=4 (designed tail gate; expected); 1040122 (button) pending. TRAIN NEUT-position 1040124
   running. P6 candle pilot attempt 4 = 1040103 on n-802 (node /tmp 23.7 GB free ⇒ staging locally). GPU 5 + 1 pending.
+- Button VAL is cross-host (r1 + liveness on n-503 / 1036679; r4 on n-501 / 1036680) ⇒ amendment-5 overlap required:
+  1040152 (`ovl_button_val.sh`, POP=val, -w n-501) re-runs KO, KO_CAND_r1, KO_RAND_r1_0, KO_DER_r1_0 from 1036679 ⇒
+  `overlap_buttonvaln501_1040152_r0.json`. Parent confirmed. Basket VAL needs no main overlap (both jobs n-503).
+  1040122 mem lowered to 40G (n-501 RAM). VAL read gating: 1036679, 1036680, 1040101, 1040122, 1040152 all DONE with
+  OVERLAP_OK (ETA ~7 h).
