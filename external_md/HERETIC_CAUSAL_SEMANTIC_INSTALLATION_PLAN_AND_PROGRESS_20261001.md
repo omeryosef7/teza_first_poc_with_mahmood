@@ -2415,3 +2415,7 @@ all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_
 - P6: `research/heretic_csi/tests/test_p6_stage0_batch_branches.sh` exercises all 6 branches of
   p6_stage0_batch.slurm under `bash -u` with stubbed python (reuse+G3 pass, fresh readout rc=4+G3 pass+extract, G3
   fail, health fail, readout crash, extraction fail) + manifest/job-provenance checks — all OK; run before every batch.
+
+## S-149 — 2026-10-14 22:10 — ops tick
+- Button P2b VAL r1 111/167, r4 134/163 (unread); P6 batch 1 1040547 pending (priority). Descriptive-rank jobs not yet
+  submitted by F2 (request S-148 pending). GPU 2 running. No failures.
