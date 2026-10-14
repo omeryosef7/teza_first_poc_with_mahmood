@@ -1914,3 +1914,32 @@ F3 (`reports/heretic_csi/VERIFY_basketball_occurrence.{md,json}`, `VERIFY_codewo
   amendments 1–4; same for the S-084 combination logic (3 jobs, OVL arms excluded from controls, 200 controls,
   beat-every-SHUF, Holm with as-recorded p's, 203 rows); cross-amendment consistency; overclaims S-097…S-109; tests.
   → `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_d.md`.
+
+## S-111 — 2026-10-14 12:40 — ~4h ADVERSARIAL REVIEW #4 (read-readiness): no false-PASS bug; 4 things to freeze first
+Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_d.md` (independent; saw no endpoint value).
+- **Verified by synthetic end-to-end dry-run:** p2b_analyze with fake run dirs using the REAL emitter's arm names
+  (330 main arms = real argv files; no plan/analyzer mismatch), 16 scenarios with planted stale/failed/short/smoke/
+  VAL/button/sibling-prefix decoys ⇒ correct dir every time; duplicate complete dir refused loudly; Holm/INCOMPLETE/
+  VOID/CI exactly per amendments 1–4. Production metadata clean (268/230 rows, no failures; one bank + exclude file
+  per prefix; factor shas identical TRAIN/VAL/fac). S-084: correct dirs from 1022698/1027577/1032110; OVL arms only
+  in the overlap check; exactly 200 controls (190 RAND + 10 SHUF); rank 3/201 ⇒ Holm 0.0448 PASS, 4/201 ⇒ 0.0597 FAIL;
+  one SHUF ≥ candidate ⇒ no PASS; as-recorded r1/r16 p's; VOID on overlap fail / non-a5000 / analyzer VOID; all three
+  logs show RTX A5000 only. Amendments mutually consistent. Tests 57 passed / 1 skipped.
+- **Must freeze BEFORE reads (owners tasked):** (1) no frozen analysis command lines; VAL prereg command lacks
+  `--addon`; S-084 analyzer script `p2a_powered_analyze.py` written after 1027577 started and untracked ⇒ commit script
+  + exact commands with sha256 (F2: ANALYSIS_COMMANDS_P2B.md; F6: ANALYSIS_COMMANDS_S084.md + unrounded ranking +
+  shortfall attribution). (2) P2b add-on arms never run ⇒ submit addon_k4 jobs when two TRAIN jobs finish; TRAIN read
+  waits for them. (3) P6 primary z is the pooled-family z whose contrast sign was family-dependent ⇒ P6 AMENDMENT 3:
+  **H6a = intersection-union over pooled / RAND-only / SHUF-only z** (parent decision); H6c descriptive with Holm over
+  {1,4} within codeword; declared VAL-domain dependence of H6a + TRAIN-LOO probe sensitivity. (4) P2b outcomes A–E were
+  still defined over 7 ranks ⇒ **P2b AMENDMENT 5 (parent decision): A–E and minimal specific rank decided ONLY on
+  VALIDATION at primary ranks {1,4}**; mapping A = basket specific at r1 & button not at r1 but at r4; B = both at r1;
+  C = neither at r1, both at r4; D = basket at some r, button at neither; E = neither (VOID/INCOMPLETE ⇒ CANNOT ANSWER);
+  TRAIN-K4 in-sample descriptive (TRAIN-fail+VAL-pass reported as VAL PASS with flag; TRAIN-pass+VAL-fail = FAIL);
+  descriptive ranks {2,8,16,32,50} unsubmitted unless GPU allows.
+- LOW fixes (F2/F5): wording flag must be False off-VALIDATION (p2b_analyze.py:306); hooks-fired gate for KO_CAND /
+  KO_IDENT / TOP8; config.json bank/exclude/codeword checks; record all arm families' run dirs; no "PASS" substring in
+  INCOMPLETE strings; P4 factor sha (not just name) check. Note: rank-4 and add-on jobs reuse BASE/KO from the r1 jobs
+  without an overlap check (all a5000 — same-GPU bit-exactness shown in S-108b supports reuse).
+- Overclaim notes: S-100 "FULLO/MLP-only close more of the gap" needs the norm/#param caveat and rests on 6–8 of 60
+  in-sample controls; S-098 "strongly specific" is z vs only 10 SHUF controls without CI. Both noted; no serious overclaim.
