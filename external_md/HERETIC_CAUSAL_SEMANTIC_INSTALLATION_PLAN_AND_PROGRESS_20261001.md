@@ -1681,3 +1681,13 @@ nothing auto-analyzes the early VAL jobs (read-after-TRAIN is procedural). Tests
 - P2b evals, 0 failures: basket r1 36, r4 41; button r1 34, r4 30 (of 163); VAL basket r1 50 / r4 59 (unread).
   6 GPU (cap); 8 P4-v2 CPU fit/CV jobs running. Queue after P2b: S-084 powered re-test (F6), P2b add-ons, P2b button
   VAL, P4 v2 evals.
+
+## S-091 — 2026-10-14 06:10 — ops tick; DISK WATCH; P6 Stage-0 CPU prep launched (F7)
+- P2b evals, 0 failures: basket r1 44, r4 47; button r1 44, r4 38; VAL basket r1 60 / r4 71 (unread). 6 GPU (cap).
+- **Disk:** project tree 157 GB of the 200 GB per-user cap (EDQUOT risk, see memory). Rule: new bulky outputs
+  (P6 caches/extractions, factor blobs) go to `/specific/scratches/scratch/omeryosef/`; p2b prod already symlinked there.
+- **F7 launched (CPU only):** freeze PREREG_P6 (pool, seeded DEV draw defined as a deterministic function applied
+  after Stage-0 covariates and before any rescue run, gates G1–G3, H6a/H6b Holm, UNDERPOWERED rule, + secondary H6c
+  "minimal specific rank" over {1,4}); build banks + split/K4 exclusions for 22 codewords with the frozen domain split;
+  per-codeword checks (single token, rel −10 decode, collisions with pool text, bank sha256); generic Stage-0 slurm
+  (base readout + slim L18 extraction + axisfit, new files); GPU-h/disk estimate. No GPU submission.
