@@ -2048,3 +2048,13 @@ Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_d.md` (independent; saw 
   Descriptive observation (not a test): CAND, at a similar total norm (44.9), is input-dependent and (from the
   completed-arm logs) did not trigger the tail gate — consistent with the edit being input-conditional rather than a
   constant shift, but this is NOT a preregistered comparison.
+
+## S-123 — 2026-10-14 15:20 — P2b TRAIN eval COMPLETE (all 4 cells; unread); 3 overlaps bit-exact; button VAL submitted
+- basket r1 = 127 (1023012, n-503) + 40 (1034929, n-501) = 167/167; basket r4 = 163/163 (1023508, n-501); button r1 =
+  149 (1023264, n-503) + 18 (1035131, n-501) = 167/167; button r4 = 163/163 (1023509, n-501). All DONE_MARKER rc=0, one
+  model load per job.
+- Overlaps (KO, KO_CAND_r1, KO_RAND_r1_0, KO_DER_r1_0 × 268 rows, identical prompt_id sets): basket n-503→n-501,
+  button 1035131, button n-501 (1035278) — **all OVERLAP_OK, max |Δy| = 0.0**.
+- TRAIN read waits only on add-ons 1036622/1036626 (+ their overlap files), ~3 h.
+- Submitted button P2b VALIDATION (frozen factors): 1036679 (r1 + liveness), 1036680 (r4), `-w n-503` (warm) —
+  unread until after the TRAIN read. GPU: 4 running + 2 pending.
