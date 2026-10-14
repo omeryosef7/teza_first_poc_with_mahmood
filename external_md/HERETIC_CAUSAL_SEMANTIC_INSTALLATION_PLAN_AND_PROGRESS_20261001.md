@@ -2363,3 +2363,15 @@ all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_
 ## S-144 — 2026-10-14 20:10 — ops tick
 - Button P2b VAL r1 75 / r4 93 (unread); VAL add-ons basket 26 / button 23 (+2 designed exits each); 1040170 pending.
   P6 batch A 1040225 in its first codeword's readout (35 min). No failures.
+
+## S-145 — 2026-10-14 20:40 — P6 G3 was MIS-IMPLEMENTED (pooled tail gate ≠ frozen G3); fixed to the frozen text
+- Batch A codeword 1 **lamp**: pooled score_behavior tail gate FAILED, yet its cell C dose-4 one-word median option mass
+  is 0.068 (> 0.05). Re-reading the frozen text: **PREREG_P6 G3 = "option-mass gate PASS (median > 0.05 on BASE)"** —
+  the BASE readout median on the RESCUE population (cell C, one-word, natural_doublespeak, n4 / dose 4), not the
+  pooled whole-bank tail gate the Stage-0 script used (which mixes dose-0 rows that are low by design).
+- **This is an implementation fix to match the frozen rule, not a rule change:** health gate (no OOM/failed rows) kept
+  separate; G3 computed exactly as written; pooled tail-gate result recorded only. Under the correct G3: candle still
+  FAILS (C dose-4 0.042), lamp PASSES (0.068) — to be confirmed by F7 on the exact population. (Correction to S-142's
+  framing: candle fails the frozen G3 on its own merits; the pooled gate was never G3.) Implementation note to be
+  recorded as PREREG_P6_AMENDMENT_4 (implementation note); lamp extraction to run; fan-out continues.
+- Button P2b VAL r1 84 / r4 104 (unread); VAL add-ons 35 / 33. No failures.
