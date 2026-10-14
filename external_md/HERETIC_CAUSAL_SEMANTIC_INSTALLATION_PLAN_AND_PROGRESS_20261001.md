@@ -1599,3 +1599,14 @@ nothing auto-analyzes the early VAL jobs (read-after-TRAIN is procedural). Tests
 - "The dissociation is a dimensionality difference" — hypothesis (no contrast test yet).
 - "Native ARA is context-free" — context-insensitive on non-collapsed reads; scoped to the shipped objective.
 - "The learned operator aligns with the refusal direction" — withdrawn pending a calibrated null.
+
+## S-084 — 2026-10-14 05:00 — PREREG PR-HCSI-S084 (powered button r4 re-test) committed before any new arm
+- `configs/heretic_csi/prereg_S084_button_r4_powered.json` (sha256 e7a10901…253ce). Family = 3 button VAL looks
+  {r1 p=0.2456 (as recorded, job 968534), r16 p=0.1754 (968535), r4 extended}; Holm ⇒ r4 must reach p < 0.0167, i.e.
+  candidate rank ≤3/201. Extended family = existing 56 (job 1022698, reused) + **144 new** random orthonormal rank-4
+  controls (same dcs_csi_axis code path, new seed 20261014; `configs/heretic_csi/hcsi_ranksweep_button_r4ext.pt`
+  sha256 a3d1c7b0…5af9e, manifest updated) ⇒ 200 controls, floor 0.005. PASS also needs candidate−KO CI-lo>0 + gates.
+  Basket-vs-button interaction z-contrast DESCRIPTIVE. Scope: same VAL data, bigger null ⇒ resolves the floor, not a
+  fresh test (fresh = P6).
+- Parent checks: cand_pls4 byte-identical to the original; 144 new bases rank 4, orthonormal, near-orthogonal to the
+  originals (max |cos| 0.069 on a sample). F6 submits 2×72-arm jobs (~4.5 h each) when our GPU count ≤4.

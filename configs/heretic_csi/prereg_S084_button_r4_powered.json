@@ -1,0 +1,39 @@
+{
+  "schema": "hcsi_prereg/1",
+  "id": "PR-HCSI-S084",
+  "written": "2026-10-14, F6, BEFORE any extended-control arm is run (no new GPU job submitted at writing time)",
+  "trigger": "Adversarial review #2 finding 6 (reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_b.md): the PR-HCSI-S051 button r4 VALIDATION PASS (rank 1/57, p=0.0175) sits at the 56-control floor, and button VALIDATION had ALREADY been read at r1 (FAIL) and r16 (FAIL) before r4 was chosen => over 3 VAL looks Bonferroni 3 x 0.0175 = 0.053 > 0.05.",
+  "question": "With a control family large enough that the floor no longer binds, does the button rank-4 PLS candidate's VALIDATION rescue remain specific after Holm correction over all three button VALIDATION looks {r1, r4, r16}?",
+  "family_of_looks": {
+    "r1": {"source": "reports/heretic_csi/hcsi_p2a_button_r1.json (frozen analyzer, split=validation, job 968534)", "rank": "14/57", "p": 0.2456},
+    "r16": {"source": "reports/heretic_csi/hcsi_p2a_button_r16.json (frozen analyzer, split=validation, job 968535)", "rank": "10/57", "p": 0.1754},
+    "r4": {"source": "THIS re-test: extended family", "p": "TBD = rank/(n_controls+1)"},
+    "note": "r1 and r16 p-values are taken AS RECORDED by the frozen analyzer (F3's independent recount gave r1 18/57; either value leaves the Holm outcome for r4 unchanged because Holm only needs r4's p < 0.05/3 when r4 is the smallest)."
+  },
+  "data": "the SAME VALIDATION population already read in S-072: button bank ts116m, exclude_button_bomb_sow_validation.txt, 230 rows / 23 domains, cell C semantic_one_word, KO demo_all:attn_knockout:6-14:1.0 target_surface_row_only, rescue at L18 query positions, eager bf16, seed 20260913, a5000 (same GPU type as job 1022698 => bit-comparable readout, S-062).",
+  "candidate": "cand_pls4 from configs/heretic_csi/hcsi_ranksweep_button.pt (sha16 ec0e41e1989ede87), arm KO_CAND_r4 already run in job 1022698 (reused, not rerun).",
+  "control_family": {
+    "existing": "56 = 46 ctrl_random_r4_{0..45} + 10 ctrl_shuffled_pls4_{0..9}, run in job 1022698 (reused)",
+    "new": "144 = ctrl_random_r4_{46..189}: random orthonormal rank-4 bases, SAME generation code path as scripts/dcs_csi_axis.py (M=randn(4,4096,float64); Q=qr(M.T)[0].T), NEW generator seed 20261014 (dcs_csi_axis used 20260915), in NEW file configs/heretic_csi/hcsi_ranksweep_button_r4ext.pt (sha256 a3d1c7b099f6bbf4cd7d977e23958f8c408461203f47f0cb1a98ba840fe5af9e; contains a byte-identical copy of cand_pls4 as the norm-match key). Norm-matched to cand_pls4 at scoring time by score_behavior --rescue-norm-match-key exactly as the original 46.",
+    "total": 200,
+    "p_floor": "1/201 = 0.004975 < 0.05/3 = 0.01667"
+  },
+  "liveness": "BASE/KO/KO_SELF/KO_FULL from job 1022698 (reused). New arms run in 1-2 new a5000 jobs via research/heretic_csi/slurm/p2a_powered_r4ext.slurm (thin copy of rescue_sweep.slurm; COMMON/KO/RESC flags byte-identical).",
+  "statistic": "frozen scripts/dcs_csi_subspace_analyze.py, --direction sufficiency, --split validation, --expect-n 230, --option-mass-floor 0.05 (as in S-072), --require-slurm-job '1022698,<new jobs>', --candidate-arm KO_CAND_r4, controls KO_RAND_r4_{0..189} + KO_SHUF_r4_{0..9}, --expect-n-controls 200. rank p = (1 + #controls >= candidate) / 201.",
+  "pass_rule": "PASS iff Holm-adjusted p for r4 over {r1: 0.2456, r16: 0.1754, r4: p_ext} < 0.05 (i.e., p_ext < 0.01667 when r4 is the smallest, => candidate rank <= 3 of 201) AND candidate-minus-KO domain-cluster bootstrap CI lower bound > 0 AND gates (KO<BASE, FULL>KO, |SELF-KO| inert) AND no VOID. The analyzer's 'strictly largest' verdict text is NOT the pass rule here; the rule above is.",
+  "honest_scope": [
+    "This is the SAME VALIDATION data re-analysed with a larger null: it resolves floor-limitation and corrects for the 3 declared button VAL looks. It does NOT make the test fresh, and does not correct for any look beyond these 3.",
+    "The rank (4) was chosen on TRAIN K4 (S-051) after seeing TRAIN r1..r16; that selection is not part of this family.",
+    "A genuinely fresh confirmation requires new codewords (P6), not this split.",
+    "Activation-space PLS family only; not the ARA weight operator; semantic installation only; no behavioral claim."
+  ],
+  "descriptive_contrast_basket_vs_button": {
+    "status": "DESCRIPTIVE ONLY (never a pass/fail)",
+    "cells": "VALIDATION, original 56-control families for all four cells (so family size is matched): basket r1 job 968532, basket r4 job 1022699, button r1 job 968534, button r4 job 1022698.",
+    "row_filter": "BASE-referenced option-mass floor 0.05 (the frozen rule), per codeword.",
+    "per_cell_z": "z = (e_cand - mean_ctrl e) / sd_ctrl e, with e_arm = mean over domains of (arm - KO) domain-mean y_install.",
+    "interaction": "I = (z_button_r4 - z_button_r1) - (z_basket_r4 - z_basket_r1); 95% CI by domain-cluster bootstrap (2000 draws) resampling the 23 shared VALIDATION domains jointly across all four cells, recomputing all arms' domain means.",
+    "interpretation_frozen": "I > 0 with CI excluding 0 is CONSISTENT WITH 'button gains specificity from r1 to r4 more than basket' (descriptive support for the dimensionality-difference reading); otherwise the reading stays unsupported by a contrast."
+  },
+  "test_split": "never"
+}
