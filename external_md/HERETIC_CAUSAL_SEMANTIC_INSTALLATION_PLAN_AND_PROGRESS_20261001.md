@@ -1885,3 +1885,11 @@ F3 (`reports/heretic_csi/VERIFY_basketball_occurrence.{md,json}`, `VERIFY_codewo
 - P2b TRAIN, 0 failures: basket r1 114, r4 102; button r1 127, r4 101 (of 163); VAL basket r1 149 (unread).
 - S-084 powered re-test job 1 = **1027577** (n-503, a5000; warm stage-in 5 s; basis sha verified; 72 new controls +
   4 overlap arms, ~4.6 h). Job 2 waits for a slot. GPU 6.
+- **r4ext basis meta check (F6, source-read):** `hcsi_ranksweep_button_r4ext.pt` lacks codeword/selected_layer/site/
+  fit_prompt meta. No numeric consumer reads them (rescue uses the tensors + CLI `--rescue-layer/--rescue-positions`;
+  analyzer uses meta only for a within-run consistency check + descriptive in_sample block; norm-match VOID uses
+  per-row written norms). Two SAFETY GUARDS were silently skipped (score_behavior.py:2372 layer==rescue-layer;
+  :2380 codeword∈bank) — their conditions verified independently on 1027577's run configs (rescue_layer 18, query
+  positions, norm-match key cand_pls4, button bank, VAL exclude; cand_pls4 byte-identical to the original whose meta
+  says layer 18 / button). **1027577 kept.** Hygiene fix for future extension files: copy source meta (not changed
+  mid-run to keep the sha).
