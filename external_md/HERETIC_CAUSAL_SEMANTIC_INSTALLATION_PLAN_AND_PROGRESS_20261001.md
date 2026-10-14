@@ -1897,3 +1897,6 @@ F3 (`reports/heretic_csi/VERIFY_basketball_occurrence.{md,json}`, `VERIFY_codewo
 ## S-108 — 2026-10-14 11:10 — ops tick
 - P2b TRAIN, 0 failures: basket r1 121, r4 109; button r1 136, r4 107 (of 163); VAL basket r1 159 (unread).
   S-084 re-test 1027577: 18 arms ok (overlap arms first). GPU 6. Next deep review ~12:10.
+- **S-084 overlap check PASSES bit-exact (F6):** OVL_BASE / OVL_KO / OVL_CAND_r4 / OVL_RAND_r4_0 in 1027577 reproduce
+  job 1022698 with max |Δ| = 0.0 over identical 230-row prompt_id sets ⇒ combining run dirs across jobs is licensed
+  (Amendment 1 condition met).
