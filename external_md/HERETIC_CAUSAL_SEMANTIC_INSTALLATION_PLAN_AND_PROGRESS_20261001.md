@@ -2412,3 +2412,6 @@ all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_
   (evalB) and {16,50} (evalC) for both codewords (amendment 5: descriptive only, curve shape for the rescue-vs-rank
   deliverable; never changes a verdict). P4 evals take the next free slot once runnable.
 - P6 batch 1 1040547 pending (L40S resources).
+- P6: `research/heretic_csi/tests/test_p6_stage0_batch_branches.sh` exercises all 6 branches of
+  p6_stage0_batch.slurm under `bash -u` with stubbed python (reuse+G3 pass, fresh readout rc=4+G3 pass+extract, G3
+  fail, health fail, readout crash, extraction fail) + manifest/job-provenance checks — all OK; run before every batch.
