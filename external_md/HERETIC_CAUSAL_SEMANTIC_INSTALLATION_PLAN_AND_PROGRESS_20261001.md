@@ -2134,3 +2134,18 @@ button's rank-1 direction does not (VAL 14–18/57).
 - Review cadence note: deep review #5 is due (~4.5 h since #4) but is deliberately scheduled to run immediately AFTER
   the P2b TRAIN read (add-ons finish in ~1–2 h) so it can attack that result; S-084 was already independently
   verified (S-126).
+
+## S-129 — 2026-10-14 17:00 — P6 pilot diagnosed (GPU memory, not flags); fixed; candle pilot resubmitted (1039942)
+- Incumbent basket readout (job 865335) used IDENTICAL flags (readout_max_batch default, min_option_mass 0.05, no
+  --allow-tail-readout) but ran on an **L40S (48 GB)**: gate PASS (median 0.060 one-word / 0.60 forced-choice),
+  5,552/5,568 rows (16 occurrence-gate losses). The 26 newer score_behavior args are off or neutral defaults
+  (semantic_options=bank_pair; gate scope/min-dose config only) ⇒ same measurement.
+- Root cause: on the a5000 (24 GB) **4,523/5,568 rows OOM'd** (long dose-4 rows under eager attention); survivors were
+  dose-0-dominated (low option mass by design) ⇒ tail gate failed.
+- Fix `research/heretic_csi/slurm/p6_stage0.slurm` (sha256 a277ef05…31d71): `--gpus=l40s:1` (matches the incumbent
+  readout GPU), mem 96G, + mechanical READOUT HEALTH GATE before extraction (exit 5 on any OOM/CUDA row failure or
+  option_mass_gate ≠ PASS; tested: incumbent passes, failed pilot rejected). Pilot resubmitted: **1039942** (pending).
+  1038879 + its run dir = SUPERSEDED pilot (kept, never used). L40S extraction differs in hardware from the
+  incumbents' V100 extraction (already declared). No fan-out until pilot + axisfit inspected.
+- Hardware note for P6 comparisons: P6 readouts on L40S like the incumbents'; cross-hardware readout noise (S-062)
+  doesn't affect within-codeword rank tests.
