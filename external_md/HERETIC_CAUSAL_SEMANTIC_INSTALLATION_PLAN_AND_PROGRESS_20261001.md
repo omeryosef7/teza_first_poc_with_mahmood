@@ -2120,3 +2120,14 @@ button's rank-1 direction does not (VAL 14–18/57).
 - **P6 Stage-0 pilot:** `p6_stage0.slurm candle` → **1038879** (n-503 warm; a5000; no-requeue). candle is the
   DEV-forced codeword (PREREG_P6). Per S-092 caveat, this single codeword's readout + L18-only extraction (+ CPU axisfit
   next) is inspected end-to-end before fanning out to the other 20. Stage-0 covariates only (no rescue run). GPU 5.
+
+## S-128 — 2026-10-14 16:45 — P6 Stage-0 PILOT (candle) FAILED — caught by the one-codeword pilot as intended
+- 1038879 FAILED (exit 4, 25 min): (1) semantic_forced_choice rows CUDA-OOM (31+ rows) on a5000; (2) score_behavior
+  TAIL GATE: population median option mass semantic_one_word 0.0100, forced_choice 0.0010 < 0.05, plus the
+  tail-readout warning. Cell C dose 4 median 0.080 (OK); dose 0 0.0088 (expected low). Run dir kept as a superseded
+  pilot (`ts116m_readout_candle_bomb_20261014_160945_2569772`).
+- Likely cause: the generic Stage-0 script does not reproduce the incumbent basket readout invocation exactly (flags /
+  batch / GPU class). F7 tasked to diff against the incumbent RUNMETA argv, fix, dry-run, and rerun ONLY candle; any
+  flag change that alters what is measured ⇒ escalate. No fan-out to the other 20 codewords until the pilot passes
+  end-to-end. Not a scientific result.
+- P2b add-ons: basket 26/43, button 19/43; button VAL r1 12, r4 16 (unread).
