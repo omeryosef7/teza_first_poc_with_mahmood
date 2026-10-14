@@ -1727,3 +1727,13 @@ nothing auto-analyzes the early VAL jobs (read-after-TRAIN is procedural). Tests
 ## S-095 — 2026-10-14 07:40 — ops tick
 - P2b evals, 0 failures: basket r1 68, r4 65; button r1 73, r4 63 (of 163); VAL basket r1 91 / r4 108 (unread).
   P4-v2 fits/CV running (3h12). Next deep review due ~08:10 (4 h after S-082/083).
+
+## S-096 — 2026-10-14 08:10 — ops tick + ~4h ADVERSARIAL REVIEW #3 launched
+- P2b evals, 0 failures: basket r1 76, r4 72; button r1 82, r4 71 (of 163); VAL basket r1 101 / r4 120 (unread).
+  P4-v2 fits/CV 8 RUNNING.
+- **Review #3** (fresh independent reviewer, read-only, forbidden from running analyzers on production dirs):
+  amendment-3 code (MEANBIAS construction/sign/TRAIN-only, INCOMPLETE logic, VOID separation, opraw); P4 v2
+  (norm-constrained reparam, IUT rule validity, shared head sets RAW/NC, leakage); F6 powered design (cross-job
+  run-dir combination bias, control-distribution identity, Holm family); P6 prep (do the 17 pool repairs confound
+  cross-codeword comparisons? DEV-draw determinism; envelope exclusion; stage0→axisfit argument compatibility; disk);
+  read discipline; overclaim audit S-084…S-095; tests. → `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_c.md`.
