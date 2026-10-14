@@ -1737,3 +1737,37 @@ nothing auto-analyzes the early VAL jobs (read-after-TRAIN is procedural). Tests
   run-dir combination bias, control-distribution identity, Holm family); P6 prep (do the 17 pool repairs confound
   cross-codeword comparisons? DEV-draw determinism; envelope exclusion; stage0→axisfit argument compatibility; disk);
   read discipline; overclaim audit S-084…S-095; tests. → `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_c.md`.
+
+## S-097 — 2026-10-14 08:40 — ~4h ADVERSARIAL REVIEW #3: 4 HIGH (2 code bugs, 1 wrong published number, 1 unsupported reading)
+Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_c.md` (independent; read-only; no production endpoint read).
+**CORRECTIONS (appended):**
+- **S-085 WITHDRAWN.** `p2a_powered_contrast.py:23-24` averaged each arm over its own surviving rows instead of the
+  rows common to all arms (the frozen analyzer's convention). On common rows (basket 133 / button 193, not 145/203):
+  basket r1 z 3.08→6.68, button r1 0.54→0.78; I = 6.09 [1.39, 7.36] (reviewer-reproduced). And the SIGN of I depends
+  on the control family: RAND-only −1.04, SHUF-only +2.96, pooled +6.10; under pooled/SHUF the positive I comes partly
+  from basket's z FALLING r1→r4. ⇒ **"button gains specificity r1→r4 much more than basket" is NOT supported.** The
+  outcome-A reading of the P2a rank sweep has no contrast support; it rests only on pass-vs-fail (S-083) — HYPOTHESIS.
+- **S-089 RESCOPED.** "No alignment" overclaims: the anisotropic null is conservative (smallest p over 924 statistics
+  0.27; detection needs |cos| ≳ 0.25–0.78 depending on cell). Correct: no *detectable* alignment at the null's
+  sensitivity; H3 stays OPEN.
+**Bugs / risks → owners (all before the affected read):**
+- HIGH: `p2b_analyze.py:307-310`, `p4_analyze_v2.py:117-119` — a VOID/gate-failed primary rank enters Holm with its
+  real p (synthetic: r1 VOID p=1/82 + r4 p=0.03 ⇒ r4 "PASS"); same for the secondary under shared VOIDs. Fix: treat
+  as missing (p=1) ⇒ INCOMPLETE (F2 → AMENDMENT_4; F5 → P4 AMENDMENT_2). **P2b TRAIN read blocked until committed.**
+- HIGH: P6 bottle bank — "bottled"/"bottling" evade the `\bbottles?\b` screen but break the extractor occurrence count
+  (7 extraction rows, 3 TRAIN rescue rows ⇒ FATAL pre-flight). Fix: full occurrence check over all banks (F7).
+- MEDIUM: F6 — all 144 new controls are RAND while SHUF (stronger null) stays n=10; rank ≤3/201 could pass with 2
+  SHUF above the candidate; no overlap arms with job 1022698 ⇒ amend: beat every SHUF, ≥3 overlap arms (bit-exact
+  same-GPU check), 203 shared rows (F6, before submission). MEANBIAS add-on lacks collapse/hook VOIDs and adds the
+  gap at full norm everywhere (may overshoot) ⇒ VOIDs + "input-conditional" requires beating both MEANBIAS variants
+  (F2). P6: DEV draw can return <5 (fill rule); pool-repair counts (6–432/bank) correlate with Zipf (ρ 0.51) ⇒
+  preregister repair sensitivity; power computed one-sided but H6b is two-sided under Holm ⇒ recompute (F7).
+**Verified OK:** MEANBIAS is TRAIN-only clean−KO codeword-row module-output gap with correct sign on CAND's 26 modules;
+opraw exact; VOID-list separation + INCOMPLETE-for-missing correct; P4 v2 constraint correct (c = TOP8 per-module
+norm) and IUT+Holm valid despite shared head sets; F6 Holm family + new controls distributionally identical (KS p 0.93),
+same code/GPU type/seed; P6 envelope exclusion mechanical, DEV draw deterministic from pre-rescue covariates,
+stage0 output matches axisfit, disk on scratch; no analyzer outputs exist; tests 49 passed / 1 skipped.
+
+### WHAT WE MUST NOT SAY (addendum S-097)
+- Any basket-vs-button "specificity gain" contrast from S-085 (withdrawn; control-family-dependent sign).
+- "The learned operator does not align with refusal/d_surface" — only "no alignment detectable at the null's sensitivity".
