@@ -2149,3 +2149,7 @@ button's rank-1 direction does not (VAL 14–18/57).
   incumbents' V100 extraction (already declared). No fan-out until pilot + axisfit inspected.
 - Hardware note for P6 comparisons: P6 readouts on L40S like the incumbents'; cross-hardware readout noise (S-062)
   doesn't affect within-codeword rank tests.
+
+## S-130 — 2026-10-14 17:10 — ops tick
+- Add-ons: basket 32/43, button 26/43 (+2 designed tail-gate MEANBIAS exits each). Button P2b VAL r1 20, r4 27
+  (unread). P6 candle pilot 1039942 on t-806 L40S, cold stage-in (10 min). GPU 5. No failures.
