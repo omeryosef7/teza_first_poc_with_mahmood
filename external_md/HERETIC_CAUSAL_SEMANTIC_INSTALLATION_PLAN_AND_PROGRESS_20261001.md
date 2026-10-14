@@ -1850,3 +1850,8 @@ stage0 output matches axisfit, disk on scratch; no analyzer outputs exist; tests
   any Stage-0 number: H6a single confirmatory (one-sided permutation Spearman α=0.05, no Holm; power at reliability
   0.7: n=15 → 0.56/0.71/0.85, n=12 → 0.46/0.59/0.73 at ρ=0.6/0.7/0.8); H6b descriptive (UNDERPOWERED, never cited as
   evidence against a frequency effect); H6c unchanged.
+
+## S-102 — 2026-10-14 08:40 — ops tick
+- P2b evals, 0 failures: basket r1 84, r4 80; button r1 92, r4 79 (of 163); VAL basket r1 111 / r4 133 (unread).
+  P4-v2 fits (4h12) + CV10 (1024034–37) running. 1024033 (p6occ) FAILED in 34 s and was superseded by 1024038
+  (COMPLETED, results used in S-101) — F7's first attempt, not a result.
