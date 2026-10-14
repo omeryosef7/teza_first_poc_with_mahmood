@@ -2439,3 +2439,7 @@ all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_
 ## S-153 — 2026-10-15 00:10 — ops tick
 - 6 GPU running (cap): button P2b VAL r1 1036679 146/167 (last VAL prerequisite); descriptive evalC 1040700/01 (14
   arms each), evalB 1040759 (8) / 1040766 (6) — all n-503; P6 batch 1 1040547 running on n-802 (20 min). No failures.
+
+## S-154 — 2026-10-15 00:40 — ops tick
+- Button P2b VAL r1 155/167. Descriptive evalC 21/22, evalB 16/15 arms. P6 batch 1: candle G3_FAIL (reused readout),
+  lamp G3_PASS (+extraction) recorded with DONE markers; kettle/pencil/ladder in progress. 6 GPU. No failures.
