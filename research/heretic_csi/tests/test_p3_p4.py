@@ -135,3 +135,16 @@ def test_p4_incomplete_verdicts_never_contain_pass():
     for line in inspect.getsource(v1.main).splitlines():
         if "INCOMPLETE FAMILY" in line:
             assert "PASS" not in line
+
+
+def test_p3_minimal_k_rule_and_boot_ratio():
+    import p3_analyze as p
+    t = {1: {"holm_p": 0.04, "retention": {"ci95": [0.4, 0.9]}}, 2: {"holm_p": 0.03, "retention": {"ci95": [0.6, 1.1]}}}
+    assert p.minimal_k(t) == 2
+    t[1]["retention"]["ci95"] = [0.55, 0.9]
+    assert p.minimal_k(t) == 1
+    t = {1: {"holm_p": 0.2, "retention": {"ci95": [0.9, 1.0]}}}
+    assert p.minimal_k(t) is None
+    doms = [f"d{i}" for i in range(10)]
+    r = p.boot_ratio(doms, {d: 1.0 for d in doms}, {d: 2.0 for d in doms}, n=200)
+    assert abs(r["point"] - 0.5) < 1e-12 and abs(r["ci95"][0] - 0.5) < 1e-12

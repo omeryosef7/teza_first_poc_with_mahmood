@@ -8,7 +8,7 @@ Per module ΔW = U S V^T (exact, from the factors). Keys written:
                (separates "which directions" from "how much norm"); declared variant
   DROP{i}      full ΔW minus component i (1-based, per module, ordered by singular value) -- necessity of
                component i; raw (norm decreases)
-  FULL         the original operator re-expressed (sanity: must reproduce KO_CAND within numerical tolerance)
+  REEXP        the original operator re-expressed (sanity: must reproduce KO_CAND within numerical tolerance)
 k in {1,2,4,8} with k < rank; i in 1..min(rank,4). Controls are generated at run time by the runner's
 `rand:<file>:<KEY>:<seed>` (rank-k, per-module norm-matched to that key) -- see p3p4_emit.py.
 """
@@ -45,7 +45,7 @@ def main():
     fac = blob["operators"][a.key]["factors"]
     r = next(iter(fac.values()))[0].shape[0]
     full_n = {n: po.fro_norm(A, B) for n, (A, B) in fac.items()}
-    ops = {"FULL": {"factors": build(fac, lambda n, S: torch.arange(len(S))), "meta": {"from": a.key}}}
+    ops = {"REEXP": {"factors": build(fac, lambda n, S: torch.arange(len(S))), "meta": {"from": a.key, "note": "CAND re-expressed from its SVD; must reproduce KO_CAND (named REEXP, not FULL, to avoid clashing with the KO_FULL whole-state-rescue liveness arm)"}}}
     for k in (1, 2, 4, 8):
         if k < r:
             t = build(fac, lambda n, S, k=k: torch.arange(min(k, len(S))))
@@ -57,10 +57,10 @@ def main():
                                "meta": {"from": a.key, "removed_component": i}}
     # sanity: FULL reproduces the original ΔW
     for n, (A, B) in fac.items():
-        A2, B2 = ops["FULL"]["factors"][n]
+        A2, B2 = ops["REEXP"]["factors"][n]
         d = (B.double() @ A.double() - B2.double() @ A2.double()).norm() / max(1e-12, full_n[n])
         if d > 1e-4:
-            raise SystemExit(f"FULL re-expression mismatch {n}: rel {d:.2e}")
+            raise SystemExit(f"REEXP re-expression mismatch {n}: rel {d:.2e}")
     for key, o in ops.items():
         o["meta"]["raw_fro"] = {n: po.fro_norm(A, B) for n, (A, B) in o["factors"].items()}
     torch.save({"operators": ops, "provenance": {"source": a.factors, "source_key": a.key, "rank": r}}, a.out)

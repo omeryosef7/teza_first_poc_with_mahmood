@@ -16,7 +16,8 @@ def main():
     ap.add_argument("--what", required=True, choices=("p3", "p4", "p4v2"))
     ap.add_argument("--cw", required=True); ap.add_argument("--snap", required=True); ap.add_argument("--excl", required=True)
     ap.add_argument("--prefix", required=True); ap.add_argument("--file", required=True)
-    ap.add_argument("--nrand", type=int, default=40, help="P3: random norm-matched controls per TOP-k key")
+    ap.add_argument("--nrand", type=int, default=40, help="P3: random norm-matched controls per raw TOP-k key (seeds 9000+100k+i)")
+    ap.add_argument("--nrand-n", type=int, default=0, help="P3: random norm-matched controls per renormed TOP-kN key (seeds 9500+100k+i; descriptive)")
     ap.add_argument("--n-rh8", type=int, default=60, help="P4: random-8-head fitted controls")
     ap.add_argument("--base-arm", action="store_true", help="also apply the primary key on BASE (preservation)")
     a = ap.parse_args()
@@ -30,6 +31,9 @@ def main():
         for key in sorted(k for k in ops if k.startswith("TOP") and not k.endswith("N")):
             for i in range(a.nrand):
                 em(f"rand:{a.file}:{key}:{9000 + 100 * int(key[3:]) + i}", f"{C} {KO}", f"KO_RAND_{key}_{i}")
+        for key in sorted(k for k in ops if k.startswith("TOP") and k.endswith("N")):
+            for i in range(a.nrand_n):
+                em(f"rand:{a.file}:{key}:{9500 + 100 * int(key[3:-1]) + i}", f"{C} {KO}", f"KO_RAND_{key}_{i}")
     elif a.what == "p4v2":   # PREREG_P4_AMENDMENT_1: two fitted control families (RAW own-optimum, NC norm-constrained refit)
         for key in ("TOP8", "TOP8_L6_14", "FULLO", "MLP", "ATTNMLP", "H2", "CELL_L10H2"):
             em(f"op:{a.file}:{key}", f"{C} {KO}", f"KO_{key}")

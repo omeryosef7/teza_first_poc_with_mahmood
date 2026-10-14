@@ -2518,3 +2518,19 @@ Verifier/reviewer (own code `research/heretic_csi/verify/verify_p2b_val.py`) →
 - Next (P3): truncation/removal interventions were gated on a VALIDATION PASS ⇒ basket r4 qualifies (marginally);
   F5 asked to freeze PREREG_P3_TRUNC (descriptive given the marginal parent PASS) and then run p3_basket_r4_val.sh
   (≈5.6 GPU-h). Button: no P3 interventions (no passing operator). MEANBIAS_NM VAL arms (descriptive) remain optional.
+
+## S-158 — 2026-10-15 01:40 — P3 truncation PREREG committed (job already running; no arm complete); P4 fit timing
+- `configs/heretic_csi/PREREG_P3_TRUNC.json` (sha256 470591ba…eaf53), written by F5 before submission. **Timing
+  disclosure:** job 1041078 was submitted before the parent committed the file; at commit time exactly 1 hcsi_p3 run
+  dir existed (BASE liveness arm, in progress, no DONE) ⇒ no truncation endpoint existed at freeze.
+- Design: frozen basket r4 operator (`fac/factors_basket_r4.pt`), VALIDATION only; top-k (k∈{1,2}) truncations vs 40
+  norm-matched random rank-k edits per module (Holm over k; floor 1/41); retention = truncated effect / re-expressed full
+  operator effect (domain-bootstrap CI); minimal k = smallest k with Holm p<0.05 AND retention CI-lo ≥ 0.5, else "no
+  k ≤ 2 retains the effect specifically"; component-removal (4) and renormalised top-k DESCRIPTIVE; everything labelled
+  descriptive (marginal parent PASS). Wording limits recorded (no "mechanism is k-dimensional"; sufficiency ≠
+  necessity; write-direction vs conditioning not separated; basket only). Gate `research/heretic_csi/p3_gate.py`
+  (accepts basket r4 VAL PASS; refuses button r4, basket r1, wrong codeword; tested). Truncation key renamed REEXP (no
+  clash with KO_FULL); liveness arms run in-job (single GPU). `p3_analyze.py` + tests 13/13. Job **1041078** (n-503,
+  133 arms, ~8.4 GPU-h, ETA ~10:00).
+- P4 fits later than estimated: CV10 jobs at fold 3–4/5 (ETA ~06:00–08:00); fit jobs 33–54/60 control pairs (ETA
+  ~12:00–13:00; within the 2-day limit). Final fit-side summary auto-generated when all 8 DONE.

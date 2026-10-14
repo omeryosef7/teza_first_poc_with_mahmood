@@ -1,0 +1,36 @@
+{
+  "schema": "hcsi_prereg/1",
+  "id": "PR-HCSI-P3-TRUNC",
+  "written": "2026-10-15, BEFORE the P3 job is submitted (no hcsi_p3_* score dir exists)",
+  "gate": "Runs only because the parent P2b basket r4 PRIMARY verdict on VALIDATION is PASS (reports/heretic_csi/p2b_basket_primary_validation.json: 'PASS (Holm p=0.04878, recovery 1.501 CI [1.222, 1.831])', independently verified S-156/S-157). research/heretic_csi/p3_gate.py refuses anything else (tested: button r4, basket r1, wrong codeword file -> refused). Button is NOT run (fails all).",
+  "status": "ALL P3 RESULTS ARE DESCRIPTIVE: the parent PASS is marginal (Holm 0.0488; lost in 9/23 leave-one-domain-out drops). Nothing here can upgrade or rescue the parent claim.",
+  "operator": "frozen P2b basket rank-4 CAND, outputs/heretic_csi/p2b/prod/fac/factors_basket_r4.pt (sha256 96e3af94c19c9b530a91df7db7117b9db84c88c17f9ddf4f0f0b183d4520b6df), 26 modules (o_proj + down_proj, L6-18). Per module exact SVD dW = U S V^T from the factors (no refit).",
+  "population": "VALIDATION: runargs/dcs_cont/exclude_basket_bomb_sow_validation.txt (230 rows / 23 domains), same score_behavior flags as P2b (eager, bf16, option-mass floor 0.05 BASE-referenced), knockout demo_all:attn_knockout:6-14:1.0 target_surface_row_only. TEST never.",
+  "arms": {
+    "liveness_within_job": "BASE, KO, KO_FULL (whole-state rescue), KO_IDENT -- run INSIDE the P3 job so every comparison is on one GPU (cross-hardware readout noise, S-062)",
+    "KO_REEXP": "CAND re-expressed from its SVD (sanity: must behave as KO_CAND)",
+    "KO_TOP1, KO_TOP2": "sum of the top-k singular components of every module (raw norm, <= full)",
+    "KO_TOP1N, KO_TOP2N": "same directions rescaled per module to the full CAND norm (descriptive)",
+    "KO_DROP1..4": "full dW minus component i (per module, ordered by singular value)",
+    "KO_RAND_TOPk_0..39": "rank-k random operators, per-module Frobenius norm matched to TOPk (seeds 9000+100k+i)",
+    "KO_RAND_TOPkN_0..19": "rank-k random operators matched to TOPkN (seeds 9500+100k+i; descriptive)",
+    "total": "133 arms"
+  },
+  "what_is_read": {
+    "truncation_sufficiency": "For k in {1,2}: rank of KO_TOPk among its 40 norm-matched random rank-k controls on stat = mean_d(arm - KO); p_k = (1 + #controls >= TOPk)/41; Holm over k in {1,2}. retention_k = stat(TOPk)/stat(REEXP) with domain-bootstrap 95% CI.",
+    "minimal_sufficient_learned_subspace": "k* = smallest k with Holm p < 0.05 AND retention CI lower bound >= 0.5. If none: 'no k <= 2 retains the CAND effect specifically' (the rank-4 operator's effect is not carried by its top-1/top-2 learned components, or not specifically).",
+    "removal_necessity": "loss_i = stat(REEXP) - stat(DROP_i) with domain-bootstrap CI and frac_i = loss_i / stat(REEXP), i = 1..4. Descriptive only (no matched control family for removal).",
+    "power_floor": "40 controls -> p floor 1/41 = 0.0244; Holm over 2 -> 0.0488 < 0.05: a k qualifies only if TOPk is strictly first among its controls at one k (and p <= 0.05 at the other) -- attainable but at the floor."
+  },
+  "gates_and_void": "KO < BASE, KO_FULL > KO, KO_IDENT == KO (|dy| <= 1e-9), hooks fired on every operator arm, readout not collapsed on liveness/REEXP (collapsed controls flagged). Any failure -> VOID / CANNOT ANSWER, no k* reported.",
+  "analyzer": "research/heretic_csi/p3_analyze.py --codeword basket --rank 4 --split validation --expect-n 230 --nrand 40 --nrand-n 20 --trunc-file outputs/heretic_csi/p2b/prod/p3/trunc_basket_r4.pt --out reports/heretic_csi/p3_basket_r4_validation.json",
+  "wording_limits": [
+    "Descriptive only; never 'the semantic-installation mechanism is k-dimensional'. At most: 'the top-k learned components of this TRAIN-fitted rank-4 weight operator retain X of its validation effect, more than / not more than norm-matched random rank-k operators'.",
+    "Sufficiency of a truncated operator is not necessity; DROP_i losses are descriptive necessity of components OF THIS OPERATOR, not of the model's mechanism.",
+    "P3 geometry (write direction = mean KO->clean gap, shared with fitted controls) means the CAND effect may be largely the mean-shift; truncation results do not separate 'input-conditional operator' from 'adds the mean shift'.",
+    "Basket only (button failed); no cross-codeword or population claim; no behavioral claim.",
+    "CAND recovery 1.501 > 1 (overshoots whole-state rescue) -- report recoveries as fractions of KO_FULL with that caveat."
+  ],
+  "hardware": "a5000 (same GPU type as the P2b VALIDATION read); prefer -w n-501 / n-503 if free; stage from the verified scratch mirror; <= 1 GPU job.",
+  "gpu_estimate": "133 arms x ~227 s ~ 8.4 GPU-h (+ stage-in)"
+}
