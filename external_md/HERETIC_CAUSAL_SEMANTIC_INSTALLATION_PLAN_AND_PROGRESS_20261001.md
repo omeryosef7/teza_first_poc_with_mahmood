@@ -2430,3 +2430,8 @@ all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_
   F2 told explicitly not to submit evalC; evalB ({2,8,32}) remains F2's. Self-correction: I briefly attached a SLURM
   `--dependency` to 1040701 to stagger stage-ins — removed within a minute (sprint rule: no job deps); staggering is
   enforced by log-watching. Button P2b VAL r1 128/167, r4 154/163 (unread). No failures.
+
+## S-152 — 2026-10-14 23:40 — ops tick
+- Button P2b VAL r4 (1036680) DONE_MARKER (164 ok lines); r1 (1036679) 137/167 — last VAL prerequisite (~1.5 h).
+  Descriptive evalC 1040700 / 1040701 running (6 arms each); F2's evalB appear as 1040759 (running) + 1040766
+  (pending). P6 batch 1 1040547 pending. GPU 4 running + 2 pending. No failures.
