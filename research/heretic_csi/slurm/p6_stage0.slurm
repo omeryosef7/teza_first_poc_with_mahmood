@@ -1,4 +1,8 @@
 #!/bin/bash
+# !!! SUPERSEDED (2026-10-14, PREREG_P6_AMENDMENT_4): this single-codeword script gates extraction on score_behavior's
+# POOLED tail gate, which is NOT G3. Use p6_stage0_batch.slurm (HEALTH + p6_g3.py). Kept only for provenance of
+# pilots 1038879/1039942/1040044/1040103. Refuses to run.
+echo 'SUPERSEDED: use research/heretic_csi/slurm/p6_stage0_batch.slurm'; exit 9
 # HERETIC-CSI P6 Stage 0 (GPU), ONE codeword per allocation: (1) base y_install readout, (2) SLIM behavioral
 # extraction (layer 18 ONLY; the incumbents' 19-layer grid is 12 GB/codeword and would breach the 200 GB home cap).
 # Commands are the incumbents' recovered argv (RUNMETA of ts116m_readout_basket_bomb_20260907_152329_3191150 and

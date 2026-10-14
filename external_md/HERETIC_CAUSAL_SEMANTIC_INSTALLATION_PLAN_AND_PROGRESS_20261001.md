@@ -2375,3 +2375,21 @@ all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_
   framing: candle fails the frozen G3 on its own merits; the pooled gate was never G3.) Implementation note to be
   recorded as PREREG_P6_AMENDMENT_4 (implementation note); lamp extraction to run; fan-out continues.
 - Button P2b VAL r1 84 / r4 104 (unread); VAL add-ons 35 / 33. No failures.
+
+## S-146 — 2026-10-14 21:00 — P6 G3 fixed to frozen text (PREREG_P6_AMENDMENT_4 = implementation note); fan-out restarted
+- Source check: score_behavior's pooled tail gate = one median over every readout row (cells A/C, doses 0/4, both
+  blocks; `option_mass_gate_min_dose` applies only in per-cell mode) — a readout-health check, not G3.
+- **G3 as frozen** (`research/heretic_csi/p6_g3.py`, sha256 78ce810b…): median per-row option mass of the
+  no-intervention readout over the TRAIN population the rescue BASE arm scores (cell C, one-word, dose 4, cds_n4_sow,
+  minus the TRAIN exclusion file; `_occ` for bottle/cushion) = 670 rows / 67 domains; PASS iff > 0.05. HEALTH (DONE,
+  no OOM/CUDA rows, only declared occurrence failures) separate; pooled tail gate recorded, never used.
+- Evaluator check + re-evaluation from existing readouts (no rerun): basket 0.0883 PASS, button 0.3283 PASS (sanity),
+  **candle 0.0481 FAIL** (verdict unchanged, reason corrected), **lamp 0.0754 PASS** (was wrongly gated ⇒ extraction
+  now runs). Descriptive all-split C dose-4: candle 0.0419, lamp 0.0678.
+- Batch A (1040225) cancelled after its one finished codeword (lamp) was mis-gated; kettle's partial readout (no DONE)
+  can never be selected. Scripts: `p6_stage0_batch.slurm` (HEALTH → G3 → extract only on G3 pass; reuse readout only if
+  its manifest job checks out), `p6_axisfit.slurm` (refuses non-G3_PASS), old `p6_stage0.slurm` marked superseded and
+  refuses to run. `configs/heretic_csi/PREREG_P6_AMENDMENT_4.json` (sha256 bd453164…f0e8) records bug, implementation,
+  sanity checks, affected attempts. Rule unchanged.
+- G1 installer strength (C−A) so far: candle 0.515 [0.46, 0.57]; basket 0.475; button 0.678.
+- Fan-out: batch A′ = **1040422** (11 codewords, candle…cushion); batch B (10) next; ≤1 P6 GPU job at a time.

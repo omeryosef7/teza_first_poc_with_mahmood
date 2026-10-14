@@ -30,10 +30,14 @@ fi
 [ -s "$MAN" ] || { echo "MISSING stage0 manifest $MAN"; exit 2; }
 CORPUS=$(python -c "import json;print(json.load(open('$MAN'))['extract_dir'])")
 READOUT=$(python -c "import json;print(json.load(open('$MAN'))['readout_dir'])")
-SJ=$(python -c "import json;print(json.load(open('$MAN'))['slurm_job'])")
-# both dirs must belong to the manifest's Stage-0 job and be DONE (no stale/preempted partial dirs)
-python research/heretic_csi/p6_select_run.py --job "$SJ" --verify "$READOUT" || { echo "READOUT dir not from job $SJ or not DONE"; exit 3; }
-python research/heretic_csi/p6_select_run.py --job "$SJ" --verify "$CORPUS" || { echo "CORPUS dir not from job $SJ or not DONE"; exit 3; }
+RJ=$(python -c "import json;m=json.load(open('$MAN'));print(m.get('readout_slurm_job') or m['slurm_job'])")
+XJ=$(python -c "import json;m=json.load(open('$MAN'));print(m.get('extract_slurm_job') or m['slurm_job'])")
+ST=$(python -c "import json;print(json.load(open('$MAN')).get('status'))")
+[ "$ST" == "G3_PASS" ] || { echo "REFUSING: stage0 status=$ST (only G3_PASS codewords get an axis fit)"; exit 3; }
+# each dir must belong to ITS recorded Stage-0 job and be DONE (no stale/preempted partial dirs; readout may be reused
+# from an earlier job while extraction ran in a later one)
+python research/heretic_csi/p6_select_run.py --job "$RJ" --verify "$READOUT" || { echo "READOUT dir not from job $RJ or not DONE"; exit 3; }
+python research/heretic_csi/p6_select_run.py --job "$XJ" --verify "$CORPUS" || { echo "CORPUS dir not from job $XJ or not DONE"; exit 3; }
 echo "HOST=$(hostname) JOB=${SLURM_JOB_ID:-none} CW=$CW CORPUS=$CORPUS READOUT=$READOUT $(date -Is)"
 python scripts/dcs_csi_axis.py --codeword "$CW" --corpus "$CORPUS" --readout "$READOUT" \
   --fit-prompt behavioral --site rel-6 --force-layer 18 --max-rank 16 --rank-controls 1,4,16 \

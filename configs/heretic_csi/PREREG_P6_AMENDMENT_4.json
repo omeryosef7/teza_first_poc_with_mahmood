@@ -1,0 +1,59 @@
+{
+ "schema": "hcsi_prereg_amendment/1",
+ "id": "PR-HCSI-P6 AMENDMENT 4 \u2014 IMPLEMENTATION NOTE (no rule change)",
+ "written": "2026-10-14, F7, on the parent's finding",
+ "frozen_text": "PREREG_P6.json gates_mechanical.G3 = 'option-mass gate PASS (median > 0.05 on BASE)' \u2014 unchanged.",
+ "bug": "p6_stage0.slurm / the first p6_stage0_batch.slurm implemented G3 as score_behavior's POOLED tail gate (one median per readout kind over every row of the Stage-0 readout: cells A and C, doses 0 and 4, both blocks; verified in score_behavior.py ~L4740-4830 \u2014 under --option-mass-gate-scope pooled (default) dose 0 IS included; --option-mass-gate-min-dose=1 applies only under per_cell_dose; the pooled check tests the upper-middle element `med`, a recorded quirk). That is a different readout-health statistic, not the frozen G3.",
+ "implementation": {
+  "G3": "research/heretic_csi/p6_g3.py: median per-row option_mass of the BASE (no-intervention) Stage-0 readout over the rescue job's BASE-arm TRAIN population = bank rows semantic_one_word / natural_doublespeak (cell C) / n_examples 4 / bank_block cds_n4_sow minus the codeword's TRAIN exclusion file (exclude_<cw>_bomb_sow_train.txt; _occ version for bottle/cushion per AMENDMENT_1) \u2014 670 rows / 67 TRAIN domains (same population as the incumbent rescue BASE arm, runargs/dcs_cont/exclude_<cw>_bomb_sow_train.txt). PASS iff median > 0.05 (strict).",
+  "HEALTH": "separate job-integrity check, NOT G3: run DONE, 0 OOM/CUDA rows, no failure reason other than the declared occurrence_count_mismatch attrition.",
+  "pooled_tail_gate": "RECORDED in every manifest (pooled_tail_gate_RECORDED_NOT_USED); score_behavior's rc=4 on it is treated as 'readout complete, tail gate failed (recorded)'.",
+  "scripts": "p6_stage0_batch.slurm (HEALTH + p6_g3.py, readout reuse via job-verified manifests); p6_stage0.slurm SUPERSEDED (refuses to run); p6_axisfit.slurm requires status G3_PASS and verifies readout/extract dirs against their own recorded jobs."
+ },
+ "validation_on_incumbents": {
+  "basket": {
+   "g3_median_option_mass": 0.08831,
+   "G3": "PASS",
+   "g3_rows_scored": 670,
+   "g3_domains": 67,
+   "pooled_tail_gate_RECORDED_NOT_USED": "PASS"
+  },
+  "button": {
+   "g3_median_option_mass": 0.3283,
+   "G3": "PASS",
+   "g3_rows_scored": 670,
+   "g3_domains": 67,
+   "pooled_tail_gate_RECORDED_NOT_USED": "PASS"
+  }
+ },
+ "re_evaluated_from_existing_readouts_no_rerun": {
+  "candle": {
+   "readout_dir": "outputs/boombness/score_behavior/ts116m_readout_candle_bomb_20261014_185228_923425",
+   "g3_median_option_mass": 0.04806,
+   "G3": "FAIL",
+   "g3_rows_scored": 670,
+   "g3_domains": 67,
+   "descriptive_C_dose4_all_splits_median": 0.04193,
+   "pooled_tail_gate_RECORDED_NOT_USED": "OVERRIDDEN \u2014 NOT REPORTABLE: semantic/semantic_one_word: median option mass 0.02483 < 0.05"
+  },
+  "lamp": {
+   "readout_dir": "outputs/boombness/score_behavior/ts116m_readout_lamp_bomb_20261014_193537_925876",
+   "g3_median_option_mass": 0.0754,
+   "G3": "PASS",
+   "g3_rows_scored": 670,
+   "g3_domains": 67,
+   "descriptive_C_dose4_all_splits_median": 0.06782,
+   "pooled_tail_gate_RECORDED_NOT_USED": "OVERRIDDEN \u2014 NOT REPORTABLE: semantic/semantic_one_word: median option mass 0.02852 < 0.05"
+  }
+ },
+ "affected_attempts": {
+  "1040103 (candle, p6_stage0.slurm)": "readout VALID and reused; earlier 'G3 fail' was the pooled gate \u2014 correct G3 = FAIL (0.0481) \u2014 verdict unchanged, reason corrected.",
+  "1040225 (batch A, cancelled after lamp)": "lamp readout VALID and reused; lamp was wrongly marked G3_FAIL by the pooled gate \u2014 correct G3 = PASS (0.0754) => extraction to run. kettle's readout dir ts116m_readout_kettle_bomb_20261014_200955_927832 is PARTIAL (no DONE; cancelled) \u2014 never used (job-scoped selection).",
+  "superseded/unused": [
+   "1038879 (a5000 OOM)",
+   "1039942 (preempted partial dir ts116m_readout_candle_bomb_20261014_171043_2895750)",
+   "1040044 (node /tmp full, no run dir)"
+  ]
+ },
+ "no_rule_change": "G1-G3 thresholds, populations of all hypotheses, and the DEV draw are unchanged; only the implementation now matches the frozen G3 text."
+}
