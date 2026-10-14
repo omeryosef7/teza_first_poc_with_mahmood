@@ -2393,3 +2393,7 @@ all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_
   sanity checks, affected attempts. Rule unchanged.
 - G1 installer strength (C−A) so far: candle 0.515 [0.46, 0.57]; basket 0.475; button 0.678.
 - Fan-out: batch A′ = **1040422** (11 codewords, candle…cushion); batch B (10) next; ≤1 P6 GPU job at a time.
+
+## S-147 — 2026-10-14 21:10 — ops tick
+- Button P2b VAL r1 93 / r4 114 (unread); VAL add-ons basket 44 / button 42 (≈done; +2 designed exits each);
+  1040170 overlap pending. P6 batch A′ 1040422 on n-805 (11 min). GPU 5 + 1 pending. No failures.
