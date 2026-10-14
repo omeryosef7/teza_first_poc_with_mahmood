@@ -2023,3 +2023,7 @@ Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_d.md` (independent; saw 
 ## S-119 — 2026-10-14 13:40 — ops tick
 - basket r4 TRAIN 147/163, button r4 142/163, basket r1 resume 15, button r1 resume 8; S-084 j1 63/76, j2 38/72.
   1035278 held. 0 failures.
+
+## S-120 — 2026-10-14 14:10 — ops tick
+- basket r4 TRAIN 154/163, button r4 150/163, basket r1 resume 22, button r1 resume 16; S-084 j1 72/76 (near done),
+  j2 47/72. 1035278 held. 0 failures.
