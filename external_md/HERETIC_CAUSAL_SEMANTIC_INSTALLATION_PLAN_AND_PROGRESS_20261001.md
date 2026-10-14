@@ -1893,3 +1893,7 @@ F3 (`reports/heretic_csi/VERIFY_basketball_occurrence.{md,json}`, `VERIFY_codewo
   positions, norm-match key cand_pls4, button bank, VAL exclude; cand_pls4 byte-identical to the original whose meta
   says layer 18 / button). **1027577 kept.** Hygiene fix for future extension files: copy source meta (not changed
   mid-run to keep the sha).
+
+## S-108 — 2026-10-14 11:10 — ops tick
+- P2b TRAIN, 0 failures: basket r1 121, r4 109; button r1 136, r4 107 (of 163); VAL basket r1 159 (unread).
+  S-084 re-test 1027577: 18 arms ok (overlap arms first). GPU 6. Next deep review ~12:10.
