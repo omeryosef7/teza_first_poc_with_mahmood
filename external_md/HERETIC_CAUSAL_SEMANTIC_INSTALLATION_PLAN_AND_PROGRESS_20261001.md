@@ -2181,3 +2181,8 @@ button's rank-1 direction does not (VAL 14–18/57).
   (separate descriptive amendment-6 section). Tests 74 passed / 1 skipped (F2). 0 analyzer outputs exist.
 - Basket add-on 1036622 COMPLETED (41/43 ok + 2 designed MEANBIAS tail-gate exits; DONE rc=0; add-on overlap OK,
   |Δy| 0). Button add-on 1036626 ~39/44. **TRAIN primary read authorized once 1036626 is DONE + its overlap OK.**
+
+## S-134 — 2026-10-14 18:10 — ops tick: button add-on DONE; TRAIN read in progress (F2)
+- 1036626 (button add-on) DONE_MARKER. F2 running the frozen TRAIN analysis (CPU python jobs 1040083–88).
+  1040065 = NM TRAIN-K4 add-on job (n-503). Button P2b VAL r1 39 / r4 49 (unread). P6 pilot 1040044 cold-staging
+  on n-801 (23 min). GPU 4.
