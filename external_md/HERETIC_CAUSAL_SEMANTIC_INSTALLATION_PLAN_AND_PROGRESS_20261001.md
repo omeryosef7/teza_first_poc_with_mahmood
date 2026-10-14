@@ -2515,3 +2515,6 @@ Verifier/reviewer (own code `research/heretic_csi/verify/verify_p2b_val.py`) →
 - "P2a and P2b disagree about button" (not comparable).
 - "Input-conditional operator" (wording suspended: MEANBIAS collapsed).
 - "Pairing-specific operator" beyond the +0.018 generalization increment.
+- Next (P3): truncation/removal interventions were gated on a VALIDATION PASS ⇒ basket r4 qualifies (marginally);
+  F5 asked to freeze PREREG_P3_TRUNC (descriptive given the marginal parent PASS) and then run p3_basket_r4_val.sh
+  (≈5.6 GPU-h). Button: no P3 interventions (no passing operator). MEANBIAS_NM VAL arms (descriptive) remain optional.
