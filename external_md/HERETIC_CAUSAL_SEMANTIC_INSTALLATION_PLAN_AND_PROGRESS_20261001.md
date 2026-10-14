@@ -2131,3 +2131,6 @@ button's rank-1 direction does not (VAL 14–18/57).
   flag change that alters what is measured ⇒ escalate. No fan-out to the other 20 codewords until the pilot passes
   end-to-end. Not a scientific result.
 - P2b add-ons: basket 26/43, button 19/43; button VAL r1 12, r4 16 (unread).
+- Review cadence note: deep review #5 is due (~4.5 h since #4) but is deliberately scheduled to run immediately AFTER
+  the P2b TRAIN read (add-ons finish in ~1–2 h) so it can attack that result; S-084 was already independently
+  verified (S-126).
