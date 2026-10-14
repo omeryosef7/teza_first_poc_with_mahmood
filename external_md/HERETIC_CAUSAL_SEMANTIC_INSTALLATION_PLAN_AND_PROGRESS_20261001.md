@@ -2009,3 +2009,8 @@ Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_d.md` (independent; saw 
 - **Parent decision:** button r4 TRAIN mixes n-503 liveness with n-501 r4 arms; cross-codeword hardware evidence is
   not enough ⇒ a button-specific n-501 overlap (re-run button KO + one completed control on n-501 vs 1023264's n-503
   dirs) is REQUIRED before the button TRAIN read (F2). Add-on jobs auto-submitted when two TRAIN jobs finish.
+- **S-117 revision (before any read):** button n-501↔n-503 overlap made codeword-specific — appended to held job
+  1035278 (re-runs button KO, KO_CAND_r1, KO_RAND_r1_0, KO_DER_r1_0 from 1023264's n-503 dirs on n-501 →
+  overlap_buttonn501_1035278_r0.json). `configs/heretic_csi/ANALYSIS_COMMANDS_P2B.md` superseded → sha256
+  185a8abb…f3c6 (dated revision note); button TRAIN command no longer uses the basket overlap file. Read gating: all
+  OVERLAP_OK files (basket 1035278; button 1035131 + 1035278; add-on k4 ×2) + add-on K4 DONE before the TRAIN read.

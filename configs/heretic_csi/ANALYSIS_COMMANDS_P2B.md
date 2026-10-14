@@ -22,8 +22,10 @@ Run from the repo root with `PY=/home/sharifm/students/omeryosef/miniconda3/envs
 - basket r1 resume (n-501 vs preempted 1023012 n-503): `outputs/heretic_csi/p2b/prod/overlap_basket_1035278_r0.json`
 - button r1 resume (in-allocation vs preempted 1023264): `outputs/heretic_csi/p2b/prod/overlap_button_1035131_r0.json`
 - add-on TRAIN (in-allocation KO vs the liveness job): `outputs/heretic_csi/p2b/prod/overlap_addon_<cw>_k4_<ATTEMPT>.json`
-- Button r4 mixes n-503 (liveness, 1023264) and n-501 (1023509): covered by the basket overlap file (n-501 vs n-503
-  host equivalence, cross-codeword evidence — stated in the report); both files are passed.
+- button n-501 vs preempted 1023264 n-503 (CODEWORD-SPECIFIC, parent S-117; covers button r4 = n-501 arms + n-503
+  liveness): `outputs/heretic_csi/p2b/prod/overlap_buttonn501_1035278_r0.json` (job 1035278, pinned n-501, tags
+  hcsi_p2b_button_k4ovln501_*). The basket overlap file is NOT used for button.
+- REVISION 2026-10-14 (before any TRAIN read): this replaced the earlier cross-codeword coverage of button r4.
 
 ## TRAIN (K4: 268 rows / 67 domains; in-sample, DESCRIPTIVE) — primary + secondary + add-on
 
@@ -35,7 +37,7 @@ $PY research/heretic_csi/p2b_analyze.py --codeword basket --prefix hcsi_p2b_bask
 
 $PY research/heretic_csi/p2b_analyze.py --codeword button --prefix hcsi_p2b_button_k4 --split train --expect-n 268 \
   --ranks 1,4 --nrand 61 --nshuf 5 --nder 15 --capop --cw-nrand 61 --cw-nder 15 --addon \
-  --overlap outputs/heretic_csi/p2b/prod/overlap_button_1035131_r0.json,outputs/heretic_csi/p2b/prod/overlap_basket_1035278_r0.json,outputs/heretic_csi/p2b/prod/overlap_addon_button_k4_<ATTEMPT>.json \
+  --overlap outputs/heretic_csi/p2b/prod/overlap_button_1035131_r0.json,outputs/heretic_csi/p2b/prod/overlap_buttonn501_1035278_r0.json,outputs/heretic_csi/p2b/prod/overlap_addon_button_k4_<ATTEMPT>.json \
   --out reports/heretic_csi/p2b_button_primary_train.json
 ```
 
