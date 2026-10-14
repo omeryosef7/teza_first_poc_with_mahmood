@@ -2359,3 +2359,7 @@ all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_
 ## S-143 — 2026-10-14 19:40 — ops tick
 - P6 Stage-0 batch A = 1040225 (lamp…cushion; n-802 L40S; one model load). Button P2b VAL r1 66 / r4 83 (unread);
   VAL add-ons basket 17 / button 14 (+2 designed tail-gate exits each); 1040170 pending. GPU 5 + 1 pending. No failures.
+
+## S-144 — 2026-10-14 20:10 — ops tick
+- Button P2b VAL r1 75 / r4 93 (unread); VAL add-ons basket 26 / button 23 (+2 designed exits each); 1040170 pending.
+  P6 batch A 1040225 in its first codeword's readout (35 min). No failures.
