@@ -1540,3 +1540,16 @@ F5 (CPU only). Reports: `reports/heretic_csi/P3_SVD_REPORT.md`, `P3_svd_descript
 - 6 GPU running (cap): 1023012 (button fits, r32 done → r50, then basket r1 TRAIN eval), 1023508 (basket r4 TRAIN,
   ~13 arms), 1023509 (button r4, waiting factors), 1023264 (button r1, started), 1023578/79 (basket VAL r1/r4, not to
   be read before TRAIN). 4 P4 CPU fits running. No failures/duplicates.
+
+## S-082 — 2026-10-14 04:10 — ops tick; all P2b fits done; ~4h ADVERSARIAL REVIEW #2 launched; P3 rerun incl. button
+- fit_summary_{basket,button}.json present ⇒ all 7 ranks × 2 codewords fitted (frozen). TRAIN-K4 evals running:
+  1023012 (basket r1), 1023508 (basket r4, ~20 arms), 1023264 (button r1), 1023509 (button r4). VAL basket r1/r4
+  (1023578/79) running, unread. 6 GPU (cap). P4 CPU fits running. hcsi_p3svd2 (1023562) COMPLETED (F5). No failures.
+- **Adversarial review #2** (fresh independent reviewer, read-only): p2b decide()/Holm/CI/collapse/VOID, whether the
+  S-065 fixes actually landed (incl. checking saved control factors' rank/norm), P4 head-column restriction + random
+  head sets + TOP8 provenance + leakage, P3 effective-rank/null construction and the "shared write direction" claim,
+  P2a button-r4 VAL headline re-attack incl. prereg-commit-time vs job-start, Phase-B verdict, read discipline for the
+  early VAL runs, overclaim audit S-066…S-081, tests. → `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_b.md`.
+- **P3 rerun with button factors:** CPU job 1023746 (`research/heretic_csi/p3_run_all.py`). The basket-only S-079
+  reports are preserved as `reports/heretic_csi/P3_*_S079_basket_only.*` (the regenerated files supersede them; no
+  history rewritten).
