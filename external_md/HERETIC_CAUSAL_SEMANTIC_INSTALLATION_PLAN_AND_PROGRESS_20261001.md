@@ -1867,3 +1867,7 @@ F3 (`reports/heretic_csi/VERIFY_basketball_occurrence.{md,json}`, `VERIFY_codewo
 - Button bank clean (F7 gate 0 failures; independent scan: no buttonhole/buttoned/buttons).
 - Lesson carried to P6 (already in PREREG_P6_AMENDMENT_1): every bank must pass `resolve_occurrences`; collision
   rows/domains excluded mechanically before population freeze.
+
+## S-104 — 2026-10-14 09:10 — ops tick
+- P2b evals, 0 failures: basket r1 92, r4 86; button r1 101, r4 85 (of 163); VAL basket r1 122 / r4 145 (unread;
+  r4 VAL nearly done). P4-v2 CPU fits/CV10 running.
