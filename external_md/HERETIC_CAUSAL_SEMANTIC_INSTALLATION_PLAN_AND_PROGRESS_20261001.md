@@ -2541,3 +2541,7 @@ Verifier/reviewer (own code `research/heretic_csi/verify/verify_p2b_val.py`) →
   pencil/ladder in progress). No failures.
 - Next deep review ~05:30 (4 h after #6). Pending reads: P3 trunc (~10:00), P4 fit summary (~12–13:00), descriptive
   ranks (~12 h), P6 Stage-0 batches.
+
+## S-160 — 2026-10-15 02:10 — ops tick
+- evalC 44/45, evalB 39/39 arms; P3 trunc 1041078 10/133; P6 G3: candle FAIL, lamp/kettle/pencil PASS (ladder next).
+  6 GPU, no failures.
