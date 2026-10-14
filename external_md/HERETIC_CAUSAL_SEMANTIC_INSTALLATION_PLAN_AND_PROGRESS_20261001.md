@@ -2066,3 +2066,20 @@ Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_d.md` (independent; saw 
   ReqNodeList=`); now pending on priority (will cold-stage from the mirror). 1036679 (button VAL r1) running n-503.
   Add-ons: 1036622 basket 10/43 (+2 tail-gate MEANBIAS arms), 1036626 button 3/43 (+2 tail-gate MEANBIAS arms —
   the all-rows MEANBIAS collapses for button too).
+
+## S-125 — 2026-10-14 15:55 — PR-HCSI-S084 READ (powered re-test): button r4 VALIDATION = PASS (pending independent verification)
+Frozen two-step read exactly as committed (`p2a_powered_analyze.py` eb0da96d → `p2a_powered_binding.py` 6533f190).
+- Validation: 1027577 76/76, 1032110 72/72 arms ok, unique, single attempt each, n-503 RTX A5000 only, DONE rc=0;
+  overlap OVL_{BASE,KO,CAND_r4,RAND_r4_0} vs 1022698 bit-exact (max |Δ| 0.0) on identical 230-id sets.
+- Shared row set **203** (no deviation). Gates: KO−BASE −0.302, FULL−KO +0.142, SELF inert; no VOID.
+- **Candidate rank 1/201 (unrounded AND frozen-analyzer rounded agree) ⇒ p = 0.004975; Holm over the 3 button VAL
+  looks {r1 0.2456, r16 0.1754, r4} ⇒ r4 adjusted 0.0149 < 0.05.** Beats every SHUF (max KO_SHUF_r4_9 0.00924 vs
+  cand 0.01292; +0.0037). Best RAND 0.00808; RAND (n=190) mean 0.00049, sd 0.00309 ⇒ cand ≈ 4.0 RAND-sd above.
+  Candidate−KO 0.01292 [0.00651, 0.01895], 20/23 domains; recovery 0.0909 [0.051, 0.124]. Binding rule ⇒ **PASS**.
+- Caveats: new vs old RAND means 0.00030 vs 0.00108 (sd ~0.003; same null); SHUF still n=10 (floor 1/11 against the
+  shuffled null alone; margin ≈1.2 SHUF-sd).
+- **Status: PASS — PENDING INDEPENDENT VERIFICATION (F3 tasked).** If verified, this resolves review #2 finding 6
+  (floor-limitation + 3-look multiplicity) for the button r4 activation-space carrier.
+- **Scope (unchanged):** same VAL data with a bigger null (not fresh); rank 4 chosen on TRAIN; SHUF n=10; PLS
+  activation-space family at L18 rel-6 under the KO; semantic installation only; no behavior. The basket-vs-button
+  "dimensionality difference" remains NOT supported by a contrast (S-097/098). Fresh confirmation ⇒ P6.

@@ -1,0 +1,40 @@
+{
+ "rule": "PARENT BINDING RULE (S-114): PASS only if unrounded AND rounded decisions both PASS",
+ "unrounded": {
+  "rank": 1,
+  "n_controls": 200,
+  "p_ext": 0.004975124378109453,
+  "holm": {
+   "r4": 0.014925373134328358,
+   "r16": 0.3508,
+   "r1": 0.3508
+  },
+  "beats_every_shuf": true,
+  "max_shuf": 0.009244313865294146,
+  "row_set": {
+   "n_keys_common": 203,
+   "deviation_from_203": 0,
+   "arms_with_dropped_keys": []
+  },
+  "VERDICT": "PASS"
+ },
+ "rounded_frozen_analyzer": {
+  "rank": 1,
+  "n_controls": 200,
+  "p_ext": 0.004975124378109453,
+  "holm": {
+   "r4": 0.014925373134328358,
+   "r16": 0.3508,
+   "r1": 0.3508
+  },
+  "beats_every_shuf": true,
+  "max_shuf": 0.00924,
+  "row_set": {
+   "n_keys_common": 203,
+   "deviation_from_203": 0,
+   "arms_with_dropped_keys": []
+  },
+  "VERDICT": "PASS"
+ },
+ "FINAL_VERDICT": "PASS"
+}
