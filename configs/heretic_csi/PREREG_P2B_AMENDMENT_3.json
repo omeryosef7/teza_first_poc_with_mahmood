@@ -1,0 +1,26 @@
+{
+ "schema": "hcsi_p2b_prereg_amendment/1",
+ "amends": {"PREREG_P2B.json": "e273df1db75f6c2aeb1860dd23639d23286570920e85d139ad66f911e8ced378",
+            "PREREG_P2B_AMENDMENT_1.json": "fd01d54e41809493b2abd4dd5c15ae852824007dab2a22debab13ea782baf10a",
+            "PREREG_P2B_AMENDMENT_2.json": "65a5f0cb1adaaa414319402ba947d29dbc9dbaf5c8e0cbdabb68c7794906a3bf",
+            "PREREG_P2B_VALIDATION.json": "5b1f3bac7c216038fe6bd69b46cd45f820dc7117afa7bef3647a1c35935d2b9b"},
+ "written": "2026-10-14T04:31:10+03:00",
+ "trigger": "reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_b.md findings 2, 3, 4, 5 (+10, +12 decide guard)",
+ "endpoint_status_at_writing": "NO P2b TRAIN or VALIDATION y_install has been computed or read by F2 or (per the parent) by anyone; only 12-row smokes were read.",
+ "changes": {
+  "2_incomplete_family": "Holm is always computed over BOTH primary ranks {1,4}; a rank that is absent or not analyzable enters as p=1 (m=2), and every other primary verdict becomes 'INCOMPLETE FAMILY ...' (never PASS). Same for the secondary family (a VOID secondary rank counts as missing). p2b_analyze.finalize; regression test test_incomplete_holm_family_is_not_a_pass.",
+  "3_secondary_screens": "Secondary test now has its own screens: KO_CWONLY collapse (median option mass < 0.05) -> secondary VOID; every KO_CWRAND/KO_CWDER is norm/rank/hook-checked against CAND -> secondary VOID on mismatch; CW-control collapse -> flag + sensitivity rank test without them; secondary recovery CI computed on the SAME keys as the secondary rank test. Three VOID lists: shared (liveness arms, KO_IDENT) void both tests; primary-only (CAND collapse, primary family norm/rank, CAPOP replay, BASE_CAND hooks) and secondary-only (CWONLY, CW family incl. missing dirs) never void each other (review finding 10). Tests: collapsed CWONLY, CW controls at 5x norm, missing CW family.",
+  "4_raw_norm_fitted_controls": "DESCRIPTIVE: report the raw/CAND total-norm ratio of every DER/SHUF control (from fit meta) and, in the add-on job, a rank test of CAND vs DER (15) and vs SHUF (5) at their RAW fitted norms (opraw = exact inverse of the per-module rescale). The norm-matched primary family is unchanged.",
+  "5_mean_gap_bias": "DESCRIPTIVE key comparator: MEANBIAS = TRAIN-mean (clean - KO) codeword-row module-output gap per module (same 26 modules/layers as CAND; p2b_meanbias.py from the TRAIN fit captures; input-independent). Arms per codeword: KO_MEANBIAS (bias at every position), KO_CWMEANBIAS (bias at the codeword row only, matching CWONLY), BASE_MEANBIAS (clean prompt, damage). MEANBIAS is rank-independent: one set per codeword, compared with CAND at each primary rank. Reported: CAND - MEANBIAS and CWONLY - CWMEANBIAS (domain-paired, bootstrap CI). It is at its natural magnitude (not norm-matched; a constant bias has no rank/norm counterpart).",
+  "wording_rule": "A CAND (or CWONLY) PASS whose CAND - MEANBIAS (resp. CWONLY - CWMEANBIAS) CI includes 0 or is negative certifies ONLY 'writing (approximately) the mean KO->clean output shift undoes part of the knockout'. It may NOT be described as an input-conditional, semantic, or position-aware operator. 'Input-conditional' wording requires CAND - MEANBIAS CI-lo > 0 on VALIDATION (descriptive, not a preregistered pass).",
+  "decide_guard": "decide() returns CANNOT ANSWER if a recovery dict has status ok but no ci95 (review LOW)."
+ },
+ "addon_jobs": {
+  "inputs": "outputs/heretic_csi/p2b/prod/fac/meanbias_<cw>.pt (CPU job 1023763, from TRAIN captures only) + frozen factors_<cw>_r{1,4}.pt",
+  "plans": ["plans/addon_basket_k4.sh", "plans/addon_button_k4.sh", "plans/addon_basket_val.sh", "plans/addon_button_val.sh"],
+  "arms_per_job": "3 MEANBIAS + 2 ranks x (15 DERRAW + 5 SHUFRAW) = 43",
+  "gpu_cost": "TRAIN K4: 43 x ~264 s = ~3.2 GPU-h per codeword; VALIDATION: 43 x ~227 s = ~2.7 GPU-h per codeword; total ~11.8 GPU-h (+ up to ~0.8 h cold stage-in per job).",
+  "analysis": "p2b_analyze.py ... --addon (same prefix as the main arms: hcsi_p2b_<cw>_k4 / _val)"
+ },
+ "code": "p2b_analyze.py (finalize, void lists, addon), p2b_operator.BiasHooks, p2b_runner OPSPECs bias/opraw, p2b_meanbias.py, p2b_emit --what addon; tests 46 passed / 1 skipped"
+}

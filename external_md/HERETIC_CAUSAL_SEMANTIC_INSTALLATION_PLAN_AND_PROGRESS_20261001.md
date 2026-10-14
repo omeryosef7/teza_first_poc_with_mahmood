@@ -1620,3 +1620,18 @@ nothing auto-analyzes the early VAL jobs (read-after-TRAIN is procedural). Tests
   — the outcome-A shape now has a contrast estimate, not just pass-vs-fail. Caveats: computed on already-read VAL
   data; z uses the 56-control families; CI lower bound close to 0; still 2 codewords. The confirmatory element remains
   the powered r4 re-test (pending GPU) and, for a population claim, P6.
+
+## S-086 — 2026-10-14 05:20 — P2b review-#2 fixes landed; PREREG_P2B_AMENDMENT_3 frozen before any TRAIN read
+- `configs/heretic_csi/PREREG_P2B_AMENDMENT_3.json` (sha256 122b86ec…1492ac). State at freeze: P2b eval run dirs are
+  being written by the running jobs (68 so far) but **none has been analyzed** (no p2b_analyze run; parent-verified).
+- (2) Holm always over {1,4}; missing/unanalyzable rank enters as p=1 ⇒ verdict "INCOMPLETE FAMILY", never PASS
+  (also for the secondary). (3) three VOID lists (shared / primary-only / secondary-only); CWONLY collapse and CW
+  control norm/rank/hook mismatches VOID only the secondary; secondary recovery on secondary keys. (4) raw-norm
+  DER/SHUF rank test (descriptive) via exact inverse rescale `opraw` (rel err 5e-8) + reported raw/CAND norm ratios.
+  (5) **MEANBIAS comparator**: TRAIN-mean (clean−KO) codeword-row output gap per module on CAND's 26 modules (CPU job
+  1023763, 670 pairs / 67 domains; ‖·‖ basket 46.2, button 53.1; `fac/meanbias_{cw}.pt` sha256 4f3773d1… / a33c1622…),
+  arms KO_MEANBIAS (all rows), KO_CWMEANBIAS (codeword row), BASE_MEANBIAS (damage). **Wording rule:** a CAND PASS
+  that does not beat MEANBIAS may only be described as "writing the mean shift undoes part of the knockout";
+  "input-conditional operator" requires CAND−MEANBIAS CI-lo>0 on VALIDATION.
+- Tests (parent-run): 46 passed, 1 skipped. Add-on plans `configs/heretic_csi/p2b_plans/addon_{cw}_{k4,val}.sh`
+  (43 arms each; ≈11.8 GPU-h total) — to be submitted as slots free; TRAIN read waits for the K4 add-on too.
