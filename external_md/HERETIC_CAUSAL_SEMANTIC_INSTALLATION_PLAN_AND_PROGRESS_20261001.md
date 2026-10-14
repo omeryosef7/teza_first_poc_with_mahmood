@@ -2419,3 +2419,7 @@ all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_
 ## S-149 — 2026-10-14 22:10 — ops tick
 - Button P2b VAL r1 111/167, r4 134/163 (unread); P6 batch 1 1040547 pending (priority). Descriptive-rank jobs not yet
   submitted by F2 (request S-148 pending). GPU 2 running. No failures.
+
+## S-150 — 2026-10-14 22:40 — ops tick
+- Button P2b VAL r1 120/167, r4 144/163 (unread). P6 batch 1 pending. Descriptive-rank jobs still not submitted ⇒
+  F2 pinged (avoid duplicate submissions). GPU 2 running. No failures.
