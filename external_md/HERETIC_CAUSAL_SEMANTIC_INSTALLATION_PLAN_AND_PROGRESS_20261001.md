@@ -1525,3 +1525,9 @@ F5 (CPU only). Reports: `reports/heretic_csi/P3_SVD_REPORT.md`, `P3_svd_descript
   post-hoc promotion of descriptive variants. **Dependence caveat:** the 8-head set was certified on basket
   VALIDATION ⇒ basket VAL P4 read is held-out for the weight fit, not a fresh test of the head nomination.
 - Plans copied to `configs/heretic_csi/p2b_plans/` (P3 truncation ≈11 GPU-h gated on a validation PASS; P4 ≈37 GPU-h).
+
+## S-080 — 2026-10-14 03:10 — ops tick
+- P2b: basket fits complete (fit_summary_basket.json); button r1, r2 fitted. 1023508 (basket r4 TRAIN-K4 eval) scoring
+  (first arm 100/268); 1023509 (button r4) waiting for button factors; 1023264 pending (BeginTime). P4 CPU fits
+  1023554–57 running. No failures/duplicates. VALIDATION P2b plans for basket now runnable (fit_summary present) —
+  will submit when GPU slots allow (currently 3 GPU + 1 pending).
