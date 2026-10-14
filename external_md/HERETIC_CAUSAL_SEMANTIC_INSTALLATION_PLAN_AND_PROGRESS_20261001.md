@@ -1855,3 +1855,15 @@ stage0 output matches axisfit, disk on scratch; no analyzer outputs exist; tests
 - P2b evals, 0 failures: basket r1 84, r4 80; button r1 92, r4 79 (of 163); VAL basket r1 111 / r4 133 (unread).
   P4-v2 fits (4h12) + CV10 (1024034–37) running. 1024033 (p6occ) FAILED in 34 s and was superseded by 1024038
   (COMPLETED, results used in S-101) — F7's first attempt, not a result.
+
+## S-103 — 2026-10-14 08:50 — VERIFIED: inherited "basketball" occurrence failures touch NO incumbent basket artifact
+F3 (`reports/heretic_csi/VERIFY_basketball_occurrence.{md,json}`, `VERIFY_codeword_collision_scan.json`):
+- All 30 failing basket rows are in domain `school_campus`. Behavioral extraction 3720→3714 rows: the 6 missing are
+  exactly the 6 failing rows (SKIPPED by the pre-flight refusal, not mis-positioned). The axis fit excludes
+  `school_campus` entirely (`excluded_domains` in hcsi_ranksweep_basket.pt; 670 rows / 67 domains).
+- S-049 basket r1/r16 TRAIN+VAL, K4 r4/r8, r4 VAL runs contain 0 offending ids and 0 `school_campus` rows —
+  `school_campus` is one of the 3 whole-domain advance exclusions (DCS-C-075 / R-108) and the 3 ids are listed in every
+  exclusion file. ⇒ sensitivity recompute is a no-op; **no verdict changes.**
+- Button bank clean (F7 gate 0 failures; independent scan: no buttonhole/buttoned/buttons).
+- Lesson carried to P6 (already in PREREG_P6_AMENDMENT_1): every bank must pass `resolve_occurrences`; collision
+  rows/domains excluded mechanically before population freeze.

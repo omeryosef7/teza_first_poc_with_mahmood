@@ -1,0 +1,17 @@
+{
+ "basket": {
+  "n_rows": 22272,
+  "superstring_words": {
+   "nBasket": 78,
+   "basketball": 120,
+   "cbasket": 66
+  }
+ },
+ "button": {
+  "n_rows": 22272,
+  "superstring_words": {
+   "nButton": 78,
+   "cbutton": 66
+  }
+ }
+}

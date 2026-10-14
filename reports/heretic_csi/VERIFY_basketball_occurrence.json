@@ -1,0 +1,28 @@
+{
+ "schema": "hcsi_verify_basketball/1",
+ "verifier": "F3, 2026-10-14",
+ "input_finding": "reports/heretic_csi/hcsi_p6_occ_check.json: basket bank 30/22272 rows fail resolve_occurrences (occurrence_count_mismatch, 'basketball'), all in domain school_campus; 3 extractor-pop (cell C behavioral), 3 rescue-pop (C semantic_one_word cds_n4_sow, TRAIN)",
+ "extraction_corpus": {
+  "run": "outputs/boombness/extract_boombness/cont1_behavioral_basket_bomb_20260910_113902_3966018",
+  "population_rows": 3720, "rows_written": 3714,
+  "missing_rows": ["4da05ceaa08c4037 A", "f953fbbb2376f8db C", "a80aaddd607b27db A", "56c76e11095a5d48 C", "f0c4482550511a5f A", "566c998c6df83a30 C"],
+  "missing_equals_failing_subset": true,
+  "handling": "SKIPPED (pre-flight refusal), not mis-positioned; the 7 surviving school_campus C rows have n_occurrences=5, n_subtokens=1, position codeword_last",
+  "axis_fit_uses_school_campus": false,
+  "axis_fit_meta": "configs/heretic_csi/hcsi_ranksweep_basket.pt meta.excluded_domains = [restaurant_kitchen, school_campus, subway_station]; n_fit_rows 670 / 67 TRAIN domains"
+ },
+ "rescue_runs": {
+  "jobs_checked": {"966084": "basket r1 TRAIN", "965928": "basket r16 TRAIN", "968532": "basket r1 VAL", "968533": "basket r16 VAL", "969085": "basket r4 K4", "969086": "basket r8 K4", "1022699": "basket r4 VAL"},
+  "arms_checked": ["BASE", "KO", "KO_FULL", "KO_CAND_r*"],
+  "offending_ids_in_population": 0,
+  "school_campus_rows_in_TRAIN_population": 0,
+  "reason": "school_campus is one of the 3 preregistered whole-population exclusions (DCS-C-075 / DCS-R-108) in runargs/dcs_cont/exclude_basket_bomb_sow_{train,validation}.txt (exclusion_sha16 b3ba3d5ea6c91d34 train); all 3 offending rescue ids are listed explicitly in every exclusion file used",
+  "sensitivity_recompute": "NOT NEEDED -- dropping the offending rows is a no-op (0 present); S-049 / S-050 / S-072 numbers unchanged by construction"
+ },
+ "button_bank": {
+  "resolve_occurrences_fails_F7": 0,
+  "independent_text_scan_superstrings": "none real (only JSON-escape artifacts 'nButton'/'cbutton' = '\\nButton' etc.); no buttonhole/buttoned/buttons",
+  "basket_text_scan_superstrings": "basketball (only real one) -- matches F7"
+ },
+ "verdict": "NO incumbent basket artifact is affected; no verdict changes."
+}
