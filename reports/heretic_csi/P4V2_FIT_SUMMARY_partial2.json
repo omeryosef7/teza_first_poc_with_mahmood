@@ -1,0 +1,330 @@
+[
+ {
+  "cell": "basket r1",
+  "source": "p3p4_1023752.out",
+  "complete": false,
+  "TOP8_net": 0.5682,
+  "TOP8_total_fro": 18.53,
+  "n_RAW": 14,
+  "TOP8_rank_among_RAW": 7,
+  "RAW_net_min_max": [
+   0.5662,
+   0.5702
+  ],
+  "RAW_total_fro_min_max": [
+   13.13,
+   19.43
+  ],
+  "n_NC": 13,
+  "TOP8_rank_among_NC": 2,
+  "NC_net_min_max": [
+   0.564,
+   0.5685
+  ],
+  "NC_vs_v1_rescaled": [
+   [
+    "RH8NC_0",
+    0.5672,
+    NaN
+   ],
+   [
+    "RH8NC_1",
+    0.5657,
+    NaN
+   ],
+   [
+    "RH8NC_2",
+    0.5676,
+    NaN
+   ]
+  ],
+  "TOP8_n_params": 66560,
+  "RH8_n_params_each": 66560,
+  "descriptive": {
+   "TOP8_L6_14": {
+    "net": 0.5802,
+    "total_fro": 15.17,
+    "n_params": 46080,
+    "gap_closure_all26": 0.1594
+   },
+   "FULLO": {
+    "net": 0.5748,
+    "total_fro": 10.67,
+    "n_params": 106496,
+    "gap_closure_all26": 0.196
+   },
+   "MLP": {
+    "net": 0.6041,
+    "total_fro": 7.25,
+    "n_params": 239616,
+    "gap_closure_all26": 0.3986
+   },
+   "ATTNMLP": {
+    "net": 0.5947,
+    "total_fro": 11.65,
+    "n_params": 346112,
+    "gap_closure_all26": 0.5951
+   },
+   "H2": {
+    "net": 0.5156,
+    "total_fro": 50.86,
+    "n_params": 54912,
+    "gap_closure_all26": 0.1821
+   },
+   "CELL_L10H2": {
+    "net": 0.5146,
+    "total_fro": 4.2,
+    "n_params": 4224,
+    "gap_closure_all26": 0.0208
+   }
+  },
+  "caveat": "net is in-sample, on the variant's OWN modules (o_proj-only variants vs down_proj-only MLP are not on the same module set); compare across variants only together with total_fro, n_params and gap_closure_all26.",
+  "CV": "not finished"
+ },
+ {
+  "cell": "basket r4",
+  "source": "p3p4_1023754.out",
+  "complete": false,
+  "TOP8_net": 0.6137,
+  "TOP8_total_fro": 22.78,
+  "n_RAW": 12,
+  "TOP8_rank_among_RAW": 6,
+  "RAW_net_min_max": [
+   0.5947,
+   0.6189
+  ],
+  "RAW_total_fro_min_max": [
+   14.99,
+   25.16
+  ],
+  "n_NC": 12,
+  "TOP8_rank_among_NC": 7,
+  "NC_net_min_max": [
+   0.6078,
+   0.6182
+  ],
+  "NC_vs_v1_rescaled": [
+   [
+    "RH8NC_0",
+    0.6166,
+    NaN
+   ],
+   [
+    "RH8NC_1",
+    0.6113,
+    NaN
+   ],
+   [
+    "RH8NC_2",
+    0.6182,
+    NaN
+   ]
+  ],
+  "TOP8_n_params": 266240,
+  "RH8_n_params_each": 266240,
+  "descriptive": {
+   "TOP8_L6_14": {
+    "net": 0.6163,
+    "total_fro": 15.28,
+    "n_params": 184320,
+    "gap_closure_all26": 0.1698
+   },
+   "FULLO": {
+    "net": 0.6347,
+    "total_fro": 14.69,
+    "n_params": 425984,
+    "gap_closure_all26": 0.2169
+   },
+   "MLP": {
+    "net": 0.6388,
+    "total_fro": 8.45,
+    "n_params": 958464,
+    "gap_closure_all26": 0.422
+   },
+   "ATTNMLP": {
+    "net": 0.6414,
+    "total_fro": 13.49,
+    "n_params": 1384448,
+    "gap_closure_all26": 0.6432
+   },
+   "H2": {
+    "net": 0.5314,
+    "total_fro": 50.94,
+    "n_params": 219648,
+    "gap_closure_all26": 0.1879
+   },
+   "CELL_L10H2": {
+    "net": 0.5495,
+    "total_fro": 5.01,
+    "n_params": 16896,
+    "gap_closure_all26": 0.0222
+   }
+  },
+  "caveat": "net is in-sample, on the variant's OWN modules (o_proj-only variants vs down_proj-only MLP are not on the same module set); compare across variants only together with total_fro, n_params and gap_closure_all26.",
+  "CV": "not finished"
+ },
+ {
+  "cell": "button r1",
+  "source": "p3p4_1023756.out",
+  "complete": false,
+  "TOP8_net": 0.6223,
+  "TOP8_total_fro": 23.62,
+  "n_RAW": 15,
+  "TOP8_rank_among_RAW": 5,
+  "RAW_net_min_max": [
+   0.6197,
+   0.6231
+  ],
+  "RAW_total_fro_min_max": [
+   11.85,
+   22.47
+  ],
+  "n_NC": 14,
+  "TOP8_rank_among_NC": 6,
+  "NC_net_min_max": [
+   0.6203,
+   0.6231
+  ],
+  "NC_vs_v1_rescaled": [
+   [
+    "RH8NC_0",
+    0.622,
+    NaN
+   ],
+   [
+    "RH8NC_1",
+    0.6214,
+    NaN
+   ],
+   [
+    "RH8NC_2",
+    0.6223,
+    NaN
+   ]
+  ],
+  "TOP8_n_params": 66560,
+  "RH8_n_params_each": 66560,
+  "descriptive": {
+   "TOP8_L6_14": {
+    "net": 0.6241,
+    "total_fro": 16.31,
+    "n_params": 46080,
+    "gap_closure_all26": 0.1565
+   },
+   "FULLO": {
+    "net": 0.6273,
+    "total_fro": 9.41,
+    "n_params": 106496,
+    "gap_closure_all26": 0.1998
+   },
+   "MLP": {
+    "net": 0.6735,
+    "total_fro": 8.05,
+    "n_params": 239616,
+    "gap_closure_all26": 0.4595
+   },
+   "ATTNMLP": {
+    "net": 0.659,
+    "total_fro": 10.74,
+    "n_params": 346112,
+    "gap_closure_all26": 0.6594
+   },
+   "H2": {
+    "net": 0.5634,
+    "total_fro": 62.13,
+    "n_params": 54912,
+    "gap_closure_all26": 0.1859
+   },
+   "CELL_L10H2": {
+    "net": 0.5749,
+    "total_fro": 4.12,
+    "n_params": 4224,
+    "gap_closure_all26": 0.021
+   }
+  },
+  "caveat": "net is in-sample, on the variant's OWN modules (o_proj-only variants vs down_proj-only MLP are not on the same module set); compare across variants only together with total_fro, n_params and gap_closure_all26.",
+  "CV": "not finished"
+ },
+ {
+  "cell": "button r4",
+  "source": "p3p4_1023758.out",
+  "complete": false,
+  "TOP8_net": 0.6513,
+  "TOP8_total_fro": 20.69,
+  "n_RAW": 14,
+  "TOP8_rank_among_RAW": 13,
+  "RAW_net_min_max": [
+   0.6455,
+   0.6614
+  ],
+  "RAW_total_fro_min_max": [
+   14.53,
+   24.05
+  ],
+  "n_NC": 13,
+  "TOP8_rank_among_NC": 13,
+  "NC_net_min_max": [
+   0.6504,
+   0.6578
+  ],
+  "NC_vs_v1_rescaled": [
+   [
+    "RH8NC_0",
+    0.6572,
+    NaN
+   ],
+   [
+    "RH8NC_1",
+    0.652,
+    NaN
+   ],
+   [
+    "RH8NC_2",
+    0.6577,
+    NaN
+   ]
+  ],
+  "TOP8_n_params": 266240,
+  "RH8_n_params_each": 266240,
+  "descriptive": {
+   "TOP8_L6_14": {
+    "net": 0.6513,
+    "total_fro": 14.25,
+    "n_params": 184320,
+    "gap_closure_all26": 0.1638
+   },
+   "FULLO": {
+    "net": 0.6743,
+    "total_fro": 13.12,
+    "n_params": 425984,
+    "gap_closure_all26": 0.2151
+   },
+   "MLP": {
+    "net": 0.6868,
+    "total_fro": 10.39,
+    "n_params": 958464,
+    "gap_closure_all26": 0.469
+   },
+   "ATTNMLP": {
+    "net": 0.6853,
+    "total_fro": 11.44,
+    "n_params": 1384448,
+    "gap_closure_all26": 0.6867
+   },
+   "H2": {
+    "net": 0.5722,
+    "total_fro": 59.18,
+    "n_params": 219648,
+    "gap_closure_all26": 0.1891
+   },
+   "CELL_L10H2": {
+    "net": 0.6017,
+    "total_fro": 5.36,
+    "n_params": 16896,
+    "gap_closure_all26": 0.0221
+   }
+  },
+  "caveat": "net is in-sample, on the variant's OWN modules (o_proj-only variants vs down_proj-only MLP are not on the same module set); compare across variants only together with total_fro, n_params and gap_closure_all26.",
+  "CV": "not finished"
+ }
+]

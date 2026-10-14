@@ -1954,3 +1954,13 @@ Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_d.md` (independent; saw 
   Holm over {1,4} within codeword (rank 1/57 = 0.0175 ≤ 0.025 can pass step 1). Declared dependence: probe scored on
   the same VAL domains as z ⇒ TRAIN-LOO probe sensitivity ("dependence-sensitive" if it flips; never rescues a fail).
 - (The "basketball" item F7 lists as open was closed in S-103: no incumbent artifact affected.)
+
+## S-113 — 2026-10-14 13:00 — PREREG_P4_AMENDMENT_4 frozen; P4 fit-side partial #2
+- `configs/heretic_csi/PREREG_P4_AMENDMENT_4.json` (sha256 42e3a493…488a7e), 0 P4 score dirs: per-arm factor-file
+  sha256 must equal the frozen fit output (incl. P2b factors for KO_IDENT) else VOID; no "PASS" substring in
+  INCOMPLETE verdicts; hooks-fired gate (hook_calls>0) for every operator arm incl. KO_TOP8 and KO_IDENT. Tests 12/12.
+- Fit summary now reports norm + #params with each net. **Caveat to S-100's "FULLO/MLP-only close more of the gap":**
+  they use more parameters (r1: 106k / 240k vs TOP8 67k), lower norm (10.7 / 7.3 vs 18.5 at basket r1) and a different
+  module set (down_proj carries more of the gap) ⇒ cross-variant net comparisons are NOT like-for-like.
+- Partial fit-side ranks (more controls; in-sample): TOP8 among RAW / NC — basket r1 7/15, 2/14; basket r4 6/13, 7/13;
+  button r1 5/16, 6/15; button r4 13/15, 13/14 ⇒ TOP8 still not distinctive. Final summary ETA ~22 h.

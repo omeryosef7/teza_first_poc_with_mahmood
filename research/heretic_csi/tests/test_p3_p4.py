@@ -107,3 +107,31 @@ def test_p4v1_void_rank_counts_as_missing():
     import ast, inspect, p4_analyze as v1
     src = inspect.getsource(v1.main)
     assert "_valid(x)" in src and "not _valid(x)" in src
+
+
+def test_p4v2_sidecar_checks_sha_and_hooks():
+    import p4_analyze_v2 as v
+    good = {"hook_calls": 100, "factors_sha16": "aaaa", "factors_file": "f.pt"}
+    assert v.sidecar_checks({"KO_TOP8": dict(good), "KO_IDENT": dict(good)}, {"KO_TOP8": "aaaa", "KO_IDENT": "aaaa"}) == []
+    # same filename, different content -> VOID
+    bad = v.sidecar_checks({"KO_TOP8": {**good, "factors_sha16": "bbbb"}}, {"KO_TOP8": "aaaa"})
+    assert bad and "sha16" in bad[0]
+    # hooks never fired on TOP8 or on the identity arm -> VOID
+    assert v.sidecar_checks({"KO_TOP8": {**good, "hook_calls": 0}}, {"KO_TOP8": "aaaa"})
+    assert v.sidecar_checks({"KO_IDENT": {**good, "hook_calls": 0}}, {"KO_IDENT": "aaaa"})
+    assert v.sidecar_checks({"KO_TOP8": None}, {"KO_TOP8": "aaaa"})
+    assert v.sidecar_checks({"KO_X": dict(good)}, {})            # unregistered arm -> VOID
+
+
+def test_p4_incomplete_verdicts_never_contain_pass():
+    import p4_analyze_v2 as v
+    r1 = _row(1, 1 / 61, 1 / 61); r1["void"] = ["x"]
+    rows = v.finalize([r1, _row(4, 0.01, 0.01)])
+    inc = [x["verdict"] for x in rows if x["verdict"].startswith("INCOMPLETE")]
+    assert inc and all("PASS" not in s for s in inc)
+    rows = v.finalize([_row(4, 0.01, 0.01)])
+    assert "PASS" not in rows[0]["verdict"]
+    import inspect, p4_analyze as v1
+    for line in inspect.getsource(v1.main).splitlines():
+        if "INCOMPLETE FAMILY" in line:
+            assert "PASS" not in line

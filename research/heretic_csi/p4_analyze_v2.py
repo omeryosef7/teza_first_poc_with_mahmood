@@ -14,6 +14,7 @@ Factor-file checks (VOID on failure): A is exactly zero outside the declared hea
 control; control head sets are disjoint from TOP8; NC per-module norms == TOP8 (1e-3); sidecar norms match the file.
 """
 import argparse, json, os, statistics, sys
+import hashlib
 import torch
 REPO = "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
 sys.path.insert(0, os.path.join(REPO, "research", "heretic_csi"))
@@ -22,6 +23,14 @@ from p4_head_fit import TOP8, cols   # noqa: E402
 sa, rederive, lpm = pa.sa, pa.rederive, pa.lpm
 PRIMARY = (1, 4)
 DESC = ["KO_TOP8_L6_14", "KO_FULLO", "KO_MLP", "KO_ATTNMLP", "KO_H2", "KO_CELL_L10H2"]
+
+
+def _sha16(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for b in iter(lambda: f.read(1 << 20), b""):
+            h.update(b)
+    return h.hexdigest()[:16]
 
 
 def factor_checks(fp, n_rh8):
@@ -49,6 +58,25 @@ def factor_checks(fp, n_rh8):
                     if abs(po.fro_norm(A, B) - tn[n]) > 1e-3 * max(tn[n], 1e-12):
                         bad.append(f"{k}:{n} norm not matched to TOP8")
     return bad, {k: ops[k]["meta"].get("raw_fro") for k in ops}
+
+
+def sidecar_checks(sc, expected_sha16):
+    """Review #4 (1)+(3). sc: arm -> p2b_operator.json sidecar (or None); expected_sha16: arm -> sha16 of the FROZEN factors
+    file that arm must have applied. VOID reasons returned for: missing sidecar; hooks never fired (EVERY operator arm,
+    INCLUDING TOP8 and the identity arm KO_IDENT -- an identity arm whose hooks never ran proves nothing); applied
+    factors file whose sha256 prefix differs from the frozen fit output (a filename match is not enough)."""
+    void = []
+    for x, s in sc.items():
+        if s is None:
+            void.append(f"{x}: no sidecar"); continue
+        if not s.get("hook_calls"):
+            void.append(f"{x}: operator hooks never fired (hook_calls={s.get('hook_calls')})")
+        exp = expected_sha16.get(x)
+        if exp is None:
+            void.append(f"{x}: no expected factors sha registered")
+        elif s.get("factors_sha16") != exp:
+            void.append(f"{x}: applied factors sha16 {s.get('factors_sha16')} != frozen {exp} ({s.get('factors_file')})")
+    return void
 
 
 def analyze_rank(a, r, assign):
@@ -81,13 +109,11 @@ def analyze_rank(a, r, assign):
     if ident > 1e-9:
         void.append(f"KO_IDENT differs from KO (max |dy|={ident:.3g})")
     sc = {x: pa.sidecar(dirs[x]) for x in arms if x not in ("BASE", "KO", "KO_FULL")}
-    for x, s in sc.items():
-        if s is None:
-            void.append(f"{x}: no sidecar"); continue
-        if x != "KO_IDENT" and not s.get("hook_calls"):
-            void.append(f"{x}: operator hooks never applied")
-        if s.get("factors_sha16") and x != "KO_IDENT" and os.path.basename(s.get("factors_file", "")) != os.path.basename(fp):
-            void.append(f"{x}: applied factors from {s.get('factors_file')} not {fp}")
+    sha_p4 = _sha16(fp)
+    ident_fp = os.path.join(a.p2b_factors_dir, f"factors_{a.codeword}_r1.pt")   # p2b_emit liveness KO_IDENT source
+    expected = {x: sha_p4 for x in sc if x != "KO_IDENT"}
+    expected["KO_IDENT"] = _sha16(ident_fp)
+    void += sidecar_checks(sc, expected)
     manip = pa.mean_diff(doms, by["KO"], by["BASE"]); full = pa.mean_diff(doms, by["KO_FULL"], by["KO"])
     gates = {"manipulation_KO_minus_BASE": round(manip, 5), "manipulation_ok": manip < 0,
              "full_rescue_FULL_minus_KO": round(full, 5), "instrument_ok": full > 0, "identity_max_abs_dy": ident}
@@ -156,6 +182,7 @@ def main():
     ap.add_argument("--n-rh8", type=int, default=60); ap.add_argument("--allow-short", type=int, default=0)
     ap.add_argument("--option-mass-floor", type=float, default=0.05); ap.add_argument("--n-boot", type=int, default=5000)
     ap.add_argument("--factors-dir", default=os.path.join(REPO, "outputs/heretic_csi/p2b/prod/p4"))
+    ap.add_argument("--p2b-factors-dir", default=os.path.join(REPO, "outputs/heretic_csi/p2b/prod/fac"), help="source of the KO_IDENT liveness arm")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
     assign = lpm.load_split()

@@ -1,0 +1,14 @@
+{
+  "schema": "hcsi_prereg_amendment/1",
+  "amends": "PREREG_P4 + AMENDMENTS 1-3",
+  "written": "2026-10-14, BEFORE any P4 endpoint (0 hcsi_p4* score dirs)",
+  "trigger": "Adversarial review #4 open P4 items",
+  "changes": {
+    "factor_sha_check": "p4_analyze_v2.sidecar_checks(): every operator arm's sidecar factors_sha16 (sha256 prefix written by p2b_runner) must equal the sha16 of the FROZEN fit output it should apply -- factors_p4v2_<cw>_r<R>.pt for all P4 arms, outputs/heretic_csi/p2b/prod/fac/factors_<cw>_r1.pt for the KO_IDENT liveness arm. Mismatch, missing sidecar or unregistered arm => VOID. (A filename match is no longer sufficient.)",
+    "hooks_fired_gate": "hook_calls > 0 is required for EVERY operator arm including KO_TOP8 and the identity arm KO_IDENT (an identity arm whose hooks never ran does not demonstrate inertness) => VOID otherwise.",
+    "incomplete_strings": "INCOMPLETE verdict strings contain no 'PASS' substring (asserted by test for v2 finalize() and the v1 source).",
+    "fit_summary_caveat": "p4v2_fit_summary.py reports, next to every variant's in-sample net: total Frobenius norm, effective #params (r x (active input columns + output dim) per module; head-restricted A counts only active head columns) and gap_closure over all 26 modules, with the caveat that each variant's net is computed on its OWN module set (o_proj-only vs down_proj-only are not comparable on net alone)."
+  },
+  "tests": "research/heretic_csi/tests/test_p3_p4.py::test_p4v2_sidecar_checks_sha_and_hooks, ::test_p4_incomplete_verdicts_never_contain_pass (12 tests pass)",
+  "unchanged": "candidate, RAW + NC families, IUT per rank + Holm over {1,4}, validity rule (Amendment 2), CV diagnostic (Amendment 3), plans, GPU estimate."
+}
