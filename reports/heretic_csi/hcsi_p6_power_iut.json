@@ -1,0 +1,114 @@
+{
+ "model": "P6 power for the H6a INTERSECTION-UNION rule (PREREG_P6_AMENDMENT_3): H6a passes only if the one-sided permutation\nSpearman(probe, z_f) exceeds its alpha=0.05 critical value for ALL three z families f in {pooled, RAND-only, SHUF-only}.\nModel (same as p6_power.py): latent s = rho*x + sqrt(1-rho^2)*e; observed y_f = sqrt(rel)*s + sqrt(1-rel)*n_f with\nn_f = sqrt(c)*u + sqrt(1-c)*v_f \u2014 c = fraction of the outcome's measurement noise SHARED across the three families\n(unknown a priori; the families share the candidate and overlap in controls, so c is plausibly high). c=1 reduces to\nthe single-test power. Seed 20261014b.",
+ "n_sim": 20000,
+ "rows": [
+  {
+   "n": 12,
+   "crit_one_sided_0.05": 0.497,
+   "power": {
+    "rho0.6_rel0.7_shared1.0": {
+     "single_family": 0.466,
+     "IUT_all_three": 0.466
+    },
+    "rho0.6_rel0.7_shared0.9": {
+     "single_family": 0.466,
+     "IUT_all_three": 0.381
+    },
+    "rho0.6_rel0.7_shared0.7": {
+     "single_family": 0.465,
+     "IUT_all_three": 0.329
+    },
+    "rho0.6_rel0.7_shared0.5": {
+     "single_family": 0.473,
+     "IUT_all_three": 0.3
+    },
+    "rho0.7_rel0.7_shared1.0": {
+     "single_family": 0.604,
+     "IUT_all_three": 0.604
+    },
+    "rho0.7_rel0.7_shared0.9": {
+     "single_family": 0.6,
+     "IUT_all_three": 0.509
+    },
+    "rho0.7_rel0.7_shared0.7": {
+     "single_family": 0.604,
+     "IUT_all_three": 0.461
+    },
+    "rho0.7_rel0.7_shared0.5": {
+     "single_family": 0.607,
+     "IUT_all_three": 0.432
+    },
+    "rho0.8_rel0.7_shared1.0": {
+     "single_family": 0.741,
+     "IUT_all_three": 0.741
+    },
+    "rho0.8_rel0.7_shared0.9": {
+     "single_family": 0.743,
+     "IUT_all_three": 0.666
+    },
+    "rho0.8_rel0.7_shared0.7": {
+     "single_family": 0.744,
+     "IUT_all_three": 0.62
+    },
+    "rho0.8_rel0.7_shared0.5": {
+     "single_family": 0.739,
+     "IUT_all_three": 0.581
+    }
+   }
+  },
+  {
+   "n": 15,
+   "crit_one_sided_0.05": 0.436,
+   "power": {
+    "rho0.6_rel0.7_shared1.0": {
+     "single_family": 0.574,
+     "IUT_all_three": 0.574
+    },
+    "rho0.6_rel0.7_shared0.9": {
+     "single_family": 0.567,
+     "IUT_all_three": 0.481
+    },
+    "rho0.6_rel0.7_shared0.7": {
+     "single_family": 0.577,
+     "IUT_all_three": 0.44
+    },
+    "rho0.6_rel0.7_shared0.5": {
+     "single_family": 0.573,
+     "IUT_all_three": 0.408
+    },
+    "rho0.7_rel0.7_shared1.0": {
+     "single_family": 0.716,
+     "IUT_all_three": 0.716
+    },
+    "rho0.7_rel0.7_shared0.9": {
+     "single_family": 0.72,
+     "IUT_all_three": 0.644
+    },
+    "rho0.7_rel0.7_shared0.7": {
+     "single_family": 0.718,
+     "IUT_all_three": 0.6
+    },
+    "rho0.7_rel0.7_shared0.5": {
+     "single_family": 0.718,
+     "IUT_all_three": 0.567
+    },
+    "rho0.8_rel0.7_shared1.0": {
+     "single_family": 0.844,
+     "IUT_all_three": 0.844
+    },
+    "rho0.8_rel0.7_shared0.9": {
+     "single_family": 0.85,
+     "IUT_all_three": 0.793
+    },
+    "rho0.8_rel0.7_shared0.7": {
+     "single_family": 0.846,
+     "IUT_all_three": 0.757
+    },
+    "rho0.8_rel0.7_shared0.5": {
+     "single_family": 0.845,
+     "IUT_all_three": 0.726
+    }
+   }
+  }
+ ]
+}

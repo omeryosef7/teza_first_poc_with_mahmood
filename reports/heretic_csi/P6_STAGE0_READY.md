@@ -60,3 +60,8 @@ All 21: shape identical to basket's bank (22,272 rows; by_block equal; 116 domai
 
 ## UPDATE — PREREG_P6_AMENDMENT_2 (parent decision, pre-Stage-0)
 H6a (held-out probe quality → r1 specificity) is the SINGLE confirmatory P6 test, one-sided α=0.05, no Holm (n=15 power 0.71 at ρ=0.7, 0.85 at ρ=0.8; reliability 0.7). H6b (frequency) is DESCRIPTIVE — Spearman with bootstrap CI, pre-labelled UNDERPOWERED, plus S1/S2 repair sensitivity. H6a rules kept: UNDERPOWERED for ρ<0.8 if n_conf<15; CANNOT ANSWER if n_conf<12.
+
+## UPDATE — PREREG_P6_AMENDMENT_3 (review #4 finding 3, parent decision, pre-Stage-0)
+- **H6a = intersection-union test**: passes only if the one-sided permutation Spearman(probe, z) p<0.05 for z computed against the pooled 56 controls AND RAND-only (46) AND SHUF-only (10); all three reported. Power (`hcsi_p6_power_iut.json`): n=15, ρ=0.7 → 0.57–0.72; ρ=0.8 → 0.73–0.84 depending on shared-noise fraction (SHUF's 10 controls make the low end more likely).
+- **H6c** descriptive; per-codeword r1/r4 "specific" calls use Holm over {1,4} within codeword.
+- **Declared dependence**: probe quality (scored on VAL) and z (VAL) share VALIDATION domains → sensitivity with probe quality scored TRAIN-LOO; a flip ⇒ "DEPENDENCE-SENSITIVE".

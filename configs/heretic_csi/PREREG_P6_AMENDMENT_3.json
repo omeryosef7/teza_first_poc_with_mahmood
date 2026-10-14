@@ -1,0 +1,96 @@
+{
+ "schema": "hcsi_prereg_amendment/1",
+ "id": "PR-HCSI-P6 AMENDMENT 3",
+ "amends": [
+  "configs/heretic_csi/PREREG_P6.json (998fc25d\u202621022)",
+  "configs/heretic_csi/PREREG_P6_AMENDMENT_1.json (3a762fc7\u20260fc94)",
+  "configs/heretic_csi/PREREG_P6_AMENDMENT_2.json (98747c69\u2026bc72fd)"
+ ],
+ "written": "2026-10-14, F7, on the parent's decision (review #4 finding 3 + open items), BEFORE any Stage-0 / P6 GPU number exists for any new codeword",
+ "a_H6a_intersection_union": {
+  "motivation": "the per-codeword primary outcome z was defined against the POOLED 56-control family (46 RAND + 10 SHUF); the basket-vs-button contrast sign depended on which family z was computed against (log S-097/S-098), so a single pooled z is not a robust per-codeword outcome.",
+  "rule": "For each confirmation codeword compute THREE r1 VALIDATION specificity z's: z_pooled (vs all 56 controls), z_RAND (vs the 46 random orthonormal rank-1 controls), z_SHUF (vs the 10 shuffled-label controls); z = (candidate recovery stat \u2212 mean family) / sd family, frozen analyzer statistic. H6a PASSES only if the one-sided permutation Spearman(held-out probe rho, z_f) has p < 0.05 for ALL THREE f (intersection-union test; no multiplicity correction needed across f). All three Spearman rho/p are reported, each also as a descriptive number; a pass on a subset of families is reported as 'family-dependent', never as a pass.",
+  "power": {
+   "source": "research/heretic_csi/p6_power_iut.py -> reports/heretic_csi/hcsi_p6_power_iut.json (reliability 0.7; c = fraction of outcome measurement noise shared across the three families, unknown a priori)",
+   "table": {
+    "n12": {
+     "rho0.7_rel0.7_shared1.0": {
+      "single_family": 0.604,
+      "IUT_all_three": 0.604
+     },
+     "rho0.7_rel0.7_shared0.9": {
+      "single_family": 0.6,
+      "IUT_all_three": 0.509
+     },
+     "rho0.7_rel0.7_shared0.7": {
+      "single_family": 0.604,
+      "IUT_all_three": 0.461
+     },
+     "rho0.7_rel0.7_shared0.5": {
+      "single_family": 0.607,
+      "IUT_all_three": 0.432
+     },
+     "rho0.8_rel0.7_shared1.0": {
+      "single_family": 0.741,
+      "IUT_all_three": 0.741
+     },
+     "rho0.8_rel0.7_shared0.9": {
+      "single_family": 0.743,
+      "IUT_all_three": 0.666
+     },
+     "rho0.8_rel0.7_shared0.7": {
+      "single_family": 0.744,
+      "IUT_all_three": 0.62
+     },
+     "rho0.8_rel0.7_shared0.5": {
+      "single_family": 0.739,
+      "IUT_all_three": 0.581
+     }
+    },
+    "n15": {
+     "rho0.7_rel0.7_shared1.0": {
+      "single_family": 0.716,
+      "IUT_all_three": 0.716
+     },
+     "rho0.7_rel0.7_shared0.9": {
+      "single_family": 0.72,
+      "IUT_all_three": 0.644
+     },
+     "rho0.7_rel0.7_shared0.7": {
+      "single_family": 0.718,
+      "IUT_all_three": 0.6
+     },
+     "rho0.7_rel0.7_shared0.5": {
+      "single_family": 0.718,
+      "IUT_all_three": 0.567
+     },
+     "rho0.8_rel0.7_shared1.0": {
+      "single_family": 0.844,
+      "IUT_all_three": 0.844
+     },
+     "rho0.8_rel0.7_shared0.9": {
+      "single_family": 0.85,
+      "IUT_all_three": 0.793
+     },
+     "rho0.8_rel0.7_shared0.7": {
+      "single_family": 0.846,
+      "IUT_all_three": 0.757
+     },
+     "rho0.8_rel0.7_shared0.5": {
+      "single_family": 0.845,
+      "IUT_all_three": 0.726
+     }
+    }
+   },
+   "summary": "IUT power <= single-family power; at n=15: rho 0.7 -> 0.72 (c=1) / 0.64 (c=0.9) / 0.60 (c=0.7) / 0.57 (c=0.5); rho 0.8 -> 0.84 / 0.79 / 0.76 / 0.73. At n=12: rho 0.8 -> 0.74 / 0.67 / 0.62 / 0.58.",
+   "caveat": "the model gives all three families equal reliability; z_SHUF rests on only 10 controls (noisier sd), so real IUT power is likely at or below the low-c rows."
+  },
+  "UNDERPOWERED_rule_v4": "H6a (IUT) is PRE-LABELLED 'UNDERPOWERED for rho < 0.8' if n_conf < 15 and 'CANNOT ANSWER' (no confirmation GPU spent; redesign) if n_conf < 12 \u2014 unchanged thresholds; note that even at n_conf = 15 IUT power at rho 0.7 is ~0.57\u20130.72, so a non-pass at rho < 0.8 may not be read as a null."
+ },
+ "b_H6c": "DESCRIPTIVE ONLY. Per codeword it reads r1 then r4 on VALIDATION; a per-codeword 'specific at rank r' call uses Holm over {1,4} WITHIN that codeword (frozen rank rule, 56 controls; floor 0.0175 \u2014 note Holm's first step needs p <= 0.025, attainable at rank 1/57). Minimal specific rank = 1 if r1 is Holm-specific, else 4 if r4 is, else '>4'. Never upgrades H6a.",
+ "c_declared_dependence": {
+  "dependence": "H6a's covariate (held-out probe quality: probe FIT on TRAIN, Spearman SCORED on the 23 VALIDATION domains) and its outcome z (r1 rescue specificity on the same 23 VALIDATION domains) share the VALIDATION domains/rows. Shared domain-level noise could induce or mask a covariate\u2013outcome correlation across codewords. Declared, not removed.",
+  "sensitivity": "H6a (all three families, IUT) recomputed with probe quality scored on TRAIN leave-one-domain-out (fit on 66 TRAIN domains, predict the held-out TRAIN domain, Spearman over all 67 TRAIN domains; research/heretic_csi/p6_heldout_probe.py logic with TRAIN-LOO scoring) \u2014 disjoint from the VALIDATION outcome. If the TRAIN-LOO version flips the H6a decision, H6a is reported as 'DEPENDENCE-SENSITIVE'. The sensitivity never rescues a failed primary."
+ },
+ "unchanged": "Everything else in PREREG_P6 and AMENDMENTS 1\u20132 (H6b descriptive/UNDERPOWERED; S1/S2 repair sensitivity; occurrence-gate exclusions; DEV draw + fill; gates G1\u2013G3; TEST never)."
+}

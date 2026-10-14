@@ -1943,3 +1943,14 @@ Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_d.md` (independent; saw 
   without an overlap check (all a5000 — same-GPU bit-exactness shown in S-108b supports reuse).
 - Overclaim notes: S-100 "FULLO/MLP-only close more of the gap" needs the norm/#param caveat and rests on 6–8 of 60
   in-sample controls; S-098 "strongly specific" is z vs only 10 SHUF controls without CI. Both noted; no serious overclaim.
+
+## S-112 — 2026-10-14 12:50 — PREREG_P6_AMENDMENT_3 frozen (before any Stage-0 number)
+- `configs/heretic_csi/PREREG_P6_AMENDMENT_3.json` (sha256 8b39b5dc…3c11). **H6a = intersection-union**: PASS only if
+  one-sided permutation Spearman(probe quality, r1 VAL specificity z) has p<0.05 with z against the pooled 56 controls
+  AND RAND-only (46) AND SHUF-only (10); partial = "family-dependent", never PASS. IUT power
+  (`reports/heretic_csi/hcsi_p6_power_iut.json`, grid over shared-noise fraction c): n=15 ρ=0.7 0.57–0.72; ρ=0.8
+  0.73–0.84; n=12 ρ=0.8 0.58–0.74 (SHUF's 10 controls favour the low end). Thresholds unchanged (UNDERPOWERED <15 for
+  ρ<0.8, CANNOT ANSWER <12; a non-pass at ρ<0.8 is not a null). H6c descriptive; per-codeword r1/r4 "specific" calls
+  Holm over {1,4} within codeword (rank 1/57 = 0.0175 ≤ 0.025 can pass step 1). Declared dependence: probe scored on
+  the same VAL domains as z ⇒ TRAIN-LOO probe sensitivity ("dependence-sensitive" if it flips; never rescues a fail).
+- (The "basketball" item F7 lists as open was closed in S-103: no incumbent artifact affected.)
