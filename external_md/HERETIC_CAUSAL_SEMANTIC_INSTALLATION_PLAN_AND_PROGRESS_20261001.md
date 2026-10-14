@@ -2254,3 +2254,10 @@ No leakage found (K4 exclude list + right bank on every arm; overlap and NM-over
 - "Basket r4 operator is pairing-specific" (in-sample fitting advantage; VAL decides).
 - "The operator is a constant / mean shift" or "overshoots".
 - Any outcome letter from TRAIN.
+
+## S-137 — 2026-10-14 19:10 — P6 pilot attempt 3 failed on node /tmp exhaustion (n-801); stage-in fallback added
+- 1040044 FAILED (46 min) on n-801: `cp ... No space left on device` while staging the model to node /tmp (same failure
+  class as S-029; not our data). F7 fix in `research/heretic_csi/slurm/p6_stage0.slurm`: df precheck (≥18 GB) before
+  staging; on insufficient space or copy failure, load directly from the verified mirror (identical bytes, slower);
+  plus job-scoped readout-dir selection (by RUNMETA slurm_job_id) so stale partial dirs from preempted/failed
+  attempts can never be picked up. Pilot attempt 4 = **1040103** (pending). Still no fan-out.

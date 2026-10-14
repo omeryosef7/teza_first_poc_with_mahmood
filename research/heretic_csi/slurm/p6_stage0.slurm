@@ -63,8 +63,18 @@ trap 'rm -rf "$TMPDIR/llama31" 2>/dev/null || true' EXIT TERM INT
 SNAPDIR="outputs/heretic_csi/p6/code_${SLURM_JOB_ID}"; mkdir -p "$SNAPDIR"
 cp src/boombness/score_behavior.py scripts/dcs_extract_under_ko.py research/heretic_csi/slurm/p6_stage0.slurm research/heretic_csi/p6_select_run.py "$SNAPDIR/"
 (cd "$SNAPDIR" && sha256sum * > SHA256SUMS)
-echo "STAGE_IN start $(date -Is)"; cp -L "$SCR"/*.safetensors "$SCR"/*.json "$TMPDIR/llama31/"; echo "STAGE_IN done $(date -Is)"
-MODEL="$TMPDIR/llama31"
+# node-local stage with a df precheck (node /tmp exhaustion killed 1040044 on n-801 — same failure class as S-029);
+# if the node lacks ~18 GB, or the copy fails, load DIRECTLY from the verified mirror (slower, identical bytes).
+AVAIL_KB=$(df --output=avail -k "$TMPDIR" 2>/dev/null | tail -1 || echo 0)
+echo "TMPDIR=$TMPDIR avail_kb=${AVAIL_KB} host=$(hostname)"
+MODEL="$SCR"
+if [ "${AVAIL_KB:-0}" -ge 18000000 ]; then
+  echo "STAGE_IN start $(date -Is)"
+  if cp -L "$SCR"/*.safetensors "$SCR"/*.json "$TMPDIR/llama31/"; then MODEL="$TMPDIR/llama31"; echo "STAGE_IN done $(date -Is)";
+  else rm -rf "$TMPDIR/llama31"; echo "STAGE_IN FAILED — loading from mirror $SCR $(date -Is)"; fi
+else
+  echo "STAGE_IN SKIPPED (insufficient node /tmp) — loading from mirror $SCR"
+fi
 "$PY" "${READ_ARGS[@]}" --model "$MODEL"; echo "READOUT_DONE rc=$? $(date -Is)"
 RD=$("$PY" research/heretic_csi/p6_select_run.py --job "$SLURM_JOB_ID" --glob "outputs/boombness/score_behavior/ts116m_readout_${CW}_bomb_*")  # THIS job + DONE only (never recency)
 # READOUT HEALTH GATE (mechanical; mirrors the incumbent's healthy run: gate PASS, no resource failures).

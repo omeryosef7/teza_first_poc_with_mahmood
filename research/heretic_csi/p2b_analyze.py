@@ -287,6 +287,12 @@ def analyze_rank(a, r, assign):
            "cand_total_fro": sum(cn.values()), "cand_n_params": sc[cand].get("n_params"),
            "cand_fit_meta": sc[cand].get("fit_meta"), "code_sha256": sc[cand].get("code_sha256"),
            "run_dirs": {x: os.path.basename(d) for x, d in dirs.items()}}
+    # review #5 (DESCRIPTIVE): fraction of the BASE-KO gap restored, for every scored arm; CAND - mean(DER)
+    out["fraction_of_BASE_minus_KO_restored"] = {
+        x: sa.effect_fraction(prof, doms, by["BASE"], by["KO"], by[x], a.n_boot, 20261015, 0.01) for x in scored}
+    der_mean = {d: sum(by[x][d] for x in der) / len(der) for d in doms}
+    out["CAND_minus_mean_DER"] = _boot_diff(doms, by[cand], der_mean, a.n_boot, 12)
+    out["CAND_minus_KO_ci"] = _boot_diff(doms, by[cand], by["KO"], a.n_boot, 13)
     pres_om = [rf[bcand][k]["option_mass"] - rf["BASE"][k]["option_mass"] for k in common]
     out["preservation"] = {"BASE_CAND_minus_BASE_y": round(mean_diff(doms, by[bcand], by["BASE"]), 5),
                            "mean_option_mass_change": round(sum(pres_om) / len(pres_om), 5)}
@@ -413,6 +419,38 @@ def analyze_rank(a, r, assign):
             out["addon_nm"] = res
         except SystemExit as e:
             out["addon_nm"] = {"status": f"NOT ANALYZABLE: {str(e)[:200]}"}
+    # ---------------- AMENDMENT 7: NEUT applied at one row only (DESCRIPTIVE; never changes a verdict) ----------
+    if a.neutpos:
+        try:
+            npos = [f"KO_NEUT_CWONLY_r{r}", f"KO_NEUT_ATLAST_r{r}"]
+            pd_ = {x: rederive.strict_run_dir(f"{a.prefix}_{x}", a.expect_n, row_file="results.jsonl",
+                                              allow_short=a.allow_short) for x in npos}
+            pkv = {x: sa.arm_key_values(pd_[x], assign, a.split)[0] for x in npos}
+            prf = {x: row_fields(pd_[x]) for x in npos}
+            pk = common & set.intersection(*[set(v) for v in pkv.values()])
+            pby = {x: dmeans(pk, lambda k, x=x: pkv[x][k]) for x in npos}
+            for x in ("KO", "KO_FULL", "BASE", cand, f"KO_NEUT_r{r}", cwonly, f"KO_ATLAST_r{r}"):
+                pby[x] = dmeans(pk, lambda k, x=x: kv[x][k])
+            pdd = sorted(pby["KO"])
+            psc = {x: sidecar(pd_[x]) for x in npos}
+            pprov = {x: run_prov(d) for x, d in pd_.items()}
+            res = {"n_keys": len(pk), "void": [], "descriptive_only": True,
+                   "run_dirs": {x: os.path.basename(d) for x, d in pd_.items()}, "arm_provenance": pprov,
+                   "median_option_mass": {x: statistics.median(prf[x][k]["option_mass"] for k in pk) for x in npos},
+                   "positions_tokens": {x: (psc[x] or {}).get("positions_tokens") for x in npos}}
+            res["void"] += config_violations(pd_, a.codeword, excl)
+            res["void"] += overlap_violations({**{x: provs[x] for x in live}, **pprov}, a.overlap)
+            for x in npos:
+                if res["median_option_mass"][x] < a.option_mass_floor:
+                    res["void"].append(f"{x}: readout collapsed (median option mass {res['median_option_mass'][x]:.2e})")
+                if psc[x] is None or not psc[x].get("hook_calls"):
+                    res["void"].append(f"{x}: hooks never applied / no sidecar")
+            for x in npos + [f"KO_NEUT_r{r}", cand, cwonly, f"KO_ATLAST_r{r}"]:
+                res[f"{x}_minus_KO"] = _boot_diff(pdd, pby[x], pby["KO"], a.n_boot, 14)
+                res[f"{x}_frac_BASE_minus_KO"] = sa.effect_fraction(prof, pdd, pby["BASE"], pby["KO"], pby[x], a.n_boot, 20261015, 0.01)
+            out["neut_position"] = res
+        except SystemExit as e:
+            out["neut_position"] = {"status": f"NOT ANALYZABLE: {str(e)[:200]}"}
     out["arm_provenance"] = provs
     out["jobs"] = sorted({p["job"] for p in provs.values() if p})
     ov = overlap_violations({k: v for k, v in provs.items() if v}, a.overlap)
@@ -485,6 +523,7 @@ def main():
     ap.add_argument("--capop", action="store_true")
     ap.add_argument("--cw-nrand", type=int, default=0)
     ap.add_argument("--cw-nder", type=int, default=0)
+    ap.add_argument("--neutpos", action="store_true", help="amendment-7 descriptive NEUT_CWONLY/NEUT_ATLAST arms")
     ap.add_argument("--addon-nm", action="store_true", help="amendment-6 descriptive MEANBIAS_NM arms (never unlock wording)")
     ap.add_argument("--addon", action="store_true", help="amendment-3 comparators: MEANBIAS arms + raw-norm DER/SHUF")
     ap.add_argument("--expect-excl", default=None, help="expected --exclude-prompt-ids of every arm (default from --split)")

@@ -79,6 +79,9 @@ def main():
                 emit(f"opraw:{fp}:DER{j}", f"{C} {KO}", f"KO_DERRAW_r{r}_{j}")
             for j in range(a.nshuf):
                 emit(f"opraw:{fp}:SHUF{j}", f"{C} {KO}", f"KO_SHUFRAW_r{r}_{j}")
+            # AMENDMENT 7 (DESCRIPTIVE): where does NEUT (last-row fit) act? its frozen factors at one row only
+            emit(f"opat:{fp}:NEUT:cw", f"{C} {KO}", f"KO_NEUT_CWONLY_r{r}")
+            emit(f"opat:{fp}:NEUT:last", f"{C} {KO}", f"KO_NEUT_ATLAST_r{r}")
     elif a.what == "addon_nm":
         # AMENDMENT 6 (DESCRIPTIVE): norm-matched mean-gap bias at all rows, per primary rank (CAND norms differ by rank)
         for r in [int(x) for x in a.ranks.split(",") if x]:
