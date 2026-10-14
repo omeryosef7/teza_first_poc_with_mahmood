@@ -1713,3 +1713,8 @@ nothing auto-analyzes the early VAL jobs (read-after-TRAIN is procedural). Tests
   ≤0.6 GB home at a time. **Caveat:** axisfit on an L18-only corpus is untested end-to-end ⇒ run ONE codeword's
   Stage 0 + axisfit and inspect before fanning out. Extraction will be native-bf16 vs the incumbents' V100.
 - GPU submission waits for slots (P2b first per priority).
+
+## S-093 — 2026-10-14 06:40 — ops tick
+- P2b evals, 0 failures: basket r1 52, r4 53; button r1 53, r4 46 (of 163); VAL basket r1 70 / r4 84 (unread).
+  P4-v2 CPU fits+CV (1023752–59) still running at 2h12m (a squeue name-truncation briefly made them look gone —
+  verified via sacct). 6 GPU (cap).
