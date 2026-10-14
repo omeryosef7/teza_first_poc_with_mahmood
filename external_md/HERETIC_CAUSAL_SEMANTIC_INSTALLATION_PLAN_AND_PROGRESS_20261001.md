@@ -2058,3 +2058,11 @@ Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_d.md` (independent; saw 
 - TRAIN read waits only on add-ons 1036622/1036626 (+ their overlap files), ~3 h.
 - Submitted button P2b VALIDATION (frozen factors): 1036679 (r1 + liveness), 1036680 (r4), `-w n-503` (warm) —
   unread until after the TRAIN read. GPU: 4 running + 2 pending.
+
+## S-124 — 2026-10-14 15:40 — ops tick: S-084 job 2 DONE ⇒ frozen read due (F6); button VAL r4 unpinned
+- 1032110 (S-084 j2) DONE_MARKER ⇒ both extension jobs complete; F6 runs the frozen two-step read
+  (p2a_powered_analyze.py → p2a_powered_binding.py) per ANALYSIS_COMMANDS_S084.md.
+- 1036680 (button P2b VAL r4) was stuck on ReqNodeNotAvail (n-503 full) ⇒ node pin removed (`scontrol update
+  ReqNodeList=`); now pending on priority (will cold-stage from the mirror). 1036679 (button VAL r1) running n-503.
+  Add-ons: 1036622 basket 10/43 (+2 tail-gate MEANBIAS arms), 1036626 button 3/43 (+2 tail-gate MEANBIAS arms —
+  the all-rows MEANBIAS collapses for button too).
