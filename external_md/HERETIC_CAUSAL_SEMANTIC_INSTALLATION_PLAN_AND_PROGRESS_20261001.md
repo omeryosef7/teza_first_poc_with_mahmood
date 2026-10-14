@@ -2027,3 +2027,11 @@ Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_d.md` (independent; saw 
 ## S-120 — 2026-10-14 14:10 — ops tick
 - basket r4 TRAIN 154/163, button r4 150/163, basket r1 resume 22, button r1 resume 16; S-084 j1 72/76 (near done),
   j2 47/72. 1035278 held. 0 failures.
+
+## S-121 — 2026-10-14 14:40 — button r1 TRAIN complete (resume) + OVERLAP_OK; S-084 job 1 done
+- 1035131 (button r1 resume, n-501): DONE_MARKER rc=0; skipped 149 already-complete arms, ran the remaining 18
+  (18/18 ok) ⇒ 167 arms; in-allocation overlap 4/4 ok ⇒ `overlap_button_1035131_r0.json` = **OVERLAP_OK** (tol 1e-6;
+  KO etc. vs 1023264 n-503, RTX A5000).
+- 1027577 (S-084 j1) DONE_MARKER (72 sweep arms + 4 overlap); 1032110 j2 56/72.
+- Only 4 GPU running ⇒ parent released held overlap job 1035278 (basket r1 overlap + button n-501 overlap).
+- Still running: basket r4 TRAIN 162/163, button r4 157/163, basket r1 resume 30. 0 failures. No endpoint read.
