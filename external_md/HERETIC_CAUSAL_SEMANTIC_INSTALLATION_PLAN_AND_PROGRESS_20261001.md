@@ -1880,3 +1880,8 @@ F3 (`reports/heretic_csi/VERIFY_basketball_occurrence.{md,json}`, `VERIFY_codewo
 - 1023579 DONE_MARKER rc=0, arms ok 163/163, single attempt. Held UNREAD until the basket TRAIN primary read.
 - P2b TRAIN, 0 failures: basket r1 106, r4 97; button r1 118, r4 95 (of 163); VAL basket r1 139. Freed slot → F6
   r4ext job 1 (46..117 + overlap arms). GPU 6.
+
+## S-107 — 2026-10-14 10:40 — ops tick
+- P2b TRAIN, 0 failures: basket r1 114, r4 102; button r1 127, r4 101 (of 163); VAL basket r1 149 (unread).
+- S-084 powered re-test job 1 = **1027577** (n-503, a5000; warm stage-in 5 s; basis sha verified; 72 new controls +
+  4 overlap arms, ~4.6 h). Job 2 waits for a slot. GPU 6.
