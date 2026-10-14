@@ -1691,3 +1691,25 @@ nothing auto-analyzes the early VAL jobs (read-after-TRAIN is procedural). Tests
   "minimal specific rank" over {1,4}); build banks + split/K4 exclusions for 22 codewords with the frozen domain split;
   per-codeword checks (single token, rel −10 decode, collisions with pool text, bank sha256); generic Stage-0 slurm
   (base readout + slim L18 extraction + axisfit, new files); GPU-h/disk estimate. No GPU submission.
+
+## S-092 — 2026-10-14 06:40 — P6 Stage-0 PREP done (F7, CPU); PREREG_P6 frozen before any P6 GPU job
+- `configs/heretic_csi/PREREG_P6.json` (sha256 998fc25d…21022). Pool = 20 untouched + candle (DEV-forced) + basket/
+  button (contaminated DEV); carrot excluded (pool placeholder); **envelope excluded mechanically, pre-GPU**
+  (vowel-initial ⇒ "a envelope" breaks the exact word-swap invariant: 3,248 `--strict` violations). DEV draw =
+  deterministic `p6_dev_draw.draw()` (frozen Zipf tertiles 7/7/6, median installer-strength split, rng 20261013),
+  applied once after Stage 0, before any rescue run. Primary = r1 VAL specificity z vs 56 controls; H6a/H6b Holm;
+  **H6c** (minimal specific rank over {1,4}) secondary/descriptive; UNDERPOWERED pre-label if <12 survive (n=15:
+  power 0.56/0.71/0.85 at ρ=0.6/0.7/0.8).
+- Banks: builder reproduces basket ts116m exactly (rows_sha16 1e872cd8…, 22,272 rows). 17 codewords collided with
+  pool text ⇒ one-word pool repairs (e.g. candle→taper, bottle→flask, chair→seat; full list in prereg; new banks equal
+  the incumbents' shape except the repaired sentences — declared). All 21: single token, rel −10 decodes to the
+  codeword 40/40 sampled, basket-identical shape (116 domains; rescue population 1,160 rows), 0 residual collisions,
+  meta hash match (`reports/heretic_csi/hcsi_p6_bank_checks.json`). Rows on scratch (1.5 GB) symlinked into
+  data/boombness_prompts (symlinks + meta tracked; rows not in git). 84 exclusion files `runargs/heretic_csi/p6/`
+  (generators reproduce basket's byte-identically; TEST not built).
+- New generic scripts: `slurm/p6_stage0.slurm <cw>` (bank-hash check → mirror stage → base readout (basket argv) →
+  L18-only extraction → scratch + manifest + DONE; a5000, no-requeue, code snapshot; dry-run 21/21) and
+  `slurm/p6_axisfit.slurm <cw>` (CPU; ranks {1,4,16}, 46 RAND + 10 SHUF per rank). Est. 21–32 GPU-h, ~13 GB scratch,
+  ≤0.6 GB home at a time. **Caveat:** axisfit on an L18-only corpus is untested end-to-end ⇒ run ONE codeword's
+  Stage 0 + axisfit and inspect before fanning out. Extraction will be native-bf16 vs the incumbents' V100.
+- GPU submission waits for slots (P2b first per priority).

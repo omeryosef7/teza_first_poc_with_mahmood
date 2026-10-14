@@ -1,0 +1,358 @@
+{
+ "schema": "hcsi_prereg/1",
+ "id": "PR-HCSI-P6",
+ "written": "2026-10-14, F7, BEFORE any P6 GPU job (Stage-0 not yet run; no installer strength, probe, or rescue number exists for any new codeword)",
+ "question": "Across Doublespeak codewords, does held-out probe quality (H6a) or lexical frequency (H6b) predict the specificity of the rank-1 installation-rescue carrier; and (H6c) does the minimal specific rank vary across codewords as basket(1) vs button(4) suggests?",
+ "design_source": "reports/heretic_csi/P6_CODEWORD_PROVENANCE_AND_DESIGN.md (S-054) + S-073/S-083/S-085 updates",
+ "codeword_pool": {
+  "untouched_confirmation_eligible": [
+   "balloon",
+   "banana",
+   "blanket",
+   "bottle",
+   "bucket",
+   "chair",
+   "curtain",
+   "cushion",
+   "jacket",
+   "kettle",
+   "ladder",
+   "lamp",
+   "pencil",
+   "pillow",
+   "ribbon",
+   "saddle",
+   "sponge",
+   "wagon",
+   "whistle",
+   "yogurt"
+  ],
+  "dev_forced": [
+   "candle"
+  ],
+  "contaminated_dev_only": [
+   "basket",
+   "button"
+  ],
+  "excluded": {
+   "carrot": "pool placeholder (9396 hits in demo_pools_116dom_tsm_bomb.json) + early-DCS GPU use (S-054)",
+   "envelope": "MECHANICAL, pre-GPU (2026-10-14): vowel-initial \u2014 the generator's exact-word-swap invariant fails (3248 alignment violations under --strict: 'a bomb' -> 'a envelope'); no bank can be built without changing the generator. Not outcome-based."
+  }
+ },
+ "banks": {
+  "builder": "PYTHONPATH=src python3 -m boombness.prompt_families --pools data/boombness_prompts/demo_pools_116dom_tsm_bomb.json --preset main_longpre_cds_ts --codeword <cw> --concept bomb --seed 20260901 --strict --incidental-replace 'button=switch,basket=hamper,knife=peeler,gun=beacon[,<cw>=<repl>]'",
+  "builder_reproduces_basket": "rows_sha16 1e872cd8cd2f63a5 == recorded meta (22272 rows)",
+  "per_codeword_repair": "added ONLY when the codeword collides with pool text (--strict refusal): candle=taper lamp=lantern ladder=scaffold blanket=quilt bucket=pail pillow=bolster saddle=harness cushion=pad curtain=drape bottle=flask jacket=coat ribbon=tape whistle=horn yogurt=custard banana=mango chair=seat balloon=kite (kettle, pencil, wagon, sponge: none). Declared consequence: pools differ from the incumbents' only in those repaired sentences.",
+  "location": "rows on /specific/scratches/scratch/omeryosef/hcsi_p6/banks (symlinked into data/boombness_prompts/); _meta.json beside them",
+  "checks": "reports/heretic_csi/hcsi_p6_bank_checks.json: all 21 single-token, rel_end -10 decodes to the codeword 40/40 sampled rows, shape identical to basket (22272 rows, 116 domains, rescue population 1160 rows/116 domains), 0 collisions after repair",
+  "per_codeword": {
+   "candle": {
+    "token_id": 38899,
+    "rows_sha16": "76b3580ee5863e25",
+    "bank_sha256": "575b5ba94d9c1935acd8d7a128a9b27abcfd6f8a682f238d4e7703e4cc294c84",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon",
+     "candle": "taper"
+    }
+   },
+   "lamp": {
+    "token_id": 29062,
+    "rows_sha16": "9879eaffc04516a4",
+    "bank_sha256": "0d603790feda4b9d46349c17bb0110a3981096150d12d3dceafe730bd0141ec3",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon",
+     "lamp": "lantern"
+    }
+   },
+   "kettle": {
+    "token_id": 73418,
+    "rows_sha16": "b3490c1e9c8eac93",
+    "bank_sha256": "02d9e27216059e74057ea285fd66ff790d2a326649f1e806256ec269147a4824",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon"
+    }
+   },
+   "pencil": {
+    "token_id": 47218,
+    "rows_sha16": "033cf40ef996011e",
+    "bank_sha256": "bed798dce7756f5a5dfbc80070d281b99663b43232a7143cc07bd02af14b99e7",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon"
+    }
+   },
+   "ladder": {
+    "token_id": 36865,
+    "rows_sha16": "7108d9b4340c783d",
+    "bank_sha256": "b5c9ea49e7c6552b7e214d531985532a14040bf084ee4e42153f4b115c9628ce",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon",
+     "ladder": "scaffold"
+    }
+   },
+   "blanket": {
+    "token_id": 39139,
+    "rows_sha16": "9d53a98b5386b471",
+    "bank_sha256": "8bf309833ff34fbf54ddb77cd64dc98154c16e9d7a3c4e2db9b84ad118faf0ca",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon",
+     "blanket": "quilt"
+    }
+   },
+   "bucket": {
+    "token_id": 15994,
+    "rows_sha16": "3fa9a573a7026417",
+    "bank_sha256": "eb9e1fe95c2f4d3d1e9c93ecbcabe1c90cfc3e67c1f3a0724b3b4626a2051f4e",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon",
+     "bucket": "pail"
+    }
+   },
+   "pillow": {
+    "token_id": 43425,
+    "rows_sha16": "601a3435666e9508",
+    "bank_sha256": "2b384e439e1c26348ac25aed354e0e91632f09a0dd685ebc3fb566d316628472",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon",
+     "pillow": "bolster"
+    }
+   },
+   "saddle": {
+    "token_id": 61858,
+    "rows_sha16": "3d866982d64afb62",
+    "bank_sha256": "cff8f07209e398a386db06912f5210df5d8a6d68eaaf313f3fe72e6c1605e886",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon",
+     "saddle": "harness"
+    }
+   },
+   "wagon": {
+    "token_id": 61519,
+    "rows_sha16": "32fc853496203ecd",
+    "bank_sha256": "ef1c74e902decb70ec0f532e292df4e7cdcfaa58041f05bf3670b35116266505",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon"
+    }
+   },
+   "cushion": {
+    "token_id": 45738,
+    "rows_sha16": "8b049a7e9a7c6620",
+    "bank_sha256": "adb36a6dab1b9b2cf51224d8af87f3af341a60d0ba00cd7ed3e2aec6c4a2501b",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon",
+     "cushion": "pad"
+    }
+   },
+   "curtain": {
+    "token_id": 46866,
+    "rows_sha16": "ba6f47e83af798b9",
+    "bank_sha256": "bd751ad330f179c22609e3c990d36e4151e6a8860b5ebea3e2665ce551a494ed",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon",
+     "curtain": "drape"
+    }
+   },
+   "bottle": {
+    "token_id": 16893,
+    "rows_sha16": "54a31ffe91884c1d",
+    "bank_sha256": "c4b748a5dcc46b054797f1ae7b0274a83f63ecd94a46d175ec12f2abf827067f",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon",
+     "bottle": "flask"
+    }
+   },
+   "jacket": {
+    "token_id": 27300,
+    "rows_sha16": "3dd7e1eafd015f5a",
+    "bank_sha256": "6055a05acf08b5a8efebe444e08b3d2c03c80d9e8940a12f5b0844ca5bcc7223",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon",
+     "jacket": "coat"
+    }
+   },
+   "ribbon": {
+    "token_id": 45667,
+    "rows_sha16": "1a2afc40d945039b",
+    "bank_sha256": "a0ea2568f651a899f74fc7cc7801b468ead663c4133ec7c98cf11469b4652aca",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon",
+     "ribbon": "tape"
+    }
+   },
+   "sponge": {
+    "token_id": 69448,
+    "rows_sha16": "e8d5ba09425c8786",
+    "bank_sha256": "ba0a8221a896f3c9cd397f6192cb4c0b1fdf2a155f74025d5b44b6e615fd3ed7",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon"
+    }
+   },
+   "whistle": {
+    "token_id": 40649,
+    "rows_sha16": "0fb6f476ef3caab2",
+    "bank_sha256": "24774bcfd7d00b8b08f31731bf2dd18ff7555fa65d2d636d6bde6e790cbcd87e",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon",
+     "whistle": "horn"
+    }
+   },
+   "yogurt": {
+    "token_id": 55575,
+    "rows_sha16": "212556060ae08261",
+    "bank_sha256": "c8d147549a29905a4a1a3d2066dc4ec2c3a658c6e48cd56cfed2ffc0113d23ca",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon",
+     "yogurt": "custard"
+    }
+   },
+   "banana": {
+    "token_id": 44196,
+    "rows_sha16": "283be91cce1afdfc",
+    "bank_sha256": "9d3f26993a15684d74475d5d3d53e799c4cd5711b869d2b7908e67ba8ed224a7",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon",
+     "banana": "mango"
+    }
+   },
+   "chair": {
+    "token_id": 10716,
+    "rows_sha16": "fe5e447bb26fe874",
+    "bank_sha256": "39a27f8ce40e3ef62233fe6f8611919c60ac4b3b838b02b93c5c80f822fa8d09",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon",
+     "chair": "seat"
+    }
+   },
+   "balloon": {
+    "token_id": 47856,
+    "rows_sha16": "95474588a2f4a8ea",
+    "bank_sha256": "46cacd04af7206461fa4672a84e0d4480523a4811576b5e2a54820d7cc6290f2",
+    "incidental_repairs": {
+     "button": "switch",
+     "basket": "hamper",
+     "knife": "peeler",
+     "gun": "beacon",
+     "balloon": "kite"
+    }
+   }
+  }
+ },
+ "splits": "frozen data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061); exclusions runargs/heretic_csi/p6/exclude_<cw>_{bomb_sow_train,bomb_sow_validation,bomb_behavioral_train,K4}.txt (generator reproduces the incumbents' files byte-identically). TEST never built, never read.",
+ "stage0": {
+  "per_codeword": "base readout (incumbent argv) + SLIM behavioral extraction (layer 18 only) [research/heretic_csi/slurm/p6_stage0.slurm], then axis fit ranks {1,4,16} with 46 random + 10 shuffled controls per rank [p6_axisfit.slurm]",
+  "covariates": {
+   "zipf": "wordfreq Zipf (frozen, in research/heretic_csi/p6_dev_draw.py)",
+   "installer_strength": "TRAIN mean y_install(C) \u2212 y_install(A), semantic_one_word, n_examples 4, domain-cluster CI",
+   "heldout_probe": "rank-1 probe fit TRAIN (67 dom) -> Spearman on VALIDATION (23 dom), L18 rel-6, research/heretic_csi/p6_heldout_probe.py"
+  },
+  "hardware": "native bf16 (a5000/l40s/3090); incumbents' extraction was V100 \u2014 declared provenance difference"
+ },
+ "gates_mechanical": {
+  "G1": "installer strength TRAIN domain-cluster CI lower bound > 0.05",
+  "G2": "KO liveness: KO\u2212BASE < 0 and KO_FULL\u2212KO > 0 with CI excluding 0 (TRAIN)",
+  "G3": "option-mass gate PASS (median > 0.05 on BASE)",
+  "attrition": "every gated-out codeword stays in the reported denominator with its reason; gates applied before any rescue arm is run"
+ },
+ "dev_draw": "research/heretic_csi/p6_dev_draw.draw(install_strength, survivors) \u2014 frozen tertiles (7/7/6 by Zipf over the 20 untouched), median split of TRAIN installer strength among G1\u2013G3 survivors, rng 20261013 cell order, 5 cells, one codeword each; DEV = candle + 5; CONFIRMATION = remaining survivors. Run once after Stage-0, logged, never re-drawn.",
+ "dev_role": "ranks {1,4,16} on TRAIN-K4 and VALIDATION; method shakedown only; NO method change after DEV (any change => new prereg + all confirmation codewords re-run)",
+ "primary_outcome_per_codeword": "rank-1 rescue specificity z on VALIDATION = (candidate \u2212 mean control)/sd control over the 56 rank-matched controls (frozen dcs_csi_subspace_analyze recovery statistic, BASE-ref option-mass floor 0.05); rank-test p secondary",
+ "tests": {
+  "H6a": "one-sided Spearman(held-out probe rho, z) > 0 across CONFIRMATION codewords, permutation p",
+  "H6b": "two-sided Spearman(Zipf, z) across CONFIRMATION codewords, permutation p",
+  "multiplicity": "Holm over {H6a, H6b}",
+  "H6c_secondary": "minimal specific rank per codeword over {1,4}: r1 PASS => 1; else r4 PASS => 4; else '>4' (PASS = frozen rank rule, VALIDATION, 56 controls). Reported as a distribution + Spearman with Zipf and with probe quality \u2014 DESCRIPTIVE unless the confirmation n reaches the power row below; never upgrades H6a/H6b.",
+  "descriptive": "count of confirmation codewords passing r1 vs Binomial(n, 0.05)"
+ },
+ "power": {
+  "source": "reports/heretic_csi/hcsi_p6_power.json (one-sided permutation Spearman, alpha 0.05, outcome reliability 0.7)",
+  "rows": {
+   "n6_dev": {
+    "rho0.6": 0.239,
+    "rho0.7": 0.301,
+    "rho0.8": 0.391
+   },
+   "n10": {
+    "rho0.6": 0.392,
+    "rho0.7": 0.505,
+    "rho0.8": 0.644
+   },
+   "n12": {
+    "rho0.6": 0.464,
+    "rho0.7": 0.593,
+    "rho0.8": 0.732
+   },
+   "n15": {
+    "rho0.6": 0.562,
+    "rho0.7": 0.714,
+    "rho0.8": 0.847
+   }
+  },
+  "expected_confirmation_n": "20 untouched \u2212 5 DEV = 15 before attrition"
+ },
+ "underpowered_rule": "If fewer than 12 confirmation codewords survive G1\u2013G3, H6a/H6b are PRE-LABELED 'CANNOT ANSWER / UNDERPOWERED for rho<0.8' before any confirmation rescue GPU is spent; the design is then redesigned (new codewords) rather than run and called null.",
+ "gpu_budget": {
+  "stage0": "~1.2 GPU-h/codeword incl. stage-in => ~25 GPU-h for 21",
+  "dev": "~30 GPU-h",
+  "confirmation_r1": "~3.5 GPU-h/codeword on VAL => ~53 GPU-h for 15"
+ },
+ "test_split": "never"
+}
