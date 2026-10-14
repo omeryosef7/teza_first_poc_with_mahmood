@@ -1905,3 +1905,12 @@ F3 (`reports/heretic_csi/VERIFY_basketball_occurrence.{md,json}`, `VERIFY_codewo
 - 1023578 DONE_MARKER rc=0 (incl. liveness arms); both basket VAL jobs now complete and held UNREAD until the basket
   TRAIN primary read. S-084 job 2 = 1032110 (n-503) started in the freed slot.
 - P2b TRAIN, 0 failures: basket r1 129, r4 116; button r1 145, r4 114 (of 163). GPU 6.
+
+## S-110 — 2026-10-14 12:10 — ops tick + ~4h ADVERSARIAL REVIEW #4 (read-readiness) launched
+- P2b TRAIN, 0 failures: basket r1 132, r4 124; button r1 149, r4 121 (of 163). S-084 jobs: 1027577 37 ok, 1032110 10 ok.
+- **Review #4** (fresh, read-only, forbidden from viewing any unread endpoint value): synthetic end-to-end dry-run of
+  p2b_analyze (main + addon + capop + CW families) on fake run dirs mirroring the real arm names/counts — arm-name
+  coverage, run-dir selection (no stale smoke / cross-codeword / VAL-into-TRAIN), Holm/INCOMPLETE/VOID/CI/wording per
+  amendments 1–4; same for the S-084 combination logic (3 jobs, OVL arms excluded from controls, 200 controls,
+  beat-every-SHUF, Holm with as-recorded p's, 203 rows); cross-amendment consistency; overclaims S-097…S-109; tests.
+  → `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_d.md`.
