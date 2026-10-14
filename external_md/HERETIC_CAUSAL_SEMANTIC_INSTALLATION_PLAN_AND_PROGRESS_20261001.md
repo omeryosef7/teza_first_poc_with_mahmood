@@ -2403,3 +2403,12 @@ all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_
 - P6 batch 1 attempt 1040533 FAILED in 35 s: shell bug (`RRC: unbound variable`) in the readout-reuse branch of
   `p6_stage0_batch.slurm` (no work done, no run dir); one-line fix; resubmitted as **1040547**. F7 asked to dry-run
   every script branch under `bash -u` with a stubbed python before any further GPU submission.
+
+## S-148 — 2026-10-14 21:40 — ops tick: VAL add-ons + button VAL overlap DONE (OVERLAP_OK); descriptive ranks into idle GPUs
+- 1040101 (basket VAL add-on) and 1040122 (button VAL add-on) DONE_MARKER (48 arms; 2 designed MEANBIAS tail-gate exits
+  each); add-on overlaps OVERLAP_OK; 1040170 (button VAL n-501 overlap) DONE, **OVERLAP_OK**. VAL read now waits only
+  on button VAL 1036679 (102/167) and 1036680 (125/163), ~3–4 h.
+- 4 GPU slots idle until the P4 fits finish (~07:30) ⇒ F2 to submit the DESCRIPTIVE TRAIN-K4 ranks {2,8,32}
+  (evalB) and {16,50} (evalC) for both codewords (amendment 5: descriptive only, curve shape for the rescue-vs-rank
+  deliverable; never changes a verdict). P4 evals take the next free slot once runnable.
+- P6 batch 1 1040547 pending (L40S resources).
