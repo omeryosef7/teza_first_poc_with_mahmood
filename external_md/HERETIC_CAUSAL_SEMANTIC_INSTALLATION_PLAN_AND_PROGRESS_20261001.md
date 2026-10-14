@@ -2423,3 +2423,10 @@ all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_
 ## S-150 — 2026-10-14 22:40 — ops tick
 - Button P2b VAL r1 120/167, r4 144/163 (unread). P6 batch 1 pending. Descriptive-rank jobs still not submitted ⇒
   F2 pinged (avoid duplicate submissions). GPU 2 running. No failures.
+
+## S-151 — 2026-10-14 23:10 — ops tick; descriptive evalC submitted by parent
+- F2 unresponsive ~1 h (likely blocked in a watcher) ⇒ parent submitted the DESCRIPTIVE TRAIN-K4 rank plans evalC
+  ({16,50}): **1040700** (basket), **1040701** (button), `-w n-503` (n-501↔n-503 overlaps exist for both codewords).
+  F2 told explicitly not to submit evalC; evalB ({2,8,32}) remains F2's. Self-correction: I briefly attached a SLURM
+  `--dependency` to 1040701 to stagger stage-ins — removed within a minute (sprint rule: no job deps); staggering is
+  enforced by log-watching. Button P2b VAL r1 128/167, r4 154/163 (unread). No failures.
