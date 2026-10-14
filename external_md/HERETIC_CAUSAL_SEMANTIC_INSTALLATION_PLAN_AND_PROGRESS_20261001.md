@@ -2400,3 +2400,6 @@ all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_
 - P6 batch A′ 1040422 PREEMPTED (n-805, 33 min); F7 resubmitted in smaller batches of 5 to limit preemption loss:
   batch 1 = 1040533 (candle + lamp reuse their readouts; lamp extraction; kettle, pencil, ladder new). No duplicate
   job (A′ gone). Partial dirs from A′ have no DONE and cannot be selected.
+- P6 batch 1 attempt 1040533 FAILED in 35 s: shell bug (`RRC: unbound variable`) in the readout-reuse branch of
+  `p6_stage0_batch.slurm` (no work done, no run dir); one-line fix; resubmitted as **1040547**. F7 asked to dry-run
+  every script branch under `bash -u` with a stubbed python before any further GPU submission.

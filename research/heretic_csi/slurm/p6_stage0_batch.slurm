@@ -62,7 +62,7 @@ for CW in "${LIST[@]}"; do
   BANK=data/boombness_prompts/boombness_prompt_bank_ts116m_${CW}_bomb.jsonl
   MAN=outputs/heretic_csi/p6/stage0_${CW}.json
   echo "==== CW=$CW start $(date -Is)"
-  RD=""
+  RD=""; RRC="reused"; XRC="none"
   if [ -s "$MAN" ]; then
     ORD=$("$PY" -c "import json;print(json.load(open('$MAN')).get('readout_dir') or '')")
     OJ=$("$PY" -c "import json;print(json.load(open('$MAN')).get('slurm_job') or '')")
