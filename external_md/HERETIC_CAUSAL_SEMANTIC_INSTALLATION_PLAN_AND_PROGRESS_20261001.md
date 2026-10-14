@@ -2326,3 +2326,8 @@ all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_
 - CAND − mean(DER) [CI]: basket r1 +0.006 [−0.002, 0.012]; basket r4 +0.021 [0.010, 0.033]; button r1 −0.004
   [−0.006, −0.001]; button r4 −0.011 [−0.019, −0.003] ⇒ for button the average deranged-pairing fit slightly BEATS the
   paired operator (in-sample).
+
+## S-141 — 2026-10-14 19:10 — ops tick
+- P6 candle pilot 1040103 (n-802, L40S): readout 2600/5568 rows, 0 OOM so far. Button P2b VAL r1 57 / r4 71 (unread);
+  VAL add-ons basket 8 / button 5 (+2 designed MEANBIAS tail-gate exits each); 1040170 overlap pending (n-501 memory).
+  GPU 5 running + 1 pending. No failures.
