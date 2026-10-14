@@ -1,0 +1,117 @@
+{
+ "schema": "hcsi_prereg_amendment/1",
+ "id": "PR-HCSI-P6 AMENDMENT 1",
+ "amends": "configs/heretic_csi/PREREG_P6.json (sha256 998fc25d444c5230c19b11eaf7c5ab9fc01e687d923f83db70b3e13ac8e21022)",
+ "written": "2026-10-14, F7, in response to adversarial review #3 (reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_c.md findings 4, 8, 9, 10); BEFORE any P6 GPU job",
+ "F4_occurrence_gate": {
+  "check": "research/heretic_csi/p6_occ_check.py runs the EXACT pre-flight gate (extract_boombness.resolve_occurrences with ds_common + the Llama-3.1 tokenizer) over EVERY row of all 21 banks + basket/button (CPU job 1024038, DONE). Output reports/heretic_csi/hcsi_p6_occ_check.json.",
+  "result": {
+   "basket": {
+    "n_fail": 30,
+    "reason": {
+     "occurrence_count_mismatch": 30
+    },
+    "extractor_pop": 3,
+    "rescue_pop_by_split": {
+     "train": 3
+    }
+   },
+   "cushion": {
+    "n_fail": 24,
+    "reason": {
+     "occurrence_count_mismatch": 24
+    },
+    "extractor_pop": 0,
+    "rescue_pop_by_split": {
+     "test": 2
+    }
+   },
+   "bottle": {
+    "n_fail": 30,
+    "reason": {
+     "occurrence_count_mismatch": 30
+    },
+    "extractor_pop": 3,
+    "rescue_pop_by_split": {
+     "train": 3
+    }
+   }
+  },
+  "root_cause": "derived words in pool text matched at the tokenizer level but not by the generator's whole-word count: bottle<-'bottled', cushion<-'cushioning'; the INCUMBENT basket has the identical defect ('basketball': 30 rows, 3 TRAIN rescue rows, 3 extractor rows). 18 other new banks: 0 failures.",
+  "rule": "MECHANICAL ROW EXCLUSION (pre-GPU, declared; parity with the incumbent, which was not pool-repaired): every row failing the gate is excluded. Implemented without altering the generated exclusion files: runargs/heretic_csi/p6/occfail_<cw>_ids.txt + exclude_<cw>_{bomb_sow_train,bomb_sow_validation,bomb_behavioral_train}_occ.txt and exclude_bottle_K4_occ.txt (bottle: +3 TRAIN rescue rows, +3 behavioral TRAIN rows; validation 0). cushion: its 2 failing rescue rows are TEST (never read) -> no change. The extractor's own FailureLedger skips the same rows (recorded attrition). The *_occ files are the ones every P6 bottle/cushion run must use.",
+  "inherited_flag": "basket's 3 TRAIN rescue rows fail the same gate; how the incumbent runs treated them is an inherited question for the parent (not changed here)."
+ },
+ "F8_dev_draw_fill": "p6_dev_draw.draw now ALWAYS returns candle + 5: after the cell pass, remaining slots are filled by rng.choice over the sorted not-yet-drawn survivors (same rng stream). Fewer than 5 surviving untouched codewords => SystemExit (DEV impossible; redesign). Tested (tests/test_p6_dev_draw.py, 4 pass incl. a single-cell case).",
+ "F9_repair_sensitivity": {
+  "measure": "repair-touched rows per bank (research/heretic_csi/p6_repair_rows.py -> reports/heretic_csi/hcsi_p6_repair_rows.json): row i of a new bank vs basket's row i after swapping the codeword back (case-preserving incl. ALL-CAPS); self-check: the 4 codewords without their own repair give 0. Counts 0\u2013432 rows/bank (rescue population 0\u201318 of 1160); Spearman(n_touched, Zipf) over the 20 untouched = 0.512.",
+  "preregistered_sensitivity": [
+   "(S1) H6a/H6b recomputed with every codeword's outcome z AND covariates (installer strength, held-out probe) re-estimated on rows EXCLUDING its repair-touched prompt_ids (the per-codeword lists in hcsi_p6_repair_rows.json).",
+   "(S2) H6a/H6b as partial Spearman controlling for log(1 + n_touched) (ranks residualised on rank(n_touched)), permutation p.",
+   "Interpretation: if S1 or S2 flips a Holm decision, the primary result is reported as REPAIR-SENSITIVE (not robust); S1/S2 never rescue a failed primary."
+  ]
+ },
+ "F10_power_two_sided_holm": {
+  "source": "research/heretic_csi/p6_power_v2.py -> reports/heretic_csi/hcsi_p6_power_v2.json (H6a one-sided, H6b two-sided; Holm over 2 => conservative per-test alpha 0.025, optimistic 0.05; reliability 0.7)",
+  "conservative_power": {
+   "n12": {
+    "rho0.7_rel0.7": {
+     "H6a_one_sided_conservative_0.025": 0.462,
+     "H6a_one_sided_optimistic_0.05": 0.593,
+     "H6b_two_sided_conservative_0.025": 0.334,
+     "H6b_two_sided_optimistic_0.05": 0.462
+    },
+    "rho0.8_rel0.7": {
+     "H6a_one_sided_conservative_0.025": 0.612,
+     "H6a_one_sided_optimistic_0.05": 0.733,
+     "H6b_two_sided_conservative_0.025": 0.478,
+     "H6b_two_sided_optimistic_0.05": 0.612
+    }
+   },
+   "n15": {
+    "rho0.7_rel0.7": {
+     "H6a_one_sided_conservative_0.025": 0.583,
+     "H6a_one_sided_optimistic_0.05": 0.712,
+     "H6b_two_sided_conservative_0.025": 0.461,
+     "H6b_two_sided_optimistic_0.05": 0.575
+    },
+    "rho0.8_rel0.7": {
+     "H6a_one_sided_conservative_0.025": 0.74,
+     "H6a_one_sided_optimistic_0.05": 0.836,
+     "H6b_two_sided_conservative_0.025": 0.633,
+     "H6b_two_sided_optimistic_0.05": 0.734
+    }
+   },
+   "n17": {
+    "rho0.7_rel0.7": {
+     "H6a_one_sided_conservative_0.025": 0.655,
+     "H6a_one_sided_optimistic_0.05": 0.772,
+     "H6b_two_sided_conservative_0.025": 0.53,
+     "H6b_two_sided_optimistic_0.05": 0.646
+    },
+    "rho0.8_rel0.7": {
+     "H6a_one_sided_conservative_0.025": 0.804,
+     "H6a_one_sided_optimistic_0.05": 0.887,
+     "H6b_two_sided_conservative_0.025": 0.7,
+     "H6b_two_sided_optimistic_0.05": 0.797
+    }
+   },
+   "n20": {
+    "rho0.7_rel0.7": {
+     "H6a_one_sided_conservative_0.025": 0.745,
+     "H6a_one_sided_optimistic_0.05": 0.837,
+     "H6b_two_sided_conservative_0.025": 0.645,
+     "H6b_two_sided_optimistic_0.05": 0.743
+    },
+    "rho0.8_rel0.7": {
+     "H6a_one_sided_conservative_0.025": 0.884,
+     "H6a_one_sided_optimistic_0.05": 0.936,
+     "H6b_two_sided_conservative_0.025": 0.816,
+     "H6b_two_sided_optimistic_0.05": 0.882
+    }
+   }
+  },
+  "finding": "the original one-sided alpha-0.05 table overstated H6b's power. Under Holm, at the maximum attainable confirmation n = 15 (20 untouched - 5 DEV, before attrition), conservative power at rho 0.8 is 0.63 (H6b) / 0.74 (H6a); at rho 0.7 0.46 / 0.58.",
+  "UNDERPOWERED_rule_v2": "Replaces the '<12' rule. With n_conf = confirmation codewords surviving G1\u2013G3: (a) H6b is PRE-LABELED 'UNDERPOWERED (conservative power < 0.70 at rho = 0.8)' for every attainable n (requires n >= 17 > 15 available) \u2014 it is still computed and reported, but a non-rejection may NOT be called a null; (b) H6a is PRE-LABELED UNDERPOWERED for rho < 0.8 if n_conf < 15, and 'CANNOT ANSWER' (no confirmation GPU spent; redesign with new codewords) if n_conf < 12 (conservative power 0.61 at rho 0.8).",
+  "option_for_parent_not_adopted": "dropping H6b from the Holm family (descriptive) would restore H6a to one-sided alpha 0.05 (n15 power 0.71 at rho 0.7). NOT adopted here \u2014 a change of hypothesis family is the parent's call and must be made before any Stage-0 number exists."
+ }
+}

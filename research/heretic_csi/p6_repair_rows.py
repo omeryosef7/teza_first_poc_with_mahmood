@@ -13,6 +13,8 @@ D = os.path.join(REPO, "data/boombness_prompts")
 def swap(text, cw):
     def rep(m):
         w = m.group(0); base = "basket" + ("s" if w.lower().endswith("s") and w.lower() != cw else "")
+        if w.isupper():
+            return base.upper()
         return base.capitalize() if w[0].isupper() else base
     return re.sub(r"\b%ss?\b" % re.escape(cw), rep, text, flags=re.IGNORECASE)
 

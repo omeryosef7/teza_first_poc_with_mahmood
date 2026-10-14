@@ -1826,3 +1826,23 @@ stage0 output matches axisfit, disk on scratch; no analyzer outputs exist; tests
 - P4 CV resubmitted with 10 control sets: 1024034–37 (old 1023753/55/57/59 cancelled, no fold completed).
   `configs/heretic_csi/PREREG_P4_AMENDMENT_3.json` (sha256 f8854509…d1ed) records it. Fits 1023752/54/56/58 continue
   (60 RAW + 60 NC per cell); final fit-side summary ETA ~22–23 h.
+
+## S-101 — 2026-10-14 09:30 — P6 review-#3 fixes; PREREG_P6_AMENDMENT_1; power re-done; INHERITED basket occurrence flag
+- `configs/heretic_csi/PREREG_P6_AMENDMENT_1.json` (sha256 3a762fc7…0fc94), before any P6 GPU job.
+- **Full pre-flight occurrence gate** (`p6_occ_check.py` = `extract_boombness.resolve_occurrences` over every row of
+  23 banks; CPU job 1024038; `reports/heretic_csi/hcsi_p6_occ_check.json`): 19 new banks clean; **bottle** fails 30
+  rows ("bottled"; 3 TRAIN rescue + 3 extraction rows); **cushion** fails 24 ("cushioning"; only 2 TEST rescue rows).
+  Rule: mechanical row exclusion via `*_occ.txt` exclusion files (bottle/cushion runs must use them).
+- **INHERITED FLAG:** the incumbent **basket** bank fails the same gate on 30 rows ("basketball"), incl. 3 TRAIN
+  rescue-population rows. How the incumbent extraction/axis fits and the certified S-049 / P2a runs handled them is
+  UNVERIFIED ⇒ independent verifier (F3) tasked: affected rows, positions used, and a drop-rows sensitivity on every
+  basket verdict; button checked for analogues ("buttonhole", "buttoned").
+- DEV draw always returns candle + 5 (deterministic fill; 4 tests). Repair-touched rows 0–432/bank (rescue 0–18 of
+  1,160), ρ(Zipf) 0.512 ⇒ preregistered sensitivity S1 (drop repair-touched rows) and S2 (partial Spearman on repair
+  count); a decision flip ⇒ "repair-sensitive".
+- **Holm-aware power (two-sided H6b):** at n=15 (pool max) conservative power H6b 0.63/0.46 at ρ=0.8/0.7; H6a 0.74/0.58.
+  **Parent decision (before any Stage-0 number):** H6b (frequency) becomes DESCRIPTIVE (pre-labelled UNDERPOWERED;
+  Spearman + bootstrap CI + S1/S2), because the Zipf range (3.54–4.69) makes it underpowered at any attainable n;
+  H6a (probe quality → r1 specificity) is the single confirmatory test, one-sided α=0.05 (power 0.71 at ρ=0.7, n=15);
+  H6a UNDERPOWERED if <15 confirmation codewords survive (for ρ<0.8), CANNOT ANSWER if <12. To be frozen as
+  PREREG_P6_AMENDMENT_2 (F7).

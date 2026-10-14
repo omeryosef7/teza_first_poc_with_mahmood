@@ -50,3 +50,10 @@ All 21: shape identical to basket's bank (22,272 rows; by_block equal; 116 domai
 ## Blockers / caveats
 - None blocking. Hardware provenance differs from the incumbents (V100 extraction). Per-codeword pool repairs mean new banks are not byte-aligned to basket/button outside the codeword itself (estimand is per-codeword, so acceptable; declared in the prereg).
 - The axis fit on an L18-only corpus is untested end-to-end (code path: `PLATEAU ∩ captured = [18]`, then `--force-layer 18`); first codeword's Stage 0 + axisfit should be inspected before fanning out.
+
+## UPDATE — PREREG_P6_AMENDMENT_1 (review #3 findings 4, 8, 9, 10)
+`configs/heretic_csi/PREREG_P6_AMENDMENT_1.json` (sha256 3a762fc7237a13c25abffe80ba90a7c1ac4e7b2fd462c1f0c4af70a67880fc94).
+- **F4 full occurrence gate** (`p6_occ_check.py`, the extractor/score_behavior pre-flight `resolve_occurrences` over EVERY row; CPU job 1024038; `hcsi_p6_occ_check.json`): 19 of 21 new banks 0 failures. **bottle** 30 rows ('bottled'; 3 TRAIN rescue rows, 3 extractor rows), **cushion** 24 rows ('cushioning'; its 2 rescue rows are TEST — never read). Incumbent **basket** fails identically ('basketball', 30 rows, 3 TRAIN rescue rows) — inherited, flagged to parent. Rule: mechanical row exclusion via `runargs/heretic_csi/p6/*_occ.txt` (bottle/cushion runs MUST use the `_occ` exclusion files; generated files untouched).
+- **F8**: DEV draw always returns candle + 5 (deterministic fill rule; 4 tests pass).
+- **F9**: repair-touched rows 0–432/bank (rescue pop 0–18/1160), Spearman with Zipf 0.512 (`hcsi_p6_repair_rows.json`; self-check 0 for unrepaired codewords). Preregistered sensitivity S1 (exclude touched rows) + S2 (partial Spearman on repair count); a flip ⇒ "REPAIR-SENSITIVE".
+- **F10**: two-sided H6b under Holm is underpowered at every attainable n (n=15: conservative 0.63 at ρ=0.8; needs n≥17). New rule: H6b pre-labeled UNDERPOWERED (non-rejection ≠ null); H6a UNDERPOWERED for ρ<0.8 if n_conf<15, CANNOT ANSWER if <12. Option (not adopted, parent's call): make H6b descriptive to restore H6a's one-sided α=0.05.

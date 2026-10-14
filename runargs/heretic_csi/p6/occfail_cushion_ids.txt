@@ -1,0 +1,25 @@
+# rows failing extract_boombness.resolve_occurrences (occurrence_count_mismatch; derived-word in pool text). Mechanical, pre-GPU (PREREG_P6_AMENDMENT_1)
+a470ecc3cdce29a5
+31c425fefb892965
+cec4b4f712ba5548
+7b4b8c11691768f1
+3e9012f056ef22a7
+6d3916fbb24e5bc2
+55edf547a289610a
+30816e57c7fe4034
+a2c6b10666f1d656
+4ca65717528d827d
+7bded8fd3847e102
+bf17f18a5cfab93b
+18325ec4752c8747
+7fc526d255b6d9ff
+6cebf6c02846008f
+5249e9268d59c9a5
+ce1741d6d5e021c9
+ec86374943624bba
+95af5017329e2106
+724b0e272f255b30
+78ca92e27a647a42
+c1667fe381feb5f0
+465b48b11be0ba16
+e92d44c99f2bdb5b
