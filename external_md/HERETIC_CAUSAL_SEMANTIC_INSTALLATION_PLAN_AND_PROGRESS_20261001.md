@@ -2287,3 +2287,10 @@ No leakage found (K4 exclude list + right bank on every arm; overlap and NM-over
 - **Synthesis so far (TRAIN, in-sample):** the operator's rescue is more than a constant shift (beats MEANBIAS_NM and
   CWMEANBIAS), but the domain-specific pairing adds little or nothing beyond "any KO→clean fit" (DER rivals it).
   VAL decides.
+
+## S-139 — 2026-10-14 18:40 (clock-checked) — ops tick
+- Timestamp correction: the header times of S-136…S-138 (written "19:00–19:20") were estimates; the actual wall-clock
+  times were ~18:15–18:35. Content unaffected.
+- Button P2b VAL: 1036679 (r1) 48 ok, 1036680 (r4) 60 ok (unread). VAL add-on 1040101 (basket) started — first arm
+  KO_MEANBIAS exited rc=4 (designed tail gate; expected); 1040122 (button) pending. TRAIN NEUT-position 1040124
+  running. P6 candle pilot attempt 4 = 1040103 on n-802 (node /tmp 23.7 GB free ⇒ staging locally). GPU 5 + 1 pending.
