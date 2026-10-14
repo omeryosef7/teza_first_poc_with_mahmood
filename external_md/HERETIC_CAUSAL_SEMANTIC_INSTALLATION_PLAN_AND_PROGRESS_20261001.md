@@ -2435,3 +2435,7 @@ all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_
 - Button P2b VAL r4 (1036680) DONE_MARKER (164 ok lines); r1 (1036679) 137/167 — last VAL prerequisite (~1.5 h).
   Descriptive evalC 1040700 / 1040701 running (6 arms each); F2's evalB appear as 1040759 (running) + 1040766
   (pending). P6 batch 1 1040547 pending. GPU 4 running + 2 pending. No failures.
+
+## S-153 — 2026-10-15 00:10 — ops tick
+- 6 GPU running (cap): button P2b VAL r1 1036679 146/167 (last VAL prerequisite); descriptive evalC 1040700/01 (14
+  arms each), evalB 1040759 (8) / 1040766 (6) — all n-503; P6 batch 1 1040547 running on n-802 (20 min). No failures.
