@@ -1531,3 +1531,7 @@ F5 (CPU only). Reports: `reports/heretic_csi/P3_SVD_REPORT.md`, `P3_svd_descript
   (first arm 100/268); 1023509 (button r4) waiting for button factors; 1023264 pending (BeginTime). P4 CPU fits
   1023554–57 running. No failures/duplicates. VALIDATION P2b plans for basket now runnable (fit_summary present) —
   will submit when GPU slots allow (currently 3 GPU + 1 pending).
+- **Submitted P2b VALIDATION runs for basket** (frozen factors; PREREG_P2B_VALIDATION): 1023578 (r1, incl. liveness)
+  and 1023579 (r4), pinned to warm n-503 (free a5000s; avoids cold stage-in). **Read discipline:** these run in
+  parallel for wall-clock reasons only; their outputs will NOT be analyzed until the basket TRAIN-K4 primary read
+  (r1 + r4) is analyzed and logged. GPU: 5 running + 1 pending = 6.
