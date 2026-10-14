@@ -1723,3 +1723,7 @@ nothing auto-analyzes the early VAL jobs (read-after-TRAIN is procedural). Tests
 - P2b evals, 0 failures: basket r1 60, r4 59; button r1 63, r4 54 (of 163); VAL basket r1 81 / r4 96 (unread).
   Time-limit check: 1023012 at 8h22 with ~103 arms left at ~4 min/arm ⇒ finishes ≈15–16 h < 23 h limit. OK.
   P4-v2 fits/CV running (2h42). Cancelled rows in sacct are F1/F5's superseded jobs (already logged).
+
+## S-095 — 2026-10-14 07:40 — ops tick
+- P2b evals, 0 failures: basket r1 68, r4 65; button r1 73, r4 63 (of 163); VAL basket r1 91 / r4 108 (unread).
+  P4-v2 fits/CV running (3h12). Next deep review due ~08:10 (4 h after S-082/083).
