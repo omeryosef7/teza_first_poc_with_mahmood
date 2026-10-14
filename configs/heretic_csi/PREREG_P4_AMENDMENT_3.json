@@ -1,0 +1,8 @@
+{
+  "schema": "hcsi_prereg_amendment/1",
+  "amends": "PREREG_P4 + AMENDMENT_1 + AMENDMENT_2",
+  "written": "2026-10-14, BEFORE any P4 endpoint (0 hcsi_p4* score dirs)",
+  "change": "The fitting-side TRAIN CV diagnostic (p4_head_fit_v2.py --mode cv) uses 10 random-head control sets per family (RH8RAW_0..9, RH8NC_0..9) instead of 20, because of CPU cost (~26 min per RAW+NC pair on CPU; 20 sets x 5 folds ~ 43 h, near the 2-day job limit). Parent decision (option a). Jobs 1023753/55/57/59 (cv-nrh 20) cancelled before finishing any fold; resubmitted as 1024034 (basket r1), 1024035 (basket r4), 1024036 (button r1), 1024037 (button r4).",
+  "status_of_CV": "Fitting-side diagnostic ONLY. It is not part of the P4 decision rule and is not used to choose, drop or change anything in the P4 design.",
+  "unchanged": "Fit jobs 1023752/54/56/58 (60 RAW + 60 NC controls per cell), decision rule, analyzer, plans, GPU estimate."
+}

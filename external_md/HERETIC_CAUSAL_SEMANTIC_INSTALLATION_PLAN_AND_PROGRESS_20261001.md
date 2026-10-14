@@ -1823,3 +1823,6 @@ stage0 output matches axisfit, disk on scratch; no analyzer outputs exist; tests
 - Runtime decision (parent): fits (1023752/54/56/58, ~26 min per RAW+NC pair ⇒ ~27 h) continue; CV jobs
   (1023753/55/57/59, ~43 h projected) cancelled and resubmitted with 10 control sets (`--cv-nrh 10`) — CV is a
   fitting-side diagnostic only, never decision-relevant; decided before any P4 endpoint.
+- P4 CV resubmitted with 10 control sets: 1024034–37 (old 1023753/55/57/59 cancelled, no fold completed).
+  `configs/heretic_csi/PREREG_P4_AMENDMENT_3.json` (sha256 f8854509…d1ed) records it. Fits 1023752/54/56/58 continue
+  (60 RAW + 60 NC per cell); final fit-side summary ETA ~22–23 h.

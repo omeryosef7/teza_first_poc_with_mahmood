@@ -47,3 +47,13 @@ v1 plans `p4_*` are marked SUPERSEDED. Analyzer: `p4_analyze_v2.py --codeword <c
 ## Caveats that travel with any P4 result
 Head set certified on basket VALIDATION (D32) ⇒ a basket VALIDATION read is not a fresh test of the nomination.
 TRAIN-K4 eval is in-sample for TOP8 and for both control families (all fitted on TRAIN).
+
+## Update (2026-10-14, before any P4 endpoint)
+- Review #3 finding 3 fixed: VOID / gate-failed / recovery-degenerate primary ranks count as MISSING in Holm ⇒ INCOMPLETE
+  (`p4_analyze_v2.valid()`; PREREG_P4_AMENDMENT_2.json).
+- CV diagnostic reduced to 10 control sets per family (PREREG_P4_AMENDMENT_3.json; CPU cost; parent decision; fitting-side
+  only, not used for any decision). CV jobs: 1024034 basket r1 · 1024035 basket r4 · 1024036 button r1 · 1024037 button r4.
+- Partial fitting-side summary (6–8 controls per family; `reports/heretic_csi/P4V2_FIT_SUMMARY_partial.json`): TOP8 is not
+  distinctive in-sample — rank among RAW 3/8, 5/7, 2/8, 7/7 and among NC 1/7, 4/6, 3/8, 7/7 (basket r1, basket r4,
+  button r1, button r4); the NC refit recovers RAW-level fit (e.g. button r1 RH8NC_0 0.622 vs v1-rescaled 0.147).
+  Final ranks: rerun `research/heretic_csi/p4v2_fit_summary.py` when the fit jobs finish.
