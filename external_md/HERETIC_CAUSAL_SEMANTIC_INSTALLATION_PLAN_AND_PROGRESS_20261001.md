@@ -2355,3 +2355,7 @@ all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_
 - **Fan-out authorized:** remaining 20 codewords, batched (several readouts per L40S allocation after one model load;
   extraction only for gate-passing codewords), ≤1 P6 GPU job at a time; then CPU axisfit for survivors; DEV draw only
   after ALL Stage-0 covariates exist.
+
+## S-143 — 2026-10-14 19:40 — ops tick
+- P6 Stage-0 batch A = 1040225 (lamp…cushion; n-802 L40S; one model load). Button P2b VAL r1 66 / r4 83 (unread);
+  VAL add-ons basket 17 / button 14 (+2 designed tail-gate exits each); 1040170 pending. GPU 5 + 1 pending. No failures.
