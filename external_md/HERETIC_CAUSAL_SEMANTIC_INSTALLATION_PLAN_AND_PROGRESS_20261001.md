@@ -2331,3 +2331,27 @@ all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_
 - P6 candle pilot 1040103 (n-802, L40S): readout 2600/5568 rows, 0 OOM so far. Button P2b VAL r1 57 / r4 71 (unread);
   VAL add-ons basket 8 / button 5 (+2 designed MEANBIAS tail-gate exits each); 1040170 overlap pending (n-501 memory).
   GPU 5 running + 1 pending. No failures.
+
+## S-142 — 2026-10-14 19:20 — P6 candle pilot: pipeline WORKS; candle FAILS frozen gate G3 (genuine) — gate kept frozen
+- 1040103 (L40S, n-802): readout COMPLETE **5,568/5,568 rows, 0 failures** (OOM fixed) in
+  `ts116m_readout_candle_bomb_20261014_185228_923425`; then score_behavior's tail gate FAILED on one-word option mass ⇒
+  job stopped before extraction (as designed). Earlier attempts: 1039942 preempted (partial dir, never used); 1040044
+  failed at stage-in (n-801 /tmp full, no run dir); 1038879 a5000 OOM (superseded dir kept, never used).
+
+  | codeword | gate | one-word pooled | forced-choice pooled | one-word C dose 4 | one-word A dose 4 |
+  |---|---|---|---|---|---|
+  | basket (incumbent) | PASS | 0.059 | 0.599 | 0.082 | 0.095 |
+  | button (incumbent) | PASS | 0.083 | 0.358 | 0.313 | 0.059 |
+  | candle | **FAIL** | **0.025** | 0.357 | 0.042 | 0.034 |
+
+- **Parent decision: G3 stays EXACTLY as frozen** (no post-pilot change): (i) any change would follow a seen outcome;
+  (ii) a dose-4-only gate would not change candle (0.042 < 0.05) — no principled rescue; (iii) "<12 survivors ⇒ H6a
+  CANNOT ANSWER" is the preregistered honest outcome. **Candle = gated out by G3 (DEV-forced codeword), stays in the
+  denominator.** F7 to verify from source exactly which rows the pooled gate uses (min_dose=1 default) before the
+  "dose-0 rows are pooled" claim is quoted.
+- Fixes committed: job-scoped run-dir selection `research/heretic_csi/p6_select_run.py` (RUNMETA slurm_job_id + DONE,
+  never recency; tested on the preempted dir and incumbent 865335), used by `p6_stage0.slurm` and `p6_axisfit.slurm`;
+  node-/tmp df precheck + direct-mirror fallback; bad-node exclusion (n-801, n-803, n-804).
+- **Fan-out authorized:** remaining 20 codewords, batched (several readouts per L40S allocation after one model load;
+  extraction only for gate-passing codewords), ≤1 P6 GPU job at a time; then CPU axisfit for survivors; DEV draw only
+  after ALL Stage-0 covariates exist.
