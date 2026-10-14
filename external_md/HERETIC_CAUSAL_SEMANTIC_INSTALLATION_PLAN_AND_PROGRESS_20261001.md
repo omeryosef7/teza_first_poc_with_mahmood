@@ -2534,3 +2534,10 @@ Verifier/reviewer (own code `research/heretic_csi/verify/verify_p2b_val.py`) →
   133 arms, ~8.4 GPU-h, ETA ~10:00).
 - P4 fits later than estimated: CV10 jobs at fold 3–4/5 (ETA ~06:00–08:00); fit jobs 33–54/60 control pairs (ETA
   ~12:00–13:00; within the 2-day limit). Final fit-side summary auto-generated when all 8 DONE.
+
+## S-159 — 2026-10-15 01:40 (clock-checked) — ops tick
+- (S-157's header time "01:50" was an estimate; actual ~01:30.) 6 GPU: descriptive evalC 1040700/01 37 arms each,
+  evalB 1040759/66 31 each; P3 trunc 1041078 started; P6 batch 1 1040547 (G3: candle FAIL, lamp PASS, kettle PASS;
+  pencil/ladder in progress). No failures.
+- Next deep review ~05:30 (4 h after #6). Pending reads: P3 trunc (~10:00), P4 fit summary (~12–13:00), descriptive
+  ranks (~12 h), P6 Stage-0 batches.
