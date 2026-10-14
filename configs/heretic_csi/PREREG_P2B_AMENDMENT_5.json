@@ -1,0 +1,42 @@
+{
+ "schema": "hcsi_p2b_prereg_amendment/1",
+ "amends": {"PREREG_P2B.json": "e273df1db75f6c2aeb1860dd23639d23286570920e85d139ad66f911e8ced378",
+            "PREREG_P2B_AMENDMENT_1.json": "fd01d54e41809493b2abd4dd5c15ae852824007dab2a22debab13ea782baf10a",
+            "PREREG_P2B_AMENDMENT_2.json": "65a5f0cb1adaaa414319402ba947d29dbc9dbaf5c8e0cbdabb68c7794906a3bf",
+            "PREREG_P2B_VALIDATION.json": "5b1f3bac7c216038fe6bd69b46cd45f820dc7117afa7bef3647a1c35935d2b9b",
+            "PREREG_P2B_AMENDMENT_3.json": "122b86ecf4a7a802f8cd8cde65bc2783a320f0c37fc5bfea19d2763f5d1492ac",
+            "PREREG_P2B_AMENDMENT_4.json": "121206ffb2eb99ea0a05c45abbe715bbf03be2be5750b985107425814113953a"},
+ "written": "2026-10-14T12:42:38+03:00",
+ "decided_by": "parent coordinator (review #4 REVIEW_ADVERSARIAL_20261014_d.md + resume overlap requirement), implemented by F2",
+ "endpoint_status_at_writing": "NO P2b TRAIN or VALIDATION y_install has been computed or read.",
+ "outcome_decision": {
+  "split": "Outcomes A-E and the minimal specific rank are decided ONLY on VALIDATION at the primary ranks {1,4}. TRAIN-K4 is in-sample and DESCRIPTIVE. TRAIN fail + VAL pass => reported as VAL PASS with the TRAIN fail flagged. TRAIN pass + VAL fail => FAIL.",
+  "specific_at_r": "primary verdict PASS at rank r on VALIDATION (Holm over {1,4}, recovery CI-lo>0, all gates; INCOMPLETE/VOID/CANNOT ANSWER are not PASS).",
+  "mapping": {"A": "basket specific at r1 AND button not at r1 but at r4",
+              "B": "both specific at r1",
+              "C": "neither specific at r1, both at r4",
+              "D": "basket specific at some r in {1,4}, button at neither",
+              "E": "neither codeword specific at either rank",
+              "CANNOT_ANSWER": "any VOID / INCOMPLETE FAMILY / CANNOT ANSWER cell needed for the mapping",
+              "other": "any other pattern is reported literally (e.g. button-only specificity)"},
+  "minimal_specific_rank": "per codeword in {1, 4, '>4 (untested beyond)'}",
+  "descriptive_ranks": "{2,8,16,32,50} inform curve shape only; they stay UNSUBMITTED unless GPU allows after P4/S-084"
+ },
+ "analyzer_fixes_review4": {
+  "wording_flag": "addon.input_conditional_wording_eligible_on_this_split is False on any split other than validation",
+  "hooks_gate": "KO_CAND with zero hook calls => primary VOID; KO_IDENT with zero hook calls => shared VOID (identity gate untested)",
+  "config_gate": "every arm's config.json: bank must be this codeword's ts116m bank, --exclude-prompt-ids must equal the split's population file (train K4: runargs/heretic_csi/exclude_<cw>_K4.txt; validation: runargs/dcs_cont/exclude_<cw>_bomb_sow_validation.txt), attn eager, dtype bfloat16; violations VOID the family they occur in (liveness => shared)",
+  "run_dirs": "run dirs AND provenance (slurm job, host, GPU) are recorded for every arm of every family (primary, CW family, add-on)",
+  "verdict_strings": "INCOMPLETE verdicts never contain the substring 'PASS' (embedded verdict re-worded would-pass / would-not-pass)"
+ },
+ "cross_job_overlap_rule": {
+  "trigger": "TRAIN r1 jobs 1023012 (basket) and 1023264 (button) were PREEMPTED at 2026-10-14T11:50 (n-503); resumed as 1034929 (basket, n-501) and 1035131 (button) with skip-if-done, so r1 cells mix arms from two jobs/hosts; r4 cells mix liveness arms (n-503) with r4 arms (n-501).",
+  "rule": "Any cell whose arms come from more than one host is analysable only if, for EVERY host pair present, an OVERLAP_OK file covers it: arms already completed in the earlier job (KO, KO_CAND_r1, KO_RAND_r1_0, KO_DER_r1_0) are re-run on the later host under distinct OVL tags (hcsi_p2b_<cw>_k4ovl_*, never read by the analyzer) and must match per row with identical prompt_id sets and max |dy_install| <= 1e-6, both on NVIDIA RTX A5000 (p2b_overlap_check.py). Otherwise the cell is VOID (shared). Same-host different jobs are treated as one host. Any arm not on RTX A5000 => VOID. Add-on arms have their own overlap gate (add-on VOID only) and their jobs re-run KO in-allocation.",
+  "jobs": {"basket_overlap": "1035278 (pinned n-501, held until 1023508/1023509 frees a slot; vs 1023012)",
+           "button_overlap": "inside 1035131 after its resume arms (vs 1023264)",
+           "button_r4_note": "button r4 (n-501 arms + n-503 liveness) relies on the basket overlap file for n-501 vs n-503 host equivalence (cross-codeword evidence; stated in the report)"},
+  "selection": "strict_run_dir selects exactly ONE complete run dir per arm tag; partial dirs from the preempted jobs have no DONE.json and are ignored; which job each arm came from is recorded in arm_provenance."
+ },
+ "analysis_commands": "configs/heretic_csi/ANALYSIS_COMMANDS_P2B.md (sha256 a9fffce944b4f45a7bdc97539b2242c1dccfb1134cda38208b3e814f9ec06767), with the analysis-code sha256s it assumes",
+ "code": "p2b_analyze.py sha256 0104b4544ba6907424f2ca47d291f9163f2ae89e93d850a2da0b2e4268d4f399; p2b_overlap_check.py 4552d70fd6aec349fdb66f65b521d6f452776f35cfdfecd6df550a843513a490; tests 73 passed / 1 skipped"
+}

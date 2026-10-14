@@ -1994,3 +1994,18 @@ Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_d.md` (independent; saw 
 - Running GPU: 1023508 (basket r4 TRAIN 131/163), 1023509 (button r4 128/163), 1034929 (basket r1 resume, staged),
   1027577 (S-084 j1 45/76), 1032110 (S-084 j2 19/72). Pending: 1035131 (button r1 resume), 1035278 (F2, new) ⇒ would
   exceed cap 6 if both start — F2 asked to hold 1035278 or merge it. No failures.
+
+## S-117 — 2026-10-14 13:00 — P2b AMENDMENT 5 + frozen analysis commands committed before any TRAIN read
+- `configs/heretic_csi/PREREG_P2B_AMENDMENT_5.json` (sha256 de158bc8…e402): A–E mapping decided ONLY on VALIDATION at
+  ranks {1,4} (TRAIN-K4 descriptive; TRAIN-fail+VAL-pass = VAL PASS flagged; TRAIN-pass+VAL-fail = FAIL); minimal
+  specific rank ∈ {1,4,>4}; descriptive ranks unsubmitted; cross-job/host overlap rule; preemption facts.
+- `research/heretic_csi/p2b_analyze.py` (sha256 0104b454…f399): wording flag False off-VALIDATION; zero-hook KO_CAND ⇒
+  primary VOID, zero-hook KO_IDENT ⇒ shared VOID; config.json gates (bank codeword, exact population file per split,
+  eager/bf16); provenance (job/host/GPU) for every arm of every family; no "PASS" in INCOMPLETE strings; cross-host
+  cells need an OVERLAP_OK per host pair; non-A5000 ⇒ VOID; add-on overlap gate (add-on-only VOID).
+- `configs/heretic_csi/ANALYSIS_COMMANDS_P2B.md` (sha256 a9fffce9…6767): exact TRAIN + VAL commands (primary,
+  secondary, --addon, overlap files) and deployed-residual (TRAIN only; VAL captures don't exist), with script shas.
+- Parent-run tests: 73 passed, 1 skipped. 0 P2b analyzer outputs exist.
+- **Parent decision:** button r4 TRAIN mixes n-503 liveness with n-501 r4 arms; cross-codeword hardware evidence is
+  not enough ⇒ a button-specific n-501 overlap (re-run button KO + one completed control on n-501 vs 1023264's n-503
+  dirs) is REQUIRED before the button TRAIN read (F2). Add-on jobs auto-submitted when two TRAIN jobs finish.

@@ -49,6 +49,56 @@ def sidecar(run_dir):
     return json.load(open(p)) if os.path.exists(p) else None
 
 
+def arm_config(run_dir):
+    return json.load(open(os.path.join(run_dir, "config.json")))["args"]
+
+
+def run_prov(run_dir):
+    m = json.load(open(os.path.join(run_dir, "metadata.json")))
+    return {"job": str(m.get("slurm_job_id")), "host": m.get("hostname"), "gpu": m.get("gpu")}
+
+
+def overlap_violations(provs, overlap_files):
+    """AMENDMENT 5: a cell whose arms come from >1 host needs, for every host pair, an OVERLAP_OK file whose
+    pairs cover that host pair (p2b_overlap_check.py). Same-host different jobs are treated as one host."""
+    out, hosts = [], sorted({p["host"] for p in provs.values()})
+    gpus = sorted({p["gpu"] for p in provs.values()})
+    if gpus != ["NVIDIA RTX A5000"]:
+        out.append(f"arms ran on GPUs {gpus}; the preregistered hardware is NVIDIA RTX A5000 only")
+    covered = set()
+    for f in overlap_files:
+        d = json.load(open(f))
+        if d.get("verdict") != "OVERLAP_OK":
+            continue
+        for pr in d["pairs"]:
+            covered.add(frozenset((pr["orig"]["host"], pr["overlap"]["host"])))
+    for i, h1 in enumerate(hosts):
+        for h2 in hosts[i + 1:]:
+            if frozenset((h1, h2)) not in covered:
+                out.append(f"cell mixes hosts {h1} and {h2} without an OVERLAP_OK check covering them")
+    return out
+
+
+def expected_excl(cw, split):
+    return {"train": f"runargs/heretic_csi/exclude_{cw}_K4.txt",
+            "validation": f"runargs/dcs_cont/exclude_{cw}_bomb_sow_validation.txt"}[split]
+
+
+def config_violations(dirs, cw, excl):
+    """VOID messages for arms whose run config is not this codeword's bank / the expected population file /
+    eager / bf16 (review #4 b)."""
+    out = []
+    for x, d in dirs.items():
+        c = arm_config(d)
+        if f"_ts116m_{cw}_bomb" not in (c.get("bank") or ""):
+            out.append(f"{x}: bank {c.get('bank')!r} is not codeword {cw!r}")
+        if c.get("exclude_prompt_ids") != excl:
+            out.append(f"{x}: exclude file {c.get('exclude_prompt_ids')!r} != expected {excl!r}")
+        if c.get("attn_impl") != "eager" or c.get("dtype") != "bfloat16":
+            out.append(f"{x}: attn/dtype {c.get('attn_impl')}/{c.get('dtype')} != eager/bfloat16")
+    return out
+
+
 def dmeans(keys, f):
     g = {}
     for k in keys:
@@ -174,8 +224,16 @@ def analyze_rank(a, r, assign):
     sc = {x: sidecar(dirs[x]) for x in arms if x not in ("BASE", "KO", "KO_FULL")}
     if sc.get("KO_IDENT") is None:
         void_shared.append("KO_IDENT: no p2b_operator.json sidecar")
+    elif not sc["KO_IDENT"].get("hook_calls"):
+        void_shared.append("KO_IDENT: identity hooks never fired (an untested identity gate)")
     if sc.get(cand) is None:
         raise SystemExit(f"{cand}: no sidecar -- cannot read CAND norms")
+    if not sc[cand].get("hook_calls"):
+        void.append(f"{cand}: operator hooks never fired")
+    provs = {x: run_prov(d) for x, d in dirs.items()}
+    excl = a.expect_excl or expected_excl(a.codeword, a.split)
+    void_shared += config_violations({x: dirs[x] for x in live}, a.codeword, excl)
+    void += config_violations({x: dirs[x] for x in arms if x not in live}, a.codeword, excl)
     for x in [bcand] + pos_arms + capop:
         s = sc.get(x)
         target = void_secondary if x == cwonly else (void if x in capop + [bcand] else flags)
@@ -249,6 +307,9 @@ def analyze_rank(a, r, assign):
             for x in cw_coll:
                 flags.append(f"{x}: readout collapsed (median option mass {cw_om[x]:.2e})")
             cwsc = {x: sidecar(cwd[x]) for x in cwfam}
+            void_secondary += config_violations(cwd, a.codeword, excl)
+            out["run_dirs_cw_family"] = {x: os.path.basename(d) for x, d in cwd.items()}
+            provs.update({x: run_prov(d) for x, d in cwd.items()})
             void_secondary += _norm_rank_check({**cwsc, cand: sc[cand]}, cand, cwfam)
             cby = {x: dmeans(ck, lambda k, x=x: cwkv[x][k]) for x in cwfam}
             for x in ("KO", "KO_FULL", cwonly):
@@ -298,20 +359,29 @@ def analyze_rank(a, r, assign):
                     ad["void"].append(f"{x}: readout collapsed (median option mass {ad['median_option_mass'][x]:.2e})")
                 if asc[x] is None or not asc[x].get("hook_calls"):
                     ad["void"].append(f"{x}: hooks never applied / no sidecar")
+            ad["void"] += config_violations(add, a.codeword, excl)
+            ad["run_dirs"] = {x: os.path.basename(d) for x, d in add.items()}
+            ad["arm_provenance"] = {x: run_prov(d) for x, d in add.items()}
+            # add-on arms get their OWN overlap gate (vs the liveness arms' hosts) -> add-on VOID only
+            ad["void"] += overlap_violations({**{x: provs[x] for x in live}, **ad["arm_provenance"]}, a.overlap)
             ad["BASE_MEANBIAS_collapsed"] = ad["median_option_mass"]["BASE_MEANBIAS"] < a.option_mass_floor
             ad["raw_arms_total_fro"] = {x: round(sum((asc[x] or {}).get("module_fro", {}).values()), 4) for x in raw}
             ad["meanbias_sidecars"] = {x: {k: (asc[x] or {}).get(k) for k in ("kind", "where", "hook_calls", "bias_total_norm")}
                                        for x in mb}
             mb_void = [v for v in ad["void"] if "MEANBIAS" in v]
             ad["input_conditional_wording_eligible_on_this_split"] = bool(
-                not mb_void and ad["CAND_minus_MEANBIAS"]["ci95"][0] > 0 and
+                a.split == "validation" and not mb_void and ad["CAND_minus_MEANBIAS"]["ci95"][0] > 0 and
                 _boot_diff(ad_d, abyk[cand], abyk["KO_CWMEANBIAS"], a.n_boot, 9)["ci95"][0] > 0)
             ad["CAND_minus_CWMEANBIAS"] = _boot_diff(ad_d, abyk[cand], abyk["KO_CWMEANBIAS"], a.n_boot, 9)
-            ad["wording_rule"] = ("'input-conditional' requires CAND beats BOTH KO_MEANBIAS and KO_CWMEANBIAS (CI-lo>0) on "
+            ad["wording_rule"] = ("only ever True on split=validation; 'input-conditional' requires CAND beats BOTH KO_MEANBIAS and KO_CWMEANBIAS (CI-lo>0) on "
                                   "VALIDATION, and is suspended if either comparator is VOID/collapsed (amendment 4)")
             out["addon"] = ad
         except SystemExit as e:
             out["addon"] = {"status": f"NOT ANALYZABLE: {str(e)[:200]}"}
+    out["arm_provenance"] = provs
+    out["jobs"] = sorted({p["job"] for p in provs.values() if p})
+    ov = overlap_violations({k: v for k, v in provs.items() if v}, a.overlap)
+    out["void_shared"] += ov
     return out
 
 
@@ -327,6 +397,11 @@ def _valid_secondary(x):
     rec = x.get("recovery_CWONLY_secondary") or {}
     return (x.get("rank_test_CWONLY_vs_cw_family") is not None and not x["void_shared"] and not x["void_secondary"]
             and g["manipulation_ok"] and g["instrument_ok"] and rec.get("status") == "ok" and "ci95" in rec)
+
+
+def _neutral(v):
+    """Re-word an embedded verdict so an INCOMPLETE string never contains the substring 'PASS' (review #4 b)."""
+    return v.replace("DOES NOT PASS", "would-not-pass").replace("PASS", "would-pass")
 
 
 def finalize(rows):
@@ -349,7 +424,7 @@ def finalize(rows):
                    x["recovery_CAND"])
         if x["primary"] and prim_missing and not v.startswith(("VOID", "CANNOT")):
             v = ("INCOMPLETE FAMILY (primary ranks %s missing / not analyzable / VOID / CANNOT ANSWER; Holm treats "
-                 "them as p=1): %s" % (prim_missing, v))
+                 "them as p=1): %s" % (prim_missing, _neutral(v)))
         x["verdict"] = v
         x["holm_family_valid_ranks"] = sorted(prim_have)
         if x["primary"] and (x.get("rank_test_CWONLY_vs_cw_family") or x["void_secondary"]):
@@ -357,7 +432,7 @@ def finalize(rows):
             vs = decide(True, ok, x["void_shared"] + x["void_secondary"], sadj.get(x["rank"], 1.0),
                         x.get("recovery_CWONLY_secondary") or {"status": "missing"})
             if sec_missing and not vs.startswith(("VOID", "CANNOT")):
-                vs = "INCOMPLETE FAMILY (secondary ranks %s missing/invalid): %s" % (sec_missing, vs)
+                vs = "INCOMPLETE FAMILY (secondary ranks %s missing/invalid): %s" % (sec_missing, _neutral(vs))
             x["verdict_secondary_CWONLY"] = vs + " [SECONDARY; requires VALIDATION replication with the frozen operator]"
     return rows
 
@@ -376,11 +451,14 @@ def main():
     ap.add_argument("--cw-nrand", type=int, default=0)
     ap.add_argument("--cw-nder", type=int, default=0)
     ap.add_argument("--addon", action="store_true", help="amendment-3 comparators: MEANBIAS arms + raw-norm DER/SHUF")
+    ap.add_argument("--expect-excl", default=None, help="expected --exclude-prompt-ids of every arm (default from --split)")
+    ap.add_argument("--overlap", default="", help="comma list of p2b_overlap_check JSONs (AMENDMENT 5)")
     ap.add_argument("--allow-short", type=int, default=0)
     ap.add_argument("--option-mass-floor", type=float, default=0.05)
     ap.add_argument("--n-boot", type=int, default=5000)
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
+    a.overlap = [f for f in a.overlap.split(",") if f]
     assign = lpm.load_split()
     rows = []
     for r in [int(x) for x in a.ranks.split(",") if x]:

@@ -10,7 +10,13 @@ DOMS = [f"d{i}" for i in range(23)]
 KEYS = [(d, s) for d in DOMS for s in range(10)]
 
 
-def _install(mp, collapse_cwonly=False, cw_bad_norm=False, missing=(), cw_missing=False, collapse_meanbias=False):
+GOOD_CFG = {"bank": "data/boombness_prompts/boombness_prompt_bank_ts116m_basket_bomb.jsonl",
+            "exclude_prompt_ids": "runargs/dcs_cont/exclude_basket_bomb_sow_validation.txt",
+            "attn_impl": "eager", "dtype": "bfloat16"}
+
+
+def _install(mp, collapse_cwonly=False, cw_bad_norm=False, missing=(), cw_missing=False, collapse_meanbias=False,
+             zero_hooks=(), bad_cfg=(), host_of=None, gpu="NVIDIA RTX A5000"):
     rng = random.Random(0)
     cache = {}
 
@@ -54,13 +60,15 @@ def _install(mp, collapse_cwonly=False, cw_bad_norm=False, missing=(), cw_missin
             return None
         r = 1 if "_r1" in d else 4
         nf = {"L6.o_proj": 5.0 if (cw_bad_norm and d.startswith("KO_CWRAND")) else 1.0}
-        return {"hook_calls": 10, "module_fro": nf, "rank": r, "positions_tokens": [" basket"]}
+        return {"hook_calls": 0 if d in zero_hooks else 10, "module_fro": nf, "rank": r, "positions_tokens": [" basket"]}
     mp.setattr(pa, "sidecar", side)
+    mp.setattr(pa, "run_prov", lambda d: {"job": "1", "host": (host_of(d) if host_of else "n-501"), "gpu": gpu})
+    mp.setattr(pa, "arm_config", lambda d: {**GOOD_CFG, "exclude_prompt_ids": "WRONG.txt"} if d in bad_cfg else dict(GOOD_CFG))
 
 
 def _run(ranks=(1, 4)):
     a = types.SimpleNamespace(nrand=61, nshuf=5, nder=15, capop=True, cw_nrand=61, cw_nder=15, addon=False,
-                              prefix="PFX", expect_n=230, allow_short=0, option_mass_floor=0.05, split="validation", n_boot=300)
+                              codeword="basket", expect_excl=None, overlap=[], prefix="PFX", expect_n=230, allow_short=0, option_mass_floor=0.05, split="validation", n_boot=300)
     rows = []
     for r in ranks:
         try:
@@ -115,7 +123,7 @@ def test_missing_cw_family_voids_secondary_not_primary(monkeypatch):
 def test_addon_comparators(monkeypatch):
     _install(monkeypatch)
     a = types.SimpleNamespace(nrand=61, nshuf=5, nder=15, capop=True, cw_nrand=61, cw_nder=15, addon=True,
-                              prefix="PFX", expect_n=230, allow_short=0, option_mass_floor=0.05, split="validation", n_boot=300)
+                              codeword="basket", expect_excl=None, overlap=[], prefix="PFX", expect_n=230, allow_short=0, option_mass_floor=0.05, split="validation", n_boot=300)
     row = pa.analyze_rank(a, 1, None)
     ad = row["addon"]
     assert "status" not in ad, ad
@@ -127,7 +135,63 @@ def test_addon_comparators(monkeypatch):
 def test_addon_collapsed_meanbias_suspends_wording(monkeypatch):
     _install(monkeypatch, collapse_meanbias=True)
     a = types.SimpleNamespace(nrand=61, nshuf=5, nder=15, capop=True, cw_nrand=61, cw_nder=15, addon=True,
-                              prefix="PFX", expect_n=230, allow_short=0, option_mass_floor=0.05, split="validation", n_boot=300)
+                              codeword="basket", expect_excl=None, overlap=[], prefix="PFX", expect_n=230, allow_short=0, option_mass_floor=0.05, split="validation", n_boot=300)
     ad = pa.analyze_rank(a, 1, None)["addon"]
     assert any("KO_MEANBIAS: readout collapsed" in v for v in ad["void"])
     assert ad["input_conditional_wording_eligible_on_this_split"] is False
+
+
+def test_cand_or_ident_zero_hooks_void(monkeypatch):
+    _install(monkeypatch, zero_hooks=("KO_CAND_r1",))
+    out = _run()
+    assert out[1]["verdict"].startswith("VOID") and "never fired" in out[1]["verdict"]
+    assert out[4]["verdict"].startswith("INCOMPLETE") and "PASS" not in out[4]["verdict"]
+    monkeypatch.undo()
+    _install(monkeypatch, zero_hooks=("KO_IDENT",))
+    out = _run()
+    assert all(out[r]["verdict"].startswith("VOID") for r in (1, 4))
+
+
+def test_wrong_population_file_voids(monkeypatch):
+    _install(monkeypatch, bad_cfg=("KO_RAND_r4_3",))
+    out = _run()
+    assert out[4]["verdict"].startswith("VOID") and "exclude file" in out[4]["verdict"]
+    assert out[1]["verdict"].startswith("INCOMPLETE") and "PASS" not in out[1]["verdict"]
+    monkeypatch.undo()
+    _install(monkeypatch, bad_cfg=("KO",))
+    out = _run()
+    assert out[1]["verdict"].startswith("VOID") and out[1]["verdict_secondary_CWONLY"].startswith("VOID")
+
+
+def test_wording_never_eligible_on_train(monkeypatch):
+    _install(monkeypatch)
+    a = types.SimpleNamespace(nrand=61, nshuf=5, nder=15, capop=True, cw_nrand=61, cw_nder=15, addon=True,
+                              codeword="basket", expect_excl="runargs/dcs_cont/exclude_basket_bomb_sow_validation.txt", overlap=[],
+                              prefix="PFX", expect_n=230, allow_short=0, option_mass_floor=0.05, split="train", n_boot=300)
+    ad = pa.analyze_rank(a, 1, None)["addon"]
+    assert ad["CAND_minus_MEANBIAS"]["ci95"][0] > 0 and ad["input_conditional_wording_eligible_on_this_split"] is False
+
+
+def _run_ov(overlap):
+    a = types.SimpleNamespace(nrand=61, nshuf=5, nder=15, capop=True, cw_nrand=61, cw_nder=15, addon=False,
+                              codeword="basket", expect_excl=None, overlap=overlap, prefix="PFX", expect_n=230,
+                              allow_short=0, option_mass_floor=0.05, split="validation", n_boot=300)
+    return {x["rank"]: x for x in pa.finalize([pa.analyze_rank(a, r, None) for r in (1, 4)])}
+
+
+def test_cross_host_cell_needs_overlap(monkeypatch, tmp_path):
+    _install(monkeypatch, host_of=lambda d: "n-503" if d in ("BASE", "KO", "KO_FULL", "KO_IDENT") else "n-501")
+    out = _run_ov([])
+    assert all(out[r]["verdict"].startswith("VOID") and "without an OVERLAP_OK" in out[r]["verdict"] for r in (1, 4))
+    ok = tmp_path / "ov.json"
+    ok.write_text('{"verdict": "OVERLAP_OK", "pairs": [{"orig": {"host": "n-503"}, "overlap": {"host": "n-501"}}]}')
+    bad = tmp_path / "ovbad.json"
+    bad.write_text('{"verdict": "OVERLAP_FAIL", "pairs": [{"orig": {"host": "n-503"}, "overlap": {"host": "n-501"}}]}')
+    assert _run_ov([str(bad)])[1]["verdict"].startswith("VOID")
+    out = _run_ov([str(ok)])
+    assert out[1]["verdict"].startswith("PASS") and out[1]["arm_provenance"]["KO"]["host"] == "n-503"
+
+
+def test_non_a5000_voids(monkeypatch):
+    _install(monkeypatch, gpu="NVIDIA L40S")
+    assert _run_ov([])[1]["verdict"].startswith("VOID")

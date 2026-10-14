@@ -43,7 +43,7 @@ def _row(r, p, void=(), void_shared=(), gates_ok=True, rec=OK, sec_p=None, void_
 def test_review3_void_rank_does_not_enter_holm():
     rows = pa.finalize([_row(1, 1 / 82, void=["x"]), _row(4, 0.03)])
     v = {x["rank"]: x["verdict"] for x in rows}
-    assert v[1].startswith("VOID") and v[4].startswith("INCOMPLETE FAMILY"), v
+    assert v[1].startswith("VOID") and v[4].startswith("INCOMPLETE FAMILY") and "PASS" not in v[4], v
     assert abs(rows[1]["holm_p"] - 0.06) < 1e-12                       # r1 treated as p=1 -> r4 Holm = 2*0.03
 
 
