@@ -2397,3 +2397,6 @@ all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_
 ## S-147 — 2026-10-14 21:10 — ops tick
 - Button P2b VAL r1 93 / r4 114 (unread); VAL add-ons basket 44 / button 42 (≈done; +2 designed exits each);
   1040170 overlap pending. P6 batch A′ 1040422 on n-805 (11 min). GPU 5 + 1 pending. No failures.
+- P6 batch A′ 1040422 PREEMPTED (n-805, 33 min); F7 resubmitted in smaller batches of 5 to limit preemption loss:
+  batch 1 = 1040533 (candle + lamp reuse their readouts; lamp extraction; kettle, pencil, ladder new). No duplicate
+  job (A′ gone). Partial dirs from A′ have no DONE and cannot be selected.
