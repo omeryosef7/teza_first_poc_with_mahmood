@@ -2153,3 +2153,13 @@ button's rank-1 direction does not (VAL 14–18/57).
 ## S-130 — 2026-10-14 17:10 — ops tick
 - Add-ons: basket 32/43, button 26/43 (+2 designed tail-gate MEANBIAS exits each). Button P2b VAL r1 20, r4 27
   (unread). P6 candle pilot 1039942 on t-806 L40S, cold stage-in (10 min). GPU 5. No failures.
+
+## S-131 — 2026-10-14 17:20 — MEANBIAS decision (before any read)
+- KO_MEANBIAS / BASE_MEANBIAS (full-norm mean gap at every position) tail-gated (collapsed) in BOTH add-on jobs;
+  KO_CWMEANBIAS (codeword row only) ran rc=0 in both.
+- **Parent decision:** (a) frozen rule stands — KO_MEANBIAS VOID ⇒ the all-rows input-independent comparison is
+  CANNOT ANSWER and the "input-conditional" wording stays SUSPENDED; CAND vs KO_CWMEANBIAS still reported. (b) PLUS a
+  DESCRIPTIVE amendment-6 comparator KO_MEANBIAS_NM (same gap vector rescaled per module to CAND's per-position
+  delta norm — an apply-side quantity, not an endpoint; per codeword × primary rank × population; + BASE_MEANBIAS_NM
+  damage), which can NEVER unlock the wording. Amendment 6 committed before the TRAIN read; the primary TRAIN read
+  does not wait for the descriptive NM arms.
