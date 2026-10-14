@@ -1,0 +1,5660 @@
+{
+ "codeword": "button",
+ "prefix": "hcsi_p2b_button_k4",
+ "split": "train",
+ "expect_n": 268,
+ "rows": [
+  {
+   "rank": 1,
+   "primary": true,
+   "n_keys": 239,
+   "n_domains": 67,
+   "gates": {
+    "manipulation_KO_minus_BASE": -0.21358,
+    "manipulation_ok": true,
+    "full_rescue_FULL_minus_KO": 0.10905,
+    "instrument_ok": true,
+    "identity_max_abs_dy": 0.0,
+    "median_option_mass": {
+     "BASE": 0.33874332904815674,
+     "KO": 0.5532814264297485,
+     "KO_FULL": 0.4226628541946411,
+     "KO_IDENT": 0.5532814264297485,
+     "KO_CAND_r1": 0.5071293711662292,
+     "BASE_CAND_r1": 0.3697952628135681,
+     "KO_CWONLY_r1": 0.48217785358428955,
+     "KO_ATLAST_r1": 0.5514886379241943,
+     "KO_NEUT_r1": 0.5750916600227356
+    }
+   },
+   "void_shared": [],
+   "void": [],
+   "void_secondary": [],
+   "flags": [
+    "KO_CWONLY_r1: applied at tokens [' button']",
+    "KO_ATLAST_r1: applied at tokens ['\\n\\n']"
+   ],
+   "recovery_CAND": {
+    "status": "ok",
+    "point": 1.7,
+    "ci95": [
+     1.5293,
+     1.9107
+    ],
+    "numerator_point": 0.1854,
+    "denominator_point": 0.10905,
+    "n_domains_with_movement": 67,
+    "draws_dropped": 0
+   },
+   "stat_CAND_minus_KO": 0.1854,
+   "rank_test": {
+    "rank": 13,
+    "of": 82,
+    "p": 0.15853658536585366,
+    "floor": 0.012195121951219513,
+    "n_controls": 81
+   },
+   "rank_test_without_collapsed_controls": {
+    "rank": 13,
+    "of": 82,
+    "p": 0.15853658536585366,
+    "floor": 0.012195121951219513,
+    "n_controls": 81
+   },
+   "rank_test_random_only": {
+    "rank": 1,
+    "of": 62,
+    "p": 0.016129032258064516,
+    "floor": 0.016129032258064516,
+    "n_controls": 61
+   },
+   "rank_test_DER_only": {
+    "rank": 13,
+    "of": 16,
+    "p": 0.8125,
+    "floor": 0.0625,
+    "n_controls": 15
+   },
+   "rank_test_SHUF_only": {
+    "rank": 1,
+    "of": 6,
+    "p": 0.16666666666666666,
+    "floor": 0.16666666666666666,
+    "n_controls": 5
+   },
+   "fitted_control_raw_over_CAND_norm": {
+    "KO_SHUF_r1_0": 3.36,
+    "KO_SHUF_r1_1": 4.0268,
+    "KO_SHUF_r1_2": 3.5156,
+    "KO_SHUF_r1_3": 2.8052,
+    "KO_SHUF_r1_4": 3.4408,
+    "KO_DER_r1_0": 1.0013,
+    "KO_DER_r1_1": 0.9856,
+    "KO_DER_r1_2": 0.9942,
+    "KO_DER_r1_3": 1.0107,
+    "KO_DER_r1_4": 1.0385,
+    "KO_DER_r1_5": 0.9488,
+    "KO_DER_r1_6": 0.985,
+    "KO_DER_r1_7": 0.9767,
+    "KO_DER_r1_8": 1.0251,
+    "KO_DER_r1_9": 1.0094,
+    "KO_DER_r1_10": 1.0222,
+    "KO_DER_r1_11": 1.0261,
+    "KO_DER_r1_12": 1.0057,
+    "KO_DER_r1_13": 0.9776,
+    "KO_DER_r1_14": 1.0095
+   },
+   "position": {
+    "KO_CWONLY_r1": {
+     "stat": 0.17688,
+     "recovery": {
+      "status": "ok",
+      "point": 1.622,
+      "ci95": [
+       1.4895,
+       1.7846
+      ],
+      "numerator_point": 0.17688,
+      "denominator_point": 0.10905,
+      "n_domains_with_movement": 67,
+      "draws_dropped": 0
+     },
+     "total_fro": 38.873831406302685
+    },
+    "KO_ATLAST_r1": {
+     "stat": 0.00165,
+     "recovery": {
+      "status": "ok",
+      "point": 0.0151,
+      "ci95": [
+       0.0042,
+       0.0265
+      ],
+      "numerator_point": 0.00165,
+      "denominator_point": 0.10905,
+      "n_domains_with_movement": 67,
+      "draws_dropped": 0
+     },
+     "total_fro": 38.873831406302685
+    },
+    "KO_NEUT_r1": {
+     "stat": 0.17816,
+     "recovery": {
+      "status": "ok",
+      "point": 1.6337,
+      "ci95": [
+       1.4315,
+       1.8856
+      ],
+      "numerator_point": 0.17816,
+      "denominator_point": 0.10905,
+      "n_domains_with_movement": 67,
+      "draws_dropped": 0
+     },
+     "total_fro": 20.332552438254496
+    }
+   },
+   "position_contrast_CWONLY_minus_ATLAST": 0.17523,
+   "decomposition": {
+    "KO_CAND_r1": {
+     "d_logp_concept": 0.6127,
+     "d_logp_codeword": -1.0023
+    },
+    "KO_CWONLY_r1": {
+     "d_logp_concept": 0.4551,
+     "d_logp_codeword": -1.0703
+    },
+    "KO_ATLAST_r1": {
+     "d_logp_concept": 0.0003,
+     "d_logp_codeword": -0.0172
+    },
+    "KO_NEUT_r1": {
+     "d_logp_concept": 0.8324,
+     "d_logp_codeword": -0.6951
+    }
+   },
+   "control_stats": {
+    "KO_RAND_r1_0": -0.01974,
+    "KO_RAND_r1_1": 0.00563,
+    "KO_RAND_r1_2": 0.01721,
+    "KO_RAND_r1_3": 0.00835,
+    "KO_RAND_r1_4": 0.03637,
+    "KO_RAND_r1_5": -0.04286,
+    "KO_RAND_r1_6": -0.00746,
+    "KO_RAND_r1_7": -0.03003,
+    "KO_RAND_r1_8": 0.01695,
+    "KO_RAND_r1_9": 0.02292,
+    "KO_RAND_r1_10": -0.02553,
+    "KO_RAND_r1_11": -0.0357,
+    "KO_RAND_r1_12": -0.02866,
+    "KO_RAND_r1_13": -0.04278,
+    "KO_RAND_r1_14": -0.01358,
+    "KO_RAND_r1_15": 0.01759,
+    "KO_RAND_r1_16": 0.03365,
+    "KO_RAND_r1_17": -0.03949,
+    "KO_RAND_r1_18": 0.01981,
+    "KO_RAND_r1_19": -0.04217,
+    "KO_RAND_r1_20": 0.03639,
+    "KO_RAND_r1_21": -0.06229,
+    "KO_RAND_r1_22": 0.00079,
+    "KO_RAND_r1_23": 0.01416,
+    "KO_RAND_r1_24": -0.01802,
+    "KO_RAND_r1_25": 0.00905,
+    "KO_RAND_r1_26": 0.01438,
+    "KO_RAND_r1_27": -0.02377,
+    "KO_RAND_r1_28": -0.00529,
+    "KO_RAND_r1_29": -0.0267,
+    "KO_RAND_r1_30": 0.00819,
+    "KO_RAND_r1_31": -0.0076,
+    "KO_RAND_r1_32": -0.00924,
+    "KO_RAND_r1_33": 0.00226,
+    "KO_RAND_r1_34": 0.03915,
+    "KO_RAND_r1_35": -0.02488,
+    "KO_RAND_r1_36": -0.03903,
+    "KO_RAND_r1_37": -0.01629,
+    "KO_RAND_r1_38": -0.02983,
+    "KO_RAND_r1_39": -0.00698,
+    "KO_RAND_r1_40": -0.01758,
+    "KO_RAND_r1_41": 0.00432,
+    "KO_RAND_r1_42": 0.07439,
+    "KO_RAND_r1_43": 0.01912,
+    "KO_RAND_r1_44": -0.00173,
+    "KO_RAND_r1_45": -0.00036,
+    "KO_RAND_r1_46": -0.00601,
+    "KO_RAND_r1_47": -0.01854,
+    "KO_RAND_r1_48": 0.04023,
+    "KO_RAND_r1_49": -0.00074,
+    "KO_RAND_r1_50": 0.0683,
+    "KO_RAND_r1_51": -0.00046,
+    "KO_RAND_r1_52": -0.04605,
+    "KO_RAND_r1_53": -0.10124,
+    "KO_RAND_r1_54": -0.04627,
+    "KO_RAND_r1_55": -0.02916,
+    "KO_RAND_r1_56": -0.00561,
+    "KO_RAND_r1_57": 0.00197,
+    "KO_RAND_r1_58": 0.00478,
+    "KO_RAND_r1_59": 0.00385,
+    "KO_RAND_r1_60": -0.01315,
+    "KO_SHUF_r1_0": 0.11122,
+    "KO_SHUF_r1_1": 0.11309,
+    "KO_SHUF_r1_2": 0.12662,
+    "KO_SHUF_r1_3": 0.10687,
+    "KO_SHUF_r1_4": 0.10506,
+    "KO_DER_r1_0": 0.19184,
+    "KO_DER_r1_1": 0.18489,
+    "KO_DER_r1_2": 0.19173,
+    "KO_DER_r1_3": 0.1915,
+    "KO_DER_r1_4": 0.1843,
+    "KO_DER_r1_5": 0.19334,
+    "KO_DER_r1_6": 0.18575,
+    "KO_DER_r1_7": 0.19187,
+    "KO_DER_r1_8": 0.18702,
+    "KO_DER_r1_9": 0.19449,
+    "KO_DER_r1_10": 0.18171,
+    "KO_DER_r1_11": 0.19021,
+    "KO_DER_r1_12": 0.18638,
+    "KO_DER_r1_13": 0.19299,
+    "KO_DER_r1_14": 0.18555
+   },
+   "control_recovery_mean": 0.34318024691358023,
+   "cand_total_fro": 38.873831406302685,
+   "cand_n_params": 346112,
+   "cand_fit_meta": {
+    "fit": "codeword_row",
+    "raw_fro": {
+     "L6.o_proj": 1.1480293316874064,
+     "L6.down_proj": 1.6682749437262478,
+     "L7.o_proj": 4.699612415389632,
+     "L7.down_proj": 2.007898532242233,
+     "L8.o_proj": 0.9894342852063779,
+     "L8.down_proj": 1.0219465475761398,
+     "L9.o_proj": 1.2006283716809991,
+     "L9.down_proj": 0.9644832759151933,
+     "L10.o_proj": 1.3609699109028872,
+     "L10.down_proj": 0.9937912821051827,
+     "L11.o_proj": 1.0393527212528924,
+     "L11.down_proj": 1.1488685134149363,
+     "L12.o_proj": 1.2166189467153448,
+     "L12.down_proj": 0.9974163068887552,
+     "L13.o_proj": 3.609949313817698,
+     "L13.down_proj": 1.1103381786210982,
+     "L14.o_proj": 1.313939971654379,
+     "L14.down_proj": 1.0069435575431467,
+     "L15.o_proj": 0.9838964920266924,
+     "L15.down_proj": 1.3725782134335975,
+     "L16.o_proj": 1.521017601581128,
+     "L16.down_proj": 1.0156385626066324,
+     "L17.o_proj": 1.1067355915466444,
+     "L17.down_proj": 1.4917487428697247,
+     "L18.o_proj": 2.744042868976162,
+     "L18.down_proj": 1.1396769269215523
+    },
+    "train_fit": {
+     "gap_closure": 0.6586053709704602,
+     "preserve_damage": 0.000542910307803707,
+     "net": 0.6580624606626565
+    },
+    "rank": 1,
+    "objective": "mse",
+    "steer_weight": 0.3,
+    "codeword": "button",
+    "n_params": 346112,
+    "numerical_rank": {
+     "L6.o_proj": 1,
+     "L6.down_proj": 1
+    }
+   },
+   "code_sha256": {
+    "p2b_runner.py": "ef95017593f0d45481e83beb4caddedb4456f2a6cad1bc6134afc6e1568e52bf",
+    "p2b_operator.py": "f2cb3f807f9200be580253089bc8ccbbe78264446c001ae4da40acd99ba2e591",
+    "operator_ara.py": "5b80713f351e4d1d7246b8aa2f6d2c715259b5b9059d46c431136dd8164b0322",
+    "positions.py": "53afbfd29557d69e95f21785be911e59cfaf982a4aa26337a93956c5daf9dcc8",
+    "p2b_emit.py": "e1119c8a98e97ae049714a4d3a43844033adb1b707b85a7d7450e9370e194ebc"
+   },
+   "run_dirs": {
+    "BASE": "hcsi_p2b_button_k4_BASE_20261014_034523_2510383",
+    "KO": "hcsi_p2b_button_k4_KO_20261014_034749_2510383",
+    "KO_FULL": "hcsi_p2b_button_k4_KO_FULL_20261014_035120_2510383",
+    "KO_IDENT": "hcsi_p2b_button_k4_KO_IDENT_20261014_035508_2510383",
+    "KO_CAND_r1": "hcsi_p2b_button_k4_KO_CAND_r1_20261014_035845_2510383",
+    "BASE_CAND_r1": "hcsi_p2b_button_k4_BASE_CAND_r1_20261014_040223_2510383",
+    "KO_CWONLY_r1": "hcsi_p2b_button_k4_KO_CWONLY_r1_20261014_040454_2510383",
+    "KO_ATLAST_r1": "hcsi_p2b_button_k4_KO_ATLAST_r1_20261014_040837_2510383",
+    "KO_NEUT_r1": "hcsi_p2b_button_k4_KO_NEUT_r1_20261014_041221_2510383",
+    "KO_CAPOP_r1": "hcsi_p2b_button_k4_KO_CAPOP_r1_20261014_041558_2510383",
+    "KO_RAND_r1_0": "hcsi_p2b_button_k4_KO_RAND_r1_0_20261014_052400_2510383",
+    "KO_RAND_r1_1": "hcsi_p2b_button_k4_KO_RAND_r1_1_20261014_052708_2510383",
+    "KO_RAND_r1_2": "hcsi_p2b_button_k4_KO_RAND_r1_2_20261014_053015_2510383",
+    "KO_RAND_r1_3": "hcsi_p2b_button_k4_KO_RAND_r1_3_20261014_053323_2510383",
+    "KO_RAND_r1_4": "hcsi_p2b_button_k4_KO_RAND_r1_4_20261014_053630_2510383",
+    "KO_RAND_r1_5": "hcsi_p2b_button_k4_KO_RAND_r1_5_20261014_053938_2510383",
+    "KO_RAND_r1_6": "hcsi_p2b_button_k4_KO_RAND_r1_6_20261014_054246_2510383",
+    "KO_RAND_r1_7": "hcsi_p2b_button_k4_KO_RAND_r1_7_20261014_054552_2510383",
+    "KO_RAND_r1_8": "hcsi_p2b_button_k4_KO_RAND_r1_8_20261014_054900_2510383",
+    "KO_RAND_r1_9": "hcsi_p2b_button_k4_KO_RAND_r1_9_20261014_055207_2510383",
+    "KO_RAND_r1_10": "hcsi_p2b_button_k4_KO_RAND_r1_10_20261014_055515_2510383",
+    "KO_RAND_r1_11": "hcsi_p2b_button_k4_KO_RAND_r1_11_20261014_055824_2510383",
+    "KO_RAND_r1_12": "hcsi_p2b_button_k4_KO_RAND_r1_12_20261014_060132_2510383",
+    "KO_RAND_r1_13": "hcsi_p2b_button_k4_KO_RAND_r1_13_20261014_060440_2510383",
+    "KO_RAND_r1_14": "hcsi_p2b_button_k4_KO_RAND_r1_14_20261014_060748_2510383",
+    "KO_RAND_r1_15": "hcsi_p2b_button_k4_KO_RAND_r1_15_20261014_061055_2510383",
+    "KO_RAND_r1_16": "hcsi_p2b_button_k4_KO_RAND_r1_16_20261014_061402_2510383",
+    "KO_RAND_r1_17": "hcsi_p2b_button_k4_KO_RAND_r1_17_20261014_061709_2510383",
+    "KO_RAND_r1_18": "hcsi_p2b_button_k4_KO_RAND_r1_18_20261014_062021_2510383",
+    "KO_RAND_r1_19": "hcsi_p2b_button_k4_KO_RAND_r1_19_20261014_062329_2510383",
+    "KO_RAND_r1_20": "hcsi_p2b_button_k4_KO_RAND_r1_20_20261014_062636_2510383",
+    "KO_RAND_r1_21": "hcsi_p2b_button_k4_KO_RAND_r1_21_20261014_062943_2510383",
+    "KO_RAND_r1_22": "hcsi_p2b_button_k4_KO_RAND_r1_22_20261014_063251_2510383",
+    "KO_RAND_r1_23": "hcsi_p2b_button_k4_KO_RAND_r1_23_20261014_063558_2510383",
+    "KO_RAND_r1_24": "hcsi_p2b_button_k4_KO_RAND_r1_24_20261014_063905_2510383",
+    "KO_RAND_r1_25": "hcsi_p2b_button_k4_KO_RAND_r1_25_20261014_064212_2510383",
+    "KO_RAND_r1_26": "hcsi_p2b_button_k4_KO_RAND_r1_26_20261014_064519_2510383",
+    "KO_RAND_r1_27": "hcsi_p2b_button_k4_KO_RAND_r1_27_20261014_064826_2510383",
+    "KO_RAND_r1_28": "hcsi_p2b_button_k4_KO_RAND_r1_28_20261014_065133_2510383",
+    "KO_RAND_r1_29": "hcsi_p2b_button_k4_KO_RAND_r1_29_20261014_065440_2510383",
+    "KO_RAND_r1_30": "hcsi_p2b_button_k4_KO_RAND_r1_30_20261014_065747_2510383",
+    "KO_RAND_r1_31": "hcsi_p2b_button_k4_KO_RAND_r1_31_20261014_070054_2510383",
+    "KO_RAND_r1_32": "hcsi_p2b_button_k4_KO_RAND_r1_32_20261014_070401_2510383",
+    "KO_RAND_r1_33": "hcsi_p2b_button_k4_KO_RAND_r1_33_20261014_070709_2510383",
+    "KO_RAND_r1_34": "hcsi_p2b_button_k4_KO_RAND_r1_34_20261014_071016_2510383",
+    "KO_RAND_r1_35": "hcsi_p2b_button_k4_KO_RAND_r1_35_20261014_071324_2510383",
+    "KO_RAND_r1_36": "hcsi_p2b_button_k4_KO_RAND_r1_36_20261014_071632_2510383",
+    "KO_RAND_r1_37": "hcsi_p2b_button_k4_KO_RAND_r1_37_20261014_071939_2510383",
+    "KO_RAND_r1_38": "hcsi_p2b_button_k4_KO_RAND_r1_38_20261014_072247_2510383",
+    "KO_RAND_r1_39": "hcsi_p2b_button_k4_KO_RAND_r1_39_20261014_072555_2510383",
+    "KO_RAND_r1_40": "hcsi_p2b_button_k4_KO_RAND_r1_40_20261014_072903_2510383",
+    "KO_RAND_r1_41": "hcsi_p2b_button_k4_KO_RAND_r1_41_20261014_073210_2510383",
+    "KO_RAND_r1_42": "hcsi_p2b_button_k4_KO_RAND_r1_42_20261014_073518_2510383",
+    "KO_RAND_r1_43": "hcsi_p2b_button_k4_KO_RAND_r1_43_20261014_073826_2510383",
+    "KO_RAND_r1_44": "hcsi_p2b_button_k4_KO_RAND_r1_44_20261014_074134_2510383",
+    "KO_RAND_r1_45": "hcsi_p2b_button_k4_KO_RAND_r1_45_20261014_074442_2510383",
+    "KO_RAND_r1_46": "hcsi_p2b_button_k4_KO_RAND_r1_46_20261014_074750_2510383",
+    "KO_RAND_r1_47": "hcsi_p2b_button_k4_KO_RAND_r1_47_20261014_075058_2510383",
+    "KO_RAND_r1_48": "hcsi_p2b_button_k4_KO_RAND_r1_48_20261014_075406_2510383",
+    "KO_RAND_r1_49": "hcsi_p2b_button_k4_KO_RAND_r1_49_20261014_075714_2510383",
+    "KO_RAND_r1_50": "hcsi_p2b_button_k4_KO_RAND_r1_50_20261014_080021_2510383",
+    "KO_RAND_r1_51": "hcsi_p2b_button_k4_KO_RAND_r1_51_20261014_080329_2510383",
+    "KO_RAND_r1_52": "hcsi_p2b_button_k4_KO_RAND_r1_52_20261014_080637_2510383",
+    "KO_RAND_r1_53": "hcsi_p2b_button_k4_KO_RAND_r1_53_20261014_080945_2510383",
+    "KO_RAND_r1_54": "hcsi_p2b_button_k4_KO_RAND_r1_54_20261014_081253_2510383",
+    "KO_RAND_r1_55": "hcsi_p2b_button_k4_KO_RAND_r1_55_20261014_081601_2510383",
+    "KO_RAND_r1_56": "hcsi_p2b_button_k4_KO_RAND_r1_56_20261014_081910_2510383",
+    "KO_RAND_r1_57": "hcsi_p2b_button_k4_KO_RAND_r1_57_20261014_082218_2510383",
+    "KO_RAND_r1_58": "hcsi_p2b_button_k4_KO_RAND_r1_58_20261014_082526_2510383",
+    "KO_RAND_r1_59": "hcsi_p2b_button_k4_KO_RAND_r1_59_20261014_082834_2510383",
+    "KO_RAND_r1_60": "hcsi_p2b_button_k4_KO_RAND_r1_60_20261014_083141_2510383",
+    "KO_SHUF_r1_0": "hcsi_p2b_button_k4_KO_SHUF_r1_0_20261014_041944_2510383",
+    "KO_SHUF_r1_1": "hcsi_p2b_button_k4_KO_SHUF_r1_1_20261014_042326_2510383",
+    "KO_SHUF_r1_2": "hcsi_p2b_button_k4_KO_SHUF_r1_2_20261014_042707_2510383",
+    "KO_SHUF_r1_3": "hcsi_p2b_button_k4_KO_SHUF_r1_3_20261014_043050_2510383",
+    "KO_SHUF_r1_4": "hcsi_p2b_button_k4_KO_SHUF_r1_4_20261014_043358_2510383",
+    "KO_DER_r1_0": "hcsi_p2b_button_k4_KO_DER_r1_0_20261014_043705_2510383",
+    "KO_DER_r1_1": "hcsi_p2b_button_k4_KO_DER_r1_1_20261014_044012_2510383",
+    "KO_DER_r1_2": "hcsi_p2b_button_k4_KO_DER_r1_2_20261014_044319_2510383",
+    "KO_DER_r1_3": "hcsi_p2b_button_k4_KO_DER_r1_3_20261014_044625_2510383",
+    "KO_DER_r1_4": "hcsi_p2b_button_k4_KO_DER_r1_4_20261014_044931_2510383",
+    "KO_DER_r1_5": "hcsi_p2b_button_k4_KO_DER_r1_5_20261014_045238_2510383",
+    "KO_DER_r1_6": "hcsi_p2b_button_k4_KO_DER_r1_6_20261014_045546_2510383",
+    "KO_DER_r1_7": "hcsi_p2b_button_k4_KO_DER_r1_7_20261014_045855_2510383",
+    "KO_DER_r1_8": "hcsi_p2b_button_k4_KO_DER_r1_8_20261014_050203_2510383",
+    "KO_DER_r1_9": "hcsi_p2b_button_k4_KO_DER_r1_9_20261014_050511_2510383",
+    "KO_DER_r1_10": "hcsi_p2b_button_k4_KO_DER_r1_10_20261014_050819_2510383",
+    "KO_DER_r1_11": "hcsi_p2b_button_k4_KO_DER_r1_11_20261014_051127_2510383",
+    "KO_DER_r1_12": "hcsi_p2b_button_k4_KO_DER_r1_12_20261014_051435_2510383",
+    "KO_DER_r1_13": "hcsi_p2b_button_k4_KO_DER_r1_13_20261014_051742_2510383",
+    "KO_DER_r1_14": "hcsi_p2b_button_k4_KO_DER_r1_14_20261014_052050_2510383"
+   },
+   "fraction_of_BASE_minus_KO_restored": {
+    "KO_CAND_r1": {
+     "status": "ok",
+     "point": 0.8681,
+     "ci95": [
+      0.8002,
+      0.9445
+     ],
+     "numerator_point": 0.1854,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_CWONLY_r1": {
+     "status": "ok",
+     "point": 0.8282,
+     "ci95": [
+      0.7766,
+      0.8792
+     ],
+     "numerator_point": 0.17688,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_ATLAST_r1": {
+     "status": "ok",
+     "point": 0.0077,
+     "ci95": [
+      0.0024,
+      0.0135
+     ],
+     "numerator_point": 0.00165,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_NEUT_r1": {
+     "status": "ok",
+     "point": 0.8342,
+     "ci95": [
+      0.7549,
+      0.9265
+     ],
+     "numerator_point": 0.17816,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_0": {
+     "status": "ok",
+     "point": -0.0924,
+     "ci95": [
+      -0.1309,
+      -0.0547
+     ],
+     "numerator_point": -0.01974,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_1": {
+     "status": "ok",
+     "point": 0.0264,
+     "ci95": [
+      0.0022,
+      0.0503
+     ],
+     "numerator_point": 0.00563,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_2": {
+     "status": "ok",
+     "point": 0.0806,
+     "ci95": [
+      0.0568,
+      0.1072
+     ],
+     "numerator_point": 0.01721,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_3": {
+     "status": "ok",
+     "point": 0.0391,
+     "ci95": [
+      0.0205,
+      0.0571
+     ],
+     "numerator_point": 0.00835,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_4": {
+     "status": "ok",
+     "point": 0.1703,
+     "ci95": [
+      0.1206,
+      0.2261
+     ],
+     "numerator_point": 0.03637,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_5": {
+     "status": "ok",
+     "point": -0.2007,
+     "ci95": [
+      -0.2423,
+      -0.1616
+     ],
+     "numerator_point": -0.04286,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_6": {
+     "status": "ok",
+     "point": -0.0349,
+     "ci95": [
+      -0.0552,
+      -0.0153
+     ],
+     "numerator_point": -0.00746,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_7": {
+     "status": "ok",
+     "point": -0.1406,
+     "ci95": [
+      -0.1786,
+      -0.107
+     ],
+     "numerator_point": -0.03003,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_8": {
+     "status": "ok",
+     "point": 0.0794,
+     "ci95": [
+      0.0586,
+      0.0997
+     ],
+     "numerator_point": 0.01695,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_9": {
+     "status": "ok",
+     "point": 0.1073,
+     "ci95": [
+      0.0719,
+      0.1471
+     ],
+     "numerator_point": 0.02292,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_10": {
+     "status": "ok",
+     "point": -0.1195,
+     "ci95": [
+      -0.146,
+      -0.095
+     ],
+     "numerator_point": -0.02553,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_11": {
+     "status": "ok",
+     "point": -0.1672,
+     "ci95": [
+      -0.204,
+      -0.1348
+     ],
+     "numerator_point": -0.0357,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_12": {
+     "status": "ok",
+     "point": -0.1342,
+     "ci95": [
+      -0.1737,
+      -0.0979
+     ],
+     "numerator_point": -0.02866,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_13": {
+     "status": "ok",
+     "point": -0.2003,
+     "ci95": [
+      -0.2349,
+      -0.1674
+     ],
+     "numerator_point": -0.04278,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_14": {
+     "status": "ok",
+     "point": -0.0636,
+     "ci95": [
+      -0.1033,
+      -0.0267
+     ],
+     "numerator_point": -0.01358,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_15": {
+     "status": "ok",
+     "point": 0.0824,
+     "ci95": [
+      0.0566,
+      0.1111
+     ],
+     "numerator_point": 0.01759,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_16": {
+     "status": "ok",
+     "point": 0.1576,
+     "ci95": [
+      0.1281,
+      0.1872
+     ],
+     "numerator_point": 0.03365,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_17": {
+     "status": "ok",
+     "point": -0.1849,
+     "ci95": [
+      -0.2214,
+      -0.1523
+     ],
+     "numerator_point": -0.03949,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_18": {
+     "status": "ok",
+     "point": 0.0928,
+     "ci95": [
+      0.0643,
+      0.1229
+     ],
+     "numerator_point": 0.01981,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_19": {
+     "status": "ok",
+     "point": -0.1974,
+     "ci95": [
+      -0.2326,
+      -0.1644
+     ],
+     "numerator_point": -0.04217,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_20": {
+     "status": "ok",
+     "point": 0.1704,
+     "ci95": [
+      0.1383,
+      0.2056
+     ],
+     "numerator_point": 0.03639,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_21": {
+     "status": "ok",
+     "point": -0.2916,
+     "ci95": [
+      -0.3331,
+      -0.2545
+     ],
+     "numerator_point": -0.06229,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_22": {
+     "status": "ok",
+     "point": 0.0037,
+     "ci95": [
+      -0.0207,
+      0.0285
+     ],
+     "numerator_point": 0.00079,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_23": {
+     "status": "ok",
+     "point": 0.0663,
+     "ci95": [
+      0.0346,
+      0.0974
+     ],
+     "numerator_point": 0.01416,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_24": {
+     "status": "ok",
+     "point": -0.0844,
+     "ci95": [
+      -0.1125,
+      -0.0571
+     ],
+     "numerator_point": -0.01802,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_25": {
+     "status": "ok",
+     "point": 0.0424,
+     "ci95": [
+      0.0208,
+      0.0644
+     ],
+     "numerator_point": 0.00905,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_26": {
+     "status": "ok",
+     "point": 0.0673,
+     "ci95": [
+      0.0496,
+      0.0864
+     ],
+     "numerator_point": 0.01438,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_27": {
+     "status": "ok",
+     "point": -0.1113,
+     "ci95": [
+      -0.1371,
+      -0.0847
+     ],
+     "numerator_point": -0.02377,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_28": {
+     "status": "ok",
+     "point": -0.0248,
+     "ci95": [
+      -0.0546,
+      0.0029
+     ],
+     "numerator_point": -0.00529,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_29": {
+     "status": "ok",
+     "point": -0.125,
+     "ci95": [
+      -0.1585,
+      -0.095
+     ],
+     "numerator_point": -0.0267,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_30": {
+     "status": "ok",
+     "point": 0.0384,
+     "ci95": [
+      0.0061,
+      0.0713
+     ],
+     "numerator_point": 0.00819,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_31": {
+     "status": "ok",
+     "point": -0.0356,
+     "ci95": [
+      -0.0584,
+      -0.013
+     ],
+     "numerator_point": -0.0076,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_32": {
+     "status": "ok",
+     "point": -0.0433,
+     "ci95": [
+      -0.0692,
+      -0.0177
+     ],
+     "numerator_point": -0.00924,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_33": {
+     "status": "ok",
+     "point": 0.0106,
+     "ci95": [
+      -0.0155,
+      0.0345
+     ],
+     "numerator_point": 0.00226,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_34": {
+     "status": "ok",
+     "point": 0.1833,
+     "ci95": [
+      0.1541,
+      0.2146
+     ],
+     "numerator_point": 0.03915,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_35": {
+     "status": "ok",
+     "point": -0.1165,
+     "ci95": [
+      -0.1426,
+      -0.0917
+     ],
+     "numerator_point": -0.02488,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_36": {
+     "status": "ok",
+     "point": -0.1828,
+     "ci95": [
+      -0.2189,
+      -0.1462
+     ],
+     "numerator_point": -0.03903,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_37": {
+     "status": "ok",
+     "point": -0.0763,
+     "ci95": [
+      -0.1058,
+      -0.0489
+     ],
+     "numerator_point": -0.01629,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_38": {
+     "status": "ok",
+     "point": -0.1397,
+     "ci95": [
+      -0.1706,
+      -0.1107
+     ],
+     "numerator_point": -0.02983,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_39": {
+     "status": "ok",
+     "point": -0.0327,
+     "ci95": [
+      -0.0584,
+      -0.0081
+     ],
+     "numerator_point": -0.00698,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_40": {
+     "status": "ok",
+     "point": -0.0823,
+     "ci95": [
+      -0.1092,
+      -0.058
+     ],
+     "numerator_point": -0.01758,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_41": {
+     "status": "ok",
+     "point": 0.0202,
+     "ci95": [
+      -0.0043,
+      0.045
+     ],
+     "numerator_point": 0.00432,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_42": {
+     "status": "ok",
+     "point": 0.3483,
+     "ci95": [
+      0.309,
+      0.3927
+     ],
+     "numerator_point": 0.07439,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_43": {
+     "status": "ok",
+     "point": 0.0895,
+     "ci95": [
+      0.0644,
+      0.1198
+     ],
+     "numerator_point": 0.01912,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_44": {
+     "status": "ok",
+     "point": -0.0081,
+     "ci95": [
+      -0.0339,
+      0.0174
+     ],
+     "numerator_point": -0.00173,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_45": {
+     "status": "ok",
+     "point": -0.0017,
+     "ci95": [
+      -0.0347,
+      0.0305
+     ],
+     "numerator_point": -0.00036,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_46": {
+     "status": "ok",
+     "point": -0.0281,
+     "ci95": [
+      -0.0492,
+      -0.0078
+     ],
+     "numerator_point": -0.00601,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_47": {
+     "status": "ok",
+     "point": -0.0868,
+     "ci95": [
+      -0.1188,
+      -0.0554
+     ],
+     "numerator_point": -0.01854,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_48": {
+     "status": "ok",
+     "point": 0.1883,
+     "ci95": [
+      0.1541,
+      0.2249
+     ],
+     "numerator_point": 0.04023,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_49": {
+     "status": "ok",
+     "point": -0.0035,
+     "ci95": [
+      -0.0252,
+      0.0176
+     ],
+     "numerator_point": -0.00074,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_50": {
+     "status": "ok",
+     "point": 0.3198,
+     "ci95": [
+      0.2779,
+      0.3652
+     ],
+     "numerator_point": 0.0683,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_51": {
+     "status": "ok",
+     "point": -0.0022,
+     "ci95": [
+      -0.0243,
+      0.0184
+     ],
+     "numerator_point": -0.00046,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_52": {
+     "status": "ok",
+     "point": -0.2156,
+     "ci95": [
+      -0.2518,
+      -0.1827
+     ],
+     "numerator_point": -0.04605,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_53": {
+     "status": "ok",
+     "point": -0.474,
+     "ci95": [
+      -0.5361,
+      -0.4179
+     ],
+     "numerator_point": -0.10124,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_54": {
+     "status": "ok",
+     "point": -0.2167,
+     "ci95": [
+      -0.251,
+      -0.1847
+     ],
+     "numerator_point": -0.04627,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_55": {
+     "status": "ok",
+     "point": -0.1366,
+     "ci95": [
+      -0.1815,
+      -0.0994
+     ],
+     "numerator_point": -0.02916,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_56": {
+     "status": "ok",
+     "point": -0.0263,
+     "ci95": [
+      -0.0509,
+      -0.0027
+     ],
+     "numerator_point": -0.00561,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_57": {
+     "status": "ok",
+     "point": 0.0092,
+     "ci95": [
+      -0.0176,
+      0.036
+     ],
+     "numerator_point": 0.00197,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_58": {
+     "status": "ok",
+     "point": 0.0224,
+     "ci95": [
+      -0.0001,
+      0.0462
+     ],
+     "numerator_point": 0.00478,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_59": {
+     "status": "ok",
+     "point": 0.018,
+     "ci95": [
+      -0.021,
+      0.0617
+     ],
+     "numerator_point": 0.00385,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r1_60": {
+     "status": "ok",
+     "point": -0.0616,
+     "ci95": [
+      -0.0922,
+      -0.0326
+     ],
+     "numerator_point": -0.01315,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_SHUF_r1_0": {
+     "status": "ok",
+     "point": 0.5207,
+     "ci95": [
+      0.4651,
+      0.5796
+     ],
+     "numerator_point": 0.11122,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_SHUF_r1_1": {
+     "status": "ok",
+     "point": 0.5295,
+     "ci95": [
+      0.4745,
+      0.591
+     ],
+     "numerator_point": 0.11309,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_SHUF_r1_2": {
+     "status": "ok",
+     "point": 0.5929,
+     "ci95": [
+      0.532,
+      0.658
+     ],
+     "numerator_point": 0.12662,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_SHUF_r1_3": {
+     "status": "ok",
+     "point": 0.5004,
+     "ci95": [
+      0.4453,
+      0.5555
+     ],
+     "numerator_point": 0.10687,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_SHUF_r1_4": {
+     "status": "ok",
+     "point": 0.4919,
+     "ci95": [
+      0.4425,
+      0.542
+     ],
+     "numerator_point": 0.10506,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r1_0": {
+     "status": "ok",
+     "point": 0.8982,
+     "ci95": [
+      0.8314,
+      0.971
+     ],
+     "numerator_point": 0.19184,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r1_1": {
+     "status": "ok",
+     "point": 0.8657,
+     "ci95": [
+      0.7934,
+      0.9445
+     ],
+     "numerator_point": 0.18489,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r1_2": {
+     "status": "ok",
+     "point": 0.8977,
+     "ci95": [
+      0.824,
+      0.981
+     ],
+     "numerator_point": 0.19173,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r1_3": {
+     "status": "ok",
+     "point": 0.8966,
+     "ci95": [
+      0.8232,
+      0.9779
+     ],
+     "numerator_point": 0.1915,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r1_4": {
+     "status": "ok",
+     "point": 0.8629,
+     "ci95": [
+      0.7897,
+      0.9416
+     ],
+     "numerator_point": 0.1843,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r1_5": {
+     "status": "ok",
+     "point": 0.9053,
+     "ci95": [
+      0.8384,
+      0.9798
+     ],
+     "numerator_point": 0.19334,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r1_6": {
+     "status": "ok",
+     "point": 0.8697,
+     "ci95": [
+      0.7977,
+      0.9497
+     ],
+     "numerator_point": 0.18575,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r1_7": {
+     "status": "ok",
+     "point": 0.8984,
+     "ci95": [
+      0.8229,
+      0.9814
+     ],
+     "numerator_point": 0.19187,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r1_8": {
+     "status": "ok",
+     "point": 0.8757,
+     "ci95": [
+      0.8002,
+      0.9587
+     ],
+     "numerator_point": 0.18702,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r1_9": {
+     "status": "ok",
+     "point": 0.9106,
+     "ci95": [
+      0.8383,
+      0.9914
+     ],
+     "numerator_point": 0.19449,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r1_10": {
+     "status": "ok",
+     "point": 0.8508,
+     "ci95": [
+      0.7821,
+      0.9284
+     ],
+     "numerator_point": 0.18171,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r1_11": {
+     "status": "ok",
+     "point": 0.8906,
+     "ci95": [
+      0.8213,
+      0.9693
+     ],
+     "numerator_point": 0.19021,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r1_12": {
+     "status": "ok",
+     "point": 0.8727,
+     "ci95": [
+      0.8034,
+      0.9488
+     ],
+     "numerator_point": 0.18638,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r1_13": {
+     "status": "ok",
+     "point": 0.9036,
+     "ci95": [
+      0.8338,
+      0.9805
+     ],
+     "numerator_point": 0.19299,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r1_14": {
+     "status": "ok",
+     "point": 0.8688,
+     "ci95": [
+      0.8031,
+      0.9391
+     ],
+     "numerator_point": 0.18555,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    }
+   },
+   "CAND_minus_mean_DER": {
+    "point": -0.00351,
+    "ci95": [
+     -0.00626,
+     -0.00073
+    ]
+   },
+   "CAND_minus_KO_ci": {
+    "point": 0.1854,
+    "ci95": [
+     0.16315,
+     0.20798
+    ]
+   },
+   "preservation": {
+    "BASE_CAND_minus_BASE_y": 0.00117,
+    "mean_option_mass_change": 0.0103
+   },
+   "rank_test_CWONLY_vs_cw_family": {
+    "rank": 9,
+    "of": 77,
+    "p": 0.11688311688311688,
+    "floor": 0.012987012987012988,
+    "n_controls": 76
+   },
+   "run_dirs_cw_family": {
+    "KO_CWRAND_r1_0": "hcsi_p2b_button_k4_KO_CWRAND_r1_0_20261014_083449_2510383",
+    "KO_CWRAND_r1_1": "hcsi_p2b_button_k4_KO_CWRAND_r1_1_20261014_083802_2510383",
+    "KO_CWRAND_r1_2": "hcsi_p2b_button_k4_KO_CWRAND_r1_2_20261014_084117_2510383",
+    "KO_CWRAND_r1_3": "hcsi_p2b_button_k4_KO_CWRAND_r1_3_20261014_084431_2510383",
+    "KO_CWRAND_r1_4": "hcsi_p2b_button_k4_KO_CWRAND_r1_4_20261014_084748_2510383",
+    "KO_CWRAND_r1_5": "hcsi_p2b_button_k4_KO_CWRAND_r1_5_20261014_085102_2510383",
+    "KO_CWRAND_r1_6": "hcsi_p2b_button_k4_KO_CWRAND_r1_6_20261014_085416_2510383",
+    "KO_CWRAND_r1_7": "hcsi_p2b_button_k4_KO_CWRAND_r1_7_20261014_085730_2510383",
+    "KO_CWRAND_r1_8": "hcsi_p2b_button_k4_KO_CWRAND_r1_8_20261014_090043_2510383",
+    "KO_CWRAND_r1_9": "hcsi_p2b_button_k4_KO_CWRAND_r1_9_20261014_090357_2510383",
+    "KO_CWRAND_r1_10": "hcsi_p2b_button_k4_KO_CWRAND_r1_10_20261014_090711_2510383",
+    "KO_CWRAND_r1_11": "hcsi_p2b_button_k4_KO_CWRAND_r1_11_20261014_091024_2510383",
+    "KO_CWRAND_r1_12": "hcsi_p2b_button_k4_KO_CWRAND_r1_12_20261014_091337_2510383",
+    "KO_CWRAND_r1_13": "hcsi_p2b_button_k4_KO_CWRAND_r1_13_20261014_091650_2510383",
+    "KO_CWRAND_r1_14": "hcsi_p2b_button_k4_KO_CWRAND_r1_14_20261014_092012_2510383",
+    "KO_CWRAND_r1_15": "hcsi_p2b_button_k4_KO_CWRAND_r1_15_20261014_092425_2510383",
+    "KO_CWRAND_r1_16": "hcsi_p2b_button_k4_KO_CWRAND_r1_16_20261014_092854_2510383",
+    "KO_CWRAND_r1_17": "hcsi_p2b_button_k4_KO_CWRAND_r1_17_20261014_093325_2510383",
+    "KO_CWRAND_r1_18": "hcsi_p2b_button_k4_KO_CWRAND_r1_18_20261014_093752_2510383",
+    "KO_CWRAND_r1_19": "hcsi_p2b_button_k4_KO_CWRAND_r1_19_20261014_094213_2510383",
+    "KO_CWRAND_r1_20": "hcsi_p2b_button_k4_KO_CWRAND_r1_20_20261014_094553_2510383",
+    "KO_CWRAND_r1_21": "hcsi_p2b_button_k4_KO_CWRAND_r1_21_20261014_094913_2510383",
+    "KO_CWRAND_r1_22": "hcsi_p2b_button_k4_KO_CWRAND_r1_22_20261014_095226_2510383",
+    "KO_CWRAND_r1_23": "hcsi_p2b_button_k4_KO_CWRAND_r1_23_20261014_095540_2510383",
+    "KO_CWRAND_r1_24": "hcsi_p2b_button_k4_KO_CWRAND_r1_24_20261014_095853_2510383",
+    "KO_CWRAND_r1_25": "hcsi_p2b_button_k4_KO_CWRAND_r1_25_20261014_100206_2510383",
+    "KO_CWRAND_r1_26": "hcsi_p2b_button_k4_KO_CWRAND_r1_26_20261014_100519_2510383",
+    "KO_CWRAND_r1_27": "hcsi_p2b_button_k4_KO_CWRAND_r1_27_20261014_100831_2510383",
+    "KO_CWRAND_r1_28": "hcsi_p2b_button_k4_KO_CWRAND_r1_28_20261014_101144_2510383",
+    "KO_CWRAND_r1_29": "hcsi_p2b_button_k4_KO_CWRAND_r1_29_20261014_101457_2510383",
+    "KO_CWRAND_r1_30": "hcsi_p2b_button_k4_KO_CWRAND_r1_30_20261014_101813_2510383",
+    "KO_CWRAND_r1_31": "hcsi_p2b_button_k4_KO_CWRAND_r1_31_20261014_102130_2510383",
+    "KO_CWRAND_r1_32": "hcsi_p2b_button_k4_KO_CWRAND_r1_32_20261014_102446_2510383",
+    "KO_CWRAND_r1_33": "hcsi_p2b_button_k4_KO_CWRAND_r1_33_20261014_102803_2510383",
+    "KO_CWRAND_r1_34": "hcsi_p2b_button_k4_KO_CWRAND_r1_34_20261014_103120_2510383",
+    "KO_CWRAND_r1_35": "hcsi_p2b_button_k4_KO_CWRAND_r1_35_20261014_103438_2510383",
+    "KO_CWRAND_r1_36": "hcsi_p2b_button_k4_KO_CWRAND_r1_36_20261014_103755_2510383",
+    "KO_CWRAND_r1_37": "hcsi_p2b_button_k4_KO_CWRAND_r1_37_20261014_104110_2510383",
+    "KO_CWRAND_r1_38": "hcsi_p2b_button_k4_KO_CWRAND_r1_38_20261014_104424_2510383",
+    "KO_CWRAND_r1_39": "hcsi_p2b_button_k4_KO_CWRAND_r1_39_20261014_104739_2510383",
+    "KO_CWRAND_r1_40": "hcsi_p2b_button_k4_KO_CWRAND_r1_40_20261014_105053_2510383",
+    "KO_CWRAND_r1_41": "hcsi_p2b_button_k4_KO_CWRAND_r1_41_20261014_105407_2510383",
+    "KO_CWRAND_r1_42": "hcsi_p2b_button_k4_KO_CWRAND_r1_42_20261014_105719_2510383",
+    "KO_CWRAND_r1_43": "hcsi_p2b_button_k4_KO_CWRAND_r1_43_20261014_110032_2510383",
+    "KO_CWRAND_r1_44": "hcsi_p2b_button_k4_KO_CWRAND_r1_44_20261014_110344_2510383",
+    "KO_CWRAND_r1_45": "hcsi_p2b_button_k4_KO_CWRAND_r1_45_20261014_110656_2510383",
+    "KO_CWRAND_r1_46": "hcsi_p2b_button_k4_KO_CWRAND_r1_46_20261014_111011_2510383",
+    "KO_CWRAND_r1_47": "hcsi_p2b_button_k4_KO_CWRAND_r1_47_20261014_111326_2510383",
+    "KO_CWRAND_r1_48": "hcsi_p2b_button_k4_KO_CWRAND_r1_48_20261014_111641_2510383",
+    "KO_CWRAND_r1_49": "hcsi_p2b_button_k4_KO_CWRAND_r1_49_20261014_111953_2510383",
+    "KO_CWRAND_r1_50": "hcsi_p2b_button_k4_KO_CWRAND_r1_50_20261014_112307_2510383",
+    "KO_CWRAND_r1_51": "hcsi_p2b_button_k4_KO_CWRAND_r1_51_20261014_112619_2510383",
+    "KO_CWRAND_r1_52": "hcsi_p2b_button_k4_KO_CWRAND_r1_52_20261014_112933_2510383",
+    "KO_CWRAND_r1_53": "hcsi_p2b_button_k4_KO_CWRAND_r1_53_20261014_113247_2510383",
+    "KO_CWRAND_r1_54": "hcsi_p2b_button_k4_KO_CWRAND_r1_54_20261014_113601_2510383",
+    "KO_CWRAND_r1_55": "hcsi_p2b_button_k4_KO_CWRAND_r1_55_20261014_113915_2510383",
+    "KO_CWRAND_r1_56": "hcsi_p2b_button_k4_KO_CWRAND_r1_56_20261014_114229_2510383",
+    "KO_CWRAND_r1_57": "hcsi_p2b_button_k4_KO_CWRAND_r1_57_20261014_114543_2510383",
+    "KO_CWRAND_r1_58": "hcsi_p2b_button_k4_KO_CWRAND_r1_58_20261014_130550_4088301",
+    "KO_CWRAND_r1_59": "hcsi_p2b_button_k4_KO_CWRAND_r1_59_20261014_130949_4088301",
+    "KO_CWRAND_r1_60": "hcsi_p2b_button_k4_KO_CWRAND_r1_60_20261014_131356_4088301",
+    "KO_CWDER_r1_0": "hcsi_p2b_button_k4_KO_CWDER_r1_0_20261014_131802_4088301",
+    "KO_CWDER_r1_1": "hcsi_p2b_button_k4_KO_CWDER_r1_1_20261014_132208_4088301",
+    "KO_CWDER_r1_2": "hcsi_p2b_button_k4_KO_CWDER_r1_2_20261014_132601_4088301",
+    "KO_CWDER_r1_3": "hcsi_p2b_button_k4_KO_CWDER_r1_3_20261014_132951_4088301",
+    "KO_CWDER_r1_4": "hcsi_p2b_button_k4_KO_CWDER_r1_4_20261014_133342_4088301",
+    "KO_CWDER_r1_5": "hcsi_p2b_button_k4_KO_CWDER_r1_5_20261014_133735_4088301",
+    "KO_CWDER_r1_6": "hcsi_p2b_button_k4_KO_CWDER_r1_6_20261014_134128_4088301",
+    "KO_CWDER_r1_7": "hcsi_p2b_button_k4_KO_CWDER_r1_7_20261014_134521_4088301",
+    "KO_CWDER_r1_8": "hcsi_p2b_button_k4_KO_CWDER_r1_8_20261014_134915_4088301",
+    "KO_CWDER_r1_9": "hcsi_p2b_button_k4_KO_CWDER_r1_9_20261014_135306_4088301",
+    "KO_CWDER_r1_10": "hcsi_p2b_button_k4_KO_CWDER_r1_10_20261014_135659_4088301",
+    "KO_CWDER_r1_11": "hcsi_p2b_button_k4_KO_CWDER_r1_11_20261014_140057_4088301",
+    "KO_CWDER_r1_12": "hcsi_p2b_button_k4_KO_CWDER_r1_12_20261014_140456_4088301",
+    "KO_CWDER_r1_13": "hcsi_p2b_button_k4_KO_CWDER_r1_13_20261014_140850_4088301",
+    "KO_CWDER_r1_14": "hcsi_p2b_button_k4_KO_CWDER_r1_14_20261014_141241_4088301"
+   },
+   "rank_test_CWONLY_without_collapsed_controls": {
+    "rank": 9,
+    "of": 77,
+    "p": 0.11688311688311688,
+    "floor": 0.012987012987012988,
+    "n_controls": 76
+   },
+   "recovery_CWONLY_secondary": {
+    "status": "ok",
+    "point": 1.622,
+    "ci95": [
+     1.4895,
+     1.7846
+    ],
+    "numerator_point": 0.17688,
+    "denominator_point": 0.10905,
+    "n_domains_with_movement": 67,
+    "draws_dropped": 0
+   },
+   "n_keys_secondary": 239,
+   "addon": {
+    "n_keys": 239,
+    "median_option_mass": {
+     "KO_MEANBIAS": 3.0574819902540185e-06,
+     "KO_CWMEANBIAS": 0.531948983669281,
+     "BASE_MEANBIAS": 3.6094306778977625e-06,
+     "KO_DERRAW_r1_0": 0.5130375027656555,
+     "KO_DERRAW_r1_1": 0.5170236229896545,
+     "KO_DERRAW_r1_2": 0.5006492137908936,
+     "KO_DERRAW_r1_3": 0.5028044581413269,
+     "KO_DERRAW_r1_4": 0.5140354633331299,
+     "KO_DERRAW_r1_5": 0.49878010153770447,
+     "KO_DERRAW_r1_6": 0.5089958310127258,
+     "KO_DERRAW_r1_7": 0.508290708065033,
+     "KO_DERRAW_r1_8": 0.5038686990737915,
+     "KO_DERRAW_r1_9": 0.507611870765686,
+     "KO_DERRAW_r1_10": 0.4996669292449951,
+     "KO_DERRAW_r1_11": 0.5011282563209534,
+     "KO_DERRAW_r1_12": 0.4978037178516388,
+     "KO_DERRAW_r1_13": 0.5145735144615173,
+     "KO_DERRAW_r1_14": 0.5083863735198975,
+     "KO_SHUFRAW_r1_0": 0.4769713580608368,
+     "KO_SHUFRAW_r1_1": 0.5060163736343384,
+     "KO_SHUFRAW_r1_2": 0.5217049717903137,
+     "KO_SHUFRAW_r1_3": 0.4911322593688965,
+     "KO_SHUFRAW_r1_4": 0.46600133180618286
+    },
+    "KO_MEANBIAS": {
+     "stat": 0.48444,
+     "recovery": {
+      "status": "ok",
+      "point": 4.4422,
+      "ci95": [
+       3.7027,
+       5.4487
+      ],
+      "numerator_point": 0.48444,
+      "denominator_point": 0.10905,
+      "n_domains_with_movement": 67,
+      "draws_dropped": 0
+     }
+    },
+    "KO_CWMEANBIAS": {
+     "stat": -0.00803,
+     "recovery": {
+      "status": "ok",
+      "point": -0.0736,
+      "ci95": [
+       -0.2869,
+       0.1185
+      ],
+      "numerator_point": -0.00803,
+      "denominator_point": 0.10905,
+      "n_domains_with_movement": 67,
+      "draws_dropped": 0
+     }
+    },
+    "BASE_MEANBIAS_minus_BASE_y": 0.27232,
+    "CAND_minus_MEANBIAS": {
+     "point": -0.29904,
+     "ci95": [
+      -0.3583,
+      -0.24304
+     ]
+    },
+    "CWONLY_minus_CWMEANBIAS": {
+     "point": 0.18491,
+     "ci95": [
+      0.16332,
+      0.20716
+     ]
+    },
+    "rank_test_DER_raw_norm": {
+     "rank": 16,
+     "of": 16,
+     "p": 1.0,
+     "floor": 0.0625,
+     "n_controls": 15
+    },
+    "rank_test_SHUF_raw_norm": {
+     "rank": 6,
+     "of": 6,
+     "p": 1.0,
+     "floor": 0.16666666666666666,
+     "n_controls": 5
+    },
+    "void": [
+     "KO_MEANBIAS: readout collapsed (median option mass 3.06e-06)"
+    ],
+    "run_dirs": {
+     "KO_MEANBIAS": "hcsi_p2b_button_k4_KO_MEANBIAS_20261014_151231_18603",
+     "KO_CWMEANBIAS": "hcsi_p2b_button_k4_KO_CWMEANBIAS_20261014_151617_18603",
+     "BASE_MEANBIAS": "hcsi_p2b_button_k4_BASE_MEANBIAS_20261014_152005_18603",
+     "KO_DERRAW_r1_0": "hcsi_p2b_button_k4_KO_DERRAW_r1_0_20261014_152256_18603",
+     "KO_DERRAW_r1_1": "hcsi_p2b_button_k4_KO_DERRAW_r1_1_20261014_152922_18603",
+     "KO_DERRAW_r1_2": "hcsi_p2b_button_k4_KO_DERRAW_r1_2_20261014_153544_18603",
+     "KO_DERRAW_r1_3": "hcsi_p2b_button_k4_KO_DERRAW_r1_3_20261014_154024_18603",
+     "KO_DERRAW_r1_4": "hcsi_p2b_button_k4_KO_DERRAW_r1_4_20261014_154414_18603",
+     "KO_DERRAW_r1_5": "hcsi_p2b_button_k4_KO_DERRAW_r1_5_20261014_154803_18603",
+     "KO_DERRAW_r1_6": "hcsi_p2b_button_k4_KO_DERRAW_r1_6_20261014_155155_18603",
+     "KO_DERRAW_r1_7": "hcsi_p2b_button_k4_KO_DERRAW_r1_7_20261014_155549_18603",
+     "KO_DERRAW_r1_8": "hcsi_p2b_button_k4_KO_DERRAW_r1_8_20261014_155945_18603",
+     "KO_DERRAW_r1_9": "hcsi_p2b_button_k4_KO_DERRAW_r1_9_20261014_160335_18603",
+     "KO_DERRAW_r1_10": "hcsi_p2b_button_k4_KO_DERRAW_r1_10_20261014_160725_18603",
+     "KO_DERRAW_r1_11": "hcsi_p2b_button_k4_KO_DERRAW_r1_11_20261014_161114_18603",
+     "KO_DERRAW_r1_12": "hcsi_p2b_button_k4_KO_DERRAW_r1_12_20261014_161506_18603",
+     "KO_DERRAW_r1_13": "hcsi_p2b_button_k4_KO_DERRAW_r1_13_20261014_161903_18603",
+     "KO_DERRAW_r1_14": "hcsi_p2b_button_k4_KO_DERRAW_r1_14_20261014_162254_18603",
+     "KO_SHUFRAW_r1_0": "hcsi_p2b_button_k4_KO_SHUFRAW_r1_0_20261014_162644_18603",
+     "KO_SHUFRAW_r1_1": "hcsi_p2b_button_k4_KO_SHUFRAW_r1_1_20261014_163035_18603",
+     "KO_SHUFRAW_r1_2": "hcsi_p2b_button_k4_KO_SHUFRAW_r1_2_20261014_163428_18603",
+     "KO_SHUFRAW_r1_3": "hcsi_p2b_button_k4_KO_SHUFRAW_r1_3_20261014_163821_18603",
+     "KO_SHUFRAW_r1_4": "hcsi_p2b_button_k4_KO_SHUFRAW_r1_4_20261014_164214_18603"
+    },
+    "arm_provenance": {
+     "KO_MEANBIAS": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_CWMEANBIAS": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "BASE_MEANBIAS": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r1_0": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r1_1": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r1_2": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r1_3": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r1_4": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r1_5": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r1_6": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r1_7": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r1_8": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r1_9": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r1_10": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r1_11": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r1_12": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r1_13": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r1_14": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_SHUFRAW_r1_0": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_SHUFRAW_r1_1": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_SHUFRAW_r1_2": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_SHUFRAW_r1_3": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_SHUFRAW_r1_4": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     }
+    },
+    "BASE_MEANBIAS_collapsed": true,
+    "raw_arms_total_fro": {
+     "KO_DERRAW_r1_0": 38.9241,
+     "KO_DERRAW_r1_1": 38.3139,
+     "KO_DERRAW_r1_2": 38.6477,
+     "KO_DERRAW_r1_3": 39.29,
+     "KO_DERRAW_r1_4": 40.372,
+     "KO_DERRAW_r1_5": 36.8847,
+     "KO_DERRAW_r1_6": 38.2894,
+     "KO_DERRAW_r1_7": 37.9668,
+     "KO_DERRAW_r1_8": 39.8495,
+     "KO_DERRAW_r1_9": 39.2384,
+     "KO_DERRAW_r1_10": 39.7379,
+     "KO_DERRAW_r1_11": 39.8895,
+     "KO_DERRAW_r1_12": 39.0953,
+     "KO_DERRAW_r1_13": 38.0048,
+     "KO_DERRAW_r1_14": 39.2413,
+     "KO_SHUFRAW_r1_0": 130.6153,
+     "KO_SHUFRAW_r1_1": 156.5375,
+     "KO_SHUFRAW_r1_2": 136.6664,
+     "KO_SHUFRAW_r1_3": 109.0484,
+     "KO_SHUFRAW_r1_4": 133.759
+    },
+    "meanbias_sidecars": {
+     "KO_MEANBIAS": {
+      "kind": "bias",
+      "where": "all",
+      "hook_calls": 27872,
+      "bias_total_norm": 53.08124542236328
+     },
+     "KO_CWMEANBIAS": {
+      "kind": "bias",
+      "where": "cw",
+      "hook_calls": 27872,
+      "bias_total_norm": 53.08124542236328
+     },
+     "BASE_MEANBIAS": {
+      "kind": "bias",
+      "where": "all",
+      "hook_calls": 27872,
+      "bias_total_norm": 53.08124542236328
+     }
+    },
+    "input_conditional_wording_eligible_on_this_split": false,
+    "CAND_minus_CWMEANBIAS": {
+     "point": 0.19343,
+     "ci95": [
+      0.16993,
+      0.2183
+     ]
+    },
+    "wording_rule": "only ever True on split=validation; 'input-conditional' requires CAND beats BOTH KO_MEANBIAS and KO_CWMEANBIAS (CI-lo>0) on VALIDATION, and is suspended if either comparator is VOID/collapsed (amendment 4)"
+   },
+   "neut_position": {
+    "n_keys": 239,
+    "void": [],
+    "descriptive_only": true,
+    "run_dirs": {
+     "KO_NEUT_CWONLY_r1": "hcsi_p2b_button_k4_KO_NEUT_CWONLY_r1_20261014_184945_2601991",
+     "KO_NEUT_ATLAST_r1": "hcsi_p2b_button_k4_KO_NEUT_ATLAST_r1_20261014_185327_2601991"
+    },
+    "arm_provenance": {
+     "KO_NEUT_CWONLY_r1": {
+      "job": "1040124",
+      "host": "n-503",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_NEUT_ATLAST_r1": {
+      "job": "1040124",
+      "host": "n-503",
+      "gpu": "NVIDIA RTX A5000"
+     }
+    },
+    "median_option_mass": {
+     "KO_NEUT_CWONLY_r1": 0.5419903993606567,
+     "KO_NEUT_ATLAST_r1": 0.5522988438606262
+    },
+    "positions_tokens": {
+     "KO_NEUT_CWONLY_r1": [
+      " button"
+     ],
+     "KO_NEUT_ATLAST_r1": [
+      "\n\n"
+     ]
+    },
+    "KO_NEUT_CWONLY_r1_minus_KO": {
+     "point": 0.01877,
+     "ci95": [
+      0.01612,
+      0.02149
+     ]
+    },
+    "KO_NEUT_CWONLY_r1_frac_BASE_minus_KO": {
+     "status": "ok",
+     "point": 0.0879,
+     "ci95": [
+      0.0766,
+      0.0994
+     ],
+     "numerator_point": 0.01877,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_NEUT_ATLAST_r1_minus_KO": {
+     "point": 0.01292,
+     "ci95": [
+      0.01082,
+      0.01527
+     ]
+    },
+    "KO_NEUT_ATLAST_r1_frac_BASE_minus_KO": {
+     "status": "ok",
+     "point": 0.0605,
+     "ci95": [
+      0.0503,
+      0.0716
+     ],
+     "numerator_point": 0.01292,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_NEUT_r1_minus_KO": {
+     "point": 0.17816,
+     "ci95": [
+      0.15593,
+      0.20119
+     ]
+    },
+    "KO_NEUT_r1_frac_BASE_minus_KO": {
+     "status": "ok",
+     "point": 0.8342,
+     "ci95": [
+      0.7549,
+      0.9265
+     ],
+     "numerator_point": 0.17816,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_CAND_r1_minus_KO": {
+     "point": 0.1854,
+     "ci95": [
+      0.16349,
+      0.20816
+     ]
+    },
+    "KO_CAND_r1_frac_BASE_minus_KO": {
+     "status": "ok",
+     "point": 0.8681,
+     "ci95": [
+      0.8002,
+      0.9445
+     ],
+     "numerator_point": 0.1854,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_CWONLY_r1_minus_KO": {
+     "point": 0.17688,
+     "ci95": [
+      0.15706,
+      0.19687
+     ]
+    },
+    "KO_CWONLY_r1_frac_BASE_minus_KO": {
+     "status": "ok",
+     "point": 0.8282,
+     "ci95": [
+      0.7766,
+      0.8792
+     ],
+     "numerator_point": 0.17688,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_ATLAST_r1_minus_KO": {
+     "point": 0.00165,
+     "ci95": [
+      0.00052,
+      0.00291
+     ]
+    },
+    "KO_ATLAST_r1_frac_BASE_minus_KO": {
+     "status": "ok",
+     "point": 0.0077,
+     "ci95": [
+      0.0024,
+      0.0135
+     ],
+     "numerator_point": 0.00165,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    }
+   },
+   "arm_provenance": {
+    "BASE": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_FULL": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_IDENT": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CAND_r1": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "BASE_CAND_r1": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWONLY_r1": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_ATLAST_r1": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_NEUT_r1": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CAPOP_r1": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_0": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_1": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_2": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_3": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_4": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_5": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_6": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_7": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_8": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_9": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_10": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_11": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_12": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_13": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_14": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_15": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_16": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_17": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_18": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_19": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_20": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_21": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_22": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_23": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_24": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_25": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_26": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_27": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_28": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_29": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_30": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_31": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_32": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_33": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_34": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_35": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_36": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_37": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_38": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_39": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_40": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_41": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_42": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_43": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_44": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_45": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_46": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_47": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_48": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_49": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_50": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_51": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_52": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_53": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_54": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_55": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_56": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_57": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_58": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_59": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r1_60": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_SHUF_r1_0": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_SHUF_r1_1": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_SHUF_r1_2": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_SHUF_r1_3": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_SHUF_r1_4": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r1_0": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r1_1": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r1_2": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r1_3": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r1_4": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r1_5": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r1_6": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r1_7": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r1_8": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r1_9": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r1_10": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r1_11": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r1_12": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r1_13": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r1_14": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_0": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_1": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_2": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_3": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_4": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_5": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_6": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_7": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_8": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_9": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_10": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_11": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_12": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_13": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_14": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_15": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_16": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_17": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_18": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_19": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_20": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_21": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_22": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_23": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_24": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_25": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_26": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_27": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_28": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_29": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_30": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_31": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_32": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_33": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_34": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_35": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_36": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_37": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_38": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_39": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_40": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_41": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_42": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_43": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_44": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_45": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_46": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_47": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_48": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_49": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_50": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_51": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_52": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_53": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_54": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_55": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_56": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_57": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_58": {
+     "job": "1035131",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_59": {
+     "job": "1035131",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r1_60": {
+     "job": "1035131",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r1_0": {
+     "job": "1035131",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r1_1": {
+     "job": "1035131",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r1_2": {
+     "job": "1035131",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r1_3": {
+     "job": "1035131",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r1_4": {
+     "job": "1035131",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r1_5": {
+     "job": "1035131",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r1_6": {
+     "job": "1035131",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r1_7": {
+     "job": "1035131",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r1_8": {
+     "job": "1035131",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r1_9": {
+     "job": "1035131",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r1_10": {
+     "job": "1035131",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r1_11": {
+     "job": "1035131",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r1_12": {
+     "job": "1035131",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r1_13": {
+     "job": "1035131",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r1_14": {
+     "job": "1035131",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    }
+   },
+   "jobs": [
+    "1023264",
+    "1035131"
+   ],
+   "holm_p": 0.3170731707317073,
+   "verdict": "DOES NOT PASS (Holm p=0.3171 >= 0.05)",
+   "holm_family_valid_ranks": [
+    1,
+    4
+   ],
+   "holm_p_secondary_CWONLY": 0.23376623376623376,
+   "verdict_secondary_CWONLY": "DOES NOT PASS (Holm p=0.2338 >= 0.05) [SECONDARY; requires VALIDATION replication with the frozen operator]"
+  },
+  {
+   "rank": 4,
+   "primary": true,
+   "n_keys": 239,
+   "n_domains": 67,
+   "gates": {
+    "manipulation_KO_minus_BASE": -0.21358,
+    "manipulation_ok": true,
+    "full_rescue_FULL_minus_KO": 0.10905,
+    "instrument_ok": true,
+    "identity_max_abs_dy": 0.0,
+    "median_option_mass": {
+     "BASE": 0.33874332904815674,
+     "KO": 0.5532814264297485,
+     "KO_FULL": 0.4226628541946411,
+     "KO_IDENT": 0.5532814264297485,
+     "KO_CAND_r4": 0.48377692699432373,
+     "BASE_CAND_r4": 0.3501775860786438,
+     "KO_CWONLY_r4": 0.4630182683467865,
+     "KO_ATLAST_r4": 0.5531352758407593,
+     "KO_NEUT_r4": 0.5739740133285522
+    }
+   },
+   "void_shared": [],
+   "void": [],
+   "void_secondary": [],
+   "flags": [
+    "KO_CWONLY_r4: applied at tokens [' button']",
+    "KO_ATLAST_r4: applied at tokens ['\\n\\n']"
+   ],
+   "recovery_CAND": {
+    "status": "ok",
+    "point": 1.5549,
+    "ci95": [
+     1.4115,
+     1.7275
+    ],
+    "numerator_point": 0.16957,
+    "denominator_point": 0.10905,
+    "n_domains_with_movement": 67,
+    "draws_dropped": 0
+   },
+   "stat_CAND_minus_KO": 0.16957,
+   "rank_test": {
+    "rank": 14,
+    "of": 82,
+    "p": 0.17073170731707318,
+    "floor": 0.012195121951219513,
+    "n_controls": 81
+   },
+   "rank_test_without_collapsed_controls": {
+    "rank": 14,
+    "of": 82,
+    "p": 0.17073170731707318,
+    "floor": 0.012195121951219513,
+    "n_controls": 81
+   },
+   "rank_test_random_only": {
+    "rank": 1,
+    "of": 62,
+    "p": 0.016129032258064516,
+    "floor": 0.016129032258064516,
+    "n_controls": 61
+   },
+   "rank_test_DER_only": {
+    "rank": 14,
+    "of": 16,
+    "p": 0.875,
+    "floor": 0.0625,
+    "n_controls": 15
+   },
+   "rank_test_SHUF_only": {
+    "rank": 1,
+    "of": 6,
+    "p": 0.16666666666666666,
+    "floor": 0.16666666666666666,
+    "n_controls": 5
+   },
+   "fitted_control_raw_over_CAND_norm": {
+    "KO_SHUF_r4_0": 1.6528,
+    "KO_SHUF_r4_1": 1.7967,
+    "KO_SHUF_r4_2": 1.7994,
+    "KO_SHUF_r4_3": 1.7892,
+    "KO_SHUF_r4_4": 1.8147,
+    "KO_DER_r4_0": 1.0991,
+    "KO_DER_r4_1": 1.1156,
+    "KO_DER_r4_2": 1.0605,
+    "KO_DER_r4_3": 1.1192,
+    "KO_DER_r4_4": 1.0909,
+    "KO_DER_r4_5": 1.0884,
+    "KO_DER_r4_6": 1.0669,
+    "KO_DER_r4_7": 1.0685,
+    "KO_DER_r4_8": 1.0534,
+    "KO_DER_r4_9": 1.1147,
+    "KO_DER_r4_10": 1.072,
+    "KO_DER_r4_11": 1.0936,
+    "KO_DER_r4_12": 1.0455,
+    "KO_DER_r4_13": 1.1701,
+    "KO_DER_r4_14": 1.0662
+   },
+   "position": {
+    "KO_CWONLY_r4": {
+     "stat": 0.16768,
+     "recovery": {
+      "status": "ok",
+      "point": 1.5376,
+      "ci95": [
+       1.428,
+       1.669
+      ],
+      "numerator_point": 0.16768,
+      "denominator_point": 0.10905,
+      "n_domains_with_movement": 67,
+      "draws_dropped": 0
+     },
+     "total_fro": 60.184159032680824
+    },
+    "KO_ATLAST_r4": {
+     "stat": 0.00173,
+     "recovery": {
+      "status": "ok",
+      "point": 0.0159,
+      "ci95": [
+       0.0043,
+       0.028
+      ],
+      "numerator_point": 0.00173,
+      "denominator_point": 0.10905,
+      "n_domains_with_movement": 67,
+      "draws_dropped": 0
+     },
+     "total_fro": 60.184159032680824
+    },
+    "KO_NEUT_r4": {
+     "stat": 0.17756,
+     "recovery": {
+      "status": "ok",
+      "point": 1.6282,
+      "ci95": [
+       1.4245,
+       1.8807
+      ],
+      "numerator_point": 0.17756,
+      "denominator_point": 0.10905,
+      "n_domains_with_movement": 67,
+      "draws_dropped": 0
+     },
+     "total_fro": 12.488100722468404
+    }
+   },
+   "position_contrast_CWONLY_minus_ATLAST": 0.16595,
+   "decomposition": {
+    "KO_CAND_r4": {
+     "d_logp_concept": 0.4319,
+     "d_logp_codeword": -0.9837
+    },
+    "KO_CWONLY_r4": {
+     "d_logp_concept": 0.3611,
+     "d_logp_codeword": -1.0707
+    },
+    "KO_ATLAST_r4": {
+     "d_logp_concept": 0.0017,
+     "d_logp_codeword": -0.0121
+    },
+    "KO_NEUT_r4": {
+     "d_logp_concept": 0.8394,
+     "d_logp_codeword": -0.7303
+    }
+   },
+   "control_stats": {
+    "KO_RAND_r4_0": -0.02097,
+    "KO_RAND_r4_1": -0.06674,
+    "KO_RAND_r4_2": -0.03034,
+    "KO_RAND_r4_3": 0.00159,
+    "KO_RAND_r4_4": 0.01039,
+    "KO_RAND_r4_5": -0.04086,
+    "KO_RAND_r4_6": -0.00034,
+    "KO_RAND_r4_7": -0.00057,
+    "KO_RAND_r4_8": -0.04374,
+    "KO_RAND_r4_9": 0.0147,
+    "KO_RAND_r4_10": -0.05649,
+    "KO_RAND_r4_11": -0.01302,
+    "KO_RAND_r4_12": -0.00655,
+    "KO_RAND_r4_13": -0.02438,
+    "KO_RAND_r4_14": 0.03775,
+    "KO_RAND_r4_15": -0.00543,
+    "KO_RAND_r4_16": 0.0104,
+    "KO_RAND_r4_17": -0.00524,
+    "KO_RAND_r4_18": 0.01077,
+    "KO_RAND_r4_19": 0.04068,
+    "KO_RAND_r4_20": -0.02136,
+    "KO_RAND_r4_21": 0.01007,
+    "KO_RAND_r4_22": -0.04566,
+    "KO_RAND_r4_23": -0.02954,
+    "KO_RAND_r4_24": 0.02195,
+    "KO_RAND_r4_25": 0.00165,
+    "KO_RAND_r4_26": 0.00848,
+    "KO_RAND_r4_27": 0.016,
+    "KO_RAND_r4_28": 0.01729,
+    "KO_RAND_r4_29": 0.02017,
+    "KO_RAND_r4_30": 0.00256,
+    "KO_RAND_r4_31": 0.02147,
+    "KO_RAND_r4_32": -0.01821,
+    "KO_RAND_r4_33": -0.03194,
+    "KO_RAND_r4_34": 0.01937,
+    "KO_RAND_r4_35": -0.01463,
+    "KO_RAND_r4_36": 0.00954,
+    "KO_RAND_r4_37": 0.01684,
+    "KO_RAND_r4_38": -0.00588,
+    "KO_RAND_r4_39": -0.02523,
+    "KO_RAND_r4_40": 0.01714,
+    "KO_RAND_r4_41": -0.01157,
+    "KO_RAND_r4_42": 0.01325,
+    "KO_RAND_r4_43": -0.05894,
+    "KO_RAND_r4_44": 0.01767,
+    "KO_RAND_r4_45": 0.01592,
+    "KO_RAND_r4_46": 0.04612,
+    "KO_RAND_r4_47": -0.06046,
+    "KO_RAND_r4_48": 0.0313,
+    "KO_RAND_r4_49": 0.02055,
+    "KO_RAND_r4_50": 0.01189,
+    "KO_RAND_r4_51": -0.02048,
+    "KO_RAND_r4_52": 0.03276,
+    "KO_RAND_r4_53": 0.01429,
+    "KO_RAND_r4_54": -0.01763,
+    "KO_RAND_r4_55": -0.00947,
+    "KO_RAND_r4_56": -0.03004,
+    "KO_RAND_r4_57": -0.03801,
+    "KO_RAND_r4_58": 0.01056,
+    "KO_RAND_r4_59": 0.00064,
+    "KO_RAND_r4_60": 0.00687,
+    "KO_SHUF_r4_0": 0.16201,
+    "KO_SHUF_r4_1": 0.14435,
+    "KO_SHUF_r4_2": 0.15585,
+    "KO_SHUF_r4_3": 0.13704,
+    "KO_SHUF_r4_4": 0.15579,
+    "KO_DER_r4_0": 0.18885,
+    "KO_DER_r4_1": 0.18344,
+    "KO_DER_r4_2": 0.18269,
+    "KO_DER_r4_3": 0.19932,
+    "KO_DER_r4_4": 0.17177,
+    "KO_DER_r4_5": 0.19557,
+    "KO_DER_r4_6": 0.18423,
+    "KO_DER_r4_7": 0.18144,
+    "KO_DER_r4_8": 0.16919,
+    "KO_DER_r4_9": 0.1717,
+    "KO_DER_r4_10": 0.17819,
+    "KO_DER_r4_11": 0.1718,
+    "KO_DER_r4_12": 0.19523,
+    "KO_DER_r4_13": 0.1605,
+    "KO_DER_r4_14": 0.17147
+   },
+   "control_recovery_mean": 0.3664901234567901,
+   "cand_total_fro": 60.184159032680824,
+   "cand_n_params": 1384448,
+   "cand_fit_meta": {
+    "fit": "codeword_row",
+    "raw_fro": {
+     "L6.o_proj": 3.949515729664125,
+     "L6.down_proj": 3.515001014334903,
+     "L7.o_proj": 4.50917403264522,
+     "L7.down_proj": 3.067643431730137,
+     "L8.o_proj": 1.589829018143502,
+     "L8.down_proj": 1.7963776390051531,
+     "L9.o_proj": 2.836261815696899,
+     "L9.down_proj": 1.1234100232672897,
+     "L10.o_proj": 2.066986319963233,
+     "L10.down_proj": 1.1389610972895554,
+     "L11.o_proj": 2.9848697386430207,
+     "L11.down_proj": 1.3105490013593866,
+     "L12.o_proj": 2.475836477117597,
+     "L12.down_proj": 1.1844479329024433,
+     "L13.o_proj": 3.4477285173528984,
+     "L13.down_proj": 1.6877690992296837,
+     "L14.o_proj": 2.360556011249735,
+     "L14.down_proj": 1.5874200697342287,
+     "L15.o_proj": 2.8195793417092974,
+     "L15.down_proj": 1.5216180650608921,
+     "L16.o_proj": 1.9364891543842189,
+     "L16.down_proj": 1.5263883260532434,
+     "L17.o_proj": 3.2348073672060154,
+     "L17.down_proj": 1.9457718399395374,
+     "L18.o_proj": 3.004635156727903,
+     "L18.down_proj": 1.5625328122707054
+    },
+    "train_fit": {
+     "gap_closure": 0.6825019314597127,
+     "preserve_damage": 0.001527352319844473,
+     "net": 0.6809745791398683
+    },
+    "rank": 4,
+    "objective": "mse",
+    "steer_weight": 0.3,
+    "codeword": "button",
+    "n_params": 1384448,
+    "numerical_rank": {
+     "L6.o_proj": 4,
+     "L6.down_proj": 4
+    }
+   },
+   "code_sha256": {
+    "p2b_runner.py": "ef95017593f0d45481e83beb4caddedb4456f2a6cad1bc6134afc6e1568e52bf",
+    "p2b_operator.py": "f2cb3f807f9200be580253089bc8ccbbe78264446c001ae4da40acd99ba2e591",
+    "operator_ara.py": "5b80713f351e4d1d7246b8aa2f6d2c715259b5b9059d46c431136dd8164b0322",
+    "positions.py": "53afbfd29557d69e95f21785be911e59cfaf982a4aa26337a93956c5daf9dcc8",
+    "p2b_emit.py": "e1119c8a98e97ae049714a4d3a43844033adb1b707b85a7d7450e9370e194ebc"
+   },
+   "run_dirs": {
+    "BASE": "hcsi_p2b_button_k4_BASE_20261014_034523_2510383",
+    "KO": "hcsi_p2b_button_k4_KO_20261014_034749_2510383",
+    "KO_FULL": "hcsi_p2b_button_k4_KO_FULL_20261014_035120_2510383",
+    "KO_IDENT": "hcsi_p2b_button_k4_KO_IDENT_20261014_035508_2510383",
+    "KO_CAND_r4": "hcsi_p2b_button_k4_KO_CAND_r4_20261014_034733_3538235",
+    "BASE_CAND_r4": "hcsi_p2b_button_k4_BASE_CAND_r4_20261014_035116_3538235",
+    "KO_CWONLY_r4": "hcsi_p2b_button_k4_KO_CWONLY_r4_20261014_035348_3538235",
+    "KO_ATLAST_r4": "hcsi_p2b_button_k4_KO_ATLAST_r4_20261014_035737_3538235",
+    "KO_NEUT_r4": "hcsi_p2b_button_k4_KO_NEUT_r4_20261014_040126_3538235",
+    "KO_CAPOP_r4": "hcsi_p2b_button_k4_KO_CAPOP_r4_20261014_040510_3538235",
+    "KO_RAND_r4_0": "hcsi_p2b_button_k4_KO_RAND_r4_0_20261014_052235_3538235",
+    "KO_RAND_r4_1": "hcsi_p2b_button_k4_KO_RAND_r4_1_20261014_052615_3538235",
+    "KO_RAND_r4_2": "hcsi_p2b_button_k4_KO_RAND_r4_2_20261014_052956_3538235",
+    "KO_RAND_r4_3": "hcsi_p2b_button_k4_KO_RAND_r4_3_20261014_053337_3538235",
+    "KO_RAND_r4_4": "hcsi_p2b_button_k4_KO_RAND_r4_4_20261014_053716_3538235",
+    "KO_RAND_r4_5": "hcsi_p2b_button_k4_KO_RAND_r4_5_20261014_054057_3538235",
+    "KO_RAND_r4_6": "hcsi_p2b_button_k4_KO_RAND_r4_6_20261014_054438_3538235",
+    "KO_RAND_r4_7": "hcsi_p2b_button_k4_KO_RAND_r4_7_20261014_054818_3538235",
+    "KO_RAND_r4_8": "hcsi_p2b_button_k4_KO_RAND_r4_8_20261014_055159_3538235",
+    "KO_RAND_r4_9": "hcsi_p2b_button_k4_KO_RAND_r4_9_20261014_055539_3538235",
+    "KO_RAND_r4_10": "hcsi_p2b_button_k4_KO_RAND_r4_10_20261014_055920_3538235",
+    "KO_RAND_r4_11": "hcsi_p2b_button_k4_KO_RAND_r4_11_20261014_060302_3538235",
+    "KO_RAND_r4_12": "hcsi_p2b_button_k4_KO_RAND_r4_12_20261014_060643_3538235",
+    "KO_RAND_r4_13": "hcsi_p2b_button_k4_KO_RAND_r4_13_20261014_061023_3538235",
+    "KO_RAND_r4_14": "hcsi_p2b_button_k4_KO_RAND_r4_14_20261014_061403_3538235",
+    "KO_RAND_r4_15": "hcsi_p2b_button_k4_KO_RAND_r4_15_20261014_061744_3538235",
+    "KO_RAND_r4_16": "hcsi_p2b_button_k4_KO_RAND_r4_16_20261014_062130_3538235",
+    "KO_RAND_r4_17": "hcsi_p2b_button_k4_KO_RAND_r4_17_20261014_062513_3538235",
+    "KO_RAND_r4_18": "hcsi_p2b_button_k4_KO_RAND_r4_18_20261014_062853_3538235",
+    "KO_RAND_r4_19": "hcsi_p2b_button_k4_KO_RAND_r4_19_20261014_063236_3538235",
+    "KO_RAND_r4_20": "hcsi_p2b_button_k4_KO_RAND_r4_20_20261014_063616_3538235",
+    "KO_RAND_r4_21": "hcsi_p2b_button_k4_KO_RAND_r4_21_20261014_063956_3538235",
+    "KO_RAND_r4_22": "hcsi_p2b_button_k4_KO_RAND_r4_22_20261014_064337_3538235",
+    "KO_RAND_r4_23": "hcsi_p2b_button_k4_KO_RAND_r4_23_20261014_064718_3538235",
+    "KO_RAND_r4_24": "hcsi_p2b_button_k4_KO_RAND_r4_24_20261014_065058_3538235",
+    "KO_RAND_r4_25": "hcsi_p2b_button_k4_KO_RAND_r4_25_20261014_065439_3538235",
+    "KO_RAND_r4_26": "hcsi_p2b_button_k4_KO_RAND_r4_26_20261014_065819_3538235",
+    "KO_RAND_r4_27": "hcsi_p2b_button_k4_KO_RAND_r4_27_20261014_070201_3538235",
+    "KO_RAND_r4_28": "hcsi_p2b_button_k4_KO_RAND_r4_28_20261014_070541_3538235",
+    "KO_RAND_r4_29": "hcsi_p2b_button_k4_KO_RAND_r4_29_20261014_070922_3538235",
+    "KO_RAND_r4_30": "hcsi_p2b_button_k4_KO_RAND_r4_30_20261014_071302_3538235",
+    "KO_RAND_r4_31": "hcsi_p2b_button_k4_KO_RAND_r4_31_20261014_071642_3538235",
+    "KO_RAND_r4_32": "hcsi_p2b_button_k4_KO_RAND_r4_32_20261014_072022_3538235",
+    "KO_RAND_r4_33": "hcsi_p2b_button_k4_KO_RAND_r4_33_20261014_072403_3538235",
+    "KO_RAND_r4_34": "hcsi_p2b_button_k4_KO_RAND_r4_34_20261014_072744_3538235",
+    "KO_RAND_r4_35": "hcsi_p2b_button_k4_KO_RAND_r4_35_20261014_073125_3538235",
+    "KO_RAND_r4_36": "hcsi_p2b_button_k4_KO_RAND_r4_36_20261014_073507_3538235",
+    "KO_RAND_r4_37": "hcsi_p2b_button_k4_KO_RAND_r4_37_20261014_073848_3538235",
+    "KO_RAND_r4_38": "hcsi_p2b_button_k4_KO_RAND_r4_38_20261014_074228_3538235",
+    "KO_RAND_r4_39": "hcsi_p2b_button_k4_KO_RAND_r4_39_20261014_074606_3538235",
+    "KO_RAND_r4_40": "hcsi_p2b_button_k4_KO_RAND_r4_40_20261014_074940_3538235",
+    "KO_RAND_r4_41": "hcsi_p2b_button_k4_KO_RAND_r4_41_20261014_075316_3538235",
+    "KO_RAND_r4_42": "hcsi_p2b_button_k4_KO_RAND_r4_42_20261014_075652_3538235",
+    "KO_RAND_r4_43": "hcsi_p2b_button_k4_KO_RAND_r4_43_20261014_080030_3538235",
+    "KO_RAND_r4_44": "hcsi_p2b_button_k4_KO_RAND_r4_44_20261014_080409_3538235",
+    "KO_RAND_r4_45": "hcsi_p2b_button_k4_KO_RAND_r4_45_20261014_080755_3538235",
+    "KO_RAND_r4_46": "hcsi_p2b_button_k4_KO_RAND_r4_46_20261014_081142_3538235",
+    "KO_RAND_r4_47": "hcsi_p2b_button_k4_KO_RAND_r4_47_20261014_081520_3538235",
+    "KO_RAND_r4_48": "hcsi_p2b_button_k4_KO_RAND_r4_48_20261014_081857_3538235",
+    "KO_RAND_r4_49": "hcsi_p2b_button_k4_KO_RAND_r4_49_20261014_082233_3538235",
+    "KO_RAND_r4_50": "hcsi_p2b_button_k4_KO_RAND_r4_50_20261014_082610_3538235",
+    "KO_RAND_r4_51": "hcsi_p2b_button_k4_KO_RAND_r4_51_20261014_082947_3538235",
+    "KO_RAND_r4_52": "hcsi_p2b_button_k4_KO_RAND_r4_52_20261014_083324_3538235",
+    "KO_RAND_r4_53": "hcsi_p2b_button_k4_KO_RAND_r4_53_20261014_083701_3538235",
+    "KO_RAND_r4_54": "hcsi_p2b_button_k4_KO_RAND_r4_54_20261014_084040_3538235",
+    "KO_RAND_r4_55": "hcsi_p2b_button_k4_KO_RAND_r4_55_20261014_084420_3538235",
+    "KO_RAND_r4_56": "hcsi_p2b_button_k4_KO_RAND_r4_56_20261014_084819_3538235",
+    "KO_RAND_r4_57": "hcsi_p2b_button_k4_KO_RAND_r4_57_20261014_085301_3538235",
+    "KO_RAND_r4_58": "hcsi_p2b_button_k4_KO_RAND_r4_58_20261014_085839_3538235",
+    "KO_RAND_r4_59": "hcsi_p2b_button_k4_KO_RAND_r4_59_20261014_090407_3538235",
+    "KO_RAND_r4_60": "hcsi_p2b_button_k4_KO_RAND_r4_60_20261014_090938_3538235",
+    "KO_SHUF_r4_0": "hcsi_p2b_button_k4_KO_SHUF_r4_0_20261014_040901_3538235",
+    "KO_SHUF_r4_1": "hcsi_p2b_button_k4_KO_SHUF_r4_1_20261014_041245_3538235",
+    "KO_SHUF_r4_2": "hcsi_p2b_button_k4_KO_SHUF_r4_2_20261014_041631_3538235",
+    "KO_SHUF_r4_3": "hcsi_p2b_button_k4_KO_SHUF_r4_3_20261014_042016_3538235",
+    "KO_SHUF_r4_4": "hcsi_p2b_button_k4_KO_SHUF_r4_4_20261014_042402_3538235",
+    "KO_DER_r4_0": "hcsi_p2b_button_k4_KO_DER_r4_0_20261014_042746_3538235",
+    "KO_DER_r4_1": "hcsi_p2b_button_k4_KO_DER_r4_1_20261014_043127_3538235",
+    "KO_DER_r4_2": "hcsi_p2b_button_k4_KO_DER_r4_2_20261014_043506_3538235",
+    "KO_DER_r4_3": "hcsi_p2b_button_k4_KO_DER_r4_3_20261014_043846_3538235",
+    "KO_DER_r4_4": "hcsi_p2b_button_k4_KO_DER_r4_4_20261014_044225_3538235",
+    "KO_DER_r4_5": "hcsi_p2b_button_k4_KO_DER_r4_5_20261014_044604_3538235",
+    "KO_DER_r4_6": "hcsi_p2b_button_k4_KO_DER_r4_6_20261014_044943_3538235",
+    "KO_DER_r4_7": "hcsi_p2b_button_k4_KO_DER_r4_7_20261014_045321_3538235",
+    "KO_DER_r4_8": "hcsi_p2b_button_k4_KO_DER_r4_8_20261014_045659_3538235",
+    "KO_DER_r4_9": "hcsi_p2b_button_k4_KO_DER_r4_9_20261014_050039_3538235",
+    "KO_DER_r4_10": "hcsi_p2b_button_k4_KO_DER_r4_10_20261014_050420_3538235",
+    "KO_DER_r4_11": "hcsi_p2b_button_k4_KO_DER_r4_11_20261014_050801_3538235",
+    "KO_DER_r4_12": "hcsi_p2b_button_k4_KO_DER_r4_12_20261014_051138_3538235",
+    "KO_DER_r4_13": "hcsi_p2b_button_k4_KO_DER_r4_13_20261014_051516_3538235",
+    "KO_DER_r4_14": "hcsi_p2b_button_k4_KO_DER_r4_14_20261014_051855_3538235"
+   },
+   "fraction_of_BASE_minus_KO_restored": {
+    "KO_CAND_r4": {
+     "status": "ok",
+     "point": 0.794,
+     "ci95": [
+      0.7364,
+      0.855
+     ],
+     "numerator_point": 0.16957,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_CWONLY_r4": {
+     "status": "ok",
+     "point": 0.7851,
+     "ci95": [
+      0.737,
+      0.8296
+     ],
+     "numerator_point": 0.16768,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_ATLAST_r4": {
+     "status": "ok",
+     "point": 0.0081,
+     "ci95": [
+      0.0022,
+      0.0141
+     ],
+     "numerator_point": 0.00173,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_NEUT_r4": {
+     "status": "ok",
+     "point": 0.8314,
+     "ci95": [
+      0.7494,
+      0.9271
+     ],
+     "numerator_point": 0.17756,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_0": {
+     "status": "ok",
+     "point": -0.0982,
+     "ci95": [
+      -0.1384,
+      -0.0601
+     ],
+     "numerator_point": -0.02097,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_1": {
+     "status": "ok",
+     "point": -0.3125,
+     "ci95": [
+      -0.3738,
+      -0.2553
+     ],
+     "numerator_point": -0.06674,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_2": {
+     "status": "ok",
+     "point": -0.1421,
+     "ci95": [
+      -0.182,
+      -0.1051
+     ],
+     "numerator_point": -0.03034,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_3": {
+     "status": "ok",
+     "point": 0.0074,
+     "ci95": [
+      -0.0262,
+      0.0417
+     ],
+     "numerator_point": 0.00159,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_4": {
+     "status": "ok",
+     "point": 0.0487,
+     "ci95": [
+      0.0171,
+      0.0868
+     ],
+     "numerator_point": 0.01039,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_5": {
+     "status": "ok",
+     "point": -0.1913,
+     "ci95": [
+      -0.236,
+      -0.1477
+     ],
+     "numerator_point": -0.04086,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_6": {
+     "status": "ok",
+     "point": -0.0016,
+     "ci95": [
+      -0.0425,
+      0.036
+     ],
+     "numerator_point": -0.00034,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_7": {
+     "status": "ok",
+     "point": -0.0027,
+     "ci95": [
+      -0.0466,
+      0.041
+     ],
+     "numerator_point": -0.00057,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_8": {
+     "status": "ok",
+     "point": -0.2048,
+     "ci95": [
+      -0.2456,
+      -0.1668
+     ],
+     "numerator_point": -0.04374,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_9": {
+     "status": "ok",
+     "point": 0.0688,
+     "ci95": [
+      0.035,
+      0.1006
+     ],
+     "numerator_point": 0.0147,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_10": {
+     "status": "ok",
+     "point": -0.2645,
+     "ci95": [
+      -0.3086,
+      -0.2227
+     ],
+     "numerator_point": -0.05649,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_11": {
+     "status": "ok",
+     "point": -0.061,
+     "ci95": [
+      -0.0938,
+      -0.0285
+     ],
+     "numerator_point": -0.01302,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_12": {
+     "status": "ok",
+     "point": -0.0307,
+     "ci95": [
+      -0.0692,
+      0.0062
+     ],
+     "numerator_point": -0.00655,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_13": {
+     "status": "ok",
+     "point": -0.1141,
+     "ci95": [
+      -0.1608,
+      -0.0707
+     ],
+     "numerator_point": -0.02438,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_14": {
+     "status": "ok",
+     "point": 0.1767,
+     "ci95": [
+      0.1436,
+      0.2127
+     ],
+     "numerator_point": 0.03775,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_15": {
+     "status": "ok",
+     "point": -0.0254,
+     "ci95": [
+      -0.0637,
+      0.0081
+     ],
+     "numerator_point": -0.00543,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_16": {
+     "status": "ok",
+     "point": 0.0487,
+     "ci95": [
+      0.0102,
+      0.0864
+     ],
+     "numerator_point": 0.0104,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_17": {
+     "status": "ok",
+     "point": -0.0245,
+     "ci95": [
+      -0.0537,
+      0.003
+     ],
+     "numerator_point": -0.00524,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_18": {
+     "status": "ok",
+     "point": 0.0504,
+     "ci95": [
+      0.0147,
+      0.0844
+     ],
+     "numerator_point": 0.01077,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_19": {
+     "status": "ok",
+     "point": 0.1905,
+     "ci95": [
+      0.1508,
+      0.2336
+     ],
+     "numerator_point": 0.04068,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_20": {
+     "status": "ok",
+     "point": -0.1,
+     "ci95": [
+      -0.1319,
+      -0.0679
+     ],
+     "numerator_point": -0.02136,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_21": {
+     "status": "ok",
+     "point": 0.0471,
+     "ci95": [
+      0.0127,
+      0.0808
+     ],
+     "numerator_point": 0.01007,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_22": {
+     "status": "ok",
+     "point": -0.2138,
+     "ci95": [
+      -0.2558,
+      -0.1743
+     ],
+     "numerator_point": -0.04566,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_23": {
+     "status": "ok",
+     "point": -0.1383,
+     "ci95": [
+      -0.1795,
+      -0.1019
+     ],
+     "numerator_point": -0.02954,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_24": {
+     "status": "ok",
+     "point": 0.1028,
+     "ci95": [
+      0.067,
+      0.1407
+     ],
+     "numerator_point": 0.02195,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_25": {
+     "status": "ok",
+     "point": 0.0077,
+     "ci95": [
+      -0.029,
+      0.0419
+     ],
+     "numerator_point": 0.00165,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_26": {
+     "status": "ok",
+     "point": 0.0397,
+     "ci95": [
+      0.0062,
+      0.0728
+     ],
+     "numerator_point": 0.00848,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_27": {
+     "status": "ok",
+     "point": 0.0749,
+     "ci95": [
+      0.0428,
+      0.1098
+     ],
+     "numerator_point": 0.016,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_28": {
+     "status": "ok",
+     "point": 0.0809,
+     "ci95": [
+      0.0403,
+      0.1203
+     ],
+     "numerator_point": 0.01729,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_29": {
+     "status": "ok",
+     "point": 0.0944,
+     "ci95": [
+      0.0534,
+      0.1381
+     ],
+     "numerator_point": 0.02017,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_30": {
+     "status": "ok",
+     "point": 0.012,
+     "ci95": [
+      -0.0283,
+      0.0505
+     ],
+     "numerator_point": 0.00256,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_31": {
+     "status": "ok",
+     "point": 0.1005,
+     "ci95": [
+      0.0649,
+      0.1407
+     ],
+     "numerator_point": 0.02147,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_32": {
+     "status": "ok",
+     "point": -0.0852,
+     "ci95": [
+      -0.126,
+      -0.0476
+     ],
+     "numerator_point": -0.01821,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_33": {
+     "status": "ok",
+     "point": -0.1495,
+     "ci95": [
+      -0.1869,
+      -0.1142
+     ],
+     "numerator_point": -0.03194,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_34": {
+     "status": "ok",
+     "point": 0.0907,
+     "ci95": [
+      0.0561,
+      0.1254
+     ],
+     "numerator_point": 0.01937,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_35": {
+     "status": "ok",
+     "point": -0.0685,
+     "ci95": [
+      -0.1071,
+      -0.0315
+     ],
+     "numerator_point": -0.01463,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_36": {
+     "status": "ok",
+     "point": 0.0446,
+     "ci95": [
+      0.0075,
+      0.0858
+     ],
+     "numerator_point": 0.00954,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_37": {
+     "status": "ok",
+     "point": 0.0789,
+     "ci95": [
+      0.0481,
+      0.1091
+     ],
+     "numerator_point": 0.01684,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_38": {
+     "status": "ok",
+     "point": -0.0275,
+     "ci95": [
+      -0.0717,
+      0.0171
+     ],
+     "numerator_point": -0.00588,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_39": {
+     "status": "ok",
+     "point": -0.1181,
+     "ci95": [
+      -0.1578,
+      -0.0806
+     ],
+     "numerator_point": -0.02523,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_40": {
+     "status": "ok",
+     "point": 0.0803,
+     "ci95": [
+      0.0412,
+      0.1255
+     ],
+     "numerator_point": 0.01714,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_41": {
+     "status": "ok",
+     "point": -0.0542,
+     "ci95": [
+      -0.0949,
+      -0.016
+     ],
+     "numerator_point": -0.01157,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_42": {
+     "status": "ok",
+     "point": 0.0621,
+     "ci95": [
+      0.0181,
+      0.1048
+     ],
+     "numerator_point": 0.01325,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_43": {
+     "status": "ok",
+     "point": -0.276,
+     "ci95": [
+      -0.3236,
+      -0.232
+     ],
+     "numerator_point": -0.05894,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_44": {
+     "status": "ok",
+     "point": 0.0827,
+     "ci95": [
+      0.0495,
+      0.1171
+     ],
+     "numerator_point": 0.01767,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_45": {
+     "status": "ok",
+     "point": 0.0745,
+     "ci95": [
+      0.0367,
+      0.1115
+     ],
+     "numerator_point": 0.01592,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_46": {
+     "status": "ok",
+     "point": 0.2159,
+     "ci95": [
+      0.1818,
+      0.2539
+     ],
+     "numerator_point": 0.04612,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_47": {
+     "status": "ok",
+     "point": -0.2831,
+     "ci95": [
+      -0.3333,
+      -0.2354
+     ],
+     "numerator_point": -0.06046,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_48": {
+     "status": "ok",
+     "point": 0.1466,
+     "ci95": [
+      0.1179,
+      0.1791
+     ],
+     "numerator_point": 0.0313,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_49": {
+     "status": "ok",
+     "point": 0.0962,
+     "ci95": [
+      0.0601,
+      0.1354
+     ],
+     "numerator_point": 0.02055,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_50": {
+     "status": "ok",
+     "point": 0.0557,
+     "ci95": [
+      0.0206,
+      0.0933
+     ],
+     "numerator_point": 0.01189,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_51": {
+     "status": "ok",
+     "point": -0.0959,
+     "ci95": [
+      -0.1331,
+      -0.0647
+     ],
+     "numerator_point": -0.02048,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_52": {
+     "status": "ok",
+     "point": 0.1534,
+     "ci95": [
+      0.1234,
+      0.1857
+     ],
+     "numerator_point": 0.03276,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_53": {
+     "status": "ok",
+     "point": 0.0669,
+     "ci95": [
+      0.0324,
+      0.1031
+     ],
+     "numerator_point": 0.01429,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_54": {
+     "status": "ok",
+     "point": -0.0826,
+     "ci95": [
+      -0.1149,
+      -0.0501
+     ],
+     "numerator_point": -0.01763,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_55": {
+     "status": "ok",
+     "point": -0.0444,
+     "ci95": [
+      -0.0861,
+      -0.0049
+     ],
+     "numerator_point": -0.00947,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_56": {
+     "status": "ok",
+     "point": -0.1406,
+     "ci95": [
+      -0.1788,
+      -0.1048
+     ],
+     "numerator_point": -0.03004,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_57": {
+     "status": "ok",
+     "point": -0.178,
+     "ci95": [
+      -0.2192,
+      -0.1413
+     ],
+     "numerator_point": -0.03801,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_58": {
+     "status": "ok",
+     "point": 0.0495,
+     "ci95": [
+      0.013,
+      0.0891
+     ],
+     "numerator_point": 0.01056,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_59": {
+     "status": "ok",
+     "point": 0.003,
+     "ci95": [
+      -0.0303,
+      0.0361
+     ],
+     "numerator_point": 0.00064,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_RAND_r4_60": {
+     "status": "ok",
+     "point": 0.0322,
+     "ci95": [
+      -0.0006,
+      0.0679
+     ],
+     "numerator_point": 0.00687,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_SHUF_r4_0": {
+     "status": "ok",
+     "point": 0.7586,
+     "ci95": [
+      0.6785,
+      0.8448
+     ],
+     "numerator_point": 0.16201,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_SHUF_r4_1": {
+     "status": "ok",
+     "point": 0.6759,
+     "ci95": [
+      0.5957,
+      0.7606
+     ],
+     "numerator_point": 0.14435,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_SHUF_r4_2": {
+     "status": "ok",
+     "point": 0.7297,
+     "ci95": [
+      0.653,
+      0.8135
+     ],
+     "numerator_point": 0.15585,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_SHUF_r4_3": {
+     "status": "ok",
+     "point": 0.6417,
+     "ci95": [
+      0.5634,
+      0.7225
+     ],
+     "numerator_point": 0.13704,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_SHUF_r4_4": {
+     "status": "ok",
+     "point": 0.7294,
+     "ci95": [
+      0.6507,
+      0.8163
+     ],
+     "numerator_point": 0.15579,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r4_0": {
+     "status": "ok",
+     "point": 0.8842,
+     "ci95": [
+      0.808,
+      0.9661
+     ],
+     "numerator_point": 0.18885,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r4_1": {
+     "status": "ok",
+     "point": 0.8589,
+     "ci95": [
+      0.7853,
+      0.9335
+     ],
+     "numerator_point": 0.18344,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r4_2": {
+     "status": "ok",
+     "point": 0.8554,
+     "ci95": [
+      0.7862,
+      0.9275
+     ],
+     "numerator_point": 0.18269,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r4_3": {
+     "status": "ok",
+     "point": 0.9333,
+     "ci95": [
+      0.8629,
+      1.0126
+     ],
+     "numerator_point": 0.19932,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r4_4": {
+     "status": "ok",
+     "point": 0.8042,
+     "ci95": [
+      0.7345,
+      0.8788
+     ],
+     "numerator_point": 0.17177,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r4_5": {
+     "status": "ok",
+     "point": 0.9157,
+     "ci95": [
+      0.8387,
+      0.9965
+     ],
+     "numerator_point": 0.19557,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r4_6": {
+     "status": "ok",
+     "point": 0.8626,
+     "ci95": [
+      0.7905,
+      0.94
+     ],
+     "numerator_point": 0.18423,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r4_7": {
+     "status": "ok",
+     "point": 0.8495,
+     "ci95": [
+      0.7771,
+      0.9246
+     ],
+     "numerator_point": 0.18144,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r4_8": {
+     "status": "ok",
+     "point": 0.7922,
+     "ci95": [
+      0.7168,
+      0.8729
+     ],
+     "numerator_point": 0.16919,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r4_9": {
+     "status": "ok",
+     "point": 0.8039,
+     "ci95": [
+      0.7331,
+      0.8788
+     ],
+     "numerator_point": 0.1717,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r4_10": {
+     "status": "ok",
+     "point": 0.8343,
+     "ci95": [
+      0.7607,
+      0.912
+     ],
+     "numerator_point": 0.17819,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r4_11": {
+     "status": "ok",
+     "point": 0.8044,
+     "ci95": [
+      0.7349,
+      0.8765
+     ],
+     "numerator_point": 0.1718,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r4_12": {
+     "status": "ok",
+     "point": 0.9141,
+     "ci95": [
+      0.8372,
+      0.9931
+     ],
+     "numerator_point": 0.19523,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r4_13": {
+     "status": "ok",
+     "point": 0.7515,
+     "ci95": [
+      0.6835,
+      0.8232
+     ],
+     "numerator_point": 0.1605,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_DER_r4_14": {
+     "status": "ok",
+     "point": 0.8028,
+     "ci95": [
+      0.7263,
+      0.8854
+     ],
+     "numerator_point": 0.17147,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    }
+   },
+   "CAND_minus_mean_DER": {
+    "point": -0.01079,
+    "ci95": [
+     -0.01878,
+     -0.00325
+    ]
+   },
+   "CAND_minus_KO_ci": {
+    "point": 0.16957,
+    "ci95": [
+     0.14947,
+     0.18938
+    ]
+   },
+   "preservation": {
+    "BASE_CAND_minus_BASE_y": -0.00352,
+    "mean_option_mass_change": -0.00264
+   },
+   "rank_test_CWONLY_vs_cw_family": {
+    "rank": 13,
+    "of": 77,
+    "p": 0.16883116883116883,
+    "floor": 0.012987012987012988,
+    "n_controls": 76
+   },
+   "run_dirs_cw_family": {
+    "KO_CWRAND_r4_0": "hcsi_p2b_button_k4_KO_CWRAND_r4_0_20261014_091525_3538235",
+    "KO_CWRAND_r4_1": "hcsi_p2b_button_k4_KO_CWRAND_r4_1_20261014_092129_3538235",
+    "KO_CWRAND_r4_2": "hcsi_p2b_button_k4_KO_CWRAND_r4_2_20261014_092726_3538235",
+    "KO_CWRAND_r4_3": "hcsi_p2b_button_k4_KO_CWRAND_r4_3_20261014_093325_3538235",
+    "KO_CWRAND_r4_4": "hcsi_p2b_button_k4_KO_CWRAND_r4_4_20261014_093925_3538235",
+    "KO_CWRAND_r4_5": "hcsi_p2b_button_k4_KO_CWRAND_r4_5_20261014_094529_3538235",
+    "KO_CWRAND_r4_6": "hcsi_p2b_button_k4_KO_CWRAND_r4_6_20261014_095123_3538235",
+    "KO_CWRAND_r4_7": "hcsi_p2b_button_k4_KO_CWRAND_r4_7_20261014_095720_3538235",
+    "KO_CWRAND_r4_8": "hcsi_p2b_button_k4_KO_CWRAND_r4_8_20261014_100319_3538235",
+    "KO_CWRAND_r4_9": "hcsi_p2b_button_k4_KO_CWRAND_r4_9_20261014_100912_3538235",
+    "KO_CWRAND_r4_10": "hcsi_p2b_button_k4_KO_CWRAND_r4_10_20261014_101501_3538235",
+    "KO_CWRAND_r4_11": "hcsi_p2b_button_k4_KO_CWRAND_r4_11_20261014_102054_3538235",
+    "KO_CWRAND_r4_12": "hcsi_p2b_button_k4_KO_CWRAND_r4_12_20261014_102650_3538235",
+    "KO_CWRAND_r4_13": "hcsi_p2b_button_k4_KO_CWRAND_r4_13_20261014_103229_3538235",
+    "KO_CWRAND_r4_14": "hcsi_p2b_button_k4_KO_CWRAND_r4_14_20261014_103813_3538235",
+    "KO_CWRAND_r4_15": "hcsi_p2b_button_k4_KO_CWRAND_r4_15_20261014_104409_3538235",
+    "KO_CWRAND_r4_16": "hcsi_p2b_button_k4_KO_CWRAND_r4_16_20261014_104943_3538235",
+    "KO_CWRAND_r4_17": "hcsi_p2b_button_k4_KO_CWRAND_r4_17_20261014_105425_3538235",
+    "KO_CWRAND_r4_18": "hcsi_p2b_button_k4_KO_CWRAND_r4_18_20261014_105906_3538235",
+    "KO_CWRAND_r4_19": "hcsi_p2b_button_k4_KO_CWRAND_r4_19_20261014_110348_3538235",
+    "KO_CWRAND_r4_20": "hcsi_p2b_button_k4_KO_CWRAND_r4_20_20261014_110834_3538235",
+    "KO_CWRAND_r4_21": "hcsi_p2b_button_k4_KO_CWRAND_r4_21_20261014_111257_3538235",
+    "KO_CWRAND_r4_22": "hcsi_p2b_button_k4_KO_CWRAND_r4_22_20261014_111705_3538235",
+    "KO_CWRAND_r4_23": "hcsi_p2b_button_k4_KO_CWRAND_r4_23_20261014_112114_3538235",
+    "KO_CWRAND_r4_24": "hcsi_p2b_button_k4_KO_CWRAND_r4_24_20261014_112520_3538235",
+    "KO_CWRAND_r4_25": "hcsi_p2b_button_k4_KO_CWRAND_r4_25_20261014_112930_3538235",
+    "KO_CWRAND_r4_26": "hcsi_p2b_button_k4_KO_CWRAND_r4_26_20261014_113345_3538235",
+    "KO_CWRAND_r4_27": "hcsi_p2b_button_k4_KO_CWRAND_r4_27_20261014_113802_3538235",
+    "KO_CWRAND_r4_28": "hcsi_p2b_button_k4_KO_CWRAND_r4_28_20261014_114212_3538235",
+    "KO_CWRAND_r4_29": "hcsi_p2b_button_k4_KO_CWRAND_r4_29_20261014_114620_3538235",
+    "KO_CWRAND_r4_30": "hcsi_p2b_button_k4_KO_CWRAND_r4_30_20261014_115027_3538235",
+    "KO_CWRAND_r4_31": "hcsi_p2b_button_k4_KO_CWRAND_r4_31_20261014_115436_3538235",
+    "KO_CWRAND_r4_32": "hcsi_p2b_button_k4_KO_CWRAND_r4_32_20261014_115848_3538235",
+    "KO_CWRAND_r4_33": "hcsi_p2b_button_k4_KO_CWRAND_r4_33_20261014_120258_3538235",
+    "KO_CWRAND_r4_34": "hcsi_p2b_button_k4_KO_CWRAND_r4_34_20261014_120705_3538235",
+    "KO_CWRAND_r4_35": "hcsi_p2b_button_k4_KO_CWRAND_r4_35_20261014_121113_3538235",
+    "KO_CWRAND_r4_36": "hcsi_p2b_button_k4_KO_CWRAND_r4_36_20261014_121520_3538235",
+    "KO_CWRAND_r4_37": "hcsi_p2b_button_k4_KO_CWRAND_r4_37_20261014_121931_3538235",
+    "KO_CWRAND_r4_38": "hcsi_p2b_button_k4_KO_CWRAND_r4_38_20261014_122350_3538235",
+    "KO_CWRAND_r4_39": "hcsi_p2b_button_k4_KO_CWRAND_r4_39_20261014_122802_3538235",
+    "KO_CWRAND_r4_40": "hcsi_p2b_button_k4_KO_CWRAND_r4_40_20261014_123222_3538235",
+    "KO_CWRAND_r4_41": "hcsi_p2b_button_k4_KO_CWRAND_r4_41_20261014_123643_3538235",
+    "KO_CWRAND_r4_42": "hcsi_p2b_button_k4_KO_CWRAND_r4_42_20261014_124118_3538235",
+    "KO_CWRAND_r4_43": "hcsi_p2b_button_k4_KO_CWRAND_r4_43_20261014_124538_3538235",
+    "KO_CWRAND_r4_44": "hcsi_p2b_button_k4_KO_CWRAND_r4_44_20261014_124958_3538235",
+    "KO_CWRAND_r4_45": "hcsi_p2b_button_k4_KO_CWRAND_r4_45_20261014_125415_3538235",
+    "KO_CWRAND_r4_46": "hcsi_p2b_button_k4_KO_CWRAND_r4_46_20261014_125829_3538235",
+    "KO_CWRAND_r4_47": "hcsi_p2b_button_k4_KO_CWRAND_r4_47_20261014_130246_3538235",
+    "KO_CWRAND_r4_48": "hcsi_p2b_button_k4_KO_CWRAND_r4_48_20261014_130654_3538235",
+    "KO_CWRAND_r4_49": "hcsi_p2b_button_k4_KO_CWRAND_r4_49_20261014_131058_3538235",
+    "KO_CWRAND_r4_50": "hcsi_p2b_button_k4_KO_CWRAND_r4_50_20261014_131509_3538235",
+    "KO_CWRAND_r4_51": "hcsi_p2b_button_k4_KO_CWRAND_r4_51_20261014_131921_3538235",
+    "KO_CWRAND_r4_52": "hcsi_p2b_button_k4_KO_CWRAND_r4_52_20261014_132332_3538235",
+    "KO_CWRAND_r4_53": "hcsi_p2b_button_k4_KO_CWRAND_r4_53_20261014_132731_3538235",
+    "KO_CWRAND_r4_54": "hcsi_p2b_button_k4_KO_CWRAND_r4_54_20261014_133131_3538235",
+    "KO_CWRAND_r4_55": "hcsi_p2b_button_k4_KO_CWRAND_r4_55_20261014_133536_3538235",
+    "KO_CWRAND_r4_56": "hcsi_p2b_button_k4_KO_CWRAND_r4_56_20261014_133941_3538235",
+    "KO_CWRAND_r4_57": "hcsi_p2b_button_k4_KO_CWRAND_r4_57_20261014_134345_3538235",
+    "KO_CWRAND_r4_58": "hcsi_p2b_button_k4_KO_CWRAND_r4_58_20261014_134750_3538235",
+    "KO_CWRAND_r4_59": "hcsi_p2b_button_k4_KO_CWRAND_r4_59_20261014_135153_3538235",
+    "KO_CWRAND_r4_60": "hcsi_p2b_button_k4_KO_CWRAND_r4_60_20261014_135557_3538235",
+    "KO_CWDER_r4_0": "hcsi_p2b_button_k4_KO_CWDER_r4_0_20261014_140000_3538235",
+    "KO_CWDER_r4_1": "hcsi_p2b_button_k4_KO_CWDER_r4_1_20261014_140406_3538235",
+    "KO_CWDER_r4_2": "hcsi_p2b_button_k4_KO_CWDER_r4_2_20261014_140810_3538235",
+    "KO_CWDER_r4_3": "hcsi_p2b_button_k4_KO_CWDER_r4_3_20261014_141210_3538235",
+    "KO_CWDER_r4_4": "hcsi_p2b_button_k4_KO_CWDER_r4_4_20261014_141612_3538235",
+    "KO_CWDER_r4_5": "hcsi_p2b_button_k4_KO_CWDER_r4_5_20261014_142021_3538235",
+    "KO_CWDER_r4_6": "hcsi_p2b_button_k4_KO_CWDER_r4_6_20261014_142422_3538235",
+    "KO_CWDER_r4_7": "hcsi_p2b_button_k4_KO_CWDER_r4_7_20261014_142824_3538235",
+    "KO_CWDER_r4_8": "hcsi_p2b_button_k4_KO_CWDER_r4_8_20261014_143225_3538235",
+    "KO_CWDER_r4_9": "hcsi_p2b_button_k4_KO_CWDER_r4_9_20261014_143646_3538235",
+    "KO_CWDER_r4_10": "hcsi_p2b_button_k4_KO_CWDER_r4_10_20261014_144055_3538235",
+    "KO_CWDER_r4_11": "hcsi_p2b_button_k4_KO_CWDER_r4_11_20261014_144507_3538235",
+    "KO_CWDER_r4_12": "hcsi_p2b_button_k4_KO_CWDER_r4_12_20261014_144918_3538235",
+    "KO_CWDER_r4_13": "hcsi_p2b_button_k4_KO_CWDER_r4_13_20261014_145321_3538235",
+    "KO_CWDER_r4_14": "hcsi_p2b_button_k4_KO_CWDER_r4_14_20261014_145723_3538235"
+   },
+   "rank_test_CWONLY_without_collapsed_controls": {
+    "rank": 13,
+    "of": 77,
+    "p": 0.16883116883116883,
+    "floor": 0.012987012987012988,
+    "n_controls": 76
+   },
+   "recovery_CWONLY_secondary": {
+    "status": "ok",
+    "point": 1.5376,
+    "ci95": [
+     1.428,
+     1.669
+    ],
+    "numerator_point": 0.16768,
+    "denominator_point": 0.10905,
+    "n_domains_with_movement": 67,
+    "draws_dropped": 0
+   },
+   "n_keys_secondary": 239,
+   "addon": {
+    "n_keys": 239,
+    "median_option_mass": {
+     "KO_MEANBIAS": 3.0574819902540185e-06,
+     "KO_CWMEANBIAS": 0.531948983669281,
+     "BASE_MEANBIAS": 3.6094306778977625e-06,
+     "KO_DERRAW_r4_0": 0.49687620997428894,
+     "KO_DERRAW_r4_1": 0.48779216408729553,
+     "KO_DERRAW_r4_2": 0.4918166995048523,
+     "KO_DERRAW_r4_3": 0.4612782895565033,
+     "KO_DERRAW_r4_4": 0.48661965131759644,
+     "KO_DERRAW_r4_5": 0.4848349690437317,
+     "KO_DERRAW_r4_6": 0.4874654710292816,
+     "KO_DERRAW_r4_7": 0.5002080798149109,
+     "KO_DERRAW_r4_8": 0.49128204584121704,
+     "KO_DERRAW_r4_9": 0.5139196515083313,
+     "KO_DERRAW_r4_10": 0.5023557543754578,
+     "KO_DERRAW_r4_11": 0.5043007731437683,
+     "KO_DERRAW_r4_12": 0.502583920955658,
+     "KO_DERRAW_r4_13": 0.48721590638160706,
+     "KO_DERRAW_r4_14": 0.49457037448883057,
+     "KO_SHUFRAW_r4_0": 0.513159453868866,
+     "KO_SHUFRAW_r4_1": 0.5113210678100586,
+     "KO_SHUFRAW_r4_2": 0.543441891670227,
+     "KO_SHUFRAW_r4_3": 0.4996146261692047,
+     "KO_SHUFRAW_r4_4": 0.5534262657165527
+    },
+    "KO_MEANBIAS": {
+     "stat": 0.48444,
+     "recovery": {
+      "status": "ok",
+      "point": 4.4422,
+      "ci95": [
+       3.7027,
+       5.4487
+      ],
+      "numerator_point": 0.48444,
+      "denominator_point": 0.10905,
+      "n_domains_with_movement": 67,
+      "draws_dropped": 0
+     }
+    },
+    "KO_CWMEANBIAS": {
+     "stat": -0.00803,
+     "recovery": {
+      "status": "ok",
+      "point": -0.0736,
+      "ci95": [
+       -0.2869,
+       0.1185
+      ],
+      "numerator_point": -0.00803,
+      "denominator_point": 0.10905,
+      "n_domains_with_movement": 67,
+      "draws_dropped": 0
+     }
+    },
+    "BASE_MEANBIAS_minus_BASE_y": 0.27232,
+    "CAND_minus_MEANBIAS": {
+     "point": -0.31487,
+     "ci95": [
+      -0.37497,
+      -0.25952
+     ]
+    },
+    "CWONLY_minus_CWMEANBIAS": {
+     "point": 0.17571,
+     "ci95": [
+      0.15504,
+      0.19706
+     ]
+    },
+    "rank_test_DER_raw_norm": {
+     "rank": 16,
+     "of": 16,
+     "p": 1.0,
+     "floor": 0.0625,
+     "n_controls": 15
+    },
+    "rank_test_SHUF_raw_norm": {
+     "rank": 6,
+     "of": 6,
+     "p": 1.0,
+     "floor": 0.16666666666666666,
+     "n_controls": 5
+    },
+    "void": [
+     "KO_MEANBIAS: readout collapsed (median option mass 3.06e-06)"
+    ],
+    "run_dirs": {
+     "KO_MEANBIAS": "hcsi_p2b_button_k4_KO_MEANBIAS_20261014_151231_18603",
+     "KO_CWMEANBIAS": "hcsi_p2b_button_k4_KO_CWMEANBIAS_20261014_151617_18603",
+     "BASE_MEANBIAS": "hcsi_p2b_button_k4_BASE_MEANBIAS_20261014_152005_18603",
+     "KO_DERRAW_r4_0": "hcsi_p2b_button_k4_KO_DERRAW_r4_0_20261014_164604_18603",
+     "KO_DERRAW_r4_1": "hcsi_p2b_button_k4_KO_DERRAW_r4_1_20261014_164955_18603",
+     "KO_DERRAW_r4_2": "hcsi_p2b_button_k4_KO_DERRAW_r4_2_20261014_165346_18603",
+     "KO_DERRAW_r4_3": "hcsi_p2b_button_k4_KO_DERRAW_r4_3_20261014_165740_18603",
+     "KO_DERRAW_r4_4": "hcsi_p2b_button_k4_KO_DERRAW_r4_4_20261014_170132_18603",
+     "KO_DERRAW_r4_5": "hcsi_p2b_button_k4_KO_DERRAW_r4_5_20261014_170527_18603",
+     "KO_DERRAW_r4_6": "hcsi_p2b_button_k4_KO_DERRAW_r4_6_20261014_170914_18603",
+     "KO_DERRAW_r4_7": "hcsi_p2b_button_k4_KO_DERRAW_r4_7_20261014_171309_18603",
+     "KO_DERRAW_r4_8": "hcsi_p2b_button_k4_KO_DERRAW_r4_8_20261014_171707_18603",
+     "KO_DERRAW_r4_9": "hcsi_p2b_button_k4_KO_DERRAW_r4_9_20261014_172058_18603",
+     "KO_DERRAW_r4_10": "hcsi_p2b_button_k4_KO_DERRAW_r4_10_20261014_172446_18603",
+     "KO_DERRAW_r4_11": "hcsi_p2b_button_k4_KO_DERRAW_r4_11_20261014_172834_18603",
+     "KO_DERRAW_r4_12": "hcsi_p2b_button_k4_KO_DERRAW_r4_12_20261014_173228_18603",
+     "KO_DERRAW_r4_13": "hcsi_p2b_button_k4_KO_DERRAW_r4_13_20261014_173616_18603",
+     "KO_DERRAW_r4_14": "hcsi_p2b_button_k4_KO_DERRAW_r4_14_20261014_174007_18603",
+     "KO_SHUFRAW_r4_0": "hcsi_p2b_button_k4_KO_SHUFRAW_r4_0_20261014_174400_18603",
+     "KO_SHUFRAW_r4_1": "hcsi_p2b_button_k4_KO_SHUFRAW_r4_1_20261014_174755_18603",
+     "KO_SHUFRAW_r4_2": "hcsi_p2b_button_k4_KO_SHUFRAW_r4_2_20261014_175144_18603",
+     "KO_SHUFRAW_r4_3": "hcsi_p2b_button_k4_KO_SHUFRAW_r4_3_20261014_175530_18603",
+     "KO_SHUFRAW_r4_4": "hcsi_p2b_button_k4_KO_SHUFRAW_r4_4_20261014_175918_18603"
+    },
+    "arm_provenance": {
+     "KO_MEANBIAS": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_CWMEANBIAS": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "BASE_MEANBIAS": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r4_0": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r4_1": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r4_2": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r4_3": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r4_4": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r4_5": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r4_6": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r4_7": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r4_8": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r4_9": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r4_10": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r4_11": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r4_12": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r4_13": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_DERRAW_r4_14": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_SHUFRAW_r4_0": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_SHUFRAW_r4_1": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_SHUFRAW_r4_2": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_SHUFRAW_r4_3": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_SHUFRAW_r4_4": {
+      "job": "1036626",
+      "host": "n-501",
+      "gpu": "NVIDIA RTX A5000"
+     }
+    },
+    "BASE_MEANBIAS_collapsed": true,
+    "raw_arms_total_fro": {
+     "KO_DERRAW_r4_0": 66.148,
+     "KO_DERRAW_r4_1": 67.141,
+     "KO_DERRAW_r4_2": 63.8224,
+     "KO_DERRAW_r4_3": 67.3572,
+     "KO_DERRAW_r4_4": 65.6526,
+     "KO_DERRAW_r4_5": 65.5036,
+     "KO_DERRAW_r4_6": 64.2121,
+     "KO_DERRAW_r4_7": 64.3071,
+     "KO_DERRAW_r4_8": 63.3953,
+     "KO_DERRAW_r4_9": 67.0897,
+     "KO_DERRAW_r4_10": 64.516,
+     "KO_DERRAW_r4_11": 65.8154,
+     "KO_DERRAW_r4_12": 62.9237,
+     "KO_DERRAW_r4_13": 70.4223,
+     "KO_DERRAW_r4_14": 64.1662,
+     "KO_SHUFRAW_r4_0": 99.4723,
+     "KO_SHUFRAW_r4_1": 108.1353,
+     "KO_SHUFRAW_r4_2": 108.2937,
+     "KO_SHUFRAW_r4_3": 107.6832,
+     "KO_SHUFRAW_r4_4": 109.2149
+    },
+    "meanbias_sidecars": {
+     "KO_MEANBIAS": {
+      "kind": "bias",
+      "where": "all",
+      "hook_calls": 27872,
+      "bias_total_norm": 53.08124542236328
+     },
+     "KO_CWMEANBIAS": {
+      "kind": "bias",
+      "where": "cw",
+      "hook_calls": 27872,
+      "bias_total_norm": 53.08124542236328
+     },
+     "BASE_MEANBIAS": {
+      "kind": "bias",
+      "where": "all",
+      "hook_calls": 27872,
+      "bias_total_norm": 53.08124542236328
+     }
+    },
+    "input_conditional_wording_eligible_on_this_split": false,
+    "CAND_minus_CWMEANBIAS": {
+     "point": 0.1776,
+     "ci95": [
+      0.15531,
+      0.2007
+     ]
+    },
+    "wording_rule": "only ever True on split=validation; 'input-conditional' requires CAND beats BOTH KO_MEANBIAS and KO_CWMEANBIAS (CI-lo>0) on VALIDATION, and is suspended if either comparator is VOID/collapsed (amendment 4)"
+   },
+   "neut_position": {
+    "n_keys": 239,
+    "void": [],
+    "descriptive_only": true,
+    "run_dirs": {
+     "KO_NEUT_CWONLY_r4": "hcsi_p2b_button_k4_KO_NEUT_CWONLY_r4_20261014_185711_2601991",
+     "KO_NEUT_ATLAST_r4": "hcsi_p2b_button_k4_KO_NEUT_ATLAST_r4_20261014_190055_2601991"
+    },
+    "arm_provenance": {
+     "KO_NEUT_CWONLY_r4": {
+      "job": "1040124",
+      "host": "n-503",
+      "gpu": "NVIDIA RTX A5000"
+     },
+     "KO_NEUT_ATLAST_r4": {
+      "job": "1040124",
+      "host": "n-503",
+      "gpu": "NVIDIA RTX A5000"
+     }
+    },
+    "median_option_mass": {
+     "KO_NEUT_CWONLY_r4": 0.531704843044281,
+     "KO_NEUT_ATLAST_r4": 0.5544657707214355
+    },
+    "positions_tokens": {
+     "KO_NEUT_CWONLY_r4": [
+      " button"
+     ],
+     "KO_NEUT_ATLAST_r4": [
+      "\n\n"
+     ]
+    },
+    "KO_NEUT_CWONLY_r4_minus_KO": {
+     "point": 0.01735,
+     "ci95": [
+      0.01494,
+      0.02002
+     ]
+    },
+    "KO_NEUT_CWONLY_r4_frac_BASE_minus_KO": {
+     "status": "ok",
+     "point": 0.0812,
+     "ci95": [
+      0.0706,
+      0.0926
+     ],
+     "numerator_point": 0.01735,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_NEUT_ATLAST_r4_minus_KO": {
+     "point": 0.01263,
+     "ci95": [
+      0.01059,
+      0.01474
+     ]
+    },
+    "KO_NEUT_ATLAST_r4_frac_BASE_minus_KO": {
+     "status": "ok",
+     "point": 0.0591,
+     "ci95": [
+      0.0498,
+      0.0692
+     ],
+     "numerator_point": 0.01263,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_NEUT_r4_minus_KO": {
+     "point": 0.17756,
+     "ci95": [
+      0.15599,
+      0.20064
+     ]
+    },
+    "KO_NEUT_r4_frac_BASE_minus_KO": {
+     "status": "ok",
+     "point": 0.8314,
+     "ci95": [
+      0.7494,
+      0.9271
+     ],
+     "numerator_point": 0.17756,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_CAND_r4_minus_KO": {
+     "point": 0.16957,
+     "ci95": [
+      0.14999,
+      0.18984
+     ]
+    },
+    "KO_CAND_r4_frac_BASE_minus_KO": {
+     "status": "ok",
+     "point": 0.794,
+     "ci95": [
+      0.7364,
+      0.855
+     ],
+     "numerator_point": 0.16957,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_CWONLY_r4_minus_KO": {
+     "point": 0.16768,
+     "ci95": [
+      0.1483,
+      0.18681
+     ]
+    },
+    "KO_CWONLY_r4_frac_BASE_minus_KO": {
+     "status": "ok",
+     "point": 0.7851,
+     "ci95": [
+      0.737,
+      0.8296
+     ],
+     "numerator_point": 0.16768,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    },
+    "KO_ATLAST_r4_minus_KO": {
+     "point": 0.00173,
+     "ci95": [
+      0.00048,
+      0.00302
+     ]
+    },
+    "KO_ATLAST_r4_frac_BASE_minus_KO": {
+     "status": "ok",
+     "point": 0.0081,
+     "ci95": [
+      0.0022,
+      0.0141
+     ],
+     "numerator_point": 0.00173,
+     "denominator_point": 0.21358,
+     "n_domains_with_movement": 67,
+     "draws_dropped": 0
+    }
+   },
+   "arm_provenance": {
+    "BASE": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_FULL": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_IDENT": {
+     "job": "1023264",
+     "host": "n-503",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CAND_r4": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "BASE_CAND_r4": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWONLY_r4": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_ATLAST_r4": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_NEUT_r4": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CAPOP_r4": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_0": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_1": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_2": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_3": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_4": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_5": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_6": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_7": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_8": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_9": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_10": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_11": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_12": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_13": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_14": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_15": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_16": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_17": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_18": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_19": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_20": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_21": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_22": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_23": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_24": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_25": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_26": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_27": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_28": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_29": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_30": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_31": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_32": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_33": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_34": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_35": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_36": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_37": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_38": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_39": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_40": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_41": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_42": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_43": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_44": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_45": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_46": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_47": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_48": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_49": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_50": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_51": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_52": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_53": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_54": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_55": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_56": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_57": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_58": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_59": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_RAND_r4_60": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_SHUF_r4_0": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_SHUF_r4_1": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_SHUF_r4_2": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_SHUF_r4_3": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_SHUF_r4_4": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r4_0": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r4_1": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r4_2": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r4_3": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r4_4": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r4_5": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r4_6": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r4_7": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r4_8": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r4_9": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r4_10": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r4_11": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r4_12": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r4_13": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_DER_r4_14": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_0": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_1": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_2": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_3": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_4": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_5": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_6": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_7": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_8": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_9": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_10": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_11": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_12": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_13": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_14": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_15": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_16": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_17": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_18": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_19": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_20": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_21": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_22": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_23": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_24": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_25": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_26": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_27": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_28": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_29": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_30": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_31": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_32": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_33": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_34": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_35": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_36": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_37": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_38": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_39": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_40": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_41": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_42": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_43": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_44": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_45": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_46": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_47": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_48": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_49": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_50": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_51": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_52": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_53": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_54": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_55": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_56": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_57": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_58": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_59": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWRAND_r4_60": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r4_0": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r4_1": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r4_2": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r4_3": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r4_4": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r4_5": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r4_6": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r4_7": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r4_8": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r4_9": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r4_10": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r4_11": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r4_12": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r4_13": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    },
+    "KO_CWDER_r4_14": {
+     "job": "1023509",
+     "host": "n-501",
+     "gpu": "NVIDIA RTX A5000"
+    }
+   },
+   "jobs": [
+    "1023264",
+    "1023509"
+   ],
+   "holm_p": 0.3170731707317073,
+   "verdict": "DOES NOT PASS (Holm p=0.3171 >= 0.05)",
+   "holm_family_valid_ranks": [
+    1,
+    4
+   ],
+   "holm_p_secondary_CWONLY": 0.23376623376623376,
+   "verdict_secondary_CWONLY": "DOES NOT PASS (Holm p=0.2338 >= 0.05) [SECONDARY; requires VALIDATION replication with the frozen operator]"
+  }
+ ]
+}

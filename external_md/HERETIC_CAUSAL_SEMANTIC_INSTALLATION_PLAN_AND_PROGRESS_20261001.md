@@ -2305,3 +2305,24 @@ No leakage found (K4 exclude list + right bank on every arm; overlap and NM-over
   note): basket VAL `--overlap overlap_addon_basket_val_1040101_r0.json`; button VAL `--overlap
   overlap_buttonvaln501_1040170_r0.json,overlap_addon_button_val_1040122_r0.json`; `ovl_template.sh` generalized to
   POP=val (sha256 d80f283b…1611763; default k4 unchanged).
+
+## S-140 — 2026-10-14 19:00 — Amendment-7 NEUT-position arms (TRAIN, descriptive): fit site determines WHERE the operator acts, not HOW MUCH
+Job 1040124 DONE (4/4 new arms per codeword; add-on overlaps OK; tokens ' basket' / ' button' / '\n\n'; no collapse;
+all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_neutpos_train.json`.
+Δ vs KO (fraction of BASE−KO gap restored):
+
+| cell | NEUT all rows | NEUT cw-only | NEUT last-only | CAND all rows | CAND cw-only | CAND last-only |
+|---|---|---|---|---|---|---|
+| basket r1 | +0.198 (0.78) | +0.012 [.008,.017] (0.05) | +0.005 [.003,.009] (0.02) | +0.176 (0.70) | +0.200 (0.79) | −0.001 (0.00) |
+| basket r4 | +0.188 (0.75) | +0.013 (0.05) | +0.005 (0.02) | +0.206 (0.82) | +0.188 (0.74) | −0.000 (0.00) |
+| button r1 | +0.178 (0.83) | +0.019 (0.09) | +0.013 (0.06) | +0.185 (0.87) | +0.177 (0.83) | +0.002 (0.01) |
+| button r4 | +0.178 (0.83) | +0.017 (0.08) | +0.013 (0.06) | +0.170 (0.79) | +0.168 (0.79) | +0.002 (0.01) |
+
+- **Refines S-135/S-136:** the codeword-row-fit operator (CAND) acts THROUGH the codeword row (CWONLY ≈ CAND,
+  ATLAST ≈ 0); the last-row-fit operator (NEUT) rescues as much only when applied at ALL rows — at the codeword row
+  alone or the last row alone it gives <10% of its effect ⇒ NEUT acts distributed over other positions. **Position-aware
+  fitting does not increase the amount of rescue, but it localizes the learned weight edit to the causal site
+  (the knocked-out codeword row).** (TRAIN, in-sample, descriptive; VAL arms pending.)
+- CAND − mean(DER) [CI]: basket r1 +0.006 [−0.002, 0.012]; basket r4 +0.021 [0.010, 0.033]; button r1 −0.004
+  [−0.006, −0.001]; button r4 −0.011 [−0.019, −0.003] ⇒ for button the average deranged-pairing fit slightly BEATS the
+  paired operator (in-sample).
