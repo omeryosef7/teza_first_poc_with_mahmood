@@ -2299,3 +2299,5 @@ No leakage found (K4 exclude list + right bank on every arm; overlap and NM-over
   `overlap_buttonvaln501_1040152_r0.json`. Parent confirmed. Basket VAL needs no main overlap (both jobs n-503).
   1040122 mem lowered to 40G (n-501 RAM). VAL read gating: 1036679, 1036680, 1040101, 1040122, 1040152 all DONE with
   OVERLAP_OK (ETA ~7 h).
+- **Correction:** the button VAL overlap job is **1040170** (not 1040152, which is an unrelated job of another
+  user); output `overlap_buttonvaln501_1040170_r0.json`. Pending (Resources). No duplicate submission.
