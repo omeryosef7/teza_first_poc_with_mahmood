@@ -67,3 +67,23 @@ def test_unrounded_matches_frozen_analyzer_on_1022698():
     ctrls = {a: stat[a] for a in ctr["controls"]}
     dec = A.decide(stat["KO_CAND_r4"], ctrls, {"r1": 1, "r16": 1}, 0.006, True, [], n_common, lost)
     assert dec["rank"] == d["verdict_basis"]["candidate_rank"] == 1
+
+
+def test_binding_combine():
+    import p2a_powered_binding as Bn
+    P, F, V = {"VERDICT": "PASS"}, {"VERDICT": "DOES NOT PASS"}, {"VERDICT": "VOID: x"}
+    assert Bn.combine(P, P) == "PASS"
+    assert Bn.combine(F, F) == "DOES NOT PASS"
+    assert Bn.combine(P, F) == "DOES NOT PASS (rounding-sensitive)"
+    assert Bn.combine(F, P) == "DOES NOT PASS (rounding-sensitive)"
+    assert Bn.combine(V, P).startswith("VOID") and Bn.combine(P, V).startswith("VOID")
+
+
+def test_rounded_tie_flips_to_rounding_sensitive():
+    import p2a_powered_binding as Bn
+    # rank 3 unrounded passes; rounding creates a tie with a 4th control -> rank 4 fails -> rounding-sensitive
+    c = _ctrls(); c["KO_RAND_r4_0"] = 0.02; c["KO_RAND_r4_1"] = 0.02; c["KO_RAND_r4_2"] = 0.0129 - 3e-6
+    u = A.decide(0.0129, c, LOOKS, 0.006, True, [], 203, {})
+    r = A.decide(round(0.0129, 5), {k: round(v, 5) for k, v in c.items()}, LOOKS, 0.006, True, [], 203, {})
+    assert u["VERDICT"] == "PASS" and r["VERDICT"] == "DOES NOT PASS"
+    assert Bn.combine(u, r) == "DOES NOT PASS (rounding-sensitive)"

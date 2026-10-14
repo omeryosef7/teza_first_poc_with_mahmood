@@ -1974,3 +1974,8 @@ Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_d.md` (independent; saw 
   5-dp-rounded points. **Parent binding rule (added at freeze):** PASS only if BOTH the unrounded decision and the
   frozen analyzer's rounded rank PASS under the identical rule; disagreement ⇒ "DOES NOT PASS (rounding-sensitive)".
 - Superseded v1 contrast files kept and committed for provenance.
+- S-114 binding rule implemented as a post-step (frozen script untouched, sha eb0da96d…): 
+  `research/heretic_csi/p2a_powered_binding.py` (sha256 6533f190…c2d4) applies the identical decide() to the frozen
+  analyzer's rounded values, asserts its rank = the analyzer's candidate_rank, PASS only if both PASS; tests now 9
+  (incl. a rounding-induced tie ⇒ "rounding-sensitive"). Read = `p2a_powered_analyze.py` then
+  `p2a_powered_binding.py` (FINAL_VERDICT). Committed before either r4ext job finished.
