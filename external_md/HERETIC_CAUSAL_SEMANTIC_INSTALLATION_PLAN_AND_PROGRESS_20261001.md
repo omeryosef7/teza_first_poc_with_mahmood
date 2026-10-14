@@ -1989,3 +1989,8 @@ Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_d.md` (independent; saw 
   (KO, KO_CAND_r1, one completed control; distinct OVL_* tags) must reproduce the preempted job's rows with
   |Δy| ≤ 1e-6 on identical prompt_id sets, both nodes RTX A5000, exactly one complete dir per arm with job provenance
   recorded — else the r1 cell is VOID. To be written into P2b amendment 5(b).
+
+## S-116 — 2026-10-14 12:40 — ops tick
+- Running GPU: 1023508 (basket r4 TRAIN 131/163), 1023509 (button r4 128/163), 1034929 (basket r1 resume, staged),
+  1027577 (S-084 j1 45/76), 1032110 (S-084 j2 19/72). Pending: 1035131 (button r1 resume), 1035278 (F2, new) ⇒ would
+  exceed cap 6 if both start — F2 asked to hold 1035278 or merge it. No failures.
