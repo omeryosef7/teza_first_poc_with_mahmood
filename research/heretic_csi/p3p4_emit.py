@@ -13,7 +13,7 @@ SB = "python src/boombness/score_behavior.py"
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--what", required=True, choices=("p3", "p4"))
+    ap.add_argument("--what", required=True, choices=("p3", "p4", "p4v2"))
     ap.add_argument("--cw", required=True); ap.add_argument("--snap", required=True); ap.add_argument("--excl", required=True)
     ap.add_argument("--prefix", required=True); ap.add_argument("--file", required=True)
     ap.add_argument("--nrand", type=int, default=40, help="P3: random norm-matched controls per TOP-k key")
@@ -30,6 +30,13 @@ def main():
         for key in sorted(k for k in ops if k.startswith("TOP") and not k.endswith("N")):
             for i in range(a.nrand):
                 em(f"rand:{a.file}:{key}:{9000 + 100 * int(key[3:]) + i}", f"{C} {KO}", f"KO_RAND_{key}_{i}")
+    elif a.what == "p4v2":   # PREREG_P4_AMENDMENT_1: two fitted control families (RAW own-optimum, NC norm-constrained refit)
+        for key in ("TOP8", "TOP8_L6_14", "FULLO", "MLP", "ATTNMLP", "H2", "CELL_L10H2"):
+            em(f"op:{a.file}:{key}", f"{C} {KO}", f"KO_{key}")
+        em(f"op:{a.file}:TOP8", C, "BASE_TOP8")
+        for fam in ("RAW", "NC"):
+            for j in range(a.n_rh8):
+                em(f"op:{a.file}:RH8{fam}_{j}", f"{C} {KO}", f"KO_RH8{fam}_{j}")
     else:
         for key in ("TOP8", "FULLO", "MLP", "ATTNMLP", "H2", "CELL_L10H2"):
             em(f"op:{a.file}:{key}", f"{C} {KO}", f"KO_{key}")

@@ -1610,3 +1610,13 @@ nothing auto-analyzes the early VAL jobs (read-after-TRAIN is procedural). Tests
   fresh test (fresh = P6).
 - Parent checks: cand_pls4 byte-identical to the original; 144 new bases rank 4, orthonormal, near-orthogonal to the
   originals (max |cos| 0.069 on a sample). F6 submits 2×72-arm jobs (~4.5 h each) when our GPU count ≤4.
+
+## S-085 — 2026-10-14 05:10 — PR-HCSI-S084 descriptive basket-vs-button contrast (already-read VAL runs only)
+- `reports/heretic_csi/P2A_BUTTON_R4_CONTRAST.json` (F6): per-codeword specificity z = (cand − mean ctrl)/sd ctrl over
+  the 56-control families, VAL 23 domains (rows after BASE floor: basket 145, button 203):
+  basket r1 **3.08**, r4 **3.39**; button r1 **0.54**, r4 **3.59**. Interaction I = (button r4−r1) − (basket r4−r1) =
+  **2.74, 95% domain-cluster CI [0.27, 4.40]**.
+- Reading (DESCRIPTIVE, prereg'd as such): consistent with button gaining specificity from r1→r4 much more than basket
+  — the outcome-A shape now has a contrast estimate, not just pass-vs-fail. Caveats: computed on already-read VAL
+  data; z uses the 56-control families; CI lower bound close to 0; still 2 codewords. The confirmatory element remains
+  the powered r4 re-test (pending GPU) and, for a population claim, P6.

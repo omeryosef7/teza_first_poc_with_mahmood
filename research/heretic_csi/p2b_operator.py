@@ -271,6 +271,42 @@ class OperatorHooks:
         return False
 
 
+class BiasHooks:
+    """Input-INDEPENDENT comparator (review #2 #5): add a constant vector v[name] to a module's output -- at
+    every position (holder=None) or only at holder["pos"] (batch 1). Same modules/layers as the operator."""
+
+    def __init__(self, model, vecs: Dict[str, torch.Tensor], holder: Optional[dict] = None):
+        self.model, self.vecs, self.holder, self.handles = model, vecs, holder, []
+        self.n_applied = 0
+
+    def __enter__(self):
+        for name, v in self.vecs.items():
+            lin = get_linear(self.model, name)
+            vt = v.to(lin.weight.device, torch.float32)
+
+            def hook(mod, inp, out, vt=vt):
+                if self.holder is None:
+                    self.n_applied += 1
+                    return (out.float() + vt).to(out.dtype)
+                pos = self.holder.get("pos")
+                if pos is None:
+                    return None
+                if out.shape[0] != 1:
+                    raise RuntimeError("position-restricted bias requires batch size 1")
+                o = out.clone()
+                o[:, pos] = (o[:, pos].float() + vt).to(out.dtype)
+                self.n_applied += 1
+                return o
+            self.handles.append(lin.register_forward_hook(hook))
+        return self
+
+    def __exit__(self, *exc):
+        for h in self.handles:
+            h.remove()
+        self.handles = []
+        return False
+
+
 class CaptureHooks:
     """Record (input, output) of named Linear modules at explicit positions of batch row 0.
 

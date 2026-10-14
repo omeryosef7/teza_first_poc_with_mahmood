@@ -35,7 +35,7 @@ def main():
     ap.add_argument("--excl", required=True)
     ap.add_argument("--limit", default="0")
     ap.add_argument("--prefix", required=True, help="tag prefix, e.g. hcsi_p2b_basket_k4")
-    ap.add_argument("--what", required=True, choices=("capture", "liveness", "rank"))
+    ap.add_argument("--what", required=True, choices=("capture", "liveness", "rank", "addon"))
     ap.add_argument("--capdir", default=None)
     ap.add_argument("--factors-dir", default=None)
     ap.add_argument("--ranks", default="")
@@ -46,6 +46,7 @@ def main():
     ap.add_argument("--cw-nder", type=int, default=0, help="codeword-row-only DER controls (for KO_CWONLY)")
     ap.add_argument("--capop", action="store_true", help="add the deployed-I/O capture arm (needs --capdir)")
     ap.add_argument("--no-base-cand", action="store_true")
+    ap.add_argument("--meanbias", default=None, help="addon: meanbias_<cw>.pt from p2b_meanbias.py")
     ap.add_argument("--n-extra", type=int, default=6, help="extra clean PRESERVE rows captured per prompt (BASE only)")
     a = ap.parse_args()
     C = common(a.cw, a.snap, a.excl, a.limit)
@@ -64,6 +65,20 @@ def main():
         emit("none", f"{C} {KO}", "KO")
         emit("none", f"{C} {KO} {RESC} --rescue-donor clean", "KO_FULL")
         emit(f"ident:{fp}:CAND", f"{C} {KO}", "KO_IDENT")
+    elif a.what == "addon":
+        # PREREG AMENDMENT 3 (DESCRIPTIVE comparators): input-independent mean-gap bias (all rows / codeword row /
+        # on the clean prompt) + DER/SHUF fitted controls at their RAW fitted norm, per primary rank.
+        if not (a.meanbias and os.path.exists(a.meanbias)):
+            raise SystemExit("addon needs --meanbias <existing file>")
+        emit(f"bias:{a.meanbias}:all", f"{C} {KO}", "KO_MEANBIAS")
+        emit(f"bias:{a.meanbias}:cw", f"{C} {KO}", "KO_CWMEANBIAS")
+        emit(f"bias:{a.meanbias}:all", C, "BASE_MEANBIAS")
+        for r in [int(x) for x in a.ranks.split(",") if x]:
+            fp = os.path.join(a.factors_dir, f"factors_{a.cw}_r{r}.pt")
+            for j in range(a.nder):
+                emit(f"opraw:{fp}:DER{j}", f"{C} {KO}", f"KO_DERRAW_r{r}_{j}")
+            for j in range(a.nshuf):
+                emit(f"opraw:{fp}:SHUF{j}", f"{C} {KO}", f"KO_SHUFRAW_r{r}_{j}")
     else:
         for r in [int(x) for x in a.ranks.split(",") if x]:
             fp = os.path.join(a.factors_dir, f"factors_{a.cw}_r{r}.pt")

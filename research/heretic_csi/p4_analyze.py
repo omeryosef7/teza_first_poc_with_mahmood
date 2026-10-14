@@ -98,8 +98,12 @@ def main():
             rows.append({"rank": r, "verdict": f"NOT ANALYZABLE: {str(e)[:300]}"})
     prim = {x["rank"]: x["rank_test"]["p"] for x in rows if x.get("primary") and "rank_test" in x}
     hadj = pa.holm(prim) if prim else {}
+    complete = set(prim) == {1, 4}     # review #2 HIGH-2: Holm over an incomplete family must never PASS
     for x in rows:
         if "rank_test" not in x:
+            continue
+        if not complete:
+            x["verdict"] = "INCOMPLETE FAMILY (primary ranks present: %s; need [1, 4]) -- no verdict" % sorted(prim)
             continue
         x["holm_p"] = hadj.get(x["rank"]); x["holm_family"] = sorted(prim)
         ok = x["gates"]["manipulation_ok"] and x["gates"]["instrument_ok"]

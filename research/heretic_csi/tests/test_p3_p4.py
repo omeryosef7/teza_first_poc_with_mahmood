@@ -45,3 +45,44 @@ def test_p4_random_heads_disjoint_from_top8():
     for j in range(60):
         hs = random.Random(4000 + 100 + j).sample(p4.NON_TOP8, 8)
         assert not set(hs) & set(p4.TOP8) and len(set(hs)) == 8
+
+
+def test_p4v2_normc_hits_target_and_beats_rescale():
+    import p4_head_fit_v2 as v2, p2b_operator as po
+    torch.manual_seed(1)
+    n, din, dout = 60, 64, 32
+    s_in = torch.randn(n, din); W = torch.randn(dout, din) * 0.1
+    s_out = s_in @ W.t(); t_out = s_out + (s_in[:, :3] @ torch.randn(3, dout))
+    m = po.PairedIO("L10.o_proj", s_in, s_out, s_in.clone(), t_out, torch.randn(20, din))
+    cfg = po.FitCfg(rank=2, n_steps=5)
+    raw = po.fit_factored([m], cfg)
+    target = {"L10.o_proj": 0.5 * po.fro_norm(*raw["L10.o_proj"])}
+    nc = v2.fit_normc([m], cfg, raw, target)
+    assert abs(po.fro_norm(*nc["L10.o_proj"]) - target["L10.o_proj"]) < 1e-4
+    resc = po.rescale_to(raw, target)
+    assert po.gap_closure([m], nc)["net"] >= po.gap_closure([m], resc)["net"] - 1e-6
+
+
+def _row(r, p_raw, p_nc, ci_lo=0.01):
+    return {"rank": r, "primary": True, "gates": {"manipulation_ok": True, "instrument_ok": True}, "void": [],
+            "recovery_TOP8": {"status": "ok", "point": 0.1, "ci95": [ci_lo, 0.2]},
+            "rank_test_RAW": {"p": p_raw, "n_controls": 60}, "rank_test_NC": {"p": p_nc, "n_controls": 60},
+            "p_IUT": max(p_raw, p_nc)}
+
+
+def test_p4v2_incomplete_family_never_passes():
+    import p4_analyze_v2 as v
+    rows = v.finalize([_row(1, 1 / 61, 1 / 61)])
+    assert rows[0]["verdict"].startswith("INCOMPLETE")
+    rows = v.finalize([_row(1, 1 / 61, 1 / 61), {"rank": 4, "verdict": "NOT ANALYZABLE: x"}])
+    assert rows[0]["verdict"].startswith("INCOMPLETE")
+
+
+def test_p4v2_iut_requires_both_families():
+    import p4_analyze_v2 as v
+    rows = v.finalize([_row(1, 1 / 61, 0.5), _row(4, 1 / 61, 1 / 61)])
+    v1 = [x for x in rows if x["rank"] == 1][0]["verdict"]
+    v4 = [x for x in rows if x["rank"] == 4][0]["verdict"]
+    assert not v1.startswith("PASS") and v4.startswith("PASS")
+    rows = v.finalize([_row(1, 1 / 61, 1 / 61), _row(4, 1 / 61, 1 / 61, ci_lo=-0.01)])
+    assert [x for x in rows if x["rank"] == 4][0]["verdict"].startswith("DOES NOT PASS")

@@ -87,6 +87,8 @@ def decide(primary, gates_ok, void, holm_p, rec):
         return "CANNOT ANSWER (recovery: %s)" % rec.get("reason", rec.get("status"))
     if not primary:
         return "DESCRIPTIVE (not a confirmatory cell)"
+    if "ci95" not in rec:
+        return "CANNOT ANSWER (recovery has no CI)"
     ci_lo = rec["ci95"][0]
     if holm_p < 0.05 and ci_lo > 0:
         return "PASS (Holm p=%.4g, recovery %.3f CI [%.3f, %.3f])" % (holm_p, rec["point"], ci_lo, rec["ci95"][1])
@@ -98,12 +100,41 @@ def decide(primary, gates_ok, void, holm_p, rec):
     return "DOES NOT PASS (" + "; ".join(why) + ")"
 
 
+def _boot_diff(doms, a_, b_, n_boot, seed):
+    """Domain-bootstrap CI of mean_d(a - b) (paired by domain)."""
+    import random as _r
+    rng = _r.Random(seed)
+    diffs = [a_[d] - b_[d] for d in doms]
+    pt = sum(diffs) / len(diffs)
+    bs = sorted(sum(diffs[rng.randrange(len(diffs))] for _ in diffs) / len(diffs) for _ in range(n_boot))
+    return {"point": round(pt, 5), "ci95": [round(bs[int(0.025 * n_boot)], 5), round(bs[int(0.975 * n_boot) - 1], 5)]}
+
+
+def _norm_rank_check(sc, cand, arms, tol=1e-3):
+    """VOID messages for arms whose per-module norm or rank differs from CAND's."""
+    out, cn = [], sc[cand]["module_fro"]
+    for x in arms:
+        s = sc.get(x)
+        if s is None:
+            out.append(f"{x}: no p2b_operator.json sidecar"); continue
+        if not s.get("hook_calls"):
+            out.append(f"{x}: operator hooks never applied")
+        mf = s.get("module_fro") or {}
+        bad = [n for n in cn if n not in mf or abs(mf[n] - cn[n]) > tol * max(cn[n], 1e-12)]
+        if bad:
+            out.append(f"{x}: per-module norm not matched to CAND on {len(bad)} modules")
+        if s.get("rank") != sc[cand].get("rank"):
+            out.append(f"{x}: rank {s.get('rank')} != CAND rank {sc[cand].get('rank')}")
+    return out
+
+
 def analyze_rank(a, r, assign):
     rand = [f"KO_RAND_r{r}_{i}" for i in range(a.nrand)]
     shuf = [f"KO_SHUF_r{r}_{j}" for j in range(a.nshuf)]
     der = [f"KO_DER_r{r}_{j}" for j in range(a.nder)]
     cand, bcand = f"KO_CAND_r{r}", f"BASE_CAND_r{r}"
-    pos_arms = [f"KO_CWONLY_r{r}", f"KO_ATLAST_r{r}", f"KO_NEUT_r{r}"]
+    cwonly = f"KO_CWONLY_r{r}"
+    pos_arms = [cwonly, f"KO_ATLAST_r{r}", f"KO_NEUT_r{r}"]
     capop = [f"KO_CAPOP_r{r}"] if a.capop else []
     live = ["BASE", "KO", "KO_FULL", "KO_IDENT"]
     fam = rand + shuf + der
@@ -118,38 +149,43 @@ def analyze_rank(a, r, assign):
         common &= keep
     by = {x: dmeans(common, lambda k, x=x: kv[x][k]) for x in arms}
     doms = sorted(by["BASE"])
-    void, flags = [], []
-    # ---- readout collapse screen on EVERY arm (review #3)
+    # THREE VOID LISTS (review #2, finding 10): shared failures void both tests; primary-only and
+    # secondary-only failures void only their own test.
+    void_shared, void, void_secondary, flags = [], [], [], []
     om_med = {x: statistics.median(rf[x][k]["option_mass"] for k in common) for x in arms}
     collapsed = sorted(x for x in arms if om_med[x] < a.option_mass_floor)
     for x in collapsed:
-        (void if x in live + [cand] else flags).append(f"{x}: readout collapsed (median option mass {om_med[x]:.2e})")
-    # ---- identity / replay
+        msg = f"{x}: readout collapsed (median option mass {om_med[x]:.2e})"
+        if x in live:
+            void_shared.append(msg)
+        elif x == cand:
+            void.append(msg)
+        elif x == cwonly:
+            void_secondary.append(msg)
+        else:
+            flags.append(msg)
     ident_dev = max(abs(kv["KO_IDENT"][k] - kv["KO"][k]) for k in common)
     if ident_dev > 1e-9:
-        void.append(f"KO_IDENT differs from KO (max |dy|={ident_dev:.3g})")
+        void_shared.append(f"KO_IDENT differs from KO (max |dy|={ident_dev:.3g})")
     if capop:
         rep = max(abs(kv[capop[0]][k] - kv[cand][k]) for k in common)
         if rep > 1e-4:
             void.append(f"{capop[0]} does not replay {cand} (max |dy|={rep:.3g})")
-    # ---- sidecars: fired, norms, ranks
     sc = {x: sidecar(dirs[x]) for x in arms if x not in ("BASE", "KO", "KO_FULL")}
-    for x, s in sc.items():
+    if sc.get("KO_IDENT") is None:
+        void_shared.append("KO_IDENT: no p2b_operator.json sidecar")
+    if sc.get(cand) is None:
+        raise SystemExit(f"{cand}: no sidecar -- cannot read CAND norms")
+    for x in [bcand] + pos_arms + capop:
+        s = sc.get(x)
+        target = void_secondary if x == cwonly else (void if x in capop + [bcand] else flags)
         if s is None:
-            void.append(f"{x}: no p2b_operator.json sidecar"); continue
-        if x != "KO_IDENT" and not s.get("hook_calls"):
-            void.append(f"{x}: operator hooks never applied")
-    cn = sc[cand]["module_fro"]
-    for x in fam:
-        s = sc[x]
-        bad = [n for n in cn if abs(s["module_fro"][n] - cn[n]) > 1e-3 * max(cn[n], 1e-12)]
-        if bad:
-            void.append(f"{x}: per-module norm not matched to CAND on {len(bad)} modules")
-        if s.get("rank") != sc[cand].get("rank"):
-            void.append(f"{x}: rank {s.get('rank')} != CAND rank {sc[cand].get('rank')}")
+            target.append(f"{x}: no p2b_operator.json sidecar")
+        elif not s.get("hook_calls"):
+            target.append(f"{x}: operator hooks never applied")
+    void += _norm_rank_check(sc, cand, fam)
     for x in pos_arms[:2]:
-        flags.append(f"{x}: applied at tokens {sc[x].get('positions_tokens')}")
-    # ---- statistics
+        flags.append(f"{x}: applied at tokens {(sc.get(x) or {}).get('positions_tokens')}")
     manip = mean_diff(doms, by["KO"], by["BASE"])
     full = mean_diff(doms, by["KO_FULL"], by["KO"])
     gates = {"manipulation_KO_minus_BASE": round(manip, 5), "manipulation_ok": manip < 0,
@@ -168,44 +204,129 @@ def analyze_rank(a, r, assign):
         decomp[x] = {"d_logp_concept": round(sum(dc.values()) / len(dc), 4),
                      "d_logp_codeword": round(sum(dk.values()) / len(dk), 4)}
     fam_ok = [x for x in fam if x not in collapsed]
-    cwfam = [f"KO_CWRAND_r{r}_{i}" for i in range(a.cw_nrand)] + [f"KO_CWDER_r{r}_{j}" for j in range(a.cw_nder)]
-    cw_test = None
-    if cwfam:
-        cwd = {x: rederive.strict_run_dir(f"{a.prefix}_{x}", a.expect_n, row_file="results.jsonl",
-                                          allow_short=a.allow_short) for x in cwfam}
-        cwkv = {x: sa.arm_key_values(cwd[x], assign, a.split)[0] for x in cwfam}
-        ck = common & set.intersection(*[set(v) for v in cwkv.values()])
-        if ck != common:
-            flags.append(f"CW family drops {len(common) - len(ck)} keys; CWONLY test on {len(ck)} keys")
-        cby = {x: dmeans(ck, lambda k, x=x: cwkv[x][k]) for x in cwfam}
-        cko = dmeans(ck, lambda k: kv["KO"][k]); cc = dmeans(ck, lambda k: kv[pos_arms[0]][k])
-        cd = sorted(cko)
-        cstat = {x: mean_diff(cd, cby[x], cko) for x in cwfam}
-        cstat[pos_arms[0]] = mean_diff(cd, cc, cko)
-        for x in cwfam:
-            if sidecar(cwd[x]) is None or not sidecar(cwd[x]).get("hook_calls"):
-                void.append(f"{x}: hooks never applied")
-        cw_test = rank_p(cstat, pos_arms[0], cwfam)
+    # raw/CAND norm ratio of the FITTED controls (review #2 finding 4): from the fit meta, no GPU needed
+    cn = sc[cand]["module_fro"]
+    raw_ratio = {}
+    for x in shuf + der:
+        rawf = ((sc.get(x) or {}).get("fit_meta") or {}).get("raw_fro")
+        if rawf:
+            raw_ratio[x] = round(sum(rawf.values()) / sum(cn.values()), 4)
+    out = {"rank": r, "primary": r in PRIMARY_RANKS, "n_keys": len(common), "n_domains": len(doms),
+           "gates": gates, "void_shared": void_shared, "void": void, "void_secondary": void_secondary,
+           "flags": flags,
+           "recovery_CAND": rec[cand], "stat_CAND_minus_KO": round(stat[cand], 5),
+           "rank_test": rank_p(stat, cand, fam),
+           "rank_test_without_collapsed_controls": rank_p(stat, cand, fam_ok),
+           "rank_test_random_only": rank_p(stat, cand, rand),
+           "rank_test_DER_only": rank_p(stat, cand, der), "rank_test_SHUF_only": rank_p(stat, cand, shuf),
+           "fitted_control_raw_over_CAND_norm": raw_ratio,
+           "position": {x: {"stat": round(stat[x], 5), "recovery": rec[x],
+                            "total_fro": sum((sc.get(x) or {}).get("module_fro", {}).values())} for x in pos_arms},
+           "position_contrast_CWONLY_minus_ATLAST": round(stat[pos_arms[0]] - stat[pos_arms[1]], 5),
+           "decomposition": decomp,
+           "control_stats": {x: round(stat[x], 5) for x in fam},
+           "control_recovery_mean": sum(rec[x].get("point", 0.0) for x in fam) / len(fam),
+           "cand_total_fro": sum(cn.values()), "cand_n_params": sc[cand].get("n_params"),
+           "cand_fit_meta": sc[cand].get("fit_meta"), "code_sha256": sc[cand].get("code_sha256"),
+           "run_dirs": {x: os.path.basename(d) for x, d in dirs.items()}}
     pres_om = [rf[bcand][k]["option_mass"] - rf["BASE"][k]["option_mass"] for k in common]
-    return {"rank": r, "primary": r in PRIMARY_RANKS, "n_keys": len(common), "n_domains": len(doms),
-            "gates": gates, "void": void, "flags": flags,
-            "recovery_CAND": rec[cand], "stat_CAND_minus_KO": round(stat[cand], 5),
-            "rank_test": rank_p(stat, cand, fam),
-            "rank_test_without_collapsed_controls": rank_p(stat, cand, fam_ok),
-            "rank_test_random_only": rank_p(stat, cand, rand),
-            "rank_test_DER_only": rank_p(stat, cand, der), "rank_test_SHUF_only": rank_p(stat, cand, shuf),
-            "position": {x: {"stat": round(stat[x], 5), "recovery": rec[x],
-                             "total_fro": sum(sc[x]["module_fro"].values())} for x in pos_arms},
-            "rank_test_CWONLY_vs_cw_family": cw_test,
-            "position_contrast_CWONLY_minus_ATLAST": round(stat[pos_arms[0]] - stat[pos_arms[1]], 5),
-            "decomposition": decomp,
-            "control_stats": {x: round(stat[x], 5) for x in fam},
-            "control_recovery_mean": sum(rec[x].get("point", 0.0) for x in fam) / len(fam),
-            "preservation": {"BASE_CAND_minus_BASE_y": round(mean_diff(doms, by[bcand], by["BASE"]), 5),
-                             "mean_option_mass_change": round(sum(pres_om) / len(pres_om), 5)},
-            "cand_total_fro": sum(cn.values()), "cand_n_params": sc[cand].get("n_params"),
-            "cand_fit_meta": sc[cand].get("fit_meta"), "code_sha256": sc[cand].get("code_sha256"),
-            "run_dirs": {x: os.path.basename(d) for x, d in dirs.items()}}
+    out["preservation"] = {"BASE_CAND_minus_BASE_y": round(mean_diff(doms, by[bcand], by["BASE"]), 5),
+                           "mean_option_mass_change": round(sum(pres_om) / len(pres_om), 5)}
+    # ---------------- SECONDARY (CWONLY vs codeword-row-only family): isolated from the primary ----------------
+    cwfam = [f"KO_CWRAND_r{r}_{i}" for i in range(a.cw_nrand)] + [f"KO_CWDER_r{r}_{j}" for j in range(a.cw_nder)]
+    out["rank_test_CWONLY_vs_cw_family"] = None
+    if cwfam:
+        try:
+            cwd = {x: rederive.strict_run_dir(f"{a.prefix}_{x}", a.expect_n, row_file="results.jsonl",
+                                              allow_short=a.allow_short) for x in cwfam}
+            cwkv = {x: sa.arm_key_values(cwd[x], assign, a.split)[0] for x in cwfam}
+            cwrf = {x: row_fields(cwd[x]) for x in cwfam}
+            ck = common & set.intersection(*[set(v) for v in cwkv.values()])
+            if ck != common:
+                flags.append(f"CW family drops {len(common) - len(ck)} keys; secondary test on {len(ck)} keys")
+            cw_om = {x: statistics.median(cwrf[x][k]["option_mass"] for k in ck) for x in cwfam}
+            cw_coll = sorted(x for x in cwfam if cw_om[x] < a.option_mass_floor)
+            for x in cw_coll:
+                flags.append(f"{x}: readout collapsed (median option mass {cw_om[x]:.2e})")
+            cwsc = {x: sidecar(cwd[x]) for x in cwfam}
+            void_secondary += _norm_rank_check({**cwsc, cand: sc[cand]}, cand, cwfam)
+            cby = {x: dmeans(ck, lambda k, x=x: cwkv[x][k]) for x in cwfam}
+            for x in ("KO", "KO_FULL", cwonly):
+                cby[x] = dmeans(ck, lambda k, x=x: kv[x][k])
+            cd = sorted(cby["KO"])
+            cstat = {x: mean_diff(cd, cby[x], cby["KO"]) for x in cwfam + [cwonly]}
+            out["rank_test_CWONLY_vs_cw_family"] = rank_p(cstat, cwonly, cwfam)
+            out["rank_test_CWONLY_without_collapsed_controls"] = rank_p(cstat, cwonly, [x for x in cwfam if x not in cw_coll])
+            # recovery on the SAME keys as the secondary rank test (review #2: was on primary keys)
+            out["recovery_CWONLY_secondary"] = sa.effect_fraction(prof, cd, cby["KO_FULL"], cby["KO"], cby[cwonly],
+                                                                  a.n_boot, 20261014, 0.01)
+            out["n_keys_secondary"] = len(ck)
+        except SystemExit as e:
+            void_secondary.append(f"CW family not analyzable: {str(e)[:200]}")
+    # ---------------- ADD-ON comparators (amendment 3; DESCRIPTIVE) ----------------
+    if a.addon:
+        try:
+            ad = {}
+            mb = {"KO_MEANBIAS": "KO_MEANBIAS", "KO_CWMEANBIAS": "KO_CWMEANBIAS", "BASE_MEANBIAS": "BASE_MEANBIAS"}
+            raw = [f"KO_DERRAW_r{r}_{j}" for j in range(a.nder)] + [f"KO_SHUFRAW_r{r}_{j}" for j in range(a.nshuf)]
+            adarms = list(mb) + raw
+            add = {x: rederive.strict_run_dir(f"{a.prefix}_{x}", a.expect_n, row_file="results.jsonl",
+                                              allow_short=a.allow_short) for x in adarms}
+            akv = {x: sa.arm_key_values(add[x], assign, a.split)[0] for x in adarms}
+            ak = common & set.intersection(*[set(v) for v in akv.values()])
+            abyk = {x: dmeans(ak, lambda k, x=x: akv[x][k]) for x in adarms}
+            for x in ["KO", "KO_FULL", "BASE", cand, cwonly] + fam:
+                abyk[x] = dmeans(ak, lambda k, x=x: kv[x][k])
+            ad_d = sorted(abyk["KO"])
+            arf = {x: row_fields(add[x]) for x in adarms}
+            ad["n_keys"] = len(ak)
+            ad["median_option_mass"] = {x: statistics.median(arf[x][k]["option_mass"] for k in ak) for x in adarms}
+            for x in ("KO_MEANBIAS", "KO_CWMEANBIAS"):
+                ad[x] = {"stat": round(mean_diff(ad_d, abyk[x], abyk["KO"]), 5),
+                         "recovery": sa.effect_fraction(prof, ad_d, abyk["KO_FULL"], abyk["KO"], abyk[x], a.n_boot, 20261014, 0.01)}
+            ad["BASE_MEANBIAS_minus_BASE_y"] = round(mean_diff(ad_d, abyk["BASE_MEANBIAS"], abyk["BASE"]), 5)
+            ad["CAND_minus_MEANBIAS"] = _boot_diff(ad_d, abyk[cand], abyk["KO_MEANBIAS"], a.n_boot, 7)
+            ad["CWONLY_minus_CWMEANBIAS"] = _boot_diff(ad_d, abyk[cwonly], abyk["KO_CWMEANBIAS"], a.n_boot, 8)
+            rstat = {x: mean_diff(ad_d, abyk[x], abyk["KO"]) for x in raw + [cand]}
+            ad["rank_test_DER_raw_norm"] = rank_p(rstat, cand, raw[:a.nder])
+            ad["rank_test_SHUF_raw_norm"] = rank_p(rstat, cand, raw[a.nder:])
+            asc = {x: sidecar(add[x]) for x in adarms}
+            ad["raw_arms_total_fro"] = {x: round(sum((asc[x] or {}).get("module_fro", {}).values()), 4) for x in raw}
+            ad["meanbias_sidecars"] = {x: {k: (asc[x] or {}).get(k) for k in ("kind", "where", "hook_calls", "bias_total_norm")}
+                                       for x in mb}
+            out["addon"] = ad
+        except SystemExit as e:
+            out["addon"] = {"status": f"NOT ANALYZABLE: {str(e)[:200]}"}
+    return out
+
+
+def finalize(rows):
+    """Holm + verdicts for one codeword's rows. A primary rank that is absent or not analyzable enters Holm as
+    p=1 (m stays 2) AND the verdict becomes INCOMPLETE FAMILY -- never a PASS at an unadjusted p (review #2 #2)."""
+    analysed = [x for x in rows if "rank_test" in x]
+    prim_have = {x["rank"]: x["rank_test"]["p"] for x in analysed if x["primary"]}
+    sec_have = {x["rank"]: x["rank_test_CWONLY_vs_cw_family"]["p"] for x in analysed
+                if x["primary"] and x.get("rank_test_CWONLY_vs_cw_family") and not x["void_secondary"]}
+    hadj = holm({r: prim_have.get(r, 1.0) for r in PRIMARY_RANKS})
+    sadj = holm({r: sec_have.get(r, 1.0) for r in PRIMARY_RANKS})
+    prim_missing = sorted(set(PRIMARY_RANKS) - set(prim_have))
+    sec_missing = sorted(set(PRIMARY_RANKS) - set(sec_have))
+    for x in analysed:
+        ok = x["gates"]["manipulation_ok"] and x["gates"]["instrument_ok"]
+        x["holm_p"] = hadj.get(x["rank"]) if x["primary"] else None
+        v = decide(x["primary"], ok, x["void_shared"] + x["void"], x["holm_p"] if x["primary"] else 1.0,
+                   x["recovery_CAND"])
+        if x["primary"] and prim_missing and not v.startswith(("VOID", "CANNOT")):
+            v = "INCOMPLETE FAMILY (primary ranks %s missing/unanalyzable; Holm treats them as p=1): %s" % (prim_missing, v)
+        x["verdict"] = v
+        if x["primary"] and (x.get("rank_test_CWONLY_vs_cw_family") or x["void_secondary"]):
+            x["holm_p_secondary_CWONLY"] = sadj.get(x["rank"])
+            vs = decide(True, ok, x["void_shared"] + x["void_secondary"], sadj.get(x["rank"], 1.0),
+                        x.get("recovery_CWONLY_secondary") or {"status": "missing"})
+            if sec_missing and not vs.startswith(("VOID", "CANNOT")):
+                vs = "INCOMPLETE FAMILY (secondary ranks %s missing/void): %s" % (sec_missing, vs)
+            x["verdict_secondary_CWONLY"] = vs + " [SECONDARY; requires VALIDATION replication with the frozen operator]"
+    return rows
 
 
 def main():
@@ -221,6 +342,7 @@ def main():
     ap.add_argument("--capop", action="store_true")
     ap.add_argument("--cw-nrand", type=int, default=0)
     ap.add_argument("--cw-nder", type=int, default=0)
+    ap.add_argument("--addon", action="store_true", help="amendment-3 comparators: MEANBIAS arms + raw-norm DER/SHUF")
     ap.add_argument("--allow-short", type=int, default=0)
     ap.add_argument("--option-mass-floor", type=float, default=0.05)
     ap.add_argument("--n-boot", type=int, default=5000)
@@ -233,34 +355,10 @@ def main():
             rows.append(analyze_rank(a, r, assign))
         except SystemExit as e:
             rows.append({"rank": r, "verdict": f"NOT ANALYZABLE: {str(e)[:300]}"})
-    prim = {x["rank"]: x["rank_test"]["p"] for x in rows if x.get("primary") and "rank_test" in x}
-    hadj = holm(prim) if prim else {}
+    finalize(rows)
     for x in rows:
-        if "rank_test" not in x:
-            continue
-        x["holm_p"] = hadj.get(x["rank"])
-        x["holm_family"] = sorted(prim)
-        if x["primary"] and set(prim) != set(PRIMARY_RANKS):
-            x["flags"].append("Holm family incomplete in this call (%s); rerun with both primary ranks" % sorted(prim))
-        ok = x["gates"]["manipulation_ok"] and x["gates"]["instrument_ok"]
-        x["verdict"] = decide(x["primary"], ok, x["void"],
-                              x["holm_p"] if x["holm_p"] is not None else 1.0, x["recovery_CAND"])
-    # SECONDARY (PREREG AMENDMENT 2): KO_CWONLY_r vs its codeword-row-only RAND+DER family, Holm over {1,4}
-    sec = {x["rank"]: x["rank_test_CWONLY_vs_cw_family"]["p"] for x in rows
-           if x.get("primary") and x.get("rank_test_CWONLY_vs_cw_family")}
-    sadj = holm(sec) if sec else {}
-    for x in rows:
-        if "rank_test" not in x:
-            continue
-        if x.get("rank_test_CWONLY_vs_cw_family"):
-            ok = x["gates"]["manipulation_ok"] and x["gates"]["instrument_ok"]
-            x["holm_p_secondary_CWONLY"] = sadj.get(x["rank"])
-            x["verdict_secondary_CWONLY"] = decide(
-                x["primary"], ok, x["void"], sadj.get(x["rank"], 1.0),
-                x["position"][f"KO_CWONLY_r{x['rank']}"]["recovery"]) + \
-                " [SECONDARY; requires VALIDATION replication with the frozen operator before any claim]"
-        print(json.dumps({k: x.get(k) for k in ("rank", "verdict", "verdict_secondary_CWONLY", "stat_CAND_minus_KO", "recovery_CAND",
-                                                "rank_test", "holm_p", "preservation")}, default=str), flush=True)
+        print(json.dumps({k: x.get(k) for k in ("rank", "verdict", "verdict_secondary_CWONLY", "stat_CAND_minus_KO",
+                                                "recovery_CAND", "rank_test", "holm_p", "preservation")}, default=str), flush=True)
     json.dump({"codeword": a.codeword, "prefix": a.prefix, "split": a.split, "expect_n": a.expect_n,
                "rows": rows}, open(a.out, "w"), indent=1, default=str)
     print("wrote", a.out)

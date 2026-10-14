@@ -1,0 +1,22 @@
+{
+ "prereg": "PR-HCSI-S084 (descriptive contrast)",
+ "n_domains": 23,
+ "rows_after_base_floor": {
+  "basket_r1": 145,
+  "basket_r4": 145,
+  "button_r1": 203,
+  "button_r4": 203
+ },
+ "z": {
+  "basket_r1": 3.08,
+  "basket_r4": 3.387,
+  "button_r1": 0.536,
+  "button_r4": 3.585
+ },
+ "interaction_I": 2.742,
+ "I_ci95": [
+  0.266,
+  4.404
+ ],
+ "interpretation_frozen": "I>0 with CI excluding 0 is CONSISTENT WITH button gaining specificity r1->r4 more than basket; otherwise unsupported by a contrast. DESCRIPTIVE only."
+}

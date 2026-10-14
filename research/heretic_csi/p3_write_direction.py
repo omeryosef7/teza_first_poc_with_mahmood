@@ -29,6 +29,9 @@ def unit(v):
 
 
 def main():
+    import argparse
+    ap = argparse.ArgumentParser(); ap.add_argument("--out", default=os.path.join(REPO, "reports/heretic_csi/P3_write_direction.json"))
+    a = ap.parse_args()
     out = {"per_codeword": {}, "cross_codeword_gap_cos": {}}
     G = {}
     for cw in ("basket", "button"):
@@ -61,7 +64,7 @@ def main():
         del pairs, mods
     for n in G["basket"]:
         out["cross_codeword_gap_cos"][n] = abs(float(G["basket"][n]["g"] @ G["button"][n]["g"]))
-    p = os.path.join(REPO, "reports/heretic_csi/P3_write_direction.json")
+    p = a.out
     json.dump(out, open(p, "w"), indent=1)
     print("P3_WD_DONE", p, flush=True)
 

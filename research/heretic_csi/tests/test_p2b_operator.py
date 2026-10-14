@@ -216,3 +216,18 @@ def test_capture_after_operator_sees_edited_output():
         y = lin(x)
     xin, yout = cap.records[0]["acts"]["L0.o_proj"]["cw"]
     assert torch.allclose(yout.float(), y[0, 1].detach().bfloat16().float())
+
+
+def test_bias_hooks_all_and_position():
+    m = Toy(); lin = m.model.layers[2].self_attn.o_proj
+    x = torch.randn(1, 5, D); base = lin(x)
+    v = torch.randn(D)
+    with po.BiasHooks(m, {"L2.o_proj": v}):
+        assert torch.allclose(lin(x), base + v, atol=1e-6)
+    holder = {"pos": None}
+    with po.BiasHooks(m, {"L2.o_proj": v}, holder=holder) as hk:
+        assert torch.equal(lin(x), base)
+        holder["pos"] = [3]
+        y = lin(x)
+    assert torch.allclose(y[0, 3], base[0, 3] + v, atol=1e-6) and torch.equal(y[0, :3], base[0, :3])
+    assert hk.n_applied == 1 and _hooks(m) == 0

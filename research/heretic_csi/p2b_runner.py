@@ -16,6 +16,11 @@ argv-file line format:  <OPSPEC>\t<python src/boombness/score_behavior.py ...>
          | rand:<factors.pt>:<key>:<seed>        random rank-matched operator, Fro-norm-matched per module
                                                  to factors[key] (seeded; regenerated, not stored)
          | ident:<factors.pt>:<key>              zero operator with factors[key]'s shapes/rank (no-op)
+         | opat:<factors.pt>:<key>:<cw|last>     operator applied ONLY at that prompt row
+         | randat:<factors.pt>:<key>:<seed>:<cw|last>  random norm-matched operator ONLY at that row
+         | capop:<out.pt>:<codeword>:<factors.pt>:<key>  operator at all rows + capture of deployed I/O
+         | opraw:<factors.pt>:<key>              fitted control at its RAW (un-rescaled) fitted norm
+         | bias:<meanbias.pt>:<all|cw>           constant mean-gap bias (input-independent comparator)
 
 The operator hooks are installed around the whole arm and removed after; the census must read 0
 before the next arm. A sidecar `p2b_operator.json` is written into the arm's run directory recording
@@ -74,6 +79,13 @@ def resolve_op(spec):
         return kind, None, {"out": parts[1], "codeword": parts[2],
                             "n_extra": int(parts[3]) if len(parts) > 3 else 0}
     extra = {}
+    if kind == "bias":       # bias:<meanbias.pt>:<all|cw>  constant TRAIN-mean (clean-KO) output gap (input-independent)
+        if parts[2] not in ("all", "cw"):
+            raise SystemExit(f"bias position must be all|cw, got {parts[2]!r}")
+        blob = torch.load(parts[1], map_location="cpu")
+        vecs = blob["bias"]
+        return kind, vecs, {"bias_file": parts[1], "bias_sha16": sha16(parts[1]), "where": parts[2],
+                            "bias_total_norm": float(sum(v.norm() for v in vecs.values())), "bias_meta": blob.get("meta")}
     if kind == "randat":     # randat:<factors.pt>:<key>:<seed>:<cw|last>  random norm-matched, ONLY at that row
         if parts[4] not in ("cw", "last"):
             raise SystemExit(f"randat position must be cw|last, got {parts[4]!r}")
@@ -94,6 +106,11 @@ def resolve_op(spec):
     meta.update(extra)
     if kind in ("op", "capop", "opat"):
         return kind, fac, meta
+    if kind == "opraw":      # opraw:<factors.pt>:<key>  a norm-matched FITTED control restored to its RAW fitted norm
+        raw = meta["fit_meta"].get("raw_fro")
+        if not raw:
+            raise SystemExit(f"opraw: {key} has no raw_fro in its fit meta")
+        return kind, po.rescale_to(fac, raw), meta
     shapes = {n: (B.shape[0], A.shape[1]) for n, (A, B) in fac.items()}
     rank = next(iter(fac.values()))[0].shape[0]
     if kind in ("rand", "randat"):
@@ -250,7 +267,7 @@ def main():
                                                                          if k != "fit_meta"}}
         if "fit_meta" in meta:
             side["fit_meta"] = meta["fit_meta"]
-        if fac is not None:
+        if fac is not None and kind != "bias":
             side["module_fro"] = {n: po.fro_norm(A, B) for n, (A, B) in fac.items()}
             side["rank"] = int(next(iter(fac.values()))[0].shape[0])
             side["n_params"] = int(sum(A.numel() + B.numel() for A, B in fac.values()))
@@ -269,6 +286,19 @@ def main():
                     rc = sb.main()
                 side["hook_calls"] = hk.n_calls
                 side["mean_last_pos_delta_norm"] = hk.delta_norm_sum / max(1, hk.n_applied)
+            elif kind == "bias":
+                holder = {"pos": None} if meta["where"] == "cw" else None
+                hk = po.BiasHooks(lm.model, fac, holder=holder)
+                if holder is None:
+                    with hk:
+                        rc = sb.main()
+                else:
+                    cw = re.search(r"_ts116m_([a-z]+)_bomb", " ".join(argv)).group(1)
+                    wr = CaptureWrap(sg, None, lm.tokenizer, cw, 0, holder=holder, where="cw")
+                    with hk, wr:
+                        rc = sb.main()
+                    side["positions_tokens"] = sorted({u["token"] for u in wr.positions_used})
+                side["hook_calls"] = hk.n_applied
             elif kind in ("opat", "randat"):
                 holder = {"pos": None}
                 hk = po.OperatorHooks(lm.model, fac, holder=holder)
