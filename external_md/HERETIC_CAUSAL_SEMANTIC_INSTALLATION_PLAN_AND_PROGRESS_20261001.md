@@ -1676,3 +1676,8 @@ nothing auto-analyzes the early VAL jobs (read-after-TRAIN is procedural). Tests
 - **H3 status (plan §3, "distil into an interpretable low-dim subspace better than d_surface"):** the learned operator
   does NOT re-discover d_surface / refusal / probe axes (calibrated null). Whether it is a *better causal variable*
   awaits P2b validation + P3 truncation (gated on a validation PASS).
+
+## S-090 — 2026-10-14 05:40 — ops tick
+- P2b evals, 0 failures: basket r1 36, r4 41; button r1 34, r4 30 (of 163); VAL basket r1 50 / r4 59 (unread).
+  6 GPU (cap); 8 P4-v2 CPU fit/CV jobs running. Queue after P2b: S-084 powered re-test (F6), P2b add-ons, P2b button
+  VAL, P4 v2 evals.
