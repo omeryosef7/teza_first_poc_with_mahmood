@@ -2545,3 +2545,6 @@ Verifier/reviewer (own code `research/heretic_csi/verify/verify_p2b_val.py`) →
 ## S-160 — 2026-10-15 02:10 — ops tick
 - evalC 44/45, evalB 39/39 arms; P3 trunc 1041078 10/133; P6 G3: candle FAIL, lamp/kettle/pencil PASS (ladder next).
   6 GPU, no failures.
+
+## S-161 — 2026-10-15 02:40 — ops tick
+- evalC 52/53, evalB 47/47; P3 trunc 19/133; P6 batch 1 on ladder (4 done: 1 FAIL, 3 PASS). 6 GPU, no failures.
