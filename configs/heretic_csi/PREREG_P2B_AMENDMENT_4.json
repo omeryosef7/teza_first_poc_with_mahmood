@@ -1,0 +1,18 @@
+{
+ "schema": "hcsi_p2b_prereg_amendment/1",
+ "amends": {"PREREG_P2B.json": "e273df1db75f6c2aeb1860dd23639d23286570920e85d139ad66f911e8ced378",
+            "PREREG_P2B_AMENDMENT_1.json": "fd01d54e41809493b2abd4dd5c15ae852824007dab2a22debab13ea782baf10a",
+            "PREREG_P2B_AMENDMENT_2.json": "65a5f0cb1adaaa414319402ba947d29dbc9dbaf5c8e0cbdabb68c7794906a3bf",
+            "PREREG_P2B_VALIDATION.json": "5b1f3bac7c216038fe6bd69b46cd45f820dc7117afa7bef3647a1c35935d2b9b",
+            "PREREG_P2B_AMENDMENT_3.json": "122b86ecf4a7a802f8cd8cde65bc2783a320f0c37fc5bfea19d2763f5d1492ac"},
+ "written": "2026-10-14T08:30:17+03:00",
+ "trigger": "reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_c.md findings 3 and 6",
+ "endpoint_status_at_writing": "NO P2b TRAIN or VALIDATION y_install has been computed or read by F2 or (per the parent) by anyone.",
+ "changes": {
+  "holm_validity": "A primary rank enters Holm with its real rank p ONLY if its primary read is VALID: no shared VOID (liveness-arm collapse, KO_IDENT != KO, KO_IDENT sidecar missing), no primary VOID (CAND collapse, primary family norm/rank/hooks, CAPOP replay, BASE_CAND hooks), manipulation and instrument gates pass, and the CAND recovery is status ok with a CI. Any other rank (absent, NOT ANALYZABLE, VOID, gate-failed, CANNOT ANSWER) enters as p=1 with m=2, and every other rank of that codeword becomes 'INCOMPLETE FAMILY' (never PASS). Secondary family: same rule, using shared + secondary VOIDs, the gates, and the CWONLY secondary recovery. p2b_analyze._valid_primary/_valid_secondary/finalize; regression tests (VOID r1 p=1/82 + r4 p=0.03 -> r4 INCOMPLETE with Holm p 0.06; gate-failed / CANNOT ANSWER / shared-VOID rank -> INCOMPLETE; shared VOID makes the secondary INCOMPLETE).",
+  "addon_voids": "Add-on (MEANBIAS / raw-norm) path: every add-on arm is hook-checked; KO_MEANBIAS, KO_CWMEANBIAS and the raw-norm arms are collapse-screened (median option mass < 0.05 => listed in addon.void). BASE_MEANBIAS collapse is reported as damage (addon.BASE_MEANBIAS_collapsed), not a VOID.",
+  "input_conditional_wording": "'Input-conditional' (or semantic/operator-specific) wording requires, on VALIDATION, CAND beats BOTH KO_MEANBIAS and KO_CWMEANBIAS with domain-bootstrap CI95 lower bound > 0 (CAND_minus_MEANBIAS and CAND_minus_CWMEANBIAS), AND neither MEANBIAS arm is VOID/collapsed. If either comparator collapsed or is VOID, the wording is SUSPENDED (cannot be earned on that split). Reported as addon.input_conditional_wording_eligible_on_this_split (descriptive; not a preregistered pass). The amendment-3 rule for CWONLY vs KO_CWMEANBIAS stands for any CWONLY wording.",
+  "meanbias_overshoot_note": "KO_MEANBIAS adds the FULL-norm TRAIN-mean gap at EVERY position of 26 modules (total norm basket 46.2, button 53.1 per position), whereas the gap was measured only at the codeword row; at other positions it may overshoot and damage the readout. Its option mass (addon.median_option_mass) and clean-prompt damage (BASE_MEANBIAS_minus_BASE_y, BASE_MEANBIAS option mass) are always reported next to it, and a collapsed KO_MEANBIAS suspends the input-conditional wording rather than counting as a CAND win."
+ },
+ "code": "p2b_analyze.py (finalize validity gating, addon voids/eligibility, CAND_minus_CWMEANBIAS); tests 56 passed / 1 skipped (poc_stage2)"
+}

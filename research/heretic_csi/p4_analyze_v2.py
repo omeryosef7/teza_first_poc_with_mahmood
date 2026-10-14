@@ -7,7 +7,8 @@ Decision (per codeword):
   per rank r: p_RAW = rank-p vs RAW, p_NC = rank-p vs NC; p_r = max(p_RAW, p_NC)  (intersection-union test: TOP8 must
   beat BOTH families; valid at level alpha with no cross-family correction).
   Holm over the primary ranks {1,4} on p_r. PASS iff Holm p < 0.05 AND TOP8 recovery CI-lo > 0 AND gates, no VOID.
-  If either primary rank is missing / not analyzable -> "INCOMPLETE FAMILY" for every rank (never a PASS).
+  If either primary rank is missing, not analyzable, VOID, gate-failed or recovery-degenerate -> "INCOMPLETE FAMILY"
+  for every other rank (never a PASS); the invalid rank keeps its own VOID / CANNOT ANSWER verdict.
   Also reported (not the decision): strict Holm over all 4 tests {r1,r4}x{RAW,NC} and its attainable floor.
 Factor-file checks (VOID on failure): A is exactly zero outside the declared heads' o_proj columns for TOP8 and every
 control; control head sets are disjoint from TOP8; NC per-module norms == TOP8 (1e-3); sidecar norms match the file.
@@ -112,10 +113,19 @@ def analyze_rank(a, r, assign):
             "run_dirs": {x: os.path.basename(d) for x, d in dirs.items()}}
 
 
+def valid(x):
+    """A primary rank may enter Holm only if its test is valid: present, no VOID, gates hold, recovery estimable
+    (review #3 finding 3: a VOID / gate-failed / CANNOT-ANSWER rank must count as MISSING, never contribute its p)."""
+    return ("p_IUT" in x and not x.get("void") and x["gates"]["manipulation_ok"] and x["gates"]["instrument_ok"]
+            and x["recovery_TOP8"].get("status") == "ok")
+
+
 def finalize(rows):
-    """Holm over the primary ranks on p_IUT; INCOMPLETE if any primary rank is missing (review #2, HIGH-2)."""
+    """Holm over the primary ranks on p_IUT. INCOMPLETE FAMILY (never PASS) for every rank unless EVERY primary rank
+    is present AND valid (review #2 HIGH-2 + review #3 finding 3). Invalid ranks keep their own VOID / CANNOT ANSWER
+    verdict from decide()."""
     have = {x["rank"]: x for x in rows if "p_IUT" in x}
-    complete = all(r in have for r in PRIMARY)
+    complete = all(r in have and valid(have[r]) for r in PRIMARY)
     hadj = pa.holm({r: have[r]["p_IUT"] for r in PRIMARY}) if complete else {}
     strict = None
     if complete:
@@ -123,13 +133,17 @@ def finalize(rows):
     for x in rows:
         if "p_IUT" not in x:
             continue
+        ok = x["gates"]["manipulation_ok"] and x["gates"]["instrument_ok"]
+        if not valid(x):
+            x["verdict"] = pa.decide(x["primary"], ok, x["void"], 1.0, x["recovery_TOP8"])
+            continue
         if not complete:
-            x["verdict"] = "INCOMPLETE FAMILY (primary ranks present: %s; need %s) -- no verdict" % (sorted(have), list(PRIMARY))
+            bad = sorted(r for r in PRIMARY if not (r in have and valid(have[r])))
+            x["verdict"] = "INCOMPLETE FAMILY (primary ranks missing or invalid: %s) -- no verdict" % bad
             continue
         x["holm_p"] = hadj[x["rank"]]
         x["strict_holm4_p"] = {k: v for k, v in strict.items() if k.startswith(f"{x['rank']}:")}
         x["strict_holm4_floor"] = 4 / (x["rank_test_RAW"]["n_controls"] + 1)
-        ok = x["gates"]["manipulation_ok"] and x["gates"]["instrument_ok"]
         x["verdict"] = pa.decide(x["primary"], ok, x["void"], x["holm_p"], x["recovery_TOP8"])
     return rows
 

@@ -1790,3 +1790,13 @@ stage0 output matches axisfit, disk on scratch; no analyzer outputs exist; tests
   Matches review #3 exactly. Sign is null-dependent ⇒ no contrast support (S-097 stands). Descriptively, button r1 is
   near-null under every family (z 0.74–0.94) while basket r1 is strongly specific (3.94–8.74); at r4 both are
   above controls.
+
+## S-099 — 2026-10-14 09:05 — PREREG_P2B_AMENDMENT_4 frozen before any TRAIN read (review #3 fixes 3, 6)
+- `configs/heretic_csi/PREREG_P2B_AMENDMENT_4.json` (sha256 121206ff…13953a). (3) A primary rank enters Holm with
+  its real p only if its read is VALID (no shared VOID incl. KO_IDENT≠KO, no primary VOID, gates pass, CAND recovery
+  with CI); otherwise p=1, m=2 and the other rank is INCOMPLETE FAMILY; secondary likewise (shared + secondary VOIDs).
+  Regression: r1 VOID p=1/82 + r4 p=0.03 ⇒ r1 VOID, r4 INCOMPLETE (Holm 0.06). (6) add-on: hook check on every arm;
+  collapse screen on KO_MEANBIAS / KO_CWMEANBIAS / raw arms (VOID); BASE_MEANBIAS collapse reported as damage;
+  "input-conditional" wording eligible only on VALIDATION, only if CAND beats BOTH MEANBIAS variants with CI-lo>0 and
+  neither is VOID/collapsed; MEANBIAS overshoot caveat + its option mass/damage always reported.
+- Parent checks: 0 P2b analyzer outputs exist (no endpoint read); tests re-run below.

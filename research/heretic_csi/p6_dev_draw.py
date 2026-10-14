@@ -8,7 +8,8 @@ Inputs: Zipf per codeword (frozen now) and TRAIN installer strength (C−A, sema
   2. Installer strength: above/below the MEDIAN of the surviving untouched codewords (ties -> 'below').
   3. Cells = tertile x strength (6). rng = random.Random(20261013); cell order = rng.sample(sorted cells); take the
      first 5 cells; from each, draw one codeword uniformly (rng.choice over the cell's sorted members). An empty cell
-     is skipped and the next cell in the order is used, so exactly 5 are drawn when >=5 survivors exist.
+     is skipped and the next cell in the order is used; if fewer than 5 cells are non-empty, the remaining slots
+     are FILLED by rng.choice over the sorted not-yet-drawn survivors (same rng stream) — always exactly 5.
   4. DEV = ['candle'] + those 5. CONFIRMATION = remaining surviving untouched codewords.
 basket/button are contaminated DEV points (never confirmation); envelope and carrot are excluded (see prereg).
 """
@@ -49,6 +50,13 @@ def draw(install_strength: dict, survivors: list, seed: int = SEED):
         members = sorted(cells.get(c, []))
         if members:
             dev.append(rng.choice(members))
+    # FILL RULE (review #3 finding 8; PREREG_P6_AMENDMENT_1): if fewer than 5 cells were non-empty, fill the
+    # remaining slots deterministically from the not-yet-drawn survivors with the SAME rng stream,
+    # rng.choice over the sorted remainder, until 5 are drawn (always possible since len(surv) >= 5).
+    n_fill = 0
+    while len(dev) < 5:
+        rest = sorted(w for w in surv if w not in dev)
+        dev.append(rng.choice(rest)); n_fill += 1
     conf = [w for w in surv if w not in dev]
     return {"dev": ["candle"] + dev, "confirmation": conf, "median_strength": med,
-            "cells": {f"{k[0]}|{k[1]}": v for k, v in sorted(cells.items())}, "cell_order": [f"{a}|{b}" for a, b in order]}
+            "n_fill": n_fill, "cells": {f"{k[0]}|{k[1]}": v for k, v in sorted(cells.items())}, "cell_order": [f"{a}|{b}" for a, b in order]}

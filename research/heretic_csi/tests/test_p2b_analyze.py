@@ -29,3 +29,36 @@ def test_holm_and_ties():
     assert abs(h[1] - 0.0244) < 1e-12 and abs(h[4] - 0.03) < 1e-12
     stat = {"C": 0.1, "a": 0.1, "b": 0.0}
     assert pa.rank_p(stat, "C", ["a", "b"])["rank"] == 2      # ties count AGAINST the candidate
+
+
+def _row(r, p, void=(), void_shared=(), gates_ok=True, rec=OK, sec_p=None, void_secondary=()):
+    return {"rank": r, "primary": True, "rank_test": {"p": p},
+            "gates": {"manipulation_ok": gates_ok, "instrument_ok": True},
+            "void": list(void), "void_shared": list(void_shared), "void_secondary": list(void_secondary),
+            "recovery_CAND": dict(rec),
+            "rank_test_CWONLY_vs_cw_family": ({"p": sec_p} if sec_p is not None else None),
+            "recovery_CWONLY_secondary": dict(OK), "flags": []}
+
+
+def test_review3_void_rank_does_not_enter_holm():
+    rows = pa.finalize([_row(1, 1 / 82, void=["x"]), _row(4, 0.03)])
+    v = {x["rank"]: x["verdict"] for x in rows}
+    assert v[1].startswith("VOID") and v[4].startswith("INCOMPLETE FAMILY"), v
+    assert abs(rows[1]["holm_p"] - 0.06) < 1e-12                       # r1 treated as p=1 -> r4 Holm = 2*0.03
+
+
+def test_gate_failed_or_cannot_answer_rank_is_missing():
+    for bad in (dict(gates_ok=False), dict(rec={"status": "CANNOT ANSWER", "reason": "deg"}), dict(void_shared=["KO_IDENT"])):
+        rows = pa.finalize([_row(1, 1 / 82, **bad), _row(4, 1 / 82)])
+        assert rows[1]["verdict"].startswith("INCOMPLETE FAMILY"), (bad, rows[1]["verdict"])
+
+
+def test_secondary_shared_void_makes_secondary_incomplete():
+    rows = pa.finalize([_row(1, 1 / 82, sec_p=1 / 77, void_shared=["KO_IDENT differs"]), _row(4, 1 / 82, sec_p=1 / 77)])
+    assert rows[1]["verdict_secondary_CWONLY"].startswith("INCOMPLETE FAMILY")
+    assert rows[0]["verdict_secondary_CWONLY"].startswith("VOID")
+
+
+def test_both_valid_pass():
+    rows = pa.finalize([_row(1, 1 / 82, sec_p=1 / 77), _row(4, 1 / 82, sec_p=1 / 77)])
+    assert all(x["verdict"].startswith("PASS") and x["verdict_secondary_CWONLY"].startswith("PASS") for x in rows)

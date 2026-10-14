@@ -10,7 +10,7 @@ DOMS = [f"d{i}" for i in range(23)]
 KEYS = [(d, s) for d in DOMS for s in range(10)]
 
 
-def _install(mp, collapse_cwonly=False, cw_bad_norm=False, missing=(), cw_missing=False):
+def _install(mp, collapse_cwonly=False, cw_bad_norm=False, missing=(), cw_missing=False, collapse_meanbias=False):
     rng = random.Random(0)
     cache = {}
 
@@ -45,7 +45,8 @@ def _install(mp, collapse_cwonly=False, cw_bad_norm=False, missing=(), cw_missin
     mp.setattr(pa, "rederive", types.SimpleNamespace(strict_run_dir=strict))
     mp.setattr(pa.sa, "reference_key_set", lambda d, f: set(KEYS))
     mp.setattr(pa.sa, "arm_key_values", lambda d, assign, split: (y(d), None))
-    mp.setattr(pa, "row_fields", lambda d: {k: {"option_mass": 0.001 if (collapse_cwonly and d.startswith("KO_CWONLY")) else 0.3,
+    mp.setattr(pa, "row_fields", lambda d: {k: {"option_mass": 0.001 if ((collapse_cwonly and d.startswith("KO_CWONLY")) or
+                                                                         (collapse_meanbias and d == "KO_MEANBIAS")) else 0.3,
                                                 "lc": -1.0, "lk": -2.0} for k in KEYS})
 
     def side(d):
@@ -121,3 +122,12 @@ def test_addon_comparators(monkeypatch):
     assert ad["CAND_minus_MEANBIAS"]["point"] > 0                    # synthetic CAND 0.43 > control-like MEANBIAS ~0.41
     assert ad["rank_test_DER_raw_norm"]["n_controls"] == 15 and ad["rank_test_SHUF_raw_norm"]["n_controls"] == 5
     assert set(ad["KO_MEANBIAS"]) == {"stat", "recovery"}
+
+
+def test_addon_collapsed_meanbias_suspends_wording(monkeypatch):
+    _install(monkeypatch, collapse_meanbias=True)
+    a = types.SimpleNamespace(nrand=61, nshuf=5, nder=15, capop=True, cw_nrand=61, cw_nder=15, addon=True,
+                              prefix="PFX", expect_n=230, allow_short=0, option_mass_floor=0.05, split="validation", n_boot=300)
+    ad = pa.analyze_rank(a, 1, None)["addon"]
+    assert any("KO_MEANBIAS: readout collapsed" in v for v in ad["void"])
+    assert ad["input_conditional_wording_eligible_on_this_split"] is False

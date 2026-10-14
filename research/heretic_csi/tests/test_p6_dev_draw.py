@@ -23,3 +23,13 @@ def test_draw_requires_five():
     import pytest
     with pytest.raises(SystemExit):
         d.draw({"lamp": 0.1}, ["lamp"])
+
+
+def test_fill_rule_when_cells_sparse():
+    # all survivors in ONE cell (same tertile, all below median) -> only 1 non-empty... fill to 5
+    low = [w for w, t in d.tertiles().items() if t == "low"]
+    strength = {w: 0.5 for w in low}           # all equal -> all 'below' the median
+    out = d.draw(strength, low)
+    assert len(out["dev"]) == 6 and out["n_fill"] == 4
+    assert len(set(out["dev"])) == 6 and not set(out["dev"]) & set(out["confirmation"])
+    assert out == d.draw(strength, low)       # deterministic

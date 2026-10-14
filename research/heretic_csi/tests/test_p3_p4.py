@@ -86,3 +86,24 @@ def test_p4v2_iut_requires_both_families():
     assert not v1.startswith("PASS") and v4.startswith("PASS")
     rows = v.finalize([_row(1, 1 / 61, 1 / 61), _row(4, 1 / 61, 1 / 61, ci_lo=-0.01)])
     assert [x for x in rows if x["rank"] == 4][0]["verdict"].startswith("DOES NOT PASS")
+
+
+def test_p4v2_void_or_gatefail_rank_counts_as_missing():
+    import p4_analyze_v2 as v
+    r1 = _row(1, 1 / 61, 1 / 61); r1["void"] = ["KO_TOP8: readout collapsed"]
+    rows = v.finalize([r1, _row(4, 0.03, 0.03)])
+    assert rows[0]["verdict"].startswith("VOID") and rows[1]["verdict"].startswith("INCOMPLETE")
+    r1 = _row(1, 1 / 61, 1 / 61); r1["gates"]["instrument_ok"] = False
+    rows = v.finalize([r1, _row(4, 0.03, 0.03)])
+    assert rows[0]["verdict"].startswith("CANNOT") and rows[1]["verdict"].startswith("INCOMPLETE")
+    r1 = _row(1, 1 / 61, 1 / 61); r1["recovery_TOP8"] = {"status": "degenerate", "reason": "den~0"}
+    rows = v.finalize([r1, _row(4, 0.03, 0.03)])
+    assert rows[0]["verdict"].startswith("CANNOT") and rows[1]["verdict"].startswith("INCOMPLETE")
+    rows = v.finalize([_row(1, 1 / 61, 1 / 61), _row(4, 0.03, 0.03)])     # both valid: normal Holm
+    assert [x for x in rows if x["rank"] == 4][0]["verdict"].startswith("PASS")
+
+
+def test_p4v1_void_rank_counts_as_missing():
+    import ast, inspect, p4_analyze as v1
+    src = inspect.getsource(v1.main)
+    assert "_valid(x)" in src and "not _valid(x)" in src

@@ -291,22 +291,53 @@ def analyze_rank(a, r, assign):
             ad["rank_test_DER_raw_norm"] = rank_p(rstat, cand, raw[:a.nder])
             ad["rank_test_SHUF_raw_norm"] = rank_p(rstat, cand, raw[a.nder:])
             asc = {x: sidecar(add[x]) for x in adarms}
+            # VOIDs on the add-on path (review #3 finding 6): collapse + hooks; MEANBIAS collapse suspends wording
+            ad["void"] = []
+            for x in adarms:
+                if ad["median_option_mass"][x] < a.option_mass_floor and x != "BASE_MEANBIAS":
+                    ad["void"].append(f"{x}: readout collapsed (median option mass {ad['median_option_mass'][x]:.2e})")
+                if asc[x] is None or not asc[x].get("hook_calls"):
+                    ad["void"].append(f"{x}: hooks never applied / no sidecar")
+            ad["BASE_MEANBIAS_collapsed"] = ad["median_option_mass"]["BASE_MEANBIAS"] < a.option_mass_floor
             ad["raw_arms_total_fro"] = {x: round(sum((asc[x] or {}).get("module_fro", {}).values()), 4) for x in raw}
             ad["meanbias_sidecars"] = {x: {k: (asc[x] or {}).get(k) for k in ("kind", "where", "hook_calls", "bias_total_norm")}
                                        for x in mb}
+            mb_void = [v for v in ad["void"] if "MEANBIAS" in v]
+            ad["input_conditional_wording_eligible_on_this_split"] = bool(
+                not mb_void and ad["CAND_minus_MEANBIAS"]["ci95"][0] > 0 and
+                _boot_diff(ad_d, abyk[cand], abyk["KO_CWMEANBIAS"], a.n_boot, 9)["ci95"][0] > 0)
+            ad["CAND_minus_CWMEANBIAS"] = _boot_diff(ad_d, abyk[cand], abyk["KO_CWMEANBIAS"], a.n_boot, 9)
+            ad["wording_rule"] = ("'input-conditional' requires CAND beats BOTH KO_MEANBIAS and KO_CWMEANBIAS (CI-lo>0) on "
+                                  "VALIDATION, and is suspended if either comparator is VOID/collapsed (amendment 4)")
             out["addon"] = ad
         except SystemExit as e:
             out["addon"] = {"status": f"NOT ANALYZABLE: {str(e)[:200]}"}
     return out
 
 
+def _valid_primary(x):
+    """A primary rank enters Holm with its real p ONLY if its primary read is valid (review #3 finding 3)."""
+    g = x["gates"]
+    return (not x["void_shared"] and not x["void"] and g["manipulation_ok"] and g["instrument_ok"]
+            and x["recovery_CAND"].get("status") == "ok" and "ci95" in x["recovery_CAND"])
+
+
+def _valid_secondary(x):
+    g = x["gates"]
+    rec = x.get("recovery_CWONLY_secondary") or {}
+    return (x.get("rank_test_CWONLY_vs_cw_family") is not None and not x["void_shared"] and not x["void_secondary"]
+            and g["manipulation_ok"] and g["instrument_ok"] and rec.get("status") == "ok" and "ci95" in rec)
+
+
 def finalize(rows):
-    """Holm + verdicts for one codeword's rows. A primary rank that is absent or not analyzable enters Holm as
-    p=1 (m stays 2) AND the verdict becomes INCOMPLETE FAMILY -- never a PASS at an unadjusted p (review #2 #2)."""
+    """Holm + verdicts for one codeword's rows. A primary rank that is absent, NOT ANALYZABLE, VOID (shared or
+    primary), gate-failed or CANNOT ANSWER enters Holm as p=1 (m stays 2), and every other rank's verdict becomes
+    INCOMPLETE FAMILY -- never a PASS at a p adjusted over a family with an invalid member (reviews #2 #2, #3 #3).
+    Same rule for the secondary family (shared VOIDs, e.g. KO_IDENT != KO, invalidate both)."""
     analysed = [x for x in rows if "rank_test" in x]
-    prim_have = {x["rank"]: x["rank_test"]["p"] for x in analysed if x["primary"]}
+    prim_have = {x["rank"]: x["rank_test"]["p"] for x in analysed if x["primary"] and _valid_primary(x)}
     sec_have = {x["rank"]: x["rank_test_CWONLY_vs_cw_family"]["p"] for x in analysed
-                if x["primary"] and x.get("rank_test_CWONLY_vs_cw_family") and not x["void_secondary"]}
+                if x["primary"] and _valid_secondary(x)}
     hadj = holm({r: prim_have.get(r, 1.0) for r in PRIMARY_RANKS})
     sadj = holm({r: sec_have.get(r, 1.0) for r in PRIMARY_RANKS})
     prim_missing = sorted(set(PRIMARY_RANKS) - set(prim_have))
@@ -317,14 +348,16 @@ def finalize(rows):
         v = decide(x["primary"], ok, x["void_shared"] + x["void"], x["holm_p"] if x["primary"] else 1.0,
                    x["recovery_CAND"])
         if x["primary"] and prim_missing and not v.startswith(("VOID", "CANNOT")):
-            v = "INCOMPLETE FAMILY (primary ranks %s missing/unanalyzable; Holm treats them as p=1): %s" % (prim_missing, v)
+            v = ("INCOMPLETE FAMILY (primary ranks %s missing / not analyzable / VOID / CANNOT ANSWER; Holm treats "
+                 "them as p=1): %s" % (prim_missing, v))
         x["verdict"] = v
+        x["holm_family_valid_ranks"] = sorted(prim_have)
         if x["primary"] and (x.get("rank_test_CWONLY_vs_cw_family") or x["void_secondary"]):
             x["holm_p_secondary_CWONLY"] = sadj.get(x["rank"])
             vs = decide(True, ok, x["void_shared"] + x["void_secondary"], sadj.get(x["rank"], 1.0),
                         x.get("recovery_CWONLY_secondary") or {"status": "missing"})
             if sec_missing and not vs.startswith(("VOID", "CANNOT")):
-                vs = "INCOMPLETE FAMILY (secondary ranks %s missing/void): %s" % (sec_missing, vs)
+                vs = "INCOMPLETE FAMILY (secondary ranks %s missing/invalid): %s" % (sec_missing, vs)
             x["verdict_secondary_CWONLY"] = vs + " [SECONDARY; requires VALIDATION replication with the frozen operator]"
     return rows
 
