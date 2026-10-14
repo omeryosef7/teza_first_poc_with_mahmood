@@ -2215,3 +2215,42 @@ VALIDATION NOT read at this point.
   VALIDATION (amendment 5). TRAIN is in-sample ⇒ weak evidence by construction.
 - Next: VALIDATION read authorized (basket VAL done; button VAL running; VAL add-ons to run). Deep adversarial
   review #5 launched on this read; independent recomputation tasked.
+
+## S-136 — 2026-10-14 19:00 — ~4h ADVERSARIAL REVIEW #5 on the P2b TRAIN read: all verdicts REPRODUCE; S-135 wording CORRECTED
+Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_e.md`; own code `research/heretic_csi/verify/verify_p2b_train.py`
+(no VAL dir read). All 8 cells reproduce exactly (ranks, Holm p's, verdicts; CIs within 0.01 — bootstrap seeds);
+one complete dir per arm; partial preempted dirs (basket CWRAND_r1_36, button CWRAND_r1_58) correctly skipped;
+*ovl dirs never read; gates, CAPOP replay (exact), sub-family and raw-norm ranks, CWMEANBIAS numbers reproduce.
+**CORRECTIONS to S-135 (appended; S-135 text stands as written):**
+1. (HIGH) "Fit site does not matter / Heretic's last-row fit + codeword-row action would suffice" — NOT TESTED (NEUT is
+   applied at all rows; no NEUT_CWONLY/ATLAST arms). Correct: **a last-row fit (NEUT) reaches TRAIN recovery
+   statistically indistinguishable from CAND (NEUT−CAND CI includes 0 in all 4 cells), so fitting at the codeword row
+   is not necessary for this magnitude; where NEUT acts was not tested.** (NEUT also ranks 1/82 vs basket r1 primary
+   controls — descriptive; not norm-matched.)
+2. (HIGH) basket r4 "pairing-specific" has an undeclared IN-SAMPLE bias: CAND is fit on the exact pairs scored; DER on
+   mismatched targets (more so at higher rank). Correct: **basket r4 CAND outranks 14/15 deranged fits in-sample,
+   where the paired fit has a built-in fitting advantage; pairing-specificity is untested until VALIDATION.**
+3. (MED) basket r4 PASS: LODO stable (rank 2 in 63/63), strict floors rank 2 — but rank 2 is the boundary (one DER
+   0.2098 > CAND 0.2064; next control 0.0068 below); vs raw-norm DER rank 5/16 (p 0.31); a strict all-arms floor makes
+   basket r1 pass too ⇒ the r1/r4 split is floor-rule-dependent.
+4. (MED) "generic KO→clean SHIFT": "generic" holds — mean DER recovery 1.20/1.30/1.73/1.65 vs CAND 1.24/1.45/1.70/1.55;
+   in button CAND is significantly WORSE than the average deranged fit (−0.0035, −0.011; CIs < 0) — but "shift" does
+   not: constant offsets do much less (CWMEANBIAS 0.70 basket / −0.07 button; basket MEANBIAS_NM 0.39 r1 / 0.67 r4 —
+   descriptive amendment-6 arms read by the reviewer; button NM pending). Correct: **most of the rescue is reproduced
+   by ANY operator fit to map KO→clean states regardless of domain pairing; it is not a constant shift.** The P3
+   shared-write-direction link is a HYPOTHESIS.
+5. (MED) "OVERSHOOT" is misleading: denominators are healthy (recovery 1.19–1.54 after dropping small ones); KO_FULL
+   (L18 query-position rescue) restores only 51–56% of BASE−KO, while CAND restores **0.70–0.87 of the BASE−KO gap**
+   and stays below BASE (by 0.03–0.08). Report gap fraction next to recovery; drop "overshoot".
+6. (MED) "TRAIN pattern would map to outcome D" — DELETED (contradicts amendment 5 / the read's own MUST-NOT).
+7. (MED) CWONLY basket PASS is carried by r1 (LODO 63/63); at r4 the margin over the best CW-DER is +0.0004 (tie);
+   strict floor ⇒ 2/77; same in-sample bias as (2). "CWONLY ≈ CAND" only loosely (difference ≠ 0 in 3/4 cells).
+8. (LOW) NEUT norm contrast summed per-module norms; per-position last-row output change is ~0.5–0.6× CAND's; deployed
+   gap-closure 0.54–0.58.
+No leakage found (K4 exclude list + right bank on every arm; overlap and NM-overlap KO runs equal the main KO exactly).
+
+### WHAT WE MUST NOT SAY (addendum S-136)
+- "Position-aware fitting is unnecessary because Heretic's last-row fit works" (where NEUT acts is untested).
+- "Basket r4 operator is pairing-specific" (in-sample fitting advantage; VAL decides).
+- "The operator is a constant / mean shift" or "overshoots".
+- Any outcome letter from TRAIN.
