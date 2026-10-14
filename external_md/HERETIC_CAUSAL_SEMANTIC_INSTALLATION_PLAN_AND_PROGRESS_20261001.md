@@ -1771,3 +1771,22 @@ stage0 output matches axisfit, disk on scratch; no analyzer outputs exist; tests
 ### WHAT WE MUST NOT SAY (addendum S-097)
 - Any basket-vs-button "specificity gain" contrast from S-085 (withdrawn; control-family-dependent sign).
 - "The learned operator does not align with refusal/d_surface" — only "no alignment detectable at the null's sensitivity".
+
+## S-098 — 2026-10-14 08:55 — PR-HCSI-S084 AMENDMENT 1 committed before submission; corrected contrast v2
+- `configs/heretic_csi/prereg_S084_button_r4_powered_AMENDMENT_1.json` (sha256 e12828b3…778bc): PASS additionally
+  requires the candidate > EVERY one of the 10 SHUF_r4 controls; job 1 re-runs overlap arms OVL_BASE / OVL_KO /
+  OVL_CAND_r4 / OVL_RAND_r4_0 and requires per-row |Δlogp|,|Δy| ≤ 1e-6 vs job 1022698 with identical prompt_id sets,
+  else VOID; job 2 VOID if not on a5000; shared row set must be 203 (or deviation reported with the responsible
+  controls). No r4ext GPU job submitted yet.
+- Corrected descriptive contrast (`reports/heretic_csi/P2A_BUTTON_R4_CONTRAST_v2.json`; v1 kept, superseded),
+  common rows basket r1 133 / r4 145, button r1 193 / r4 203:
+
+  | family | basket z r1 / r4 | button z r1 / r4 | I [95% CI] |
+  |---|---|---|---|
+  | RAND-only | 8.74 / 13.37 | 0.74 / 4.33 | −1.045 [−4.876, 1.044] |
+  | SHUF-only | 3.94 / 2.25 | 0.94 / 2.21 | 2.960 [0.845, 4.437] |
+  | pooled | 6.68 / 3.39 | 0.78 / 3.59 | 6.093 [1.391, 7.361] |
+
+  Matches review #3 exactly. Sign is null-dependent ⇒ no contrast support (S-097 stands). Descriptively, button r1 is
+  near-null under every family (z 0.74–0.94) while basket r1 is strongly specific (3.94–8.74); at r4 both are
+  above controls.

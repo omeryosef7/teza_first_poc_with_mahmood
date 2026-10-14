@@ -33,6 +33,7 @@ PY=/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python
 CW=button
 START="${1:?usage: sbatch p2a_powered_r4ext.slurm START END}"
 END="${2:?}"
+OVL="${3:-0}"   # 1 => also run the AMENDMENT_1 overlap arms (job 1 only)
 RANKS=4; LIMIT=0; BATCH=1
 LIMITARG=""
 PT=configs/heretic_csi/hcsi_ranksweep_button_r4ext.pt
@@ -91,6 +92,15 @@ KO="--intervene demo_all:attn_knockout:6-14:1.0 --knockout-scope target_surface_
 RESC="--rescue-positions query --rescue-layer $LAYER"
 ARGV=$(mktemp)
 emit () { echo "python src/boombness/score_behavior.py $*" >> "$ARGV"; }
+# PR-HCSI-S084 AMENDMENT_1: OVERLAP arms re-run identical interventions from job 1022698 under distinct labels
+# (so they never collide with that job's run dirs in the analyzer); they must reproduce 1022698 per row.
+ORIG=configs/heretic_csi/hcsi_ranksweep_button.pt
+if [ "$OVL" = "1" ]; then
+  emit $COMMON                                --arm OVL_BASE --tag ${TAGP}_OVL_BASE
+  emit $COMMON $KO                            --arm OVL_KO   --tag ${TAGP}_OVL_KO
+  emit $COMMON $KO $RESC --rescue-donor clean --rescue-basis $ORIG --rescue-basis-key cand_pls4 --arm OVL_CAND_r4 --tag ${TAGP}_OVL_CAND_r4
+  emit $COMMON $KO $RESC --rescue-donor clean --rescue-basis $ORIG --rescue-basis-key ctrl_random_r4_0 --rescue-norm-match-key cand_pls4 --arm OVL_RAND_r4_0 --tag ${TAGP}_OVL_RAND_r4_0
+fi
 while IFS=$'\t' read -r ARM KEY NM ROLE RANK; do
   [ -z "$ARM" ] && continue
   emit $COMMON $KO $RESC --rescue-donor clean --rescue-basis $PT --rescue-basis-key $KEY --rescue-norm-match-key $NM --arm "$ARM" --tag "${TAGP}_${ARM}"
@@ -102,5 +112,5 @@ set +e
 RC=$?
 set -e
 echo "---- SWEEP DONE rc=$RC CW=$CW $(date -Is) HOST=$(hostname)"
-echo "DONE_MARKER sweep_arms=$(wc -l < "$ARMS") argv_lines=$(wc -l < "$ARGV") codeword=$CW ranks=4ext range=$START..$END rc=$RC"
+echo "DONE_MARKER sweep_arms=$(wc -l < "$ARMS") argv_lines=$(wc -l < "$ARGV") codeword=$CW ranks=4ext range=$START..$END ovl=$OVL rc=$RC"
 rm -f "$ARMS" "$ARGV"

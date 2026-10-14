@@ -1,0 +1,19 @@
+{
+  "schema": "hcsi_prereg/1",
+  "id": "PR-HCSI-S084 AMENDMENT 1",
+  "amends": "configs/heretic_csi/prereg_S084_button_r4_powered.json (sha256 e7a109013bf91f218cb154e036352f49c874d6e252eb3eab845c11ae659253ce, committed aa7fdc65)",
+  "written": "2026-10-14, F6, BEFORE any extended-control arm is run (no r4ext GPU job submitted)",
+  "trigger": "Adversarial review #3 (reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_c.md) findings 1, 2, 5.",
+  "pass_rule_additions": {
+    "beat_every_shuf": "PASS additionally requires the candidate's statistic (mean over domains of KO_CAND_r4 - KO, on the analyzer's common-key row set) to be STRICTLY greater than that of EVERY one of the 10 shuffled-label PLS controls KO_SHUF_r4_{0..9}. Reason: SHUF is the stronger null (at button r4 SHUF mean recovery 0.0038 vs RAND 0.0011) and stays at n=10; all 144 new controls are RAND, so the 200-control p resolves the floor only against random geometry.",
+    "full_rule": "PASS iff [Holm-adjusted p_ext (over {r1 0.2456, r16 0.1754, r4 p_ext}) < 0.05] AND [candidate > every KO_SHUF_r4_j] AND [candidate-minus-KO domain-cluster CI lower bound > 0] AND [gates] AND [no VOID, incl. the overlap VOID below]."
+  },
+  "overlap_check": {
+    "arms": "Job 1 (range 46..117) additionally re-runs 4 interventions identical to job 1022698 under distinct labels so they cannot collide in the analyzer: OVL_BASE (=BASE), OVL_KO (=KO), OVL_CAND_r4 (=KO_CAND_r4: original basis file, key cand_pls4, no norm-match), OVL_RAND_r4_0 (=KO_RAND_r4_0: original basis file, key ctrl_random_r4_0, norm-match cand_pls4). Same COMMON/KO/RESC flags, a5000.",
+    "rule": "For every overlap arm and every prompt_id present in both runs: |logp_concept_new - logp_concept_1022698|, |logp_codeword_new - logp_codeword_1022698| and |y_new - y_1022698| must be <= 1e-6 (S-062: the frozen readout is bit-exact within a GPU type; bit-exact expected on a5000), and the prompt_id sets must be identical. Any violation => the extended re-test is VOID (cross-job combination not licensed); the new controls are then reported descriptively only.",
+    "job_2": "Job 2 (range 118..189) has no overlap arms; it is licensed by job 1's overlap check plus the same a5000 GPU type recorded in its log. If job 2 lands on a different GPU type => VOID."
+  },
+  "row_set": "The analyzer's common-key row set across BASE/KO/KO_SELF/KO_FULL/candidate/all 200 controls must be 203 rows (as in S-072/073, BASE-referenced floor 0.05). If smaller (norm-match-degeneracy drops in new controls), REPORT the deviation and the controls responsible; the analyzer's own common-key set is used as-is (no post-hoc control exclusion).",
+  "descriptive_contrast_correction": "The S-084 descriptive contrast v1 (reports/heretic_csi/P2A_BUTTON_R4_CONTRAST.json; I=2.74 [0.27,4.40]) is SUPERSEDED: it averaged each arm over its own rows. v2 (research/heretic_csi/p2a_powered_contrast_v2.py -> reports/heretic_csi/P2A_BUTTON_R4_CONTRAST_v2.json) uses rows common to all arms and reports three families: RAND-only I=-1.045 [-4.876,1.044]; SHUF-only I=2.960 [0.845,4.437]; pooled I=6.093 [1.391,7.361]. The interaction's sign depends on the null ⇒ 'button gains specificity r1->r4 more than basket' is NOT supported by a contrast (descriptive).",
+  "unchanged": "Everything else in PR-HCSI-S084 (data, candidate, 200-control family, Holm family, honest_scope, test never)."
+}

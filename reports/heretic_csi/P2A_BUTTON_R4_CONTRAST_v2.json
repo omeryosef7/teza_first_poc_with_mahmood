@@ -1,0 +1,53 @@
+{
+ "prereg": "PR-HCSI-S084 descriptive contrast v2 (common-row fix)",
+ "supersedes": "P2A_BUTTON_R4_CONTRAST.json",
+ "n_domains": 23,
+ "n_common_rows": {
+  "basket_r1": 133,
+  "basket_r4": 145,
+  "button_r1": 193,
+  "button_r4": 203
+ },
+ "by_family": {
+  "rand": {
+   "z": {
+    "basket_r1": 8.737,
+    "basket_r4": 13.365,
+    "button_r1": 0.741,
+    "button_r4": 4.325
+   },
+   "interaction_I": -1.045,
+   "I_ci95": [
+    -4.876,
+    1.044
+   ]
+  },
+  "shuf": {
+   "z": {
+    "basket_r1": 3.935,
+    "basket_r4": 2.245,
+    "button_r1": 0.943,
+    "button_r4": 2.213
+   },
+   "interaction_I": 2.96,
+   "I_ci95": [
+    0.845,
+    4.437
+   ]
+  },
+  "pooled": {
+   "z": {
+    "basket_r1": 6.675,
+    "basket_r4": 3.387,
+    "button_r1": 0.78,
+    "button_r4": 3.585
+   },
+   "interaction_I": 6.093,
+   "I_ci95": [
+    1.391,
+    7.361
+   ]
+  }
+ },
+ "reading": "DESCRIPTIVE. The interaction's sign/size depends on the control family; see by_family."
+}
