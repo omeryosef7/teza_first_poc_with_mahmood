@@ -1494,3 +1494,34 @@ E = concept_in_benign_ctx. Phase-B ARA groups renamed target = C (installed), so
   preserve damage ≤0.003); r50 then button ranks next. 1023508/09 (r4) waiting on factors; 1023264 pending.
 - F5 CPU jobs (cpu-killable): P4 head-restricted fits 1023554–57 (basket/button × r1/r4), P3 1023558. 3 GPU running.
   No failures/duplicates.
+
+## S-079 — 2026-10-14 03:00 — P3 (descriptive SVD, basket r1–r32) + P4 setup; PREREG_P4 frozen before any P4 endpoint
+F5 (CPU only). Reports: `reports/heretic_csi/P3_SVD_REPORT.md`, `P3_svd_descriptive.json`, `P3_write_direction.json`,
+`P4_HEAD_RESTRICTED_DESIGN.md`. Button P3 pending (button factors not yet fit).
+- **P3 key structural finding (DESCRIPTIVE geometry):** at r1–2 the candidate AND every fitted control (DER, SHUF)
+  write along the same direction per module = the mean KO→clean output gap (|cos| 1.000 CAND/DER, 0.999 SHUF); they
+  differ only in input conditioning (whole-ΔW cos: DER 0.6, SHUF 0.35; NEUT 0.13). The mean gap carries 44–75%
+  (basket) / 52–78% (button) of per-prompt gap energy and is largely SHARED across codewords (basket·button |cos|
+  0.84–0.94 at L6–14, 0.50 at L18). **Consequence for P2b reading:** CAND vs fitted controls tests input-side
+  specificity only; CAND vs RAND tests write direction + conditioning.
+- Shape: o_proj holds 59–79% of ‖ΔW‖²; norm concentrates in layers 6–7 and 17–18; entropy-effective rank 1.0 (r1),
+  ~2 (r4), ~4.8 (r8, r16); ‖ΔW‖/‖W‖ median 2–6%.
+- Alignment (vs matched random-subspace null): weak. Largest = refusal direction at L16 o_proj (squared projection
+  0.025–0.043, |cos| ≈0.16–0.21, every rank, > random 99th pct); d_surface at L6/L12 ≤0.019; L18 probe axes ≤0.023
+  (different token position — not like-for-like). **No preference for the inherited 8-head circuit** (TOP8 share of
+  o_proj input-column norm median 0.23–0.25 vs 0.25 expected; ≤1/13 modules above random 95th pct).
+  (F5 self-corrected a draft claim that alignment never exceeded the null — refusal@L16 does.)
+- **P4 setup:** query head h ↔ o_proj input columns [128h, 128h+128) verified in transformers LlamaAttention (GQA
+  repeat_kv precedes; same indexing as the CSI head knockout); unit-tested. Existing captures contain o_proj inputs
+  at the codeword row L6–18 ⇒ no new GPU capture. Fits (CPU, 1023554–57, ~12 h): TOP8 heads [19,17,23,6,13,2,24,28]
+  vs 60 fitted random-8-head sets from the 24 other heads (norm-matched per module), + FULLO, MLP, ATTNMLP, H2,
+  CELL_L10H2; ranks {1,4}. In-sample (fitting-side): basket r1 TOP8 gap-closure 0.571 (‖ΔW‖ 18.3, damage 0.0025) vs
+  FULLO 0.575 (10.0, 0.0007); basket r4 0.620 vs 0.638; button r1 0.624 vs 0.628. CPU thread count changes TOP8 norm
+  by 0.04% (saved factors are the frozen ones). Summary-file collision (S-051 class) caught + fixed before results.
+- **PREREG_P4 frozen** `configs/heretic_csi/PREREG_P4.json` (sha256 aba003bc…aacbf), parent-reviewed: candidate
+  KO_TOP8_r vs 60 fitted, norm-matched random-8-head controls (floor 0.0164); basket PRIMARY (Holm {1,4}, CI-lo>0,
+  gates, VOIDs), button = secondary transfer; TRAIN-K4 in-sample then VALIDATION frozen factors; parent additions:
+  the test measures head/input-side specificity (all fits share the write direction), unscaled norms reported, no
+  post-hoc promotion of descriptive variants. **Dependence caveat:** the 8-head set was certified on basket
+  VALIDATION ⇒ basket VAL P4 read is held-out for the weight fit, not a fresh test of the head nomination.
+- Plans copied to `configs/heretic_csi/p2b_plans/` (P3 truncation ≈11 GPU-h gated on a validation PASS; P4 ≈37 GPU-h).

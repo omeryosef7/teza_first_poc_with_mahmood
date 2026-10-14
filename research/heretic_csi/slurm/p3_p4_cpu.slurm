@@ -12,7 +12,7 @@
 set -euo pipefail
 cd /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
 PY=/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python
-export PYTHONUNBUFFERED=1 OMP_NUM_THREADS=16
+export PYTHONUNBUFFERED=1 OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-16} MKL_NUM_THREADS=${SLURM_CPUS_PER_TASK:-16}
 echo "HOST=$(hostname) JOB=${SLURM_JOB_ID} $(date -Is) ARGS=$*"
 mkdir -p outputs/heretic_csi/p3p4/code_${SLURM_JOB_ID}
 cp research/heretic_csi/p3_*.py research/heretic_csi/p4_*.py outputs/heretic_csi/p3p4/code_${SLURM_JOB_ID}/ 2>/dev/null || true

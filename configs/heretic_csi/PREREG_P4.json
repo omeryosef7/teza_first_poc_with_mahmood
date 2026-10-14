@@ -1,0 +1,41 @@
+{
+ "schema": "hcsi_prereg/1",
+ "id": "PR-HCSI-P4",
+ "question": "Can a learned low-rank weight operator RESTRICTED to the independently nominated attention-head circuit (o_proj input columns of query heads [19,17,23,6,13,2,24,28], D32) reproduce semantic-installation rescue under the CSI knockout better than the same operator restricted to random disjoint 8-head sets?",
+ "head_to_oproj_mapping": "verified in transformers LlamaAttention (poc_stage2): attn_output [b,32,q,128] -> transpose(1,2) -> reshape(...,4096) -> o_proj; query head h = o_proj input columns [128h,128h+128); GQA repeat_kv precedes and does not change the layout; CSI knockout heads= uses the same query-head index (num_attention_heads=32).",
+ "operator": "Delta W = B @ A on self_attn.o_proj of layers 6-18 (P2b fit layers), A zero outside the chosen heads' columns; heads tied across layers (like the CSI head knockout). Fitted by p4_head_fit.py with P2b's FROZEN objective (freeze_pooled.json: mse, steer 0.3, preserve 1.0, 15 L-BFGS steps) on TRAIN full (670 rows / 67 domains) at the per-example codeword row; SOURCE = KO, TARGET = clean. Applied at ALL positions (weight edit) like P2b KO_CAND.",
+ "candidate": "KO_TOP8_r (r in {1,4})",
+ "control_family": "KO_RH8_j, j=0..59: same procedure restricted to a seeded random 8-head set drawn from the 24 NON-TOP8 heads (seed 4000+100r+j; disjoint from TOP8), then rescaled per module to TOP8's Frobenius norm => matched rank, layers, component, #effective params (8x128xr + 4096xr per module), training rows, objective and norm. 60 controls => p floor 1/61 = 0.0164.",
+ "statistic": "domain-level mean(KO_TOP8 - KO) vs each control's mean(KO_RH8_j - KO) on keys common to all arms after the BASE-referenced option-mass floor 0.05; rank p = (1 + #controls >= candidate)/61. Recovery = effect_fraction (sufficiency) vs whole-state rescue KO_FULL, domain-cluster bootstrap.",
+ "pass_rule": "per codeword: Holm over ranks {1,4}; PASS iff Holm p < 0.05 AND TOP8 recovery CI lower bound > 0 AND gates (KO<BASE, FULL>KO, KO_IDENT==KO) AND no VOID (collapsed BASE/KO/FULL/IDENT/TOP8 readout; hooks not applied; control norm/rank mismatch). Implemented by p4_analyze.py using p2b_analyze.decide().",
+ "codewords": {
+  "basket": "PRIMARY (the head set was nominated and certified on basket, D32/D34/D36)",
+  "button": "SECONDARY transfer test (D35: head 2 did not transfer to button; prediction: weaker or null). Holm within codeword; button result never upgrades the basket claim."
+ },
+ "populations": {
+  "fit": "TRAIN full 670 rows (in-sample for the TRAIN eval)",
+  "train_eval": "TRAIN K4 subset 268 rows (runargs/heretic_csi/exclude_<cw>_K4.txt) - IN-SAMPLE; a TRAIN pass is weak evidence (candidate is fit on these rows; but controls are ALSO fitted, unlike P2b RAND)",
+  "confirmatory": "VALIDATION 230 rows / 23 domains with the SAME frozen factors (no refit), read once after the TRAIN read",
+  "test": "never"
+ },
+ "dependence_caveat": "The 8-head set was CERTIFIED on basket VALIDATION (D32, DCS_CSI_PR010_HEAD_validation.json). A basket VALIDATION P4 read therefore re-uses the population that certified the head set: it is a held-out test of the WEIGHT-OPERATOR fit (fit on TRAIN) but not a fresh test of the head nomination. Fully fresh confirmation requires P6 codewords.",
+ "descriptive_arms": [
+  "KO_FULLO (o_proj all heads)",
+  "KO_MLP (down_proj only)",
+  "KO_ATTNMLP (o_proj+down_proj, refit)",
+  "KO_H2 (head 2 only)",
+  "KO_CELL_L10H2 (L10 o_proj, head 2 only)",
+  "BASE_TOP8 (preservation)",
+  "TOP8/FULLO recovery ratio",
+  "d logp_concept / d logp_codeword"
+ ],
+ "fitting_side_diagnostics": "p4_fit_<cw>.json: in-sample net gap-closure for every variant and 5-fold domain-grouped TRAIN CV of TOP8 vs RH8_0..19 (fitting side only; reported, never used to change this design).",
+ "gpu_estimate": "per (cw, rank, split) 68 arms (+4 liveness at r1): TRAIN K4 ~5.0 GPU-h, VALIDATION ~4.3 GPU-h; 2 codewords x 2 ranks x 2 splits ~37 GPU-h",
+ "no_writer_language": "No cell or head is called a 'writer'; the claim (if any) is: an operator restricted to these heads' o_proj columns is sufficient for a specific rescue relative to random-head-restricted operators of equal norm.",
+ "frozen_at": "2026-10-14 ~03:00, parent-reviewed, BEFORE any P4 endpoint (P4 fit jobs 1023554-57 still running; no P4 eval submitted)",
+ "parent_review_additions": {
+  "what_the_test_measures": "P3 (S-079) showed fitted operators (candidate and fitted controls) write along the same mean KO->clean output-gap direction per module at low rank. Since every RH8 control is also FITTED by the same objective, TOP8-vs-RH8 tests whether routing the edit through the nominated heads' o_proj input columns gives a more specific rescue than routing it through random heads - i.e. input-side/head specificity, not a distinct write direction. Claims must be worded accordingly.",
+  "norm_reporting": "Report each variant's unscaled fitted norm next to its recovery (TOP8 needed ~1.8x FULLO norm in-sample at basket r1); TOP8-vs-FULLO comparisons are descriptive and norm-confounded.",
+  "single_test_per_codeword": "Primary = basket, Holm over ranks {1,4}; button = secondary transfer; no other variant (H2, CELL_L10H2, FULLO, MLP, ATTNMLP) may be promoted to primary after the read."
+ }
+}

@@ -153,7 +153,7 @@ def main():
         torch.save({"operators": ops, "provenance": {"codeword": a.codeword, "rank": r, "code_sha256": code,
                                                      "frozen_objective": fz, "top8": TOP8}}, fp)
         summ["ranks"][str(r)] = {"factors": os.path.relpath(fp, REPO), "diag": diag}
-        json.dump(summ, open(os.path.join(a.out_dir, f"p4_fit_{a.codeword}.json"), "w"), indent=1)
+        json.dump(summ, open(os.path.join(a.out_dir, f"p4_fit_{a.codeword}_r{a.ranks.replace(',', '-')}.json"), "w"), indent=1)
         print(f"[p4] r{r} FACTORS_SAVED {fp}", flush=True)
         # TRAIN 5-fold domain-grouped CV: TOP8 vs first cv_nrh RH8 sets (raw, unscaled fits)
         folds = [f for f in pf.domain_folds(pairs) if f]
@@ -174,7 +174,7 @@ def main():
                        "n": a.cv_nrh, "note": "TRAIN 5-fold domain-grouped held-out fitting-side net; raw (unscaled) fits"}
         print(f"[p4] r{r} CV TOP8 {cvm['TOP8']:.4f} rank {diag['_cv']['TOP8_rank_among_RH8']}/{a.cv_nrh+1}", flush=True)
         summ["ranks"][str(r)] = {"factors": os.path.relpath(fp, REPO), "diag": diag}
-        json.dump(summ, open(os.path.join(a.out_dir, f"p4_fit_{a.codeword}.json"), "w"), indent=1)
+        json.dump(summ, open(os.path.join(a.out_dir, f"p4_fit_{a.codeword}_r{a.ranks.replace(',', '-')}.json"), "w"), indent=1)
     print("P4_FIT_DONE", a.codeword, f"{time.time()-t0:.0f}s", flush=True)
 
 
