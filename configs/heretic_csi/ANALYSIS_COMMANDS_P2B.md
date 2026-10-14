@@ -46,14 +46,22 @@ $PY research/heretic_csi/p2b_analyze.py --codeword button --prefix hcsi_p2b_butt
 ```
 $PY research/heretic_csi/p2b_analyze.py --codeword basket --prefix hcsi_p2b_basket_val --split validation --expect-n 230 \
   --ranks 1,4 --nrand 61 --nshuf 5 --nder 15 --capop --cw-nrand 61 --cw-nder 15 --addon --neutpos \
-  --overlap <every overlap JSON produced by the val/addon_val jobs if they span >1 host> \
+  --overlap outputs/heretic_csi/p2b/prod/overlap_addon_basket_val_1040101_r0.json \
   --out reports/heretic_csi/p2b_basket_primary_validation.json
 
 $PY research/heretic_csi/p2b_analyze.py --codeword button --prefix hcsi_p2b_button_val --split validation --expect-n 230 \
   --ranks 1,4 --nrand 61 --nshuf 5 --nder 15 --capop --cw-nrand 61 --cw-nder 15 --addon --neutpos \
-  --overlap <as above> --out reports/heretic_csi/p2b_button_primary_validation.json
+  --overlap outputs/heretic_csi/p2b/prod/overlap_buttonvaln501_1040170_r0.json,outputs/heretic_csi/p2b/prod/overlap_addon_button_val_1040122_r0.json \
+  --out reports/heretic_csi/p2b_button_primary_validation.json
 ```
-(If the VALIDATION arms all ran on one host, `--overlap` may be empty; the analyzer VOIDs any cross-host cell lacking coverage.)
+REVISION 2026-10-14 (before any VALIDATION read): VAL overlap files fixed.
+- basket VAL main arms all on n-503 (1023578, 1023579): no main overlap needed. The add-on job 1040101 (n-501)
+  carries an in-allocation KO overlap vs 1023578 → `overlap_addon_basket_val_1040101_r0.json`.
+- button VAL r1 + liveness on n-503 (1036679), r4 on n-501 (1036680). Required n-501↔n-503 coverage on the VAL
+  population comes from job 1040170 (plans/ovl_button_val.sh: KO, KO_CAND_r1, KO_RAND_r1_0, KO_DER_r1_0 re-run on
+  n-501 vs 1036679) → `overlap_buttonvaln501_1040170_r0.json`; add-on 1040122 (n-501) → `overlap_addon_button_val_1040122_r0.json`.
+- `outputs/heretic_csi/p2b/plans/ovl_template.sh` was generalized to POP=val (POP unset = k4, unchanged); sha256 `d80f283b4e18ec909ad5957d07ef9386e3d75efa056de1b83d250a2c44611763`.
+- If an attempt suffix changes (resubmission), use the file whose job DONE_MARKER rc=0 and verdict OVERLAP_OK.
 
 ## Amendment 6 — DESCRIPTIVE MEANBIAS_NM (run AFTER the primary read; never unlocks wording)
 

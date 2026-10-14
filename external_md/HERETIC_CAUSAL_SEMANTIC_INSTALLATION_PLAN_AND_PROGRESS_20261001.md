@@ -2301,3 +2301,7 @@ No leakage found (K4 exclude list + right bank on every arm; overlap and NM-over
   OVERLAP_OK (ETA ~7 h).
 - **Correction:** the button VAL overlap job is **1040170** (not 1040152, which is an unrelated job of another
   user); output `overlap_buttonvaln501_1040170_r0.json`. Pending (Resources). No duplicate submission.
+- VAL commands revised before the read: `configs/heretic_csi/ANALYSIS_COMMANDS_P2B.md` sha256 cb145d55…701f0 (dated
+  note): basket VAL `--overlap overlap_addon_basket_val_1040101_r0.json`; button VAL `--overlap
+  overlap_buttonvaln501_1040170_r0.json,overlap_addon_button_val_1040122_r0.json`; `ovl_template.sh` generalized to
+  POP=val (sha256 d80f283b…1611763; default k4 unchanged).
