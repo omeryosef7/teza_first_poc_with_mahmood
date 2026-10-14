@@ -2163,3 +2163,8 @@ button's rank-1 direction does not (VAL 14–18/57).
   delta norm — an apply-side quantity, not an endpoint; per codeword × primary rank × population; + BASE_MEANBIAS_NM
   damage), which can NEVER unlock the wording. Amendment 6 committed before the TRAIN read; the primary TRAIN read
   does not wait for the descriptive NM arms.
+
+## S-132 — 2026-10-14 17:40 — ops tick: P6 candle pilot PREEMPTED (killable L40S) → resubmitted
+- 1039942 PREEMPTED at 17:17 on t-806 (19 min, mid-readout ~900/5568 rows; no DONE) — its partial readout dir is
+  incomplete (no DONE.json) and is not used; pilot resubmitted (job id below). Add-ons: basket 40/43, button 34/43;
+  button VAL r1 29, r4 38 (unread). Amendment 6 not yet received from F2 (TRAIN read waits for it).
