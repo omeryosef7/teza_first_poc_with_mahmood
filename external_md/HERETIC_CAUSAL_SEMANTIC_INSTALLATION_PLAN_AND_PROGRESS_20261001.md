@@ -1800,3 +1800,26 @@ stage0 output matches axisfit, disk on scratch; no analyzer outputs exist; tests
   "input-conditional" wording eligible only on VALIDATION, only if CAND beats BOTH MEANBIAS variants with CI-lo>0 and
   neither is VOID/collapsed; MEANBIAS overshoot caveat + its option mass/damage always reported.
 - Parent checks: 0 P2b analyzer outputs exist (no endpoint read); tests re-run below.
+
+## S-100 — 2026-10-14 09:15 — P4 AMENDMENT 2 frozen; P4 fitting-side partial summary points to a NULL; CV cut
+- `configs/heretic_csi/PREREG_P4_AMENDMENT_2.json` (sha256 7c00ab22…a27e): VOID / gate-failed / CANNOT-ANSWER /
+  degenerate-recovery rank ⇒ treated as missing ⇒ the other rank INCOMPLETE, never PASS (v1+v2 analyzers; tests 10/10).
+  0 P4 score dirs exist.
+- **Fitting-side partial summary** (`reports/heretic_csi/P4V2_FIT_SUMMARY_partial.json`; in-sample net, o_proj; 6–8 of
+  60 controls per family so far; NOT an endpoint):
+
+  | cell | TOP8 | rank among RAW | rank among NC | TOP8_L6_14 | FULLO |
+  |---|---|---|---|---|---|
+  | basket r1 | 0.568 | 3/8 (0.567–0.570) | 1/7 (0.564–0.568) | 0.580 | 0.575 |
+  | basket r4 | 0.614 | 5/7 | 4/6 | 0.616 | 0.635 |
+  | button r1 | 0.622 | 2/8 | 3/8 | 0.624 | 0.627 |
+  | button r4 | 0.651 | 7/7 | 7/7 | 0.651 | 0.674 |
+
+  The norm-constrained refit removes v1's handicap (button r1 ctrl0: 0.622 NC vs 0.147 v1-rescaled). **Random disjoint
+  8-head sets fit as well as TOP8 at both their own optimum and TOP8's norm; FULLO and MLP-only close more of the gap
+  in every cell** ⇒ the inherited head circuit is not distinctive for a learned weight operator on the fitting side.
+  Flagged before any eval, as review #2 asked: this predicts a P4 null. Drift: basket r1 TOP8 norm 18.53 vs 18.33
+  (CPU-thread non-determinism ~1%; net equal to 4 dp).
+- Runtime decision (parent): fits (1023752/54/56/58, ~26 min per RAW+NC pair ⇒ ~27 h) continue; CV jobs
+  (1023753/55/57/59, ~43 h projected) cancelled and resubmitted with 10 control sets (`--cv-nrh 10`) — CV is a
+  fitting-side diagnostic only, never decision-relevant; decided before any P4 endpoint.

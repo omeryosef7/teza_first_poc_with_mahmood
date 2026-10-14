@@ -1,0 +1,14 @@
+{
+  "schema": "hcsi_prereg_amendment/1",
+  "amends": "PREREG_P4 + PREREG_P4_AMENDMENT_1",
+  "written": "2026-10-14, BEFORE any P4 endpoint (no P4 eval job submitted; 0 hcsi_p4* score dirs)",
+  "trigger": "Adversarial review #3 (reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_c.md) finding 3 (HIGH): a VOID / gate-failed / CANNOT-ANSWER primary rank entered Holm with its real p, relaxing the other rank's threshold from alpha/2 to alpha (synthetic: r1 VOID with p=1/61, r4 p=0.03 -> r4 'PASS (Holm p=0.0328)').",
+  "change": {
+    "validity": "A primary rank is VALID only if: analyzed (not NOT ANALYZABLE), no VOID condition, gates hold (KO < BASE, FULL > KO), and TOP8 recovery is estimable (effect_fraction status == ok).",
+    "holm_entry": "Holm over the primary ranks {1,4} is computed ONLY if BOTH primary ranks are valid. Otherwise every valid rank's verdict is 'INCOMPLETE FAMILY (primary ranks missing or invalid: [...]) -- no verdict' (never PASS), and each invalid rank keeps its own VOID / CANNOT ANSWER verdict (p treated as 1 / missing).",
+    "applies_to": "research/heretic_csi/p4_analyze_v2.py (decisive analyzer; function valid() + finalize()) and, for consistency, the superseded v1 research/heretic_csi/p4_analyze.py.",
+    "tests": "research/heretic_csi/tests/test_p3_p4.py::test_p4v2_void_or_gatefail_rank_counts_as_missing (VOID rank, gate-failed rank, degenerate-recovery rank each force INCOMPLETE on the other rank; both-valid case still Holm-PASSes), ::test_p4v2_incomplete_family_never_passes, ::test_p4v2_iut_requires_both_families, ::test_p4v1_void_rank_counts_as_missing (source-level only; v1 is superseded)."
+  },
+  "unchanged": "Everything in PREREG_P4 + AMENDMENT_1 (candidate, RAW + NC families, IUT per rank, Holm over {1,4}, PASS = Holm p < 0.05 AND recovery CI-lo > 0 AND gates, VOID checks, descriptive arms, populations, caveats, GPU estimate ~70 GPU-h).",
+  "note_out_of_scope": "p2b_analyze.py has the same defect (review #3 cites :307,310 and the secondary void_shared case); not an F5 file - parent/F2 to fix."
+}
