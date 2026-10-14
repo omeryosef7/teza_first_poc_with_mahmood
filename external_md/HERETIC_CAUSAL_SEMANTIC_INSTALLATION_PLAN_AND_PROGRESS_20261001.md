@@ -1553,3 +1553,49 @@ F5 (CPU only). Reports: `reports/heretic_csi/P3_SVD_REPORT.md`, `P3_svd_descript
 - **P3 rerun with button factors:** CPU job 1023746 (`research/heretic_csi/p3_run_all.py`). The basket-only S-079
   reports are preserved as `reports/heretic_csi/P3_*_S079_basket_only.*` (the regenerated files supersede them; no
   history rewritten).
+
+## S-083 — 2026-10-14 04:40 — ~4h ADVERSARIAL REVIEW #2: 1 CRITICAL + 5 HIGH; CORRECTIONS to S-073 / S-077 / S-079
+Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_b.md` (independent reviewer; read-only; no P2b/P4 endpoint read).
+**CORRECTIONS (appended, not rewritten):**
+- **S-073 DOWNGRADED.** "CONFIRMED" for button r4 VAL is withdrawn. Button VALIDATION had already been read at r1
+  (FAIL) and r16 (FAIL) before r4 was chosen (on TRAIN); over the 3 VAL looks, Bonferroni 3×0.0175 = 0.053 > 0.05 and
+  p sits at the 56-control floor. The single preregistered test PASSED honestly and is robust (floor/LODO), but over
+  all looks it is **SUGGESTIVE (floor-limited, look-multiplicity)**, not confirmatory. The "outcome-A / dimensionality
+  difference" synthesis compares a pass with a fail and has no basket-vs-button contrast test ⇒ it is a HYPOTHESIS.
+  Remedy launched (F6): preregistered powered re-test on the same VAL data with ≥200 rank-4 controls (floor ≤0.005),
+  Holm over the 3 button VAL looks {r1,r4,r16}, + descriptive basket-vs-button interaction; fresh confirmation → P6.
+- **S-077 SCOPED.** Phase-B "not sufficient for installation" holds on the benign cell-A read + cross-codeword read; but
+  the knife/gun read (option mass 0.139→0.009) and basket VAL-C (0.036) are on COLLAPSED readouts, and P(knife)/P(gun)
+  also rose ⇒ "context-free" is too strong. Wording now: native last-position ARA (Heretic objective, as shipped)
+  produces a largely context-insensitive answer-position bias toward "bomb", not codeword-specific installation.
+- **S-079 alignment wording.** The isotropic alignment null is miscalibrated (almost every layer "exceeds" it) and the
+  PLS-4 comparison used a dimension-mismatched null; the "refusal@L16" headline is withdrawn pending an anisotropic
+  null (F5). The shared-write-direction finding is correct but expected by construction (fitted controls are fit to
+  the same gap).
+**Findings → owners (all before any affected endpoint read):**
+1. CRITICAL P4 (`p4_head_fit.py:131`): rescaling fitted random-8-head controls to TOP8 norm moves them off optimum
+   (in-sample net RH8_0 raw→rescaled: button r1 0.621→0.147 vs TOP8 0.622; basket r1 0.568→0.460 vs 0.568; basket r4
+   0.618→0.581 vs 0.615; button r4 0.659→0.586 vs 0.651). **Fitting-side finding: at their own optimum, random
+   8-head sets fit as well as TOP8.** Fix (F5): PREREG_P4 amendment — TOP8 must beat BOTH raw-norm RH8 and
+   norm-constrained RH8 (refit under constraint preferred), Holm over ranks × families.
+2. HIGH bug (`p2b_analyze.py:236-247`, `p4_analyze.py:99-106`): Holm over an incomplete family PASSes at unadjusted p
+   ⇒ must be INCOMPLETE. 3. HIGH bug: secondary CWONLY lacks collapse/norm/rank VOIDs, and CW-family failures void the
+   primary. 4. HIGH: P2b fitted controls carry the same rescaling handicap (DER0 raw/CAND 1.10–1.29; SHUF0 1.65–3.4×)
+   ⇒ report raw-norm rank tests. 5. HIGH interpretation: CAND writes the shared mean KO→clean gap ⇒ add an
+   input-independent MEAN-GAP BIAS comparator; a CAND PASS not beating it certifies only "adding the mean shift undoes
+   part of the KO". (2–5 → F2: PREREG_P2B_AMENDMENT_3 before the TRAIN read.)
+6. MEDIUM: P4 heads nominated on L6–14 but tied over L6–18 (F5: descriptive variant/caveat). Provenance: P2a basis
+   files untracked (65 MB) ⇒ sha256 manifest committed `configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt`
+   (button `1c586d1a…`, basket `0bf29e02…`, mtime 2026-10-02 — predate all VAL reads).
+**Verified OK:** Holm step-down + CI-lo>0 + VOID/gate order in decide(); constructive derangement (0 same-domain, 0
+reuse, all seeds); DER no role swap; saved fitted controls match CAND per module (≤6e-8) at rank r; RAND seeds
+regenerate (≤3e-8); code shas = working tree; prereg copies byte-identical; VAL factor shas = TRAIN; P4 column
+restriction correct, 60 head sets distinct & disjoint, TOP8 = HD_TOPK from TRAIN screen; P3 truncation renorm
+declared; **P2a r4 prereg committed 20:18:33, job 1022698 started 22:14:47; TRAIN/VAL share 0 domains, 0 prompt ids**;
+nothing auto-analyzes the early VAL jobs (read-after-TRAIN is procedural). Tests 35 passed / 1 skipped.
+
+### WHAT WE MUST NOT SAY (addendum S-083)
+- "Button r4 is CONFIRMED" / "certified" — suggestive, floor- and look-limited until the powered re-test reads.
+- "The dissociation is a dimensionality difference" — hypothesis (no contrast test yet).
+- "Native ARA is context-free" — context-insensitive on non-collapsed reads; scoped to the shipped objective.
+- "The learned operator aligns with the refusal direction" — withdrawn pending a calibrated null.
