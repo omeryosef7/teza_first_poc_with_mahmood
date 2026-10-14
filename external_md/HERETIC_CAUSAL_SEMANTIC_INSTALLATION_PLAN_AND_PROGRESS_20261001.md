@@ -2035,3 +2035,16 @@ Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_d.md` (independent; saw 
 - 1027577 (S-084 j1) DONE_MARKER (72 sweep arms + 4 overlap); 1032110 j2 56/72.
 - Only 4 GPU running ⇒ parent released held overlap job 1035278 (basket r1 overlap + button n-501 overlap).
 - Still running: basket r4 TRAIN 162/163, button r4 157/163, basket r1 resume 30. 0 failures. No endpoint read.
+
+## S-122 — 2026-10-14 15:10 — ops tick: button r4 TRAIN done; basket overlap OK; MEANBIAS (all-rows) COLLAPSES the readout
+- 1023509 (button r4 TRAIN) DONE_MARKER. `overlap_basket_1035278_r0.json` = **OVERLAP_OK** (n-501 vs n-503).
+  1035278 continues with the button n-501 overlap. 1034929 (basket r1 resume) 38 arms; add-ons 1036622 (basket,
+  3/43) / 1036626 (button, started); S-084 j2 64/72.
+- **1036622: KO_MEANBIAS and BASE_MEANBIAS exited rc=4 = score_behavior's TAIL GATE (designed, not a crash): median
+  option mass 0.0011 / 0.0013 < 0.05** — adding the TRAIN-mean (clean−KO) gap as a constant bias at EVERY position at
+  full norm (46.2) collapses the semantic readout (the overshoot review #3 predicted). Rows are written; per
+  amendment 4 the collapsed comparator ⇒ add-on VOID for that comparator and the "input-conditional" wording is
+  SUSPENDED (cannot be unlocked by beating a collapsed arm). Codeword-row-only KO_CWMEANBIAS still pending in the job.
+  Descriptive observation (not a test): CAND, at a similar total norm (44.9), is input-dependent and (from the
+  completed-arm logs) did not trigger the tail gate — consistent with the edit being input-conditional rather than a
+  constant shift, but this is NOT a preregistered comparison.
