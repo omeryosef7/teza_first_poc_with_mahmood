@@ -2470,3 +2470,48 @@ validation.json`; draft `reports/heretic_csi/P2B_VAL_READ_DRAFT_LOG_ENTRY.md`.
   (learned weight operator): basket specific at r4 only, button at neither. ⇒ the weight-level operator does NOT
   reproduce the activation-space button r4 carrier; the two intervention families disagree for button.
 - Status: PENDING independent verification + deep adversarial review #6 (launched now).
+
+## S-157 — 2026-10-15 01:50 — P2b VAL read INDEPENDENTLY VERIFIED (outcome D reproduces) + ADVERSARIAL REVIEW #6: wording corrected
+Verifier/reviewer (own code `research/heretic_csi/verify/verify_p2b_val.py`) → `reports/heretic_csi/VERIFY_P2B_VAL.{md,json}`,
+`REVIEW_ADVERSARIAL_20261015_f.md`.
+- **All 8 VAL cells reproduce exactly** (stat, rank, Holm; CIs differ in the 3rd decimal — bootstrap seed); gates,
+  identity, CAPOP replay exact, hooks fired, controls norm-matched ≤6e-8; CAND−mean(DER), sub-family/raw-norm ranks,
+  NEUT/position fractions match. (VAL keys need dev|/heldout| prefixes — analyzer handles it correctly.)
+  **No leakage**: no VAL domain/prompt in TRAIN-K4 or the fit captures; operator files identical TRAIN↔VAL (no refit);
+  button cross-host overlap OK. **Outcome D CONFIRMED (verified).**
+- **Robustness:**
+  - basket r4 PRIMARY PASS (Holm 0.0488, rank 2/82) is MARGINAL: beaten by KO_DER_r4_10 (the same DER as on TRAIN);
+    next control 0.00009 below (rank 3 ⇒ Holm 0.073); **LODO over 23 VAL domains: rank 2 in 14, rank 3 in 8, rank 4 in
+    1 ⇒ loses the pass in 9/23 drops** (TRAIN: stable 63/63); fails under a row-level statistic (rank 3, Holm 0.073)
+    and with raw-norm DER (7/82); strict paired floors keep rank 2.
+  - basket CWONLY PASS is ROBUST: rank 1 in 23/23 LODO and under strict floors; CWONLY − mean CWDER +0.020 / +0.019
+    (CI > 0); margin over the best CWDER +0.004 (CI includes 0).
+**CORRECTIONS to S-156 (appended):**
+1. "replicated but fragile" ⇒ **basket r4 primary: a MARGINAL pass under the frozen rule — beaten by the same DER control
+   as on TRAIN, not LODO-stable on VAL (9/23 single-domain drops lose it), and not passing under a row-level statistic
+   or raw-norm DER.**
+2. "P2a and P2b DISAGREE for button" ⇒ **the weight-operator test, under its stricter FITTED-control null, does not
+   detect a button-specific carrier; this neither confirms nor contradicts P2a's L18 result** (P2b button CAND ranks
+   1/62 vs random edits — the P2a-type null; it fails only vs fitted domain-deranged controls P2a never had; sites,
+   "rank", effect size (0.09 vs 1.6) and multiplicity all differ).
+3. "pairing-specific" ⇒ **the correctly-paired TRAIN fit generalizes to held-out domains slightly better than deranged
+   fits (+0.018 [0.009, 0.028], basket r4 only)** (neither has seen VAL domains).
+4. "NEUT acts distributed" ⇒ **NEUT's effect is not carried by the codeword or last row alone; where it acts is
+   untested.** "Not how much" needs qualifying: basket r1 NEUT−CAND +0.040 [0.013, 0.067], button r1 −0.020; basket r1
+   NEUT ranks 1/82; CWONLY beats CAND at basket r1.
+5. **Basket CWONLY (codeword-row-only application) is P2b's most robust basket result** — with the amendment-2
+   forking-path disclosure (smoke hinted CWONLY > CAND before the test was added).
+6. LOW: the VAL split was already used in P2a ⇒ held out from the fit, not a fresh split.
+
+### WHAT WE CAN DEFEND (P2b, addendum S-157)
+- A learned low-rank weight operator (o_proj + down_proj, L6–18), fit position-aware at the codeword row on TRAIN,
+  rescues semantic installation under the knockout on held-out VAL domains far beyond random edits of equal rank/norm,
+  and acts through the codeword row (CWONLY ≈ CAND; ATLAST ≈ 0). For basket, applying it at the codeword row only beats
+  76 codeword-row controls incl. fitted deranged-pairing fits (Holm 0.026, LODO 23/23) — with forking-path disclosure.
+- Most of the rescue is reproduced by ANY operator fit to map KO→clean states (fitted deranged controls), so the
+  weight-level result is largely generic; domain-pairing adds at most a small increment (basket r4 +0.018).
+### WHAT WE MUST NOT SAY (P2b, addendum S-157)
+- "Basket has a robust rank-4 weight-level carrier" (marginal, not LODO-stable).
+- "P2a and P2b disagree about button" (not comparable).
+- "Input-conditional operator" (wording suspended: MEANBIAS collapsed).
+- "Pairing-specific operator" beyond the +0.018 generalization increment.
