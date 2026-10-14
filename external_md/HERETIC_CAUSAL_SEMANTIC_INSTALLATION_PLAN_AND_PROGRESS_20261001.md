@@ -1651,3 +1651,28 @@ nothing auto-analyzes the early VAL jobs (read-after-TRAIN is procedural). Tests
 - P2b evals, 0 failures: basket r1 28, basket r4 34, button r1 25, button r4 22 (of 163); VAL basket r1 39 / r4 46
   (unread). CPU: 1023746 (P3 button rerun), 1023763 (MEANBIAS build), 1023764 (P3 anisotropic null), 1023766 (P3
   write-direction v2) COMPLETED; 1023765 (P3 SVD v2) + P4 v2 fits/CV running. F5 renders P3 v2 report when done.
+
+## S-089 — 2026-10-14 05:30 — P4 redesign (review #2) + PREREG_P4_AMENDMENT_1 frozen; P3 v2 with calibrated nulls: NO alignment
+- **P4 (F5):** new fitter `p4_head_fit_v2.py` (v1 kept; v1 jobs 1023554–57 cancelled having saved no factors).
+  Two control families of the same 60 random disjoint 8-head sets: **RAW** (own optimum, norms reported) and **NC**
+  (refit under per-module norm = TOP8's via ΔW = c·BA/‖BA‖_F, initialized at the RAW optimum; unit-tested never worse
+  than v1's post-hoc rescale). + descriptive TOP8_L6_14 (nomination band).
+  **Fitting-side finding (in-sample net, o_proj):** at their own optimum random 8-head sets fit as well as TOP8 —
+  basket r1 0.568 vs 0.568; basket r4 0.618 vs 0.615; button r1 0.621 vs 0.622; button r4 0.659 vs 0.651 (RH8_0).
+  **Decision rule (`configs/heretic_csi/PREREG_P4_AMENDMENT_1.json`, sha256 63e9bea4…1faa1ee3f):** per rank,
+  p = max(p_RAW, p_NC) (intersection-union test: TOP8 must beat BOTH families; no cross-family correction needed),
+  then Holm over ranks {1,4}, + CI-lo>0 + gates/VOIDs. (Holm over 4 tests with 60 controls/family is unattainable —
+  min adjusted p 4/61 = 0.066 — so it is reported, non-deciding; making it decisive needs ≥81/family ≈ +40 GPU-h.)
+  New VOIDs: nonzero weights outside declared heads, control heads overlapping TOP8, NC norm mismatch, wrong factor
+  file. Incomplete-family Holm ⇒ INCOMPLETE (p4_analyze v1+v2), regression-tested. Plans p4v2 (128 arms/cell; ≈70
+  GPU-h total, TRAIN-K4 + VAL) — queued behind P2b and the S-084 powered re-test. Tests: test_p3_p4 8 passed.
+- **P3 v2 (new files; v1 kept):** anisotropic null (random directions from each module's output covariance) and a
+  4-D null for PLS-4. **0 of 66 alignment statistics reach anisotropic p ≤ 0.01**, every cell, every rank, both
+  codewords; absolute projections ≤0.04 (|cos| ≲ 0.2) while the null is not powerless (a truly aligned direction would
+  exceed every q99; largest q99 0.54). **⇒ No evidence the learned operators write along the refusal direction,
+  d_surface, or the P2a probe axes** (supersedes the S-079 "refusal@L16" line, already withdrawn in S-083).
+  Button now included: basket and button r1 write subspaces overlap strongly (median cos² 0.76 across modules).
+  Effective rank relabelled energy-entropy; shared mean-gap write direction noted as true by construction.
+- **H3 status (plan §3, "distil into an interpretable low-dim subspace better than d_surface"):** the learned operator
+  does NOT re-discover d_surface / refusal / probe axes (calibrated null). Whether it is a *better causal variable*
+  awaits P2b validation + P3 truncation (gated on a validation PASS).

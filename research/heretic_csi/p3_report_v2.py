@@ -65,8 +65,14 @@ L += ["", "## Reading (descriptive only)", "",
       "mean shift' from 'input-conditional operator'.",
       "- The mean gap is a large common component (see shares above) and is largely codeword-general at L6–14, less so at "
       "L18 (cross-codeword cosines above).",
-      "- Alignment with refusal / d_surface / PLS: judge ONLY by the anisotropic column. The isotropic null flags many "
-      "modules (miscalibrated); what survives the anisotropic null is listed per cell. Any survivor is descriptive "
-      "geometry, not a causal or representational claim."]
+      "- Alignment with refusal / d_surface / PLS: under the ANISOTROPIC null **no statistic reaches p ≤ 0.01 in any "
+      "cell** (table). The anisotropic null mean is 0.01–0.22 (q99 0.07–0.54) because the write subspace lies in the "
+      "high-variance part of each module's output; the reference directions project on it LESS than a typical "
+      "activation direction does, while still MORE than an isotropic random direction (the isotropic null flags many "
+      "modules). The two nulls bracket the answer and all absolute values are tiny (squared projection ≤ ~0.04, "
+      "|cos| ≤ ~0.2). Positive-control sanity: a genuinely aligned direction (squared projection ≈ 1, e.g. the mean gap "
+      "g itself at r1) would exceed every anisotropic q99 (max 0.54), so the null is not powerless. **Conclusion: no "
+      "evidence that the learned operators write along refusal, d_surface or the P2a probe axes.**",
+      "- PLS-4 (L18) uses a dimension-matched 4-d null; see `P3_alignment_aniso.json` (`p_iso4`, `p_aniso4`)."]
 open(os.path.join(R, "P3_SVD_REPORT_v2.md"), "w").write("\n".join(L) + "\n")
 print("wrote P3_SVD_REPORT_v2.md")

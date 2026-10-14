@@ -1,0 +1,38 @@
+{
+  "schema": "hcsi_prereg_amendment/1",
+  "amends": "PREREG_P4 (draft outputs/heretic_csi/p2b/prod/p4/PREREG_P4_DRAFT.json; to be committed as configs/heretic_csi/PREREG_P4.json together with this amendment)",
+  "written": "2026-10-14, BEFORE any P4 endpoint (no P4 eval job has been submitted; no hcsi_p4* score dir exists)",
+  "trigger": "Adversarial review #2 (reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_b.md) CRITICAL-1, HIGH-2, MEDIUM-9.",
+  "fitting_side_finding_v1": {
+    "what": "v1 (p4_head_fit.py) fitted random-8-head controls at their own optimum and then rescaled them per module to TOP8's Frobenius norm. TOP8 needs ~1.8-2.3x the norm of an all-head o_proj fit, so the rescale moved controls far off their optimum.",
+    "in_sample_net_o_proj": {
+      "basket_r1": {"TOP8": 0.5681, "RH8_0_raw": 0.5675, "RH8_0_rescaled": 0.4598},
+      "basket_r4": {"TOP8": 0.6153, "RH8_0_raw": 0.6175, "RH8_0_rescaled": 0.5810, "RH8_10_raw": 0.6111, "RH8_10_rescaled": 0.5790},
+      "button_r1": {"TOP8": 0.6221, "RH8_0_raw": 0.6212, "RH8_0_rescaled": 0.1469, "RH8_10_raw": 0.6230, "RH8_10_rescaled": 0.4790},
+      "button_r4": {"TOP8": 0.6513, "RH8_0_raw": 0.6588, "RH8_0_rescaled": 0.5858}
+    },
+    "reading": "FITTING SIDE ONLY (not an endpoint): at their own optimum, random disjoint 8-head sets close the codeword-row KO->clean gap as well as the inherited 8-head set (TOP8 not better on any examined pair). v1 jobs (1023554-7) were cancelled before saving factors; their logs are the only record.",
+    "source_logs": "outputs/heretic_csi/logs/p3p4_1023554.out ... p3p4_1023557.out"
+  },
+  "changes": {
+    "control_families": {
+      "RAW": "KO_RH8RAW_j, j=0..59: random 8-head set from the 24 non-TOP8 heads (seed 4000+100r+j), fitted at its OWN optimum with the identical procedure as TOP8; per-module and total raw norms reported.",
+      "NC": "KO_RH8NC_j, j=0..59: same head set, REFIT (not rescaled) under the per-module equality constraint ||B A||_F = ||TOP8||_F via reparametrisation dW = c*BA/||BA||_F, L-BFGS initialised at the RAW optimum (so it can only improve on v1's rescaled point; unit-tested).",
+      "fitter": "research/heretic_csi/p4_head_fit_v2.py (v1 kept unchanged)"
+    },
+    "decision_rule": {
+      "per_rank": "p_r = max(p_RAW, p_NC) where p_F = (1 + #controls in family F with mean(arm-KO) >= TOP8's)/(60+1). Intersection-union test: TOP8 must beat BOTH families; valid at level alpha without correction across the two families.",
+      "across_ranks": "Holm over the primary ranks {1,4} on p_r. PASS iff Holm p < 0.05 AND TOP8 recovery CI lower bound > 0 AND gates AND no VOID (decide() from p2b_analyze).",
+      "incomplete_family": "If either primary rank is missing or not analyzable, EVERY rank's verdict is 'INCOMPLETE FAMILY' (never PASS). Regression-tested (tests/test_p3_p4.py::test_p4v2_incomplete_family_never_passes).",
+      "strict_variant_reported_not_decisive": "Holm over all 4 tests {r1,r4}x{RAW,NC} is computed and reported. With 60 controls per family its smallest attainable adjusted p is 4/61 = 0.066 > 0.05, i.e. that design is CANNOT ANSWER by construction (mandate §20); making it decisive would need >= 81 controls per family AND TOP8 strictly first in all four tests (+~40 GPU-h). Parent decision if wanted.",
+      "power_floor_decisive_rule": "p_r floor 1/61 = 0.0164; Holm over 2 ranks: TOP8 must be strictly first against BOTH families at one rank (2 x 0.0164 = 0.0328 < 0.05) and p_r <= 0.05 at the other."
+    },
+    "added_checks_VOID": ["A exactly zero outside the declared heads' o_proj columns (TOP8 and all 120 controls)", "control head sets disjoint from TOP8", "NC per-module norm == TOP8 within 1e-3", "every arm applied the declared factors file"],
+    "descriptive_added": "KO_TOP8_L6_14: TOP8 heads restricted to o_proj L6-14 (the knockout band on which D32 nominated the heads). Caveat (MEDIUM-9): the primary TOP8 ties the heads across L6-18; at L15-18 the head identity has no nomination basis (symmetric for controls, so it dilutes rather than biases).",
+    "norms_reported": "total and per-module raw Frobenius norms for TOP8, every RAW and NC control and every descriptive arm (factors meta raw_fro; p4v2_fit_<cw>_r<R>.json; analyzer raw_norms_total)."
+  },
+  "analyzer": "research/heretic_csi/p4_analyze_v2.py --codeword <cw> --prefix hcsi_p4v2_<cw>_<train_k4|validation> --split <train|validation> --expect-n <268|230> --ranks 1,4 --out reports/heretic_csi/p4v2_<cw>_<split>.json",
+  "plans": "outputs/heretic_csi/p2b/plans/p4v2_<cw>_r<R>_{train,val}.sh via p4v2_template.sh (v1 p4_* plans marked SUPERSEDED)",
+  "gpu_estimate": "per (cw, rank, split) 128 arms (+4 liveness at r1): TRAIN-K4 ~9.4 GPU-h, VALIDATION ~8.1 GPU-h; 2 codewords x 2 ranks x 2 splits ~70 GPU-h (v1 plan was ~37).",
+  "unchanged": "candidate definition, objective, populations, TEST never, basket primary / button secondary transfer, dependence caveat (head set certified on basket VALIDATION, D32), no writer language."
+}
