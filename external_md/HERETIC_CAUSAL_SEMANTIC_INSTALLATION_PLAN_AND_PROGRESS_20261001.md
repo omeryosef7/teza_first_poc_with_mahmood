@@ -2186,3 +2186,32 @@ button's rank-1 direction does not (VAL 14–18/57).
 - 1036626 (button add-on) DONE_MARKER. F2 running the frozen TRAIN analysis (CPU python jobs 1040083–88).
   1040065 = NM TRAIN-K4 add-on job (n-503). Button P2b VAL r1 39 / r4 49 (unread). P6 pilot 1040044 cold-staging
   on n-801 (23 min). GPU 4.
+
+## S-135 — 2026-10-14 18:30 — P2b WEIGHT-OPERATOR TRAIN-K4 READ (in-sample, DESCRIPTIVE per amendment 5)
+Frozen commands run exactly (commands doc c1b7089d; all code shas matched; 5 overlap files OVERLAP_OK |Δy| 0.0; both
+add-ons DONE). Outputs `reports/heretic_csi/p2b_{basket,button}_primary_train.json`,
+`p2b_{cw}_r{1,4}_deployed_train.json`; F2 draft `reports/heretic_csi/P2B_TRAIN_READ_DRAFT_LOG_ENTRY.md`.
+VALIDATION NOT read at this point.
+- Gates: no VOIDs; KO−BASE −0.253 / −0.214; FULL−KO +0.142 / +0.109 (basket / button); KO_IDENT exact;
+  preservation |Δ| ≤ 0.042.
+- **PRIMARY (CAND vs 81 controls = 61 RAND + 5 SHUF + 15 DER; Holm over {1,4}):**
+  basket r1 DOES NOT PASS (9/82, Holm 0.110); **basket r4 PASS (2/82, Holm 0.0488 — fragile, in-sample)**;
+  button r1 DOES NOT PASS (13/82, 0.317); button r4 DOES NOT PASS (14/82, 0.317).
+  Recoveries 1.24 / 1.45 [1.27, 1.69] / 1.70 / 1.55 ⇒ OVERSHOOT relative to whole-state rescue.
+- **SECONDARY CWONLY (vs 76 codeword-row-only controls):** basket PASS r1 & r4 (1/77 each, Holm 0.026; recovery
+  1.40 / 1.32); button DOES NOT PASS (9/77, 13/77; Holm 0.234).
+- **Descriptive structure (the important part):**
+  - CAND ranks 1/62 vs RANDOM edits in every cell, but FITTED domain-deranged controls (DER) rival it (DER-family
+    rank 9 / 2 / 13 / 14 of 16), and at their RAW norms DER beats CAND in 3/4 cells ⇒ **most of the operator's
+    rescue is the generic KO→clean shift (P3: shared write direction), not pairing/domain-specific information**;
+    only basket r4 is pairing-specific under the frozen family.
+  - CWONLY ≈ CAND and ATLAST ≈ 0 ⇒ the edit ACTS through the codeword row (where the KO bites). But NEUT (fit at the
+    last row, smaller norm) recovers as much ⇒ the FIT SITE does not matter ⇒ **"position-aware fitting" is NOT
+    supported** as a necessity (Heretic's last-row fit + codeword-row action would suffice for this rescue).
+  - KO_MEANBIAS collapsed (option mass 1e-3 / 3e-6) ⇒ VOID; "input-conditional" wording SUSPENDED (amendment 4).
+    CAND − CWMEANBIAS > 0 with CI-lo > 0 in every cell (descriptive only).
+  - Deployed gap-closure 0.55–0.58 vs fitted 0.60–0.68 (joint deployment loses a little).
+- TRAIN pattern would map to outcome D (basket specific at some rank, button at neither), but A–E are decided ONLY on
+  VALIDATION (amendment 5). TRAIN is in-sample ⇒ weak evidence by construction.
+- Next: VALIDATION read authorized (basket VAL done; button VAL running; VAL add-ons to run). Deep adversarial
+  review #5 launched on this read; independent recomputation tasked.
