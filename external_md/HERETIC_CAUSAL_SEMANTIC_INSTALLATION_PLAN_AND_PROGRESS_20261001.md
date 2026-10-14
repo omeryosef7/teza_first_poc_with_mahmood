@@ -2014,3 +2014,8 @@ Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_d.md` (independent; saw 
   overlap_buttonn501_1035278_r0.json). `configs/heretic_csi/ANALYSIS_COMMANDS_P2B.md` superseded → sha256
   185a8abb…f3c6 (dated revision note); button TRAIN command no longer uses the basket overlap file. Read gating: all
   OVERLAP_OK files (basket 1035278; button 1035131 + 1035278; add-on k4 ×2) + add-on K4 DONE before the TRAIN read.
+
+## S-118 — 2026-10-14 13:10 — ops tick
+- GPU (6 running): 1023508 basket r4 TRAIN 139/163, 1023509 button r4 135/163, 1034929 basket r1 resume 7 new arms,
+  1035131 button r1 resume (started), 1027577 S-084 j1 54/76, 1032110 j2 28/72. 1035278 (overlap job) HELD until an
+  r4 job ends. No failures/duplicates. Next deep review ~16:10.
