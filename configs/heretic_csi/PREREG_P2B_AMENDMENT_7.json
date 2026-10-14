@@ -1,0 +1,13 @@
+{
+ "schema": "hcsi_p2b_prereg_amendment/1",
+ "amends": {"PREREG_P2B_AMENDMENT_6.json": "354e98fd8205d64cdadcb0978248679edd64cb58c19a5aaf3f89b32591812b2b"},
+ "written": "2026-10-14T18:31:27+03:00",
+ "decided_by": "parent coordinator after review #5 (REVIEW_ADVERSARIAL_20261014_e.md), implemented by F2",
+ "endpoint_status_at_writing": "P2b TRAIN-K4 read DONE and logged (S-135/S-136). NO P2b VALIDATION y_install has been read. The new arms below have NOT been run on either split.",
+ "question": "Where does NEUT (the operator fit at the LAST prompt row, own norm) act? TRAIN showed NEUT at all rows recovers as much as CAND, while CAND acts through the codeword row (CWONLY ~ CAND, ATLAST ~ 0).",
+ "arms": "KO_NEUT_CWONLY_r (NEUT's frozen factors applied ONLY at the codeword row) and KO_NEUT_ATLAST_r (ONLY at the last prompt row), r in {1,4}, both codewords, on TRAIN-K4 (plans/neutpos_k4.sh) and VALIDATION (riding in the VAL add-on jobs 1040101 basket / 1040122 button). Same tag prefixes as the main arms.",
+ "reported": "NEUT_CWONLY - KO and NEUT_ATLAST - KO with domain-bootstrap CI95, next to CAND - KO, CWONLY - KO, ATLAST - KO and NEUT - KO on the same keys; each also as the fraction of the BASE - KO gap restored (with CI). Screens: collapse, hooks, config, overlap gate -> neut_position.void (descriptive only).",
+ "also_reported_review5": "for every scored arm: fraction of the BASE - KO gap restored (alongside recovery vs KO_FULL); CAND - mean(DER) with domain-bootstrap CI; CAND - KO with CI; CAND's rank within DER-only at RAW norm (already in addon.rank_test_DER_raw_norm).",
+ "status": "DESCRIPTIVE ONLY. Never changes a primary or secondary verdict, never enters Holm, never unlocks any wording.",
+ "code": "p2b_analyze.py sha256 5bafd09223526ca5d34f9a1f3b4dfc88726bff13700b5e174606e92a2985a62a (--neutpos; review-5 fields; no verdict logic changed), p2b_emit.py bc288f73a22d0d9e7ef1715b8531c826fee50107d07c8755571b0e5ddede1e7f (addon family +4 arms); tests 75 passed / 1 skipped"
+}

@@ -2261,3 +2261,29 @@ No leakage found (K4 exclude list + right bank on every arm; overlap and NM-over
   staging; on insufficient space or copy failure, load directly from the verified mirror (identical bytes, slower);
   plus job-scoped readout-dir selection (by RUNMETA slurm_job_id) so stale partial dirs from preempted/failed
   attempts can never be picked up. Pilot attempt 4 = **1040103** (pending). Still no fan-out.
+
+## S-138 — 2026-10-14 19:20 — P2b AMENDMENT 7 frozen before VAL read; TRAIN sub-family ranks; amendment-6 NM (descriptive)
+- `configs/heretic_csi/PREREG_P2B_AMENDMENT_7.json` (sha256 270360e4…66ee): DESCRIPTIVE KO_NEUT_CWONLY / KO_NEUT_ATLAST
+  (NEUT's frozen factors at one row only), r1/r4, both codewords, TRAIN-K4 + VAL; + review-5 descriptive fields
+  (fraction of BASE−KO restored for every arm, CAND−mean(DER) with CI). Never changes a verdict.
+  p2b_analyze.py sha256 5bafd092…a62a (no verdict logic changed); ANALYSIS_COMMANDS_P2B.md 1437b3a9…cb48. Tests 75/1.
+  Jobs: VAL add-ons 1040101 (basket, LIVEJOB 1023578) + 1040122 (button, LIVEJOB 1036679), 47 arms each; TRAIN
+  NEUT-position 1040124 (4 new arms/codeword via skip-if-done).
+- **TRAIN CAND ranks by sub-family (descriptive):**
+
+  | cell | vs RAND(61) /62 | vs DER(15) norm-matched /16 | vs DER raw /16 | vs SHUF(5) /6 | full /82 |
+  |---|---|---|---|---|---|
+  | basket r1 | 1 (p .016) | 9 (p .56) | 16 | 1 | 9 |
+  | basket r4 | 1 (p .016) | 2 (p .125) | 5 | 1 | 2 |
+  | button r1 | 1 (p .016) | 13 (p .81) | 16 | 1 | 13 |
+  | button r4 | 1 (p .016) | 14 (p .88) | 16 | 1 | 14 |
+
+  ⇒ CAND beats every random edit and every role-swapped SHUF fit, but NOT the domain-deranged fits (esp. at raw norm).
+- **Amendment-6 MEANBIAS_NM (TRAIN, descriptive; job 1040065 DONE, NM overlaps OK; no NM arm collapsed):**
+  recovery 0.39 / 0.67 / 0.40 / 0.70 (basket r1, r4, button r1, r4); **CAND − MEANBIAS_NM = +0.120 [0.085,0.155] /
+  +0.111 [0.078,0.147] / +0.141 [0.123,0.160] / +0.093 [0.078,0.108]**; clean damage BASE_NM−BASE +0.02–0.06.
+  ⇒ an input-independent mean shift at CAND's injected norm undoes part of the KO, and CAND exceeds it in every TRAIN
+  cell (in-sample). Descriptive; cannot unlock wording (amendment 6).
+- **Synthesis so far (TRAIN, in-sample):** the operator's rescue is more than a constant shift (beats MEANBIAS_NM and
+  CWMEANBIAS), but the domain-specific pairing adds little or nothing beyond "any KO→clean fit" (DER rivals it).
+  VAL decides.
