@@ -1635,3 +1635,14 @@ nothing auto-analyzes the early VAL jobs (read-after-TRAIN is procedural). Tests
   "input-conditional operator" requires CAND−MEANBIAS CI-lo>0 on VALIDATION.
 - Tests (parent-run): 46 passed, 1 skipped. Add-on plans `configs/heretic_csi/p2b_plans/addon_{cw}_{k4,val}.sh`
   (43 arms each; ≈11.8 GPU-h total) — to be submitted as slots free; TRAIN read waits for the K4 add-on too.
+
+## S-087 — 2026-10-14 04:40 — ops tick
+- P2b evals (163 arms/primary rank; ~4 min/arm): 1023012 basket r1 20 ok, 1023508 basket r4 27, 1023264 button r1 15,
+  1023509 button r4 14; VAL basket r1 29 / r4 34 (unread). 6 GPU (cap). Expected TRAIN completion ~10–14 h.
+- F5 CPU (cpu-killable): P4 v2 fits under the review-#2 redesign (1023752–59: fit + CV, basket/button × r1/r4), P3
+  anisotropic-null rerun (1023764) and SVD v2 (1023765), plus the P3 button rerun 1023746. Earlier P4 v1 fit jobs
+  1023554–57 superseded (see sacct below). No failures in our GPU jobs.
+  1023554      CANCELLED+   01:49:23 
+  1023555      CANCELLED+   01:49:22 
+  1023556      CANCELLED+   01:49:21 
+  1023557      CANCELLED+   01:49:21 
