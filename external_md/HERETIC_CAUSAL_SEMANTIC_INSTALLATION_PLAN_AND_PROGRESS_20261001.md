@@ -2083,3 +2083,33 @@ Frozen two-step read exactly as committed (`p2a_powered_analyze.py` eb0da96d →
 - **Scope (unchanged):** same VAL data with a bigger null (not fresh); rank 4 chosen on TRAIN; SHUF n=10; PLS
   activation-space family at L18 rel-6 under the KO; semantic installation only; no behavior. The basket-vs-button
   "dimensionality difference" remains NOT supported by a contrast (S-097/098). Fresh confirmation ⇒ P6.
+
+## S-126 — 2026-10-14 16:05 — INDEPENDENTLY VERIFIED: PR-HCSI-S084 PASS (button r4 VALIDATION, powered, multiplicity-corrected)
+F3 (`research/heretic_csi/verify/verify_s084.py`; frozen analyzer and p2a_powered_* NOT used) →
+`reports/heretic_csi/VERIFY_S084_powered.{md,json}`. **AGREES on every element of the amended rule.**
+- Selection: exactly one complete dir for each of 205 arms (1022698: 61; 1027577: 72; 1032110: 72), all RTX A5000,
+  single attempt, all log-referenced; OVL_* excluded; same-tag dirs from other jobs ignored; 230 rows / 23 VAL
+  domains, no TEST.
+- 203 common rows; candidate 0.0129158 rank **1/201** vs exactly 200 controls (ties against; unrounded = 5-dp);
+  **p = 0.004975; Holm over {r1, r16, r4} ⇒ 0.0149** (also with F3's own r1 recount 18/57); beats every SHUF (max
+  0.009244); best RAND 0.008075; margin +0.0037 ≈ 1.1 control-SD. Candidate−KO 0.01292 [0.00654, 0.01898], 20/23;
+  recovery 0.0909. **LODO rank 1 in 23/23**; identical under the strict paired floor; still rank 1 with no floor.
+- Controls: 200 rank-4, orthonormal, distinct, ≠ candidate, norm-matched ≤5e-16; r4ext sha matches the prereg;
+  cand_pls4 byte-identical. Overlap bit-exact. Mutations null (swap median p 0.60; within-domain shuffle median
+  0.50, 0/30 ≤ 0.0149). Binding rule satisfied.
+
+### STATUS UPDATE (supersedes the S-083 downgrade for this specific claim)
+**CONFIRMED (preregistered, held-out, multiplicity-corrected over all declared button VAL looks, powered null,
+independently verified):** button's rank-4 PLS activation-space subspace at L18 rel-6 rescues semantic installation
+under the attention knockout more than all 200 rank- and norm-matched controls (Holm-adjusted p = 0.0149), whereas
+button's rank-1 direction does not (VAL 14–18/57).
+
+### WHAT WE CAN DEFEND (addendum S-126)
+- The above, scoped: one codeword, L18, PLS activation-space family, semantic-installation rescue (~9% of whole-state).
+- Basket has a specific rank-1 carrier on VALIDATION (S-049; floor-sensitive, S-052). Together: the two codewords
+  differ in whether a specific carrier exists at rank 1 (basket yes, button no), while button has one by rank 4.
+
+### WHAT WE MUST NOT SAY (addendum S-126)
+- "Button needs more dimensions than basket" as a CONTRAST finding (no supported interaction; S-097/098).
+- "Fresh confirmation" — same VAL data; rank 4 chosen on TRAIN; SHUF null n=10; margin ~1.1 SD.
+- Anything about the ARA weight operator (P2b unread), behavior, or a population law.
