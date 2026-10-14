@@ -1,0 +1,35 @@
+{
+ "schema": "hcsi_prereg_amendment/1",
+ "id": "PR-HCSI-P6 AMENDMENT 2",
+ "amends": [
+  "configs/heretic_csi/PREREG_P6.json (sha256 998fc25d444c5230c19b11eaf7c5ab9fc01e687d923f83db70b3e13ac8e21022)",
+  "configs/heretic_csi/PREREG_P6_AMENDMENT_1.json (sha256 3a762fc7237a13c25abffe80ba90a7c1ac4e7b2fd462c1f0c4af70a67880fc94)"
+ ],
+ "written": "2026-10-14, F7, on the parent's decision, BEFORE any Stage-0 / P6 GPU number exists for any new codeword",
+ "decision": {
+  "H6a": "SINGLE CONFIRMATORY TEST: one-sided permutation Spearman(held-out probe rho, r1 VALIDATION specificity z) > 0 across CONFIRMATION codewords, alpha = 0.05, NO multiplicity correction (it is the only confirmatory test of P6).",
+  "H6b": "DESCRIPTIVE (no longer confirmatory, not in any multiplicity family): Spearman(Zipf, z) across CONFIRMATION codewords reported with a codeword-level bootstrap 95% CI (and its permutation p as a descriptive number), PRE-LABELLED 'UNDERPOWERED' \u2014 a non-significant or null-looking H6b may never be described as evidence against a frequency effect. Its repair-sensitivity analyses S1/S2 (AMENDMENT_1 F9) are still reported.",
+  "H6c": "unchanged \u2014 secondary/descriptive (minimal specific rank over {1,4}).",
+  "Holm": "REMOVED (AMENDMENT_1's Holm over {H6a, H6b} is superseded)."
+ },
+ "rationale": [
+  "The Zipf range of the untouched pool is narrow (3.54\u20134.69), so H6b is underpowered at every attainable confirmation n regardless of correction (AMENDMENT_1 F10: two-sided n=15 power 0.63 at rho 0.8 even before Holm-optimistic gains; needs n>=17 with only 15 available).",
+  "Keeping H6b in a Holm family costs only H6a power: at n = 15, rho 0.7 (reliability 0.7), H6a power falls from 0.71 (one-sided alpha 0.05) to 0.58 (conservative Holm alpha 0.025), for no realistic gain on H6b.",
+  "Decision taken before any Stage-0 covariate or outcome exists for any new codeword, so it cannot be outcome-driven."
+ ],
+ "H6a_power_one_sided_0.05_rel0.7": {
+  "source": "reports/heretic_csi/hcsi_p6_power.json (research/heretic_csi/p6_power.py)",
+  "n12": {
+   "rho0.6_rel0.7": 0.464,
+   "rho0.7_rel0.7": 0.593,
+   "rho0.8_rel0.7": 0.732
+  },
+  "n15": {
+   "rho0.6_rel0.7": 0.562,
+   "rho0.7_rel0.7": 0.714,
+   "rho0.8_rel0.7": 0.847
+  }
+ },
+ "UNDERPOWERED_rule_v3": "Replaces AMENDMENT_1 F10's rule. With n_conf = confirmation codewords surviving G1\u2013G3: H6a is PRE-LABELLED 'UNDERPOWERED for rho < 0.8' if n_conf < 15, and 'CANNOT ANSWER' (no confirmation GPU spent; redesign with new codewords) if n_conf < 12. H6b: always 'UNDERPOWERED' (descriptive).",
+ "unchanged": "Everything else in PREREG_P6 and AMENDMENT_1 (pool, banks, occurrence-gate row exclusions, DEV draw + fill rule, gates G1\u2013G3, primary per-codeword outcome, S1/S2 repair sensitivity, TEST never)."
+}

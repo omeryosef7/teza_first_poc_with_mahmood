@@ -1846,3 +1846,7 @@ stage0 output matches axisfit, disk on scratch; no analyzer outputs exist; tests
   H6a (probe quality → r1 specificity) is the single confirmatory test, one-sided α=0.05 (power 0.71 at ρ=0.7, n=15);
   H6a UNDERPOWERED if <15 confirmation codewords survive (for ρ<0.8), CANNOT ANSWER if <12. To be frozen as
   PREREG_P6_AMENDMENT_2 (F7).
+- **PREREG_P6_AMENDMENT_2 frozen** `configs/heretic_csi/PREREG_P6_AMENDMENT_2.json` (sha256 98747c69…bc72fd), before
+  any Stage-0 number: H6a single confirmatory (one-sided permutation Spearman α=0.05, no Holm; power at reliability
+  0.7: n=15 → 0.56/0.71/0.85, n=12 → 0.46/0.59/0.73 at ρ=0.6/0.7/0.8); H6b descriptive (UNDERPOWERED, never cited as
+  evidence against a frequency effect); H6c unchanged.

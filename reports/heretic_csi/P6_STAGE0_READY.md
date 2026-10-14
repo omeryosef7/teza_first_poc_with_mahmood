@@ -57,3 +57,6 @@ All 21: shape identical to basket's bank (22,272 rows; by_block equal; 116 domai
 - **F8**: DEV draw always returns candle + 5 (deterministic fill rule; 4 tests pass).
 - **F9**: repair-touched rows 0–432/bank (rescue pop 0–18/1160), Spearman with Zipf 0.512 (`hcsi_p6_repair_rows.json`; self-check 0 for unrepaired codewords). Preregistered sensitivity S1 (exclude touched rows) + S2 (partial Spearman on repair count); a flip ⇒ "REPAIR-SENSITIVE".
 - **F10**: two-sided H6b under Holm is underpowered at every attainable n (n=15: conservative 0.63 at ρ=0.8; needs n≥17). New rule: H6b pre-labeled UNDERPOWERED (non-rejection ≠ null); H6a UNDERPOWERED for ρ<0.8 if n_conf<15, CANNOT ANSWER if <12. Option (not adopted, parent's call): make H6b descriptive to restore H6a's one-sided α=0.05.
+
+## UPDATE — PREREG_P6_AMENDMENT_2 (parent decision, pre-Stage-0)
+H6a (held-out probe quality → r1 specificity) is the SINGLE confirmatory P6 test, one-sided α=0.05, no Holm (n=15 power 0.71 at ρ=0.7, 0.85 at ρ=0.8; reliability 0.7). H6b (frequency) is DESCRIPTIVE — Spearman with bootstrap CI, pre-labelled UNDERPOWERED, plus S1/S2 repair sensitivity. H6a rules kept: UNDERPOWERED for ρ<0.8 if n_conf<15; CANNOT ANSWER if n_conf<12.
