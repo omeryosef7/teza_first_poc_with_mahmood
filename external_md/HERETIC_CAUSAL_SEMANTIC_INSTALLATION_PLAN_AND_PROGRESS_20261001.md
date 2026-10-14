@@ -2447,3 +2447,26 @@ all S-135 verdicts unchanged). Outputs `reports/heretic_csi/p2b_{basket,button}_
 ## S-155 — 2026-10-15 01:10 — ops tick
 - Button P2b VAL r1 164/167 (VAL read imminent). Descriptive evalC 29/30, evalB 24/23 arms. P6 G3 so far: candle FAIL,
   lamp PASS, kettle PASS. 6 GPU. No failures.
+
+## S-156 — 2026-10-15 01:20 — P2b WEIGHT-OPERATOR VALIDATION READ: preregistered outcome **D** (pending independent verification)
+Frozen VAL commands run exactly (commands doc cb145d55, analyzer 5bafd092 = S-139d). All VAL jobs DONE rc=0 (basket
+1023578/79 167+163; button 1036679/80 167+163; add-ons 1040101/1040122 45/47 + 2 designed MEANBIAS exits; overlap
+1040170 4/4); all 3 VAL overlap files OVERLAP_OK (|Δy| 0.0). Outputs `reports/heretic_csi/p2b_{basket,button}_primary_
+validation.json`; draft `reports/heretic_csi/P2B_VAL_READ_DRAFT_LOG_ENTRY.md`.
+- Gates: no VOIDs; KO−BASE −0.280 / −0.302; FULL−KO +0.140 / +0.142; identity exact.
+- **PRIMARY (81 controls; Holm over {1,4}):** basket r1 DOES NOT PASS (11/82, Holm 0.134); **basket r4 PASS (2/82,
+  Holm 0.0488; recovery 1.50 [1.22, 1.83])**; button r1 DOES NOT PASS (14/82, 0.342); button r4 DOES NOT PASS (15/82, 0.342).
+- **SECONDARY CWONLY (76 CW-row controls):** basket PASS r1 & r4 (1/77 each, Holm 0.026) — replicates TRAIN as
+  amendment 2 requires; button DOES NOT PASS (9/77, 12/77).
+- All 8 primary + secondary verdicts match TRAIN; basket r4 rank 2/82 identical on both splits.
+- **Outcome (amendment-5 mapping, VALIDATION only): D** — basket specific at some r∈{1,4} (r4), button at neither.
+  Minimal specific rank: basket 4; button ">4 (untested)".
+- Descriptive: CAND 1/62 vs random edits everywhere; fitted DER rival it; **CAND − mean(DER) > 0 only for basket r4
+  (+0.018 [0.009, 0.028])**. CAND acts through the codeword row (CWONLY ≈ CAND, ATLAST ≈ 0); NEUT acts distributed
+  (its cw-only effect 0.03–0.07 of the gap). KO_MEANBIAS collapsed again ⇒ CANNOT ANSWER; "input-conditional"
+  wording suspended. No VAL deployed residual (no VAL captures). MEANBIAS_NM VAL arms not run (plan ready).
+- **Caveats:** basket r4 PASS at Holm 0.0488 = second-best attainable value (rank 2/82) ⇒ replicated but fragile.
+- **Contrast with P2a (activation space, S-126):** P2a: basket specific at r1, button at r4 (powered, verified). P2b
+  (learned weight operator): basket specific at r4 only, button at neither. ⇒ the weight-level operator does NOT
+  reproduce the activation-space button r4 carrier; the two intervention families disagree for button.
+- Status: PENDING independent verification + deep adversarial review #6 (launched now).
