@@ -378,6 +378,41 @@ def analyze_rank(a, r, assign):
             out["addon"] = ad
         except SystemExit as e:
             out["addon"] = {"status": f"NOT ANALYZABLE: {str(e)[:200]}"}
+    # ---------------- AMENDMENT 6: norm-matched mean-gap bias (DESCRIPTIVE ONLY; never unlocks wording) --------
+    if a.addon_nm:
+        try:
+            nm = [f"KO_MEANBIAS_NM_r{r}", f"BASE_MEANBIAS_NM_r{r}"]
+            nd = {x: rederive.strict_run_dir(f"{a.prefix}_{x}", a.expect_n, row_file="results.jsonl",
+                                             allow_short=a.allow_short) for x in nm}
+            nkv = {x: sa.arm_key_values(nd[x], assign, a.split)[0] for x in nm}
+            nrf = {x: row_fields(nd[x]) for x in nm}
+            nk = common & set.intersection(*[set(v) for v in nkv.values()])
+            nby = {x: dmeans(nk, lambda k, x=x: nkv[x][k]) for x in nm}
+            for x in ("KO", "KO_FULL", "BASE", cand):
+                nby[x] = dmeans(nk, lambda k, x=x: kv[x][k])
+            ndd = sorted(nby["KO"])
+            nsc = {x: sidecar(nd[x]) for x in nm}
+            nprov = {x: run_prov(d) for x, d in nd.items()}
+            res = {"n_keys": len(nk), "void": [], "run_dirs": {x: os.path.basename(d) for x, d in nd.items()},
+                   "arm_provenance": nprov,
+                   "median_option_mass": {x: statistics.median(nrf[x][k]["option_mass"] for k in nk) for x in nm},
+                   "bias_total_norm": {x: (nsc[x] or {}).get("bias_total_norm") for x in nm},
+                   "never_unlocks_wording": True}
+            res["void"] += config_violations(nd, a.codeword, excl)
+            res["void"] += overlap_violations({**{x: provs[x] for x in live}, **nprov}, a.overlap)
+            for x in nm:
+                if res["median_option_mass"][x] < a.option_mass_floor:
+                    res["void" if x.startswith("KO_") else "damage_flags"] = res.get("void" if x.startswith("KO_") else "damage_flags", []) + [
+                        f"{x}: readout collapsed (median option mass {res['median_option_mass'][x]:.2e})"]
+                if nsc[x] is None or not nsc[x].get("hook_calls"):
+                    res["void"].append(f"{x}: hooks never applied / no sidecar")
+            res["KO_MEANBIAS_NM"] = {"stat": round(mean_diff(ndd, nby[nm[0]], nby["KO"]), 5),
+                                     "recovery": sa.effect_fraction(prof, ndd, nby["KO_FULL"], nby["KO"], nby[nm[0]], a.n_boot, 20261014, 0.01)}
+            res["BASE_MEANBIAS_NM_minus_BASE_y"] = round(mean_diff(ndd, nby[nm[1]], nby["BASE"]), 5)
+            res["CAND_minus_MEANBIAS_NM"] = _boot_diff(ndd, nby[cand], nby[nm[0]], a.n_boot, 11)
+            out["addon_nm"] = res
+        except SystemExit as e:
+            out["addon_nm"] = {"status": f"NOT ANALYZABLE: {str(e)[:200]}"}
     out["arm_provenance"] = provs
     out["jobs"] = sorted({p["job"] for p in provs.values() if p})
     ov = overlap_violations({k: v for k, v in provs.items() if v}, a.overlap)
@@ -450,6 +485,7 @@ def main():
     ap.add_argument("--capop", action="store_true")
     ap.add_argument("--cw-nrand", type=int, default=0)
     ap.add_argument("--cw-nder", type=int, default=0)
+    ap.add_argument("--addon-nm", action="store_true", help="amendment-6 descriptive MEANBIAS_NM arms (never unlock wording)")
     ap.add_argument("--addon", action="store_true", help="amendment-3 comparators: MEANBIAS arms + raw-norm DER/SHUF")
     ap.add_argument("--expect-excl", default=None, help="expected --exclude-prompt-ids of every arm (default from --split)")
     ap.add_argument("--overlap", default="", help="comma list of p2b_overlap_check JSONs (AMENDMENT 5)")

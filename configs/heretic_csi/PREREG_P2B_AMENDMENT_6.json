@@ -1,0 +1,31 @@
+{
+ "schema": "hcsi_p2b_prereg_amendment/1",
+ "amends": {"PREREG_P2B.json": "e273df1db75f6c2aeb1860dd23639d23286570920e85d139ad66f911e8ced378",
+            "PREREG_P2B_AMENDMENT_1.json": "fd01d54e41809493b2abd4dd5c15ae852824007dab2a22debab13ea782baf10a",
+            "PREREG_P2B_AMENDMENT_2.json": "65a5f0cb1adaaa414319402ba947d29dbc9dbaf5c8e0cbdabb68c7794906a3bf",
+            "PREREG_P2B_VALIDATION.json": "5b1f3bac7c216038fe6bd69b46cd45f820dc7117afa7bef3647a1c35935d2b9b",
+            "PREREG_P2B_AMENDMENT_3.json": "122b86ecf4a7a802f8cd8cde65bc2783a320f0c37fc5bfea19d2763f5d1492ac",
+            "PREREG_P2B_AMENDMENT_4.json": "121206ffb2eb99ea0a05c45abbe715bbf03be2be5750b985107425814113953a",
+            "PREREG_P2B_AMENDMENT_5.json": "de158bc817530e73bfd9ba89fade7a0e463e7dced8afa2598cb2cbd728b1e402"},
+ "written": "2026-10-14T17:47:05+03:00",
+ "decided_by": "parent coordinator 2026-10-14 (before any P2b y_install read), implemented by F2",
+ "endpoint_status_at_writing": "NO P2b TRAIN or VALIDATION y_install has been read. Known operational fact (not an endpoint): KO_MEANBIAS and BASE_MEANBIAS (full-norm, all rows) returned score_behavior rc=4 = option-mass gate in add-on jobs 1036622 (basket) and 1036626 (button); KO_CWMEANBIAS rc=0.",
+ "frozen_rule_stands": "Amendment 4 unchanged: KO_MEANBIAS is VOID (collapsed); the all-rows input-independent comparison is CANNOT ANSWER; the 'input-conditional' wording stays SUSPENDED.",
+ "new_descriptive_comparator": {
+  "name": "MEANBIAS_NM (DESCRIPTIVE ONLY; can NEVER unlock input-conditional or any other wording)",
+  "definition": "per module (CAND's 26 modules), the same TRAIN-mean codeword-row (clean - KO) output gap direction as meanbias_<cw>.pt, rescaled so its injected norm equals CAND's MEAN per-position output-delta norm ||x A^T B^T||, the mean taken over EVERY clean TRAIN-captured input row of that module (per prompt: codeword row, last row, 6 seeded random preserve rows; 670 prompts = 5360 rows). This is a fit/apply-side quantity computed from the TRAIN captures and the frozen CAND factors (NOT the runner's logged last-position delta, NOT an endpoint).",
+  "per_rank": "separate vectors for r1 and r4 (CAND norms differ): fac/meanbias_nm_<cw>_r{1,4}.pt",
+  "files_sha256": {"meanbias_nm_basket_r1.pt": "bcf1083d4b9611eaf363220f4a579feb9378ad96bf1633f4eaa08e78059b7a0e",
+                   "meanbias_nm_basket_r4.pt": "7184984fc517b65e38677381d482f2eac37fe015df6b04de11cc59e3848131e4",
+                   "meanbias_nm_button_r1.pt": "e5473662d5cec3aead975357ddc2b7493579085cf715c4e9811a3bd93e51f2b0",
+                   "meanbias_nm_button_r4.pt": "cf597967455ff83554520a6db3fd3361162c5ab2ae10d28d47beb469dad39af9"},
+  "built_by": "CPU job 1040046 (p2b_meanbias.py --nm-factors); the re-derived base mean gap was asserted bitwise equal to the frozen meanbias_<cw>.pt",
+  "total_injected_norm": {"basket_r1": 1.0316, "basket_r4": 1.9432, "button_r1": 1.1027, "button_r4": 2.1148},
+  "arms": "per codeword x primary rank x population: KO_MEANBIAS_NM_r{1,4} (KO + bias at all rows) and BASE_MEANBIAS_NM_r{1,4} (clean prompt, damage); same tag prefix as the main arms (hcsi_p2b_<cw>_k4 / _val)",
+  "screens": "collapse (median option mass < 0.05): KO arm -> addon_nm VOID, BASE arm -> damage flag; hooks fired; config gate; overlap gate vs liveness hosts (in-allocation KO re-run under <prefix>nmovl)",
+  "reported": "KO_MEANBIAS_NM stat and recovery, BASE_MEANBIAS_NM - BASE y, CAND - MEANBIAS_NM (domain-bootstrap CI). Descriptive; no verdict, no wording effect.",
+  "jobs": "TRAIN-K4: plans/addon_nm_k4.sh (one GPU job, both codewords, 8 arms + 2 overlap KO re-runs; ~45 min). VAL: plans/addon_nm_val.sh (LIVE_basket=1023578, LIVE_button=1036679), after the TRAIN read is logged.",
+  "analysis": "p2b_analyze.py <frozen TRAIN/VAL primary command> --addon-nm, run separately AFTER the primary read; the TRAIN primary read does NOT wait for these arms."
+ },
+ "code": "p2b_meanbias.py --nm-factors; p2b_emit.py --what addon_nm; p2b_analyze.py --addon-nm (out['addon_nm']); tests 74 passed / 1 skipped"
+}

@@ -10,7 +10,7 @@ Run from the repo root with `PY=/home/sharifm/students/omeryosef/miniconda3/envs
 
 | file | sha256 |
 |---|---|
-| research/heretic_csi/p2b_analyze.py | `0104b4544ba6907424f2ca47d291f9163f2ae89e93d850a2da0b2e4268d4f399` |
+| research/heretic_csi/p2b_analyze.py | `c1b1132750f2125abf1ae0a7afff8df167944d89b45ae239999338fcb52c16f7` (supersedes `0104b454…f399`: +36 lines, ONLY the amendment-6 `--addon-nm` block, inert without the flag; `git diff` vs the S-117 commit) |
 | research/heretic_csi/p2b_overlap_check.py | `4552d70fd6aec349fdb66f65b521d6f452776f35cfdfecd6df550a843513a490` |
 | research/heretic_csi/p2b_deployed_residual.py | `ba2057bdcec9d4256540bc74c0482f78d1d6db58bb97a101c03d53ca518ce533` |
 | scripts/dcs_csi_subspace_analyze.py (reused helpers) | `8a9e16944cc4dbc41bcec72e54c6162389dfe9f3eba4a4f852b134d9c09d556e` |
@@ -54,6 +54,13 @@ $PY research/heretic_csi/p2b_analyze.py --codeword button --prefix hcsi_p2b_butt
   --overlap <as above> --out reports/heretic_csi/p2b_button_primary_validation.json
 ```
 (If the VALIDATION arms all ran on one host, `--overlap` may be empty; the analyzer VOIDs any cross-host cell lacking coverage.)
+
+## Amendment 6 — DESCRIPTIVE MEANBIAS_NM (run AFTER the primary read; never unlocks wording)
+
+Same frozen command as the primary read for that split, with `--addon-nm` appended and the add-on-NM overlap file
+added to `--overlap` (TRAIN: `outputs/heretic_csi/p2b/prod/overlap_addonnm_<cw>_k4_<ATTEMPT>.json` from the
+plans/addon_nm_k4.sh job), written to a separate output, e.g. `reports/heretic_csi/p2b_<cw>_meanbias_nm_train.json`.
+Only `out["addon_nm"]` is new; the primary/secondary verdicts must be identical to the primary read's.
 
 ## Deployed-vs-fitted residual (descriptive; per codeword × rank ∈ {1,4})
 

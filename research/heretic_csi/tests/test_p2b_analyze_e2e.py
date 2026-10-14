@@ -67,7 +67,7 @@ def _install(mp, collapse_cwonly=False, cw_bad_norm=False, missing=(), cw_missin
 
 
 def _run(ranks=(1, 4)):
-    a = types.SimpleNamespace(nrand=61, nshuf=5, nder=15, capop=True, cw_nrand=61, cw_nder=15, addon=False,
+    a = types.SimpleNamespace(nrand=61, nshuf=5, nder=15, capop=True, cw_nrand=61, cw_nder=15, addon=False, addon_nm=False,
                               codeword="basket", expect_excl=None, overlap=[], prefix="PFX", expect_n=230, allow_short=0, option_mass_floor=0.05, split="validation", n_boot=300)
     rows = []
     for r in ranks:
@@ -122,7 +122,7 @@ def test_missing_cw_family_voids_secondary_not_primary(monkeypatch):
 
 def test_addon_comparators(monkeypatch):
     _install(monkeypatch)
-    a = types.SimpleNamespace(nrand=61, nshuf=5, nder=15, capop=True, cw_nrand=61, cw_nder=15, addon=True,
+    a = types.SimpleNamespace(nrand=61, nshuf=5, nder=15, capop=True, cw_nrand=61, cw_nder=15, addon=True, addon_nm=False,
                               codeword="basket", expect_excl=None, overlap=[], prefix="PFX", expect_n=230, allow_short=0, option_mass_floor=0.05, split="validation", n_boot=300)
     row = pa.analyze_rank(a, 1, None)
     ad = row["addon"]
@@ -134,7 +134,7 @@ def test_addon_comparators(monkeypatch):
 
 def test_addon_collapsed_meanbias_suspends_wording(monkeypatch):
     _install(monkeypatch, collapse_meanbias=True)
-    a = types.SimpleNamespace(nrand=61, nshuf=5, nder=15, capop=True, cw_nrand=61, cw_nder=15, addon=True,
+    a = types.SimpleNamespace(nrand=61, nshuf=5, nder=15, capop=True, cw_nrand=61, cw_nder=15, addon=True, addon_nm=False,
                               codeword="basket", expect_excl=None, overlap=[], prefix="PFX", expect_n=230, allow_short=0, option_mass_floor=0.05, split="validation", n_boot=300)
     ad = pa.analyze_rank(a, 1, None)["addon"]
     assert any("KO_MEANBIAS: readout collapsed" in v for v in ad["void"])
@@ -165,7 +165,7 @@ def test_wrong_population_file_voids(monkeypatch):
 
 def test_wording_never_eligible_on_train(monkeypatch):
     _install(monkeypatch)
-    a = types.SimpleNamespace(nrand=61, nshuf=5, nder=15, capop=True, cw_nrand=61, cw_nder=15, addon=True,
+    a = types.SimpleNamespace(nrand=61, nshuf=5, nder=15, capop=True, cw_nrand=61, cw_nder=15, addon=True, addon_nm=False,
                               codeword="basket", expect_excl="runargs/dcs_cont/exclude_basket_bomb_sow_validation.txt", overlap=[],
                               prefix="PFX", expect_n=230, allow_short=0, option_mass_floor=0.05, split="train", n_boot=300)
     ad = pa.analyze_rank(a, 1, None)["addon"]
@@ -173,7 +173,7 @@ def test_wording_never_eligible_on_train(monkeypatch):
 
 
 def _run_ov(overlap):
-    a = types.SimpleNamespace(nrand=61, nshuf=5, nder=15, capop=True, cw_nrand=61, cw_nder=15, addon=False,
+    a = types.SimpleNamespace(nrand=61, nshuf=5, nder=15, capop=True, cw_nrand=61, cw_nder=15, addon=False, addon_nm=False,
                               codeword="basket", expect_excl=None, overlap=overlap, prefix="PFX", expect_n=230,
                               allow_short=0, option_mass_floor=0.05, split="validation", n_boot=300)
     return {x["rank"]: x for x in pa.finalize([pa.analyze_rank(a, r, None) for r in (1, 4)])}
@@ -195,3 +195,14 @@ def test_cross_host_cell_needs_overlap(monkeypatch, tmp_path):
 def test_non_a5000_voids(monkeypatch):
     _install(monkeypatch, gpu="NVIDIA L40S")
     assert _run_ov([])[1]["verdict"].startswith("VOID")
+
+
+def test_addon_nm_descriptive(monkeypatch):
+    _install(monkeypatch)
+    a = types.SimpleNamespace(nrand=61, nshuf=5, nder=15, capop=True, cw_nrand=61, cw_nder=15, addon=False, addon_nm=True,
+                              codeword="basket", expect_excl=None, overlap=[], prefix="PFX", expect_n=230,
+                              allow_short=0, option_mass_floor=0.05, split="validation", n_boot=300)
+    row = pa.analyze_rank(a, 4, None)
+    nm = row["addon_nm"]
+    assert "status" not in nm and nm["never_unlocks_wording"] is True and nm["void"] == []
+    assert "CAND_minus_MEANBIAS_NM" in nm and "addon" not in row

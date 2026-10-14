@@ -35,7 +35,7 @@ def main():
     ap.add_argument("--excl", required=True)
     ap.add_argument("--limit", default="0")
     ap.add_argument("--prefix", required=True, help="tag prefix, e.g. hcsi_p2b_basket_k4")
-    ap.add_argument("--what", required=True, choices=("capture", "liveness", "rank", "addon"))
+    ap.add_argument("--what", required=True, choices=("capture", "liveness", "rank", "addon", "addon_nm"))
     ap.add_argument("--capdir", default=None)
     ap.add_argument("--factors-dir", default=None)
     ap.add_argument("--ranks", default="")
@@ -79,6 +79,14 @@ def main():
                 emit(f"opraw:{fp}:DER{j}", f"{C} {KO}", f"KO_DERRAW_r{r}_{j}")
             for j in range(a.nshuf):
                 emit(f"opraw:{fp}:SHUF{j}", f"{C} {KO}", f"KO_SHUFRAW_r{r}_{j}")
+    elif a.what == "addon_nm":
+        # AMENDMENT 6 (DESCRIPTIVE): norm-matched mean-gap bias at all rows, per primary rank (CAND norms differ by rank)
+        for r in [int(x) for x in a.ranks.split(",") if x]:
+            mb = os.path.join(a.factors_dir, f"meanbias_nm_{a.cw}_r{r}.pt")
+            if not os.path.exists(mb):
+                raise SystemExit(f"missing {mb}")
+            emit(f"bias:{mb}:all", f"{C} {KO}", f"KO_MEANBIAS_NM_r{r}")
+            emit(f"bias:{mb}:all", C, f"BASE_MEANBIAS_NM_r{r}")
     else:
         for r in [int(x) for x in a.ranks.split(",") if x]:
             fp = os.path.join(a.factors_dir, f"factors_{a.cw}_r{r}.pt")

@@ -2168,3 +2168,16 @@ button's rank-1 direction does not (VAL 14–18/57).
 - 1039942 PREEMPTED at 17:17 on t-806 (19 min, mid-readout ~900/5568 rows; no DONE) — its partial readout dir is
   incomplete (no DONE.json) and is not used; pilot resubmitted (job id below). Add-ons: basket 40/43, button 34/43;
   button VAL r1 29, r4 38 (unread). Amendment 6 not yet received from F2 (TRAIN read waits for it).
+
+## S-133 — 2026-10-14 17:55 — PREREG_P2B_AMENDMENT_6 committed before the TRAIN read
+- `configs/heretic_csi/PREREG_P2B_AMENDMENT_6.json` (sha256 354e98fd…812b2b): amendment-4 rule unchanged (KO_MEANBIAS
+  VOID ⇒ CANNOT ANSWER; wording SUSPENDED); MEANBIAS_NM DESCRIPTIVE only, never unlocks wording. NM reference = CAND's
+  mean per-position output-delta norm ‖x Aᵀ Bᵀ‖ over all clean TRAIN-captured rows of each module (5360 rows) — an
+  apply-side quantity from TRAIN captures + frozen factors, not an endpoint. Built by CPU job 1040046 (base gap
+  re-derived bitwise-equal to the frozen meanbias); fac/meanbias_nm_{cw}_r{1,4}.pt; injected norm 1.03/1.94 (basket
+  r1/r4), 1.10/2.11 (button) vs 46–53 for the collapsed full-norm bias.
+- `research/heretic_csi/p2b_analyze.py` sha256 c1b11327…16f7: parent-verified diff = +36 lines confined to the
+  `--addon-nm` block (inert without the flag). `configs/heretic_csi/ANALYSIS_COMMANDS_P2B.md` sha256 c1b7089d…f7f7
+  (separate descriptive amendment-6 section). Tests 74 passed / 1 skipped (F2). 0 analyzer outputs exist.
+- Basket add-on 1036622 COMPLETED (41/43 ok + 2 designed MEANBIAS tail-gate exits; DONE rc=0; add-on overlap OK,
+  |Δy| 0). Button add-on 1036626 ~39/44. **TRAIN primary read authorized once 1036626 is DONE + its overlap OK.**

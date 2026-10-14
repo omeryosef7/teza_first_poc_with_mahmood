@@ -61,12 +61,12 @@ nvidia-smi --query-gpu=name,compute_cap --format=csv,noheader
 export TMPDIR="${SLURM_TMPDIR:-/tmp/${USER}/${SLURM_JOB_ID}}"; mkdir -p "$TMPDIR/llama31"
 trap 'rm -rf "$TMPDIR/llama31" 2>/dev/null || true' EXIT TERM INT
 SNAPDIR="outputs/heretic_csi/p6/code_${SLURM_JOB_ID}"; mkdir -p "$SNAPDIR"
-cp src/boombness/score_behavior.py scripts/dcs_extract_under_ko.py research/heretic_csi/slurm/p6_stage0.slurm "$SNAPDIR/"
+cp src/boombness/score_behavior.py scripts/dcs_extract_under_ko.py research/heretic_csi/slurm/p6_stage0.slurm research/heretic_csi/p6_select_run.py "$SNAPDIR/"
 (cd "$SNAPDIR" && sha256sum * > SHA256SUMS)
 echo "STAGE_IN start $(date -Is)"; cp -L "$SCR"/*.safetensors "$SCR"/*.json "$TMPDIR/llama31/"; echo "STAGE_IN done $(date -Is)"
 MODEL="$TMPDIR/llama31"
 "$PY" "${READ_ARGS[@]}" --model "$MODEL"; echo "READOUT_DONE rc=$? $(date -Is)"
-RD=$(ls -dt outputs/boombness/score_behavior/ts116m_readout_${CW}_bomb_* | head -1)
+RD=$("$PY" research/heretic_csi/p6_select_run.py --job "$SLURM_JOB_ID" --glob "outputs/boombness/score_behavior/ts116m_readout_${CW}_bomb_*")  # THIS job + DONE only (never recency)
 # READOUT HEALTH GATE (mechanical; mirrors the incumbent's healthy run: gate PASS, no resource failures).
 # Stop BEFORE extraction if any row failed with OOM/CUDA errors or score_behavior's own option-mass gate != PASS.
 "$PY" - "$RD" <<'PYG'
@@ -78,7 +78,7 @@ print("READOUT_HEALTH gate=%s n_failed=%s oom_rows=%d" % (s.get("option_mass_gat
 sys.exit(0 if (not oom and s.get("option_mass_gate") == "PASS") else 5)
 PYG
 "$PY" "${EXT_ARGS[@]}" --model "$MODEL"; echo "EXTRACT_DONE rc=$? $(date -Is)"
-XD=$(ls -dt outputs/boombness/extract_boombness/cont1_behavioral_${CW}_bomb_* | head -1)
+XD=$("$PY" research/heretic_csi/p6_select_run.py --job "$SLURM_JOB_ID" --glob "outputs/boombness/extract_boombness/cont1_behavioral_${CW}_bomb_*")  # THIS job + DONE only
 [ -L "$XD" ] && { echo "unexpected symlink $XD"; exit 4; }
 mv "$XD" "$XDST/"; ln -s "$XDST/$(basename "$XD")" "$XD"
 $PY - "$MAN" "$CW" "$RD" "$XD" "$GOT" <<'PY'

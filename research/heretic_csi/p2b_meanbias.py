@@ -22,6 +22,9 @@ def main():
     ap.add_argument("--ko", required=True)
     ap.add_argument("--codeword", required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--nm-factors", default=None,
+                    help="AMENDMENT 6: also write norm-matched copies, one per factors file (comma list, e.g. r1,r4)")
+    ap.add_argument("--nm-out", default=None, help="comma list of output paths matching --nm-factors")
     a = ap.parse_args()
     pairs, names = pf.load_pairs(a.clean, a.ko, a.codeword)
     bias, norms = {}, {}
@@ -35,6 +38,24 @@ def main():
             "total_norm": sum(norms.values())}
     torch.save({"bias": bias, "meta": meta}, a.out)
     print(json.dumps({k: v for k, v in meta.items() if k != "per_module_norm"}))
+    if a.nm_factors:
+        # MEANBIAS_NM (AMENDMENT 6, DESCRIPTIVE ONLY): the same gap direction per module, rescaled so its injected norm
+        # equals CAND's MEAN per-position delta norm ||x A^T B^T||, averaged over EVERY clean TRAIN-captured input row
+        # (codeword row, last row and the 6 random preserve rows per prompt). Fit/apply-side quantity from the TRAIN
+        # captures + frozen factors; no endpoint is read.
+        for fpath, opath in zip(a.nm_factors.split(","), a.nm_out.split(",")):
+            fac = torch.load(fpath, map_location="cpu")["operators"]["CAND"]["factors"]
+            tgt, vecs = {}, {}
+            for n in names:
+                A, B = (x.double() for x in fac[n])
+                X = torch.stack([xin.double() for p in pairs for (xin, _) in p["clean"]["acts"][n].values()])
+                tgt[n] = float(((X @ A.t()) @ B.t()).norm(dim=1).mean())
+                vecs[n] = (bias[n].double() * (tgt[n] / max(float(bias[n].norm()), 1e-12))).float()
+            m2 = {**meta, "norm_matched_to": fpath, "nm_reference": "mean_rows ||x A^T B^T|| over all clean TRAIN-captured rows",
+                  "n_rows_per_module": int(X.shape[0]), "per_module_target_norm": tgt, "total_norm": sum(tgt.values()),
+                  "descriptive_only": "can NEVER unlock input-conditional wording (amendment 6)"}
+            torch.save({"bias": vecs, "meta": m2}, opath)
+            print(json.dumps({"nm": opath, "rows": int(X.shape[0]), "total_norm": m2["total_norm"]}))
 
 
 if __name__ == "__main__":
