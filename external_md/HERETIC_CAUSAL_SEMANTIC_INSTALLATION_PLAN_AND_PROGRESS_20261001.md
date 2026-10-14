@@ -1535,3 +1535,8 @@ F5 (CPU only). Reports: `reports/heretic_csi/P3_SVD_REPORT.md`, `P3_svd_descript
   and 1023579 (r4), pinned to warm n-503 (free a5000s; avoids cold stage-in). **Read discipline:** these run in
   parallel for wall-clock reasons only; their outputs will NOT be analyzed until the basket TRAIN-K4 primary read
   (r1 + r4) is analyzed and logged. GPU: 5 running + 1 pending = 6.
+
+## S-081 — 2026-10-14 03:40 — ops tick
+- 6 GPU running (cap): 1023012 (button fits, r32 done → r50, then basket r1 TRAIN eval), 1023508 (basket r4 TRAIN,
+  ~13 arms), 1023509 (button r4, waiting factors), 1023264 (button r1, started), 1023578/79 (basket VAL r1/r4, not to
+  be read before TRAIN). 4 P4 CPU fits running. No failures/duplicates.
