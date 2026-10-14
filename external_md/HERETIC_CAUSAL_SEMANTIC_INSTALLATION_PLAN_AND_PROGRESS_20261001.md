@@ -1964,3 +1964,13 @@ Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_d.md` (independent; saw 
   module set (down_proj carries more of the gap) ⇒ cross-variant net comparisons are NOT like-for-like.
 - Partial fit-side ranks (more controls; in-sample): TOP8 among RAW / NC — basket r1 7/15, 2/14; basket r4 6/13, 7/13;
   button r1 5/16, 6/15; button r4 13/15, 13/14 ⇒ TOP8 still not distinctive. Final summary ETA ~22 h.
+
+## S-114 — 2026-10-14 13:10 — S-084 analysis FROZEN before either r4ext job finished
+- `research/heretic_csi/p2a_powered_analyze.py` (sha256 eb0da96d…8c4c), tests `test_p2a_powered_analyze.py`
+  (a58599f7…56ab; parent-run 7 passed: unrounded tie, 3/201 pass vs 4/201 fail, SHUF block, CI/gate/VOID, row-set
+  attribution, and a real-data equivalence on the already-read 1022698 reproducing n_keys_common 203 + all 56 control
+  points + rank 1), command file `configs/heretic_csi/ANALYSIS_COMMANDS_S084.md` (sha256 after parent addition
+  a51af483…c735). Unrounded ranking (ties against the candidate) is a pre-read refinement; the frozen analyzer ranks on
+  5-dp-rounded points. **Parent binding rule (added at freeze):** PASS only if BOTH the unrounded decision and the
+  frozen analyzer's rounded rank PASS under the identical rule; disagreement ⇒ "DOES NOT PASS (rounding-sensitive)".
+- Superseded v1 contrast files kept and committed for provenance.
