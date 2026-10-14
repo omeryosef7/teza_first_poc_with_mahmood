@@ -1875,3 +1875,8 @@ F3 (`reports/heretic_csi/VERIFY_basketball_occurrence.{md,json}`, `VERIFY_codewo
 ## S-105 — 2026-10-14 09:40 — ops tick
 - P2b evals, 0 failures: basket r1 99, r4 91; button r1 109, r4 90 (of 163); VAL basket r1 130 / r4 155 (unread).
   When 1023579 finishes, the freed slot goes to F6's S-084 powered re-test (job 1, with overlap arms).
+
+## S-106 — 2026-10-14 10:10 — ops tick: basket P2b VAL r4 (1023579) DONE (163/163, 1 load) — unread
+- 1023579 DONE_MARKER rc=0, arms ok 163/163, single attempt. Held UNREAD until the basket TRAIN primary read.
+- P2b TRAIN, 0 failures: basket r1 106, r4 97; button r1 118, r4 95 (of 163); VAL basket r1 139. Freed slot → F6
+  r4ext job 1 (46..117 + overlap arms). GPU 6.
