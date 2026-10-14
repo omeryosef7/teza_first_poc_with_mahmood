@@ -1979,3 +1979,13 @@ Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261014_d.md` (independent; saw 
   analyzer's rounded values, asserts its rank = the analyzer's candidate_rank, PASS only if both PASS; tests now 9
   (incl. a rounding-induced tie ⇒ "rounding-sensitive"). Read = `p2a_powered_analyze.py` then
   `p2a_powered_binding.py` (FINAL_VERDICT). Committed before either r4ext job finished.
+
+## S-115 — 2026-10-14 13:20 — P2b r1 TRAIN jobs PREEMPTED (n-503 reclaimed); resumed; overlap check required
+- 1023012 (basket r1; ~127/167 eval arms) and 1023264 (button r1; ~149/167) PREEMPTED at 11:50 (no-requeue ⇒ no
+  restart). Mid-arm partial dirs lack DONE.json ⇒ ignored by strict_run_dir; resumed via the runner's skip-if-done:
+  1034929 (basket r1 + liveness, n-501, --mem=40G) and 1035131 (button r1 + liveness; held until 1034929's stage-in
+  completes — one cold stage-in at a time). r4 jobs 1023508/09 unaffected (~125–129/163).
+- **Requirement (parent, before the TRAIN read):** the r1 cells now combine arms from two jobs/nodes ⇒ overlap arms
+  (KO, KO_CAND_r1, one completed control; distinct OVL_* tags) must reproduce the preempted job's rows with
+  |Δy| ≤ 1e-6 on identical prompt_id sets, both nodes RTX A5000, exactly one complete dir per arm with job provenance
+  recorded — else the r1 cell is VOID. To be written into P2b amendment 5(b).
