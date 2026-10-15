@@ -2766,3 +2766,11 @@ its sha + GPU type, then submit (F5 already on this order).
 ## S-183 — 2026-10-15 10:10 — ops tick
 - evalB button 1040766 DONE_MARKER; evalB basket 1040759 166/168. P6 batch 3 G3: cushion, curtain, bottle, jacket PASS
   (ribbon next); batch 4 1041596 running; G2 batch 2 1041561 running. 4 GPU. No failures.
+
+## S-184 — 2026-10-15 10:30 — P6 preemptions: G2 batch 2 and Stage-0 batch 3 preempted; handled
+- G2 batch 2 1041561 PREEMPTED before evaluating anything ⇒ no outputs from uncommitted code (the S-181 provenance
+  concern does not apply); re-run whole under the committed code as **1041708**.
+- Stage-0 batch 3 1041485 PREEMPTED after 4/5 codewords (cushion, curtain, bottle, jacket — G3 PASS); their G3/manifest
+  steps re-run with the committed code reproduce identically (closes the S-181 provenance gap for batch 3). ribbon
+  pending ⇒ re-run after batch 4 (≤1 Stage-0 job). Axisfits 1041635–38 (cushion, curtain, bottle, jacket) running.
+  Batch 4 1041596: sponge G3 PASS, whistle in progress.
