@@ -2705,3 +2705,31 @@ P6 batch 3 (1041485) running.
   pre-rescue covariates only, cannot run early); P3 VOID handling; overclaim audit S-166…S-178; pending risks before
   P4 eval and the P6 rescue stage (power, multiplicity, L40S-readout vs a5000-rescue hardware mixing).
   → `reports/heretic_csi/REVIEW_ADVERSARIAL_20261015_h.md`.
+
+## S-180 — 2026-10-15 09:40 — ADVERSARIAL REVIEW #8: no result-changing bug; corrections; pre-draw / pre-rescue fixes
+Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261015_h.md`.
+**Verified OK:** G2 for lamp/kettle/pencil/ladder reproduces from raw dirs (own bootstrap, different seed; points to 1e-5,
+CIs ≤0.001); each arm exactly the 670-row / 67-domain TRAIN rescue population from that codeword's own bank+exclusions;
+argv identical to the incumbent basket liveness arms; correct codeword ids; PASS rule = frozen G2 text. P3 VOID is
+correct (tolerance frozen before the read; refusing re-preregistration on seen data is right). DEV-draw procedure itself
+is deterministic, input-order-invariant, uses only Zipf + TRAIN C−A, fill rule works.
+**CORRECTIONS (appended):**
+- **S-176:** the sentence "Pattern (descriptive only): a rank-1-dominated operator whose effect follows its leading
+  component…" is STRUCK — it interprets a VOID read (the forbidden claim in softer words). The float32-SVD "diagnosis"
+  is an untested HYPOTHESIS (bf16 re-rounding equally plausible). Added
+  `reports/heretic_csi/p3_basket_r4_validation.NOT_QUOTABLE.md` (JSON itself left unmodified).
+- **S-178:** the incumbent comparison "basket KO −0.30, FULL +0.14" used VAL numbers; the matching TRAIN incumbent is
+  **KO−BASE −0.235 / FULL−KO +0.124**. "Weak installer" for ladder ⇒ "lower installer strength (G1 0.15)".
+- S-142/S-145: "P(>0.05)=0.32" is a bootstrap fraction, not a probability. Blanket is a BORDERLINE G3 pass (dropped
+  label in S-172).
+- G2 job 1041401 was submitted 48 s before its code commit (no harm: held; snapshot matches) ⇒ second commit-after-
+  submit; rule now: refuse submission if the script is uncommitted.
+**Fixes tasked (F7, before the DEV draw / rescue):** committed DEV-draw DRIVER that reads all 20 manifests, refuses
+unless every codeword has a FINAL status through G2, rejects NaN/missing covariates, writes the draw once with manifest
+sha256s; manifests get a G2 status; `p6_g2.py` codeword guard + rows==population (esp. `_occ` populations); atomic,
+locked manifest writes; **rescue-stage hardware pinned (one job per codeword on l40s:1; VOID if a codeword's arms mix
+jobs/GPU types; basket/button comparisons cross-hardware ⇒ descriptive)**. Declared shared-noise dependencies for
+H6a: identical random controls across codewords (fixed seed), lamp·basket rank-1 cos 0.63, shared VAL domains.
+**Power risk (declared):** 12/20 untouched pass G3 so far, 8 pending — one more failure ⇒ n_conf < 15 ⇒ H6a pre-labelled
+UNDERPOWERED for ρ<0.8. P4: commit `p4_analyze_v2.py` (currently uncommitted change) then a P4 v2 eval prereg pinning
+its sha + GPU type, then submit (F5 already on this order).
