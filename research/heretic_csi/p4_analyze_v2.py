@@ -105,6 +105,30 @@ def collapse_void(name, t, n_fam):
     return None
 
 
+def provenance_void(r, jobs, gpus):
+    """L7 (PREREG_P4_AMENDMENT_6 addendum): all arms of a rank must come from exactly ONE slurm job and ONE GPU type, and
+    both fields must be RECORDED (a missing/None RUNMETA field can no longer satisfy the rule vacuously)."""
+    v = []
+    if None in jobs or None in gpus or "" in jobs or "" in gpus:
+        v.append(f"rank {r}: RUNMETA missing slurm_job_id and/or gpu on some arm (jobs={sorted(map(str, jobs))}, gpus={sorted(map(str, gpus))})")
+    if len(jobs) != 1 or len(gpus) != 1:
+        v.append(f"rank {r}: arms come from {len(jobs)} jobs / GPU types {sorted(map(str, gpus))} -- must be one job, one GPU")
+    return v
+
+
+def analyze_rank_safe(fn, r):
+    """L6 (addendum): a per-rank failure never crashes the script and never reads like a null.
+    SystemExit from the strict run-dir/integrity checks => 'NOT ANALYZABLE (data integrity, not a null)';
+    any other exception => 'NOT ANALYZABLE (internal error, not a null)'. Either way the row has no p_IUT, so the other
+    primary rank becomes INCOMPLETE (never PASS)."""
+    try:
+        return fn()
+    except SystemExit as e:
+        return {"rank": r, "verdict": f"NOT ANALYZABLE (data integrity, not a null): {str(e)[:300]}"}
+    except Exception as e:   # noqa: BLE001
+        return {"rank": r, "verdict": f"NOT ANALYZABLE (internal error, not a null): {type(e).__name__}: {str(e)[:300]}"}
+
+
 def split_label(split, codeword):
     """M7: every verdict carries the split and the codeword's confirmatory role (output labelling only)."""
     sp = "TRAIN-K4 (in-sample)" if split == "train" else "VALIDATION"
@@ -134,8 +158,7 @@ def analyze_rank(a, r, assign):
     by = {x: pa.dmeans(common, lambda k, x=x: kv[x][k]) for x in arms}
     doms = sorted(by["BASE"])
     void, flags = [], []
-    if len(jobs) != 1 or len(gpus) != 1:
-        void.append(f"rank {r}: arms come from {len(jobs)} jobs / GPU types {sorted(map(str, gpus))} -- must be one job, one GPU")
+    void += provenance_void(r, jobs, gpus)
     fp = os.path.join(a.factors_dir, f"factors_p4v2_{a.codeword}_r{r}.pt")
     fb, raw_norms = factor_checks(fp, a.n_rh8)
     void += fb
@@ -232,10 +255,7 @@ def main():
     assign = lpm.load_split()
     rows = []
     for r in [int(x) for x in a.ranks.split(",") if x]:
-        try:
-            rows.append(analyze_rank(a, r, assign))
-        except SystemExit as e:
-            rows.append({"rank": r, "verdict": f"NOT ANALYZABLE: {str(e)[:300]}"})
+        rows.append(analyze_rank_safe(lambda r=r: analyze_rank(a, r, assign), r))
     finalize(rows, split_label(a.split, a.codeword))
     for x in rows:
         print(json.dumps({k: x.get(k) for k in ("rank", "verdict", "stat_TOP8_minus_KO", "p_IUT", "holm_p", "strict_holm4_p")}, default=str), flush=True)

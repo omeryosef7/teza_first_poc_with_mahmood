@@ -228,3 +228,36 @@ def test_a6_main_applies_split_label():
     import inspect, p4_analyze_v2 as v
     src = inspect.getsource(v.main)
     assert "finalize(rows, split_label(a.split, a.codeword))" in src
+
+
+# ---- PREREG_P4_AMENDMENT_6 ADDENDUM (review #10 L6, L7) ----
+def test_a6add_provenance_requires_recorded_single_job_and_gpu():
+    import p4_analyze_v2 as v
+    assert v.provenance_void(1, {"123"}, {"NVIDIA RTX A5000"}) == []
+    assert v.provenance_void(1, {"123", "124"}, {"NVIDIA RTX A5000"})                  # two jobs
+    assert v.provenance_void(1, {"123"}, {"NVIDIA RTX A5000", "NVIDIA L40S"})          # two GPU types
+    assert v.provenance_void(1, {None}, {"NVIDIA RTX A5000"})                          # missing job id: no vacuous pass
+    assert v.provenance_void(1, {"123"}, {None})                                       # missing gpu: no vacuous pass
+    assert v.provenance_void(1, {"123", None}, {"NVIDIA RTX A5000"})
+    assert v.provenance_void(1, {"123"}, {""})
+
+
+def test_a6add_not_analyzable_labels_and_no_crash():
+    import p4_analyze_v2 as v
+    ok = v.analyze_rank_safe(lambda: {"rank": 4, "x": 1}, 4)
+    assert ok == {"rank": 4, "x": 1}
+    def integrity(): raise SystemExit("2 DONE dirs for hcsi_p4v2_x_BASE")
+    def bug(): raise KeyError(("d1", 3))
+    ri, rb = v.analyze_rank_safe(integrity, 1), v.analyze_rank_safe(bug, 4)
+    assert ri["verdict"].startswith("NOT ANALYZABLE (data integrity, not a null)")
+    assert rb["verdict"].startswith("NOT ANALYZABLE (internal error, not a null)") and "KeyError" in rb["verdict"]
+    assert "PASS" not in ri["verdict"] + rb["verdict"]
+    # the other primary rank can never PASS when one is not analyzable
+    rows = v.finalize([ri, _row(4, 0.001, 0.001)])
+    assert rows[0]["verdict"].startswith("NOT ANALYZABLE") and rows[1]["verdict"].startswith("INCOMPLETE")
+
+
+def test_a6add_main_uses_safe_wrapper_and_provenance():
+    import inspect, p4_analyze_v2 as v
+    assert "analyze_rank_safe" in inspect.getsource(v.main)
+    assert "provenance_void(r, jobs, gpus)" in inspect.getsource(v.analyze_rank)

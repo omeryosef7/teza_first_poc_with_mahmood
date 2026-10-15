@@ -1,0 +1,17 @@
+{
+  "schema": "hcsi_prereg_amendment/1",
+  "amends": "PREREG_P4_AMENDMENT_6 (committed 2baebb0f)",
+  "written": "2026-10-15, BEFORE any P4 eval endpoint is read: basket TRAIN-K4 jobs 1042143 (r1, ~30/132 arms) and 1042311 (r4, ~22/132 arms) are still running; the analyzer has not been run on any P4 eval output (reports/heretic_csi/p4v2_* does not exist). Arms/plans/factors unchanged.",
+  "closes": "Review #10 LOW items L6 and L7 (left open in Amendment 6 'not_changed_here').",
+  "L6_not_analyzable_labels": {
+    "rule": "Each rank is analysed through analyze_rank_safe(). SystemExit from the strict run-dir / integrity checks (including >1 DONE dir after an accidental re-run = duplicate evidence) => verdict 'NOT ANALYZABLE (data integrity, not a null): ...'. Any other exception (KeyError, torch load, ...) => 'NOT ANALYZABLE (internal error, not a null): <type>: ...' instead of crashing the script and writing no rows. Either way the row has no p_IUT, so the other primary rank becomes INCOMPLETE (never PASS); neither string can be read as a null result.",
+    "implementation": "research/heretic_csi/p4_analyze_v2.py::analyze_rank_safe (used by main)"
+  },
+  "L7_recorded_provenance": {
+    "rule": "A rank is VOID unless every arm's RUNMETA RECORDS slurm_job_id and gpu (None / empty counts as missing) AND all arms of the rank share exactly one job and one GPU type. Previously a set like {None} satisfied 'one job, one GPU' vacuously.",
+    "checked_against_live_runs": "RUNMETA of the running P4 jobs records both fields on every run dir seen so far (r1: 31 dirs, job 1042143, NVIDIA RTX A5000; r4: 23 dirs, job 1042311, NVIDIA RTX A5000; 0 missing), so the rule cannot false-VOID them.",
+    "implementation": "research/heretic_csi/p4_analyze_v2.py::provenance_void (used by analyze_rank)"
+  },
+  "tests": "research/heretic_csi/tests/test_p3_p4.py: test_a6add_provenance_requires_recorded_single_job_and_gpu, test_a6add_not_analyzable_labels_and_no_crash, test_a6add_main_uses_safe_wrapper_and_provenance. Mutation-checked (allowing None provenance fails 1 test; relabelling the integrity stop as a plain null fails 1). 21 tests pass.",
+  "unchanged": "Everything else in PREREG_P4 + Amendments 1-6."
+}
