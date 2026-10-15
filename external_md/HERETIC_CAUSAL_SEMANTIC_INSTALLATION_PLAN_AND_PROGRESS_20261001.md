@@ -3070,3 +3070,12 @@ net on the frozen objective; 60 RAW + 60 NC random disjoint 8-head sets per cell
   cb0fb0d9…). One job per cell on a5000, 132 arms, ≈9.7 GPU-h per TRAIN-K4 job / 8.3 per VAL; ≈72 GPU-h total.
 - Tests 14/14; 0 hcsi_p4 score dirs at commit. CV (10 sets) fit-side ranks among 11 (RAW/NC): basket r1 5/2, r4 10/11;
   button r1 7/4, r4 10/11 (fitting-side diagnostic only; never decision-relevant).
+
+## S-205 — 2026-10-15 14:15 — ops tick after compaction
+- Cron 9587c2a2 alive. SLURM: 1042049 (S-199 basket r1 re-test) RUNNING n-503; 1042050 + P4 basket r1 (1042100) PENDING priority; G2 1042039 RUNNING t-806. Stage-0 1041850 (whistle/yogurt/banana) COMPLETED (not yet validated).
+- F6 (S-199) and F7 (P6) had ended their turns while jobs were queued; F7 resumed to validate 1041850 and submit chair/balloon/ribbon Stage-0. F6 to be resumed when 1042049/50 finish. No new results read; no claims changed.
+
+## S-206 — 2026-10-15 14:23 — P6 Stage-0 batch 1041850 validated; pre-commit guard fix
+- Pre-commit guard run_completeness_check refused the S-205 commit: old run hcsi_p2a_basket_KO_20261002_202100_4049577 (all 670 rows failed, "knockout supports batch size 1 only", launch error superseded by reruns) was not in KNOWN_ZERO. Added it with cause (no run deleted). Guard then passes.
+- Batch 1041850 (F7 report, my recompute pending): whistle G3 PASS 0.0817 and G1 PASS (C−A 0.666 [0.611,0.718]); yogurt G3 FAIL 0.0096; banana G3 FAIL 0.0171 — gated out mechanically, kept in denominator, no rescue arms. Stage-0 for chair/balloon/ribbon = job 1042103; whistle axis fit 1042104; G2 1042039 still running.
+- Power arithmetic CORRECTION of F7's draft ("at most 17 survive"): 20 untouched − yogurt − banana = at most 18 survivors; minus 5 DEV = at most 13 confirmation codewords < 15 ⇒ H6a is UNDERPOWERED by prereg (≥12 so not CANNOT ANSWER). Candle is not among the 20.

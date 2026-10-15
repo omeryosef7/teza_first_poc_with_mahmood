@@ -71,6 +71,12 @@ ROW_FILE = {
 #: None of them is cited by any claim in the record (checked 2026-09-11 across external_md/ and
 #: reports/). They are NOT deleted -- section 53: supersede or quarantine with provenance.
 KNOWN_ZERO = {
+    # ---- HERETIC-CSI P2a: first KO launch (2026-10-02) failed all 670 rows with
+    # "ScopedAttentionKnockout supports batch size 1 only"; rerun with batch size 1 produced the
+    # real runs. Documented failure, kept as evidence (S-205).
+    "hcsi_p2a_basket_KO_20261002_202100_4049577":
+        "HERETIC-CSI P2a: 670/670 rows failed (NotImplementedError: knockout supports batch size 1 only); "
+        "launch config error, superseded by the batch-size-1 reruns.",
     # ---- DCS-CSI-117 diagnostic quartet. All four are DELIBERATE probes of the defect S-117
     # demonstrates: the 24 prompt_ids that `--limit 24` selects ALL patch successfully inside the
     # 670-row run of the same arm/basis/layer (24 of 24 present in its results.jsonl, none among
