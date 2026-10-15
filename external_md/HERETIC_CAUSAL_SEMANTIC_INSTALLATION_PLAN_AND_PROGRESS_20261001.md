@@ -2876,3 +2876,22 @@ basket, 0.57–0.58 button).
   content-gated endpoint + refusal metric + the prior same-population null; draft PREREG_P7 (VAL-only confirmation,
   same rows for semantics + behavior, domain-cluster stats, matched control family, power/MDE with CANNOT-ANSWER
   labelling, mediation-language rules, GPU + API cost).
+
+## S-193 — 2026-10-15 12:30 — P7 DESIGN (F8, CPU only): primary pre-labelled **CANNOT ANSWER / UNDERPOWERED** before any GPU spend (§20)
+`reports/heretic_csi/P7_DESIGN.md` (sha256 d6819367…), draft `configs/heretic_csi/PREREG_P7_DRAFT.json` (cf2d5ba5…).
+- Qualifying intervention (§18, chosen without behavior): **P2a button r4 only** (S-126: confirmed, held-out, Holm,
+  200 matched controls, verified). P2b basket CWONLY = disclosed second choice (secondary + forking-path disclosure).
+  P2a basket r1 (floor-sensitive) and P2b basket r4 (marginal) do NOT qualify.
+- Inherited pipeline: generation `score_behavior.py --query-kinds behavioral --max-new 640`, eager/bf16, seed
+  20260913 (20.2 s/row ⇒ 1.29 GPU-h per 230-row arm); judge StrongREJECT via OpenAI gpt-4o-mini (pinned; key present;
+  ~$0.07/arm); content-true endpoint = StrongREJECT ∧ concept_present (44-term lexicon) ∧ non-refusal (frozen CR-002);
+  raw judge ASR overstates content-true success 6.6× (basket) / 11.8× (button).
+- **Power:** VAL (23 domains) MDE for content-true ASR at 80% power = **0.0907**. The KO moved installation 0.2150 and
+  content-true ASR +0.0030 [−0.0299, +0.0358] (p 0.844, DR-070, 67 domains); button r4 moves installation 0.0129 = 6.0%
+  of the KO's effect ⇒ plausible |ΔASR| ≤ 0.0021 under a generous proportional model ⇒ ~42,900 domains needed.
+  ⇒ **P7 primary (content-true ASR) = CANNOT ANSWER / UNDERPOWERED, declared before GPU** (running it and reporting a
+  null is the §20 failure mode). Consistent with the inherited result that semantic/refusal changes did not move
+  content-true attack success.
+- Blocker for any P7 run: VALIDATION behavioral exclusion files don't exist (CPU, minutes).
+- Optional DESCRIPTIVE secondary (button only — basket refusal at floor ⇒ CANNOT ANSWER): refusal + same-row
+  manipulation check, 14 arms ≈ 18 GPU-h + ~$1. **Deferred** until P4 and P6 finish (priority order); decision then.
