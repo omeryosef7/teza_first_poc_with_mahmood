@@ -2644,3 +2644,7 @@ in H6a (declared dependence).
 ## S-173 — 2026-10-15 07:40 — ops tick
 - evalB 128/129 (of 168), P3 trunc 114/133, G2 1041401 + P6 batch 3 1041485 on t-806. 9 codewords G3+G1 PASS with
   verified axis fits (F7). 5 GPU. No failures.
+
+## S-174 — 2026-10-15 08:10 — ops tick
+- evalB 136/137 (of 168), P3 trunc 123/133 (read ~08:45), G2 1041401 (1h15) + P6 batch 3 1041485 running on t-806.
+  5 GPU. No failures. Next deep review ~09:10 (after the P3 read).
