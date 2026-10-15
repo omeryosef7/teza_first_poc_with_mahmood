@@ -3108,3 +3108,7 @@ net on the frozen objective; 60 RAW + 60 NC random disjoint 8-head sets per cell
 
 ## S-214 — 2026-10-15 17:08 — ops tick
 - RUNNING: P4 basket r1 1042143 (1h10m, n-501), P4 basket r4 1042311 (25 min, n-503), S-199 1042049/50 (2h40–2h55m, n-503). PENDING: P6 G2 whistle+chair 1042284 (priority, ~1.5 h queued). Ribbon axis fit 1042341 COMPLETED. No failures/duplicates; no endpoints read. Review #10 due ~18:00 — launching next tick/now.
+
+## S-215 — 2026-10-15 17:39 — ops tick; ADVERSARIAL REVIEW #10 launched
+- G2 whistle+chair 1042284 now RUNNING (n-805, 20 min). P4 basket r1 (1h40m) / r4 (55 min), S-199 1042049/50 (3h10–3h25m) RUNNING; 5 killable jobs (<6). No failures/duplicates; no endpoints read.
+- Review #10 agent launched (scope: independent recompute of newly gated P6 codewords + power arithmetic, S-199/P4 analyzer code via synthetic mutation tests, KNOWN_ZERO change). Instructed NOT to read P4/S-199 endpoints. Report → reports/heretic_csi/REVIEW_ADVERSARIAL_20261015_j.md.
