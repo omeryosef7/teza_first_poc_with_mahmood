@@ -14,7 +14,7 @@ def test_draw_deterministic_and_disjoint():
     surv = sorted(d.ZIPF)
     a = d.draw(strength, surv); b = d.draw(strength, surv)
     assert a == b
-    assert a["dev"][0] == "candle" and len(a["dev"]) == 6
+    assert "candle" not in a["dev"] and len(a["dev"]) == 5
     assert not set(a["dev"]) & set(a["confirmation"])
     assert len(a["confirmation"]) == 15
 
@@ -30,6 +30,6 @@ def test_fill_rule_when_cells_sparse():
     low = [w for w, t in d.tertiles().items() if t == "low"]
     strength = {w: 0.5 for w in low}           # all equal -> all 'below' the median
     out = d.draw(strength, low)
-    assert len(out["dev"]) == 6 and out["n_fill"] == 4
-    assert len(set(out["dev"])) == 6 and not set(out["dev"]) & set(out["confirmation"])
+    assert len(out["dev"]) == 5 and out["n_fill"] == 4 and "candle" not in out["dev"]
+    assert len(set(out["dev"])) == 5 and not set(out["dev"]) & set(out["confirmation"])
     assert out == d.draw(strength, low)       # deterministic

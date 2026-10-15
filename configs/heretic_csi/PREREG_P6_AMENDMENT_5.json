@@ -1,0 +1,50 @@
+{
+ "schema": "hcsi_prereg_amendment/1",
+ "id": "PR-HCSI-P6 AMENDMENT 5",
+ "written": "2026-10-15, F7, on review #7 (reports/heretic_csi/REVIEW_ADVERSARIAL_20261015_g.md), BEFORE the DEV draw (no draw has been run) and before any P6 rescue arm",
+ "amends": [
+  "PREREG_P6.json (998fc25d\u2026)",
+  "AMENDMENT_1 (3a762fc7\u2026)",
+  "AMENDMENT_2 (98747c69\u2026)",
+  "AMENDMENT_3 (8b39b5dc\u2026)",
+  "AMENDMENT_4 (bd453164\u2026)"
+ ],
+ "item1_DEV_without_candle": {
+  "issue": "PREREG_P6 forced candle into DEV, but the prereg applies gates G1\u2013G3 BEFORE any rescue arm; candle is G3_FAIL (median 0.0481 on its TRAIN rescue BASE population).",
+  "rule": "candle stays in the reported denominator with NO rescue arms (any role). DEV = the 5 codewords drawn by p6_dev_draw.draw() (unchanged seeded cell procedure + fill rule) from the UNTOUCHED codewords passing G1, G2 AND G3; CONFIRMATION = the remaining untouched G1\u2013G3 survivors. basket/button remain contaminated DEV reference points (already measured).",
+  "code": {
+   "research/heretic_csi/p6_dev_draw.py": "3878ea535405fd94dcbed360b086910b46a231196b5ae3722a08bd4bee926a64",
+   "tests": "tests/test_p6_dev_draw.py (4 pass)"
+  },
+  "consequence": "candle was never in the 20-codeword untouched pool, so the maximum confirmation n is unchanged (20 \u2212 5 = 15 before attrition)."
+ },
+ "item2_G2_implemented": {
+  "rule_text_unchanged": "G2: KO liveness \u2014 KO\u2212BASE < 0 and KO_FULL\u2212KO > 0 with CI excluding 0 (TRAIN).",
+  "implementation": "research/heretic_csi/slurm/p6_g2.slurm: per G3-passing codeword, BASE / KO / KO_SELF / KO_FULL on the TRAIN rescue population (exclude_<cw>_bomb_sow_train[_occ].txt, 670 rows / 67 domains) with the incumbent rescue_sweep liveness invocation (seed 20260913, KO demo_all:attn_knockout:6-14:1.0 target_surface_row_only, rescue at query positions L18, batch 1), one model load via dcs_csi_arm_runner. research/heretic_csi/p6_g2.py: rows paired by prompt_id, domain = unit, 95% domain-cluster bootstrap (2000, seed 20261015); PASS iff KO\u2212BASE CI upper < 0 AND KO_FULL\u2212KO CI lower > 0; KO_SELF\u2212KO reported (identity sanity). Result written into the codeword's manifest.",
+  "BASE_not_reused": "the Stage-0 readout is NOT reused as BASE: its invocation differs (seed 20260816, mixed query kinds/doses), so it is not verifiably identical; BASE is re-scored in the G2 job.",
+  "tests": "tests/test_p6_g2.py (4 pass: live knockout PASS, dead knockout FAIL, no rescue FAIL, exact-tag matching \u2014 a real bug found: 'KO' glob matched KO_SELF/KO_FULL, fixed before any GPU run)",
+  "terminology": "until G2 is run, codewords are 'G3-passing', never 'survivors'.",
+  "code": {
+   "research/heretic_csi/slurm/p6_g2.slurm": "c36ebec862bb84739a701425397fb0828c29ae35d1d9e2467f232f4f3c792afe",
+   "research/heretic_csi/p6_g2.py": "1920a5a765a617a9ee0854cbc9f4df5207b1050c00723ce6741ed64ac497a9ff"
+  }
+ },
+ "item3_G3_hardening": {
+  "changes": "p6_g3.py: codeword guard (readout RUNMETA must reference the codeword's bank; every scored row's target_surface must equal the codeword) => ERROR_G3_INPUT; rows_scored must equal the population size; empty population => error; domain-bootstrap 95% CI of the G3 median reported DESCRIPTIVELY (decision unchanged: frozen point rule median > 0.05).",
+  "re_check": "candle 0.04806 [0.03699, 0.06256] FAIL; lamp 0.0754 [0.0584, 0.1006] PASS; kettle 0.1294 [0.0973, 0.1762] PASS; pencil 0.0920 [0.0824, 0.1087] PASS; ladder 0.1049 [0.0905, 0.1201] PASS; all 670/670 rows, no errors; guard rejects a lamp readout passed as kettle.",
+  "code": {
+   "research/heretic_csi/p6_g3.py": "94c08e07d4f7f5e81ca63c102affc387c04fc368d5da1a57b5ea27df101fc314"
+  }
+ },
+ "item4_manifests": {
+  "changes": "p6_stage0_batch.slurm writes the manifest on EVERY path (incl. no-readout ERROR) via p6_write_manifest.py with each step's rc, G3 JSON, readout/extract dirs with their own jobs, and G1 (+provenance) for every G3-passer; p6_axisfit.slurm records axis path + sha256 + job in the manifest; one-off backfill (p6_backfill_manifest.py) added axis sha256 + G1 to the 4 G3-passers that predate it (lamp, kettle, pencil, ladder).",
+  "tests": "tests/test_p6_stage0_batch_branches.sh under bash -u: all branches incl. error-path manifests, rc and G1 provenance \u2014 ALL_BRANCHES_OK",
+  "code": {
+   "research/heretic_csi/slurm/p6_stage0_batch.slurm": "be5152f98b7285a74b0bc4507afeebe34d6ecb8acc8eca188152087a7703bb12",
+   "research/heretic_csi/slurm/p6_axisfit.slurm": "689d959396399465b4144c9b7a632016984bc180272d0a393717094a674ca5b9",
+   "research/heretic_csi/p6_write_manifest.py": "2ba6fbf61a7276f948e5fd4874fe51bab035856754f513d1e161f3809cfbccda",
+   "research/heretic_csi/p6_backfill_manifest.py": "5fd003fb2ff416e5547bfa1ad5e57b748a6edcd2d278e6f90283f9cb8c6d57f0"
+  }
+ },
+ "unchanged": "All gate thresholds, H6a (IUT, one-sided \u03b1=0.05), H6b descriptive, H6c descriptive, S1/S2, dependence sensitivity, TEST never."
+}

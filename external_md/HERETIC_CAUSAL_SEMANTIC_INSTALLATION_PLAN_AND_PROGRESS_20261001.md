@@ -2605,3 +2605,19 @@ in H6a (declared dependence).
   (--ref-prefix hcsi_p2b_basket_val --ref-expect-n 230); wording limits (k* "vs random norm-matched edits only; not vs
   fitted controls"; TOP1/TOP2 keep 0.915/0.982 of the REEXP norm (0.836/0.964 squared); DROP1 removes ~84% of squared
   norm ⇒ DROP losses norm-confounded).
+
+## S-168 — 2026-10-15 06:00 — P6 AMENDMENT 5 (pre-draw) + G2 implemented; G3 evaluator hardened
+- `configs/heretic_csi/PREREG_P6_AMENDMENT_5.json` (sha256 5841ccd4…1e4b), before any DEV draw: candle (G3 FAIL) stays
+  in the denominator with NO rescue arms; DEV = 5 drawn untouched G1–G3 survivors; CONFIRMATION = the rest (max n 15
+  unchanged). `p6_dev_draw.py` no longer forces candle (4 tests).
+- **G2 implemented:** `p6_g2.slurm` (BASE, KO, KO_SELF, KO_FULL on the 670-row TRAIN rescue population, incumbent
+  rescue invocation, one model load; Stage-0 readout NOT reused as BASE — invocation differs) + `p6_g2.py` (prompt-paired,
+  domain unit, domain-cluster bootstrap; PASS iff KO−BASE CI < 0 and KO_FULL−KO CI > 0); 4 synthetic tests caught a
+  real glob bug (KO matched KO_SELF/KO_FULL) before any GPU run. G2 job 1041401 (lamp, kettle, pencil, ladder) —
+  **placed on HOLD by the parent** (it would have been the 7th concurrent GPU job); released when a slot frees.
+- `p6_g3.py` hardened: codeword guard, rows==population assert, empty ⇒ ERROR, descriptive domain-bootstrap CI.
+  Re-check (670/670 rows each): candle 0.0481 [0.037, 0.063] FAIL; lamp 0.0754 [0.058, 0.101]; kettle 0.1294
+  [0.097, 0.176]; pencil 0.0920 [0.082, 0.109]; ladder 0.1049 [0.090, 0.120] — PASS.
+- Manifests on every path (rc per step, G3, G1 with provenance; axisfit path/sha/job); backfilled for the 4 passers.
+  G1 (C−A): candle 0.515, lamp 0.539, kettle 0.572, pencil 0.420, ladder 0.151 [0.12, 0.18] (all CI-lo > 0.05 ⇒ G1
+  PASS). Axis fits lamp/kettle/pencil/ladder done; shuffled-label controls |ρ| ≤ 0.10.

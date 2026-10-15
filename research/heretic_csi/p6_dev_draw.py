@@ -10,7 +10,8 @@ Inputs: Zipf per codeword (frozen now) and TRAIN installer strength (C−A, sema
      first 5 cells; from each, draw one codeword uniformly (rng.choice over the cell's sorted members). An empty cell
      is skipped and the next cell in the order is used; if fewer than 5 cells are non-empty, the remaining slots
      are FILLED by rng.choice over the sorted not-yet-drawn survivors (same rng stream) — always exactly 5.
-  4. DEV = ['candle'] + those 5. CONFIRMATION = remaining surviving untouched codewords.
+  4. DEV = those 5 (PREREG_P6_AMENDMENT_5: candle is NOT forced — it is G3_FAIL, stays in the denominator with no
+     rescue arms). CONFIRMATION = remaining G1–G3 survivors among the untouched codewords.
 basket/button are contaminated DEV points (never confirmation); envelope and carrot are excluded (see prereg).
 """
 from __future__ import annotations
@@ -58,5 +59,5 @@ def draw(install_strength: dict, survivors: list, seed: int = SEED):
         rest = sorted(w for w in surv if w not in dev)
         dev.append(rng.choice(rest)); n_fill += 1
     conf = [w for w in surv if w not in dev]
-    return {"dev": ["candle"] + dev, "confirmation": conf, "median_strength": med,
+    return {"dev": dev, "confirmation": conf, "median_strength": med,
             "n_fill": n_fill, "cells": {f"{k[0]}|{k[1]}": v for k, v in sorted(cells.items())}, "cell_order": [f"{a}|{b}" for a, b in order]}
