@@ -2907,3 +2907,17 @@ basket, 0.57–0.58 button).
   machine-readable experiment registry + builder script, figures index (+ missing plots from committed numbers),
   ≤1-page Matan/Mahmood update, verification index; inconsistencies between log entries to be listed, not resolved
   silently. Deep review #9 (~13:10 due) will be run on the compiled report once F9 returns (attack the synthesis).
+
+## S-196 — 2026-10-15 13:30 — INTERIM deliverables compiled (F9); deep review #9 to attack them
+Files: `reports/heretic_csi/HERETIC_CSI_FINAL_REPORT_INTERIM.md` (written in two passes — the first write was truncated
+mid-Q10 and completed in a second call; to be read through by review #9), `EXPERIMENT_REGISTRY.json` (27 entries; builder
+`research/heretic_csi/build_registry.py`), `FIGURES_INDEX.md` (+ new `fig_p2a_val_specificity.png`,
+`fig_p2b_preservation_vs_rank.png` via `research/heretic_csi/make_interim_figures.py`),
+`MEETING_UPDATE_MATAN_MAHMOOD_INTERIM.md`, `VERIFICATION_INDEX.md`. P4 eval, P6 rescue/H6a and P7 read marked PENDING.
+**Inconsistencies listed by F9 (not silently resolved):** (1) registry entry `configs/heretic_csi/phaseB` is a directory
+(no sha) — should point at its MANIFEST.json files; (2) cosmetic S-entry sub-numbering; (3) two "incumbent basket"
+baselines (TRAIN −0.235/+0.124 vs VAL −0.30/+0.14; S-180 corrects S-178) — quote TRAIN for TRAIN comparisons; (4) P2a
+r4 K4 common-row counts differ by codeword (basket 179 vs button 239 TRAIN; 133/145 vs 193/203 VAL) — declared
+option-mass attrition, matters for cross-codeword comparisons; (5) early reduced-sweep artifacts
+`hcsi_p2a_basket_r4.json` / `_r32.json` (S-013 era; n_keys 14, 8 controls) share the production prefix — NOT
+production results; (6) non-monotone header times in a clock-corrected window.

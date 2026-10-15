@@ -1,0 +1,1237 @@
+{
+ "schema": "hcsi_registry/1",
+ "interim": true,
+ "built_at": "2026-10-15T13:11:25",
+ "repo_head_at_build": "250dd1722aad7aa47834941b107c412cb7e251d8",
+ "source_log": "external_md/HERETIC_CAUSAL_SEMANTIC_INSTALLATION_PLAN_AND_PROGRESS_20261001.md",
+ "experiments": [
+  {
+   "id": "P0-PhaseA",
+   "phase": "P0",
+   "description": "Heretic audit: base->modify->reset->base, dW rank, Optuna resume, readout port",
+   "split": "TRAIN (few prompts)",
+   "configs": [],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/PHASE_A_heretic_audit.md",
+     "sha256": "752dc1ab70c9a5594fc2eb93a5cd66e95128237a93a0037fd78687344b749597"
+    },
+    {
+     "path": "reports/heretic_csi/PHASE_A_heretic_audit_job1023185_r0.json",
+     "sha256": "7d746e3fe4a05084b1e96f2db6deb491384fb3d2ea514d34ee56b7e5cfc62561"
+    },
+    {
+     "path": "reports/heretic_csi/PHASE_A_heretic_audit_job1022919_r0.json",
+     "sha256": "24d17e10f5f251523002cd863eca3a55311e8eee6e933dccf821ced089fb1e52"
+    }
+   ],
+   "slurm_jobs": [
+    "1022919 (superseded gate-fail record)",
+    "1023185"
+   ],
+   "params": {
+    "env": "/specific/scratches/scratch/omeryosef/envs/heretic_csi"
+   },
+   "status": "DONE",
+   "verdict": "PASS (with upstream findings: reset keeps lora_A; deployed != optimized under preserve_row_magnitudes; resume re-draws trial 0)",
+   "log_entries": [
+    "S-062",
+    "S-077"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P0-PhaseB",
+   "phase": "P0",
+   "description": "Native last-position Heretic ARA as a control on matched TRAIN populations (target=C, source=A)",
+   "split": "TRAIN tune / VAL read once",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/phaseB",
+     "sha256": null,
+     "last_commit": "1ac8aa37 2026-10-14T02:18:01+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/phaseB/PHASEB_SUMMARY.md",
+     "sha256": "6d994bbc3eb6443c8c1c0a3a6503313bf5aa703def07d104872bfcc5b5d703f6"
+    }
+   ],
+   "slurm_jobs": [
+    "1023185",
+    "1023251",
+    "1023386"
+   ],
+   "params": {
+    "lora_rank_chosen": 50,
+    "layers": "6-30",
+    "controls": 42
+   },
+   "status": "DONE",
+   "verdict": "MEASURED control: answer-position output bias, NOT codeword-specific installation (scoped S-083)",
+   "log_entries": [
+    "S-077",
+    "S-083"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-basket-r1-VALIDATION",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "7d6c67c2fc032c7447cfb18a2b315c37524bd14c9a2b65cb6f50517e3542ba13",
+     "last_commit": "aa7fdc65 2026-10-14T04:29:29+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_basket_r1.json",
+     "sha256": "92f26071a00a65c07385ff877ad4ee50667565aee05b61b873087b91fc5a6b46"
+    }
+   ],
+   "slurm_jobs": [
+    "968532"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_basket_bomb.jsonl (sha16 79511d9e254571e6)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "PASS 1/57 (floor-sensitive, S-052)",
+   "log_entries": [
+    "S-049",
+    "S-052"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-basket-r16-VALIDATION",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "7d6c67c2fc032c7447cfb18a2b315c37524bd14c9a2b65cb6f50517e3542ba13",
+     "last_commit": "aa7fdc65 2026-10-14T04:29:29+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_basket_r16.json",
+     "sha256": "9d6960c31c0b7e71dc2e201776d282d60c1bc3bbf29fe846f640943c38b500f5"
+    }
+   ],
+   "slurm_jobs": [
+    "968533"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_basket_bomb.jsonl (sha16 79511d9e254571e6)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "DOES NOT PASS 10/57",
+   "log_entries": [
+    "S-049"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-basket-r4-TRAIN-K4",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "TRAIN-K4",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "7d6c67c2fc032c7447cfb18a2b315c37524bd14c9a2b65cb6f50517e3542ba13",
+     "last_commit": "aa7fdc65 2026-10-14T04:29:29+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_basket_r4_train.json",
+     "sha256": "c002d6f77a839262e1bbf23ff6a0d3aab11dae47a5c615233cf4ec1bbb46fd72"
+    }
+   ],
+   "slurm_jobs": [
+    "969085"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_basket_bomb.jsonl (sha16 79511d9e254571e6)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "3/57 (descriptive)",
+   "log_entries": [
+    "S-051"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-basket-r8-TRAIN-K4",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "TRAIN-K4",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "7d6c67c2fc032c7447cfb18a2b315c37524bd14c9a2b65cb6f50517e3542ba13",
+     "last_commit": "aa7fdc65 2026-10-14T04:29:29+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_basket_r8_train.json",
+     "sha256": "596c4aeda997903a44ac203798b07a1cbe648dc4c26cb005446c7d4678052972"
+    }
+   ],
+   "slurm_jobs": [
+    "969086"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_basket_bomb.jsonl (sha16 79511d9e254571e6)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "4/57",
+   "log_entries": [
+    "S-051"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-basket-r4-VALIDATION",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "7d6c67c2fc032c7447cfb18a2b315c37524bd14c9a2b65cb6f50517e3542ba13",
+     "last_commit": "aa7fdc65 2026-10-14T04:29:29+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/prereg_S051_rank4_validation.json",
+     "sha256": "e170da61de1d39abb79bee9741eac69cbb7e12f861014b3fef5beed26eed1d29",
+     "last_commit": "532d220d 2026-10-13T20:18:33+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_basket_r4_validation.json",
+     "sha256": "1dcf0500ff72be9d880dc8b4fb213beaf8ebfb3e1cdbe076796771f64890238f"
+    }
+   ],
+   "slurm_jobs": [
+    "1022699"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_basket_bomb.jsonl (sha16 79511d9e254571e6)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "1/57 FRAGILE, descriptive",
+   "log_entries": [
+    "S-072",
+    "S-073",
+    "S-083"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-button-r1-VALIDATION",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "7d6c67c2fc032c7447cfb18a2b315c37524bd14c9a2b65cb6f50517e3542ba13",
+     "last_commit": "aa7fdc65 2026-10-14T04:29:29+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_button_r1.json",
+     "sha256": "5786bd94c8360458df15146fd3dd98648840419dfcac28eb36cf4322316e505e"
+    }
+   ],
+   "slurm_jobs": [
+    "968534"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_button_bomb.jsonl (sha16 dcd92d723f3e6d00)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "DOES NOT PASS 14/57",
+   "log_entries": [
+    "S-049",
+    "S-052"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-button-r16-VALIDATION",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "7d6c67c2fc032c7447cfb18a2b315c37524bd14c9a2b65cb6f50517e3542ba13",
+     "last_commit": "aa7fdc65 2026-10-14T04:29:29+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_button_r16.json",
+     "sha256": "c79d5606669b5604b8d99d209e911cf33b3cbcbbeb5c5c133a4afd080800a3b2"
+    }
+   ],
+   "slurm_jobs": [
+    "968535"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_button_bomb.jsonl (sha16 dcd92d723f3e6d00)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "DOES NOT PASS 10/57",
+   "log_entries": [
+    "S-049"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-button-r4-TRAIN-K4",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "TRAIN-K4",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "7d6c67c2fc032c7447cfb18a2b315c37524bd14c9a2b65cb6f50517e3542ba13",
+     "last_commit": "aa7fdc65 2026-10-14T04:29:29+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_button_r4_train.json",
+     "sha256": "3126731ec0324457867fb2bf7d0c4d30dece5ffe45f9a0b9a1f90de17008b6e9"
+    }
+   ],
+   "slurm_jobs": [
+    "969087"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_button_bomb.jsonl (sha16 dcd92d723f3e6d00)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "PASS 1/57 (TRAIN, multiplicity)",
+   "log_entries": [
+    "S-051"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-button-r8-TRAIN-K4",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "TRAIN-K4",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "7d6c67c2fc032c7447cfb18a2b315c37524bd14c9a2b65cb6f50517e3542ba13",
+     "last_commit": "aa7fdc65 2026-10-14T04:29:29+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_button_r8_train.json",
+     "sha256": "5fb8e5d1ee19b3dfd1de506f54a11334e7512e1df5cab3f3e39b8b174e343ef9"
+    }
+   ],
+   "slurm_jobs": [
+    "969088"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_button_bomb.jsonl (sha16 dcd92d723f3e6d00)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "3/57",
+   "log_entries": [
+    "S-051"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-button-r4-VALIDATION",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "7d6c67c2fc032c7447cfb18a2b315c37524bd14c9a2b65cb6f50517e3542ba13",
+     "last_commit": "aa7fdc65 2026-10-14T04:29:29+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/prereg_S051_rank4_validation.json",
+     "sha256": "e170da61de1d39abb79bee9741eac69cbb7e12f861014b3fef5beed26eed1d29",
+     "last_commit": "532d220d 2026-10-13T20:18:33+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_button_r4_validation.json",
+     "sha256": "a7d663245f2043f7c6bbfd9b9ee7009311fab7fa2ddbfd960b66623a37927491"
+    }
+   ],
+   "slurm_jobs": [
+    "1022698"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_button_bomb.jsonl (sha16 dcd92d723f3e6d00)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "PASS 1/57 (prereg S051; superseded by powered S-084)",
+   "log_entries": [
+    "S-072",
+    "S-073",
+    "S-083"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-button-r4-POWERED",
+   "phase": "P2a",
+   "description": "S-084 powered re-test: button r4 VAL vs 200 controls, Holm over 3 VAL looks",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/prereg_S084_button_r4_powered.json",
+     "sha256": "e7a109013bf91f218cb154e036352f49c874d6e252eb3eab845c11ae659253ce",
+     "last_commit": "aa7fdc65 2026-10-14T04:29:29+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/prereg_S084_button_r4_powered_AMENDMENT_1.json",
+     "sha256": "e12828b34cef8daf0fa7a9acdd95e9e8bb42cb2055743dfbd1e49e6cd62778bc",
+     "last_commit": "e69f40e2 2026-10-14T08:30:03+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/ANALYSIS_COMMANDS_S084.md",
+     "sha256": "a51af4835176eb816ad4d2ed046fd4e5eb7f7d1b2b71f96a78b4ebfd1dd5c735",
+     "last_commit": "d4adddd6 2026-10-14T12:30:43+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/P2A_BUTTON_R4_POWERED.json",
+     "sha256": "0c4507ab2fd4ebd003fa11cf5aedcb564fca963a16bde9b3744f190dd18dfca4"
+    },
+    {
+     "path": "reports/heretic_csi/P2A_BUTTON_R4_POWERED_BINDING.json",
+     "sha256": "26f3c6179e4adff15d8f892052bd76c1bf9cedb0bacdd93a1a9ee20217d4c435"
+    },
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_button_r4ext_validation_analyzer.json",
+     "sha256": "485d90283e7dc3295d2a97ab2ec348992a9cd22b5d111782264053cd82c895a5"
+    },
+    {
+     "path": "reports/heretic_csi/VERIFY_S084_powered.json",
+     "sha256": "39fac87efc1c07348b387aed86280a8763d2a437ba2825e5a14a1f0759cbca25"
+    }
+   ],
+   "slurm_jobs": [
+    "1022698",
+    "1027577",
+    "1032110"
+   ],
+   "params": {
+    "controls": "190 RAND + 10 SHUF",
+    "floor": 0.005,
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "CONFIRMED: rank 1/201, p=0.004975, Holm 0.0149, beats all SHUF, LODO 23/23 (independently verified)",
+   "log_entries": [
+    "S-125",
+    "S-126"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-contrast",
+   "phase": "P2a",
+   "description": "basket-vs-button r1->r4 specificity interaction (descriptive)",
+   "split": "VALIDATION (already read)",
+   "configs": [],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/P2A_BUTTON_R4_CONTRAST_v2.json",
+     "sha256": "6207a26ec2b2bd317be5c06f9e62f9512a6e9dd4db5709641ac9045229afa7c0"
+    },
+    {
+     "path": "reports/heretic_csi/P2A_BUTTON_R4_CONTRAST.json",
+     "sha256": "e1cbe25e4de53598b87ca5fe616706bfa1b14ed3fe7266f79000aedc5974c47d"
+    }
+   ],
+   "slurm_jobs": [],
+   "params": {},
+   "status": "DONE",
+   "verdict": "v1 WITHDRAWN (row-set bug); v2 sign depends on control family => no contrast support",
+   "log_entries": [
+    "S-085",
+    "S-097",
+    "S-098"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2b-basket-TRAIN",
+   "phase": "P2b",
+   "description": "position-aware weight operator dW=BA (o_proj+down_proj L6-18), primary r{1,4} + CWONLY secondary",
+   "split": "TRAIN-K4 (in-sample)",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/PREREG_P2B.json",
+     "sha256": "e273df1db75f6c2aeb1860dd23639d23286570920e85d139ad66f911e8ced378",
+     "last_commit": "c08c1825 2026-10-13T22:56:51+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_1.json",
+     "sha256": "fd01d54e41809493b2abd4dd5c15ae852824007dab2a22debab13ea782baf10a",
+     "last_commit": "1794dba5 2026-10-14T00:46:16+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_2.json",
+     "sha256": "65a5f0cb1adaaa414319402ba947d29dbc9dbaf5c8e0cbdabb68c7794906a3bf",
+     "last_commit": "26ca31da 2026-10-14T00:57:24+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_3.json",
+     "sha256": "122b86ecf4a7a802f8cd8cde65bc2783a320f0c37fc5bfea19d2763f5d1492ac",
+     "last_commit": "6d126b18 2026-10-14T04:34:25+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_4.json",
+     "sha256": "121206ffb2eb99ea0a05c45abbe715bbf03be2be5750b985107425814113953a",
+     "last_commit": "970c9670 2026-10-14T08:31:33+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_5.json",
+     "sha256": "de158bc817530e73bfd9ba89fade7a0e463e7dced8afa2598cb2cbd728b1e402",
+     "last_commit": "1411f8b9 2026-10-14T12:44:32+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_6.json",
+     "sha256": "354e98fd8205d64cdadcb0978248679edd64cb58c19a5aaf3f89b32591812b2b",
+     "last_commit": "67d3ac9b 2026-10-14T17:48:02+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_7.json",
+     "sha256": "270360e4f39da030fadd2e8434571485034d606889afad9e95d443990e3766ee",
+     "last_commit": "bf6a28a1 2026-10-14T18:35:00+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/ANALYSIS_COMMANDS_P2B.md",
+     "sha256": "acf67d243903826ea14db9e631fbacd55e2e064658cbc6c912f1ebb2c944165c",
+     "last_commit": "c74b3349 2026-10-15T10:46:59+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/p2b_basket_primary_train.json",
+     "sha256": "0b871a0b2784fef0dcf37756c4bdde00b05c46d51d11696fa4e64670e6cf82b5"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_basket_neutpos_train.json",
+     "sha256": "559371adc871cb2b3a9228ba1782c97d5b5a527e1e730673a6e5c36510adae69"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_basket_meanbias_nm_train.json",
+     "sha256": "fcea1213fb69a4e9e5fcca5c30a48d59fc5dd103c9f9cf4338d4372e5f963cbf"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_basket_r1_deployed_train.json",
+     "sha256": "03343d2ed0fae6b5b6e81a7fbe9cb66ab20ad5f6f86440565dba925aa69e954f"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_basket_r4_deployed_train.json",
+     "sha256": "77d51605b2e2407f67ddd1b24fb352eb71459e1b92eec8d9c99fc8234aadea69"
+    }
+   ],
+   "slurm_jobs": [
+    "1023012",
+    "1034929",
+    "1023508",
+    "1035278",
+    "1036622",
+    "1040065",
+    "1040124"
+   ],
+   "params": {
+    "objective": "paired MSE, steer 0.3 (TRAIN CV)",
+    "controls_primary": "61 RAND + 5 SHUF + 15 DER",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "basket r4 PASS (in-sample, fragile); r1 fail; CWONLY pass",
+   "log_entries": [
+    "S-135",
+    "S-136",
+    "S-138",
+    "S-140"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2b-basket-VAL",
+   "phase": "P2b",
+   "description": "frozen operators on VALIDATION; outcome mapping per amendment 5",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_VALIDATION.json",
+     "sha256": "5b1f3bac7c216038fe6bd69b46cd45f820dc7117afa7bef3647a1c35935d2b9b",
+     "last_commit": "fb74775d 2026-10-14T02:03:45+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/ANALYSIS_COMMANDS_P2B.md",
+     "sha256": "acf67d243903826ea14db9e631fbacd55e2e064658cbc6c912f1ebb2c944165c",
+     "last_commit": "c74b3349 2026-10-15T10:46:59+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/p2b_basket_primary_validation.json",
+     "sha256": "b16004adfad1fc1546eec570496690e53c0adae564fa2da57ddf1b8974a2d4d8"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_basket_meanbias_nm_validation.json",
+     "sha256": "e1e120826272e961f4571ecec020275fb3fe6df59bf313745ac3bfed706131eb"
+    },
+    {
+     "path": "reports/heretic_csi/VERIFY_P2B_VAL.json",
+     "sha256": "8bccc148d245c62273eb6cbaf9349f033faf0cb7f727cefa4fe5b325ac7b4c57"
+    }
+   ],
+   "slurm_jobs": [
+    "1023578",
+    "1023579",
+    "1040101",
+    "1041761"
+   ],
+   "params": {
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "outcome D: basket r4 PRIMARY PASS (marginal, LODO loses 9/23); CWONLY r1/r4 PASS (robust)",
+   "log_entries": [
+    "S-156",
+    "S-157",
+    "S-191"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2b-button-TRAIN",
+   "phase": "P2b",
+   "description": "position-aware weight operator dW=BA (o_proj+down_proj L6-18), primary r{1,4} + CWONLY secondary",
+   "split": "TRAIN-K4 (in-sample)",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/PREREG_P2B.json",
+     "sha256": "e273df1db75f6c2aeb1860dd23639d23286570920e85d139ad66f911e8ced378",
+     "last_commit": "c08c1825 2026-10-13T22:56:51+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_1.json",
+     "sha256": "fd01d54e41809493b2abd4dd5c15ae852824007dab2a22debab13ea782baf10a",
+     "last_commit": "1794dba5 2026-10-14T00:46:16+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_2.json",
+     "sha256": "65a5f0cb1adaaa414319402ba947d29dbc9dbaf5c8e0cbdabb68c7794906a3bf",
+     "last_commit": "26ca31da 2026-10-14T00:57:24+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_3.json",
+     "sha256": "122b86ecf4a7a802f8cd8cde65bc2783a320f0c37fc5bfea19d2763f5d1492ac",
+     "last_commit": "6d126b18 2026-10-14T04:34:25+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_4.json",
+     "sha256": "121206ffb2eb99ea0a05c45abbe715bbf03be2be5750b985107425814113953a",
+     "last_commit": "970c9670 2026-10-14T08:31:33+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_5.json",
+     "sha256": "de158bc817530e73bfd9ba89fade7a0e463e7dced8afa2598cb2cbd728b1e402",
+     "last_commit": "1411f8b9 2026-10-14T12:44:32+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_6.json",
+     "sha256": "354e98fd8205d64cdadcb0978248679edd64cb58c19a5aaf3f89b32591812b2b",
+     "last_commit": "67d3ac9b 2026-10-14T17:48:02+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_7.json",
+     "sha256": "270360e4f39da030fadd2e8434571485034d606889afad9e95d443990e3766ee",
+     "last_commit": "bf6a28a1 2026-10-14T18:35:00+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/ANALYSIS_COMMANDS_P2B.md",
+     "sha256": "acf67d243903826ea14db9e631fbacd55e2e064658cbc6c912f1ebb2c944165c",
+     "last_commit": "c74b3349 2026-10-15T10:46:59+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/p2b_button_primary_train.json",
+     "sha256": "b3dd4adbb2d09ed8ecbc5cb2b2569f93ac65adaa9c1867352eb46d9ae396e8c7"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_button_neutpos_train.json",
+     "sha256": "7aeb90ac69fabdd4b40a98c3eb2d30c4fc0595cef33055c864db8c7689b47c0f"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_button_meanbias_nm_train.json",
+     "sha256": "f6c83e4e1ee20223a2235496307fe5c29deb810d198dcc2b242a854c27cb3500"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_button_r1_deployed_train.json",
+     "sha256": "8523ad2bf5db19632a6722ad64ae780b94544604bcfd42a3ca90c58306b412b8"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_button_r4_deployed_train.json",
+     "sha256": "4b30cddfcd4da5be1759d97584ed3a2914b2eaf5c58878ea08198b764ce121e4"
+    }
+   ],
+   "slurm_jobs": [
+    "1023264",
+    "1035131",
+    "1023509",
+    "1035278",
+    "1036626",
+    "1040065",
+    "1040124"
+   ],
+   "params": {
+    "objective": "paired MSE, steer 0.3 (TRAIN CV)",
+    "controls_primary": "61 RAND + 5 SHUF + 15 DER",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "all fail",
+   "log_entries": [
+    "S-135",
+    "S-136",
+    "S-138",
+    "S-140"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2b-button-VAL",
+   "phase": "P2b",
+   "description": "frozen operators on VALIDATION; outcome mapping per amendment 5",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_VALIDATION.json",
+     "sha256": "5b1f3bac7c216038fe6bd69b46cd45f820dc7117afa7bef3647a1c35935d2b9b",
+     "last_commit": "fb74775d 2026-10-14T02:03:45+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/ANALYSIS_COMMANDS_P2B.md",
+     "sha256": "acf67d243903826ea14db9e631fbacd55e2e064658cbc6c912f1ebb2c944165c",
+     "last_commit": "c74b3349 2026-10-15T10:46:59+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/p2b_button_primary_validation.json",
+     "sha256": "792bf34feb9e3a82cba34d1111160e39b2548df8c3eabd19d6c949a0b86cd993"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_button_meanbias_nm_validation.json",
+     "sha256": "40c506abf07e8a71333daaf67df7fbc6c2408d81f71f0d0fdd823269d086678f"
+    },
+    {
+     "path": "reports/heretic_csi/VERIFY_P2B_VAL.json",
+     "sha256": "8bccc148d245c62273eb6cbaf9349f033faf0cb7f727cefa4fe5b325ac7b4c57"
+    }
+   ],
+   "slurm_jobs": [
+    "1036679",
+    "1036680",
+    "1040122",
+    "1040170",
+    "1041761"
+   ],
+   "params": {
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "outcome D: button no specific carrier at r1/r4",
+   "log_entries": [
+    "S-156",
+    "S-157",
+    "S-191"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2b-rank-curve",
+   "phase": "P2b",
+   "description": "descriptive ranks {2,8,16,32,50} + primary {1,4}",
+   "split": "TRAIN-K4 (in-sample)",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/ANALYSIS_COMMANDS_P2B.md",
+     "sha256": "acf67d243903826ea14db9e631fbacd55e2e064658cbc6c912f1ebb2c944165c",
+     "last_commit": "c74b3349 2026-10-15T10:46:59+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/P2B_RANK_CURVE_TRAIN.json",
+     "sha256": "7387c32768247ead25289c32137b342950821bbb0a5f6c130f1fd9f20f26d87a"
+    },
+    {
+     "path": "reports/heretic_csi/P2B_RANK_CURVE_TRAIN.png",
+     "sha256": "764bd8ddf653d2ceaf8f4ebf0a6a9a96ac4ce2cbadaea57b0c5ee037f969b2ce"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_basket_descriptive_ranks_train.json",
+     "sha256": "87ad9c6e7eb129ec48f3ae6a809ccfe93c79f7e1d9b32f1eae840302010d9bd5"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_button_descriptive_ranks_train.json",
+     "sha256": "e02dcc73302b58fc34c9d401ae4ae8491499ed1b50a246bfba4425956dce4070"
+    }
+   ],
+   "slurm_jobs": [
+    "1040700",
+    "1040701",
+    "1040759",
+    "1040766"
+   ],
+   "params": {
+    "controls": "41 RAND + 5 SHUF + 5 DER"
+   },
+   "status": "DONE",
+   "verdict": "DESCRIPTIVE: rank-flat rescue r1-50; sparse non-monotone pairing specificity",
+   "log_entries": [
+    "S-188"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P3-SVD",
+   "phase": "P3",
+   "description": "SVD / effective rank / write direction / alignment (anisotropic null)",
+   "split": "TRAIN factors",
+   "configs": [],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/P3_SVD_REPORT_v2.md",
+     "sha256": "3740ae9af3c9d44075c0d5244c8c5f840ff23319058480f088e2fa1dd671abe1"
+    },
+    {
+     "path": "reports/heretic_csi/P3_alignment_aniso.json",
+     "sha256": "48e9cf64f6731ef2910306f72c87217fecfa99bf73ee44a4af0d24ef35f8ce95"
+    },
+    {
+     "path": "reports/heretic_csi/P3_svd_descriptive_v2.json",
+     "sha256": "f6fcb58fa525dcff280a0e4051b22f226e13fbf80cd5746c95ce55967f59d252"
+    },
+    {
+     "path": "reports/heretic_csi/P3_write_direction_v2.json",
+     "sha256": "1fc618bdf3441ef6457070532f6ddb06c60aefc12d66c85d553a454ce347eb22"
+    }
+   ],
+   "slurm_jobs": [
+    "1023746",
+    "1023764",
+    "1023765",
+    "1023766"
+   ],
+   "params": {},
+   "status": "DONE",
+   "verdict": "DESCRIPTIVE: shared mean-gap write direction (by construction); no alignment detectable at the null's sensitivity",
+   "log_entries": [
+    "S-079",
+    "S-089",
+    "S-097"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P3-TRUNC",
+   "phase": "P3",
+   "description": "top-k truncation / component removal of basket r4 operator",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/PREREG_P3_TRUNC.json",
+     "sha256": "470591badba0df36f35fd4a1d9c38bd031c8b990c19fd856bda554ac884eaf53",
+     "last_commit": "83e157b7 2026-10-15T01:37:47+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P3_TRUNC_ERRATUM.json",
+     "sha256": "0c03cd7c8b63bae4c2f81fcf52df0fdf4ebe8892b36c4caf55721cd8a5b0c2d0",
+     "last_commit": "cc7ac15a 2026-10-15T05:19:46+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/p3_basket_r4_validation.json",
+     "sha256": "a8fb0322c66393080ea1de6d44c5ebd25d0e75c52bdbb2381dd991afcb3a1125"
+    },
+    {
+     "path": "reports/heretic_csi/P3_TRUNC_READ_VOID.md",
+     "sha256": "df9db5b8b2a3684737a6d0a2fa2fefd39cb79691e535fcee71c9a6e06ae13d69"
+    },
+    {
+     "path": "reports/heretic_csi/p3_basket_r4_validation.NOT_QUOTABLE.md",
+     "sha256": "4db3d0751d39364c9fe32bdb12b5d4e9c2ce0b23f93d1b2258c053aea86824ed"
+    }
+   ],
+   "slurm_jobs": [
+    "1041078"
+   ],
+   "params": {
+    "controls": "40 per k"
+   },
+   "status": "DONE",
+   "verdict": "VOID (REEXP per-row tolerance failed; kept VOID)",
+   "log_entries": [
+    "S-158",
+    "S-167",
+    "S-176",
+    "S-180"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P4-fits",
+   "phase": "P4",
+   "description": "head-restricted o_proj operators: TOP8 vs 60 RAW + 60 NC random 8-head sets (+ FULLO, MLP, ATTNMLP, H2, L10H2, TOP8_L6_14)",
+   "split": "TRAIN (fit-side)",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/PREREG_P4.json",
+     "sha256": "aba003bc50002a4e0487ce4b049b131e1d97885a0527dcc85e75734de30aacbf",
+     "last_commit": "9a0e302a 2026-10-14T03:08:50+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P4_AMENDMENT_1.json",
+     "sha256": "63e9bea4f09e4f72f14a2337db335726d2207aa77a6c95e0c7f25274faa1ee3f",
+     "last_commit": "ed539c23 2026-10-14T05:16:27+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P4_AMENDMENT_2.json",
+     "sha256": "7c00ab2206de6cace3814e8a86b5308f6b60c1cdef64634b164f469a874da27e",
+     "last_commit": "ac2263ac 2026-10-14T08:31:57+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P4_AMENDMENT_3.json",
+     "sha256": "f8854509f1e544c1ca16aaf05d7c7c77bcfbe4d2aaf3a24e269ff0be0e4ed1ed",
+     "last_commit": "7b99e149 2026-10-14T08:32:46+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P4_AMENDMENT_4.json",
+     "sha256": "42e3a493905ef68985632bfdfe8729fdd520ed16bf60690a000cd3b9b8488a7e",
+     "last_commit": "5c70f083 2026-10-14T12:29:43+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/P4V2_FIT_SUMMARY_partial.json",
+     "sha256": "b9e5edb9118086c22f03f81757353fb406e61e47c3b4b040be8be19e274116b8"
+    },
+    {
+     "path": "reports/heretic_csi/P4V2_FIT_SUMMARY_partial2.json",
+     "sha256": "4a8148f2ce8ef6651f4a1f4e738869ed462c3e96abaaeb9c57f0182080f16eca"
+    },
+    {
+     "path": "reports/heretic_csi/P4_HEAD_RESTRICTED_DESIGN_v2.md",
+     "sha256": "25bc2bf8a8cf49a9b486f73614114919ab599dd4272da382264ca10063eab743"
+    }
+   ],
+   "slurm_jobs": [
+    "1023752",
+    "1023754",
+    "1023756",
+    "1023758",
+    "1024034",
+    "1024035",
+    "1024036",
+    "1024037"
+   ],
+   "params": {},
+   "status": "RUNNING (1 fit left)",
+   "verdict": "fit-side partial: TOP8 not distinctive vs random head sets",
+   "log_entries": [
+    "S-089",
+    "S-100",
+    "S-113"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P4-eval",
+   "phase": "P4",
+   "description": "head-restricted operator rescue eval (TRAIN-K4 then VAL)",
+   "split": "TRAIN-K4 / VALIDATION",
+   "configs": [],
+   "artifacts": [],
+   "slurm_jobs": [],
+   "params": {},
+   "status": "PENDING",
+   "verdict": "PENDING",
+   "log_entries": [],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P5-heldout-probe",
+   "phase": "P5",
+   "description": "held-out probe quality basket vs button (C1)",
+   "split": "TRAIN fit -> VAL score",
+   "configs": [],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p6_heldout_probe_basket.json",
+     "sha256": "798518d61bc592ea7ffc662a4db770845c0e40208dcb92c955cb80e2ef4a92df"
+    },
+    {
+     "path": "reports/heretic_csi/hcsi_p6_heldout_probe_button.json",
+     "sha256": "84f38ede97ce818eea65db1e366aa7da3969535248088195deb1b3f920455cab"
+    }
+   ],
+   "slurm_jobs": [
+    "1022696"
+   ],
+   "params": {},
+   "status": "DONE",
+   "verdict": "C1 unsupported held-out; decodability difference CANNOT ANSWER",
+   "log_entries": [
+    "S-054",
+    "S-065"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P6-stage0-gates",
+   "phase": "P6",
+   "description": "new-codeword Stage-0 (readout, L18 extraction, axisfit) + gates G1/G2/G3",
+   "split": "TRAIN",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/PREREG_P6.json",
+     "sha256": "998fc25d444c5230c19b11eaf7c5ab9fc01e687d923f83db70b3e13ac8e21022",
+     "last_commit": "8ff4564c 2026-10-14T06:21:25+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P6_AMENDMENT_1.json",
+     "sha256": "3a762fc7237a13c25abffe80ba90a7c1ac4e7b2fd462c1f0c4af70a67880fc94",
+     "last_commit": "032024ee 2026-10-14T08:37:33+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P6_AMENDMENT_2.json",
+     "sha256": "98747c697106b4f4499cfe5d98715c8790b194cc78c3053e044d68c2c8bc72fd",
+     "last_commit": "aafbf0d4 2026-10-14T08:38:18+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P6_AMENDMENT_3.json",
+     "sha256": "8b39b5dc9b1e0f9d2283be873e9483ee9bba782d0b7ff18f733d5633a3d93c11",
+     "last_commit": "40ebfcfe 2026-10-14T12:29:21+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P6_AMENDMENT_4.json",
+     "sha256": "bd453164aff88f914adfdd10657a4821b38c010c1266327c46037b83ca7cf0e8",
+     "last_commit": "86c802dc 2026-10-14T20:43:09+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P6_AMENDMENT_5.json",
+     "sha256": "5841ccd4b749c2528333e628a7140193d5eaf5549245e740fdcf44dc133d1e4b",
+     "last_commit": "886bda58 2026-10-15T05:22:49+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P6_AMENDMENT_6.json",
+     "sha256": "6f40234a8d3564059527c4ec23f8bafa89a42d448fc3f81366560588311d23d2",
+     "last_commit": "0aec73f1 2026-10-15T09:23:18+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p6_g2_lamp.json",
+     "sha256": "707ac8ba7687f045a2e005f1664eda989ba45e58f5d4dec247eca82816655a19"
+    },
+    {
+     "path": "reports/heretic_csi/hcsi_p6_g2_kettle.json",
+     "sha256": "59c2443ac7b218154bddcaacfef74b6f6be8c599a8f516518d19139cc78ea48f"
+    },
+    {
+     "path": "reports/heretic_csi/hcsi_p6_g2_pencil.json",
+     "sha256": "e1f07605f1eb8b81a1e569ba4fa03da4b908055b52597e9a9b63d6c715736ecc"
+    },
+    {
+     "path": "reports/heretic_csi/hcsi_p6_g2_ladder.json",
+     "sha256": "60a0e751d81e5fda16b2fde8f68f98efb5951eaa3a2d07eb39371ffe95ed50b1"
+    },
+    {
+     "path": "reports/heretic_csi/hcsi_p6_bank_checks.json",
+     "sha256": "0c965c5fad0479b5cde227e9da687902e3c62785ff3d1b7597565d7205fabb71"
+    },
+    {
+     "path": "reports/heretic_csi/hcsi_p6_occ_check.json",
+     "sha256": "9bb7e649fd9946f133a62b4a2d2ae03dd76e1c679bffe268a4173c5def04859e"
+    },
+    {
+     "path": "reports/heretic_csi/hcsi_p6_power_iut.json",
+     "sha256": "90bd3c5fa906bc35d95e6b94ffe97e42d7b87562319595d7f11a2db8a2bcaf18"
+    }
+   ],
+   "slurm_jobs": [
+    "1040103",
+    "1040547",
+    "1041177",
+    "1041485",
+    "1041401",
+    "1041734",
+    "1041850"
+   ],
+   "params": {
+    "gpu": "l40s",
+    "partition": "killable"
+   },
+   "status": "RUNNING",
+   "verdict": "interim: G3 fail candle; G3 pass 14; G2 pass lamp/kettle/pencil/ladder; others pending",
+   "log_entries": [
+    "S-142",
+    "S-146",
+    "S-168",
+    "S-178"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P6-rescue",
+   "phase": "P6",
+   "description": "DEV draw + per-codeword rescue + H6a",
+   "split": "VALIDATION",
+   "configs": [],
+   "artifacts": [],
+   "slurm_jobs": [],
+   "params": {},
+   "status": "PENDING",
+   "verdict": "PENDING",
+   "log_entries": [],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P7-design",
+   "phase": "P7",
+   "description": "behavioral linking design",
+   "split": "VALIDATION (planned)",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/PREREG_P7_DRAFT.json",
+     "sha256": "cf2d5ba58ead1a84f94555efae27a0a881d302a4c5da5b279379ae30c0e1a575",
+     "last_commit": "dd3e4435 2026-10-15T12:13:50+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/P7_DESIGN.md",
+     "sha256": "d681936760673a629af8514c1eb8c88001a711f0dc8fa81f5ec05a24a0464938"
+    }
+   ],
+   "slurm_jobs": [],
+   "params": {},
+   "status": "DONE (design)",
+   "verdict": "primary pre-labelled CANNOT ANSWER / UNDERPOWERED (MDE 0.0907 vs plausible <=0.0021)",
+   "log_entries": [
+    "S-193"
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  }
+ ]
+}
