@@ -2756,3 +2756,9 @@ its sha + GPU type, then submit (F5 already on this order).
 - Also committed: `research/heretic_csi/p4_analyze_v2.py` pending change (F5; per review #8 before any P4 prereg).
 - Rules adopted (F7): `git status --porcelain` empty for every script a job runs before submission; submit only if
   running killable jobs < 6.
+
+## S-182 — 2026-10-15 09:40 (clock-checked) — ops tick
+- (S-180/S-181 headers "09:40"/"10:00" ran ahead; actual ~09:20–09:35.)
+- 5 GPU: evalB 159/161 (of 168); P6 batch 3 1041485 (t-806, 2h36) and batch 4 1041596 (sponge…balloon, n-805) running
+  concurrently (deviation from S-142's ≤1 Stage-0 job; under the 6-cap; F7 told not to start more until both finish);
+  G2 batch 2 1041561. P4 v2: button-r1 CV done; basket-r4 CV + 3 fits running. No failures.
