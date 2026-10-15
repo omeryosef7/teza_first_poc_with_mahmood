@@ -2899,3 +2899,11 @@ basket, 0.57–0.58 button).
 ## S-194 — 2026-10-15 12:40 — ops tick
 - GPU 2: P6 Stage-0 1041850 (whistle, yogurt, banana; n-802), G2 1041734 (blanket…wagon; t-806, 1h31). P4 v2: basket r4
   fit still running (last one). No failures.
+
+## S-195 — 2026-10-15 13:10 — ops tick; interim deliverables compilation started (F9)
+- GPU 2: P6 Stage-0 1041850 (51 min), G2 1041734 (2h01). P4 basket r4 fit still running. No failures.
+- **F9 launched (CPU):** INTERIM deliverables per §28 — final report answering each §28.2 question with evidence status
+  (P4/P6 PENDING, never anticipated), consolidated WHAT WE CAN DEFEND / WHAT WE MUST NOT SAY (all corrections applied),
+  machine-readable experiment registry + builder script, figures index (+ missing plots from committed numbers),
+  ≤1-page Matan/Mahmood update, verification index; inconsistencies between log entries to be listed, not resolved
+  silently. Deep review #9 (~13:10 due) will be run on the compiled report once F9 returns (attack the synthesis).
