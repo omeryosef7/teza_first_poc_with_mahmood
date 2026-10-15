@@ -2548,3 +2548,9 @@ Verifier/reviewer (own code `research/heretic_csi/verify/verify_p2b_val.py`) →
 
 ## S-161 — 2026-10-15 02:40 — ops tick
 - evalC 52/53, evalB 47/47; P3 trunc 19/133; P6 batch 1 on ladder (4 done: 1 FAIL, 3 PASS). 6 GPU, no failures.
+
+## S-162 — 2026-10-15 03:10 — ops tick
+- P6 batch 1 (1040547) COMPLETE — G3: candle FAIL; lamp, kettle, pencil, ladder PASS (extractions for passers). Lamp
+  axisfit 1041178 COMPLETED (3 min; first L18-only corpus end-to-end — F7 inspecting); further axisfits running; batch
+  2 (1041177: blanket, bucket, pillow, saddle, wagon) pending (L40S). evalC 60/61, evalB 55/55, P3 trunc 29/133.
+  5 GPU + 1 pending. No failures.
