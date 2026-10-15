@@ -2680,3 +2680,19 @@ Job 1041078 validated (DONE rc=0, 133/133 arms, 1 load, 1 attempt, A5000 n-503; 
   ⇒ F7 asked to evaluate + report. 1041561 = G2 for blanket, bucket, pillow, saddle, wagon. P6 batch 3 1041485 running.
   F5: P3 VOID report `reports/heretic_csi/P3_TRUNC_READ_VOID.md`; P4 v2 eval plans/analyzer updated (per-rank-job
   liveness; VOID on mixed job/GPU type; tests 14/14); prereg to be committed before any P4 submission.
+
+## S-178 — 2026-10-15 09:15 — P6 G2 (KO liveness): lamp, kettle, pencil, ladder all PASS ⇒ first 4 full G1–G3 survivors
+1041401 validated (16/16 arms, 1 load, no hook leaks, one DONE dir per arm, 670 rows each). In-job evaluator re-run
+from the same dirs (numbers identical). 670 paired rows / 67 TRAIN domains each; domain-cluster 95% CIs:
+
+| codeword | KO − BASE | KO_FULL − KO | KO_SELF − KO | G2 |
+|---|---|---|---|---|
+| lamp | −0.227 [−0.256, −0.197] | +0.134 [0.115, 0.152] | −0.0009 [−0.0018, 0.0000] | PASS |
+| kettle | −0.225 [−0.249, −0.202] | +0.142 [0.126, 0.158] | −0.0004 [−0.0013, 0.0004] | PASS |
+| pencil | −0.248 [−0.278, −0.218] | +0.147 [0.127, 0.167] | +0.0005 [−0.0001, 0.0011] | PASS |
+| ladder | −0.111 [−0.135, −0.088] | +0.048 [0.037, 0.060] | +0.0000 [−0.0003, 0.0004] | PASS |
+
+KO_SELF inert everywhere. Magnitudes for lamp/kettle/pencil ≈ the incumbents (basket KO −0.30, FULL +0.14); ladder about
+half (weak installer, G1 0.15). Reports `reports/heretic_csi/hcsi_p6_g2_{lamp,kettle,pencil,ladder}.json`.
+**Survivors (G1–G3) so far: lamp, kettle, pencil, ladder.** G2 for blanket/bucket/pillow/saddle/wagon (1041561) and
+P6 batch 3 (1041485) running.

@@ -99,3 +99,22 @@ Both secondary PASSes carry the amendment-2 forking-path disclosure and need VAL
 **Next:** the VALIDATION read after the parent logs this entry. That needs basket val 1023578/9, button val
 1036679/80, the add-on val jobs and their overlap files. Amendment-6 NM TRAIN arms (job 1040065) are running;
 analyse them with `--addon-nm`, descriptive, in a separate output.
+
+
+## ADDENDUM (post-S-135, descriptive; amendment 7 TRAIN arms, job 1040124) — refines item 3
+
+The fit site DOES change WHERE the operator acts. Δ vs KO [CI], TRAIN-K4, from `p2b_<cw>_neutpos_train.json`:
+- NEUT (fit at the last row) at ALL rows recovers 0.75–0.83 of the BASE−KO gap.
+- NEUT applied ONLY at the codeword row gives +0.012..0.019 (0.05–0.09 of the gap).
+- NEUT applied ONLY at the last row gives +0.005..0.013 (0.02–0.06).
+- CAND (fit at the codeword row) acts THROUGH the codeword row: CWONLY ≈ CAND, ATLAST ≈ 0.
+
+So NEUT acts DISTRIBUTED over other positions, while CAND concentrates at the codeword row; both reach similar
+total rescue. The S-135 line "the fit site doesn't matter" should read "the fit site doesn't matter for the AMOUNT of
+rescue, but it determines WHERE the edit acts". Fitting at the codeword row yields an operator that acts there.
+
+CAND − mean(DER) [CI]: basket r1 +0.006 [−0.002, 0.012]; basket r4 +0.021 [0.010, 0.033]; button r1 −0.004
+[−0.006, −0.001]; button r4 −0.011 [−0.019, −0.003].
+
+Amendment-6 NM (descriptive): the norm-matched mean gap recovers 0.39–0.70 of KO_FULL; CAND − MEANBIAS_NM is
++0.09..0.14 with CI-lo > 0 in all cells. This can never unlock wording.
