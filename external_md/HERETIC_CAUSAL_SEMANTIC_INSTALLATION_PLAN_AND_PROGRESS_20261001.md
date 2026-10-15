@@ -2990,3 +2990,26 @@ anticipates P4/P6/P7; most numbers trace exactly. Problems:
   intersection, the original 56-control basket r1 VAL cell gives rank **1/57 on 123 rows**, not the 2/57 F3 reported in
   S-052 (F3's per-domain means may have skipped the cross-arm key intersection — the defect review #3 found in the
   S-085 contrast). S-052 / S-198 "2/57 under the paired floor" is therefore DISPUTED until F3 re-checks.
+
+## S-200 — 2026-10-15 14:40 — PAIRED-FLOOR RE-CHECK (F3): F6 correct — S-052 rank-1 numbers CORRECTED
+`reports/heretic_csi/VERIFY_PAIRED_FLOOR_RECHECK.{md,json}`, code `research/heretic_csi/verify/paired_floor_recheck.py`.
+F3's earlier verify_s049 / verify_r4_val averaged each arm over its own surviving rows instead of the keys common to all
+arms. Affects ONLY rank-1 cells (rank-1 random controls lose 1–6 rows each to norm-match refusals). Corrected (common keys):
+
+| cell | floor | previously (S-052) | corrected |
+|---|---|---|---|
+| basket r1 VAL | strict paired | 2/57, p 0.035, 135 rows | **1/57, p 0.0175, 123 rows** (recovery 0.0224) |
+| basket r1 VAL | BASE-ref | 1/57, 145 rows | 1/57, 133 rows |
+| basket r1 TRAIN | BASE-ref | 1/57 | **2/57, p 0.035**, 397 rows (= S-049 record; near-tie with KO_SHUF_r1_8, Δ ~1e-5) |
+| basket r1 TRAIN | strict | 5/57 | **4/57, p 0.070** (still fails) |
+| button r1 VAL | both | 18/57 | **14/57, p 0.2456** (= analyzer) |
+| button r1 TRAIN | BASE-ref / strict | 25/57 / 23/57 | **23/57 / 22/57** |
+
+Unchanged: basket r4 VAL strict 2/57 (S-072/073 stands); button r4 1/57 under every floor; S-084 unaffected (it already
+intersected keys).
+**CORRECTIONS (appended):** S-052's "basket r1 is option-mass-floor-SENSITIVE (strict VAL 2/57)" and S-198's "it is
+also 2/57 under the strict paired floor" are **WITHDRAWN** — basket r1 VAL is strictly largest under every floor
+variant. VERIFY_S049's attribution of rank-1 differences to the analyzer statistic is superseded (F3's corrected code
+reproduces the analyzer exactly). **The S-198 downgrade STANDS**: basket r1 VAL is still uncorrected for basket's 3 VAL
+looks (Holm 0.0525) ⇒ SUGGESTIVE until the S-199 powered re-test reads. Basket r1 TRAIN remains 2/57 (near-tie).
+Original verification reports left in place; the recheck supersedes them for these cells.
