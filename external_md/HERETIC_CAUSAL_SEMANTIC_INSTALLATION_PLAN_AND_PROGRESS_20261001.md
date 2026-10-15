@@ -2563,3 +2563,12 @@ Verifier/reviewer (own code `research/heretic_csi/verify/verify_p2b_val.py`) →
 
 ## S-165 — 2026-10-15 04:40 — ops tick
 - evalC 83/84, evalB 80/79, P3 trunc 57/133; P6 batch 2 on bucket (blanket PASS). 6 GPU. No failures.
+
+## S-166 — 2026-10-15 05:10 — ops tick + ~4h ADVERSARIAL REVIEW #7 launched
+- 6 GPU (killable): evalC 91/91, evalB 88/88, P3 trunc 67/133, P6 batch 2 (blanket, bucket G3_PASS; pillow next).
+  No failures.
+- **Review #7** (fresh, read-only; barred from P3/P4 endpoints): P6 G3 implementation reproduces the incumbent rescue
+  BASE-arm median on identical rows; batch/select/axisfit scripts (job-scoped selection, HEALTH vs G3, rc=4, manifests);
+  the first L18-only axisfit basis (lamp) vs the incumbent basis format incl. meta (codeword/selected_layer guards),
+  TRAIN-only fit, G1 computation; P3 truncation code (REEXP ≡ CAND, per-module norm-matched controls, Holm over k,
+  retention CI, minimal-k rule); overclaims S-140…S-165 → `reports/heretic_csi/REVIEW_ADVERSARIAL_20261015_g.md`.
