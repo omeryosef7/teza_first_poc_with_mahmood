@@ -3085,3 +3085,8 @@ net on the frozen objective; 60 RAW + 60 NC random disjoint 8-head sets per cell
 
 ## S-208 — 2026-10-15 15:08 — ops tick (quiet)
 - Unchanged since S-207: 1042049/50 (S-199) RUNNING, 1042103 (P6 Stage-0) RUNNING, 1042039 (G2) RUNNING 1h46m, 1042143 (P4 basket r1) PENDING priority. No failures/duplicates/stale jobs; no endpoints read. Review #10 due ~18:00.
+
+## S-209 — 2026-10-15 15:34 — P6 G2 for cushion/curtain/bottle/jacket/sponge (job 1042039; F7 report, not yet independently recomputed)
+- All five PASS G2 (670 rows each, bottle 667, no errors): KO−BASE −0.12…−0.36, KO_FULL−KO +0.06…+0.19 (CIs exclude 0), KO_SELF≈0. **14 untouched codewords now pass G1+G2+G3** (lamp kettle pencil ladder blanket bucket pillow saddle wagon cushion curtain bottle jacket sponge).
+- Whistle (G3 0.0817, G1 0.666) and chair (G3 0.127, G1 0.364 [0.316,0.415]) pass G3/G1; G2 job 1042284 (both); chair axis fit 1042285. Balloon/ribbon Stage-0 still in 1042103. Draw driver refuses until those are final. Yogurt/banana G3 FAIL (gated out).
+- Power bound (consistent with S-206): ≤18 survivors ⇒ ≤13 confirmation codewords ⇒ H6a UNDERPOWERED label.

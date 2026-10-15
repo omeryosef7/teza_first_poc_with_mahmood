@@ -1,0 +1,78 @@
+{
+ "codeword": "curtain",
+ "job": "1042039",
+ "n_paired_rows": 670,
+ "arms": {
+  "BASE": "outputs/boombness/score_behavior/hcsi_p6g2_curtain_BASE_20261015_134947_3060732",
+  "KO": "outputs/boombness/score_behavior/hcsi_p6g2_curtain_KO_20261015_135428_3060732",
+  "KO_SELF": "outputs/boombness/score_behavior/hcsi_p6g2_curtain_KO_SELF_20261015_140100_3060732",
+  "KO_FULL": "outputs/boombness/score_behavior/hcsi_p6g2_curtain_KO_FULL_20261015_140823_3060732"
+ },
+ "KO_minus_BASE": {
+  "point": -0.17185,
+  "ci95": [
+   -0.20219,
+   -0.14332
+  ],
+  "n_domains": 67
+ },
+ "KO_FULL_minus_KO": {
+  "point": 0.05839,
+  "ci95": [
+   0.04583,
+   0.07106
+  ],
+  "n_domains": 67
+ },
+ "KO_SELF_minus_KO": {
+  "point": -0.00047,
+  "ci95": [
+   -0.00109,
+   0.0001
+  ],
+  "n_domains": 67
+ },
+ "population": {
+  "exclusion_file": "runargs/heretic_csi/p6/exclude_curtain_bomb_sow_train.txt",
+  "n": 670
+ },
+ "partition": "killable",
+ "validation": {
+  "arm_dirs": {
+   "BASE": {
+    "slurm_job_id": "1042039",
+    "done": true,
+    "rows": 670,
+    "gpu": "NVIDIA L40S"
+   },
+   "KO": {
+    "slurm_job_id": "1042039",
+    "done": true,
+    "rows": 670,
+    "gpu": "NVIDIA L40S"
+   },
+   "KO_SELF": {
+    "slurm_job_id": "1042039",
+    "done": true,
+    "rows": 670,
+    "gpu": "NVIDIA L40S"
+   },
+   "KO_FULL": {
+    "slurm_job_id": "1042039",
+    "done": true,
+    "rows": 670,
+    "gpu": "NVIDIA L40S"
+   }
+  },
+  "single_gpu_type": true,
+  "arm_runner": {
+   "n_arms_requested": 20,
+   "n_arms_run": 20,
+   "n_ok": 20,
+   "n_model_loads": 1,
+   "hook_leak_detected": false
+  }
+ },
+ "errors": [],
+ "G2": "PASS"
+}
