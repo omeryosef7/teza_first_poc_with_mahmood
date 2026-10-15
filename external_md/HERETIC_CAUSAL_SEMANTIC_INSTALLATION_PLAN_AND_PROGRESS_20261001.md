@@ -3127,3 +3127,6 @@ net on the frozen objective; 60 RAW + 60 NC random disjoint 8-head sets per cell
 ## S-218 — 2026-10-15 18:05 — P4 Amendment 6 ADDENDUM frozen before any P4 read; ribbon G2 submitted
 - PREREG_P4_AMENDMENT_6_ADDENDUM (2b1c5854…3f18): L6 data-integrity/internal-error ⇒ "NOT ANALYZABLE (…, not a null)", no p-value, other primary rank INCOMPLETE; L7 rank VOID unless every arm records slurm_job_id and gpu and all share one job+GPU type (live dirs checked: r1 31 arms, r4 23 arms, 0 missing). Analyzer p4_analyze_v2.py 7c7fc3df…; 21 tests + mutation checks. No analyzer run on any P4 output.
 - P4 progress: r1 1042143 ≈30/132 arms, r4 1042311 ≈22/132. P6: ribbon G2 = 1042491 submitted (Amendment 7 committed first); whistle+chair G2 1042284 still running; their outcomes unread by me.
+
+## S-219 — 2026-10-15 18:12 — ops tick: G2 whistle+chair 1042284 PREEMPTED
+- 1042284 PREEMPTED after 47 min on n-805 (killable). Per standing rule: rerun whole; F7 instructed to treat any partial outputs as void and resubmit. Ribbon G2 1042491 RUNNING (n-802, 8 min). P4 r1 1042143 (2h13m) / r4 1042311 (1h28m) and S-199 1042049/50 (3h43–3h58m) RUNNING. No endpoints read.
