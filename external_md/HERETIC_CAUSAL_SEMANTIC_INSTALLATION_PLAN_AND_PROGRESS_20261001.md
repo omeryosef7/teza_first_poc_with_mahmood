@@ -3026,3 +3026,11 @@ meeting update de-previews P4). S-200 applied (basket r1 floor-sensitivity WITHD
 Known gaps: the report's Q10 text count ("14 so far") is a snapshot — the generated P6 gate table (16 codewords with a
 Stage-0 result) is authoritative; `P6_GATE_TABLE_interim.md` reads untracked manifests under outputs/heretic_csi/p6/
 (snapshot them into reports/ at P6 completion so it regenerates from a clean clone).
+
+## S-202 — 2026-10-15 13:40 (clock-checked) — ops tick; TIMESTAMP CORRECTION
+- **Timestamp correction:** the header times of S-196 … S-201 ("13:30" … "15:00") ran up to ~1.5 h AHEAD of the wall
+  clock; their actual times were ~12:50–13:35 (see commit timestamps). Content unaffected. From now on headers are
+  taken from `date`.
+- GPU: P6 Stage-0 1041850 (whistle/yogurt/banana, 1h21), G2 1042039 (cushion, curtain, bottle, jacket, sponge);
+  S-199 basket r1 re-test 1042049/1042050 PENDING (priority; pinned n-503). P4 v2: basket r4 fit still running.
+  No failures.
