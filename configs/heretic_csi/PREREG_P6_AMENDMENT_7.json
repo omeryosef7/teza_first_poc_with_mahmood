@@ -1,0 +1,178 @@
+{
+ "schema": "hcsi_prereg_amendment/1",
+ "id": "PR-HCSI-P6 AMENDMENT 7 (DRAFT for parent review; not committed)",
+ "written": "2026-10-15, F7, on review #10 (reports/heretic_csi/REVIEW_ADVERSARIAL_20261015_j.md M1-M4, L1) and the coordinator's HOLD",
+ "amends": [
+  "PREREG_P6.json",
+  "AMENDMENTS 1-6",
+  "A2/A3 H6a labelling rules"
+ ],
+ "timing_disclosure": {
+  "state_at_writing": "Stage-0 G3/G1 outcomes of all 21 codewords are known to the author; G2 is final for 14 untouched codewords (all PASS). G2 for whistle and chair (job 1042284) was PENDING/RUNNING and ribbon's G2 was NOT submitted. The author has NOT read any G2 result for whistle, chair or ribbon: the coordinator HOLD was honoured, the two watchers that print them were killed, and the draw driver's --check (which prints gate statuses) was not run.",
+  "caveat": "Job 1042284's in-job evaluator writes its result into the manifests/reports automatically when it ends; that write is not a read. Maximum survivors given known outcomes: 17 of 20 untouched (candle is outside the 20; yogurt, banana, balloon failed G3).",
+  "outcome_awareness": "This amendment is written after the Stage-0 gate outcomes of 20 words and before the last three G2 outcomes. Extension (a) depends only on pre-rescue gate outcomes (G1-G3), never on any rescue/VALIDATION outcome."
+ },
+ "a_contingent_pool_extension": {
+  "evaluation_time": "when ALL 20 untouched codewords have final g3/g1/g2 statuses (as applicable). S := number passing G1, G2 and G3. DEV = 5 (retained), so n_conf_available := S - 5.",
+  "trigger": "n_conf_available < 12, i.e. S < 17 (the CANNOT ANSWER boundary of AMENDMENT_2/3).",
+  "at_exactly_12": "S = 17 (n_conf_available = 12): NO extension. H6a is run and labelled UNDERPOWERED (see c). [Parent decision point D1: alternative OPTION B = also extend while n_conf_available < 15 (target S = 20), at the cost of more GPU and a later start; not adopted in this draft.]",
+  "source": {
+   "seed_words": "configs/heretic_csi/P6_REPLACEMENT_SEED_WORDS.txt",
+   "seed_sha256": "54df3178e1a950fd5850265dd84890b313b23b51374b4a6e56d18eeb3396f396",
+   "builder": "research/heretic_csi/p6_replacement_candidates.py",
+   "builder_sha256": "601184b67e73e2635a6c53b81939a797337b1459542e567107e08cf63a40a9b0",
+   "ordered_list": "configs/heretic_csi/P6_REPLACEMENT_CANDIDATES.json",
+   "ordered_list_sha256": "db800dc2756096260f49a9867d4962e82e5b66f308d0f18f003388365c2ffe2e",
+   "uses_stage0_data": false,
+   "screens": "PR-CSI-008 L1 (single token with leading space), L2 (<= 0.005 of the cds116_button_bomb corpus rows), L3 (concept disjoint), L5 (no substring pairs) + P6a consonant-initial (exact-swap invariant), P6b ZERO whole-word-prefix hits in demo_pools_116dom_tsm_bomb.json (=> no pool repair and no derived-form occurrence failures: removes the discretionary repair step used for 17 of the original banks), P6c Zipf in [3.5, 4.7] (original pool span), P6d not already used/contaminated.",
+   "order": "sorted passers then random.Random(20261015).shuffle (seeded, mechanical)",
+   "result": "62 seed words -> 10 passers",
+   "ordered_candidates": [
+    {
+     "rank": 1,
+     "word": "cabbage",
+     "zipf": 3.55,
+     "tertile": "low"
+    },
+    {
+     "rank": 2,
+     "word": "sock",
+     "zipf": 3.61,
+     "tertile": "low"
+    },
+    {
+     "rank": 3,
+     "word": "kite",
+     "zipf": 3.55,
+     "tertile": "low"
+    },
+    {
+     "rank": 4,
+     "word": "ruler",
+     "zipf": 3.84,
+     "tertile": "low"
+    },
+    {
+     "rank": 5,
+     "word": "scissors",
+     "zipf": 3.58,
+     "tertile": "low"
+    },
+    {
+     "rank": 6,
+     "word": "basin",
+     "zipf": 4.08,
+     "tertile": "high"
+    },
+    {
+     "rank": 7,
+     "word": "sweater",
+     "zipf": 3.78,
+     "tertile": "low"
+    },
+    {
+     "rank": 8,
+     "word": "sofa",
+     "zipf": 3.81,
+     "tertile": "low"
+    },
+    {
+     "rank": 9,
+     "word": "trumpet",
+     "zipf": 3.58,
+     "tertile": "low"
+    },
+    {
+     "rank": 10,
+     "word": "pumpkin",
+     "zipf": 3.83,
+     "tertile": "low"
+    }
+   ],
+   "disclosure": "The seed list was written by the author AFTER seeing the Stage-0 gate outcomes of the 20 words; it is a broad sweep of the same semantic classes as the 40 PR-CSI-008 candidates and is not tuned to them. 49 of 62 seeds fail P6b alone, so the mechanical list is short and skews to the LOW Zipf tertile (9 of 10) \u2014 a declared limitation (it compresses the frequency range; H6b is descriptive)."
+  },
+  "procedure": "Replacements are taken strictly in the frozen order, in Stage-0 batches of at most 3 (one Stage-0 job at a time), through the IDENTICAL pipeline and frozen thresholds as the original 20: bank build (same generator, preset, seed 20260901, pools, repair map; no per-word repair is expected under P6b), occurrence gate, exclusion files, Stage-0 readout (HEALTH, G3 per AMENDMENT_4), G1, axis fit, G2 (p6_g2.slurm). Stop when S_total >= 17 or after 8 replacement candidates have been attempted (cap). Every attempted replacement, pass or fail, is reported in the denominator. If S_total < 17 after the cap: H6a = CANNOT ANSWER, no further candidates, no rescue GPU for confirmation.",
+  "tertiles_and_DEV": "Tertiles are by the FROZEN cutpoints low < 3.87 <= mid < 4.04 <= high (reproduces the original 7/7/6 assignment of the 20; tests/test_p6_dev_draw.py). The DEV draw is run ONCE, after the extension (if any) is final, over original + replacement survivors (cell procedure, seed 20261013, fill rule unchanged); DEV size stays 5 [Parent decision point D2: a DEV size other than 5 must be fixed here, as a formula of S, BEFORE the draw]. Replacements are eligible for DEV or CONFIRMATION like any other survivor.",
+  "implementation": "p6_dev_draw.py (cutpoint tertiles; draw(..., zipf=)), p6_dev_draw_driver.py (optional configs/heretic_csi/P6_EXTENSION.json adds attempted replacements to the pool and the all-final requirement); tests extended (9 pass).",
+  "what_the_decision_uses": "G1-G3 outcomes only (pre-rescue); no rescue, VALIDATION or probe outcome."
+ },
+ "b_post_draw_void_and_cannot_answer": {
+  "rule": "n_conf_final := confirmation codewords whose rescue read is NOT VOID (AMENDMENT_6: single job, single GPU type, all arms DONE) and whose z is ESTIMABLE (d). Before the label is applied, each VOID codeword may be re-run ONCE as a whole fresh single job. If n_conf_final < 12 after that: H6a is labelled CANNOT ANSWER (results are still reported descriptively; no pass/fail is claimed). If 12 <= n_conf_final < 15: UNDERPOWERED (c). The label is therefore evaluated twice: at the DEV draw (pre-spend) and after the confirmatory reads (post-hoc, as a VOID can arise after GPU is spent).",
+  "note": "at n_conf = 12 a single unrecoverable VOID or NOT-ESTIMABLE codeword makes H6a CANNOT ANSWER."
+ },
+ "c_corrected_power_wording": {
+  "source": "reports/heretic_csi/hcsi_p6_power_iut.json (A3 IUT rule; reliability 0.7; c = shared-noise fraction 0.5-1.0)",
+  "ranges_over_c": {
+   "n12": {
+    "rho0.6": [
+     0.3,
+     0.466
+    ],
+    "rho0.7": [
+     0.432,
+     0.604
+    ],
+    "rho0.8": [
+     0.581,
+     0.741
+    ]
+   },
+   "n15": {
+    "rho0.6": [
+     0.408,
+     0.574
+    ],
+    "rho0.7": [
+     0.567,
+     0.716
+    ],
+    "rho0.8": [
+     0.726,
+     0.844
+    ]
+   }
+  },
+  "wording": "REPLACES 'power ~0.5-0.7 at n=12': IUT power at n_conf = 12 is 0.43-0.60 at rho = 0.7 and 0.58-0.74 at rho = 0.8; at n_conf = 15 it is 0.57-0.72 (rho 0.7) and 0.73-0.84 (rho 0.8). It never reaches 0.80 for n_conf <= 12, and at n_conf = 15 only if the outcome noise is essentially fully shared across the three control families (c = 1). 'UNDERPOWERED for rho < 0.8' is retained as the label for 12 <= n_conf < 15, but it does NOT mean rho = 0.8 is adequately powered. n_conf = 13, 14 were not simulated.",
+  "upper_bound": "These are upper bounds: the model assumes iid-normal covariate/outcome; the cell-stratified DEV removal, the possibly low-skewed replacement tertiles, shared random controls (AMENDMENT_6) and shared VAL domains all compress variance or add dependence (review #10 L3)."
+ },
+ "d_validation_option_mass_floor": {
+  "problem": "G3 is a TRAIN-only gate; the confirmatory z lives on VALIDATION and uses a BASE-referenced option-mass floor 0.05. Review #10 found (BASE VAL medians) ribbon 0.0497 and blanket 0.0443 near/below the floor, so about half of their VAL rows may drop out of the recovery statistic.",
+  "record": "For every codeword's confirmatory VALIDATION rescue read, the BASE arm's floor-surviving rows are counted as keys: n_keys_surviving, n_domains_with_>=1_key (of 23), and the fraction of VAL rows below the floor. Computed ONLY from the rescue job's own BASE arm, after this amendment is committed; NOT computed now from Stage-0 readouts.",
+  "minimum": "A codeword's z is NOT ESTIMABLE if fewer than 15 of the 23 VALIDATION domains retain >= 1 floor-surviving key [Parent decision point D3: the number 15 follows the reviewer's proposal and may be changed before any VAL support exists]. NOT ESTIMABLE is attrition: the codeword stays in the denominator with that reason, is excluded from H6a, and reduces n_conf_final (b). It is never a post-hoc exclusion.",
+  "outcome_awareness": "Review #10 observed ribbon/blanket VAL BASE medians before this amendment; the rule itself is generic and the threshold comes from the reviewer, not from those numbers."
+ },
+ "e_test_wording": {
+  "old": "'TEST never built, never read'",
+  "new": "No TEST rescue outcome and no TEST-based gate is ever read. TEST-domain rows exist in every Stage-0 bank (22,272 rows over 116 domains) and every Stage-0 readout scores them as BASE option mass; G3 and G1 use TRAIN domains only, so no gate used them. 'test_split: never' means: no TEST rescue arms and no gate or decision conditioned on TEST rows.",
+  "disclosures": [
+   "p6_g3.py wrote `descriptive_C_dose4_all_splits_median` (included the 230 TEST rows) into every manifest; it was never used by any gate.",
+   "Review #10's own script printed per-split BASE medians including TEST rows (self-disclosed there)."
+  ],
+  "action": "key removed from research/heretic_csi/p6_g3.py output and scrubbed from all 21 manifests (research/heretic_csi/p6_scrub_all_splits.py, locked+atomic; values remain in git history / Stage-0 logs)."
+ },
+ "f_A4_disclosure": {
+  "fact": "AMENDMENT_4 re-implemented G3 as the frozen text (median option mass on the rescue BASE-arm TRAIN population > 0.05) AFTER lamp and candle had been scored under the pooled tail gate. Lamp: pooled 0.0285 (would have FAILED) vs frozen-text 0.0754 PASS; candle: pooled 0.0248 / frozen-text 0.0481, FAIL under both. This is an outcome-aware implementation decision; it changes the verdict of exactly one codeword (lamp). All other codewords were scored only after A4.",
+  "sensitivity_S3": "H6a (all three z families, IUT) is additionally reported leaving lamp out, pre-declared; a flip is reported as 'LAMP-SENSITIVE'. It never rescues a failed primary.",
+  "also_documented": "G1 uses all semantic_one_word n4 A/C rows of the TRAIN domains (not restricted to cds_n4_sow or the exclusion file) with a fixed bootstrap seed 0; G3 uses the exclusion-file population. G2 is a weak liveness gate (any significant sign passes). Thin G3 margins (ribbon 0.0583, curtain 0.0553, blanket 0.0558; descriptive CIs straddle 0.05) follow the frozen point rule."
+ },
+ "parent_decision_points": [
+  "D1 extend at exactly n_conf = 12? (draft: no)",
+  "D2 DEV size formula (draft: 5)",
+  "D3 VAL floor minimum domains (draft: 15 of 23)",
+  "D4 accept the short, low-skewed mechanical candidate list or widen the seed list (before any G2 read)"
+ ],
+ "out_of_scope": "Review #10 M5-M7 and L4-L7 concern the S-199/P4 v2 analyzer; not addressed here.",
+ "unchanged": "All gate thresholds and definitions, H6a (IUT, one-sided alpha 0.05), H6b/H6c descriptive, S1/S2/dependence sensitivities, DEV procedure, TEST never rescued.",
+ "files_to_commit": [
+  "configs/heretic_csi/PREREG_P6_AMENDMENT_7.json",
+  "configs/heretic_csi/P6_REPLACEMENT_SEED_WORDS.txt",
+  "configs/heretic_csi/P6_REPLACEMENT_CANDIDATES.json",
+  "research/heretic_csi/p6_replacement_candidates.py",
+  "research/heretic_csi/p6_dev_draw.py",
+  "research/heretic_csi/p6_dev_draw_driver.py",
+  "research/heretic_csi/p6_g3.py",
+  "research/heretic_csi/p6_scrub_all_splits.py",
+  "research/heretic_csi/tests/test_p6_dev_draw.py",
+  "reports/heretic_csi/P6_AMENDMENT7_RATIONALE.md"
+ ]
+}

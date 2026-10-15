@@ -33,3 +33,15 @@ def test_fill_rule_when_cells_sparse():
     assert len(out["dev"]) == 5 and out["n_fill"] == 4 and "candle" not in out["dev"]
     assert len(set(out["dev"])) == 5 and not set(out["dev"]) & set(out["confirmation"])
     assert out == d.draw(strength, low)       # deterministic
+
+
+def test_cutpoint_tertiles_reproduce_original_rank_assignment():
+    order = sorted(d.ZIPF, key=lambda w: (d.ZIPF[w], w))
+    rank_based = {w: ("low" if i < 7 else "mid" if i < 14 else "high") for i, w in enumerate(order)}
+    assert d.tertiles() == rank_based
+
+
+def test_replacement_gets_cutpoint_tertile():
+    z = dict(d.ZIPF); z["sock"] = 3.61; z["basin"] = 4.08; z["mug"] = 3.95
+    t = d.tertiles(z)
+    assert (t["sock"], t["mug"], t["basin"]) == ("low", "mid", "high")

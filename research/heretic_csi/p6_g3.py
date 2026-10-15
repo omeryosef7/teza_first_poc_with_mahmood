@@ -6,7 +6,7 @@ ids in the codeword's TRAIN exclusion file (runargs/heretic_csi/p6/exclude_<cw>_
 version where it exists — bottle/cushion, PREREG_P6_AMENDMENT_1). Statistic: true median of per-row `option_mass` over
 those rows that the readout scored. PASS iff median > 0.05. score_behavior's POOLED tail gate is a different readout-
 health check: RECORDED here, never used for G3 (PREREG_P6_AMENDMENT_4).
-Also reports (descriptive) the cell-C dose-4 one-word median over ALL splits and the health check (OOM/CUDA rows;
+(AMENDMENT_7: the former all-splits descriptive median was REMOVED — it included TEST-domain BASE rows.) Reports the health check (OOM/CUDA rows;
 other failure reasons; occurrence_count_mismatch rows are the declared mechanical attrition of AMENDMENT_1).
 Usage: p6_g3.py <codeword> <readout_dir>   -> one JSON line; exit 0 always (status in the JSON)."""
 import json, os, random, statistics, sys
@@ -18,7 +18,7 @@ REPO = "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
 def main(cw, rd):
     rd = os.path.join(REPO, rd) if not os.path.isabs(rd) else rd
     pop, ex = p6_pop.population(cw)  # single shared definition (p6_pop.py; also used by p6_g2.py)
-    g3, alls, doms = [], [], set()
+    g3, doms = [], set()
     by_dom = {}
     errors = []
     errors += p6_pop.bank_guard(rd, cw)  # CODEWORD GUARD (review #7)
@@ -29,8 +29,6 @@ def main(cw, rd):
         if r.get("target_surface") not in (None, cw) and r["query_kind"] == "semantic_one_word":
             errors.append(f"codeword_guard: row {r['prompt_id']} target_surface={r.get('target_surface')} != {cw}")
             break
-        if r["query_kind"] == "semantic_one_word" and r["cell"] == "C" and int(r["n_examples"]) == 4:
-            alls.append(r["option_mass"])
         if r["prompt_id"] in pop and r["query_kind"] == "semantic_one_word":
             g3.append(r["option_mass"]); doms.add(r["domain"]); by_dom.setdefault(r["domain"], []).append(r["option_mass"])
     s = json.load(open(os.path.join(rd, "summary.json"))) if os.path.exists(os.path.join(rd, "summary.json")) else {}
@@ -57,7 +55,6 @@ def main(cw, rd):
            "g3_median_option_mass": None if med is None else round(med, 5),
            "G3": "PASS" if (med is not None and med > 0.05) else "FAIL",
            "g3_median_domain_bootstrap_ci95_DESCRIPTIVE": ci, "errors": errors,
-           "descriptive_C_dose4_all_splits_median": round(statistics.median(alls), 5) if alls else None,
            "pooled_tail_gate_RECORDED_NOT_USED": s.get("option_mass_gate")}
     out["status"] = ("ERROR_G3_INPUT" if errors else
                      ("G3_PASS" if out["G3"] == "PASS" else "G3_FAIL") if health == "HEALTH_OK" else "ERROR_HEALTH")

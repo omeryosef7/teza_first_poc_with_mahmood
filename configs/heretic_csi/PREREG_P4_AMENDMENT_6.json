@@ -1,0 +1,20 @@
+{
+  "schema": "hcsi_prereg_amendment/1",
+  "amends": "PREREG_P4 + AMENDMENTS 1-5",
+  "written": "2026-10-15, BEFORE any P4 eval endpoint is read. Basket TRAIN-K4 jobs 1042143 (r1) and 1042311 (r4) are running; the analyzer has NOT been run on any P4 eval output (no reports/heretic_csi/p4v2_* exists; the auto-read watcher was killed). Arms emitted/run are unchanged by this amendment; it changes only analysis.",
+  "trigger": "Adversarial review #10 (reports/heretic_csi/REVIEW_ADVERSARIAL_20261015_j.md) M6, M7.",
+  "M6_collapsed_controls": {
+    "problem": "A control whose readout collapses (median option mass < floor) was only flagged; its stat is far below TOP8's, so TOP8 'beat' it for free and the primary rank p was biased DOWN (anti-conservative).",
+    "rule": "The PRIMARY rank p per family now counts every collapsed control as >= the candidate: p_F = (1 + #{controls with stat >= TOP8 OR collapsed}) / (n + 1). This is >= both the plain p and the without-collapsed p. Both alternatives are still reported (p_plain, p_without_collapsed, collapsed_controls). p_r = max(p_RAW, p_NC); Holm over ranks {1,4}; all other rules unchanged.",
+    "void_rule": "A rank is VOID if more than 10% of a control family (> 6 of 60) has a collapsed readout.",
+    "implementation": "research/heretic_csi/p4_analyze_v2.py::conservative_rank_p, ::collapse_void"
+  },
+  "M7_labels_and_roles": {
+    "labels": "Every P4 verdict string is prefixed '[TRAIN-K4 (in-sample); ...]' when --split train and '[VALIDATION; ...]' when --split validation (output labelling only; no rule change). Log wording for a TRAIN-K4 pass: 'TRAIN-K4 (in-sample) PASS'.",
+    "confirmatory_structure": "The SOLE confirmatory P4 test is basket VALIDATION, Holm over ranks {1,4}. Basket TRAIN-K4 is in-sample (candidate and both control families are fitted on the same TRAIN rows) and never confirmatory. Button (TRAIN-K4 and VALIDATION) is a SECONDARY transfer test, DESCRIPTIVE: no cross-codeword multiplicity correction is pre-declared, so a button PASS is labelled secondary-transfer/descriptive and cannot support a claim on its own.",
+    "implementation": "research/heretic_csi/p4_analyze_v2.py::split_label, finalize(rows, label)"
+  },
+  "tests": "research/heretic_csi/tests/test_p3_p4.py: test_a6_collapsed_controls_are_never_a_free_win, test_a6_collapsed_family_over_10pct_is_void_and_decisive_p_cannot_pass, test_a6_verdict_labels_carry_split_and_role, test_a6_main_applies_split_label (mutation-checked: ignoring collapsed controls fails 2 tests; loosening the 10% rule fails 1; dropping the label in main() fails 1). 18 tests pass.",
+  "not_changed_here": "Review #10 L6 (data-integrity label for NOT ANALYZABLE) and L7 (require non-None RUNMETA gpu/slurm_job_id) are LOW items not addressed in this amendment; left open for a separate amendment before the first VALIDATION read.",
+  "unchanged": "arms, plans, populations, factors, RAW + NC families, IUT per rank, Holm over {1,4}, PASS = Holm p < 0.05 AND recovery CI-lo > 0 AND gates, VOID checks (Amendments 2, 4, 5)."
+}

@@ -1,0 +1,24 @@
+{
+  "schema": "hcsi_prereg/1",
+  "id": "PR-HCSI-S199 AMENDMENT 1",
+  "amends": "configs/heretic_csi/prereg_S199_basket_r1_powered.json (sha256 455ec59208bdb16fd505cefc3a219b308c25ec61531c021a3e49ad3e63ff6b6f, committed 1a85cd08)",
+  "written": "2026-10-15, F6, BEFORE the S-199 read. Jobs 1042049/1042050 were running at writing time; only job state / arm counts were looked at, NO score, row set or endpoint of any new arm was read.",
+  "trigger": "Adversarial review #10 (reports/heretic_csi/REVIEW_ADVERSARIAL_20261015_j.md) finding M5: row-set shrinkage was reported but never gated (a 133 -> 90 row candidate still returned PASS in test). The extended set is the key intersection over 205 arms and each rank-1 control already loses 1-6 rows to norm-match refusals (the original 56: BASE-floor 145 -> 133).",
+  "i_row_set_floor": {
+    "rule": "If the common-key row set of ALL 205 arms (BASE-floor key set, the analyzer's n_keys_common) has fewer than 100 rows, OR fewer than 21 of the 23 VALIDATION domains retain at least one common key, the S-199 verdict is 'UNDERPOWERED (row set): <reasons>' - never PASS and never DOES NOT PASS. A VOID (overlap mismatch, GPU type, analyzer VOID) still takes precedence over UNDERPOWERED. The binding rule applies: if either the unrounded or the rounded decision is UNDERPOWERED the FINAL_VERDICT is UNDERPOWERED.",
+    "thresholds_basis": "100 rows = 75% of the original 133 common rows (the S-049/S-072 standard row set for basket r1; BASE-floor keys 145 over 23 domains with per-domain support min 1 / median 7). 21/23 domains = 91% of the unit of independence. Set from the original job's support and fixed here before any extended-arm row set was computed.",
+    "what_UNDERPOWERED_means": "The design cannot answer: the larger null was bought with so many lost rows that the candidate statistic / domain support is no longer the S-049 object. It is NOT a null result and does not retire or support the original rank 1/57; a redesign (e.g. rank-1 controls drawn without norm-match degeneracy, or a row set held fixed across arms) would be required before any claim."
+  },
+  "ii_descriptive_companion": "The candidate vs the ORIGINAL 56 controls (46 RAND + 10 SHUF, job 968532) computed on the SAME shrunken common row set as the primary (statistic = mean over domains of dmean[arm]-dmean[KO] on the 205-arm common keys): rank/57 and p. Separates row-set loss from null-size gain. Reported as companions_DESCRIPTIVE.ii_candidate_vs_original_56_on_shrunken_rows.",
+  "iii_descriptive_sensitivity": "Per-control paired comparison on each control's OWN rows: for each of the 200 controls, keys = BASE-floor keys present in {candidate, KO, control}; delta_c = mean over domains of (dmean[candidate]-dmean[control]). Reported: number of controls the candidate beats, min/median/max delta, the 5 lowest-delta controls, and the min/max rows per control. Reported as companions_DESCRIPTIVE.iii_per_control_paired_own_rows.",
+  "none_of_ii_iii_may_change_the_verdict": true,
+  "reported_in_result_also": [
+    "the S-199 Holm family statement: no other basket VALIDATION look exists beyond r1 (968532), r4 (1022699) and r16 (968533); the r32/r4 basket files under reports/heretic_csi are TRAIN reads (review #10 L4). r4 (0.0175) and r16 (0.1754) enter Holm as recorded from 56-control nulls while r1 uses 201 (conservative for r1, pre-declared)."
+  ],
+  "implementation": {
+    "script": "research/heretic_csi/p2a_powered_read.py (new sha256 b93c4cce1edfaffd0531458d15a203a75c9f38f67f264267f321bfc038f1d439; supersedes 94382e87… of the original prereg; changes: decide() row/domain floor, combine() UNDERPOWERED propagation, companions(), CLI --min-rows 100 --min-domains 21 defaults; every other step byte-identical in logic)",
+    "tests": "research/heretic_csi/tests/test_p2a_powered_read.py (sha256 665362e623d0381c3e6b6d438bb9d080532490624139e6af80db81caad029072; 9 passed incl. 133->90 rows is NOT PASS, 99/100 boundary, 20/21 domains boundary, UNDERPOWERED beats DOES NOT PASS, VOID beats UNDERPOWERED, combine propagation, S-084 call signature unchanged, companions on the original job 968532)",
+    "command": "python research/heretic_csi/p2a_powered_read.py --codeword basket --rank 1 --orig-job 968532 --ext-jobs 1042049,1042050 --looks r4=0.0175,r16=0.1754 --n-old-rand 46 --n-new 144 --nshuf 10 --expected-rows 133 --min-rows 100 --min-domains 21 --tag P2A_BASKET_R1_POWERED"
+  },
+  "unchanged": "Everything else in PR-HCSI-S199 (data, candidate, 200-control family, Holm family, SHUF rule, CI rule, binding rule, BASE-ref floor PRIMARY / paired floor descriptive, honest_scope, test never)."
+}

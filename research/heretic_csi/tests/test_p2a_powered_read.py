@@ -74,3 +74,55 @@ def test_reproduces_s084_button():
     dec = G.decide(st["KO_CAND_r4"], {k: st[k] for k in ctrl}, {"r1": 0.2456, "r16": 0.1754}, "r4", "KO_SHUF_r4_",
                    p["candidate_minus_KO"]["ci95"][0], True, [], n, 203, lost)
     assert dec["VERDICT"] == p["decision_unrounded"]["VERDICT"] == "PASS" and dec["rank"] == p["decision_unrounded"]["rank"]
+
+
+# ---- S-199 AMENDMENT 1 (review #10 M5): row-set floor => UNDERPOWERED, descriptive companions ----
+def _passing(**kw):
+    a = dict(cand=0.03, controls=C(), looks=L, look_key="r1", shuf_prefix="KO_SHUF_r1_", ci_lo=0.01, gates_ok=True,
+             void=[], n_keys_common=133, expected_rows=133, arms_lost={}, n_domains=23, min_rows=100, min_domains=21)
+    a.update(kw); return G.decide(**a)
+
+
+def test_rowset_floor_blocks_pass():
+    assert _passing()["VERDICT"] == "PASS"
+    d = _passing(n_keys_common=90)                       # 133 -> 90 rows must NOT give PASS
+    assert d["VERDICT"].startswith("UNDERPOWERED") and d["rank"] == 1 and "common rows 90 < 100" in d["VERDICT"]
+    assert _passing(n_keys_common=99)["VERDICT"].startswith("UNDERPOWERED")
+    assert _passing(n_keys_common=100)["VERDICT"] == "PASS"            # boundary inclusive
+    d = _passing(n_domains=20)
+    assert d["VERDICT"].startswith("UNDERPOWERED") and "domains 20 < 21" in d["VERDICT"]
+    assert _passing(n_domains=21)["VERDICT"] == "PASS"
+    both = _passing(n_keys_common=80, n_domains=18)
+    assert both["VERDICT"].count("<") == 2
+
+
+def test_underpowered_beats_does_not_pass_and_void_beats_underpowered():
+    # a would-be FAIL on a shrunken row set is still UNDERPOWERED (not a null), a VOID stays VOID
+    assert _passing(n_keys_common=90, ci_lo=-1)["VERDICT"].startswith("UNDERPOWERED")
+    assert _passing(n_keys_common=90, void=["x"])["VERDICT"].startswith("VOID")
+
+
+def test_combine_propagates_underpowered():
+    U, P, F, V = {"VERDICT": "UNDERPOWERED (row set): x"}, {"VERDICT": "PASS"}, {"VERDICT": "DOES NOT PASS"}, {"VERDICT": "VOID: z"}
+    assert G.combine(U, P).startswith("UNDERPOWERED") and G.combine(P, U).startswith("UNDERPOWERED")
+    assert G.combine(F, U).startswith("UNDERPOWERED")
+    assert G.combine(U, V).startswith("VOID")
+
+
+def test_no_floor_default_unchanged():
+    d = G.decide(0.03, C(), L, "r1", "KO_SHUF_r1_", 0.01, True, [], 90, 133, {})        # S-084 call signature
+    assert d["VERDICT"] == "PASS" and d["underpowered_reasons"] == []
+
+
+@pytest.mark.skipif(not os.path.exists(REF), reason="basket r1 VAL analyzer output absent")
+def test_companions_on_original_job():
+    A = G._ana()
+    orig = [f"KO_RAND_r1_{i}" for i in range(46)] + [f"KO_SHUF_r1_{j}" for j in range(10)]
+    arms = ["BASE", "KO", "KO_SELF", "KO_FULL", "KO_CAND_r1"] + orig
+    st, n, lost, doms, _ = G.stats(A, "basket", arms, ["968532"], "base")
+    ii, iii = G.companions(A, "basket", 1, ["968532"], st, "KO_CAND_r1", orig)
+    assert ii["rank"] == 1 and ii["n_controls"] == 56 and ii["p"] == pytest.approx(1 / 57)
+    assert iii["n_controls"] == 56 and 0 <= iii["n_candidate_gt_control"] <= 56
+    assert iii["min_delta"] <= iii["median_delta"] <= iii["max_delta"] and iii["rows_per_control_min_max"][0] >= 100
+    assert len(iii["worst_controls"]) == 5
+    print("companion iii on original:", iii["n_candidate_gt_control"], "/ 56 candidate>control; rows", iii["rows_per_control_min_max"])

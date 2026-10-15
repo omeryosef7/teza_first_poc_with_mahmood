@@ -26,24 +26,37 @@ def holm(ps):
     return out
 
 
-def decide(cand, controls, looks, look_key, shuf_prefix, ci_lo, gates_ok, void, n_keys_common, expected_rows, arms_lost):
+def decide(cand, controls, looks, look_key, shuf_prefix, ci_lo, gates_ok, void, n_keys_common, expected_rows, arms_lost,
+           n_domains=None, min_rows=None, min_domains=None):
+    """min_rows/min_domains: PR-HCSI-S199 AMENDMENT 1 row-set floor. If the common-key row set (or the number of
+    domains with >=1 common key) is below the floor the verdict is UNDERPOWERED, never PASS/DOES NOT PASS.
+    None => no floor (used only by the S-084 reproduction test)."""
     better = sum(1 for v in controls.values() if v >= cand)
     p_ext = (1 + better) / (len(controls) + 1)
     hp = holm(dict(looks, **{look_key: p_ext}))
     shuf = {k: v for k, v in controls.items() if k.startswith(shuf_prefix)}
     beats = bool(shuf) and all(cand > v for v in shuf.values())
     passed = (not void) and hp[look_key] < 0.05 and beats and ci_lo > 0 and gates_ok
+    under = []
+    if min_rows is not None and n_keys_common < min_rows:
+        under.append(f"common rows {n_keys_common} < {min_rows}")
+    if min_domains is not None and n_domains is not None and n_domains < min_domains:
+        under.append(f"domains {n_domains} < {min_domains}")
     return {"rank": 1 + better, "n_controls": len(controls), "p_ext": p_ext, "holm": hp, "beats_every_shuf": beats,
             "max_shuf": max(shuf.values()) if shuf else None,
             "row_set": {"n_keys_common": n_keys_common, "expected": expected_rows, "deviation": n_keys_common - expected_rows,
                         "arms_with_dropped_keys": sorted(a for a, n in arms_lost.items() if n)},
-            "VERDICT": ("VOID: " + "; ".join(void)) if void else ("PASS" if passed else "DOES NOT PASS")}
+            "n_domains": n_domains, "underpowered_reasons": under,
+            "VERDICT": ("VOID: " + "; ".join(void)) if void else
+                       ("UNDERPOWERED (row set): " + "; ".join(under) if under else ("PASS" if passed else "DOES NOT PASS"))}
 
 
 def combine(u, r):
     u, r = u["VERDICT"], r["VERDICT"]
     if u.startswith("VOID") or r.startswith("VOID"):
         return u if u.startswith("VOID") else r
+    if u.startswith("UNDERPOWERED") or r.startswith("UNDERPOWERED"):
+        return u if u.startswith("UNDERPOWERED") else r
     return u if u == r else "DOES NOT PASS (rounding-sensitive)"
 
 
@@ -133,6 +146,36 @@ def boot_ci(diffs, n_boot=20000, seed=20260915):
     return [dr[int(0.025 * n_boot)], dr[min(n_boot - 1, int(0.975 * n_boot))]]
 
 
+def companions(A, cw, R, jobs, st, cand, orig_ctrls):
+    """DESCRIPTIVE companions (S-199 AMENDMENT 1; never change the verdict).
+    (ii) candidate vs the ORIGINAL 56 controls on the SAME shrunken common row set (st = stats over the
+         common keys of all arms): separates row-set loss from null-size gain.
+    (iii) per-control paired comparison, each control on ITS OWN rows: for control c, keys = BASE-floor keys
+         present in {candidate, KO, c}; delta_c = mean over domains of (dmean[cand]-dmean[c]) on those keys."""
+    better = sum(1 for k in orig_ctrls if st[k] >= st[cand])
+    comp_ii = {"n_controls": len(orig_ctrls), "rank": 1 + better, "p": (1 + better) / (len(orig_ctrls) + 1),
+               "candidate_stat": st[cand]}
+    sel = {"require_rescue_layer": None, "require_slurm_jobs": [str(j) for j in jobs]}
+    assign = A.lpm.load_split()
+    rd = lambda arm: A.rederive.strict_run_dir(f"hcsi_p2a_{cw}_{arm}", 230, row_file="results.jsonl", allow_short=20, **sel)
+    keep = A.reference_key_set(rd("BASE"), 0.05)
+    names = [cand, "KO"] + [a for a in st if a.startswith(("KO_RAND_r", "KO_SHUF_r"))]
+    kv = {a: A.arm_key_values(rd(a), assign, "validation")[0] for a in names}
+    deltas, rows = {}, {}
+    for c in names[2:]:
+        keys = set(kv[cand]) & set(kv["KO"]) & set(kv[c]) & keep
+        by = {}
+        for k in keys:
+            by.setdefault(k[0], []).append(kv[cand][k] - kv[c][k])
+        deltas[c] = sum(sum(v) / len(v) for v in by.values()) / len(by)
+        rows[c] = len(keys)
+    vals = sorted(deltas.values())
+    comp_iii = {"n_controls": len(deltas), "n_candidate_gt_control": sum(1 for v in vals if v > 0),
+                "min_delta": vals[0], "median_delta": vals[len(vals) // 2], "max_delta": vals[-1],
+                "worst_controls": sorted(deltas, key=deltas.get)[:5], "rows_per_control_min_max": [min(rows.values()), max(rows.values())]}
+    return comp_ii, comp_iii
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--codeword", required=True); ap.add_argument("--rank", type=int, required=True)
@@ -140,6 +183,8 @@ def main():
     ap.add_argument("--looks", required=True, help="other VAL looks, e.g. r4=0.0175,r16=0.1754")
     ap.add_argument("--n-old-rand", type=int, default=46); ap.add_argument("--n-new", type=int, default=144)
     ap.add_argument("--nshuf", type=int, default=10); ap.add_argument("--expected-rows", type=int, required=True)
+    ap.add_argument("--min-rows", type=int, default=100, help="AMENDMENT 1 row-set floor (common keys)")
+    ap.add_argument("--min-domains", type=int, default=21, help="AMENDMENT 1 domain floor (domains with >=1 common key)")
     ap.add_argument("--tag", required=True, help="output stem, e.g. P2A_BASKET_R1_POWERED")
     a = ap.parse_args()
     cw, R = a.codeword, a.rank
@@ -170,15 +215,21 @@ def main():
     gates_ok = (not d.get("VOID")) and bool(d.get("gates")) and all(bool(v) for v in d["gates"].values())
     void = list(ov_void) + ([] if gp_ok else [f"GPU types differ / not unique: {gp}"]) + list(d.get("VOID") or [])
     lk, sp = f"r{R}", f"KO_SHUF_r{R}_"
-    dec_u = decide(st[cand], {k: st[k] for k in ctrl_arms}, looks, lk, sp, cmk["ci95"][0], gates_ok, void, n_common, a.expected_rows, lost)
-    dec_r = decide(ctr["candidate"], dict(ctr["controls"]), looks, lk, sp, cmk["ci95"][0], gates_ok, void, n_common, a.expected_rows, lost)
+    dec_u = decide(st[cand], {k: st[k] for k in ctrl_arms}, looks, lk, sp, cmk["ci95"][0], gates_ok, void, n_common, a.expected_rows, lost,
+                    len(doms), a.min_rows, a.min_domains)
+    dec_r = decide(ctr["candidate"], dict(ctr["controls"]), looks, lk, sp, cmk["ci95"][0], gates_ok, void, n_common, a.expected_rows, lost,
+                    len(doms), a.min_rows, a.min_domains)
     assert dec_r["rank"] == d["verdict_basis"]["candidate_rank"], (dec_r["rank"], d["verdict_basis"]["candidate_rank"])
     final = combine(dec_u, dec_r)
     # SENSITIVITY (descriptive): strict paired floor
     st_p, n_p, lost_p, doms_p, diffs_p = stats(A, cw, arms, jobs, "paired")
     ci_p = boot_ci(diffs_p)
-    dec_p = decide(st_p[cand], {k: st_p[k] for k in ctrl_arms}, looks, lk, sp, ci_p[0], gates_ok, void, n_p, a.expected_rows, lost_p)
-    res = {"codeword": cw, "rank": R, "jobs": jobs, "gpus": gp, "overlap": ov, "looks_family": dict(looks, **{lk: "p_ext"}),
+    dec_p = decide(st_p[cand], {k: st_p[k] for k in ctrl_arms}, looks, lk, sp, ci_p[0], gates_ok, void, n_p, a.expected_rows, lost_p,
+                    len(doms_p), a.min_rows, a.min_domains)
+    orig_ctrls = [f"KO_RAND_r{R}_{i}" for i in range(a.n_old_rand)] + [f"KO_SHUF_r{R}_{j}" for j in range(a.nshuf)]
+    comp_ii, comp_iii = companions(A, cw, R, jobs, st, cand, orig_ctrls)
+    res = {"codeword": cw, "rank": R, "jobs": jobs, "companions_DESCRIPTIVE": {"ii_candidate_vs_original_56_on_shrunken_rows": comp_ii,
+                                                                           "iii_per_control_paired_own_rows": comp_iii}, "gpus": gp, "overlap": ov, "looks_family": dict(looks, **{lk: "p_ext"}),
            "PRIMARY_base_ref_floor": {"unrounded": dec_u, "rounded_frozen_analyzer": dec_r, "FINAL_VERDICT": final,
                                       "candidate_stat_unrounded": st[cand], "candidate_minus_KO": cmk,
                                       "recovery_fraction": d.get("recovery_fraction_candidate_of_full"),
@@ -191,7 +242,7 @@ def main():
     json.dump(res, open(out, "w"), indent=1, default=str)
     print(json.dumps({"FINAL_VERDICT": final, "unrounded": {k: dec_u[k] for k in ("rank", "p_ext", "holm", "beats_every_shuf", "max_shuf", "row_set", "VERDICT")},
                       "rounded": {k: dec_r[k] for k in ("rank", "VERDICT")}, "candidate_stat": st[cand], "cand_minus_KO": cmk["point"],
-                      "ci95": cmk["ci95"], "paired_floor": {k: dec_p[k] for k in ("rank", "p_ext", "holm", "beats_every_shuf", "VERDICT")},
+                      "ci95": cmk["ci95"], "companion_ii": comp_ii, "companion_iii": comp_iii, "paired_floor": {k: dec_p[k] for k in ("rank", "p_ext", "holm", "beats_every_shuf", "VERDICT")},
                       "paired_ci95": ci_p, "overlap": ov, "gpus": gp}, indent=1, default=str))
 
 

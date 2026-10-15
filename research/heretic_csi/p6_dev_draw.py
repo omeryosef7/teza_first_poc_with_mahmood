@@ -25,20 +25,30 @@ ZIPF = {"lamp": 4.05, "kettle": 3.54, "pencil": 3.95, "ladder": 4.03, "blanket":
         "chair": 4.69, "balloon": 3.9}
 
 
+# PREREG_P6_AMENDMENT_7: tertiles by FROZEN Zipf cutpoints (low < 3.87 <= mid < 4.04 <= high). On the original 20 untouched
+# words this reproduces the earlier rank-based 7/7/6 assignment exactly (tests/test_p6_dev_draw.py), and it lets contingent
+# replacement codewords be assigned without re-cutting the table.
+CUTS = (3.87, 4.04)
+
+
+def tertile_of(z):
+    return "low" if z < CUTS[0] else ("mid" if z < CUTS[1] else "high")
+
+
 def tertiles(zipf=ZIPF):
-    order = sorted(zipf, key=lambda w: (zipf[w], w))
-    return {w: ("low" if i < 7 else "mid" if i < 14 else "high") for i, w in enumerate(order)}
+    return {w: tertile_of(z) for w, z in zipf.items()}
 
 
-def draw(install_strength: dict, survivors: list, seed: int = SEED):
+def draw(install_strength: dict, survivors: list, seed: int = SEED, zipf: dict = None):
     """install_strength: {codeword: TRAIN C-A}; survivors: UNTOUCHED codewords passing G1, G2 and G3."""
-    surv = sorted(w for w in survivors if w in ZIPF)
+    zipf = ZIPF if zipf is None else zipf
+    surv = sorted(w for w in survivors if w in zipf)
     if len(surv) < 5:
         raise SystemExit(f"only {len(surv)} surviving untouched codewords — DEV draw impossible; see prereg")
     vals = sorted(install_strength[w] for w in surv)
     m = len(vals)
     med = vals[m // 2] if m % 2 else 0.5 * (vals[m // 2 - 1] + vals[m // 2])
-    tert = tertiles()
+    tert = tertiles(zipf)
     cells = {}
     for w in surv:
         cells.setdefault((tert[w], "above" if install_strength[w] > med else "below"), []).append(w)

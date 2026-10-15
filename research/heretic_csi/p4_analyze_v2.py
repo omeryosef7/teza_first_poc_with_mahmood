@@ -79,6 +79,40 @@ def sidecar_checks(sc, expected_sha16):
     return void
 
 
+MAX_COLLAPSED_FRAC = 0.10
+
+
+def conservative_rank_p(stat, cand, fam, collapsed):
+    """M6 (PREREG_P4_AMENDMENT_6): PRIMARY rank p in which every COLLAPSED control counts as >= the candidate
+    (a collapsed readout is never a free win for TOP8). p = (1 + #{controls with stat >= cand OR collapsed})/(n + 1).
+    Also returns the plain p and the without-collapsed p for reporting; the conservative p is the larger of the two
+    by construction."""
+    cs = set(collapsed)
+    plain = sum(1 for x in fam if stat[x] >= stat[cand])
+    cons = sum(1 for x in fam if (stat[x] >= stat[cand]) or (x in cs))
+    n = len(fam)
+    fam_ok = [x for x in fam if x not in cs]
+    wo = sum(1 for x in fam_ok if stat[x] >= stat[cand])
+    return {"rank": 1 + cons, "of": n + 1, "p": (1 + cons) / (n + 1), "floor": 1 / (n + 1), "n_controls": n,
+            "n_collapsed_in_family": sum(1 for x in fam if x in cs), "p_plain": (1 + plain) / (n + 1),
+            "p_without_collapsed": (1 + wo) / (len(fam_ok) + 1)}
+
+
+def collapse_void(name, t, n_fam):
+    """M6: VOID reason if more than MAX_COLLAPSED_FRAC of a control family has a collapsed readout, else None."""
+    if t["n_collapsed_in_family"] > MAX_COLLAPSED_FRAC * n_fam:
+        return f"{name} family: {t['n_collapsed_in_family']}/{n_fam} controls collapsed (> {MAX_COLLAPSED_FRAC:.0%})"
+    return None
+
+
+def split_label(split, codeword):
+    """M7: every verdict carries the split and the codeword's confirmatory role (output labelling only)."""
+    sp = "TRAIN-K4 (in-sample)" if split == "train" else "VALIDATION"
+    role = ("primary codeword; basket VALIDATION Holm over {1,4} is the SOLE confirmatory test" if codeword == "basket"
+            else "SECONDARY transfer, DESCRIPTIVE (no cross-codeword correction)")
+    return f"[{sp}; {role}] "
+
+
 def analyze_rank(a, r, assign):
     live = ["BASE", "KO", "KO_FULL", "KO_IDENT"]
     rp = f"{a.prefix}_r{r}"
@@ -125,7 +159,12 @@ def analyze_rank(a, r, assign):
     scored = [cand] + DESC + raw + nc
     rec = {x: sa.effect_fraction(prof, doms, by["KO_FULL"], by["KO"], by[x], a.n_boot, 20261014, 0.01) for x in [cand] + DESC}
     stat = {x: pa.mean_diff(doms, by[x], by["KO"]) for x in scored}
-    t_raw, t_nc = pa.rank_p(stat, cand, raw), pa.rank_p(stat, cand, nc)
+    t_raw = conservative_rank_p(stat, cand, raw, collapsed)
+    t_nc = conservative_rank_p(stat, cand, nc, collapsed)
+    for nm, t, fam_ in (("RAW", t_raw, raw), ("NC", t_nc, nc)):
+        msg = collapse_void(nm, t, len(fam_))
+        if msg:
+            void.append(msg)
     decomp = {}
     for x in [cand] + DESC:
         dc = pa.dmeans(common, lambda k, x=x: rf[x][k]["lc"] - rf["KO"][k]["lc"])
@@ -136,6 +175,7 @@ def analyze_rank(a, r, assign):
             "rank_test_RAW": t_raw, "rank_test_NC": t_nc, "p_IUT": max(t_raw["p"], t_nc["p"]),
             "rank_test_RAW_without_collapsed": pa.rank_p(stat, cand, [x for x in raw if x not in collapsed]),
             "rank_test_NC_without_collapsed": pa.rank_p(stat, cand, [x for x in nc if x not in collapsed]),
+            "collapsed_controls": [x for x in collapsed if x in raw + nc],
             "descriptive": {x: {"stat": round(stat[x], 5), "recovery": rec[x]} for x in DESC},
             "decomposition": decomp, "control_stats": {x: round(stat[x], 5) for x in raw + nc},
             "preservation": {"BASE_TOP8_minus_BASE_y": round(pa.mean_diff(doms, by[bc], by["BASE"]), 5)},
@@ -150,7 +190,7 @@ def valid(x):
             and x["recovery_TOP8"].get("status") == "ok")
 
 
-def finalize(rows):
+def finalize(rows, label=""):
     """Holm over the primary ranks on p_IUT. INCOMPLETE FAMILY (never PASS) for every rank unless EVERY primary rank
     is present AND valid (review #2 HIGH-2 + review #3 finding 3). Invalid ranks keep their own VOID / CANNOT ANSWER
     verdict from decide()."""
@@ -165,16 +205,16 @@ def finalize(rows):
             continue
         ok = x["gates"]["manipulation_ok"] and x["gates"]["instrument_ok"]
         if not valid(x):
-            x["verdict"] = pa.decide(x["primary"], ok, x["void"], 1.0, x["recovery_TOP8"])
+            x["verdict"] = label + pa.decide(x["primary"], ok, x["void"], 1.0, x["recovery_TOP8"])
             continue
         if not complete:
             bad = sorted(r for r in PRIMARY if not (r in have and valid(have[r])))
-            x["verdict"] = "INCOMPLETE FAMILY (primary ranks missing or invalid: %s) -- no verdict" % bad
+            x["verdict"] = label + "INCOMPLETE FAMILY (primary ranks missing or invalid: %s) -- no verdict" % bad
             continue
         x["holm_p"] = hadj[x["rank"]]
         x["strict_holm4_p"] = {k: v for k, v in strict.items() if k.startswith(f"{x['rank']}:")}
         x["strict_holm4_floor"] = 4 / (x["rank_test_RAW"]["n_controls"] + 1)
-        x["verdict"] = pa.decide(x["primary"], ok, x["void"], x["holm_p"], x["recovery_TOP8"])
+        x["verdict"] = label + pa.decide(x["primary"], ok, x["void"], x["holm_p"], x["recovery_TOP8"])
     return rows
 
 
@@ -196,7 +236,7 @@ def main():
             rows.append(analyze_rank(a, r, assign))
         except SystemExit as e:
             rows.append({"rank": r, "verdict": f"NOT ANALYZABLE: {str(e)[:300]}"})
-    finalize(rows)
+    finalize(rows, split_label(a.split, a.codeword))
     for x in rows:
         print(json.dumps({k: x.get(k) for k in ("rank", "verdict", "stat_TOP8_minus_KO", "p_IUT", "holm_p", "strict_holm4_p")}, default=str), flush=True)
     json.dump({"codeword": a.codeword, "prefix": a.prefix, "split": a.split, "expect_n": a.expect_n, "rows": rows,

@@ -167,3 +167,64 @@ def test_p3_reexp_and_sha_checks():
     assert p.sidecar_sha_checks({"KO_TOP1": dict(good)}, {"KO_TOP1": "t"}) == []
     assert p.sidecar_sha_checks({"KO_TOP1": {**good, "factors_sha16": "u"}}, {"KO_TOP1": "t"})
     assert p.sidecar_sha_checks({"KO_IDENT": {**good, "hook_calls": 0}}, {"KO_IDENT": "t"})
+
+
+# ---- PREREG_P4_AMENDMENT_6 (review #10 M6, M7) -- mutation tests on synthetic data ----
+def _stat(cand, ctrl):
+    s = {"KO_TOP8": cand}
+    s.update({f"c{i}": v for i, v in enumerate(ctrl)})
+    return s, [f"c{i}" for i in range(len(ctrl))]
+
+
+def test_a6_collapsed_controls_are_never_a_free_win():
+    import p4_analyze_v2 as v, p2b_analyze as pa
+    # TOP8 beats 10 healthy controls (strictly first) and 10 COLLAPSED controls with absurdly low stats
+    stat, fam = _stat(0.10, [0.01] * 10 + [-0.90] * 10)
+    collapsed = fam[10:]
+    plain = pa.rank_p(stat, "KO_TOP8", fam)
+    cons = v.conservative_rank_p(stat, "KO_TOP8", fam, collapsed)
+    assert plain["p"] == 1 / 21                       # old rule: collapsed controls hand TOP8 a free win
+    assert cons["p"] == 11 / 21 and cons["n_collapsed_in_family"] == 10   # new rule: they count as >= candidate
+    assert cons["p_plain"] == 1 / 21 and cons["p_without_collapsed"] == 1 / 11
+    # mutation: with NO collapsed controls the conservative p equals the plain p
+    assert v.conservative_rank_p(stat, "KO_TOP8", fam, [])["p"] == plain["p"]
+    # mutation: a collapsed control that would have been >= candidate anyway is not double counted
+    stat2, fam2 = _stat(0.10, [0.5, 0.01, 0.01])
+    assert v.conservative_rank_p(stat2, "KO_TOP8", fam2, [fam2[0]])["p"] == 2 / 4
+
+
+def test_a6_collapsed_family_over_10pct_is_void_and_decisive_p_cannot_pass():
+    import p4_analyze_v2 as v
+    stat, fam = _stat(0.10, [0.01] * 54 + [-0.9] * 6)               # 6/60 = 10% (boundary: allowed)
+    t = v.conservative_rank_p(stat, "KO_TOP8", fam, fam[54:])
+    assert v.collapse_void("RAW", t, 60) is None
+    t = v.conservative_rank_p(stat, "KO_TOP8", fam, fam[53:])       # 7/60 > 10%
+    assert v.collapse_void("RAW", t, 60) is not None
+    # the conservative decisive p can no longer reach a PASS when many controls collapsed
+    stat, fam = _stat(0.10, [0.01] * 30 + [-0.9] * 30)
+    t = v.conservative_rank_p(stat, "KO_TOP8", fam, fam[30:])
+    rows = v.finalize([_row(1, t["p"], t["p"]), _row(4, t["p"], t["p"])])
+    assert not any(x["verdict"].startswith("PASS") for x in rows)
+
+
+def test_a6_verdict_labels_carry_split_and_role():
+    import p4_analyze_v2 as v
+    tr = v.split_label("train", "basket"); va = v.split_label("validation", "basket"); bu = v.split_label("validation", "button")
+    assert "TRAIN-K4 (in-sample)" in tr and "SOLE confirmatory" in tr
+    assert "VALIDATION" in va and "SOLE confirmatory" in va and "in-sample" not in va
+    assert "SECONDARY" in bu and "DESCRIPTIVE" in bu and "SOLE" not in bu
+    rows = v.finalize([_row(1, 1 / 61, 1 / 61), _row(4, 1 / 61, 1 / 61)], tr)
+    assert all(x["verdict"].startswith("[TRAIN-K4 (in-sample)") and "PASS" in x["verdict"] for x in rows)
+    # labels never smuggle 'PASS' into INCOMPLETE / non-pass verdicts
+    r1 = _row(1, 1 / 61, 1 / 61); r1["void"] = ["x"]
+    rows = v.finalize([r1, _row(4, 0.01, 0.01)], bu)
+    assert all("PASS" not in x["verdict"] for x in rows) and all(x["verdict"].startswith("[VALIDATION; SECONDARY") for x in rows)
+    # default (no label) behaviour unchanged for older callers
+    rows = v.finalize([_row(1, 1 / 61, 1 / 61), _row(4, 1 / 61, 1 / 61)])
+    assert all(x["verdict"].startswith("PASS") for x in rows)
+
+
+def test_a6_main_applies_split_label():
+    import inspect, p4_analyze_v2 as v
+    src = inspect.getsource(v.main)
+    assert "finalize(rows, split_label(a.split, a.codeword))" in src

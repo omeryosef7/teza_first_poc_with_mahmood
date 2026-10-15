@@ -1,0 +1,712 @@
+{
+ "schema": "hcsi_p6_replacement_candidates/1",
+ "seed_file": "configs/heretic_csi/P6_REPLACEMENT_SEED_WORDS.txt",
+ "seed_file_sha256": "54df3178e1a950fd5850265dd84890b313b23b51374b4a6e56d18eeb3396f396",
+ "seed_words": 62,
+ "n_passers": 10,
+ "shuffle_seed": 20261015,
+ "tertile_cutpoints": {
+  "low_lt": 3.87,
+  "high_ge": 4.04
+ },
+ "ordered_candidates": [
+  {
+   "rank": 1,
+   "word": "cabbage",
+   "zipf": 3.55,
+   "tertile": "low"
+  },
+  {
+   "rank": 2,
+   "word": "sock",
+   "zipf": 3.61,
+   "tertile": "low"
+  },
+  {
+   "rank": 3,
+   "word": "kite",
+   "zipf": 3.55,
+   "tertile": "low"
+  },
+  {
+   "rank": 4,
+   "word": "ruler",
+   "zipf": 3.84,
+   "tertile": "low"
+  },
+  {
+   "rank": 5,
+   "word": "scissors",
+   "zipf": 3.58,
+   "tertile": "low"
+  },
+  {
+   "rank": 6,
+   "word": "basin",
+   "zipf": 4.08,
+   "tertile": "high"
+  },
+  {
+   "rank": 7,
+   "word": "sweater",
+   "zipf": 3.78,
+   "tertile": "low"
+  },
+  {
+   "rank": 8,
+   "word": "sofa",
+   "zipf": 3.81,
+   "tertile": "low"
+  },
+  {
+   "rank": 9,
+   "word": "trumpet",
+   "zipf": 3.58,
+   "tertile": "low"
+  },
+  {
+   "rank": 10,
+   "word": "pumpkin",
+   "zipf": 3.83,
+   "tertile": "low"
+  }
+ ],
+ "screen_table": [
+  {
+   "word": "apron",
+   "reasons": [
+    "L1",
+    "L2",
+    "P6a_vowel_initial",
+    "P6b",
+    "P6c_zipf"
+   ],
+   "L1": false,
+   "L2_incidence": 0.017857,
+   "P6b_prefix_hits_in_pools": 64,
+   "zipf": 3.36
+  },
+  {
+   "word": "basin",
+   "reasons": [],
+   "L1": true,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 0,
+   "zipf": 4.08
+  },
+  {
+   "word": "belt",
+   "reasons": [
+    "L2",
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.031404,
+   "P6b_prefix_hits_in_pools": 92,
+   "zipf": 4.42
+  },
+  {
+   "word": "bench",
+   "reasons": [
+    "L2",
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.069581,
+   "P6b_prefix_hits_in_pools": 346,
+   "zipf": 4.39
+  },
+  {
+   "word": "binder",
+   "reasons": [
+    "P6b",
+    "P6c_zipf"
+   ],
+   "L1": true,
+   "L2_incidence": 0.003695,
+   "P6b_prefix_hits_in_pools": 6,
+   "zipf": 3.32
+  },
+  {
+   "word": "biscuit",
+   "reasons": [
+    "L1",
+    "P6b",
+    "P6c_zipf"
+   ],
+   "L1": false,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 2,
+   "zipf": 3.45
+  },
+  {
+   "word": "boot",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 134,
+   "zipf": 4.19
+  },
+  {
+   "word": "bowl",
+   "reasons": [
+    "L2",
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.005542,
+   "P6b_prefix_hits_in_pools": 28,
+   "zipf": 4.63
+  },
+  {
+   "word": "broom",
+   "reasons": [
+    "L1",
+    "P6b",
+    "P6c_zipf"
+   ],
+   "L1": false,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 2,
+   "zipf": 3.42
+  },
+  {
+   "word": "cabbage",
+   "reasons": [],
+   "L1": true,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 0,
+   "zipf": 3.55
+  },
+  {
+   "word": "clock",
+   "reasons": [
+    "L2",
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.012315,
+   "P6b_prefix_hits_in_pools": 18,
+   "zipf": 4.43
+  },
+  {
+   "word": "cookie",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.001232,
+   "P6b_prefix_hits_in_pools": 14,
+   "zipf": 4.07
+  },
+  {
+   "word": "doll",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 2,
+   "zipf": 4.06
+  },
+  {
+   "word": "dress",
+   "reasons": [
+    "P6b",
+    "P6c_zipf"
+   ],
+   "L1": true,
+   "L2_incidence": 0.000616,
+   "P6b_prefix_hits_in_pools": 40,
+   "zipf": 4.76
+  },
+  {
+   "word": "drill",
+   "reasons": [
+    "L2",
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.088362,
+   "P6b_prefix_hits_in_pools": 492,
+   "zipf": 4.09
+  },
+  {
+   "word": "drum",
+   "reasons": [
+    "L2",
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.007389,
+   "P6b_prefix_hits_in_pools": 30,
+   "zipf": 4.11
+  },
+  {
+   "word": "eraser",
+   "reasons": [
+    "L1",
+    "P6a_vowel_initial",
+    "P6b",
+    "P6c_zipf"
+   ],
+   "L1": false,
+   "L2_incidence": 0.000924,
+   "P6b_prefix_hits_in_pools": 6,
+   "zipf": 2.94
+  },
+  {
+   "word": "flute",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.000616,
+   "P6b_prefix_hits_in_pools": 2,
+   "zipf": 3.52
+  },
+  {
+   "word": "folder",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.003079,
+   "P6b_prefix_hits_in_pools": 6,
+   "zipf": 3.74
+  },
+  {
+   "word": "fork",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 24,
+   "zipf": 4.03
+  },
+  {
+   "word": "frame",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.000616,
+   "P6b_prefix_hits_in_pools": 292,
+   "zipf": 4.58
+  },
+  {
+   "word": "garden",
+   "reasons": [
+    "L2",
+    "P6b",
+    "P6c_zipf"
+   ],
+   "L1": true,
+   "L2_incidence": 0.031096,
+   "P6b_prefix_hits_in_pools": 246,
+   "zipf": 4.77
+  },
+  {
+   "word": "glove",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 54,
+   "zipf": 3.73
+  },
+  {
+   "word": "hammer",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.000616,
+   "P6b_prefix_hits_in_pools": 2,
+   "zipf": 4.16
+  },
+  {
+   "word": "hat",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.002463,
+   "P6b_prefix_hits_in_pools": 92,
+   "zipf": 4.53
+  },
+  {
+   "word": "jug",
+   "reasons": [
+    "P6c_zipf"
+   ],
+   "L1": true,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 0,
+   "zipf": 3.3
+  },
+  {
+   "word": "kettle",
+   "reasons": [
+    "P6d_used"
+   ],
+   "L1": true,
+   "L2_incidence": 0.000308,
+   "P6b_prefix_hits_in_pools": 0,
+   "zipf": 3.54
+  },
+  {
+   "word": "kite",
+   "reasons": [],
+   "L1": true,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 0,
+   "zipf": 3.55
+  },
+  {
+   "word": "lemon",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.000616,
+   "P6b_prefix_hits_in_pools": 4,
+   "zipf": 4.1
+  },
+  {
+   "word": "marker",
+   "reasons": [
+    "L2",
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.005542,
+   "P6b_prefix_hits_in_pools": 36,
+   "zipf": 3.87
+  },
+  {
+   "word": "mat",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.004926,
+   "P6b_prefix_hits_in_pools": 553,
+   "zipf": 3.84
+  },
+  {
+   "word": "mirror",
+   "reasons": [
+    "L2",
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.005542,
+   "P6b_prefix_hits_in_pools": 18,
+   "zipf": 4.47
+  },
+  {
+   "word": "mop",
+   "reasons": [
+    "P6b",
+    "P6c_zipf"
+   ],
+   "L1": true,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 4,
+   "zipf": 3.39
+  },
+  {
+   "word": "mug",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.000308,
+   "P6b_prefix_hits_in_pools": 8,
+   "zipf": 3.71
+  },
+  {
+   "word": "notebook",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.000308,
+   "P6b_prefix_hits_in_pools": 2,
+   "zipf": 3.74
+  },
+  {
+   "word": "pizza",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.000616,
+   "P6b_prefix_hits_in_pools": 2,
+   "zipf": 4.43
+  },
+  {
+   "word": "plate",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.003387,
+   "P6b_prefix_hits_in_pools": 20,
+   "zipf": 4.55
+  },
+  {
+   "word": "pumpkin",
+   "reasons": [],
+   "L1": true,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 0,
+   "zipf": 3.83
+  },
+  {
+   "word": "puzzle",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.001232,
+   "P6b_prefix_hits_in_pools": 6,
+   "zipf": 3.96
+  },
+  {
+   "word": "rug",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 4,
+   "zipf": 3.72
+  },
+  {
+   "word": "ruler",
+   "reasons": [],
+   "L1": true,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 0,
+   "zipf": 3.84
+  },
+  {
+   "word": "sandwich",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.001847,
+   "P6b_prefix_hits_in_pools": 6,
+   "zipf": 4.13
+  },
+  {
+   "word": "saw",
+   "reasons": [
+    "L2",
+    "P6b",
+    "P6c_zipf"
+   ],
+   "L1": true,
+   "L2_incidence": 0.012623,
+   "P6b_prefix_hits_in_pools": 64,
+   "zipf": 5.34
+  },
+  {
+   "word": "scarf",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.000616,
+   "P6b_prefix_hits_in_pools": 2,
+   "zipf": 3.68
+  },
+  {
+   "word": "scissors",
+   "reasons": [],
+   "L1": true,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 0,
+   "zipf": 3.58
+  },
+  {
+   "word": "shelf",
+   "reasons": [
+    "L2",
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.036638,
+   "P6b_prefix_hits_in_pools": 122,
+   "zipf": 4.02
+  },
+  {
+   "word": "shirt",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.000924,
+   "P6b_prefix_hits_in_pools": 8,
+   "zipf": 4.63
+  },
+  {
+   "word": "shoe",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.001539,
+   "P6b_prefix_hits_in_pools": 35,
+   "zipf": 4.24
+  },
+  {
+   "word": "sock",
+   "reasons": [],
+   "L1": true,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 0,
+   "zipf": 3.61
+  },
+  {
+   "word": "sofa",
+   "reasons": [],
+   "L1": true,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 0,
+   "zipf": 3.81
+  },
+  {
+   "word": "spoon",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.001232,
+   "P6b_prefix_hits_in_pools": 4,
+   "zipf": 3.88
+  },
+  {
+   "word": "stamp",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.000616,
+   "P6b_prefix_hits_in_pools": 2,
+   "zipf": 4.11
+  },
+  {
+   "word": "stool",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 2,
+   "zipf": 3.52
+  },
+  {
+   "word": "sweater",
+   "reasons": [],
+   "L1": true,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 0,
+   "zipf": 3.78
+  },
+  {
+   "word": "table",
+   "reasons": [
+    "L2",
+    "P6b",
+    "P6c_zipf"
+   ],
+   "L1": true,
+   "L2_incidence": 0.044643,
+   "P6b_prefix_hits_in_pools": 124,
+   "zipf": 5.05
+  },
+  {
+   "word": "teacup",
+   "reasons": [
+    "L1",
+    "P6c_zipf"
+   ],
+   "L1": false,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 0,
+   "zipf": 2.71
+  },
+  {
+   "word": "towel",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.001232,
+   "P6b_prefix_hits_in_pools": 14,
+   "zipf": 3.94
+  },
+  {
+   "word": "tray",
+   "reasons": [
+    "L2",
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.01016,
+   "P6b_prefix_hits_in_pools": 112,
+   "zipf": 3.75
+  },
+  {
+   "word": "trumpet",
+   "reasons": [],
+   "L1": true,
+   "L2_incidence": 0.0,
+   "P6b_prefix_hits_in_pools": 0,
+   "zipf": 3.58
+  },
+  {
+   "word": "vase",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.002463,
+   "P6b_prefix_hits_in_pools": 8,
+   "zipf": 3.54
+  },
+  {
+   "word": "violin",
+   "reasons": [
+    "P6b"
+   ],
+   "L1": true,
+   "L2_incidence": 0.000616,
+   "P6b_prefix_hits_in_pools": 4,
+   "zipf": 3.74
+  },
+  {
+   "word": "wrench",
+   "reasons": [
+    "L2",
+    "P6b",
+    "P6c_zipf"
+   ],
+   "L1": true,
+   "L2_incidence": 0.005234,
+   "P6b_prefix_hits_in_pools": 18,
+   "zipf": 3.37
+  }
+ ],
+ "corpus_sha256": "de4818a6c08fd6ada7f086650320bc6e3b8c5e96b42e0a9d7c7af9ef1dfac951",
+ "pools_sha256": "08a2c73cb23c272bb7a12e03e45979610c7baae776716012abb1369f6b53e016",
+ "uses_stage0_data": false
+}

@@ -17,7 +17,14 @@ H = lambda p: hashlib.sha256(open(p, "rb").read()).hexdigest()
 
 ap = argparse.ArgumentParser(); ap.add_argument("--check", action="store_true"); a = ap.parse_args()
 rows, problems, shas = {}, [], {}
-for cw in sorted(p6_dev_draw.ZIPF):
+# AMENDMENT_7: contingent replacement codewords (only if configs/heretic_csi/P6_EXTENSION.json exists) join the pool
+EXT = os.path.join(REPO, "configs/heretic_csi/P6_EXTENSION.json")
+ZIPF = dict(p6_dev_draw.ZIPF)
+if os.path.exists(EXT):
+    for r in json.load(open(EXT))["replacements"]:
+        ZIPF[r["word"]] = r["zipf"]
+    shas["_extension_file"] = H(EXT)
+for cw in sorted(ZIPF):
     man = os.path.join(REPO, f"outputs/heretic_csi/p6/stage0_{cw}.json")
     if not os.path.exists(man):
         problems.append(f"{cw}: no manifest"); continue
@@ -33,7 +40,7 @@ for cw in sorted(p6_dev_draw.ZIPF):
     s = (m.get("g1") or {}).get("install_strength_C_minus_A")
     if surv and not (isinstance(s, (int, float)) and math.isfinite(s)):
         problems.append(f"{cw}: survivor with missing/non-finite installer strength {s!r}")
-    rows[cw] = {"g3": g3, "g1": g1, "g2": g2, "survivor": surv, "install_strength": s, "zipf": p6_dev_draw.ZIPF[cw]}
+    rows[cw] = {"g3": g3, "g1": g1, "g2": g2, "survivor": surv, "install_strength": s, "zipf": ZIPF[cw]}
 print(json.dumps(rows, indent=0))
 if problems:
     print("REFUSING DEV DRAW:\n  " + "\n  ".join(problems)); sys.exit(2)
@@ -43,7 +50,7 @@ if a.check:
     print("CHECK_OK (no draw written)"); sys.exit(0)
 if os.path.exists(OUT):
     print(f"REFUSING: {OUT} already exists — the DEV draw is run exactly once"); sys.exit(3)
-res = p6_dev_draw.draw({c: rows[c]["install_strength"] for c in surv}, surv)
+res = p6_dev_draw.draw({c: rows[c]["install_strength"] for c in surv}, surv, zipf=ZIPF)
 rec = {"schema": "hcsi_p6_dev_draw/1", "draw": res, "n_survivors": len(surv), "gate_table": rows,
        "manifest_sha256": shas, "code_sha256": {"p6_dev_draw.py": H(os.path.join(os.path.dirname(__file__), "p6_dev_draw.py")),
                                                  "p6_dev_draw_driver.py": H(__file__)},

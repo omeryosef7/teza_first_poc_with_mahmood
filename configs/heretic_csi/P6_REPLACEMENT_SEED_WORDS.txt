@@ -1,0 +1,11 @@
+# P6 AMENDMENT 7 — seed list of fresh candidate codewords for the CONTINGENT pool extension.
+# Authored 2026-10-15 BEFORE the G2 results of whistle/chair/ribbon (job 1042284) were read and before any P6 number exists for any word below.
+# DISCLOSURE: the author had seen the Stage-0 G3/G1 outcomes of the 20 untouched pool words (not G2 for whistle/chair/ribbon). The list is NOT
+# tuned to them: it is a broad sweep of concrete, singular, consonant-initial household / clothing / tool / stationery / toy / food nouns (the semantic
+# classes of the original 40 PR-CSI-008 candidates). Every word is subject to MECHANICAL screens (p6_replacement_candidates.py); nothing is hand-picked after.
+mug plate spoon fork bowl jug tray towel rug mat broom mop basin shelf stool bench sofa clock vase frame
+sock scarf glove hat boot shoe apron belt sweater shirt dress
+hammer wrench saw drill ruler eraser marker notebook stamp folder binder scissors
+kite doll puzzle drum flute trumpet violin
+biscuit cookie sandwich pizza cabbage lemon pumpkin
+mirror table garden teacup kettle
