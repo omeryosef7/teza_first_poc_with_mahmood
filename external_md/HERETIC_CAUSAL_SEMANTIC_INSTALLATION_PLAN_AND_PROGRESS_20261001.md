@@ -2866,3 +2866,13 @@ basket, 0.57–0.58 button).
   only part of what the fitted operator undoes; CAND − MEANBIAS_NM > 0 (CI-lo > 0) in all 4 VAL cells, replicating
   TRAIN. Per amendments 4/6 the full-norm MEANBIAS remains VOID (collapsed) ⇒ "input-conditional" wording stays
   SUSPENDED; this NM comparison cannot lift it. Outcome D unchanged.
+
+## S-192 — 2026-10-15 12:10 — ops tick; P6 Stage-0 preempted again; P7 design started (CPU only)
+- 1041733 (Stage-0: whistle, yogurt, banana, chair, balloon, ribbon) PREEMPTED after 38 min, 0 codewords done ⇒ F7 to
+  resubmit (suggested: 2 sequential jobs of 3 codewords to cut preemption loss). 1041734 (G2 blanket…wagon) running.
+  P4 v2: basket r4 fit still running. 1 GPU running.
+- **F8 launched — P7 behavioral-linking DESIGN only** (no GPU, no paid API): pick qualifying interventions (P2a button r4
+  confirmed; P2a basket r1; P2b basket CWONLY) without looking at behavior; recover the inherited content-true /
+  content-gated endpoint + refusal metric + the prior same-population null; draft PREREG_P7 (VAL-only confirmation,
+  same rows for semantics + behavior, domain-cluster stats, matched control family, power/MDE with CANNOT-ANSWER
+  labelling, mediation-language rules, GPU + API cost).
