@@ -2621,3 +2621,8 @@ in H6a (declared dependence).
 - Manifests on every path (rc per step, G3, G1 with provenance; axisfit path/sha/job); backfilled for the 4 passers.
   G1 (C−A): candle 0.515, lamp 0.539, kettle 0.572, pencil 0.420, ladder 0.151 [0.12, 0.18] (all CI-lo > 0.05 ⇒ G1
   PASS). Axis fits lamp/kettle/pencil/ladder done; shuffled-label controls |ρ| ≤ 0.10.
+
+## S-169 — 2026-10-15 05:40 (clock-checked) — ops tick
+- Timestamp correction: S-167/S-168 headers ("05:40", "06:00") ran ahead of the wall clock; actual ~05:20–05:35.
+- 6 GPU running (cap): evalC 99/99, evalB 96/96, P3 trunc 76/133, P6 batch 2 (blanket, bucket, pillow G3_PASS; saddle
+  next). G2 1041401 held. No failures.
