@@ -2557,3 +2557,6 @@ Verifier/reviewer (own code `research/heretic_csi/verify/verify_p2b_val.py`) →
 
 ## S-163 — 2026-10-15 03:40 — ops tick
 - evalC 68/68, evalB 64/63, P3 trunc 38/133; P6 batch 2 1041177 running (n-802). 6 GPU. No failures.
+
+## S-164 — 2026-10-15 04:10 — ops tick
+- evalC 76/76, evalB 72/71, P3 trunc 48/133; P6 batch 2: blanket G3_PASS (bucket next). 6 GPU. No failures.
