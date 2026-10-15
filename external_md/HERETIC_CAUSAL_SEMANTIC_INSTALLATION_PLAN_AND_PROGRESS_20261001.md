@@ -3093,3 +3093,6 @@ net on the frozen objective; 60 RAW + 60 NC random disjoint 8-head sets per cell
 
 ## S-210 — 2026-10-15 15:41 — ops tick (quiet)
 - S-199 jobs 1042049/50 and P6 Stage-0 1042103 RUNNING (1h12–1h28m); chair axis fit 1042285 COMPLETED; G2 whistle+chair 1042284 and P4 basket r1 1042143 PENDING priority. No failures/duplicates/stale; no endpoints read. Review #10 due ~18:00.
+
+## S-211 — 2026-10-15 16:09 — ops tick: P4 basket r1 TRAIN-K4 STARTED
+- P4 v2 basket r1 TRAIN-K4 (1042143) RUNNING on n-501 (a5000), 10 min in; F5's watcher submits basket r4 after stage-in (cap <6 killable: currently 5 running/pending-GPU incl. this). S-199 1042049/50 (~1h50m) and P6 Stage-0 1042103 (1h50m) RUNNING; G2 whistle+chair 1042284 PENDING. No failures/duplicates; no endpoints read.
