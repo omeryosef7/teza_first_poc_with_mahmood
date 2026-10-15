@@ -2848,3 +2848,21 @@ only ~51–56% of BASE−KO, S-136) — read the gap fraction, not "overshoot". 
 ## S-190 — 2026-10-15 11:40 — ops tick
 - GPU 3: 1041761 (F2, amendment-6 NM VAL arms, n-503), P6 1041733 + 1041734 (t-806). P4 v2: only the basket r4 fit
   remains (others COMPLETED). No failures. Next deep review ~13:10.
+
+## S-191 — 2026-10-15 12:00 — Amendment-6 MEANBIAS_NM on VALIDATION (DESCRIPTIVE; never unlocks wording): CAND beats it in every cell
+Job 1041761 (n-503; 5/5 arms per codeword; DONE rc=0; in-allocation overlap OK vs 1023578/1036679, |Δy| 0). Frozen VAL
+commands + --addon-nm, separate outputs `reports/heretic_csi/p2b_{basket,button}_meanbias_nm_validation.json`.
+Primary/secondary verdicts identical to S-156 in all 4 cells; no NM VOIDs; no collapse (KO_NM option mass 0.27–0.28
+basket, 0.57–0.58 button).
+
+| cell | KO_MEANBIAS_NM recovery [CI] | CAND recovery | CAND − MEANBIAS_NM [CI] | BASE_NM − BASE |
+|---|---|---|---|---|
+| basket r1 | 0.32 [0.28, 0.38] | 1.20 | +0.123 [0.077, 0.174] | +0.020 |
+| basket r4 | 0.63 [0.55, 0.73] | 1.50 | +0.122 [0.073, 0.179] | +0.031 |
+| button r1 | 0.35 [0.29, 0.40] | 1.73 | +0.197 [0.161, 0.242] | +0.022 |
+| button r4 | 0.62 [0.53, 0.71] | 1.62 | +0.143 [0.111, 0.186] | +0.038 |
+
+- Reading (descriptive): at matched injected norm, a constant input-independent shift along the TRAIN-mean gap undoes
+  only part of what the fitted operator undoes; CAND − MEANBIAS_NM > 0 (CI-lo > 0) in all 4 VAL cells, replicating
+  TRAIN. Per amendments 4/6 the full-norm MEANBIAS remains VOID (collapsed) ⇒ "input-conditional" wording stays
+  SUSPENDED; this NM comparison cannot lift it. Outcome D unchanged.
