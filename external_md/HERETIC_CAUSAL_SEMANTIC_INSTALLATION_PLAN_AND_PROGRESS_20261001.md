@@ -2936,3 +2936,39 @@ production results; (6) non-monotone header times in a clock-corrected window.
 (bucket's KO_SELF CI excludes 0 by ~0.001 — negligible vs the KO effect; noted.) **G1–G3 survivors: lamp, kettle,
 pencil, ladder, blanket, bucket, pillow, saddle, wagon (9).** G2 for cushion, curtain, bottle (667-row _occ
 population), jacket, sponge = 1042039; Stage-0 last 6 via queue runner (1041850 first).
+
+## S-198 — 2026-10-15 14:00 — ADVERSARIAL REVIEW #9 (on the interim report): 5 HIGH; a substantive CORRECTION for basket r1
+Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261015_i.md`. No withdrawn/voided/superseded number quoted; nothing
+anticipates P4/P6/P7; most numbers trace exactly. Problems:
+- **CORRECTION (substantive, applies to S-049 / WHAT WE CAN DEFEND):** basket's VALIDATION split was also read at three
+  ranks (r1 and r16 per S-041; r4 descriptive per S-051) but its r1 PASS (rank 1/57, p 0.0175) was **never corrected for
+  those looks**, unlike button r4 (S-084). Holm over basket's 3 VAL looks ⇒ r1 adjusted **0.0525 > 0.05**. It is also
+  2/57 under the strict paired floor (S-052) and TRAIN was 2/57 (so "cross-hardware certification" overstated it).
+  ⇒ **basket r1 VAL is SUGGESTIVE (floor-limited, uncorrected), not CONFIRMED.** Mitigating (descriptive): its
+  specificity z is 3.9–8.7 in every control family (S-098). A powered basket r1 re-test (like S-084) would resolve it.
+  The only CONFIRMED P2a claim remains button r4 (S-126).
+- The report says the P2b operator used "a clean-room reimplementation of ARA's objective" — wrong: ΔW=B·A form and the
+  preserve/steer structure came from Heretic ARA, but the frozen steer objective is paired MSE (steer 0.3); ARA's kNN
+  objective LOST the TRAIN CV (0.38 vs 0.650; S-074).
+- Missing required caveats: button r4 effect size (recovery 0.091; cand−KO 0.013 [0.007, 0.019]); "passes at r4, not
+  r1; ranks 2–3 untested on VAL" (not "needs 4 dims"); must-not list lacks "overshoot" and "outcome letter from TRAIN".
+- Hypotheses table: H1 — preregistered P2b outcome D maps to "H1 falsified for button" in plan §3, scoped to r∈{1,4}
+  under the fitted-control null (CAND still 1/62 vs random); H2 — cited the alignment test (H3 evidence); status OPEN
+  (P4 pending); ΔW norm peaks L6–7/L17–18 partly overlap the circuit layers (descriptive).
+- Headline artifacts untracked: `reports/heretic_csi/hcsi_p2a_{basket,button}_r{1,16}.json` (the S-049 VAL cells;
+  un-split names were overwritten by the VAL analyses, S-052) — **committed now**. Fig 1 styled basket r4 (descriptive,
+  fragile) like the confirmed button r4 — to be annotated. Figures index cited stale untracked RANK_TABLE_train.md and a
+  glob catching non-production `_r4`/`_r32` files.
+- MEDIUM: position-aware answer wrong on VAL (basket r1 NEUT−CAND +0.040 [0.013, 0.067], S-157); Phase-B basket C and
+  knife/gun reads are on collapsed readouts; S-191 NM VAL numbers not independently verified; only the lora_A Heretic
+  finding was independently source-confirmed; verification index rows mis-cited; meeting update previews a P4 null,
+  lacks "(TRAIN, in-sample, descriptive)" on rank-flat, says "refits" for "drops"; power ceiling (n=15 max; blanket
+  borderline G3); report omits the F9 inconsistencies section; registry gaps (directory entry, powered seed 20261014,
+  P6 job list incomplete, missing P2a TRAIN r1/r16 + MEANBIAS builds, "git SHA" = config's last commit not job code sha;
+  builder lacks --out/--check); Fig 2 lacks labels/units/CI note/scale.
+- Action: F9 to produce v2 deliverables (new files; v1 kept) applying every fix.
+
+### WHAT WE MUST NOT SAY (addendum S-198)
+- "Basket's rank-1 carrier is CONFIRMED / certified" — suggestive (uncorrected over 3 VAL looks: Holm 0.0525).
+- "The P2b operator uses ARA's objective" — it uses ARA's operator form with an MSE steer chosen by TRAIN CV.
+- "Button requires (exactly) 4 dimensions" — passes at r4, not r1; ranks 2–3 untested on VAL.
