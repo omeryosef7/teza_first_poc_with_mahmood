@@ -8,7 +8,7 @@ REPO=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
 SB=$(mktemp -d /tmp/claude-47249/-home-sharifm-students-omeryosef-first-poc-teza-first-poc-with-mahmood/b2d5e7b5-e18e-4ee6-ba19-55fa20bf97cb/scratchpad/p6sb.XXXX)
 mkdir -p "$SB/outputs/boombness/score_behavior" "$SB/outputs/boombness/extract_boombness" "$SB/outputs/heretic_csi/p6" "$SB/scratch_extract" "$SB/research/heretic_csi/slurm"
 ln -s "$REPO/data" "$SB/data"; ln -s "$REPO/src" "$SB/src"; ln -s "$REPO/scripts" "$SB/scripts"
-cp "$REPO/research/heretic_csi/p6_select_run.py" "$SB/research/heretic_csi/"
+cp "$REPO/research/heretic_csi/p6_select_run.py" "$REPO/research/heretic_csi/p6_write_manifest.py" "$SB/research/heretic_csi/"
 STUB="$REPO/research/heretic_csi/tests/p6_stub.py"
 sed -e "s#^cd /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood#cd $SB#" \
     -e '/^source .*conda.sh/d' -e '/^conda activate/d' -e '/^nvidia-smi/d' \
@@ -18,6 +18,7 @@ sed -e "s#^cd /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mah
     -e "s#\"\$PY\" src/boombness/score_behavior.py#\"\$PY\" $STUB score#" \
     -e "s#\"\$PY\" scripts/dcs_extract_under_ko.py#\"\$PY\" $STUB extract#" \
     -e "s#\"\$PY\" research/heretic_csi/p6_g3.py#\"\$PY\" $STUB g3#" \
+    -e "s#\"\$PY\" research/heretic_csi/p6_install_strength.py#\"\$PY\" $STUB g1#" \
     "$REPO/research/heretic_csi/slurm/p6_stage0_batch.slurm" > "$SB/batch.sh"
 cp "$SB/batch.sh" "$SB/research/heretic_csi/slurm/p6_stage0_batch.slurm"
 # reuse branch: a valid earlier readout for lamp from "job 999" with a manifest pointing at it
@@ -45,7 +46,16 @@ assert m["readout_slurm_job"] == "4242" and m["extract_slurm_job"] == "4242", m
 l = json.load(open(f"{sb}/outputs/heretic_csi/p6/stage0_lamp.json"))
 assert l["readout_slurm_job"] == "999" and l["extract_slurm_job"] == "4242", l
 p = json.load(open(f"{sb}/outputs/heretic_csi/p6/stage0_pencil.json"))
-assert p["extract_dir"] is None, p
+assert p["extract_dir"] is None and p["g1"] is None, p
+assert m["g1"]["install_strength_C_minus_A"] == 0.5 and m["g1_provenance"]["readout_dir"], m
+assert m["rc"]["readout"] == "4" and m["rc"]["extract"] == "0", m["rc"]
+b = json.load(open(f"{sb}/outputs/heretic_csi/p6/stage0_blanket.json"))
+assert b["status"] == "ERROR" and b["rc"]["readout"] == "1", b
+x = json.load(open(f"{sb}/outputs/heretic_csi/p6/stage0_bucket.json"))
+assert x["status"] == "ERROR_EXTRACT" and x["rc"]["extract"] == "1" and x["g1"] is not None, x
+h = json.load(open(f"{sb}/outputs/heretic_csi/p6/stage0_ladder.json"))
+assert h["status"] == "ERROR_HEALTH" and h["g1"] is None, h
+print("OK   error-path manifests + rc + G1 provenance")
 print("OK   manifests (kettle extract symlinked + jobs; lamp readout 999 / extract 4242; pencil no extract)")
 PY
 grep -q "BATCH_DONE" "$SB/out.log" && echo "OK   BATCH_DONE" || { echo "FAIL no BATCH_DONE"; fail=1; }

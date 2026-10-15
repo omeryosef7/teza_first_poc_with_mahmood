@@ -27,6 +27,9 @@ if kind == "extract":
     tag = args[args.index("--tag") + 1]; cw = tag.split("_")[2]; m = mode_of.get(cw, "pass")
     d = f"outputs/boombness/extract_boombness/{tag}_{time.strftime('%Y%m%d_%H%M%S')}_{os.getpid()}"
     mk(d, done=(m != "extractfail")); sys.exit(0 if m != "extractfail" else 1)
+if kind == "g1":
+    print(json.dumps({"codeword": args[0], "split": "train", "install_strength_C_minus_A": 0.5, "ci95": [0.4, 0.6]}))
+    sys.exit(0)
 if kind == "g3":
     cw, rd = args[0], args[1]
     m = open(os.path.join(rd, "plan.txt")).read().strip() if os.path.exists(os.path.join(rd, "plan.txt")) else "g3fail"

@@ -2597,3 +2597,11 @@ REEXP-vs-CAND statistic check + sidecar-sha check (or VOID) before reading 10410
 not vs fitted controls; DROP norm-confounded" (TOP1/TOP2 keep 86%/98% of ΔW norm — a k* of 1–2 is near-guaranteed
 against random edits). Note: rank-1 random controls are byte-identical across codewords (fixed seed) — shared noise
 in H6a (declared dependence).
+- P3 pre-read fixes landed (before any trunc read; job 1041078 at 70/133): `p3_analyze.py` (sha256 713fe39b…5b75)
+  now VOIDs unless REEXP reproduces CAND — P3-job KO == P2b VAL KO per row (≤1e-6, same GPU type a5000/n-503), per-row
+  |y_REEXP − y_refCAND| ≤ 0.01, |stat(REEXP) − stat(KO_CAND)| ≤ 0.001 — and every arm's sidecar factor sha matches
+  (trunc file or P2b r1 factors for KO_IDENT) with hooks fired. Tests 14/14. `configs/heretic_csi/
+  PREREG_P3_TRUNC_ERRATUM.json` (sha256 0c03cd7c…c2d0): commit-after-submit timing; new command flags
+  (--ref-prefix hcsi_p2b_basket_val --ref-expect-n 230); wording limits (k* "vs random norm-matched edits only; not vs
+  fitted controls"; TOP1/TOP2 keep 0.915/0.982 of the REEXP norm (0.836/0.964 squared); DROP1 removes ~84% of squared
+  norm ⇒ DROP losses norm-confounded).

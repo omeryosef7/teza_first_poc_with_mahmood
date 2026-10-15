@@ -148,3 +148,22 @@ def test_p3_minimal_k_rule_and_boot_ratio():
     doms = [f"d{i}" for i in range(10)]
     r = p.boot_ratio(doms, {d: 1.0 for d in doms}, {d: 2.0 for d in doms}, n=200)
     assert abs(r["point"] - 0.5) < 1e-12 and abs(r["ci95"][0] - 0.5) < 1e-12
+
+
+def test_p3_reexp_and_sha_checks():
+    import p3_analyze as p
+    keys = [(f"d{i}", s) for i in range(5) for s in range(2)]
+    ko = {k: 0.2 for k in keys}; cand = {k: 0.3 for k in keys}
+    r, v = p.reexp_check(keys, dict(cand), dict(ko), dict(cand), dict(ko), "A5000", "A5000")
+    assert v == [] and abs(r["stat_REEXP"] - 0.1) < 1e-12
+    bad = dict(cand); bad[keys[0]] = 0.35                      # one row off by 0.05 > ROW_TOL
+    assert p.reexp_check(keys, bad, dict(ko), dict(cand), dict(ko), "A5000", "A5000")[1]
+    shifted = {k: 0.302 for k in keys}                          # stat off by 0.002 > STAT_TOL
+    assert any("stat diff" in x for x in p.reexp_check(keys, shifted, dict(ko), dict(cand), dict(ko), "A5000", "A5000")[1])
+    ko2 = dict(ko); ko2[keys[3]] = 0.2001                       # own KO differs from reference KO
+    assert p.reexp_check(keys, dict(cand), ko2, dict(cand), dict(ko), "A5000", "A5000")[1]
+    assert p.reexp_check(keys, dict(cand), dict(ko), dict(cand), dict(ko), "A5000", "L40S")[1]   # GPU mismatch -> VOID
+    good = {"hook_calls": 5, "factors_sha16": "t"}
+    assert p.sidecar_sha_checks({"KO_TOP1": dict(good)}, {"KO_TOP1": "t"}) == []
+    assert p.sidecar_sha_checks({"KO_TOP1": {**good, "factors_sha16": "u"}}, {"KO_TOP1": "t"})
+    assert p.sidecar_sha_checks({"KO_IDENT": {**good, "hook_calls": 0}}, {"KO_IDENT": "t"})

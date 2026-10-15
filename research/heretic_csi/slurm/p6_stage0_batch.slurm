@@ -52,7 +52,7 @@ nvidia-smi --query-gpu=name,compute_cap --format=csv,noheader
 export TMPDIR="${SLURM_TMPDIR:-/tmp/${USER}/${SLURM_JOB_ID}}"; mkdir -p "$TMPDIR/llama31"
 trap 'rm -rf "$TMPDIR/llama31" 2>/dev/null || true' EXIT TERM INT
 SNAPDIR="outputs/heretic_csi/p6/code_${SLURM_JOB_ID}"; mkdir -p "$SNAPDIR"
-cp src/boombness/score_behavior.py scripts/dcs_extract_under_ko.py research/heretic_csi/slurm/p6_stage0_batch.slurm research/heretic_csi/p6_select_run.py research/heretic_csi/p6_g3.py "$SNAPDIR/"
+cp src/boombness/score_behavior.py scripts/dcs_extract_under_ko.py research/heretic_csi/slurm/p6_stage0_batch.slurm research/heretic_csi/p6_select_run.py research/heretic_csi/p6_g3.py research/heretic_csi/p6_write_manifest.py research/heretic_csi/p6_install_strength.py "$SNAPDIR/"
 (cd "$SNAPDIR" && sha256sum * > SHA256SUMS)
 AVAIL_KB=$(df --output=avail -k "$TMPDIR" 2>/dev/null | tail -1 || echo 0); MODEL="$SCR"
 if [ "${AVAIL_KB:-0}" -ge 18000000 ] && cp -L "$SCR"/*.safetensors "$SCR"/*.json "$TMPDIR/llama31/"; then
@@ -76,7 +76,9 @@ for CW in "${LIST[@]}"; do
     --tag ts116m_readout_${CW}_bomb --model "$MODEL"
   RRC=$?
   RD=$("$PY" research/heretic_csi/p6_select_run.py --job "$SLURM_JOB_ID" --glob "outputs/boombness/score_behavior/ts116m_readout_${CW}_bomb_*") \
-    || { echo "STAGE0_RESULT cw=$CW status=ERROR_NO_READOUT_DIR rc=$RRC"; echo "DONE_MARKER p6_stage0 cw=$CW status=ERROR"; continue; }
+    || { echo "STAGE0_RESULT cw=$CW status=ERROR_NO_READOUT_DIR rc=$RRC"
+         "$PY" research/heretic_csi/p6_write_manifest.py "$MAN" "$CW" ERROR --readout-rc "$RRC"
+         echo "DONE_MARKER p6_stage0 cw=$CW status=ERROR"; continue; }
   echo "READOUT_RC cw=$CW rc=$RRC (rc=4 = score_behavior pooled tail gate; recorded, not G3)"
   fi
   GATE=$("$PY" research/heretic_csi/p6_g3.py "$CW" "$RD")
@@ -91,16 +93,12 @@ for CW in "${LIST[@]}"; do
     XD=$("$PY" research/heretic_csi/p6_select_run.py --job "$SLURM_JOB_ID" --glob "outputs/boombness/extract_boombness/cont1_behavioral_${CW}_bomb_*") || XD=""
     if [ -n "$XD" ]; then mv "$XD" "$XDST/" && ln -s "$XDST/$(basename "$XD")" "$XD"; else STATUS="ERROR_EXTRACT"; echo "extract rc=$XRC no DONE dir"; fi
   fi
-  "$PY" - "$MAN" "$CW" "$RD" "$XD" "$STATUS" "$GATE" <<'PY'
-import json, sys, os
-man, cw, rd, xd, status, gate = sys.argv[1:]
-prev = json.load(open(man)) if os.path.exists(man) else {}
-rjob = json.load(open(os.path.join(rd, "RUNMETA.json"))).get("slurm_job_id")
-json.dump({"codeword": cw, "status": status, "g3": json.loads(gate), "readout_dir": rd, "readout_slurm_job": str(rjob),
-           "extract_dir": xd or None, "extract_realpath": os.path.realpath(xd) if xd else None,
-           "extract_slurm_job": os.environ.get("SLURM_JOB_ID") if xd else None,
-           "slurm_job": str(rjob), "previous_manifest": prev or None}, open(man, "w"), indent=1)
-PY
+  G1=""
+  if [ "$STATUS" == "G3_PASS" ] || [ "$STATUS" == "ERROR_EXTRACT" ]; then
+    G1=$("$PY" research/heretic_csi/p6_install_strength.py "$CW" "$RD" train) || G1=""
+  fi
+  "$PY" research/heretic_csi/p6_write_manifest.py "$MAN" "$CW" "$STATUS" --readout "$RD" --extract "$XD" \
+    --gate "$GATE" --readout-rc "$RRC" --extract-rc "$XRC" --g1 "$G1"
   echo "DONE_MARKER p6_stage0 cw=$CW status=$STATUS readout=$RD extract=${XD:-none} $(date -Is)"
 done
 echo "BATCH_DONE job=$SLURM_JOB_ID cws=$CWS $(date -Is)"

@@ -1,0 +1,21 @@
+{
+  "schema": "hcsi_prereg_erratum/1",
+  "corrects": "configs/.../PREREG_P3_TRUNC.json (sha256 470591badba0df36f35fd4a1d9c38bd031c8b990c19fd856bda554ac884eaf53, committed S-158)",
+  "written": "2026-10-15, BEFORE any P3 endpoint is read (p3_analyze.py has not been run on job 1041078 output)",
+  "trigger": "Adversarial review #7 (reports/heretic_csi/REVIEW_ADVERSARIAL_20261015_g.md), P3 items",
+  "timing_correction": "The prereg states 'written BEFORE the P3 job is submitted'. That is true of WRITING; the COMMIT (01:37:47) FOLLOWED submission of job 1041078 (01:35:54). At commit time no arm was complete (only the in-progress BASE run dir existed; S-158), so the commit still predates every endpoint. Going forward endpoint-producing jobs are submitted only after the parent confirms the commit.",
+  "implementation_of_promised_checks": {
+    "reexp_vs_cand": "research/heretic_csi/p3_analyze.py::reexp_check -- against the P2b VALIDATION reference arms hcsi_p2b_basket_val_KO (job 1023578) and hcsi_p2b_basket_val_KO_CAND_r4 (job 1023579), both NVIDIA RTX A5000 on n-503 (same GPU type and node as P3 job 1041078): on common row keys, VOID unless own KO == reference KO per key within 1e-6, max per-row |y_REEXP - y_refCAND| <= 1e-2, and |stat(REEXP) - stat_ref(KO_CAND)| <= 1e-3; VOID ('cannot verify') if the RUNMETA GPU types differ.",
+    "sidecar_sha": "p3_analyze.py::sidecar_sha_checks -- every operator arm's sidecar factors_sha16 must equal sha16 of trunc_basket_r4.pt (REEXP, TOPk, TOPkN, DROPi and all RAND controls) or of fac/factors_basket_r1.pt (KO_IDENT); hooks must have fired on every operator arm incl. KO_IDENT; else VOID.",
+    "tests": "research/heretic_csi/tests/test_p3_p4.py::test_p3_reexp_and_sha_checks (row deviation, stat deviation, KO mismatch, GPU mismatch, sha mismatch, hooks-not-fired all VOID)",
+    "new_cli": "--ref-prefix hcsi_p2b_basket_val --ref-expect-n 230 (required); --p2b-factors-dir default outputs/heretic_csi/p2b/prod/fac"
+  },
+  "wording_restrictions_added": [
+    "The truncation null is RANDOM per-module-norm-matched rank-k edits ONLY. CAND itself already beats such random edits; no fitted (DER/SHUF-type) truncation controls exist. Any k* must be stated as 'vs random norm-matched edits only; not vs fitted controls'.",
+    "Norm retained (trunc_basket_r4.pt, total Frobenius norm relative to REEXP): TOP1 0.915 (squared 0.836), TOP2 0.982 (squared 0.964); TOPkN = 1.0 by construction. A 'retained' effect at k=1,2 therefore keeps most of the operator's norm.",
+    "DROP losses are confounded with norm loss: remaining norm DROP1 0.405, DROP2 0.934, DROP3 0.987, DROP4 0.995 of REEXP. Any DROP_i necessity statement must say 'norm-confounded' (DROP1 removes ~84% of the squared norm).",
+    "All P3 results remain DESCRIPTIVE (parent PASS marginal)."
+  ],
+  "updated_analyzer_command": "research/heretic_csi/p3_analyze.py --codeword basket --rank 4 --split validation --expect-n 230 --nrand 40 --nrand-n 20 --trunc-file outputs/heretic_csi/p2b/prod/p3/trunc_basket_r4.pt --ref-prefix hcsi_p2b_basket_val --ref-expect-n 230 --out reports/heretic_csi/p3_basket_r4_validation.json",
+  "unchanged": "Everything else in PREREG_P3_TRUNC (arms, populations, statistic, Holm over k in {1,2}, retention threshold 0.5, power floor)."
+}

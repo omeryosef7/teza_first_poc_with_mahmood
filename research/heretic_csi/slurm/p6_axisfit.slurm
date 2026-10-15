@@ -42,5 +42,14 @@ echo "HOST=$(hostname) JOB=${SLURM_JOB_ID:-none} CW=$CW CORPUS=$CORPUS READOUT=$
 python scripts/dcs_csi_axis.py --codeword "$CW" --corpus "$CORPUS" --readout "$READOUT" \
   --fit-prompt behavioral --site rel-6 --force-layer 18 --max-rank 16 --rank-controls 1,4,16 \
   --n-random-rank 46 --n-shuffled-rank 10 --seed 20260915 --out "$OUT"
-sha256sum "$OUT"
-echo "DONE_MARKER p6_axisfit cw=$CW out=$OUT rc=0 $(date -Is)"
+SHA=$(sha256sum "$OUT" | cut -d' ' -f1); echo "$SHA  $OUT"
+# record the axis basis + its sha256 in the Stage-0 manifest (review #7 item 4)
+python - "$MAN" "$OUT" "$SHA" <<'PY'
+import json, os, sys
+man, out, sha = sys.argv[1:]
+m = json.load(open(man))
+m["axis"] = {"path": out, "sha256": sha, "axisfit_job": os.environ.get("SLURM_JOB_ID"),
+             "recipe": "dcs_csi_axis.py --fit-prompt behavioral --site rel-6 --force-layer 18 --max-rank 16 --rank-controls 1,4,16 --n-random-rank 46 --n-shuffled-rank 10 --seed 20260915"}
+json.dump(m, open(man, "w"), indent=1)
+PY
+echo "DONE_MARKER p6_axisfit cw=$CW out=$OUT sha256=$SHA rc=0 $(date -Is)"

@@ -10,10 +10,20 @@ hcsi_p3_<cw>_r<R>_<split>). Reuses p2b_analyze helpers. Unit = domain.
      if none -> 'no k <= 2 retains the effect specifically'.
   TOPkN (renormed to the full per-module norm) vs KO_RAND_TOPkN_*: descriptive.
   REMOVAL (necessity of component i): loss_i = stat(REEXP) - stat(DROPi), domain-bootstrap CI; frac_i = loss_i/stat(REEXP).
-  Sanity: REEXP must reproduce the frozen CAND (checked via sidecar factors and |stat(REEXP)-stat(KO_CAND_ref)| if given);
-  gates KO < BASE, FULL > KO, KO_IDENT == KO, hooks fired, collapse screen. ALL P3 results are DESCRIPTIVE (parent P2b
+  Sanity (review #7, both enforced -> VOID on failure):
+    (a) REEXP reproduces the frozen CAND: against the P2b VALIDATION reference arms (--ref-prefix, e.g.
+        hcsi_p2b_basket_val: <ref>_KO and <ref>_KO_CAND_r<R>) on the SAME rows (common keys) and the SAME GPU type
+        (RUNMETA 'gpu' must match, else VOID: cannot verify): |stat(REEXP) - stat_ref(KO_CAND)| <= STAT_TOL (1e-3) and
+        max per-key |y_REEXP - y_ref_CAND| <= ROW_TOL (1e-2); the P3 job's own KO must equal the reference KO per key
+        within KO_TOL (1e-6) (same GPU type => the frozen readout is bit-exact).
+    (b) every operator arm's sidecar factors_sha16 equals the sha16 of the file it must apply: the trunc file for
+        REEXP/TOPk/TOPkN/DROPi and the RAND controls; fac/factors_<cw>_r1.pt for KO_IDENT.
+  Other gates: KO < BASE, FULL > KO, KO_IDENT == KO, hooks fired, collapse screen.
+  WORDING (review #7): the truncation null is RANDOM norm-matched edits only (CAND already beats those); TOP1/TOP2
+  keep most of the dW norm; DROP losses are confounded with norm loss. Any k* must be stated 'vs random edits only;
+  not vs fitted controls; norm-confounded for DROP'. ALL P3 results are DESCRIPTIVE (parent P2b
   basket r4 PASS is marginal: Holm 0.0488, LODO-fragile)."""
-import argparse, json, os, random, statistics, sys
+import argparse, hashlib, json, os, random, statistics, sys
 REPO = "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
 sys.path.insert(0, os.path.join(REPO, "research", "heretic_csi"))
 import p2b_analyze as pa   # noqa: E402
@@ -42,6 +52,57 @@ def boot_mean(doms, f, n=5000, seed=20261015):
     return {"point": sum(f[x] for x in doms) / len(doms), "ci95": [vals[int(0.025 * n)], vals[int(0.975 * n) - 1]]}
 
 
+STAT_TOL, ROW_TOL, KO_TOL = 1e-3, 1e-2, 1e-6
+
+
+def sha16(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for b in iter(lambda: f.read(1 << 20), b""):
+            h.update(b)
+    return h.hexdigest()[:16]
+
+
+def sidecar_sha_checks(sc, expected):
+    """sc: arm -> sidecar dict or None; expected: arm -> sha16. VOID reasons (missing sidecar, hooks never fired,
+    unregistered arm, sha mismatch)."""
+    v = []
+    for x, s in sc.items():
+        if s is None:
+            v.append(f"{x}: no sidecar"); continue
+        if not s.get("hook_calls"):
+            v.append(f"{x}: hooks never fired")
+        if x not in expected:
+            v.append(f"{x}: no expected sha registered")
+        elif s.get("factors_sha16") != expected[x]:
+            v.append(f"{x}: factors sha16 {s.get('factors_sha16')} != expected {expected[x]}")
+    return v
+
+
+def reexp_check(keys, y_reexp, y_ko, y_ref_cand, y_ref_ko, gpu_p3, gpu_ref):
+    """keys: common row keys (domain, slot). y_*: key -> y_install. Returns (result dict, void list)."""
+    void = []
+    if gpu_p3 != gpu_ref:
+        return {"gpu_p3": gpu_p3, "gpu_ref": gpu_ref}, [f"REEXP check: GPU type differs ({gpu_p3} vs {gpu_ref}) -- cannot verify"]
+    ko_dev = max(abs(y_ko[k] - y_ref_ko[k]) for k in keys)
+    row_dev = max(abs(y_reexp[k] - y_ref_cand[k]) for k in keys)
+    doms = sorted({k[0] for k in keys})
+    dm = lambda y: {d: sum(y[k] for k in keys if k[0] == d) / sum(1 for k in keys if k[0] == d) for d in doms}  # noqa: E731
+    a, b, c, e = dm(y_reexp), dm(y_ko), dm(y_ref_cand), dm(y_ref_ko)
+    st_p3 = sum(a[d] - b[d] for d in doms) / len(doms)
+    st_ref = sum(c[d] - e[d] for d in doms) / len(doms)
+    res = {"n_keys": len(keys), "gpu": gpu_p3, "KO_vs_refKO_max_abs_dy": ko_dev, "REEXP_vs_refCAND_max_abs_dy": row_dev,
+           "stat_REEXP": st_p3, "stat_ref_CAND": st_ref, "abs_stat_diff": abs(st_p3 - st_ref),
+           "tolerances": {"stat": STAT_TOL, "row": ROW_TOL, "ko": KO_TOL}}
+    if ko_dev > KO_TOL:
+        void.append(f"REEXP check: own KO != reference KO (max |dy| {ko_dev:.3g} > {KO_TOL})")
+    if row_dev > ROW_TOL:
+        void.append(f"REEXP check: per-row |y_REEXP - y_refCAND| {row_dev:.3g} > {ROW_TOL}")
+    if abs(st_p3 - st_ref) > STAT_TOL:
+        void.append(f"REEXP check: |stat diff| {abs(st_p3 - st_ref):.3g} > {STAT_TOL}")
+    return res, void
+
+
 def minimal_k(tests):
     """tests: k -> {'holm_p', 'retention': {'ci95': [lo, hi]}} ; returns smallest qualifying k or None."""
     ok = [k for k in sorted(tests) if tests[k]["holm_p"] < 0.05 and tests[k]["retention"]["ci95"][0] >= 0.5]
@@ -56,6 +117,9 @@ def main():
     ap.add_argument("--nrand-n", type=int, default=20); ap.add_argument("--allow-short", type=int, default=0)
     ap.add_argument("--option-mass-floor", type=float, default=0.05); ap.add_argument("--n-boot", type=int, default=5000)
     ap.add_argument("--trunc-file", required=True); ap.add_argument("--out", required=True)
+    ap.add_argument("--ref-prefix", required=True, help="P2b VALIDATION prefix holding <ref>_KO and <ref>_KO_CAND_r<R>")
+    ap.add_argument("--ref-expect-n", type=int, default=None)
+    ap.add_argument("--p2b-factors-dir", default=os.path.join(REPO, "outputs/heretic_csi/p2b/prod/fac"))
     a = ap.parse_args()
     import torch
     ops = torch.load(a.trunc_file, map_location="cpu")["operators"]
@@ -81,12 +145,21 @@ def main():
     ident = max(abs(kv["KO_IDENT"][k] - kv["KO"][k]) for k in common)
     if ident > 1e-9:
         void.append(f"KO_IDENT != KO (max |dy| {ident:.3g})")
-    for x in arms:
-        if x in ("BASE", "KO", "KO_FULL"):
-            continue
-        s = pa.sidecar(dirs[x])
-        if s is None or not s.get("hook_calls"):
-            void.append(f"{x}: hooks never fired / no sidecar")
+    sc = {x: pa.sidecar(dirs[x]) for x in arms if x not in ("BASE", "KO", "KO_FULL")}
+    tsha = sha16(a.trunc_file)
+    expected = {x: tsha for x in sc if x != "KO_IDENT"}
+    expected["KO_IDENT"] = sha16(os.path.join(a.p2b_factors_dir, f"factors_{a.codeword}_r1.pt"))
+    void += sidecar_sha_checks(sc, expected)
+    # REEXP reproduces the frozen CAND (P2b VALIDATION reference arms; same rows, same GPU type)
+    ren = a.ref_expect_n or a.expect_n
+    rdir = {x: rederive.strict_run_dir(f"{a.ref_prefix}_{x}", ren, row_file="results.jsonl", allow_short=a.allow_short)
+            for x in ("KO", f"KO_CAND_r{a.rank}")}
+    rkv = {x: sa.arm_key_values(d, assign, a.split)[0] for x, d in rdir.items()}
+    rk = common & set(rkv["KO"]) & set(rkv[f"KO_CAND_r{a.rank}"])
+    gpu = lambda d: json.load(open(os.path.join(d, "RUNMETA.json"))).get("gpu")   # noqa: E731
+    reexp, rv = reexp_check(rk, kv["KO_REEXP"], kv["KO"], rkv[f"KO_CAND_r{a.rank}"], rkv["KO"],
+                            gpu(dirs["KO_REEXP"]), gpu(rdir[f"KO_CAND_r{a.rank}"]))
+    void += rv
     manip = pa.mean_diff(doms, by["KO"], by["BASE"]); full = pa.mean_diff(doms, by["KO_FULL"], by["KO"])
     gates = {"KO_minus_BASE": manip, "FULL_minus_KO": full, "ok": manip < 0 and full > 0}
     stat = {x: pa.mean_diff(doms, by[x], by["KO"]) for x in arms if x not in live}
@@ -109,7 +182,8 @@ def main():
     valid = not void and gates["ok"]
     k_star = minimal_k(tests) if valid else None
     res = {"codeword": a.codeword, "rank": a.rank, "split": a.split, "prefix": pfx, "n_keys": len(common), "n_domains": len(doms),
-           "gates": gates, "void": void, "flags": flags, "stat": {k: round(v, 5) for k, v in stat.items() if "RAND" not in k},
+           "gates": gates, "void": void, "flags": flags, "reexp_check": reexp,
+           "wording": "k* (if any) is vs RANDOM norm-matched edits only; NOT vs fitted controls; DROP losses are norm-confounded", "stat": {k: round(v, 5) for k, v in stat.items() if "RAND" not in k},
            "recovery": rec, "truncation_tests": tests, "removal": removal,
            "minimal_sufficient_k": k_star if valid else "VOID/CANNOT ANSWER",
            "label": "DESCRIPTIVE (parent P2b basket r4 VALIDATION PASS is marginal; PREREG_P3_TRUNC.json)",
