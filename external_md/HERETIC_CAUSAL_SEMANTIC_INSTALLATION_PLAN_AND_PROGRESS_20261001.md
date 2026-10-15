@@ -3034,3 +3034,23 @@ Stage-0 result) is authoritative; `P6_GATE_TABLE_interim.md` reads untracked man
 - GPU: P6 Stage-0 1041850 (whistle/yogurt/banana, 1h21), G2 1042039 (cushion, curtain, bottle, jacket, sponge);
   S-199 basket r1 re-test 1042049/1042050 PENDING (priority; pinned n-503). P4 v2: basket r4 fit still running.
   No failures.
+
+## S-203 — 2026-10-15 14:10 — P4 v2 FIT-SIDE FINAL: the inherited 8-head set is NOT distinctive (in-sample, fitting-side)
+All 8 CPU jobs COMPLETED (fits 22 h–1 d 10 h; CV10 20–25 h). `reports/heretic_csi/P4V2_FIT_SUMMARY_final.json` (in-sample
+net on the frozen objective; 60 RAW + 60 NC random disjoint 8-head sets per cell; rank 1 = best of 61):
+
+| cell | TOP8 net | TOP8 rank among RAW (own optimum) | TOP8 rank among NC (TOP8's norm) | RAW net range | NC net range |
+|---|---|---|---|---|---|
+| basket r1 | 0.5682 | 34 | 7 | 0.5662–0.5704 | 0.5632–0.5693 |
+| basket r4 | 0.6137 | 25 | 30 | 0.5947–0.6192 | 0.6070–0.6182 |
+| button r1 | 0.6223 | 17 | 17 | 0.6190–0.6236 | 0.6192–0.6232 |
+| button r4 | 0.6513 | 51 | 53 | 0.6402–0.6623 | 0.6484–0.6578 |
+
+- TOP8 sits mid-pack among random 8-head sets in every cell (and near the bottom at button r4); random head sets fit as
+  well as the inherited circuit at their own optimum AND at TOP8's norm. (v1 post-hoc rescale handicap confirmed: NC vs
+  v1-rescaled e.g. button r1 ctrl0 0.622 vs −0.003.) Descriptive variants (TOP8_L6_14, FULLO, MLP, ATTNMLP, H2,
+  CELL_L10H2) with norms and #params in the file; cross-variant net comparisons are not like-for-like (S-089).
+- **Fitting-side verdict:** a learned weight operator restricted to the independently nominated attention-head circuit
+  does not fit the knockout→clean map better than random 8-head sets — **fitting-side evidence AGAINST H2's
+  head-concentration prediction for this operator family** (in-sample; the preregistered eval, TRAIN-K4 then VAL, still
+  decides under amendments 1–4). F5 to send eval prereg/plan shas; nothing submitted before my commit.
