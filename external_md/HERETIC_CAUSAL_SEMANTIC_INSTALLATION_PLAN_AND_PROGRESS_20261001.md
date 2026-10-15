@@ -2634,3 +2634,9 @@ in H6a (declared dependence).
 - 1040700 / 1040701 (evalC {16,50}) DONE_MARKER (113 ok lines each). evalB 112/112 (of 168), P3 trunc 95/133, P6 batch 2
   (blanket, bucket, pillow, saddle G3_PASS; wagon next). 4 GPU running ⇒ parent released G2 job 1041401. No failures.
   Descriptive-rank analysis waits for evalB (full curve).
+
+## S-172 — 2026-10-15 07:10 — ops tick
+- P6 batch 2 (1041177) COMPLETE — G3: blanket, bucket, pillow, saddle, wagon all PASS (G3-passing so far: lamp, kettle,
+  pencil, ladder + these 5 = 9; candle FAIL); axisfits 1041480–84 running/finishing (CPU); batch 3 = 1041485 (t-806);
+  G2 1041401 running (t-806). evalB 120/168, P3 trunc 104/133. P4 v2: basket r1 fit+CV done; CV10 2/4 done; 3 fits
+  running. 5 GPU. No failures.
