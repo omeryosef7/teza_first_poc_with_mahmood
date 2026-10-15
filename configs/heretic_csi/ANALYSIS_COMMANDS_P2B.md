@@ -76,6 +76,15 @@ The frozen TRAIN command for that codeword with `--neutpos` appended and the new
 plans/neutpos_k4.sh job added to `--overlap`, written to `reports/heretic_csi/p2b_<cw>_neutpos_train.json`.
 Only `out["neut_position"]` (+ the review-5 descriptive fields) is new; verdicts must equal the S-135 read's.
 
+## DESCRIPTIVE ranks {2,8,16,32,50} on TRAIN-K4 (curve shape only; never a verdict)
+
+REVISION 2026-10-15: this command was described in F2's reports and amendment 1 (41 RAND + 5 SHUF + 5 DER) but had not
+been written into this file before it was run; recorded here verbatim as run (after the VAL read; descriptive only).
+```
+$PY research/heretic_csi/p2b_analyze.py --codeword <cw> --prefix hcsi_p2b_<cw>_k4 --split train --expect-n 268 \
+  --ranks 2,8,16,32,50 --nrand 41 --nshuf 5 --nder 5 --out reports/heretic_csi/p2b_<cw>_descriptive_ranks_train.json
+```
+
 ## Deployed-vs-fitted residual (descriptive; per codeword × rank ∈ {1,4})
 
 ```

@@ -1,0 +1,713 @@
+{
+ "label": "DESCRIPTIVE, TRAIN-K4 (268 rows / 67 domains; option-mass key set), IN-SAMPLE for CAND/DER/SHUF fits; never changes a verdict or the outcome (decided on VALIDATION: D)",
+ "sources": {
+  "r1,r4": "reports/heretic_csi/p2b_<cw>_neutpos_train.json (frozen S-135 arms; analyzer 5bafd092 with review-5 fields; verdicts identical to S-135)",
+  "r2,8,16,32,50": "reports/heretic_csi/p2b_<cw>_descriptive_ranks_train.json"
+ },
+ "control_family_sizes": {
+  "r1,r4": "61 RAND + 5 SHUF + 15 DER = 81",
+  "others": "41 RAND + 5 SHUF + 5 DER = 51"
+ },
+ "rows": [
+  {
+   "codeword": "basket",
+   "rank": 1,
+   "primary": true,
+   "verdict": "DOES NOT PASS (Holm p=0.1098 >= 0.05)",
+   "recovery": 1.238,
+   "recovery_ci95": [
+    1.0946,
+    1.4147
+   ],
+   "frac_BASE_minus_KO": 0.6968,
+   "frac_ci95": [
+    0.628,
+    0.7589
+   ],
+   "rank_vs_RAND": [
+    1,
+    62
+   ],
+   "rank_vs_DER": [
+    9,
+    16
+   ],
+   "rank_vs_full": [
+    9,
+    82
+   ],
+   "p_full": 0.10975609756097561,
+   "CAND_minus_mean_DER": {
+    "point": 0.0056,
+    "ci95": [
+     -0.00196,
+     0.01249
+    ]
+   },
+   "RAND_recovery_p5_median_p95": [
+    -0.4213,
+    -0.0099,
+    0.3956
+   ],
+   "DER_recovery_mean": 1.1986,
+   "dW_total_fro": 44.907,
+   "n_params": 346112,
+   "fit_gap_closure": 0.5941,
+   "fit_preserve_damage": 0.0005746514740679347,
+   "BASE_CAND_minus_BASE_y": -0.04238,
+   "manip_KO_minus_BASE": -0.25286,
+   "full_minus_KO": 0.14233,
+   "n_domains": 63
+  },
+  {
+   "codeword": "basket",
+   "rank": 2,
+   "primary": false,
+   "verdict": "DESCRIPTIVE (not a confirmatory cell)",
+   "recovery": 1.4153,
+   "recovery_ci95": [
+    1.2438,
+    1.6291
+   ],
+   "frac_BASE_minus_KO": 0.7966,
+   "frac_ci95": [
+    0.7241,
+    0.8638
+   ],
+   "rank_vs_RAND": [
+    1,
+    42
+   ],
+   "rank_vs_DER": [
+    2,
+    6
+   ],
+   "rank_vs_full": [
+    2,
+    52
+   ],
+   "p_full": 0.038461538461538464,
+   "CAND_minus_mean_DER": {
+    "point": 0.0086,
+    "ci95": [
+     -0.00119,
+     0.01832
+    ]
+   },
+   "RAND_recovery_p5_median_p95": [
+    -0.3798,
+    -0.1203,
+    0.2304
+   ],
+   "DER_recovery_mean": 1.3549,
+   "dW_total_fro": 53.848,
+   "n_params": 692224,
+   "fit_gap_closure": 0.6092,
+   "fit_preserve_damage": 0.0011569944834869516,
+   "BASE_CAND_minus_BASE_y": -0.01451,
+   "manip_KO_minus_BASE": -0.25286,
+   "full_minus_KO": 0.14233,
+   "n_domains": 63
+  },
+  {
+   "codeword": "basket",
+   "rank": 4,
+   "primary": true,
+   "verdict": "PASS (Holm p=0.04878, recovery 1.450 CI [1.267, 1.689])",
+   "recovery": 1.4501,
+   "recovery_ci95": [
+    1.2671,
+    1.6892
+   ],
+   "frac_BASE_minus_KO": 0.8162,
+   "frac_ci95": [
+    0.7429,
+    0.8884
+   ],
+   "rank_vs_RAND": [
+    1,
+    62
+   ],
+   "rank_vs_DER": [
+    2,
+    16
+   ],
+   "rank_vs_full": [
+    2,
+    82
+   ],
+   "p_full": 0.024390243902439025,
+   "CAND_minus_mean_DER": {
+    "point": 0.0214,
+    "ci95": [
+     0.01032,
+     0.0334
+    ]
+   },
+   "RAND_recovery_p5_median_p95": [
+    -0.33,
+    -0.0387,
+    0.2562
+   ],
+   "DER_recovery_mean": 1.2997,
+   "dW_total_fro": 55.548,
+   "n_params": 1384448,
+   "fit_gap_closure": 0.6272,
+   "fit_preserve_damage": 0.0015818589720209392,
+   "BASE_CAND_minus_BASE_y": 0.00132,
+   "manip_KO_minus_BASE": -0.25286,
+   "full_minus_KO": 0.14233,
+   "n_domains": 63
+  },
+  {
+   "codeword": "basket",
+   "rank": 8,
+   "primary": false,
+   "verdict": "DESCRIPTIVE (not a confirmatory cell)",
+   "recovery": 1.3469,
+   "recovery_ci95": [
+    1.1828,
+    1.5531
+   ],
+   "frac_BASE_minus_KO": 0.7581,
+   "frac_ci95": [
+    0.6776,
+    0.8326
+   ],
+   "rank_vs_RAND": [
+    1,
+    42
+   ],
+   "rank_vs_DER": [
+    2,
+    6
+   ],
+   "rank_vs_full": [
+    2,
+    52
+   ],
+   "p_full": 0.038461538461538464,
+   "CAND_minus_mean_DER": {
+    "point": 0.00855,
+    "ci95": [
+     -0.01207,
+     0.02626
+    ]
+   },
+   "RAND_recovery_p5_median_p95": [
+    -0.4329,
+    -0.0516,
+    0.4796
+   ],
+   "DER_recovery_mean": 1.2868,
+   "dW_total_fro": 83.195,
+   "n_params": 2768896,
+   "fit_gap_closure": 0.6755,
+   "fit_preserve_damage": 0.0025914417737845094,
+   "BASE_CAND_minus_BASE_y": -0.00399,
+   "manip_KO_minus_BASE": -0.25286,
+   "full_minus_KO": 0.14233,
+   "n_domains": 63
+  },
+  {
+   "codeword": "basket",
+   "rank": 16,
+   "primary": false,
+   "verdict": "DESCRIPTIVE (not a confirmatory cell)",
+   "recovery": 1.252,
+   "recovery_ci95": [
+    1.101,
+    1.4397
+   ],
+   "frac_BASE_minus_KO": 0.7047,
+   "frac_ci95": [
+    0.6303,
+    0.7728
+   ],
+   "rank_vs_RAND": [
+    1,
+    42
+   ],
+   "rank_vs_DER": [
+    4,
+    6
+   ],
+   "rank_vs_full": [
+    4,
+    52
+   ],
+   "p_full": 0.07692307692307693,
+   "CAND_minus_mean_DER": {
+    "point": -0.00269,
+    "ci95": [
+     -0.01891,
+     0.01217
+    ]
+   },
+   "RAND_recovery_p5_median_p95": [
+    -0.5296,
+    -0.0379,
+    0.4613
+   ],
+   "DER_recovery_mean": 1.2709,
+   "dW_total_fro": 79.264,
+   "n_params": 5537792,
+   "fit_gap_closure": 0.6767,
+   "fit_preserve_damage": 0.0030651523123362934,
+   "BASE_CAND_minus_BASE_y": -0.0208,
+   "manip_KO_minus_BASE": -0.25286,
+   "full_minus_KO": 0.14233,
+   "n_domains": 63
+  },
+  {
+   "codeword": "basket",
+   "rank": 32,
+   "primary": false,
+   "verdict": "DESCRIPTIVE (not a confirmatory cell)",
+   "recovery": 1.4036,
+   "recovery_ci95": [
+    1.2496,
+    1.6018
+   ],
+   "frac_BASE_minus_KO": 0.79,
+   "frac_ci95": [
+    0.7225,
+    0.8581
+   ],
+   "rank_vs_RAND": [
+    1,
+    42
+   ],
+   "rank_vs_DER": [
+    1,
+    6
+   ],
+   "rank_vs_full": [
+    1,
+    52
+   ],
+   "p_full": 0.019230769230769232,
+   "CAND_minus_mean_DER": {
+    "point": 0.02785,
+    "ci95": [
+     0.01783,
+     0.03884
+    ]
+   },
+   "RAND_recovery_p5_median_p95": [
+    -0.6065,
+    -0.1673,
+    0.281
+   ],
+   "DER_recovery_mean": 1.2079,
+   "dW_total_fro": 68.819,
+   "n_params": 11075584,
+   "fit_gap_closure": 0.6368,
+   "fit_preserve_damage": 0.0023851287373761383,
+   "BASE_CAND_minus_BASE_y": -0.00522,
+   "manip_KO_minus_BASE": -0.25286,
+   "full_minus_KO": 0.14233,
+   "n_domains": 63
+  },
+  {
+   "codeword": "basket",
+   "rank": 50,
+   "primary": false,
+   "verdict": "DESCRIPTIVE (not a confirmatory cell)",
+   "recovery": 1.3392,
+   "recovery_ci95": [
+    1.1752,
+    1.537
+   ],
+   "frac_BASE_minus_KO": 0.7538,
+   "frac_ci95": [
+    0.6775,
+    0.8241
+   ],
+   "rank_vs_RAND": [
+    1,
+    42
+   ],
+   "rank_vs_DER": [
+    2,
+    6
+   ],
+   "rank_vs_full": [
+    2,
+    52
+   ],
+   "p_full": 0.038461538461538464,
+   "CAND_minus_mean_DER": {
+    "point": 0.00398,
+    "ci95": [
+     -0.00727,
+     0.0152
+    ]
+   },
+   "RAND_recovery_p5_median_p95": [
+    -0.4624,
+    -0.0582,
+    0.2622
+   ],
+   "DER_recovery_mean": 1.3112,
+   "dW_total_fro": 72.312,
+   "n_params": 17305600,
+   "fit_gap_closure": 0.6287,
+   "fit_preserve_damage": 0.0021739533722576203,
+   "BASE_CAND_minus_BASE_y": -0.02362,
+   "manip_KO_minus_BASE": -0.25286,
+   "full_minus_KO": 0.14233,
+   "n_domains": 63
+  },
+  {
+   "codeword": "button",
+   "rank": 1,
+   "primary": true,
+   "verdict": "DOES NOT PASS (Holm p=0.3171 >= 0.05)",
+   "recovery": 1.7,
+   "recovery_ci95": [
+    1.5293,
+    1.9107
+   ],
+   "frac_BASE_minus_KO": 0.8681,
+   "frac_ci95": [
+    0.8002,
+    0.9445
+   ],
+   "rank_vs_RAND": [
+    1,
+    62
+   ],
+   "rank_vs_DER": [
+    13,
+    16
+   ],
+   "rank_vs_full": [
+    13,
+    82
+   ],
+   "p_full": 0.15853658536585366,
+   "CAND_minus_mean_DER": {
+    "point": -0.00351,
+    "ci95": [
+     -0.00626,
+     -0.00073
+    ]
+   },
+   "RAND_recovery_p5_median_p95": [
+    -0.4223,
+    -0.0514,
+    0.359
+   ],
+   "DER_recovery_mean": 1.7323,
+   "dW_total_fro": 38.874,
+   "n_params": 346112,
+   "fit_gap_closure": 0.6586,
+   "fit_preserve_damage": 0.000542910307803707,
+   "BASE_CAND_minus_BASE_y": 0.00117,
+   "manip_KO_minus_BASE": -0.21358,
+   "full_minus_KO": 0.10905,
+   "n_domains": 67
+  },
+  {
+   "codeword": "button",
+   "rank": 2,
+   "primary": false,
+   "verdict": "DESCRIPTIVE (not a confirmatory cell)",
+   "recovery": 1.6159,
+   "recovery_ci95": [
+    1.4618,
+    1.8028
+   ],
+   "frac_BASE_minus_KO": 0.8251,
+   "frac_ci95": [
+    0.7636,
+    0.8911
+   ],
+   "rank_vs_RAND": [
+    1,
+    42
+   ],
+   "rank_vs_DER": [
+    1,
+    6
+   ],
+   "rank_vs_full": [
+    1,
+    52
+   ],
+   "p_full": 0.019230769230769232,
+   "CAND_minus_mean_DER": {
+    "point": 0.01311,
+    "ci95": [
+     0.00802,
+     0.01797
+    ]
+   },
+   "RAND_recovery_p5_median_p95": [
+    -0.3635,
+    -0.1287,
+    0.2306
+   ],
+   "DER_recovery_mean": 1.4958,
+   "dW_total_fro": 50.011,
+   "n_params": 692224,
+   "fit_gap_closure": 0.6768,
+   "fit_preserve_damage": 0.0008124919217388083,
+   "BASE_CAND_minus_BASE_y": -0.00498,
+   "manip_KO_minus_BASE": -0.21358,
+   "full_minus_KO": 0.10905,
+   "n_domains": 67
+  },
+  {
+   "codeword": "button",
+   "rank": 4,
+   "primary": true,
+   "verdict": "DOES NOT PASS (Holm p=0.3171 >= 0.05)",
+   "recovery": 1.5549,
+   "recovery_ci95": [
+    1.4115,
+    1.7275
+   ],
+   "frac_BASE_minus_KO": 0.794,
+   "frac_ci95": [
+    0.7364,
+    0.855
+   ],
+   "rank_vs_RAND": [
+    1,
+    62
+   ],
+   "rank_vs_DER": [
+    14,
+    16
+   ],
+   "rank_vs_full": [
+    14,
+    82
+   ],
+   "p_full": 0.17073170731707318,
+   "CAND_minus_mean_DER": {
+    "point": -0.01079,
+    "ci95": [
+     -0.01878,
+     -0.00325
+    ]
+   },
+   "RAND_recovery_p5_median_p95": [
+    -0.518,
+    0.0146,
+    0.3004
+   ],
+   "DER_recovery_mean": 1.6539,
+   "dW_total_fro": 60.184,
+   "n_params": 1384448,
+   "fit_gap_closure": 0.6825,
+   "fit_preserve_damage": 0.001527352319844473,
+   "BASE_CAND_minus_BASE_y": -0.00352,
+   "manip_KO_minus_BASE": -0.21358,
+   "full_minus_KO": 0.10905,
+   "n_domains": 67
+  },
+  {
+   "codeword": "button",
+   "rank": 8,
+   "primary": false,
+   "verdict": "DESCRIPTIVE (not a confirmatory cell)",
+   "recovery": 1.6258,
+   "recovery_ci95": [
+    1.4831,
+    1.7915
+   ],
+   "frac_BASE_minus_KO": 0.8302,
+   "frac_ci95": [
+    0.7736,
+    0.8884
+   ],
+   "rank_vs_RAND": [
+    1,
+    42
+   ],
+   "rank_vs_DER": [
+    4,
+    6
+   ],
+   "rank_vs_full": [
+    4,
+    52
+   ],
+   "p_full": 0.07692307692307693,
+   "CAND_minus_mean_DER": {
+    "point": 0.00061,
+    "ci95": [
+     -0.00947,
+     0.01012
+    ]
+   },
+   "RAND_recovery_p5_median_p95": [
+    -0.5569,
+    -0.0358,
+    0.519
+   ],
+   "DER_recovery_mean": 1.6203,
+   "dW_total_fro": 75.136,
+   "n_params": 2768896,
+   "fit_gap_closure": 0.7118,
+   "fit_preserve_damage": 0.001898345328641551,
+   "BASE_CAND_minus_BASE_y": 0.00671,
+   "manip_KO_minus_BASE": -0.21358,
+   "full_minus_KO": 0.10905,
+   "n_domains": 67
+  },
+  {
+   "codeword": "button",
+   "rank": 16,
+   "primary": false,
+   "verdict": "DESCRIPTIVE (not a confirmatory cell)",
+   "recovery": 1.5154,
+   "recovery_ci95": [
+    1.3574,
+    1.69
+   ],
+   "frac_BASE_minus_KO": 0.7738,
+   "frac_ci95": [
+    0.7024,
+    0.845
+   ],
+   "rank_vs_RAND": [
+    1,
+    42
+   ],
+   "rank_vs_DER": [
+    2,
+    6
+   ],
+   "rank_vs_full": [
+    6,
+    52
+   ],
+   "p_full": 0.11538461538461539,
+   "CAND_minus_mean_DER": {
+    "point": 0.01503,
+    "ci95": [
+     0.00454,
+     0.0254
+    ]
+   },
+   "RAND_recovery_p5_median_p95": [
+    -0.7783,
+    -0.1843,
+    0.699
+   ],
+   "DER_recovery_mean": 1.3776,
+   "dW_total_fro": 100.344,
+   "n_params": 5537792,
+   "fit_gap_closure": 0.7408,
+   "fit_preserve_damage": 0.0028634206536515294,
+   "BASE_CAND_minus_BASE_y": 0.00265,
+   "manip_KO_minus_BASE": -0.21358,
+   "full_minus_KO": 0.10905,
+   "n_domains": 67
+  },
+  {
+   "codeword": "button",
+   "rank": 32,
+   "primary": false,
+   "verdict": "DESCRIPTIVE (not a confirmatory cell)",
+   "recovery": 1.6887,
+   "recovery_ci95": [
+    1.5138,
+    1.896
+   ],
+   "frac_BASE_minus_KO": 0.8623,
+   "frac_ci95": [
+    0.7979,
+    0.93
+   ],
+   "rank_vs_RAND": [
+    1,
+    42
+   ],
+   "rank_vs_DER": [
+    3,
+    6
+   ],
+   "rank_vs_full": [
+    3,
+    52
+   ],
+   "p_full": 0.057692307692307696,
+   "CAND_minus_mean_DER": {
+    "point": 0.00249,
+    "ci95": [
+     -0.0036,
+     0.00884
+    ]
+   },
+   "RAND_recovery_p5_median_p95": [
+    -0.7775,
+    -0.1602,
+    0.2584
+   ],
+   "DER_recovery_mean": 1.6659,
+   "dW_total_fro": 79.152,
+   "n_params": 11075584,
+   "fit_gap_closure": 0.678,
+   "fit_preserve_damage": 0.0016947009978834065,
+   "BASE_CAND_minus_BASE_y": 0.0016,
+   "manip_KO_minus_BASE": -0.21358,
+   "full_minus_KO": 0.10905,
+   "n_domains": 67
+  },
+  {
+   "codeword": "button",
+   "rank": 50,
+   "primary": false,
+   "verdict": "DESCRIPTIVE (not a confirmatory cell)",
+   "recovery": 1.6319,
+   "recovery_ci95": [
+    1.4649,
+    1.8281
+   ],
+   "frac_BASE_minus_KO": 0.8333,
+   "frac_ci95": [
+    0.7715,
+    0.8974
+   ],
+   "rank_vs_RAND": [
+    1,
+    42
+   ],
+   "rank_vs_DER": [
+    4,
+    6
+   ],
+   "rank_vs_full": [
+    4,
+    52
+   ],
+   "p_full": 0.07692307692307693,
+   "CAND_minus_mean_DER": {
+    "point": -0.00626,
+    "ci95": [
+     -0.01325,
+     0.00043
+    ]
+   },
+   "RAND_recovery_p5_median_p95": [
+    -0.7071,
+    -0.1628,
+    0.3773
+   ],
+   "DER_recovery_mean": 1.6894,
+   "dW_total_fro": 82.406,
+   "n_params": 17305600,
+   "fit_gap_closure": 0.68,
+   "fit_preserve_damage": 0.0018353707784556949,
+   "BASE_CAND_minus_BASE_y": -0.00365,
+   "manip_KO_minus_BASE": -0.21358,
+   "full_minus_KO": 0.10905,
+   "n_domains": 67
+  }
+ ]
+}

@@ -2803,3 +2803,39 @@ its sha + GPU type, then submit (F5 already on this order).
 - Status: G3 PASS 14 (lamp, kettle, pencil, ladder, blanket, bucket, pillow, saddle, wagon, cushion, curtain, bottle,
   jacket, sponge); G3 FAIL candle; G2 PASS 4 (lamp, kettle, pencil, ladder); G2 pending blanket…wagon (1041734), then
   cushion, curtain, bottle, jacket, sponge; Stage-0 remaining whistle, yogurt, banana, chair, balloon, ribbon (1041733).
+
+## S-188 — 2026-10-15 11:10 — P2b RESCUE-vs-RANK curve (TRAIN-K4, DESCRIPTIVE, in-sample; outcome D stands, VAL-decided)
+Deliverable `reports/heretic_csi/P2B_RANK_CURVE_TRAIN.{md,json,png}` (panel A: rescue vs rank with each codeword's
+random-edit 5–95% band; panel B: CAND−mean(DER) with CIs). Jobs evalC 1040700/01 (112/112), evalB 1040759/66 (168/168),
+all n-503, single attempt, DONE rc=0, 1 load each; liveness from 1023012/1023264 (n-503) ⇒ all 10 cells single-host,
+no VOIDs. Analyzer 5bafd092. **Disclosure:** the descriptive command was NOT recorded in ANALYSIS_COMMANDS_P2B.md before
+the run (earlier reports implied it was); it was run exactly as amendment 1 defines (41 RAND + 5 SHUF + 5 DER, no
+capop/CW) and recorded afterwards with a dated revision note (doc sha256 acf67d24…). Descriptive only ⇒ no verdict
+affected. Outputs `p2b_{basket,button}_descriptive_ranks_train.json`.
+
+| cw r | recovery | frac BASE−KO | vs RAND | vs DER | vs full | CAND−mean(DER) [CI] | ‖ΔW‖ | #params |
+|---|---|---|---|---|---|---|---|---|
+| basket 1* | 1.24 | .70 | 1/62 | 9/16 | 9/82 | +.006 [−.002,+.012] | 44.9 | 346k |
+| basket 2 | 1.42 | .80 | 1/42 | 2/6 | 2/52 | +.009 [−.001,+.018] | 53.8 | 692k |
+| basket 4* | 1.45 | .82 | 1/62 | 2/16 | 2/82 | +.021 [+.010,+.033] | 55.5 | 1.38M |
+| basket 8 | 1.35 | .76 | 1/42 | 2/6 | 2/52 | +.009 [−.012,+.026] | 83.2 | 2.77M |
+| basket 16 | 1.25 | .70 | 1/42 | 4/6 | 4/52 | −.003 [−.019,+.012] | 79.3 | 5.54M |
+| basket 32 | 1.40 | .79 | 1/42 | 1/6 | 1/52 | +.028 [+.018,+.039] | 68.8 | 11.1M |
+| basket 50 | 1.34 | .75 | 1/42 | 2/6 | 2/52 | +.004 [−.007,+.015] | 72.3 | 17.3M |
+| button 1* | 1.70 | .87 | 1/62 | 13/16 | 13/82 | −.004 [−.006,−.001] | 38.9 | 346k |
+| button 2 | 1.62 | .83 | 1/42 | 1/6 | 1/52 | +.013 [+.008,+.018] | 50.0 | 692k |
+| button 4* | 1.55 | .79 | 1/62 | 14/16 | 14/82 | −.011 [−.019,−.003] | 60.2 | 1.38M |
+| button 8 | 1.63 | .83 | 1/42 | 4/6 | 4/52 | +.001 [−.009,+.010] | 75.1 | 2.77M |
+| button 16 | 1.52 | .77 | 1/42 | 2/6 | 6/52 | +.015 [+.005,+.025] | 100.3 | 5.54M |
+| button 32 | 1.69 | .86 | 1/42 | 3/6 | 3/52 | +.002 [−.004,+.009] | 79.2 | 11.1M |
+| button 50 | 1.63 | .83 | 1/42 | 4/6 | 4/52 | −.006 [−.013,+.000] | 82.4 | 17.3M |
+
+(* = primary ranks, from the S-135 read.) "recovery" is relative to KO_FULL (an L18 query-position rescue that restores
+only ~51–56% of BASE−KO, S-136) — read the gap fraction, not "overshoot". Preservation at all ranks: fit-side damage
+≤ 0.003 of the gap; |BASE_CAND − BASE| ≤ 0.042.
+- **Reading (descriptive, in-sample):** the operator's rescue is RANK-FLAT — it restores ~0.70–0.82 (basket) / ~0.77–
+  0.87 (button) of the BASE−KO gap at every rank 1…50 while #params grows 50× and ‖ΔW‖ ~1.6–2.1×. CAND ranks 1st vs
+  random norm-matched edits at every rank. Pairing specificity is SPARSE and NON-MONOTONE (CAND−mean(DER) CI-lo>0 only
+  at basket r4/r32 and button r2/r16; CI-hi<0 at button r1/r4); with 5 descriptive ranks per codeword no rank trend is
+  claimed. **In this weight-operator family, more rank adds no rescue, and no rank-dependent basket/button difference
+  appears up to r=50** — consistent with (not a test of) the VAL outcome D at r∈{1,4}.
