@@ -1,0 +1,41 @@
+{
+  "schema": "hcsi_prereg/1",
+  "id": "PR-HCSI-S199",
+  "written": "2026-10-15, F6, BEFORE any extended-control arm is run (no GPU job submitted)",
+  "trigger": "Review #9 / S-198: the basket r1 VALIDATION PASS (rank 1/57, p=0.0175, job 968532) was never corrected for basket's 3 VALIDATION looks {r1, r4 (job 1022699, rank 1/57, descriptive), r16 (job 968533, rank 10/57)} => Holm 3 x 0.0175 = 0.0525 > 0.05. Mirrors PR-HCSI-S084 + Amendment 1 + the S-114 binding rule.",
+  "question": "With a control family large enough that the floor no longer binds, does the basket rank-1 candidate's VALIDATION rescue remain specific after Holm correction over all three basket VALIDATION looks?",
+  "family_of_looks": {
+    "r4": {"source": "reports/heretic_csi/hcsi_p2a_basket_r4_validation.json (frozen analyzer, job 1022699, S-073: descriptive, fragile)", "rank": "1/57", "p": 0.0175},
+    "r16": {"source": "reports/heretic_csi/hcsi_p2a_basket_r16.json (frozen analyzer, split=validation, job 968533)", "rank": "10/57", "p": 0.1754},
+    "r1": {"source": "THIS re-test: extended family", "p": "TBD = rank/(n_controls+1)"},
+    "note": "As-recorded p values. With r4 at 0.0175, Holm requires r1's p_ext to be < 0.05/3 = 0.01667 if it is the smallest, or < 0.05/2 = 0.025 if r4's 0.0175 is smaller (then r4's Holm 3*0.0175 = 0.0525 > 0.05 stops the step-down: Holm stops at the first non-rejection, so r1 can only pass if r1's p_ext is the smallest AND 3*p_ext < 0.05). Holm is computed exactly by the frozen code (step-down with monotone max)."
+  },
+  "data": "the SAME VALIDATION population read in S-048/049: basket bank ts116m, runargs/dcs_cont/exclude_basket_bomb_sow_validation.txt, 230 rows / 23 domains, cell C semantic_one_word, KO demo_all:attn_knockout:6-14:1.0 target_surface_row_only, rescue at L18 query positions, eager bf16, seed 20260913, NVIDIA RTX A5000 (job 968532 ran on a5000, n-501, single attempt; every new job must report the identical GPU type else VOID).",
+  "candidate": "cand_rank1 from configs/heretic_csi/hcsi_ranksweep_basket.pt (sha16 679c76d2d0e8fe9e), arm KO_CAND_r1 already run in job 968532 (reused, not rerun).",
+  "control_family": {
+    "existing": "56 = 46 ctrl_random_r1_{0..45} + 10 ctrl_shuffled_pls1_{0..9}, run in job 968532 (reused)",
+    "new": "144 = ctrl_random_r1_{46..189}: random unit vectors (rank-1 orthonormal bases), SAME generation code path as scripts/dcs_csi_axis.py (M=randn(1,4096,float64); Q=qr(M.T)[0].T), NEW generator seed 20261015 (axis 20260915; S-084 used 20261014), in NEW file configs/heretic_csi/hcsi_ranksweep_basket_r1ext.pt (sha256 95458377eea9724d4cb26ea80ee0cbbe77d743e7fb44574ba3a7ad218c0c8457). That file COPIES the source meta (codeword=basket, selected_layer=18, site=rel-6, fit_prompt=behavioral, fit_population) so score_behavior's layer/codeword guards fire (fixes the S-107b meta gap), and contains a byte-identical copy of cand_rank1 as the norm-match key. Norm-matched at scoring time via --rescue-norm-match-key cand_rank1, exactly as the original 46.",
+    "total": 200,
+    "p_floor": "1/201 = 0.004975 < 0.05/3"
+  },
+  "jobs": "Two new a5000 jobs via research/heretic_csi/slurm/p2a_powered_ext.slurm (sha256 91f6c6ced84babd135f8fdf05e0b756ff7295e1b9bb3d1bbb1cc0495043a4df1; generic copy of the S-084 slurm; COMMON/KO/RESC flags byte-identical to rescue_sweep.slurm; --no-requeue): job A = basket 1 cand_rank1 <ext pt> 46 117 1 (incl. 4 overlap arms), job B = ... 118 189 0. Liveness, candidate and the original 56 controls are reused from job 968532.",
+  "overlap_check": "Job A re-runs OVL_BASE (=BASE), OVL_KO (=KO), OVL_CAND_r1 (=KO_CAND_r1: original basis, key cand_rank1, no norm-match), OVL_RAND_r1_0 (=KO_RAND_r1_0: original basis, ctrl_random_r1_0, norm-match cand_rank1). For each, per prompt_id: |dlogp_concept|, |dlogp_codeword|, |dy| <= 1e-6 vs job 968532 and identical prompt_id sets; any violation => VOID.",
+  "statistic_and_rule": {
+    "primary_floor": "BASE-referenced option-mass floor 0.05 (the frozen rule; S-049 standard) = PRIMARY.",
+    "statistic": "candidate and each control: mean over domains of (domain-mean y_install[arm] - domain-mean y_install[KO]) over the (domain,slot) keys common to ALL 205 arms within the BASE-floor key set (frozen analyzer definition), computed UNROUNDED with the analyzer's own helpers and asserted to round to the analyzer's published 5-dp values.",
+    "pass_rule": "PASS iff Holm({r4: 0.0175, r16: 0.1754, r1: p_ext})[r1] < 0.05 with p_ext = (1 + #controls >= candidate)/201 (ties against the candidate) AND candidate > every KO_SHUF_r1_j (n=10) AND candidate-minus-KO domain-cluster CI lower bound > 0 (frozen analyzer) AND all gates AND no VOID.",
+    "binding_rule": "As S-114: the same rule is applied to the unrounded statistics AND to the frozen analyzer's 5-dp-rounded statistics; PASS only if both PASS; disagreement => 'DOES NOT PASS (rounding-sensitive)'; VOID propagates.",
+    "row_set": "Shared row set must equal the original's 133 (n_keys_common of reports/heretic_csi/hcsi_p2a_basket_r1.json). If smaller (rank-1 norm-match-degeneracy row drops in new controls), REPORT the deviation and the arms responsible; the analyzer's common-key set is used as-is (no post-hoc control exclusion)."
+  },
+  "sensitivity_declared": {
+    "paired_floor": "DESCRIPTIVE ONLY, never the verdict: identical decision recomputed with the strict PAIRED floor (keep keys where BASE, KO and KO_FULL all have option mass >= 0.05), CI by domain-cluster bootstrap (20000, seed 20260915). basket r1 was floor-sensitive in S-052 (F3: strict paired floor VAL 2/57). Note recorded before the read: F3's S-052 per-domain means were taken over each arm's own rows (no cross-arm key intersection, the defect review #3 found in the v1 contrast); this read's generic code intersects keys, and on the ORIGINAL 56-control job it gives paired-floor rank 1/57 on 123 rows (test_p2a_powered_read.py), not 2/57."
+  },
+  "analysis_command": "python research/heretic_csi/p2a_powered_read.py --codeword basket --rank 1 --orig-job 968532 --ext-jobs <jobA>,<jobB> --looks r4=0.0175,r16=0.1754 --n-old-rand 46 --n-new 144 --nshuf 10 --expected-rows 133 --tag P2A_BASKET_R1_POWERED  (read script sha256 94382e871f4bba414de08e724c4bacea82d1db001393e57377e76cc29aa669cd; basis builder sha256 6355b565b96b54e78ad3cee3997ebb378c068201171c6e7d4323bc246ddac94a)",
+  "honest_scope": [
+    "SAME VALIDATION data re-analysed with a larger null: resolves the floor limitation and corrects for the 3 declared basket VAL looks only; NOT a fresh test.",
+    "basket r1 is floor-sensitive (S-052); BASE-ref floor is pre-declared PRIMARY, paired floor reported as sensitivity only.",
+    "SHUF null stays n=10 (floor 1/11 against shuffled-label PLS alone); the rule requires beating all 10.",
+    "Activation-space axis family only; not the ARA weight operator; semantic installation only; no behavioral claim; fresh confirmation needs P6 codewords."
+  ],
+  "test_split": "never"
+}

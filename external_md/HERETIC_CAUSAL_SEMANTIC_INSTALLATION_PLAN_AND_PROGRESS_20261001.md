@@ -2972,3 +2972,21 @@ anticipates P4/P6/P7; most numbers trace exactly. Problems:
 - "Basket's rank-1 carrier is CONFIRMED / certified" — suggestive (uncorrected over 3 VAL looks: Holm 0.0525).
 - "The P2b operator uses ARA's objective" — it uses ARA's operator form with an MSE steer chosen by TRAIN CV.
 - "Button requires (exactly) 4 dimensions" — passes at r4, not r1; ranks 2–3 untested on VAL.
+
+## S-199 — 2026-10-15 14:20 — PREREG PR-HCSI-S199 (powered basket r1 re-test) committed before any new arm
+- `configs/heretic_csi/prereg_S199_basket_r1_powered.json` (sha256 455ec592…6b6f): mirrors S-084 + Amendment 1 + S-114.
+  Family = basket's 3 VAL looks {r4 0.0175 (as recorded), r16 0.1754, r1 extended}; r1 re-tested on the SAME VAL data
+  (job 968532: RTX A5000 n-501; expected shared rows 133) with 144 NEW rank-1 random controls (seed 20261015) + the
+  existing 56 ⇒ 200 controls; r1 passes Holm only if p_ext ≤ ~0.0167 (rank ≤ 3/201) as the smallest p; plus beat
+  every SHUF, CI-lo>0, gates, no VOID, unrounded+rounded binding; overlap arms vs 968532 bit-exact; same GPU type;
+  BASE-ref floor PRIMARY, paired floor descriptive. Scope: same data, bigger null, not fresh.
+- Basis `configs/heretic_csi/hcsi_ranksweep_basket_r1ext.pt` (sha256 95458377…8457; manifest updated): cand_rank1
+  byte-identical; source meta copied (codeword basket, selected_layer 18, site rel-6, fit_prompt behavioral) ⇒ the
+  score_behavior guards fire (fixes the S-107b gap); 144 new controls near-orthogonal to the originals (max |cos|
+  0.057 sampled). Code (additive): `p2a_powered_build_basis_v2.py`, `slurm/p2a_powered_ext.slurm` (generic; COMMON/
+  KO/RESC byte-identical), `p2a_powered_read.py` (generic frozen read), tests 5/5 (parent-run) — reproduces the
+  already-read 968532 exactly (133 rows, rank 1/57) and S-084's button PASS bit-for-bit.
+- **DISPUTED (pending independent verification):** F6 reports that under the strict PAIRED floor with cross-arm key
+  intersection, the original 56-control basket r1 VAL cell gives rank **1/57 on 123 rows**, not the 2/57 F3 reported in
+  S-052 (F3's per-domain means may have skipped the cross-arm key intersection — the defect review #3 found in the
+  S-085 contrast). S-052 / S-198 "2/57 under the paired floor" is therefore DISPUTED until F3 re-checks.

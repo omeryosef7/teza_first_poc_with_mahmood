@@ -1,8 +1,13 @@
 """Build reports/heretic_csi/EXPERIMENT_REGISTRY.json from committed files (F9, interim).
 Each entry is declared here (experiment metadata transcribed from the progress log S-entries) and enriched
 from disk: sha256 of every listed config/artifact that exists, and the last git commit touching each config.
-Re-run any time:  python research/heretic_csi/build_registry.py"""
-import hashlib, json, os, subprocess, datetime
+Usage:
+  python research/heretic_csi/build_registry.py [--out reports/heretic_csi/EXPERIMENT_REGISTRY_v2.json] [--check]
+--check rebuilds in memory and compares with --out, ignoring built_at / repo_head_at_build; exit 1 on mismatch.
+Per-job code provenance: git_commit from score_behavior RUNMETA (P2a/P2b/P6 GPU jobs), SHA256SUMS of the job's code
+snapshot (outputs/heretic_csi/p2b/code_snapshots/<job>_r*/, outputs/heretic_csi/p3p4/code_<job>/,
+outputs/heretic_csi/p6/code_<job>/) where present; otherwise "config last-commit" is the only git provenance."""
+import argparse, glob, hashlib, json, os, subprocess, datetime, sys
 
 REPO = "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
 HERETIC_SHA = "662e4ba27ecaf8878b0938c184a78f75a9116f82"
@@ -21,6 +26,39 @@ def sha(p):
         for b in iter(lambda: f.read(1 << 20), b""):
             h.update(b)
     return h.hexdigest()
+
+_RUNMETA = None
+def runmeta_commits():
+    global _RUNMETA
+    if _RUNMETA is None:
+        _RUNMETA = {}
+        for f in glob.glob(os.path.join(REPO, "outputs/boombness/score_behavior/*/RUNMETA.json")):
+            try:
+                m = json.load(open(f))
+            except Exception:
+                continue
+            j = str(m.get("slurm_job_id") or "")
+            if j:
+                _RUNMETA.setdefault(j, set()).add(m.get("git_commit"))
+    return _RUNMETA
+
+def job_code(job):
+    j = str(job).split()[0]
+    out = {"job": str(job)}
+    gc = runmeta_commits().get(j)
+    if gc:
+        out["runmeta_git_commit"] = sorted(x for x in gc if x)
+    for pat in (f"outputs/heretic_csi/p2b/code_snapshots/{j}_r*/SHA256SUMS", f"outputs/heretic_csi/p3p4/code_{j}",
+                f"outputs/heretic_csi/p6/code_{j}"):
+        hits = glob.glob(os.path.join(REPO, pat))
+        if hits:
+            h = hits[0]
+            out["code_snapshot"] = os.path.relpath(h, REPO)
+            if os.path.isfile(h):
+                out["code_snapshot_sha256"] = sha(os.path.relpath(h, REPO))
+    if len(out) == 1:
+        out["code_provenance"] = "config last-commit only"
+    return out
 
 def last_commit(p):
     try:
@@ -43,7 +81,7 @@ add("P0-PhaseA", "P0", "Heretic audit: base->modify->reset->base, dW rank, Optun
     "DONE", "PASS (with upstream findings: reset keeps lora_A; deployed != optimized under preserve_row_magnitudes; resume re-draws trial 0)",
     ["S-062", "S-077"])
 add("P0-PhaseB", "P0", "Native last-position Heretic ARA as a control on matched TRAIN populations (target=C, source=A)",
-    "TRAIN tune / VAL read once", ["configs/heretic_csi/phaseB"], ["reports/heretic_csi/phaseB/PHASEB_SUMMARY.md"],
+    "TRAIN tune / VAL read once", sorted(os.path.relpath(f, REPO) for f in glob.glob(os.path.join(REPO, "configs/heretic_csi/phaseB/*/MANIFEST.json"))), ["reports/heretic_csi/phaseB/PHASEB_SUMMARY.md"],
     ["1023185", "1023251", "1023386"], {"lora_rank_chosen": 50, "layers": "6-30", "controls": 42},
     "DONE", "MEASURED control: answer-position output bias, NOT codeword-specific installation (scoped S-083)",
     ["S-077", "S-083"])
@@ -51,7 +89,7 @@ add("P0-PhaseB", "P0", "Native last-position Heretic ARA as a control on matched
 for cw in ("basket", "button"):
     for r, split, f, jobs, verdict, log in [
         (1, "VALIDATION", f"reports/heretic_csi/hcsi_p2a_{cw}_r1.json", ["968532" if cw == "basket" else "968534"],
-         "PASS 1/57 (floor-sensitive, S-052)" if cw == "basket" else "DOES NOT PASS 14/57", ["S-049", "S-052"]),
+         "SUGGESTIVE: PASS 1/57 at the 56-control floor; floor-sensitive (S-052); uncorrected over basket's 3 VAL looks (Holm 0.0525, S-198)" if cw == "basket" else "DOES NOT PASS 14/57 (verifier 18/57)", ["S-049", "S-052", "S-198"]),
         (16, "VALIDATION", f"reports/heretic_csi/hcsi_p2a_{cw}_r16.json", ["968533" if cw == "basket" else "968535"],
          "DOES NOT PASS 10/57", ["S-049"]),
         (4, "TRAIN-K4", f"reports/heretic_csi/hcsi_p2a_{cw}_r4_train.json", ["969085" if cw == "basket" else "969087"],
@@ -64,12 +102,31 @@ for cw in ("basket", "button"):
         add(f"P2a-{cw}-r{r}-{split}", "P2a", "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
             split, ["configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt"] + (["configs/heretic_csi/prereg_S051_rank4_validation.json"] if (r == 4 and split == "VALIDATION") else []),
             [f], jobs, {"bank": BANKS[cw], "controls": "46 RAND + 10 SHUF", "seed": SEED}, "DONE", verdict, log)
+for cw in ("basket", "button"):
+    for r, job, verdict in ((1, "966084" if cw == "basket" else "966157",
+                             "2/57 p=0.035 (passes only under AM-48)" if cw == "basket" else "DOES NOT PASS 23/57 (verifier 25/57)"),
+                            (16, "965928" if cw == "basket" else "966158", "DOES NOT PASS 10/57")):
+        add(f"P2a-{cw}-r{r}-TRAIN", "P2a", "activation-space PLS rank-r rescue at L18 rel-6 under KO (full 670 TRAIN rows)",
+            "TRAIN", ["configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt"],
+            ["reports/heretic_csi/VERIFY_S049_independent.json"], [job],
+            {"bank": BANKS[cw], "controls": "46 RAND + 10 SHUF", "seed": SEED,
+             "note": "per-cell analyzer JSON for TRAIN was overwritten by the VAL analysis (S-052); values from the S-049 table + verifier"},
+            "DONE", verdict, ["S-049", "S-052"])
+add("C1-TRAIN-LOO", "P5", "rank-1 probe quality TRAIN leave-one-domain-out (inherited C1 replication)", "TRAIN",
+    ["configs/heretic_csi/hcsi_ranksweep_basket.json", "configs/heretic_csi/hcsi_ranksweep_button.json"], [],
+    ["964404", "964435"], {}, "DONE", "basket 0.5629 vs button 0.5042 (TRAIN LOO; superseded as evidence by held-out S-054/S-065)",
+    ["S-043", "S-054", "S-065"])
+add("P2b-MEANBIAS-builds", "P2b", "TRAIN-mean (clean-KO) codeword-row gap bias (full-norm) and norm-matched variants", "TRAIN",
+    ["configs/heretic_csi/PREREG_P2B_AMENDMENT_3.json", "configs/heretic_csi/PREREG_P2B_AMENDMENT_6.json"],
+    ["outputs/heretic_csi/p2b/prod/fac/meanbias_basket.pt", "outputs/heretic_csi/p2b/prod/fac/meanbias_button.pt"]
+    + [f"outputs/heretic_csi/p2b/prod/fac/meanbias_nm_{c}_r{r}.pt" for c in ("basket", "button") for r in (1, 4)],
+    ["1023763", "1040046"], {}, "DONE", "built from TRAIN captures only (verified review #3 / amendment 6)", ["S-086", "S-133"])
 add("P2a-button-r4-POWERED", "P2a", "S-084 powered re-test: button r4 VAL vs 200 controls, Holm over 3 VAL looks", "VALIDATION",
     ["configs/heretic_csi/prereg_S084_button_r4_powered.json", "configs/heretic_csi/prereg_S084_button_r4_powered_AMENDMENT_1.json",
      "configs/heretic_csi/ANALYSIS_COMMANDS_S084.md"],
     ["reports/heretic_csi/P2A_BUTTON_R4_POWERED.json", "reports/heretic_csi/P2A_BUTTON_R4_POWERED_BINDING.json",
      "reports/heretic_csi/hcsi_p2a_button_r4ext_validation_analyzer.json", "reports/heretic_csi/VERIFY_S084_powered.json"],
-    ["1022698", "1027577", "1032110"], {"controls": "190 RAND + 10 SHUF", "floor": 0.005, "seed": SEED},
+    ["1022698", "1027577", "1032110"], {"controls": "190 RAND + 10 SHUF", "floor": 0.005, "readout_seed": SEED, "new_control_generator_seed": 20261014},
     "DONE", "CONFIRMED: rank 1/201, p=0.004975, Holm 0.0149, beats all SHUF, LODO 23/23 (independently verified)",
     ["S-125", "S-126"])
 add("P2a-contrast", "P2a", "basket-vs-button r1->r4 specificity interaction (descriptive)", "VALIDATION (already read)",
@@ -89,7 +146,8 @@ for cw in ("basket", "button"):
         "DONE", ("basket r4 PASS (in-sample, fragile); r1 fail; CWONLY pass" if cw == "basket" else "all fail"),
         ["S-135", "S-136", "S-138", "S-140"])
     add(f"P2b-{cw}-VAL", "P2b", "frozen operators on VALIDATION; outcome mapping per amendment 5", "VALIDATION",
-        ["configs/heretic_csi/PREREG_P2B_VALIDATION.json", "configs/heretic_csi/ANALYSIS_COMMANDS_P2B.md"],
+        ["configs/heretic_csi/PREREG_P2B_VALIDATION.json", "configs/heretic_csi/PREREG_P2B.json"]
+        + [f"configs/heretic_csi/PREREG_P2B_AMENDMENT_{i}.json" for i in range(1, 8)] + ["configs/heretic_csi/ANALYSIS_COMMANDS_P2B.md"],
         [f"reports/heretic_csi/p2b_{cw}_primary_validation.json", f"reports/heretic_csi/p2b_{cw}_meanbias_nm_validation.json",
          "reports/heretic_csi/VERIFY_P2B_VAL.json"],
         (["1023578", "1023579", "1040101", "1041761"] if cw == "basket" else ["1036679", "1036680", "1040122", "1040170", "1041761"]),
@@ -131,25 +189,44 @@ add("P6-stage0-gates", "P6", "new-codeword Stage-0 (readout, L18 extraction, axi
     ["configs/heretic_csi/PREREG_P6.json"] + [f"configs/heretic_csi/PREREG_P6_AMENDMENT_{i}.json" for i in range(1, 7)],
     ["reports/heretic_csi/hcsi_p6_g2_lamp.json", "reports/heretic_csi/hcsi_p6_g2_kettle.json", "reports/heretic_csi/hcsi_p6_g2_pencil.json",
      "reports/heretic_csi/hcsi_p6_g2_ladder.json", "reports/heretic_csi/hcsi_p6_bank_checks.json", "reports/heretic_csi/hcsi_p6_occ_check.json",
-     "reports/heretic_csi/hcsi_p6_power_iut.json"],
-    ["1040103", "1040547", "1041177", "1041485", "1041401", "1041734", "1041850"], {"gpu": "l40s", "partition": "killable"},
-    "RUNNING", "interim: G3 fail candle; G3 pass 14; G2 pass lamp/kettle/pencil/ladder; others pending", ["S-142", "S-146", "S-168", "S-178"])
+     "reports/heretic_csi/hcsi_p6_power_iut.json", "reports/heretic_csi/P6_GATE_TABLE_interim.md"]
+    + sorted(os.path.relpath(f, REPO) for f in glob.glob(os.path.join(REPO, "outputs/heretic_csi/p6/stage0_*.json"))),
+    ["1038879 (a5000 OOM pilot, superseded)", "1039942 (preempted)", "1040044 (failed: node /tmp)", "1040103 (candle readout)",
+     "1040225 (batch A; lamp readout reused; cancelled)", "1040422 (preempted)", "1040533 (failed: shell bug)", "1040547 (batch 1)",
+     "1041177 (batch 2)", "1041485 (batch 3; preempted after 4/5)", "1041596 (batch 4; preempted; sponge done)",
+     "1041733 (preempted)", "1041850 (running at build)", "1041401 (G2 batch 1)", "1041561 (G2 preempted)",
+     "1041708 (G2 preempted)", "1041734 (G2 batch 2)", "1042039 (G2 batch 3)", "1041178 (axisfit)", "1041480", "1041481",
+     "1041482", "1041483", "1041484", "1041635", "1041636", "1041637", "1041638", "1041735", "1024033 (occ, failed)",
+     "1024038 (occ)"], {"gpu": "l40s", "partition": "killable"},
+    "RUNNING", "interim: G3 FAIL candle (borderline 0.0481); G1-G3 survivors so far: lamp, kettle, pencil, ladder, blanket, bucket, pillow, saddle, wagon (S-197); others pending",
+    ["S-142", "S-146", "S-167", "S-168", "S-178", "S-187", "S-197"])
 add("P6-rescue", "P6", "DEV draw + per-codeword rescue + H6a", "VALIDATION", [], [], [], {}, "PENDING", "PENDING", [])
 add("P7-design", "P7", "behavioral linking design", "VALIDATION (planned)", ["configs/heretic_csi/PREREG_P7_DRAFT.json"],
     ["reports/heretic_csi/P7_DESIGN.md"], [], {}, "DONE (design)",
     "primary pre-labelled CANNOT ANSWER / UNDERPOWERED (MDE 0.0907 vs plausible <=0.0021)", ["S-193"])
 
+ap = argparse.ArgumentParser()
+ap.add_argument("--out", default="reports/heretic_csi/EXPERIMENT_REGISTRY_v2.json")
+ap.add_argument("--check", action="store_true")
+args = ap.parse_args()
 head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO, capture_output=True, text=True).stdout.strip()
 for e in E:
+    e["job_code_provenance"] = [job_code(j) for j in e["slurm_jobs"]]
     e["configs"] = [{"path": p, "sha256": sha(p), "last_commit": last_commit(p)} for p in e["configs"]]
     e["artifacts"] = [{"path": p, "sha256": sha(p)} for p in e["artifacts"]]
     e["heretic_sha"] = HERETIC_SHA
     e["model"] = MODEL
     e["domain_split"] = SPLIT_FILE
-out = {"schema": "hcsi_registry/1", "interim": True, "built_at": datetime.datetime.now().isoformat(timespec="seconds"),
+out = {"schema": "hcsi_registry/2", "interim": True, "built_at": datetime.datetime.now().isoformat(timespec="seconds"),
        "repo_head_at_build": head, "source_log": "external_md/HERETIC_CAUSAL_SEMANTIC_INSTALLATION_PLAN_AND_PROGRESS_20261001.md",
        "experiments": E}
-p = os.path.join(REPO, "reports/heretic_csi/EXPERIMENT_REGISTRY.json")
+p = os.path.join(REPO, args.out)
+if args.check:
+    old = json.load(open(p))
+    strip = lambda d: {k: v for k, v in d.items() if k not in ("built_at", "repo_head_at_build")}
+    same = json.dumps(strip(old), sort_keys=True) == json.dumps(strip(json.loads(json.dumps(out))), sort_keys=True)
+    print("CHECK", "OK" if same else "MISMATCH", p)
+    sys.exit(0 if same else 1)
 json.dump(out, open(p, "w"), indent=1)
 missing = [a["path"] for e in E for a in e["configs"] + e["artifacts"] if a["sha256"] is None]
 print("wrote", p, "entries", len(E), "missing files:", missing)
