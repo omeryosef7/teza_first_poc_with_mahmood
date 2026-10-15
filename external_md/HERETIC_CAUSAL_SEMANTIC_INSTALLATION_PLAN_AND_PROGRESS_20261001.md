@@ -2895,3 +2895,7 @@ basket, 0.57–0.58 button).
 - Blocker for any P7 run: VALIDATION behavioral exclusion files don't exist (CPU, minutes).
 - Optional DESCRIPTIVE secondary (button only — basket refusal at floor ⇒ CANNOT ANSWER): refusal + same-row
   manipulation check, 14 arms ≈ 18 GPU-h + ~$1. **Deferred** until P4 and P6 finish (priority order); decision then.
+
+## S-194 — 2026-10-15 12:40 — ops tick
+- GPU 2: P6 Stage-0 1041850 (whistle, yogurt, banana; n-802), G2 1041734 (blanket…wagon; t-806, 1h31). P4 v2: basket r4
+  fit still running (last one). No failures.
