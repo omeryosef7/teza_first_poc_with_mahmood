@@ -2839,3 +2839,8 @@ only ~51–56% of BASE−KO, S-136) — read the gap fraction, not "overshoot". 
   at basket r4/r32 and button r2/r16; CI-hi<0 at button r1/r4); with 5 descriptive ranks per codeword no rank trend is
   claimed. **In this weight-operator family, more rank adds no rescue, and no rank-dependent basket/button difference
   appears up to r=50** — consistent with (not a test of) the VAL outcome D at r∈{1,4}.
+
+## S-189 — 2026-10-15 11:10 — ops tick
+- GPU: 2 running (P6 1041733 Stage-0 last 6 codewords; 1041734 G2 blanket…wagon, both t-806). P4 v2: both CV10 done,
+  button r1 fit done, basket r4 + button r4 fits running ⇒ P4 eval prereg after those. Idle slots ⇒ F2 to submit the
+  amendment-6 descriptive MEANBIAS_NM VALIDATION arms (≤2 jobs). No failures.
