@@ -36,6 +36,7 @@
   "exclusion_file": "runargs/heretic_csi/p6/exclude_kettle_bomb_sow_train.txt",
   "n": 670
  },
+ "partition": "killable",
  "validation": {
   "arm_dirs": {
    "BASE": {

@@ -29,6 +29,7 @@ def build(prev):
         rjob = str(json.load(open(os.path.join(a.readout, "RUNMETA.json"))).get("slurm_job_id"))
     g3 = js(a.gate); g1 = js(a.g1)
     out = {"codeword": a.cw, "status": a.status, "batch_job": os.environ.get("SLURM_JOB_ID"),
+           "partition": os.environ.get("SLURM_JOB_PARTITION"),
            "rc": {"readout": a.readout_rc or None, "extract": a.extract_rc or None},
            "g3": g3, "g3_status": (g3 or {}).get("G3") if a.status in ("G3_PASS", "G3_FAIL", "ERROR_EXTRACT") else "UNDECIDED",
            "g1": g1, "g1_status": (("PASS" if g1["ci95"][0] > 0.05 else "FAIL") if isinstance(g1, dict) and "ci95" in g1 else

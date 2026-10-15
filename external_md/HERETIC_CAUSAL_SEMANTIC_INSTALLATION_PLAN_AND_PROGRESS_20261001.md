@@ -2790,3 +2790,16 @@ its sha + GPU type, then submit (F5 already on this order).
   running, 1 colleague job pending for 2 GPUs): ≤2 of our jobs there at any time, `l40s:1` only (amendment-6 GPU pin
   unchanged), global cap 6 across killable + gpu-sharifm, fall back to killable if others queue; partition recorded in
   every manifest.
+
+## S-187 — 2026-10-15 11:00 — gpu-sharifm NOT accessible (group restriction) ⇒ stay on killable; partition provenance added
+- `scontrol update Partition=gpu-sharifm` refused: hidden partition with AllowGroups=cs_gpu-sharifm; the account is in
+  math1 / gww-users / moamadim / cs_sharifm, not cs_gpu-sharifm (sacctmgr association alone is insufficient). Also
+  PreemptMode=REQUEUE there and it includes n-804 (bad /tmp). ⇒ **S-186 moot; all P6 GPU work stays on killable**
+  (preemption handled by whole-job reruns per amendment 6). Group membership would need the user / cluster admins.
+- Partition provenance: `p6_write_manifest.py` (SLURM_JOB_PARTITION) and `p6_g2.py` (sacct) record partitions; all 16
+  manifests backfilled; G2 reports for lamp/kettle/pencil/ladder re-evaluated (still PASS, no errors) with
+  `partition: killable` (superseded versions in git). Committed now, BEFORE pending jobs 1041733/1041734 reach those
+  steps (so they run committed code).
+- Status: G3 PASS 14 (lamp, kettle, pencil, ladder, blanket, bucket, pillow, saddle, wagon, cushion, curtain, bottle,
+  jacket, sponge); G3 FAIL candle; G2 PASS 4 (lamp, kettle, pencil, ladder); G2 pending blanket…wagon (1041734), then
+  cushion, curtain, bottle, jacket, sponge; Stage-0 remaining whistle, yogurt, banana, chair, balloon, ribbon (1041733).

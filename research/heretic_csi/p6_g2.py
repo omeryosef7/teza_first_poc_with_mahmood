@@ -75,13 +75,19 @@ for k, d in dirs.items():
               "rows": sum(1 for _ in open(os.path.join(d, "results.jsonl"))), "gpu": rm.get("gpu")}
 ar = os.path.join(REPO, f"outputs/heretic_csi/p6/g2_arm_runner_{a.job}.json")
 arj = json.load(open(ar)) if os.path.exists(ar) else {}
+try:  # partition of the G2 job, from SLURM accounting (works inside or outside the job)
+    import subprocess
+    part = subprocess.run(["sacct", "-j", a.job, "-X", "-n", "-o", "Partition%30"], capture_output=True, text=True, timeout=60).stdout.strip() or None
+except Exception:
+    part = None
+res["partition"] = part
 res["validation"] = {"arm_dirs": val, "single_gpu_type": len({v["gpu"] for v in val.values()}) == 1,
                      "arm_runner": {k: arj.get(k) for k in ("n_arms_requested", "n_arms_run", "n_ok", "n_model_loads", "hook_leak_detected")} if arj else None}
 res["errors"] = errors
 res["G2"] = ("ERROR" if errors else
              "PASS" if (res["KO_minus_BASE"]["ci95"][1] < 0 and res["KO_FULL_minus_KO"]["ci95"][0] > 0) else "FAIL")
 man = os.path.join(REPO, f"outputs/heretic_csi/p6/stage0_{a.cw}.json")
-p6_manifest_io.update(man, lambda m: {**m, "g2": res, "g2_status": res["G2"]})
+p6_manifest_io.update(man, lambda m: {**m, "g2": res, "g2_status": res["G2"], "g2_partition": res["partition"]})
 rep = os.path.join(REPO, f"reports/heretic_csi/hcsi_p6_g2_{a.cw}.json")
 if os.path.isdir(os.path.dirname(rep)):
     json.dump(res, open(rep, "w"), indent=1)
