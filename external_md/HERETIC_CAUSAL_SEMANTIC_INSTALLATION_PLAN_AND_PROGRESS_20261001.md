@@ -3054,3 +3054,19 @@ net on the frozen objective; 60 RAW + 60 NC random disjoint 8-head sets per cell
   does not fit the knockout→clean map better than random 8-head sets — **fitting-side evidence AGAINST H2's
   head-concentration prediction for this operator family** (in-sample; the preregistered eval, TRAIN-K4 then VAL, still
   decides under amendments 1–4). F5 to send eval prereg/plan shas; nothing submitted before my commit.
+
+## S-204 — 2026-10-15 14:30 — P4 v2 EVAL bundle committed (PREREG_P4_AMENDMENT_5 + ANALYSIS_COMMANDS_P4) before any P4 endpoint
+- `configs/heretic_csi/PREREG_P4_AMENDMENT_5.json` (sha256 eee4841f…2cd6): per-rank baseline arms inside every job; one
+  job / one GPU type per (codeword, rank, split) — analyzer VOIDs a rank whose arms span >1 job or GPU type; submission
+  order basket TRAIN-K4 r1/r4 → button TRAIN-K4 (secondary transfer) → VAL only after the matching TRAIN read is logged;
+  ≤3 concurrent P4 jobs; TRAIN-K4 is in-sample for candidate and both control families (a TRAIN pass is weak evidence);
+  the 8-head set was certified on basket VAL (D32) so a basket VAL read is not a fresh test of the nomination; TEST never
+  used; no change to controls/ranks/rule after any TRAIN read. **A P4 null is the expected outcome (fit-side, S-203),
+  recorded here before any eval; a pass would be surprising and requires independent re-verification before any claim.**
+- `reports/heretic_csi/ANALYSIS_COMMANDS_P4.md` (sha256 8420ada7…7ae2): exact submission, TRAIN-K4 and VAL commands,
+  decision rule (IUT max(p_RAW, p_NC) then Holm over {1,4}), costs, code shas: `p4_analyze_v2.py` bfee75ec…a313a,
+  `p3p4_emit.py` 3d6b438f…0d6f, `p4_head_fit_v2.py` 1c559ed9…793d, `p4v2_template.sh` 76ccc4f0…5e74b (+ 8 per-cell plans
+  in `configs/heretic_csi/p2b_plans/`); frozen operators (basket r1 f385f7e1…, r4 7110e2ee…, button r1 af496573…, r4
+  cb0fb0d9…). One job per cell on a5000, 132 arms, ≈9.7 GPU-h per TRAIN-K4 job / 8.3 per VAL; ≈72 GPU-h total.
+- Tests 14/14; 0 hcsi_p4 score dirs at commit. CV (10 sets) fit-side ranks among 11 (RAW/NC): basket r1 5/2, r4 10/11;
+  button r1 7/4, r4 10/11 (fitting-side diagnostic only; never decision-relevant).

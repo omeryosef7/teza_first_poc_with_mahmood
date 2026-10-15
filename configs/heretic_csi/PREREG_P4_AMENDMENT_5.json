@@ -1,0 +1,21 @@
+{
+  "schema": "hcsi_prereg_amendment/1",
+  "amends": "PREREG_P4 + AMENDMENTS 1-4",
+  "written": "2026-10-15, BEFORE any P4 eval job is submitted (0 hcsi_p4* score dirs); bundle sent to parent for commit; NO submission before the parent's 'committed'",
+  "trigger": "Cross-hardware readout noise (S-062) + the P3 lesson (P3_TRUNC_READ_VOID.md): every comparison must stay within one job / one GPU. The v2 plan ran liveness only in the r1 job, so r4 arms would have been compared with liveness from a different job (possibly a different GPU).",
+  "changes": {
+    "liveness_per_rank_job": "BASE / KO / KO_FULL / KO_IDENT are emitted in EVERY (codeword, rank, split) job at prefix hcsi_p4v2_<cw>_<split>_r<R> (p4v2_template.sh); LIVE flag removed. 132 arms per job.",
+    "single_job_rule": "p4_analyze_v2.analyze_rank reads all arms of a rank (liveness + TOP8 + descriptive + 120 controls) at the rank prefix and VOIDs the rank unless all run dirs come from ONE slurm job and ONE GPU type (RUNMETA).",
+    "submission_order": "basket (primary) TRAIN-K4 r1 and r4 first; then button (secondary transfer) TRAIN-K4 r1 and r4; VALIDATION (same frozen factors, no refit) only AFTER the corresponding TRAIN read is logged. Each wave is submitted only after the parent confirms the commit of the prereg set + plan shas. <= 3 concurrent P4 GPU jobs; global cap 6 GPU jobs (count killable jobs of ALL workstreams at submit time).",
+    "hardware_pinning": "One job per (codeword, rank, split), each running its own liveness arms (132 arms); --gpus=a5000:1 (p2b_job.slurm), --no-requeue, stage from the verified scratch mirror (sha256-checked); prefer warm nodes -w n-501/n-503 only if a matching GPU is free, otherwise unpinned a5000. p4_analyze_v2 VOIDs a rank unless all its run dirs share ONE slurm_job_id and ONE GPU type. The r1 and r4 jobs of a codeword may land on different a5000 nodes; Holm combines p-values, not raw values, so this is allowed; no cross-rank raw comparison is made.",
+    "provenance_overlap_rules": [
+      "TEST never read; TRAIN-K4 (runargs/heretic_csi/exclude_<cw>_K4.txt, 268 rows) is IN-SAMPLE for TOP8 and BOTH fitted control families (all fitted on the full TRAIN capture): a TRAIN pass is weak evidence; only a VALIDATION read counts (and it is read once, with the frozen factors).",
+      "The 8-head set was certified on basket VALIDATION (D32) => a basket VALIDATION P4 read is a held-out test of the TRAIN-fitted operator, NOT a fresh test of the head nomination.",
+      "Fit-side expectation recorded BEFORE any eval (P4V2_FIT_SUMMARY_final.json, S-203): TOP8 is mid-pack against random 8-head sets in all four cells (in-sample rank among RAW/NC: basket r1 34/61, 7/61; basket r4 25/61, 30/61; button r1 17/61, 17/61; button r4 51/61, 53/61; CV rank among 10+1: basket r1 5/2, basket r4 10/11, button r1 7/4, button r4 10/11). A P4 null is the expected outcome; a PASS would be surprising and must be re-verified independently before any claim.",
+      "Frozen artifacts: factors_p4v2_<cw>_r<R>.pt sha256 recorded in ANALYSIS_COMMANDS_P4.md; each job writes the factor sha into every sidecar; analyzer VOIDs on mismatch (Amendment 4).",
+      "No post-hoc change to controls, ranks, or the rule after any TRAIN read; the VAL plan uses the same frozen factors and the same analyzer."
+    ]
+  },
+  "gpu_estimate": "per (cw, rank, split) 132 arms: TRAIN-K4 ~9.7 GPU-h, VALIDATION ~8.3 GPU-h; all 8 jobs ~72 GPU-h (basket TRAIN r1+r4 ~19.4 GPU-h first)",
+  "unchanged": "candidate, families (RAW + NC), IUT per rank, Holm over {1,4}, validity rule (A2), CV diagnostic (A3), sha/hooks checks (A4), caveats."
+}
