@@ -2572,3 +2572,28 @@ Verifier/reviewer (own code `research/heretic_csi/verify/verify_p2b_val.py`) →
   the first L18-only axisfit basis (lamp) vs the incumbent basis format incl. meta (codeword/selected_layer guards),
   TRAIN-only fit, G1 computation; P3 truncation code (REEXP ≡ CAND, per-module norm-matched controls, Holm over k,
   retention CI, minimal-k rule); overclaims S-140…S-165 → `reports/heretic_csi/REVIEW_ADVERSARIAL_20261015_g.md`.
+
+## S-167 — 2026-10-15 05:40 — ~4h ADVERSARIAL REVIEW #7 (P6 / P3 code): no result-changing bug; corrections + pre-read fixes
+Report `reports/heretic_csi/REVIEW_ADVERSARIAL_20261015_g.md`.
+**Verified OK:** P6 G3 population = the incumbent rescue BASE rows exactly (670 rows / 67 domains for basket/button);
+values differ only by batching/seed/hardware (per-row |Δ| 0.006–0.010; medians within ±0.002). All 7 Stage-0
+manifests consistent (5568/5568 rows, 0 failures, identical readout args, job-matched). Lamp L18-only axis basis has
+the incumbent schema + same 31 meta keys, codeword/selected_layer present (guards will fire), TRAIN-only fit (67 dom /
+670 rows), 199 orthonormal bases. G1 reproduces (lamp 0.5388 [0.4846, 0.5908]). P3 truncation construction matches
+the prereg (133 arms; REEXP ≡ CAND at factor level, rel 3.7e-8; controls rank-k, norm-matched ≤3e-8; gate correct).
+**CORRECTIONS (appended):**
+- S-142 "candle FAILS the frozen gate (genuine)" ⇒ **candle is a BORDERLINE G3 fail**: G3 median 0.048 [domain-bootstrap
+  95% CI 0.037, 0.063], P(>0.05) = 0.32; blanket a borderline pass 0.056 [0.039, 0.066]; lamp robust 0.075
+  [0.058, 0.101]. The frozen point rule decides; CIs reported descriptively.
+- S-142/S-146 "one model load per batch" is WRONG: each codeword runs separate processes (one load per codeword).
+- "survivors" (S-146, S-162) ⇒ **"G3-passing"** — G2 (KO liveness) is not yet implemented/run.
+- PREREG_P3_TRUNC's "written BEFORE the P3 job is submitted": written before, but committed (01:37:47) after
+  submission (01:35:54) — disclosed in S-158; a prereg erratum file is being added.
+**Fixes before the affected reads/draw (owners tasked):** P6 AMENDMENT 5 (pre-draw): candle (G3 fail) stays in the
+denominator with NO rescue arms; DEV = 5 drawn G1–G3 survivors. G2 implemented + cheap GPU job per G3-passer.
+`p6_g3.py`: codeword guard (a mismatched readout currently returns a wrong-codeword G3), rows==population assert,
+empty ⇒ ERROR, CI reporting. Manifests: rc per step, error-path manifests, axis .pt sha. P3: implement the promised
+REEXP-vs-CAND statistic check + sidecar-sha check (or VOID) before reading 1041078; wording "vs random edits only;
+not vs fitted controls; DROP norm-confounded" (TOP1/TOP2 keep 86%/98% of ΔW norm — a k* of 1–2 is near-guaranteed
+against random edits). Note: rank-1 random controls are byte-identical across codewords (fixed seed) — shared noise
+in H6a (declared dependence).
