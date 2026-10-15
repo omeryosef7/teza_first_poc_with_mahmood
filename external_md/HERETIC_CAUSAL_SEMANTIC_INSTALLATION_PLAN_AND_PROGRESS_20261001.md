@@ -2648,3 +2648,7 @@ in H6a (declared dependence).
 ## S-174 — 2026-10-15 08:10 — ops tick
 - evalB 136/137 (of 168), P3 trunc 123/133 (read ~08:45), G2 1041401 (1h15) + P6 batch 3 1041485 running on t-806.
   5 GPU. No failures. Next deep review ~09:10 (after the P3 read).
+
+## S-175 — 2026-10-15 08:40 — ops tick: P3 trunc job DONE (read pending, F5)
+- 1041078 DONE_MARKER (134 ok lines); F5 validates 133/133 + single attempt and runs the committed analyzer
+  (REEXP≡CAND + sidecar checks). evalB 143/145 (of 168); G2 1041401 + P6 batch 3 running. 4 GPU. No failures.
