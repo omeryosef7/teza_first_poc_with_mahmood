@@ -3082,3 +3082,6 @@ net on the frozen objective; 60 RAW + 60 NC random disjoint 8-head sets per cell
 
 ## S-207 — 2026-10-15 14:38 — ops tick (quiet)
 - SLURM: S-199 jobs 1042049/50 RUNNING (n-503); P6 Stage-0 1042103 RUNNING (n-802); G2 1042039 RUNNING (t-806, 1h16m); P4 basket r1 1042143 PENDING priority (1042100 cancelled duplicate, 1042106 failed on n-502 at 4 s before any arm — no P4 score dirs). Whistle axis fit 1042104 COMPLETED. No duplicates/stale jobs; <6 killable. No endpoints read. Review #10 not yet due (#9 at 14:00).
+
+## S-208 — 2026-10-15 15:08 — ops tick (quiet)
+- Unchanged since S-207: 1042049/50 (S-199) RUNNING, 1042103 (P6 Stage-0) RUNNING, 1042039 (G2) RUNNING 1h46m, 1042143 (P4 basket r1) PENDING priority. No failures/duplicates/stale jobs; no endpoints read. Review #10 due ~18:00.
