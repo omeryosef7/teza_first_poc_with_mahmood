@@ -3099,3 +3099,9 @@ net on the frozen objective; 60 RAW + 60 NC random disjoint 8-head sets per cell
 
 ## S-212 — 2026-10-15 16:38 — ops tick
 - P6 Stage-0 1042103 (chair/balloon/ribbon) COMPLETED 1h56m — F7 resumed to validate and submit G2/axis for passers. P4 basket r1 1042143 RUNNING (40 min), r4 1042311 PENDING; S-199 1042049/50 RUNNING (2h10–2h25m); G2 whistle+chair 1042284 PENDING. No failures/duplicates; no endpoints read.
+
+## S-213 — 2026-10-15 16:46 — P6 Stage-0 COMPLETE (all 21 codewords) (F7 report; my recompute pending)
+- Batch 1042103 (670/670 rows each, no errors): chair G3 PASS 0.1268 [0.108,0.153] / G1 0.364 [0.316,0.415] PASS; **balloon G3 FAIL 0.0314** (gated out, stays in denominator, no rescue arms); ribbon G3 PASS 0.0583 [0.047,0.068] (thin margin: decision follows the frozen point rule, not the CI) / G1 0.449 PASS. Chair axis 1042285 done; ribbon axis 1042341; G2 whistle+chair 1042284 pending; ribbon G2 to follow.
+- G3-fail denominator: candle (DEV-excluded), yogurt, banana, balloon.
+- **CORRECTION of S-206/S-209 power bound** (balloon failed): ≤17 of the 20 untouched can survive ⇒ ≤12 confirmation codewords after the 5-codeword DEV draw = exactly the CANNOT-ANSWER boundary (<12). If any of whistle/chair/ribbon fails G2, n_conf ≤11 ⇒ H6a CANNOT ANSWER under the frozen rule; at exactly 12 it is UNDERPOWERED (power ≈0.5–0.7). Draw driver still refuses until G2 final.
+- OPEN DECISION (no action before G2 resolves): whether to extend the pool with fresh replacement codewords. This would be a new preregistered amendment (gates G1–G3 are pre-rescue, so it is permissible only if written and committed before any rescue arm is run and with the same frozen gates); not done, not pre-judged.
