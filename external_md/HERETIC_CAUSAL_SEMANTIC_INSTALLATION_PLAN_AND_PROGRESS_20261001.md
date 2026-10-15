@@ -2696,3 +2696,12 @@ KO_SELF inert everywhere. Magnitudes for lamp/kettle/pencil ≈ the incumbents (
 half (weak installer, G1 0.15). Reports `reports/heretic_csi/hcsi_p6_g2_{lamp,kettle,pencil,ladder}.json`.
 **Survivors (G1–G3) so far: lamp, kettle, pencil, ladder.** G2 for blanket/bucket/pillow/saddle/wagon (1041561) and
 P6 batch 3 (1041485) running.
+
+## S-179 — 2026-10-15 09:10 (clock-checked) — ops tick + ~4h ADVERSARIAL REVIEW #8 launched
+- (S-176–S-178 header times ran ~15–30 min ahead of the wall clock; content unaffected.)
+- 4 GPU: evalB 151/153 (of 168); P6 batch 3 1041485 (t-806, 2h06); G2 batch 2 1041561 (n-805). No failures.
+- **Review #8** (fresh, read-only): independent recomputation of G2 for the 4 passers from raw run dirs + invocation
+  parity with the incumbent rescue + correct-codeword ids; DEV-draw spec/dry-run under amendment 5 (determinism,
+  pre-rescue covariates only, cannot run early); P3 VOID handling; overclaim audit S-166…S-178; pending risks before
+  P4 eval and the P6 rescue stage (power, multiplicity, L40S-readout vs a5000-rescue hardware mixing).
+  → `reports/heretic_csi/REVIEW_ADVERSARIAL_20261015_h.md`.
