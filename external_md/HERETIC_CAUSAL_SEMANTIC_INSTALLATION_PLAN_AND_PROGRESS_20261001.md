@@ -2781,3 +2781,12 @@ its sha + GPU type, then submit (F5 already on this order).
   (ranks {1,2,4,8,16,32,50}, both codewords; recovery, gap fraction, ranks vs RAND/DER, CAND−mean(DER), ΔW norm,
   #params, damage; plot with random-control band; DESCRIPTIVE, in-sample).
 - GPU: 2 running (P6 batch 4 1041596; G2 rerun 1041708). 4 slots free; P4 evals await the P4 fit summary + prereg.
+
+## S-186 — 2026-10-15 10:50 — P6 preemption losses ⇒ limited use of lab partition gpu-sharifm
+- Batch 4 (1041596) and G2 rerun (1041708) PREEMPTED on n-805 (batch 4 finished only sponge, G3 PASS). Resubmitted:
+  1041733 (whistle, yogurt, banana, chair, balloon + ribbon), 1041734 (G2: blanket, bucket, pillow, saddle, wagon).
+  killable preemption has now cost 5 P6 jobs (1040422, 1041485, 1041561, 1041596, 1041708).
+- **Parent decision:** P6 GPU jobs may use `gpu-sharifm` (listed in the mandate; at decision time 24 GPUs, nothing
+  running, 1 colleague job pending for 2 GPUs): ≤2 of our jobs there at any time, `l40s:1` only (amendment-6 GPU pin
+  unchanged), global cap 6 across killable + gpu-sharifm, fall back to killable if others queue; partition recorded in
+  every manifest.
