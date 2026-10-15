@@ -2774,3 +2774,10 @@ its sha + GPU type, then submit (F5 already on this order).
   steps re-run with the committed code reproduce identically (closes the S-181 provenance gap for batch 3). ribbon
   pending ⇒ re-run after batch 4 (≤1 Stage-0 job). Axisfits 1041635–38 (cushion, curtain, bottle, jacket) running.
   Batch 4 1041596: sponge G3 PASS, whistle in progress.
+
+## S-185 — 2026-10-15 10:40 — ops tick: all descriptive rank jobs DONE ⇒ rescue-vs-rank curve requested
+- evalB basket 1040759 DONE_MARKER (with 1040766, 1040700, 1040701 ⇒ all descriptive ranks {2,8,16,32,50} done).
+  F2 asked to validate + run the frozen descriptive analysis and build the P2b rescue-vs-rank deliverable
+  (ranks {1,2,4,8,16,32,50}, both codewords; recovery, gap fraction, ranks vs RAND/DER, CAND−mean(DER), ΔW norm,
+  #params, damage; plot with random-control band; DESCRIPTIVE, in-sample).
+- GPU: 2 running (P6 batch 4 1041596; G2 rerun 1041708). 4 slots free; P4 evals await the P4 fit summary + prereg.
