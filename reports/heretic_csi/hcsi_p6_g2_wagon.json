@@ -1,0 +1,78 @@
+{
+ "codeword": "wagon",
+ "job": "1041734",
+ "n_paired_rows": 670,
+ "arms": {
+  "BASE": "outputs/boombness/score_behavior/hcsi_p6g2_wagon_BASE_20261015_125325_3019486",
+  "KO": "outputs/boombness/score_behavior/hcsi_p6g2_wagon_KO_20261015_125812_3019486",
+  "KO_SELF": "outputs/boombness/score_behavior/hcsi_p6g2_wagon_KO_SELF_20261015_130448_3019486",
+  "KO_FULL": "outputs/boombness/score_behavior/hcsi_p6g2_wagon_KO_FULL_20261015_131215_3019486"
+ },
+ "KO_minus_BASE": {
+  "point": -0.18336,
+  "ci95": [
+   -0.20367,
+   -0.16349
+  ],
+  "n_domains": 67
+ },
+ "KO_FULL_minus_KO": {
+  "point": 0.1035,
+  "ci95": [
+   0.09079,
+   0.11621
+  ],
+  "n_domains": 67
+ },
+ "KO_SELF_minus_KO": {
+  "point": -0.00043,
+  "ci95": [
+   -0.00116,
+   0.00031
+  ],
+  "n_domains": 67
+ },
+ "population": {
+  "exclusion_file": "runargs/heretic_csi/p6/exclude_wagon_bomb_sow_train.txt",
+  "n": 670
+ },
+ "partition": "killable",
+ "validation": {
+  "arm_dirs": {
+   "BASE": {
+    "slurm_job_id": "1041734",
+    "done": true,
+    "rows": 670,
+    "gpu": "NVIDIA L40S"
+   },
+   "KO": {
+    "slurm_job_id": "1041734",
+    "done": true,
+    "rows": 670,
+    "gpu": "NVIDIA L40S"
+   },
+   "KO_SELF": {
+    "slurm_job_id": "1041734",
+    "done": true,
+    "rows": 670,
+    "gpu": "NVIDIA L40S"
+   },
+   "KO_FULL": {
+    "slurm_job_id": "1041734",
+    "done": true,
+    "rows": 670,
+    "gpu": "NVIDIA L40S"
+   }
+  },
+  "single_gpu_type": true,
+  "arm_runner": {
+   "n_arms_requested": 20,
+   "n_arms_run": 20,
+   "n_ok": 20,
+   "n_model_loads": 1,
+   "hook_leak_detected": false
+  }
+ },
+ "errors": [],
+ "G2": "PASS"
+}

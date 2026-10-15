@@ -2921,3 +2921,18 @@ r4 K4 common-row counts differ by codeword (basket 179 vs button 239 TRAIN; 133/
 option-mass attrition, matters for cross-codeword comparisons; (5) early reduced-sweep artifacts
 `hcsi_p2a_basket_r4.json` / `_r32.json` (S-013 era; n_keys 14, 8 controls) share the production prefix — NOT
 production results; (6) non-monotone header times in a clock-corrected window.
+
+## S-197 — 2026-10-15 13:40 — P6 G2 batch 2 (1041734): blanket, bucket, pillow, saddle, wagon all PASS ⇒ 9 G1–G3 survivors
+670 paired rows / 67 TRAIN domains each; domain-cluster 95% CIs; no evaluator errors:
+
+| codeword | KO − BASE | KO_FULL − KO | KO_SELF − KO | G2 |
+|---|---|---|---|---|
+| blanket | −0.325 [−0.360, −0.290] | +0.135 [0.116, 0.153] | −0.000 [−0.001, 0.000] | PASS |
+| bucket | −0.196 [−0.225, −0.171] | +0.106 [0.091, 0.122] | −0.001 [−0.002, −0.000] | PASS |
+| pillow | −0.320 [−0.351, −0.289] | +0.130 [0.112, 0.148] | +0.000 [−0.001, 0.001] | PASS |
+| saddle | −0.257 [−0.288, −0.228] | +0.101 [0.086, 0.117] | −0.000 [−0.001, 0.001] | PASS |
+| wagon | −0.183 [−0.204, −0.163] | +0.103 [0.091, 0.116] | −0.000 [−0.001, 0.000] | PASS |
+
+(bucket's KO_SELF CI excludes 0 by ~0.001 — negligible vs the KO effect; noted.) **G1–G3 survivors: lamp, kettle,
+pencil, ladder, blanket, bucket, pillow, saddle, wagon (9).** G2 for cushion, curtain, bottle (667-row _occ
+population), jacket, sponge = 1042039; Stage-0 last 6 via queue runner (1041850 first).
