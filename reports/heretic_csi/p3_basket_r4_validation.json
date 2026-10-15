@@ -1,0 +1,280 @@
+{
+ "codeword": "basket",
+ "rank": 4,
+ "split": "validation",
+ "prefix": "hcsi_p3_basket_r4_validation",
+ "n_keys": 145,
+ "n_domains": 23,
+ "gates": {
+  "KO_minus_BASE": -0.2799628525569417,
+  "FULL_minus_KO": 0.14017949306132918,
+  "ok": true
+ },
+ "void": [
+  "REEXP check: per-row |y_REEXP - y_refCAND| 0.0723 > 0.01"
+ ],
+ "flags": [],
+ "reexp_check": {
+  "n_keys": 145,
+  "gpu": "NVIDIA RTX A5000",
+  "KO_vs_refKO_max_abs_dy": 0.0,
+  "REEXP_vs_refCAND_max_abs_dy": 0.07234416492036633,
+  "stat_REEXP": 0.21110729256501987,
+  "stat_ref_CAND": 0.21042763163782285,
+  "abs_stat_diff": 0.0006796609271970122,
+  "tolerances": {
+   "stat": 0.001,
+   "row": 0.01,
+   "ko": 1e-06
+  }
+ },
+ "wording": "k* (if any) is vs RANDOM norm-matched edits only; NOT vs fitted controls; DROP losses are norm-confounded",
+ "stat": {
+  "KO_REEXP": 0.21111,
+  "KO_TOP1": 0.19795,
+  "KO_TOP2": 0.20904,
+  "KO_TOP1N": 0.19953,
+  "KO_TOP2N": 0.21222,
+  "KO_DROP1": 0.01159,
+  "KO_DROP2": 0.19975,
+  "KO_DROP3": 0.21124,
+  "KO_DROP4": 0.21078
+ },
+ "recovery": {
+  "KO_REEXP": {
+   "status": "ok",
+   "point": 1.506,
+   "ci95": [
+    1.2283,
+    1.812
+   ],
+   "numerator_point": 0.21111,
+   "denominator_point": 0.14018,
+   "n_domains_with_movement": 23,
+   "draws_dropped": 0
+  },
+  "KO_TOP1": {
+   "status": "ok",
+   "point": 1.4121,
+   "ci95": [
+    1.1587,
+    1.6992
+   ],
+   "numerator_point": 0.19795,
+   "denominator_point": 0.14018,
+   "n_domains_with_movement": 23,
+   "draws_dropped": 0
+  },
+  "KO_TOP2": {
+   "status": "ok",
+   "point": 1.4912,
+   "ci95": [
+    1.2123,
+    1.8019
+   ],
+   "numerator_point": 0.20904,
+   "denominator_point": 0.14018,
+   "n_domains_with_movement": 23,
+   "draws_dropped": 0
+  },
+  "KO_TOP1N": {
+   "status": "ok",
+   "point": 1.4234,
+   "ci95": [
+    1.1644,
+    1.7152
+   ],
+   "numerator_point": 0.19953,
+   "denominator_point": 0.14018,
+   "n_domains_with_movement": 23,
+   "draws_dropped": 0
+  },
+  "KO_TOP2N": {
+   "status": "ok",
+   "point": 1.5139,
+   "ci95": [
+    1.2365,
+    1.8204
+   ],
+   "numerator_point": 0.21222,
+   "denominator_point": 0.14018,
+   "n_domains_with_movement": 23,
+   "draws_dropped": 0
+  },
+  "KO_DROP1": {
+   "status": "ok",
+   "point": 0.0827,
+   "ci95": [
+    -0.0051,
+    0.1529
+   ],
+   "numerator_point": 0.01159,
+   "denominator_point": 0.14018,
+   "n_domains_with_movement": 23,
+   "draws_dropped": 0
+  },
+  "KO_DROP2": {
+   "status": "ok",
+   "point": 1.425,
+   "ci95": [
+    1.1615,
+    1.7205
+   ],
+   "numerator_point": 0.19975,
+   "denominator_point": 0.14018,
+   "n_domains_with_movement": 23,
+   "draws_dropped": 0
+  },
+  "KO_DROP3": {
+   "status": "ok",
+   "point": 1.5069,
+   "ci95": [
+    1.2283,
+    1.8168
+   ],
+   "numerator_point": 0.21124,
+   "denominator_point": 0.14018,
+   "n_domains_with_movement": 23,
+   "draws_dropped": 0
+  },
+  "KO_DROP4": {
+   "status": "ok",
+   "point": 1.5036,
+   "ci95": [
+    1.2153,
+    1.8211
+   ],
+   "numerator_point": 0.21078,
+   "denominator_point": 0.14018,
+   "n_domains_with_movement": 23,
+   "draws_dropped": 0
+  }
+ },
+ "truncation_tests": {
+  "1": {
+   "rank_test": {
+    "rank": 1,
+    "of": 41,
+    "p": 0.024390243902439025,
+    "floor": 0.024390243902439025,
+    "n_controls": 40
+   },
+   "rank_test_renormed_descriptive": {
+    "rank": 1,
+    "of": 21,
+    "p": 0.047619047619047616,
+    "floor": 0.047619047619047616,
+    "n_controls": 20
+   },
+   "retention": {
+    "point": 0.9376883590344252,
+    "ci95": [
+     0.9012551739707225,
+     0.9764962483051656
+    ],
+    "n_boot_ok": 5000
+   },
+   "retention_renormed": {
+    "point": 0.9451595843106229,
+    "ci95": [
+     0.9136844030375659,
+     0.9790704847225429
+    ],
+    "n_boot_ok": 5000
+   },
+   "holm_p": 0.04878048780487805
+  },
+  "2": {
+   "rank_test": {
+    "rank": 1,
+    "of": 41,
+    "p": 0.024390243902439025,
+    "floor": 0.024390243902439025,
+    "n_controls": 40
+   },
+   "rank_test_renormed_descriptive": {
+    "rank": 1,
+    "of": 21,
+    "p": 0.047619047619047616,
+    "floor": 0.047619047619047616,
+    "n_controls": 20
+   },
+   "retention": {
+    "point": 0.9902142942835149,
+    "ci95": [
+     0.9722778549083217,
+     1.0076851365642487
+    ],
+    "n_boot_ok": 5000
+   },
+   "retention_renormed": {
+    "point": 1.0052918302697265,
+    "ci95": [
+     0.9915794857920673,
+     1.0200754209759586
+    ],
+    "n_boot_ok": 5000
+   },
+   "holm_p": 0.04878048780487805
+  }
+ },
+ "removal": {
+  "1": {
+   "loss": {
+    "point": 0.1995197200630814,
+    "ci95": [
+     0.13958755848193719,
+     0.26567856218060476
+    ]
+   },
+   "frac_of_REEXP": 0.9451105058420968
+  },
+  "2": {
+   "loss": {
+    "point": 0.01135630365202008,
+    "ci95": [
+     0.00419347313890947,
+     0.01993990699635261
+    ]
+   },
+   "frac_of_REEXP": 0.05379399031666535
+  },
+  "3": {
+   "loss": {
+    "point": -0.00013537251165069239,
+    "ci95": [
+     -0.0024363738079485487,
+     0.002127934047868374
+    ]
+   },
+   "frac_of_REEXP": -0.00064124981191256
+  },
+  "4": {
+   "loss": {
+    "point": 0.00032806236844499224,
+    "ci95": [
+     -0.003485652983150369,
+     0.0036190654278622568
+    ]
+   },
+   "frac_of_REEXP": 0.0015540077486617425
+  }
+ },
+ "minimal_sufficient_k": "VOID/CANNOT ANSWER",
+ "label": "DESCRIPTIVE (parent P2b basket r4 VALIDATION PASS is marginal; PREREG_P3_TRUNC.json)",
+ "run_dirs": {
+  "BASE": "hcsi_p3_basket_r4_validation_BASE_20261015_013653_2640250",
+  "KO": "hcsi_p3_basket_r4_validation_KO_20261015_013900_2640250",
+  "KO_FULL": "hcsi_p3_basket_r4_validation_KO_FULL_20261015_014205_2640250",
+  "KO_IDENT": "hcsi_p3_basket_r4_validation_KO_IDENT_20261015_014525_2640250",
+  "KO_REEXP": "hcsi_p3_basket_r4_validation_KO_REEXP_20261015_020107_2640250",
+  "KO_TOP1": "hcsi_p3_basket_r4_validation_KO_TOP1_20261015_020416_2640250",
+  "KO_TOP2": "hcsi_p3_basket_r4_validation_KO_TOP2_20261015_021032_2640250",
+  "KO_TOP1N": "hcsi_p3_basket_r4_validation_KO_TOP1N_20261015_020725_2640250",
+  "KO_TOP2N": "hcsi_p3_basket_r4_validation_KO_TOP2N_20261015_021340_2640250",
+  "KO_DROP1": "hcsi_p3_basket_r4_validation_KO_DROP1_20261015_014835_2640250",
+  "KO_DROP2": "hcsi_p3_basket_r4_validation_KO_DROP2_20261015_015143_2640250",
+  "KO_DROP3": "hcsi_p3_basket_r4_validation_KO_DROP3_20261015_015450_2640250",
+  "KO_DROP4": "hcsi_p3_basket_r4_validation_KO_DROP4_20261015_015757_2640250"
+ }
+}

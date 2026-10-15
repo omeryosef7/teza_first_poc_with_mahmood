@@ -2652,3 +2652,25 @@ in H6a (declared dependence).
 ## S-175 — 2026-10-15 08:40 — ops tick: P3 trunc job DONE (read pending, F5)
 - 1041078 DONE_MARKER (134 ok lines); F5 validates 133/133 + single attempt and runs the committed analyzer
   (REEXP≡CAND + sidecar checks). evalB 143/145 (of 168); G2 1041401 + P6 batch 3 running. 4 GPU. No failures.
+
+## S-176 — 2026-10-15 08:55 — P3 truncation/removal read = **VOID** (preregistered REEXP check failed); kept VOID
+Job 1041078 validated (DONE rc=0, 133/133 arms, 1 load, 1 attempt, A5000 n-503; analyzer 713fe39b). Output
+`reports/heretic_csi/p3_basket_r4_validation.json` (sha256 a8fb0322…1125).
+- **VOID reason:** REEXP (CAND rebuilt from its SVD) failed the per-row reproduction tolerance: max |y_REEXP − y_refCAND|
+  0.072 > 0.01; 37/145 rows > 0.01 (median 0.0004, p99 0.057). Other checks PASS: P3 KO ≡ reference KO (max |Δ| 0);
+  stat(REEXP) 0.2111 vs ref 0.2104 (|Δ| 0.0007 < 0.001); gates OK; no collapsed control. Diagnosis: float32 SVD
+  re-expression perturbs factors slightly; the readout amplifies it on some rows. The 0.01 row tolerance was set
+  without calibration.
+- **Parent decision: P3 stays VOID.** No post-hoc re-preregistration on the already-seen VAL data (would be
+  outcome-informed), and even a valid read would compare only against random norm-matched edits (which CAND beats
+  everywhere) ⇒ low marginal value. Lesson for any future SVD-truncation work: re-express in float64 and calibrate
+  reproduction tolerances on TRAIN before freezing.
+- MEASURED, NOT QUOTABLE (invalid read): REEXP stat 0.211 (recovery 1.51 [1.23, 1.81]); TOP1 0.198 (1.41), TOP2 0.209
+  (1.49); TOP1/TOP2 rank 1/41 vs random rank-k edits (Holm 0.0488, floor), retention 0.94 [0.90, 0.98] / 0.99
+  [0.97, 1.01]; DROP1 loses 0.95 (norm-confounded: ~84% of squared norm), DROP2 0.05 [0.02, 0.09], DROP3/4 ≈ 0.
+  Pattern (descriptive only): a rank-1-dominated operator whose effect follows its leading component — consistent with
+  the P3 shared mean-gap write direction.
+- P4 fit status: basket r1 fit+CV done; button r1 CV done; other fits 46/52/55 of 60 (~2–6 h); r4 CV on fold 4/5.
+
+### WHAT WE MUST NOT SAY (addendum S-176)
+- "The learned operator is effectively rank-1 / its minimal sufficient subspace is k=1" (P3 read VOID; vs random only).
