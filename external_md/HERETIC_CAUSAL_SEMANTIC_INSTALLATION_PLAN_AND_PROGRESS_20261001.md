@@ -2674,3 +2674,9 @@ Job 1041078 validated (DONE rc=0, 133/133 arms, 1 load, 1 attempt, A5000 n-503; 
 
 ### WHAT WE MUST NOT SAY (addendum S-176)
 - "The learned operator is effectively rank-1 / its minimal sufficient subspace is k=1" (P3 read VOID; vs random only).
+
+## S-177 — 2026-10-15 09:00 — ops: P6 G2 job 1 done (evaluation pending); G2 job 2 submitted
+- 1041401 (G2: lamp, kettle, pencil, ladder) COMPLETED 1h47 (DONE_MARKER arm_runner_rc=0); G2 evaluation not yet run
+  ⇒ F7 asked to evaluate + report. 1041561 = G2 for blanket, bucket, pillow, saddle, wagon. P6 batch 3 1041485 running.
+  F5: P3 VOID report `reports/heretic_csi/P3_TRUNC_READ_VOID.md`; P4 v2 eval plans/analyzer updated (per-rank-job
+  liveness; VOID on mixed job/GPU type; tests 14/14); prereg to be committed before any P4 submission.
