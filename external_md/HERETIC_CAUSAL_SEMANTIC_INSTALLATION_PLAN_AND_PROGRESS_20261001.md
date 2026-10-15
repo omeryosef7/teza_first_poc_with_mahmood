@@ -2629,3 +2629,8 @@ in H6a (declared dependence).
 
 ## S-170 — 2026-10-15 06:10 — ops tick
 - evalC 107/107 (of 112), evalB 104/104 (of 168), P3 trunc 85/133, P6 batch 2 on saddle. G2 held. 6 GPU. No failures.
+
+## S-171 — 2026-10-15 06:40 — ops tick: descriptive evalC DONE; G2 released
+- 1040700 / 1040701 (evalC {16,50}) DONE_MARKER (113 ok lines each). evalB 112/112 (of 168), P3 trunc 95/133, P6 batch 2
+  (blanket, bucket, pillow, saddle G3_PASS; wagon next). 4 GPU running ⇒ parent released G2 job 1041401. No failures.
+  Descriptive-rank analysis waits for evalB (full curve).
