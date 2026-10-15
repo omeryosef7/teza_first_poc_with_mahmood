@@ -44,12 +44,5 @@ python scripts/dcs_csi_axis.py --codeword "$CW" --corpus "$CORPUS" --readout "$R
   --n-random-rank 46 --n-shuffled-rank 10 --seed 20260915 --out "$OUT"
 SHA=$(sha256sum "$OUT" | cut -d' ' -f1); echo "$SHA  $OUT"
 # record the axis basis + its sha256 in the Stage-0 manifest (review #7 item 4)
-python - "$MAN" "$OUT" "$SHA" <<'PY'
-import json, os, sys
-man, out, sha = sys.argv[1:]
-m = json.load(open(man))
-m["axis"] = {"path": out, "sha256": sha, "axisfit_job": os.environ.get("SLURM_JOB_ID"),
-             "recipe": "dcs_csi_axis.py --fit-prompt behavioral --site rel-6 --force-layer 18 --max-rank 16 --rank-controls 1,4,16 --n-random-rank 46 --n-shuffled-rank 10 --seed 20260915"}
-json.dump(m, open(man, "w"), indent=1)
-PY
+python research/heretic_csi/p6_manifest_io.py set "$MAN" axis "{\"path\": \"$OUT\", \"sha256\": \"$SHA\", \"axisfit_job\": \"${SLURM_JOB_ID:-none}\", \"recipe\": \"dcs_csi_axis.py --fit-prompt behavioral --site rel-6 --force-layer 18 --max-rank 16 --rank-controls 1,4,16 --n-random-rank 46 --n-shuffled-rank 10 --seed 20260915\"}"
 echo "DONE_MARKER p6_axisfit cw=$CW out=$OUT sha256=$SHA rc=0 $(date -Is)"

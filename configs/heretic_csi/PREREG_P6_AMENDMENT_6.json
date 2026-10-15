@@ -1,0 +1,54 @@
+{
+ "schema": "hcsi_prereg_amendment/1",
+ "id": "PR-HCSI-P6 AMENDMENT 6",
+ "written": "2026-10-15, F7, on review #8 (reports/heretic_csi/REVIEW_ADVERSARIAL_20261015_h.md), BEFORE the DEV draw (not run; the driver currently refuses \u2014 gates not final for all 20) and before any P6 rescue job",
+ "amends": [
+  "PREREG_P6.json",
+  "AMENDMENTS 1\u20135 (5841ccd4\u2026)"
+ ],
+ "rescue_stage_pinning": {
+  "rule": "Each codeword's rescue evaluation (DEV and CONFIRMATION) runs as ONE SLURM job on --gpus=l40s:1 (the GPU class of every P6 Stage-0 readout and G2 job) and contains ALL of that codeword's rescue arms: liveness (BASE/KO/KO_SELF/KO_FULL), the candidate(s) and the full rank-matched control families.",
+  "VOID": "A codeword's rescue result is VOID if its arms come from more than one SLURM job or more than one GPU type (checked from every arm's RUNMETA slurm_job_id and gpu), or if any arm is not DONE. A VOID codeword stays in the denominator with reason 'VOID_RESCUE_PROVENANCE' and is excluded from H6a; it may be re-run ONCE in a fresh single job (the whole arm set), never patched arm-by-arm.",
+  "requeue": "rescue jobs use --no-requeue; a preempted job leaves a VOID codeword that is re-run whole.",
+  "hardware_note": "incumbent basket/button rescue VALIDATION reads ran on a5000 (S-048/S-072); they are contaminated DEV reference points only and never enter H6a, so the a5000-vs-L40S difference does not touch the confirmatory test; it is a declared caveat for any descriptive comparison with them (S-062 cross-hardware readout noise)."
+ },
+ "declared_shared_noise_dependencies": {
+  "identical_random_controls": "The 46-random rank-r control families (r in {1,4,16}; 138 bases) are BYTE-IDENTICAL across all 9 new codewords axis-fitted so far (lamp\u2026wagon; same dcs_csi_axis seed 20260915 and rank list) and will be for every new codeword. The incumbents basket/button share only the 46 rank-1 random controls with the new codewords (the generator stream diverges after rank 1 because their rank list was {1,2,4,8,16,32}); basket and button share all 138 with each other. Shuffled-label controls are codeword-specific (fit on each codeword's own shuffled labels; 0/30 shared). => per-codeword specificity z's share control directions => correlated noise across codewords.",
+  "aligned_candidate_axes": "Rank-1 candidate axes are moderately aligned across codewords: pairwise |cos| over 11 codewords min 0.328 / median 0.567 / max 0.745 (bucket\u00b7basket 0.745; lamp\u00b7basket 0.627). Codeword outcomes are therefore not independent draws.",
+  "shared_validation_domains": "Every codeword's VALIDATION outcome (z) and held-out probe quality use the SAME 23 VALIDATION domains, the same demo pools and templates => shared domain-level noise across codewords (in addition to the within-codeword probe/outcome dependence declared in AMENDMENT_3 c).",
+  "consequence": "H6a's permutation Spearman treats confirmation codewords as exchangeable independent units; these dependencies make that approximate. Declared, not removed; the H6a decision rule is unchanged. Any H6a result is reported with this caveat, and a pass is not described as a population law beyond the measured codewords."
+ },
+ "operational_rules": {
+  "commit_before_submit": "No P6 job is submitted unless `git status --porcelain <every script it runs>` is empty (the script and every python it calls are committed); otherwise the submission waits for the parent's commit.",
+  "gpu_cap": "submit only if `squeue -u $USER -h -p killable -t R | wc -l` < 6."
+ },
+ "other_review8_items_implemented": {
+  "dev_draw_driver": {
+   "path": "research/heretic_csi/p6_dev_draw_driver.py",
+   "sha256": "42d6ea0881b2f71d7785bd59b015fb48a4c02efe72b52e574184253695a8bbf8",
+   "behaviour": "refuses unless all 20 untouched codewords have FINAL g3/g1/g2 statuses (as applicable), rejects missing/NaN strengths, writes configs/heretic_csi/P6_DEV_DRAW.json once (O_EXCL create; refuses if present) with every manifest sha256 + code sha256s; --check validates only. tests/test_p6_dev_draw_driver.py (3 pass)."
+  },
+  "dev_draw_docstring": {
+   "path": "research/heretic_csi/p6_dev_draw.py",
+   "sha256": "e373d71231bde6007c87772c562715bf8991adb98b14dee6002f98cfe2bf288f",
+   "change": "'after G1, G2 AND G3 are finally decided' (docs only; behaviour unchanged since AMENDMENT_5)"
+  },
+  "explicit_gate_statuses": "manifests carry g3_status / g1_status / g2_status (PASS, FAIL, NOT_APPLICABLE_G3_FAIL, UNDECIDED, ERROR); existing manifests normalized by p6_normalize_status.py (no measured value changed).",
+  "g2_guards": {
+   "path": "research/heretic_csi/p6_g2.py",
+   "sha256": "4f966d04f7ecd4387a9d1bd71d815503950f69793924a4549418ddd644f624c2",
+   "change": "codeword guard on every arm (RUNMETA bank), every arm must score EXACTLY the shared population (p6_pop.population, incl. _occ for bottle/cushion), ERROR otherwise; explicit g2_status; report file with validation block. tests/test_p6_g2.py (6 pass). Re-evaluation of job 1041401: lamp/kettle/pencil/ladder PASS, no errors, 670/670 rows."
+  },
+  "shared_population": {
+   "path": "research/heretic_csi/p6_pop.py",
+   "sha256": "1eead572147ef6edf9ca620f161b3e537380d7d0b9b4fd51cbd5e2fd0c03b025",
+   "note": "single definition used by p6_g3.py (output byte-identical before/after refactor for 5 codewords) and p6_g2.py"
+  },
+  "atomic_locked_manifests": {
+   "path": "research/heretic_csi/p6_manifest_io.py",
+   "sha256": "7f34ab1042a1a55acef822fa6c21e83ae4d64520dc93bf1f6dfea733d86d5a1b",
+   "note": "fcntl lock + temp file + fsync + os.replace; used by p6_write_manifest.py, p6_g2.py, p6_backfill_manifest.py, p6_axisfit.slurm. A Stage-0 rerun carries g2/g2_status forward at top level (not into previous_manifest); axis carried only if the extraction dir is unchanged; previous_manifest keeps one level."
+  }
+ },
+ "unchanged": "All gate thresholds, H6a (IUT, one-sided alpha 0.05), H6b/H6c descriptive, S1/S2, dependence sensitivity, DEV draw procedure, TEST never."
+}

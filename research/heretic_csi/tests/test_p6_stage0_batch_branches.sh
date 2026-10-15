@@ -8,7 +8,7 @@ REPO=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
 SB=$(mktemp -d /tmp/claude-47249/-home-sharifm-students-omeryosef-first-poc-teza-first-poc-with-mahmood/b2d5e7b5-e18e-4ee6-ba19-55fa20bf97cb/scratchpad/p6sb.XXXX)
 mkdir -p "$SB/outputs/boombness/score_behavior" "$SB/outputs/boombness/extract_boombness" "$SB/outputs/heretic_csi/p6" "$SB/scratch_extract" "$SB/research/heretic_csi/slurm"
 ln -s "$REPO/data" "$SB/data"; ln -s "$REPO/src" "$SB/src"; ln -s "$REPO/scripts" "$SB/scripts"
-cp "$REPO/research/heretic_csi/p6_select_run.py" "$REPO/research/heretic_csi/p6_write_manifest.py" "$SB/research/heretic_csi/"
+cp "$REPO/research/heretic_csi/p6_select_run.py" "$REPO/research/heretic_csi/p6_write_manifest.py" "$REPO/research/heretic_csi/p6_manifest_io.py" "$SB/research/heretic_csi/"
 STUB="$REPO/research/heretic_csi/tests/p6_stub.py"
 sed -e "s#^cd /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood#cd $SB#" \
     -e '/^source .*conda.sh/d' -e '/^conda activate/d' -e '/^nvidia-smi/d' \

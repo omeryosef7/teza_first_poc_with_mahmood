@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """P6 DEV-set draw — the deterministic function frozen in configs/heretic_csi/PREREG_P6.json.
 
-Applied AFTER Stage-0 covariates exist (installer strength needs the Stage-0 readout) and BEFORE any rescue run.
-Inputs: Zipf per codeword (frozen now) and TRAIN installer strength (C−A, semantic_one_word, n4) per G1–G3 survivor.
+Applied ONLY via research/heretic_csi/p6_dev_draw_driver.py, AFTER every untouched codeword's gates G1, G2 AND G3 are
+finally decided (G2 needs its own KO-liveness GPU job) and BEFORE any rescue run.
+Inputs: Zipf per codeword (frozen now) and TRAIN installer strength (C−A, semantic_one_word, n4) per G1–G2–G3 survivor.
   1. Frequency tertiles are FROZEN NOW over the 20 untouched codewords: sort by (zipf, word), split 7/7/6
      (low/mid/high) — independent of which codewords later survive.
   2. Installer strength: above/below the MEDIAN of the surviving untouched codewords (ties -> 'below').
@@ -30,7 +31,7 @@ def tertiles(zipf=ZIPF):
 
 
 def draw(install_strength: dict, survivors: list, seed: int = SEED):
-    """install_strength: {codeword: TRAIN C-A}; survivors: G1–G3-surviving UNTOUCHED codewords."""
+    """install_strength: {codeword: TRAIN C-A}; survivors: UNTOUCHED codewords passing G1, G2 and G3."""
     surv = sorted(w for w in survivors if w in ZIPF)
     if len(surv) < 5:
         raise SystemExit(f"only {len(surv)} surviving untouched codewords — DEV draw impossible; see prereg")

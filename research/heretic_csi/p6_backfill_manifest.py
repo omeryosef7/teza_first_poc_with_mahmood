@@ -3,6 +3,8 @@
 axis {path, sha256 (recomputed), axisfit_job (from the axisfit log)} and G1 (re-computed by p6_install_strength.py on the
 manifest's readout dir, provenance recorded). Never changes status, readout or extract fields."""
 import glob, hashlib, json, os, re, subprocess, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import p6_manifest_io  # noqa: E402
 REPO = "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
 PY = "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python"
 for cw in sys.argv[1:]:
@@ -19,5 +21,7 @@ for cw in sys.argv[1:]:
     if not m.get("g1"):
         g1 = subprocess.check_output([PY, os.path.join(REPO, "research/heretic_csi/p6_install_strength.py"), cw, m["readout_dir"], "train"], cwd=REPO).decode()
         m["g1"] = json.loads(g1); m["g1_provenance"] = {"script": "research/heretic_csi/p6_install_strength.py", "readout_dir": m["readout_dir"], "split": "train", "backfilled": True}
-    json.dump(m, open(man, "w"), indent=1)
+    if isinstance(m.get("g1"), dict) and "ci95" in m["g1"]:
+        m["g1_status"] = "PASS" if m["g1"]["ci95"][0] > 0.05 else "FAIL"
+    p6_manifest_io.update(man, lambda cur, m=m: {**cur, **{k: m[k] for k in ("axis", "g1", "g1_provenance", "g1_status") if k in m}})
     print(cw, m["status"], m.get("axis", {}).get("sha256", "")[:12], m.get("axis", {}).get("axisfit_job"), m["g1"]["install_strength_C_minus_A"], m["g1"]["ci95"])

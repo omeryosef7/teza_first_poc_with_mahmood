@@ -86,8 +86,10 @@ def analyze_rank(a, r, assign):
     nc = [f"KO_RH8NC_{j}" for j in range(a.n_rh8)]
     cand, bc = "KO_TOP8", "BASE_TOP8"
     rk = [cand, bc] + DESC + raw + nc
-    dirs = {x: rederive.strict_run_dir(f"{a.prefix}_{x}", a.expect_n, row_file="results.jsonl", allow_short=a.allow_short) for x in live}
-    dirs.update({x: rederive.strict_run_dir(f"{rp}_{x}", a.expect_n, row_file="results.jsonl", allow_short=a.allow_short) for x in rk})
+    # liveness is run INSIDE each rank job (prefix <prefix>_r<R>), so every arm of a rank comes from one job / one GPU
+    dirs = {x: rederive.strict_run_dir(f"{rp}_{x}", a.expect_n, row_file="results.jsonl", allow_short=a.allow_short) for x in live + rk}
+    jobs = {json.load(open(os.path.join(d, "RUNMETA.json"))).get("slurm_job_id") for d in dirs.values()}
+    gpus = {json.load(open(os.path.join(d, "RUNMETA.json"))).get("gpu") for d in dirs.values()}
     arms = live + rk
     keep = sa.reference_key_set(dirs["BASE"], a.option_mass_floor) if a.option_mass_floor > 0 else None
     kv = {x: sa.arm_key_values(dirs[x], assign, a.split)[0] for x in arms}
@@ -98,6 +100,8 @@ def analyze_rank(a, r, assign):
     by = {x: pa.dmeans(common, lambda k, x=x: kv[x][k]) for x in arms}
     doms = sorted(by["BASE"])
     void, flags = [], []
+    if len(jobs) != 1 or len(gpus) != 1:
+        void.append(f"rank {r}: arms come from {len(jobs)} jobs / GPU types {sorted(map(str, gpus))} -- must be one job, one GPU")
     fp = os.path.join(a.factors_dir, f"factors_p4v2_{a.codeword}_r{r}.pt")
     fb, raw_norms = factor_checks(fp, a.n_rh8)
     void += fb

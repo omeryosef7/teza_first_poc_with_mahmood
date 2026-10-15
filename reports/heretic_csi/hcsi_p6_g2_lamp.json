@@ -32,43 +32,38 @@
   ],
   "n_domains": 67
  },
- "G2": "PASS",
+ "population": {
+  "exclusion_file": "runargs/heretic_csi/p6/exclude_lamp_bomb_sow_train.txt",
+  "n": 670
+ },
  "validation": {
   "arm_dirs": {
-   "BASE": [
-    {
-     "slurm_job_id": "1041401",
-     "done": true,
-     "rows": 670,
-     "gpu": "NVIDIA L40S"
-    }
-   ],
-   "KO": [
-    {
-     "slurm_job_id": "1041401",
-     "done": true,
-     "rows": 670,
-     "gpu": "NVIDIA L40S"
-    }
-   ],
-   "KO_SELF": [
-    {
-     "slurm_job_id": "1041401",
-     "done": true,
-     "rows": 670,
-     "gpu": "NVIDIA L40S"
-    }
-   ],
-   "KO_FULL": [
-    {
-     "slurm_job_id": "1041401",
-     "done": true,
-     "rows": 670,
-     "gpu": "NVIDIA L40S"
-    }
-   ]
+   "BASE": {
+    "slurm_job_id": "1041401",
+    "done": true,
+    "rows": 670,
+    "gpu": "NVIDIA L40S"
+   },
+   "KO": {
+    "slurm_job_id": "1041401",
+    "done": true,
+    "rows": 670,
+    "gpu": "NVIDIA L40S"
+   },
+   "KO_SELF": {
+    "slurm_job_id": "1041401",
+    "done": true,
+    "rows": 670,
+    "gpu": "NVIDIA L40S"
+   },
+   "KO_FULL": {
+    "slurm_job_id": "1041401",
+    "done": true,
+    "rows": 670,
+    "gpu": "NVIDIA L40S"
+   }
   },
-  "all_arms_single_dir_job1041401_DONE_670rows": true,
+  "single_gpu_type": true,
   "arm_runner": {
    "n_arms_requested": 16,
    "n_arms_run": 16,
@@ -76,5 +71,7 @@
    "n_model_loads": 1,
    "hook_leak_detected": false
   }
- }
+ },
+ "errors": [],
+ "G2": "PASS"
 }

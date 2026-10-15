@@ -10,34 +10,18 @@ Also reports (descriptive) the cell-C dose-4 one-word median over ALL splits and
 other failure reasons; occurrence_count_mismatch rows are the declared mechanical attrition of AMENDMENT_1).
 Usage: p6_g3.py <codeword> <readout_dir>   -> one JSON line; exit 0 always (status in the JSON)."""
 import json, os, random, statistics, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import p6_pop  # noqa: E402
 REPO = "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
 
 
 def main(cw, rd):
     rd = os.path.join(REPO, rd) if not os.path.isabs(rd) else rd
-    ex = os.path.join(REPO, f"runargs/heretic_csi/p6/exclude_{cw}_bomb_sow_train_occ.txt")
-    if not os.path.exists(ex):
-        ex = os.path.join(REPO, f"runargs/heretic_csi/p6/exclude_{cw}_bomb_sow_train.txt")
-    if cw in ("basket", "button"):
-        ex = os.path.join(REPO, f"runargs/dcs_cont/exclude_{cw}_bomb_sow_train.txt")
-    excl = {l.strip() for l in open(ex) if l.strip() and not l.startswith("#")}
-    pop = set()
-    for l in open(os.path.join(REPO, f"data/boombness_prompts/boombness_prompt_bank_ts116m_{cw}_bomb.jsonl")):
-        r = json.loads(l)
-        if (r["query_kind"] == "semantic_one_word" and r["condition"] == "natural_doublespeak" and int(r["n_examples"]) == 4
-                and r["bank_block"] == "cds_n4_sow" and r["prompt_id"] not in excl):
-            pop.add(r["prompt_id"])
+    pop, ex = p6_pop.population(cw)  # single shared definition (p6_pop.py; also used by p6_g2.py)
     g3, alls, doms = [], [], set()
     by_dom = {}
     errors = []
-    # CODEWORD GUARD (review #7): the readout must have scored THIS codeword's bank
-    try:
-        rm = json.load(open(os.path.join(rd, "RUNMETA.json")))
-        argv = str(rm.get("argv", "")) + " " + str(rm.get("args", ""))
-        if f"boombness_prompt_bank_ts116m_{cw}_bomb.jsonl" not in argv:
-            errors.append(f"codeword_guard: readout {rd} was not run on the {cw} bank")
-    except Exception as e:
-        errors.append(f"codeword_guard: unreadable RUNMETA ({e})")
+    errors += p6_pop.bank_guard(rd, cw)  # CODEWORD GUARD (review #7)
     for l in open(os.path.join(rd, "results.jsonl")):
         r = json.loads(l)
         if r.get("option_mass") is None:

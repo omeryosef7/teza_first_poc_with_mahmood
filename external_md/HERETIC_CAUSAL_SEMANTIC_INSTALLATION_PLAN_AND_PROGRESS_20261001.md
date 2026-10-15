@@ -2733,3 +2733,26 @@ H6a: identical random controls across codewords (fixed seed), lamp·basket rank-
 **Power risk (declared):** 12/20 untouched pass G3 so far, 8 pending — one more failure ⇒ n_conf < 15 ⇒ H6a pre-labelled
 UNDERPOWERED for ρ<0.8. P4: commit `p4_analyze_v2.py` (currently uncommitted change) then a P4 v2 eval prereg pinning
 its sha + GPU type, then submit (F5 already on this order).
+
+## S-181 — 2026-10-15 10:00 — P6 AMENDMENT 6 + review-#8 fixes committed; PROVENANCE GAP disclosed
+- `configs/heretic_csi/PREREG_P6_AMENDMENT_6.json` (sha256 6f40234a…d23d2), before any DEV draw / rescue: rescue stage
+  = ONE job per codeword on l40s:1 containing every arm; a codeword is VOID if its arms span >1 job or GPU type or any
+  arm is not DONE (then re-run once, whole). Declared shared-noise dependencies (measured): all 138 random controls
+  (ranks 1/4/16) byte-identical across the 9 new codewords; basket/button share only the 46 rank-1 random controls;
+  shuffled controls codeword-specific (0/30 shared); rank-1 axes |cos| 0.33–0.75 (median 0.57; lamp·basket 0.627); all
+  codewords share the same 23 VAL domains ⇒ H6a codeword units are NOT independent (caveat attached; rule unchanged).
+- Code (tests: 13 passed; batch-branch test ALL_BRANCHES_OK): `p6_dev_draw_driver.py` (refuses unless all 20 untouched
+  codewords have FINAL G3→G1→G2 statuses; rejects missing/UNDECIDED/ERROR/NaN; writes `configs/heretic_csi/P6_DEV_DRAW.json`
+  once, atomically, with manifest + code sha256s; `--check` currently refuses — correct); shared population module
+  `p6_pop.py` (G3 output byte-identical after refactor; `_occ` populations e.g. bottle 667 rows); `p6_g2.py` codeword
+  guard + rows==population; locked atomic manifest writes (`p6_manifest_io.py`); explicit g1/g2/g3 statuses (10
+  manifests normalized, no measured value changed). The 4 G2 reports were regenerated with a validation block (same
+  numbers; superseded versions remain in git history, S-178 commit).
+- **PROVENANCE GAP (disclosed):** jobs 1041485 (P6 batch 3; calls `p6_write_manifest.py`) and 1041561 (G2 batch 2; calls
+  `p6_g2.py` at the end) took code snapshots at start, but call these repo scripts by path when they reach those steps
+  — edits made after their start and before this commit mean parts of their outputs could come from code that was
+  uncommitted at the time. All new versions are tested and committed now (this commit); outputs will be re-validated
+  against the committed code (G2 re-run from its run dirs with the committed `p6_g2.py`).
+- Also committed: `research/heretic_csi/p4_analyze_v2.py` pending change (F5; per review #8 before any P4 prereg).
+- Rules adopted (F7): `git status --porcelain` empty for every script a job runs before submission; submit only if
+  running killable jobs < 6.
