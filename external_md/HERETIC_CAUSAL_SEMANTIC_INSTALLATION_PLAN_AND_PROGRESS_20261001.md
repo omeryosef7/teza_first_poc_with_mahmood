@@ -3013,3 +3013,16 @@ variant. VERIFY_S049's attribution of rank-1 differences to the analyzer statist
 reproduces the analyzer exactly). **The S-198 downgrade STANDS**: basket r1 VAL is still uncorrected for basket's 3 VAL
 looks (Holm 0.0525) ⇒ SUGGESTIVE until the S-199 powered re-test reads. Basket r1 TRAIN remains 2/57 (near-tie).
 Original verification reports left in place; the recheck supersedes them for these cells.
+
+## S-201 — 2026-10-15 15:00 — v2 INTERIM deliverables (review #9 + S-200 applied); v1 kept
+`reports/heretic_csi/HERETIC_CSI_FINAL_REPORT_INTERIM_v2.md`, `MEETING_UPDATE_MATAN_MAHMOOD_INTERIM_v2.md`,
+`FIGURES_INDEX_v2.md`, `VERIFICATION_INDEX_v2.md`, `EXPERIMENT_REGISTRY_v2.json` (33 entries; `build_registry.py
+--check` passes ignoring build-time fields), `fig_p2a_val_specificity_v2.png` (per-cell status, descriptive/fragile
+hollow, SHUF shown separately), `fig_p2b_preservation_vs_rank_v2.png`, `P6_GATE_TABLE_interim.md`. All review-#9
+HIGH/MEDIUM/LOW fixes applied (P2b operator = Heretic ΔW=B·A + preserve/steer form with TRAIN-CV-chosen MSE steer;
+button r4 effect size + "minimal rank ∈{2,3,4} not identified"; H1 ↔ outcome D scoped; H2 OPEN; NEUT VAL correction;
+collapsed Phase-B reads flagged; S-191 marked not independently verified; only lora_A finding source-confirmed;
+meeting update de-previews P4). S-200 applied (basket r1 floor-sensitivity WITHDRAWN; S-198 downgrade stands).
+Known gaps: the report's Q10 text count ("14 so far") is a snapshot — the generated P6 gate table (16 codewords with a
+Stage-0 result) is authoritative; `P6_GATE_TABLE_interim.md` reads untracked manifests under outputs/heretic_csi/p6/
+(snapshot them into reports/ at P6 completion so it regenerates from a clean clone).

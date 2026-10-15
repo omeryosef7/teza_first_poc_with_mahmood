@@ -89,7 +89,7 @@ add("P0-PhaseB", "P0", "Native last-position Heretic ARA as a control on matched
 for cw in ("basket", "button"):
     for r, split, f, jobs, verdict, log in [
         (1, "VALIDATION", f"reports/heretic_csi/hcsi_p2a_{cw}_r1.json", ["968532" if cw == "basket" else "968534"],
-         "SUGGESTIVE: PASS 1/57 at the 56-control floor; floor-sensitive (S-052); uncorrected over basket's 3 VAL looks (Holm 0.0525, S-198)" if cw == "basket" else "DOES NOT PASS 14/57 (verifier 18/57)", ["S-049", "S-052", "S-198"]),
+         "SUGGESTIVE: PASS 1/57 at the 56-control floor, robust to every floor variant (S-200 withdrew S-052's floor-sensitivity); uncorrected over basket's 3 VAL looks (Holm 0.0525, S-198); powered re-test PR-HCSI-S199 pending" if cw == "basket" else "DOES NOT PASS 14/57 (S-200 corrected the verifier's 18/57)", ["S-049", "S-052", "S-198", "S-199", "S-200"]),
         (16, "VALIDATION", f"reports/heretic_csi/hcsi_p2a_{cw}_r16.json", ["968533" if cw == "basket" else "968535"],
          "DOES NOT PASS 10/57", ["S-049"]),
         (4, "TRAIN-K4", f"reports/heretic_csi/hcsi_p2a_{cw}_r4_train.json", ["969085" if cw == "basket" else "969087"],
@@ -104,7 +104,7 @@ for cw in ("basket", "button"):
             [f], jobs, {"bank": BANKS[cw], "controls": "46 RAND + 10 SHUF", "seed": SEED}, "DONE", verdict, log)
 for cw in ("basket", "button"):
     for r, job, verdict in ((1, "966084" if cw == "basket" else "966157",
-                             "2/57 p=0.035 (passes only under AM-48)" if cw == "basket" else "DOES NOT PASS 23/57 (verifier 25/57)"),
+                             "2/57 p=0.035 (passes only under AM-48)" if cw == "basket" else "DOES NOT PASS 23/57 (S-200)"),
                             (16, "965928" if cw == "basket" else "966158", "DOES NOT PASS 10/57")):
         add(f"P2a-{cw}-r{r}-TRAIN", "P2a", "activation-space PLS rank-r rescue at L18 rel-6 under KO (full 670 TRAIN rows)",
             "TRAIN", ["configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt"],

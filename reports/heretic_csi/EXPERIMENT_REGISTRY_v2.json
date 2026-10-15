@@ -1,0 +1,2860 @@
+{
+ "schema": "hcsi_registry/2",
+ "interim": true,
+ "built_at": "2026-10-15T13:37:53",
+ "repo_head_at_build": "63f73dd9c9a377b19a6746e112c673347b8e011e",
+ "source_log": "external_md/HERETIC_CAUSAL_SEMANTIC_INSTALLATION_PLAN_AND_PROGRESS_20261001.md",
+ "experiments": [
+  {
+   "id": "P0-PhaseA",
+   "phase": "P0",
+   "description": "Heretic audit: base->modify->reset->base, dW rank, Optuna resume, readout port",
+   "split": "TRAIN (few prompts)",
+   "configs": [],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/PHASE_A_heretic_audit.md",
+     "sha256": "752dc1ab70c9a5594fc2eb93a5cd66e95128237a93a0037fd78687344b749597"
+    },
+    {
+     "path": "reports/heretic_csi/PHASE_A_heretic_audit_job1023185_r0.json",
+     "sha256": "7d746e3fe4a05084b1e96f2db6deb491384fb3d2ea514d34ee56b7e5cfc62561"
+    },
+    {
+     "path": "reports/heretic_csi/PHASE_A_heretic_audit_job1022919_r0.json",
+     "sha256": "24d17e10f5f251523002cd863eca3a55311e8eee6e933dccf821ced089fb1e52"
+    }
+   ],
+   "slurm_jobs": [
+    "1022919 (superseded gate-fail record)",
+    "1023185"
+   ],
+   "params": {
+    "env": "/specific/scratches/scratch/omeryosef/envs/heretic_csi"
+   },
+   "status": "DONE",
+   "verdict": "PASS (with upstream findings: reset keeps lora_A; deployed != optimized under preserve_row_magnitudes; resume re-draws trial 0)",
+   "log_entries": [
+    "S-062",
+    "S-077"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "1022919 (superseded gate-fail record)",
+     "code_provenance": "config last-commit only"
+    },
+    {
+     "job": "1023185",
+     "code_provenance": "config last-commit only"
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P0-PhaseB",
+   "phase": "P0",
+   "description": "Native last-position Heretic ARA as a control on matched TRAIN populations (target=C, source=A)",
+   "split": "TRAIN tune / VAL read once",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/phaseB/basket/MANIFEST.json",
+     "sha256": "7d66c3cc47fe577d7ea73faa3c73dd30cf05c5666e5d23b9fe1a5c391d765933",
+     "last_commit": "1ac8aa37 2026-10-14T02:18:01+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/phaseB/basket_gun/MANIFEST.json",
+     "sha256": "50780e9fe8e619a9de5d1eaf9aab93a0bf82696c1f46acb96452a7e78b0689d5",
+     "last_commit": "1ac8aa37 2026-10-14T02:18:01+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/phaseB/basket_knife/MANIFEST.json",
+     "sha256": "d78f07a85a4207ba00dcf0481d48280b18b1198a7b999c92e1d4f99e124ca587",
+     "last_commit": "1ac8aa37 2026-10-14T02:18:01+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/phaseB/button/MANIFEST.json",
+     "sha256": "b9431506a5f8d2e39424f9e2a275975a0f6e4bdf10e12ca089b7e7cc498f0737",
+     "last_commit": "1ac8aa37 2026-10-14T02:18:01+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/phaseB/button_knife/MANIFEST.json",
+     "sha256": "5b276d52d14e5b458bccfa035610470186eccb254aae66e85dfe61ecbc6fc897",
+     "last_commit": "1ac8aa37 2026-10-14T02:18:01+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/phaseB/PHASEB_SUMMARY.md",
+     "sha256": "6d994bbc3eb6443c8c1c0a3a6503313bf5aa703def07d104872bfcc5b5d703f6"
+    }
+   ],
+   "slurm_jobs": [
+    "1023185",
+    "1023251",
+    "1023386"
+   ],
+   "params": {
+    "lora_rank_chosen": 50,
+    "layers": "6-30",
+    "controls": 42
+   },
+   "status": "DONE",
+   "verdict": "MEASURED control: answer-position output bias, NOT codeword-specific installation (scoped S-083)",
+   "log_entries": [
+    "S-077",
+    "S-083"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "1023185",
+     "code_provenance": "config last-commit only"
+    },
+    {
+     "job": "1023251",
+     "code_provenance": "config last-commit only"
+    },
+    {
+     "job": "1023386",
+     "code_provenance": "config last-commit only"
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-basket-r1-VALIDATION",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "40655dc204ad16a780b150f53a2dcf56ef5f5ed0e8fd430e8ab62b07ee3c193b",
+     "last_commit": "1a85cd08 2026-10-15T13:32:17+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_basket_r1.json",
+     "sha256": "92f26071a00a65c07385ff877ad4ee50667565aee05b61b873087b91fc5a6b46"
+    }
+   ],
+   "slurm_jobs": [
+    "968532"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_basket_bomb.jsonl (sha16 79511d9e254571e6)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "SUGGESTIVE: PASS 1/57 at the 56-control floor, robust to every floor variant (S-200 withdrew S-052's floor-sensitivity); uncorrected over basket's 3 VAL looks (Holm 0.0525, S-198); powered re-test PR-HCSI-S199 pending",
+   "log_entries": [
+    "S-049",
+    "S-052",
+    "S-198",
+    "S-199",
+    "S-200"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "968532",
+     "runmeta_git_commit": [
+      "31fe11c6084003ada78d9e138ba10a151e6f5f4f",
+      "539917e1017b5a7faca31bb2c733230f60754274",
+      "81fe7b8ca5c6ec8e25855dca335d5dd99be9935e",
+      "ae2ab8762745a78d17732e45074f703713aac639"
+     ]
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-basket-r16-VALIDATION",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "40655dc204ad16a780b150f53a2dcf56ef5f5ed0e8fd430e8ab62b07ee3c193b",
+     "last_commit": "1a85cd08 2026-10-15T13:32:17+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_basket_r16.json",
+     "sha256": "9d6960c31c0b7e71dc2e201776d282d60c1bc3bbf29fe846f640943c38b500f5"
+    }
+   ],
+   "slurm_jobs": [
+    "968533"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_basket_bomb.jsonl (sha16 79511d9e254571e6)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "DOES NOT PASS 10/57",
+   "log_entries": [
+    "S-049"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "968533",
+     "runmeta_git_commit": [
+      "31fe11c6084003ada78d9e138ba10a151e6f5f4f",
+      "539917e1017b5a7faca31bb2c733230f60754274",
+      "81fe7b8ca5c6ec8e25855dca335d5dd99be9935e",
+      "ae2ab8762745a78d17732e45074f703713aac639"
+     ]
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-basket-r4-TRAIN-K4",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "TRAIN-K4",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "40655dc204ad16a780b150f53a2dcf56ef5f5ed0e8fd430e8ab62b07ee3c193b",
+     "last_commit": "1a85cd08 2026-10-15T13:32:17+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_basket_r4_train.json",
+     "sha256": "c002d6f77a839262e1bbf23ff6a0d3aab11dae47a5c615233cf4ec1bbb46fd72"
+    }
+   ],
+   "slurm_jobs": [
+    "969085"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_basket_bomb.jsonl (sha16 79511d9e254571e6)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "3/57 (descriptive)",
+   "log_entries": [
+    "S-051"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "969085",
+     "runmeta_git_commit": [
+      "0c0219ec331c9121d9673ae197e07c047ed8fbe6"
+     ]
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-basket-r8-TRAIN-K4",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "TRAIN-K4",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "40655dc204ad16a780b150f53a2dcf56ef5f5ed0e8fd430e8ab62b07ee3c193b",
+     "last_commit": "1a85cd08 2026-10-15T13:32:17+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_basket_r8_train.json",
+     "sha256": "596c4aeda997903a44ac203798b07a1cbe648dc4c26cb005446c7d4678052972"
+    }
+   ],
+   "slurm_jobs": [
+    "969086"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_basket_bomb.jsonl (sha16 79511d9e254571e6)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "4/57",
+   "log_entries": [
+    "S-051"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "969086",
+     "runmeta_git_commit": [
+      "0c0219ec331c9121d9673ae197e07c047ed8fbe6"
+     ]
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-basket-r4-VALIDATION",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "40655dc204ad16a780b150f53a2dcf56ef5f5ed0e8fd430e8ab62b07ee3c193b",
+     "last_commit": "1a85cd08 2026-10-15T13:32:17+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/prereg_S051_rank4_validation.json",
+     "sha256": "e170da61de1d39abb79bee9741eac69cbb7e12f861014b3fef5beed26eed1d29",
+     "last_commit": "532d220d 2026-10-13T20:18:33+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_basket_r4_validation.json",
+     "sha256": "1dcf0500ff72be9d880dc8b4fb213beaf8ebfb3e1cdbe076796771f64890238f"
+    }
+   ],
+   "slurm_jobs": [
+    "1022699"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_basket_bomb.jsonl (sha16 79511d9e254571e6)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "1/57 FRAGILE, descriptive",
+   "log_entries": [
+    "S-072",
+    "S-073",
+    "S-083"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "1022699",
+     "runmeta_git_commit": [
+      "05e277dce19e635ad07e2e24624ecfe96a36dbc4",
+      "1290a4592af6a6975bf255e9ff6d5eee12702d22",
+      "1794dba55dd17f9b6674cb3d3e7ada01ea5eb16d",
+      "26ca31daea3c579fef4e859362eb9bb9e87b4c93",
+      "2c556998f533bba670ddd752dbf3c6096f0c3303",
+      "3d667bcb8be4c85631cd773f2fb4cc14d4327d8b",
+      "4c7207f5ceccaebe9e5664363c4acc7c565c2fa0",
+      "59a8e1c1bda83bd2bf7b02e98f85a0a952dba56a",
+      "6e480d5360681582ab8f257841b81b52207c4197",
+      "77ba1c6e1f43f498277433aa339a585ed778e90b",
+      "932520cd6529099891ee23219131db2a4744a2c9",
+      "98a0c80da4ae24586c6054630e6098b984c5d506",
+      "ab2678f1d6c3e191e889c1b63683b6a648d11435",
+      "c08c18256df898daa6fa6b04448d5d56033bab57",
+      "d0e809f905023cb21bccd2b4f406f4ed3e8eba81",
+      "d5aaef89e0b085f7b0932774ea3d1e43be1d72ca"
+     ]
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-button-r1-VALIDATION",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "40655dc204ad16a780b150f53a2dcf56ef5f5ed0e8fd430e8ab62b07ee3c193b",
+     "last_commit": "1a85cd08 2026-10-15T13:32:17+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_button_r1.json",
+     "sha256": "5786bd94c8360458df15146fd3dd98648840419dfcac28eb36cf4322316e505e"
+    }
+   ],
+   "slurm_jobs": [
+    "968534"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_button_bomb.jsonl (sha16 dcd92d723f3e6d00)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "DOES NOT PASS 14/57 (S-200 corrected the verifier's 18/57)",
+   "log_entries": [
+    "S-049",
+    "S-052",
+    "S-198",
+    "S-199",
+    "S-200"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "968534",
+     "runmeta_git_commit": [
+      "31fe11c6084003ada78d9e138ba10a151e6f5f4f",
+      "539917e1017b5a7faca31bb2c733230f60754274",
+      "81fe7b8ca5c6ec8e25855dca335d5dd99be9935e",
+      "ae2ab8762745a78d17732e45074f703713aac639"
+     ]
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-button-r16-VALIDATION",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "40655dc204ad16a780b150f53a2dcf56ef5f5ed0e8fd430e8ab62b07ee3c193b",
+     "last_commit": "1a85cd08 2026-10-15T13:32:17+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_button_r16.json",
+     "sha256": "c79d5606669b5604b8d99d209e911cf33b3cbcbbeb5c5c133a4afd080800a3b2"
+    }
+   ],
+   "slurm_jobs": [
+    "968535"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_button_bomb.jsonl (sha16 dcd92d723f3e6d00)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "DOES NOT PASS 10/57",
+   "log_entries": [
+    "S-049"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "968535",
+     "runmeta_git_commit": [
+      "31fe11c6084003ada78d9e138ba10a151e6f5f4f",
+      "539917e1017b5a7faca31bb2c733230f60754274",
+      "81fe7b8ca5c6ec8e25855dca335d5dd99be9935e",
+      "ae2ab8762745a78d17732e45074f703713aac639"
+     ]
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-button-r4-TRAIN-K4",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "TRAIN-K4",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "40655dc204ad16a780b150f53a2dcf56ef5f5ed0e8fd430e8ab62b07ee3c193b",
+     "last_commit": "1a85cd08 2026-10-15T13:32:17+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_button_r4_train.json",
+     "sha256": "3126731ec0324457867fb2bf7d0c4d30dece5ffe45f9a0b9a1f90de17008b6e9"
+    }
+   ],
+   "slurm_jobs": [
+    "969087"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_button_bomb.jsonl (sha16 dcd92d723f3e6d00)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "PASS 1/57 (TRAIN, multiplicity)",
+   "log_entries": [
+    "S-051"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "969087",
+     "runmeta_git_commit": [
+      "0c0219ec331c9121d9673ae197e07c047ed8fbe6"
+     ]
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-button-r8-TRAIN-K4",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "TRAIN-K4",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "40655dc204ad16a780b150f53a2dcf56ef5f5ed0e8fd430e8ab62b07ee3c193b",
+     "last_commit": "1a85cd08 2026-10-15T13:32:17+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_button_r8_train.json",
+     "sha256": "5fb8e5d1ee19b3dfd1de506f54a11334e7512e1df5cab3f3e39b8b174e343ef9"
+    }
+   ],
+   "slurm_jobs": [
+    "969088"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_button_bomb.jsonl (sha16 dcd92d723f3e6d00)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "3/57",
+   "log_entries": [
+    "S-051"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "969088",
+     "runmeta_git_commit": [
+      "0c0219ec331c9121d9673ae197e07c047ed8fbe6"
+     ]
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-button-r4-VALIDATION",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO demo_all:attn_knockout:6-14",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "40655dc204ad16a780b150f53a2dcf56ef5f5ed0e8fd430e8ab62b07ee3c193b",
+     "last_commit": "1a85cd08 2026-10-15T13:32:17+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/prereg_S051_rank4_validation.json",
+     "sha256": "e170da61de1d39abb79bee9741eac69cbb7e12f861014b3fef5beed26eed1d29",
+     "last_commit": "532d220d 2026-10-13T20:18:33+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_button_r4_validation.json",
+     "sha256": "a7d663245f2043f7c6bbfd9b9ee7009311fab7fa2ddbfd960b66623a37927491"
+    }
+   ],
+   "slurm_jobs": [
+    "1022698"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_button_bomb.jsonl (sha16 dcd92d723f3e6d00)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "PASS 1/57 (prereg S051; superseded by powered S-084)",
+   "log_entries": [
+    "S-072",
+    "S-073",
+    "S-083"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "1022698",
+     "runmeta_git_commit": [
+      "1290a4592af6a6975bf255e9ff6d5eee12702d22",
+      "1794dba55dd17f9b6674cb3d3e7ada01ea5eb16d",
+      "26ca31daea3c579fef4e859362eb9bb9e87b4c93",
+      "2c556998f533bba670ddd752dbf3c6096f0c3303",
+      "3d667bcb8be4c85631cd773f2fb4cc14d4327d8b",
+      "4c7207f5ceccaebe9e5664363c4acc7c565c2fa0",
+      "59a8e1c1bda83bd2bf7b02e98f85a0a952dba56a",
+      "687aefab7f40108792cf775b2e537865f39b9819",
+      "6e480d5360681582ab8f257841b81b52207c4197",
+      "77ba1c6e1f43f498277433aa339a585ed778e90b",
+      "932520cd6529099891ee23219131db2a4744a2c9",
+      "98a0c80da4ae24586c6054630e6098b984c5d506",
+      "c08c18256df898daa6fa6b04448d5d56033bab57",
+      "d0e809f905023cb21bccd2b4f406f4ed3e8eba81",
+      "d5aaef89e0b085f7b0932774ea3d1e43be1d72ca"
+     ]
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-basket-r1-TRAIN",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO (full 670 TRAIN rows)",
+   "split": "TRAIN",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "40655dc204ad16a780b150f53a2dcf56ef5f5ed0e8fd430e8ab62b07ee3c193b",
+     "last_commit": "1a85cd08 2026-10-15T13:32:17+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/VERIFY_S049_independent.json",
+     "sha256": "ced6a68aa86af0eff50300d947d4b2d27f713df9f2f3862b81a6de7638c44623"
+    }
+   ],
+   "slurm_jobs": [
+    "966084"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_basket_bomb.jsonl (sha16 79511d9e254571e6)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913,
+    "note": "per-cell analyzer JSON for TRAIN was overwritten by the VAL analysis (S-052); values from the S-049 table + verifier"
+   },
+   "status": "DONE",
+   "verdict": "2/57 p=0.035 (passes only under AM-48)",
+   "log_entries": [
+    "S-049",
+    "S-052"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "966084",
+     "runmeta_git_commit": [
+      "127966a078afbda6a6300dad9616ce49590a7cd2",
+      "4b85d43f2c92454e8f08649276fa0dea49db3242",
+      "6747f2984f51f71d8885cc84a8134d4fc3614052",
+      "8d7f70fcfc7dd02de4bf9049f154d42ac91561fb",
+      "b9e725316cb4f0ac54beed947e55b55c1a591f84",
+      "c0cc4ad3732f854f3d81de1f3d96af714f7e50c6"
+     ]
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-basket-r16-TRAIN",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO (full 670 TRAIN rows)",
+   "split": "TRAIN",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "40655dc204ad16a780b150f53a2dcf56ef5f5ed0e8fd430e8ab62b07ee3c193b",
+     "last_commit": "1a85cd08 2026-10-15T13:32:17+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/VERIFY_S049_independent.json",
+     "sha256": "ced6a68aa86af0eff50300d947d4b2d27f713df9f2f3862b81a6de7638c44623"
+    }
+   ],
+   "slurm_jobs": [
+    "965928"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_basket_bomb.jsonl (sha16 79511d9e254571e6)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913,
+    "note": "per-cell analyzer JSON for TRAIN was overwritten by the VAL analysis (S-052); values from the S-049 table + verifier"
+   },
+   "status": "DONE",
+   "verdict": "DOES NOT PASS 10/57",
+   "log_entries": [
+    "S-049",
+    "S-052"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "965928",
+     "runmeta_git_commit": [
+      "127966a078afbda6a6300dad9616ce49590a7cd2",
+      "4b85d43f2c92454e8f08649276fa0dea49db3242",
+      "6723f8485487e95d9d477a20ef5e6a86a797d270",
+      "6747f2984f51f71d8885cc84a8134d4fc3614052",
+      "8d7f70fcfc7dd02de4bf9049f154d42ac91561fb",
+      "c0cc4ad3732f854f3d81de1f3d96af714f7e50c6"
+     ]
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-button-r1-TRAIN",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO (full 670 TRAIN rows)",
+   "split": "TRAIN",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "40655dc204ad16a780b150f53a2dcf56ef5f5ed0e8fd430e8ab62b07ee3c193b",
+     "last_commit": "1a85cd08 2026-10-15T13:32:17+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/VERIFY_S049_independent.json",
+     "sha256": "ced6a68aa86af0eff50300d947d4b2d27f713df9f2f3862b81a6de7638c44623"
+    }
+   ],
+   "slurm_jobs": [
+    "966157"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_button_bomb.jsonl (sha16 dcd92d723f3e6d00)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913,
+    "note": "per-cell analyzer JSON for TRAIN was overwritten by the VAL analysis (S-052); values from the S-049 table + verifier"
+   },
+   "status": "DONE",
+   "verdict": "DOES NOT PASS 23/57 (S-200)",
+   "log_entries": [
+    "S-049",
+    "S-052"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "966157",
+     "runmeta_git_commit": [
+      "127966a078afbda6a6300dad9616ce49590a7cd2",
+      "4b85d43f2c92454e8f08649276fa0dea49db3242",
+      "6747f2984f51f71d8885cc84a8134d4fc3614052",
+      "8d7f70fcfc7dd02de4bf9049f154d42ac91561fb",
+      "c0cc4ad3732f854f3d81de1f3d96af714f7e50c6"
+     ]
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-button-r16-TRAIN",
+   "phase": "P2a",
+   "description": "activation-space PLS rank-r rescue at L18 rel-6 under KO (full 670 TRAIN rows)",
+   "split": "TRAIN",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_SHA256SUMS.txt",
+     "sha256": "40655dc204ad16a780b150f53a2dcf56ef5f5ed0e8fd430e8ab62b07ee3c193b",
+     "last_commit": "1a85cd08 2026-10-15T13:32:17+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/VERIFY_S049_independent.json",
+     "sha256": "ced6a68aa86af0eff50300d947d4b2d27f713df9f2f3862b81a6de7638c44623"
+    }
+   ],
+   "slurm_jobs": [
+    "966158"
+   ],
+   "params": {
+    "bank": "boombness_prompt_bank_ts116m_button_bomb.jsonl (sha16 dcd92d723f3e6d00)",
+    "controls": "46 RAND + 10 SHUF",
+    "seed": 20260913,
+    "note": "per-cell analyzer JSON for TRAIN was overwritten by the VAL analysis (S-052); values from the S-049 table + verifier"
+   },
+   "status": "DONE",
+   "verdict": "DOES NOT PASS 10/57",
+   "log_entries": [
+    "S-049",
+    "S-052"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "966158",
+     "runmeta_git_commit": [
+      "127966a078afbda6a6300dad9616ce49590a7cd2",
+      "4b85d43f2c92454e8f08649276fa0dea49db3242",
+      "6747f2984f51f71d8885cc84a8134d4fc3614052",
+      "8d7f70fcfc7dd02de4bf9049f154d42ac91561fb",
+      "c0cc4ad3732f854f3d81de1f3d96af714f7e50c6"
+     ]
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "C1-TRAIN-LOO",
+   "phase": "P5",
+   "description": "rank-1 probe quality TRAIN leave-one-domain-out (inherited C1 replication)",
+   "split": "TRAIN",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_basket.json",
+     "sha256": "3b0811bb6f65aa4d4743912254349bd53bdaf8dfac6494c0e86aacbb801d9c0e",
+     "last_commit": null
+    },
+    {
+     "path": "configs/heretic_csi/hcsi_ranksweep_button.json",
+     "sha256": "ac0ccb9b0c7b072da90f5eb3b4e9e16e8a5dacef02714d76f968c9d4222c9279",
+     "last_commit": null
+    }
+   ],
+   "artifacts": [],
+   "slurm_jobs": [
+    "964404",
+    "964435"
+   ],
+   "params": {},
+   "status": "DONE",
+   "verdict": "basket 0.5629 vs button 0.5042 (TRAIN LOO; superseded as evidence by held-out S-054/S-065)",
+   "log_entries": [
+    "S-043",
+    "S-054",
+    "S-065"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "964404",
+     "code_provenance": "config last-commit only"
+    },
+    {
+     "job": "964435",
+     "code_provenance": "config last-commit only"
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2b-MEANBIAS-builds",
+   "phase": "P2b",
+   "description": "TRAIN-mean (clean-KO) codeword-row gap bias (full-norm) and norm-matched variants",
+   "split": "TRAIN",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_3.json",
+     "sha256": "122b86ecf4a7a802f8cd8cde65bc2783a320f0c37fc5bfea19d2763f5d1492ac",
+     "last_commit": "6d126b18 2026-10-14T04:34:25+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_6.json",
+     "sha256": "354e98fd8205d64cdadcb0978248679edd64cb58c19a5aaf3f89b32591812b2b",
+     "last_commit": "67d3ac9b 2026-10-14T17:48:02+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "outputs/heretic_csi/p2b/prod/fac/meanbias_basket.pt",
+     "sha256": "4f3773d10048a5228da11aebc0285575a5d7c7658502ad3348f436beb1c3bea8"
+    },
+    {
+     "path": "outputs/heretic_csi/p2b/prod/fac/meanbias_button.pt",
+     "sha256": "a33c16224e6b52428c1cfeec4fb76f69da8bb3ecaa0cacca58e734a8df84579e"
+    },
+    {
+     "path": "outputs/heretic_csi/p2b/prod/fac/meanbias_nm_basket_r1.pt",
+     "sha256": "bcf1083d4b9611eaf363220f4a579feb9378ad96bf1633f4eaa08e78059b7a0e"
+    },
+    {
+     "path": "outputs/heretic_csi/p2b/prod/fac/meanbias_nm_basket_r4.pt",
+     "sha256": "7184984fc517b65e38677381d482f2eac37fe015df6b04de11cc59e3848131e4"
+    },
+    {
+     "path": "outputs/heretic_csi/p2b/prod/fac/meanbias_nm_button_r1.pt",
+     "sha256": "e5473662d5cec3aead975357ddc2b7493579085cf715c4e9811a3bd93e51f2b0"
+    },
+    {
+     "path": "outputs/heretic_csi/p2b/prod/fac/meanbias_nm_button_r4.pt",
+     "sha256": "cf597967455ff83554520a6db3fd3361162c5ab2ae10d28d47beb469dad39af9"
+    }
+   ],
+   "slurm_jobs": [
+    "1023763",
+    "1040046"
+   ],
+   "params": {},
+   "status": "DONE",
+   "verdict": "built from TRAIN captures only (verified review #3 / amendment 6)",
+   "log_entries": [
+    "S-086",
+    "S-133"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "1023763",
+     "code_provenance": "config last-commit only"
+    },
+    {
+     "job": "1040046",
+     "code_provenance": "config last-commit only"
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-button-r4-POWERED",
+   "phase": "P2a",
+   "description": "S-084 powered re-test: button r4 VAL vs 200 controls, Holm over 3 VAL looks",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/prereg_S084_button_r4_powered.json",
+     "sha256": "e7a109013bf91f218cb154e036352f49c874d6e252eb3eab845c11ae659253ce",
+     "last_commit": "aa7fdc65 2026-10-14T04:29:29+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/prereg_S084_button_r4_powered_AMENDMENT_1.json",
+     "sha256": "e12828b34cef8daf0fa7a9acdd95e9e8bb42cb2055743dfbd1e49e6cd62778bc",
+     "last_commit": "e69f40e2 2026-10-14T08:30:03+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/ANALYSIS_COMMANDS_S084.md",
+     "sha256": "a51af4835176eb816ad4d2ed046fd4e5eb7f7d1b2b71f96a78b4ebfd1dd5c735",
+     "last_commit": "d4adddd6 2026-10-14T12:30:43+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/P2A_BUTTON_R4_POWERED.json",
+     "sha256": "0c4507ab2fd4ebd003fa11cf5aedcb564fca963a16bde9b3744f190dd18dfca4"
+    },
+    {
+     "path": "reports/heretic_csi/P2A_BUTTON_R4_POWERED_BINDING.json",
+     "sha256": "26f3c6179e4adff15d8f892052bd76c1bf9cedb0bacdd93a1a9ee20217d4c435"
+    },
+    {
+     "path": "reports/heretic_csi/hcsi_p2a_button_r4ext_validation_analyzer.json",
+     "sha256": "485d90283e7dc3295d2a97ab2ec348992a9cd22b5d111782264053cd82c895a5"
+    },
+    {
+     "path": "reports/heretic_csi/VERIFY_S084_powered.json",
+     "sha256": "39fac87efc1c07348b387aed86280a8763d2a437ba2825e5a14a1f0759cbca25"
+    }
+   ],
+   "slurm_jobs": [
+    "1022698",
+    "1027577",
+    "1032110"
+   ],
+   "params": {
+    "controls": "190 RAND + 10 SHUF",
+    "floor": 0.005,
+    "readout_seed": 20260913,
+    "new_control_generator_seed": 20261014
+   },
+   "status": "DONE",
+   "verdict": "CONFIRMED: rank 1/201, p=0.004975, Holm 0.0149, beats all SHUF, LODO 23/23 (independently verified)",
+   "log_entries": [
+    "S-125",
+    "S-126"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "1022698",
+     "runmeta_git_commit": [
+      "1290a4592af6a6975bf255e9ff6d5eee12702d22",
+      "1794dba55dd17f9b6674cb3d3e7ada01ea5eb16d",
+      "26ca31daea3c579fef4e859362eb9bb9e87b4c93",
+      "2c556998f533bba670ddd752dbf3c6096f0c3303",
+      "3d667bcb8be4c85631cd773f2fb4cc14d4327d8b",
+      "4c7207f5ceccaebe9e5664363c4acc7c565c2fa0",
+      "59a8e1c1bda83bd2bf7b02e98f85a0a952dba56a",
+      "687aefab7f40108792cf775b2e537865f39b9819",
+      "6e480d5360681582ab8f257841b81b52207c4197",
+      "77ba1c6e1f43f498277433aa339a585ed778e90b",
+      "932520cd6529099891ee23219131db2a4744a2c9",
+      "98a0c80da4ae24586c6054630e6098b984c5d506",
+      "c08c18256df898daa6fa6b04448d5d56033bab57",
+      "d0e809f905023cb21bccd2b4f406f4ed3e8eba81",
+      "d5aaef89e0b085f7b0932774ea3d1e43be1d72ca"
+     ]
+    },
+    {
+     "job": "1027577",
+     "runmeta_git_commit": [
+      "04d368bb0a6cc1c5b4787673ecdb06af5d05f56b",
+      "1411f8b913b3d7c28dac59e6d986b7619a228876",
+      "16fc488387617cf4f60df17cfcf0ecb582f007bb",
+      "4802f588bc34044c53b5a57245271f758cc0b13d",
+      "4be6d81bdf3f1a94ee8de61782cb9b6bebccf4c2",
+      "523526d8b8513701a69fed942bb0fe2b6865d9e8",
+      "8c7500baba9b1a06511b85598f1456c8f37cdb26",
+      "93f6b98cbaf6c0ce54554f66b38d1c48d694a508",
+      "a8f66ac7b3cb51f64516a5fbe260a9a0c81db421",
+      "af9ab736a66420ec6652f9389d4c685ee1dc7bc1",
+      "b995d09530383651ca352a89ab421ae3bd965b6b",
+      "d71d7907c859e6348d6c8d828612d8f27f1c1289",
+      "d88fa1deeef089bc0a28da84ac4f1da5e7270c1e",
+      "de1727794a5c0e1e10967b8656c763385408226f",
+      "ee744996834135730ca7b60296adb2847a72800f"
+     ]
+    },
+    {
+     "job": "1032110",
+     "runmeta_git_commit": [
+      "04d368bb0a6cc1c5b4787673ecdb06af5d05f56b",
+      "1411f8b913b3d7c28dac59e6d986b7619a228876",
+      "4802f588bc34044c53b5a57245271f758cc0b13d",
+      "4be6d81bdf3f1a94ee8de61782cb9b6bebccf4c2",
+      "5c70f0831a75ac8d77cb7e437c7747b11286f628",
+      "6ae51d7df0b64ba105ada10ab55bdf1f0e618c6c",
+      "7028e25c907d2b90d48cd9e18b7dcbde8bf8d5f4",
+      "8c7500baba9b1a06511b85598f1456c8f37cdb26",
+      "93f6b98cbaf6c0ce54554f66b38d1c48d694a508",
+      "ac487f4e5a4f4c660ce4dd91bbfce193c74f1d79",
+      "af9ab736a66420ec6652f9389d4c685ee1dc7bc1",
+      "b995d09530383651ca352a89ab421ae3bd965b6b",
+      "d71d7907c859e6348d6c8d828612d8f27f1c1289",
+      "d88fa1deeef089bc0a28da84ac4f1da5e7270c1e",
+      "de1727794a5c0e1e10967b8656c763385408226f",
+      "ee744996834135730ca7b60296adb2847a72800f"
+     ]
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2a-contrast",
+   "phase": "P2a",
+   "description": "basket-vs-button r1->r4 specificity interaction (descriptive)",
+   "split": "VALIDATION (already read)",
+   "configs": [],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/P2A_BUTTON_R4_CONTRAST_v2.json",
+     "sha256": "6207a26ec2b2bd317be5c06f9e62f9512a6e9dd4db5709641ac9045229afa7c0"
+    },
+    {
+     "path": "reports/heretic_csi/P2A_BUTTON_R4_CONTRAST.json",
+     "sha256": "e1cbe25e4de53598b87ca5fe616706bfa1b14ed3fe7266f79000aedc5974c47d"
+    }
+   ],
+   "slurm_jobs": [],
+   "params": {},
+   "status": "DONE",
+   "verdict": "v1 WITHDRAWN (row-set bug); v2 sign depends on control family => no contrast support",
+   "log_entries": [
+    "S-085",
+    "S-097",
+    "S-098"
+   ],
+   "job_code_provenance": [],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2b-basket-TRAIN",
+   "phase": "P2b",
+   "description": "position-aware weight operator dW=BA (o_proj+down_proj L6-18), primary r{1,4} + CWONLY secondary",
+   "split": "TRAIN-K4 (in-sample)",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/PREREG_P2B.json",
+     "sha256": "e273df1db75f6c2aeb1860dd23639d23286570920e85d139ad66f911e8ced378",
+     "last_commit": "c08c1825 2026-10-13T22:56:51+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_1.json",
+     "sha256": "fd01d54e41809493b2abd4dd5c15ae852824007dab2a22debab13ea782baf10a",
+     "last_commit": "1794dba5 2026-10-14T00:46:16+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_2.json",
+     "sha256": "65a5f0cb1adaaa414319402ba947d29dbc9dbaf5c8e0cbdabb68c7794906a3bf",
+     "last_commit": "26ca31da 2026-10-14T00:57:24+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_3.json",
+     "sha256": "122b86ecf4a7a802f8cd8cde65bc2783a320f0c37fc5bfea19d2763f5d1492ac",
+     "last_commit": "6d126b18 2026-10-14T04:34:25+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_4.json",
+     "sha256": "121206ffb2eb99ea0a05c45abbe715bbf03be2be5750b985107425814113953a",
+     "last_commit": "970c9670 2026-10-14T08:31:33+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_5.json",
+     "sha256": "de158bc817530e73bfd9ba89fade7a0e463e7dced8afa2598cb2cbd728b1e402",
+     "last_commit": "1411f8b9 2026-10-14T12:44:32+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_6.json",
+     "sha256": "354e98fd8205d64cdadcb0978248679edd64cb58c19a5aaf3f89b32591812b2b",
+     "last_commit": "67d3ac9b 2026-10-14T17:48:02+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_7.json",
+     "sha256": "270360e4f39da030fadd2e8434571485034d606889afad9e95d443990e3766ee",
+     "last_commit": "bf6a28a1 2026-10-14T18:35:00+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/ANALYSIS_COMMANDS_P2B.md",
+     "sha256": "acf67d243903826ea14db9e631fbacd55e2e064658cbc6c912f1ebb2c944165c",
+     "last_commit": "c74b3349 2026-10-15T10:46:59+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/p2b_basket_primary_train.json",
+     "sha256": "0b871a0b2784fef0dcf37756c4bdde00b05c46d51d11696fa4e64670e6cf82b5"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_basket_neutpos_train.json",
+     "sha256": "559371adc871cb2b3a9228ba1782c97d5b5a527e1e730673a6e5c36510adae69"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_basket_meanbias_nm_train.json",
+     "sha256": "fcea1213fb69a4e9e5fcca5c30a48d59fc5dd103c9f9cf4338d4372e5f963cbf"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_basket_r1_deployed_train.json",
+     "sha256": "03343d2ed0fae6b5b6e81a7fbe9cb66ab20ad5f6f86440565dba925aa69e954f"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_basket_r4_deployed_train.json",
+     "sha256": "77d51605b2e2407f67ddd1b24fb352eb71459e1b92eec8d9c99fc8234aadea69"
+    }
+   ],
+   "slurm_jobs": [
+    "1023012",
+    "1034929",
+    "1023508",
+    "1035278",
+    "1036622",
+    "1040065",
+    "1040124"
+   ],
+   "params": {
+    "objective": "paired MSE, steer 0.3 (TRAIN CV)",
+    "controls_primary": "61 RAND + 5 SHUF + 15 DER",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "basket r4 PASS (in-sample, fragile); r1 fail; CWONLY pass",
+   "log_entries": [
+    "S-135",
+    "S-136",
+    "S-138",
+    "S-140"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "1023012",
+     "runmeta_git_commit": [
+      "16fc488387617cf4f60df17cfcf0ecb582f007bb",
+      "222357d472d60ca88feb80c0cd1da48439bec47a",
+      "275a27a5aa251b2905517902fc421c4537d3c722",
+      "2909a63954e0661822f55ff29499760374110548",
+      "3d667bcb8be4c85631cd773f2fb4cc14d4327d8b",
+      "49b10efcdeb0150a305c7c9befec51350787a250",
+      "4cbb6ac76b37bc2ac77b1f66b7852e2a32992719",
+      "5178c885c4b56858274beaceae890fae3558ab4f",
+      "536f67351ba929abc24f69307eec44785de5beb9",
+      "6d126b18aa5e001fc320d3bbd4ab0fa8400766d6",
+      "7b99e149eb065cad2e0a6d98eae9edfe41d23618",
+      "7bcb7e1611b2cd87d7ec613aa6f41436d5d0f07d",
+      "7c2ad451a868fff2aee0a3a2c9988713acc73ef2",
+      "82cc2e6a78c82240d38b20dc2fd3dd5e4151c692",
+      "8ef9aa76cf43efcb3b1fb3487aa8ef0642922878",
+      "8ff4564ce35286bde292c76339e26f78c015ddb8",
+      "98a0c80da4ae24586c6054630e6098b984c5d506",
+      "a72e1a98b0232eef23b39d7321abae4556b0ea53",
+      "a8f66ac7b3cb51f64516a5fbe260a9a0c81db421",
+      "ac2263acfde82ba4b995275dd1bd4ae137e7f80b",
+      "af9ab736a66420ec6652f9389d4c685ee1dc7bc1",
+      "b995d09530383651ca352a89ab421ae3bd965b6b",
+      "c08c18256df898daa6fa6b04448d5d56033bab57",
+      "d88fa1deeef089bc0a28da84ac4f1da5e7270c1e",
+      "e736c391f0c2431d350ed8dc8e22770428dbac79",
+      "e9bddef492b51e4fac94aa938cd8359e4e059d29",
+      "eccdd6640c05afc13fc036dd800c494085faddae",
+      "ed539c23ad54607285327dd5c002652928ab8259",
+      "f97d32ddfbc1da2046665b512eeabfac70827622"
+     ]
+    },
+    {
+     "job": "1034929",
+     "runmeta_git_commit": [
+      "04d368bb0a6cc1c5b4787673ecdb06af5d05f56b",
+      "1411f8b913b3d7c28dac59e6d986b7619a228876",
+      "4802f588bc34044c53b5a57245271f758cc0b13d",
+      "4be6d81bdf3f1a94ee8de61782cb9b6bebccf4c2",
+      "6ae51d7df0b64ba105ada10ab55bdf1f0e618c6c",
+      "8c7500baba9b1a06511b85598f1456c8f37cdb26",
+      "ac487f4e5a4f4c660ce4dd91bbfce193c74f1d79",
+      "d71d7907c859e6348d6c8d828612d8f27f1c1289",
+      "ee744996834135730ca7b60296adb2847a72800f"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1034929_r0/SHA256SUMS",
+     "code_snapshot_sha256": "3a90b2651f01baa43b9d096187ec3bdb5f5d93b2c6b82e6f3904eb292aca1595"
+    },
+    {
+     "job": "1023508",
+     "runmeta_git_commit": [
+      "04d368bb0a6cc1c5b4787673ecdb06af5d05f56b",
+      "1411f8b913b3d7c28dac59e6d986b7619a228876",
+      "16fc488387617cf4f60df17cfcf0ecb582f007bb",
+      "222357d472d60ca88feb80c0cd1da48439bec47a",
+      "275a27a5aa251b2905517902fc421c4537d3c722",
+      "2909a63954e0661822f55ff29499760374110548",
+      "3f5e81cbff89d8e3b68b6ea2ab0cf4da4ec61240",
+      "4802f588bc34044c53b5a57245271f758cc0b13d",
+      "49b10efcdeb0150a305c7c9befec51350787a250",
+      "4be6d81bdf3f1a94ee8de61782cb9b6bebccf4c2",
+      "4cbb6ac76b37bc2ac77b1f66b7852e2a32992719",
+      "536f67351ba929abc24f69307eec44785de5beb9",
+      "6d126b18aa5e001fc320d3bbd4ab0fa8400766d6",
+      "78ec94b3e02710709c11b13fa36fe4aa0de9275d",
+      "7b99e149eb065cad2e0a6d98eae9edfe41d23618",
+      "7bcb7e1611b2cd87d7ec613aa6f41436d5d0f07d",
+      "7c2ad451a868fff2aee0a3a2c9988713acc73ef2",
+      "82cc2e6a78c82240d38b20dc2fd3dd5e4151c692",
+      "8c7500baba9b1a06511b85598f1456c8f37cdb26",
+      "8ef9aa76cf43efcb3b1fb3487aa8ef0642922878",
+      "8ff4564ce35286bde292c76339e26f78c015ddb8",
+      "93f6b98cbaf6c0ce54554f66b38d1c48d694a508",
+      "a72e1a98b0232eef23b39d7321abae4556b0ea53",
+      "a8f66ac7b3cb51f64516a5fbe260a9a0c81db421",
+      "af9ab736a66420ec6652f9389d4c685ee1dc7bc1",
+      "b995d09530383651ca352a89ab421ae3bd965b6b",
+      "bf4e25187068b704bef95ca761a6cc4e1eabe179",
+      "d4adddd673fe6163f17b675a71d4eb00f142ade4",
+      "d71d7907c859e6348d6c8d828612d8f27f1c1289",
+      "de1727794a5c0e1e10967b8656c763385408226f",
+      "e69f40e2e604b8892aa755282fc3f617b3a37402",
+      "e736c391f0c2431d350ed8dc8e22770428dbac79",
+      "e9bddef492b51e4fac94aa938cd8359e4e059d29",
+      "eccdd6640c05afc13fc036dd800c494085faddae",
+      "ed539c23ad54607285327dd5c002652928ab8259",
+      "ee744996834135730ca7b60296adb2847a72800f",
+      "f97d32ddfbc1da2046665b512eeabfac70827622"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1023508_r0/SHA256SUMS",
+     "code_snapshot_sha256": "7156f00c9b3167cea3d9dd8a2ae97b2c749554cc4d8af8f8bf8e85a1698f5f97"
+    },
+    {
+     "job": "1035278",
+     "runmeta_git_commit": [
+      "6ae51d7df0b64ba105ada10ab55bdf1f0e618c6c",
+      "ac487f4e5a4f4c660ce4dd91bbfce193c74f1d79"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1035278_r0/SHA256SUMS",
+     "code_snapshot_sha256": "c81ed6d74b1a460769902e66650fe9ee8cde8c91f2d825a0f886ac94b1480a9a"
+    },
+    {
+     "job": "1036622",
+     "runmeta_git_commit": [
+      "1352fd7755c2637df419397206bf05ee3493f86e",
+      "6ae51d7df0b64ba105ada10ab55bdf1f0e618c6c",
+      "7028e25c907d2b90d48cd9e18b7dcbde8bf8d5f4",
+      "835269803d8d70e814bc5543edd8fef3dba4b0b2",
+      "847f4229a6a1f70a41777b15d80c9cc06f054ee8",
+      "8cb05de53eee2c85c0989d056ff004e73f9d3d71",
+      "ac487f4e5a4f4c660ce4dd91bbfce193c74f1d79",
+      "c22be43fa936c87b8e2dc31ef6f5f33ba5cce023",
+      "d2881ee1f7e82942b495340ec462a42bfad63fc2",
+      "d4c8e2f5031ef4f019d9d1e7f72017a920a5f035"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1036622_r0/SHA256SUMS",
+     "code_snapshot_sha256": "5298401e61c666dee16905dc6bedc7e105fea42da7594e2997f8ff030d3ba8a8"
+    },
+    {
+     "job": "1040065",
+     "runmeta_git_commit": [
+      "67d3ac9babe21dd6d47006c9e8870a9e15dce802",
+      "8659e29678efee7c508ba43efa56a963c16ece5d",
+      "ca3c3d37fdd287823c9c129cc326e07be9dbe533",
+      "d484b0bef3562d4f4be78689a2205196a9ff445e",
+      "ef2a749e2e57eccd48ad122136249e3c3470d92a"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1040065_r0/SHA256SUMS",
+     "code_snapshot_sha256": "7e5996c0341bd3b1f33f03b195c98bf6c3a8573615ef63511534567d7c06273c"
+    },
+    {
+     "job": "1040124",
+     "runmeta_git_commit": [
+      "417f5dabb6b03f5e00fd094ed482c12d87a7439d",
+      "8659e29678efee7c508ba43efa56a963c16ece5d",
+      "97994b7de4b433a3b77abf797518d01c991d1ea1",
+      "bf6a28a1e335ed80af4d6f566c9af8f5c6ade158",
+      "f0bbaeefb37399eecaae4917d5ff1e2ed63e8bc2"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1040124_r0/SHA256SUMS",
+     "code_snapshot_sha256": "fe303c13b7189df3139026e7a17bcbe951902aebd041f957d96dc6cc1e67f7a8"
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2b-basket-VAL",
+   "phase": "P2b",
+   "description": "frozen operators on VALIDATION; outcome mapping per amendment 5",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_VALIDATION.json",
+     "sha256": "5b1f3bac7c216038fe6bd69b46cd45f820dc7117afa7bef3647a1c35935d2b9b",
+     "last_commit": "fb74775d 2026-10-14T02:03:45+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B.json",
+     "sha256": "e273df1db75f6c2aeb1860dd23639d23286570920e85d139ad66f911e8ced378",
+     "last_commit": "c08c1825 2026-10-13T22:56:51+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_1.json",
+     "sha256": "fd01d54e41809493b2abd4dd5c15ae852824007dab2a22debab13ea782baf10a",
+     "last_commit": "1794dba5 2026-10-14T00:46:16+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_2.json",
+     "sha256": "65a5f0cb1adaaa414319402ba947d29dbc9dbaf5c8e0cbdabb68c7794906a3bf",
+     "last_commit": "26ca31da 2026-10-14T00:57:24+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_3.json",
+     "sha256": "122b86ecf4a7a802f8cd8cde65bc2783a320f0c37fc5bfea19d2763f5d1492ac",
+     "last_commit": "6d126b18 2026-10-14T04:34:25+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_4.json",
+     "sha256": "121206ffb2eb99ea0a05c45abbe715bbf03be2be5750b985107425814113953a",
+     "last_commit": "970c9670 2026-10-14T08:31:33+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_5.json",
+     "sha256": "de158bc817530e73bfd9ba89fade7a0e463e7dced8afa2598cb2cbd728b1e402",
+     "last_commit": "1411f8b9 2026-10-14T12:44:32+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_6.json",
+     "sha256": "354e98fd8205d64cdadcb0978248679edd64cb58c19a5aaf3f89b32591812b2b",
+     "last_commit": "67d3ac9b 2026-10-14T17:48:02+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_7.json",
+     "sha256": "270360e4f39da030fadd2e8434571485034d606889afad9e95d443990e3766ee",
+     "last_commit": "bf6a28a1 2026-10-14T18:35:00+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/ANALYSIS_COMMANDS_P2B.md",
+     "sha256": "acf67d243903826ea14db9e631fbacd55e2e064658cbc6c912f1ebb2c944165c",
+     "last_commit": "c74b3349 2026-10-15T10:46:59+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/p2b_basket_primary_validation.json",
+     "sha256": "b16004adfad1fc1546eec570496690e53c0adae564fa2da57ddf1b8974a2d4d8"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_basket_meanbias_nm_validation.json",
+     "sha256": "e1e120826272e961f4571ecec020275fb3fe6df59bf313745ac3bfed706131eb"
+    },
+    {
+     "path": "reports/heretic_csi/VERIFY_P2B_VAL.json",
+     "sha256": "8bccc148d245c62273eb6cbaf9349f033faf0cb7f727cefa4fe5b325ac7b4c57"
+    }
+   ],
+   "slurm_jobs": [
+    "1023578",
+    "1023579",
+    "1040101",
+    "1041761"
+   ],
+   "params": {
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "outcome D: basket r4 PRIMARY PASS (marginal, LODO loses 9/23); CWONLY r1/r4 PASS (robust)",
+   "log_entries": [
+    "S-156",
+    "S-157",
+    "S-191"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "1023578",
+     "runmeta_git_commit": [
+      "16fc488387617cf4f60df17cfcf0ecb582f007bb",
+      "222357d472d60ca88feb80c0cd1da48439bec47a",
+      "275a27a5aa251b2905517902fc421c4537d3c722",
+      "2909a63954e0661822f55ff29499760374110548",
+      "49b10efcdeb0150a305c7c9befec51350787a250",
+      "4cbb6ac76b37bc2ac77b1f66b7852e2a32992719",
+      "536f67351ba929abc24f69307eec44785de5beb9",
+      "6d126b18aa5e001fc320d3bbd4ab0fa8400766d6",
+      "7b99e149eb065cad2e0a6d98eae9edfe41d23618",
+      "7bcb7e1611b2cd87d7ec613aa6f41436d5d0f07d",
+      "7c2ad451a868fff2aee0a3a2c9988713acc73ef2",
+      "82cc2e6a78c82240d38b20dc2fd3dd5e4151c692",
+      "8ef9aa76cf43efcb3b1fb3487aa8ef0642922878",
+      "8ff4564ce35286bde292c76339e26f78c015ddb8",
+      "a72e1a98b0232eef23b39d7321abae4556b0ea53",
+      "a8f66ac7b3cb51f64516a5fbe260a9a0c81db421",
+      "aafbf0d4cb0cc1f60640c309d322194289ca53af",
+      "af9ab736a66420ec6652f9389d4c685ee1dc7bc1",
+      "bf4e25187068b704bef95ca761a6cc4e1eabe179",
+      "e69f40e2e604b8892aa755282fc3f617b3a37402",
+      "e736c391f0c2431d350ed8dc8e22770428dbac79",
+      "e9bddef492b51e4fac94aa938cd8359e4e059d29",
+      "eccdd6640c05afc13fc036dd800c494085faddae",
+      "ed539c23ad54607285327dd5c002652928ab8259",
+      "f97d32ddfbc1da2046665b512eeabfac70827622"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1023578_r0/SHA256SUMS",
+     "code_snapshot_sha256": "2e700f156c17f37dff6dd223fe017583c4bcdb7c214e5602336d102a9c8ed9b0"
+    },
+    {
+     "job": "1023579",
+     "runmeta_git_commit": [
+      "222357d472d60ca88feb80c0cd1da48439bec47a",
+      "275a27a5aa251b2905517902fc421c4537d3c722",
+      "2909a63954e0661822f55ff29499760374110548",
+      "49b10efcdeb0150a305c7c9befec51350787a250",
+      "4cbb6ac76b37bc2ac77b1f66b7852e2a32992719",
+      "536f67351ba929abc24f69307eec44785de5beb9",
+      "6d126b18aa5e001fc320d3bbd4ab0fa8400766d6",
+      "7b99e149eb065cad2e0a6d98eae9edfe41d23618",
+      "7bcb7e1611b2cd87d7ec613aa6f41436d5d0f07d",
+      "7c2ad451a868fff2aee0a3a2c9988713acc73ef2",
+      "82cc2e6a78c82240d38b20dc2fd3dd5e4151c692",
+      "8ef9aa76cf43efcb3b1fb3487aa8ef0642922878",
+      "8ff4564ce35286bde292c76339e26f78c015ddb8",
+      "a72e1a98b0232eef23b39d7321abae4556b0ea53",
+      "aafbf0d4cb0cc1f60640c309d322194289ca53af",
+      "bf4e25187068b704bef95ca761a6cc4e1eabe179",
+      "ca3038f494e78ebc83f2ff083a84bbd61679b945",
+      "e69f40e2e604b8892aa755282fc3f617b3a37402",
+      "e736c391f0c2431d350ed8dc8e22770428dbac79",
+      "e9bddef492b51e4fac94aa938cd8359e4e059d29",
+      "eccdd6640c05afc13fc036dd800c494085faddae",
+      "ed539c23ad54607285327dd5c002652928ab8259",
+      "f97d32ddfbc1da2046665b512eeabfac70827622"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1023579_r0/SHA256SUMS",
+     "code_snapshot_sha256": "81b40c5df9435b9840ceb8c5392230ebdd69ced432af94d4d550fd688b827bd1"
+    },
+    {
+     "job": "1040101",
+     "runmeta_git_commit": [
+      "088f98275a26bf1dd0b5a63534e2dde7895dd0e7",
+      "417f5dabb6b03f5e00fd094ed482c12d87a7439d",
+      "496f37794e1cb0ba5edcaee9a9262088776eafdc",
+      "76a41f46dadbec05d58ede9eb16ff60328b32323",
+      "86c802dc608dc5e50629d6c0f33712d19de78794",
+      "89da05ae3432bef81c61d72287b30b1b9c396090",
+      "97994b7de4b433a3b77abf797518d01c991d1ea1",
+      "bf6a28a1e335ed80af4d6f566c9af8f5c6ade158",
+      "da832562344ffe161636f82a6f100847816790e4",
+      "e4de5c43493d7140483d215e147c76a8db2a0eae",
+      "f0bbaeefb37399eecaae4917d5ff1e2ed63e8bc2"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1040101_r0/SHA256SUMS",
+     "code_snapshot_sha256": "c5c42a6238b94b5dd1cb2a4d83abde46acc891436f541a6bb4e89d6ae82eee2e"
+    },
+    {
+     "job": "1041761",
+     "runmeta_git_commit": [
+      "6c7bfcca621dfed73ba6a656e10397691d4b6385",
+      "774da7b00934807fd9511a87e4bd783e93fdd031"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1041761_r0/SHA256SUMS",
+     "code_snapshot_sha256": "afa8cd27083bc27394c3ffdd077a67a8224e33e6f725a35539c9525c1ac190f4"
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2b-button-TRAIN",
+   "phase": "P2b",
+   "description": "position-aware weight operator dW=BA (o_proj+down_proj L6-18), primary r{1,4} + CWONLY secondary",
+   "split": "TRAIN-K4 (in-sample)",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/PREREG_P2B.json",
+     "sha256": "e273df1db75f6c2aeb1860dd23639d23286570920e85d139ad66f911e8ced378",
+     "last_commit": "c08c1825 2026-10-13T22:56:51+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_1.json",
+     "sha256": "fd01d54e41809493b2abd4dd5c15ae852824007dab2a22debab13ea782baf10a",
+     "last_commit": "1794dba5 2026-10-14T00:46:16+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_2.json",
+     "sha256": "65a5f0cb1adaaa414319402ba947d29dbc9dbaf5c8e0cbdabb68c7794906a3bf",
+     "last_commit": "26ca31da 2026-10-14T00:57:24+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_3.json",
+     "sha256": "122b86ecf4a7a802f8cd8cde65bc2783a320f0c37fc5bfea19d2763f5d1492ac",
+     "last_commit": "6d126b18 2026-10-14T04:34:25+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_4.json",
+     "sha256": "121206ffb2eb99ea0a05c45abbe715bbf03be2be5750b985107425814113953a",
+     "last_commit": "970c9670 2026-10-14T08:31:33+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_5.json",
+     "sha256": "de158bc817530e73bfd9ba89fade7a0e463e7dced8afa2598cb2cbd728b1e402",
+     "last_commit": "1411f8b9 2026-10-14T12:44:32+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_6.json",
+     "sha256": "354e98fd8205d64cdadcb0978248679edd64cb58c19a5aaf3f89b32591812b2b",
+     "last_commit": "67d3ac9b 2026-10-14T17:48:02+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_7.json",
+     "sha256": "270360e4f39da030fadd2e8434571485034d606889afad9e95d443990e3766ee",
+     "last_commit": "bf6a28a1 2026-10-14T18:35:00+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/ANALYSIS_COMMANDS_P2B.md",
+     "sha256": "acf67d243903826ea14db9e631fbacd55e2e064658cbc6c912f1ebb2c944165c",
+     "last_commit": "c74b3349 2026-10-15T10:46:59+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/p2b_button_primary_train.json",
+     "sha256": "b3dd4adbb2d09ed8ecbc5cb2b2569f93ac65adaa9c1867352eb46d9ae396e8c7"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_button_neutpos_train.json",
+     "sha256": "7aeb90ac69fabdd4b40a98c3eb2d30c4fc0595cef33055c864db8c7689b47c0f"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_button_meanbias_nm_train.json",
+     "sha256": "f6c83e4e1ee20223a2235496307fe5c29deb810d198dcc2b242a854c27cb3500"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_button_r1_deployed_train.json",
+     "sha256": "8523ad2bf5db19632a6722ad64ae780b94544604bcfd42a3ca90c58306b412b8"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_button_r4_deployed_train.json",
+     "sha256": "4b30cddfcd4da5be1759d97584ed3a2914b2eaf5c58878ea08198b764ce121e4"
+    }
+   ],
+   "slurm_jobs": [
+    "1023264",
+    "1035131",
+    "1023509",
+    "1035278",
+    "1036626",
+    "1040065",
+    "1040124"
+   ],
+   "params": {
+    "objective": "paired MSE, steer 0.3 (TRAIN CV)",
+    "controls_primary": "61 RAND + 5 SHUF + 15 DER",
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "all fail",
+   "log_entries": [
+    "S-135",
+    "S-136",
+    "S-138",
+    "S-140"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "1023264",
+     "runmeta_git_commit": [
+      "032024ee061e840f2027ffdb234f742d87ea7750",
+      "16fc488387617cf4f60df17cfcf0ecb582f007bb",
+      "222357d472d60ca88feb80c0cd1da48439bec47a",
+      "275a27a5aa251b2905517902fc421c4537d3c722",
+      "2909a63954e0661822f55ff29499760374110548",
+      "49b10efcdeb0150a305c7c9befec51350787a250",
+      "4cbb6ac76b37bc2ac77b1f66b7852e2a32992719",
+      "536f67351ba929abc24f69307eec44785de5beb9",
+      "6d126b18aa5e001fc320d3bbd4ab0fa8400766d6",
+      "7b99e149eb065cad2e0a6d98eae9edfe41d23618",
+      "7bcb7e1611b2cd87d7ec613aa6f41436d5d0f07d",
+      "7c2ad451a868fff2aee0a3a2c9988713acc73ef2",
+      "82cc2e6a78c82240d38b20dc2fd3dd5e4151c692",
+      "8ef9aa76cf43efcb3b1fb3487aa8ef0642922878",
+      "8ff4564ce35286bde292c76339e26f78c015ddb8",
+      "970c967076b70cd2a7a3f807b2331c3779c973a2",
+      "a72e1a98b0232eef23b39d7321abae4556b0ea53",
+      "a8f66ac7b3cb51f64516a5fbe260a9a0c81db421",
+      "af9ab736a66420ec6652f9389d4c685ee1dc7bc1",
+      "b995d09530383651ca352a89ab421ae3bd965b6b",
+      "d88fa1deeef089bc0a28da84ac4f1da5e7270c1e",
+      "e736c391f0c2431d350ed8dc8e22770428dbac79",
+      "e9bddef492b51e4fac94aa938cd8359e4e059d29",
+      "eccdd6640c05afc13fc036dd800c494085faddae",
+      "ed539c23ad54607285327dd5c002652928ab8259",
+      "f97d32ddfbc1da2046665b512eeabfac70827622"
+     ]
+    },
+    {
+     "job": "1035131",
+     "runmeta_git_commit": [
+      "04d368bb0a6cc1c5b4787673ecdb06af5d05f56b",
+      "4802f588bc34044c53b5a57245271f758cc0b13d",
+      "8c7500baba9b1a06511b85598f1456c8f37cdb26",
+      "ee744996834135730ca7b60296adb2847a72800f"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1035131_r0/SHA256SUMS",
+     "code_snapshot_sha256": "9a2a757db51fd69510efbaaa6d698918a3e826c0ee97f4a76ef5d6f4eafe29a9"
+    },
+    {
+     "job": "1023509",
+     "runmeta_git_commit": [
+      "04d368bb0a6cc1c5b4787673ecdb06af5d05f56b",
+      "1411f8b913b3d7c28dac59e6d986b7619a228876",
+      "16fc488387617cf4f60df17cfcf0ecb582f007bb",
+      "222357d472d60ca88feb80c0cd1da48439bec47a",
+      "275a27a5aa251b2905517902fc421c4537d3c722",
+      "2909a63954e0661822f55ff29499760374110548",
+      "4802f588bc34044c53b5a57245271f758cc0b13d",
+      "49b10efcdeb0150a305c7c9befec51350787a250",
+      "4be6d81bdf3f1a94ee8de61782cb9b6bebccf4c2",
+      "4cbb6ac76b37bc2ac77b1f66b7852e2a32992719",
+      "536f67351ba929abc24f69307eec44785de5beb9",
+      "6ae51d7df0b64ba105ada10ab55bdf1f0e618c6c",
+      "6d126b18aa5e001fc320d3bbd4ab0fa8400766d6",
+      "7b99e149eb065cad2e0a6d98eae9edfe41d23618",
+      "7bcb7e1611b2cd87d7ec613aa6f41436d5d0f07d",
+      "7c2ad451a868fff2aee0a3a2c9988713acc73ef2",
+      "82cc2e6a78c82240d38b20dc2fd3dd5e4151c692",
+      "8c7500baba9b1a06511b85598f1456c8f37cdb26",
+      "8ef9aa76cf43efcb3b1fb3487aa8ef0642922878",
+      "8ff4564ce35286bde292c76339e26f78c015ddb8",
+      "93f6b98cbaf6c0ce54554f66b38d1c48d694a508",
+      "a72e1a98b0232eef23b39d7321abae4556b0ea53",
+      "a8f66ac7b3cb51f64516a5fbe260a9a0c81db421",
+      "af9ab736a66420ec6652f9389d4c685ee1dc7bc1",
+      "b995d09530383651ca352a89ab421ae3bd965b6b",
+      "ca3038f494e78ebc83f2ff083a84bbd61679b945",
+      "d71d7907c859e6348d6c8d828612d8f27f1c1289",
+      "d88fa1deeef089bc0a28da84ac4f1da5e7270c1e",
+      "de1727794a5c0e1e10967b8656c763385408226f",
+      "e736c391f0c2431d350ed8dc8e22770428dbac79",
+      "e9bddef492b51e4fac94aa938cd8359e4e059d29",
+      "eccdd6640c05afc13fc036dd800c494085faddae",
+      "ed539c23ad54607285327dd5c002652928ab8259",
+      "ee744996834135730ca7b60296adb2847a72800f",
+      "f97d32ddfbc1da2046665b512eeabfac70827622"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1023509_r0/SHA256SUMS",
+     "code_snapshot_sha256": "9610249eaefb26a5d6804d1b15b085fca16a30a2a0ee38a64eb3859dba96b978"
+    },
+    {
+     "job": "1035278",
+     "runmeta_git_commit": [
+      "6ae51d7df0b64ba105ada10ab55bdf1f0e618c6c",
+      "ac487f4e5a4f4c660ce4dd91bbfce193c74f1d79"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1035278_r0/SHA256SUMS",
+     "code_snapshot_sha256": "c81ed6d74b1a460769902e66650fe9ee8cde8c91f2d825a0f886ac94b1480a9a"
+    },
+    {
+     "job": "1036626",
+     "runmeta_git_commit": [
+      "1352fd7755c2637df419397206bf05ee3493f86e",
+      "67d3ac9babe21dd6d47006c9e8870a9e15dce802",
+      "7028e25c907d2b90d48cd9e18b7dcbde8bf8d5f4",
+      "835269803d8d70e814bc5543edd8fef3dba4b0b2",
+      "847f4229a6a1f70a41777b15d80c9cc06f054ee8",
+      "8cb05de53eee2c85c0989d056ff004e73f9d3d71",
+      "ac487f4e5a4f4c660ce4dd91bbfce193c74f1d79",
+      "c22be43fa936c87b8e2dc31ef6f5f33ba5cce023",
+      "d2881ee1f7e82942b495340ec462a42bfad63fc2",
+      "d4c8e2f5031ef4f019d9d1e7f72017a920a5f035"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1036626_r0/SHA256SUMS",
+     "code_snapshot_sha256": "f7bb5e9c54ed2dd8607187cd459d5a3dc1fc70eb54b0565471ebeb10da1df823"
+    },
+    {
+     "job": "1040065",
+     "runmeta_git_commit": [
+      "67d3ac9babe21dd6d47006c9e8870a9e15dce802",
+      "8659e29678efee7c508ba43efa56a963c16ece5d",
+      "ca3c3d37fdd287823c9c129cc326e07be9dbe533",
+      "d484b0bef3562d4f4be78689a2205196a9ff445e",
+      "ef2a749e2e57eccd48ad122136249e3c3470d92a"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1040065_r0/SHA256SUMS",
+     "code_snapshot_sha256": "7e5996c0341bd3b1f33f03b195c98bf6c3a8573615ef63511534567d7c06273c"
+    },
+    {
+     "job": "1040124",
+     "runmeta_git_commit": [
+      "417f5dabb6b03f5e00fd094ed482c12d87a7439d",
+      "8659e29678efee7c508ba43efa56a963c16ece5d",
+      "97994b7de4b433a3b77abf797518d01c991d1ea1",
+      "bf6a28a1e335ed80af4d6f566c9af8f5c6ade158",
+      "f0bbaeefb37399eecaae4917d5ff1e2ed63e8bc2"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1040124_r0/SHA256SUMS",
+     "code_snapshot_sha256": "fe303c13b7189df3139026e7a17bcbe951902aebd041f957d96dc6cc1e67f7a8"
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2b-button-VAL",
+   "phase": "P2b",
+   "description": "frozen operators on VALIDATION; outcome mapping per amendment 5",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_VALIDATION.json",
+     "sha256": "5b1f3bac7c216038fe6bd69b46cd45f820dc7117afa7bef3647a1c35935d2b9b",
+     "last_commit": "fb74775d 2026-10-14T02:03:45+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B.json",
+     "sha256": "e273df1db75f6c2aeb1860dd23639d23286570920e85d139ad66f911e8ced378",
+     "last_commit": "c08c1825 2026-10-13T22:56:51+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_1.json",
+     "sha256": "fd01d54e41809493b2abd4dd5c15ae852824007dab2a22debab13ea782baf10a",
+     "last_commit": "1794dba5 2026-10-14T00:46:16+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_2.json",
+     "sha256": "65a5f0cb1adaaa414319402ba947d29dbc9dbaf5c8e0cbdabb68c7794906a3bf",
+     "last_commit": "26ca31da 2026-10-14T00:57:24+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_3.json",
+     "sha256": "122b86ecf4a7a802f8cd8cde65bc2783a320f0c37fc5bfea19d2763f5d1492ac",
+     "last_commit": "6d126b18 2026-10-14T04:34:25+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_4.json",
+     "sha256": "121206ffb2eb99ea0a05c45abbe715bbf03be2be5750b985107425814113953a",
+     "last_commit": "970c9670 2026-10-14T08:31:33+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_5.json",
+     "sha256": "de158bc817530e73bfd9ba89fade7a0e463e7dced8afa2598cb2cbd728b1e402",
+     "last_commit": "1411f8b9 2026-10-14T12:44:32+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_6.json",
+     "sha256": "354e98fd8205d64cdadcb0978248679edd64cb58c19a5aaf3f89b32591812b2b",
+     "last_commit": "67d3ac9b 2026-10-14T17:48:02+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P2B_AMENDMENT_7.json",
+     "sha256": "270360e4f39da030fadd2e8434571485034d606889afad9e95d443990e3766ee",
+     "last_commit": "bf6a28a1 2026-10-14T18:35:00+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/ANALYSIS_COMMANDS_P2B.md",
+     "sha256": "acf67d243903826ea14db9e631fbacd55e2e064658cbc6c912f1ebb2c944165c",
+     "last_commit": "c74b3349 2026-10-15T10:46:59+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/p2b_button_primary_validation.json",
+     "sha256": "792bf34feb9e3a82cba34d1111160e39b2548df8c3eabd19d6c949a0b86cd993"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_button_meanbias_nm_validation.json",
+     "sha256": "40c506abf07e8a71333daaf67df7fbc6c2408d81f71f0d0fdd823269d086678f"
+    },
+    {
+     "path": "reports/heretic_csi/VERIFY_P2B_VAL.json",
+     "sha256": "8bccc148d245c62273eb6cbaf9349f033faf0cb7f727cefa4fe5b325ac7b4c57"
+    }
+   ],
+   "slurm_jobs": [
+    "1036679",
+    "1036680",
+    "1040122",
+    "1040170",
+    "1041761"
+   ],
+   "params": {
+    "seed": 20260913
+   },
+   "status": "DONE",
+   "verdict": "outcome D: button no specific carrier at r1/r4",
+   "log_entries": [
+    "S-156",
+    "S-157",
+    "S-191"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "1036679",
+     "runmeta_git_commit": [
+      "08812e14f2554ef1fdb441110fbc892c66010d8e",
+      "088f98275a26bf1dd0b5a63534e2dde7895dd0e7",
+      "1352fd7755c2637df419397206bf05ee3493f86e",
+      "2ec783ff12ce3ce97c5864e0ae3fd8738e34e5eb",
+      "417f5dabb6b03f5e00fd094ed482c12d87a7439d",
+      "496472a22c5dc7952ad2db561bc9f2730ad11462",
+      "496f37794e1cb0ba5edcaee9a9262088776eafdc",
+      "5808e4c3ec905dc953267f2c8bc10cc433a45805",
+      "5aaec465120a173aea155b0f4a1c42db81f398de",
+      "67d3ac9babe21dd6d47006c9e8870a9e15dce802",
+      "6a3b16268f24e0dfdd0a98fa826b2f0c848f97c4",
+      "76a41f46dadbec05d58ede9eb16ff60328b32323",
+      "835269803d8d70e814bc5543edd8fef3dba4b0b2",
+      "8659e29678efee7c508ba43efa56a963c16ece5d",
+      "86c802dc608dc5e50629d6c0f33712d19de78794",
+      "89da05ae3432bef81c61d72287b30b1b9c396090",
+      "8cb05de53eee2c85c0989d056ff004e73f9d3d71",
+      "8e532cc6f9b1828f01d65c6b468d151f5139f7c3",
+      "97994b7de4b433a3b77abf797518d01c991d1ea1",
+      "bf6a28a1e335ed80af4d6f566c9af8f5c6ade158",
+      "c131671ffa4d30bd428267362ab3794e22494428",
+      "c22be43fa936c87b8e2dc31ef6f5f33ba5cce023",
+      "ca3c3d37fdd287823c9c129cc326e07be9dbe533",
+      "d2881ee1f7e82942b495340ec462a42bfad63fc2",
+      "d484b0bef3562d4f4be78689a2205196a9ff445e",
+      "d4c8e2f5031ef4f019d9d1e7f72017a920a5f035",
+      "da832562344ffe161636f82a6f100847816790e4",
+      "e4de5c43493d7140483d215e147c76a8db2a0eae",
+      "ecd1ba84af2c7cc4991470fdf98aed81914c7e92",
+      "ef2a749e2e57eccd48ad122136249e3c3470d92a",
+      "f0bbaeefb37399eecaae4917d5ff1e2ed63e8bc2",
+      "fa1c19beca94aa02ef2b3c7b35396ee3e228e9e1"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1036679_r0/SHA256SUMS",
+     "code_snapshot_sha256": "8dab954ad041c91dc4d5eb26716eb3ff9e6eb585d5115e718ede8db781b5a5fa"
+    },
+    {
+     "job": "1036680",
+     "runmeta_git_commit": [
+      "088f98275a26bf1dd0b5a63534e2dde7895dd0e7",
+      "1352fd7755c2637df419397206bf05ee3493f86e",
+      "417f5dabb6b03f5e00fd094ed482c12d87a7439d",
+      "496472a22c5dc7952ad2db561bc9f2730ad11462",
+      "496f37794e1cb0ba5edcaee9a9262088776eafdc",
+      "5808e4c3ec905dc953267f2c8bc10cc433a45805",
+      "67d3ac9babe21dd6d47006c9e8870a9e15dce802",
+      "76a41f46dadbec05d58ede9eb16ff60328b32323",
+      "835269803d8d70e814bc5543edd8fef3dba4b0b2",
+      "8659e29678efee7c508ba43efa56a963c16ece5d",
+      "86c802dc608dc5e50629d6c0f33712d19de78794",
+      "89da05ae3432bef81c61d72287b30b1b9c396090",
+      "8cb05de53eee2c85c0989d056ff004e73f9d3d71",
+      "8e532cc6f9b1828f01d65c6b468d151f5139f7c3",
+      "97994b7de4b433a3b77abf797518d01c991d1ea1",
+      "98d60c5af2fcb17b70f6e313f3ee456b4c4ba298",
+      "bf6a28a1e335ed80af4d6f566c9af8f5c6ade158",
+      "c131671ffa4d30bd428267362ab3794e22494428",
+      "c22be43fa936c87b8e2dc31ef6f5f33ba5cce023",
+      "ca3c3d37fdd287823c9c129cc326e07be9dbe533",
+      "d2881ee1f7e82942b495340ec462a42bfad63fc2",
+      "d484b0bef3562d4f4be78689a2205196a9ff445e",
+      "d4c8e2f5031ef4f019d9d1e7f72017a920a5f035",
+      "da832562344ffe161636f82a6f100847816790e4",
+      "e4de5c43493d7140483d215e147c76a8db2a0eae",
+      "ecd1ba84af2c7cc4991470fdf98aed81914c7e92",
+      "ef2a749e2e57eccd48ad122136249e3c3470d92a",
+      "f0bbaeefb37399eecaae4917d5ff1e2ed63e8bc2",
+      "fa1c19beca94aa02ef2b3c7b35396ee3e228e9e1"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1036680_r0/SHA256SUMS",
+     "code_snapshot_sha256": "15898008d0c023511692c0979be5df9aba33f68d11d7e902e87e116963dd21ef"
+    },
+    {
+     "job": "1040122",
+     "runmeta_git_commit": [
+      "088f98275a26bf1dd0b5a63534e2dde7895dd0e7",
+      "417f5dabb6b03f5e00fd094ed482c12d87a7439d",
+      "496f37794e1cb0ba5edcaee9a9262088776eafdc",
+      "76a41f46dadbec05d58ede9eb16ff60328b32323",
+      "86c802dc608dc5e50629d6c0f33712d19de78794",
+      "89da05ae3432bef81c61d72287b30b1b9c396090",
+      "bfbec5ad1bdffa721d6c942b2a25c87d9d2c9f3c",
+      "da832562344ffe161636f82a6f100847816790e4",
+      "e4de5c43493d7140483d215e147c76a8db2a0eae",
+      "f0bbaeefb37399eecaae4917d5ff1e2ed63e8bc2"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1040122_r0/SHA256SUMS",
+     "code_snapshot_sha256": "2f39e8032c71b925aed86fa5d7fd2a0e7518c10abcd5e0b8ecd67ec1ac9512ee"
+    },
+    {
+     "job": "1040170",
+     "runmeta_git_commit": [
+      "89da05ae3432bef81c61d72287b30b1b9c396090"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1040170_r0/SHA256SUMS",
+     "code_snapshot_sha256": "35a93304c1a998d7372b1b4f9579819351e2a0cb44a52aa030caea77a696bd6d"
+    },
+    {
+     "job": "1041761",
+     "runmeta_git_commit": [
+      "6c7bfcca621dfed73ba6a656e10397691d4b6385",
+      "774da7b00934807fd9511a87e4bd783e93fdd031"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1041761_r0/SHA256SUMS",
+     "code_snapshot_sha256": "afa8cd27083bc27394c3ffdd077a67a8224e33e6f725a35539c9525c1ac190f4"
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P2b-rank-curve",
+   "phase": "P2b",
+   "description": "descriptive ranks {2,8,16,32,50} + primary {1,4}",
+   "split": "TRAIN-K4 (in-sample)",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/ANALYSIS_COMMANDS_P2B.md",
+     "sha256": "acf67d243903826ea14db9e631fbacd55e2e064658cbc6c912f1ebb2c944165c",
+     "last_commit": "c74b3349 2026-10-15T10:46:59+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/P2B_RANK_CURVE_TRAIN.json",
+     "sha256": "7387c32768247ead25289c32137b342950821bbb0a5f6c130f1fd9f20f26d87a"
+    },
+    {
+     "path": "reports/heretic_csi/P2B_RANK_CURVE_TRAIN.png",
+     "sha256": "764bd8ddf653d2ceaf8f4ebf0a6a9a96ac4ce2cbadaea57b0c5ee037f969b2ce"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_basket_descriptive_ranks_train.json",
+     "sha256": "87ad9c6e7eb129ec48f3ae6a809ccfe93c79f7e1d9b32f1eae840302010d9bd5"
+    },
+    {
+     "path": "reports/heretic_csi/p2b_button_descriptive_ranks_train.json",
+     "sha256": "e02dcc73302b58fc34c9d401ae4ae8491499ed1b50a246bfba4425956dce4070"
+    }
+   ],
+   "slurm_jobs": [
+    "1040700",
+    "1040701",
+    "1040759",
+    "1040766"
+   ],
+   "params": {
+    "controls": "41 RAND + 5 SHUF + 5 DER"
+   },
+   "status": "DONE",
+   "verdict": "DESCRIPTIVE: rank-flat rescue r1-50; sparse non-monotone pairing specificity",
+   "log_entries": [
+    "S-188"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "1040700",
+     "runmeta_git_commit": [
+      "08812e14f2554ef1fdb441110fbc892c66010d8e",
+      "0928a58f0207db1aa773cb8ef09281a4a26b920d",
+      "28ba26cfb04bee840ce0f0ec553ede93a6037c0a",
+      "2e327a9f6a32ae441390f1029d3021de9e34638c",
+      "2ec783ff12ce3ce97c5864e0ae3fd8738e34e5eb",
+      "3dc3af8eed181a063c47307e9c2e192222dbfa49",
+      "4307496c2f6304f967ecef852ed97e6bafd31823",
+      "49cc9a3bcd45dccec570dbc0292772fd8ee1fd23",
+      "5aaec465120a173aea155b0f4a1c42db81f398de",
+      "6a3b16268f24e0dfdd0a98fa826b2f0c848f97c4",
+      "7a6835ef498b0433ab050a89894134ce2e157edc",
+      "81b677f85ebe6fe4403c2bf4cd92a6df59cb9277",
+      "82218c7d2ceaaa3dd7007868bffb6fce89636e0d",
+      "82e9e6f487974f50acea286a10744dc52f16f691",
+      "83e157b746d282ef90514f8d7ca5179dde0da32f",
+      "886bda589c18ef43c6bde71befa7eccff5c888ac",
+      "a4809c52f084b679f7bbe82b10627fb38e497c14",
+      "cc7ac15a67bcc7680e13f876dfb3c0b17dda2957",
+      "cf1559c1a55450859303ee609f84e2951103fa12",
+      "fa1c19beca94aa02ef2b3c7b35396ee3e228e9e1",
+      "fc04b68d9eaa3460a77a79b02a2546b6f50a82b4"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1040700_r0/SHA256SUMS",
+     "code_snapshot_sha256": "f3f42752e5adb2535654054f113db65f726b093dd30d604d6d1b6a557b11365b"
+    },
+    {
+     "job": "1040701",
+     "runmeta_git_commit": [
+      "08812e14f2554ef1fdb441110fbc892c66010d8e",
+      "0928a58f0207db1aa773cb8ef09281a4a26b920d",
+      "28ba26cfb04bee840ce0f0ec553ede93a6037c0a",
+      "2e327a9f6a32ae441390f1029d3021de9e34638c",
+      "2ec783ff12ce3ce97c5864e0ae3fd8738e34e5eb",
+      "3dc3af8eed181a063c47307e9c2e192222dbfa49",
+      "4307496c2f6304f967ecef852ed97e6bafd31823",
+      "49cc9a3bcd45dccec570dbc0292772fd8ee1fd23",
+      "5aaec465120a173aea155b0f4a1c42db81f398de",
+      "6a3b16268f24e0dfdd0a98fa826b2f0c848f97c4",
+      "7a6835ef498b0433ab050a89894134ce2e157edc",
+      "81b677f85ebe6fe4403c2bf4cd92a6df59cb9277",
+      "82218c7d2ceaaa3dd7007868bffb6fce89636e0d",
+      "82e9e6f487974f50acea286a10744dc52f16f691",
+      "886bda589c18ef43c6bde71befa7eccff5c888ac",
+      "a4809c52f084b679f7bbe82b10627fb38e497c14",
+      "cc7ac15a67bcc7680e13f876dfb3c0b17dda2957",
+      "fa1c19beca94aa02ef2b3c7b35396ee3e228e9e1",
+      "fc04b68d9eaa3460a77a79b02a2546b6f50a82b4"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1040701_r0/SHA256SUMS",
+     "code_snapshot_sha256": "ee25fc7c0627eaae2404f8b18697311ad51824da0a7fc8c684592eb2bb0692c6"
+    },
+    {
+     "job": "1040759",
+     "runmeta_git_commit": [
+      "030c2273f3f174cb5fcb4aa4700198f04c56bd94",
+      "040a5ced3e717018655ff24da590c71d65413321",
+      "08812e14f2554ef1fdb441110fbc892c66010d8e",
+      "0928a58f0207db1aa773cb8ef09281a4a26b920d",
+      "0aec73f10531bf49bdd492ebe4765ebd63b04cca",
+      "16d57098451ec245482e94b008a63d73220f387e",
+      "1e12d21c075a9c0ec73b96181698db9ad96c20ee",
+      "2638090d64d844205c37c6e4586f5ae1c8e58887",
+      "28ba26cfb04bee840ce0f0ec553ede93a6037c0a",
+      "2e327a9f6a32ae441390f1029d3021de9e34638c",
+      "2ec783ff12ce3ce97c5864e0ae3fd8738e34e5eb",
+      "3dc3af8eed181a063c47307e9c2e192222dbfa49",
+      "424d05da2e1f086d9aa64a8d5a4795adc531f1d9",
+      "4307496c2f6304f967ecef852ed97e6bafd31823",
+      "49cc9a3bcd45dccec570dbc0292772fd8ee1fd23",
+      "4ea5d13654bc94c61d98a2ca505391853bdc3432",
+      "5aaec465120a173aea155b0f4a1c42db81f398de",
+      "5e108edf0e38934141fb21412918f64913038984",
+      "6a3b16268f24e0dfdd0a98fa826b2f0c848f97c4",
+      "7a6835ef498b0433ab050a89894134ce2e157edc",
+      "81b677f85ebe6fe4403c2bf4cd92a6df59cb9277",
+      "82218c7d2ceaaa3dd7007868bffb6fce89636e0d",
+      "82e9e6f487974f50acea286a10744dc52f16f691",
+      "886bda589c18ef43c6bde71befa7eccff5c888ac",
+      "8909701e28d3b6a522f3b9ab0e4e5e5f0699a838",
+      "a4809c52f084b679f7bbe82b10627fb38e497c14",
+      "a64ff1f3f3ffda75e8465eda2894b1f2853aab8a",
+      "cc7ac15a67bcc7680e13f876dfb3c0b17dda2957",
+      "cf1559c1a55450859303ee609f84e2951103fa12",
+      "fc04b68d9eaa3460a77a79b02a2546b6f50a82b4"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1040759_r0/SHA256SUMS",
+     "code_snapshot_sha256": "993d55dd21f52ab0a16cb4126dd0214fd001b9e4eae440952369e7c442c1fdd0"
+    },
+    {
+     "job": "1040766",
+     "runmeta_git_commit": [
+      "030c2273f3f174cb5fcb4aa4700198f04c56bd94",
+      "040a5ced3e717018655ff24da590c71d65413321",
+      "08812e14f2554ef1fdb441110fbc892c66010d8e",
+      "0928a58f0207db1aa773cb8ef09281a4a26b920d",
+      "0aec73f10531bf49bdd492ebe4765ebd63b04cca",
+      "16d57098451ec245482e94b008a63d73220f387e",
+      "1e12d21c075a9c0ec73b96181698db9ad96c20ee",
+      "2638090d64d844205c37c6e4586f5ae1c8e58887",
+      "28ba26cfb04bee840ce0f0ec553ede93a6037c0a",
+      "2e327a9f6a32ae441390f1029d3021de9e34638c",
+      "2ec783ff12ce3ce97c5864e0ae3fd8738e34e5eb",
+      "3dc3af8eed181a063c47307e9c2e192222dbfa49",
+      "424d05da2e1f086d9aa64a8d5a4795adc531f1d9",
+      "4307496c2f6304f967ecef852ed97e6bafd31823",
+      "49cc9a3bcd45dccec570dbc0292772fd8ee1fd23",
+      "5aaec465120a173aea155b0f4a1c42db81f398de",
+      "5e108edf0e38934141fb21412918f64913038984",
+      "6a3b16268f24e0dfdd0a98fa826b2f0c848f97c4",
+      "7a6835ef498b0433ab050a89894134ce2e157edc",
+      "81b677f85ebe6fe4403c2bf4cd92a6df59cb9277",
+      "82218c7d2ceaaa3dd7007868bffb6fce89636e0d",
+      "82e9e6f487974f50acea286a10744dc52f16f691",
+      "83e157b746d282ef90514f8d7ca5179dde0da32f",
+      "886bda589c18ef43c6bde71befa7eccff5c888ac",
+      "8909701e28d3b6a522f3b9ab0e4e5e5f0699a838",
+      "a4809c52f084b679f7bbe82b10627fb38e497c14",
+      "a64ff1f3f3ffda75e8465eda2894b1f2853aab8a",
+      "cf1559c1a55450859303ee609f84e2951103fa12",
+      "fc04b68d9eaa3460a77a79b02a2546b6f50a82b4"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1040766_r0/SHA256SUMS",
+     "code_snapshot_sha256": "321e8c18dc77b32dc88f973cd328aebb8ecdd83e8a83b3a67bf667632f8fb9e6"
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P3-SVD",
+   "phase": "P3",
+   "description": "SVD / effective rank / write direction / alignment (anisotropic null)",
+   "split": "TRAIN factors",
+   "configs": [],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/P3_SVD_REPORT_v2.md",
+     "sha256": "3740ae9af3c9d44075c0d5244c8c5f840ff23319058480f088e2fa1dd671abe1"
+    },
+    {
+     "path": "reports/heretic_csi/P3_alignment_aniso.json",
+     "sha256": "48e9cf64f6731ef2910306f72c87217fecfa99bf73ee44a4af0d24ef35f8ce95"
+    },
+    {
+     "path": "reports/heretic_csi/P3_svd_descriptive_v2.json",
+     "sha256": "f6fcb58fa525dcff280a0e4051b22f226e13fbf80cd5746c95ce55967f59d252"
+    },
+    {
+     "path": "reports/heretic_csi/P3_write_direction_v2.json",
+     "sha256": "1fc618bdf3441ef6457070532f6ddb06c60aefc12d66c85d553a454ce347eb22"
+    }
+   ],
+   "slurm_jobs": [
+    "1023746",
+    "1023764",
+    "1023765",
+    "1023766"
+   ],
+   "params": {},
+   "status": "DONE",
+   "verdict": "DESCRIPTIVE: shared mean-gap write direction (by construction); no alignment detectable at the null's sensitivity",
+   "log_entries": [
+    "S-079",
+    "S-089",
+    "S-097"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "1023746",
+     "code_snapshot": "outputs/heretic_csi/p3p4/code_1023746"
+    },
+    {
+     "job": "1023764",
+     "code_snapshot": "outputs/heretic_csi/p3p4/code_1023764"
+    },
+    {
+     "job": "1023765",
+     "code_snapshot": "outputs/heretic_csi/p3p4/code_1023765"
+    },
+    {
+     "job": "1023766",
+     "code_snapshot": "outputs/heretic_csi/p3p4/code_1023766"
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P3-TRUNC",
+   "phase": "P3",
+   "description": "top-k truncation / component removal of basket r4 operator",
+   "split": "VALIDATION",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/PREREG_P3_TRUNC.json",
+     "sha256": "470591badba0df36f35fd4a1d9c38bd031c8b990c19fd856bda554ac884eaf53",
+     "last_commit": "83e157b7 2026-10-15T01:37:47+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P3_TRUNC_ERRATUM.json",
+     "sha256": "0c03cd7c8b63bae4c2f81fcf52df0fdf4ebe8892b36c4caf55721cd8a5b0c2d0",
+     "last_commit": "cc7ac15a 2026-10-15T05:19:46+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/p3_basket_r4_validation.json",
+     "sha256": "a8fb0322c66393080ea1de6d44c5ebd25d0e75c52bdbb2381dd991afcb3a1125"
+    },
+    {
+     "path": "reports/heretic_csi/P3_TRUNC_READ_VOID.md",
+     "sha256": "df9db5b8b2a3684737a6d0a2fa2fefd39cb79691e535fcee71c9a6e06ae13d69"
+    },
+    {
+     "path": "reports/heretic_csi/p3_basket_r4_validation.NOT_QUOTABLE.md",
+     "sha256": "4db3d0751d39364c9fe32bdb12b5d4e9c2ce0b23f93d1b2258c053aea86824ed"
+    }
+   ],
+   "slurm_jobs": [
+    "1041078"
+   ],
+   "params": {
+    "controls": "40 per k"
+   },
+   "status": "DONE",
+   "verdict": "VOID (REEXP per-row tolerance failed; kept VOID)",
+   "log_entries": [
+    "S-158",
+    "S-167",
+    "S-176",
+    "S-180"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "1041078",
+     "runmeta_git_commit": [
+      "030c2273f3f174cb5fcb4aa4700198f04c56bd94",
+      "0928a58f0207db1aa773cb8ef09281a4a26b920d",
+      "16d57098451ec245482e94b008a63d73220f387e",
+      "2e327a9f6a32ae441390f1029d3021de9e34638c",
+      "3dc3af8eed181a063c47307e9c2e192222dbfa49",
+      "424d05da2e1f086d9aa64a8d5a4795adc531f1d9",
+      "4307496c2f6304f967ecef852ed97e6bafd31823",
+      "49cc9a3bcd45dccec570dbc0292772fd8ee1fd23",
+      "7a6835ef498b0433ab050a89894134ce2e157edc",
+      "81b677f85ebe6fe4403c2bf4cd92a6df59cb9277",
+      "82218c7d2ceaaa3dd7007868bffb6fce89636e0d",
+      "82e9e6f487974f50acea286a10744dc52f16f691",
+      "83e157b746d282ef90514f8d7ca5179dde0da32f",
+      "886bda589c18ef43c6bde71befa7eccff5c888ac",
+      "a4809c52f084b679f7bbe82b10627fb38e497c14",
+      "a64ff1f3f3ffda75e8465eda2894b1f2853aab8a",
+      "cc7ac15a67bcc7680e13f876dfb3c0b17dda2957",
+      "cf1559c1a55450859303ee609f84e2951103fa12",
+      "fc04b68d9eaa3460a77a79b02a2546b6f50a82b4"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p2b/code_snapshots/1041078_r0/SHA256SUMS",
+     "code_snapshot_sha256": "c49db86f86b03643263389c75743b4d9b36a6c18ad4632d3c959526b0acc83a6"
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P4-fits",
+   "phase": "P4",
+   "description": "head-restricted o_proj operators: TOP8 vs 60 RAW + 60 NC random 8-head sets (+ FULLO, MLP, ATTNMLP, H2, L10H2, TOP8_L6_14)",
+   "split": "TRAIN (fit-side)",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/PREREG_P4.json",
+     "sha256": "aba003bc50002a4e0487ce4b049b131e1d97885a0527dcc85e75734de30aacbf",
+     "last_commit": "9a0e302a 2026-10-14T03:08:50+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P4_AMENDMENT_1.json",
+     "sha256": "63e9bea4f09e4f72f14a2337db335726d2207aa77a6c95e0c7f25274faa1ee3f",
+     "last_commit": "ed539c23 2026-10-14T05:16:27+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P4_AMENDMENT_2.json",
+     "sha256": "7c00ab2206de6cace3814e8a86b5308f6b60c1cdef64634b164f469a874da27e",
+     "last_commit": "ac2263ac 2026-10-14T08:31:57+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P4_AMENDMENT_3.json",
+     "sha256": "f8854509f1e544c1ca16aaf05d7c7c77bcfbe4d2aaf3a24e269ff0be0e4ed1ed",
+     "last_commit": "7b99e149 2026-10-14T08:32:46+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P4_AMENDMENT_4.json",
+     "sha256": "42e3a493905ef68985632bfdfe8729fdd520ed16bf60690a000cd3b9b8488a7e",
+     "last_commit": "5c70f083 2026-10-14T12:29:43+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/P4V2_FIT_SUMMARY_partial.json",
+     "sha256": "b9e5edb9118086c22f03f81757353fb406e61e47c3b4b040be8be19e274116b8"
+    },
+    {
+     "path": "reports/heretic_csi/P4V2_FIT_SUMMARY_partial2.json",
+     "sha256": "4a8148f2ce8ef6651f4a1f4e738869ed462c3e96abaaeb9c57f0182080f16eca"
+    },
+    {
+     "path": "reports/heretic_csi/P4_HEAD_RESTRICTED_DESIGN_v2.md",
+     "sha256": "25bc2bf8a8cf49a9b486f73614114919ab599dd4272da382264ca10063eab743"
+    }
+   ],
+   "slurm_jobs": [
+    "1023752",
+    "1023754",
+    "1023756",
+    "1023758",
+    "1024034",
+    "1024035",
+    "1024036",
+    "1024037"
+   ],
+   "params": {},
+   "status": "RUNNING (1 fit left)",
+   "verdict": "fit-side partial: TOP8 not distinctive vs random head sets",
+   "log_entries": [
+    "S-089",
+    "S-100",
+    "S-113"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "1023752",
+     "code_snapshot": "outputs/heretic_csi/p3p4/code_1023752"
+    },
+    {
+     "job": "1023754",
+     "code_snapshot": "outputs/heretic_csi/p3p4/code_1023754"
+    },
+    {
+     "job": "1023756",
+     "code_snapshot": "outputs/heretic_csi/p3p4/code_1023756"
+    },
+    {
+     "job": "1023758",
+     "code_snapshot": "outputs/heretic_csi/p3p4/code_1023758"
+    },
+    {
+     "job": "1024034",
+     "code_snapshot": "outputs/heretic_csi/p3p4/code_1024034"
+    },
+    {
+     "job": "1024035",
+     "code_snapshot": "outputs/heretic_csi/p3p4/code_1024035"
+    },
+    {
+     "job": "1024036",
+     "code_snapshot": "outputs/heretic_csi/p3p4/code_1024036"
+    },
+    {
+     "job": "1024037",
+     "code_snapshot": "outputs/heretic_csi/p3p4/code_1024037"
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P4-eval",
+   "phase": "P4",
+   "description": "head-restricted operator rescue eval (TRAIN-K4 then VAL)",
+   "split": "TRAIN-K4 / VALIDATION",
+   "configs": [],
+   "artifacts": [],
+   "slurm_jobs": [],
+   "params": {},
+   "status": "PENDING",
+   "verdict": "PENDING",
+   "log_entries": [],
+   "job_code_provenance": [],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P5-heldout-probe",
+   "phase": "P5",
+   "description": "held-out probe quality basket vs button (C1)",
+   "split": "TRAIN fit -> VAL score",
+   "configs": [],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p6_heldout_probe_basket.json",
+     "sha256": "798518d61bc592ea7ffc662a4db770845c0e40208dcb92c955cb80e2ef4a92df"
+    },
+    {
+     "path": "reports/heretic_csi/hcsi_p6_heldout_probe_button.json",
+     "sha256": "84f38ede97ce818eea65db1e366aa7da3969535248088195deb1b3f920455cab"
+    }
+   ],
+   "slurm_jobs": [
+    "1022696"
+   ],
+   "params": {},
+   "status": "DONE",
+   "verdict": "C1 unsupported held-out; decodability difference CANNOT ANSWER",
+   "log_entries": [
+    "S-054",
+    "S-065"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "1022696",
+     "code_provenance": "config last-commit only"
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P6-stage0-gates",
+   "phase": "P6",
+   "description": "new-codeword Stage-0 (readout, L18 extraction, axisfit) + gates G1/G2/G3",
+   "split": "TRAIN",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/PREREG_P6.json",
+     "sha256": "998fc25d444c5230c19b11eaf7c5ab9fc01e687d923f83db70b3e13ac8e21022",
+     "last_commit": "8ff4564c 2026-10-14T06:21:25+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P6_AMENDMENT_1.json",
+     "sha256": "3a762fc7237a13c25abffe80ba90a7c1ac4e7b2fd462c1f0c4af70a67880fc94",
+     "last_commit": "032024ee 2026-10-14T08:37:33+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P6_AMENDMENT_2.json",
+     "sha256": "98747c697106b4f4499cfe5d98715c8790b194cc78c3053e044d68c2c8bc72fd",
+     "last_commit": "aafbf0d4 2026-10-14T08:38:18+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P6_AMENDMENT_3.json",
+     "sha256": "8b39b5dc9b1e0f9d2283be873e9483ee9bba782d0b7ff18f733d5633a3d93c11",
+     "last_commit": "40ebfcfe 2026-10-14T12:29:21+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P6_AMENDMENT_4.json",
+     "sha256": "bd453164aff88f914adfdd10657a4821b38c010c1266327c46037b83ca7cf0e8",
+     "last_commit": "86c802dc 2026-10-14T20:43:09+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P6_AMENDMENT_5.json",
+     "sha256": "5841ccd4b749c2528333e628a7140193d5eaf5549245e740fdcf44dc133d1e4b",
+     "last_commit": "886bda58 2026-10-15T05:22:49+03:00"
+    },
+    {
+     "path": "configs/heretic_csi/PREREG_P6_AMENDMENT_6.json",
+     "sha256": "6f40234a8d3564059527c4ec23f8bafa89a42d448fc3f81366560588311d23d2",
+     "last_commit": "0aec73f1 2026-10-15T09:23:18+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/hcsi_p6_g2_lamp.json",
+     "sha256": "707ac8ba7687f045a2e005f1664eda989ba45e58f5d4dec247eca82816655a19"
+    },
+    {
+     "path": "reports/heretic_csi/hcsi_p6_g2_kettle.json",
+     "sha256": "59c2443ac7b218154bddcaacfef74b6f6be8c599a8f516518d19139cc78ea48f"
+    },
+    {
+     "path": "reports/heretic_csi/hcsi_p6_g2_pencil.json",
+     "sha256": "e1f07605f1eb8b81a1e569ba4fa03da4b908055b52597e9a9b63d6c715736ecc"
+    },
+    {
+     "path": "reports/heretic_csi/hcsi_p6_g2_ladder.json",
+     "sha256": "60a0e751d81e5fda16b2fde8f68f98efb5951eaa3a2d07eb39371ffe95ed50b1"
+    },
+    {
+     "path": "reports/heretic_csi/hcsi_p6_bank_checks.json",
+     "sha256": "0c965c5fad0479b5cde227e9da687902e3c62785ff3d1b7597565d7205fabb71"
+    },
+    {
+     "path": "reports/heretic_csi/hcsi_p6_occ_check.json",
+     "sha256": "9bb7e649fd9946f133a62b4a2d2ae03dd76e1c679bffe268a4173c5def04859e"
+    },
+    {
+     "path": "reports/heretic_csi/hcsi_p6_power_iut.json",
+     "sha256": "90bd3c5fa906bc35d95e6b94ffe97e42d7b87562319595d7f11a2db8a2bcaf18"
+    },
+    {
+     "path": "reports/heretic_csi/P6_GATE_TABLE_interim.md",
+     "sha256": "9508b843ee5ebbc036374a6cc739c3adaf1847d81cdf5361bf890d40de562df2"
+    },
+    {
+     "path": "outputs/heretic_csi/p6/stage0_blanket.json",
+     "sha256": "f6d691a53520f0045e2dec7c595048a4a5385be475389d84d9fa2dff6295df0b"
+    },
+    {
+     "path": "outputs/heretic_csi/p6/stage0_bottle.json",
+     "sha256": "1a33922810cc6f905d41a5dee86c95b0475bb97f96fea8d93627f03ae8051734"
+    },
+    {
+     "path": "outputs/heretic_csi/p6/stage0_bucket.json",
+     "sha256": "6c9b0c8ac3b529a1934a27411ea0af1695f6c646c408c8f8521e28449daa2084"
+    },
+    {
+     "path": "outputs/heretic_csi/p6/stage0_candle.json",
+     "sha256": "0076282678f1e31f3dd8547ad7b67733fadc3b60432bc8aeb80ca06b50994e0a"
+    },
+    {
+     "path": "outputs/heretic_csi/p6/stage0_curtain.json",
+     "sha256": "e7e035646f225c29f0b6687baf790826cf24006c5a094840422d6445947b2337"
+    },
+    {
+     "path": "outputs/heretic_csi/p6/stage0_cushion.json",
+     "sha256": "b7d2fbcb2eaf4db39014cb5add2c017d5106d362687a209c336884f451a6bf76"
+    },
+    {
+     "path": "outputs/heretic_csi/p6/stage0_jacket.json",
+     "sha256": "153e34694f1d4c1861e72f31c8b5a4aa622cd0d47d8f1b8bf9e5a653ee1d8d96"
+    },
+    {
+     "path": "outputs/heretic_csi/p6/stage0_kettle.json",
+     "sha256": "71e8e856d3be61db6812281938622226007e567fccc617f4969a93822250ba23"
+    },
+    {
+     "path": "outputs/heretic_csi/p6/stage0_ladder.json",
+     "sha256": "312b6993644f9f36ae5a22b2cc69380d119fa686efab69b66b0e73f71dcd8835"
+    },
+    {
+     "path": "outputs/heretic_csi/p6/stage0_lamp.json",
+     "sha256": "560fc6a432b5d9fc391bc668b4b56bc01f667b98ac5844a46473e4a81981fe4b"
+    },
+    {
+     "path": "outputs/heretic_csi/p6/stage0_pencil.json",
+     "sha256": "d624008eeea5c8a938a70c2fe15344cf2b9f80fcff6cd90abdd923fcd0ef55f3"
+    },
+    {
+     "path": "outputs/heretic_csi/p6/stage0_pillow.json",
+     "sha256": "0e9f6aa0b6945848fd3481f318944a7e14f8f93f85c87a7285a026141390c29a"
+    },
+    {
+     "path": "outputs/heretic_csi/p6/stage0_saddle.json",
+     "sha256": "02afa0f9ac8ef35f7a8604c9392c269f3e02ce9e981f01397f9778b6c23cf56b"
+    },
+    {
+     "path": "outputs/heretic_csi/p6/stage0_sponge.json",
+     "sha256": "11e14dd2237d97ef78944ad4c5ca222096139f9272876222d1c25e9742996188"
+    },
+    {
+     "path": "outputs/heretic_csi/p6/stage0_wagon.json",
+     "sha256": "4ed17c999901f0d27975a27bb94274bf12dbec60dfc5f459ed814c2f0c381a0f"
+    },
+    {
+     "path": "outputs/heretic_csi/p6/stage0_whistle.json",
+     "sha256": "dd4fc23b3cc20ff36b26891c5965018955da74abb2a0a30e2318adbc98483ba3"
+    }
+   ],
+   "slurm_jobs": [
+    "1038879 (a5000 OOM pilot, superseded)",
+    "1039942 (preempted)",
+    "1040044 (failed: node /tmp)",
+    "1040103 (candle readout)",
+    "1040225 (batch A; lamp readout reused; cancelled)",
+    "1040422 (preempted)",
+    "1040533 (failed: shell bug)",
+    "1040547 (batch 1)",
+    "1041177 (batch 2)",
+    "1041485 (batch 3; preempted after 4/5)",
+    "1041596 (batch 4; preempted; sponge done)",
+    "1041733 (preempted)",
+    "1041850 (running at build)",
+    "1041401 (G2 batch 1)",
+    "1041561 (G2 preempted)",
+    "1041708 (G2 preempted)",
+    "1041734 (G2 batch 2)",
+    "1042039 (G2 batch 3)",
+    "1041178 (axisfit)",
+    "1041480",
+    "1041481",
+    "1041482",
+    "1041483",
+    "1041484",
+    "1041635",
+    "1041636",
+    "1041637",
+    "1041638",
+    "1041735",
+    "1024033 (occ, failed)",
+    "1024038 (occ)"
+   ],
+   "params": {
+    "gpu": "l40s",
+    "partition": "killable"
+   },
+   "status": "RUNNING",
+   "verdict": "interim: G3 FAIL candle (borderline 0.0481); G1-G3 survivors so far: lamp, kettle, pencil, ladder, blanket, bucket, pillow, saddle, wagon (S-197); others pending",
+   "log_entries": [
+    "S-142",
+    "S-146",
+    "S-167",
+    "S-168",
+    "S-178",
+    "S-187",
+    "S-197"
+   ],
+   "job_code_provenance": [
+    {
+     "job": "1038879 (a5000 OOM pilot, superseded)",
+     "runmeta_git_commit": [
+      "8cb05de53eee2c85c0989d056ff004e73f9d3d71"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p6/code_1038879"
+    },
+    {
+     "job": "1039942 (preempted)",
+     "runmeta_git_commit": [
+      "c22be43fa936c87b8e2dc31ef6f5f33ba5cce023"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p6/code_1039942"
+    },
+    {
+     "job": "1040044 (failed: node /tmp)",
+     "code_snapshot": "outputs/heretic_csi/p6/code_1040044"
+    },
+    {
+     "job": "1040103 (candle readout)",
+     "runmeta_git_commit": [
+      "417f5dabb6b03f5e00fd094ed482c12d87a7439d"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p6/code_1040103"
+    },
+    {
+     "job": "1040225 (batch A; lamp readout reused; cancelled)",
+     "runmeta_git_commit": [
+      "76a41f46dadbec05d58ede9eb16ff60328b32323",
+      "da832562344ffe161636f82a6f100847816790e4"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p6/code_1040225"
+    },
+    {
+     "job": "1040422 (preempted)",
+     "code_snapshot": "outputs/heretic_csi/p6/code_1040422"
+    },
+    {
+     "job": "1040533 (failed: shell bug)",
+     "code_snapshot": "outputs/heretic_csi/p6/code_1040533"
+    },
+    {
+     "job": "1040547 (batch 1)",
+     "runmeta_git_commit": [
+      "2ec783ff12ce3ce97c5864e0ae3fd8738e34e5eb",
+      "5aaec465120a173aea155b0f4a1c42db81f398de",
+      "a4809c52f084b679f7bbe82b10627fb38e497c14"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p6/code_1040547"
+    },
+    {
+     "job": "1041177 (batch 2)",
+     "runmeta_git_commit": [
+      "4307496c2f6304f967ecef852ed97e6bafd31823",
+      "7a6835ef498b0433ab050a89894134ce2e157edc",
+      "82218c7d2ceaaa3dd7007868bffb6fce89636e0d",
+      "886bda589c18ef43c6bde71befa7eccff5c888ac",
+      "fc04b68d9eaa3460a77a79b02a2546b6f50a82b4"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p6/code_1041177"
+    },
+    {
+     "job": "1041485 (batch 3; preempted after 4/5)",
+     "runmeta_git_commit": [
+      "030c2273f3f174cb5fcb4aa4700198f04c56bd94",
+      "16d57098451ec245482e94b008a63d73220f387e",
+      "1e12d21c075a9c0ec73b96181698db9ad96c20ee",
+      "2638090d64d844205c37c6e4586f5ae1c8e58887",
+      "a64ff1f3f3ffda75e8465eda2894b1f2853aab8a"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p6/code_1041485"
+    },
+    {
+     "job": "1041596 (batch 4; preempted; sponge done)",
+     "runmeta_git_commit": [
+      "0aec73f10531bf49bdd492ebe4765ebd63b04cca",
+      "8c02eff13eca46c4cf3ec7da08e3dfe0e0657382"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p6/code_1041596"
+    },
+    {
+     "job": "1041733 (preempted)",
+     "runmeta_git_commit": [
+      "c74b3349513e57a953d4aa81258ad9104edf1910"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p6/code_1041733"
+    },
+    {
+     "job": "1041850 (running at build)",
+     "runmeta_git_commit": [
+      "250dd1722aad7aa47834941b107c412cb7e251d8",
+      "dd3e44355c59f3ca7eca4d9db96eb8adf5bfed52"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p6/code_1041850"
+    },
+    {
+     "job": "1041401 (G2 batch 1)",
+     "runmeta_git_commit": [
+      "030c2273f3f174cb5fcb4aa4700198f04c56bd94",
+      "16d57098451ec245482e94b008a63d73220f387e",
+      "424d05da2e1f086d9aa64a8d5a4795adc531f1d9",
+      "a64ff1f3f3ffda75e8465eda2894b1f2853aab8a"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p6/code_1041401"
+    },
+    {
+     "job": "1041561 (G2 preempted)",
+     "runmeta_git_commit": [
+      "040a5ced3e717018655ff24da590c71d65413321",
+      "0aec73f10531bf49bdd492ebe4765ebd63b04cca",
+      "2638090d64d844205c37c6e4586f5ae1c8e58887",
+      "8909701e28d3b6a522f3b9ab0e4e5e5f0699a838",
+      "8c02eff13eca46c4cf3ec7da08e3dfe0e0657382"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p6/code_1041561"
+    },
+    {
+     "job": "1041708 (G2 preempted)",
+     "runmeta_git_commit": [
+      "a652da8fa9380678fa193883d8044ac4cf370f19"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p6/code_1041708"
+    },
+    {
+     "job": "1041734 (G2 batch 2)",
+     "runmeta_git_commit": [
+      "1b891585c74ea6ba62a480643492b782f3148e2f",
+      "250dd1722aad7aa47834941b107c412cb7e251d8",
+      "4eafe78d48c088405688d74a2b95a65ec5f409ec",
+      "6c7bfcca621dfed73ba6a656e10397691d4b6385",
+      "774da7b00934807fd9511a87e4bd783e93fdd031",
+      "aef1d3bb10d7a96fd0f1f93af79d177ca1ac964a",
+      "c74b3349513e57a953d4aa81258ad9104edf1910",
+      "dd3e44355c59f3ca7eca4d9db96eb8adf5bfed52"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p6/code_1041734"
+    },
+    {
+     "job": "1042039 (G2 batch 3)",
+     "runmeta_git_commit": [
+      "63f73dd9c9a377b19a6746e112c673347b8e011e",
+      "65b23827a00928ffed6505cdf30ca46afe297af8",
+      "f25cea5bd62ec449f85f0fc643df71ccd243f74f"
+     ],
+     "code_snapshot": "outputs/heretic_csi/p6/code_1042039"
+    },
+    {
+     "job": "1041178 (axisfit)",
+     "code_provenance": "config last-commit only"
+    },
+    {
+     "job": "1041480",
+     "code_provenance": "config last-commit only"
+    },
+    {
+     "job": "1041481",
+     "code_provenance": "config last-commit only"
+    },
+    {
+     "job": "1041482",
+     "code_provenance": "config last-commit only"
+    },
+    {
+     "job": "1041483",
+     "code_provenance": "config last-commit only"
+    },
+    {
+     "job": "1041484",
+     "code_provenance": "config last-commit only"
+    },
+    {
+     "job": "1041635",
+     "code_provenance": "config last-commit only"
+    },
+    {
+     "job": "1041636",
+     "code_provenance": "config last-commit only"
+    },
+    {
+     "job": "1041637",
+     "code_provenance": "config last-commit only"
+    },
+    {
+     "job": "1041638",
+     "code_provenance": "config last-commit only"
+    },
+    {
+     "job": "1041735",
+     "code_provenance": "config last-commit only"
+    },
+    {
+     "job": "1024033 (occ, failed)",
+     "code_snapshot": "outputs/heretic_csi/p3p4/code_1024033"
+    },
+    {
+     "job": "1024038 (occ)",
+     "code_snapshot": "outputs/heretic_csi/p3p4/code_1024038"
+    }
+   ],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P6-rescue",
+   "phase": "P6",
+   "description": "DEV draw + per-codeword rescue + H6a",
+   "split": "VALIDATION",
+   "configs": [],
+   "artifacts": [],
+   "slurm_jobs": [],
+   "params": {},
+   "status": "PENDING",
+   "verdict": "PENDING",
+   "log_entries": [],
+   "job_code_provenance": [],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  },
+  {
+   "id": "P7-design",
+   "phase": "P7",
+   "description": "behavioral linking design",
+   "split": "VALIDATION (planned)",
+   "configs": [
+    {
+     "path": "configs/heretic_csi/PREREG_P7_DRAFT.json",
+     "sha256": "cf2d5ba58ead1a84f94555efae27a0a881d302a4c5da5b279379ae30c0e1a575",
+     "last_commit": "dd3e4435 2026-10-15T12:13:50+03:00"
+    }
+   ],
+   "artifacts": [
+    {
+     "path": "reports/heretic_csi/P7_DESIGN.md",
+     "sha256": "d681936760673a629af8514c1eb8c88001a711f0dc8fa81f5ec05a24a0464938"
+    }
+   ],
+   "slurm_jobs": [],
+   "params": {},
+   "status": "DONE (design)",
+   "verdict": "primary pre-labelled CANNOT ANSWER / UNDERPOWERED (MDE 0.0907 vs plausible <=0.0021)",
+   "log_entries": [
+    "S-193"
+   ],
+   "job_code_provenance": [],
+   "heretic_sha": "662e4ba27ecaf8878b0938c184a78f75a9116f82",
+   "model": "meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f249a16976918f6564b8830bc894c89659 (bf16, eager)",
+   "domain_split": "data/boombness_prompts/dcs_ts116_domain_split.json (seed 202609061; 67 train / 23 val; TEST never used)"
+  }
+ ]
+}

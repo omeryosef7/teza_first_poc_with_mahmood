@@ -22,10 +22,10 @@ def load(n):
 
 # ---------------- Fig 1 v2: P2a VALIDATION, candidate vs rank-matched controls, with per-cell status ----------------
 cells = {
-    "basket": [(1, "hcsi_p2a_basket_r1.json", "PASS 1/57 — floor-sensitive;\nuncorrected over 3 VAL looks\n(Holm 0.0525) ⇒ SUGGESTIVE", "pass"),
+    "basket": [(1, "hcsi_p2a_basket_r1.json", "PASS 1/57 (robust to floor, S-200);\nuncorrected over 3 VAL looks\n(Holm 0.0525) ⇒ SUGGESTIVE", "pass"),
                (4, "hcsi_p2a_basket_r4_validation.json", "descriptive, FRAGILE —\nnot a pass", "desc"),
                (16, "hcsi_p2a_basket_r16.json", "fail 10/57", "fail")],
-    "button": [(1, "hcsi_p2a_button_r1.json", "fail 14/57\n(verifier 18/57)", "fail"),
+    "button": [(1, "hcsi_p2a_button_r1.json", "fail 14/57", "fail"),
                (4, "hcsi_p2a_button_r4ext_validation_analyzer.json", "CONFIRMED 1/201\n(200 ctrl, Holm 0.0149)", "conf"),
                (16, "hcsi_p2a_button_r16.json", "fail 10/57", "fail")],
 }
@@ -54,7 +54,7 @@ for ax, (cw, lst) in zip(axes, cells.items()):
     ax.set_ylabel("candidate − KO  (domain-level Δ y_install)")
     ax.legend(fontsize=7, loc="upper left")
 fig.text(0.5, -0.06,
-         "Filled red = CONFIRMED (S-126); filled orange = preregistered pass, SUGGESTIVE (S-049/S-198); hollow = fail or descriptive. "
+         "Filled red = CONFIRMED (S-126); filled orange = preregistered pass, SUGGESTIVE (S-049/S-198/S-200); hollow = fail or descriptive. "
          "button r4 uses the S-084 powered family (190 random + 10 shuffled); other cells 46 + 10.\n"
          "Basket VAL cells use 133–145 common rows vs button 193–203 (declared option-mass attrition). "
          "Sources: hcsi_p2a_*.json (S-049, S-073, S-125/126).", ha="center", fontsize=7)
